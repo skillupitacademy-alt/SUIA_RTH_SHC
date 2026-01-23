@@ -22,12 +22,17 @@ interface QuizState {
     subjects: string[];
     difficulty: string;
   } | null;
+  examId: string | null;
+  isSubmitted: boolean;
 
   // Actions
   startQuiz: (questions: Question[], config: any, duration: number) => void;
+  setExamId: (id: string) => void;
+  setQuestions: (questions: Question[]) => void;
   setAnswer: (questionId: number, optionIndex: number) => void;
   toggleReview: (questionId: number) => void;
   updateTimer: () => void;
+  updateTimeLeft: () => void; // Alias for updateTimer
   setTimeRemaining: (time: number) => void;
   setCurrentIndex: (index: number) => void;
   finishQuiz: () => void;
@@ -43,6 +48,8 @@ export const useQuizStore = create<QuizState>()(
       timeLeft: 0,
       currentQuestionIndex: 0,
       config: null,
+      examId: null,
+      isSubmitted: false,
 
       startQuiz: (questions, config, duration) => set({
         isActive: true,
@@ -52,7 +59,12 @@ export const useQuizStore = create<QuizState>()(
         answers: {},
         markedForReview: [],
         currentQuestionIndex: 0,
+        isSubmitted: false, // Reset submission state
       }),
+
+      setExamId: (id) => set({ examId: id }),
+      
+      setQuestions: (questions) => set({ questions }),
 
       setAnswer: (questionId, optionIndex) => set((state) => ({
         answers: { ...state.answers, [questionId]: optionIndex }
@@ -67,6 +79,8 @@ export const useQuizStore = create<QuizState>()(
       updateTimer: () => set((state) => ({
         timeLeft: state.timeLeft > 0 ? state.timeLeft - 1 : 0
       })),
+      
+      updateTimeLeft: () => get().updateTimer(),
 
       setTimeRemaining: (time) => set({ timeLeft: time }),
 
@@ -74,7 +88,8 @@ export const useQuizStore = create<QuizState>()(
 
       finishQuiz: () => set({
         isActive: false,
-        // We keep questions/answers for results page viewing, but clear session
+        isSubmitted: true,
+        // We keep questions/answers for results page viewing, but clear session status
       }),
     }),
     {

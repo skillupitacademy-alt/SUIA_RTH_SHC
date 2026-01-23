@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { apiClient } from '@quiz/api-client';
 import {
     Clock,
     ChevronLeft,
@@ -26,26 +27,71 @@ export function ExamInterface() {
         toggleReview,
         setCurrentIndex,
         finishQuiz,
-        isActive
+        setQuestions,
+        examId,
+        setExamId,
+        isSubmitted,
+        updateTimeLeft // Changed from updateTimer
     } = useQuizStore();
+
+    const [isLoading, setIsLoading] = useState(true);
 
     const question = questions[currentQuestionIndex];
 
-    // Simulation fallback if no store questions (e.g. direct nav)
-    useEffect(() => {
-        if (!isActive && questions.length === 0) {
-            // router.push('/quiz/new');
+    const handleAnswer = async (optionIndex: number) => {
+        const questionId = questions[currentQuestionIndex].id;
+        const option = questions[currentQuestionIndex].options[optionIndex];
+
+        // Optimistic UI update
+        setAnswer(questionId, optionIndex);
+
+        // Real persistence
+        if (examId) {
+            try {
+                await apiClient.quiz.submitAnswer(examId, String(questionId), option);
+            } catch (err) {
+                console.error("Failed to save answer", err);
+            }
         }
-    }, [isActive, questions, router]);
+    };
+
+    useEffect(() => {
+        const initExam = async () => {
+            // If we have questions and not submitted, we might be resuming
+            if (questions.length > 0 && !isSubmitted) {
+                setIsLoading(false);
+                return;
+            }
+
+            try {
+                // Start a new exam (Mocking domain ID for demo)
+                // In real flow, this comes from selection page or URL param
+                const { examId, questions } = await apiClient.quiz.startExam({
+                    domainId: 'domain_1',
+                    difficulty: 'intermediate'
+                });
+
+                setExamId(examId);
+                setQuestions(questions);
+            } catch (err) {
+                console.error("Failed to start exam", err);
+                // Fallback or redirect
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        initExam();
+    }, [questions.length, isSubmitted, setQuestions, setExamId]);
 
     // Timer logic
     useEffect(() => {
-        if (!isActive) return;
+        if (isLoading || isSubmitted) return; // Stop timer if loading or submitted
         const timer = setInterval(() => {
-            updateTimer();
+            updateTimeLeft();
         }, 1000);
         return () => clearInterval(timer);
-    }, [isActive, updateTimer]);
+    }, [isLoading, isSubmitted, updateTimeLeft]);
 
     const formatTime = (seconds: number) => {
         const min = Math.floor(seconds / 60);
@@ -57,6 +103,14 @@ export function ExamInterface() {
         finishQuiz();
         router.push('/reports/active-report');
     };
+
+    if (isLoading) {
+        return (
+            <div className="flex flex-col min-h-[calc(100vh-64px)] bg-muted/5 items-center justify-center">
+                <p className="text-xl font-bold text-primary animate-pulse">Loading Exam...</p>
+            </div>
+        );
+    }
 
     if (!question) return null;
 
@@ -147,7 +201,7 @@ export function ExamInterface() {
                             {question.options.map((option, i) => (
                                 <button
                                     key={i}
-                                    onClick={() => setAnswer(question.id, i)}
+                                    onClick={() => handleAnswer(i)}
                                     className={cn(
                                         "flex items-center justify-between w-full p-6 rounded-2xl border-2 transition-all text-left group",
                                         answers[question.id] === i

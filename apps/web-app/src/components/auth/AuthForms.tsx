@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useAuthStore } from '@/store/auth-store';
 import { useRouter } from 'next/navigation';
+import { apiClient } from '@quiz/api-client';
 
 export function LoginForm() {
     const [showPassword, setShowPassword] = useState(false);
@@ -15,18 +16,20 @@ export function LoginForm() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
-        // Simulation
-        setTimeout(() => {
-            login({
-                id: '1',
-                name: 'Jane Doe',
-                email: 'jane@example.com',
-                role: 'user',
-                onboarded: true // Mocking already onboarded for simple flow
-            }, 'mock-jwt-token');
-            setLoading(false);
+        try {
+            // Real API Call
+            const { user, accessToken } = await apiClient.auth.login(
+                (e.target as any).email.value,
+                (e.target as any).password.value
+            );
+
+            login(user, accessToken);
             router.push('/dashboard');
-        }, 1500);
+        } catch (err: any) {
+            alert(err.message); // Simple error handling for now
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -100,11 +103,24 @@ export function LoginForm() {
 
 export function SignupForm() {
     const [loading, setLoading] = useState(false);
+    const router = useRouter(); // Added missing router
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
-        setTimeout(() => setLoading(false), 1500);
+        try {
+            await apiClient.auth.signup(
+                (e.target as any).email.value,
+                (e.target as any).password.value,
+                (e.target as any).name.value
+            );
+            // Auto login or redirect to login
+            router.push('/login');
+        } catch (err: any) {
+            alert(err.message);
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (

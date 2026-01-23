@@ -9,7 +9,7 @@
         "lint": "next lint"
     },
     "dependencies": {
-        "@quiz/db": "workspace:*",
+        "@quiz/db": "^0.1.0",
         "bcrypt": "^5.1.1",
         "bcryptjs": "^3.0.3",
         "cookie": "^1.0.2",
