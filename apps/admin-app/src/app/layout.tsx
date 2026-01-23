@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { AdminLayout } from "@/components/layout/AdminLayout";
 
 export const metadata: Metadata = {
-    title: "Admin Dashboard | Quiz Platform",
-    description: "Quiz platform administration",
+    title: "QuizAdmin | Governance",
+    description: "Enterprise Quiz Platform Admin Terminal",
 };
 
 export default function RootLayout({
@@ -13,7 +14,11 @@ export default function RootLayout({
 }>) {
     return (
         <html lang="en">
-            <body>{children}</body>
+            <body>
+                <AdminLayout>
+                    {children}
+                </AdminLayout>
+            </body>
         </html>
     );
 }

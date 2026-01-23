@@ -1,66 +1,33 @@
-'use client';
-
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { SignupForm } from "@/components/auth/AuthForms";
+import { Zap } from "lucide-react";
 
 export default function SignupPage() {
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [name, setName] = useState('');
-    const [error, setError] = useState('');
-    const router = useRouter();
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        try {
-            const res = await fetch('/api/auth/signup', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password, name }),
-            });
-
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.error);
-
-            router.push('/login');
-        } catch (err: any) {
-            setError(err.message);
-        }
-    };
-
     return (
-        <div className="flex flex-col items-center justify-center min-h-screen p-4">
-            <form onSubmit={handleSubmit} className="w-full max-w-md p-8 space-y-4 bg-white rounded shadow">
-                <h1 className="text-2xl font-bold text-center">Create Account</h1>
-                {error && <p className="text-red-500 text-sm">{error}</p>}
-                <input
-                    type="text"
-                    placeholder="Full Name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    className="w-full p-2 border rounded text-black"
-                    required
-                />
-                <input
-                    type="email"
-                    placeholder="Email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="w-full p-2 border rounded text-black"
-                    required
-                />
-                <input
-                    type="password"
-                    placeholder="Password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="w-full p-2 border rounded text-black"
-                    required
-                />
-                <button type="submit" className="w-full p-2 text-white bg-green-600 rounded hover:bg-green-700">
-                    Sign Up
-                </button>
-            </form>
+        <div className="flex min-h-[calc(100vh-64px)] overflow-hidden">
+            {/* Form Side */}
+            <div className="flex-1 flex items-center justify-center p-6 bg-muted/5">
+                <SignupForm />
+            </div>
+
+            {/* Visual Side */}
+            <div className="hidden lg:flex flex-1 bg-secondary relative items-center justify-center text-primary-foreground p-12">
+                <div className="absolute inset-0 bg-gradient-to-tr from-secondary to-primary opacity-90" />
+                <div className="relative z-10 max-w-lg">
+                    <Zap size={64} className="mb-8" />
+                    <h1 className="text-5xl font-extrabold mb-6 tracking-tight">Accelerate Your Growth</h1>
+                    <p className="text-xl text-primary-foreground/80 leading-relaxed">
+                        Create your account to start personalized assessments in your domain.
+                    </p>
+                    <ul className="mt-12 space-y-4">
+                        {['Adaptive Difficulty', 'In-depth Analytics', 'Skill Certification', 'Expert Support'].map(item => (
+                            <li key={item} className="flex items-center gap-3 text-lg font-medium">
+                                <div className="h-2 w-2 rounded-full bg-white shadow-[0_0_10px_white]" />
+                                {item}
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            </div>
         </div>
     );
 }

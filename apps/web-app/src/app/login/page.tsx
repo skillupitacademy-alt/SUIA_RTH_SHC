@@ -1,60 +1,36 @@
-'use client';
-
-import { useState } from 'react';
-import { useAuth } from '@/context/auth-context';
-import { useRouter } from 'next/navigation';
+import { LoginForm } from "@/components/auth/AuthForms";
+import { ShieldCheck } from "lucide-react";
 
 export default function LoginPage() {
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [error, setError] = useState('');
-    const { login } = useAuth();
-    const router = useRouter();
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        try {
-            const res = await fetch('/api/auth/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password }),
-            });
-
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.error);
-
-            login(data.accessToken, data.user);
-            router.push('/dashboard');
-        } catch (err: any) {
-            setError(err.message);
-        }
-    };
-
     return (
-        <div className="flex flex-col items-center justify-center min-h-screen p-4">
-            <form onSubmit={handleSubmit} className="w-full max-w-md p-8 space-y-4 bg-white rounded shadow">
-                <h1 className="text-2xl font-bold text-center">Login</h1>
-                {error && <p className="text-red-500 text-sm">{error}</p>}
-                <input
-                    type="email"
-                    placeholder="Email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="w-full p-2 border rounded text-black"
-                    required
-                />
-                <input
-                    type="password"
-                    placeholder="Password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="w-full p-2 border rounded text-black"
-                    required
-                />
-                <button type="submit" className="w-full p-2 text-white bg-blue-600 rounded hover:bg-blue-700">
-                    Sign In
-                </button>
-            </form>
+        <div className="flex min-h-[calc(100vh-64px)] overflow-hidden">
+            {/* Visual Side */}
+            <div className="hidden lg:flex flex-1 bg-primary relative items-center justify-center text-primary-foreground p-12">
+                <div className="absolute inset-0 bg-gradient-to-br from-primary to-secondary opacity-90" />
+                <div className="relative z-10 max-w-lg">
+                    <ShieldCheck size={64} className="mb-8" />
+                    <h1 className="text-5xl font-extrabold mb-6 tracking-tight">Securing Your Future</h1>
+                    <p className="text-xl text-primary-foreground/80 leading-relaxed">
+                        Access our enterprise-grade assessments and tracking tools.
+                        Your path to professional mastery starts here.
+                    </p>
+                    <div className="mt-12 grid grid-cols-2 gap-6">
+                        <div className="p-4 rounded-xl bg-white/10 backdrop-blur-sm">
+                            <p className="text-3xl font-bold">100%</p>
+                            <p className="text-sm opacity-80">Secure Platform</p>
+                        </div>
+                        <div className="p-4 rounded-xl bg-white/10 backdrop-blur-sm">
+                            <p className="text-3xl font-bold">50k+</p>
+                            <p className="text-sm opacity-80">Active Learners</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Form Side */}
+            <div className="flex-1 flex items-center justify-center p-6 bg-muted/5">
+                <LoginForm />
+            </div>
         </div>
     );
 }

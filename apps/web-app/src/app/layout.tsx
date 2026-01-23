@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { AuthProvider } from "@/context/auth-context";
+import { ThemeProvider } from "@/components/providers/ThemeProvider";
+import { AppShell } from "@/components/layout/AppShell";
 
 export const metadata: Metadata = {
     title: "Quiz Platform",
@@ -13,11 +15,15 @@ export default function RootLayout({
     children: React.ReactNode;
 }>) {
     return (
-        <html lang="en">
+        <html lang="en" suppressHydrationWarning>
             <body>
-                <AuthProvider>
-                    {children}
-                </AuthProvider>
+                <ThemeProvider>
+                    <AuthProvider>
+                        <AppShell>
+                            {children}
+                        </AppShell>
+                    </AuthProvider>
+                </ThemeProvider>
             </body>
         </html>
     );

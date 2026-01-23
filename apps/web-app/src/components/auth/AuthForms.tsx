@@ -1,0 +1,166 @@
+'use client';
+
+import { useState } from 'react';
+import Link from 'next/link';
+import { Eye, EyeOff, Loader2 } from 'lucide-react';
+import { useAuthStore } from '@/store/auth-store';
+import { useRouter } from 'next/navigation';
+
+export function LoginForm() {
+    const [showPassword, setShowPassword] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const { login } = useAuthStore();
+    const router = useRouter();
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setLoading(true);
+        // Simulation
+        setTimeout(() => {
+            login({
+                id: '1',
+                name: 'Jane Doe',
+                email: 'jane@example.com',
+                role: 'user',
+                onboarded: true // Mocking already onboarded for simple flow
+            }, 'mock-jwt-token');
+            setLoading(false);
+            router.push('/dashboard');
+        }, 1500);
+    };
+
+    return (
+        <div className="w-full max-w-md space-y-8 p-8 bg-background border rounded-2xl shadow-sm">
+            <div className="text-center">
+                <h2 className="text-3xl font-bold tracking-tight">Welcome back</h2>
+                <p className="mt-2 text-muted-foreground">Please enter your details to sign in</p>
+            </div>
+
+            <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+                <div className="space-y-4">
+                    <div>
+                        <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70" htmlFor="email">
+                            Email Address
+                        </label>
+                        <input
+                            id="email"
+                            type="email"
+                            placeholder="name@example.com"
+                            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 mt-1.5"
+                            required
+                        />
+                    </div>
+                    <div>
+                        <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70" htmlFor="password">
+                            Password
+                        </label>
+                        <div className="relative mt-1.5">
+                            <input
+                                id="password"
+                                type={showPassword ? "text" : "password"}
+                                placeholder="••••••••"
+                                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                required
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setShowPassword(!showPassword)}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                            >
+                                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                        <input type="checkbox" id="remember" className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary" />
+                        <label htmlFor="remember" className="text-sm font-medium leading-none">Remember me</label>
+                    </div>
+                    <Link href="#" className="text-sm font-medium text-primary hover:underline">Forgot password?</Link>
+                </div>
+
+                <button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-bold text-primary-foreground shadow hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 h-11"
+                >
+                    {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Sign In"}
+                </button>
+            </form>
+
+            <div className="text-center text-sm">
+                <span className="text-muted-foreground">Don&apos;t have an account? </span>
+                <Link href="/signup" className="font-bold text-primary hover:underline">Create an account</Link>
+            </div>
+        </div>
+    );
+}
+
+export function SignupForm() {
+    const [loading, setLoading] = useState(false);
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setLoading(true);
+        setTimeout(() => setLoading(false), 1500);
+    };
+
+    return (
+        <div className="w-full max-w-md space-y-8 p-8 bg-background border rounded-2xl shadow-sm">
+            <div className="text-center">
+                <h2 className="text-3xl font-bold tracking-tight">Create an account</h2>
+                <p className="mt-2 text-muted-foreground">Enter your details to get started</p>
+            </div>
+
+            <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+                <div className="space-y-4">
+                    <div>
+                        <label className="text-sm font-medium leading-none" htmlFor="name">Full Name</label>
+                        <input
+                            id="name"
+                            type="text"
+                            placeholder="John Doe"
+                            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm mt-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                            required
+                        />
+                    </div>
+                    <div>
+                        <label className="text-sm font-medium leading-none" htmlFor="email">Email Address</label>
+                        <input
+                            id="email"
+                            type="email"
+                            placeholder="name@example.com"
+                            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm mt-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                            required
+                        />
+                    </div>
+                    <div>
+                        <label className="text-sm font-medium leading-none" htmlFor="password">Password</label>
+                        <input
+                            id="password"
+                            type="password"
+                            placeholder="••••••••"
+                            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm mt-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                            required
+                        />
+                    </div>
+                </div>
+
+                <button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-bold text-primary-foreground shadow hover:bg-primary/90 h-11"
+                >
+                    {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Sign Up"}
+                </button>
+            </form>
+
+            <div className="text-center text-sm">
+                <span className="text-muted-foreground">Already have an account? </span>
+                <Link href="/login" className="font-bold text-primary hover:underline">Sign in</Link>
+            </div>
+        </div>
+    );
+}
