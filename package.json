@@ -21,6 +21,9 @@
         "pnpm": ">=10.0.0"
     },
     "dependencies": {
+        "@neondatabase/serverless": "^0.10.4",
+        "drizzle-kit": "^0.30.6",
+        "drizzle-orm": "^0.38.4",
         "next": "^16.1.4"
     }
 }

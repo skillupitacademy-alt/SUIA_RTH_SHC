@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+export const dynamic = 'force-dynamic';
 import { ExamEngine } from '@/modules/exam-engine/exam.engine';
 
 /**

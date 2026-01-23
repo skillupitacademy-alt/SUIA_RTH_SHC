@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+export const dynamic = 'force-dynamic';
 import { TokenService } from '@/modules/auth/token.service';
 import { db, users } from '@quiz/db';
 import { eq } from 'drizzle-orm';

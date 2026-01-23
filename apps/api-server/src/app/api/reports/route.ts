@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { ReportService } from '@/modules/report-engine/report.service';
+export const dynamic = 'force-dynamic';
+import { ReportEngine } from '@/modules/report-engine/report.engine';
 import { TokenService } from '@/modules/auth/token.service';
 
 /**
@@ -12,7 +13,7 @@ export async function GET(req: NextRequest) {
     if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const payload = await TokenService.verifyAccessToken(token);
-    const report = await ReportService.getUserPerformance(payload.userId);
+    const report = await ReportEngine.getUserPerformance(payload.userId);
     
     return NextResponse.json(report);
   } catch (error: any) {

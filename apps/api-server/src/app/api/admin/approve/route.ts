@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+export const dynamic = 'force-dynamic';
 import { AdminEngine } from '@/modules/admin-engine/admin.engine';
 import { TokenService } from '@/modules/auth/token.service';
 

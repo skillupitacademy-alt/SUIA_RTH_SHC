@@ -1,6 +1,6 @@
 import { db, examQuestions, exams } from '@quiz/db';
 import { eq, and } from 'drizzle-orm';
-import { ScoringService } from '../scoring/scoring.service';
+import { ScoringEngine } from '../scoring-engine/scoring.engine';
 import { AnswerEvaluationEngine } from '../answer-engine/answer.engine';
 
 export class ExamEngine {
@@ -38,7 +38,6 @@ export class ExamEngine {
       .set({ 
         userAnswer: answer,
         isCorrect,
-        updatedAt: new Date(),
       })
       .where(eq(examQuestions.id, examQuestionId));
 
@@ -58,7 +57,7 @@ export class ExamEngine {
     }
 
     // Trigger Scoring Engine (calculated in previous phase)
-    const finalScore = await ScoringService.calculateExamResults(examId);
+    const finalScore = await ScoringEngine.calculateExamResults(examId);
 
     return { examId, finalScore };
   }

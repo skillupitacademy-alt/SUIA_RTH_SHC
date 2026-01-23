@@ -1,7 +1,7 @@
 import { db, exams, resultsByDimension } from '@quiz/db';
 import { eq, desc } from 'drizzle-orm';
 
-export class ReportService {
+export class ReportEngine {
   static async getUserPerformance(userId: string) {
     const userExams = await db.query.exams.findMany({
       where: eq(exams.userId, userId),

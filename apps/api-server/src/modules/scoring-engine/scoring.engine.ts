@@ -1,7 +1,8 @@
 import { db, examQuestions, resultsByDimension, exams, questions } from '@quiz/db';
 import { eq, and } from 'drizzle-orm';
+export const dynamic = 'force-dynamic';
 
-export class ScoringService {
+export class ScoringEngine {
   static async calculateExamResults(examId: string) {
     const exam = await db.query.exams.findFirst({
       where: eq(exams.id, examId),
@@ -43,8 +44,8 @@ export class ScoringService {
         examId,
         dimensionType: type,
         dimensionId: id === 'simple' || id === 'intermediate' || id === 'expert' ? null : (id as string),
-        score: Math.round((stats.correct / stats.total) * 100),
-        accuracy: Math.round((stats.correct / stats.total) * 100),
+        score: stats.total > 0 ? Math.round((stats.correct / stats.total) * 100) : 0,
+        accuracy: stats.total > 0 ? Math.round((stats.correct / stats.total) * 100) : 0,
       };
     });
 

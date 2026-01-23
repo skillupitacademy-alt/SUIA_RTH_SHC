@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { DashboardEngine } from './dashboard.engine';
-import { TokenService } from '../auth/token.service';
+import { DashboardEngine } from '@/modules/dashboard-engine/dashboard.engine';
+import { TokenService } from '@/modules/auth/token.service';
 
 export async function GET(req: NextRequest) {
   try {

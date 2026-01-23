@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+export const dynamic = 'force-dynamic';
 import { DomainService } from '@/modules/domain/domain.service';
 
 export async function GET(req: NextRequest) {

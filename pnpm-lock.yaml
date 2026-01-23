@@ -8,6 +8,15 @@ importers:
 
   .:
     dependencies:
+      '@neondatabase/serverless':
+        specifier: ^0.10.4
+        version: 0.10.4
+      drizzle-kit:
+        specifier: ^0.30.6
+        version: 0.30.6
+      drizzle-orm:
+        specifier: ^0.38.4
+        version: 0.38.4(@neondatabase/serverless@0.10.4)(@types/pg@8.11.6)(@types/react@19.2.9)(react@19.2.3)
       next:
         specifier: ^16.1.4
         version: 16.1.4(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
