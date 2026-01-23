@@ -1,8 +1,7 @@
 import { db, loginAttempts, users } from '@quiz/db';
-import { eq, and, sql } from 'drizzle-orm';
+import { eq, and } from 'drizzle-orm';
 
 const MAX_ATTEMPTS = 5;
-const LOCK_DURATION_MINUTES = 15;
 
 export class SecurityService {
   static async trackLoginAttempt(ip: string, email: string, success: boolean) {
@@ -13,29 +12,26 @@ export class SecurityService {
     if (!user) return;
 
     if (success) {
-      // Clear attempts on success
       await db.delete(loginAttempts)
-        .where(
-          and(
-            eq(loginAttempts.userId, user.id),
-            eq(loginAttempts.ip, ip)
-          )
-        );
+        .where(and(eq(loginAttempts.userId, user.id), eq(loginAttempts.ip, ip)));
       return;
     }
 
-    // Handle failure
     const existing = await db.query.loginAttempts.findFirst({
-      where: and(
-        eq(loginAttempts.userId, user.id),
-        eq(loginAttempts.ip, ip)
-      ),
+      where: and(eq(loginAttempts.userId, user.id), eq(loginAttempts.ip, ip)),
     });
 
     if (existing) {
       const newAttempts = existing.attempts + 1;
-      const lockedUntil = newAttempts >= MAX_ATTEMPTS 
-        ? new Date(Date.now() + LOCK_DURATION_MINUTES * 60 * 1000) 
+      let lockoutMinutes = 0;
+
+      // Progressive Lockout Strategy
+      if (newAttempts >= 20) lockoutMinutes = 1440; // 24 hours
+      else if (newAttempts >= 10) lockoutMinutes = 60; // 1 hour
+      else if (newAttempts >= MAX_ATTEMPTS) lockoutMinutes = 15; // 15 mins
+
+      const lockedUntil = lockoutMinutes > 0 
+        ? new Date(Date.now() + lockoutMinutes * 60 * 1000) 
         : null;
 
       await db.update(loginAttempts)

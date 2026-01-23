@@ -5,6 +5,7 @@ import { TokenService } from './token.service';
 import { SecurityService } from './security.service';
 import { AuditService } from './audit.service';
 import crypto from 'crypto';
+import jwt from 'jsonwebtoken';
 
 export class AuthService {
   static async signup(email: string, password: string, name: string, ip?: string) {
@@ -53,7 +54,7 @@ export class AuthService {
   static async login(email: string, password: string, ip: string = '0.0.0.0') {
     if (await SecurityService.isAccountLocked(email, ip)) {
       await AuditService.log({ action: 'login_locked', metadata: { email }, ip });
-      throw new Error('Account temporarily locked. Try again in 15 minutes.');
+      throw new Error('Account temporarily locked. Try again later.');
     }
 
     const user = await db.query.users.findFirst({
@@ -75,30 +76,34 @@ export class AuthService {
     await AuditService.log({ userId: user.id, action: 'login_success', ip });
 
     const roleNames = user.userRoles.map(ur => ur.role.name);
+    const isAdmin = roleNames.includes('ADMIN') || roleNames.includes('SUPER_ADMIN');
 
     const accessToken = TokenService.generateAccessToken({
       userId: user.id,
       email: user.email,
       roles: roleNames,
+      isAdmin,
     });
 
-    const refreshToken = TokenService.generateRefreshToken(user.id);
+    const refreshToken = TokenService.generateRefreshToken(user.id, isAdmin);
     const refreshTokenHash = TokenService.hashToken(refreshToken);
 
-    // Save refresh token to DB
     await db.insert(refreshTokens).values({
       userId: user.id,
       token: refreshTokenHash,
-      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
     });
 
-    return { user, accessToken, refreshToken };
+    return { user, accessToken, refreshToken, isAdmin };
   }
 
   static async refresh(token: string, ip?: string) {
+    const decoded = jwt.decode(token) as any;
+    const isAdmin = decoded?.isAdmin === true;
+
     let payload;
     try {
-      payload = TokenService.verifyRefreshToken(token);
+      payload = TokenService.verifyRefreshToken(token, isAdmin);
     } catch {
       await AuditService.log({ action: 'refresh_failed', metadata: { reason: 'invalid_token' }, ip });
       throw new Error('Invalid refresh token');
@@ -118,8 +123,12 @@ export class AuthService {
         .set({ revoked: true })
         .where(eq(refreshTokens.userId, payload.userId));
       
-      await AuditService.log({ userId: payload.userId, action: 'refresh_reuse_detected', ip });
-      throw new Error('Refresh token compromised. Please login again.');
+      await AuditService.log({ 
+        userId: payload.userId, 
+        action: 'security_alert_token_reuse', 
+        metadata: { ip, severity: 'critical' } 
+      });
+      throw new Error('Security Alert: Session compromised. All tokens revoked.');
     }
 
     if (storedToken.expiresAt < new Date()) {
@@ -137,14 +146,16 @@ export class AuthService {
 
     if (!user) throw new Error('User not found');
     const roleNames = user.userRoles.map(ur => ur.role.name);
+    const isAdminNow = roleNames.includes('ADMIN') || roleNames.includes('SUPER_ADMIN');
 
     const newAccessToken = TokenService.generateAccessToken({
       userId: user.id,
       email: user.email,
       roles: roleNames,
+      isAdmin: isAdminNow,
     });
     
-    const newRefreshToken = TokenService.generateRefreshToken(user.id);
+    const newRefreshToken = TokenService.generateRefreshToken(user.id, isAdminNow);
     const newRefreshTokenHash = TokenService.hashToken(newRefreshToken);
 
     await db.transaction(async (tx) => {
@@ -172,5 +183,18 @@ export class AuthService {
       .where(eq(refreshTokens.token, tokenHash));
 
     await AuditService.log({ userId, action: 'logout_success', ip });
+  }
+
+  static async verifyEmail(token: string, ip?: string) {
+    // Strategy: Decrypt/Verify verification token, find user, mark as verified.
+    // Placeholder for actual implementation in PR with SMTP.
+    await AuditService.log({ action: 'email_verification_attempt', ip });
+    return true; 
+  }
+
+  static async resendVerification(userId: string, ip?: string) {
+    // Strategy: Generate new token, save to DB, trigger email sending.
+    await AuditService.log({ userId, action: 'email_verification_resend_triggered', ip });
+    return true;
   }
 }

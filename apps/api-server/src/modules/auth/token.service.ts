@@ -8,29 +8,35 @@ export interface TokenPayload {
   userId: string;
   email: string;
   roles: string[];
+  isAdmin?: boolean;
 }
 
 export class TokenService {
   private static readonly ACCESS_SECRET = process.env.JWT_SECRET!;
   private static readonly REFRESH_SECRET = process.env.JWT_REFRESH_SECRET!;
+  private static readonly ADMIN_SECRET = process.env.ADMIN_JWT_SECRET || process.env.JWT_SECRET!;
 
   static hashToken(token: string): string {
     return crypto.createHash('sha256').update(token).digest('hex');
   }
 
   static generateAccessToken(payload: TokenPayload): string {
-    return jwt.sign(payload, this.ACCESS_SECRET, { expiresIn: ACCESS_TOKEN_EXPIRE });
+    const secret = payload.isAdmin ? this.ADMIN_SECRET : this.ACCESS_SECRET;
+    return jwt.sign(payload, secret, { expiresIn: ACCESS_TOKEN_EXPIRE });
   }
 
-  static generateRefreshToken(userId: string): string {
-    return jwt.sign({ userId }, this.REFRESH_SECRET, { expiresIn: REFRESH_TOKEN_EXPIRE });
+  static generateRefreshToken(userId: string, isAdmin: boolean = false): string {
+    const secret = isAdmin ? this.ADMIN_SECRET : this.REFRESH_SECRET;
+    return jwt.sign({ userId, isAdmin }, secret, { expiresIn: REFRESH_TOKEN_EXPIRE });
   }
 
-  static verifyAccessToken(token: string): TokenPayload {
-    return jwt.verify(token, this.ACCESS_SECRET) as TokenPayload;
+  static verifyAccessToken(token: string, isAdmin: boolean = false): TokenPayload {
+    const secret = isAdmin ? this.ADMIN_SECRET : this.ACCESS_SECRET;
+    return jwt.verify(token, secret) as TokenPayload;
   }
 
-  static verifyRefreshToken(token: string): { userId: string } {
-    return jwt.verify(token, this.REFRESH_SECRET) as { userId: string };
+  static verifyRefreshToken(token: string, isAdmin: boolean = false): { userId: string; isAdmin: boolean } {
+    const secret = isAdmin ? this.ADMIN_SECRET : this.REFRESH_SECRET;
+    return jwt.verify(token, secret) as { userId: string; isAdmin: boolean };
   }
 }
