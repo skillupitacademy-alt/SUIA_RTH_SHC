@@ -9,9 +9,10 @@
         "^build"
       ],
       "outputs": [
-        "dist/**",
-        ".next/**",
-        "!.next/cache/**"
+        "apps/**/.next/**",
+        "apps/**/dist/**",
+        "apps/**/build/**",
+        "!apps/**/.next/cache/**"
       ]
     },
     "lint": {
