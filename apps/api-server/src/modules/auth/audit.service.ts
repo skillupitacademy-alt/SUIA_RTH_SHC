@@ -1,0 +1,27 @@
+import { db, auditLogs } from '@quiz/db';
+
+export interface AuditLogEntry {
+  userId?: string;
+  action: string;
+  ip?: string;
+  device?: string;
+  metadata?: any;
+}
+
+export class AuditService {
+  static async log(entry: AuditLogEntry) {
+    try {
+      await db.insert(auditLogs).values({
+        userId: entry.userId,
+        action: entry.action,
+        ip: entry.ip,
+        device: entry.device,
+        metadata: entry.metadata ? JSON.stringify(entry.metadata) : null,
+      });
+    } catch (error) {
+      // We don't want to crash the main flow if a log fails,
+      // but in production, this should go to a monitoring system.
+      console.error('Failed to write audit log:', error);
+    }
+  }
+}

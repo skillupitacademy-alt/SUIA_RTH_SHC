@@ -1,9 +1,21 @@
 import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/request';
-import { TokenService } from './src/modules/auth/token.service';
+import type { NextRequest } from 'next/server';
+import { TokenService } from '@/modules/auth/token.service';
+import { rateLimit } from '@/modules/auth/rate-limit.middleware';
+import { csrfProtection } from '@/modules/auth/csrf.middleware';
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
+  // 1. Rate Limiting
+  const rateLimitResponse = await rateLimit(request);
+  if (rateLimitResponse) return rateLimitResponse;
+
+  // 2. CSRF Protection
+  const csrfResponse = await csrfProtection(request);
+  if (csrfResponse) return csrfResponse;
+
+  // 3. Auth Protection
   const token = request.cookies.get('accessToken')?.value;
+  // ... rest of middleware
 
   if (request.nextUrl.pathname.startsWith('/dashboard')) {
     if (!token) {

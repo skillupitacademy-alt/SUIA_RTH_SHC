@@ -1,68 +1,80 @@
-import { db, users, userProfiles, roles, userRoles } from '@quiz/db';
-import { eq } from 'drizzle-orm';
+import { db, users, userProfiles, roles, userRoles, refreshTokens, revokedTokens } from '@quiz/db';
+import { eq, sql, and, lt } from 'drizzle-orm';
 import { PasswordService } from './password.service';
 import { TokenService } from './token.service';
+import { SecurityService } from './security.service';
+import { AuditService } from './audit.service';
+import crypto from 'crypto';
 
 export class AuthService {
-  static async signup(email: string, password: string, name: string) {
-    // 1. Check if user exists
+  static async signup(email: string, password: string, name: string, ip?: string) {
+    await AuditService.log({ action: 'signup_attempt', metadata: { email }, ip });
+
     const existingUser = await db.query.users.findFirst({
       where: eq(users.email, email),
     });
 
     if (existingUser) {
+      await AuditService.log({ action: 'signup_failed', metadata: { reason: 'user_exists', email }, ip });
       throw new Error('User already exists');
     }
 
-    // 2. Hash password
     const passwordHash = await PasswordService.hash(password);
 
-    // 3. Create user
-    return await db.transaction(async (tx) => {
-      const [newUser] = await tx.insert(users).values({
+    const newUser = await db.transaction(async (tx) => {
+      const [user] = await tx.insert(users).values({
         email,
         passwordHash,
       }).returning();
 
       await tx.insert(userProfiles).values({
-        userId: newUser.id,
+        userId: user.id,
         name,
       });
 
-      // Assign default USER role (Assumes role exists)
       const userRole = await tx.query.roles.findFirst({
-        where: eq(roles.name, 'USER'),
+        where: sql`${roles.name} = 'USER'`,
       });
 
       if (userRole) {
         await tx.insert(userRoles).values({
-          userId: newUser.id,
+          userId: user.id,
           roleId: userRole.id,
         });
       }
 
-      return newUser;
+      return user;
     });
+
+    await AuditService.log({ userId: newUser.id, action: 'signup_success', ip });
+    return newUser;
   }
 
-  static async login(email: string, password: string) {
-    const user = await db.query.users.findFirst({
-      where: eq(users.email, email),
-    });
-
-    if (!user || !(await PasswordService.compare(password, user.passwordHash))) {
-      throw new Error('Invalid credentials');
+  static async login(email: string, password: string, ip: string = '0.0.0.0') {
+    if (await SecurityService.isAccountLocked(email, ip)) {
+      await AuditService.log({ action: 'login_locked', metadata: { email }, ip });
+      throw new Error('Account temporarily locked. Try again in 15 minutes.');
     }
 
-    // Get roles
-    const userRolesList = await db.query.userRoles.findMany({
-      where: eq(userRoles.userId, user.id),
+    const user = await db.query.users.findFirst({
+      where: eq(users.email, email),
       with: {
-        role: true,
+        userRoles: {
+          with: { role: true }
+        }
       }
     });
 
-    const roleNames = userRolesList.map(ur => ur.role.name);
+    if (!user || !(await PasswordService.compare(password, user.passwordHash))) {
+      await SecurityService.trackLoginAttempt(ip, email, false);
+      await AuditService.log({ action: 'login_failed', metadata: { email }, ip });
+      throw new Error('Invalid credentials');
+    }
+
+    await SecurityService.trackLoginAttempt(ip, email, true);
+    await AuditService.log({ userId: user.id, action: 'login_success', ip });
+
+    const roleNames = user.userRoles.map(ur => ur.role.name);
 
     const accessToken = TokenService.generateAccessToken({
       userId: user.id,
@@ -71,7 +83,94 @@ export class AuthService {
     });
 
     const refreshToken = TokenService.generateRefreshToken(user.id);
+    const refreshTokenHash = TokenService.hashToken(refreshToken);
+
+    // Save refresh token to DB
+    await db.insert(refreshTokens).values({
+      userId: user.id,
+      token: refreshTokenHash,
+      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+    });
 
     return { user, accessToken, refreshToken };
+  }
+
+  static async refresh(token: string, ip?: string) {
+    let payload;
+    try {
+      payload = TokenService.verifyRefreshToken(token);
+    } catch {
+      await AuditService.log({ action: 'refresh_failed', metadata: { reason: 'invalid_token' }, ip });
+      throw new Error('Invalid refresh token');
+    }
+
+    const tokenHash = TokenService.hashToken(token);
+
+    const storedToken = await db.query.refreshTokens.findFirst({
+      where: and(
+        eq(refreshTokens.token, tokenHash),
+        eq(refreshTokens.revoked, false)
+      ),
+    });
+
+    if (!storedToken) {
+      await db.update(refreshTokens)
+        .set({ revoked: true })
+        .where(eq(refreshTokens.userId, payload.userId));
+      
+      await AuditService.log({ userId: payload.userId, action: 'refresh_reuse_detected', ip });
+      throw new Error('Refresh token compromised. Please login again.');
+    }
+
+    if (storedToken.expiresAt < new Date()) {
+      throw new Error('Refresh token expired');
+    }
+
+    const user = await db.query.users.findFirst({
+      where: eq(users.id, payload.userId),
+      with: {
+        userRoles: {
+          with: { role: true }
+        }
+      }
+    });
+
+    if (!user) throw new Error('User not found');
+    const roleNames = user.userRoles.map(ur => ur.role.name);
+
+    const newAccessToken = TokenService.generateAccessToken({
+      userId: user.id,
+      email: user.email,
+      roles: roleNames,
+    });
+    
+    const newRefreshToken = TokenService.generateRefreshToken(user.id);
+    const newRefreshTokenHash = TokenService.hashToken(newRefreshToken);
+
+    await db.transaction(async (tx) => {
+      await tx.update(refreshTokens)
+        .set({ revoked: true })
+        .where(eq(refreshTokens.id, storedToken.id));
+
+      await tx.insert(refreshTokens).values({
+        userId: user.id,
+        token: newRefreshTokenHash,
+        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      });
+    });
+
+    await AuditService.log({ userId: user.id, action: 'refresh_success', ip });
+
+    return { accessToken: newAccessToken, refreshToken: newRefreshToken };
+  }
+
+  static async logout(token: string, userId?: string, ip?: string) {
+    const tokenHash = TokenService.hashToken(token);
+    
+    await db.update(refreshTokens)
+      .set({ revoked: true })
+      .where(eq(refreshTokens.token, tokenHash));
+
+    await AuditService.log({ userId, action: 'logout_success', ip });
   }
 }

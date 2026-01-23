@@ -1,4 +1,5 @@
 import jwt from 'jsonwebtoken';
+import crypto from 'crypto';
 
 const ACCESS_TOKEN_EXPIRE = '15m';
 const REFRESH_TOKEN_EXPIRE = '7d';
@@ -12,6 +13,10 @@ export interface TokenPayload {
 export class TokenService {
   private static readonly ACCESS_SECRET = process.env.JWT_SECRET!;
   private static readonly REFRESH_SECRET = process.env.JWT_REFRESH_SECRET!;
+
+  static hashToken(token: string): string {
+    return crypto.createHash('sha256').update(token).digest('hex');
+  }
 
   static generateAccessToken(payload: TokenPayload): string {
     return jwt.sign(payload, this.ACCESS_SECRET, { expiresIn: ACCESS_TOKEN_EXPIRE });
