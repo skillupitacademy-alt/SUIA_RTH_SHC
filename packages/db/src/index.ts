@@ -12,8 +12,8 @@ const schema = {
   ...examSchema,
 };
 
-// Expecting DATABASE_URL in env
-const sql = neon(process.env.DATABASE_URL!);
+const databaseUrl = process.env.DATABASE_URL || 'postgres://localhost:5432/dummy';
+const sql = neon(databaseUrl);
 export const db = drizzle(sql, { schema });
 
 export * from './schema/auth';

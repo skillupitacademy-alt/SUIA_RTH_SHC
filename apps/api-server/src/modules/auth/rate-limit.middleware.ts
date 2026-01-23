@@ -23,7 +23,7 @@ export async function rateLimit(request: NextRequest) {
   
   if (token) {
     try {
-      const payload = TokenService.verifyAccessToken(token);
+      const payload = await TokenService.verifyAccessToken(token);
       userId = payload.userId;
     } catch {
       // Invalid token, ignore user-based limit

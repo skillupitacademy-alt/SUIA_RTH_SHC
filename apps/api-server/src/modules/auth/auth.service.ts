@@ -1,5 +1,5 @@
-import { db, users, userProfiles, roles, userRoles, refreshTokens, revokedTokens } from '@quiz/db';
-import { eq, sql, and, lt } from 'drizzle-orm';
+import { db, users, userProfiles, roles, userRoles, refreshTokens } from '@quiz/db';
+import { eq, sql, and } from 'drizzle-orm';
 import { PasswordService } from './password.service';
 import { TokenService } from './token.service';
 import { SecurityService } from './security.service';
@@ -78,15 +78,15 @@ export class AuthService {
     const roleNames = user.userRoles.map(ur => ur.role.name);
     const isAdmin = roleNames.includes('ADMIN') || roleNames.includes('SUPER_ADMIN');
 
-    const accessToken = TokenService.generateAccessToken({
+    const accessToken = await TokenService.generateAccessToken({
       userId: user.id,
       email: user.email,
       roles: roleNames,
       isAdmin,
     });
 
-    const refreshToken = TokenService.generateRefreshToken(user.id, isAdmin);
-    const refreshTokenHash = TokenService.hashToken(refreshToken);
+    const refreshToken = await TokenService.generateRefreshToken(user.id, isAdmin);
+    const refreshTokenHash = await TokenService.hashToken(refreshToken);
 
     await db.insert(refreshTokens).values({
       userId: user.id,
@@ -103,13 +103,13 @@ export class AuthService {
 
     let payload;
     try {
-      payload = TokenService.verifyRefreshToken(token, isAdmin);
+      payload = await TokenService.verifyRefreshToken(token, isAdmin);
     } catch {
       await AuditService.log({ action: 'refresh_failed', metadata: { reason: 'invalid_token' }, ip });
       throw new Error('Invalid refresh token');
     }
 
-    const tokenHash = TokenService.hashToken(token);
+    const tokenHash = await TokenService.hashToken(token);
 
     const storedToken = await db.query.refreshTokens.findFirst({
       where: and(
@@ -148,15 +148,15 @@ export class AuthService {
     const roleNames = user.userRoles.map(ur => ur.role.name);
     const isAdminNow = roleNames.includes('ADMIN') || roleNames.includes('SUPER_ADMIN');
 
-    const newAccessToken = TokenService.generateAccessToken({
+    const newAccessToken = await TokenService.generateAccessToken({
       userId: user.id,
       email: user.email,
       roles: roleNames,
       isAdmin: isAdminNow,
     });
     
-    const newRefreshToken = TokenService.generateRefreshToken(user.id, isAdminNow);
-    const newRefreshTokenHash = TokenService.hashToken(newRefreshToken);
+    const newRefreshToken = await TokenService.generateRefreshToken(user.id, isAdminNow);
+    const newRefreshTokenHash = await TokenService.hashToken(newRefreshToken);
 
     await db.transaction(async (tx) => {
       await tx.update(refreshTokens)
@@ -176,7 +176,7 @@ export class AuthService {
   }
 
   static async logout(token: string, userId?: string, ip?: string) {
-    const tokenHash = TokenService.hashToken(token);
+    const tokenHash = await TokenService.hashToken(token);
     
     await db.update(refreshTokens)
       .set({ revoked: true })

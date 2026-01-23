@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { DomainService } from './domain.service';
+import { DomainService } from '@/modules/domain/domain.service';
 
 export async function GET(req: NextRequest) {
   try {

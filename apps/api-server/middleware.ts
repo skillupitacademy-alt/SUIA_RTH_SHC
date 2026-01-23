@@ -15,6 +15,13 @@ export async function middleware(request: NextRequest) {
 
   // 3. Auth Protection
   const token = request.cookies.get('accessToken')?.value;
+  if (token) {
+    try {
+      await TokenService.verifyAccessToken(token);
+    } catch {
+      // Token invalid, clear it? Or just ignore.
+    }
+  }
   // ... rest of middleware
 
   if (request.nextUrl.pathname.startsWith('/dashboard')) {

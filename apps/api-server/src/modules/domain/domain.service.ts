@@ -1,5 +1,5 @@
 import { db, domains, subjects, topics, subtopics } from '@quiz/db';
-import { eq, sql } from 'drizzle-orm';
+import { eq, sql, and } from 'drizzle-orm';
 
 export class DomainService {
   static async getAllDomains() {

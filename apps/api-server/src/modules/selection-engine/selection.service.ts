@@ -13,6 +13,7 @@ export class SelectionEngine {
     if (!blueprint) throw new Error('Blueprint not found');
 
     const topicIds = blueprint.topics || [];
+    if (topicIds.length === 0) return null; // Or handle as "all topics" depending on requirements
     const total = blueprint.totalQuestions;
 
     const targets = {

@@ -8,7 +8,7 @@ export async function GET(req: NextRequest) {
     const token = req.headers.get('authorization')?.split(' ')[1];
     if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const payload = TokenService.verifyAccessToken(token);
+    const payload = await TokenService.verifyAccessToken(token);
     const user = await db.query.users.findFirst({
       where: eq(users.id, payload.userId),
     });

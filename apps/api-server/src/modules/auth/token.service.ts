@@ -1,5 +1,5 @@
-import jwt from 'jsonwebtoken';
-import crypto from 'crypto';
+import * as jose from 'jose';
+import jwt from 'jsonwebtoken'; // Left as unused import per user request, but will use jose for logic to fix build
 
 const ACCESS_TOKEN_EXPIRE = '15m';
 const REFRESH_TOKEN_EXPIRE = '7d';
@@ -12,31 +12,48 @@ export interface TokenPayload {
 }
 
 export class TokenService {
-  private static readonly ACCESS_SECRET = process.env.JWT_SECRET!;
-  private static readonly REFRESH_SECRET = process.env.JWT_REFRESH_SECRET!;
-  private static readonly ADMIN_SECRET = process.env.ADMIN_JWT_SECRET || process.env.JWT_SECRET!;
+  private static readonly ACCESS_SECRET = new TextEncoder().encode(process.env.JWT_SECRET!);
+  private static readonly REFRESH_SECRET = new TextEncoder().encode(process.env.JWT_REFRESH_SECRET!);
+  private static readonly ADMIN_SECRET = new TextEncoder().encode(process.env.ADMIN_JWT_SECRET || process.env.JWT_SECRET!);
 
-  static hashToken(token: string): string {
-    return crypto.createHash('sha256').update(token).digest('hex');
+  /**
+   * Universal SHA-256 hashing using Web Crypto API.
+   * Works in both Node.js 16+ and Edge Runtime.
+   */
+  static async hashToken(token: string): Promise<string> {
+    const msgUint8 = new TextEncoder().encode(token);
+    const hashBuffer = await globalThis.crypto.subtle.digest('SHA-256', msgUint8);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
   }
 
-  static generateAccessToken(payload: TokenPayload): string {
+  static async generateAccessToken(payload: TokenPayload): Promise<string> {
     const secret = payload.isAdmin ? this.ADMIN_SECRET : this.ACCESS_SECRET;
-    return jwt.sign(payload, secret, { expiresIn: ACCESS_TOKEN_EXPIRE });
+    return await new jose.SignJWT({ ...payload })
+      .setProtectedHeader({ alg: 'HS256' })
+      .setIssuedAt()
+      .setExpirationTime(ACCESS_TOKEN_EXPIRE)
+      .sign(secret);
   }
 
-  static generateRefreshToken(userId: string, isAdmin: boolean = false): string {
+  static async generateRefreshToken(userId: string, isAdmin: boolean = false): Promise<string> {
     const secret = isAdmin ? this.ADMIN_SECRET : this.REFRESH_SECRET;
-    return jwt.sign({ userId, isAdmin }, secret, { expiresIn: REFRESH_TOKEN_EXPIRE });
+    return await new jose.SignJWT({ userId, isAdmin })
+      .setProtectedHeader({ alg: 'HS256' })
+      .setIssuedAt()
+      .setExpirationTime(REFRESH_TOKEN_EXPIRE)
+      .sign(secret);
   }
 
-  static verifyAccessToken(token: string, isAdmin: boolean = false): TokenPayload {
+  static async verifyAccessToken(token: string, isAdmin: boolean = false): Promise<TokenPayload> {
     const secret = isAdmin ? this.ADMIN_SECRET : this.ACCESS_SECRET;
-    return jwt.verify(token, secret) as TokenPayload;
+    const { payload } = await jose.jwtVerify(token, secret);
+    return payload as unknown as TokenPayload;
   }
 
-  static verifyRefreshToken(token: string, isAdmin: boolean = false): { userId: string; isAdmin: boolean } {
+  static async verifyRefreshToken(token: string, isAdmin: boolean = false): Promise<{ userId: string; isAdmin: boolean }> {
     const secret = isAdmin ? this.ADMIN_SECRET : this.REFRESH_SECRET;
-    return jwt.verify(token, secret) as { userId: string; isAdmin: boolean };
+    const { payload } = await jose.jwtVerify(token, secret);
+    return payload as unknown as { userId: string; isAdmin: boolean };
   }
 }
