@@ -25,13 +25,19 @@
         "paths": {
             "@quiz/db": [
                 "./packages/db/src/index.ts"
+            ],
+            "@quiz/api-client": [
+                "./packages/api-client/src/index.ts"
             ]
-        }
+        },
+        "noEmit": true
     },
     "exclude": [
         "node_modules",
         "dist",
         "build",
-        ".next"
+        ".next",
+        "**/*.config.js",
+        "**/*.config.mjs"
     ]
 }
