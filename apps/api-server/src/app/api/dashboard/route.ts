@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+export const dynamic = 'force-dynamic';
 import { DashboardEngine } from '@/modules/dashboard-engine/dashboard.engine';
 import { TokenService } from '@/modules/auth/token.service';
 
