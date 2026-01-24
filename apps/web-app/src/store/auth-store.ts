@@ -18,14 +18,22 @@ interface AuthState {
   completeOnboarding: () => void;
 }
 
+import { apiClient } from '@quiz/api-client';
+
 export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
       user: null,
       token: null,
       isAuthenticated: false,
-      login: (user, token) => set({ user, token, isAuthenticated: true }),
-      logout: () => set({ user: null, token: null, isAuthenticated: false }),
+      login: (user, token) => {
+        apiClient.setAccessToken(token);
+        set({ user, token, isAuthenticated: true });
+      },
+      logout: () => {
+        apiClient.setAccessToken(null);
+        set({ user: null, token: null, isAuthenticated: false });
+      },
       completeOnboarding: () => 
         set((state) => ({
           user: state.user ? { ...state.user, onboarded: true } : null
@@ -33,6 +41,11 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: 'quiz-platform-auth',
+      onRehydrateStorage: () => (state) => {
+        if (state?.token) {
+          apiClient.setAccessToken(state.token);
+        }
+      }
     }
   )
 );
