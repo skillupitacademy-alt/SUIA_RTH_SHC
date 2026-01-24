@@ -16,6 +16,9 @@
         "clean": "turbo run clean && rm -rf node_modules"
     },
     "devDependencies": {
+        "@types/bcrypt": "^5.0.2",
+        "@types/jsonwebtoken": "^9.0.8",
+        "@types/node": "^25.0.10",
         "turbo": "^2.3.3",
         "typescript": "^5.7.2"
     },
