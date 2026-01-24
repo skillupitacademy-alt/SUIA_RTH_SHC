@@ -12,4 +12,5 @@ export const apiClient = {
   auth: new AuthClient(baseClient),
   quiz: new QuizClient(baseClient),
   admin: new AdminClient(baseClient),
+  setAccessToken: (token: string | null) => baseClient.setAccessToken(token),
 };

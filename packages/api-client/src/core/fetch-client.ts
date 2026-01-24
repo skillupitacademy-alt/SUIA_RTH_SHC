@@ -1,27 +1,35 @@
 export class FetchClient {
   private baseUrl: string;
+  private accessToken: string | null = null;
 
   constructor(baseUrl: string) {
     this.baseUrl = baseUrl;
   }
 
+  setAccessToken(token: string | null) {
+    this.accessToken = token;
+  }
+
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`;
     
-    // Inject auth token from localStorage if available
-    const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
-    const headers = {
+    const headers: Record<string, string> = {
       'Content-Type': 'application/json',
-      ...(token && { Authorization: `Bearer ${token}` }),
-      ...options.headers,
+      ...options.headers as Record<string, string>,
     };
+
+    if (this.accessToken) {
+      headers['Authorization'] = `Bearer ${this.accessToken}`;
+    }
 
     const response = await fetch(url, {
       ...options,
       headers,
+      credentials: 'include', // Important for cookies (refresh token)
     });
 
     if (!response.ok) {
+        // Clone response to read body twice if needed (though we only read once here)
       const error = await response.json().catch(() => ({ message: 'Unknown error' }));
       throw new Error(error.message || `API Error: ${response.status}`);
     }

@@ -22,4 +22,8 @@ export class AuthClient {
   async logout() {
     return this.client.post('/auth/logout', {});
   }
+
+  async refresh() {
+    return this.client.post<{ accessToken: string }>('/auth/refresh', {});
+  }
 }
