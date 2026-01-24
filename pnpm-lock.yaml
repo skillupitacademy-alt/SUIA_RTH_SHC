@@ -94,6 +94,15 @@ importers:
       '@quiz/db':
         specifier: workspace:*
         version: link:../../packages/db
+      '@types/bcrypt':
+        specifier: ^5.0.2
+        version: 5.0.2
+      '@types/jsonwebtoken':
+        specifier: ^9.0.8
+        version: 9.0.10
+      '@types/node':
+        specifier: ^22
+        version: 22.19.7
       bcrypt:
         specifier: ^5.1.1
         version: 5.1.1
@@ -125,21 +134,12 @@ importers:
         specifier: ^3.24.1
         version: 3.25.76
     devDependencies:
-      '@types/bcrypt':
-        specifier: ^5.0.2
-        version: 5.0.2
       '@types/bcryptjs':
         specifier: ^3.0.0
         version: 3.0.0
       '@types/cookie':
         specifier: ^0.6.0
         version: 0.6.0
-      '@types/jsonwebtoken':
-        specifier: ^9.0.8
-        version: 9.0.10
-      '@types/node':
-        specifier: ^22
-        version: 22.19.7
       '@types/react':
         specifier: ^19.0.0
         version: 19.2.9
