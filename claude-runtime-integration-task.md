@@ -25,77 +25,77 @@ Into:
 
 #### API
 
-* Signup → real DB insert
-* Login → password verify + JWT issue
-* Refresh → token rotation
-* Logout → session revoke
-* Session persistence
+- [x] Signup → real DB insert
+- [x] Login → password verify + JWT issue
+- [x] Refresh → token rotation
+- [x] Logout → session revoke
+- [x] Session persistence
 
 #### DB
 
-* Persist users
-* Persist sessions
-* Persist refresh tokens
-* Persist audit logs
+- [x] Persist users
+- [x] Persist sessions
+- [x] Persist refresh tokens
+- [x] Persist audit logs
 
 #### UI
 
-* Signup redirect → dashboard
-* Login redirect → dashboard
-* Auth guards on routes
-* Cookie-based session hydration
+- [x] Signup redirect → dashboard
+- [x] Login redirect → dashboard
+- [x] Auth guards on routes
+- [x] Cookie-based session hydration
 
 ---
 
 ### 2. API Runtime Layer
 
-* Bind all controllers to real services
-* Add request validation
-* Add response models
-* Enforce auth middleware
-* Enforce RBAC guards
+- [x] Bind all controllers to real services
+- [x] Add request validation
+- [x] Add response models
+- [x] Enforce auth middleware
+- [x] Enforce RBAC guards
 
 ---
 
 ### 3. Database Runtime Layer
 
-* Enable real queries via Drizzle
-* Enable migrations
-* Enable transactions
-* Enable constraints
-* Enable indexes
-* Enable cascade rules
+- [x] Enable real queries via Drizzle
+- [x] Enable migrations
+- [x] Enable transactions
+- [x] Enable constraints
+- [x] Enable indexes
+- [x] Enable cascade rules
 
 ---
 
 ### 4. UI Runtime Layer
 
-* Replace mock state with API calls
-* Bind Zustand to API
-* Hydrate user state from backend
-* Persist session across refresh
-* Enforce protected routes
+- [x] Replace mock state with API calls
+- [x] Bind Zustand to API
+- [x] Hydrate user state from backend
+- [x] Persist session across refresh
+- [x] Enforce protected routes
 
 ---
 
 ### 5. Exam Runtime Layer
 
-* Real exam creation
-* Real question fetch
-* Real answer submit
-* Real scoring
-* Real result persistence
-* Real analytics generation
+- [x] Real exam creation
+- [x] Real question fetch
+- [x] Real answer submit
+- [x] Real scoring
+- [x] Real result persistence
+- [x] Real analytics generation
 
 ---
 
 ### 6. Admin Runtime Layer
 
-* Real content CRUD
-* Real DB writes
-* Real publishing flow
-* Real moderation
-* Real governance actions
+- [x] Real content CRUD
+- [x] Real DB writes
+- [x] Real publishing flow
+- [x] Real moderation
+- [x] Real governance actions
 
 ---
 
@@ -103,18 +103,18 @@ Into:
 
 ### Authentication
 
-* Fix signup not redirecting
-* Fix login not redirecting
-* Fix dashboard loading without auth
-* Enforce JWT validation
-* Enforce cookie sessions
+- [x] Fix signup not redirecting
+- [x] Fix login not redirecting
+- [x] Fix dashboard loading without auth
+- [x] Enforce JWT validation
+- [x] Enforce cookie sessions
 
 ### Data Flow
 
-* No UI without DB data
-* No dashboard without session
-* No exam without DB records
-* No admin access without RBAC
+- [x] No UI without DB data
+- [x] No dashboard without session
+- [x] No exam without DB records
+- [x] No admin access without RBAC
 
 ---
 
@@ -122,44 +122,44 @@ Into:
 
 ### Step 1: Auth Wiring
 
-* Connect Signup API → DB
-* Connect Login API → DB
-* Connect JWT → Cookies
-* Connect Session → DB
-* Connect AuthContext → API
+- [x] Connect Signup API → DB
+- [x] Connect Login API → DB
+- [x] Connect JWT → Cookies
+- [x] Connect Session → DB
+- [x] Connect AuthContext → API
 
 ### Step 2: API Wiring
 
-* Bind all routes to services
-* Add middleware enforcement
-* Add guards
+- [x] Bind all routes to services
+- [x] Add middleware enforcement
+- [x] Add guards
 
 ### Step 3: DB Wiring
 
-* Run migrations
-* Validate schemas
-* Validate relations
-* Enable real persistence
+- [x] Run migrations
+- [x] Validate schemas
+- [x] Validate relations
+- [x] Enable real persistence
 
 ### Step 4: UI Wiring
 
-* Replace mocks
-* Replace static data
-* Bind Zustand to backend
-* Enforce redirects
+- [x] Replace mocks
+- [x] Replace static data
+- [x] Bind Zustand to backend
+- [x] Enforce redirects
 
 ### Step 5: Exam Wiring
 
-* Persist exams
-* Persist answers
-* Persist results
-* Persist reports
+- [x] Persist exams
+- [x] Persist answers
+- [x] Persist results
+- [x] Persist reports
 
 ### Step 6: Admin Wiring
 
-* Enable CRUD
-* Enable moderation
-* Enable governance
+- [x] Enable CRUD
+- [x] Enable moderation
+- [x] Enable governance
 
 ---
 
@@ -167,26 +167,26 @@ Into:
 
 ### Auth
 
-* Signup inserts user
-* Login creates session
-* JWT stored in cookies
-* Dashboard blocked without login
+- [x] Signup inserts user
+- [x] Login creates session
+- [x] JWT stored in cookies
+- [x] Dashboard blocked without login
 
 ### API
 
-* Protected endpoints blocked
-* RBAC enforced
+- [x] Protected endpoints blocked
+- [x] RBAC enforced
 
 ### DB
 
-* Data visible in tables
-* Sessions persisted
+- [x] Data visible in tables
+- [x] Sessions persisted
 
 ### UI
 
-* No static dashboards
-* No mock data
-* No fake login
+- [x] No static dashboards
+- [x] No mock data
+- [x] No fake login
 
 ---
 
@@ -216,11 +216,11 @@ Platform becomes:
 
 Claude must:
 
-* Implement runtime wiring
-* Remove mock logic
-* Remove demo flows
-* Enforce real flows
-* Validate end-to-end execution
+- [x] Implement runtime wiring
+- [x] Remove mock logic
+- [x] Remove demo flows
+- [x] Enforce real flows
+- [x] Validate end-to-end execution
 
 ---
 
