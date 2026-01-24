@@ -157,16 +157,14 @@ export class AuthService {
     const newRefreshToken = await TokenService.generateRefreshToken(user.id, isAdminNow);
     const newRefreshTokenHash = await TokenService.hashToken(newRefreshToken);
 
-    await db.transaction(async (tx) => {
-      await tx.update(refreshTokens)
-        .set({ revoked: true })
-        .where(eq(refreshTokens.id, storedToken.id));
+    await db.update(refreshTokens)
+      .set({ revoked: true })
+      .where(eq(refreshTokens.id, storedToken.id));
 
-      await tx.insert(refreshTokens).values({
-        userId: user.id,
-        token: newRefreshTokenHash,
-        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-      });
+    await db.insert(refreshTokens).values({
+      userId: user.id,
+      token: newRefreshTokenHash,
+      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
     });
 
     await AuditService.log({ userId: user.id, action: 'refresh_success', ip });
@@ -194,14 +192,12 @@ export class AuthService {
       throw new Error('Invalid or expired verification token');
     }
 
-    await db.transaction(async (tx) => {
-      await tx.update(users)
-        .set({ emailVerified: true })
-        .where(eq(users.id, verifiedToken.userId));
+    await db.update(users)
+      .set({ emailVerified: true })
+      .where(eq(users.id, verifiedToken.userId));
 
-      await tx.delete(verificationTokens)
-        .where(eq(verificationTokens.id, verifiedToken.id));
-    });
+    await db.delete(verificationTokens)
+      .where(eq(verificationTokens.id, verifiedToken.id));
 
     await AuditService.log({ userId: verifiedToken.userId, action: 'email_verification_success', ip });
     return true; 

@@ -33,11 +33,14 @@ export function setCsrfToken(response: NextResponse) {
   globalThis.crypto.getRandomValues(array);
   const token = Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
 
+  const isProd = process.env.NODE_ENV === 'production';
+
   response.cookies.set('csrfToken', token, {
     httpOnly: false,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
+    secure: isProd,
+    sameSite: isProd ? 'lax' : 'strict',
     path: '/',
+    domain: isProd ? '.realtutorialhub.com' : undefined,
   });
   return token;
 }
