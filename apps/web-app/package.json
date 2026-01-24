@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "node ../../node_modules/next/dist/bin/next dev -p 3000",
-    "build": "npx next build",
+    "build": "next build",
     "start": "next start",
     "lint": "next lint"
   },
@@ -12,7 +12,7 @@
     "clsx": "^2.1.1",
     "lucide-react": "^0.563.0",
     "next": "^16.1.4",
-    "@quiz/api-client": "^0.1.0",
+    "@quiz/api-client": "workspace:*",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "tailwind-merge": "^3.4.0",

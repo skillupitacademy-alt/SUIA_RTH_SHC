@@ -19,10 +19,9 @@
         "turbo": "^2.3.3",
         "typescript": "^5.7.2"
     },
-    "packageManager": "npm@10.8.2",
+    "packageManager": "pnpm@9.15.4",
     "engines": {
-        "node": "20.x",
-        "npm": ">=10.0.0"
+        "node": "20.x"
     },
     "dependencies": {
         "@neondatabase/serverless": "^0.10.4",
