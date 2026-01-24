@@ -1,4 +1,8 @@
+'use client';
+
 import { LucideIcon, Users, FileCheck, ShieldAlert, Cpu } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { apiClient } from '@quiz/api-client';
 
 interface MetricCardProps {
     label: string;
@@ -16,15 +20,13 @@ export function MetricCard({ label, value, icon: Icon, subValue, variant = 'defa
                     <div className={`p-4 rounded-2xl group-hover:scale-110 transition-transform ${variant === 'alert' ? 'bg-primary text-primary-foreground' : 'bg-muted text-primary'}`}>
                         <Icon size={24} />
                     </div>
-                    {subValue && (
-                        <span className="text-[10px] font-black tracking-widest uppercase py-1 px-3 rounded-full bg-muted/50 text-muted-foreground border">
-                            {subValue}
-                        </span>
-                    )}
                 </div>
                 <div>
                     <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-1">{label}</p>
                     <p className="text-4xl font-black italic">{value}</p>
+                    {subValue && (
+                        <p className="text-[10px] font-bold text-muted-foreground mt-2 uppercase tracking-wide">{subValue}</p>
+                    )}
                 </div>
             </div>
         </div>
@@ -32,32 +34,32 @@ export function MetricCard({ label, value, icon: Icon, subValue, variant = 'defa
 }
 
 export function AdminMetricsGrid() {
+    const [metrics, setMetrics] = useState<any>(null);
+
+    useEffect(() => {
+        const fetchMetrics = async () => {
+            try {
+                const data = await apiClient.admin.getMetrics();
+                setMetrics(data);
+            } catch (err) {
+                console.error("Failed to fetch admin metrics", err);
+            }
+        };
+        fetchMetrics();
+    }, []);
+
+    const stats = [
+        { label: "Total Operators", value: metrics?.totalUsers ?? '...', icon: Users, subValue: "Active Platform Accounts" },
+        { label: "Exams Verified", value: metrics?.totalExams ?? '...', icon: FileCheck, subValue: "Total Attempts" },
+        { label: "Asset Inventory", value: metrics?.totalQuestions ?? '...', icon: ShieldAlert, subValue: "Question Bank" },
+        { label: "System Load", value: metrics?.systemLoad ?? '...', icon: Cpu, subValue: metrics?.uptime ?? "Uptime Status" },
+    ];
+
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <MetricCard
-                label="Total Operators"
-                value="42,105"
-                icon={Users}
-                subValue="+240 Today"
-            />
-            <MetricCard
-                label="Exams Verified"
-                value="12,504"
-                icon={FileCheck}
-                subValue="+1.2k Weekly"
-            />
-            <MetricCard
-                label="Security Alerts"
-                value="0"
-                icon={ShieldAlert}
-                subValue="Clean Trace"
-            />
-            <MetricCard
-                label="System Load"
-                value="4.2%"
-                icon={Cpu}
-                subValue="Optimized"
-            />
+            {stats.map((stat, i) => (
+                <MetricCard key={i} {...stat} />
+            ))}
         </div>
     );
 }

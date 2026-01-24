@@ -109,13 +109,14 @@ export function SignupForm() {
         e.preventDefault();
         setLoading(true);
         try {
-            await apiClient.auth.signup(
+            const { user, accessToken } = await apiClient.auth.signup(
                 (e.target as any).email.value,
                 (e.target as any).password.value,
                 (e.target as any).name.value
             );
-            // Auto login or redirect to login
-            router.push('/login');
+
+            useAuthStore.getState().login(user, accessToken);
+            router.push('/dashboard');
         } catch (err: any) {
             alert(err.message);
         } finally {

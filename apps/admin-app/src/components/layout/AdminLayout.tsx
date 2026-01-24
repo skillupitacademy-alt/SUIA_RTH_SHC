@@ -13,6 +13,7 @@ import {
     Bell
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { AdminGuard } from '../auth/AdminGuard';
 
 const ADMIN_NAV = [
     { name: 'Dashboard', href: '/', icon: BarChart3 },

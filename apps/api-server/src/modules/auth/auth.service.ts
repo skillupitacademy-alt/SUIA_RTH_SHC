@@ -1,4 +1,4 @@
-import { db, users, userProfiles, roles, userRoles, refreshTokens } from '@quiz/db';
+import { db, users, userProfiles, roles, userRoles, refreshTokens, verificationTokens } from '@quiz/db';
 import { eq, sql, and } from 'drizzle-orm';
 import { PasswordService } from './password.service';
 import { TokenService } from './token.service';
@@ -186,14 +186,48 @@ export class AuthService {
   }
 
   static async verifyEmail(token: string, ip?: string) {
-    // Strategy: Decrypt/Verify verification token, find user, mark as verified.
-    // Placeholder for actual implementation in PR with SMTP.
-    await AuditService.log({ action: 'email_verification_attempt', ip });
+    const verifiedToken = await db.query.verificationTokens.findFirst({
+      where: eq(verificationTokens.token, token),
+    });
+
+    if (!verifiedToken || verifiedToken.expiresAt < new Date()) {
+      await AuditService.log({ action: 'email_verification_failed', metadata: { reason: 'invalid_or_expired' }, ip });
+      throw new Error('Invalid or expired verification token');
+    }
+
+    await db.transaction(async (tx) => {
+      await tx.update(users)
+        .set({ emailVerified: true })
+        .where(eq(users.id, verifiedToken.userId));
+
+      await tx.delete(verificationTokens)
+        .where(eq(verificationTokens.id, verifiedToken.id));
+    });
+
+    await AuditService.log({ userId: verifiedToken.userId, action: 'email_verification_success', ip });
     return true; 
   }
 
   static async resendVerification(userId: string, ip?: string) {
-    // Strategy: Generate new token, save to DB, trigger email sending.
+    const user = await db.query.users.findFirst({
+      where: eq(users.id, userId),
+    });
+
+    if (!user) throw new Error('User not found');
+    if (user.emailVerified) throw new Error('Email already verified');
+
+    const token = crypto.randomBytes(32).toString('hex');
+    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+
+    await db.insert(verificationTokens).values({
+      userId,
+      token,
+      expiresAt,
+    });
+
+    // In a real app, send email here.
+    console.log(`[VERIFICATION EMAIL] To: ${user.email}, Link: /verify-email?token=${token}`);
+
     await AuditService.log({ userId, action: 'email_verification_resend_triggered', ip });
     return true;
   }

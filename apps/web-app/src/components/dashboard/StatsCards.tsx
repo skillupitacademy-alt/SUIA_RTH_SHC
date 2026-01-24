@@ -39,34 +39,34 @@ export function StatCard({ title, value, icon: Icon, trend, color }: StatCardPro
     );
 }
 
-export function StatsGrid() {
+export function StatsGrid({ overview }: { overview?: any }) {
     return (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <StatCard
                 title="Exams Taken"
-                value="24"
+                value={overview?.totalExams || "0"}
                 icon={TrendingUp}
-                trend={{ value: "+12%", positive: true }}
+                trend={{ value: "+0%", positive: true }}
                 color="primary"
             />
             <StatCard
                 title="Avg Score"
-                value="82%"
+                value={`${Math.round(overview?.avgScore || 0)}%`}
                 icon={TrendingUp}
-                trend={{ value: "+5%", positive: true }}
+                trend={{ value: "+0%", positive: true }}
                 color="secondary"
             />
             <StatCard
                 title="Mastery Points"
-                value="1,240"
+                value={(overview?.totalExams || 0) * 50} // Mock calculation for now
                 icon={TrendingUp}
                 color="accent"
             />
             <StatCard
                 title="Global Rank"
-                value="#124"
+                value="#-"
                 icon={TrendingUp}
-                trend={{ value: "-2", positive: false }}
+                trend={{ value: "0", positive: false }}
                 color="primary"
             />
         </div>

@@ -16,13 +16,23 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         if (!mounted) return;
 
         const root = window.document.documentElement;
+
+        // Use a transition class to avoid flashing during initial load but enable it for toggles
+        root.classList.add('theme-transitioning');
+
         root.classList.remove('theme-a', 'theme-b', 'light', 'dark');
         root.classList.add(theme);
         root.classList.add(mode);
+
+        const timer = setTimeout(() => {
+            root.classList.remove('theme-transitioning');
+        }, 300);
+
+        return () => clearTimeout(timer);
     }, [theme, mode, mounted]);
 
     if (!mounted) {
-        return <>{children}</>;
+        return <div className="invisible">{children}</div>;
     }
 
     return <>{children}</>;

@@ -11,29 +11,46 @@ export class ReportEngine {
       }
     });
 
-    // Aggregate strength and weak areas
-    const topicStats: Record<string, { totalScore: number; count: number }> = {};
-    
-    for (const exam of userExams) {
-      for (const dim of exam.dimensions) {
-        if (dim.dimensionType === 'topic') {
-          const id = dim.dimensionId!;
-          if (!topicStats[id]) topicStats[id] = { totalScore: 0, count: 0 };
-          topicStats[id].totalScore += dim.score;
-          topicStats[id].count++;
-        }
-      }
-    }
-
-    const masters = Object.entries(topicStats)
-      .map(([id, stats]) => ({ id, average: stats.totalScore / stats.count }))
-      .sort((a, b) => b.average - a.average);
-
     return {
       examsCompleted: userExams.length,
       averageScore: userExams.length > 0 ? userExams.reduce((acc, curr) => acc + (curr.totalScore || 0), 0) / userExams.length : 0,
-      strengthAreas: masters.slice(0, 3),
-      weakAreas: masters.slice(-3),
+      dimensions: userExams.flatMap(e => e.dimensions),
+    };
+  }
+
+  static async getExamReport(examId: string) {
+    const exam = await db.query.exams.findFirst({
+      where: eq(exams.id, examId),
+      with: {
+        examQuestions: {
+          with: {
+            question: true,
+          }
+        },
+        blueprint: true,
+      }
+    });
+
+    if (!exam) throw new Error('Exam not found');
+
+    const totalQuestions = exam.examQuestions.length;
+    const correctAnswers = exam.examQuestions.filter(eq => eq.isCorrect).length;
+    const scorePercentage = totalQuestions > 0 ? (correctAnswers / totalQuestions) * 100 : 0;
+
+    return {
+      id: exam.id,
+      score: correctAnswers,
+      total: totalQuestions,
+      percentage: scorePercentage,
+      status: scorePercentage >= 70 ? 'passed' : 'failed',
+      completedAt: exam.completedAt,
+      // Aggregating by topic/difficulty could be added here
+      questions: exam.examQuestions.map(eq => ({
+        text: eq.question.questionText,
+        userAnswer: eq.userAnswer,
+        correctAnswer: eq.question.correctAnswer,
+        isCorrect: eq.isCorrect,
+      }))
     };
   }
 }

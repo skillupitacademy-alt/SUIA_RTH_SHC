@@ -8,9 +8,16 @@ import Link from "next/link";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 
 import { useAuthStore } from "@/store/auth-store";
+import { useDashboardStore } from "@/store/dashboard-store";
+import { useEffect } from "react";
 
 export default function DashboardPage() {
     const { user } = useAuthStore();
+    const { data, fetchDashboard, loading } = useDashboardStore();
+
+    useEffect(() => {
+        fetchDashboard();
+    }, [fetchDashboard]);
 
     return (
         <AuthGuard>
@@ -33,7 +40,7 @@ export default function DashboardPage() {
                     </div>
 
                     {/* Stats Section */}
-                    <StatsGrid />
+                    <StatsGrid overview={data?.overview} />
 
                     <div className="grid lg:grid-cols-3 gap-8 mt-10">
                         <div className="lg:col-span-2">

@@ -14,4 +14,8 @@ export class AdminClient {
   async getQuestions() {
     return this.client.get<any[]>('/admin/questions');
   }
+
+  async getMetrics() {
+    return this.client.get<any>('/admin/metrics');
+  }
 }

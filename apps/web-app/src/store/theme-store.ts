@@ -15,7 +15,7 @@ interface ThemeState {
 
 export const useThemeStore = create<ThemeState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       theme: 'theme-a',
       mode: 'light',
       setTheme: (theme) => set({ theme }),
@@ -27,6 +27,13 @@ export const useThemeStore = create<ThemeState>()(
     }),
     {
       name: 'quiz-platform-theme',
+      onRehydrateStorage: () => (state) => {
+        // Handle system preference if nothing is stored
+        if (state && !localStorage.getItem('quiz-platform-theme')) {
+           const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+           state.setMode(isDark ? 'dark' : 'light');
+        }
+      }
     }
   )
 );

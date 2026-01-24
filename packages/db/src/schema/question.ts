@@ -1,6 +1,6 @@
 import { pgTable, text, timestamp, uuid, integer, jsonb, pgEnum } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
-import { topics } from "./domain";
+import { topics, statusEnum } from "./domain";
 
 export const questionTypeEnum = pgEnum("question_type", ["mcq", "code_mcq"]);
 export const difficultyEnum = pgEnum("difficulty", ["simple", "intermediate", "expert"]);
@@ -18,6 +18,7 @@ export const questions = pgTable("questions", {
   explanation: text("explanation"),
   codeSnippet: text("code_snippet"),
   metadata: jsonb("metadata"), // For future AI/platform extensions
+  status: statusEnum("status").notNull().default("active"),
   tags: text("tags").array(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),

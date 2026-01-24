@@ -12,7 +12,7 @@ export class AuthClient {
   }
 
   async signup(email: string, password: string, name: string) {
-    return this.client.post<{ user: any }>('/auth/signup', { email, password, name });
+    return this.client.post<{ user: any; accessToken: string }>('/auth/signup', { email, password, name });
   }
 
   async getSession() {
@@ -25,5 +25,9 @@ export class AuthClient {
 
   async refresh() {
     return this.client.post<{ accessToken: string }>('/auth/refresh', {});
+  }
+
+  async updateProfile(profileData: any) {
+    return this.client.put('/auth/profile', profileData);
   }
 }
