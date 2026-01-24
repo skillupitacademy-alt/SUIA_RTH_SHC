@@ -1,4 +1,4 @@
 {
-    "buildCommand": "pnpm add -D @types/jsonwebtoken @types/bcrypt @types/node && pnpm build",
+    "buildCommand": "pnpm add @types/jsonwebtoken @types/bcrypt @types/node && pnpm build",
     "installCommand": "pnpm install --no-frozen-lockfile"
 }
