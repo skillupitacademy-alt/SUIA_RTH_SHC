@@ -22,30 +22,29 @@ export class AuthService {
 
     const passwordHash = await PasswordService.hash(password);
 
-    const newUser = await db.transaction(async (tx) => {
-      const [user] = await tx.insert(users).values({
-        email,
-        passwordHash,
-      }).returning();
+    // Neon HTTP driver doesn't support transactions, so we do sequential inserts
+    const [user] = await db.insert(users).values({
+      email,
+      passwordHash,
+    }).returning();
 
-      await tx.insert(userProfiles).values({
-        userId: user.id,
-        name,
-      });
-
-      const userRole = await tx.query.roles.findFirst({
-        where: sql`${roles.name} = 'USER'`,
-      });
-
-      if (userRole) {
-        await tx.insert(userRoles).values({
-          userId: user.id,
-          roleId: userRole.id,
-        });
-      }
-
-      return user;
+    await db.insert(userProfiles).values({
+      userId: user.id,
+      name,
     });
+
+    const userRole = await db.query.roles.findFirst({
+      where: sql`${roles.name} = 'USER'`,
+    });
+
+    if (userRole) {
+      await db.insert(userRoles).values({
+        userId: user.id,
+        roleId: userRole.id,
+      });
+    }
+
+    const newUser = user;
 
     await AuditService.log({ userId: newUser.id, action: 'signup_success', ip });
     return newUser;
