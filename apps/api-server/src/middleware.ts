@@ -18,7 +18,9 @@ export async function middleware(request: NextRequest) {
 
   // 2. Rate Limiting
   const rateLimitResponse = await rateLimit(request);
-  if (rateLimitResponse) return rateLimitResponse;
+  if (rateLimitResponse) {
+    return corsMiddleware(request, rateLimitResponse);
+  }
 
   // 3. CSRF Protection for mutations
   const isAuthRoute = request.nextUrl.pathname.startsWith('/api/auth');
@@ -26,20 +28,23 @@ export async function middleware(request: NextRequest) {
   // Skip CSRF for auth routes (login/signup) which don't have tokens yet
   if (!isAuthRoute) {
     const csrfResponse = await csrfProtection(request);
-    if (csrfResponse) return csrfResponse;
+    if (csrfResponse) {
+      return corsMiddleware(request, csrfResponse);
+    }
   }
 
   // 4. Auth Protection (Exclude public routes)
   // isAuthRoute already defined above
-  const isPublicRoute = isAuthRoute || request.nextUrl.pathname === '/api/status';
+  const isPublicRoute = isAuthRoute || request.nextUrl.pathname === '/api/status' || request.nextUrl.pathname === '/api/migrate';
 
   if (!isPublicRoute) {
     const authHeader = request.headers.get('authorization');
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return NextResponse.json(
+      const response = NextResponse.json(
         { error: 'Authentication required' },
         { status: 401 }
       );
+      return corsMiddleware(request, response);
     }
   }
 
