@@ -10,7 +10,10 @@ export async function csrfProtection(request: NextRequest) {
   const origin = request.headers.get('origin');
   const host = request.headers.get('host');
   
-  if (origin && !origin.includes(host || '')) {
+  const allowedOrigins = ['http://localhost:3000', 'https://quiz.realtutorialhub.com'];
+  const isAllowed = allowedOrigins.includes(origin || '') || (origin && origin.includes(host || ''));
+
+  if (origin && !isAllowed) {
     return NextResponse.json({ error: 'Origin mismatch' }, { status: 403 });
   }
 

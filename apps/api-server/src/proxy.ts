@@ -21,11 +21,16 @@ export async function proxy(request: NextRequest) {
   if (rateLimitResponse) return rateLimitResponse;
 
   // 3. CSRF Protection for mutations
-  const csrfResponse = await csrfProtection(request);
-  if (csrfResponse) return csrfResponse;
+  const isAuthRoute = request.nextUrl.pathname.startsWith('/api/auth');
+  
+  // Skip CSRF for auth routes (login/signup) which don't have tokens yet
+  if (!isAuthRoute) {
+    const csrfResponse = await csrfProtection(request);
+    if (csrfResponse) return csrfResponse;
+  }
 
   // 4. Auth Protection (Exclude public routes)
-  const isAuthRoute = request.nextUrl.pathname.startsWith('/api/auth');
+  // isAuthRoute already defined above
   const isPublicRoute = isAuthRoute || request.nextUrl.pathname === '/api/status';
 
   if (!isPublicRoute) {
