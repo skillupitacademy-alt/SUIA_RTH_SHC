@@ -12,10 +12,13 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useQuizStore } from '@/store/quiz-store';
-import { useRouter } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 
 export function ExamInterface() {
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const examIdParam = searchParams.get('examId');
+
     const {
         questions,
         answers,
@@ -31,7 +34,7 @@ export function ExamInterface() {
         examId,
         setExamId,
         isSubmitted,
-        updateTimeLeft // Changed from updateTimer
+        updateTimeLeft
     } = useQuizStore();
 
     const [isLoading, setIsLoading] = useState(true);
@@ -48,6 +51,9 @@ export function ExamInterface() {
         // Real persistence
         if (examId) {
             try {
+                // We use legitimate questionId for persistence
+                // Note: The store might be using exam_question.id or question.id. 
+                // backend expects questionId (uuid).
                 await apiClient.quiz.submitAnswer(examId, String(questionId), option);
             } catch (err) {
                 console.error("Failed to save answer", err);
@@ -57,32 +63,57 @@ export function ExamInterface() {
 
     useEffect(() => {
         const initExam = async () => {
-            // If we have questions and not submitted, we might be resuming
-            if (questions.length > 0 && !isSubmitted) {
+            // If we have questions and examId matches, we are good (client navigation)
+            if (questions.length > 0 && examId === examIdParam) {
                 setIsLoading(false);
                 return;
             }
 
+            if (!examIdParam) {
+                // No exam ID, redirect to new quiz
+                router.push('/quiz/new');
+                return;
+            }
+
             try {
-                // Start a new exam (Mocking domain ID for demo)
-                // In real flow, this comes from selection page or URL param
-                const { examId, questions } = await apiClient.quiz.startExam({
-                    domainId: 'domain_1',
-                    difficulty: 'intermediate'
+                // Fetch real state
+                const state = await apiClient.quiz.getQuizState(examIdParam);
+
+                // Mapper to match store interface
+                const mappedQuestions = state.questions.map((q: any) => ({
+                    id: q.questionId, // Use the actual question UUID
+                    type: q.type === 'code_mcq' ? 'CODE_MCQ' : 'MCQ', // Normalize type
+                    text: q.questionText,
+                    code: q.codeSnippet, // Access code snippet if available (backend needs to return this, assuming yes or null)
+                    options: q.options,
+                    difficulty: 'Intermediate' // Default or fetch from Q
+                }));
+
+                setExamId(state.id);
+                setQuestions(mappedQuestions);
+
+                // Hydrate answers if any (backend returns userAnswer)
+                state.questions.forEach((q: any) => {
+                    if (q.userAnswer !== null) {
+                        // We need to map answer string back to index... 
+                        // Or update store to handle string answers. 
+                        // For now assuming index logic in UI, but backend stores strings.
+                        // Ideally we find index of q.userAnswer in q.options
+                        const idx = q.options.indexOf(q.userAnswer);
+                        if (idx !== -1) useQuizStore.getState().setAnswer(q.questionId, idx);
+                    }
                 });
 
-                setExamId(examId);
-                setQuestions(questions);
             } catch (err) {
-                console.error("Failed to start exam", err);
-                // Fallback or redirect
+                console.error("Failed to load exam session", err);
+                router.push('/quiz/new'); // Fallback
             } finally {
                 setIsLoading(false);
             }
         };
 
         initExam();
-    }, [questions.length, isSubmitted, setQuestions, setExamId]);
+    }, [examIdParam, router, setExamId, setQuestions, questions.length, examId]);
 
     // Timer logic
     useEffect(() => {

@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import {
     Code,
     ShieldCheck,
@@ -11,31 +12,82 @@ import {
     Clock,
     Layers,
     ChevronRight,
-    Sparkles
+    Sparkles,
+    Loader2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useQuizStore } from '@/store/quiz-store';
+import { apiClient } from '@quiz/api-client';
 
-const DOMAINS = [
-    { id: 'full-stack', title: 'Full Stack', icon: Code, subjects: ['Frontend', 'Backend', 'DevOps', 'Mobile'] },
-    { id: 'data-analyst', title: 'Data Analyst', icon: LineChart, subjects: ['SQL', 'Excel', 'Statistics', 'PowerBI'] },
-    { id: 'data-science', title: 'Data Science', icon: Database, subjects: ['Python', 'Machine Learning', 'Data Visualization'] },
-    { id: 'cyber-security', title: 'Cyber Security', icon: Lock, subjects: ['Networking', 'Penetration Testing', 'Incident Response'] },
-    { id: 'ethical-hacking', title: 'Ethical Hacking', icon: ShieldCheck, subjects: ['Linux', 'Web App Hacking', 'Digital Forensics'] },
-];
+// Map icons to domain IDs (fallback/static mapping for aesthetics)
+const ICON_MAP: Record<string, any> = {
+    'full-stack': Code,
+    'data-analyst': LineChart,
+    'data-science': Database,
+    'cyber-security': Lock,
+    'ethical-hacking': ShieldCheck,
+};
 
 export function QuizSelection() {
+    const router = useRouter();
+    const [domains, setDomains] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [starting, setStarting] = useState(false);
+
     const [selectedDomain, setSelectedDomain] = useState<string | null>(null);
     const [selectedSubjects, setSelectedSubjects] = useState<string[]>([]);
     const [difficulty, setDifficulty] = useState('mixed');
 
-    const domain = DOMAINS.find(d => d.id === selectedDomain);
+    useEffect(() => {
+        const fetchDomains = async () => {
+            try {
+                const data = await apiClient.quiz.getDomains();
+                setDomains(data);
+            } catch (err) {
+                console.error("Failed to load domains", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchDomains();
+    }, []);
+
+    const domain = domains.find(d => d.id === selectedDomain);
 
     const toggleSubject = (s: string) => {
         setSelectedSubjects(prev =>
             prev.includes(s) ? prev.filter(item => item !== s) : [...prev, s]
         );
     };
+
+    const handleStartExam = async () => {
+        if (!selectedDomain) return;
+        setStarting(true);
+        try {
+            // Create a blueprint/config for the exam
+            // In a real advanced app, we'd send complex config. 
+            // For now, mapping domainId is enough for the simple API we audited.
+            const exam = await apiClient.quiz.startExam({
+                blueprintId: selectedDomain, // Using domain ID as blueprint for now
+                subjects: selectedSubjects,
+                difficulty
+            });
+
+            router.push(`/quiz/active-session?examId=${exam.examId}`);
+        } catch (err) {
+            console.error("Failed to start exam", err);
+            alert("Failed to start exam session. Please try again.");
+            setStarting(false);
+        }
+    };
+
+    if (loading) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-[400px]">
+                <Loader2 className="h-10 w-10 animate-spin text-primary" />
+                <p className="mt-4 text-muted-foreground font-medium">Loading Enterprise Domains...</p>
+            </div>
+        );
+    }
 
     return (
         <div className="max-w-6xl mx-auto space-y-12">
@@ -46,63 +98,66 @@ export function QuizSelection() {
                     <h2 className="text-2xl font-bold tracking-tight">Select Domain</h2>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {DOMAINS.map((item) => (
-                        <button
-                            key={item.id}
-                            onClick={() => {
-                                setSelectedDomain(item.id);
-                                setSelectedSubjects([]);
-                            }}
-                            className={cn(
-                                "group relative p-8 rounded-[2.5rem] border-2 transition-all duration-300 text-left",
-                                selectedDomain === item.id
-                                    ? "border-primary bg-primary/5 shadow-xl shadow-primary/10 ring-2 ring-primary/20"
-                                    : "border-muted-foreground/10 bg-background hover:border-primary/40 hover:shadow-lg"
-                            )}
-                        >
-                            <div className={cn(
-                                "mb-6 p-4 rounded-2xl w-fit transition-colors",
-                                selectedDomain === item.id ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary"
-                            )}>
-                                <item.icon size={32} />
-                            </div>
-                            <h3 className="text-xl font-extrabold mb-2">{item.title}</h3>
-                            <p className="text-sm text-muted-foreground leading-relaxed">
-                                Master industry-standard practices and tools in {item.title}.
-                            </p>
-                            <div className={cn(
-                                "absolute top-8 right-8 transition-opacity",
-                                selectedDomain === item.id ? "opacity-100" : "opacity-0"
-                            )}>
-                                <div className="h-6 w-6 rounded-full bg-primary flex items-center justify-center">
-                                    <ChevronRight size={14} className="text-white" />
+                    {domains.map((item) => {
+                        const Icon = ICON_MAP[item.id] || Code;
+                        return (
+                            <button
+                                key={item.id}
+                                onClick={() => {
+                                    setSelectedDomain(item.id);
+                                    setSelectedSubjects([]);
+                                }}
+                                className={cn(
+                                    "group relative p-8 rounded-[2.5rem] border-2 transition-all duration-300 text-left",
+                                    selectedDomain === item.id
+                                        ? "border-primary bg-primary/5 shadow-xl shadow-primary/10 ring-2 ring-primary/20"
+                                        : "border-muted-foreground/10 bg-background hover:border-primary/40 hover:shadow-lg"
+                                )}
+                            >
+                                <div className={cn(
+                                    "mb-6 p-4 rounded-2xl w-fit transition-colors",
+                                    selectedDomain === item.id ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary"
+                                )}>
+                                    <Icon size={32} />
                                 </div>
-                            </div>
-                        </button>
-                    ))}
+                                <h3 className="text-xl font-extrabold mb-2">{item.name}</h3>
+                                <p className="text-sm text-muted-foreground leading-relaxed">
+                                    {item.description || `Master industry-standard practices and tools in ${item.name}.`}
+                                </p>
+                                <div className={cn(
+                                    "absolute top-8 right-8 transition-opacity",
+                                    selectedDomain === item.id ? "opacity-100" : "opacity-0"
+                                )}>
+                                    <div className="h-6 w-6 rounded-full bg-primary flex items-center justify-center">
+                                        <ChevronRight size={14} className="text-white" />
+                                    </div>
+                                </div>
+                            </button>
+                        );
+                    })}
                 </div>
             </section>
 
             {/* Step 2: Subject Filtering */}
-            {selectedDomain && (
+            {selectedDomain && domain?.subjects && (
                 <section className="space-y-6 animate-in slide-in-from-bottom-8 duration-500">
                     <div className="flex items-center gap-3">
                         <div className="h-8 w-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-sm">2</div>
                         <h2 className="text-2xl font-bold tracking-tight">Refine Subjects</h2>
                     </div>
                     <div className="flex flex-wrap gap-4">
-                        {domain?.subjects.map(subject => (
+                        {domain.subjects.map((subject: any) => (
                             <button
-                                key={subject}
-                                onClick={() => toggleSubject(subject)}
+                                key={subject.id || subject}
+                                onClick={() => toggleSubject(subject.name || subject)}
                                 className={cn(
                                     "px-6 py-3 rounded-2xl border-2 font-bold transition-all",
-                                    selectedSubjects.includes(subject)
+                                    selectedSubjects.includes(subject.name || subject)
                                         ? "border-primary bg-primary text-primary-foreground shadow-lg shadow-primary/20"
                                         : "border-muted bg-background hover:border-primary/30"
                                 )}
                             >
-                                {subject}
+                                {subject.name || subject}
                             </button>
                         ))}
                     </div>
@@ -110,7 +165,7 @@ export function QuizSelection() {
             )}
 
             {/* Step 3: Configuration */}
-            {selectedDomain && selectedSubjects.length > 0 && (
+            {selectedDomain && (
                 <section className="space-y-6 animate-in slide-in-from-bottom-8 duration-700">
                     <div className="flex items-center gap-3">
                         <div className="h-8 w-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-sm">3</div>
@@ -147,44 +202,16 @@ export function QuizSelection() {
                                 <div className="flex items-center gap-1.5"><Layers size={16} /> 20 Questions</div>
                             </div>
                             <button
-                                className="w-full py-5 rounded-3xl bg-primary text-primary-foreground text-lg font-black shadow-xl shadow-primary/30 flex items-center justify-center gap-3 hover:scale-[1.02] transition-transform active:scale-95"
-                                onClick={() => {
-                                    useQuizStore.getState().startQuiz(
-                                        [
-                                            {
-                                                id: 1,
-                                                type: 'MCQ',
-                                                text: 'What is the primary purpose of React Hooks?',
-                                                options: [
-                                                    'To manage state and lifecycle in functional components',
-                                                    'To replace all class components',
-                                                    'To handle CSS-in-JS directly',
-                                                    'To optimize image loading automatically'
-                                                ],
-                                                difficulty: 'Simple'
-                                            },
-                                            {
-                                                id: 2,
-                                                type: 'CODE_MCQ',
-                                                text: 'Analyze the following code snippet. What will be the output?',
-                                                code: `const x = [1, 2, 3];\nconst y = x.map(n => n * 2).filter(n => n > 3);\nconsole.log(y);`,
-                                                options: [
-                                                    '[4, 6]',
-                                                    '[2, 4, 6]',
-                                                    '[3, 6]',
-                                                    '[1, 2, 3]'
-                                                ],
-                                                difficulty: 'Intermediate'
-                                            },
-                                        ],
-                                        { domain: selectedDomain, subjects: selectedSubjects, difficulty },
-                                        2700
-                                    );
-                                    window.location.href = '/quiz/active-session';
-                                }}
+                                className="w-full py-5 rounded-3xl bg-primary text-primary-foreground text-lg font-black shadow-xl shadow-primary/30 flex items-center justify-center gap-3 hover:scale-[1.02] transition-transform active:scale-95 disabled:opacity-50 disabled:pointer-events-none"
+                                onClick={handleStartExam}
+                                disabled={starting}
                             >
-                                Start Enterprise Exam
-                                <ArrowRight size={22} />
+                                {starting ? <Loader2 className="h-6 w-6 animate-spin" /> : (
+                                    <>
+                                        Start Enterprise Exam
+                                        <ArrowRight size={22} />
+                                    </>
+                                )}
                             </button>
                         </div>
                     </div>

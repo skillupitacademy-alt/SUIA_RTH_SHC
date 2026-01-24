@@ -1,4 +1,4 @@
-# Claude Runtime Integration Task - [COMPLETED]
+# Claude Runtime Integration Task
 
 ## Purpose
 
@@ -21,7 +21,7 @@ Into:
 
 ## Runtime Layers to Integrate
 
-### 1. Auth Runtime Layer - [COMPLETED]
+### 1. Auth Runtime Layer
 
 #### API
 
@@ -47,7 +47,7 @@ Into:
 
 ---
 
-### 2. API Runtime Layer - [COMPLETED]
+### 2. API Runtime Layer
 
 * Bind all controllers to real services
 * Add request validation
@@ -57,7 +57,7 @@ Into:
 
 ---
 
-### 3. Database Runtime Layer - [COMPLETED]
+### 3. Database Runtime Layer
 
 * Enable real queries via Drizzle
 * Enable migrations
@@ -68,7 +68,7 @@ Into:
 
 ---
 
-### 4. UI Runtime Layer - [COMPLETED]
+### 4. UI Runtime Layer
 
 * Replace mock state with API calls
 * Bind Zustand to API
@@ -78,7 +78,7 @@ Into:
 
 ---
 
-### 5. Exam Runtime Layer - [COMPLETED]
+### 5. Exam Runtime Layer
 
 * Real exam creation
 * Real question fetch
@@ -89,7 +89,7 @@ Into:
 
 ---
 
-### 6. Admin Runtime Layer - [COMPLETED]
+### 6. Admin Runtime Layer
 
 * Real content CRUD
 * Real DB writes
