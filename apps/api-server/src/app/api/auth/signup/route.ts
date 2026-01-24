@@ -35,6 +35,7 @@ export async function POST(req: NextRequest) {
 
     return response;
   } catch (error: any) {
+    console.error('[SIGNUP ERROR]', error);
     return NextResponse.json({ error: error.message }, { status: 400 });
   }
 }

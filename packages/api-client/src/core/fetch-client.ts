@@ -29,9 +29,10 @@ export class FetchClient {
     });
 
     if (!response.ok) {
-        // Clone response to read body twice if needed (though we only read once here)
-      const error = await response.json().catch(() => ({ message: 'Unknown error' }));
-      throw new Error(error.message || `API Error: ${response.status}`);
+      // Clone response to read body twice if needed (though we only read once here)
+      const errorBody = await response.json().catch(() => ({ message: 'Unknown error' }));
+      const errorMessage = errorBody.message || errorBody.error || `API Error: ${response.status}`;
+      throw new Error(errorMessage);
     }
 
     return response.json();
