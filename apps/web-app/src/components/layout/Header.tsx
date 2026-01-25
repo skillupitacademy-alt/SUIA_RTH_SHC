@@ -23,13 +23,15 @@ export function Header() {
                         <span className="inline-block font-bold text-xl text-primary">QuizPlatform</span>
                     </Link>
                     <nav className="flex gap-6">
-                        <Link
-                            href="/dashboard"
-                            className="flex items-center text-sm font-medium text-muted-foreground hover:text-primary transition-colors"
-                        >
-                            <LayoutDashboard size={18} className="mr-2" />
-                            Dashboard
-                        </Link>
+                        {isAuthenticated && (
+                            <Link
+                                href="/dashboard"
+                                className="flex items-center text-sm font-medium text-muted-foreground hover:text-primary transition-colors"
+                            >
+                                <LayoutDashboard size={18} className="mr-2" />
+                                Dashboard
+                            </Link>
+                        )}
                     </nav>
                 </div>
                 <div className="flex items-center gap-4">

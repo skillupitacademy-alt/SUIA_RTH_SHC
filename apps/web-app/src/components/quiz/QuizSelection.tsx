@@ -220,7 +220,7 @@ export function QuizSelection() {
 
                         <div className="flex flex-col justify-end gap-6">
                             <div className="flex items-center gap-4 text-sm font-bold text-muted-foreground/60 uppercase tracking-widest">
-                                <div className="flex items-center gap-1.5"><Clock size={16} /> 45 Minutes</div>
+                                <div className="flex items-center gap-1.5"><Clock size={16} /> {Math.ceil(questionCount * 1.5)} Minutes</div>
                                 <div className="flex items-center gap-1.5"><Layers size={16} /> {questionCount} Questions</div>
                             </div>
                             <button

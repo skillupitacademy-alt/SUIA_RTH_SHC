@@ -11,7 +11,9 @@ import { cn } from "@/lib/utils";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 import { useAuthStore } from "@/store/auth-store";
 
-export default function ReportPage() {
+import { Suspense } from 'react';
+
+function ReportContent() {
     const searchParams = useSearchParams();
     const router = useRouter();
     const { isAuthenticated } = useAuthStore();
@@ -184,5 +186,20 @@ export default function ReportPage() {
                 </div>
             </div>
         </AuthGuard>
+    );
+}
+
+export default function ReportPage() {
+    return (
+        <Suspense fallback={
+            <div className="flex flex-col min-h-[calc(100vh-64px)] items-center justify-center bg-muted/5">
+                <Loader2 className="animate-spin text-primary mb-4" size={48} />
+                <p className="text-xl font-bold text-muted-foreground italic animate-pulse">
+                    "Loading report..."
+                </p>
+            </div>
+        }>
+            <ReportContent />
+        </Suspense>
     );
 }
