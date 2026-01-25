@@ -6,9 +6,8 @@ import { useAuthStore } from '@/store/auth-store';
 import { apiClient } from '@quiz/api-client';
 
 export function AdminGuard({ children }: { children: React.ReactNode }) {
-    const { user, isAuthenticated, initialized } = useAuthStore();
+    const { user, isAuthenticated, initialized, token } = useAuthStore(); // Unpack token
     const router = useRouter();
-
     const { logout } = useAuthStore();
 
     useEffect(() => {
@@ -22,18 +21,26 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
         // Hardening: Revalidate session state with server
         const revalidate = async () => {
             try {
+                // Ensure token is set before validation call
+                if (token) {
+                    apiClient.setAccessToken(token);
+                } else {
+                    console.warn("AdminGuard: No token available for revalidation");
+                    throw new Error("No token");
+                }
+
                 const { user: validatedUser } = await apiClient.auth.getSession();
                 if (!validatedUser.isAdmin) throw new Error("Revoked");
             } catch (err) {
+                console.error("Session revalidation failed:", err);
                 logout();
                 router.push('/login');
             }
         };
 
-        // Only revalidate if we have a token (debounce could be used in real apps, but strict here)
         revalidate();
 
-    }, [isAuthenticated, user, initialized, router, logout]);
+    }, [isAuthenticated, user, initialized, router, logout, token]);
 
     if (!initialized || !isAuthenticated || !user?.isAdmin) {
         return (

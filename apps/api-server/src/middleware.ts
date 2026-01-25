@@ -25,7 +25,8 @@ export async function middleware(request: NextRequest) {
   }
 
   // 3. CSRF Protection for mutations
-  const isAuthRoute = request.nextUrl.pathname.startsWith('/api/auth');
+  const isAuthRoute = request.nextUrl.pathname.startsWith('/api/auth') || 
+                      request.nextUrl.pathname.startsWith('/api/admin/auth');
   
   // Skip CSRF for auth routes (login/signup) which don't have tokens yet
   if (!isAuthRoute) {

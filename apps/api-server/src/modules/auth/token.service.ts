@@ -45,10 +45,27 @@ export class TokenService {
       .sign(secret);
   }
 
-  static async verifyAccessToken(token: string, isAdmin: boolean = false): Promise<TokenPayload> {
-    const secret = isAdmin ? this.ADMIN_SECRET : this.ACCESS_SECRET;
-    const { payload } = await jose.jwtVerify(token, secret);
-    return payload as unknown as TokenPayload;
+  static async verifyAccessToken(token: string, isAdmin?: boolean): Promise<TokenPayload> {
+    // If specific scope requested, enforce it
+    if (typeof isAdmin === 'boolean') {
+        const secret = isAdmin ? this.ADMIN_SECRET : this.ACCESS_SECRET;
+        const { payload } = await jose.jwtVerify(token, secret);
+        return payload as unknown as TokenPayload;
+    }
+
+    // Otherwise, try User Secret first (common case)
+    try {
+        const { payload } = await jose.jwtVerify(token, this.ACCESS_SECRET);
+        return payload as unknown as TokenPayload;
+    } catch (err) {
+        // Fallback to Admin Secret
+        try {
+             const { payload } = await jose.jwtVerify(token, this.ADMIN_SECRET);
+             return payload as unknown as TokenPayload;
+        } catch {
+            throw new Error('Invalid token signature');
+        }
+    }
   }
 
   static async verifyRefreshToken(token: string, isAdmin: boolean = false): Promise<{ userId: string; isAdmin: boolean }> {
