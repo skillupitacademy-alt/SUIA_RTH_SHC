@@ -44,3 +44,9 @@ Allow users to configure and initiate a new exam session by selecting domains, t
 +- [x] Domains and Topics fetch from real database.
 +- [x] Question count and difficulty reflect in the created exam.
 +- [x] Redirect happens with a valid UUID `examId`.
+
+> [!IMPORTANT]
+> **Enterprise Blueprint Generation**
+> Exam blueprint generation logic follows the strict rules defined in:
+> [`docs/execution/EXAM_BLUEPRINT_GENERATION.md`](file:///d:/onlinewebsites/quiz-platform/docs/execution/EXAM_BLUEPRINT_GENERATION.md)
+
