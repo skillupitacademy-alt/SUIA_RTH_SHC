@@ -10,6 +10,14 @@ export class FetchClient {
     this.accessToken = token;
   }
 
+  private getCookie(name: string): string | null {
+    if (typeof document === 'undefined') return null;
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop()?.split(';').shift() || null;
+    return null;
+  }
+
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`;
     
@@ -20,6 +28,15 @@ export class FetchClient {
 
     if (this.accessToken) {
       headers['Authorization'] = `Bearer ${this.accessToken}`;
+    }
+
+    // Add CSRF token for mutation requests
+    const isMutation = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(options.method || 'GET');
+    if (isMutation) {
+      const csrfToken = this.getCookie('csrfToken');
+      if (csrfToken) {
+        headers['x-csrf-token'] = csrfToken;
+      }
     }
 
     const response = await fetch(url, {
@@ -60,3 +77,4 @@ export class FetchClient {
     return this.request<T>(endpoint, { method: 'DELETE' });
   }
 }
+
