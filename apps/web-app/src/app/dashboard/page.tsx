@@ -7,6 +7,7 @@ import { ArrowRight, Play, BookOpen } from "lucide-react";
 import Link from "next/link";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 import { cn } from "@/lib/utils";
+import { MobileNav } from "@/components/dashboard/MobileNav";
 
 import { useAuthStore } from "@/store/auth-store";
 import { useDashboardStore } from "@/store/dashboard-store";
@@ -24,7 +25,7 @@ export default function DashboardPage() {
         <AuthGuard>
             <div className="flex min-h-[calc(100vh-64px)]">
                 <Sidebar />
-                <main className="flex-1 p-6 md:p-10 space-y-10 overflow-y-auto">
+                <main className="flex-1 p-6 md:p-10 pb-24 md:pb-10 space-y-10 overflow-y-auto">
                     {/* Welcome Header */}
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                         <div>
@@ -83,12 +84,13 @@ export default function DashboardPage() {
                                     ))
                                 )}
                             </div>
-                            <Link href="/quiz" className="flex items-center justify-center w-full py-4 rounded-3xl border-2 border-dashed border-muted-foreground/20 text-muted-foreground font-bold hover:border-primary/40 hover:text-primary transition-all">
+                            <Link href="/dashboard/my-exams" className="flex items-center justify-center w-full py-4 rounded-3xl border-2 border-dashed border-muted-foreground/20 text-muted-foreground font-bold hover:border-primary/40 hover:text-primary transition-all">
                                 View All Quizzes
                             </Link>
                         </div>
                     </div>
                 </main>
+                <MobileNav />
             </div>
         </AuthGuard>
     );

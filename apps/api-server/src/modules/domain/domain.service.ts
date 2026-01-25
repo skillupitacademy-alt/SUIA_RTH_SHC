@@ -5,6 +5,12 @@ export class DomainService {
   static async getAllDomains() {
     return await db.query.domains.findMany({
       where: eq(domains.status, 'active'),
+      with: {
+        subjects: {
+          where: eq(subjects.status, 'active'),
+          orderBy: [subjects.order],
+        }
+      }
     });
   }
 

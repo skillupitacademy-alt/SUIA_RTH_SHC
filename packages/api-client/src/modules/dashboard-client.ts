@@ -7,7 +7,7 @@ export class DashboardClient {
     this.client = client;
   }
 
-  async getDashboard() {
-    return this.client.get<any>('/dashboard');
+  async getDashboard(range: string = '7d') {
+    return this.client.get<any>(`/dashboard?range=${range}`);
   }
 }

@@ -12,45 +12,29 @@ import { ReportClient } from './modules/report-client';
  * - Vercel preview: Uses the preview API URL
  */
 function getApiUrl(): string {
-  // Allow manual override via environment variable
+  // 1. Primary Source: Environment Variable (Standard for Vercel/Production)
   if (process.env.NEXT_PUBLIC_API_URL) {
-    console.log('[API-CLIENT] Using env override:', process.env.NEXT_PUBLIC_API_URL);
     return process.env.NEXT_PUBLIC_API_URL;
   }
 
-  // Check if we're in a browser environment
+  // 2. Browser Detection for Local Development/Preview
   if (typeof window !== 'undefined') {
     const hostname = window.location.hostname;
-    const port = window.location.port;
     
-    console.log('[API-CLIENT] Detected hostname:', hostname, 'port:', port);
-    
-    // Local development - always use port 3000 for API (where api-server runs)
+    // Dynamic Localhost Detection (assuming API is standard on port 3000)
     if (hostname === 'localhost' || hostname === '127.0.0.1') {
-      console.log('[API-CLIENT] Using localhost API: http://localhost:3000');
-      return 'http://localhost:3000';
+      return `http://${hostname}:3000/api`;
     }
     
-    // Vercel preview deployment
+    // Vercel Preview/Branch Deployments
     if (hostname.includes('vercel.app')) {
-      // Extract the preview URL pattern and construct API URL
-      // e.g., quiz-platform-web-app-git-preview-xxx.vercel.app
-      // becomes quiz-platform-api-server-git-preview-xxx.vercel.app
       const apiHostname = hostname.replace('web-app', 'api-server').replace('admin-app', 'api-server');
-      console.log('[API-CLIENT] Using preview API:', `https://${apiHostname}`);
       return `https://${apiHostname}`;
-    }
-    
-    // Production
-    if (hostname === 'quiz.realtutorialhub.com' || hostname === 'admin.realtutorialhub.com') {
-      console.log('[API-CLIENT] Using production API: https://api.realtutorialhub.com');
-      return 'https://api.realtutorialhub.com';
     }
   }
 
-  // Fallback for SSR or unknown environments
-  console.log('[API-CLIENT] Using fallback API: https://api.realtutorialhub.com');
-  return 'https://api.realtutorialhub.com';
+  // 3. Fallback: Should be avoided by setting env vars, but we'll use a relative path if possible or log error
+  return ''; 
 }
 
 const API_URL = getApiUrl();

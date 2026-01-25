@@ -1,11 +1,27 @@
 # Project-Specific Instructions for Quiz Platform
 
-## 📁 Documentation Location
+## 📁 Documentation Governance & Placement
 
-**All documentation files (.md) must be placed in the `docs/` folder.**
+### Global Documentation Placement Rule (MANDATORY)
+- Every new `.md` file MUST be placed inside a folder whose name semantically matches its purpose.
+- If no matching folder exists, the agent MUST create a new folder with a meaningful name.
+- `.md` files MUST NOT be placed at the root of `docs/`.
+- Page-specific contracts MUST always live under `docs/pages/<journey>/`.
+- Global rules MUST live in a shared domain folder (e.g., `ux/`, `architecture/`, `platform/`).
 
-- ✅ Correct: `docs/ENVIRONMENT_CONFIG.md`
-- ❌ Wrong: `ENVIRONMENT_CONFIG.md` (root level)
+**Violation of this rule requires the agent to STOP and ASK the user.**
+
+### Folder Intent Guide:
+- **`docs/ux/`**: Global UX rules and baselines (e.g., `UX_BASELINE.md`).
+- **`docs/pages/`**: Page-specific contracts grouped by user journey.
+- **`docs/execution/`**: Task logs, history, and status mapping.
+- **`docs/architecture/`**: System design, specs, and project instructions.
+- **`docs/platform/`**: CI/CD, environment config, and troubleshooting.
+- **`docs/security/`**: Auth protocols and security hardening data.
+- **`docs/domain/`**: Product modeling and business logic specs.
+- **`docs/audits/`**: Project reports and quality audits.
+- **`docs/walkthroughs/`**: Feature demonstrations and verification logs.
+- **`docs/sql/`**: SQL migration scripts and schemas.
 
 ## ⚠️ CRITICAL: Git Push Policy
 

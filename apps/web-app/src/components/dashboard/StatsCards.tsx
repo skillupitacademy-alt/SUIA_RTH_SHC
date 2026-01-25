@@ -40,6 +40,11 @@ export function StatCard({ title, value, icon: Icon, trend, color }: StatCardPro
 }
 
 export function StatsGrid({ overview }: { overview?: any }) {
+    const globalRankValue = overview?.globalRank ?? "Pending";
+    const globalRankTrend = overview?.globalRank
+        ? { value: "Top 10%", positive: true }
+        : undefined;
+
     return (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <StatCard
@@ -62,6 +67,18 @@ export function StatsGrid({ overview }: { overview?: any }) {
                 icon={TrendingUp}
                 color="accent"
             />
+            <StatCard
+                title="Global Rank"
+                value={globalRankValue}
+                icon={TrendingUp}
+                trend={globalRankTrend}
+                color="primary"
+            />
+            {overview?.globalRank === null && (
+                <p className="col-span-full text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-1 text-center">
+                    Take 5 exams to see your global rank
+                </p>
+            )}
         </div>
     );
 }

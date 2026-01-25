@@ -1,9 +1,10 @@
-import { db, users, userProfiles, roles, userRoles, refreshTokens, verificationTokens } from '@quiz/db';
-import { eq, sql, and } from 'drizzle-orm';
+import { db, users, userProfiles, roles, userRoles, refreshTokens, verificationTokens, passwordResetTokens } from '@quiz/db';
+import { eq, sql, and, gt } from 'drizzle-orm';
 import { PasswordService } from './password.service';
 import { TokenService } from './token.service';
 import { SecurityService } from './security.service';
 import { AuditService } from './audit.service';
+import { EmailService } from '../email/EmailService';
 import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
 
@@ -225,6 +226,82 @@ export class AuthService {
     console.log(`[VERIFICATION EMAIL] To: ${user.email}, Link: /verify-email?token=${token}`);
 
     await AuditService.log({ userId, action: 'email_verification_resend_triggered', ip });
+    return true;
+  }
+
+  static async forgotPassword(email: string, ip?: string) {
+    await AuditService.log({ action: 'auth_forgot_password_requested', metadata: { email_redacted: '***' }, ip });
+
+    // 1. Check if user exists
+    const user = await db.query.users.findFirst({
+      where: eq(users.email, email.toLowerCase().trim()),
+    });
+
+    // 2. Regardless of existence, return success (prevents enumeration)
+    if (!user) {
+      console.log(`[PASS RESET] User not found for ${email}. Returning neutral success.`);
+      return true; 
+    }
+
+    // 3. User exists: Generate secure reset token
+    const token = crypto.randomBytes(32).toString('hex');
+    const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // Increased to 60 minutes for better testing
+
+    // 4. Store token (sequential insert)
+    await db.insert(passwordResetTokens).values({
+      userId: user.id,
+      token,
+      expiresAt,
+    });
+
+    // 5. Send real email via EmailService (handles mock/resend switches)
+    // IMPORTANT: resetUrl MUST point to the frontend (port 3001), not the API (port 3000).
+    // In production (Vercel), APP_BASE_URL will be set to the real domain.
+    const baseUrl = (process.env.APP_BASE_URL || 'http://localhost:3001').replace(/\/$/, '');
+    const resetUrl = `${baseUrl}/reset-password?token=${token}`;
+    
+    console.log(`[AUTH SERVICE] Generating Reset Link for ${user.email}: ${resetUrl}`);
+    await EmailService.sendPasswordResetEmail(user.email, resetUrl);
+
+    return true;
+  }
+
+  static async validateResetToken(token: string) {
+    const validToken = await db.query.passwordResetTokens.findFirst({
+      where: and(
+        eq(passwordResetTokens.token, token),
+        gt(passwordResetTokens.expiresAt, new Date())
+      ),
+    });
+
+    return !!validToken;
+  }
+
+  static async resetPassword(token: string, newPassword: string, ip?: string) {
+    const validToken = await db.query.passwordResetTokens.findFirst({
+      where: and(
+        eq(passwordResetTokens.token, token),
+        gt(passwordResetTokens.expiresAt, new Date())
+      ),
+    });
+
+    if (!validToken) {
+      await AuditService.log({ action: 'password_reset_failed', metadata: { reason: 'invalid_or_expired_token' }, ip });
+      throw new Error('Invalid or expired password reset link');
+    }
+
+    const passwordHash = await PasswordService.hash(newPassword);
+
+    await db.update(users)
+      .set({ passwordHash })
+      .where(eq(users.id, validToken.userId));
+
+    // Invalidate token
+    await db.delete(passwordResetTokens)
+      .where(eq(passwordResetTokens.id, validToken.id));
+
+    await AuditService.log({ userId: validToken.userId, action: 'auth_password_reset_completed', ip });
+    
     return true;
   }
 }

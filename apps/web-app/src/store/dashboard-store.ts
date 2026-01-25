@@ -6,6 +6,8 @@ interface DashboardData {
         avgScore: number;
         totalExams: number;
         masteryPoints: number;
+        weeklyExamsCount: number;
+        globalRank: number | null;
     };
     recentActivity: Array<{
         id: string;
@@ -14,24 +16,24 @@ interface DashboardData {
         relativeTime: string;
         status: string;
     }>;
-    performanceTrend: number[];
+    performanceTrend: Array<{ score: number; date: string }>;
 }
 
 interface DashboardState {
     data: DashboardData | null;
     loading: boolean;
     error: string | null;
-    fetchDashboard: () => Promise<void>;
+    fetchDashboard: (range?: string) => Promise<void>;
 }
 
 export const useDashboardStore = create<DashboardState>((set) => ({
     data: null,
     loading: false,
     error: null,
-    fetchDashboard: async () => {
+    fetchDashboard: async (range = '7d') => {
         set({ loading: true, error: null });
         try {
-            const data = await apiClient.dashboard.getDashboard(); 
+            const data = await apiClient.dashboard.getDashboard(range); 
             set({ data, loading: false });
         } catch (err: any) {
             set({ error: err.message, loading: false });

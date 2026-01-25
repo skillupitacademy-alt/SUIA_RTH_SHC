@@ -13,9 +13,11 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
+import { useDashboardStore } from '@/store/dashboard-store';
+
 const NAV_ITEMS = [
     { name: 'Overview', href: '/dashboard', icon: LayoutDashboard },
-    { name: 'My Exams', href: '/dashboard/exams', icon: BookOpen },
+    { name: 'My Exams', href: '/dashboard/my-exams', icon: BookOpen },
     { name: 'Learning Path', href: '/dashboard/path', icon: TrendingUp },
     { name: 'Certifications', href: '/dashboard/certs', icon: Award },
     { name: 'Reports', href: '/dashboard/reports', icon: FileText },
@@ -24,6 +26,11 @@ const NAV_ITEMS = [
 
 export function Sidebar() {
     const pathname = usePathname();
+    const { data } = useDashboardStore();
+
+    const weeklyExams = data?.overview?.weeklyExamsCount || 0;
+    const weeklyGoal = 4;
+    const progress = Math.min((weeklyExams / weeklyGoal) * 100, 100);
 
     return (
         <aside className="hidden md:flex flex-col w-64 border-r bg-muted/10">
@@ -64,9 +71,9 @@ export function Sidebar() {
                 <div className="p-4 rounded-2xl bg-gradient-to-br from-secondary/10 to-primary/10 border border-primary/20">
                     <p className="text-sm font-bold mb-1">Weekly Goal</p>
                     <div className="h-2 w-full bg-muted rounded-full mt-2 overflow-hidden">
-                        <div className="h-full bg-secondary w-3/4" />
+                        <div className="h-full bg-secondary transition-all duration-500" style={{ width: `${progress}%` }} />
                     </div>
-                    <p className="text-[10px] mt-2 text-muted-foreground">75% complete (3/4 exams)</p>
+                    <p className="text-[10px] mt-2 text-muted-foreground">{progress}% complete ({weeklyExams}/{weeklyGoal} exams)</p>
                 </div>
             </div>
         </aside>

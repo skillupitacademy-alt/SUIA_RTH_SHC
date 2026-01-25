@@ -30,4 +30,16 @@ export class AuthClient {
   async updateProfile(profileData: any) {
     return this.client.put('/auth/profile', profileData);
   }
+
+  async forgotPassword(email: string) {
+    return this.client.post('/auth/forgot-password', { email });
+  }
+
+  async validateResetToken(token: string) {
+    return this.client.get<{ valid: boolean }>(`/auth/reset-password?token=${token}`);
+  }
+
+  async resetPassword(token: string, newPassword: string) {
+    return this.client.post('/auth/reset-password', { token, newPassword });
+  }
 }

@@ -9,7 +9,10 @@ export async function GET(req: NextRequest) {
     if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const payload = await TokenService.verifyAccessToken(token);
-    const data = await DashboardEngine.getUserDashboard(payload.userId);
+    const range = req.nextUrl.searchParams.get('range') || '7d';
+    const from = req.nextUrl.searchParams.get('from') || undefined;
+    const to = req.nextUrl.searchParams.get('to') || undefined;
+    const data = await DashboardEngine.getUserDashboard(payload.userId, range, from, to);
     
     return NextResponse.json(data);
   } catch (error: any) {
