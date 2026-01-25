@@ -1,6 +1,6 @@
 import { db, questions, examBlueprints, topics, subjects, domains } from "@quiz/db";
 import { eq, and, inArray, sql } from "drizzle-orm";
-import { v4 as uuidv4 } from "uuid";
+
 
 /**
  * Enterprise Exam Blueprint Generation Service
@@ -56,7 +56,6 @@ export class ExamBlueprintService {
     const name = `Enterprise Generated Exam - ${timestamp}`;
 
     const [blueprint] = await db.insert(examBlueprints).values({
-      id: uuidv4(),
       name: name,
       description: `Dynamically generated enterprise exam (${questionCount} Qs, ${difficultyPreference}).`,
       domains: [domainId],
