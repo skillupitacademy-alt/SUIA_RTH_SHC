@@ -14,6 +14,9 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { AdminGuard } from '../auth/AdminGuard';
+import { useAuthStore } from '@/store/auth-store';
+import { apiClient } from '@quiz/api-client';
+import { useEffect } from 'react';
 
 const ADMIN_NAV = [
     { name: 'Dashboard', href: '/', icon: BarChart3 },
@@ -25,6 +28,13 @@ const ADMIN_NAV = [
 
 export function AdminLayout({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
+    const { token } = useAuthStore();
+
+    useEffect(() => {
+        if (token) {
+            apiClient.setAccessToken(token);
+        }
+    }, [token]);
 
     return (
         <div className="flex min-h-screen bg-background text-foreground">
