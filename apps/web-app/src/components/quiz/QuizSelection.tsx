@@ -16,6 +16,7 @@ import {
     Loader2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useAuthStore } from '@/store/auth-store';
 import { apiClient } from '@quiz/api-client';
 
 // Map icons to domain IDs (fallback/static mapping for aesthetics)
@@ -29,6 +30,7 @@ const ICON_MAP: Record<string, any> = {
 
 export function QuizSelection() {
     const router = useRouter();
+    const { isAuthenticated } = useAuthStore();
     const [domains, setDomains] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [starting, setStarting] = useState(false);
@@ -36,9 +38,12 @@ export function QuizSelection() {
     const [selectedDomain, setSelectedDomain] = useState<string | null>(null);
     const [selectedSubjects, setSelectedSubjects] = useState<string[]>([]);
     const [difficulty, setDifficulty] = useState('mixed');
+    const [questionCount, setQuestionCount] = useState(10);
 
     useEffect(() => {
         const fetchDomains = async () => {
+            if (!isAuthenticated) return;
+
             try {
                 const data = await apiClient.quiz.getDomains();
                 setDomains(data);
@@ -49,7 +54,7 @@ export function QuizSelection() {
             }
         };
         fetchDomains();
-    }, []);
+    }, [isAuthenticated]);
 
     const domain = domains.find(d => d.id === selectedDomain);
 
@@ -61,21 +66,29 @@ export function QuizSelection() {
 
     const handleStartExam = async () => {
         if (!selectedDomain) return;
+        if (selectedSubjects.length === 0) {
+            alert("Please select at least one topic.");
+            return;
+        }
+
         setStarting(true);
         try {
-            // Create a blueprint/config for the exam
-            // In a real advanced app, we'd send complex config. 
-            // For now, mapping domainId is enough for the simple API we audited.
+            // Map selected subject names back to IDs
+            const topicIds = domain.subjects
+                .filter((s: any) => selectedSubjects.includes(s.name || s))
+                .map((s: any) => s.id || s);
+
             const exam = await apiClient.quiz.startExam({
-                blueprintId: selectedDomain, // Using domain ID as blueprint for now
-                subjects: selectedSubjects,
-                difficulty
+                blueprintId: selectedDomain,
+                subjects: topicIds,
+                difficulty,
+                questionCount
             });
 
             router.push(`/quiz/active-session?examId=${exam.examId}`);
-        } catch (err) {
+        } catch (err: any) {
             console.error("Failed to start exam", err);
-            alert("Failed to start exam session. Please try again.");
+            alert(err.message || "Failed to start exam session.");
             setStarting(false);
         }
     };
@@ -124,14 +137,6 @@ export function QuizSelection() {
                                 <p className="text-sm text-muted-foreground leading-relaxed">
                                     {item.description || `Master industry-standard practices and tools in ${item.name}.`}
                                 </p>
-                                <div className={cn(
-                                    "absolute top-8 right-8 transition-opacity",
-                                    selectedDomain === item.id ? "opacity-100" : "opacity-0"
-                                )}>
-                                    <div className="h-6 w-6 rounded-full bg-primary flex items-center justify-center">
-                                        <ChevronRight size={14} className="text-white" />
-                                    </div>
-                                </div>
                             </button>
                         );
                     })}
@@ -172,34 +177,51 @@ export function QuizSelection() {
                         <h2 className="text-2xl font-bold tracking-tight">Exam Configuration</h2>
                     </div>
                     <div className="grid md:grid-cols-2 gap-8 bg-muted/20 p-8 rounded-[3rem] border border-primary/5">
-                        <div className="space-y-6">
+                        <div className="space-y-8">
                             <div>
-                                <label className="text-sm font-bold uppercase tracking-widest text-muted-foreground mb-4 block">Difficulty Distribution</label>
-                                <div className="grid grid-cols-2 gap-3">
-                                    {['mixed', 'fixed'].map(opt => (
+                                <label className="text-xs font-black uppercase tracking-widest text-muted-foreground mb-4 block">Question Count</label>
+                                <div className="grid grid-cols-3 gap-3">
+                                    {[5, 10, 20].map(count => (
+                                        <button
+                                            key={count}
+                                            onClick={() => setQuestionCount(count)}
+                                            className={cn(
+                                                "p-3 rounded-2xl border-2 font-bold text-sm",
+                                                questionCount === count ? "border-primary bg-background text-primary" : "border-muted-foreground/10 bg-transparent text-muted-foreground"
+                                            )}
+                                        >
+                                            {count} Qs
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="text-xs font-black uppercase tracking-widest text-muted-foreground mb-4 block">Difficulty Preference</label>
+                                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                                    {['mixed', 'simple', 'intermediate', 'expert'].map(opt => (
                                         <button
                                             key={opt}
                                             onClick={() => setDifficulty(opt)}
                                             className={cn(
-                                                "p-4 rounded-2xl border-2 font-bold text-sm flex items-center justify-center gap-2",
+                                                "p-3 rounded-2xl border-2 font-bold text-xs flex items-center justify-center gap-1",
                                                 difficulty === opt ? "border-primary bg-background text-primary" : "border-muted-foreground/10 bg-transparent text-muted-foreground"
                                             )}
                                         >
-                                            {opt === 'mixed' ? <Sparkles size={16} /> : <Layers size={16} />}
                                             {opt.charAt(0).toUpperCase() + opt.slice(1)}
                                         </button>
                                     ))}
                                 </div>
                                 <p className="mt-4 text-xs text-muted-foreground/80 italic">
-                                    * Mixed difficulty uses our 30/30/40 engine rule.
+                                    * Mixed uses 30/30/40 engine rule. Expert is limited to expert-tier pooled questions.
                                 </p>
                             </div>
                         </div>
 
                         <div className="flex flex-col justify-end gap-6">
-                            <div className="flex items-center gap-4 text-sm font-medium text-muted-foreground">
+                            <div className="flex items-center gap-4 text-sm font-bold text-muted-foreground/60 uppercase tracking-widest">
                                 <div className="flex items-center gap-1.5"><Clock size={16} /> 45 Minutes</div>
-                                <div className="flex items-center gap-1.5"><Layers size={16} /> 20 Questions</div>
+                                <div className="flex items-center gap-1.5"><Layers size={16} /> {questionCount} Questions</div>
                             </div>
                             <button
                                 className="w-full py-5 rounded-3xl bg-primary text-primary-foreground text-lg font-black shadow-xl shadow-primary/30 flex items-center justify-center gap-3 hover:scale-[1.02] transition-transform active:scale-95 disabled:opacity-50 disabled:pointer-events-none"

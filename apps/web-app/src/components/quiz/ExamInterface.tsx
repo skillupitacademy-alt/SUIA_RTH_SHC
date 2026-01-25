@@ -38,75 +38,75 @@ export function ExamInterface() {
     } = useQuizStore();
 
     const [isLoading, setIsLoading] = useState(true);
+    const [isSaving, setIsSaving] = useState(false);
 
     const question = questions[currentQuestionIndex];
 
     const handleAnswer = async (optionIndex: number) => {
-        const questionId = questions[currentQuestionIndex].id;
-        const option = questions[currentQuestionIndex].options[optionIndex];
+        const currentQuestion = questions[currentQuestionIndex];
+        const questionId = currentQuestion.id;
+        const option = currentQuestion.options[optionIndex];
 
         // Optimistic UI update
         setAnswer(questionId, optionIndex);
 
         // Real persistence
         if (examId) {
+            setIsSaving(true);
             try {
-                // We use legitimate questionId for persistence
-                // Note: The store might be using exam_question.id or question.id. 
-                // backend expects questionId (uuid).
-                await apiClient.quiz.submitAnswer(examId, String(questionId), option);
+                // Backend expects questionId (uuid) and option text
+                await apiClient.quiz.submitAnswer(examId, questionId, option);
             } catch (err) {
                 console.error("Failed to save answer", err);
+            } finally {
+                setTimeout(() => setIsSaving(false), 500);
             }
         }
     };
 
     useEffect(() => {
         const initExam = async () => {
-            // If we have questions and examId matches, we are good (client navigation)
+            if (!examIdParam) {
+                router.push('/quiz/new');
+                return;
+            }
+
+            // Avoid re-fetch if we already have the state and ID matches
             if (questions.length > 0 && examId === examIdParam) {
                 setIsLoading(false);
                 return;
             }
 
-            if (!examIdParam) {
-                // No exam ID, redirect to new quiz
-                router.push('/quiz/new');
-                return;
-            }
-
             try {
-                // Fetch real state
+                setIsLoading(true);
                 const state = await apiClient.quiz.getQuizState(examIdParam);
 
-                // Mapper to match store interface
+                // Map Questions to store interface
                 const mappedQuestions = state.questions.map((q: any) => ({
-                    id: q.questionId, // Use the actual question UUID
-                    type: q.type === 'code_mcq' ? 'CODE_MCQ' : 'MCQ', // Normalize type
+                    id: q.questionId, // Actual question UUID
+                    type: q.type === 'code_mcq' ? 'CODE_MCQ' : 'MCQ',
                     text: q.questionText,
-                    code: q.codeSnippet, // Access code snippet if available (backend needs to return this, assuming yes or null)
+                    code: q.codeSnippet || "",
                     options: q.options,
-                    difficulty: 'Intermediate' // Default or fetch from Q
+                    difficulty: q.difficulty || 'Intermediate'
                 }));
 
                 setExamId(state.id);
                 setQuestions(mappedQuestions);
 
-                // Hydrate answers if any (backend returns userAnswer)
+                // Hydrate answers from backend
                 state.questions.forEach((q: any) => {
                     if (q.userAnswer !== null) {
-                        // We need to map answer string back to index... 
-                        // Or update store to handle string answers. 
-                        // For now assuming index logic in UI, but backend stores strings.
-                        // Ideally we find index of q.userAnswer in q.options
                         const idx = q.options.indexOf(q.userAnswer);
-                        if (idx !== -1) useQuizStore.getState().setAnswer(q.questionId, idx);
+                        if (idx !== -1) {
+                            useQuizStore.getState().setAnswer(q.questionId, idx);
+                        }
                     }
                 });
 
             } catch (err) {
                 console.error("Failed to load exam session", err);
-                router.push('/quiz/new'); // Fallback
+                router.push('/quiz/new');
             } finally {
                 setIsLoading(false);
             }
@@ -117,7 +117,7 @@ export function ExamInterface() {
 
     // Timer logic
     useEffect(() => {
-        if (isLoading || isSubmitted) return; // Stop timer if loading or submitted
+        if (isLoading || isSubmitted) return;
         const timer = setInterval(() => {
             updateTimeLeft();
         }, 1000);
@@ -130,9 +130,28 @@ export function ExamInterface() {
         return `${min}:${sec.toString().padStart(2, '0')}`;
     };
 
-    const handleFinish = () => {
-        finishQuiz();
-        router.push('/reports/active-report');
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const handleFinish = async () => {
+        if (!examId || isSubmitting) return;
+
+        // Simple validation before submission
+        if (Object.keys(answers).length < questions.length) {
+            const confirmed = window.confirm(`You have only answered ${Object.keys(answers).length} of ${questions.length} questions. Finish anyway?`);
+            if (!confirmed) return;
+        }
+
+        try {
+            setIsSubmitting(true);
+            await apiClient.quiz.submitExam(examId);
+            finishQuiz();
+            router.push(`/reports/active-report?examId=${examId}`);
+        } catch (err) {
+            console.error("Failed to submit exam", err);
+            alert("Failed to submit exam. Please try again.");
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     if (isLoading) {
@@ -183,9 +202,10 @@ export function ExamInterface() {
                     </div>
                     <button
                         onClick={handleFinish}
-                        className="hidden sm:flex items-center gap-2 px-6 py-2 rounded-2xl bg-primary text-primary-foreground font-black shadow-lg shadow-primary/20 hover:scale-105 transition-transform active:scale-95"
+                        disabled={isSubmitting}
+                        className="hidden sm:flex items-center gap-2 px-6 py-2 rounded-2xl bg-primary text-primary-foreground font-black shadow-lg shadow-primary/20 hover:scale-105 transition-transform active:scale-95 disabled:opacity-50"
                     >
-                        Submit Exam
+                        {isSubmitting ? "Submitting..." : "Submit Exam"}
                     </button>
                 </div>
             </header>
@@ -291,9 +311,10 @@ export function ExamInterface() {
                             ) : (
                                 <button
                                     onClick={handleFinish}
-                                    className="flex items-center gap-2 px-8 py-4 rounded-2xl bg-green-600 text-white font-black shadow-lg hover:bg-green-700 transition-all active:scale-95"
+                                    disabled={isSubmitting}
+                                    className="flex items-center gap-2 px-8 py-4 rounded-2xl bg-green-600 text-white font-black shadow-lg hover:bg-green-700 transition-all active:scale-95 disabled:opacity-50"
                                 >
-                                    Finish Attempt
+                                    {isSubmitting ? "Submitting..." : "Finish Attempt"}
                                     <CheckCircle2 size={20} />
                                 </button>
                             )}

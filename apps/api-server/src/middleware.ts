@@ -5,6 +5,8 @@ import { csrfProtection } from './modules/auth/csrf.middleware';
 import { corsMiddleware } from './modules/auth/cors.middleware';
 
 export async function middleware(request: NextRequest) {
+  console.log('[MIDDLEWARE] Request:', request.method, request.nextUrl.pathname);
+  
   // 1. CORS Preflight
   if (request.method === 'OPTIONS') {
     const response = new NextResponse(null, { status: 204 });

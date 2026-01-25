@@ -5,14 +5,16 @@ interface DashboardData {
     overview: {
         avgScore: number;
         totalExams: number;
+        masteryPoints: number;
     };
     recentActivity: Array<{
         id: string;
         title: string;
-        score: number;
-        date: string;
+        score: number | null;
+        relativeTime: string;
         status: string;
     }>;
+    performanceTrend: number[];
 }
 
 interface DashboardState {

@@ -9,8 +9,16 @@ export async function POST(req: NextRequest) {
 
     const { user, accessToken, refreshToken, isAdmin } = await AuthService.login(email, password);
 
+    const onboarded = !!(user.profile?.professionalStatus && user.profile?.educationLevel);
+
     const response = NextResponse.json({
-      user: { id: user.id, email: user.email },
+      user: { 
+        id: user.id, 
+        email: user.email,
+        name: user.profile?.name || 'User',
+        onboarded,
+        role: isAdmin ? 'admin' : 'user'
+      },
       accessToken,
     });
 

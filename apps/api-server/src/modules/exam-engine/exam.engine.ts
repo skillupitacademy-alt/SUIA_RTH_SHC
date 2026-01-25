@@ -7,7 +7,7 @@ export class ExamEngine {
   /**
    * Handles individual question submission within an exam.
    */
-  static async submitAnswer(examId: string, examQuestionId: string, answer: string) {
+  static async submitAnswer(examId: string, questionId: string, answer: string) {
     const exam = await db.query.exams.findFirst({
       where: eq(exams.id, examId),
     });
@@ -18,7 +18,7 @@ export class ExamEngine {
 
     const eqRecord = await db.query.examQuestions.findFirst({
       where: and(
-        eq(examQuestions.id, examQuestionId),
+        eq(examQuestions.questionId, questionId),
         eq(examQuestions.examId, examId)
       ),
       with: {
@@ -39,7 +39,7 @@ export class ExamEngine {
         userAnswer: answer,
         isCorrect,
       })
-      .where(eq(examQuestions.id, examQuestionId));
+      .where(eq(examQuestions.id, eqRecord.id));
 
     return { isCorrect };
   }

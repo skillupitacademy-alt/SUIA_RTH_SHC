@@ -4,9 +4,10 @@ import { cn } from '@/lib/utils';
 interface PerformanceBreakdownProps {
     topics: Array<{ name: string; score: number; total: number }>;
     difficulty: Array<{ level: string; accuracy: number }>;
+    growthZones: Array<{ topic: string; suggestion: string }>;
 }
 
-export function PerformanceBreakdown({ topics, difficulty }: PerformanceBreakdownProps) {
+export function PerformanceBreakdown({ topics, difficulty, growthZones }: PerformanceBreakdownProps) {
     return (
         <div className="grid lg:grid-cols-2 gap-8">
             {/* Topic Mastery */}
@@ -64,22 +65,27 @@ export function PerformanceBreakdown({ topics, difficulty }: PerformanceBreakdow
                         <h3 className="text-xl font-black tracking-tight text-secondary">Identified Growth Zones</h3>
                     </div>
                     <div className="space-y-4">
-                        <div className="flex gap-4 p-4 rounded-2xl bg-white/60">
-                            <div className="h-10 w-10 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center shrink-0">
-                                <TrendingUp size={20} />
+                        {growthZones.length > 0 ? (
+                            growthZones.map((zone, idx) => (
+                                <div key={idx} className="flex gap-4 p-4 rounded-2xl bg-white/60">
+                                    <div className="h-10 w-10 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center shrink-0">
+                                        <TrendingUp size={20} />
+                                    </div>
+                                    <p className="text-sm font-bold leading-relaxed">
+                                        {zone.suggestion}
+                                    </p>
+                                </div>
+                            ))
+                        ) : (
+                            <div className="flex gap-4 p-4 rounded-2xl bg-green-100/60 transition-colors">
+                                <div className="h-10 w-10 rounded-xl bg-green-200 text-green-700 flex items-center justify-center shrink-0">
+                                    <TrendingUp size={20} />
+                                </div>
+                                <p className="text-sm font-bold leading-relaxed text-green-800">
+                                    No immediate growth zones. You maintained excellent consistency across all topics!
+                                </p>
                             </div>
-                            <p className="text-sm font-bold leading-relaxed">
-                                Master <span className="text-orange-600">Advanced Hooks</span> to improve your frontend performance score by ~15%.
-                            </p>
-                        </div>
-                        <div className="flex gap-4 p-4 rounded-2xl bg-white/60">
-                            <div className="h-10 w-10 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center shrink-0">
-                                <AlertCircle size={20} />
-                            </div>
-                            <p className="text-sm font-bold leading-relaxed">
-                                Review <span className="text-blue-600">CSRF Patterns</span>. You missed 2 security-tier questions in this category.
-                            </p>
-                        </div>
+                        )}
                     </div>
                 </div>
             </div>

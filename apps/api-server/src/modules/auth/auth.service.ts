@@ -59,6 +59,7 @@ export class AuthService {
     const user = await db.query.users.findFirst({
       where: eq(users.email, email),
       with: {
+        profile: true,
         userRoles: {
           with: { role: true }
         }

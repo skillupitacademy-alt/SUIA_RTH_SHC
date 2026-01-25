@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
 
     const response = NextResponse.json({ 
       message: 'User created', 
-      user: { id: user.id, email: user.email, name },
+      user: { id: user.id, email: user.email, name, onboarded: false },
       accessToken
     });
 

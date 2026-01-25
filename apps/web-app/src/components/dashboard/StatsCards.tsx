@@ -58,16 +58,9 @@ export function StatsGrid({ overview }: { overview?: any }) {
             />
             <StatCard
                 title="Mastery Points"
-                value={(overview?.totalExams || 0) * 50} // Mock calculation for now
+                value={overview?.masteryPoints || 0}
                 icon={TrendingUp}
                 color="accent"
-            />
-            <StatCard
-                title="Global Rank"
-                value="#-"
-                icon={TrendingUp}
-                trend={{ value: "0", positive: false }}
-                color="primary"
             />
         </div>
     );

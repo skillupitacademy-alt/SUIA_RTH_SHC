@@ -5,13 +5,16 @@ export class SelectionEngine {
   /**
    * Selection logic: 30% Simple, 30% Intermediate, 40% Expert
    */
-  static async composeExam(userId: string, blueprintOrDomainId: string) {
-    // First, try to find as a blueprint ID
+  static async composeExam(
+    userId: string, 
+    blueprintOrDomainId: string, 
+    config?: { topics?: string[], questionCount?: number, difficulty?: string }
+  ) {
+    // 1. Resolve Blueprint
     let blueprint = await db.query.examBlueprints.findFirst({
       where: eq(examBlueprints.id, blueprintOrDomainId),
     });
 
-    // If not found, treat it as a domain ID and find a blueprint for that domain
     if (!blueprint) {
       blueprint = await db.query.examBlueprints.findFirst({
         where: sql`${examBlueprints.domains} @> ARRAY[${blueprintOrDomainId}]::uuid[]`,
@@ -20,36 +23,59 @@ export class SelectionEngine {
 
     if (!blueprint) throw new Error('Blueprint not found');
 
-    const topicIds = blueprint.topics || [];
-    if (topicIds.length === 0) return null; // Or handle as "all topics" depending on requirements
-    const total = blueprint.totalQuestions;
+    // 2. Determine Configuration
+    const topicIds = config?.topics && config.topics.length > 0 ? config.topics : (blueprint.topics || []);
+    const total = config?.questionCount || blueprint.totalQuestions || 10;
+    const difficultyPref = config?.difficulty || 'mixed';
 
-    const targets = {
-      simple: Math.floor(total * 0.3),
-      intermediate: Math.floor(total * 0.3),
-      expert: total - Math.floor(total * 0.3) - Math.floor(total * 0.3),
-    };
+    if (topicIds.length === 0) throw new Error('No topics available for this exam');
 
+    // 3. Select Questions
     const selectedQuestions: any[] = [];
+    
+    if (difficultyPref === 'mixed') {
+      const targets = {
+        simple: Math.floor(total * 0.3),
+        intermediate: Math.floor(total * 0.3),
+        expert: total - Math.floor(total * 0.3) - Math.floor(total * 0.3),
+      };
 
-    // Fetch pooled questions for each difficulty
-    for (const [diff, count] of Object.entries(targets)) {
+      for (const [diff, count] of Object.entries(targets)) {
+        if (count <= 0) continue;
+        const pooled = await db.query.questions.findMany({
+          where: and(
+            inArray(questions.topicId, topicIds),
+            eq(questions.difficulty, diff as any)
+          ),
+          limit: count,
+          orderBy: sql`RANDOM()`,
+        });
+        selectedQuestions.push(...pooled);
+      }
+    } else {
+      // Fixed difficulty selection
       const pooled = await db.query.questions.findMany({
         where: and(
           inArray(questions.topicId, topicIds),
-          eq(questions.difficulty, diff as any)
+          eq(questions.difficulty, difficultyPref as any)
         ),
-        limit: count,
-        orderBy: sql`RANDOM()`, // Random selection
+        limit: total,
+        orderBy: sql`RANDOM()`,
       });
       selectedQuestions.push(...pooled);
     }
 
-    // Create Exam instance
+    // Handle case where not enough questions were found
+    if (selectedQuestions.length === 0) {
+      throw new Error('Not enough questions found for the selected configuration');
+    }
+
+    // 4. Create Exam instance
     const [exam] = await db.insert(exams).values({
       userId,
       blueprintId: blueprint.id,
       status: 'started',
+      totalScore: 0,
     }).returning();
 
     const examQuestionsData = selectedQuestions.map((q, index) => ({

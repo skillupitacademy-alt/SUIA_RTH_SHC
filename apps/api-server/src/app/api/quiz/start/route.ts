@@ -13,9 +13,10 @@ export async function POST(req: NextRequest) {
     if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const payload = await TokenService.verifyAccessToken(token);
-    const { blueprintId } = await req.json();
+    const { blueprintId, subjects, questionCount, difficulty } = await req.json();
 
-    const exam = await QuizEngine.startQuiz(payload.userId, blueprintId);
+    const config = { topics: subjects, questionCount, difficulty };
+    const exam = await QuizEngine.startQuiz(payload.userId, blueprintId, config);
     return NextResponse.json(exam);
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });

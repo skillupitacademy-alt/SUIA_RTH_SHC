@@ -1,11 +1,14 @@
 'use client';
 
-export function ProgressChart() {
-    const data = [40, 65, 55, 80, 75, 90, 85];
-    const max = Math.max(...data);
+import { cn } from '@/lib/utils';
+
+export function ProgressChart({ trendData = [] }: { trendData?: number[] }) {
+    // If no data, show a flat base line
+    const data = trendData.length > 0 ? trendData : [0, 0];
+    const max = Math.max(...data, 100); // Always baseline to 100%
     const width = 600;
     const height = 200;
-    const step = width / (data.length - 1);
+    const step = width / (data.length - 1 || 1);
 
     const points = data.map((d, i) => `${i * step},${height - (d / max) * height}`).join(' ');
 
@@ -14,7 +17,7 @@ export function ProgressChart() {
             <div className="flex items-center justify-between mb-8">
                 <div>
                     <h3 className="text-lg font-bold">Performance Trends</h3>
-                    <p className="text-sm text-muted-foreground">Your success rate over the last 7 days</p>
+                    <p className="text-sm text-muted-foreground">Your success rate over the last 7 completed exams</p>
                 </div>
                 <select className="bg-muted/50 border-none rounded-lg px-3 py-1 text-sm font-medium focus:ring-0">
                     <option>Last 7 Days</option>
@@ -74,8 +77,10 @@ export function ProgressChart() {
             </div>
 
             <div className="flex justify-between mt-6 px-1">
-                {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => (
-                    <span key={day} className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">{day}</span>
+                {data.map((_, i) => (
+                    <span key={i} className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                        {data.length > 1 ? `Exam ${i + 1}` : 'N/A'}
+                    </span>
                 ))}
             </div>
         </div>

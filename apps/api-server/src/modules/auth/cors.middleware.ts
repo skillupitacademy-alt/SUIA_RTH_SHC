@@ -1,17 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-
-const ALLOWED_ORIGINS = [
-  'http://localhost:3000',
-  'http://localhost:3001',
-  'http://localhost:3002',
-  'https://quiz.realtutorialhub.com',
-  'https://admin.realtutorialhub.com',
-];
+import { config } from '@/config';
 
 export function corsMiddleware(request: NextRequest, response: NextResponse) {
   const origin = request.headers.get('origin');
   
-  if (origin && ALLOWED_ORIGINS.includes(origin)) {
+  if (origin && config.cors.allowedOrigins.includes(origin)) {
     response.headers.set('Access-Control-Allow-Origin', origin);
   }
 

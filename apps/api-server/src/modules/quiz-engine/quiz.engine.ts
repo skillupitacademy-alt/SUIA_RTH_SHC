@@ -6,9 +6,12 @@ export class QuizEngine {
   /**
    * Starts a new quiz session by creating an exam from a blueprint.
    */
-  static async startQuiz(userId: string, blueprintId: string) {
-    // SelectionEngine already handles the 30/30/40 logic and instantiation
-    const exam = await SelectionEngine.composeExam(userId, blueprintId);
+  static async startQuiz(
+    userId: string, 
+    blueprintId: string, 
+    config?: { topics?: string[], questionCount?: number, difficulty?: string }
+  ) {
+    const exam = await SelectionEngine.composeExam(userId, blueprintId, config);
     if (!exam) throw new Error('Failed to compose quiz');
     return exam;
   }

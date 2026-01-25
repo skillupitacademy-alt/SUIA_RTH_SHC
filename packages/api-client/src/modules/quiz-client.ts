@@ -11,7 +11,7 @@ export class QuizClient {
     return this.client.get<any[]>('/domains');
   }
 
-  async startExam(config: { domainId?: string; blueprintId?: string; subjects?: string[]; difficulty?: string }) {
+  async startExam(config: { domainId?: string; blueprintId?: string; subjects?: string[]; difficulty?: string; questionCount?: number }) {
     return this.client.post<{ examId: string; questions: any[] }>('/quiz/start', config);
   }
 

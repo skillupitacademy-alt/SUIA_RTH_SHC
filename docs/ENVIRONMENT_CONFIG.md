@@ -63,5 +63,17 @@ pnpm dev
 
 Visit `http://localhost:3001` - it will automatically use `http://localhost:3000` for API calls!
 
-### Production
-Deploy to Vercel - it will automatically use `https://api.realtutorialhub.com`!
+## Local Testing Ports
+- **API Server**: Port 3000 (`apps/api-server`)
+- **Web App**: Port 3001 (override with `pnpm dev -- -p 3001`)
+- **Admin App**: Port 3002 (override with `pnpm dev -- -p 3002`)
+
+## ⚠️ Git Push Policy
+**DO NOT push to GitHub automatically.** 
+- Local changes should be committed locally but **NOT pushed**.
+- Reason: Vercel deployment limits (100/day).
+- Only push when explicitly requested by user.
+
+## Test Credentials
+- Email: `user@test.com`
+- Password: `password123`

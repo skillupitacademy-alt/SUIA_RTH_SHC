@@ -8,8 +8,8 @@ import { ExamEngine } from '@/modules/exam-engine/exam.engine';
  */
 export async function POST(req: NextRequest) {
   try {
-    const { examId, examQuestionId, answer } = await req.json();
-    const result = await ExamEngine.submitAnswer(examId, examQuestionId, answer);
+    const { examId, questionId, answer } = await req.json();
+    const result = await ExamEngine.submitAnswer(examId, questionId, answer);
     return NextResponse.json(result);
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 400 });

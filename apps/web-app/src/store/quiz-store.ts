@@ -2,19 +2,19 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
 export interface Question {
-  id: number;
+  id: string;
   type: 'MCQ' | 'CODE_MCQ';
   text: string;
   code?: string;
   options: string[];
-  difficulty: 'Simple' | 'Intermediate' | 'Expert';
+  difficulty: string;
 }
 
 interface QuizState {
   isActive: boolean;
   questions: Question[];
-  answers: Record<number, number>;
-  markedForReview: number[];
+  answers: Record<string, number>;
+  markedForReview: string[];
   timeLeft: number;
   currentQuestionIndex: number;
   config: {
@@ -29,8 +29,8 @@ interface QuizState {
   startQuiz: (questions: Question[], config: any, duration: number) => void;
   setExamId: (id: string) => void;
   setQuestions: (questions: Question[]) => void;
-  setAnswer: (questionId: number, optionIndex: number) => void;
-  toggleReview: (questionId: number) => void;
+  setAnswer: (questionId: string, optionIndex: number) => void;
+  toggleReview: (questionId: string) => void;
   updateTimer: () => void;
   updateTimeLeft: () => void; // Alias for updateTimer
   setTimeRemaining: (time: number) => void;

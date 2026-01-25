@@ -6,6 +6,7 @@ import { Sidebar } from "@/components/dashboard/Sidebar";
 import { ArrowRight, Play, BookOpen } from "lucide-react";
 import Link from "next/link";
 import { AuthGuard } from "@/components/auth/AuthGuard";
+import { cn } from "@/lib/utils";
 
 import { useAuthStore } from "@/store/auth-store";
 import { useDashboardStore } from "@/store/dashboard-store";
@@ -44,7 +45,7 @@ export default function DashboardPage() {
 
                     <div className="grid lg:grid-cols-3 gap-8 mt-10">
                         <div className="lg:col-span-2">
-                            <ProgressChart />
+                            <ProgressChart trendData={data?.performanceTrend} />
                         </div>
                         <div className="space-y-6">
                             <h3 className="text-xl font-bold px-1">Recent Activity</h3>
@@ -58,13 +59,23 @@ export default function DashboardPage() {
                                         <div key={activity.id} className="p-5 rounded-3xl border bg-muted/20 hover:bg-muted/40 transition-colors group">
                                             <div className="flex items-center justify-between">
                                                 <div>
-                                                    <p className="text-xs font-bold text-primary uppercase mb-1">{activity.status}</p>
+                                                    <div className="flex items-center gap-2 mb-1">
+                                                        <p className={cn(
+                                                            "text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full",
+                                                            activity.status === 'completed' ? "bg-green-100 text-green-700" : "bg-primary/20 text-primary"
+                                                        )}>
+                                                            {activity.status}
+                                                        </p>
+                                                        <span className="text-[10px] font-bold text-muted-foreground uppercase">{activity.relativeTime}</span>
+                                                    </div>
                                                     <h4 className="font-bold truncate max-w-[150px]">{activity.title}</h4>
-                                                    <p className="text-sm text-muted-foreground mt-1 flex items-center gap-2">
-                                                        <BookOpen size={14} /> Score: {activity.score}%
-                                                    </p>
+                                                    {activity.score !== null && (
+                                                        <p className="text-sm text-muted-foreground mt-1 flex items-center gap-2">
+                                                            <BookOpen size={14} /> Score: {activity.score}%
+                                                        </p>
+                                                    )}
                                                 </div>
-                                                <Link href={`/reports/${activity.id}`} className="h-10 w-10 rounded-full bg-background border flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-all">
+                                                <Link href={activity.status === 'completed' ? `/reports/active-report?examId=${activity.id}` : `/quiz/session/${activity.id}`} className="h-10 w-10 rounded-full bg-background border flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-all">
                                                     <ArrowRight size={18} />
                                                 </Link>
                                             </div>

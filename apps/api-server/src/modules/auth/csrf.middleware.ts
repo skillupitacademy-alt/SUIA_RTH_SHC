@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto'; // Keep for compatibility per user request
+import { config } from '@/config';
 
 export async function csrfProtection(request: NextRequest) {
   const method = request.method;
@@ -10,25 +11,49 @@ export async function csrfProtection(request: NextRequest) {
   const origin = request.headers.get('origin');
   const host = request.headers.get('host');
   
-  // Allow all localhost origins for local development
-  const isLocalhost = origin?.includes('localhost') || origin?.includes('127.0.0.1');
-  const allowedOrigins = [
-    'https://quiz.realtutorialhub.com',
-    'https://admin.realtutorialhub.com'
-  ];
-  const isAllowed = isLocalhost || allowedOrigins.includes(origin || '') || (origin && origin.includes(host || ''));
+  // Debug logging (only in development)
+  if (config.debug.logCsrf) {
+    console.log('[CSRF] Origin:', origin);
+    console.log('[CSRF] Host:', host);
+  }
+  
+  // Check if origin is allowed
+  const isLocalhost = config.csrf.allowAllLocalhost && 
+    (origin?.includes('localhost') || origin?.includes('127.0.0.1'));
+  const isAllowed = isLocalhost || 
+    config.csrf.allowedOrigins.includes(origin || '') || 
+    (origin && origin.includes(host || ''));
+
+  if (config.debug.logCsrf) {
+    console.log('[CSRF] isLocalhost:', isLocalhost);
+    console.log('[CSRF] isAllowed:', isAllowed);
+  }
 
   if (origin && !isAllowed) {
+    if (config.debug.logCsrf) {
+      console.log('[CSRF] REJECTED - Origin mismatch');
+    }
     return NextResponse.json({ error: 'Origin mismatch' }, { status: 403 });
   }
 
   const cookieToken = request.cookies.get('csrfToken')?.value;
   const headerToken = request.headers.get('x-csrf-token');
 
+  if (config.debug.logCsrf) {
+    console.log('[CSRF] Cookie token:', cookieToken ? 'present' : 'missing');
+    console.log('[CSRF] Header token:', headerToken ? 'present' : 'missing');
+  }
+
   if (!cookieToken || !headerToken || cookieToken !== headerToken) {
+    if (config.debug.logCsrf) {
+      console.log('[CSRF] REJECTED - Token validation failed');
+    }
     return NextResponse.json({ error: 'CSRF token validation failed' }, { status: 403 });
   }
 
+  if (config.debug.logCsrf) {
+    console.log('[CSRF] PASSED');
+  }
   return null;
 }
 
@@ -38,14 +63,9 @@ export function setCsrfToken(response: NextResponse) {
   globalThis.crypto.getRandomValues(array);
   const token = Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
 
-  const isProd = process.env.NODE_ENV === 'production';
-
   response.cookies.set('csrfToken', token, {
-    httpOnly: false,
-    secure: isProd,
-    sameSite: isProd ? 'lax' : 'strict',
+    ...config.csrf.cookieSettings,
     path: '/',
-    domain: isProd ? '.realtutorialhub.com' : undefined,
   });
   return token;
 }

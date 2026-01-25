@@ -37,15 +37,23 @@ export function AuthGuard({ children, requireAdmin = false }: AuthGuardProps) {
 
                 // Admin check
                 if (requireAdmin && user?.role !== 'admin' && user?.role !== 'super_admin') {
-                    router.push('/dashboard'); // Redirect unauthorized admin access back to dashboard
+                    router.push('/dashboard');
+                    return;
+                }
+
+                // Onboarding check
+                if (user && !user.onboarded && pathname !== '/onboarding') {
+                    router.push('/onboarding');
+                    return;
+                }
+
+                if (user && user.onboarded && pathname === '/onboarding') {
+                    router.push('/dashboard');
                     return;
                 }
 
             } catch (err) {
-                // If checking fails, redirect to login
-                // Don't redirect if we are already on public pages (but AuthGuard shouldn't be used there)
                 if (pathname !== '/login' && pathname !== '/signup') {
-                    // logout(); // Clear any stale state
                     router.push(`/login?redirect=${encodeURIComponent(pathname)}`);
                 }
             } finally {
