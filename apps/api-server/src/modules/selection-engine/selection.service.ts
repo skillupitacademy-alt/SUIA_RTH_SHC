@@ -1,14 +1,22 @@
 import { db, questions, examBlueprints, exams, examQuestions } from '@quiz/db';
-import { eq, inArray, sql, and } from 'drizzle-orm';
+import { eq, inArray, sql, and, arrayContains } from 'drizzle-orm';
 
 export class SelectionEngine {
   /**
    * Selection logic: 30% Simple, 30% Intermediate, 40% Expert
    */
-  static async composeExam(userId: string, blueprintId: string) {
-    const blueprint = await db.query.examBlueprints.findFirst({
-      where: eq(examBlueprints.id, blueprintId),
+  static async composeExam(userId: string, blueprintOrDomainId: string) {
+    // First, try to find as a blueprint ID
+    let blueprint = await db.query.examBlueprints.findFirst({
+      where: eq(examBlueprints.id, blueprintOrDomainId),
     });
+
+    // If not found, treat it as a domain ID and find a blueprint for that domain
+    if (!blueprint) {
+      blueprint = await db.query.examBlueprints.findFirst({
+        where: sql`${examBlueprints.domains} @> ARRAY[${blueprintOrDomainId}]::uuid[]`,
+      });
+    }
 
     if (!blueprint) throw new Error('Blueprint not found');
 
@@ -38,21 +46,20 @@ export class SelectionEngine {
     }
 
     // Create Exam instance
-    return await db.transaction(async (tx) => {
-      const [exam] = await tx.insert(exams).values({
-        userId,
-        blueprintId: blueprint.id,
-        status: 'started',
-      }).returning();
+    const [exam] = await db.insert(exams).values({
+      userId,
+      blueprintId: blueprint.id,
+      status: 'started',
+    }).returning();
 
-      const examQuestionsData = selectedQuestions.map((q, index) => ({
-        examId: exam.id,
-        questionId: q.id,
-        order: index + 1,
-      }));
+    const examQuestionsData = selectedQuestions.map((q, index) => ({
+      examId: exam.id,
+      questionId: q.id,
+      order: index + 1,
+    }));
 
-      await tx.insert(examQuestions).values(examQuestionsData);
-      return exam;
-    });
+    await db.insert(examQuestions).values(examQuestionsData);
+    
+    return { examId: exam.id, status: exam.status };
   }
 }
