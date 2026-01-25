@@ -18,4 +18,8 @@ export class AdminClient {
   async getMetrics() {
     return this.client.get<any>('/admin/metrics');
   }
+
+  async login(email: string, password: string) {
+    return this.client.post<{ user: any; accessToken: string }>('/admin/auth/login', { email, password });
+  }
 }

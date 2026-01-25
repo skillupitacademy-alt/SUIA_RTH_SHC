@@ -23,10 +23,12 @@ export default function AdminLoginPage() {
         setIsLoading(true);
 
         try {
-            const { user, accessToken } = await apiClient.auth.login(formData.email, formData.password);
+            // STRICT BOUNDARY: Use Admin Client (hits /api/admin/auth/login)
+            const { user, accessToken } = await apiClient.admin.login(formData.email, formData.password);
 
+            // Redundant check (API should handle this), but safe for UI
             if (!user.isAdmin) {
-                throw new Error("Access Denied: Admin privileges required.");
+                throw new Error("Access Denied: Governance Privileges Required.");
             }
 
             login(user, accessToken);
@@ -61,7 +63,7 @@ export default function AdminLoginPage() {
                         <input
                             type="email"
                             required
-                            className="w-full pl-12 pr-4 py-3 rounded-xl border bg-muted/30 focus:bg-background focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all font-medium"
+                            className="w-full pl-12 pr-4 py-3 rounded-xl border bg-muted/30 text-foreground focus:bg-background focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all font-medium"
                             placeholder="admin@quizplatform.com"
                             value={formData.email}
                             onChange={(e) => setFormData({ ...formData, email: e.target.value })}
@@ -78,7 +80,7 @@ export default function AdminLoginPage() {
                         <input
                             type="password"
                             required
-                            className="w-full pl-12 pr-4 py-3 rounded-xl border bg-muted/30 focus:bg-background focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all font-medium"
+                            className="w-full pl-12 pr-4 py-3 rounded-xl border bg-muted/30 text-foreground focus:bg-background focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all font-medium"
                             placeholder="••••••••••••"
                             value={formData.password}
                             onChange={(e) => setFormData({ ...formData, password: e.target.value })}
