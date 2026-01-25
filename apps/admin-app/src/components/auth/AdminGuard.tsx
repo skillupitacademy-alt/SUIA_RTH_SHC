@@ -42,6 +42,12 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
 
     }, [isAuthenticated, user, initialized, router, logout, token]);
 
+    // Synchronously ensure token is set before rendering children
+    // This allows child components (AdminMetricsGrid) to use apiClient immediately in their effects
+    if (token) {
+        apiClient.setAccessToken(token);
+    }
+
     if (!initialized || !isAuthenticated || !user?.isAdmin) {
         return (
             <div className="h-screen w-screen flex items-center justify-center bg-background">

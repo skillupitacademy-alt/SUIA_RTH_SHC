@@ -17,7 +17,8 @@ export async function POST(req: NextRequest) {
         email: user.email,
         name: user.profile?.name || 'User',
         onboarded,
-        role: isAdmin ? 'admin' : 'user'
+        role: isAdmin ? 'admin' : 'user',
+        isAdmin
       },
       accessToken,
     });

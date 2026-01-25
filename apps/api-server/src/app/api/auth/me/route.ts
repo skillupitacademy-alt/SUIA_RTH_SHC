@@ -24,13 +24,17 @@ export async function GET(req: NextRequest) {
 
     const onboarded = !!(user.profile?.professionalStatus && user.profile?.educationLevel);
 
+    const role = user.userRoles[0]?.role?.name?.toLowerCase() || 'user';
+    const isAdmin = role === 'admin' || role === 'super_admin';
+
     return NextResponse.json({ 
       user: { 
         id: user.id, 
         email: user.email,
         name: user.profile?.name || 'User',
         onboarded,
-        role: user.userRoles[0]?.role?.name?.toLowerCase() || 'user'
+        role,
+        isAdmin
       } 
     });
   } catch (error) {
