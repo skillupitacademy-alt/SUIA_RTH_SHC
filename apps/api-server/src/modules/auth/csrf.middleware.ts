@@ -10,8 +10,13 @@ export async function csrfProtection(request: NextRequest) {
   const origin = request.headers.get('origin');
   const host = request.headers.get('host');
   
-  const allowedOrigins = ['http://localhost:3000', 'https://quiz.realtutorialhub.com'];
-  const isAllowed = allowedOrigins.includes(origin || '') || (origin && origin.includes(host || ''));
+  // Allow all localhost origins for local development
+  const isLocalhost = origin?.includes('localhost') || origin?.includes('127.0.0.1');
+  const allowedOrigins = [
+    'https://quiz.realtutorialhub.com',
+    'https://admin.realtutorialhub.com'
+  ];
+  const isAllowed = isLocalhost || allowedOrigins.includes(origin || '') || (origin && origin.includes(host || ''));
 
   if (origin && !isAllowed) {
     return NextResponse.json({ error: 'Origin mismatch' }, { status: 403 });
