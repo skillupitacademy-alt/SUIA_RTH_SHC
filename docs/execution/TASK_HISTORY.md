@@ -10,36 +10,6 @@
 | 2026-01-25 | Exam Session Implementation | COMPLETED | Implemented real-time answer persistence and state hydration. Aligned with `docs/pages/exam-session.md`. |
 | 2026-01-25 | Reports Page Implementation | COMPLETED | Detailed Question Audit and Dimension-based analytics implemented. Aligned with `docs/pages/reports.md`. |
 | 2026-01-25 | Onboarding Implementation | COMPLETED | Defined contract and enforced redirection logic in AuthGuard. Aligned with `docs/pages/onboarding.md`. |
-
----
-## 2026-01-25 — Compliance Alignment Project (Core Pages)
-
-**Objective**  
-Align all core Quiz Platform pages with `.agent/AGENT_CONSTITUTION.md` and enforce contract-first implementation using page-level specifications under `docs/pages/`.
-
-**Pages Covered**
-- Dashboard
-- Settings
-- Start Exam
-- Exam Session
-- Reports
-
-**Key Outcomes**
-- Authentication UI corrected across all pages (Login/Signup hidden when authenticated, Logout exposed).
-- Dashboard metrics and charts now render real, server-backed data only.
-- Dynamic exam configuration enabled (topics, question count, difficulty rules).
-- Real-time answer persistence and active session recovery implemented.
-- Dimension-based analytics and question-level audit added to Reports.
-
-**Verification**
-- All page contracts in `docs/pages/` marked as verified.
-- No SQL or migration files modified.
-- No unauthorized GitHub push performed.
-- Execution logging followed via CURRENT_TASK_LOG.md.
-
-**Result**: ✅ SUCCESS
----
-
 | 2026-01-25 | Dashboard Activity & Trends Correction | COMPLETED | Corrected recent activity ordering, limiting (4), and implemented backend-authoritative relative time. |
 | 2026-01-25 | Quiz Selection Auth Fix | COMPLETED | Fixed 'Authentication required' error by wrapping the page in AuthGuard and syncing API calls with authentication state. |
 | 2026-01-25 | Report Page Auth Fix | COMPLETED | Fixed 'Authentication required' error in ReportPage by wrapping it in AuthGuard and syncing API calls with authentication state. |
@@ -58,3 +28,6 @@ Align all core Quiz Platform pages with `.agent/AGENT_CONSTITUTION.md` and enfor
 | 2026-01-25 | UI/UX Typography Refinement | COMPLETED | Reduced typography scale by 15% and increased layout density for a premium feel. |
 | 2026-01-25 | Quiz Selection Flow Fix | COMPLETED | Resolved subject fetch issues to restore Step 2 during exam configuration. |
 | 2026-01-25 | Selection Engine Refinement | COMPLETED | Fixed Subject-to-Topic mapping and established strict difficulty validation. |
+| 2026-01-26 | Database Seeding Implementation | COMPLETED | Created `populate-exam-blueprints.sql` and `execute-seed.ts` to populate exam blueprints with strict difficulty distribution. |
+| 2026-01-26 | API Client CORS Fix | COMPLETED | Fixed CORS error by ensuring `packages/api-client` appends `/api` to localhost URLs, enabling proper middleware processing. |
+| 2026-01-26 | Documentation Review | COMPLETED | Reviewed and validated 46+ documentation files against `AGENT_CONSTITUTION.md` to ensure governance compliance. |
