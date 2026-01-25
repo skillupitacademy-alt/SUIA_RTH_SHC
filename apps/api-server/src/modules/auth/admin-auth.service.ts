@@ -52,7 +52,6 @@ export class AdminAuthService {
       email: user.email,
       roles: roleNames,
       isAdmin: true, // Explicit
-      scope: 'admin_portal' // Extra claim for boundary
     });
 
     const refreshToken = await TokenService.generateRefreshToken(user.id, true);
