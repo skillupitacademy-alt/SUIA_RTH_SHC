@@ -37,7 +37,9 @@ export async function middleware(request: NextRequest) {
 
   // 4. Auth Protection (Exclude public routes)
   // isAuthRoute already defined above
-  const isPublicRoute = isAuthRoute || request.nextUrl.pathname === '/api/status' || request.nextUrl.pathname === '/api/migrate';
+  const isPublicRoute = isAuthRoute || 
+    request.nextUrl.pathname === '/api/status' || 
+    request.nextUrl.pathname === '/api/migrate';
 
   if (!isPublicRoute) {
     const authHeader = request.headers.get('authorization');

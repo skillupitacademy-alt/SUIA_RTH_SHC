@@ -25,7 +25,13 @@ export function Footer() {
                         .
                     </p>
                 </div>
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-6">
+                    <a
+                        href="http://localhost:3002" // In production this would be admin.domain.com
+                        className="text-xs font-bold text-muted-foreground/50 hover:text-primary transition-colors flex items-center gap-1.5 uppercase tracking-widest"
+                    >
+                        Governance
+                    </a>
                     <span className="text-sm text-muted-foreground">© 2026 Quiz Platform</span>
                 </div>
             </div>

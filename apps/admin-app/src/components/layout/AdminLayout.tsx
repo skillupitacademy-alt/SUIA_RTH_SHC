@@ -31,6 +31,7 @@ const ADMIN_NAV = [
 export function AdminLayout({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
     const { token } = useAuthStore();
+    const { showWarning, confirmLogout, cancelNavigation } = useStrictNavigation();
 
     useEffect(() => {
         if (token) {
@@ -74,7 +75,6 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
         );
     }
 
-    const { showWarning, confirmLogout, cancelNavigation } = useStrictNavigation();
 
     return (
         <AdminGuard>
