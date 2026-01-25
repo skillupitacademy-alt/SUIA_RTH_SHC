@@ -9,8 +9,9 @@ import { eq, and, inArray, sql } from "drizzle-orm";
 
 interface BlueprintConfiguration {
   domainId: string;
-  subjectId?: string;
-  topicId?: string;
+
+  subjectIds?: string[];
+  topicIds?: string[];
   questionCount: number;
   difficultyPreference: 'mixed' | 'simple' | 'intermediate' | 'expert';
 }
@@ -27,18 +28,18 @@ export class ExamBlueprintService {
    * Performs resolution, fetching, randomization, and persistence.
    */
   async generateBlueprint(config: BlueprintConfiguration): Promise<string> {
-    const { domainId, subjectId, topicId, questionCount, difficultyPreference } = config;
+    const { domainId, subjectIds, topicIds, questionCount, difficultyPreference } = config;
 
-    console.log(`[BlueprintGen] Starting for Domain=${domainId}, S=${subjectId}, T=${topicId}, N=${questionCount}, Diff=${difficultyPreference}`);
+    console.log(`[BlueprintGen] Starting for Domain=${domainId}, Ss=${subjectIds?.length}, Ts=${topicIds?.length}, N=${questionCount}, Diff=${difficultyPreference}`);
 
     // 1. Calculate Distribution based on Preference
     const distribution = this.calculateDistribution(questionCount, difficultyPreference);
     console.log(`[BlueprintGen] Distribution: ${JSON.stringify(distribution)}`);
 
     // 2. Fetch Eligible Questions by Bucket
-    const simpleQuestions = await this.fetchQuestions(distribution.simple, 'simple', domainId, subjectId, topicId);
-    const intermediateQuestions = await this.fetchQuestions(distribution.intermediate, 'intermediate', domainId, subjectId, topicId);
-    const expertQuestions = await this.fetchQuestions(distribution.expert, 'expert', domainId, subjectId, topicId);
+    const simpleQuestions = await this.fetchQuestions(distribution.simple, 'simple', domainId, subjectIds, topicIds);
+    const intermediateQuestions = await this.fetchQuestions(distribution.intermediate, 'intermediate', domainId, subjectIds, topicIds);
+    const expertQuestions = await this.fetchQuestions(distribution.expert, 'expert', domainId, subjectIds, topicIds);
 
     // 3. Validate Pool Sufficiency (Strict Mode)
     if (simpleQuestions.length < distribution.simple) {
@@ -59,8 +60,9 @@ export class ExamBlueprintService {
       name: name,
       description: `Dynamically generated enterprise exam (${questionCount} Qs, ${difficultyPreference}).`,
       domains: [domainId],
-      subjects: subjectId ? [subjectId] : [], 
-      topics: topicId ? [topicId] : [],
+
+      subjects: subjectIds || [], 
+      topics: topicIds || [],
       difficultyDistribution: distribution,
       totalQuestions: questionCount,
     }).returning();
@@ -98,8 +100,9 @@ export class ExamBlueprintService {
     count: number, 
     difficulty: 'simple' | 'intermediate' | 'expert',
     domainId: string,
-    subjectId?: string,
-    topicId?: string
+
+    subjectIds?: string[],
+    topicIds?: string[]
   ) {
     if (count === 0) return [];
 
@@ -110,12 +113,12 @@ export class ExamBlueprintService {
     ];
 
     // Hierarchy Filters
-    if (topicId) {
-      conditions.push(eq(questions.topicId, topicId));
-    } else if (subjectId) {
+    if (topicIds && topicIds.length > 0) {
+      conditions.push(inArray(questions.topicId, topicIds));
+    } else if (subjectIds && subjectIds.length > 0) {
       const subQuery = db.select({ id: topics.id })
                          .from(topics)
-                         .where(eq(topics.subjectId, subjectId));
+                         .where(inArray(topics.subjectId, subjectIds));
       conditions.push(inArray(questions.topicId, subQuery));
     } else {
       const subjectsSubQuery = db.select({ id: subjects.id })
