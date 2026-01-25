@@ -13,6 +13,7 @@ The extraction logic requires the following input configuration:
 *   `domainId` (Required): The root domain for the exam (e.g., "Web Development").
 *   `subjectId` (Optional): A specific subject to refine scope (e.g., "Frontend").
 *   `topicId` (Optional): A specific topic for deep-dives (e.g., "React Hooks").
+*   `difficultyPreference` (Required): 'mixed' | 'simple' | 'intermediate' | 'expert'.
 *   `questionCount`: Total number of questions required (e.g., 20, 50, 100).
     *   *Constraint*: Must be sufficient to satisfy difficulty distribution.
 
@@ -33,20 +34,22 @@ A question is eligible for selection ONLY if:
 2.  It belongs to the resolved Target Scope (Topic/Subject/Domain).
 3.  It matches the required difficulty bucket.
 
-## 5. Mixed Difficulty Distribution (30/30/40)
-The service MUST enforce the following distribution for the `questionCount`:
+## 5. Difficulty Distribution
+The service determines distribution based on `difficultyPreference`:
 
+### Option A: Mixed (Enterprise Standard)
+Enforces strict 30/30/40 rule:
 | Difficulty | Percentage | Logic |
 | :--- | :--- | :--- |
 | **Simple** | 30% | `floor(total * 0.30)` |
 | **Intermediate** | 30% | `floor(total * 0.30)` |
 | **Expert** | 40% | `total - (simple_count + intermediate_count)` (Remainder Safe) |
 
-**Example (N=22)**:
-*   Simple: `floor(6.6)` = 6
-*   Intermediate: `floor(6.6)` = 6
-*   Expert: `22 - 12` = 10
-*   **Total**: 22
+### Option B: Specific Difficulty
+Enforces 100% allocation to the selected tier:
+*   **Simple**: 100% Simple questions.
+*   **Intermediate**: 100% Intermediate questions.
+*   **Expert**: 100% Expert questions.
 
 ## 6. Selection Rules
 1.  **No Duplicates**: A question ID cannot appear twice in the same blueprint (handled by set/unique selection).
