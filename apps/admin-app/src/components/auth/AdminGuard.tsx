@@ -3,16 +3,37 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/auth-store';
+import { apiClient } from '@quiz/api-client';
 
 export function AdminGuard({ children }: { children: React.ReactNode }) {
     const { user, isAuthenticated, initialized } = useAuthStore();
     const router = useRouter();
 
+    const { logout } = useAuthStore();
+
     useEffect(() => {
-        if (initialized && (!isAuthenticated || !user?.isAdmin)) {
+        if (!initialized) return;
+
+        if (!isAuthenticated || !user?.isAdmin) {
             router.push('/login');
+            return;
         }
-    }, [isAuthenticated, user, initialized, router]);
+
+        // Hardening: Revalidate session state with server
+        const revalidate = async () => {
+            try {
+                const { user: validatedUser } = await apiClient.auth.getSession();
+                if (!validatedUser.isAdmin) throw new Error("Revoked");
+            } catch (err) {
+                logout();
+                router.push('/login');
+            }
+        };
+
+        // Only revalidate if we have a token (debounce could be used in real apps, but strict here)
+        revalidate();
+
+    }, [isAuthenticated, user, initialized, router, logout]);
 
     if (!initialized || !isAuthenticated || !user?.isAdmin) {
         return (

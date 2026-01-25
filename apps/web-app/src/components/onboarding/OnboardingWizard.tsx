@@ -44,6 +44,7 @@ export function OnboardingWizard() {
         experience: '0',
         educationLevel: '',
     });
+    const [error, setError] = useState<string | null>(null);
     const router = useRouter();
     const { completeOnboarding } = useAuthStore();
 
@@ -58,7 +59,7 @@ export function OnboardingWizard() {
             router.push('/dashboard');
         } catch (err) {
             console.error("Failed to save profile", err);
-            alert("Something went wrong. Please try again.");
+            setError("Something went wrong ensuring your profile is secure. Please try again.");
         } finally {
             setLoading(false);
         }
@@ -85,6 +86,16 @@ export function OnboardingWizard() {
                     />
                 </div>
             </div>
+
+
+
+            {
+                error && (
+                    <div className="mb-8 p-4 bg-red-50 text-red-700 border border-red-200 rounded-2xl font-medium text-center animate-in slide-in-from-top-2">
+                        {error}
+                    </div>
+                )
+            }
 
             <div className="bg-background/80 backdrop-blur-xl border rounded-[2rem] p-8 md:p-12 shadow-2xl shadow-primary/5 min-h-[550px] flex flex-col transition-all duration-500">
                 {step === 1 && (

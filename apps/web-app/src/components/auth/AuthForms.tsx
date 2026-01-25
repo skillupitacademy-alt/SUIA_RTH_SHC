@@ -10,6 +10,7 @@ import { apiClient } from '@quiz/api-client';
 export function LoginForm() {
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
     const { login } = useAuthStore();
     const router = useRouter();
 
@@ -26,7 +27,7 @@ export function LoginForm() {
             login(user, accessToken);
             router.push('/dashboard');
         } catch (err: any) {
-            alert(err.message); // Simple error handling for now
+            setError(err.message || "Invalid credentials. Please try again.");
         } finally {
             setLoading(false);
         }
@@ -38,6 +39,12 @@ export function LoginForm() {
                 <h2 className="text-3xl font-bold tracking-tight">Welcome back</h2>
                 <p className="mt-2 text-muted-foreground">Please enter your details to sign in</p>
             </div>
+
+            {error && (
+                <div className="p-3 text-sm font-medium bg-red-50 text-red-600 rounded-md border border-red-200">
+                    {error}
+                </div>
+            )}
 
             <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
                 <div className="space-y-4">
@@ -103,6 +110,7 @@ export function LoginForm() {
 
 export function SignupForm() {
     const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
     const router = useRouter(); // Added missing router
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -118,7 +126,7 @@ export function SignupForm() {
             useAuthStore.getState().login(user, accessToken);
             router.push('/dashboard');
         } catch (err: any) {
-            alert(err.message);
+            setError(err.message || "Failed to create account.");
         } finally {
             setLoading(false);
         }
@@ -130,6 +138,12 @@ export function SignupForm() {
                 <h2 className="text-3xl font-bold tracking-tight">Create an account</h2>
                 <p className="mt-2 text-muted-foreground">Enter your details to get started</p>
             </div>
+
+            {error && (
+                <div className="p-3 text-sm font-medium bg-red-50 text-red-600 rounded-md border border-red-200">
+                    {error}
+                </div>
+            )}
 
             <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
                 <div className="space-y-4">

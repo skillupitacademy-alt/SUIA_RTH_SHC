@@ -10,13 +10,15 @@ import {
     Settings,
     ChevronRight,
     LogOut,
-    Bell
+    Bell,
+    AlertTriangle
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { AdminGuard } from '../auth/AdminGuard';
 import { useAuthStore } from '@/store/auth-store';
 import { apiClient } from '@quiz/api-client';
 import { useEffect } from 'react';
+import { useStrictNavigation } from '@/hooks/useStrictNavigation';
 
 const ADMIN_NAV = [
     { name: 'Dashboard', href: '/', icon: BarChart3 },
@@ -72,8 +74,42 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
         );
     }
 
+    const { showWarning, confirmLogout, cancelNavigation } = useStrictNavigation();
+
     return (
         <AdminGuard>
+            {showWarning && (
+                <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
+                    <div className="bg-background border rounded-3xl p-8 max-w-md w-full shadow-2xl relative overflow-hidden">
+                        <div className="absolute top-0 left-0 w-full h-2 bg-red-600 z-10" />
+                        <div className="flex flex-col items-center text-center gap-4">
+                            <div className="h-16 w-16 rounded-full bg-red-100 flex items-center justify-center text-red-600 mb-2">
+                                <AlertTriangle size={32} />
+                            </div>
+                            <h3 className="text-2xl font-black">Security Warning</h3>
+                            <p className="text-muted-foreground">
+                                Navigation attempt detected. For security reasons, using the browser <strong>Back</strong> button will terminate your session.
+                            </p>
+
+                            <div className="grid grid-cols-2 gap-4 w-full mt-6">
+                                <button
+                                    onClick={cancelNavigation}
+                                    className="px-4 py-3 rounded-xl border-2 font-bold hover:bg-muted transition-colors"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={confirmLogout}
+                                    className="px-4 py-3 rounded-xl bg-red-600 text-white font-bold hover:bg-red-700 transition-colors shadow-lg shadow-red-600/20"
+                                >
+                                    Log Out
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             <div className="flex min-h-screen bg-background text-foreground">
                 {/* Sidebar */}
                 <aside className="fixed inset-y-0 left-0 w-72 border-r bg-muted/30 backdrop-blur-md z-50 overflow-y-auto">

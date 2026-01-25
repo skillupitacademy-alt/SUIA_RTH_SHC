@@ -40,6 +40,7 @@ export function ExamInterface() {
 
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
     const question = questions[currentQuestionIndex];
 
@@ -167,7 +168,7 @@ export function ExamInterface() {
             router.push(`/reports/active-report?examId=${examId}`);
         } catch (err) {
             console.error("Failed to submit exam", err);
-            alert("Failed to submit exam. Please try again.");
+            setError("Failed to submit exam. Please try again or check your connection.");
         } finally {
             setIsSubmitting(false);
         }
@@ -187,6 +188,15 @@ export function ExamInterface() {
         <div className="flex flex-col min-h-[calc(100vh-64px)] bg-muted/5">
             {/* Exam Header */}
             <header className="sticky top-0 z-40 bg-background border-b px-6 py-4 flex items-center justify-between shadow-sm">
+                {error && (
+                    <div className="absolute top-20 left-1/2 -translate-x-1/2 z-50 bg-red-600 text-white px-6 py-3 rounded-full font-bold shadow-2xl animate-in slide-in-from-top-4 flex items-center gap-3">
+                        <span className="h-2 w-2 rounded-full bg-white animate-pulse" />
+                        {error}
+                        <button onClick={() => setError(null)} className="ml-2 hover:bg-white/20 rounded-full p-1">
+                            <ChevronRight size={14} className="rotate-90" />
+                        </button>
+                    </div>
+                )}
                 <div className="flex items-center gap-6">
                     <div>
                         <h2 className="text-xl font-black tracking-tight uppercase italic text-primary">Enterprise Exam</h2>

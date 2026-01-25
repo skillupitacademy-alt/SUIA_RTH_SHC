@@ -34,6 +34,7 @@ export function QuizSelection() {
     const [domains, setDomains] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [starting, setStarting] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
     const [selectedDomain, setSelectedDomain] = useState<string | null>(null);
     const [selectedSubjects, setSelectedSubjects] = useState<string[]>([]);
@@ -59,6 +60,7 @@ export function QuizSelection() {
     const domain = domains.find(d => d.id === selectedDomain);
 
     const toggleSubject = (s: string) => {
+        setError(null);
         setSelectedSubjects(prev =>
             prev.includes(s) ? prev.filter(item => item !== s) : [...prev, s]
         );
@@ -67,7 +69,7 @@ export function QuizSelection() {
     const handleStartExam = async () => {
         if (!selectedDomain) return;
         if (selectedSubjects.length === 0) {
-            alert("Please select at least one topic.");
+            setError("Please select at least one topic to proceed.");
             return;
         }
 
@@ -88,7 +90,7 @@ export function QuizSelection() {
             router.push(`/quiz/active-session?examId=${exam.examId}`);
         } catch (err: any) {
             console.error("Failed to start exam", err);
-            alert(err.message || "Failed to start exam session.");
+            setError(err.message || "Failed to start exam session.");
             setStarting(false);
         }
     };
@@ -176,6 +178,14 @@ export function QuizSelection() {
                         <div className="h-8 w-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-sm">3</div>
                         <h2 className="text-2xl font-bold tracking-tight">Exam Configuration</h2>
                     </div>
+
+                    {error && (
+                        <div className="p-4 rounded-2xl bg-red-50/50 border border-red-200 text-red-600 font-bold text-sm flex items-center gap-2">
+                            <ShieldCheck size={18} />
+                            {error}
+                        </div>
+                    )}
+
                     <div className="grid md:grid-cols-2 gap-8 bg-muted/20 p-8 rounded-[3rem] border border-primary/5">
                         <div className="space-y-8">
                             <div>
