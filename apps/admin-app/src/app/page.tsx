@@ -29,23 +29,21 @@ export default function AdminDashboard() {
             </div>
 
             {/* Account & Performance Tier */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-                <div className="space-y-12">
-                    <UserAnalyticsPanel />
-                    <ExamActivityBoard />
-                </div>
+            <div className="flex flex-col gap-12">
+                <UserAnalyticsPanel />
+                <ExamActivityBoard />
                 <RBACGovernancePanel />
             </div>
 
             {/* Security & Audit Tier */}
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-12">
+            <div className="flex flex-col gap-12">
                 <SecurityHealthPanel />
                 <SystemAuditTerminal />
             </div>
 
             {/* Content & Blueprint Tier */}
-            <div className="grid grid-cols-1 xl:grid-cols-3 gap-12">
-                <div className="xl:col-span-2">
+            <div className="flex flex-col gap-12">
+                <div className="w-full">
                     <ContentReadinessBoard />
                 </div>
                 <BlueprintAuditBoard />
