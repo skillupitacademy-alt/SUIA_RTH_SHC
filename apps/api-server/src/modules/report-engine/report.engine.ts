@@ -33,6 +33,10 @@ export class ReportEngine {
 
     if (!exam) throw new Error('Exam not found');
 
+    const results = await db.query.resultsByDimension.findMany({
+      where: eq(resultsByDimension.examId, examId),
+    });
+
     const totalQuestions = exam.examQuestions.length;
     const correctAnswers = exam.examQuestions.filter(eq => eq.isCorrect).length;
     const scorePercentage = totalQuestions > 0 ? (correctAnswers / totalQuestions) * 100 : 0;
@@ -44,7 +48,17 @@ export class ReportEngine {
       percentage: scorePercentage,
       status: scorePercentage >= 70 ? 'passed' : 'failed',
       completedAt: exam.completedAt,
-      // Aggregating by topic/difficulty could be added here
+      blueprint: exam.blueprint,
+      performance: results.reduce((acc: any, r) => {
+        if (!acc[r.dimensionType]) acc[r.dimensionType] = [];
+        acc[r.dimensionType].push({
+          id: r.dimensionId,
+          name: r.name,
+          score: r.score,
+          accuracy: r.accuracy
+        });
+        return acc;
+      }, {}),
       questions: exam.examQuestions.map(eq => ({
         text: eq.question.questionText,
         userAnswer: eq.userAnswer,

@@ -1,4 +1,4 @@
-import { db, examQuestions, exams } from '@quiz/db';
+import { db, examQuestions, exams, examBlueprints } from '@quiz/db';
 import { eq, and } from 'drizzle-orm';
 import { ScoringEngine } from '../scoring-engine/scoring.engine';
 import { AnswerEvaluationEngine } from '../answer-engine/answer.engine';
@@ -14,6 +14,23 @@ export class ExamEngine {
 
     if (!exam || exam.status !== 'started') {
       throw new Error('Exam is not active');
+    }
+
+    // Timer Logic: Check if exam time has expired
+    if (exam.blueprintId) {
+        const blueprint = await db.query.examBlueprints.findFirst({
+            where: eq(examBlueprints.id, exam.blueprintId)
+        });
+        
+        if (blueprint && blueprint.timeLimit) {
+            const timeElapsed = (Date.now() - new Date(exam.startedAt).getTime()) / 1000 / 60; // in minutes
+            if (timeElapsed > blueprint.timeLimit) {
+                await db.update(exams)
+                    .set({ status: 'abandoned' })
+                    .where(eq(exams.id, examId));
+                throw new Error('Exam time limit exceeded. Session abandoned.');
+            }
+        }
     }
 
     const eqRecord = await db.query.examQuestions.findFirst({

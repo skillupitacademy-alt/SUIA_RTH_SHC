@@ -3,6 +3,7 @@ import type { NextRequest } from 'next/server';
 import { rateLimit } from './modules/auth/rate-limit.middleware';
 import { csrfProtection } from './modules/auth/csrf.middleware';
 import { corsMiddleware } from './modules/auth/cors.middleware';
+import { TokenService } from './modules/auth/token.service';
 
 export async function middleware(request: NextRequest) {
   console.log('[MIDDLEWARE] Request:', request.method, request.nextUrl.pathname);
@@ -47,6 +48,20 @@ export async function middleware(request: NextRequest) {
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       const response = NextResponse.json(
         { error: 'Authentication required' },
+        { status: 401 }
+      );
+      return corsMiddleware(request, response);
+    }
+
+    const token = authHeader.split(' ')[1];
+    try {
+      // In middleware, we just want to ensure it's a valid, unexpired token.
+      // Specific route handlers will do deeper user/role checks if needed.
+      await TokenService.verifyAccessToken(token);
+    } catch (err: any) {
+      console.error('[MIDDLEWARE] JWT Verification failed:', err.message);
+      const response = NextResponse.json(
+        { error: 'Invalid or expired token', message: err.message },
         { status: 401 }
       );
       return corsMiddleware(request, response);

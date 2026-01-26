@@ -24,6 +24,7 @@ export class DomainService {
           with: {
             topics: {
               where: eq(topics.status, 'active'),
+              orderBy: [topics.complexityLevel],
               with: {
                 subtopics: true,
               }
@@ -37,6 +38,14 @@ export class DomainService {
   static async createDomain(data: { name: string; description?: string; category?: string }) {
     return await db.insert(domains).values(data).returning();
   }
+
+  static async updateDomain(id: string, data: any) {
+    return await db.update(domains).set(data).where(eq(domains.id, id)).returning();
+  }
+
+  static async deleteDomain(id: string) {
+    return await db.delete(domains).where(eq(domains.id, id)).returning();
+  }
 }
 
 export class SubjectService {
@@ -45,5 +54,56 @@ export class SubjectService {
       where: and(eq(subjects.domainId, domainId), eq(subjects.status, 'active')),
       orderBy: [subjects.order],
     });
+  }
+
+  static async createSubject(data: any) {
+    return await db.insert(subjects).values(data).returning();
+  }
+
+  static async updateSubject(id: string, data: any) {
+    return await db.update(subjects).set(data).where(eq(subjects.id, id)).returning();
+  }
+
+  static async deleteSubject(id: string) {
+    return await db.delete(subjects).where(eq(subjects.id, id)).returning();
+  }
+}
+
+export class TopicService {
+  static async getTopicsBySubject(subjectId: string) {
+    return await db.query.topics.findMany({
+      where: and(eq(topics.subjectId, subjectId), eq(topics.status, 'active')),
+      orderBy: [topics.complexityLevel],
+    });
+  }
+
+  static async getSubtopicsByTopic(topicId: string) {
+    return await db.query.subtopics.findMany({
+      where: eq(subtopics.topicId, topicId),
+    });
+  }
+
+  static async createSubtopic(data: any) {
+    return await db.insert(subtopics).values(data).returning();
+  }
+
+  static async updateSubtopic(id: string, data: any) {
+    return await db.update(subtopics).set(data).where(eq(subtopics.id, id)).returning();
+  }
+
+  static async deleteSubtopic(id: string) {
+    return await db.delete(subtopics).where(eq(subtopics.id, id)).returning();
+  }
+
+  static async createTopic(data: any) {
+    return await db.insert(topics).values(data).returning();
+  }
+
+  static async updateTopic(id: string, data: any) {
+    return await db.update(topics).set(data).where(eq(topics.id, id)).returning();
+  }
+
+  static async deleteTopic(id: string) {
+    return await db.delete(topics).where(eq(topics.id, id)).returning();
   }
 }

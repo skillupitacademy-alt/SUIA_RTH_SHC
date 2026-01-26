@@ -9,7 +9,13 @@ export class SelectionEngine {
   static async composeExam(
     userId: string, 
     blueprintOrDomainId: string, 
-    config?: { topics?: string[], questionCount?: number, difficulty?: string }
+    config?: { 
+      subjectId?: string,
+      topics?: string[], 
+      subtopicIds?: string[],
+      questionCount?: number, 
+      difficulty?: string 
+    }
   ) {
     // 1. Resolve Blueprint
     let blueprint = await db.query.examBlueprints.findFirst({
@@ -24,24 +30,24 @@ export class SelectionEngine {
 
     if (!blueprint) throw new Error('Blueprint not found');
 
-    // 2. Determine Configuration
-    const providedIds = config?.topics && config.topics.length > 0 ? config.topics : (blueprint.topics || []);
-    const total = config?.questionCount || blueprint.totalQuestions || 10;
-    const difficultyPref = config?.difficulty || 'mixed';
+    const domainId = blueprintOrDomainId; 
+    const { 
+      subjectId, 
+      topics: topicIds, 
+      subtopicIds,
+      questionCount,
+      difficulty 
+    } = config || {};
 
-    // 2.1 Resolve Topic IDs
-    let resolvedTopicIds: string[] = [];
-    const linkedTopics = await db.query.topics.findMany({
-      where: inArray(topics.subjectId, providedIds),
-    });
-
-    if (linkedTopics.length > 0) {
-      resolvedTopicIds = linkedTopics.map(t => t.id);
-    } else {
-      resolvedTopicIds = providedIds;
+    if (!domainId || !subjectId || !topicIds || topicIds.length === 0) {
+      throw new Error('Domain, Subject, and at least one Topic are required to compose an exam.');
     }
 
-    if (resolvedTopicIds.length === 0) throw new Error('No topics found for the selected subjects.');
+    const total = questionCount || blueprint?.totalQuestions || 10;
+    const difficultyPref = difficulty || 'mixed';
+
+    // 2.1 Finalize Pool Selection
+    const resolvedTopicIds = topicIds;
 
     // 3. Select Questions
     const selectedQuestions: any[] = [];
@@ -50,6 +56,7 @@ export class SelectionEngine {
       return await db.query.questions.findMany({
         where: and(
           inArray(questions.topicId, resolvedTopicIds),
+          subtopicIds && subtopicIds.length > 0 ? inArray(questions.subtopicId, subtopicIds) : undefined,
           inArray(questions.difficulty, diffs as any),
           excludeIds.length > 0 ? notInArray(questions.id, excludeIds) : undefined
         ),

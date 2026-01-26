@@ -23,6 +23,7 @@ This report maps all tasks defined in the project's `.md` documentation files to
 | [Platform Integration](#5-platform-integration) | `docs/claude-platform-integration-task.md` | ✅ Complete | High |
 | [Product Experience](#6-product-experience-ui) | `docs/claude-product-experience-task.md` | ⚠️ Pending | Medium |
 | [Scaffold Monorepo](#7-monorepo-scaffolding) | `docs/Scaffold Monorepo Next.js App.md` | ✅ Complete | Critical |
+| [Backend Roadmap](#backend-roadmap) | `docs/execution/BACKEND_MASTER_ROADMAP.md` | ⚠️ Pending | High |
 
 **Legend**:
 - ✅ Complete - All tasks implemented

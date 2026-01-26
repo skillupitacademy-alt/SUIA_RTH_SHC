@@ -19,20 +19,52 @@ export class ScoringEngine {
 
     const dimensions: Record<string, { total: number; correct: number; name?: string }> = {};
 
-    // 1. Resolve Topic Names for dimensions
+    // 1. Resolve Hierarchy Data
     const topicIds = [...new Set(exam.examQuestions.map(eq => eq.question.topicId))];
     const topicData = await db.query.topics.findMany({
       where: (topics, { inArray }) => inArray(topics.id, topicIds as string[]),
+      with: {
+        subject: {
+          with: {
+            domain: true
+          }
+        },
+        topicSkills: {
+          with: {
+            skill: true
+          }
+        },
+        subtopics: true
+      }
     });
-    const topicMap = new Map(topicData.map(t => [t.id, t.name]));
+
+    const topicMap = new Map(topicData.map(t => [t.id, t]));
 
     // 2. Analyze performance by various dimensions
     for (const eqRecord of exam.examQuestions) {
       const q = eqRecord.question;
+      const t = topicMap.get(q.topicId);
+      if (!t) continue;
+
       const dims = [
-        { type: 'topic', id: q.topicId, name: topicMap.get(q.topicId) },
+        { type: 'domain', id: t.subject.domain.id, name: t.subject.domain.name },
+        { type: 'subject', id: t.subject.id, name: t.subject.name },
+        { type: 'topic', id: t.id, name: t.name },
         { type: 'difficulty', id: q.difficulty, name: q.difficulty.charAt(0).toUpperCase() + q.difficulty.slice(1) },
       ];
+
+      // Add Subtopic if present
+      if (q.subtopicId) {
+          const st = t.subtopics.find(s => s.id === q.subtopicId);
+          if (st) {
+            dims.push({ type: 'subtopic', id: st.id, name: st.name });
+          }
+      }
+
+      // Add Skills
+      t.topicSkills.forEach(ts => {
+        dims.push({ type: 'skill', id: ts.skill.id, name: ts.skill.name });
+      });
 
       for (const d of dims) {
         const key = `${d.type}:${d.id}`;
@@ -43,16 +75,16 @@ export class ScoringEngine {
     }
 
     // 3. Prepare data for results_by_dimension
-    // Note: We'll currently store accuracy/score as the same value
     const resultsData = Object.entries(dimensions).map(([key, stats]) => {
       const [type, id] = key.split(':');
       return {
         examId,
         dimensionType: type,
         dimensionId: id as string,
+        name: stats.name,
         score: stats.total > 0 ? Math.round((stats.correct / stats.total) * 100) : 0,
         accuracy: stats.total > 0 ? Math.round((stats.correct / stats.total) * 100) : 0,
-      };
+       };
     });
 
     // Clear old results if any (idempotency)

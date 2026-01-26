@@ -1,34 +1,67 @@
-import { db, questions, domains, subjects, topics } from '@quiz/db';
+import { db, questions, domains, subjects, topics, skills } from '@quiz/db';
 import { eq, and, sql, desc } from 'drizzle-orm';
 import { AuditService } from '../auth/audit.service';
+import { QuestionService } from '../question/question.service';
+import { DomainService, SubjectService, TopicService } from '../domain/domain.service';
+import { SkillService } from '../domain/skill.service';
 
 export class AdminEngine {
   /**
    * Creates a new question.
    */
   static async createQuestion(data: any, adminId: string) {
-    const [question] = await db.insert(questions).values({
-      ...data,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    }).returning();
+    const question = await QuestionService.createQuestion(data);
 
     await AuditService.log({
       userId: adminId,
       action: 'admin_create_question',
-      metadata: { questionId: question.id },
+      metadata: { questionId: question[0].id },
     });
 
-    return question;
+    return question[0];
+  }
+
+  /**
+   * Bulk creates questions.
+   */
+  static async bulkCreateQuestions(data: any[], adminId: string) {
+    const created = await QuestionService.bulkCreateQuestions(data);
+
+    await AuditService.log({
+      userId: adminId,
+      action: 'admin_bulk_create_questions',
+      metadata: { count: created.length },
+    });
+
+    return created;
   }
 
   /**
    * Fetches all questions for management.
    */
   static async getAllQuestions() {
-    return await db.query.questions.findMany({
-      orderBy: [desc(questions.createdAt)],
-    });
+    return await QuestionService.getAllQuestions();
+  }
+
+  /**
+   * Domain Management
+   */
+  static async createDomain(data: any, adminId: string) {
+    const result = await DomainService.createDomain(data);
+    await AuditService.log({ userId: adminId, action: 'admin_create_domain', metadata: { domainId: result[0].id } });
+    return result[0];
+  }
+
+  static async updateDomain(id: string, data: any, adminId: string) {
+    const result = await DomainService.updateDomain(id, data);
+    await AuditService.log({ userId: adminId, action: 'admin_update_domain', metadata: { domainId: id } });
+    return result[0];
+  }
+
+  static async deleteDomain(id: string, adminId: string) {
+    const result = await DomainService.deleteDomain(id);
+    await AuditService.log({ userId: adminId, action: 'admin_delete_domain', metadata: { domainId: id } });
+    return result;
   }
 
   /**
@@ -97,14 +130,91 @@ export class AdminEngine {
   }
 
   /**
-   * Validates a topic (placeholder for complex validation).
+   * Validates a topic based on the 13-question distribution rule.
    */
   static async validateTopic(topicId: string) {
-    // Perform structural validation checks
-    return { 
-      topicId, 
-      isValid: true, 
-      message: 'Topic structure validated successfully' 
-    };
+    return await QuestionService.validateTopicReadiness(topicId);
+  }
+
+  // --- SUBJECT MANAGEMENT ---
+  static async createSubject(data: any, adminId: string) {
+    const result = await SubjectService.createSubject(data);
+    await AuditService.log({ userId: adminId, action: 'admin_create_subject', metadata: { subjectId: result[0].id } });
+    return result[0];
+  }
+
+  static async updateSubject(id: string, data: any, adminId: string) {
+    const result = await SubjectService.updateSubject(id, data);
+    await AuditService.log({ userId: adminId, action: 'admin_update_subject', metadata: { subjectId: id } });
+    return result[0];
+  }
+
+  static async deleteSubject(id: string, adminId: string) {
+    const result = await SubjectService.deleteSubject(id);
+    await AuditService.log({ userId: adminId, action: 'admin_delete_subject', metadata: { subjectId: id } });
+    return result;
+  }
+
+  // --- TOPIC MANAGEMENT ---
+  static async createTopic(data: any, adminId: string) {
+    const result = await TopicService.createTopic(data);
+    await AuditService.log({ userId: adminId, action: 'admin_create_topic', metadata: { topicId: result[0].id } });
+    return result[0];
+  }
+
+  static async updateTopic(id: string, data: any, adminId: string) {
+    const result = await TopicService.updateTopic(id, data);
+    await AuditService.log({ userId: adminId, action: 'admin_update_topic', metadata: { topicId: id } });
+    return result[0];
+  }
+
+  static async deleteTopic(id: string, adminId: string) {
+    const result = await TopicService.deleteTopic(id);
+    await AuditService.log({ userId: adminId, action: 'admin_delete_topic', metadata: { topicId: id } });
+    return result;
+  }
+
+  // --- SUBTOPIC MANAGEMENT ---
+  static async createSubtopic(data: any, adminId: string) {
+    const result = await TopicService.createSubtopic(data);
+    await AuditService.log({ userId: adminId, action: 'admin_create_subtopic', metadata: { subtopicId: result[0].id } });
+    return result[0];
+  }
+
+  static async updateSubtopic(id: string, data: any, adminId: string) {
+    const result = await TopicService.updateSubtopic(id, data);
+    await AuditService.log({ userId: adminId, action: 'admin_update_subtopic', metadata: { subtopicId: id } });
+    return result[0];
+  }
+
+  static async deleteSubtopic(id: string, adminId: string) {
+    const result = await TopicService.deleteSubtopic(id);
+    await AuditService.log({ userId: adminId, action: 'admin_delete_subtopic', metadata: { subtopicId: id } });
+    return result;
+  }
+
+  // --- SKILL MANAGEMENT ---
+  static async createSkill(data: any, adminId: string) {
+    const result = await SkillService.createSkill(data);
+    await AuditService.log({ userId: adminId, action: 'admin_create_skill', metadata: { skillId: result[0].id } });
+    return result[0];
+  }
+
+  static async updateSkill(id: string, data: any, adminId: string) {
+    const result = await db.update(skills).set(data).where(eq(skills.id, id)).returning();
+    await AuditService.log({ userId: adminId, action: 'admin_update_skill', metadata: { skillId: id } });
+    return result[0];
+  }
+
+  static async deleteSkill(id: string, adminId: string) {
+    const result = await SkillService.deleteSkill(id);
+    await AuditService.log({ userId: adminId, action: 'admin_delete_skill', metadata: { skillId: id } });
+    return result;
+  }
+
+  static async mapTopicToSkills(topicId: string, skillIds: string[], adminId: string) {
+    const result = await SkillService.mapTopicToSkills(topicId, skillIds);
+    await AuditService.log({ userId: adminId, action: 'admin_map_topic_skills', metadata: { topicId, skillIds } });
+    return result;
   }
 }

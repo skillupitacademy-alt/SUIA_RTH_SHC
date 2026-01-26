@@ -57,6 +57,7 @@ export const resultsByDimension = pgTable("results_by_dimension", {
     .references(() => exams.id, { onDelete: "cascade" }),
   dimensionType: text("dimension_type").notNull(), // domain, subject, topic, skill, difficulty
   dimensionId: text("dimension_id"), // link to domain/subject/topic/skill id or enum value
+  name: text("name"), // descriptive name for the dimension (e.g. "Mathematics")
   score: integer("score").notNull(),
   accuracy: integer("accuracy").notNull(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
