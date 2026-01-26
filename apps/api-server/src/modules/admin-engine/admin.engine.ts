@@ -521,4 +521,35 @@ export class AdminEngine {
       totalPages: Math.ceil(Number(countResult?.count || 0) / limit)
     };
   }
+
+  /**
+   * Section 16: User Management
+   */
+  static async getUsers(page: number = 1, limit: number = 20) {
+    const offset = (page - 1) * limit;
+
+    const [countResult] = await db.select({ count: sql`count(*)` }).from(users);
+
+    const usersList = await db.query.users.findMany({
+      limit,
+      offset,
+      orderBy: [desc(users.createdAt)],
+      with: {
+        profile: true,
+        userRoles: {
+            with: {
+                role: true
+            }
+        }
+      }
+    });
+
+    return {
+      users: usersList,
+      total: Number(countResult?.count || 0),
+      page,
+      limit,
+      totalPages: Math.ceil(Number(countResult?.count || 0) / limit)
+    };
+  }
 }

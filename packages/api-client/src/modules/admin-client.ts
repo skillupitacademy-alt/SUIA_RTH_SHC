@@ -65,6 +65,16 @@ export class AdminClient {
     }>(`/admin/sessions/live?page=${page}&limit=${limit}`);
   }
 
+  async getUsers(page: number = 1, limit: number = 20) {
+    return this.client.get<{
+        users: any[];
+        total: number;
+        page: number;
+        limit: number;
+        totalPages: number;
+    }>(`/admin/users?page=${page}&limit=${limit}`);
+  }
+
   async login(email: string, password: string) {
     return this.client.post<{ user: any; accessToken: string }>('/admin/auth/login', { email, password });
   }

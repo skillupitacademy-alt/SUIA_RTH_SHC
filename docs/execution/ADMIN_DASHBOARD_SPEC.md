@@ -309,3 +309,33 @@ This Admin Dashboard is:
 - Designed for clarity, not complexity
 
 It provides **confidence**, not control overload.
+
+---
+
+## 16. User Management Interface (New)
+
+### What Should Be Visible
+
+- **Paginated User List**: Displaying all registered users.
+- **Essential Columns**:
+  - Name & Avatar
+  - Email Address
+  - Assigned Role
+  - Account Status (Verified / Active)
+  - Joined Date (Sorted Latest First)
+- **Onboarding Details (Modal/Expandable)**:
+  - Education Level
+  - Professional Status (Student/Professional)
+  - Age Group
+  - Experience Years
+  - Domain Interests (Tags)
+
+### Why This Exists
+
+- **Identity Verification**: Admins verify who is accessing the platform.
+- **Demographic Insight**: Helps separate student cohorts from professionals.
+- **Support**: Allows admins to debug user profile issues.
+
+### Sorting Rule
+
+> **"Latest First"**: The default view must always show the most recently registered users at the top.
