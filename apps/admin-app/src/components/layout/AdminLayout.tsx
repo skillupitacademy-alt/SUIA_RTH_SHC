@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import {
     LayoutDashboard,
     Database,
@@ -20,6 +20,7 @@ import { useAuthStore } from '@/store/auth-store';
 import { apiClient } from '@quiz/api-client';
 import { useEffect } from 'react';
 import { useStrictNavigation } from '@/hooks/useStrictNavigation';
+import { usePresenceHeartbeat } from '@/hooks/usePresenceHeartbeat';
 
 const ADMIN_NAV = [
     { name: 'Dashboard', href: '/', icon: LayoutDashboard },
@@ -29,7 +30,10 @@ const ADMIN_NAV = [
     { name: 'Settings', href: '/settings', icon: Settings },
 ];
 
-export function AdminLayout({ children }: { children: React.ReactNode }) {
+export default function AdminLayout({ children }: { children: React.ReactNode }) {
+    useStrictNavigation();
+    usePresenceHeartbeat();
+    const router = useRouter();
     const pathname = usePathname();
     const { token, logout } = useAuthStore();
     const { showWarning, confirmLogout, cancelNavigation } = useStrictNavigation();

@@ -56,8 +56,10 @@ export async function middleware(request: NextRequest) {
     const token = authHeader.split(' ')[1];
     try {
       // In middleware, we just want to ensure it's a valid, unexpired token.
-      // Specific route handlers will do deeper user/role checks if needed.
-      await TokenService.verifyAccessToken(token);
+      const payload = await TokenService.verifyAccessToken(token);
+      
+      // Heartbeat: Implemented via client-side /api/auth/heartbeat polling
+      // to avoid heavy ORM usage in Edge Middleware.
     } catch (err: any) {
       console.error('[MIDDLEWARE] JWT Verification failed:', err.message);
       const response = NextResponse.json(

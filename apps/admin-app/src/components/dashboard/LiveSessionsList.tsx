@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { apiClient } from '@quiz/api-client';
 import { Users, Clock, Globe, ShieldCheck, Loader2 } from 'lucide-react';
+import { formatDistanceToNow } from 'date-fns';
 
 export function LiveSessionsList() {
     const [sessions, setSessions] = useState<any[]>([]);
@@ -80,10 +81,10 @@ export function LiveSessionsList() {
 
                                 <div className="hidden md:flex items-center gap-10 text-right">
                                     <div className="space-y-1">
-                                        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Authenticated</p>
+                                        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Last Seen</p>
                                         <div className="flex items-center gap-2 justify-end text-sm font-bold text-[#1A1A1A]">
                                             <Clock size={14} className="text-[#FF4B91]" />
-                                            {new Date(session.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                            {formatDistanceToNow(new Date(session.lastActiveAt), { addSuffix: true })}
                                         </div>
                                     </div>
                                     <div className="w-px h-10 bg-muted-foreground/10" />
@@ -95,8 +96,17 @@ export function LiveSessionsList() {
                                     <div className="space-y-1">
                                         <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Status</p>
                                         <div className="flex items-center gap-1.5 justify-end">
-                                            <Globe size={14} className="text-green-500" />
-                                            <span className="text-[11px] font-black text-green-600 uppercase tracking-widest">Active</span>
+                                            {session.status === 'active' ? (
+                                                <>
+                                                    <Globe size={14} className="text-green-500 animate-pulse" />
+                                                    <span className="text-[11px] font-black text-green-600 uppercase tracking-widest">Active</span>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <Clock size={14} className="text-orange-500" />
+                                                    <span className="text-[11px] font-black text-orange-600 uppercase tracking-widest">Idle</span>
+                                                </>
+                                            )}
                                         </div>
                                     </div>
                                 </div>

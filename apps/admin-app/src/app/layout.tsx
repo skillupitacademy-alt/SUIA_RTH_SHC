@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { AdminLayout } from "@/components/layout/AdminLayout";
+import AdminLayout from "@/components/layout/AdminLayout";
 
 export const metadata: Metadata = {
     title: "QuizAdmin | Governance",

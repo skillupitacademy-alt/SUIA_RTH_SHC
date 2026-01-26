@@ -65,6 +65,7 @@ export const refreshTokens = pgTable("refresh_tokens", {
   token: text("token").notNull().unique(),
   expiresAt: timestamp("expires_at").notNull(),
   revoked: boolean("revoked").notNull().default(false),
+  lastActiveAt: timestamp("last_active_at").notNull().defaultNow(), // Added for presence tracking
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 

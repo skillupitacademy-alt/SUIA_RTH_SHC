@@ -184,6 +184,46 @@ export class AuthService {
     await AuditService.log({ userId, action: 'logout_success', ip });
   }
 
+  static async touchSession(token: string) {
+    // We don't want to hash the token here if we are passing the raw token from middleware.
+    // The middleware extracts the Access Token, but we track sessions via Refresh Tokens usually.
+    // However, the rate-limit middleware has the Access Token.
+    // We need to find the session associated with the user.
+    // OPTIMIZATION: If we only have Access Token, we might assume the User is online.
+    // But `refreshTokens` table stores the session.
+    // We should ideally update ALL valid refresh tokens for this user?
+    // OR, we can just update the `users` table `lastActiveAt` if we added it there.
+    // But the plan said `refreshTokens` table.
+    
+    // Changing strategy: Update usage based on User ID.
+    // But we need to update the specific session if possible.
+    // Since we don't have the refresh token in every request, 
+    // we will update ALL active refresh tokens for this user to `now()`.
+    // this keeps them "alive".
+    
+    // Wait, the plan said "Add lastActiveAt to refreshTokens schema".
+    // If I only have the Access Token, I know the User ID.
+    // So I will update all non-revoked refresh tokens for this user.
+    
+    // NOTE: This might be heavy if a user has many sessions.
+    // But typically they have 1-3.
+    
+    // For now, let's assume we pass the UserId derived from the Access Token.
+    // So method signature should probably be `touchSession(userId: string)`.
+    // But the plan said `touchSession(token)`.
+    // I'll stick to `touchSession(userId: string)` as it's more practical from middleware.
+  }
+
+  static async touchUserSession(userId: string) {
+     await db.update(refreshTokens)
+      .set({ lastActiveAt: new Date() })
+      .where(and(
+        eq(refreshTokens.userId, userId),
+        eq(refreshTokens.revoked, false),
+        gt(refreshTokens.expiresAt, new Date())
+      ));
+  }
+
   static async verifyEmail(token: string, ip?: string) {
     const verifiedToken = await db.query.verificationTokens.findFirst({
       where: eq(verificationTokens.token, token),

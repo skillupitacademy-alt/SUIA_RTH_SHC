@@ -3,8 +3,8 @@ import { TokenService } from './token.service';
 
 const cache = new Map<string, { count: number; expires: number }>();
 const WINDOW_MS = 15 * 60 * 1000;
-const MAX_IP_REQUESTS = 100;
-const MAX_USER_REQUESTS = 500; // Users get higher limits than raw IPs
+const MAX_IP_REQUESTS = 1000; // Increased to support high-density admin dashboard
+const MAX_USER_REQUESTS = 2000; // Users get higher limits than raw IPs
 
 export async function rateLimit(request: NextRequest) {
   const now = Date.now();
@@ -18,7 +18,16 @@ export async function rateLimit(request: NextRequest) {
   }
 
   // 2. User Tracking (Authenticated Throttling)
-  const token = request.cookies.get('accessToken')?.value;
+  let token = request.cookies.get('accessToken')?.value;
+  
+  // Fallback to Authorization header if cookie is not present
+  if (!token) {
+    const authHeader = request.headers.get('authorization');
+    if (authHeader?.startsWith('Bearer ')) {
+      token = authHeader.split(' ')[1];
+    }
+  }
+
   let userId = null;
   
   if (token) {

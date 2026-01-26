@@ -499,11 +499,22 @@ export class AdminEngine {
       },
       limit,
       offset,
-      orderBy: [desc(refreshTokens.createdAt)]
+      orderBy: [desc(refreshTokens.lastActiveAt)]
+    });
+
+    const enhancedSessions = sessions.map(session => {
+        const lastActive = new Date(session.lastActiveAt).getTime();
+        const now = Date.now();
+        const diffMinutes = (now - lastActive) / 1000 / 60;
+        
+        let status = 'idle';
+        if (diffMinutes < 5) status = 'active';
+        
+        return { ...session, status };
     });
 
     return {
-      sessions,
+      sessions: enhancedSessions,
       total: Number(countResult?.count || 0),
       page,
       limit,
