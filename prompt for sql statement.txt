@@ -1,0 +1,77 @@
+Subject: Generate SQL Seed Data for Quiz Platform (PostgreSQL/Drizzle)
+
+Objective: Generate 100 technical assessment questions for the following Domain: [INSERT DOMAIN NAME HERE].
+
+Database Schema & Enums:
+
+Enums:
+status: 'active', 'inactive', 'draft'
+difficulty: 'simple', 'intermediate', 'expert'
+question_type: 'mcq', 'code_mcq'
+Tables:
+domains: { id: UUID, name: text, category: text, status: status }
+subjects: { id: UUID, domain_id: UUID, name: text, status: status }
+topics: { id: UUID, subject_id: UUID, name: text, status: status }
+questions: { id: UUID, topic_id: UUID, difficulty: difficulty, type: question_type, question_text: text, options: jsonb (array of strings), correct_answer: text, explanation: text, code_snippet: text (optional), status: status }
+Reference SQL Examples (FOLLOW THIS EXACT FORMAT):
+
+
+Deterministic Domain IDs (USE THESE):
+
+Web Development: 30000000-0000-0000-0000-000000000001
+Data Science: 30000000-0000-0000-0000-000000000002
+Cloud Computing: 30000000-0000-0000-0000-000000000003
+Cybersecurity: 30000000-0000-0000-0000-000000000004
+Mobile Development: 30000000-0000-0000-0000-000000000005
+DevOps: 30000000-0000-0000-0000-000000000006
+Artificial Intelligence: 30000000-0000-0000-0000-000000000007
+Database Systems: 30000000-0000-0000-0000-000000000008
+Software Architecture: 30000000-0000-0000-0000-000000000009
+Product Management: 30000000-0000-0000-0000-000000000010
+Deterministic Subject Example (e.g., for Web Dev):
+
+Subject 1 (React.js): 40000000-0000-0000-0000-000000000001
+Subject 2 (Node.js): 40000000-0000-0000-0000-000000000002
+(AI should continue the 4000... pattern for other subjects/domains)
+
+
+sql
+-- 1. Create the Domain
+INSERT INTO domains (id, name, category, status) 
+VALUES ('d0000000-0000-0000-0000-000000000001', 'Cloud Computing', 'Infrastructure', 'active');
+-- 2. Create a Subject (Linked to Domain)
+INSERT INTO subjects (id, domain_id, name, status) 
+VALUES ('s0000000-0000-0000-0000-000000000001', 'd0000000-0000-0000-0000-000000000001', 'AWS Fundamentals', 'active');
+-- 3. Create a Topic (Linked to Subject)
+INSERT INTO topics (id, subject_id, name, status) 
+VALUES ('t0000000-0000-0000-0000-000000000001', 's0000000-0000-0000-0000-000000000001', 'EC2 & S3', 'active');
+-- 4. Create a Question (Linked to Topic)
+-- Note: 'options' must be a JSON array. 'correct_answer' must be the exact string from the options.
+INSERT INTO questions (topic_id, difficulty, type, question_text, options, correct_answer, explanation, status) 
+VALUES (
+    't0000000-0000-0000-0000-000000000001', 
+    'intermediate', 
+    'mcq', 
+    'Which storage class is optimized for data that is rarely accessed but requires millisecond retrieval?', 
+    '["S3 Standard", "S3 Standard-IA", "S3 Glacier", "S3 One Zone-IA"]', 
+    'S3 Standard-IA', 
+    'Standard Infrequent Access (S3 Standard-IA) is designed for data that is accessed less frequently but requires rapid access when needed.', 
+    'active'
+);
+Data Volume & Logic Rules:
+
+Volume: Generate 100 questions total for this domain.
+Organization: Divide the domain into 4 logical Subjects. Divide each Subject into 2 Topics. Total 8 topics.
+Topic IDs: Use deterministic IDs like 50000000-0000-0000-0000-000000000001 (Topic A), ...02 (Topic B), etc.
+Difficulty Logic (The 30/30/40 Rule):
+For every topic, Provide: 4 Simple, 4 Intermediate, and 5 Expert questions (approx. 13 per topic).
+Strict Constraint: Ensure correct_answer is an exact character-match with one of the strings inside options.
+Why the AI model needs these samples:
+JSON Syntax: It shows them that options must be wrapped in '["option1", "option2"]' for Postgres compatibility.
+ID Chain: It demonstrates how the topic_id in the questions table must point back to the topics table.
+Correct Answer Match: It reinforces that the answer isn't "A" or "B", but the literal string (this is vital for your Result calculation logic).
+
+
+so based on this relationship populate exam_blueprints table with the help of existing records from domains table , subject tables and 30% simple 30% intermediate 
+
+

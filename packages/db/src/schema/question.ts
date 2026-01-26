@@ -10,7 +10,7 @@ export const questions = pgTable("questions", {
   topicId: uuid("topic_id")
     .notNull()
     .references(() => topics.id, { onDelete: "cascade" }),
-  subtopicId: uuid("subtopicId")
+  subtopicId: uuid("subtopic_id")
     .references(() => subtopics.id, { onDelete: "set null" }),
   difficulty: difficultyEnum("difficulty").notNull(),
   type: questionTypeEnum("type").notNull().default("mcq"),

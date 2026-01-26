@@ -239,4 +239,40 @@ This principle MUST be upheld at all times.
 
 ---
 
+## 1️⃣2️⃣ ENGINEERING STANDARDS (FAANG SDE-3)
+
+All code and architecture MUST adhere to these Tier-1 engineering principles:
+
+### 🚀 Scalability Mandate
+> **All future logic must support millions of concurrent users. Implement database-level pagination, efficient indexing, and stateless processing for all services.**
+
+### 🎨 Frontend (UI/UX Excellence)
+- **Visual WOW Factor**: Interfaces must look premium, modern, and high-performance. Use vibrant colors, smooth micro-animations, and glassmorphism where appropriate.
+- **Performance First**: Optimize for Core Web Vitals (LCP, FID, CLS). Use code-splitting, lazy loading, and image optimization assets.
+- **Accessibility (A11y)**: Full WCAG 2.1 Compliance. Semantic HTML is mandatory.
+- **State Sovereignty**: Centralized state management (e.g., Zustand/Redux) with clear patterns for optimistic updates and caching.
+
+### 🏢 BFF (Backend For Frontend)
+- **Payload Minimization**: Never return raw database objects. Every response must be tailored for the consumer (web/mobile), trimming unnecessary fields to save bandwidth.
+- **API Aggregation**: The BFF must resolve multiple downstream data sources into a single request for the client.
+- **Client-Side Caching Headers**: Implement ETag, Last-Modified, and Cache-Control strategies aggressively.
+
+### 🔩 Backend (Distributed Systems)
+- **High Concurrency**: Use non-blocking I/O and stateless architecture to allow seamless horizontal scaling across compute nodes.
+- **Database Optimization**: Mandatory query profiling. Use B-Tree/GIN indexing strategically. Never perform `SELECT *` on high-traffic tables.
+- **Idempotency**: All write operations (POST/PUT/DELETE) must be idempotent to prevent duplicate processing during retries.
+- **Consistent Consistency**: Use transactions for atomic state changes; use eventual consistency models for non-critical logging/analytics.
+
+### 🛡️ Security & Privacy
+- **Zero Trust Architecture**: Never trust internal calls. Every request must be authenticated and authorized via JWT/OIDC.
+- **Least Privilege (RBAC)**: Enforce strict Role-Based Access Control at the API and Database levels.
+- **Automatic Sanitization**: All user input MUST be sanitized and validated at the boundary before entering business logic.
+
+### ⚖️ Reliability & Load Balancing
+- **Horizontal Elasticity**: Services must be designed to spin up/down based on load with zero downtime.
+- **Observability**: Every operation must be traceable. Implement structured logging, metrics (Prometheus), and distributed tracing (OpenTelemetry).
+- **Graceful Degradation**: Implement Circuit Breakers and Retries with Exponential Backoff for all external service calls.
+
+---
+
 📌 **END OF AGENT CONSTITUTION**

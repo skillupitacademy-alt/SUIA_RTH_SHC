@@ -1,6 +1,6 @@
 'use client';
 
-import { LucideIcon, Users, FileCheck, ShieldAlert, Cpu } from 'lucide-react';
+import { LucideIcon, Users, FileCheck, ShieldAlert, Cpu, Zap } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { apiClient } from '@quiz/api-client';
 
@@ -50,9 +50,9 @@ export function AdminMetricsGrid() {
 
     const stats = [
         { label: "Total Operators", value: metrics?.totalUsers ?? '...', icon: Users, subValue: "Active Platform Accounts" },
+        { label: "Live Users", value: metrics?.liveUsers ?? '...', icon: Zap, subValue: "Currently Authenticated", variant: 'alert' as const },
         { label: "Exams Verified", value: metrics?.totalExams ?? '...', icon: FileCheck, subValue: "Total Attempts" },
         { label: "Asset Inventory", value: metrics?.totalQuestions ?? '...', icon: ShieldAlert, subValue: "Question Bank" },
-        { label: "System Load", value: metrics?.systemLoad ?? '...', icon: Cpu, subValue: metrics?.uptime ?? "Uptime Status" },
     ];
 
     return (

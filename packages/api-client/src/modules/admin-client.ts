@@ -19,6 +19,16 @@ export class AdminClient {
     return this.client.get<any>('/admin/metrics');
   }
 
+  async getLiveSessions(page: number = 1, limit: number = 10) {
+    return this.client.get<{
+      sessions: any[];
+      total: number;
+      page: number;
+      limit: number;
+      totalPages: number;
+    }>(`/admin/sessions/live?page=${page}&limit=${limit}`);
+  }
+
   async login(email: string, password: string) {
     return this.client.post<{ user: any; accessToken: string }>('/admin/auth/login', { email, password });
   }

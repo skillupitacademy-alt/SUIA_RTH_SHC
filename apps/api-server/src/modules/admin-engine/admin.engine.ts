@@ -1,5 +1,5 @@
-import { db, questions, domains, subjects, topics, skills } from '@quiz/db';
-import { eq, and, sql, desc } from 'drizzle-orm';
+import { db, questions, domains, subjects, topics, skills, refreshTokens, users, userProfiles } from '@quiz/db';
+import { eq, and, sql, desc, gt } from 'drizzle-orm';
 import { AuditService } from '../auth/audit.service';
 import { QuestionService } from '../question/question.service';
 import { DomainService, SubjectService, TopicService } from '../domain/domain.service';
@@ -90,10 +90,13 @@ export class AdminEngine {
     const [examCount] = await db.select({ count: sql`count(*)` }).from(sql`exams`);
     const [questionCount] = await db.select({ count: sql`count(*)` }).from(questions);
     
+    const { total: liveUserCount } = await this.getLiveSessions(1, 1);
+
     return {
       totalUsers: Number(userCount?.count || 0),
       totalExams: Number(examCount?.count || 0),
       totalQuestions: Number(questionCount?.count || 0),
+      liveUsers: liveUserCount,
       systemLoad: '0.8%',
       uptime: '99.99%',
     };
@@ -216,5 +219,44 @@ export class AdminEngine {
     const result = await SkillService.mapTopicToSkills(topicId, skillIds);
     await AuditService.log({ userId: adminId, action: 'admin_map_topic_skills', metadata: { topicId, skillIds } });
     return result;
+  }
+
+  /**
+   * SESSION MONITORING (Optimized for Millions of Users)
+   */
+  static async getLiveSessions(page: number = 1, limit: number = 10) {
+    const offset = (page - 1) * limit;
+
+    const [countResult] = await db.select({ count: sql`count(*)` })
+      .from(refreshTokens)
+      .where(and(
+        eq(refreshTokens.revoked, false),
+        gt(refreshTokens.expiresAt, new Date())
+      ));
+
+    const sessions = await db.query.refreshTokens.findMany({
+      where: and(
+        eq(refreshTokens.revoked, false),
+        gt(refreshTokens.expiresAt, new Date())
+      ),
+      with: {
+        user: {
+          with: {
+            profile: true
+          }
+        }
+      },
+      limit,
+      offset,
+      orderBy: [desc(refreshTokens.createdAt)]
+    });
+
+    return {
+      sessions,
+      total: Number(countResult?.count || 0),
+      page,
+      limit,
+      totalPages: Math.ceil(Number(countResult?.count || 0) / limit)
+    };
   }
 }
