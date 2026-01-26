@@ -15,6 +15,12 @@ I have successfully achieved **100% functional parity** with the [Admin Dashboar
 - **Performance & Mastery**: Aggregated accuracy by Domain, **Difficulty level**, and **Pass/Fail trends**.
 - **Growth Zones**: Identification of systemic skill gaps.
 
+### 👥 User Management Interface
+- **Paginated User Matrix**: Real-time view of all platform users, sorted by latest.
+- **Identity Dossier**: Modal view revealing onboarding data (Education, Profession, Age, Experience).
+- **Role Visibility**: Instant identification of Admin vs. Standard accounts.
+- **Real-Time Presence**: "Heartbeat" tracking (Active/Idle/Offline) for admins.
+
 ### 🏗️ Technical Architecture Upgrades
 - **High-Performance SQL Aggregations**: Optimized for massive scale.
 - **Modular API Layer**: Specialized metrics endpoints.
@@ -23,6 +29,7 @@ I have successfully achieved **100% functional parity** with the [Admin Dashboar
 
 ---
 ## Change Log
+- **2026-01-27**: Documented User Management Interface and Presence Tracking.
 - **2026-01-27**: Resolved critical 500 login error by refactoring schema enums and repairing `.env.local`.
 - **2026-01-27**: Created `DATABASE_ERD.md` in `docs/architecture` per user request and AGENT_CONSTITUTION_v1.1 compliance.
 - **2026-01-27**: Achieved 100% Admin Dashboard spec compliance with new metrics and visualizations.

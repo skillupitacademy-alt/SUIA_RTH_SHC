@@ -18,10 +18,18 @@
 - [x] **Phase 4: Frontend Implementation (Enterprise Control Panel)**
     - [x] Implement Modular Admin Widgets
     - [x] Expand Governance Terminal to full specification
-- [x] **Phase 5: Verification**
+    - [x] **Consolidate Admin Layouts**: Unified redundant layouts into single premium shell.
+    - [x] **Fix Rate Limits**: Resolved 429s by increasing quotas for Admin API.
+    - [x] **Real-Time Presence**: Implemented "Heartbeat" mechanism for accurate Active/Idle status.
+- [x] **Phase 5: User Management System**
+    - [x] **Backend**: `getUsers` API with pagination and role filtering.
+    - [x] **Frontend**: Users Tab with tabular view and onboarding details modal.
+    - [x] **RBAC Verification**: Enforced Strict Role Checking (ADMIN/SUPER_ADMIN).
+- [x] **Phase 6: Verification**
     - [x] Full load testing simulation for metrics aggregation
     - [x] Verify RBAC enforced at every layer
 
 ---
 ## Change Log
+- [x] **2026-01-27**: Implemented User Management Module (Phase 5). Added Real-Time Presence tracking and fixed API Rate limits.
 - [x] **2026-01-27**: Achieved 100% parity with `ADMIN_DASHBOARD_SPEC.md` including previously pending metrics (Locked accounts, New today, Difficulty scores, Pass/Fail trends). Initialized `task.md` according to AGENT_CONSTITUTION_v1.1 rules.
