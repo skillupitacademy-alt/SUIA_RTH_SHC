@@ -353,17 +353,7 @@ export class AdminEngine {
     };
   }
 
-  static async getDomains() {
-    return await db.query.domains.findMany();
-  }
 
-  static async getSubjects() {
-    return await db.query.subjects.findMany();
-  }
-
-  static async getTopics() {
-    return await db.query.topics.findMany();
-  }
 
   /**
    * Publishes a question.
@@ -550,6 +540,101 @@ export class AdminEngine {
       page,
       limit,
       totalPages: Math.ceil(Number(countResult?.count || 0) / limit)
+    };
+  }
+
+  /**
+   * Section 4: Question Bank Management (Phase 6)
+   */
+  static async getQuestions(page: number = 1, limit: number = 20) {
+    const offset = (page - 1) * limit;
+
+    const [countResult] = await db.select({ count: sql`count(*)` }).from(questions);
+
+    const questionsList = await db.query.questions.findMany({
+      limit,
+      offset,
+      orderBy: [desc(questions.createdAt)],
+      with: {
+        topic: {
+          with: {
+            subject: {
+              with: {
+                domain: true
+              }
+            }
+          }
+        }
+      }
+    });
+
+    return {
+      questions: questionsList,
+      total: Number(countResult?.count || 0),
+      page,
+      limit,
+      totalPages: Math.ceil(Number(countResult?.count || 0) / limit)
+    };
+  }
+
+  static async getDomains(page: number = 1, limit: number = 20) {
+    const offset = (page - 1) * limit;
+    const [countResult] = await db.select({ count: sql`count(*)` }).from(domains);
+    const data = await db.query.domains.findMany({
+        limit,
+        offset,
+        orderBy: [desc(domains.createdAt)]
+    });
+    return {
+        data,
+        total: Number(countResult?.count || 0),
+        page,
+        limit,
+        totalPages: Math.ceil(Number(countResult?.count || 0) / limit)
+    };
+  }
+
+  static async getSubjects(page: number = 1, limit: number = 20) {
+    const offset = (page - 1) * limit;
+    const [countResult] = await db.select({ count: sql`count(*)` }).from(subjects);
+    const data = await db.query.subjects.findMany({
+        limit,
+        offset,
+        orderBy: [desc(subjects.createdAt)],
+        with: {
+            domain: true
+        }
+    });
+    return {
+        data,
+        total: Number(countResult?.count || 0),
+        page,
+        limit,
+        totalPages: Math.ceil(Number(countResult?.count || 0) / limit)
+    };
+  }
+
+  static async getTopics(page: number = 1, limit: number = 20) {
+    const offset = (page - 1) * limit;
+    const [countResult] = await db.select({ count: sql`count(*)` }).from(topics);
+    const data = await db.query.topics.findMany({
+        limit,
+        offset,
+        orderBy: [desc(topics.createdAt)],
+        with: {
+            subject: {
+                with: {
+                    domain: true
+                }
+            }
+        }
+    });
+    return {
+        data,
+        total: Number(countResult?.count || 0),
+        page,
+        limit,
+        totalPages: Math.ceil(Number(countResult?.count || 0) / limit)
     };
   }
 }

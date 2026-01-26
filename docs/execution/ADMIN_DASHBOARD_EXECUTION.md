@@ -27,3 +27,28 @@ Implement extreme scalability for session monitoring and reorganize the UI for a
 ## 🧪 Verification Checkpoints
 - [ ] Success: Logging in a new user immediately shows them in the Admin Dashboard.
 - [ ] Success: Revoking a session in Admin UI logs the user out on their end.
+
+## 4. Question Bank Management (Phase 6)
+
+Provide a comprehensive view of the questioning engine.
+
+### Data Requirements (All Tables)
+The interface must join and display data from:
+1.  **Questions**: The core record (Text, Type, Difficulty).
+2.  **Topics**: The immediate parent (Name, Complexity, Weight).
+3.  **Subjects**: The middle layer (Name).
+4.  **Domains**: The top-level category (Name).
+
+### UI Specification: Question Matrix
+- **Paginated Table**: Display 20 records per page.
+- **Columns**:
+    - **Question**: Truncated text with "View" action.
+    - **Hierarchy**: Domain > Subject > Topic (Breadcrumb style).
+    - **Metadata**: Type (MCQ/Code), Difficulty (Badge).
+    - **Status**: Active/Draft/Archived.
+    - **Created**: Date.
+
+### API Requirements
+- `GET /api/admin/questions`:
+    - Support pagination (page, limit).
+    - Return flat object with joined hierarchy names.

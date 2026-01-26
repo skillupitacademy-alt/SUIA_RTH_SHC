@@ -46,6 +46,11 @@ export class FetchClient {
     });
 
     if (!response.ok) {
+      if (response.status === 401) {
+        if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('auth:unauthorized'));
+        }
+      }
       // Clone response to read body twice if needed (though we only read once here)
       const errorBody = await response.json().catch(() => ({ message: 'Unknown error' }));
       const errorMessage = errorBody.message || errorBody.error || `API Error: ${response.status}`;

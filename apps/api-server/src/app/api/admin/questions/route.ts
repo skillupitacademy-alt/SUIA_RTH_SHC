@@ -1,33 +1,44 @@
 import { NextRequest, NextResponse } from 'next/server';
-export const dynamic = 'force-dynamic';
 import { AdminEngine } from '@/modules/admin-engine/admin.engine';
 import { TokenService } from '@/modules/auth/token.service';
+import { db } from '@quiz/db';
+import { userRoles, roles } from '@quiz/db';
+import { eq, and, inArray } from 'drizzle-orm';
+
+export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
   try {
-    const token = req.headers.get('authorization')?.split(' ')[1];
-    if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const authHeader = req.headers.get('authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
 
-    const payload = await TokenService.verifyAccessToken(token, true); // true for isAdmin check
+    const token = authHeader.split(' ')[1];
+    const payload = await TokenService.verifyAccessToken(token);
+
+    // Verify Admin Role
+    const userRole = await db.select()
+        .from(userRoles)
+        .innerJoin(roles, eq(userRoles.roleId, roles.id))
+        .where(and(
+            eq(userRoles.userId, payload.userId),
+            inArray(roles.name, ['admin', 'ADMIN', 'super_admin', 'SUPER_ADMIN'])
+        ))
+        .limit(1);
+
+    if (userRole.length === 0) {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
     
-    const questions = await AdminEngine.getAllQuestions();
-    return NextResponse.json(questions);
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 403 });
-  }
-}
+    const searchParams = req.nextUrl.searchParams;
+    const page = parseInt(searchParams.get('page') || '1');
+    const limit = parseInt(searchParams.get('limit') || '20');
 
-export async function POST(req: NextRequest) {
-  try {
-    const token = req.headers.get('authorization')?.split(' ')[1];
-    if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-    const payload = await TokenService.verifyAccessToken(token, true);
-    
-    const data = await req.json();
-    const question = await AdminEngine.createQuestion(data, payload.userId);
-    return NextResponse.json(question);
+    const data = await AdminEngine.getQuestions(page, limit);
+    return NextResponse.json(data);
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 403 });
+    console.error('[ADMIN_QUESTIONS] Error:', error.message);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }

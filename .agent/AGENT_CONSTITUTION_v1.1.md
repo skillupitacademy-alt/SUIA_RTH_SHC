@@ -156,9 +156,9 @@ Whenever an agent **creates or updates** any of the following files:
 The agent MUST obey the following rules:
 
 ### Placement Law
-
-- These files MUST live inside the `@docs/` directory
-- They are **FORBIDDEN** outside `@docs/`
+- Tasks, Walkthroughs, and Implementation plans MUST live inside the `@docs/` directory
+- **Specifications (Spec MDs)** MUST live inside `@docs/execution/`
+- They are **FORBIDDEN** in the root or generic subfolders unless derived
 
 ### Creation / Append Rules
 

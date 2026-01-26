@@ -31,15 +31,29 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
 
                 const { user: validatedUser } = await apiClient.auth.getSession();
                 if (!validatedUser.isAdmin) throw new Error("Revoked");
-            } catch (err) {
+            } catch (err: any) {
                 console.error("Session revalidation failed:", err);
-                logout();
-                router.push('/login');
+                // Auto-heal on invalid token signature
+                if (err.message.includes('Invalid token') || err.message.includes('signature') || err.message.includes('jwt')) {
+                    console.warn("Detected invalid token, forcing logout...");
+                    logout();
+                    router.push('/login');
+                }
             }
         };
 
+
         revalidate();
 
+        // Circuit Breaker: Listen for global 401 events from FetchClient
+        const handleUnauthorized = () => {
+            console.warn("Circuit Breaker: Global 401 detected. Logging out.");
+            logout();
+            router.push('/login');
+        };
+
+        window.addEventListener('auth:unauthorized', handleUnauthorized);
+        return () => window.removeEventListener('auth:unauthorized', handleUnauthorized);
     }, [isAuthenticated, user, initialized, router, logout, token]);
 
     // Synchronously ensure token is set before rendering children

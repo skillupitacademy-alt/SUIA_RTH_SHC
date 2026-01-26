@@ -30,6 +30,14 @@ Implement the authoritative product specification defined in [ADMIN_DASHBOARD_SP
   - `usePresenceHeartbeat` hook: Pings `/api/auth/heartbeat` every 60s.
   - UI Indicators: Pulse animation for Active users, dimmed state for Idle.
 
+#### Phase 6: Question Bank Management (New)
+- **Backend**:
+  - `AdminEngine.getQuestions(page, limit)`: Joins questions -> topics -> subjects -> domains.
+  - Endpoint: `GET /api/admin/questions`.
+- **Frontend**:
+  - `QuestionTable.tsx`: Displays hierarchical data with status badges.
+  - `/questions`: Main page with navigation integration.
+
 ---
 ## Change Log
 - **2026-01-27**: Added implementation details for User Management, Presence Heartbeat, and Admin Layout consolidation.

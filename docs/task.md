@@ -25,7 +25,12 @@
     - [x] **Backend**: `getUsers` API with pagination and role filtering.
     - [x] **Frontend**: Users Tab with tabular view and onboarding details modal.
     - [x] **RBAC Verification**: Enforced Strict Role Checking (ADMIN/SUPER_ADMIN).
-- [x] **Phase 6: Verification**
+- [x] **Phase 6: Question Bank Management**
+    - [x] **Backend**: `getQuestions` with 4-level join (Question->Topic->Subject->Domain).
+    - [x] **API**: `GET /api/admin/questions`.
+    - [x] **Frontend**: Question Matrix UI (`QuestionTable.tsx`).
+    - [x] **Hierarchy Views**: Tabular views for Domains, Subjects, and Topics.
+- [x] **Phase 7: Verification** (Renamed from 6)
     - [x] Full load testing simulation for metrics aggregation
     - [x] Verify RBAC enforced at every layer
 

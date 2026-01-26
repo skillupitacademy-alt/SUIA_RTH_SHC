@@ -7,12 +7,44 @@ export class AdminClient {
     this.client = client;
   }
 
-  async getDomains() {
-    return this.client.get<any[]>('/admin/domains');
+  async getDomains(page: number = 1, limit: number = 20) {
+    return this.client.get<{
+        data: any[];
+        total: number;
+        page: number;
+        limit: number;
+        totalPages: number;
+    }>(`/admin/domains?page=${page}&limit=${limit}`);
   }
 
-  async getQuestions() {
-    return this.client.get<any[]>('/admin/questions');
+  async getSubjects(page: number = 1, limit: number = 20) {
+    return this.client.get<{
+        data: any[];
+        total: number;
+        page: number;
+        limit: number;
+        totalPages: number;
+    }>(`/admin/subjects?page=${page}&limit=${limit}`);
+  }
+
+  async getTopics(page: number = 1, limit: number = 20) {
+    return this.client.get<{
+        data: any[];
+        total: number;
+        page: number;
+        limit: number;
+        totalPages: number;
+    }>(`/admin/topics?page=${page}&limit=${limit}`);
+  }
+
+  async getQuestions(page: number = 1, limit: number = 20) {
+    return this.client.get<{
+        questions: any[];
+        total: number;
+        page: number;
+        limit: number;
+        totalPages: number;
+    }>(`/admin/questions?page=${page}&limit=${limit}`);
   }
 
   async getMetrics() {

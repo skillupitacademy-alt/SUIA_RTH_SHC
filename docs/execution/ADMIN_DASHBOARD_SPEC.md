@@ -45,12 +45,6 @@ This dashboard answers one core question:
 - Ensure users are completing email verification
 - Support basic user management
 
-### Notes
-
-- Admins **must never see passwords**
-- Admins **must never see tokens**
-- Only high-level user metadata is shown
-
 ---
 
 ## 3. Roles & Permissions (RBAC)
@@ -62,18 +56,13 @@ This dashboard answers one core question:
   - Admin
   - Super Admin
 - Number of users assigned to each role
-- Role assignment history (optional, audit-level)
+- Role assignment history
 
 ### Why This Exists
 
 - Prevents accidental privilege escalation
 - Ensures admins know who has elevated access
 - Supports enterprise governance
-
-### Notes
-
-- Role logic is backend-enforced
-- UI only reflects current assignments
 
 ---
 
@@ -83,23 +72,15 @@ This dashboard answers one core question:
 
 - Successful vs failed login attempts (aggregated)
 - Accounts with repeated failed logins
-- Active sessions count
+- Active sessions count (real-time)
 - Recent authentication activity
-- Suspicious activity indicators (optional)
+- Suspicious activity indicators (Threat Levels)
 
 ### Why This Exists
 
 - Detect brute-force or abuse attempts
 - Monitor platform security health
 - Provide early warning signals
-
-### What Is NOT Visible
-
-- JWT tokens
-- Refresh tokens
-- Password hashes
-
-Admins see **signals**, not **secrets**.
 
 ---
 
@@ -110,20 +91,13 @@ Admins see **signals**, not **secrets**.
 - List of Domains (e.g., Full Stack, Data Science)
 - Subjects under each domain
 - Topics under each subject
-- Topic complexity level
-- Topic weight
+- Topic complexity level & weights
 - Active vs inactive status
 
 ### Why This Exists
 
 - Ensures syllabus completeness
 - Helps admins validate curriculum structure
-- Prevents broken or incomplete exams
-
-### Notes
-
-- Topics are the **atomic unit of exams and scoring**
-- Changes here directly affect exam quality
 
 ---
 
@@ -131,24 +105,34 @@ Admins see **signals**, not **secrets**.
 
 ### What Should Be Visible
 
-- Total questions per domain
-- Questions per subject and topic
+- Total questions per domain/subject/topic
 - Difficulty distribution:
-  - Simple
-  - Intermediate
-  - Expert
+  - Simple (Target: 30%)
+  - Intermediate (Target: 30%)
+  - Expert (Target: 40%)
 - Active vs inactive questions
-- Topics with insufficient questions
+- Topics with insufficient questions (Critical Alerts)
+
+### Tabular Data View (Hierarchy Management)
+
+To ensure full visibility, the Admin Dashboard must expose raw data tables for each layer of the hierarchy:
+
+#### 1. Domains Table
+- **Columns**: Name, Category, Description, Status, Created At.
+- **Actions**: Edit, Archive.
+
+#### 2. Subjects Table
+- **Columns**: Name, Parent Domain, Order, Status.
+- **Actions**: Edit, Reorder.
+
+#### 3. Topics Table
+- **Columns**: Name, Parent Subject, Complexity (1-10), Weight, Status.
+- **Actions**: Edit, Validate Readiness.
 
 ### Why This Exists
 
-- Prevents exam blueprint failures
 - Maintains fair difficulty balance
 - Ensures enterprise exam standards are met
-
-### Example Insight
-
-> “Topic X has only 3 Expert questions – enterprise exams may fail.”
 
 ---
 
@@ -157,23 +141,14 @@ Admins see **signals**, not **secrets**.
 ### What Should Be Visible
 
 - Total blueprints generated
-- Blueprint scope:
-  - Domain-based
-  - Subject-based
-  - Topic-based
-- Question count per blueprint
-- Difficulty distribution (30% / 30% / 40%)
-- Blueprint generation success / failure
+- Blueprint scope (Domain/Subject/Topic)
+- Question count & Difficulty distribution
+- Blueprint generation success / failure logs
 
 ### Why This Exists
 
 - Confirms enterprise exam rules are enforced
 - Allows auditing of exam configuration
-- Helps diagnose blueprint generation issues
-
-### Important Rule
-
-Blueprints are **immutable** once created.
 
 ---
 
@@ -185,13 +160,11 @@ Blueprints are **immutable** once created.
 - Exams completed vs abandoned
 - Exams per domain
 - Average completion time
-- Peak exam usage periods
 
 ### Why This Exists
 
 - Understand user engagement
 - Identify UX or timing issues
-- Plan scaling and performance improvements
 
 ---
 
@@ -202,43 +175,16 @@ Blueprints are **immutable** once created.
 - Average scores by domain
 - Average scores by difficulty
 - Pass / fail trends
-- Topics with lowest accuracy
-- Topics with highest mastery
+- Topics with lowest accuracy (Gap Analysis)
 
 ### Why This Exists
 
 - Measure exam quality
 - Detect overly easy or hard topics
-- Support data-driven curriculum improvements
-
-### Privacy Rule
-
-Admins see **aggregated data only**, not individual answers.
 
 ---
 
-## 10. Growth Zones & Learning Insights
-
-### What Should Be Visible
-
-- Common weak topics across users
-- High-weight topics with low accuracy
-- Skill gaps by domain
-- System-identified improvement areas
-
-### Why This Exists
-
-- Guides future content creation
-- Improves learning outcomes
-- Prepares the system for AI-driven recommendations
-
-### Note
-
- These insights are **derived**, not manually entered.
-
----
-
-## 11. Audit & System Logs
+## 10. Audit & System Logs
 
 ### What Should Be Visible
 
@@ -246,7 +192,6 @@ Admins see **aggregated data only**, not individual answers.
 - Role changes
 - Exam blueprint generation events
 - System-level warnings or errors
-- Timestamped activity logs
 
 ### Why This Exists
 
@@ -256,86 +201,16 @@ Admins see **aggregated data only**, not individual answers.
 
 ---
 
-## 12. What Admin Dashboard Must NOT Show
+## 11. Restriction Matrix
 
 | Restricted Item | Reason |
 |-----------------|--------|
-| Passwords | Security risk |
-| JWT tokens | Sensitive |
-| Refresh tokens | Sensitive |
-| Individual exam answers | Privacy |
-| Internal algorithms | Over-complex |
+| Passwords | High Security Risk |
+| User Secrets / Tokens | High Security Risk |
+| Individual Answer Data | Privacy compliance |
 
 ---
 
-## 13. Admin Dashboard Mental Model
+## 12. Final Goal
 
-Admins do not interact with exams directly.
-
-Admins:
-- **Observe**
-- **Monitor**
-- **Protect**
-- **Improve**
-
-> “If users take exams, admins protect the system.”
-
----
-
-## 14. Summary of Dashboard Sections
-
-| Section | Purpose |
-|------|--------|
-| Users & Accounts | Growth & access |
-| Roles & Permissions | Security governance |
-| Login Health | Threat detection |
-| Domains & Topics | Content control |
-| Question Bank | Exam readiness |
-| Exam Blueprints | Enterprise compliance |
-| Exam Activity | Usage insights |
-| Scoring Analytics | Quality measurement |
-| Growth Zones | Improvement planning |
-| Audit Logs | Trust & compliance |
-
----
-
-## 15. Final Statement
-
-This Admin Dashboard is:
-- Enterprise-grade
-- Security-first
-- Analytics-driven
-- AI-ready
-- Designed for clarity, not complexity
-
-It provides **confidence**, not control overload.
-
----
-
-## 16. User Management Interface (New)
-
-### What Should Be Visible
-
-- **Paginated User List**: Displaying all registered users.
-- **Essential Columns**:
-  - Name & Avatar
-  - Email Address
-  - Assigned Role
-  - Account Status (Verified / Active)
-  - Joined Date (Sorted Latest First)
-- **Onboarding Details (Modal/Expandable)**:
-  - Education Level
-  - Professional Status (Student/Professional)
-  - Age Group
-  - Experience Years
-  - Domain Interests (Tags)
-
-### Why This Exists
-
-- **Identity Verification**: Admins verify who is accessing the platform.
-- **Demographic Insight**: Helps separate student cohorts from professionals.
-- **Support**: Allows admins to debug user profile issues.
-
-### Sorting Rule
-
-> **"Latest First"**: The default view must always show the most recently registered users at the top.
+This Admin Dashboard provides **Confidence through Clarity**. It transforms raw database records into **Actionable Governance Signals**.
