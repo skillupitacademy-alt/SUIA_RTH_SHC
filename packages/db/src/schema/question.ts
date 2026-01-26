@@ -1,9 +1,7 @@
-import { pgTable, text, timestamp, uuid, integer, jsonb, pgEnum } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, uuid, integer, jsonb } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
-import { topics, subtopics, statusEnum } from "./domain";
-
-export const questionTypeEnum = pgEnum("question_type", ["mcq", "code_mcq"]);
-export const difficultyEnum = pgEnum("difficulty", ["simple", "intermediate", "expert"]);
+import { topics, subtopics } from "./domain";
+import { statusEnum, questionTypeEnum, difficultyEnum } from "./enums";
 
 export const questions = pgTable("questions", {
   id: uuid("id").primaryKey().defaultRandom(),

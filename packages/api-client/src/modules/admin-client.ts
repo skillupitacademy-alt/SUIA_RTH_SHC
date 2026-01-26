@@ -19,6 +19,42 @@ export class AdminClient {
     return this.client.get<any>('/admin/metrics');
   }
 
+  async getUserMetrics() {
+    return this.client.get<any>('/admin/metrics/users');
+  }
+
+  async getSecurityMetrics() {
+    return this.client.get<any>('/admin/metrics/security');
+  }
+
+  async getContentHealth() {
+    return this.client.get<any[]>('/admin/metrics/content');
+  }
+
+  async getPerformanceAnalytics() {
+    return this.client.get<any[]>('/admin/metrics/performance');
+  }
+
+  async getExamActivity() {
+    return this.client.get<any>('/admin/metrics/exams');
+  }
+
+  async getRBACMetrics() {
+    return this.client.get<any[]>('/admin/metrics/rbac');
+  }
+
+  async getBlueprintMetrics() {
+    return this.client.get<any>('/admin/metrics/blueprints');
+  }
+
+  async getGrowthMetrics() {
+    return this.client.get<any[]>('/admin/metrics/growth');
+  }
+
+  async getAuditLogs() {
+    return this.client.get<any[]>('/admin/logs');
+  }
+
   async getLiveSessions(page: number = 1, limit: number = 10) {
     return this.client.get<{
       sessions: any[];

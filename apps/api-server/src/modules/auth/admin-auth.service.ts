@@ -23,6 +23,7 @@ export class AdminAuthService {
         }
       }
     });
+    console.log('>>> [AdminAuthService] User found:', !!user);
 
     // 3. Validate Credentials
     if (!user || !(await PasswordService.compare(password, user.passwordHash))) {

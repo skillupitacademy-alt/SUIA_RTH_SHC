@@ -1,7 +1,6 @@
-import { pgTable, text, timestamp, uuid, integer, primaryKey, pgEnum } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, uuid, integer, primaryKey } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
-
-export const statusEnum = pgEnum("status", ["active", "inactive", "draft"]);
+import { statusEnum } from "./enums";
 
 // --- EDUCATIONAL HIERARCHY ---
 
@@ -87,6 +86,8 @@ export const subjectsRelations = relations(subjects, ({ one, many }) => ({
   topics: many(topics),
 }));
 
+import { questions } from "./question";
+
 export const topicsRelations = relations(topics, ({ one, many }) => ({
   subject: one(subjects, {
     fields: [topics.subjectId],
@@ -94,6 +95,7 @@ export const topicsRelations = relations(topics, ({ one, many }) => ({
   }),
   subtopics: many(subtopics),
   topicSkills: many(topicSkills),
+  questions: many(questions),
 }));
 
 export const subtopicsRelations = relations(subtopics, ({ one }) => ({

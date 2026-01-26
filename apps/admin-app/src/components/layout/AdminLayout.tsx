@@ -3,15 +3,16 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
-    BarChart3,
+    LayoutDashboard,
     Database,
-    Users,
+    FileText,
     ShieldAlert,
     Settings,
-    ChevronRight,
     LogOut,
+    ChevronRight,
     Bell,
-    AlertTriangle
+    AlertTriangle,
+    Search
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { AdminGuard } from '../auth/AdminGuard';
@@ -21,16 +22,16 @@ import { useEffect } from 'react';
 import { useStrictNavigation } from '@/hooks/useStrictNavigation';
 
 const ADMIN_NAV = [
-    { name: 'Dashboard', href: '/', icon: BarChart3 },
-    { name: 'Content Engine', href: '/content', icon: Database },
-    { name: 'User Moderation', href: '/users', icon: Users },
-    { name: 'Risk & Audit', href: '/audit', icon: ShieldAlert },
-    { name: 'Platform Settings', href: '/settings', icon: Settings },
+    { name: 'Dashboard', href: '/', icon: LayoutDashboard },
+    { name: 'Question Bank', href: '/questions', icon: Database },
+    { name: 'Blueprint Manager', href: '/blueprints', icon: FileText },
+    { name: 'Audit Logs', href: '/audit', icon: ShieldAlert },
+    { name: 'Settings', href: '/settings', icon: Settings },
 ];
 
 export function AdminLayout({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
-    const { token } = useAuthStore();
+    const { token, logout } = useAuthStore();
     const { showWarning, confirmLogout, cancelNavigation } = useStrictNavigation();
 
     useEffect(() => {
@@ -39,35 +40,40 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
         }
     }, [token]);
 
+    const handleLogout = () => {
+        logout();
+        window.location.href = '/login';
+    };
+
     if (pathname === '/login') {
         return (
-            <div className="min-h-screen grid lg:grid-cols-2 bg-background">
+            <div className="min-h-screen grid lg:grid-cols-2 bg-background font-sans">
                 {/* Visual Side */}
                 <div className="hidden lg:flex flex-col justify-between p-12 bg-[#020408] text-white relative overflow-hidden">
                     <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=2070')] bg-cover opacity-20" />
                     <div className="relative z-10">
                         <div className="flex items-center gap-3 mb-8">
-                            <div className="h-10 w-10 rounded-xl bg-primary flex items-center justify-center font-black text-xl italic">A</div>
-                            <span className="text-2xl font-black tracking-tight uppercase">QuizAdmin</span>
+                            <div className="h-10 w-10 rounded-xl bg-[#FF4B91] flex items-center justify-center font-black text-xl shadow-lg shadow-[#FF4B91]/30">Q</div>
+                            <span className="text-2xl font-black tracking-tighter text-white">QUIZADMIN</span>
                         </div>
                     </div>
                     <div className="relative z-10 space-y-6">
-                        <h1 className="text-5xl font-black leading-tight">
-                            Secure Governance <br />
-                            <span className="text-primary">Terminal</span>
+                        <h1 className="text-5xl font-black leading-tight tracking-tighter italic uppercase">
+                            Secure <br />
+                            <span className="text-[#FF4B91]">Governance</span>
                         </h1>
-                        <p className="text-lg text-gray-400 max-w-md">
-                            Authorized personnel only. Access to this system is monitored and audited.
+                        <p className="text-lg text-gray-400 max-w-md font-medium">
+                            Authorized personnel only. Access to this terminal is monitored and audited.
                         </p>
                     </div>
-                    <div className="relative z-10 text-xs font-mono text-gray-500">
-                        SYSTEM_ID: QZ-CORE-V1 // SECURE_CONNECTION
+                    <div className="relative z-10 text-xs font-black uppercase tracking-widest text-gray-500">
+                        SYSTEM_ID: RH-9011-GC // SECURE_LAYER_V1
                     </div>
                 </div>
 
                 {/* Form Side */}
-                <div className="flex items-center justify-center p-8">
-                    <div className="w-full max-w-md space-y-8">
+                <div className="flex items-center justify-center p-8 bg-muted/5">
+                    <div className="w-full max-w-md space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
                         {children}
                     </div>
                 </div>
@@ -75,32 +81,31 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
         );
     }
 
-
     return (
         <AdminGuard>
             {showWarning && (
                 <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
-                    <div className="bg-background border rounded-3xl p-8 max-w-md w-full shadow-2xl relative overflow-hidden">
-                        <div className="absolute top-0 left-0 w-full h-2 bg-red-600 z-10" />
+                    <div className="bg-background border rounded-[2.5rem] p-8 max-w-md w-full shadow-2xl relative overflow-hidden">
+                        <div className="absolute top-0 left-0 w-full h-2 bg-[#FF4B91] z-10" />
                         <div className="flex flex-col items-center text-center gap-4">
                             <div className="h-16 w-16 rounded-full bg-red-100 flex items-center justify-center text-red-600 mb-2">
                                 <AlertTriangle size={32} />
                             </div>
-                            <h3 className="text-2xl font-black">Security Warning</h3>
-                            <p className="text-muted-foreground">
+                            <h3 className="text-2xl font-black text-[#1A1A1A]">Security Warning</h3>
+                            <p className="text-muted-foreground font-medium">
                                 Navigation attempt detected. For security reasons, using the browser <strong>Back</strong> button will terminate your session.
                             </p>
 
                             <div className="grid grid-cols-2 gap-4 w-full mt-6">
                                 <button
                                     onClick={cancelNavigation}
-                                    className="px-4 py-3 rounded-xl border-2 font-bold hover:bg-muted transition-colors"
+                                    className="px-6 py-4 rounded-2xl border-2 font-black uppercase tracking-widest text-xs hover:bg-muted transition-all"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     onClick={confirmLogout}
-                                    className="px-4 py-3 rounded-xl bg-red-600 text-white font-bold hover:bg-red-700 transition-colors shadow-lg shadow-red-600/20"
+                                    className="px-6 py-4 rounded-2xl bg-red-600 text-white font-black uppercase tracking-widest text-xs hover:bg-red-700 transition-all shadow-lg shadow-red-600/20"
                                 >
                                     Log Out
                                 </button>
@@ -110,19 +115,19 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
                 </div>
             )}
 
-            <div className="flex min-h-screen bg-background text-foreground">
+            <div className="flex min-h-screen bg-muted/10 overflow-hidden font-sans">
                 {/* Sidebar */}
-                <aside className="fixed inset-y-0 left-0 w-72 border-r bg-muted/30 backdrop-blur-md z-50 overflow-y-auto">
-                    <div className="flex flex-col h-full">
-                        <div className="p-8">
-                            <Link href="/" className="flex items-center gap-2">
-                                <div className="h-8 w-8 rounded-lg bg-primary text-primary-foreground flex items-center justify-center font-black">A</div>
-                                <span className="text-xl font-black tracking-tight italic uppercase">QuizAdmin</span>
-                            </Link>
+                <aside className="w-80 border-r bg-background flex flex-col shadow-xl shadow-muted/5 fixed inset-y-0 left-0 z-50">
+                    <div className="p-10">
+                        <div className="flex items-center gap-3 mb-12">
+                            <div className="flex items-center gap-2">
+                                <div className="h-10 w-10 rounded-xl bg-[#FF4B91] flex items-center justify-center text-white font-black text-xl shadow-lg shadow-[#FF4B91]/30">Q</div>
+                                <span className="font-black text-2xl tracking-tighter text-[#1A1A1A]">QUIZADMIN</span>
+                            </div>
                         </div>
 
-                        <nav className="flex-1 px-4 space-y-2">
-                            <p className="px-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 mb-4">Platform Control</p>
+                        <p className="text-[11px] font-black uppercase tracking-[0.2em] text-muted-foreground/40 mb-8 px-4">Platform Control</p>
+                        <nav className="space-y-4">
                             {ADMIN_NAV.map((item) => {
                                 const isActive = pathname === item.href;
                                 return (
@@ -130,66 +135,78 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
                                         key={item.name}
                                         href={item.href}
                                         className={cn(
-                                            "flex items-center justify-between group px-4 py-3.5 rounded-2xl transition-all",
+                                            "flex items-center justify-between group px-6 py-4 rounded-[1.5rem] transition-all duration-300",
                                             isActive
-                                                ? "bg-primary text-primary-foreground shadow-xl shadow-primary/10"
+                                                ? "bg-[#FF4B91] text-white shadow-xl shadow-[#FF4B91]/30 scale-[1.02]"
                                                 : "text-muted-foreground hover:bg-muted hover:text-foreground"
                                         )}
                                     >
-                                        <div className="flex items-center gap-3">
-                                            <item.icon size={20} className={cn(isActive ? "text-primary-foreground" : "text-primary")} />
-                                            <span className="font-bold text-sm tracking-tight">{item.name}</span>
+                                        <div className="flex items-center gap-4">
+                                            <item.icon size={22} className={cn("transition-colors", isActive ? "text-white" : "text-[#FF4B91]")} />
+                                            <span className="font-bold text-[15px]">{item.name}</span>
                                         </div>
-                                        <ChevronRight size={14} className={cn("transition-transform", isActive ? "opacity-100" : "opacity-0")} />
+                                        <ChevronRight
+                                            size={18}
+                                            className={cn(
+                                                "transition-all duration-300",
+                                                isActive ? "opacity-100 rotate-90" : "opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0"
+                                            )}
+                                        />
                                     </Link>
                                 );
                             })}
                         </nav>
+                    </div>
 
-                        <div className="p-6 mt-auto">
-                            <div className="p-5 rounded-3xl bg-primary/5 border border-primary/10 mb-4">
-                                <p className="text-xs font-bold text-primary uppercase mb-1">System Health</p>
-                                <div className="flex items-center gap-2">
-                                    <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
-                                    <span className="text-sm font-bold">All Engines Active</span>
-                                </div>
+                    <div className="mt-auto p-10 border-t bg-muted/5">
+                        <div className="p-5 rounded-3xl bg-primary/5 border border-primary/10 mb-6">
+                            <p className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-2">System Health</p>
+                            <div className="flex items-center gap-2">
+                                <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+                                <span className="text-xs font-black uppercase tracking-tight">Engines Active</span>
                             </div>
-                            <button className="flex items-center gap-3 w-full px-4 py-3 rounded-2xl text-muted-foreground hover:text-primary hover:bg-muted transition-all">
-                                <LogOut size={20} />
-                                <span className="font-bold text-sm">Exit Terminal</span>
-                            </button>
                         </div>
+                        <button
+                            onClick={handleLogout}
+                            className="flex items-center gap-4 w-full px-6 py-4 rounded-[1.5rem] text-red-500 font-bold hover:bg-red-50 transition-colors group"
+                        >
+                            <LogOut size={22} className="group-hover:-translate-x-1 transition-transform" />
+                            <span className="text-sm font-black uppercase tracking-widest">Sign Out</span>
+                        </button>
                     </div>
                 </aside>
 
                 {/* Main Content */}
-                <main className="pl-72 flex-1 w-full">
-                    {/* Top Header */}
-                    <header className="h-20 border-b flex items-center justify-between px-10 bg-background/50 backdrop-blur-sm sticky top-0 z-40">
-                        <div className="flex items-center gap-4">
-                            <h2 className="font-black text-sm uppercase tracking-widest text-muted-foreground">Terminal v1.0.4</h2>
-                            <div className="h-4 w-px bg-border" />
-                            <span className="text-xs font-bold text-green-500 tracking-tighter cursor-default">CONNECTED_SECURE</span>
+                <div className="flex-1 flex flex-col overflow-hidden ml-80">
+                    <header className="h-24 border-b bg-background flex items-center justify-between px-12 sticky top-0 z-40">
+                        <div className="flex items-center gap-8">
+                            <div className="flex items-center gap-3 pr-8 border-r border-muted-foreground/10">
+                                <div className="h-12 w-12 rounded-2xl bg-[#FF4B91] flex items-center justify-center text-white font-black text-2xl shadow-lg shadow-[#FF4B91]/30">A</div>
+                                <span className="font-black text-3xl tracking-tighter text-[#1A1A1A]">ADMIN CORE</span>
+                            </div>
+                            <div className="flex items-center gap-4">
+                                <span className="text-xs font-black uppercase tracking-widest text-muted-foreground">Terminal v1.0.4</span>
+                                <span className="px-3 py-1 rounded-full bg-green-500/10 text-green-500 text-[10px] font-black uppercase tracking-widest border border-green-500/20">Connected_Secure</span>
+                            </div>
                         </div>
+
                         <div className="flex items-center gap-6">
-                            <button className="relative p-2 rounded-xl hover:bg-muted transition-colors">
-                                <Bell size={20} />
-                                <div className="absolute top-2 right-2 h-2 w-2 rounded-full bg-primary" />
-                            </button>
-                            <div className="flex items-center gap-3">
-                                <div className="text-right">
-                                    <p className="text-xs font-black uppercase">Root Admin</p>
-                                    <p className="text-[10px] text-muted-foreground font-bold">Governance Level 5</p>
-                                </div>
-                                <div className="h-10 w-10 rounded-xl bg-muted border flex items-center justify-center font-black">RA</div>
+                            <div className="text-right">
+                                <p className="text-sm font-black italic text-[#1A1A1A]">SUPER ADMIN</p>
+                                <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">id: rh-9012-ad</p>
+                            </div>
+                            <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-[#FF4B91] to-[#FF8E9E] p-0.5 shadow-lg shadow-[#FF4B91]/20">
+                                <div className="h-full w-full rounded-[14px] bg-background flex items-center justify-center font-black text-[#FF4B91]">RH</div>
                             </div>
                         </div>
                     </header>
 
-                    <div className="p-10 max-w-7xl mx-auto">
-                        {children}
-                    </div>
-                </main>
+                    <main className="flex-1 overflow-y-auto p-12">
+                        <div className="w-full animate-in fade-in slide-in-from-bottom-8 duration-700">
+                            {children}
+                        </div>
+                    </main>
+                </div>
             </div>
         </AdminGuard>
     );
