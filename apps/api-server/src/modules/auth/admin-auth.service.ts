@@ -7,7 +7,7 @@ import { AuditService } from './audit.service';
 
 export class AdminAuthService {
   static async login(email: string, password: string, ip: string = '0.0.0.0') {
-    const cleanEmail = email.toLowerCase().trim();
+    const cleanEmail = email.trim();
 
     // 1. Check Lockout
     if (await SecurityService.isAccountLocked(cleanEmail, ip)) {
@@ -18,9 +18,8 @@ export class AdminAuthService {
     // 2. Find User with Roles
     console.log(`>>> [AdminAuthService] Attempting login for: ${cleanEmail}`);
     
-    // Using sql`lower(...)` for case-insensitive DB match
     const user = await db.query.users.findFirst({
-      where: sql`lower(${users.email}) = ${cleanEmail}`,
+      where: eq(users.email, cleanEmail),
       with: {
         profile: true,
         userRoles: {
