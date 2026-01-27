@@ -6,7 +6,7 @@
 export const config = {
   // CORS Configuration
   cors: {
-    allowedOrigins: [
+    allowedOrigins: process.env.ALLOWED_ORIGINS?.split(',') || [
       'https://quiz.realtutorialhub.com',
       'https://admin.realtutorialhub.com',
     ],
@@ -15,7 +15,7 @@ export const config = {
   // CSRF Configuration
   csrf: {
     allowAllLocalhost: false,
-    allowedOrigins: [
+    allowedOrigins: process.env.ALLOWED_ORIGINS?.split(',') || [
       'https://quiz.realtutorialhub.com',
       'https://admin.realtutorialhub.com',
     ],
@@ -23,7 +23,7 @@ export const config = {
       httpOnly: false,
       secure: true,
       sameSite: 'lax' as const,
-      domain: '.realtutorialhub.com',
+      domain: process.env.COOKIE_DOMAIN || '.realtutorialhub.com',
     },
   },
 

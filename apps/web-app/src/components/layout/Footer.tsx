@@ -27,7 +27,7 @@ export function Footer() {
                 </div>
                 <div className="flex items-center gap-6">
                     <a
-                        href="http://localhost:3002" // In production this would be admin.domain.com
+                        href={process.env.NEXT_PUBLIC_ADMIN_URL || '#'}
                         className="text-xs font-bold text-muted-foreground/50 hover:text-primary transition-colors flex items-center gap-1.5 uppercase tracking-widest"
                     >
                         Governance

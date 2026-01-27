@@ -295,8 +295,7 @@ export class AuthService {
     });
 
     // 5. Send real email via EmailService (handles mock/resend switches)
-    // IMPORTANT: resetUrl MUST point to the frontend (port 3001), not the API (port 3000).
-    // In production (Vercel), APP_BASE_URL will be set to the real domain.
+    // IMPORTANT: resetUrl MUST point to the frontend, not the API.
     const baseUrl = (process.env.APP_BASE_URL || 'http://localhost:3001').replace(/\/$/, '');
     const resetUrl = `${baseUrl}/reset-password?token=${token}`;
     

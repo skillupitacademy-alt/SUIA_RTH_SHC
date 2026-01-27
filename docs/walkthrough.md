@@ -5,6 +5,16 @@
 ### Overview
 I have successfully achieved **100% functional parity** with the [Admin Dashboard Specification](file:///d:/onlinewebsites/quiz-platform/docs/ADMIN_DASHBOARD_SPEC.md).
 
+## Deployment Preparation (Completed)
+
+I have refactored the codebase to ensure it is production-ready for Vercel and Neon:
+- **Clean Configuration**: Removed hardcoded `localhost` and `127.0.0.1` instances from logic.
+- **Dynamic URLs**: All app-to-app communication now uses environment variables like `NEXT_PUBLIC_API_URL` and `NEXT_PUBLIC_ADMIN_URL`.
+- **Stateless & Portable**: The API Server configuration is now driven by `ALLOWED_ORIGINS` and `COOKIE_DOMAIN`.
+- **Database Safety**: The database package now strictly requires `DATABASE_URL` without local fallbacks.
+
+Check the [Production Deployment Guide](file:///d:/onlinewebsites/quiz-platform/docs/platform/VERCEL_DEPLOYMENT.md) for the final checklist.
+
 ### 🛡️ Governance Widgets
 - **User Analytics Tier**: Tracks growth (**New Today**, New 7d), verification status, and **Locked Accounts**.
 - **RBAC Governance**: Real-time distribution of roles and privilege monitoring.

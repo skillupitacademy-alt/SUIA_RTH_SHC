@@ -3,10 +3,12 @@ import { AdminEngine } from '@/modules/admin-engine/admin.engine';
 import { TokenService } from '@/modules/auth/token.service';
 import { verifyAdmin } from '@/modules/auth/rbac.service';
 
-export const dynamic = 'force-dynamic';
-
-export async function GET(req: NextRequest) {
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
+    const { id } = await params;
     const authHeader = req.headers.get('authorization');
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -16,44 +18,41 @@ export async function GET(req: NextRequest) {
     const payload = await TokenService.verifyAccessToken(token);
 
     if (!(await verifyAdmin(payload))) {
-        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-    }
-
-    const searchParams = req.nextUrl.searchParams;
-    const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '20');
-    const subjectId = searchParams.get('subjectId') || undefined;
-
-    const data = await AdminEngine.getTopics(page, limit, { subjectId });
-    return NextResponse.json(data);
-  } catch (error: any) {
-    console.error('[ADMIN_TOPICS_GET] Error:', error.message);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
-  }
-}
-
-export async function POST(req: NextRequest) {
-  try {
-    const authHeader = req.headers.get('authorization');
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const token = authHeader.split(' ')[1];
-    const payload = await TokenService.verifyAccessToken(token);
-
-    if (!(await verifyAdmin(payload))) {
-        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
     const body = await req.json();
-    const result = await AdminEngine.createTopic(body, payload.userId);
+    const result = await AdminEngine.updateTopic(id, body, payload.userId);
     
     return NextResponse.json(result);
   } catch (error: any) {
-    console.error('[ADMIN_TOPICS_POST] Error:', error.message);
-    return NextResponse.json({ 
-        error: error.message || 'Internal Server Error' 
-    }, { status: 500 });
+    console.error('[ADMIN_TOPIC_PATCH] Error:', error.message);
+    return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
+  }
+}
+
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+    const authHeader = req.headers.get('authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const token = authHeader.split(' ')[1];
+    const payload = await TokenService.verifyAccessToken(token);
+
+    if (!(await verifyAdmin(payload))) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    const result = await AdminEngine.deleteTopic(id, payload.userId);
+    return NextResponse.json(result);
+  } catch (error: any) {
+    console.error('[ADMIN_TOPIC_DELETE] Error:', error.message);
+    return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
   }
 }

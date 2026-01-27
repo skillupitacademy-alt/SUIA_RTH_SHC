@@ -22,7 +22,10 @@ let dbInstance: DbClient | null = null;
 
 export const getDb = (): DbClient => {
     if (!dbInstance) {
-        const databaseUrl = process.env.DATABASE_URL || 'postgres://localhost:5432/dummy';
+        const databaseUrl = process.env.DATABASE_URL;
+        if (!databaseUrl) {
+            throw new Error('DATABASE_URL environment variable is required');
+        }
         const sql = neon(databaseUrl);
         dbInstance = drizzle(sql, { schema });
     }

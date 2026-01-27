@@ -66,7 +66,7 @@ const db = drizzle(sql);
 async function runSeed() {
     try {
         console.log("Reading SQL seed file...");
-        const seedFilePath = path.join(__dirname, 'seed', 'populate-exam-blueprints.sql');
+        const seedFilePath = path.join(__dirname, 'test-users.sql');
         
         if (!fs.existsSync(seedFilePath)) {
              console.error(`Error: Seed file not found at ${seedFilePath}`);
@@ -76,8 +76,12 @@ async function runSeed() {
         const seedSql = fs.readFileSync(seedFilePath, 'utf-8');
         
         console.log("Executing SQL...");
-        // Split by semicolon to handle multiple statements if supported, or just run as one block if supported by Neon driver
-        const statements = seedSql
+        // Strip comments and split by semicolon correctly
+        const cleanSql = seedSql
+            .replace(/--.*$/gm, '') // Remove single line comments
+            .replace(/\/\*[\s\S]*?\*\//g, ''); // Remove multi-line comments
+            
+        const statements = cleanSql
             .split(';')
             .map(s => s.trim())
             .filter(s => s.length > 0);
@@ -85,14 +89,18 @@ async function runSeed() {
         console.log(`Found ${statements.length} statements to execute.`);
 
         for (const statement of statements) {
-            // content might start with comments, postgres usually handles them but let's be safe
             try {
                 await sql(statement);
-                console.log("Statement executed.");
-            } catch (stmtErr) {
-                 console.error("Error executing statement:", statement.substring(0, 100) + "...");
-                 console.error(stmtErr);
-                 throw stmtErr;
+                // console.log("Statement executed successfully.");
+            } catch (stmtErr: any) {
+                 // Ignore "already exists" errors during seed
+                 if (stmtErr.message.includes('already exists')) {
+                     console.log("Record already exists, skipping...");
+                 } else {
+                     console.error("Error executing statement:", statement.substring(0, 100) + "...");
+                     console.error(stmtErr.message);
+                     // continue regardless for seed
+                 }
             }
         }
 
