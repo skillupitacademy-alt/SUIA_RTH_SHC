@@ -1,15 +1,25 @@
-import { db, userRoles, roles } from '@quiz/db';
+import { db, userRoles, roles, users } from '@quiz/db';
 import { eq, and, sql } from 'drizzle-orm';
 import { TokenPayload } from './token.service';
 
 export async function verifyAdmin(payload: TokenPayload): Promise<boolean> {
+    // 0. Security: Check if user is blocked (Always hit DB for Admin actions)
+    const user = await db.query.users.findFirst({
+        where: eq(users.id, payload.userId),
+        columns: { isBlocked: true }
+    });
+
+    if (user?.isBlocked) {
+        console.warn(`[RBAC] BLOCKED USER attempted admin access: ${payload.userId}`);
+        return false;
+    }
+
     // 1. JWT Payload Check (Fast Payout)
     const isAdminInToken = payload.isAdmin || payload.roles?.some(r => 
         ['admin', 'ADMIN', 'super_admin', 'SUPER_ADMIN'].includes(r)
     );
 
     if (isAdminInToken) {
-        console.log('[RBAC] PASSED via JWT:', payload.userId);
         return true;
     }
 

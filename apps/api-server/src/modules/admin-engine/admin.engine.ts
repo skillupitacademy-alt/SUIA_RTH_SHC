@@ -605,8 +605,24 @@ export class AdminEngine {
       }
     });
 
+    // Compute status
+    const now = new Date();
+    const processedUsers = usersList.map(u => {
+        let status = 'offline';
+        if (u.lastActiveAt) {
+            const diffMinutes = (now.getTime() - new Date(u.lastActiveAt).getTime()) / (1000 * 60);
+            if (diffMinutes < 2) status = 'online';
+            else if (diffMinutes < 5) status = 'idle';
+        }
+        
+        // Blocked overrides everything
+        if (u.isBlocked) status = 'blocked';
+
+        return { ...u, status };
+    });
+
     return {
-      users: usersList,
+      users: processedUsers,
       total: Number(countResult?.count || 0),
       page,
       limit,
@@ -615,9 +631,44 @@ export class AdminEngine {
   }
 
   static async updateUser(id: string, data: any, adminId: string) {
-    const [updated] = await db.update(users).set(data).where(eq(users.id, id)).returning();
-    await AuditService.log({ userId: adminId, action: 'admin_update_user', metadata: { targetUserId: id } });
-    return updated;
+    // 1. Separate user fields from relations
+    const { roles: newRoles, ...userFields } = data;
+
+    let updated;
+    if (Object.keys(userFields).length > 0) {
+        [updated] = await db.update(users).set(userFields).where(eq(users.id, id)).returning();
+    }
+
+    // 2. Handle Blocking Side Effects
+    if (userFields.isBlocked === true) {
+        await db.update(refreshTokens).set({ revoked: true }).where(eq(refreshTokens.userId, id));
+    }
+
+    // 3. Handle Role Updates
+    if (newRoles && Array.isArray(newRoles)) {
+        // Resolve Role IDs
+        const roleRecords = await db.select().from(roles).where(inArray(sql`lower(${roles.name})`, newRoles.map((r: string) => r.toLowerCase())));
+        
+        if (roleRecords.length > 0) {
+            // Transaction-like: Delete all existing roles for user, then insert new ones
+            await db.delete(userRoles).where(eq(userRoles.userId, id));
+            
+            await db.insert(userRoles).values(
+                roleRecords.map(r => ({
+                    userId: id,
+                    roleId: r.id
+                }))
+            );
+        }
+    }
+
+    await AuditService.log({ userId: adminId, action: 'admin_update_user', metadata: { targetUserId: id, updates: data } });
+    return updated || { id }; // Return updated user or just ID if only roles changed
+  }
+
+
+  static async toggleBlockStatus(userId: string, isBlocked: boolean, adminId: string) {
+    return await this.updateUser(userId, { isBlocked }, adminId);
   }
 
   static async deleteUser(id: string, adminId: string) {

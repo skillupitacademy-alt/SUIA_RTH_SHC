@@ -14,9 +14,30 @@
 - [x] Sync `ExamBlueprintService` and `SelectionEngine` logic <!-- id: 41 -->
 - [x] Verify Additive Granularity Flow <!-- id: 42 -->
 
+## 🚀 Active Phase: User Management Module (Phase 8)
+
+- [x] Add `is_blocked` column to `users` table <!-- id: 43 -->
+- [x] Implement `AdminEngine.toggleBlockStatus` <!-- id: 44 -->
+- [x] Update `UserTable` with Block/Unblock actions <!-- id: 45 -->
+- [x] Implement Admin Role Management (Edit User Modal) <!-- id: 46 -->
+- [x] Verify Profile View (Existing) <!-- id: 47 -->
+
+## 🚀 Active Phase: Session Management (Phase 9)
+
+- [x] Add `last_active_at` to `users` schema <!-- id: 48 -->
+- [x] Implement `AuthService.heartbeat` and `TokenService` timeout logic <!-- id: 49 -->
+- [x] Implement `AdminEngine` status computation (Online/Idle/Offline) <!-- id: 50 -->
+- [x] Update `UserTable` with Real-time Status Indicators <!-- id: 51 -->
+- [x] Implement Auto-Logout on Idle (Backend Enforcement) <!-- id: 52 -->
+
 ---
 
 ## ✅ Completed Phases
+
+### Phase 9: Session Management
+- **Status**: Completed (2026-01-27)
+- **Summary**: Implemented Online/Idle/Offline tracking, Heartbeat API, and 5-min Auto-logout enforcement.
+- **Cleanup**: Removed temporary migration scripts (`manual-migrate-session.ts`, `count-questions.ts`, etc.).
 
 ### Phase 7: Purging Localhost References
 - **Status**: Completed (2026-01-27)

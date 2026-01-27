@@ -73,6 +73,14 @@ export class AuthService {
       throw new Error('Invalid credentials');
     }
 
+    if (user.isBlocked) {
+        await AuditService.log({ action: 'login_blocked_user', metadata: { email }, ip });
+        throw new Error('Account has been blocked. Contact administrator.');
+    }
+
+    // Update Last Active
+    await db.update(users).set({ lastActiveAt: new Date() }).where(eq(users.id, user.id));
+
     await SecurityService.trackLoginAttempt(ip, email, true);
     await AuditService.log({ userId: user.id, action: 'login_success', ip });
 
@@ -146,6 +154,14 @@ export class AuthService {
     });
 
     if (!user) throw new Error('User not found');
+    
+    if (user.isBlocked) {
+        throw new Error('access_denied:user_blocked');
+    }
+
+    // Update Last Active on Refresh
+    await db.update(users).set({ lastActiveAt: new Date() }).where(eq(users.id, user.id));
+
     const roleNames = user.userRoles.map(ur => ur.role.name);
     const isAdminNow = roleNames.includes('ADMIN') || roleNames.includes('SUPER_ADMIN');
 
@@ -181,7 +197,19 @@ export class AuthService {
       .set({ revoked: true })
       .where(eq(refreshTokens.token, tokenHash));
 
+    // Force Offline status by setting lastActiveAt to null or old date
+    if (userId) {
+        // Set to 1 hour ago to ensure they appear offline immediately
+        const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000); 
+        await db.update(users).set({ lastActiveAt: oneHourAgo }).where(eq(users.id, userId));
+    }
+
     await AuditService.log({ userId, action: 'logout_success', ip });
+  }
+
+  static async heartbeat(userId: string) {
+    await db.update(users).set({ lastActiveAt: new Date() }).where(eq(users.id, userId));
+    return true;
   }
 
   static async touchSession(token: string) {
