@@ -2,12 +2,7 @@
 
 ## Automatic Environment Detection ✨
 
-The application now **automatically detects** the environment and uses the correct API URL:
-
-### Local Development
-- **Hostname**: `localhost` or `127.0.0.1`
-- **API URL**: `http://localhost:3000`
-- **No configuration needed!**
+The application now **automatically detects** the environment and uses the correct API URL (optimized for Production/Vercel):
 
 ### Vercel Preview
 - **Hostname**: `*.vercel.app`
@@ -20,15 +15,9 @@ The application now **automatically detects** the environment and uses the corre
 
 ## Manual Override (Optional)
 
-If you need to override the automatic detection, create environment files:
+If you need to override the automatic detection, create environment variables in the Vercel dashboard:
 
-### Local Override
-Create `apps/web-app/.env.local`:
-```env
-NEXT_PUBLIC_API_URL=http://localhost:3000
-```
-
-### Vercel Environment Variables
+### Vercel Project Settings
 In Vercel dashboard → Project Settings → Environment Variables:
 ```
 NEXT_PUBLIC_API_URL=https://api.realtutorialhub.com
@@ -38,35 +27,15 @@ NEXT_PUBLIC_API_URL=https://api.realtutorialhub.com
 
 The `api-client` package checks:
 1. **Environment variable** first (if set)
-2. **Browser hostname** to detect environment
-3. **Fallback** to production URL for SSR
+2. **Browser hostname** to detect environment (Vercel Preview or Production)
+3. **Fallback** to production URL for absolute reliability
 
 ## Benefits
 
-✅ **No manual configuration** needed for different environments  
-✅ **Works automatically** in local, preview, and production  
-✅ **Can still override** if needed  
+✅ **No manual configuration** needed  
+✅ **Works automatically** in preview and production  
+✅ **Strictly production-ready** configuration  
 ✅ **No more deployment errors** due to wrong API URLs  
-
-## Testing
-
-### Local Development
-```bash
-# Terminal 1
-cd apps/api-server
-pnpm dev
-
-# Terminal 2
-cd apps/web-app
-pnpm dev
-```
-
-Visit `http://localhost:3001` - it will automatically use `http://localhost:3000` for API calls!
-
-## Local Testing Ports
-- **API Server**: Port 3000 (`apps/api-server`)
-- **Web App**: Port 3001 (override with `pnpm dev -- -p 3001`)
-- **Admin App**: Port 3002 (override with `pnpm dev -- -p 3002`)
 
 ## ⚠️ Git Push Policy
 **DO NOT push to GitHub automatically.** 
@@ -74,6 +43,8 @@ Visit `http://localhost:3001` - it will automatically use `http://localhost:3000
 - Reason: Vercel deployment limits (100/day).
 - Only push when explicitly requested by user.
 
-## Test Credentials
-- Email: `user@test.com`
-- Password: `password123`
+## 📝 Change Log
+
+### 2026-01-27
+- **Deprecation**: Removed all `localhost` and `127.0.0.1` configuration guides.
+- **Optimization**: Switched logic to strictly handle Vercel subdomains (quiz., api., admin.) and preview patterns.

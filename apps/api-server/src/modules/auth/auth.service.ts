@@ -264,7 +264,6 @@ export class AuthService {
 
     // In a real app, send email here.
     console.log(`[VERIFICATION EMAIL] To: ${user.email}, Link: /verify-email?token=${token}`);
-
     await AuditService.log({ userId, action: 'email_verification_resend_triggered', ip });
     return true;
   }
@@ -272,9 +271,14 @@ export class AuthService {
   static async forgotPassword(email: string, ip?: string) {
     await AuditService.log({ action: 'auth_forgot_password_requested', metadata: { email_redacted: '***' }, ip });
 
-    // 1. Check if user exists
+    // 1. Check if user exists (with roles)
     const user = await db.query.users.findFirst({
       where: eq(users.email, email.toLowerCase().trim()),
+      with: {
+        userRoles: {
+          with: { role: true }
+        }
+      }
     });
 
     // 2. Regardless of existence, return success (prevents enumeration)
@@ -285,21 +289,26 @@ export class AuthService {
 
     // 3. User exists: Generate secure reset token
     const token = crypto.randomBytes(32).toString('hex');
-    const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // Increased to 60 minutes for better testing
+    const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 60 minutes
 
-    // 4. Store token (sequential insert)
+    // 4. Store token
     await db.insert(passwordResetTokens).values({
       userId: user.id,
       token,
       expiresAt,
     });
 
-    // 5. Send real email via EmailService (handles mock/resend switches)
-    // IMPORTANT: resetUrl MUST point to the frontend, not the API.
-    const baseUrl = (process.env.APP_BASE_URL || 'https://quiz.realtutorialhub.com').replace(/\/$/, '');
-    const resetUrl = `${baseUrl}/reset-password?token=${token}`;
+    // 5. Determine correct UI URL (Governance vs Web)
+    const roleNames = user.userRoles.map(ur => ur.role.name);
+    const isAdmin = roleNames.includes('ADMIN') || roleNames.includes('SUPER_ADMIN');
     
-    console.log(`[AUTH SERVICE] Generating Reset Link for ${user.email}: ${resetUrl}`);
+    const baseUrl = isAdmin 
+      ? (process.env.ADMIN_URL || process.env.NEXT_PUBLIC_ADMIN_URL || 'https://admin.realtutorialhub.com')
+      : (process.env.APP_BASE_URL || 'https://quiz.realtutorialhub.com');
+
+    const resetUrl = `${baseUrl.replace(/\/$/, '')}/reset-password?token=${token}`;
+    
+    console.log(`[AUTH SERVICE] Generating ${isAdmin ? 'ADMIN' : 'USER'} Reset Link for ${user.email}: ${resetUrl}`);
     await EmailService.sendPasswordResetEmail(user.email, resetUrl);
 
     return true;

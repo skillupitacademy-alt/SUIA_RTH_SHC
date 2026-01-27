@@ -51,7 +51,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         window.location.href = '/login';
     };
 
-    if (pathname === '/login') {
+    const isGuestPath = ['/login', '/forgot-password', '/reset-password'].includes(pathname);
+
+    if (isGuestPath) {
         return (
             <div className="min-h-screen grid lg:grid-cols-2 bg-background font-sans">
                 {/* Visual Side */}
@@ -69,7 +71,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                             <span className="text-[#FF4B91]">Governance</span>
                         </h1>
                         <p className="text-lg text-gray-400 max-w-md font-medium">
-                            Authorized personnel only. Access to this terminal is monitored and audited.
+                            Authorized personnel only. Secure access to the governance terminal is strictly audited.
                         </p>
                     </div>
                     <div className="relative z-10 text-xs font-black uppercase tracking-widest text-gray-500">

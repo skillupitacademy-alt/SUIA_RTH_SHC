@@ -52,32 +52,13 @@ git push origin main  # Only when user explicitly asks!
 git push origin main  # Now it's okay
 ```
 
-## Development Setup
-
-### Local Testing Ports:
-- **API Server**: Port 3000 (`apps/api-server`)
-- **Web App**: Port 3001 (override with `pnpm dev -- -p 3001`)
-- **Admin App**: Port 3002 (override with `pnpm dev -- -p 3002`)
-
-### Running Locally:
-```bash
-# Terminal 1 - API Server
-cd apps/api-server
-pnpm dev
-
-# Terminal 2 - Web App
-cd apps/web-app
-pnpm dev -- -p 3001
-```
-
 ## Environment Detection
 
-The `api-client` package automatically detects the environment:
-- **Localhost**: Uses `http://localhost:3000`
-- **Vercel Preview**: Auto-constructs preview URL
-- **Production**: Uses `https://api.realtutorialhub.com`
+The `api-client` package automatically detects the environment (optimized for Production/Vercel):
+- **Vercel Preview**: Auto-constructs preview URLs for branch testing.
+- **Production**: Uses `https://api.realtutorialhub.com` as the authoritative backend.
 
-No manual environment variable changes needed!
+No manual environment variable changes are needed for base operation!
 
 ## Database
 
@@ -98,4 +79,11 @@ No manual environment variable changes needed!
 
 ---
 
-**Last Updated**: 2026-01-25
+## 📝 Change Log
+
+### 2026-01-27
+- **Production Hardening**: Removed all `localhost` references and local port (3000/3001/3002) development instructions.
+- **Environment Detection**: Updated `api-client` to strictly prioritize production and preview logic.
+- **Security**: CSRF and Auth protocols hardened for strict production execution.
+
+**Last Updated**: 2026-01-27
