@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { AdminEngine } from '@/modules/admin-engine/admin.engine';
 import { TokenService } from '@/modules/auth/token.service';
-import { db } from '@quiz/db';
-import { userRoles, roles } from '@quiz/db';
-import { eq, and, inArray } from 'drizzle-orm';
+import { verifyAdmin } from '@/modules/auth/rbac.service';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,17 +15,7 @@ export async function GET(req: NextRequest) {
     const token = authHeader.split(' ')[1];
     const payload = await TokenService.verifyAccessToken(token);
 
-    // Verify Admin Role
-    const userRole = await db.select()
-        .from(userRoles)
-        .innerJoin(roles, eq(userRoles.roleId, roles.id))
-        .where(and(
-            eq(userRoles.userId, payload.userId),
-            inArray(roles.name, ['admin', 'ADMIN', 'super_admin', 'SUPER_ADMIN'])
-        ))
-        .limit(1);
-
-    if (userRole.length === 0) {
+    if (!(await verifyAdmin(payload))) {
         return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
     
