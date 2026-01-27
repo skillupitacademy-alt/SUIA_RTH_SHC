@@ -1,0 +1,39 @@
+Please act as an expert technical content creator. Generate 10 unique questions for a quiz platform.
+Your output MUST be a JSON array of objects, following the schema below.
+
+**CRITICAL REQUIREMENT:** Each question must include a `skills` property. This must be an **array of strings**, where each string is chosen from the "Available Skills" list provided below. You can assign one or more skills to each question.
+
+**Target JSON Format (Reference: sql/data.json):**
+```json
+[
+  {
+    "text": "The question text, using markdown for code or emphasis where needed.",
+    "type": "single",
+    "difficulty": "simple|intermediate|expert",
+    "skills": ["Skill Name 1", "Skill Name 2"],
+    "options": [
+      { "text": "Correct Option Text", "isCorrect": true },
+      { "text": "Incorrect Option Text 1", "isCorrect": false },
+      { "text": "Incorrect Option Text 2", "isCorrect": false },
+      { "text": "Incorrect Option Text 3", "isCorrect": false }
+    ],
+    "explanation": "A detailed explanation of why the correct option is right.",
+    "estimatedTime": 45,
+    "tags": ["tag1", "tag2"]
+  }
+]
+```
+
+**Available Skills (List all values currently available in the database):**
+1. Problem Solving
+2. Code Debugging
+3. API Design
+4. Data Analysis
+5. System Design
+6. Security Awareness
+7. Performance Optimization
+8. Testing & QA
+9. Version Control
+10. Agile Methodology
+
+Please ensure the questions are technically accurate, the options are plausible, and the explanations are clear.

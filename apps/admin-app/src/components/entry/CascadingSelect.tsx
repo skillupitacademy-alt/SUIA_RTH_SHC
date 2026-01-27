@@ -1,85 +1,95 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useDomains, useSubjects, useTopics, useSubtopics, useTopicSkills, useAllSkills } from '@/hooks/useAdminHierarchy';
-import { ChevronDown, Plus, X, Loader2, Check, Sparkles } from 'lucide-react';
+import { useState, useRef, useEffect, useMemo } from 'react';
+import { useDomains, useSubjects, useTopics, useSubtopics, useAllSkills, useTopicSkills } from '@/hooks/useAdminHierarchy';
+import { X, Loader2, Sparkles, Binary } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { SelectField, MultiSelectField } from './SelectionFields';
 
-interface Selection {
+export interface Selection {
     domainId: string | null;
     subjectId: string | null;
     topicId: string | null;
     subtopicId: string | null;
-    skillId: string | null;
+    skillIds: string[];
 }
 
 interface CascadingSelectProps {
     onChange: (selection: Selection) => void;
     value?: Selection;
+    hideSkills?: boolean;
 }
 
-export function CascadingSelect({ onChange, value }: CascadingSelectProps) {
-    const [selection, setSelection] = useState<Selection>({
+export function CascadingSelect({ onChange, value, hideSkills }: CascadingSelectProps) {
+    // Local state only used if 'value' prop is NOT provided (uncontrolled mode)
+    const [localSelection, setLocalSelection] = useState<Selection>({
         domainId: null,
         subjectId: null,
         topicId: null,
         subtopicId: null,
-        skillId: null,
+        skillIds: [],
     });
+
+    // Effective selection is either the prop (controlled) or local state (uncontrolled)
+    const selection = useMemo(() => value || localSelection, [value, localSelection]);
+
+    // Hierarchy Hooks respond to the effective selection
+    const domains = useDomains();
+    const subjects = useSubjects(selection.domainId || undefined);
+    const topics = useTopics(selection.subjectId || undefined);
+    const subtopics = useSubtopics(selection.topicId || undefined);
+    const allSkills = useAllSkills();
+    const topicSkills = useTopicSkills(selection.topicId || undefined);
+
+    // Effective skills: if a topic is selected, try topic-specific skills, 
+    // but ALWAYS fallback to allSkills if topic has no mappings OR no topic is selected.
+    const skills = useMemo(() => {
+        if (selection.topicId && topicSkills.data && topicSkills.data.length > 0) {
+            return topicSkills;
+        }
+        return allSkills;
+    }, [selection.topicId, topicSkills, allSkills]);
+
+    // Debugging: Log state transitions for the problematic fields
+    useEffect(() => {
+        if (value) {
+            console.log('[DEBUG] CascadingSelect Prop Value:', value);
+            console.log('[DEBUG] Subtopics Data Status:', { loading: subtopics.loading, count: subtopics.data?.length });
+            console.log('[DEBUG] Skills Data Status:', { loading: skills.loading, count: skills.data?.length });
+        }
+    }, [value, subtopics.loading, skills.loading]);
+
+    const handleChange = (level: keyof Selection, val: any) => {
+        const next = { ...selection };
+        // @ts-ignore
+        next[level] = val;
+
+        // Reset children cascadingly ONLY if this is a manual change
+        if (level === 'domainId') {
+            next.subjectId = null;
+            next.topicId = null;
+            next.subtopicId = null;
+        } else if (level === 'subjectId') {
+            next.topicId = null;
+            next.subtopicId = null;
+        } else if (level === 'topicId') {
+            next.subtopicId = null;
+            next.skillIds = [];
+        }
+
+        // Update local state if uncontrolled
+        if (!value) {
+            setLocalSelection(next);
+        }
+
+        // Notify parent of the change
+        onChange(next);
+    };
 
     const [modalConfig, setModalConfig] = useState<{
         type: 'domain' | 'subject' | 'topic' | 'subtopic' | null;
         isOpen: boolean;
     }>({ type: null, isOpen: false });
-
-    // Hierarchy Hooks
-    const domains = useDomains();
-    const subjects = useSubjects(selection.domainId || undefined);
-    const topics = useTopics(selection.subjectId || undefined);
-    const subtopics = useSubtopics(selection.topicId || undefined);
-    const skills = useAllSkills();
-
-    useEffect(() => {
-        onChange(selection);
-    }, [selection, onChange]);
-
-    // Support external reset
-    useEffect(() => {
-        if (value && (
-            value.domainId === '' ||
-            value.subjectId === '' ||
-            value.topicId === '' ||
-            value.subtopicId === '' ||
-            value.skillId === ''
-        )) {
-            if (!value.domainId && !value.subjectId && !value.topicId && !value.subtopicId && !value.skillId) {
-                setSelection({ domainId: null, subjectId: null, topicId: null, subtopicId: null, skillId: null });
-            }
-        }
-    }, [value]);
-
-    const handleChange = (level: keyof Selection, id: string) => {
-        setSelection(prev => {
-            const next = { ...prev };
-            next[level] = id;
-
-            // Reset children
-            if (level === 'domainId') {
-                next.subjectId = null;
-                next.topicId = null;
-                next.subtopicId = null;
-                next.skillId = null;
-            } else if (level === 'subjectId') {
-                next.topicId = null;
-                next.subtopicId = null;
-                next.skillId = null;
-            } else if (level === 'topicId') {
-                next.subtopicId = null;
-                next.skillId = null;
-            }
-            return next;
-        });
-    };
 
     const openCreateModal = (type: 'domain' | 'subject' | 'topic' | 'subtopic') => {
         setModalConfig({ type, isOpen: true });
@@ -95,9 +105,18 @@ export function CascadingSelect({ onChange, value }: CascadingSelectProps) {
             {/* Ambient Background Glow (Subtle Light Mode) */}
             <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-[#FF4B91]/5 rounded-full blur-[100px] -z-10 group-hover:bg-[#FF4B91]/10 transition-all duration-700" />
 
-            <div className="flex items-center gap-3 mb-4">
-                <div className="h-6 w-1 bg-[#FF4B91] rounded-full shadow-[0_0_15px_rgba(255,75,145,0.5)]" />
-                <h3 className="text-lg font-black text-[#1A1A1A] tracking-tight uppercase">Target Hierarchy</h3>
+            <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                    <div className="h-6 w-1 bg-[#FF4B91] rounded-full shadow-[0_0_15px_rgba(255,75,145,0.5)]" />
+                    <h3 className="text-lg font-black text-[#1A1A1A] tracking-tight uppercase">Target Hierarchy</h3>
+                </div>
+                {/* Visual state indicator for debugging */}
+                {value && (
+                    <div className="flex items-center gap-2 px-3 py-1 bg-slate-100 rounded-full border border-slate-200">
+                        <Binary className="w-3 h-3 text-slate-400" />
+                        <span className="text-[9px] font-bold text-slate-500 uppercase tracking-tighter">Controlled_State_Active</span>
+                    </div>
+                )}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-6">
@@ -110,7 +129,7 @@ export function CascadingSelect({ onChange, value }: CascadingSelectProps) {
                     onChange={(id) => handleChange('domainId', id)}
                     onCreate={() => openCreateModal('domain')}
                     placeholder="Select Domain"
-                    active={true} // Always active
+                    active={true}
                 />
 
                 {/* SUBJECT */}
@@ -139,7 +158,11 @@ export function CascadingSelect({ onChange, value }: CascadingSelectProps) {
                     active={!!selection.subjectId}
                 />
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:col-span-2">
+                {/* SUBTOPIC & SKILLS CONTAINER */}
+                <div className={cn(
+                    "grid gap-6 md:col-span-2",
+                    hideSkills ? "grid-cols-1" : "grid-cols-1 md:grid-cols-2"
+                )}>
                     {/* SUBTOPIC */}
                     <SelectField
                         label="Subtopic (Component)"
@@ -153,20 +176,19 @@ export function CascadingSelect({ onChange, value }: CascadingSelectProps) {
                         active={!!selection.topicId}
                     />
 
-                    {/* MAPPED SKILL */}
-                    <SelectField
-                        label="Mapped Skill (Assessment Focus)"
-                        value={selection.skillId}
-                        options={skills.data}
-                        loading={skills.loading}
-                        disabled={false} // Global skills can be selected anytime
-                        onChange={(id) => handleChange('skillId', id)}
-                        onCreate={() => { }}
-                        hideCreate={true}
-                        placeholder={"Select Skill (Global)"}
-                        active={true} // Always active visually
-                        icon={<Sparkles className="w-3 h-3" />}
-                    />
+                    {/* MAPPED SKILLS (MULTI-SELECT) */}
+                    {!hideSkills && (
+                        <MultiSelectField
+                            label="Mapped Skills (Assessment Focus)"
+                            values={selection.skillIds || []}
+                            options={skills.data}
+                            loading={skills.loading}
+                            onChange={(ids) => handleChange('skillIds', ids)}
+                            placeholder="Select Skills (Global)"
+                            active={true}
+                            icon={<Sparkles className="w-3 h-3 text-[#FF4B91]" />}
+                        />
+                    )}
                 </div>
             </div>
 
@@ -184,77 +206,6 @@ export function CascadingSelect({ onChange, value }: CascadingSelectProps) {
                     hooks={{ domains, subjects, topics, subtopics }}
                 />
             )}
-        </div>
-    );
-}
-
-// --- SUB COMPONENTS ---
-
-interface SelectFieldProps {
-    label: string;
-    value: string | null;
-    options: any[];
-    loading: boolean;
-    disabled?: boolean;
-    onChange: (id: string) => void;
-    onCreate: () => void;
-    placeholder: string;
-    active?: boolean;
-    hideCreate?: boolean;
-    icon?: React.ReactNode;
-}
-
-function SelectField({ label, value, options, loading, disabled, onChange, onCreate, placeholder, active, hideCreate, icon }: SelectFieldProps) {
-    return (
-        <div className={cn("flex flex-col gap-2 transition-opacity duration-300", disabled && "opacity-50 grayscale")}>
-            <label className={cn(
-                "text-[9px] font-black uppercase tracking-[0.2em] transition-colors flex items-center gap-2",
-                active ? "text-[#FF4B91]" : "text-slate-400"
-            )}>
-                {icon && icon}
-                {label}
-            </label>
-            <div className="flex gap-2">
-                <div className="relative flex-1 group/input">
-                    <select
-                        value={value || ''}
-                        onChange={(e) => onChange(e.target.value)}
-                        className={cn(
-                            "w-full h-10 pl-3 pr-8 bg-white/50 border rounded-xl text-[#1A1A1A] font-bold text-xs focus:outline-none transition-all appearance-none cursor-pointer backdrop-blur-md shadow-sm",
-                            "hover:bg-white/80",
-                            active
-                                ? "border-[#FF4B91]/30 focus:border-[#FF4B91] focus:ring-2 focus:ring-[#FF4B91]/10"
-                                : "border-slate-200"
-                        )}
-                        disabled={disabled}
-                    >
-                        <option value="" disabled className="text-slate-400">{loading ? 'Loading...' : placeholder}</option>
-                        {options.map((opt) => (
-                            <option key={opt.id} value={opt.id} className="bg-white text-slate-800 font-medium">
-                                {opt.name}
-                            </option>
-                        ))}
-                    </select>
-                    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 transition-colors group-hover/input:text-[#FF4B91]">
-                        {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ChevronDown className="w-4 h-4" />}
-                    </div>
-                </div>
-                {!hideCreate && (
-                    <button
-                        onClick={onCreate}
-                        disabled={disabled}
-                        className={cn(
-                            "flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-xl transition-all border shadow-sm",
-                            active
-                                ? "bg-[#FF4B91]/5 hover:bg-[#FF4B91]/10 text-[#FF4B91] border-[#FF4B91]/20"
-                                : "bg-white/40 text-slate-400 border-slate-200 cursor-not-allowed"
-                        )}
-                        title={`Add new ${label}`}
-                    >
-                        <Plus className="w-4 h-4" />
-                    </button>
-                )}
-            </div>
         </div>
     );
 }

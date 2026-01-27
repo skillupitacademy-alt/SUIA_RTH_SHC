@@ -44,6 +44,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
         const question = await db.query.questions.findFirst({
             where: eq(questions.id, id),
             with: {
+                questionSkills: true,
                 topic: {
                     with: {
                         subject: {

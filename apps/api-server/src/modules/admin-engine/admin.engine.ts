@@ -1,4 +1,4 @@
-import { db, questions, domains, subjects, topics, subtopics, topicSkills, skills, refreshTokens, users, userRoles, roles, userProfiles, auditLogs, exams, resultsByDimension, examBlueprints } from '@quiz/db';
+import { db, questions, questionSkills, domains, subjects, topics, subtopics, topicSkills, skills, refreshTokens, users, userRoles, roles, userProfiles, auditLogs, exams, resultsByDimension, examBlueprints } from '@quiz/db';
 import { eq, and, sql, desc, gt, inArray } from 'drizzle-orm';
 import { AuditService } from '../auth/audit.service';
 import { QuestionService } from '../question/question.service';
@@ -255,23 +255,38 @@ export class AdminEngine {
     };
   }
 
+  // --- QUESTION MANAGEMENT ---
+
   /**
    * Private helper to map frontend question data to database schema.
    */
-  private static mapQuestionData(data: any, topicId: string, subtopicId?: string, skillId?: string) {
+  private static mapQuestionData(data: any, topicId: string, subtopicId?: string, skillId?: string, skillIds?: string[]) {
     const correctOption = data.options.find((o: any) => o.isCorrect);
     const correctAnswer = correctOption ? correctOption.text : 'No correct answer provided';
 
-    return {
+    // Resolve Skills: Priority = Item Array > Item Single > Context Array > Context Single
+    let resolvedSkillIds: string[] = [];
+    if (Array.isArray(data.skillIds) && data.skillIds.length > 0) {
+       resolvedSkillIds = data.skillIds;
+    } else if (data.skillId) {
+       resolvedSkillIds = [data.skillId];
+    } else if (Array.isArray(skillIds) && skillIds.length > 0) {
+       resolvedSkillIds = skillIds;
+    } else if (skillId) {
+       resolvedSkillIds = [skillId];
+    }
+
+    const dbData = {
         topicId: topicId,
         subtopicId: subtopicId || data.subtopicId,
-        skillId: skillId || data.skillId,
+        // skillId: resolvedSkillIds[0], // Keep for backward compat if needed, or null. Deprecated.
         difficulty: data.difficulty || 'intermediate',
         type: data.type === 'multiple' ? 'mcq' : 'mcq',
         questionText: data.text || data.questionText,
         options: data.options,
         correctAnswer: correctAnswer,
         explanation: data.explanation || '',
+        codeSnippet: data.codeSnippet || null,
         metadata: {
             estimatedTime: data.estimatedTime,
             tags: data.tags
@@ -279,30 +294,23 @@ export class AdminEngine {
         status: 'active' as const,
         updatedAt: new Date()
     };
+
+    return { dbData, resolvedSkillIds };
   }
 
   /**
    * Creates a new question with schema mapping.
    */
   static async createQuestion(data: any, adminId: string) {
-    // 1. Resolve topicId from subtopicId if not provided (required by schema)
-    let topicId = data.topicId;
-    if (!topicId && data.subtopicId) {
-        const subtopic = await db.query.subtopics.findFirst({
-            where: eq(subtopics.id, data.subtopicId)
-        });
-        if (subtopic) {
-            topicId = subtopic.topicId;
-        }
-    }
-
+    const topicId = data.topicId;
     if (!topicId) {
         throw new Error('Could not resolve topicId for the question.');
     }
 
     // 2. Map and Create
-    const dbData = this.mapQuestionData(data, topicId, data.subtopicId, data.skillId);
-    const question = await QuestionService.createQuestion(dbData);
+    // Note: data.skillIds expected from frontend
+    const mapping = this.mapQuestionData(data, topicId, data.subtopicId, data.skillId, data.skillIds);
+    const question = await QuestionService.createQuestion(mapping.dbData, mapping.resolvedSkillIds);
 
     await AuditService.log({
       userId: adminId,
@@ -318,44 +326,32 @@ export class AdminEngine {
    */
   static async bulkCreateQuestionsWithContext(
     questionsList: any[], 
-    context: { topicId: string, subtopicId?: string, skillId?: string }, 
+    context: { topicId: string, subtopicId?: string, skillId?: string, skillIds?: string[] }, 
     adminId: string
   ) {
     // 1. Map all questions using the centralized logic
-    const dbRows = questionsList.map(q => 
-        this.mapQuestionData(q, context.topicId, context.subtopicId, context.skillId)
+    // Returns array of objects { dbData, resolvedSkillIds }
+    const mappedItems = questionsList.map(q => 
+        this.mapQuestionData(q, context.topicId, context.subtopicId, context.skillId, context.skillIds)
     );
 
-    // 2. Batch Insert
-    const created = await QuestionService.bulkCreateQuestions(dbRows);
+    const dbRows = mappedItems.map(item => item.dbData);
+    
+    // Create a mapping for the service: index -> skillIds
+    const skillMappings = mappedItems.map((item, index) => ({
+       questionIndex: index,
+       skillIds: item.resolvedSkillIds
+    }));
+
+    const questions = await QuestionService.bulkCreateQuestions(dbRows, skillMappings);
 
     await AuditService.log({
       userId: adminId,
       action: 'admin_bulk_create_questions',
-      metadata: { 
-        count: created.length,
-        topicId: context.topicId,
-        subtopicId: context.subtopicId,
-        skillId: context.skillId
-      },
+      metadata: { count: questions.length, topicId: context.topicId },
     });
 
-    return created;
-  }
-
-  /**
-   * Bulk creates questions.
-   */
-  static async bulkCreateQuestions(data: any[], adminId: string) {
-    const created = await QuestionService.bulkCreateQuestions(data);
-
-    await AuditService.log({
-      userId: adminId,
-      action: 'admin_bulk_create_questions',
-      metadata: { count: created.length },
-    });
-
-    return created;
+    return questions;
   }
 
   /**
@@ -621,7 +617,7 @@ export class AdminEngine {
   /**
    * Section 4: Question Bank Management (Phase 8 - Enhanced)
    */
-  static async getQuestions(page: number = 1, limit: number = 20, filters?: { domainId?: string; subjectId?: string; topicId?: string; subtopicId?: string; status?: string }) {
+  static async getQuestions(page: number = 1, limit: number = 20, filters?: { domainId?: string; subjectId?: string; topicId?: string; subtopicId?: string; skillIds?: string[]; status?: string }) {
     const offset = (page - 1) * limit;
 
     const conditions = [];
@@ -631,6 +627,19 @@ export class AdminEngine {
         conditions.push(eq(questions.status, filters.status as any));
     } else {
         conditions.push(eq(questions.status, 'active'));
+    }
+
+    // Skill Filter (Many-to-Many)
+    if (filters?.skillIds && filters.skillIds.length > 0) {
+        const mappedQuestions = await db.select({ id: questionSkills.questionId })
+            .from(questionSkills)
+            .where(inArray(questionSkills.skillId, filters.skillIds));
+        
+        if (mappedQuestions.length > 0) {
+            conditions.push(inArray(questions.id, mappedQuestions.map(m => m.id)));
+        } else {
+            return { questions: [], total: 0, page, limit, totalPages: 0 };
+        }
     }
 
     if (filters?.subtopicId) {
@@ -722,14 +731,13 @@ export class AdminEngine {
     };
     if (topicId) updateData.topicId = topicId;
     if (data.subtopicId) updateData.subtopicId = data.subtopicId;
-    if (data.skillId) updateData.skillId = data.skillId;
     if (data.difficulty) updateData.difficulty = data.difficulty;
     if (data.text) updateData.questionText = data.text;
     if (data.options) updateData.options = data.options;
     if (correctAnswer) updateData.correctAnswer = correctAnswer;
     if (data.explanation !== undefined) updateData.explanation = data.explanation;
     if (data.status) updateData.status = data.status;
-    
+
     if (data.estimatedTime !== undefined || data.tags) {
         updateData.metadata = {
             estimatedTime: data.estimatedTime,
@@ -737,10 +745,7 @@ export class AdminEngine {
         };
     }
 
-    const [updated] = await db.update(questions)
-        .set(updateData)
-        .where(eq(questions.id, id))
-        .returning();
+    const [updated] = await QuestionService.updateQuestion(id, updateData, data.skillIds);
 
     await AuditService.log({
       userId: adminId,

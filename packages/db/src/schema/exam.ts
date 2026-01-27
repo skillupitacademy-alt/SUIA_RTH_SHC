@@ -13,6 +13,7 @@ export const examBlueprints = pgTable("exam_blueprints", {
   domains: uuid("domain_ids").array(),
   subjects: uuid("subject_ids").array(),
   topics: uuid("topic_ids").array(),
+  subtopics: uuid("subtopic_ids").array(),
   totalQuestions: integer("total_questions").notNull().default(10),
   timeLimit: integer("time_limit"), // in minutes
   difficultyDistribution: jsonb("difficulty_distribution").notNull().default({

@@ -86,7 +86,7 @@ export const subjectsRelations = relations(subjects, ({ one, many }) => ({
   topics: many(topics),
 }));
 
-import { questions } from "./question";
+import { questions, questionSkills } from "./question";
 
 export const topicsRelations = relations(topics, ({ one, many }) => ({
   subject: one(subjects, {
@@ -107,6 +107,7 @@ export const subtopicsRelations = relations(subtopics, ({ one }) => ({
 
 export const skillsRelations = relations(skills, ({ many }) => ({
   topicSkills: many(topicSkills),
+  questionSkills: many(questionSkills),
 }));
 
 export const topicSkillsRelations = relations(topicSkills, ({ one }) => ({

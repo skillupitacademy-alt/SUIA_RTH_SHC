@@ -2,9 +2,11 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { apiClient } from '@quiz/api-client';
-import { FileText, Layers, Hash, Activity, Edit3, Trash2, Filter, X, AlertTriangle, Loader2 } from 'lucide-react';
+import { FileText, Layers, Hash, Activity, Edit3, Trash2, Filter, X, AlertTriangle, Loader2, Sparkles } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
-import { CascadingSelect } from '@/components/entry/CascadingSelect';
+import { CascadingSelect, Selection } from '@/components/entry/CascadingSelect';
+import { MultiSelectField } from '../entry/SelectionFields';
+import { useAllSkills } from '@/hooks/useAdminHierarchy';
 import Link from 'next/link';
 
 interface QuestionData {
@@ -30,13 +32,15 @@ export function QuestionTable() {
     const [isLoading, setIsLoading] = useState(true);
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
+    const skills = useAllSkills();
 
     // Phase 8: Filters
     const [filters, setFilters] = useState({
         domainId: '',
         subjectId: '',
         topicId: '',
-        subtopicId: ''
+        subtopicId: '',
+        skillIds: [] as string[]
     });
     const [isFiltering, setIsFiltering] = useState(false);
     const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; questionId: string | null; isDeleting: boolean; error: string | null }>({
@@ -46,26 +50,29 @@ export function QuestionTable() {
         error: null
     });
 
-    const handleFilterChange = useCallback((selection: any) => {
+    const handleFilterChange = useCallback((selection: Selection) => {
         setFilters(prev => {
-            // Check if values actually changed to avoid infinite loop
             if (
                 prev.domainId === (selection.domainId || '') &&
                 prev.subjectId === (selection.subjectId || '') &&
                 prev.topicId === (selection.topicId || '') &&
-                prev.subtopicId === (selection.subtopicId || '')
+                prev.subtopicId === (selection.subtopicId || '') &&
+                JSON.stringify(prev.skillIds) === JSON.stringify(selection.skillIds)
             ) {
                 return prev;
             }
             return {
+                ...prev,
                 domainId: selection.domainId || '',
                 subjectId: selection.subjectId || '',
                 topicId: selection.topicId || '',
-                subtopicId: selection.subtopicId || ''
+                subtopicId: selection.subtopicId || '',
+                skillIds: selection.skillIds || []
             };
         });
         setPage(1);
     }, []);
+
 
     useEffect(() => {
         const fetchQuestions = async () => {
@@ -76,6 +83,7 @@ export function QuestionTable() {
                     subjectId: filters.subjectId || undefined,
                     topicId: filters.topicId || undefined,
                     subtopicId: filters.subtopicId || undefined,
+                    skillIds: filters.skillIds.length > 0 ? filters.skillIds : undefined,
                 });
                 setQuestions(data.questions);
                 setTotalPages(data.totalPages);
@@ -122,9 +130,9 @@ export function QuestionTable() {
                             <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Hierarchy Targeting System</p>
                         </div>
                     </div>
-                    {(filters.domainId || filters.subjectId || filters.topicId || filters.subtopicId) && (
+                    {(filters.domainId || filters.subjectId || filters.topicId || filters.subtopicId || filters.skillIds.length > 0) && (
                         <button
-                            onClick={() => setFilters({ domainId: '', subjectId: '', topicId: '', subtopicId: '' })}
+                            onClick={() => setFilters({ domainId: '', subjectId: '', topicId: '', subtopicId: '', skillIds: [] })}
                             className="flex items-center gap-2 px-4 py-2 rounded-xl bg-red-50 text-red-600 text-[10px] font-black uppercase tracking-widest hover:bg-red-100 transition-all border border-red-100"
                         >
                             <X className="w-3 h-3" /> Clear Filters
@@ -132,9 +140,9 @@ export function QuestionTable() {
                     )}
                 </div>
 
-                <div className="grid grid-cols-1 gap-4">
+                <div className="space-y-6">
                     <CascadingSelect
-                        value={filters as any} // Cast because internal type is slightly different (string vs null)
+                        value={filters as any}
                         onChange={handleFilterChange}
                     />
                 </div>

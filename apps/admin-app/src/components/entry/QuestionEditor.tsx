@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Plus, Trash2, Check, Clock, AlertCircle, Type, List, FileText } from 'lucide-react';
+import { Plus, Trash2, Check, Clock, AlertCircle, Type, List, FileText, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface QuestionFormData {
@@ -11,7 +11,6 @@ interface QuestionFormData {
     explanation: string;
     difficulty: 'simple' | 'intermediate' | 'expert';
     estimatedTime: number; // seconds
-    tags: string[];
 }
 
 interface QuestionEditorProps {
@@ -31,7 +30,6 @@ export function QuestionEditor({ onSubmit, loading, initialData }: QuestionEdito
         explanation: initialData?.explanation || '',
         difficulty: initialData?.difficulty || 'intermediate',
         estimatedTime: initialData?.estimatedTime || 60,
-        tags: initialData?.tags || []
     });
 
     const addOption = () => {

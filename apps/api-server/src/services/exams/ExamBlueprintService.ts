@@ -12,6 +12,7 @@ interface BlueprintConfiguration {
 
   subjectIds?: string[];
   topicIds?: string[];
+  subtopicIds?: string[];
   questionCount: number;
   difficultyPreference: 'mixed' | 'simple' | 'intermediate' | 'expert';
 }
@@ -28,18 +29,18 @@ export class ExamBlueprintService {
    * Performs resolution, fetching, randomization, and persistence.
    */
   async generateBlueprint(config: BlueprintConfiguration): Promise<string> {
-    const { domainId, subjectIds, topicIds, questionCount, difficultyPreference } = config;
+    const { domainId, subjectIds, topicIds, subtopicIds, questionCount, difficultyPreference } = config;
 
-    console.log(`[BlueprintGen] Starting for Domain=${domainId}, Ss=${subjectIds?.length}, Ts=${topicIds?.length}, N=${questionCount}, Diff=${difficultyPreference}`);
+    console.log(`[BlueprintGen] Starting for Domain=${domainId}, Ss=${subjectIds?.length}, Ts=${topicIds?.length}, STs=${subtopicIds?.length}, N=${questionCount}, Diff=${difficultyPreference}`);
 
     // 1. Calculate Distribution based on Preference
     const distribution = this.calculateDistribution(questionCount, difficultyPreference);
     console.log(`[BlueprintGen] Distribution: ${JSON.stringify(distribution)}`);
 
     // 2. Fetch Eligible Questions by Bucket
-    const simpleQuestions = await this.fetchQuestions(distribution.simple, 'simple', domainId, subjectIds, topicIds);
-    const intermediateQuestions = await this.fetchQuestions(distribution.intermediate, 'intermediate', domainId, subjectIds, topicIds);
-    const expertQuestions = await this.fetchQuestions(distribution.expert, 'expert', domainId, subjectIds, topicIds);
+    const simpleQuestions = await this.fetchQuestions(distribution.simple, 'simple', domainId, subjectIds, topicIds, subtopicIds);
+    const intermediateQuestions = await this.fetchQuestions(distribution.intermediate, 'intermediate', domainId, subjectIds, topicIds, subtopicIds);
+    const expertQuestions = await this.fetchQuestions(distribution.expert, 'expert', domainId, subjectIds, topicIds, subtopicIds);
 
     // 3. Validate Pool Sufficiency (Strict Mode)
     if (simpleQuestions.length < distribution.simple) {
@@ -63,6 +64,7 @@ export class ExamBlueprintService {
 
       subjects: subjectIds || [], 
       topics: topicIds || [],
+      subtopics: subtopicIds || [],
       difficultyDistribution: distribution,
       totalQuestions: questionCount,
     }).returning();
@@ -102,7 +104,8 @@ export class ExamBlueprintService {
     domainId: string,
 
     subjectIds?: string[],
-    topicIds?: string[]
+    topicIds?: string[],
+    subtopicIds?: string[]
   ) {
     if (count === 0) return [];
 
@@ -112,8 +115,10 @@ export class ExamBlueprintService {
       eq(questions.difficulty, difficulty)
     ];
 
-    // Hierarchy Filters
-    if (topicIds && topicIds.length > 0) {
+    // Hierarchy Filters (Prioritize most granular)
+    if (subtopicIds && subtopicIds.length > 0) {
+      conditions.push(inArray(questions.subtopicId, subtopicIds));
+    } else if (topicIds && topicIds.length > 0) {
       conditions.push(inArray(questions.topicId, topicIds));
     } else if (subjectIds && subjectIds.length > 0) {
       const subQuery = db.select({ id: topics.id })

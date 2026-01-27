@@ -1,4 +1,4 @@
-import { db, questions } from '@quiz/db';
+import { db, questions, questionSkills } from '@quiz/db';
 import { eq, and, inArray, sql, desc } from 'drizzle-orm';
 
 export class QuestionService {
@@ -7,8 +7,22 @@ export class QuestionService {
       orderBy: [desc(questions.createdAt)],
     });
   }
-  static async createQuestion(data: any) {
-    return await db.insert(questions).values(data).returning();
+
+  static async createQuestion(data: any, skillIds: string[] = []) {
+    // 1. Insert Question
+    const [insertedQuestion] = await db.insert(questions).values(data).returning();
+
+    // 2. Insert Skills (if any)
+    if (skillIds.length > 0) {
+      await db.insert(questionSkills).values(
+        skillIds.map(skillId => ({
+          questionId: insertedQuestion.id,
+          skillId
+        }))
+      );
+    }
+
+    return [insertedQuestion];
   }
 
   static async getQuestionsByTopic(topicId: string) {
@@ -17,8 +31,27 @@ export class QuestionService {
     });
   }
 
-  static async bulkCreateQuestions(data: any[]) {
-    return await db.insert(questions).values(data).returning();
+  static async bulkCreateQuestions(questionsList: any[], mappings: { questionIndex: number, skillIds: string[] }[]) {
+    // 1. Insert All Questions
+    const insertedQuestions = await db.insert(questions).values(questionsList).returning();
+    
+    // 2. Map inserted IDs back to skills based on index order
+    const skillInserts: any[] = [];
+    
+    mappings.forEach(m => {
+        const questionId = insertedQuestions[m.questionIndex]?.id;
+        if (questionId && m.skillIds.length > 0) {
+            m.skillIds.forEach(skillId => {
+                skillInserts.push({ questionId, skillId });
+            });
+        }
+    });
+
+    if (skillInserts.length > 0) {
+        await db.insert(questionSkills).values(skillInserts);
+    }
+
+    return insertedQuestions;
   }
 
   static async validateTopicReadiness(topicId: string) {
@@ -52,8 +85,30 @@ export class QuestionService {
     };
   }
 
-  static async updateQuestion(id: string, data: any) {
-    return await db.update(questions).set(data).where(eq(questions.id, id)).returning();
+  static async updateQuestion(id: string, data: any, skillIds?: string[]) {
+    // 1. Update Question
+    const [updatedQuestion] = await db.update(questions)
+      .set(data)
+      .where(eq(questions.id, id))
+      .returning();
+
+    // 2. Sync Skills if provided
+    if (skillIds !== undefined) {
+      // Delete existing associations
+      await db.delete(questionSkills).where(eq(questionSkills.questionId, id));
+
+      // Insert new ones
+      if (skillIds.length > 0) {
+        await db.insert(questionSkills).values(
+          skillIds.map(skillId => ({
+            questionId: id,
+            skillId
+          }))
+        );
+      }
+    }
+
+    return [updatedQuestion];
   }
 
   static async deleteQuestion(id: string) {

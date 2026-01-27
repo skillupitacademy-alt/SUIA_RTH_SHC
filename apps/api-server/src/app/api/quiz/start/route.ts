@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
     if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const payload = await TokenService.verifyAccessToken(token);
-    const { blueprintId, subjects, questionCount, difficulty } = await req.json();
+    const { blueprintId, subjects, topicIds, subtopicIds, questionCount, difficulty } = await req.json();
 
     // Enterprise Flow: Generate Blueprint on the fly if blueprintId looks like a Domain ID (which it is in this flow)
     // The frontend sends the selected Domain ID as 'blueprintId'.
@@ -29,6 +29,8 @@ export async function POST(req: NextRequest) {
       targetBlueprintId = await blueprintService.generateBlueprint({
         domainId: blueprintId, // Frontend passes domain ID here
         subjectIds: subjects,
+        topicIds: topicIds,
+        subtopicIds: subtopicIds,
         questionCount: questionCount || 10,
         difficultyPreference: difficulty || 'mixed'
       });

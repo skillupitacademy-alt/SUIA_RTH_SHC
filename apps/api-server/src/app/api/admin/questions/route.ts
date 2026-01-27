@@ -29,6 +29,7 @@ export async function GET(req: NextRequest) {
         subjectId: searchParams.get('subjectId') || undefined,
         topicId: searchParams.get('topicId') || undefined,
         subtopicId: searchParams.get('subtopicId') || undefined,
+        skillIds: searchParams.getAll('skillIds').length > 0 ? searchParams.getAll('skillIds') : undefined,
         status: searchParams.get('status') || undefined,
     };
 

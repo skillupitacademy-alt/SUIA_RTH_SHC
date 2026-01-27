@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const { topicId, subtopicId, questions } = await req.json();
+    const { topicId, subtopicId, skillId, skillIds, questions } = await req.json();
 
     if (!topicId || !Array.isArray(questions)) {
         return NextResponse.json({ error: 'Missing required fields: topicId and questions array' }, { status: 400 });
@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
 
     const result = await AdminEngine.bulkCreateQuestionsWithContext(
         questions, 
-        { topicId, subtopicId }, 
+        { topicId, subtopicId, skillId, skillIds }, 
         payload.userId
     );
     

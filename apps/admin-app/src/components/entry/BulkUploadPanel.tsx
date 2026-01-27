@@ -8,12 +8,12 @@ import { apiClient } from '@quiz/api-client';
 interface BulkUploadPanelProps {
     topicId: string;
     subtopicId: string | null;
-    skillId: string | null;
+    skillIds: string[];
     onSuccess: (count: number) => void;
     onError: (message: string) => void;
 }
 
-export function BulkUploadPanel({ topicId, subtopicId, skillId, onSuccess, onError }: BulkUploadPanelProps) {
+export function BulkUploadPanel({ topicId, subtopicId, skillIds, onSuccess, onError }: BulkUploadPanelProps) {
     const [file, setFile] = useState<File | null>(null);
     const [questions, setQuestions] = useState<any[]>([]);
     const [isParsing, setIsParsing] = useState(false);
@@ -81,7 +81,7 @@ export function BulkUploadPanel({ topicId, subtopicId, skillId, onSuccess, onErr
             await apiClient.admin.bulkCreateQuestions({
                 topicId,
                 subtopicId: subtopicId || undefined,
-                skillId: skillId || undefined,
+                skillIds: skillIds.length > 0 ? skillIds : undefined,
                 questions
             });
 
@@ -178,13 +178,51 @@ export function BulkUploadPanel({ topicId, subtopicId, skillId, onSuccess, onErr
                 </div>
             )}
 
-            <div className="bg-blue-50/50 border border-blue-100 rounded-2xl p-6 flex items-start gap-4">
-                <AlertCircle className="w-5 h-5 text-blue-500 shrink-0 mt-0.5" />
-                <div className="space-y-1">
-                    <h5 className="text-sm font-bold text-blue-900">Pro Tip</h5>
-                    <p className="text-xs text-blue-700/80 font-medium leading-relaxed">
-                        The bulk uploader automatically maps your questions to the selected topic. Use the standard JSON schema to ensure high reliability.
-                    </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-slate-50/50 border border-slate-100 rounded-3xl p-8">
+                <div className="space-y-4">
+                    <div className="flex items-center gap-3 text-[#1A1A1A]">
+                        <div className="p-2 rounded-xl bg-blue-50 text-blue-600">
+                            <FileJson className="w-5 h-5" />
+                        </div>
+                        <h5 className="font-black text-sm uppercase tracking-widest">JSON Schema Guide</h5>
+                    </div>
+                    <div className="bg-slate-900 rounded-2xl p-4 overflow-x-auto">
+                        <pre className="text-[10px] text-blue-400 font-mono leading-relaxed">
+                            {`[
+  {
+    "text": "Identify the primary function of a database index.",
+    "difficulty": "intermediate",
+    "skillIds": ["skill_uuid_1", "skill_uuid_2"],
+    "options": [
+      { "text": "Speed up data retrieval", "isCorrect": true },
+      { "text": "Reduce disk space", "isCorrect": false }
+    ],
+    "explanation": "Indexes improve query performance..."
+  }
+]`}
+                        </pre>
+                    </div>
+                </div>
+
+                <div className="space-y-4">
+                    <div className="flex items-center gap-3 text-[#1A1A1A]">
+                        <div className="p-2 rounded-xl bg-amber-50 text-amber-600">
+                            <AlertCircle className="w-5 h-5" />
+                        </div>
+                        <h5 className="font-black text-sm uppercase tracking-widest">Knowledge Base</h5>
+                    </div>
+                    <div className="space-y-3">
+                        <div className="p-4 bg-white border border-slate-100 rounded-2xl">
+                            <p className="text-[11px] font-bold text-slate-600 leading-relaxed italic">
+                                "Mapping skills directly in the JSON allows for high-granularity assessment tagging. Ensure <span className="text-[#FF4B91]">skillIds</span> are included per item for precise mapping."
+                            </p>
+                        </div>
+                        <div className="p-4 bg-white border border-slate-100 rounded-2xl">
+                            <p className="text-[11px] font-bold text-slate-600 leading-relaxed">
+                                Upload is prioritized at the <span className="text-blue-600 underline">Subtopic</span> level. Use this panel to inject bulk content into your assessment matrix.
+                            </p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { CascadingSelect } from '@/components/entry/CascadingSelect';
+import { useState } from 'react';
+import { CascadingSelect, Selection } from '@/components/entry/CascadingSelect';
 import { QuestionEditor } from '@/components/entry/QuestionEditor';
 import { BulkUploadPanel } from '@/components/entry/BulkUploadPanel';
 import { apiClient } from '@quiz/api-client';
@@ -9,21 +9,13 @@ import { CheckCircle2, AlertTriangle, ArrowLeft, X, Edit3, Layers } from 'lucide
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 
-interface Selection {
-    domainId: string | null;
-    subjectId: string | null;
-    topicId: string | null;
-    subtopicId: string | null;
-    skillId: string | null;
-}
-
 export default function QuestionEntryPage() {
     const [selection, setSelection] = useState<Selection>({
         domainId: null,
         subjectId: null,
         topicId: null,
         subtopicId: null,
-        skillId: null,
+        skillIds: [],
     });
     const [mode, setMode] = useState<'manual' | 'bulk'>('manual');
     const [status, setStatus] = useState<{ type: 'success' | 'error', message: string } | null>(null);
@@ -35,18 +27,21 @@ export default function QuestionEntryPage() {
         if (status?.type === 'error') setStatus(null);
     };
 
-    const handleCreateQuestion = async (data: any) => {
-        if (!selection.topicId) return;
+    const handleCreateQuestion = async (formData: any) => {
+        if (!selection.topicId) {
+            setStatus({ type: 'error', message: 'Please select at least a Topic in the hierarchy.' });
+            return;
+        }
 
         setSubmitting(true);
         setStatus(null);
 
         try {
             await apiClient.admin.createQuestion({
-                ...data,
+                ...formData,
                 topicId: selection.topicId,
                 subtopicId: selection.subtopicId,
-                skillId: selection.skillId
+                skillIds: selection.skillIds,
             });
 
             setStatus({ type: 'success', message: 'Question created successfully!' });
@@ -78,7 +73,7 @@ export default function QuestionEntryPage() {
         else window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
-    // Requirement: Bulk Upload is unlocked only when ALL levels are selected
+    // Requirement: Bulk Upload/Editor is unlocked only when Subtopic level is selected
     const isUnlocked = !!selection.subtopicId;
 
     return (
@@ -110,7 +105,7 @@ export default function QuestionEntryPage() {
                 </div>
             )}
 
-            <div className="w-full max-w-[1800px] mx-auto space-y-12">
+            <div className="w-full max-w-[1800px] mx-auto space-y-12 pb-24">
 
                 {/* Header */}
                 <div className="flex flex-col gap-4">
@@ -147,7 +142,11 @@ export default function QuestionEntryPage() {
                     </div>
                 </div>
 
-                <CascadingSelect key={`hierarchy-${formKey}`} onChange={handleSelectionChange} />
+                <CascadingSelect
+                    key={`hierarchy-${formKey}`}
+                    onChange={handleSelectionChange}
+                    hideSkills={mode === 'bulk'}
+                />
 
                 {/* Editor Section */}
                 <div className="relative pt-8">
@@ -166,7 +165,7 @@ export default function QuestionEntryPage() {
                                 <BulkUploadPanel
                                     topicId={selection.topicId!}
                                     subtopicId={selection.subtopicId}
-                                    skillId={selection.skillId}
+                                    skillIds={selection.skillIds}
                                     onSuccess={handleBulkSuccess}
                                     onError={(msg) => setStatus({ type: 'error', message: msg })}
                                 />
@@ -178,7 +177,7 @@ export default function QuestionEntryPage() {
                                 <ArrowLeft className="w-8 h-8 rotate-90 opacity-40 text-slate-400" />
                             </div>
                             <h3 className="text-xl font-bold uppercase tracking-widest mb-2 text-slate-600">Awaiting Selection</h3>
-                            <p className="font-medium">Select a Topic above to unlock the {mode === 'manual' ? 'editor' : 'bulk uploader'}.</p>
+                            <p className="font-medium">Select Target Hierarchy (up to Subtopic) to unlock the {mode === 'manual' ? 'editor' : 'bulk uploader'}.</p>
                         </div>
                     )}
                 </div>

@@ -70,12 +70,15 @@ export class AdminClient {
     }>(`/admin/skills?page=${page}&limit=${limit}`);
   }
 
-  async getQuestions(page: number = 1, limit: number = 20, filters?: { domainId?: string; subjectId?: string; topicId?: string; subtopicId?: string; status?: string }) {
+  async getQuestions(page: number = 1, limit: number = 20, filters?: { domainId?: string; subjectId?: string; topicId?: string; subtopicId?: string; skillIds?: string[]; status?: string }) {
     const query = new URLSearchParams({ page: page.toString(), limit: limit.toString() });
     if (filters?.domainId) query.append('domainId', filters.domainId);
     if (filters?.subjectId) query.append('subjectId', filters.subjectId);
     if (filters?.topicId) query.append('topicId', filters.topicId);
     if (filters?.subtopicId) query.append('subtopicId', filters.subtopicId);
+    if (filters?.skillIds && filters.skillIds.length > 0) {
+        filters.skillIds.forEach(id => query.append('skillIds', id));
+    }
     if (filters?.status) query.append('status', filters.status);
 
     return this.client.get<{
@@ -111,7 +114,7 @@ export class AdminClient {
     return this.client.post<any>('/admin/questions', data);
   }
 
-  async bulkCreateQuestions(data: { topicId: string, subtopicId?: string, skillId?: string, questions: any[] }) {
+  async bulkCreateQuestions(data: { topicId: string, subtopicId?: string, skillId?: string, skillIds?: string[], questions: any[] }) {
     return this.client.post<any>('/admin/questions/bulk', data);
   }
 
