@@ -12,7 +12,7 @@ export function ContentManager() {
         const fetchContent = async () => {
             try {
                 const data = await apiClient.admin.getQuestions();
-                setContent(data);
+                setContent(data.questions);
             } catch (err) {
                 console.error("Failed to fetch admin content", err);
             } finally {
