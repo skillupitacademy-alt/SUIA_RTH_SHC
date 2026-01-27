@@ -183,3 +183,63 @@ export function useSubtopics(topicId?: string): HierarchyHookResult<any> {
 
     return { data, total, loading, error, refetch: fetch, create };
 }
+
+export function useTopicSkills(topicId?: string): { data: any[], loading: boolean, error: string | null } {
+    const [data, setData] = useState<any[]>([]);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    const { token } = useAuthStore();
+
+    const fetch = useCallback(async () => {
+        if (!topicId || !token) {
+            setData([]);
+            return;
+        }
+        setLoading(true);
+        setError(null);
+        try {
+            const res = await apiClient.admin.getTopicSkills(topicId);
+            setData(res);
+        } catch (err: any) {
+            setError(err.message || 'Failed to fetch topic skills');
+        } finally {
+            setLoading(false);
+        }
+    }, [topicId, token]);
+
+    useEffect(() => {
+        if (token) fetch();
+    }, [fetch, token]);
+
+    return { data, loading, error };
+}
+
+export function useAllSkills(): { data: any[], loading: boolean, error: string | null } {
+    const [data, setData] = useState<any[]>([]);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    const { token } = useAuthStore();
+
+    const fetch = useCallback(async () => {
+        if (!token) return;
+        setLoading(true);
+        setError(null);
+        try {
+            // Fetching page 1 with a large limit to get all skills for the dropdown
+            const res = await apiClient.admin.getSkills(1, 1000);
+            setData(res.data);
+        } catch (err: any) {
+            setError(err.message || 'Failed to fetch skills');
+        } finally {
+            setLoading(false);
+        }
+    }, [token]);
+
+    useEffect(() => {
+        if (token) fetch();
+    }, [fetch, token]);
+
+    return { data, loading, error };
+}

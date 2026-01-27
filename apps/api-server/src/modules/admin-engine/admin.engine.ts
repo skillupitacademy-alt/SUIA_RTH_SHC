@@ -258,13 +258,14 @@ export class AdminEngine {
   /**
    * Private helper to map frontend question data to database schema.
    */
-  private static mapQuestionData(data: any, topicId: string, subtopicId?: string) {
+  private static mapQuestionData(data: any, topicId: string, subtopicId?: string, skillId?: string) {
     const correctOption = data.options.find((o: any) => o.isCorrect);
     const correctAnswer = correctOption ? correctOption.text : 'No correct answer provided';
 
     return {
         topicId: topicId,
         subtopicId: subtopicId || data.subtopicId,
+        skillId: skillId || data.skillId,
         difficulty: data.difficulty || 'intermediate',
         type: data.type === 'multiple' ? 'mcq' : 'mcq',
         questionText: data.text || data.questionText,
@@ -300,7 +301,7 @@ export class AdminEngine {
     }
 
     // 2. Map and Create
-    const dbData = this.mapQuestionData(data, topicId);
+    const dbData = this.mapQuestionData(data, topicId, data.subtopicId, data.skillId);
     const question = await QuestionService.createQuestion(dbData);
 
     await AuditService.log({
@@ -317,12 +318,12 @@ export class AdminEngine {
    */
   static async bulkCreateQuestionsWithContext(
     questionsList: any[], 
-    context: { topicId: string, subtopicId?: string }, 
+    context: { topicId: string, subtopicId?: string, skillId?: string }, 
     adminId: string
   ) {
     // 1. Map all questions using the centralized logic
     const dbRows = questionsList.map(q => 
-        this.mapQuestionData(q, context.topicId, context.subtopicId)
+        this.mapQuestionData(q, context.topicId, context.subtopicId, context.skillId)
     );
 
     // 2. Batch Insert
@@ -334,7 +335,8 @@ export class AdminEngine {
       metadata: { 
         count: created.length,
         topicId: context.topicId,
-        subtopicId: context.subtopicId
+        subtopicId: context.subtopicId,
+        skillId: context.skillId
       },
     });
 
@@ -720,6 +722,7 @@ export class AdminEngine {
     };
     if (topicId) updateData.topicId = topicId;
     if (data.subtopicId) updateData.subtopicId = data.subtopicId;
+    if (data.skillId) updateData.skillId = data.skillId;
     if (data.difficulty) updateData.difficulty = data.difficulty;
     if (data.text) updateData.questionText = data.text;
     if (data.options) updateData.options = data.options;
@@ -925,5 +928,16 @@ export class AdminEngine {
         limit,
         totalPages: Math.ceil(Number(countResult?.count || 0) / limit)
     };
+  }
+
+  static async getSkillsByTopic(topicId: string) {
+    const data = await db.query.topicSkills.findMany({
+        where: eq(topicSkills.topicId, topicId),
+        with: {
+            skill: true
+        }
+    });
+    // Extract just the skill objects
+    return data.map(ts => ts.skill);
   }
 }

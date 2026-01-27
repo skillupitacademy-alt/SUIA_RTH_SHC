@@ -14,6 +14,7 @@ interface Selection {
     subjectId: string | null;
     topicId: string | null;
     subtopicId: string | null;
+    skillId: string | null;
 }
 
 export default function QuestionEntryPage() {
@@ -22,6 +23,7 @@ export default function QuestionEntryPage() {
         subjectId: null,
         topicId: null,
         subtopicId: null,
+        skillId: null,
     });
     const [mode, setMode] = useState<'manual' | 'bulk'>('manual');
     const [status, setStatus] = useState<{ type: 'success' | 'error', message: string } | null>(null);
@@ -43,7 +45,8 @@ export default function QuestionEntryPage() {
             await apiClient.admin.createQuestion({
                 ...data,
                 topicId: selection.topicId,
-                subtopicId: selection.subtopicId
+                subtopicId: selection.subtopicId,
+                skillId: selection.skillId
             });
 
             setStatus({ type: 'success', message: 'Question created successfully!' });
@@ -163,6 +166,7 @@ export default function QuestionEntryPage() {
                                 <BulkUploadPanel
                                     topicId={selection.topicId!}
                                     subtopicId={selection.subtopicId}
+                                    skillId={selection.skillId}
                                     onSuccess={handleBulkSuccess}
                                     onError={(msg) => setStatus({ type: 'error', message: msg })}
                                 />

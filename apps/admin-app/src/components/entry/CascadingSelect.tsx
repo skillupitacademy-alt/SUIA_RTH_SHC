@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useDomains, useSubjects, useTopics, useSubtopics } from '@/hooks/useAdminHierarchy';
-import { ChevronDown, Plus, X, Loader2, Check } from 'lucide-react';
+import { useDomains, useSubjects, useTopics, useSubtopics, useTopicSkills, useAllSkills } from '@/hooks/useAdminHierarchy';
+import { ChevronDown, Plus, X, Loader2, Check, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface Selection {
@@ -10,6 +10,7 @@ interface Selection {
     subjectId: string | null;
     topicId: string | null;
     subtopicId: string | null;
+    skillId: string | null;
 }
 
 interface CascadingSelectProps {
@@ -23,6 +24,7 @@ export function CascadingSelect({ onChange, value }: CascadingSelectProps) {
         subjectId: null,
         topicId: null,
         subtopicId: null,
+        skillId: null,
     });
 
     const [modalConfig, setModalConfig] = useState<{
@@ -35,6 +37,7 @@ export function CascadingSelect({ onChange, value }: CascadingSelectProps) {
     const subjects = useSubjects(selection.domainId || undefined);
     const topics = useTopics(selection.subjectId || undefined);
     const subtopics = useSubtopics(selection.topicId || undefined);
+    const skills = useAllSkills();
 
     useEffect(() => {
         onChange(selection);
@@ -46,10 +49,11 @@ export function CascadingSelect({ onChange, value }: CascadingSelectProps) {
             value.domainId === '' ||
             value.subjectId === '' ||
             value.topicId === '' ||
-            value.subtopicId === ''
+            value.subtopicId === '' ||
+            value.skillId === ''
         )) {
-            if (!value.domainId && !value.subjectId && !value.topicId && !value.subtopicId) {
-                setSelection({ domainId: null, subjectId: null, topicId: null, subtopicId: null });
+            if (!value.domainId && !value.subjectId && !value.topicId && !value.subtopicId && !value.skillId) {
+                setSelection({ domainId: null, subjectId: null, topicId: null, subtopicId: null, skillId: null });
             }
         }
     }, [value]);
@@ -64,11 +68,14 @@ export function CascadingSelect({ onChange, value }: CascadingSelectProps) {
                 next.subjectId = null;
                 next.topicId = null;
                 next.subtopicId = null;
+                next.skillId = null;
             } else if (level === 'subjectId') {
                 next.topicId = null;
                 next.subtopicId = null;
+                next.skillId = null;
             } else if (level === 'topicId') {
                 next.subtopicId = null;
+                next.skillId = null;
             }
             return next;
         });
@@ -132,18 +139,35 @@ export function CascadingSelect({ onChange, value }: CascadingSelectProps) {
                     active={!!selection.subjectId}
                 />
 
-                {/* SUBTOPIC */}
-                <SelectField
-                    label="Subtopic (Skill)"
-                    value={selection.subtopicId}
-                    options={subtopics.data}
-                    loading={subtopics.loading}
-                    disabled={!selection.topicId}
-                    onChange={(id) => handleChange('subtopicId', id)}
-                    onCreate={() => openCreateModal('subtopic')}
-                    placeholder="Select Subtopic"
-                    active={!!selection.topicId}
-                />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:col-span-2">
+                    {/* SUBTOPIC */}
+                    <SelectField
+                        label="Subtopic (Component)"
+                        value={selection.subtopicId}
+                        options={subtopics.data}
+                        loading={subtopics.loading}
+                        disabled={!selection.topicId}
+                        onChange={(id) => handleChange('subtopicId', id)}
+                        onCreate={() => openCreateModal('subtopic')}
+                        placeholder="Select Subtopic"
+                        active={!!selection.topicId}
+                    />
+
+                    {/* MAPPED SKILL */}
+                    <SelectField
+                        label="Mapped Skill (Assessment Focus)"
+                        value={selection.skillId}
+                        options={skills.data}
+                        loading={skills.loading}
+                        disabled={false} // Global skills can be selected anytime
+                        onChange={(id) => handleChange('skillId', id)}
+                        onCreate={() => { }}
+                        hideCreate={true}
+                        placeholder={"Select Skill (Global)"}
+                        active={true} // Always active visually
+                        icon={<Sparkles className="w-3 h-3" />}
+                    />
+                </div>
             </div>
 
             {/* Quick Create Modal */}
@@ -176,15 +200,18 @@ interface SelectFieldProps {
     onCreate: () => void;
     placeholder: string;
     active?: boolean;
+    hideCreate?: boolean;
+    icon?: React.ReactNode;
 }
 
-function SelectField({ label, value, options, loading, disabled, onChange, onCreate, placeholder, active }: SelectFieldProps) {
+function SelectField({ label, value, options, loading, disabled, onChange, onCreate, placeholder, active, hideCreate, icon }: SelectFieldProps) {
     return (
         <div className={cn("flex flex-col gap-2 transition-opacity duration-300", disabled && "opacity-50 grayscale")}>
             <label className={cn(
-                "text-[9px] font-black uppercase tracking-[0.2em] transition-colors",
+                "text-[9px] font-black uppercase tracking-[0.2em] transition-colors flex items-center gap-2",
                 active ? "text-[#FF4B91]" : "text-slate-400"
             )}>
+                {icon && icon}
                 {label}
             </label>
             <div className="flex gap-2">
@@ -212,19 +239,21 @@ function SelectField({ label, value, options, loading, disabled, onChange, onCre
                         {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ChevronDown className="w-4 h-4" />}
                     </div>
                 </div>
-                <button
-                    onClick={onCreate}
-                    disabled={disabled}
-                    className={cn(
-                        "flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-xl transition-all border shadow-sm",
-                        active
-                            ? "bg-[#FF4B91]/5 hover:bg-[#FF4B91]/10 text-[#FF4B91] border-[#FF4B91]/20"
-                            : "bg-white/40 text-slate-400 border-slate-200 cursor-not-allowed"
-                    )}
-                    title={`Add new ${label}`}
-                >
-                    <Plus className="w-4 h-4" />
-                </button>
+                {!hideCreate && (
+                    <button
+                        onClick={onCreate}
+                        disabled={disabled}
+                        className={cn(
+                            "flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-xl transition-all border shadow-sm",
+                            active
+                                ? "bg-[#FF4B91]/5 hover:bg-[#FF4B91]/10 text-[#FF4B91] border-[#FF4B91]/20"
+                                : "bg-white/40 text-slate-400 border-slate-200 cursor-not-allowed"
+                        )}
+                        title={`Add new ${label}`}
+                    >
+                        <Plus className="w-4 h-4" />
+                    </button>
+                )}
             </div>
         </div>
     );

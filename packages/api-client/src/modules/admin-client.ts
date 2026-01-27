@@ -43,6 +43,10 @@ export class AdminClient {
     }>(`/admin/topics?${query.toString()}`);
   }
 
+  async getTopicSkills(topicId: string) {
+    return this.client.get<any[]>(`/admin/topics/${topicId}/skills`);
+  }
+
   async getSubtopics(page: number = 1, limit: number = 20, topicId?: string) {
     const query = new URLSearchParams({ page: page.toString(), limit: limit.toString() });
     if (topicId) query.append('topicId', topicId);
@@ -107,7 +111,7 @@ export class AdminClient {
     return this.client.post<any>('/admin/questions', data);
   }
 
-  async bulkCreateQuestions(data: { topicId: string, subtopicId?: string, questions: any[] }) {
+  async bulkCreateQuestions(data: { topicId: string, subtopicId?: string, skillId?: string, questions: any[] }) {
     return this.client.post<any>('/admin/questions/bulk', data);
   }
 

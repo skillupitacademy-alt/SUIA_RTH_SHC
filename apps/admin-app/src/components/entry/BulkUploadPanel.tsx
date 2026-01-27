@@ -8,11 +8,12 @@ import { apiClient } from '@quiz/api-client';
 interface BulkUploadPanelProps {
     topicId: string;
     subtopicId: string | null;
+    skillId: string | null;
     onSuccess: (count: number) => void;
     onError: (message: string) => void;
 }
 
-export function BulkUploadPanel({ topicId, subtopicId, onSuccess, onError }: BulkUploadPanelProps) {
+export function BulkUploadPanel({ topicId, subtopicId, skillId, onSuccess, onError }: BulkUploadPanelProps) {
     const [file, setFile] = useState<File | null>(null);
     const [questions, setQuestions] = useState<any[]>([]);
     const [isParsing, setIsParsing] = useState(false);
@@ -72,16 +73,19 @@ export function BulkUploadPanel({ topicId, subtopicId, onSuccess, onError }: Bul
 
     const handleUpload = async () => {
         if (!file || questions.length === 0) return;
+        if (!topicId) return;
+
         setIsUploading(true);
 
         try {
-            const response = await apiClient.admin.bulkCreateQuestions({
+            await apiClient.admin.bulkCreateQuestions({
                 topicId,
                 subtopicId: subtopicId || undefined,
+                skillId: skillId || undefined,
                 questions
             });
 
-            onSuccess(response.count);
+            onSuccess(questions.length);
             setQuestions([]);
             setFile(null);
         } catch (err: any) {

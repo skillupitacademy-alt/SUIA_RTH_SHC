@@ -1,6 +1,6 @@
 import { pgTable, text, timestamp, uuid, integer, jsonb } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
-import { topics, subtopics } from "./domain";
+import { topics, subtopics, skills } from "./domain";
 import { statusEnum, questionTypeEnum, difficultyEnum } from "./enums";
 
 export const questions = pgTable("questions", {
@@ -10,6 +10,8 @@ export const questions = pgTable("questions", {
     .references(() => topics.id, { onDelete: "cascade" }),
   subtopicId: uuid("subtopic_id")
     .references(() => subtopics.id, { onDelete: "set null" }),
+  skillId: uuid("skill_id")
+    .references(() => skills.id, { onDelete: "set null" }),
   difficulty: difficultyEnum("difficulty").notNull(),
   type: questionTypeEnum("type").notNull().default("mcq"),
   questionText: text("question_text").notNull(),
@@ -32,5 +34,9 @@ export const questionsRelations = relations(questions, ({ one }) => ({
   subtopic: one(subtopics, {
     fields: [questions.subtopicId],
     references: [subtopics.id],
+  }),
+  skill: one(skills, {
+    fields: [questions.skillId],
+    references: [skills.id],
   }),
 }));
