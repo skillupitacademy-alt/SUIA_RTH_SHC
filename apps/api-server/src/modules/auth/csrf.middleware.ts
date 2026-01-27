@@ -18,14 +18,10 @@ export async function csrfProtection(request: NextRequest) {
   }
   
   // Check if origin is allowed
-  const isLocalhost = config.csrf.allowAllLocalhost && 
-    (origin?.includes('localhost') || origin?.includes('127.0.0.1'));
-  const isAllowed = isLocalhost || 
-    config.csrf.allowedOrigins.includes(origin || '') || 
+  const isAllowed = config.csrf.allowedOrigins.includes(origin || '') || 
     (origin && origin.includes(host || ''));
-
+  
   if (config.debug.logCsrf) {
-    console.log('[CSRF] isLocalhost:', isLocalhost);
     console.log('[CSRF] isAllowed:', isAllowed);
   }
 

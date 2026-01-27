@@ -296,7 +296,7 @@ export class AuthService {
 
     // 5. Send real email via EmailService (handles mock/resend switches)
     // IMPORTANT: resetUrl MUST point to the frontend, not the API.
-    const baseUrl = (process.env.APP_BASE_URL || 'http://localhost:3001').replace(/\/$/, '');
+    const baseUrl = (process.env.APP_BASE_URL || 'https://quiz.realtutorialhub.com').replace(/\/$/, '');
     const resetUrl = `${baseUrl}/reset-password?token=${token}`;
     
     console.log(`[AUTH SERVICE] Generating Reset Link for ${user.email}: ${resetUrl}`);

@@ -7,9 +7,8 @@ export function middleware(request: NextRequest) {
 
   // Protected Routes
   if (path.startsWith('/dashboard') || path.startsWith('/onboarding')) {
-    // We can't access localStorage here, and cookie 'accessToken' isn't set yet (we use headers).
-    // But if we used 'refreshToken' cookie (httpOnly), we might see it here if domains match.
-    // Since domains differ (localhost:3000 vs 3001), we rely on client-side check MOSTLY.
+    // We can't access localStorage here, and cookie 'accessToken' isn't set yet.
+    // Since domains differ (quiz. vs api. subdomains), we rely on client-side check.
     // However, if we eventually proxy /api, we can check cookies.
     
     // Fallback: Just proceed and let Layout/Context handle redirect.
