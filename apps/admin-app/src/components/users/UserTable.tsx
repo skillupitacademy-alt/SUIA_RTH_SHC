@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { apiClient } from '@quiz/api-client';
-import { User, Mail, Calendar, Info, Shield, CheckCircle, XCircle } from 'lucide-react';
+import { User, Mail, Calendar, Info, Shield, CheckCircle, XCircle, Trash2, AlertTriangle, Lock } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
 interface UserData {
@@ -28,18 +28,26 @@ interface UserData {
 
 export function UserTable() {
     const [users, setUsers] = useState<UserData[]>([]);
+    const [deletedUsers, setDeletedUsers] = useState<UserData[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [selectedUser, setSelectedUser] = useState<UserData | null>(null);
     const [editingUser, setEditingUser] = useState<UserData | null>(null);
     const [isSaving, setIsSaving] = useState(false);
+    const [newPassword, setNewPassword] = useState('');
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
     const fetchUsers = async () => {
         try {
-            const data = await apiClient.admin.getUsers(page, 10);
-            setUsers(data.users);
-            setTotalPages(data.totalPages);
+            const [activeData, deletedData] = await Promise.all([
+                apiClient.admin.getUsers(page, 10, 'active'),
+                apiClient.admin.getUsers(1, 50, 'deleted') // Fetch recent 50 deleted users
+            ]);
+
+            setUsers(activeData.users);
+            setTotalPages(activeData.totalPages);
+            setDeletedUsers(deletedData.users);
         } catch (error) {
             console.error('Failed to fetch users:', error);
         } finally {
@@ -60,15 +68,37 @@ export function UserTable() {
         setIsSaving(true);
         try {
             const currentRoles = editingUser.userRoles.map(r => r.role.name);
-            await apiClient.admin.updateUser(editingUser.id, {
+            const payload: any = {
                 isBlocked: editingUser.isBlocked,
                 roles: currentRoles
-            });
+            };
+            if (newPassword) {
+                payload.password = newPassword;
+            }
+
+            await apiClient.admin.updateUser(editingUser.id, payload);
             await fetchUsers();
             setEditingUser(null);
+            setNewPassword('');
         } catch (error) {
             console.error('Failed to update user:', error);
             alert('Failed to update user.');
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    const handleDeleteUser = async () => {
+        if (!editingUser) return;
+        setIsSaving(true);
+        try {
+            await apiClient.admin.deleteUser(editingUser.id);
+            await fetchUsers();
+            setEditingUser(null);
+            setShowDeleteConfirm(false);
+        } catch (error) {
+            console.error('Failed to delete user:', error);
+            alert('Failed to delete user.');
         } finally {
             setIsSaving(false);
         }
@@ -231,6 +261,55 @@ export function UserTable() {
                 </div>
             </div>
 
+            {/* Deleted Users Table */}
+            {deletedUsers.length > 0 && (
+                <div className="mt-12 space-y-4">
+                    <h3 className="text-sm font-black uppercase tracking-widest text-red-500 flex items-center gap-2">
+                        <Trash2 size={16} />
+                        Deleted Accounts
+                    </h3>
+                    <div className="rounded-[2.5rem] border border-red-200 bg-red-50/30 backdrop-blur-xl overflow-hidden shadow-sm">
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left opacity-75 grayscale hover:grayscale-0 transition-all duration-500">
+                                <thead>
+                                    <tr className="border-b border-red-100 bg-red-50/50">
+                                        <th className="p-6 text-[10px] font-black uppercase tracking-widest text-red-400">Identity</th>
+                                        <th className="p-6 text-[10px] font-black uppercase tracking-widest text-red-400">Deleted Status</th>
+                                        <th className="p-6 text-[10px] font-black uppercase tracking-widest text-red-400">Joined</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-red-100">
+                                    {deletedUsers.map((user) => (
+                                        <tr key={user.id}>
+                                            <td className="p-6">
+                                                <div className="flex items-center gap-4">
+                                                    <div className="h-8 w-8 rounded-lg bg-gray-100 flex items-center justify-center">
+                                                        <User size={14} className="text-gray-400" />
+                                                    </div>
+                                                    <div>
+                                                        <p className="font-bold text-gray-700 text-sm">{user.profile?.name || 'Unknown Agent'}</p>
+                                                        <p className="text-[10px] text-red-400">{user.email}</p>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td className="p-6">
+                                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-red-100 text-red-600 text-[10px] font-bold uppercase tracking-wide">
+                                                    <Trash2 size={10} /> Deleted
+                                                </span>
+                                            </td>
+                                            <td className="p-6 text-[10px] font-medium text-red-400">
+                                                {formatDistanceToNow(new Date(user.createdAt), { addSuffix: true })}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+
             {/* Edit User Modal */}
             {editingUser && (
                 <div className="fixed inset-0 z-[200] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
@@ -273,6 +352,64 @@ export function UserTable() {
                                         />
                                     </div>
                                     <p className="text-[10px] text-muted-foreground pl-1">Grant full access to the admin dashboard.</p>
+                                </div>
+                            </div>
+
+                            <div className="space-y-4 pt-4 border-t border-gray-100">
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Security</label>
+                                    <div className="p-4 rounded-xl border border-gray-200 bg-gray-50 space-y-4">
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-bold text-gray-500 uppercase">Change Password</label>
+                                            <div className="flex items-center gap-3">
+                                                <Lock size={16} className="text-gray-400" />
+                                                <input
+                                                    type="password"
+                                                    placeholder="Enter new password (optional)"
+                                                    value={newPassword}
+                                                    onChange={(e) => setNewPassword(e.target.value)}
+                                                    className="flex-1 bg-transparent text-sm font-medium border-none focus:ring-0 placeholder:text-gray-300"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-red-500 flex items-center gap-2">
+                                        <AlertTriangle size={12} /> Danger Zone
+                                    </label>
+
+                                    {!showDeleteConfirm ? (
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowDeleteConfirm(true)}
+                                            className="w-full p-4 rounded-xl border border-red-100 bg-red-50 text-red-600 text-xs font-black uppercase tracking-widest hover:bg-red-100 transition-colors flex items-center justify-between group"
+                                        >
+                                            <span>Delete Account</span>
+                                            <Trash2 size={16} className="group-hover:scale-110 transition-transform" />
+                                        </button>
+                                    ) : (
+                                        <div className="p-4 rounded-xl border border-red-200 bg-red-50 space-y-3 animate-in fade-in zoom-in-95">
+                                            <p className="text-xs font-bold text-red-700">Are you sure? This will soft-delete the user and revoke all access.</p>
+                                            <div className="flex gap-2">
+                                                <button
+                                                    type="button"
+                                                    onClick={handleDeleteUser}
+                                                    className="flex-1 py-2 bg-red-600 text-white rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-red-700"
+                                                >
+                                                    Confirm Delete
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setShowDeleteConfirm(false)}
+                                                    className="px-4 py-2 bg-white border border-red-200 text-red-600 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-red-50"
+                                                >
+                                                    Cancel
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
 

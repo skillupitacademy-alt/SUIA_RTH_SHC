@@ -9,6 +9,7 @@ export const users = pgTable("users", {
   emailVerified: boolean("email_verified").notNull().default(false),
   isBlocked: boolean("is_blocked").notNull().default(false),
   lastActiveAt: timestamp("last_active_at").defaultNow(),
+  deletedAt: timestamp("deleted_at"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });

@@ -1,6 +1,7 @@
 import { db, questions, questionSkills, domains, subjects, topics, subtopics, topicSkills, skills, refreshTokens, users, userRoles, roles, userProfiles, auditLogs, exams, resultsByDimension, examBlueprints } from '@quiz/db';
-import { eq, and, sql, desc, gt, inArray } from 'drizzle-orm';
+import { eq, and, sql, desc, gt, inArray, isNull, isNotNull } from 'drizzle-orm';
 import { AuditService } from '../auth/audit.service';
+import { PasswordService } from '../auth/password.service';
 import { QuestionService } from '../question/question.service';
 import { DomainService, SubjectService, TopicService } from '../domain/domain.service';
 import { SkillService } from '../domain/skill.service';
@@ -586,14 +587,21 @@ export class AdminEngine {
   /**
    * Section 16: User Management
    */
-  static async getUsers(page: number = 1, limit: number = 20) {
+  static async getUsers(page: number = 1, limit: number = 20, status: 'active' | 'deleted' = 'active') {
     const offset = (page - 1) * limit;
 
-    const [countResult] = await db.select({ count: sql`count(*)` }).from(users);
+    const whereClause = status === 'active' 
+        ? isNull(users.deletedAt) 
+        : isNotNull(users.deletedAt);
+
+    const [countResult] = await db.select({ count: sql`count(*)` })
+        .from(users)
+        .where(whereClause);
 
     const usersList = await db.query.users.findMany({
       limit,
       offset,
+      where: whereClause,
       orderBy: [desc(users.createdAt)],
       with: {
         profile: true,
@@ -634,6 +642,12 @@ export class AdminEngine {
     // 1. Separate user fields from relations
     const { roles: newRoles, ...userFields } = data;
 
+    // 0. Handle Password Hashing
+    if (data.password) {
+        userFields.passwordHash = await PasswordService.hash(data.password);
+        delete userFields.password;
+    }
+
     let updated;
     if (Object.keys(userFields).length > 0) {
         [updated] = await db.update(users).set(userFields).where(eq(users.id, id)).returning();
@@ -672,7 +686,15 @@ export class AdminEngine {
   }
 
   static async deleteUser(id: string, adminId: string) {
-    const [deleted] = await db.delete(users).where(eq(users.id, id)).returning();
+    // Soft Delete
+    const [deleted] = await db.update(users)
+        .set({ deletedAt: new Date() })
+        .where(eq(users.id, id))
+        .returning();
+    
+    // Revoke all tokens
+    await db.update(refreshTokens).set({ revoked: true }).where(eq(refreshTokens.userId, id));
+
     await AuditService.log({ userId: adminId, action: 'admin_delete_user', metadata: { targetUserId: id } });
     return deleted;
   }

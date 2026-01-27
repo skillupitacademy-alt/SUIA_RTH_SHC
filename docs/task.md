@@ -30,6 +30,13 @@
 - [x] Update `UserTable` with Real-time Status Indicators <!-- id: 51 -->
 - [x] Implement Auto-Logout on Idle (Backend Enforcement) <!-- id: 52 -->
 
+## 🚀 Active Phase: Advanced User Management (Phase 10)
+- [x] Backend: Update `AdminEngine.updateUser` to support Password Hashing <!-- id: 53 -->
+- [x] Backend: Update `AdminEngine.deleteUser` (Integrity Check/Soft Delete) <!-- id: 54 -->
+- [x] Frontend: Add "Change Password" to `EditUserModal` <!-- id: 55 -->
+- [x] Frontend: Add "Delete Account" Action (with Confirmation) <!-- id: 56 -->
+- [x] Frontend: Add "Deleted Users" Table <!-- id: 57 -->
+
 ---
 
 ## ✅ Completed Phases

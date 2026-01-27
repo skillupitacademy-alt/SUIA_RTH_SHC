@@ -22,8 +22,9 @@ export async function GET(req: NextRequest) {
     const searchParams = req.nextUrl.searchParams;
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '20');
+    const status = searchParams.get('status') as 'active' | 'deleted' || 'active';
 
-    const data = await AdminEngine.getUsers(page, limit);
+    const data = await AdminEngine.getUsers(page, limit, status);
     return NextResponse.json(data);
   } catch (error: any) {
     console.error('[ADMIN_USERS] Error:', error.message);

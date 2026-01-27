@@ -224,14 +224,14 @@ export class AdminClient {
     }>(`/admin/sessions/live?page=${page}&limit=${limit}`);
   }
 
-  async getUsers(page: number = 1, limit: number = 20) {
+  async getUsers(page: number = 1, limit: number = 20, status: 'active' | 'deleted' = 'active') {
     return this.client.get<{
         users: any[];
         total: number;
         page: number;
         limit: number;
         totalPages: number;
-    }>(`/admin/users?page=${page}&limit=${limit}`);
+    }>(`/admin/users?page=${page}&limit=${limit}&status=${status}`);
   }
 
   async updateUser(id: string, data: any) {
