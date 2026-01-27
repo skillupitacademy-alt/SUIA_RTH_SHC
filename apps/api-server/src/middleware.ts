@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { rateLimit } from './modules/auth/rate-limit.middleware';
-import { csrfProtection } from './modules/auth/csrf.middleware';
+import { csrfProtection, setCsrfToken } from './modules/auth/csrf.middleware';
 import { corsMiddleware } from './modules/auth/cors.middleware';
 import { TokenService } from './modules/auth/token.service';
 
@@ -57,9 +57,7 @@ export async function middleware(request: NextRequest) {
     try {
       // In middleware, we just want to ensure it's a valid, unexpired token.
       const payload = await TokenService.verifyAccessToken(token);
-      
-      // Heartbeat: Implemented via client-side /api/auth/heartbeat polling
-      // to avoid heavy ORM usage in Edge Middleware.
+      console.log('[MIDDLEWARE] JWT Validated for user:', payload.userId);
     } catch (err: any) {
       console.error('[MIDDLEWARE] JWT Verification failed:', err.message);
       const response = NextResponse.json(
@@ -70,8 +68,14 @@ export async function middleware(request: NextRequest) {
     }
   }
 
+  // Debug log after all checks pass
+  console.log('[MIDDLEWARE] PASSED:', request.nextUrl.pathname);
+
   // 5. Proceed and add CORS headers
   const response = NextResponse.next();
+  // Permanent Fix: Always re-issue/refresh CSRF token on successful requests
+  // ensure the client always has a fresh token for the next mutation.
+  setCsrfToken(response);
   return corsMiddleware(request, response);
 }
 

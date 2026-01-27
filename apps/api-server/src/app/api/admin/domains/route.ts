@@ -18,8 +18,12 @@ export async function GET(req: NextRequest) {
     if (!(await verifyAdmin(payload))) {
         return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
+    
+    const searchParams = req.nextUrl.searchParams;
+    const page = parseInt(searchParams.get('page') || '1');
+    const limit = parseInt(searchParams.get('limit') || '20');
 
-    const data = await AdminEngine.getDomains();
+    const data = await AdminEngine.getDomains(page, limit);
     return NextResponse.json(data);
   } catch (error: any) {
     console.error('[ADMIN_DOMAINS] Error:', error.message);

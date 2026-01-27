@@ -19,10 +19,12 @@ export async function GET(req: NextRequest) {
         return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const domainId = req.nextUrl.searchParams.get('domainId');
-    if (!domainId) return NextResponse.json([], { status: 200 });
+    const searchParams = req.nextUrl.searchParams;
+    const page = parseInt(searchParams.get('page') || '1');
+    const limit = parseInt(searchParams.get('limit') || '20');
+    const domainId = searchParams.get('domainId') || undefined;
 
-    const data = await AdminEngine.getSubjects(domainId);
+    const data = await AdminEngine.getSubjects(page, limit, { domainId });
     return NextResponse.json(data);
   } catch (error: any) {
     console.error('[ADMIN_SUBJECTS] Error:', error.message);

@@ -19,10 +19,12 @@ export async function GET(req: NextRequest) {
         return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const topicId = req.nextUrl.searchParams.get('topicId');
-    if (!topicId) return NextResponse.json([], { status: 200 });
+    const searchParams = req.nextUrl.searchParams;
+    const page = parseInt(searchParams.get('page') || '1');
+    const limit = parseInt(searchParams.get('limit') || '20');
+    const topicId = searchParams.get('topicId') || undefined;
 
-    const data = await AdminEngine.getSubtopics(topicId);
+    const data = await AdminEngine.getSubtopics(page, limit, { topicId });
     return NextResponse.json(data);
   } catch (error: any) {
     console.error('[ADMIN_SUBTOPICS] Error:', error.message);

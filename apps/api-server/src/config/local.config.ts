@@ -28,7 +28,7 @@ export const config = {
     cookieSettings: {
       httpOnly: false,
       secure: false,
-      sameSite: 'strict' as const,
+      sameSite: 'lax' as const,
       domain: undefined,
     },
   },

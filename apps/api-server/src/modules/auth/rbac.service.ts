@@ -8,7 +8,10 @@ export async function verifyAdmin(payload: TokenPayload): Promise<boolean> {
         ['admin', 'ADMIN', 'super_admin', 'SUPER_ADMIN'].includes(r)
     );
 
-    if (isAdminInToken) return true;
+    if (isAdminInToken) {
+        console.log('[RBAC] PASSED via JWT:', payload.userId);
+        return true;
+    }
 
     // 2. Database Verification (Strict)
     const userRole = await db.select()
@@ -21,5 +24,7 @@ export async function verifyAdmin(payload: TokenPayload): Promise<boolean> {
         ))
         .limit(1);
 
-    return userRole.length > 0;
+    const passed = userRole.length > 0;
+    console.log(`[RBAC] Result for ${payload.userId}: ${passed ? 'PASSED' : 'FAILED'}`);
+    return passed;
 }
