@@ -124,16 +124,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <div className="flex min-h-screen bg-muted/10 overflow-hidden font-sans">
                 {/* Sidebar */}
                 <aside className="w-64 border-r bg-background flex flex-col shadow-xl shadow-muted/5 fixed inset-y-0 left-0 z-50">
-                    <div className="p-8">
-                        <div className="flex items-center gap-3 mb-8">
+                    <div className="p-6">
+                        <div className="flex items-center gap-3 mb-6">
                             <div className="flex items-center gap-2">
-                                <div className="h-9 w-9 rounded-xl bg-[#FF4B91] flex items-center justify-center text-white font-black text-lg shadow-lg shadow-[#FF4B91]/30">Q</div>
-                                <span className="font-black text-xl tracking-tighter text-[#1A1A1A]">QUIZADMIN</span>
+                                <div className="h-8 w-8 rounded-xl bg-[#FF4B91] flex items-center justify-center text-white font-black text-lg shadow-lg shadow-[#FF4B91]/30">Q</div>
+                                <span className="font-black text-lg tracking-tighter text-[#1A1A1A]">QUIZADMIN</span>
                             </div>
                         </div>
 
                         <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/40 mb-6 px-4">Platform Control</p>
-                        <nav className="space-y-3">
+                        <nav className="space-y-2">
                             {ADMIN_NAV.map((item) => {
                                 const isActive = pathname === item.href;
                                 return (
@@ -141,7 +141,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                                         key={item.name}
                                         href={item.href}
                                         className={cn(
-                                            "flex items-center justify-between group px-5 py-3 rounded-[1.25rem] transition-all duration-300",
+                                            "flex items-center justify-between group px-4 py-2.5 rounded-[1.25rem] transition-all duration-300",
                                             isActive
                                                 ? "bg-[#FF4B91] text-white shadow-xl shadow-[#FF4B91]/30 scale-[1.02]"
                                                 : "text-muted-foreground hover:bg-muted hover:text-foreground"
@@ -164,12 +164,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                         </nav>
                     </div>
 
-                    <div className="mt-auto p-8 border-t bg-muted/5">
-                        <div className="p-4 rounded-2xl bg-primary/5 border border-primary/10 mb-5">
-                            <p className="text-[9px] font-black text-primary uppercase tracking-[0.2em] mb-1.5">System Health</p>
+                    <div className="mt-auto p-6 border-t bg-muted/5">
+                        <div className="p-3 rounded-2xl bg-primary/5 border border-primary/10 mb-4">
+                            <p className="text-[9px] font-black text-primary uppercase tracking-[0.2em] mb-1">System Health</p>
                             <div className="flex items-center gap-2">
                                 <div className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
-                                <span className="text-[11px] font-black uppercase tracking-tight">Engines Active</span>
+                                <span className="text-[10px] font-black uppercase tracking-tight">Engines Active</span>
                             </div>
                         </div>
                         <button
@@ -184,11 +184,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
                 {/* Main Content */}
                 <div className="flex-1 flex flex-col overflow-hidden ml-64">
-                    <header className="h-20 border-b bg-background flex items-center justify-between px-10 sticky top-0 z-40">
+                    <header className="h-16 border-b bg-background flex items-center justify-between px-8 sticky top-0 z-40">
                         <div className="flex items-center gap-6">
                             <div className="flex items-center gap-3 pr-6 border-r border-muted-foreground/10">
-                                <div className="h-10 w-10 rounded-2xl bg-[#FF4B91] flex items-center justify-center text-white font-black text-xl shadow-lg shadow-[#FF4B91]/30">A</div>
-                                <span className="font-black text-2xl tracking-tighter text-[#1A1A1A]">ADMIN CORE</span>
+                                <div className="h-9 w-9 rounded-2xl bg-[#FF4B91] flex items-center justify-center text-white font-black text-lg shadow-lg shadow-[#FF4B91]/30">A</div>
+                                <span className="font-black text-xl tracking-tighter text-[#1A1A1A]">ADMIN CORE</span>
                             </div>
                             <div className="flex items-center gap-3">
                                 <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Terminal v1.0.4</span>
@@ -207,7 +207,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                         </div>
                     </header>
 
-                    <main className="flex-1 overflow-y-auto p-10">
+                    <main className="flex-1 overflow-y-auto p-8">
                         <div className="w-full animate-in fade-in slide-in-from-bottom-8 duration-700">
                             {children}
                         </div>
