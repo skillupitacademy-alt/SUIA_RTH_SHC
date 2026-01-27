@@ -7,9 +7,10 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(
     req: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const { id } = await params;
         const authHeader = req.headers.get('authorization');
         if (!authHeader || !authHeader.startsWith('Bearer ')) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -22,7 +23,7 @@ export async function GET(
             return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
         }
 
-        const data = await AdminEngine.getSkillsByTopic(params.id);
+        const data = await AdminEngine.getSkillsByTopic(id);
         return NextResponse.json(data);
     } catch (error: any) {
         console.error('[TOPIC_SKILLS] Error:', error.message);
