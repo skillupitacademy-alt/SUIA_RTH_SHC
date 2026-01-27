@@ -82,16 +82,16 @@ export function CascadingSelect({ onChange, value }: CascadingSelectProps) {
     };
 
     return (
-        <div className="space-y-6 p-8 rounded-3xl border border-white/40 bg-white/60 backdrop-blur-2xl shadow-xl relative overflow-hidden group">
+        <div className="space-y-4 p-6 rounded-2xl border border-white/40 bg-white/60 backdrop-blur-2xl shadow-xl relative overflow-hidden group">
             {/* Ambient Background Glow (Subtle Light Mode) */}
             <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-[#FF4B91]/5 rounded-full blur-[100px] -z-10 group-hover:bg-[#FF4B91]/10 transition-all duration-700" />
 
-            <div className="flex items-center gap-3 mb-6">
-                <div className="h-8 w-1 bg-[#FF4B91] rounded-full shadow-[0_0_15px_rgba(255,75,145,0.5)]" />
-                <h3 className="text-xl font-black text-[#1A1A1A] tracking-tight uppercase">Target Hierarchy</h3>
+            <div className="flex items-center gap-3 mb-4">
+                <div className="h-6 w-1 bg-[#FF4B91] rounded-full shadow-[0_0_15px_rgba(255,75,145,0.5)]" />
+                <h3 className="text-lg font-black text-[#1A1A1A] tracking-tight uppercase">Target Hierarchy</h3>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-6">
                 {/* DOMAIN */}
                 <SelectField
                     label="Domain"
@@ -178,20 +178,20 @@ interface SelectFieldProps {
 
 function SelectField({ label, value, options, loading, disabled, onChange, onCreate, placeholder, active }: SelectFieldProps) {
     return (
-        <div className={cn("flex flex-col gap-3 transition-opacity duration-300", disabled && "opacity-50 grayscale")}>
+        <div className={cn("flex flex-col gap-2 transition-opacity duration-300", disabled && "opacity-50 grayscale")}>
             <label className={cn(
-                "text-[10px] font-black uppercase tracking-[0.2em] transition-colors",
+                "text-[9px] font-black uppercase tracking-[0.2em] transition-colors",
                 active ? "text-[#FF4B91]" : "text-slate-400"
             )}>
                 {label}
             </label>
-            <div className="flex gap-3">
+            <div className="flex gap-2">
                 <div className="relative flex-1 group/input">
                     <select
                         value={value || ''}
                         onChange={(e) => onChange(e.target.value)}
                         className={cn(
-                            "w-full h-12 pl-4 pr-10 bg-white/50 border rounded-xl text-[#1A1A1A] font-bold focus:outline-none transition-all appearance-none cursor-pointer backdrop-blur-md shadow-sm",
+                            "w-full h-10 pl-3 pr-8 bg-white/50 border rounded-xl text-[#1A1A1A] font-bold text-xs focus:outline-none transition-all appearance-none cursor-pointer backdrop-blur-md shadow-sm",
                             "hover:bg-white/80",
                             active
                                 ? "border-[#FF4B91]/30 focus:border-[#FF4B91] focus:ring-2 focus:ring-[#FF4B91]/10"
@@ -214,14 +214,14 @@ function SelectField({ label, value, options, loading, disabled, onChange, onCre
                     onClick={onCreate}
                     disabled={disabled}
                     className={cn(
-                        "flex-shrink-0 w-12 h-12 flex items-center justify-center rounded-xl transition-all border shadow-sm",
+                        "flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-xl transition-all border shadow-sm",
                         active
                             ? "bg-[#FF4B91]/5 hover:bg-[#FF4B91]/10 text-[#FF4B91] border-[#FF4B91]/20"
                             : "bg-white/40 text-slate-400 border-slate-200 cursor-not-allowed"
                     )}
                     title={`Add new ${label}`}
                 >
-                    <Plus className="w-5 h-5" />
+                    <Plus className="w-4 h-4" />
                 </button>
             </div>
         </div>

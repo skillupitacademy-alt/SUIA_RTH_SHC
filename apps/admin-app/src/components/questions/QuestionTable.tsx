@@ -107,9 +107,11 @@ export function QuestionTable() {
     };
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-4">
             {/* Filter Console - Always Mounted */}
-            <div className="rounded-[2.5rem] border border-primary/10 bg-white/50 backdrop-blur-xl p-8 shadow-xl">
+            <div className="rounded-[1.75rem] border border-primary/10 bg-white/50 backdrop-blur-xl p-6 shadow-xl relative overflow-hidden">
+                {/* Subtle Glow */}
+                <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-3xl -z-10" />
                 <div className="flex items-center justify-between mb-6">
                     <div className="flex items-center gap-3">
                         <div className="p-2 rounded-xl bg-primary/10 text-primary">
@@ -139,7 +141,7 @@ export function QuestionTable() {
             </div>
 
             {/* Table Area */}
-            <div className="rounded-[2.5rem] border border-primary/10 bg-white/50 backdrop-blur-xl overflow-hidden shadow-xl min-h-[400px] relative">
+            <div className="rounded-[1.75rem] border border-primary/10 bg-white/50 backdrop-blur-xl overflow-hidden shadow-xl min-h-[400px] relative">
                 {isLoading && (
                     <div className="absolute inset-0 z-10 bg-white/60 backdrop-blur-sm flex items-center justify-center animate-in fade-in duration-300">
                         <div className="flex flex-col items-center gap-4">
@@ -153,10 +155,10 @@ export function QuestionTable() {
                     <table className="w-full text-left font-sans">
                         <thead>
                             <tr className="border-b border-primary/5 bg-primary/5">
-                                <th className="p-6 text-[11px] font-black uppercase tracking-widest text-muted-foreground w-[45%]">Assessment Content & Hierarchy</th>
-                                <th className="p-6 text-[11px] font-black uppercase tracking-widest text-muted-foreground">Complexity</th>
-                                <th className="p-6 text-[11px] font-black uppercase tracking-widest text-muted-foreground">Governance</th>
-                                <th className="p-6 text-[11px] font-black uppercase tracking-widest text-muted-foreground text-right">Operations</th>
+                                <th className="p-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground w-[45%]">Assessment Content & Hierarchy</th>
+                                <th className="p-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Complexity</th>
+                                <th className="p-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Governance</th>
+                                <th className="p-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground text-right">Operations</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-primary/5">
@@ -169,10 +171,10 @@ export function QuestionTable() {
                             ) : (
                                 questions.map((q) => (
                                     <tr key={q.id} className="group hover:bg-primary/5 transition-colors">
-                                        <td className="p-6">
+                                        <td className="p-4">
                                             <div className="space-y-1">
-                                                <p className="font-bold text-[#1A1A1A] line-clamp-2 text-sm">{q.questionText}</p>
-                                                <div className="flex items-center gap-2 text-[10px] uppercase font-black tracking-widest text-muted-foreground/60">
+                                                <p className="font-bold text-[#1A1A1A] line-clamp-2 text-[13px] leading-snug">{q.questionText}</p>
+                                                <div className="flex items-center gap-2 text-[9px] uppercase font-black tracking-widest text-muted-foreground/60">
                                                     <span>{q.topic?.subject?.domain?.name || 'N/A'}</span>
                                                     <span>/</span>
                                                     <span>{q.topic?.subject?.name || 'N/A'}</span>
@@ -181,44 +183,44 @@ export function QuestionTable() {
                                                 </div>
                                             </div>
                                         </td>
-                                        <td className="p-6">
-                                            <span className="px-2.5 py-1 rounded-lg bg-gray-100 text-gray-600 text-[10px] font-black uppercase tracking-wider border border-gray-200">
+                                        <td className="p-4">
+                                            <span className="px-2 py-0.5 rounded-lg bg-gray-100 text-gray-600 text-[9px] font-black uppercase tracking-wider border border-gray-200">
                                                 {q.type}
                                             </span>
                                         </td>
-                                        <td className="p-6">
-                                            <span className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider border ${q.difficulty === 'simple' ? 'bg-green-100 text-green-700 border-green-200' :
+                                        <td className="p-4">
+                                            <span className={`px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-wider border ${q.difficulty === 'simple' ? 'bg-green-100 text-green-700 border-green-200' :
                                                 q.difficulty === 'mean' || q.difficulty === 'intermediate' ? 'bg-orange-100 text-orange-700 border-orange-200' :
                                                     'bg-red-100 text-red-700 border-red-200'
                                                 }`}>
                                                 {q.difficulty}
                                             </span>
                                         </td>
-                                        <td className="p-6">
+                                        <td className="p-4">
                                             <div className="flex items-center gap-2">
-                                                <div className={`w-2 h-2 rounded-full ${q.status === 'active' ? 'bg-green-500 animate-pulse' : 'bg-gray-400'}`} />
-                                                <span className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">{q.status}</span>
+                                                <div className={`w-1.5 h-1.5 rounded-full ${q.status === 'active' ? 'bg-green-500 animate-pulse' : 'bg-gray-400'}`} />
+                                                <span className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">{q.status}</span>
                                             </div>
                                         </td>
-                                        <td className="p-6">
+                                        <td className="p-4">
                                             <div className="flex items-center justify-end gap-2">
                                                 <Link
                                                     href={`/questions/${q.id}/edit`}
-                                                    className="p-2 rounded-xl bg-primary/5 text-primary hover:bg-primary hover:text-white transition-all border border-primary/10"
+                                                    className="p-1.5 rounded-lg bg-primary/5 text-primary hover:bg-primary hover:text-white transition-all border border-primary/10"
                                                     title="Edit Assessment"
                                                 >
-                                                    <Edit3 className="w-4 h-4" />
+                                                    <Edit3 className="w-3.5 h-3.5" />
                                                 </Link>
                                                 <button
                                                     onClick={() => openDeleteModal(q.id)}
-                                                    className="p-2 rounded-xl bg-red-50 text-red-600 hover:bg-red-600 hover:text-white transition-all border border-red-100"
+                                                    className="p-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-600 hover:text-white transition-all border border-red-100"
                                                     title="Delete Assessment"
                                                 >
-                                                    <Trash2 className="w-4 h-4" />
+                                                    <Trash2 className="w-3.5 h-3.5" />
                                                 </button>
                                             </div>
-                                            <div className="text-right mt-2">
-                                                <span className="text-[9px] font-bold text-muted-foreground/50 uppercase tracking-tighter">
+                                            <div className="text-right mt-1">
+                                                <span className="text-[8px] font-bold text-muted-foreground/50 uppercase tracking-tighter">
                                                     Added {formatDistanceToNow(new Date(q.createdAt))} ago
                                                 </span>
                                             </div>

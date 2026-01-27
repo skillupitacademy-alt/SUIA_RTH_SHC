@@ -123,17 +123,17 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
             <div className="flex min-h-screen bg-muted/10 overflow-hidden font-sans">
                 {/* Sidebar */}
-                <aside className="w-80 border-r bg-background flex flex-col shadow-xl shadow-muted/5 fixed inset-y-0 left-0 z-50">
-                    <div className="p-10">
-                        <div className="flex items-center gap-3 mb-12">
+                <aside className="w-64 border-r bg-background flex flex-col shadow-xl shadow-muted/5 fixed inset-y-0 left-0 z-50">
+                    <div className="p-8">
+                        <div className="flex items-center gap-3 mb-8">
                             <div className="flex items-center gap-2">
-                                <div className="h-10 w-10 rounded-xl bg-[#FF4B91] flex items-center justify-center text-white font-black text-xl shadow-lg shadow-[#FF4B91]/30">Q</div>
-                                <span className="font-black text-2xl tracking-tighter text-[#1A1A1A]">QUIZADMIN</span>
+                                <div className="h-9 w-9 rounded-xl bg-[#FF4B91] flex items-center justify-center text-white font-black text-lg shadow-lg shadow-[#FF4B91]/30">Q</div>
+                                <span className="font-black text-xl tracking-tighter text-[#1A1A1A]">QUIZADMIN</span>
                             </div>
                         </div>
 
-                        <p className="text-[11px] font-black uppercase tracking-[0.2em] text-muted-foreground/40 mb-8 px-4">Platform Control</p>
-                        <nav className="space-y-4">
+                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/40 mb-6 px-4">Platform Control</p>
+                        <nav className="space-y-3">
                             {ADMIN_NAV.map((item) => {
                                 const isActive = pathname === item.href;
                                 return (
@@ -141,18 +141,18 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                                         key={item.name}
                                         href={item.href}
                                         className={cn(
-                                            "flex items-center justify-between group px-6 py-4 rounded-[1.5rem] transition-all duration-300",
+                                            "flex items-center justify-between group px-5 py-3 rounded-[1.25rem] transition-all duration-300",
                                             isActive
                                                 ? "bg-[#FF4B91] text-white shadow-xl shadow-[#FF4B91]/30 scale-[1.02]"
                                                 : "text-muted-foreground hover:bg-muted hover:text-foreground"
                                         )}
                                     >
-                                        <div className="flex items-center gap-4">
-                                            <item.icon size={22} className={cn("transition-colors", isActive ? "text-white" : "text-[#FF4B91]")} />
-                                            <span className="font-bold text-[15px]">{item.name}</span>
+                                        <div className="flex items-center gap-3">
+                                            <item.icon size={20} className={cn("transition-colors", isActive ? "text-white" : "text-[#FF4B91]")} />
+                                            <span className="font-bold text-[14px]">{item.name}</span>
                                         </div>
                                         <ChevronRight
-                                            size={18}
+                                            size={16}
                                             className={cn(
                                                 "transition-all duration-300",
                                                 isActive ? "opacity-100 rotate-90" : "opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0"
@@ -164,50 +164,50 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                         </nav>
                     </div>
 
-                    <div className="mt-auto p-10 border-t bg-muted/5">
-                        <div className="p-5 rounded-3xl bg-primary/5 border border-primary/10 mb-6">
-                            <p className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-2">System Health</p>
+                    <div className="mt-auto p-8 border-t bg-muted/5">
+                        <div className="p-4 rounded-2xl bg-primary/5 border border-primary/10 mb-5">
+                            <p className="text-[9px] font-black text-primary uppercase tracking-[0.2em] mb-1.5">System Health</p>
                             <div className="flex items-center gap-2">
-                                <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
-                                <span className="text-xs font-black uppercase tracking-tight">Engines Active</span>
+                                <div className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
+                                <span className="text-[11px] font-black uppercase tracking-tight">Engines Active</span>
                             </div>
                         </div>
                         <button
                             onClick={handleLogout}
-                            className="flex items-center gap-4 w-full px-6 py-4 rounded-[1.5rem] text-red-500 font-bold hover:bg-red-50 transition-colors group"
+                            className="flex items-center gap-4 w-full px-5 py-3 rounded-[1.25rem] text-red-500 font-bold hover:bg-red-50 transition-colors group"
                         >
-                            <LogOut size={22} className="group-hover:-translate-x-1 transition-transform" />
-                            <span className="text-sm font-black uppercase tracking-widest">Sign Out</span>
+                            <LogOut size={20} className="group-hover:-translate-x-1 transition-transform" />
+                            <span className="text-xs font-black uppercase tracking-widest">Sign Out</span>
                         </button>
                     </div>
                 </aside>
 
                 {/* Main Content */}
-                <div className="flex-1 flex flex-col overflow-hidden ml-80">
-                    <header className="h-24 border-b bg-background flex items-center justify-between px-12 sticky top-0 z-40">
-                        <div className="flex items-center gap-8">
-                            <div className="flex items-center gap-3 pr-8 border-r border-muted-foreground/10">
-                                <div className="h-12 w-12 rounded-2xl bg-[#FF4B91] flex items-center justify-center text-white font-black text-2xl shadow-lg shadow-[#FF4B91]/30">A</div>
-                                <span className="font-black text-3xl tracking-tighter text-[#1A1A1A]">ADMIN CORE</span>
+                <div className="flex-1 flex flex-col overflow-hidden ml-64">
+                    <header className="h-20 border-b bg-background flex items-center justify-between px-10 sticky top-0 z-40">
+                        <div className="flex items-center gap-6">
+                            <div className="flex items-center gap-3 pr-6 border-r border-muted-foreground/10">
+                                <div className="h-10 w-10 rounded-2xl bg-[#FF4B91] flex items-center justify-center text-white font-black text-xl shadow-lg shadow-[#FF4B91]/30">A</div>
+                                <span className="font-black text-2xl tracking-tighter text-[#1A1A1A]">ADMIN CORE</span>
                             </div>
-                            <div className="flex items-center gap-4">
-                                <span className="text-xs font-black uppercase tracking-widest text-muted-foreground">Terminal v1.0.4</span>
-                                <span className="px-3 py-1 rounded-full bg-green-500/10 text-green-500 text-[10px] font-black uppercase tracking-widest border border-green-500/20">Connected_Secure</span>
+                            <div className="flex items-center gap-3">
+                                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Terminal v1.0.4</span>
+                                <span className="px-2 py-0.5 rounded-full bg-green-500/10 text-green-500 text-[9px] font-black uppercase tracking-widest border border-green-500/20">Connected_Secure</span>
                             </div>
                         </div>
 
-                        <div className="flex items-center gap-6">
+                        <div className="flex items-center gap-5">
                             <div className="text-right">
-                                <p className="text-sm font-black italic text-[#1A1A1A]">SUPER ADMIN</p>
-                                <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">id: rh-9012-ad</p>
+                                <p className="text-xs font-black italic text-[#1A1A1A]">SUPER ADMIN</p>
+                                <p className="text-[9px] text-muted-foreground font-bold uppercase tracking-widest">id: rh-9012-ad</p>
                             </div>
-                            <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-[#FF4B91] to-[#FF8E9E] p-0.5 shadow-lg shadow-[#FF4B91]/20">
-                                <div className="h-full w-full rounded-[14px] bg-background flex items-center justify-center font-black text-[#FF4B91]">RH</div>
+                            <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-[#FF4B91] to-[#FF8E9E] p-0.5 shadow-lg shadow-[#FF4B91]/20">
+                                <div className="h-full w-full rounded-[10px] bg-background flex items-center justify-center font-black text-[#FF4B91] text-xs">RH</div>
                             </div>
                         </div>
                     </header>
 
-                    <main className="flex-1 overflow-y-auto p-12">
+                    <main className="flex-1 overflow-y-auto p-10">
                         <div className="w-full animate-in fade-in slide-in-from-bottom-8 duration-700">
                             {children}
                         </div>
