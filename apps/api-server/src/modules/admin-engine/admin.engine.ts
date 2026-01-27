@@ -614,6 +614,18 @@ export class AdminEngine {
     };
   }
 
+  static async updateUser(id: string, data: any, adminId: string) {
+    const [updated] = await db.update(users).set(data).where(eq(users.id, id)).returning();
+    await AuditService.log({ userId: adminId, action: 'admin_update_user', metadata: { targetUserId: id } });
+    return updated;
+  }
+
+  static async deleteUser(id: string, adminId: string) {
+    const [deleted] = await db.delete(users).where(eq(users.id, id)).returning();
+    await AuditService.log({ userId: adminId, action: 'admin_delete_user', metadata: { targetUserId: id } });
+    return deleted;
+  }
+
   /**
    * Section 4: Question Bank Management (Phase 8 - Enhanced)
    */

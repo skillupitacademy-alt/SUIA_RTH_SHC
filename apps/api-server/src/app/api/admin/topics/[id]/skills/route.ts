@@ -26,7 +26,35 @@ export async function GET(
         const data = await AdminEngine.getSkillsByTopic(id);
         return NextResponse.json(data);
     } catch (error: any) {
-        console.error('[TOPIC_SKILLS] Error:', error.message);
+        console.error('[TOPIC_SKILLS_GET] Error:', error.message);
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    }
+}
+
+export async function POST(
+    req: NextRequest,
+    { params }: { params: Promise<{ id: string }> }
+) {
+    try {
+        const { id } = await params;
+        const authHeader = req.headers.get('authorization');
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
+        const token = authHeader.split(' ')[1];
+        const payload = await TokenService.verifyAccessToken(token);
+
+        if (!(await verifyAdmin(payload))) {
+            return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+        }
+
+        const body = await req.json(); // Expected { skillIds: string[] }
+        const result = await AdminEngine.mapTopicToSkills(id, body.skillIds, payload.userId);
+        
+        return NextResponse.json(result);
+    } catch (error: any) {
+        console.error('[TOPIC_SKILLS_POST] Error:', error.message);
+        return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
     }
 }
