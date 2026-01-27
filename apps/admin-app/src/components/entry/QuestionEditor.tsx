@@ -1,3 +1,5 @@
+'use client';
+
 import { useState } from 'react';
 import { Plus, Trash2, Check, Clock, AlertCircle, Type, List, FileText } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -22,7 +24,10 @@ export function QuestionEditor({ onSubmit, loading, initialData }: QuestionEdito
     const [data, setData] = useState<QuestionFormData>({
         text: initialData?.text || '',
         type: initialData?.type || 'single',
-        options: initialData?.options || [{ id: '1', text: '', isCorrect: false }, { id: '2', text: '', isCorrect: false }],
+        options: initialData?.options?.map(o => ({
+            ...o,
+            id: o.id || crypto.randomUUID()
+        })) || [{ id: '1', text: '', isCorrect: false }, { id: '2', text: '', isCorrect: false }],
         explanation: initialData?.explanation || '',
         difficulty: initialData?.difficulty || 'intermediate',
         estimatedTime: initialData?.estimatedTime || 60,

@@ -1,3 +1,5 @@
+'use client';
+
 import { useState, useEffect } from 'react';
 import { useDomains, useSubjects, useTopics, useSubtopics } from '@/hooks/useAdminHierarchy';
 import { ChevronDown, Plus, X, Loader2, Check } from 'lucide-react';

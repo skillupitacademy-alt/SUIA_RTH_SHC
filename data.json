@@ -1,0 +1,122 @@
+[
+    {
+        "text": "Which SQL Server statement is used to retrieve all columns from a table named **Employees**?",
+        "type": "single",
+        "difficulty": "simple",
+        "options": [
+            {
+                "text": "SELECT * FROM Employees;",
+                "isCorrect": true
+            },
+            {
+                "text": "GET ALL FROM Employees;",
+                "isCorrect": false
+            },
+            {
+                "text": "FETCH * Employees;",
+                "isCorrect": false
+            },
+            {
+                "text": "SELECT Employees.*;",
+                "isCorrect": false
+            }
+        ],
+        "explanation": "In SQL Server, the SELECT statement with the * wildcard retrieves all columns from a table.",
+        "estimatedTime": 45,
+        "tags": [
+            "sql-server",
+            "select",
+            "basics"
+        ]
+    },
+    {
+        "text": "Which query correctly selects the **Name** and **Salary** columns from the **Employees** table in SQL Server?",
+        "type": "single",
+        "difficulty": "simple",
+        "options": [
+            {
+                "text": "SELECT Name Salary FROM Employees;",
+                "isCorrect": false
+            },
+            {
+                "text": "SELECT Name, Salary FROM Employees;",
+                "isCorrect": true
+            },
+            {
+                "text": "SELECT (Name, Salary) FROM Employees;",
+                "isCorrect": false
+            },
+            {
+                "text": "GET Name, Salary FROM Employees;",
+                "isCorrect": false
+            }
+        ],
+        "explanation": "In SQL Server, multiple columns are selected by listing them after SELECT, separated by commas.",
+        "estimatedTime": 45,
+        "tags": [
+            "sql-server",
+            "select",
+            "columns"
+        ]
+    },
+    {
+        "text": "Which SQL Server query retrieves all records from the **Customers** table where only the **CustomerID** column is required?",
+        "type": "single",
+        "difficulty": "simple",
+        "options": [
+            {
+                "text": "SELECT Customers.CustomerID;",
+                "isCorrect": false
+            },
+            {
+                "text": "SELECT CustomerID FROM Customers;",
+                "isCorrect": true
+            },
+            {
+                "text": "GET CustomerID FROM Customers;",
+                "isCorrect": false
+            },
+            {
+                "text": "SELECT CustomerID OF Customers;",
+                "isCorrect": false
+            }
+        ],
+        "explanation": "To retrieve a specific column in SQL Server, you specify the column name after SELECT and the table name after FROM.",
+        "estimatedTime": 45,
+        "tags": [
+            "sql-server",
+            "select",
+            "single-column"
+        ]
+    },
+    {
+        "text": "Which SQL Server SELECT statement correctly retrieves all unique values from the **City** column in the **Customers** table?",
+        "type": "single",
+        "difficulty": "simple",
+        "options": [
+            {
+                "text": "SELECT UNIQUE City FROM Customers;",
+                "isCorrect": false
+            },
+            {
+                "text": "SELECT DISTINCT City FROM Customers;",
+                "isCorrect": true
+            },
+            {
+                "text": "SELECT City ONLY FROM Customers;",
+                "isCorrect": false
+            },
+            {
+                "text": "SELECT DIFFERENT City FROM Customers;",
+                "isCorrect": false
+            }
+        ],
+        "explanation": "The DISTINCT keyword in SQL Server is used with SELECT to remove duplicate values from the result set.",
+        "estimatedTime": 60,
+        "tags": [
+            "sql-server",
+            "select",
+            "distinct"
+        ]
+    }
+]

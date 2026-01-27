@@ -256,6 +256,31 @@ export class AdminEngine {
   }
 
   /**
+   * Private helper to map frontend question data to database schema.
+   */
+  private static mapQuestionData(data: any, topicId: string, subtopicId?: string) {
+    const correctOption = data.options.find((o: any) => o.isCorrect);
+    const correctAnswer = correctOption ? correctOption.text : 'No correct answer provided';
+
+    return {
+        topicId: topicId,
+        subtopicId: subtopicId || data.subtopicId,
+        difficulty: data.difficulty || 'intermediate',
+        type: data.type === 'multiple' ? 'mcq' : 'mcq',
+        questionText: data.text || data.questionText,
+        options: data.options,
+        correctAnswer: correctAnswer,
+        explanation: data.explanation || '',
+        metadata: {
+            estimatedTime: data.estimatedTime,
+            tags: data.tags
+        },
+        status: 'active' as const,
+        updatedAt: new Date()
+    };
+  }
+
+  /**
    * Creates a new question with schema mapping.
    */
   static async createQuestion(data: any, adminId: string) {
@@ -274,27 +299,8 @@ export class AdminEngine {
         throw new Error('Could not resolve topicId for the question.');
     }
 
-    // 2. Extract correctAnswer (schema requires this string)
-    const correctOption = data.options.find((o: any) => o.isCorrect);
-    const correctAnswer = correctOption ? correctOption.text : 'No correct answer provided';
-
-    // 3. Map frontend data to DB schema
-    const dbData = {
-        topicId: topicId,
-        subtopicId: data.subtopicId,
-        difficulty: data.difficulty, // expected: 'simple', 'intermediate', 'expert'
-        type: data.type === 'multiple' ? 'mcq' : 'mcq', // Currently mapping both to mcq
-        questionText: data.text,
-        options: data.options,
-        correctAnswer: correctAnswer,
-        explanation: data.explanation || '',
-        metadata: {
-            estimatedTime: data.estimatedTime,
-            tags: data.tags
-        },
-        status: 'active' as const
-    };
-
+    // 2. Map and Create
+    const dbData = this.mapQuestionData(data, topicId);
     const question = await QuestionService.createQuestion(dbData);
 
     await AuditService.log({
@@ -304,6 +310,35 @@ export class AdminEngine {
     });
 
     return question[0];
+  }
+
+  /**
+   * Bulk creates questions with hierarchical context.
+   */
+  static async bulkCreateQuestionsWithContext(
+    questionsList: any[], 
+    context: { topicId: string, subtopicId?: string }, 
+    adminId: string
+  ) {
+    // 1. Map all questions using the centralized logic
+    const dbRows = questionsList.map(q => 
+        this.mapQuestionData(q, context.topicId, context.subtopicId)
+    );
+
+    // 2. Batch Insert
+    const created = await QuestionService.bulkCreateQuestions(dbRows);
+
+    await AuditService.log({
+      userId: adminId,
+      action: 'admin_bulk_create_questions',
+      metadata: { 
+        count: created.length,
+        topicId: context.topicId,
+        subtopicId: context.subtopicId
+      },
+    });
+
+    return created;
   }
 
   /**

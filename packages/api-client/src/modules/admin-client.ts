@@ -107,6 +107,10 @@ export class AdminClient {
     return this.client.post<any>('/admin/questions', data);
   }
 
+  async bulkCreateQuestions(data: { topicId: string, subtopicId?: string, questions: any[] }) {
+    return this.client.post<any>('/admin/questions/bulk', data);
+  }
+
   async updateQuestion(id: string, data: any) {
     return this.client.patch<any>(`/admin/questions/${id}`, data);
   }
