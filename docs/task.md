@@ -7,6 +7,13 @@
 - [x] Update `apps/admin-app/src/app/login/page.tsx` with "Forgot Password?" link <!-- id: 37 -->
 - [x] Verify End-to-End Recovery Flow <!-- id: 38 -->
 
+## 🚀 Active Phase: Exam Engine Refinement (Phase 7)
+
+- [x] Implement "Deepest Selection Wins" hierarchical filtering <!-- id: 39 -->
+- [x] Resolve API vs SelectionEngine parameter mismatch <!-- id: 40 -->
+- [x] Sync `ExamBlueprintService` and `SelectionEngine` logic <!-- id: 41 -->
+- [x] Verify Additive Granularity Flow <!-- id: 42 -->
+
 ---
 
 ## ✅ Completed Phases

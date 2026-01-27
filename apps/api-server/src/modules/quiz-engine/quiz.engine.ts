@@ -9,7 +9,13 @@ export class QuizEngine {
   static async startQuiz(
     userId: string, 
     blueprintId: string, 
-    config?: { topics?: string[], questionCount?: number, difficulty?: string }
+    config?: { 
+      subjectIds?: string[],
+      topicIds?: string[], 
+      subtopicIds?: string[],
+      questionCount?: number, 
+      difficulty?: string 
+    }
   ) {
     const exam = await SelectionEngine.composeExam(userId, blueprintId, config);
     if (!exam) throw new Error('Failed to compose quiz');

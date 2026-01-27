@@ -1,5 +1,5 @@
-import { db, questions, examBlueprints, topics, subjects, domains } from "@quiz/db";
-import { eq, and, inArray, sql } from "drizzle-orm";
+import { db, questions, examBlueprints, topics, subtopics, subjects, domains } from "@quiz/db";
+import { eq, and, or, inArray, sql } from "drizzle-orm";
 
 
 /**
@@ -96,51 +96,70 @@ export class ExamBlueprintService {
 
   /**
    * Fetches random questions matching criteria.
-   * Uses Drizzle ORM with subqueries for hierarchy resolution.
+   * Uses hierarchical resolution with "Deepest Selection Wins" logic.
    */
   private async fetchQuestions(
     count: number, 
     difficulty: 'simple' | 'intermediate' | 'expert',
     domainId: string,
 
-    subjectIds?: string[],
-    topicIds?: string[],
-    subtopicIds?: string[]
+    subjectIds: string[] = [],
+    topicIds: string[] = [],
+    subtopicIds: string[] = []
   ) {
     if (count === 0) return [];
 
-    // Base filters
-    const conditions = [
-      eq(questions.status, 'active'),
-      eq(questions.difficulty, difficulty)
-    ];
+    // 1. Resolve Effective Selections
+    const topicParentsOfSubtopics = subtopicIds.length > 0 
+        ? (await db.select({ topicId: subtopics.topicId })
+                  .from(subtopics)
+                  .where(inArray(subtopics.id, subtopicIds))
+          ).map(r => r.topicId)
+        : [];
+    
+    const actualTopicIds = topicIds.filter(id => !topicParentsOfSubtopics.includes(id));
+    
+    const subjectParentsOfTopics = topicIds.length > 0 
+        ? (await db.select({ subjectId: topics.subjectId })
+                  .from(topics)
+                  .where(inArray(topics.id, topicIds))
+          ).map(r => r.subjectId)
+        : [];
+    
+    const actualSubjectIds = subjectIds.filter(id => !subjectParentsOfTopics.includes(id));
 
-    // Hierarchy Filters (Prioritize most granular)
-    if (subtopicIds && subtopicIds.length > 0) {
-      conditions.push(inArray(questions.subtopicId, subtopicIds));
-    } else if (topicIds && topicIds.length > 0) {
-      conditions.push(inArray(questions.topicId, topicIds));
-    } else if (subjectIds && subjectIds.length > 0) {
-      const subQuery = db.select({ id: topics.id })
-                         .from(topics)
-                         .where(inArray(topics.subjectId, subjectIds));
-      conditions.push(inArray(questions.topicId, subQuery));
-    } else {
-      const subjectsSubQuery = db.select({ id: subjects.id })
-                                 .from(subjects)
-                                 .where(eq(subjects.domainId, domainId));
-                                 
-      const topicsSubQuery = db.select({ id: topics.id })
-                               .from(topics)
-                               .where(inArray(topics.subjectId, subjectsSubQuery));
-
-      conditions.push(inArray(questions.topicId, topicsSubQuery));
+    // 2. Build Query Conditions
+    const subtopicCond = subtopicIds.length > 0 ? inArray(questions.subtopicId, subtopicIds) : null;
+    const topicCond = actualTopicIds.length > 0 ? inArray(questions.topicId, actualTopicIds) : null;
+    
+    let subjectTopicCond = null;
+    if (actualSubjectIds.length > 0) {
+        const subQuery = db.select({ id: topics.id }).from(topics).where(inArray(topics.subjectId, actualSubjectIds));
+        subjectTopicCond = inArray(questions.topicId, subQuery);
     }
 
-    // Fetch randomized
+    let domainCond = null;
+    if (!subtopicCond && !topicCond && !subjectTopicCond) {
+        const subjectsSubQuery = db.select({ id: subjects.id }).from(subjects).where(eq(subjects.domainId, domainId));
+        const topicsSubQuery = db.select({ id: topics.id }).from(topics).where(inArray(topics.subjectId, subjectsSubQuery));
+        domainCond = inArray(questions.topicId, topicsSubQuery);
+    }
+
+    const hierarchyCond = or(
+        subtopicCond || undefined, 
+        topicCond || undefined, 
+        subjectTopicCond || undefined, 
+        domainCond || undefined
+    );
+
+    // 3. Fetch randomized
     return await db.select({ id: questions.id })
       .from(questions)
-      .where(and(...conditions))
+      .where(and(
+          hierarchyCond,
+          eq(questions.status, 'active'),
+          eq(questions.difficulty, difficulty)
+      ))
       .orderBy(sql`RANDOM()`)
       .limit(count);
   }

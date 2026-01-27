@@ -36,7 +36,13 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    const config = { topics: subjects, questionCount, difficulty };
+    const config = { 
+      subjectIds: subjects, 
+      topicIds, 
+      subtopicIds, 
+      questionCount, 
+      difficulty 
+    };
     // Pass the NEW blueprint ID to the engine
     const exam = await QuizEngine.startQuiz(payload.userId, targetBlueprintId, config);
     return NextResponse.json(exam);
