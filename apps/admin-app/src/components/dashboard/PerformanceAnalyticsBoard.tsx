@@ -30,28 +30,28 @@ export function PerformanceAnalyticsBoard() {
     if (isLoading || !perf) return null;
 
     return (
-        <div className="space-y-12">
-            <div className="p-10 rounded-[3.5rem] border border-primary/10 bg-muted/5 backdrop-blur-md shadow-sm">
-                <div className="flex items-center justify-between mb-10">
+        <div className="space-y-8">
+            <div className="p-8 rounded-[2rem] border border-primary/10 bg-muted/5 backdrop-blur-md shadow-sm">
+                <div className="flex items-center justify-between mb-8">
                     <div>
-                        <h3 className="text-3xl font-black uppercase tracking-tighter italic text-[#1A1A1A]">Performance Insights</h3>
-                        <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1">Aggregated Scoring & Mastery levels</p>
+                        <h3 className="text-2xl font-black uppercase tracking-tighter italic text-[#1A1A1A]">Performance Insights</h3>
+                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-0.5">Aggregated Scoring & Mastery levels</p>
                     </div>
-                    <div className="px-5 py-2.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-500 flex items-center gap-3">
-                        <BarChart3 size={18} />
-                        <span className="text-[11px] font-black uppercase tracking-widest">Global Accuracy Tracking</span>
+                    <div className="px-4 py-2 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-500 flex items-center gap-2.5">
+                        <BarChart3 size={16} />
+                        <span className="text-[10px] font-black uppercase tracking-widest">Global Accuracy Tracking</span>
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {perf.domains.map((domain: any) => (
-                        <div key={domain.id} className="p-8 rounded-[2.5rem] bg-background border border-muted/50 hover:border-blue-500/30 transition-all group shadow-sm">
-                            <div className="flex items-center justify-between mb-4">
-                                <span className="text-[11px] font-black uppercase tracking-widest text-muted-foreground">{domain.name}</span>
-                                <Target size={18} className="text-blue-500 opacity-40" />
+                        <div key={domain.id} className="p-6 rounded-[1.5rem] bg-background border border-muted/50 hover:border-blue-500/30 transition-all group shadow-sm">
+                            <div className="flex items-center justify-between mb-3">
+                                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{domain.name}</span>
+                                <Target size={16} className="text-blue-500 opacity-40" />
                             </div>
-                            <p className="text-4xl font-black tracking-tighter text-[#1A1A1A]">{domain.avgAccuracy}%</p>
-                            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-2">{domain.sampleSize} Exams Analyzed</p>
+                            <p className="text-3xl font-black tracking-tighter text-[#1A1A1A]">{domain.avgAccuracy}%</p>
+                            <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest mt-1.5">{domain.sampleSize} Exams Analyzed</p>
 
                             <div className="mt-6 h-1.5 w-full bg-muted rounded-full overflow-hidden">
                                 <div
@@ -94,11 +94,11 @@ export function PerformanceAnalyticsBoard() {
 
             {/* Section 10: Growth Zones */}
             {growth.length > 0 && (
-                <div className="p-10 rounded-[3.5rem] border border-yellow-500/10 bg-yellow-500/5 backdrop-blur-md shadow-sm">
-                    <div className="flex items-center justify-between mb-10">
+                <div className="p-8 rounded-[2rem] border border-yellow-500/10 bg-yellow-500/5 backdrop-blur-md shadow-sm">
+                    <div className="flex items-center justify-between mb-8">
                         <div>
-                            <h3 className="text-3xl font-black uppercase tracking-tighter italic text-[#1A1A1A]">Growth Zones</h3>
-                            <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1">Derived Systemic Skill Gaps (Lowest Accuracy Topics)</p>
+                            <h3 className="text-2xl font-black uppercase tracking-tighter italic text-[#1A1A1A]">Growth Zones</h3>
+                            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-0.5">Derived Systemic Skill Gaps (Lowest Accuracy Topics)</p>
                         </div>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">

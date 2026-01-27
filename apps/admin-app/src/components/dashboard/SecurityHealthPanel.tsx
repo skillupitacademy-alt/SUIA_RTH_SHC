@@ -26,42 +26,42 @@ export function SecurityHealthPanel() {
     const isHighThreat = stats.threatLevel === 'HIGH';
 
     return (
-        <div className="p-10 rounded-[3.5rem] border border-primary/10 bg-muted/5 backdrop-blur-md shadow-sm h-full">
-            <div className="flex items-center justify-between mb-10">
+        <div className="p-8 rounded-[2rem] border border-primary/10 bg-muted/5 backdrop-blur-md shadow-sm h-full">
+            <div className="flex items-center justify-between mb-8">
                 <div>
-                    <h3 className="text-3xl font-black uppercase tracking-tighter italic text-[#1A1A1A]">Security Signals</h3>
-                    <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1">Authentication Health Monitor</p>
+                    <h3 className="text-2xl font-black uppercase tracking-tighter italic text-[#1A1A1A]">Security Signals</h3>
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-0.5">Authentication Health Monitor</p>
                 </div>
-                <div className={`px-5 py-2.5 rounded-full border flex items-center gap-3 ${isHighThreat
-                        ? 'bg-red-500/10 border-red-500/20 text-red-500'
-                        : 'bg-green-500/10 border-green-500/20 text-green-500'
+                <div className={`px-4 py-2 rounded-full border flex items-center gap-2.5 ${isHighThreat
+                    ? 'bg-red-500/10 border-red-500/20 text-red-500'
+                    : 'bg-green-500/10 border-green-500/20 text-green-500'
                     }`}>
-                    {isHighThreat ? <ShieldAlert size={18} /> : <ShieldCheck size={18} />}
-                    <span className="text-[11px] font-black uppercase tracking-widest">Threat Level: {stats.threatLevel}</span>
+                    {isHighThreat ? <ShieldAlert size={16} /> : <ShieldCheck size={16} />}
+                    <span className="text-[10px] font-black uppercase tracking-widest">Threat Level: {stats.threatLevel}</span>
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="p-8 rounded-[2.5rem] bg-background border border-muted/50 hover:border-green-500/30 transition-all group shadow-sm">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="p-6 rounded-[1.5rem] bg-background border border-muted/50 hover:border-green-500/30 transition-all group shadow-sm">
                     <div className="flex items-center gap-4 mb-4">
-                        <div className="p-3 rounded-2xl bg-green-500/10 text-green-500">
-                            <Activity size={24} />
+                        <div className="p-2.5 rounded-xl bg-green-500/10 text-green-500">
+                            <Activity size={20} />
                         </div>
                         <div>
-                            <span className="text-[11px] font-black uppercase tracking-widest text-muted-foreground">Successful Logins</span>
-                            <p className="text-4xl font-black tracking-tighter text-[#1A1A1A] mt-1">{stats.successfulLogins.toLocaleString()}</p>
+                            <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Successful Logins</span>
+                            <p className="text-3xl font-black tracking-tighter text-[#1A1A1A] mt-0.5">{stats.successfulLogins.toLocaleString()}</p>
                         </div>
                     </div>
                 </div>
 
-                <div className="p-8 rounded-[2.5rem] bg-background border border-muted/50 hover:border-red-500/30 transition-all group shadow-sm">
-                    <div className="flex items-center gap-4 mb-4">
-                        <div className={`p-3 rounded-2xl ${isHighThreat ? 'bg-red-500/10 text-red-500' : 'bg-yellow-500/10 text-yellow-500'}`}>
-                            <Lock size={24} />
+                <div className="p-6 rounded-[1.5rem] bg-background border border-muted/50 hover:border-red-500/30 transition-all group shadow-sm">
+                    <div className="flex items-center gap-3 mb-3">
+                        <div className={`p-2.5 rounded-xl ${isHighThreat ? 'bg-red-500/10 text-red-500' : 'bg-yellow-500/10 text-yellow-500'}`}>
+                            <Lock size={20} />
                         </div>
                         <div>
-                            <span className="text-[11px] font-black uppercase tracking-widest text-muted-foreground">Failed Attempts</span>
-                            <p className="text-4xl font-black tracking-tighter text-[#1A1A1A] mt-1">{stats.failedLogins.toLocaleString()}</p>
+                            <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Failed Attempts</span>
+                            <p className="text-3xl font-black tracking-tighter text-[#1A1A1A] mt-0.5">{stats.failedLogins.toLocaleString()}</p>
                         </div>
                     </div>
                 </div>

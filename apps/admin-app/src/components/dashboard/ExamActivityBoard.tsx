@@ -22,47 +22,47 @@ export function ExamActivityBoard() {
     if (!stats) return null;
 
     return (
-        <div className="p-10 rounded-[3.5rem] border border-primary/10 bg-muted/5 backdrop-blur-md shadow-sm h-full">
-            <div className="flex items-center justify-between mb-10">
+        <div className="p-8 rounded-[2rem] border border-primary/10 bg-muted/5 backdrop-blur-md shadow-sm h-full">
+            <div className="flex items-center justify-between mb-8">
                 <div>
-                    <h3 className="text-3xl font-black uppercase tracking-tighter italic text-[#1A1A1A]">Exam Activity</h3>
-                    <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1">Engagement & Outcome Metrics</p>
+                    <h3 className="text-2xl font-black uppercase tracking-tighter italic text-[#1A1A1A]">Exam Activity</h3>
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-0.5">Engagement & Outcome Metrics</p>
                 </div>
-                <div className="p-3 rounded-2xl bg-orange-500/10 text-orange-500">
-                    <Activity size={24} />
+                <div className="p-2.5 rounded-xl bg-orange-500/10 text-orange-500">
+                    <Activity size={20} />
                 </div>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-10">
-                <div className="p-6 rounded-[2rem] bg-background border border-muted/50">
-                    <div className="flex items-center gap-2 mb-2 text-muted-foreground">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                <div className="p-4 rounded-[1.25rem] bg-background border border-muted/50">
+                    <div className="flex items-center gap-2 mb-1.5 text-muted-foreground">
                         <Activity size={12} />
-                        <span className="text-[10px] font-black uppercase tracking-widest">Started</span>
+                        <span className="text-[9px] font-black uppercase tracking-widest">Started</span>
                     </div>
-                    <p className="text-3xl font-black tracking-tighter text-[#1A1A1A]">{stats.started}</p>
+                    <p className="text-2xl font-black tracking-tighter text-[#1A1A1A]">{stats.started}</p>
                 </div>
-                <div className="p-6 rounded-[2rem] bg-background border border-muted/50">
-                    <div className="flex items-center gap-2 mb-2 text-green-500">
+                <div className="p-4 rounded-[1.25rem] bg-background border border-muted/50">
+                    <div className="flex items-center gap-2 mb-1.5 text-green-500">
                         <CheckCircle2 size={12} />
-                        <span className="text-[10px] font-black uppercase tracking-widest">Completed</span>
+                        <span className="text-[9px] font-black uppercase tracking-widest">Completed</span>
                     </div>
-                    <p className="text-3xl font-black tracking-tighter text-green-500">{stats.completed}</p>
+                    <p className="text-2xl font-black tracking-tighter text-green-500">{stats.completed}</p>
                 </div>
-                <div className="p-6 rounded-[2rem] bg-background border border-muted/50">
-                    <div className="flex items-center gap-2 mb-2 text-red-500">
+                <div className="p-4 rounded-[1.25rem] bg-background border border-muted/50">
+                    <div className="flex items-center gap-2 mb-1.5 text-red-500">
                         <XCircle size={12} />
-                        <span className="text-[10px] font-black uppercase tracking-widest">Abandoned</span>
+                        <span className="text-[9px] font-black uppercase tracking-widest">Abandoned</span>
                     </div>
-                    <p className="text-3xl font-black tracking-tighter text-red-500">{stats.abandoned}</p>
+                    <p className="text-2xl font-black tracking-tighter text-red-500">{stats.abandoned}</p>
                 </div>
-                <div className="p-6 rounded-[2rem] bg-background border border-muted/50">
-                    <div className="flex items-center gap-2 mb-2 text-primary">
+                <div className="p-4 rounded-[1.25rem] bg-background border border-muted/50">
+                    <div className="flex items-center gap-2 mb-1.5 text-primary">
                         <Clock size={12} />
-                        <span className="text-[10px] font-black uppercase tracking-widest">Avg Time</span>
+                        <span className="text-[9px] font-black uppercase tracking-widest">Avg Time</span>
                     </div>
                     <div className="flex items-baseline gap-1">
-                        <p className="text-3xl font-black tracking-tighter text-[#1A1A1A]">{stats.avgCompletionTimeMinutes}</p>
-                        <span className="text-[10px] font-bold text-muted-foreground uppercase">min</span>
+                        <p className="text-2xl font-black tracking-tighter text-[#1A1A1A]">{stats.avgCompletionTimeMinutes}</p>
+                        <span className="text-[9px] font-bold text-muted-foreground uppercase">min</span>
                     </div>
                 </div>
             </div>

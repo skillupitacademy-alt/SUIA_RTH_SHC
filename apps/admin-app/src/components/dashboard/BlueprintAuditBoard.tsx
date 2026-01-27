@@ -22,27 +22,27 @@ export function BlueprintAuditBoard() {
     if (!stats) return null;
 
     return (
-        <div className="p-10 rounded-[3.5rem] border border-primary/10 bg-muted/5 backdrop-blur-md shadow-sm h-full">
-            <div className="flex items-center justify-between mb-10">
+        <div className="p-8 rounded-[2rem] border border-primary/10 bg-muted/5 backdrop-blur-md shadow-sm h-full">
+            <div className="flex items-center justify-between mb-8">
                 <div>
-                    <h3 className="text-3xl font-black uppercase tracking-tighter italic text-[#1A1A1A]">Blueprint Audit</h3>
-                    <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1">Enterprise Configuration & Compliance</p>
+                    <h3 className="text-2xl font-black uppercase tracking-tighter italic text-[#1A1A1A]">Blueprint Audit</h3>
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-0.5">Enterprise Configuration & Compliance</p>
                 </div>
-                <div className="p-3 rounded-2xl bg-green-500/10 text-green-500">
-                    <ClipboardCheck size={24} />
+                <div className="p-2.5 rounded-xl bg-green-500/10 text-green-500">
+                    <ClipboardCheck size={20} />
                 </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-6 mb-8">
-                <div className="p-7 rounded-[2.5rem] bg-background border border-muted/50">
-                    <p className="text-[11px] font-black uppercase tracking-widest text-muted-foreground mb-2">Total Blueprints</p>
-                    <p className="text-4xl font-black tracking-tighter text-[#1A1A1A]">{stats.total}</p>
+            <div className="grid grid-cols-2 gap-4 mb-6">
+                <div className="p-5 rounded-[1.5rem] bg-background border border-muted/50">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Total Blueprints</p>
+                    <p className="text-3xl font-black tracking-tighter text-[#1A1A1A]">{stats.total}</p>
                 </div>
-                <div className="p-7 rounded-[2.5rem] bg-background border border-muted/50">
-                    <p className="text-[11px] font-black uppercase tracking-widest text-muted-foreground mb-2">Compliance Rate</p>
+                <div className="p-5 rounded-[1.5rem] bg-background border border-muted/50">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Compliance Rate</p>
                     <div className="flex items-center gap-2">
-                        <p className="text-4xl font-black tracking-tighter text-green-500">{stats.complianceRate}</p>
-                        <CheckCircle2 size={24} className="text-green-500" />
+                        <p className="text-3xl font-black tracking-tighter text-green-500">{stats.complianceRate}</p>
+                        <CheckCircle2 size={20} className="text-green-500" />
                     </div>
                 </div>
             </div>

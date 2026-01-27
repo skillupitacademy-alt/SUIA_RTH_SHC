@@ -22,11 +22,11 @@ export function UserAnalyticsPanel() {
     if (!stats) return null;
 
     return (
-        <div className="p-10 rounded-[3.5rem] border border-primary/10 bg-muted/5 backdrop-blur-md shadow-sm h-full">
-            <div className="flex items-center justify-between mb-10">
+        <div className="p-8 rounded-[2rem] border border-primary/10 bg-muted/5 backdrop-blur-md shadow-sm h-full">
+            <div className="flex items-center justify-between mb-8">
                 <div>
-                    <h3 className="text-3xl font-black uppercase tracking-tighter italic text-[#1A1A1A]">User Insights</h3>
-                    <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1">Growth & Account Verification</p>
+                    <h3 className="text-2xl font-black uppercase tracking-tighter italic text-[#1A1A1A]">User Insights</h3>
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-0.5">Growth & Account Verification</p>
                 </div>
                 <div className="px-5 py-2.5 rounded-full bg-[#FF4B91]/10 border border-[#FF4B91]/20 text-[#FF4B91] flex items-center gap-3">
                     <TrendingUp size={18} />
@@ -34,38 +34,38 @@ export function UserAnalyticsPanel() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                <div className="p-8 rounded-[2.5rem] bg-background border border-muted/50 shadow-sm relative overflow-hidden group">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <div className="p-6 rounded-[1.5rem] bg-background border border-muted/50 shadow-sm relative overflow-hidden group">
                     <div className="relative z-10">
-                        <div className="flex items-center gap-4 mb-3">
-                            <div className="p-3 rounded-2xl bg-blue-500/10 text-blue-500">
-                                <Users size={24} />
+                        <div className="flex items-center gap-3 mb-2">
+                            <div className="p-2 rounded-xl bg-blue-500/10 text-blue-500">
+                                <Users size={20} />
                             </div>
-                            <span className="text-[11px] font-black uppercase tracking-widest text-muted-foreground">Total Users</span>
+                            <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Total Users</span>
                         </div>
-                        <p className="text-5xl font-black tracking-tighter text-[#1A1A1A]">{stats.total.toLocaleString()}</p>
+                        <p className="text-3xl font-black tracking-tighter text-[#1A1A1A]">{stats.total.toLocaleString()}</p>
                     </div>
                 </div>
 
-                <div className="p-8 rounded-[2.5rem] bg-background border border-muted/50 shadow-sm group">
-                    <div className="flex items-center gap-4 mb-3">
-                        <div className="p-3 rounded-2xl bg-green-500/10 text-green-500">
-                            <UserCheck size={24} />
+                <div className="p-6 rounded-[1.5rem] bg-background border border-muted/50 shadow-sm group">
+                    <div className="flex items-center gap-3 mb-2">
+                        <div className="p-2 rounded-xl bg-green-500/10 text-green-500">
+                            <UserCheck size={20} />
                         </div>
-                        <span className="text-[11px] font-black uppercase tracking-widest text-muted-foreground">Verified Accounts</span>
+                        <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Verified Accounts</span>
                     </div>
-                    <p className="text-5xl font-black tracking-tighter text-[#1A1A1A]">{stats.verified.toLocaleString()}</p>
+                    <p className="text-3xl font-black tracking-tighter text-[#1A1A1A]">{stats.verified.toLocaleString()}</p>
                 </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-                <div className="p-6 rounded-[2rem] bg-muted/20 border border-muted-foreground/5 text-center">
-                    <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest mb-1">New Today</p>
-                    <p className="text-2xl font-black text-[#1A1A1A]">+{stats.newToday}</p>
+            <div className="grid grid-cols-2 gap-3">
+                <div className="p-4 rounded-[1.25rem] bg-muted/20 border border-muted-foreground/5 text-center">
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">New Today</p>
+                    <p className="text-xl font-black text-[#1A1A1A]">+{stats.newToday}</p>
                 </div>
-                <div className="p-6 rounded-[2rem] bg-red-500/5 border border-red-500/10 text-center">
-                    <p className="text-[11px] font-bold text-red-500 uppercase tracking-widest mb-1">Locked Accounts</p>
-                    <p className="text-2xl font-black text-red-600">{stats.lockedCount}</p>
+                <div className="p-4 rounded-[1.25rem] bg-red-500/5 border border-red-500/10 text-center">
+                    <p className="text-[10px] font-bold text-red-500 uppercase tracking-widest mb-1">Locked Accounts</p>
+                    <p className="text-xl font-black text-red-600">{stats.lockedCount}</p>
                 </div>
             </div>
 

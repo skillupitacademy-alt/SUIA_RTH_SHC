@@ -28,15 +28,15 @@ export function SystemAuditTerminal() {
     if (isLoading && logs.length === 0) return null;
 
     return (
-        <div className="p-10 rounded-[3.5rem] border border-primary/10 bg-[#0C0C0C] shadow-2xl overflow-hidden">
-            <div className="flex items-center justify-between mb-10">
+        <div className="p-8 rounded-[2rem] border border-primary/10 bg-[#0C0C0C] shadow-2xl overflow-hidden">
+            <div className="flex items-center justify-between mb-8">
                 <div className="flex items-center gap-4">
                     <div className="p-3 rounded-2xl bg-[#FF4B91]/10 text-[#FF4B91]">
                         <Terminal size={24} />
                     </div>
                     <div>
-                        <h3 className="text-3xl font-black uppercase tracking-tighter italic text-white">System Audit</h3>
-                        <p className="text-xs font-bold text-[#FF4B91] uppercase tracking-[0.2em] mt-1 line-through opacity-80 decoration-2">Confidential_Access</p>
+                        <h3 className="text-2xl font-black uppercase tracking-tighter italic text-white">System Audit</h3>
+                        <p className="text-[10px] font-bold text-[#FF4B91] uppercase tracking-[0.2em] mt-0.5 line-through opacity-80 decoration-2">Confidential_Access</p>
                     </div>
                 </div>
                 <div className="flex items-center gap-3">
@@ -45,9 +45,9 @@ export function SystemAuditTerminal() {
                 </div>
             </div>
 
-            <div className="space-y-3 font-mono text-[13px] max-h-[500px] overflow-y-auto pr-4 custom-scrollbar">
+            <div className="space-y-2 font-mono text-xs max-h-[400px] overflow-y-auto pr-3 custom-scrollbar">
                 {logs.map((log) => (
-                    <div key={log.id} className="p-5 rounded-2xl bg-white/5 border border-white/5 hover:border-[#FF4B91]/30 transition-all group flex items-start gap-5">
+                    <div key={log.id} className="p-4 rounded-xl bg-white/5 border border-white/5 hover:border-[#FF4B91]/30 transition-all group flex items-start gap-4">
                         <div className="pt-1">
                             <Clock size={14} className="text-[#FF4B91] opacity-60" />
                         </div>
@@ -77,7 +77,7 @@ export function SystemAuditTerminal() {
                 ))}
             </div>
 
-            <div className="mt-10 pt-10 border-t border-white/10 flex items-center justify-between">
+            <div className="mt-8 pt-8 border-t border-white/10 flex items-center justify-between">
                 <div className="flex items-center gap-6">
                     <div className="flex flex-col">
                         <span className="text-[10px] font-black text-white/40 uppercase tracking-widest mb-1">Status</span>

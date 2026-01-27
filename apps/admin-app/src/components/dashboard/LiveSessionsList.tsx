@@ -42,30 +42,30 @@ export function LiveSessionsList() {
     }
 
     return (
-        <div className="w-full space-y-8">
-            <div className="p-10 rounded-[3.5rem] border border-primary/10 bg-muted/5 backdrop-blur-md shadow-sm">
-                <div className="flex items-center justify-between mb-10">
+        <div className="w-full space-y-6">
+            <div className="p-8 rounded-[2rem] border border-primary/10 bg-muted/5 backdrop-blur-md shadow-sm">
+                <div className="flex items-center justify-between mb-8">
                     <div>
-                        <h3 className="text-3xl font-black uppercase tracking-tighter italic text-[#1A1A1A]">Governance Terminal</h3>
-                        <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1">Currently Authenticated Users</p>
+                        <h3 className="text-2xl font-black uppercase tracking-tighter italic text-[#1A1A1A]">Governance Terminal</h3>
+                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-0.5">Currently Authenticated Users</p>
                     </div>
-                    <div className="px-5 py-2.5 rounded-full bg-green-500/10 border border-green-500/20 flex items-center gap-2">
-                        <span className="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse" />
-                        <span className="text-[11px] font-black text-green-600 uppercase tracking-widest">{meta.total} Online</span>
+                    <div className="px-4 py-2 rounded-full bg-green-500/10 border border-green-500/20 flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                        <span className="text-[10px] font-black text-green-600 uppercase tracking-widest">{meta.total} Online</span>
                     </div>
                 </div>
 
-                <div className="space-y-4 mb-10">
+                <div className="space-y-3 mb-8">
                     {sessions.length === 0 ? (
-                        <div className="text-center py-20 border-2 border-dashed rounded-[3rem] border-muted-foreground/10">
+                        <div className="text-center py-12 border-2 border-dashed rounded-[2rem] border-muted-foreground/10">
                             <Users className="mx-auto text-muted-foreground/20 mb-4" size={56} />
                             <p className="text-sm font-bold text-muted-foreground uppercase tracking-widest">No Active Sessions Detected</p>
                         </div>
                     ) : (
                         sessions.map((session) => (
-                            <div key={session.id} className="p-7 rounded-[2.5rem] bg-background border border-muted/50 hover:border-[#FF4B91]/30 transition-all group flex items-center justify-between shadow-sm">
-                                <div className="flex items-center gap-6">
-                                    <div className="w-16 h-16 rounded-[1.5rem] bg-[#FF4B91]/5 flex items-center justify-center text-[#FF4B91] font-black text-2xl border border-[#FF4B91]/10">
+                            <div key={session.id} className="p-5 rounded-[1.75rem] bg-background border border-muted/50 hover:border-[#FF4B91]/30 transition-all group flex items-center justify-between shadow-sm">
+                                <div className="flex items-center gap-5">
+                                    <div className="w-12 h-12 rounded-xl bg-[#FF4B91]/5 flex items-center justify-center text-[#FF4B91] font-black text-xl border border-[#FF4B91]/10">
                                         {session.user.profile?.name?.[0] || 'U'}
                                     </div>
                                     <div>
