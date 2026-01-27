@@ -1,3 +1,5 @@
+import { apiClient } from '@quiz/api-client';
+
 export function Footer() {
     return (
         <footer className="border-t bg-muted/30">
@@ -27,7 +29,7 @@ export function Footer() {
                 </div>
                 <div className="flex items-center gap-6">
                     <a
-                        href={process.env.NEXT_PUBLIC_ADMIN_URL || '#'}
+                        href={apiClient.getAdminUrl()}
                         className="text-xs font-bold text-muted-foreground/50 hover:text-primary transition-colors flex items-center gap-1.5 uppercase tracking-widest"
                     >
                         Governance

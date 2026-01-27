@@ -50,8 +50,48 @@ function getApiUrl(): string {
   return '/api'; 
 }
 
+function getAdminUrl(): string {
+  // 1. Primary Source: Environment Variable
+  if (process.env.NEXT_PUBLIC_ADMIN_URL) {
+    return process.env.NEXT_PUBLIC_ADMIN_URL.replace(/\/$/, '');
+  }
+
+  // 2. Browser Detection
+  if (typeof window !== 'undefined') {
+    const hostname = window.location.hostname;
+    const protocol = window.location.protocol;
+    
+    // Dynamic Development Detection
+    const isLocal = hostname === 'localhost' || 
+                   hostname === '127.0.0.1' || 
+                   hostname.startsWith('192.168.') || 
+                   hostname.startsWith('10.') || 
+                   hostname.endsWith('.local');
+
+    if (isLocal) {
+      return `${protocol}//${hostname}:3002`;
+    }
+    
+    // Vercel Preview/Branch Deployments
+    if (hostname.includes('vercel.app')) {
+      const adminHostname = hostname.replace('web-app', 'admin-app');
+      return `${protocol}//${adminHostname}`;
+    }
+
+    // RealTutorialHub Domain Detection
+    if (hostname.includes('realtutorialhub.com')) {
+      return `https://admin.realtutorialhub.com`;
+    }
+  }
+
+  return '#'; 
+}
+
 const API_URL = getApiUrl();
+const ADMIN_URL = getAdminUrl();
+
 console.log('[API-CLIENT] Final API URL:', API_URL);
+console.log('[API-CLIENT] Final Admin URL:', ADMIN_URL);
 
 const baseClient = new FetchClient(API_URL);
 
@@ -62,4 +102,5 @@ export const apiClient = {
   dashboard: new DashboardClient(baseClient),
   reports: new ReportClient(baseClient),
   setAccessToken: (token: string | null) => baseClient.setAccessToken(token),
+  getAdminUrl: () => ADMIN_URL,
 };
