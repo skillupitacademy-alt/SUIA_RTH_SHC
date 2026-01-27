@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-    /* config options here */
+    transpilePackages: ['@quiz/api-client', '@quiz/db'],
 };
 
 module.exports = nextConfig;
