@@ -19,6 +19,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ status: 'ok', timestamp: new Date().toISOString() });
   } catch (error: any) {
     console.error('[HEARTBEAT] Error:', error.message);
+    if (error.message.includes('signature') || error.message.includes('expired') || error.code === 'ERR_JWT_EXPIRED') {
+        return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
+    }
     return NextResponse.json({ error: 'Failed to update session' }, { status: 500 });
   }
 }

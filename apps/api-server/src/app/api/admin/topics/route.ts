@@ -34,11 +34,45 @@ export async function GET(req: NextRequest) {
     const searchParams = req.nextUrl.searchParams;
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '20');
+    const subjectId = searchParams.get('subjectId') || undefined;
 
-    const data = await AdminEngine.getTopics(page, limit);
+    const data = await AdminEngine.getTopics(page, limit, { subjectId });
     return NextResponse.json(data);
   } catch (error: any) {
     console.error('[ADMIN_TOPICS] Error:', error.message);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+  }
+}
+
+export async function POST(req: NextRequest) {
+  try {
+    const authHeader = req.headers.get('authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const token = authHeader.split(' ')[1];
+    const payload = await TokenService.verifyAccessToken(token);
+
+    // Verify Admin Role
+    const userRole = await db.select()
+        .from(userRoles)
+        .innerJoin(roles, eq(userRoles.roleId, roles.id))
+        .where(and(
+            eq(userRoles.userId, payload.userId),
+            inArray(roles.name, ['admin', 'ADMIN', 'super_admin', 'SUPER_ADMIN'])
+        ))
+        .limit(1);
+
+    if (userRole.length === 0) {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    const body = await req.json();
+    const result = await AdminEngine.createTopic(body, payload.userId);
+    return NextResponse.json(result);
+  } catch (error: any) {
+    console.error('[ADMIN_TOPICS_CREATE] Error:', error.message);
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

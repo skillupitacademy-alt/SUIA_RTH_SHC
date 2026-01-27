@@ -4,10 +4,12 @@
 
 :root {
   /* Default Theme A */
-  --primary: 337 90% 63%; /* #F54A8D */
+  --primary: 337 90% 63%;
+  /* #F54A8D */
   --primary-foreground: 0 0% 100%;
-  
-  --secondary: 223 74% 29%; /* #133382 */
+
+  --secondary: 223 74% 29%;
+  /* #133382 */
   --secondary-foreground: 0 0% 100%;
 
   --background: 0 0% 100%;
@@ -40,8 +42,15 @@
   --input: 217 33% 17%;
 }
 
+html {
+  font-size: 14px;
+  /* Further reduced to achieve ultra-premium high-density dashboard feel */
+}
+
 body {
-    color: var(--foreground);
-    background: var(--background);
-    font-family: Arial, Helvetica, sans-serif;
+  color: var(--foreground);
+  background: var(--background);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }

@@ -29,7 +29,12 @@
     - [x] **Backend**: `getQuestions` with 4-level join (Question->Topic->Subject->Domain).
     - [x] **API**: `GET /api/admin/questions`.
     - [x] **Frontend**: Question Matrix UI (`QuestionTable.tsx`).
-    - [x] **Hierarchy Views**: Tabular views for Domains, Subjects, and Topics.
+    - [x] **Extended Hierarchy**:
+        - [x] Backend: `getSubtopics` (Join Topic->Subject->Domain).
+        - [x] Backend: `getSkills` (Global list).
+        - [x] Backend: `getTopicSkills` (Join Topic + Skill).
+        - [x] Frontend: `SubtopicTable.tsx` and `SkillTable.tsx`.
+        - [x] Reorder Tabs: Domain -> Subject -> Topic -> Subtopic -> Questions -> Skills.
 - [x] **Phase 7: Verification** (Renamed from 6)
     - [x] Full load testing simulation for metrics aggregation
     - [x] Verify RBAC enforced at every layer

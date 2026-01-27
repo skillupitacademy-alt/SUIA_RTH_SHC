@@ -34,12 +34,12 @@ export async function GET(req: NextRequest) {
     const searchParams = req.nextUrl.searchParams;
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '20');
-    const domainId = searchParams.get('domainId') || undefined;
+    const topicId = searchParams.get('topicId') || undefined;
 
-    const data = await AdminEngine.getSubjects(page, limit, { domainId });
+    const data = await AdminEngine.getSubtopics(page, limit, { topicId });
     return NextResponse.json(data);
   } catch (error: any) {
-    console.error('[ADMIN_SUBJECTS] Error:', error.message);
+    console.error('[ADMIN_SUBTOPICS] Error:', error.message);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
@@ -69,10 +69,10 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const result = await AdminEngine.createSubject(body, payload.userId);
+    const result = await AdminEngine.createSubtopic(body, payload.userId);
     return NextResponse.json(result);
   } catch (error: any) {
-    console.error('[ADMIN_SUBJECTS_CREATE] Error:', error.message);
+    console.error('[ADMIN_SUBTOPICS_CREATE] Error:', error.message);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

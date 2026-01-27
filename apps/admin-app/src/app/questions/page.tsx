@@ -5,10 +5,13 @@ import { QuestionTable } from '@/components/questions/QuestionTable';
 import { DomainTable } from '@/components/questions/DomainTable';
 import { SubjectTable } from '@/components/questions/SubjectTable';
 import { TopicTable } from '@/components/questions/TopicTable';
-import { Database, FolderTree, BookOpen, Layers, Hash } from 'lucide-react';
+import { SubtopicTable } from '@/components/questions/SubtopicTable';
+import { SkillTable } from '@/components/questions/SkillTable';
+import Link from 'next/link';
+import { Database, FolderTree, BookOpen, Layers, Hash, GitBranch, Award, Plus } from 'lucide-react';
 
 export default function QuestionsPage() {
-    const [activeTab, setActiveTab] = useState<'questions' | 'domains' | 'subjects' | 'topics'>('questions');
+    const [activeTab, setActiveTab] = useState<'domains' | 'subjects' | 'topics' | 'subtopics' | 'questions' | 'skills'>('domains');
 
     return (
         <div className="space-y-8 pb-24">
@@ -23,19 +26,17 @@ export default function QuestionsPage() {
                     <p className="text-sm font-bold text-muted-foreground uppercase tracking-widest mt-2">Hierarchy • Difficulty • Compliance</p>
                 </div>
                 <div className="flex flex-col items-end gap-3 text-right">
-                    <span className="px-4 py-2 rounded-xl bg-primary/5 text-primary text-[10px] font-black uppercase tracking-widest border border-primary/10">Read Only Mode</span>
+                    <Link
+                        href="/questions/new"
+                        className="px-5 py-2.5 rounded-xl bg-[#FF4B91] hover:bg-[#ff3382] text-white text-xs font-black uppercase tracking-widest shadow-lg shadow-[#FF4B91]/20 transition-all flex items-center gap-2"
+                    >
+                        <Plus size={16} /> New Question
+                    </Link>
                 </div>
             </div>
 
             {/* Tab Navigation */}
-            <div className="flex gap-2">
-                <button
-                    onClick={() => setActiveTab('questions')}
-                    className={`px-6 py-3 rounded-2xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'questions' ? 'bg-[#1A1A1A] text-white shadow-lg' : 'bg-white text-muted-foreground hover:bg-gray-50'
-                        }`}
-                >
-                    Questions
-                </button>
+            <div className="flex gap-2 flex-wrap">
                 <button
                     onClick={() => setActiveTab('domains')}
                     className={`px-6 py-3 rounded-2xl text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2 ${activeTab === 'domains' ? 'bg-[#1A1A1A] text-white shadow-lg' : 'bg-white text-muted-foreground hover:bg-gray-50'
@@ -57,14 +58,37 @@ export default function QuestionsPage() {
                 >
                     <Hash size={14} /> Topics
                 </button>
+                <button
+                    onClick={() => setActiveTab('subtopics')}
+                    className={`px-6 py-3 rounded-2xl text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2 ${activeTab === 'subtopics' ? 'bg-[#1A1A1A] text-white shadow-lg' : 'bg-white text-muted-foreground hover:bg-gray-50'
+                        }`}
+                >
+                    <GitBranch size={14} /> Subtopics
+                </button>
+                <button
+                    onClick={() => setActiveTab('questions')}
+                    className={`px-6 py-3 rounded-2xl text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2 ${activeTab === 'questions' ? 'bg-[#1A1A1A] text-white shadow-lg' : 'bg-white text-muted-foreground hover:bg-gray-50'
+                        }`}
+                >
+                    <Database size={14} /> Questions
+                </button>
+                <button
+                    onClick={() => setActiveTab('skills')}
+                    className={`px-6 py-3 rounded-2xl text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2 ${activeTab === 'skills' ? 'bg-[#1A1A1A] text-white shadow-lg' : 'bg-white text-muted-foreground hover:bg-gray-50'
+                        }`}
+                >
+                    <Award size={14} /> Skills
+                </button>
             </div>
 
             {/* Tab Content */}
             <div className="animate-in fade-in slide-in-from-bottom-4 duration-300">
-                {activeTab === 'questions' && <QuestionTable />}
                 {activeTab === 'domains' && <DomainTable />}
                 {activeTab === 'subjects' && <SubjectTable />}
                 {activeTab === 'topics' && <TopicTable />}
+                {activeTab === 'subtopics' && <SubtopicTable />}
+                {activeTab === 'questions' && <QuestionTable />}
+                {activeTab === 'skills' && <SkillTable />}
             </div>
         </div>
     );

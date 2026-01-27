@@ -1,4 +1,4 @@
-import { db, questions, domains, subjects, topics, skills, refreshTokens, users, userRoles, roles, userProfiles, auditLogs, exams, resultsByDimension, examBlueprints } from '@quiz/db';
+import { db, questions, domains, subjects, topics, subtopics, topicSkills, skills, refreshTokens, users, userRoles, roles, userProfiles, auditLogs, exams, resultsByDimension, examBlueprints } from '@quiz/db';
 import { eq, and, sql, desc, gt, inArray } from 'drizzle-orm';
 import { AuditService } from '../auth/audit.service';
 import { QuestionService } from '../question/question.service';
@@ -256,10 +256,46 @@ export class AdminEngine {
   }
 
   /**
-   * Creates a new question.
+   * Creates a new question with schema mapping.
    */
   static async createQuestion(data: any, adminId: string) {
-    const question = await QuestionService.createQuestion(data);
+    // 1. Resolve topicId from subtopicId if not provided (required by schema)
+    let topicId = data.topicId;
+    if (!topicId && data.subtopicId) {
+        const subtopic = await db.query.subtopics.findFirst({
+            where: eq(subtopics.id, data.subtopicId)
+        });
+        if (subtopic) {
+            topicId = subtopic.topicId;
+        }
+    }
+
+    if (!topicId) {
+        throw new Error('Could not resolve topicId for the question.');
+    }
+
+    // 2. Extract correctAnswer (schema requires this string)
+    const correctOption = data.options.find((o: any) => o.isCorrect);
+    const correctAnswer = correctOption ? correctOption.text : 'No correct answer provided';
+
+    // 3. Map frontend data to DB schema
+    const dbData = {
+        topicId: topicId,
+        subtopicId: data.subtopicId,
+        difficulty: data.difficulty, // expected: 'simple', 'intermediate', 'expert'
+        type: data.type === 'multiple' ? 'mcq' : 'mcq', // Currently mapping both to mcq
+        questionText: data.text,
+        options: data.options,
+        correctAnswer: correctAnswer,
+        explanation: data.explanation || '',
+        metadata: {
+            estimatedTime: data.estimatedTime,
+            tags: data.tags
+        },
+        status: 'active' as const
+    };
+
+    const question = await QuestionService.createQuestion(dbData);
 
     await AuditService.log({
       userId: adminId,
@@ -339,7 +375,9 @@ export class AdminEngine {
     const security = await this.getSecuritySignals();
     const examActivity = await this.getExamActivity();
     
-    const [questionCount] = await db.select({ count: sql`count(*)` }).from(questions);
+    const [questionCount] = await db.select({ count: sql`count(*)` })
+        .from(questions)
+        .where(eq(questions.status, 'active'));
     const { total: liveUserCount } = await this.getLiveSessions(1, 1);
 
     return {
@@ -544,16 +582,58 @@ export class AdminEngine {
   }
 
   /**
-   * Section 4: Question Bank Management (Phase 6)
+   * Section 4: Question Bank Management (Phase 8 - Enhanced)
    */
-  static async getQuestions(page: number = 1, limit: number = 20) {
+  static async getQuestions(page: number = 1, limit: number = 20, filters?: { domainId?: string; subjectId?: string; topicId?: string; subtopicId?: string; status?: string }) {
     const offset = (page - 1) * limit;
 
-    const [countResult] = await db.select({ count: sql`count(*)` }).from(questions);
+    const conditions = [];
+    
+    // Status filter (default to active for general view, but allow override)
+    if (filters?.status) {
+        conditions.push(eq(questions.status, filters.status as any));
+    } else {
+        conditions.push(eq(questions.status, 'active'));
+    }
+
+    if (filters?.subtopicId) {
+        conditions.push(eq(questions.subtopicId, filters.subtopicId));
+    } else if (filters?.topicId) {
+        conditions.push(eq(questions.topicId, filters.topicId));
+    } else if (filters?.subjectId) {
+        // Find all topics for this subject
+        const topicList = await db.select({ id: topics.id }).from(topics).where(eq(topics.subjectId, filters.subjectId));
+        if (topicList.length > 0) {
+            conditions.push(inArray(questions.topicId, topicList.map(t => t.id)));
+        } else {
+            // No topics found, return empty set
+            return { questions: [], total: 0, page, limit, totalPages: 0 };
+        }
+    } else if (filters?.domainId) {
+        // Find all subjects -> topics for this domain
+        const subjectList = await db.select({ id: subjects.id }).from(subjects).where(eq(subjects.domainId, filters.domainId));
+        if (subjectList.length > 0) {
+            const topicList = await db.select({ id: topics.id }).from(topics).where(inArray(topics.subjectId, subjectList.map(s => s.id)));
+            if (topicList.length > 0) {
+                conditions.push(inArray(questions.topicId, topicList.map(t => t.id)));
+            } else {
+                return { questions: [], total: 0, page, limit, totalPages: 0 };
+            }
+        } else {
+             return { questions: [], total: 0, page, limit, totalPages: 0 };
+        }
+    }
+
+    const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+
+    const [countResult] = await db.select({ count: sql`count(*)` })
+        .from(questions)
+        .where(whereClause);
 
     const questionsList = await db.query.questions.findMany({
       limit,
       offset,
+      where: whereClause,
       orderBy: [desc(questions.createdAt)],
       with: {
         topic: {
@@ -577,6 +657,80 @@ export class AdminEngine {
     };
   }
 
+  /**
+   * Updates an existing question.
+   */
+  static async updateQuestion(id: string, data: any, adminId: string) {
+    // 1. Resolve topicId if subtopicId changed
+    let topicId = data.topicId;
+    if (data.subtopicId) {
+        const subtopic = await db.query.subtopics.findFirst({
+            where: eq(subtopics.id, data.subtopicId)
+        });
+        if (subtopic) {
+            topicId = subtopic.topicId;
+        }
+    }
+
+    // 2. Extract correctAnswer
+    let correctAnswer = data.correctAnswer;
+    if (data.options) {
+        const correctOption = data.options.find((o: any) => o.isCorrect);
+        correctAnswer = correctOption ? correctOption.text : correctAnswer;
+    }
+
+    // 3. Map to schema
+    const updateData: any = {
+        updatedAt: new Date(),
+    };
+    if (topicId) updateData.topicId = topicId;
+    if (data.subtopicId) updateData.subtopicId = data.subtopicId;
+    if (data.difficulty) updateData.difficulty = data.difficulty;
+    if (data.text) updateData.questionText = data.text;
+    if (data.options) updateData.options = data.options;
+    if (correctAnswer) updateData.correctAnswer = correctAnswer;
+    if (data.explanation !== undefined) updateData.explanation = data.explanation;
+    if (data.status) updateData.status = data.status;
+    
+    if (data.estimatedTime !== undefined || data.tags) {
+        updateData.metadata = {
+            estimatedTime: data.estimatedTime,
+            tags: data.tags
+        };
+    }
+
+    const [updated] = await db.update(questions)
+        .set(updateData)
+        .where(eq(questions.id, id))
+        .returning();
+
+    await AuditService.log({
+      userId: adminId,
+      action: 'admin_update_question',
+      metadata: { questionId: id },
+    });
+
+    return updated;
+  }
+
+  /**
+   * Safely deletes a question (Soft Delete).
+   */
+  static async deleteQuestion(id: string, adminId: string) {
+    const [deleted] = await db.update(questions)
+        .set({ status: 'inactive', updatedAt: new Date() })
+        .where(eq(questions.id, id))
+        .returning();
+
+    await AuditService.log({
+      userId: adminId,
+      action: 'admin_delete_question',
+      metadata: { questionId: id },
+    });
+
+    return deleted;
+  }
+
   static async getDomains(page: number = 1, limit: number = 20) {
     const offset = (page - 1) * limit;
     const [countResult] = await db.select({ count: sql`count(*)` }).from(domains);
@@ -594,12 +748,24 @@ export class AdminEngine {
     };
   }
 
-  static async getSubjects(page: number = 1, limit: number = 20) {
+  static async getSubjects(page: number = 1, limit: number = 20, filters?: { domainId?: string }) {
     const offset = (page - 1) * limit;
-    const [countResult] = await db.select({ count: sql`count(*)` }).from(subjects);
+    
+    const conditions = [];
+    if (filters?.domainId) {
+        conditions.push(eq(subjects.domainId, filters.domainId));
+    }
+
+    const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+
+    const [countResult] = await db.select({ count: sql`count(*)` })
+        .from(subjects)
+        .where(whereClause);
+
     const data = await db.query.subjects.findMany({
         limit,
         offset,
+        where: whereClause,
         orderBy: [desc(subjects.createdAt)],
         with: {
             domain: true
@@ -614,12 +780,24 @@ export class AdminEngine {
     };
   }
 
-  static async getTopics(page: number = 1, limit: number = 20) {
+  static async getTopics(page: number = 1, limit: number = 20, filters?: { subjectId?: string }) {
     const offset = (page - 1) * limit;
-    const [countResult] = await db.select({ count: sql`count(*)` }).from(topics);
+
+    const conditions = [];
+    if (filters?.subjectId) {
+        conditions.push(eq(topics.subjectId, filters.subjectId));
+    }
+
+    const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+
+    const [countResult] = await db.select({ count: sql`count(*)` })
+        .from(topics)
+        .where(whereClause);
+
     const data = await db.query.topics.findMany({
         limit,
         offset,
+        where: whereClause,
         orderBy: [desc(topics.createdAt)],
         with: {
             subject: {
@@ -627,6 +805,82 @@ export class AdminEngine {
                     domain: true
                 }
             }
+        }
+    });
+    return {
+        data,
+        total: Number(countResult?.count || 0),
+        page,
+        limit,
+        totalPages: Math.ceil(Number(countResult?.count || 0) / limit)
+    };
+  }
+
+  static async getSubtopics(page: number = 1, limit: number = 20, filters?: { topicId?: string }) {
+    const offset = (page - 1) * limit;
+
+    const conditions = [];
+    if (filters?.topicId) {
+        conditions.push(eq(subtopics.topicId, filters.topicId));
+    }
+
+    const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+
+    const [countResult] = await db.select({ count: sql`count(*)` })
+        .from(subtopics)
+        .where(whereClause);
+
+    const data = await db.query.subtopics.findMany({
+        limit,
+        offset,
+        where: whereClause,
+        orderBy: [desc(subtopics.createdAt)],
+        with: {
+            topic: {
+                with: {
+                    subject: {
+                        with: {
+                            domain: true
+                        }
+                    }
+                }
+            }
+        }
+    });
+    return {
+        data,
+        total: Number(countResult?.count || 0),
+        page,
+        limit,
+        totalPages: Math.ceil(Number(countResult?.count || 0) / limit)
+    };
+  }
+
+  static async getSkills(page: number = 1, limit: number = 20) {
+    const offset = (page - 1) * limit;
+    const [countResult] = await db.select({ count: sql`count(*)` }).from(skills);
+    const data = await db.query.skills.findMany({
+        limit,
+        offset,
+    });
+    return {
+        data,
+        total: Number(countResult?.count || 0),
+        page,
+        limit,
+        totalPages: Math.ceil(Number(countResult?.count || 0) / limit)
+    };
+  }
+
+  static async getTopicSkills(page: number = 1, limit: number = 20) {
+    const offset = (page - 1) * limit;
+    const [countResult] = await db.select({ count: sql`count(*)` }).from(topicSkills);
+    const data = await db.query.topicSkills.findMany({
+        limit,
+        offset,
+        with: {
+            topic: true,
+            skill: true
         }
     });
     return {
