@@ -4,10 +4,12 @@
 
 :root {
   /* Default Theme A */
-  --primary: 337 90% 63%; /* #F54A8D */
+  --primary: 337 90% 63%;
+  /* #F54A8D */
   --primary-foreground: 0 0% 100%;
-  
-  --secondary: 223 74% 29%; /* #133382 */
+
+  --secondary: 223 74% 29%;
+  /* #133382 */
   --secondary-foreground: 0 0% 100%;
 
   --background: 0 0% 100%;
@@ -27,15 +29,17 @@
 }
 
 .theme-b {
-  --primary: 198 84% 15%; /* #063347 */
+  --primary: 198 84% 15%;
+  /* #063347 */
   --primary-foreground: 0 0% 100%;
 
-  --secondary: 16 88% 53%; /* #F0561D */
+  --secondary: 16 88% 53%;
+  /* #F0561D */
   --secondary-foreground: 0 0% 100%;
 
   --accent: 16 88% 53%;
   --accent-foreground: 0 0% 100%;
-  
+
   --ring: 198 84% 15%;
 }
 
@@ -51,6 +55,11 @@
 
   --border: 217 33% 17%;
   --input: 217 33% 17%;
+}
+
+html {
+  font-size: 13px;
+  /* Platform-standard high-density scaling */
 }
 
 body {
