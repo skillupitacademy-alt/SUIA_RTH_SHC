@@ -98,16 +98,64 @@ export class AdminClient {
     return this.client.post<any>('/admin/domains', data);
   }
 
+  async updateDomain(id: string, data: any) {
+    return this.client.patch<any>(`/admin/domains/${id}`, data);
+  }
+
+  async deleteDomain(id: string) {
+    return this.client.delete<any>(`/admin/domains/${id}`);
+  }
+
   async createSubject(data: any) {
     return this.client.post<any>('/admin/subjects', data);
+  }
+
+  async updateSubject(id: string, data: any) {
+    return this.client.patch<any>(`/admin/subjects/${id}`, data);
+  }
+
+  async deleteSubject(id: string) {
+    return this.client.delete<any>(`/admin/subjects/${id}`);
   }
 
   async createTopic(data: any) {
     return this.client.post<any>('/admin/topics', data);
   }
 
+  async updateTopic(id: string, data: any) {
+    return this.client.patch<any>(`/admin/topics/${id}`, data);
+  }
+
+  async deleteTopic(id: string) {
+    return this.client.delete<any>(`/admin/topics/${id}`);
+  }
+
   async createSubtopic(data: any) {
     return this.client.post<any>('/admin/subtopics', data);
+  }
+
+  async updateSubtopic(id: string, data: any) {
+    return this.client.patch<any>(`/admin/subtopics/${id}`, data);
+  }
+
+  async deleteSubtopic(id: string) {
+    return this.client.delete<any>(`/admin/subtopics/${id}`);
+  }
+
+  async createSkill(data: any) {
+    return this.client.post<any>('/admin/skills', data);
+  }
+
+  async updateSkill(id: string, data: any) {
+    return this.client.patch<any>(`/admin/skills/${id}`, data);
+  }
+
+  async deleteSkill(id: string) {
+    return this.client.delete<any>(`/admin/skills/${id}`);
+  }
+
+  async mapTopicSkills(topicId: string, skillIds: string[]) {
+    return this.client.post<any>(`/admin/topics/${topicId}/skills`, { skillIds });
   }
 
   async createQuestion(data: any) {
@@ -184,6 +232,14 @@ export class AdminClient {
         limit: number;
         totalPages: number;
     }>(`/admin/users?page=${page}&limit=${limit}`);
+  }
+
+  async updateUser(id: string, data: any) {
+    return this.client.patch<any>(`/admin/users/${id}`, data);
+  }
+
+  async deleteUser(id: string) {
+    return this.client.delete<any>(`/admin/users/${id}`);
   }
 
   async login(email: string, password: string) {
