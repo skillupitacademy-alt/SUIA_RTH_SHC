@@ -14,27 +14,40 @@ import { ReportClient } from './modules/report-client';
 function getApiUrl(): string {
   // 1. Primary Source: Environment Variable (Standard for Vercel/Production)
   if (process.env.NEXT_PUBLIC_API_URL) {
-    return process.env.NEXT_PUBLIC_API_URL;
+    return process.env.NEXT_PUBLIC_API_URL.replace(/\/$/, '');
   }
 
-  // 2. Browser Detection for Local Development/Preview
+  // 2. Browser Detection for Local Development/Preview/Custom Domains
   if (typeof window !== 'undefined') {
     const hostname = window.location.hostname;
     
-    // Dynamic Localhost Detection (assuming API is standard on port 3000)
-    if (hostname === 'localhost' || hostname === '127.0.0.1') {
+    // Dynamic Development Detection (Localhost and Local Network IPs)
+    const isLocal = hostname === 'localhost' || 
+                   hostname === '127.0.0.1' || 
+                   hostname.startsWith('192.168.') || 
+                   hostname.startsWith('10.') || 
+                   hostname.endsWith('.local');
+
+    if (isLocal) {
       return `http://${hostname}:3000/api`;
     }
     
-    // Vercel Preview/Branch Deployments
+    // Vercel Preview/Branch Deployments (Automatic)
     if (hostname.includes('vercel.app')) {
       const apiHostname = hostname.replace('web-app', 'api-server').replace('admin-app', 'api-server');
-      return `https://${apiHostname}`;
+      return `https://${apiHostname}/api`;
+    }
+
+    // RealTutorialHub Domain Detection (Production/Staging structure)
+    if (hostname.includes('realtutorialhub.com')) {
+      // If we are on admin.realtutorialhub.com or quiz.realtutorialhub.com, 
+      // the API is always at api.realtutorialhub.com
+      return `https://api.realtutorialhub.com/api`;
     }
   }
 
-  // 3. Fallback: Should be avoided by setting env vars, but we'll use a relative path if possible or log error
-  return ''; 
+  // 3. Fallback: Should usually be avoided by env vars, but use relative for same-origin
+  return '/api'; 
 }
 
 const API_URL = getApiUrl();
