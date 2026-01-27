@@ -14,7 +14,6 @@ export const config = {
 
   // CSRF Configuration
   csrf: {
-    allowAllLocalhost: false,
     allowedOrigins: process.env.ALLOWED_ORIGINS?.split(',') || [
       'https://quiz.realtutorialhub.com',
       'https://admin.realtutorialhub.com',

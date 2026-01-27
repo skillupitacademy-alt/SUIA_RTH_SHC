@@ -5,7 +5,7 @@ import { AuthService } from '@/modules/auth/auth.service';
 export async function POST(req: NextRequest) {
   const token = req.cookies.get('refreshToken')?.value;
   const adminToken = req.cookies.get('admin_refreshToken')?.value;
-  const ip = req.headers.get('x-forwarded-for')?.split(',')[0] || '127.0.0.1';
+  const ip = req.headers.get('x-forwarded-for')?.split(',')[0] || '';
 
   if (token) {
     await AuthService.logout(token, undefined, ip);

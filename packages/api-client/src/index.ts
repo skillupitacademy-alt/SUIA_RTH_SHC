@@ -7,8 +7,7 @@ import { ReportClient } from './modules/report-client';
 
 /**
  * Smart environment detection for API URL
- * - Local development: http://localhost:3000 (API server port)
- * - Vercel production: https://api.realtutorialhub.com
+ * - Production: https://api.realtutorialhub.com
  * - Vercel preview: Uses the preview API URL
  */
 function getApiUrl(): string {

@@ -14,7 +14,7 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { email, password } = loginSchema.parse(body);
 
-    const ip = req.headers.get('x-forwarded-for') || '127.0.0.1';
+    const ip = req.headers.get('x-forwarded-for') || '';
     
     const result = await AdminAuthService.login(email, password, ip);
 

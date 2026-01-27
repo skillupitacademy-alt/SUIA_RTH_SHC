@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
     const isAdmin = !!adminToken && !refreshToken; // Heuristic based on which cookie is present
     const cookieName = isAdmin ? 'admin_refreshToken' : 'refreshToken';
 
-    const ip = req.headers.get('x-forwarded-for')?.split(',')[0] || '127.0.0.1';
+    const ip = (req.headers.get('x-forwarded-for') || '').split(',')[0] || '';
     
     const { accessToken, refreshToken: newRefreshToken } = await AuthService.refresh(tokenToUse!, ip);
 

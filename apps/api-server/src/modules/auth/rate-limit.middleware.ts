@@ -10,7 +10,7 @@ export async function rateLimit(request: NextRequest) {
   const now = Date.now();
   
   // 1. IP Tracking
-  const ip = request.headers.get('x-forwarded-for')?.split(',')[0] || '127.0.0.1';
+  const ip = request.headers.get('x-forwarded-for')?.split(',')[0] || 'unknown';
   const ipRecord = cache.get(`ip:${ip}`);
   
   if (ipRecord && now < ipRecord.expires && ipRecord.count >= MAX_IP_REQUESTS) {
