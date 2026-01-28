@@ -16,18 +16,18 @@ export function DocsTabs({ structure, onFileSelect, activePath }: DocsTabsProps)
     const [activeTab, setActiveTab] = useState<DocCategory>(categories[0]);
 
     return (
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-6">
             {/* Category Navigation - Top Bar */}
-            <div className="flex bg-slate-900 border border-slate-800 p-1.5 rounded-2xl shadow-xl overflow-x-auto custom-scrollbar no-scrollbar">
+            <div className="flex bg-white border border-slate-200 p-2 rounded-[2rem] shadow-2xl shadow-primary/5 overflow-x-auto no-scrollbar">
                 {categories.map((cat) => (
                     <button
                         key={cat}
                         onClick={() => setActiveTab(cat)}
                         className={cn(
-                            "whitespace-nowrap px-6 py-2.5 text-[10px] font-black tracking-[0.2em] uppercase transition-all duration-300 rounded-xl flex-shrink-0",
+                            "whitespace-nowrap px-8 py-3.5 text-[11px] font-black tracking-[0.2em] uppercase transition-all duration-500 rounded-2xl flex-shrink-0",
                             activeTab === cat
-                                ? "bg-blue-600 text-white shadow-lg shadow-blue-500/20"
-                                : "text-slate-500 hover:text-slate-300 hover:bg-slate-800"
+                                ? "bg-[#1A1A1A] text-white shadow-xl shadow-[#1A1A1A]/20"
+                                : "text-slate-400 hover:text-[#1A1A1A] hover:bg-slate-50"
                         )}
                     >
                         {cat}
@@ -35,30 +35,30 @@ export function DocsTabs({ structure, onFileSelect, activePath }: DocsTabsProps)
                 ))}
             </div>
 
-            {/* File Selector - Grid/Row under categories */}
-            <div className="flex gap-2 p-1 overflow-x-auto pb-4 no-scrollbar">
+            {/* File Selector - Row under categories */}
+            <div className="flex gap-3 p-1 overflow-x-auto pb-4 no-scrollbar">
                 {structure[activeTab].map((file) => (
                     <button
                         key={file.path}
                         onClick={() => onFileSelect(file.path)}
                         className={cn(
-                            "flex items-center gap-3 px-5 py-3 rounded-[1.25rem] text-[11px] font-bold transition-all duration-300 border-2 whitespace-nowrap",
+                            "flex items-center gap-4 px-6 py-4 rounded-2xl text-[12px] font-bold transition-all duration-500 border-2 whitespace-nowrap",
                             activePath === file.path
-                                ? "bg-blue-500/10 border-blue-500 text-blue-400 shadow-xl shadow-blue-500/10"
-                                : "bg-slate-900 border-slate-800 text-slate-500 hover:border-slate-700 hover:text-slate-300"
+                                ? "bg-[#FF4B91]/5 border-[#FF4B91] text-[#FF4B91] shadow-xl shadow-[#FF4B91]/10"
+                                : "bg-white border-slate-100 text-slate-400 hover:border-slate-300 hover:text-slate-600 shadow-sm"
                         )}
                     >
                         <div className={cn(
-                            "w-2 h-2 rounded-full",
-                            activePath === file.path ? "bg-blue-400 animate-pulse" : "bg-slate-800"
+                            "w-2.5 h-2.5 rounded-full",
+                            activePath === file.path ? "bg-[#FF4B91] animate-pulse shadow-[0_0_8px_#FF4B91]" : "bg-slate-200"
                         )} />
-                        <span className="font-mono uppercase tracking-tighter">{file.name}</span>
+                        <span className="font-black uppercase tracking-tighter">{file.name}</span>
                     </button>
                 ))}
 
                 {structure[activeTab].length === 0 && (
-                    <p className="text-slate-600 italic text-xs py-2 px-4">
-                        Zero indices detected in this mainframe category.
+                    <p className="text-slate-400 italic text-[11px] font-bold py-4 px-6 uppercase tracking-widest">
+                        No Indices Detected_
                     </p>
                 )}
             </div>
