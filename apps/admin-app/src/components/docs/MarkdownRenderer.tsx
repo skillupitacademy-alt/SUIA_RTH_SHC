@@ -33,10 +33,10 @@ export function MarkdownRenderer({ content }: MarkdownRendererProps) {
                         </div>
                     ),
                     thead: ({ node, ...props }) => (
-                        <thead className="bg-slate-100" {...props} />
+                        <thead className="bg-[#FF4B91]/5" {...props} />
                     ),
                     th: ({ node, ...props }) => (
-                        <th className="px-8 py-5 text-left text-[11px] font-black text-[#1A1A1A] uppercase tracking-[0.2em]" {...props} />
+                        <th className="px-8 py-5 text-left text-[11px] font-black text-[#FF4B91] uppercase tracking-[0.3em] border-b-2 border-[#FF4B91]/10" {...props} />
                     ),
                     td: ({ node, ...props }) => (
                         <td className="px-8 py-5 text-[14px] font-semibold text-slate-600 border-b border-slate-100 group-hover:bg-slate-50 transition-colors" {...props} />
@@ -45,8 +45,8 @@ export function MarkdownRenderer({ content }: MarkdownRendererProps) {
                         return !inline ? (
                             <div className="relative my-8 group">
                                 <div className="absolute -inset-1 bg-gradient-to-r from-slate-200 to-slate-100 rounded-3xl blur opacity-25" />
-                                <pre className="relative p-8 rounded-[2rem] bg-slate-50 border border-slate-200 overflow-x-auto shadow-2xl">
-                                    <code className={cn("text-xs leading-relaxed font-mono text-[#FF4B91]", className)} {...props}>
+                                <pre className="relative p-10 rounded-[2.5rem] bg-slate-50 border border-slate-100 overflow-x-auto shadow-2xl shadow-primary/5">
+                                    <code className={cn("text-xs leading-relaxed font-mono text-[#FF4B91] font-bold", className)} {...props}>
                                         {children}
                                     </code>
                                 </pre>

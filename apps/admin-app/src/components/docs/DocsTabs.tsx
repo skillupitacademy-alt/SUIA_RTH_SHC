@@ -18,7 +18,22 @@ export function DocsTabs({ structure, onFileSelect, activePath }: DocsTabsProps)
     return (
         <div className="flex flex-col gap-6">
             {/* Category Navigation - Top Bar */}
-            <div className="flex bg-white border border-slate-200 p-2 rounded-[2rem] shadow-2xl shadow-primary/5 overflow-x-auto no-scrollbar">
+            <div className="flex bg-white border border-slate-200 p-2 rounded-[2rem] shadow-2xl shadow-primary/5 overflow-x-auto no-scrollbar items-center gap-2">
+                <button
+                    onClick={() => onFileSelect('RADAR')}
+                    className={cn(
+                        "whitespace-nowrap px-8 py-3.5 text-[11px] font-black tracking-[0.3em] uppercase transition-all duration-500 rounded-2xl flex-shrink-0 flex items-center gap-3",
+                        activePath === 'RADAR'
+                            ? "bg-[#FF4B91] text-white shadow-xl shadow-[#FF4B91]/20 scale-105"
+                            : "text-slate-400 hover:text-[#FF4B91] hover:bg-slate-50"
+                    )}
+                >
+                    <div className={cn("w-2 h-2 rounded-full", activePath === 'RADAR' ? "bg-white animate-ping" : "bg-[#FF4B91]")} />
+                    Project_Radar
+                </button>
+
+                <div className="h-8 w-[1px] bg-slate-100 mx-2" />
+
                 {categories.map((cat) => (
                     <button
                         key={cat}

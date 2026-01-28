@@ -5,6 +5,8 @@ import { DocCategory, DocFile } from '@/lib/docs-loader';
 import { DocsTabs } from './DocsTabs';
 import { MarkdownRenderer } from './MarkdownRenderer';
 import { getDocContentAction } from '@/app/actions/docs';
+import { GovernanceInventory } from './GovernanceInventory';
+import { DocExplainer } from './DocExplainer';
 
 
 interface DocsViewerProps {
@@ -12,12 +14,18 @@ interface DocsViewerProps {
 }
 
 export function DocsViewer({ structure }: DocsViewerProps) {
-    const [activePath, setActivePath] = useState<string>('architecture/PROJECT_MANIFESTO.md');
+    const [activePath, setActivePath] = useState<string>('RADAR');
     const [content, setContent] = useState<string>('');
-    const [loading, setLoading] = useState<boolean>(true);
+    const [loading, setLoading] = useState<boolean>(false);
 
     useEffect(() => {
         async function loadContent() {
+            if (activePath === 'RADAR') {
+                setContent('');
+                setLoading(false);
+                return;
+            }
+
             setLoading(true);
             const result = await getDocContentAction(activePath);
             if (result.success && result.content !== undefined) {
@@ -48,7 +56,7 @@ export function DocsViewer({ structure }: DocsViewerProps) {
                             <span className="text-[#1A1A1A] font-bold text-sm tracking-tight">{activePath}</span>
                         </div>
                         <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest italic">
-                            Authorized_Intel // Revision_v2.0 // Active_Stream
+                            Authorized_Intel // Revision_v2.0 // AI_Flow_Active
                         </h4>
                     </div>
                     {loading && (
@@ -61,7 +69,7 @@ export function DocsViewer({ structure }: DocsViewerProps) {
 
                 <div className="flex-1 overflow-y-auto p-12 lg:p-20 custom-scrollbar">
                     {loading ? (
-                        <div className="flex flex-col items-center justify-center h-[500px] space-y-8">
+                        <div className="flex flex-col items-center justify-center h-[600px] space-y-8">
                             <div className="relative">
                                 <div className="w-20 h-20 border-4 border-slate-100 border-t-[#FF4B91] rounded-full animate-spin" />
                                 <div className="absolute inset-0 flex items-center justify-center">
@@ -72,7 +80,14 @@ export function DocsViewer({ structure }: DocsViewerProps) {
                         </div>
                     ) : (
                         <div className="max-w-4xl mx-auto animate-in fade-in slide-in-from-bottom-10 duration-1000">
-                            <MarkdownRenderer content={content} />
+                            {activePath === 'RADAR' ? (
+                                <GovernanceInventory />
+                            ) : (
+                                <>
+                                    <DocExplainer filePath={activePath} />
+                                    <MarkdownRenderer content={content} />
+                                </>
+                            )}
                         </div>
                     )}
                 </div>
