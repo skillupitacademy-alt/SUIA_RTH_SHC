@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { DocCategory, DocFile } from '@/lib/docs-loader';
 import { DocsTabs } from './DocsTabs';
 import { GovernanceInventory } from './GovernanceInventory';
+import { ConstitutionViewer } from './ConstitutionViewer';
 
 interface DocsViewerProps {
     structure: Record<DocCategory, DocFile[]>;
@@ -39,6 +40,8 @@ export function DocsViewer({ structure }: DocsViewerProps) {
                     <div className="w-full mx-auto animate-in fade-in slide-in-from-bottom-10 duration-1000 px-4">
                         {activePath === 'RADAR' ? (
                             <GovernanceInventory />
+                        ) : activePath.includes('AGENT_CONSTITUTION.md') ? (
+                            <ConstitutionViewer />
                         ) : (
                             <div className="p-8 border-2 border-dashed border-slate-200 rounded-[2rem] text-center">
                                 <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest">Content Display Disabled by Protocol</p>

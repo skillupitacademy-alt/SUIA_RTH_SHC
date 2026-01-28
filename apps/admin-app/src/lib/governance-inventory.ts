@@ -90,12 +90,20 @@ export const INVENTORY_GROUPS = [
 ];
 
 export const GOVERNANCE_DATA = {
+    overview: [
+        { attribute: 'Version', details: 'v2.0' },
+        { attribute: 'Scope', details: 'All Antigravity Agents' },
+        { attribute: 'Applies To', details: 'Every model, every execution, every task' },
+        { attribute: 'Priority', details: 'ABSOLUTE' },
+        { attribute: 'Change Policy', details: 'User-only approval' },
+    ],
     hierarchy: [
         { rank: '1', source: '@docs/**', description: 'Absolute Source of Truth' },
         { rank: '2', source: 'Executable artifacts (SQL, migrations)', description: 'Immutable Truth' },
         { rank: '3', source: 'agent/**', description: 'Behavioral control only' },
         { rank: '4', source: 'Model reasoning', description: 'Lowest priority' },
     ],
+    hierarchyNote: 'Conflict Rule: Higher authority ALWAYS wins. Agent MUST STOP and ASK the user.',
     permissions: [
         { path: '@docs/**', read: '✅', write: '❌', notes: 'Read-only unless user says "update docs".' },
         { path: 'apps/**', read: '✅', write: '⚠️', notes: 'Write ONLY within requested scope.' },
@@ -103,12 +111,36 @@ export const GOVERNANCE_DATA = {
         { path: 'agent/**', read: '✅', write: '✅', notes: 'Behavior & orchestration only.' },
         { path: 'SQL / Migrations', read: '✅', write: '❌', notes: 'Immutable unless user says "modify migration SQL".' },
     ],
+    folderIntentMap: [
+        { folder: 'THE LAW', intent: 'docs/architecture/', keyFiles: 'PROJECT_MANIFESTO, SYSTEM_ARCHITECTURE' },
+        { folder: 'THE LOGIC', intent: 'docs/specs/', keyFiles: 'CORE_PLATFORM_SPEC, ADMIN_PLATFORM_SPEC, INFRASTRUCTURE_SPEC' },
+        { folder: 'THE UI', intent: 'docs/pages/', keyFiles: 'CORE_APP_JOURNEY, AUTH_JOURNEY, ADMIN_JOURNEY, EXAM_JOURNEY' },
+        { folder: 'THE STATUS', intent: 'docs/execution/', keyFiles: 'CURRENT_STATE_REPORT, TASK_HISTORY, CURRENT_TASK_LOG' },
+        { folder: 'THE RULES', intent: 'docs/ux/', keyFiles: 'UX_BASELINE' },
+        { folder: 'THE PAST', intent: 'docs/archive/', keyFiles: 'EXECUTION_LOGS_ARCHIVE, WALKTHROUGH_ARCHIVE, AUDIT_REPORT_JAN24' },
+    ],
+    stopConditions: [
+        'Request contradicts @docs/**',
+        'File location is ambiguous',
+        'User implies a "Non-Goal" (e.g., self-healing migrations, automatic schema refactoring)',
+    ],
     standards: [
-        { principle: 'Scalability', description: 'Logic must support millions of users (stateless, pagination).' },
-        { principle: 'Frontend', description: '"Visual WOW Factor" mandatory. Mobile-first (Tailwind).' },
-        { principle: 'BFF Pattern', description: 'Minimize payloads. Aggregate APIs.' },
-        { principle: 'Security', description: 'Zero Trust. RBAC. Automatic Sanitization.' },
-        { principle: 'Database', description: 'Efficient indexing. No SELECT * on hot paths.' },
+        { principle: 'Scalability', description: 'Support millions of users (stateless, pagination)' },
+        { principle: 'Frontend', description: '"Visual WOW Factor" mandatory, mobile-first (Tailwind)' },
+        { principle: 'BFF Pattern', description: 'Minimize payloads, aggregate APIs' },
+        { principle: 'Security', description: 'Zero Trust, RBAC, automatic sanitization' },
+        { principle: 'Database', description: 'Efficient indexing, no SELECT * on hot paths' },
+    ],
+    changePolicy: [
+        'Preserve intent',
+        'Append-Only (prefer appending over rewriting)',
+        'Traceability (add change logs if significant)',
+    ],
+    cycleOfTruth: [
+        { step: '1', governs: 'Constitution → Manifesto', logs: '.agent/AGENT_CONSTITUTION.md, docs/architecture/PROJECT_MANIFESTO.md' },
+        { step: '2', governs: 'Manifesto → Execution', logs: 'Architecture & spec files (SYSTEM_ARCHITECTURE, CORE_PLATFORM_SPEC, etc.)' },
+        { step: '3', governs: 'Execution → Brain Log', logs: 'docs/execution/*.md' },
+        { step: '4', governs: 'Brain Log → Docs', logs: 'docs/archive/*.md' },
     ]
 };
 
