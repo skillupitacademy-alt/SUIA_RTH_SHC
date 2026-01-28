@@ -120,7 +120,8 @@ Reduce documentation fragmentation and improve discoverability by consolidating 
 - **Admin**: Mapped `admin-app` structure to `ADMIN_JOURNEY.md`.
 - **Infra**: Clarified `packages/ui` vs App-specific components in `INFRASTRUCTURE_SPEC.md`.
 
-
-
-
-
+### 16. Batch 16 (Constitution & Inventory Refinement)
+- **Goal**: Align digitized governance with visual spec and improve macro-level architectural discoverability.
+- **Constitution**: Refactored massive `AGENT_CONSTITUTION.md` tables into `ConstitutionViewer.tsx`. Aligned 8 tables with high-fidelity spec (Overview, STOP Conditions, Cycle of Truth).
+- **Inventory**: Logically grouped 50+ monorepo artifacts into feature-based subgroups (Auth, Dashboard, Content, API, Services).
+- **Outcome**: Achieved 100% "Cycle of Truth" physical-to-logical visual parity.
