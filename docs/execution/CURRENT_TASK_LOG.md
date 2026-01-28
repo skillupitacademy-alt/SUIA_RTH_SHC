@@ -4,12 +4,12 @@
 
 # Current Task Log
 
-### 1. Brain Log Digitization
+### 1. Proactive Core Digitization
 - **Status**: COMPLETED
-- **Activity**: Digitized `BRAIN_LOG_RESTRUCTURE.md` into 5 high-fidelity React tables mirroring the visual spec of the Governance Constitution.
-- **Result**: Architectural traceability now rendered as premium dashboard artifacts (Batches 1-16).
+- **Activity**: Digitized `PROJECT_MANIFESTO` and `SYSTEM_ARCHITECTURE` into high-fidelity Executive White viewers.
+- **Result**: All Tier-1 governance documents now render with premium tabular aesthetics.
 
-### 2. Logical Inventory Grouping (Archived)
+### 2. Brain Log Digitization (Archived)
 - **Status**: COMPLETED
 - **Activity**: Refactored Constitution display into `ConstitutionViewer.tsx`. Aligned content with reference image.
 

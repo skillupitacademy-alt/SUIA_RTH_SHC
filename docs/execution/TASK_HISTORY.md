@@ -50,3 +50,4 @@
 | 2026-01-28 | Constitution Alignment & Visibility Fix | COMPLETED | Aligned digitized constitution tables with visual spec (Overview, STOP Conditions, Cycle of Truth) and fixed display visibility in DocsViewer. |
 | 2026-01-28 | Logical Inventory Grouping | COMPLETED | Restructured massive inventory tables into logical feature-based subgroups (Auth, Dashboard, Content, etc.) for better readability. |
 | 2026-01-28 | Brain Log Digitization | COMPLETED | Digitize `BRAIN_LOG_RESTRUCTURE.md` into 5 high-fidelity React tables mirroring the visual spec of the Governance Constitution. |
+| 2026-01-28 | Proactive Core Digitization | COMPLETED | Proactively digitized `PROJECT_MANIFESTO` and `SYSTEM_ARCHITECTURE` into executive-grade viewers, completing the full "Cycle of Truth" UI overhaul. |

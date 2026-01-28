@@ -144,6 +144,62 @@ export const GOVERNANCE_DATA = {
     ]
 };
 
+export const MANIFESTO_DATA = {
+    docGovernance: [
+        { rule: 'Global Placement', details: 'All .md files must live in semantic folders (no root docs/ placement).' },
+        { rule: 'Journey Mapping', details: 'Page contracts must live under docs/pages/<journey>/.' },
+        { rule: 'Domain Shared', details: 'Global rules (UX, Architecture) must live in domain folders.' },
+    ],
+    folderIntentGuide: [
+        { folder: 'docs/architecture/', intent: 'Foundational Truth & Layout', keyFiles: 'MANIFESTO, ARCHITECTURE' },
+        { folder: 'docs/specs/', intent: 'Technical Logic Consolidation', keyFiles: 'CORE, ADMIN, INFRA' },
+        { folder: 'docs/pages/', intent: 'UI User Journey Maps', keyFiles: 'AUTH, CORE, EXAM, ADMIN' },
+        { folder: 'docs/execution/', intent: 'Session Logs & State Reports', keyFiles: 'STATUS, HISTORY, LOGS' },
+        { folder: 'docs/ux/', intent: 'Global Design & Filtering Rules', keyFiles: 'UX_BASELINE' },
+    ],
+    gitPushPolicy: [
+        { policy: 'Local Commit Only', details: 'Commit frequently but DO NOT PUSH automatically.' },
+        { policy: 'Push Approval', details: 'Only push to GitHub when explicitly requested by user.' },
+        { policy: 'Vercel Safety', details: 'Prevents exceeding daily deployment limits (100/day).' },
+    ],
+    onboardingPrinciples: [
+        { principle: 'Absolute Authority', description: 'AGENT_CONSTITUTION.md is the supreme law.' },
+        { principle: 'Truth Source', description: 'Documentation defines truth; Model reasoning has lowest priority.' },
+        { principle: 'Execution Safety', description: 'Agents execute but do NOT decide architectural changes.' },
+    ],
+    workflowMandate: [
+        { step: '1', action: 'Define Contracts', detail: 'Update .md files BEFORE starting code execution.' },
+        { step: '2', action: 'Governing Prompts', detail: 'Generate Antigravity prompts ONLY from existing contracts.' },
+        { step: '3', action: 'Audit Log', detail: 'Every task must be logged in CURRENT_TASK_LOG.md.' },
+    ]
+};
+
+export const ARCHITECTURE_DATA = {
+    runtimeEngines: [
+        { engine: 'Quiz Engine', purpose: 'Lifecycle and real-time state management for active sessions.' },
+        { engine: 'Exam Engine', purpose: 'Session timing, question serving, and submission flow control.' },
+        { engine: 'Answer Evaluation', purpose: 'Content-aware correctness check and state persistence logic.' },
+        { engine: 'Scoring Engine', purpose: 'Multi-dimensional accuracy calculation and mastery analysis.' },
+        { engine: 'Admin Engine', purpose: 'User discovery orchestrator and content lifecycle management.' },
+    ],
+    schemaMapping: [
+        { file: 'auth.ts', tables: 'users, sessions, roles, audit_logs', intent: 'Identity & RBAC' },
+        { file: 'domain.ts', tables: 'domains, subjects, topics, skills', intent: 'Curriculum Hierarchy' },
+        { file: 'exam.ts', tables: 'exams, blueprints, results', intent: 'Runtime Persistence' },
+        { file: 'question.ts', tables: 'questions, question_options', intent: 'Question Bank' },
+    ],
+    scoringLogic: [
+        { metric: 'Total Score', logic: '(Total Correct / Total Count) * 100' },
+        { metric: 'Mastery Breakdown', logic: 'Accuracy per Dimension (Topic, Subject, Difficulty)' },
+        { metric: 'Growth Zones', logic: 'Identified where Accuracy < 70% in high-weight topics' },
+    ],
+    adminCoverage: [
+        { panel: 'User Overview', tables: 'users, login_attempts' },
+        { panel: 'Security Health', tables: 'audit_logs, refresh_tokens' },
+        { panel: 'Question Health', tables: 'questions, domains, topics' },
+    ]
+};
+
 export const BRAIN_LOG_DATA = {
     overview: [
         { attribute: 'Date', details: '2026-01-28' },
