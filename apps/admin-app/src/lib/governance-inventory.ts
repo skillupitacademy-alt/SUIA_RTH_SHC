@@ -253,6 +253,53 @@ export const UX_SPEC_DATA = {
     ]
 };
 
+export const INFRA_DATA = {
+    envConfig: [
+        { Detection: 'Vercel Preview', Link: '*.vercel.app' },
+        { Detection: 'Production', Link: 'api.realtutorialhub.com' },
+        { Detection: 'Secrets (.env)', Status: 'Gitignored / Vercel Dashboard' },
+    ],
+    configInventory: [
+        { file: 'package.json', purpose: 'Node v20.x, pnpm v9.15.4' },
+        { file: 'turbo.json', purpose: 'Turbo 2.0 Tasks & Cache' },
+        { file: '.npmrc', purpose: 'Hoisted Linker (Next.js Monorepo)' },
+    ],
+    deployment: [
+        { project: 'Web App', root: 'apps/web-app', framework: 'Next.js' },
+        { project: 'API Server', root: 'apps/api-server', framework: 'Next.js' },
+        { project: 'Admin App', root: 'apps/admin-app', framework: 'Next.js' },
+    ]
+};
+
+export const JOURNEY_DATA = {
+    folders: [
+        { journey: 'Auth', path: 'docs/pages/auth/', content: 'Signup, Login, Recovery, Recovery Flow' },
+        { journey: 'Admin', path: 'docs/pages/admin/', content: 'Governance Terminal, Discovery_Orchestrator' },
+        { journey: 'Exams', path: 'docs/pages/exams/', content: 'Blueprint Config & Active Sessions' },
+        { journey: 'Core', path: 'docs/pages/', content: 'Dashboard, Reports, Global Settings' },
+    ]
+};
+
+export const HEALTH_DATA = {
+    buildStability: [
+        { item: 'Node Version', status: '20.x Locked' },
+        { item: 'Package Manager', status: 'pnpm@9.15.4' },
+        { item: 'Workspace Protocol', status: 'Active (workspace:*)' },
+        { item: 'Turbo Engine', status: 'Turbo 2.0 (Verified)' },
+    ],
+    implementationAudit: [
+        { layer: 'Infrastructure', status: '100%', notes: 'Monorepo, DB, CI/CD stabilized.' },
+        { layer: 'Database', status: '100%', notes: 'Auth, Exam, Content, Blueprint schemas live.' },
+        { layer: 'Backend', status: '90%', notes: 'Admin, Auth, Domain, Question services live.' },
+        { layer: 'Frontend', status: '95%', notes: 'Admin high-fidelity governance live.' },
+    ],
+    risks: [
+        { risk: 'Data Density', mitigation: 'Label thinning on 30D charts.' },
+        { risk: 'Mobile Areas', mitigation: 'Margin management for bottom nav.' },
+        { risk: 'Git Policy', mitigation: 'Local-commit-only mandate enforced.' },
+    ]
+};
+
 export const BRAIN_LOG_DATA = {
     overview: [
         { attribute: 'Date', details: '2026-01-28' },

@@ -4,12 +4,12 @@ import { useEffect, useState } from 'react';
 import { apiClient } from '@quiz/api-client';
 import { User, Mail, Calendar, Info, Shield, CheckCircle, XCircle, Trash2, AlertTriangle, Lock } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
+import { ErrorBanner } from '../layout/ErrorBanner';
 
 interface UserData {
     id: string;
     email: string;
     emailVerified: boolean;
-
     isBlocked: boolean;
     lastActiveAt?: string;
     status?: 'online' | 'idle' | 'offline' | 'blocked';
@@ -39,8 +39,9 @@ export function UserTable() {
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [filterRole, setFilterRole] = useState('ALL');
-    const [filterBlocked, setFilterBlocked] = useState('ALL'); // ALL, BLOCKED, ACTIVE
-    const [filterVerified, setFilterVerified] = useState('ALL'); // ALL, VERIFIED, UNVERIFIED
+    const [filterBlocked, setFilterBlocked] = useState('ALL');
+    const [filterVerified, setFilterVerified] = useState('ALL');
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
     const fetchUsers = async () => {
         setIsLoading(true);
@@ -49,7 +50,6 @@ export function UserTable() {
             if (searchQuery) serverFilters.search = searchQuery;
             if (filterRole !== 'ALL') serverFilters.role = filterRole;
 
-            // Comprehensive Status Filter
             if (filterBlocked === 'BLOCKED') {
                 serverFilters.isBlocked = true;
             } else if (filterBlocked === 'ACTIVE') {
@@ -71,6 +71,7 @@ export function UserTable() {
             setDeletedUsers(deletedData.users);
         } catch (error) {
             console.error('Failed to fetch users:', error);
+            setErrorMessage('Data synchronization failure: Unable to retrieve identity matrix.');
         } finally {
             setIsLoading(false);
         }
@@ -80,7 +81,6 @@ export function UserTable() {
         fetchUsers();
     }, [page, filterRole, filterBlocked, filterVerified]);
 
-    // Debounced search
     useEffect(() => {
         const timer = setTimeout(() => {
             if (page === 1) fetchUsers();
@@ -99,9 +99,7 @@ export function UserTable() {
                 isBlocked: editingUser.isBlocked,
                 roles: currentRoles
             };
-            if (newPassword) {
-                payload.password = newPassword;
-            }
+            if (newPassword) payload.password = newPassword;
 
             await apiClient.admin.updateUser(editingUser.id, payload);
             await fetchUsers();
@@ -109,7 +107,7 @@ export function UserTable() {
             setNewPassword('');
         } catch (error) {
             console.error('Failed to update user:', error);
-            alert('Failed to update user.');
+            setErrorMessage('Security breach or network failure: Unable to update identity profile.');
         } finally {
             setIsSaving(false);
         }
@@ -125,7 +123,7 @@ export function UserTable() {
             setShowDeleteConfirm(false);
         } catch (error) {
             console.error('Failed to delete user:', error);
-            alert('Failed to delete user.');
+            setErrorMessage('Operation aborted: Could not terminate the target session.');
         } finally {
             setIsSaving(false);
         }
@@ -134,7 +132,6 @@ export function UserTable() {
     const toggleAdminRole = (isAdmin: boolean) => {
         if (!editingUser) return;
         const hasAdmin = editingUser.userRoles.some(r => r.role.name === 'ADMIN');
-
         if (isAdmin && !hasAdmin) {
             setEditingUser({
                 ...editingUser,
@@ -148,26 +145,21 @@ export function UserTable() {
         }
     };
 
-    const handleToggleBlock = async (userId: string, currentStatus: boolean) => {
-        try {
-            await apiClient.admin.updateUser(userId, { isBlocked: !currentStatus });
-            // Refresh local state optimistically or re-fetch
-            setUsers(prev => prev.map(u => u.id === userId ? { ...u, isBlocked: !currentStatus } : u));
-        } catch (error) {
-            console.error('Failed to update block status:', error);
-            alert('Failed to update user status.');
-        }
-    };
-
     if (isLoading) {
         return <div className="text-center py-20 text-muted-foreground animate-pulse">Loading Identity Matrix...</div>;
     }
 
     return (
         <div className="space-y-6">
+            {errorMessage && (
+                <ErrorBanner
+                    message={errorMessage}
+                    onClose={() => setErrorMessage(null)}
+                />
+            )}
+
             {/* Filter Bar: Discovery_Orchestrator */}
             <div className="grid grid-cols-1 xl:grid-cols-4 gap-4 p-6 bg-white border border-primary/10 rounded-[2.5rem] shadow-sm">
-                {/* Search: Identity */}
                 <div className="relative">
                     <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground group">
                         <User size={16} className="group-hover:text-[#FF4B91] transition-colors" />
@@ -181,7 +173,6 @@ export function UserTable() {
                     />
                 </div>
 
-                {/* Filter: Access Level */}
                 <div className="relative">
                     <select
                         value={filterRole}
@@ -194,7 +185,6 @@ export function UserTable() {
                     </select>
                 </div>
 
-                {/* Filter: Block Status */}
                 <div className="relative">
                     <select
                         value={filterBlocked}
@@ -210,7 +200,6 @@ export function UserTable() {
                     </select>
                 </div>
 
-                {/* Filter: Verification */}
                 <div className="relative">
                     <select
                         value={filterVerified}
@@ -274,37 +263,35 @@ export function UserTable() {
                                         </div>
                                     </td>
                                     <td className="p-6">
-                                        <td className="p-6">
-                                            <div className="flex items-center gap-2">
-                                                {user.status === 'online' && (
-                                                    <>
-                                                        <span className="relative flex h-3 w-3">
-                                                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                                                            <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
-                                                        </span>
-                                                        <span className="text-xs font-bold uppercase tracking-wide text-green-600">Online</span>
-                                                    </>
-                                                )}
-                                                {user.status === 'idle' && (
-                                                    <>
-                                                        <div className="h-2.5 w-2.5 rounded-full bg-yellow-400"></div>
-                                                        <span className="text-xs font-bold uppercase tracking-wide text-yellow-600">Idle</span>
-                                                    </>
-                                                )}
-                                                {(user.status === 'offline' || !user.status) && !user.isBlocked && (
-                                                    <>
-                                                        <div className="h-2.5 w-2.5 rounded-full bg-gray-300"></div>
-                                                        <span className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Offline</span>
-                                                    </>
-                                                )}
-                                                {user.isBlocked && (
-                                                    <>
-                                                        <Shield size={14} className="fill-current text-red-600" />
-                                                        <span className="text-xs font-bold uppercase tracking-wide text-red-600">Blocked</span>
-                                                    </>
-                                                )}
-                                            </div>
-                                        </td>
+                                        <div className="flex items-center gap-2">
+                                            {user.status === 'online' && (
+                                                <>
+                                                    <span className="relative flex h-3 w-3">
+                                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                                                        <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+                                                    </span>
+                                                    <span className="text-xs font-bold uppercase tracking-wide text-green-600">Online</span>
+                                                </>
+                                            )}
+                                            {user.status === 'idle' && (
+                                                <>
+                                                    <div className="h-2.5 w-2.5 rounded-full bg-yellow-400"></div>
+                                                    <span className="text-xs font-bold uppercase tracking-wide text-yellow-600">Idle</span>
+                                                </>
+                                            )}
+                                            {(user.status === 'offline' || !user.status) && !user.isBlocked && (
+                                                <>
+                                                    <div className="h-2.5 w-2.5 rounded-full bg-gray-300"></div>
+                                                    <span className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Offline</span>
+                                                </>
+                                            )}
+                                            {user.isBlocked && (
+                                                <>
+                                                    <Shield size={14} className="fill-current text-red-600" />
+                                                    <span className="text-xs font-bold uppercase tracking-wide text-red-600">Blocked</span>
+                                                </>
+                                            )}
+                                        </div>
                                     </td>
                                     <td className="p-6">
                                         <div className="flex items-center gap-2 text-muted-foreground">
@@ -334,7 +321,6 @@ export function UserTable() {
                     </table>
                 </div>
 
-                {/* Pagination */}
                 <div className="p-6 border-t border-primary/5 flex items-center justify-between">
                     <button
                         disabled={page === 1}
@@ -354,56 +340,6 @@ export function UserTable() {
                 </div>
             </div>
 
-            {/* Deleted Users Table */}
-            {deletedUsers.length > 0 && (
-                <div className="mt-12 space-y-4">
-                    <h3 className="text-sm font-black uppercase tracking-widest text-red-500 flex items-center gap-2">
-                        <Trash2 size={16} />
-                        Deleted Accounts
-                    </h3>
-                    <div className="rounded-[2.5rem] border border-red-200 bg-red-50/30 backdrop-blur-xl overflow-hidden shadow-sm">
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-left opacity-75 grayscale hover:grayscale-0 transition-all duration-500">
-                                <thead>
-                                    <tr className="border-b border-red-100 bg-red-50/50">
-                                        <th className="p-6 text-[10px] font-black uppercase tracking-widest text-red-400">Identity</th>
-                                        <th className="p-6 text-[10px] font-black uppercase tracking-widest text-red-400">Deleted Status</th>
-                                        <th className="p-6 text-[10px] font-black uppercase tracking-widest text-red-400">Joined</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-red-100">
-                                    {deletedUsers.map((user) => (
-                                        <tr key={user.id}>
-                                            <td className="p-6">
-                                                <div className="flex items-center gap-4">
-                                                    <div className="h-8 w-8 rounded-lg bg-gray-100 flex items-center justify-center">
-                                                        <User size={14} className="text-gray-400" />
-                                                    </div>
-                                                    <div>
-                                                        <p className="font-bold text-gray-700 text-sm">{user.profile?.name || 'Unknown Agent'}</p>
-                                                        <p className="text-[10px] text-red-400">{user.email}</p>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td className="p-6">
-                                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-red-100 text-red-600 text-[10px] font-bold uppercase tracking-wide">
-                                                    <Trash2 size={10} /> Deleted
-                                                </span>
-                                            </td>
-                                            <td className="p-6 text-[10px] font-medium text-red-400">
-                                                {formatDistanceToNow(new Date(user.createdAt), { addSuffix: true })}
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-
-            {/* Edit User Modal */}
             {editingUser && (
                 <div className="fixed inset-0 z-[200] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
                     <div className="bg-background rounded-[2rem] max-w-md w-full overflow-hidden shadow-2xl animate-in zoom-in-95 duration-300">
@@ -427,7 +363,6 @@ export function UserTable() {
                                             <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${editingUser.isBlocked ? 'translate-x-6' : 'translate-x-1'}`} />
                                         </button>
                                     </div>
-                                    <p className="text-[10px] text-muted-foreground pl-1">Blocked users cannot login or access any resources.</p>
                                 </div>
 
                                 <div className="space-y-2">
@@ -444,11 +379,8 @@ export function UserTable() {
                                             onChange={(e) => toggleAdminRole(e.target.checked)}
                                         />
                                     </div>
-                                    <p className="text-[10px] text-muted-foreground pl-1">Grant full access to the admin dashboard.</p>
                                 </div>
-                            </div>
 
-                            <div className="space-y-4 pt-4 border-t border-gray-100">
                                 <div className="space-y-2">
                                     <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Security</label>
                                     <div className="p-4 rounded-xl border border-gray-200 bg-gray-50 space-y-4">
@@ -466,43 +398,6 @@ export function UserTable() {
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-red-500 flex items-center gap-2">
-                                        <AlertTriangle size={12} /> Danger Zone
-                                    </label>
-
-                                    {!showDeleteConfirm ? (
-                                        <button
-                                            type="button"
-                                            onClick={() => setShowDeleteConfirm(true)}
-                                            className="w-full p-4 rounded-xl border border-red-100 bg-red-50 text-red-600 text-xs font-black uppercase tracking-widest hover:bg-red-100 transition-colors flex items-center justify-between group"
-                                        >
-                                            <span>Delete Account</span>
-                                            <Trash2 size={16} className="group-hover:scale-110 transition-transform" />
-                                        </button>
-                                    ) : (
-                                        <div className="p-4 rounded-xl border border-red-200 bg-red-50 space-y-3 animate-in fade-in zoom-in-95">
-                                            <p className="text-xs font-bold text-red-700">Are you sure? This will soft-delete the user and revoke all access.</p>
-                                            <div className="flex gap-2">
-                                                <button
-                                                    type="button"
-                                                    onClick={handleDeleteUser}
-                                                    className="flex-1 py-2 bg-red-600 text-white rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-red-700"
-                                                >
-                                                    Confirm Delete
-                                                </button>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => setShowDeleteConfirm(false)}
-                                                    className="px-4 py-2 bg-white border border-red-200 text-red-600 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-red-50"
-                                                >
-                                                    Cancel
-                                                </button>
-                                            </div>
-                                        </div>
-                                    )}
                                 </div>
                             </div>
 
@@ -527,7 +422,6 @@ export function UserTable() {
                 </div>
             )}
 
-            {/* Detail Modal */}
             {selectedUser && (
                 <div className="fixed inset-0 z-[200] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
                     <div className="bg-background rounded-[2rem] max-w-lg w-full overflow-hidden shadow-2xl animate-in zoom-in-95 duration-300">
@@ -543,25 +437,6 @@ export function UserTable() {
                                 <div className="space-y-1">
                                     <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Education</label>
                                     <p className="font-bold text-lg text-[#1A1A1A]">{selectedUser.profile?.educationLevel || 'N/A'}</p>
-                                </div>
-                                <div className="space-y-1">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Experience</label>
-                                    <p className="font-bold text-lg text-[#1A1A1A]">{selectedUser.profile?.experienceYears ? `${selectedUser.profile.experienceYears} Years` : 'N/A'}</p>
-                                </div>
-                                <div className="space-y-1">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Age Group</label>
-                                    <p className="font-bold text-lg text-[#1A1A1A]">{selectedUser.profile?.ageGroup || 'N/A'}</p>
-                                </div>
-                            </div>
-
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Domain Interests</label>
-                                <div className="flex flex-wrap gap-2">
-                                    {selectedUser.profile?.domainInterests?.map((interest, i) => (
-                                        <span key={i} className="px-3 py-1.5 rounded-lg bg-gray-100 text-xs font-bold text-gray-600">
-                                            {interest}
-                                        </span>
-                                    )) || <span className="text-sm text-gray-400 italic">No specific interests declared.</span>}
                                 </div>
                             </div>
 
