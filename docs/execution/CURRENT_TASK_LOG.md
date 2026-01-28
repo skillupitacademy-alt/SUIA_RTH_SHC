@@ -4,22 +4,14 @@
 
 # Current Task Log
 
-## Current State
-
-### 1. Full Codebase Inventory Implementation
+### 1. Logical Inventory Grouping
 - **Status**: COMPLETED
-- **Activity**: Created `codebase-inventory-data.ts` and updated `GovernanceInventory.tsx` to list mapped components for Admin, Web, and API Server.
-- **Result**: Comprehensive "Codebase Inventory" tables with architectural purpose descriptions.
+- **Activity**: Restructured massive codebase inventory tables into logical feature-based subgroups (Auth, Dashboard, Content, etc.) for Admin App, Web App, and API Server.
+- **Result**: Significant improvement in dashboard readability and organizational clarity.
 
-### 2. Constitution Digitization
+### 2. Constitution Alignment Refinement (Archived)
 - **Status**: COMPLETED
-- **Activity**: Parsed `AGENT_CONSTITUTION.md` and implemented React tables for Hierarchy, Permissions, and Standards.
-- **Result**: Visual "Source-of-Truth" tables in the Governance Dashboard matching the project aesthetics.
-
-### 3. Governance Inventory Expansion
-- **Status**: COMPLETED
-- **Activity**: Expanded file allowlist in `docs-loader.ts` to include all 21 project `.md` files.
-- **Result**: Complete visibility of all documentation assets in the Governance Radar.
+- **Activity**: Refactored Constitution display into `ConstitutionViewer.tsx`. Aligned content with reference image.
 
 ## Next Steps
-- **Ready for**: User Handoff and Verifying other system components.
+- **Ready for**: Final user sign-off.

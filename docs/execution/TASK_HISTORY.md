@@ -47,3 +47,5 @@
 | 2026-01-28 | Universal Admin Filtering | COMPLETED | Implemented real-time search and filtering across all Admin Question Bank tables, Dashboards, and Documentation Viewer. |
 | 2026-01-28 | Full Codebase Inventory | COMPLETED | Implemented automated inventory tables for Admin App, Web App, and API Server in Governance Dashboard. |
 | 2026-01-28 | Governance Constitution Digitization | COMPLETED | Digitized `AGENT_CONSTITUTION.md` into structured React tables (Hierarchy, Permissions, Standards) for the Governance Dashboard. |
+| 2026-01-28 | Constitution Alignment & Visibility Fix | COMPLETED | Aligned digitized constitution tables with visual spec (Overview, STOP Conditions, Cycle of Truth) and fixed display visibility in DocsViewer. |
+| 2026-01-28 | Logical Inventory Grouping | COMPLETED | Restructured massive inventory tables into logical feature-based subgroups (Auth, Dashboard, Content, etc.) for better readability. |

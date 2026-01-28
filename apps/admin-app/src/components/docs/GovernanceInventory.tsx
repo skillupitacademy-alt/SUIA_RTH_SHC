@@ -1,6 +1,11 @@
 import React from 'react';
 import { INVENTORY_GROUPS, FOLDER_BREAKDOWN, MASTER_FOLDER_MAP, COMPONENT_INVENTORY, GOVERNANCE_DATA } from '@/lib/governance-inventory';
-import { ADMIN_APP_INVENTORY, WEB_APP_INVENTORY, API_SERVER_INVENTORY, CodeInventoryItem } from '@/lib/codebase-inventory-data';
+import {
+    ADMIN_AUTH_INVENTORY, ADMIN_DASHBOARD_INVENTORY, ADMIN_CONTENT_INVENTORY, ADMIN_GOVERNANCE_INVENTORY,
+    WEB_CORE_INVENTORY, WEB_STUDENT_INVENTORY, WEB_EXAM_INVENTORY, WEB_REPORTS_INVENTORY,
+    API_ADMIN_INVENTORY, API_AUTH_INVENTORY, API_QUIZ_INVENTORY, API_SERVICES_INVENTORY,
+    CodeInventoryItem
+} from '@/lib/codebase-inventory-data';
 
 function InventoryTable({ title, subtitle, items }: { title: string, subtitle: string, items: CodeInventoryItem[] }) {
     return (
@@ -139,24 +144,106 @@ export function GovernanceInventory() {
                 </section>
             ))}
 
-            {/* 3. Full Codebase Inventory (New) */}
-            <InventoryTable
-                title="Admin App Inventory"
-                subtitle="UI Components & Governance Pages"
-                items={ADMIN_APP_INVENTORY}
-            />
+            {/* 3. Full Codebase Inventory (Logically Grouped) */}
+            <div className="flex items-center gap-4 mb-8">
+                <div className="w-2 h-10 bg-[#FF4B91] rounded-full" />
+                <h1 className="text-4xl font-black text-[#1A1A1A] tracking-tighter uppercase italic">
+                    Full Codebase Inventory <span className="text-[#FF4B91] font-medium not-italic text-sm tracking-[0.2em] ml-4">(Architecture Verification)</span>
+                </h1>
+            </div>
 
-            <InventoryTable
-                title="Web App Inventory"
-                subtitle="Student Interface & Exam Experience"
-                items={WEB_APP_INVENTORY}
-            />
+            {/* --- ADMIN APP --- */}
+            <div className="pt-10 pb-4 border-b border-slate-100 mb-10">
+                <h3 className="text-xl font-black text-slate-400 uppercase tracking-[0.5em]">Admin App Sub-Systems</h3>
+            </div>
 
-            <InventoryTable
-                title="API Server Inventory"
-                subtitle="Backend Logic & Data Services"
-                items={API_SERVER_INVENTORY}
-            />
+            <div className="grid grid-cols-1 gap-20">
+                <InventoryTable
+                    title="Auth & Shell"
+                    subtitle="Authentication flows and root layouts"
+                    items={ADMIN_AUTH_INVENTORY}
+                />
+
+                <InventoryTable
+                    title="Analytics & Logs"
+                    subtitle="Security health, RBAC panels, and audit logs"
+                    items={ADMIN_DASHBOARD_INVENTORY}
+                />
+
+                <InventoryTable
+                    title="Content Management"
+                    subtitle="Question Bank editors and user management"
+                    items={ADMIN_CONTENT_INVENTORY}
+                />
+
+                <InventoryTable
+                    title="Governance & Docs"
+                    subtitle="Documentation viewers and system radar"
+                    items={ADMIN_GOVERNANCE_INVENTORY}
+                />
+            </div>
+
+            {/* --- WEB APP --- */}
+            <div className="pt-20 pb-4 border-b border-slate-100 mb-10">
+                <h3 className="text-xl font-black text-slate-400 uppercase tracking-[0.5em]">Web App Journeys</h3>
+            </div>
+
+            <div className="grid grid-cols-1 gap-20">
+                <InventoryTable
+                    title="Auth & Core"
+                    subtitle="Student registration and app shell"
+                    items={WEB_CORE_INVENTORY}
+                />
+
+                <InventoryTable
+                    title="Student Experience"
+                    subtitle="Dashboard, settings, and onboarding"
+                    items={WEB_STUDENT_INVENTORY}
+                />
+
+                <InventoryTable
+                    title="Exam Session"
+                    subtitle="Quiz configuration and live environment"
+                    items={WEB_EXAM_INVENTORY}
+                />
+
+                <InventoryTable
+                    title="Performance Reports"
+                    subtitle="Results summary and detailed breakdown"
+                    items={WEB_REPORTS_INVENTORY}
+                />
+            </div>
+
+            {/* --- API SERVER --- */}
+            <div className="pt-20 pb-4 border-b border-slate-100 mb-10">
+                <h3 className="text-xl font-black text-slate-400 uppercase tracking-[0.5em]">API Service Layer</h3>
+            </div>
+
+            <div className="grid grid-cols-1 gap-20">
+                <InventoryTable
+                    title="Admin Endpoints"
+                    subtitle="Management APIs for domains and questions"
+                    items={API_ADMIN_INVENTORY}
+                />
+
+                <InventoryTable
+                    title="Auth Endpoints"
+                    subtitle="Identity management and session APIs"
+                    items={API_AUTH_INVENTORY}
+                />
+
+                <InventoryTable
+                    title="Quiz Endpoints"
+                    subtitle="Session initialization and submission APIs"
+                    items={API_QUIZ_INVENTORY}
+                />
+
+                <InventoryTable
+                    title="Business Logic"
+                    subtitle="Core engines and service modules"
+                    items={API_SERVICES_INVENTORY}
+                />
+            </div>
 
             {/* 4. Component Audit Board (Legacy View - Optional to keep or remove, keeping for now as specific highlight) */}
             <section>
