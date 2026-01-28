@@ -21,7 +21,7 @@ const CATEGORY_MAP: Record<DocCategory, string[]> = {
     'pages/README.md',
     'pages/_PAGE_TEMPLATE.md'
   ],
-  'THE STATUS': ['execution/CURRENT_STATE_REPORT.md', 'execution/TASK_HISTORY.md', 'execution/CURRENT_TASK_LOG.md'],
+  'THE STATUS': ['execution/CURRENT_STATE_REPORT.md', 'execution/TASK_HISTORY.md', 'execution/CURRENT_TASK_LOG.md', '../../.agent/BRAIN_LOG_RESTRUCTURE.md'],
   'THE RULES': ['ux/UX_BASELINE.md'],
   'THE PAST': [
     'archive/EXECUTION_LOGS_ARCHIVE.md',
