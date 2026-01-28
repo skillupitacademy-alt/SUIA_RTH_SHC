@@ -5,6 +5,7 @@ import { DocCategory, DocFile } from '@/lib/docs-loader';
 import { DocsTabs } from './DocsTabs';
 import { GovernanceInventory } from './GovernanceInventory';
 import { ConstitutionViewer } from './ConstitutionViewer';
+import { BrainLogViewer } from './BrainLogViewer';
 
 interface DocsViewerProps {
     structure: Record<DocCategory, DocFile[]>;
@@ -42,6 +43,8 @@ export function DocsViewer({ structure }: DocsViewerProps) {
                             <GovernanceInventory />
                         ) : activePath.includes('AGENT_CONSTITUTION.md') ? (
                             <ConstitutionViewer />
+                        ) : activePath.includes('BRAIN_LOG_RESTRUCTURE.md') ? (
+                            <BrainLogViewer />
                         ) : (
                             <div className="p-8 border-2 border-dashed border-slate-200 rounded-[2rem] text-center">
                                 <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest">Content Display Disabled by Protocol</p>

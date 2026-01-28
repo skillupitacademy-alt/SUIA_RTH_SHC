@@ -144,6 +144,59 @@ export const GOVERNANCE_DATA = {
     ]
 };
 
+export const BRAIN_LOG_DATA = {
+    overview: [
+        { attribute: 'Date', details: '2026-01-28' },
+        { attribute: 'Operation', details: 'Consolidation & Cleanup' },
+        { attribute: 'Agent', details: 'Antigravity' },
+        { attribute: 'Goal', details: 'Reduce documentation fragmentation, improve discoverability' },
+    ],
+    batches: [
+        { batch: '1', action: 'Architecture Consolidation', created: 'docs/architecture/SYSTEM_ARCHITECTURE.md', merged: 'runtime-engine-architecture.md, DATABASE_ERD.md, SCORING_ENGINE_SPEC.md' },
+        { batch: '2', action: 'Manifesto Creation', created: 'docs/architecture/PROJECT_MANIFESTO.md', merged: 'PROJECT_INSTRUCTIONS.md, PROJECT_BOOTSTRAP.md, NEW_SESSION_CHECKLIST.md' },
+        { batch: '3', action: 'Specification Consolidation', created: 'docs/specs/ADMIN_PLATFORM_SPEC.md', merged: 'ADMIN_DASHBOARD_EXECUTION.md, ADMIN_AUTHENTICATION.md, ADMIN_PASSWORD_PLAN.md, ADMIN_DASHBOARD_SPEC.md' },
+        { batch: '3', action: 'Specification Consolidation', created: 'docs/specs/CORE_PLATFORM_SPEC.md', merged: 'AUTH_SYSTEM_EXECUTION.md, DOMAIN_SERVICES_EXECUTION.md, EXAM_ENGINE_EXECUTION.md, email-delivery.md, EXAM_BLUEPRINT_GENERATION.md, AUTH_ERROR_AND_SESSION_HANDLING.md' },
+        { batch: '3', action: 'Specification Consolidation', created: 'docs/specs/INFRASTRUCTURE_SPEC.md', merged: 'Scaffold Monorepo Next.js App.md, LOCKFILE_FIX.md' },
+        { batch: '4', action: 'Status Reporting', created: 'docs/execution/CURRENT_STATE_REPORT.md', merged: 'IMPLEMENTATION_STATUS.md, TASK_IMPLEMENTATION_MAPPING.md, CURRENT_PROJECT_HANDOFF.md' },
+        { batch: '5', action: 'Archiving', created: 'docs/archive/EXECUTION_LOGS_ARCHIVE.md', merged: '10+ historical task logs (Claude era)' },
+        { batch: '6', action: 'Batch 2 Consolidation', created: '—', merged: 'Merged docs/platform/* into INFRASTRUCTURE_SPEC.md. Deleted docs/admin, docs/platform.' },
+        { batch: '7', action: 'Page Contract Consolidation', created: 'docs/pages/auth/AUTH_JOURNEY.md', merged: 'Merged 5 auth files' },
+        { batch: '7', action: 'Page Contract Consolidation', created: 'docs/pages/admin/ADMIN_JOURNEY.md', merged: 'Merged 2 admin files' },
+        { batch: '7', action: 'Page Contract Consolidation', created: 'docs/pages/exams/EXAM_JOURNEY.md', merged: 'Merged 2 exam files' },
+        { batch: '8', action: 'Aggressive Consolidation', created: '—', merged: 'Merged DATA_TIME_FILTERING.md into UX_BASELINE.md' },
+        { batch: '8', action: 'Aggressive Consolidation', created: '—', merged: 'Merged dashboard.md, reports.md, settings.md into CORE_APP_JOURNEY.md' },
+        { batch: '9', action: 'Agent Directory Cleanup', created: 'AGENT_CONSTITUTION.md (v2.0)', merged: 'Unified v1.0 and v1.1, deleted v1.1' },
+        { batch: '10', action: 'Audit Phase (Redundancy Removal)', created: '—', merged: 'Removed duplicate content across specs, normalized data' },
+        { batch: '11', action: 'Final Polish', created: '—', merged: 'Moved PROJECT_AUDIT_REPORT to Archive, deleted docs/audits/ folder, reset CURRENT_TASK_LOG' },
+        { batch: '12', action: 'Gold Standard Definition', created: 'Updated AGENT_CONSTITUTION.md', merged: 'Reflected final folder intent map (Law/Logic/UI/Status/Rules/Past)' },
+        { batch: '14', action: 'Full Codebase Traceability', created: '—', merged: 'Mapped schema files, root configs, env files, backend services to logical specs' },
+        { batch: '15', action: 'Frontend Traceability Audit', created: '—', merged: 'Mapped .tsx files to user journey documents (AUTH_JOURNEY.md, CORE_APP_JOURNEY.md, etc.)' },
+        { batch: '16', action: 'Constitution & Inventory Refinement', created: '—', merged: 'Refactored AGENT_CONSTITUTION.md into ConstitutionViewer.tsx, grouped 50+ artifacts logically' },
+    ],
+    impact: [
+        { metric: 'File Count Reduction', result: '~60 → ~30' },
+        { metric: 'Data Loss', result: '0% (All content appended/merged)' },
+        { metric: 'Logical Structure Enforced', result: 'Yes (specs/, architecture/, archive/)' },
+        { metric: 'Page Contracts Organized', result: 'By User Journey sequences' },
+        { metric: 'Normalized Data', result: '100% (No duplicate facts)' },
+        { metric: 'Physical-to-Logical Mapping', result: '100% Achieved' },
+        { metric: 'Governance Visual Parity', result: '100% Achieved (Cycle of Truth)' },
+    ],
+    futureUsage: [
+        { type: 'New Task', start: 'PROJECT_MANIFESTO → CURRENT_STATE_REPORT', reference: 'Current status & goals' },
+        { type: 'Architectural Reference', start: 'SYSTEM_ARCHITECTURE.md, specs/*.md', reference: 'System design & specs' },
+        { type: 'Debugging / Historical Context', start: 'archive/EXECUTION_LOGS_ARCHIVE.md', reference: 'Past execution logs & walkthroughs' },
+    ],
+    structureSummary: [
+        { folder: 'docs/architecture/', purpose: 'THE LAW — Foundational docs' },
+        { folder: 'docs/specs/', purpose: 'THE LOGIC — Platform specs' },
+        { folder: 'docs/pages/', purpose: 'THE UI — User journey maps' },
+        { folder: 'docs/execution/', purpose: 'THE STATUS — Current state & logs' },
+        { folder: 'docs/ux/', purpose: 'THE RULES — UX baseline' },
+        { folder: 'docs/archive/', purpose: 'THE PAST — Historical logs' },
+    ]
+};
+
 export const COMPONENT_INVENTORY: ComponentAuditItem[] = [
     { component: 'ContentManager.tsx', purpose: 'Centralized orchestrator for question bank hierarchy and data integrity.' },
     { component: 'QuestionEditor.tsx', purpose: 'Dynamic form engine for rich-text question creation and metadata tagging.' },
