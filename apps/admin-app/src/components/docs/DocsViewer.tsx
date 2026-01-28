@@ -8,6 +8,7 @@ import { ConstitutionViewer } from './ConstitutionViewer';
 import { BrainLogViewer } from './BrainLogViewer';
 import { ManifestoViewer } from './ManifestoViewer';
 import { ArchitectureViewer } from './ArchitectureViewer';
+import { SpecViewer } from './SpecViewer';
 
 interface DocsViewerProps {
     structure: Record<DocCategory, DocFile[]>;
@@ -51,6 +52,12 @@ export function DocsViewer({ structure }: DocsViewerProps) {
                             <ManifestoViewer />
                         ) : activePath.includes('SYSTEM_ARCHITECTURE.md') ? (
                             <ArchitectureViewer />
+                        ) : activePath.includes('ADMIN_PLATFORM_SPEC.md') ? (
+                            <SpecViewer type="admin" />
+                        ) : activePath.includes('CORE_PLATFORM_SPEC.md') ? (
+                            <SpecViewer type="core" />
+                        ) : activePath.includes('UX_BASELINE.md') ? (
+                            <SpecViewer type="ux" />
                         ) : (
                             <div className="p-8 border-2 border-dashed border-slate-200 rounded-[2rem] text-center">
                                 <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest">Content Display Disabled by Protocol</p>

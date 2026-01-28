@@ -200,6 +200,59 @@ export const ARCHITECTURE_DATA = {
     ]
 };
 
+export const ADMIN_SPEC_DATA = {
+    authStrategy: [
+        { layer: 'Isolation', principle: 'Admin sessions logically separated from public user sessions.' },
+        { layer: 'Token Scoping', principle: 'Specific claims (role: admin) required; invalid for public user routes.' },
+        { layer: 'Signup Restricted', principle: 'Public signup DISABLED. Restricted to internal invites only.' },
+    ],
+    modules: [
+        { module: 'User Overview', purpose: 'Identity search and real-time activity signals.', logic: 'Discovery_Orchestrator' },
+        { module: 'RBAC Governance', purpose: 'Role assignment and privilege escalation prevention.', logic: 'Audit History' },
+        { module: 'Question Bank', purpose: 'Hierarchical 5-step wizard (Domain -> Subject -> Topic -> Ques).', logic: '30/30/40 Split' },
+        { module: 'Exam Monitoring', purpose: 'Blueprint integrity audit and generation success logs.', logic: 'Deterministic JSON' },
+    ],
+    recoveryFlow: [
+        { step: '1', action: 'Request Reset', target: '/forgot-password' },
+        { step: '2', action: 'Verify Token', target: 'Email Service (Redacted)' },
+        { step: '3', action: 'Set Password', target: '/reset-password (Admin App Context)' },
+    ]
+};
+
+export const CORE_SPEC_DATA = {
+    authServices: [
+        { service: 'Password Service', responsibility: 'Bcrypt hashing and verification logic.' },
+        { service: 'Token Service', responsibility: 'JWT sign/verify, expiration, and rotation.' },
+        { service: 'Security Service', responsibility: 'Rate limiting and CSRF protection modules.' },
+    ],
+    blueprintRules: [
+        { rule: 'Mixed (Enterprise)', value: 'Simple: 30%, Intermediate: 30%, Expert: 40%' },
+        { rule: 'Specific Tier', value: '100% allocation to selected difficulty level.' },
+        { rule: 'Integrity', value: 'No Duplicates; Deterministic shuffling; Shuffled within buckets.' },
+    ],
+    navigationEnforcement: [
+        { hook: 'Back Button', behavior: 'Intercept via popstate; show logout warning modal.' },
+        { hook: 'Cache Control', behavior: 'Disable cache; re-validate token on every mount.' },
+    ]
+};
+
+export const UX_SPEC_DATA = {
+    breakpoints: [
+        { prefix: 'sm', width: '640px', usage: 'Mobile Landscape / Tablet' },
+        { prefix: 'md', width: '768px', usage: 'Tablet Portrait / Laptop' },
+        { prefix: 'lg', width: '1024px', usage: 'Desktop (Standard)' },
+    ],
+    interactionStates: [
+        { state: 'Hover', visual: 'Opacity / Color Shift' },
+        { state: 'Focus', visual: 'Ring-2 Glow (Accessibility)' },
+        { state: 'Loading', visual: 'Spinner / Disabled State' },
+    ],
+    componentStandards: [
+        { component: 'Cards', padding: 'p-4 (Mob) / p-6 (Desk)', border: 'Gray-100 (Light)' },
+        { component: 'Tables', behavior: 'Sticky Headers; Scrollable on Mobile', state: 'Explicit Empty State' },
+    ]
+};
+
 export const BRAIN_LOG_DATA = {
     overview: [
         { attribute: 'Date', details: '2026-01-28' },

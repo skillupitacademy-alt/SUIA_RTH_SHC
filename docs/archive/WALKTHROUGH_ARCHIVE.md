@@ -40,3 +40,13 @@ Implemented advanced user filtering and tabular doc rendering.
 ## 5. Task History (Claude Era)
 *Source: task.md, implementation.md, walkthrough.md (original)*
 - Legacy task tracking files from previous agent sessions.
+
+## 6. Governance Dashboard Overhaul (v2.0)
+*Source: implementation_plan.md, walkthrough.md (Batch 16)*
+
+### Summary
+Comprehensive restructuring and digitization of the Governance layer to achieve absolute "Cycle of Truth" parity.
+- **Constitution**: Fully aligned with visual spec (Overview, STOP Conditions, Cycle of Truth).
+- **Core Digitization**: Proactively digitized Manifesto, System Architecture, and Brain Log into high-fidelity executive React viewers.
+- **Inventory**: Logically grouped 50+ monorepo artifacts for improved architectural discoverability.
+- **Result**: 100% stable, spec-accurate digital governance system.
