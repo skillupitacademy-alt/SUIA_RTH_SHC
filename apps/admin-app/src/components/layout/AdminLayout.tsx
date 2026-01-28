@@ -13,8 +13,11 @@ import {
     Bell,
     AlertTriangle,
     Search,
-    Users
+    Search,
+    Users,
+    ShieldCheck
 } from 'lucide-react';
+
 import { cn } from '@/lib/utils';
 import { AdminGuard } from '../auth/AdminGuard';
 import { useAuthStore } from '@/store/auth-store';
@@ -29,8 +32,10 @@ const ADMIN_NAV = [
     { name: 'Blueprint Manager', href: '/blueprints', icon: FileText },
     { name: 'Users', href: '/users', icon: Users },
     { name: 'Audit Logs', href: '/audit', icon: ShieldAlert },
+    { name: 'Governance', href: '/governance', icon: ShieldCheck },
     { name: 'Settings', href: '/settings', icon: Settings },
 ];
+
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
     useStrictNavigation();

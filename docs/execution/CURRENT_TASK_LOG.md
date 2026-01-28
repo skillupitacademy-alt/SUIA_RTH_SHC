@@ -5,57 +5,22 @@
 # Current Task Log
 
 ## Task Identification
-- **Task**: Enterprise Admin Dashboard & FAANG Governance
+- **Task**: Documentation Restructuring & Consolidation
 - **Status**: [COMPLETED]
-- **Session Finished**: 2026-01-27 02:00:00
+- **Session Finished**: 2026-01-28 02:00:00
 
 ## Current State
 
-### 1. Database & Relational Integrity
+### 1. Consolidation
 - **Status**: COMPLETED
-- **Activity**: Fixed `referencedTable` errors and standardized `subtopic_id` column naming across the schema.
-- **Implementation**: Added missing relations to `auth.ts` and updated `domain.ts` to allow deep-fetching questions for analytics.
+- **Activity**: Merged 30+ fragmented files into authoritative Specs and Journeys.
+- **Result**: Reduced file count by 50%.
 
-### 2. Enterprise Admin Governance (BFF & Backend)
+### 2. Standardization
 - **Status**: COMPLETED
-- **Implementation**: Heavily extended `AdminEngine` with high-performance SQL aggregations for:
-  - **Account Metrics**: Total/New/Verified users (scaling to millions).
-  - **Security Signals**: Failed/Successful login tracking & Threat Level derivation.
-  - **Content Health**: Topic-level verification of the 30/30/40 distribution mandate.
-  - **Analytics**: Aggregated scoring and mastery levels across domains.
-
-### 3. Modular Control Panel (Frontend)
-- **Status**: COMPLETED
-- **UI Architecture**: Redesigned `AdminShell` with horizontal header and "Platform Control" sidebar (Pink Theme).
-- **Widgets**: Implemented mission-critical dashboards:
-  - `SecurityHealthPanel` (Lock/Shield icons, real-time alerts).
-  - `ContentReadinessBoard` (Topic distribution validation).
-  - `UserAnalyticsPanel` (Growth & verification tracking).
-  - `PerformanceAnalyticsBoard` (Mastery level scoring).
-
-### 4. FAANG SDE-3 Engineering Standards
-- **Status**: COMPLETED
-- **Activity**: Appended "Section 12: Engineering Standards" to `AGENT_CONSTITUTION.md`.
-- **Mandate**: Enforced database-level pagination, stateless processing, and zero-trust security as absolute project laws.
-
-## Previous Iterations (Corrected)
-- Fixed UI/UX bugs: Header auth check, Timer logic, Black code block patch, Suspense boundary in Reports.
-- Fixed Admin Dashboard bugs: Auth token sync in layout, CSS theme variables restored.
-- Implemented Admin Authentication Governance (Doc, Specs, Backend Service, Frontend Integration).
-- Removed all alert() calls in Web App (AuthForms, QuizSelection, ExamInterface, OnboardingWizard).
-- Implemented Strict Navigation Logic (Back Button Protection) in Admin App.
-- Hardened AdminGuard with Server-Side Revalidation.
-- Seeded Admin User (via temp route).
-- Added Governance Link to Web App Footer.
-- Fixed AdminLayout hook ordering bug.
-- Fixed AdminGuard race condition (token availability).
-- Whitelisted /api/admin/auth in middleware.
-- Implemented Dual-Secret Verification in TokenService for shared endpoints.
-- Fixed Admin Login 401 (Middleware & Token Secrets).
-- Fixed 'Revoked' error (Added isAdmin schema).
-- Fixed Dashboard loading race condition (AdminGuard sync token).
+- **Activity**: Enforced strict "Folder Intent" map.
+- **Reference**: `AGENT_CONSTITUTION.md` and `PROJECT_MANIFESTO.md` updated.
 
 ## Next Steps
-- Dashboard is now fully operational and compliant with the Enterprise Spec.
-- Ready for manual verification of real-time security alerts.
-- Ready for "hardened production" deployment steps.
+- **Ready for**: Backend Development (Phase 3).
+- **Start Here**: `docs/execution/CURRENT_STATE_REPORT.md`

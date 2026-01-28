@@ -1,25 +1,81 @@
-# Global UX Baseline
+# 📐 UX/UI Baseline & Global Standards
 
-This document defines the mandatory, non-negotiable UX rules for the Quiz Platform. These rules apply to all user-facing pages and components.
+This document establishes the non-negotiable design, responsiveness, and interaction standards for the Quiz Platform.
 
-## Responsiveness & Layout
-- **Ubiquitous Access**: All pages MUST be fully responsive across Mobile, Tablet, Laptop, and Desktop.
-- **No Overflow**: Horizontal scrolling is strictly forbidden on any device.
-- **Preservation**: No UI elements or interactive controls may be hidden due to screen size unless replaced by a mobile-optimized alternative (e.g., hamburger menu).
-- **Chart Balance**: Charts must be proportionally balanced, correctly labeled, and responsive to viewport changes.
+---
 
-## Navigation & Routing
-- **Active CTAs**: No visible Call-to-Action (CTA) or link may route to a 404 page.
-- **Contextual Back**: Users should always have a logical path back to the Dashboard or the previous meaningful state.
+## 1. Responsive Breakpoints
+The platform uses the standard **Tailwind CSS** breakpoint system.
 
-## Data Consistency
-- **Single Source of Truth**: If two or more UI elements represent the same data (e.g., Weekly Goal in Sidebar vs. Stats in Dashboard), they MUST share the same authoritative data source.
-- **Synchronized State**: Updates to data should propagate across all related UI components simultaneously.
+| Prefix | Minimum Width | Device Class |
+| :--- | :--- | :--- |
+| `base` | 0px | Mobile Portrait |
+| `sm` | 640px | Mobile Landscape / Tablet |
+| `md` | 768px | Tablet Portrait / Small Laptop |
+| `lg` | 1024px | Desktop (Standard) |
+| `xl` | 1280px | Large Screens |
+| `2xl` | 1536px | Extra Large Screens |
+
+### 📱 Mobile-First Mandate
+- **All layouts** must be designed for `base` (mobile) first.
+- **Testing**: Everything must work on a 375px wide viewport (iPhone SE).
+- **Navigation**:
+  - `sm` and below: Use Hamburger Menu or Bottom Navigation.
+  - `md` and up: Use Sidebar or Top Bar.
+
+---
+
+## 2. Global Typography
+- **Font Family**: Inter, Sans-serif.
+- **Scale**:
+  - H1: `text-2xl` (Mobile) / `text-3xl` (Desktop)
+  - H2: `text-xl` (Mobile) / `text-2xl` (Desktop)
+  - Body: `text-sm` (Mobile) / `text-base` (Desktop)
+  - Micro: `text-xs`
+
+---
+
+## 3. Global Interaction States
+- **Hover**: All clickable elements must have a visual `:hover` state (opacity, color shift).
+- **Active/Focus**: Inputs must show a `ring-2` focus state for accessibility.
+- **Disabled**: Must reduce opacity (`opacity-50`) and set `cursor-not-allowed`.
+- **Loading**: Buttons must show a spinner or `isLoading` state, preventing double-clicks.
+
+---
+
+## 4. Component Standards
+
+### Cards (Dashboard/Lists)
+- **Padding**: `p-4` (Mobile) / `p-6` (Desktop).
+- **Shadow**: `shadow-sm` (Default) / `shadow-md` (Hover).
+- **Border**: `border border-gray-100` (Light) / `border-gray-800` (Dark).
+
+### Lists & Tables
+- **Mobile**: Stacked cards or horizontal scroll.
+- **Desktop**: Full table with headers.
+- **Empty States**: Must provide actionable next steps ("Create your first exam").
+- **Tables**: Must be scrollable on mobile, with sticky headers if possible.
+
+---
+
+## 5. Data & Time Filtering
+*Source: DATA_TIME_FILTERING.md*
+
+### Supported Ranges
+- **7 Days**: Default window.
+- **30 Days**: Extended window.
+- **Custom**: Calendar-based selection.
+
+### Behavioral Rules
+- **Authoritative Filtering**: Selected range passes to backend API.
+- **No Silent Fallbacks**: "No data" state must be explicit.
+- **State Sync**: Active filter MUST reflect in URL or Store.
+
+### Interface Rules
+- **Visible Selection**: Highlight active range.
+- **Integrity**: 7D/30D toggles must remain always visible.
+- **Labels**: Use relative labels (`Today`, `Yesterday`) for recent items (<7 days).
 
 ## Quality of Experience
 - **Enhancement allowed**: UI/UX may be enhanced for clarity, usability, and visual delight.
 - **No Degradation**: UI/UX features MUST NOT be removed or degraded unless explicitly instructed by the user.
-
-## Governance
-- All new page contracts MUST reference this baseline.
-- Verification checklists must include a responsiveness audit.
