@@ -13,7 +13,6 @@ import {
     Bell,
     AlertTriangle,
     Search,
-    Search,
     Users,
     ShieldCheck
 } from 'lucide-react';

@@ -1,7 +1,7 @@
 'use client';
 
-import ReactLeaf from 'react-markdown';
 import ReactMarkdown from 'react-markdown';
+
 import remarkGfm from 'remark-gfm';
 
 interface MarkdownRendererProps {
@@ -40,8 +40,9 @@ export function MarkdownRenderer({ content }: MarkdownRendererProps) {
                         );
                     },
                     blockquote: ({ node, ...props }) => (
-                        <div className="border-l-4 border-blue-500 bg-blue-500/10 p-4 my-4 rounded-r-lg italic" {...props} />
+                        <blockquote className="border-l-4 border-blue-500 bg-blue-500/10 p-4 my-4 rounded-r-lg italic" {...props} />
                     ),
+
                     ul: ({ node, ...props }) => <ul className="list-disc list-inside space-y-2 my-4 text-slate-400" {...props} />,
                     ol: ({ node, ...props }) => <ol className="list-decimal list-inside space-y-2 my-4 text-slate-400" {...props} />,
                     li: ({ node, ...props }) => <li className="ml-2" {...props} />,
