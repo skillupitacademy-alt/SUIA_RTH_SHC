@@ -44,7 +44,7 @@ stateDiagram-v2
 - **Answer Evaluation**: Content-aware correctness check.
 - **Scoring Engine**: Multi-dimensional point calculation.
 - **Report Engine**: Mastery & Progress analysis.
-- **Admin Engine**: Publishing & Approval workflows.
+- **Admin Engine**: Publishing, Approval workflows, and advanced User Discovery filtering.
 
 ---
 

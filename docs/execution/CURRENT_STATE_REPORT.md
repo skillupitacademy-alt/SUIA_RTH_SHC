@@ -76,8 +76,9 @@ The platform is in an advanced state of implementation with a fully functional A
 - **Git Policy**: Strict local-commit-only rule unless approved.
 
 ### Recommended Next Steps
-1. **Backend First**: Implement `AuthService` and `DomainService`.
-2. **Frontend Second**: Build `AuthPage` and `Dashboard`.
+1. **Security Hardening**: Implement the Back Button Guard and NavigationGuard as defined in the Auth Hardening backlog.
+2. **Content Expansion**: Bulk import core question sets to validate the 30/30/40 difficulty split algorithm in production.
+3. **Web-App Refinement**: Align the public-facing Web-App dashboard with the high-fidelity executive standards set by the Admin-App.
 
 ### Backlog: Auth Hardening
 *Source: CORE_PLATFORM_SPEC.md*

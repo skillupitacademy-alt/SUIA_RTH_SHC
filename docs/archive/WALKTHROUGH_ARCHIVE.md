@@ -29,6 +29,14 @@ Fixed data granularity in charts.
 - **Issue**: Chart clutter on 30D view.
 - **Fix**: Implemented label thinning/skipping.
 
-## 4. Task History (Claude Era)
+## 4. Discovery_Orchestrator & Tabular Docs
+*Source: WALKTHROUGH_DISCOVERY_ORCHESTRATOR.md*
+
+### Summary
+Implemented advanced user filtering and tabular doc rendering.
+- **Features**: Real-time activity signals, Dossier_Verified checkmarks.
+- **UI**: Structured property-aware documentation viewer.
+
+## 5. Task History (Claude Era)
 *Source: task.md, implementation.md, walkthrough.md (original)*
 - Legacy task tracking files from previous agent sessions.
