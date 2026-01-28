@@ -82,7 +82,7 @@ export function GovernanceInventory() {
                             ))}
                             <tr className="bg-[#1A1A1A]/5">
                                 <td className="px-10 py-6 font-black uppercase text-xs tracking-widest">Total</td>
-                                <td className="px-10 py-6 font-black text-xl text-[#FF4B91]">32</td>
+                                <td className="px-10 py-6 font-black text-xl text-[#FF4B91]">21</td>
                                 <td className="px-10 py-6"></td>
                             </tr>
                         </tbody>

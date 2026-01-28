@@ -19,14 +19,14 @@ export const FRONTEND_INVENTORY: InventoryItem[] = [
 ];
 
 export const FOLDER_BREAKDOWN: FolderBreakdown[] = [
-    { folder: 'pages/', count: 14, purpose: 'Frontend Page Contracts (Auth, Dashboard, Exams)' },
-    { folder: 'walkthroughs/', count: 6, purpose: 'Verification Logs & Artifacts' },
+    { folder: 'pages/', count: 7, purpose: 'Frontend Page Contracts (Auth, Dashboard, Exams)' },
+    { folder: 'archive/', count: 3, purpose: 'Historical Execution Logs & Evidence' },
     { folder: 'specs/', count: 3, purpose: 'Core Technical Specs (Admin, Core, Infra)' },
     { folder: 'execution/', count: 3, purpose: 'Status Reports (Current State, Task Logs)' },
     { folder: 'architecture/', count: 2, purpose: 'System Truth (Manifesto, Architecture)' },
-    { folder: 'ux/', count: 2, purpose: 'Global Design Rules' },
-    { folder: 'archive/', count: 1, purpose: 'Historical Execution Logs' },
-    { folder: 'audits/', count: 1, purpose: 'Project Audit Report' },
+    { folder: 'ux/', count: 1, purpose: 'Global Design Rules' },
+    { folder: 'sql/', count: 1, purpose: 'Database Migrations & SQL References' },
+    { folder: 'docs/', count: 1, purpose: 'Main Documentation Entry Point' },
 ];
 
 export const FILE_PURPOSE_MAP: Record<string, string> = {
