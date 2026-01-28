@@ -23,8 +23,9 @@ export async function GET(req: NextRequest) {
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '20');
     const subjectId = searchParams.get('subjectId') || undefined;
+    const search = searchParams.get('search') || undefined;
 
-    const data = await AdminEngine.getTopics(page, limit, { subjectId });
+    const data = await AdminEngine.getTopics(page, limit, { subjectId, search });
     return NextResponse.json(data);
   } catch (error: any) {
     console.error('[ADMIN_TOPICS_GET] Error:', error.message);

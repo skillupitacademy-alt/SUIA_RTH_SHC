@@ -43,6 +43,14 @@ export function QuestionTable() {
         skillIds: [] as string[]
     });
     const [isFiltering, setIsFiltering] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [debouncedSearch, setDebouncedSearch] = useState('');
+
+    useEffect(() => {
+        const timer = setTimeout(() => setDebouncedSearch(searchQuery), 500);
+        return () => clearTimeout(timer);
+    }, [searchQuery]);
+
     const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; questionId: string | null; isDeleting: boolean; error: string | null }>({
         isOpen: false,
         questionId: null,
@@ -84,6 +92,7 @@ export function QuestionTable() {
                     topicId: filters.topicId || undefined,
                     subtopicId: filters.subtopicId || undefined,
                     skillIds: filters.skillIds.length > 0 ? filters.skillIds : undefined,
+                    search: debouncedSearch || undefined,
                 });
                 setQuestions(data.questions);
                 setTotalPages(data.totalPages);
@@ -94,7 +103,7 @@ export function QuestionTable() {
             }
         };
         fetchQuestions();
-    }, [page, filters]);
+    }, [page, filters, debouncedSearch]);
 
     const handleDelete = async () => {
         if (!deleteModal.questionId) return;
@@ -120,7 +129,7 @@ export function QuestionTable() {
             <div className="rounded-[1.75rem] border border-primary/10 bg-white/50 backdrop-blur-xl p-6 shadow-xl relative overflow-hidden">
                 {/* Subtle Glow */}
                 <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-3xl -z-10" />
-                <div className="flex items-center justify-between mb-6">
+                <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6 mb-8">
                     <div className="flex items-center gap-3">
                         <div className="p-2 rounded-xl bg-primary/10 text-primary">
                             <Filter className="w-5 h-5" />
@@ -130,14 +139,33 @@ export function QuestionTable() {
                             <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Hierarchy Targeting System</p>
                         </div>
                     </div>
-                    {(filters.domainId || filters.subjectId || filters.topicId || filters.subtopicId || filters.skillIds.length > 0) && (
-                        <button
-                            onClick={() => setFilters({ domainId: '', subjectId: '', topicId: '', subtopicId: '', skillIds: [] })}
-                            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-red-50 text-red-600 text-[10px] font-black uppercase tracking-widest hover:bg-red-100 transition-all border border-red-100"
-                        >
-                            <X className="w-3 h-3" /> Clear Filters
-                        </button>
-                    )}
+
+                    <div className="flex items-center gap-4">
+                        {/* Content Search Input */}
+                        <div className="relative w-full xl:w-[400px]">
+                            <FileText size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground/40" />
+                            <input
+                                type="text"
+                                placeholder="SEARCH_QUESTION_TEXT..."
+                                value={searchQuery}
+                                onChange={(e) => { setSearchQuery(e.target.value); setPage(1); }}
+                                className="w-full bg-slate-50 border-none rounded-2xl pl-12 pr-6 py-3.5 text-[11px] font-black tracking-widest text-[#1A1A1A] placeholder:text-slate-300 focus:ring-2 focus:ring-[#FF4B91]/10 transition-all outline-none border border-transparent shadow-inner"
+                            />
+                        </div>
+
+                        {(filters.domainId || filters.subjectId || filters.topicId || filters.subtopicId || filters.skillIds.length > 0 || searchQuery) && (
+                            <button
+                                onClick={() => {
+                                    setFilters({ domainId: '', subjectId: '', topicId: '', subtopicId: '', skillIds: [] });
+                                    setSearchQuery('');
+                                    setPage(1);
+                                }}
+                                className="flex-shrink-0 flex items-center gap-2 px-4 py-3.5 rounded-2xl bg-red-50 text-red-600 text-[10px] font-black uppercase tracking-widest hover:bg-red-100 transition-all border border-red-100 h-full"
+                            >
+                                <X className="w-3 h-3" /> Clear
+                            </button>
+                        )}
+                    </div>
                 </div>
 
                 <div className="space-y-6">

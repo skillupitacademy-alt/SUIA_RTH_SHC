@@ -39,7 +39,7 @@ The platform is in an advanced state of implementation with a fully functional A
 | **Infrastructure** | ✅ 100% | Monorepo, DB, CI/CD stabilized. |
 | **Database** | ✅ 100% | Auth, Exam, Content, Blueprint schemas fully implemented. |
 | **Backend** | ✅ 90% | Services & Controllers (Admin, Auth, Domain, Question) live. |
-| **Frontend** | ✅ 85% | Admin-App high-fidelity controls live. Web-App core live. |
+| **Frontend** | ✅ 90% | Admin-App high-fidelity controls live. Universal Filtering implemented. |
 
 ### Component Status Detail
 
@@ -63,6 +63,7 @@ The platform is in an advanced state of implementation with a fully functional A
 #### 4. Product Experience
 - ✅ **Admin Governance**: 100% Live (Tabular Doc Rendering + Discovery_Orchestrator).
 - ✅ **User Management**: 100% Live (Real-time status filtering & Identity search).
+- ✅ **Question Bank**: 100% Live (Universal Search across Domains, Subjects, Topics, Subtopics, Skills, Questions).
 - ✅ **Identity Layer**: Dossier-verified badges and Granular status logic.
 
 ### Compliance & Governance Audit

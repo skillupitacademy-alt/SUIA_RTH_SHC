@@ -14,6 +14,7 @@ Provide administrators with a "Single Pane of Glass" view of the system's Laws, 
 
 #### Layout
 - **Header**: "QUIZADMIN - System Governance".
+- **Search**: "Discovery_Orchestrator" bar for filtered document discovery.
 - **Navigation (Tabs)**:
   1. **THE LAW** (Constitution, Manifesto)
   2. **THE LOGIC** (Specs)

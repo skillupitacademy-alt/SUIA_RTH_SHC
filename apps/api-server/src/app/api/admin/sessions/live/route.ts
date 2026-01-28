@@ -16,8 +16,9 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '10');
+    const search = searchParams.get('search') || undefined;
 
-    const result = await AdminEngine.getLiveSessions(page, limit);
+    const result = await AdminEngine.getLiveSessions(page, limit, { search });
     return NextResponse.json(result);
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 403 });

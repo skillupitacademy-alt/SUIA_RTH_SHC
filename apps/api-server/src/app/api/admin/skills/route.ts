@@ -22,8 +22,9 @@ export async function GET(req: NextRequest) {
     const searchParams = req.nextUrl.searchParams;
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '20');
+    const search = searchParams.get('search') || undefined;
 
-    const data = await AdminEngine.getSkills(page, limit);
+    const data = await AdminEngine.getSkills(page, limit, { search });
     return NextResponse.json(data);
   } catch (error: any) {
     console.error('[ADMIN_SKILLS_GET] Error:', error.message);

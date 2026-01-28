@@ -7,6 +7,7 @@ import { FileWarning, CheckCircle2, AlertCircle, Layers, Weight, Activity } from
 export function ContentReadinessBoard() {
     const [topics, setTopics] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [searchQuery, setSearchQuery] = useState('');
 
     useEffect(() => {
         const fetch = async () => {
@@ -24,18 +25,33 @@ export function ContentReadinessBoard() {
 
     if (isLoading) return null;
 
-    const criticalTopics = topics.filter(t => !t.isReady);
-    const healthyTopicsCount = topics.length - criticalTopics.length;
+    const filteredTopics = topics.filter(t =>
+        t.topicName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        t.domainName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        t.subjectName.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+    const criticalTopics = filteredTopics.filter(t => !t.isReady);
+    const healthyTopicsCount = filteredTopics.filter(t => t.isReady).length;
 
     return (
         <div className="p-8 rounded-[2rem] border border-primary/10 bg-muted/5 backdrop-blur-md shadow-sm">
-            <div className="flex items-center justify-between mb-8">
+            <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6 mb-8">
                 <div>
                     <h3 className="text-2xl font-black uppercase tracking-tighter italic text-[#1A1A1A]">Domain Structure & Readiness</h3>
                     <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-0.5">Syllabus overview • Question Bank Distribution</p>
                 </div>
-                <div className="flex gap-4">
-                    <div className="px-5 py-2 rounded-full bg-green-500/10 border border-green-500/20 flex items-center gap-2">
+                <div className="flex items-center gap-4">
+                    <div className="relative w-full xl:w-[300px]">
+                        <input
+                            type="text"
+                            placeholder="SEARCH_STRUCTURE..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="w-full bg-white border border-primary/5 rounded-xl px-4 py-2 text-[10px] font-black tracking-widest text-[#1A1A1A] placeholder:text-slate-300 focus:ring-2 focus:ring-[#FF4B91]/10 outline-none shadow-sm"
+                        />
+                    </div>
+                    <div className="px-5 py-2 rounded-full bg-green-500/10 border border-green-500/20 flex items-center gap-2 flex-shrink-0">
                         <CheckCircle2 size={16} className="text-green-500" />
                         <span className="text-[11px] font-black text-green-600 uppercase tracking-widest">{healthyTopicsCount} Ready</span>
                     </div>
@@ -43,7 +59,7 @@ export function ContentReadinessBoard() {
             </div>
 
             <div className="space-y-4 max-h-[500px] overflow-y-auto pr-3 custom-scrollbar">
-                {topics.map((topic) => (
+                {filteredTopics.map((topic) => (
                     <div key={topic.topicId} className={`p-5 rounded-[1.75rem] bg-background border transition-all group flex flex-col md:flex-row md:items-center justify-between shadow-sm gap-4 ${topic.isReady ? 'border-muted/50 hover:border-primary/30' : 'border-red-500/30 hover:border-red-500/50 bg-red-500/[0.02]'}`}>
                         <div className="flex items-center gap-6 flex-1 min-w-[300px]">
                             <div className={`w-12 h-12 rounded-xl flex items-center justify-center border shadow-sm ${topic.isReady ? 'bg-primary/5 text-primary border-primary/10 shadow-primary/5' : 'bg-red-500/5 text-red-500 border-red-500/10 shadow-red-500/5'}`}>

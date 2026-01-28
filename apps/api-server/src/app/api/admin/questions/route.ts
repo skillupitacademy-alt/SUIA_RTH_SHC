@@ -31,6 +31,7 @@ export async function GET(req: NextRequest) {
         subtopicId: searchParams.get('subtopicId') || undefined,
         skillIds: searchParams.getAll('skillIds').length > 0 ? searchParams.getAll('skillIds') : undefined,
         status: searchParams.get('status') || undefined,
+        search: searchParams.get('search') || undefined,
     };
 
     const data = await AdminEngine.getQuestions(page, limit, filters);

@@ -23,8 +23,9 @@ export async function GET(req: NextRequest) {
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '20');
     const domainId = searchParams.get('domainId') || undefined;
+    const search = searchParams.get('search') || undefined;
 
-    const data = await AdminEngine.getSubjects(page, limit, { domainId });
+    const data = await AdminEngine.getSubjects(page, limit, { domainId, search });
     return NextResponse.json(data);
   } catch (error: any) {
     console.error('[ADMIN_SUBJECTS_GET] Error:', error.message);

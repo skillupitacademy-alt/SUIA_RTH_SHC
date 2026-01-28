@@ -14,6 +14,12 @@ interface DocsTabsProps {
 export function DocsTabs({ structure, onFileSelect, activePath }: DocsTabsProps) {
     const categories = Object.keys(structure) as DocCategory[];
     const [activeTab, setActiveTab] = useState<DocCategory>(categories[0]);
+    const [searchQuery, setSearchQuery] = useState('');
+
+    const filteredFiles = structure[activeTab].filter(file =>
+        file.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        file.path.toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
     return (
         <div className="flex flex-col gap-6">
@@ -37,7 +43,10 @@ export function DocsTabs({ structure, onFileSelect, activePath }: DocsTabsProps)
                 {categories.map((cat) => (
                     <button
                         key={cat}
-                        onClick={() => setActiveTab(cat)}
+                        onClick={() => {
+                            setActiveTab(cat);
+                            setSearchQuery('');
+                        }}
                         className={cn(
                             "whitespace-nowrap px-8 py-3.5 text-[11px] font-black tracking-[0.2em] uppercase transition-all duration-500 rounded-2xl flex-shrink-0",
                             activeTab === cat
@@ -48,11 +57,38 @@ export function DocsTabs({ structure, onFileSelect, activePath }: DocsTabsProps)
                         {cat}
                     </button>
                 ))}
+
+                {/* Search Input - Desktop View Expansion */}
+                <div className="hidden lg:flex flex-1 items-center justify-end px-4">
+                    <div className="relative w-full max-w-[300px]">
+                        <input
+                            type="text"
+                            placeholder="SEARCH_LOGIC..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="w-full bg-slate-50 border-none rounded-xl px-5 py-2.5 text-[10px] font-black tracking-widest text-[#1A1A1A] placeholder:text-slate-300 focus:ring-2 focus:ring-[#FF4B91]/20 transition-all outline-none"
+                        />
+                        <div className="absolute right-4 top-1/2 -translate-y-1/2 opacity-20 group-hover:opacity-100 transition-opacity">
+                            <div className="w-1.5 h-1.5 bg-[#FF4B91] rounded-full" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Mobile Search - Visible only if needed or persistent */}
+            <div className="lg:hidden px-2">
+                <input
+                    type="text"
+                    placeholder="SEARCH_LOGIC..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full bg-white border border-slate-100 rounded-xl px-5 py-3.5 text-[10px] font-black tracking-widest text-[#1A1A1A] placeholder:text-slate-300 shadow-sm outline-none"
+                />
             </div>
 
             {/* File Selector - Row under categories */}
             <div className="flex gap-3 p-1 overflow-x-auto pb-4 no-scrollbar">
-                {structure[activeTab].map((file) => (
+                {filteredFiles.map((file) => (
                     <button
                         key={file.path}
                         onClick={() => onFileSelect(file.path)}

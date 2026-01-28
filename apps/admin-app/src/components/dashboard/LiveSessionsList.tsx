@@ -11,9 +11,17 @@ export function LiveSessionsList() {
     const [page, setPage] = useState(1);
     const [isLoading, setIsLoading] = useState(true);
 
+    const [searchQuery, setSearchQuery] = useState('');
+    const [debouncedSearch, setDebouncedSearch] = useState('');
+
+    useEffect(() => {
+        const timer = setTimeout(() => setDebouncedSearch(searchQuery), 500);
+        return () => clearTimeout(timer);
+    }, [searchQuery]);
+
     const fetchSessions = async (p: number) => {
         try {
-            const data = await apiClient.admin.getLiveSessions(p, 10);
+            const data = await apiClient.admin.getLiveSessions(p, 10, debouncedSearch || undefined);
             setSessions(data.sessions);
             setMeta({
                 page: data.page,
@@ -31,7 +39,7 @@ export function LiveSessionsList() {
         fetchSessions(page);
         const interval = setInterval(() => fetchSessions(page), 30000); // Poll every 30s
         return () => clearInterval(interval);
-    }, [page]);
+    }, [page, debouncedSearch]);
 
     if (isLoading && sessions.length === 0) {
         return (
@@ -44,14 +52,25 @@ export function LiveSessionsList() {
     return (
         <div className="w-full space-y-6">
             <div className="p-8 rounded-[2rem] border border-primary/10 bg-muted/5 backdrop-blur-md shadow-sm">
-                <div className="flex items-center justify-between mb-8">
+                <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6 mb-8">
                     <div>
                         <h3 className="text-2xl font-black uppercase tracking-tighter italic text-[#1A1A1A]">Governance Terminal</h3>
                         <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-0.5">Currently Authenticated Users</p>
                     </div>
-                    <div className="px-4 py-2 rounded-full bg-green-500/10 border border-green-500/20 flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                        <span className="text-[10px] font-black text-green-600 uppercase tracking-widest">{meta.total} Online</span>
+                    <div className="flex items-center gap-4">
+                        <div className="relative w-full xl:w-[300px]">
+                            <input
+                                type="text"
+                                placeholder="SEARCH_SESSION_USER..."
+                                value={searchQuery}
+                                onChange={(e) => { setSearchQuery(e.target.value); setPage(1); }}
+                                className="w-full bg-white border border-primary/5 rounded-xl px-4 py-2 text-[10px] font-black tracking-widest text-[#1A1A1A] placeholder:text-slate-300 focus:ring-2 focus:ring-[#FF4B91]/10 outline-none shadow-sm"
+                            />
+                        </div>
+                        <div className="px-4 py-2 rounded-full bg-green-500/10 border border-green-500/20 flex items-center gap-2 flex-shrink-0">
+                            <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                            <span className="text-[10px] font-black text-green-600 uppercase tracking-widest">{meta.total} Online</span>
+                        </div>
                     </div>
                 </div>
 

@@ -537,21 +537,37 @@ export class AdminEngine {
   /**
    * SESSION MONITORING (Optimized for Millions of Users)
    */
-  static async getLiveSessions(page: number = 1, limit: number = 10) {
+  static async getLiveSessions(page: number = 1, limit: number = 10, filters?: { search?: string }) {
     const offset = (page - 1) * limit;
+
+    const sessionConditions = [
+        eq(refreshTokens.revoked, false),
+        gt(refreshTokens.expiresAt, new Date())
+    ];
+
+    if (filters?.search) {
+        const searchPattern = `%${filters.search.toLowerCase()}%`;
+        const userMatch = await db.select({ id: users.id })
+            .from(users)
+            .leftJoin(userProfiles, eq(users.id, userProfiles.userId))
+            .where(sql`lower(${users.email}) ilike ${searchPattern} or lower(${userProfiles.name}) ilike ${searchPattern}`);
+        
+        const matchingUserIds = userMatch.map(u => u.id);
+        if (matchingUserIds.length > 0) {
+            sessionConditions.push(inArray(refreshTokens.userId, matchingUserIds));
+        } else {
+            return { sessions: [], total: 0, page, limit, totalPages: 0 };
+        }
+    }
+
+    const whereClause = and(...sessionConditions);
 
     const [countResult] = await db.select({ count: sql`count(*)` })
       .from(refreshTokens)
-      .where(and(
-        eq(refreshTokens.revoked, false),
-        gt(refreshTokens.expiresAt, new Date())
-      ));
+      .where(whereClause);
 
     const sessions = await db.query.refreshTokens.findMany({
-      where: and(
-        eq(refreshTokens.revoked, false),
-        gt(refreshTokens.expiresAt, new Date())
-      ),
+      where: whereClause,
       with: {
         user: {
           with: {
@@ -768,7 +784,7 @@ export class AdminEngine {
   /**
    * Section 4: Question Bank Management (Phase 8 - Enhanced)
    */
-  static async getQuestions(page: number = 1, limit: number = 20, filters?: { domainId?: string; subjectId?: string; topicId?: string; subtopicId?: string; skillIds?: string[]; status?: string }) {
+  static async getQuestions(page: number = 1, limit: number = 20, filters?: { domainId?: string; subjectId?: string; topicId?: string; subtopicId?: string; skillIds?: string[]; status?: string; search?: string }) {
     const offset = (page - 1) * limit;
 
     const conditions = [];
@@ -819,6 +835,10 @@ export class AdminEngine {
         } else {
              return { questions: [], total: 0, page, limit, totalPages: 0 };
         }
+    }
+
+    if (filters?.search) {
+        conditions.push(sql`${questions.questionText} ilike ${`%${filters.search}%`}`);
     }
 
     const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
@@ -925,10 +945,18 @@ export class AdminEngine {
     return deleted;
   }
 
-  static async getDomains(page: number = 1, limit: number = 20) {
+  static async getDomains(page: number = 1, limit: number = 20, filters?: { search?: string }) {
     const offset = (page - 1) * limit;
-    const [countResult] = await db.select({ count: sql`count(*)` }).from(domains);
+    
+    const conditions = [];
+    if (filters?.search) {
+        conditions.push(sql`${domains.name} ilike ${`%${filters.search}%`}`);
+    }
+    const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+
+    const [countResult] = await db.select({ count: sql`count(*)` }).from(domains).where(whereClause);
     const data = await db.query.domains.findMany({
+        where: whereClause,
         limit,
         offset,
         orderBy: [desc(domains.createdAt)]
@@ -942,12 +970,15 @@ export class AdminEngine {
     };
   }
 
-  static async getSubjects(page: number = 1, limit: number = 20, filters?: { domainId?: string }) {
+  static async getSubjects(page: number = 1, limit: number = 20, filters?: { domainId?: string; search?: string }) {
     const offset = (page - 1) * limit;
     
     const conditions = [];
     if (filters?.domainId) {
         conditions.push(eq(subjects.domainId, filters.domainId));
+    }
+    if (filters?.search) {
+        conditions.push(sql`${subjects.name} ilike ${`%${filters.search}%`}`);
     }
 
     const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
@@ -974,12 +1005,15 @@ export class AdminEngine {
     };
   }
 
-  static async getTopics(page: number = 1, limit: number = 20, filters?: { subjectId?: string }) {
+  static async getTopics(page: number = 1, limit: number = 20, filters?: { subjectId?: string; search?: string }) {
     const offset = (page - 1) * limit;
 
     const conditions = [];
     if (filters?.subjectId) {
         conditions.push(eq(topics.subjectId, filters.subjectId));
+    }
+    if (filters?.search) {
+        conditions.push(sql`${topics.name} ilike ${`%${filters.search}%`}`);
     }
 
     const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
@@ -1010,12 +1044,15 @@ export class AdminEngine {
     };
   }
 
-  static async getSubtopics(page: number = 1, limit: number = 20, filters?: { topicId?: string }) {
+  static async getSubtopics(page: number = 1, limit: number = 20, filters?: { topicId?: string; search?: string }) {
     const offset = (page - 1) * limit;
 
     const conditions = [];
     if (filters?.topicId) {
         conditions.push(eq(subtopics.topicId, filters.topicId));
+    }
+    if (filters?.search) {
+        conditions.push(sql`${subtopics.name} ilike ${`%${filters.search}%`}`);
     }
 
     const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
@@ -1050,10 +1087,18 @@ export class AdminEngine {
     };
   }
 
-  static async getSkills(page: number = 1, limit: number = 20) {
+  static async getSkills(page: number = 1, limit: number = 20, filters?: { search?: string }) {
     const offset = (page - 1) * limit;
-    const [countResult] = await db.select({ count: sql`count(*)` }).from(skills);
+    
+    const conditions = [];
+    if (filters?.search) {
+        conditions.push(sql`${skills.name} ilike ${`%${filters.search}%`}`);
+    }
+    const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+
+    const [countResult] = await db.select({ count: sql`count(*)` }).from(skills).where(whereClause);
     const data = await db.query.skills.findMany({
+        where: whereClause,
         limit,
         offset,
     });
