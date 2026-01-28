@@ -79,14 +79,14 @@ export function DocsViewer({ structure }: DocsViewerProps) {
                             <p className="text-slate-400 text-[11px] font-black tracking-[0.5em] uppercase animate-pulse">Synchronizing_Vault</p>
                         </div>
                     ) : (
-                        <div className="max-w-4xl mx-auto animate-in fade-in slide-in-from-bottom-10 duration-1000">
+                        <div className="w-full mx-auto animate-in fade-in slide-in-from-bottom-10 duration-1000 px-4">
                             {activePath === 'RADAR' ? (
                                 <GovernanceInventory />
                             ) : (
-                                <>
+                                <div className="max-w-4xl mx-auto">
                                     <DocExplainer filePath={activePath} />
                                     <MarkdownRenderer content={content} />
-                                </>
+                                </div>
                             )}
                         </div>
                     )}

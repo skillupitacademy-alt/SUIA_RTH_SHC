@@ -9,13 +9,44 @@ export interface FolderBreakdown {
     purpose: string;
 }
 
+export interface FolderMapItem {
+    intent: string;
+    directory: string;
+    keyFiles: string;
+}
+
+export interface ComponentAuditItem {
+    component: string;
+    purpose: string;
+}
+
+export const MASTER_FOLDER_MAP: FolderMapItem[] = [
+    { intent: 'THE LAW', directory: 'docs/architecture/', keyFiles: 'PROJECT_MANIFESTO, SYSTEM_ARCHITECTURE, AGENT_CONSTITUTION' },
+    { intent: 'THE LOGIC', directory: 'docs/specs/', keyFiles: 'CORE_PLATFORM_SPEC, ADMIN_PLATFORM_SPEC, INFRASTRUCTURE_SPEC' },
+    { intent: 'THE UI', directory: 'docs/pages/', keyFiles: 'CORE_APP_JOURNEY, AUTH_JOURNEY, ADMIN_JOURNEY, EXAM_JOURNEY' },
+    { intent: 'THE STATUS', directory: 'docs/execution/', keyFiles: 'CURRENT_STATE_REPORT, TASK_HISTORY, CURRENT_TASK_LOG' },
+    { intent: 'THE RULES', directory: 'docs/ux/', keyFiles: 'UX_BASELINE' },
+    { intent: 'THE PAST', directory: 'docs/archive/', keyFiles: 'EXECUTION_LOGS_ARCHIVE, WALKTHROUGH_ARCHIVE, AUDIT_REPORT_JAN24' },
+];
+
 export const FRONTEND_INVENTORY: InventoryItem[] = [
     { journeyFile: 'AUTH_JOURNEY.md', codeMapped: 'signup/, login/, onboarding/, AuthGuard.tsx' },
     { journeyFile: 'CORE_APP_JOURNEY.md', codeMapped: 'dashboard/, reports/, Sidebar.tsx, StatsCards.tsx' },
     { journeyFile: 'EXAM_JOURNEY.md', codeMapped: 'quiz/new, active-session, QuizSelection.tsx' },
     { journeyFile: 'ADMIN_JOURNEY.md', codeMapped: 'admin-app/ (Pages & ContentManager)' },
-    { journeyFile: 'DOCS_VIEWER_JOURNEY.md', codeMapped: 'admin-app/ (DocsViewer, MarkdownRenderer)' },
+    { journeyFile: 'DOCS_VIEWER_JOURNEY.md', codeMapped: 'admin-app/ (DocsViewer, MarkdownRenderer, GovernanceInventory)' },
     { journeyFile: 'INFRASTRUCTURE_SPEC.md', codeMapped: 'packages/config, packages/types, packages/db' },
+];
+
+export const COMPONENT_INVENTORY: ComponentAuditItem[] = [
+    { component: 'ContentManager.tsx', purpose: 'Centralized orchestrator for question bank hierarchy and data integrity.' },
+    { component: 'QuestionEditor.tsx', purpose: 'Dynamic form engine for rich-text question creation and metadata tagging.' },
+    { component: 'DocsViewer.tsx', purpose: 'The primary governance interface for high-fidelity documentation rendering.' },
+    { component: 'MarkdownRenderer.tsx', purpose: 'Premium "AI-Style" content engine with pure-light executive formatting.' },
+    { component: 'GovernanceInventory.tsx', purpose: 'Interactive "Radar" board providing macro-level project audit views.' },
+    { component: 'CascadingSelect.tsx', purpose: 'High-performance hierarchy selection with real-time dependency filtering.' },
+    { component: 'AdminStats.tsx', purpose: 'Enterprise analytics dashboard for platform-wide health monitoring.' },
+    { component: 'DomainTable.tsx', purpose: 'Governance board for managing primary subject area classifications.' },
 ];
 
 export const FOLDER_BREAKDOWN: FolderBreakdown[] = [
@@ -26,7 +57,7 @@ export const FOLDER_BREAKDOWN: FolderBreakdown[] = [
     { folder: 'architecture/', count: 2, purpose: 'System Truth (Manifesto, Architecture)' },
     { folder: 'ux/', count: 1, purpose: 'Global Design Rules' },
     { folder: 'sql/', count: 1, purpose: 'Database Migrations & SQL References' },
-    { folder: 'docs/', count: 1, purpose: 'Main Documentation Entry Point' },
+    { folder: 'docs/', count: 1, purpose: 'Main Documentation Entry Point (README)' },
 ];
 
 export const FILE_PURPOSE_MAP: Record<string, string> = {
@@ -40,6 +71,9 @@ export const FILE_PURPOSE_MAP: Record<string, string> = {
     'pages/admin/ADMIN_JOURNEY.md': 'Administrative workflows including content management and system monitoring.',
     'pages/exams/EXAM_JOURNEY.md': 'The end-to-end student assessment journey, from selection to completion.',
     'pages/admin/DOCS_VIEWER_JOURNEY.md': 'Contract for the documentation viewer and governance radar implementation.',
+    'pages/README.md': 'Directory-level overview for the User Journey documentation folder.',
+    'pages/_PAGE_TEMPLATE.md': 'A standardized blueprint for creating consistent journey documentation across the project.',
+    'README.md': 'The primary technical entry point and root-level index for the documentation system.',
     'execution/CURRENT_STATE_REPORT.md': 'Real-time audit of project health, build stability, and feature completeness.',
     'execution/TASK_HISTORY.md': 'A historical record of all completed milestones for long-term auditability.',
     'execution/CURRENT_TASK_LOG.md': 'Active execution log for the current session and terminal activities.',
