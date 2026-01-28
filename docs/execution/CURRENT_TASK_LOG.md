@@ -4,22 +4,22 @@
 
 # Current Task Log
 
-## Task Identification
-- **Task**: Tabular Doc Rendering & Advanced User Management Filtering
-- **Status**: [COMPLETED]
-- **Session Finished**: 2026-01-28 14:45:00
-
 ## Current State
 
-### 1. Tabular AI Documentation Renderer
+### 1. Full Codebase Inventory Implementation
 - **Status**: COMPLETED
-- **Activity**: Refactored `MarkdownRenderer` and `DocsViewer` for full-width, property-aware dashboard rendering.
-- **Result**: Docs are now structured tabular interfaces instead of raw prose.
+- **Activity**: Created `codebase-inventory-data.ts` and updated `GovernanceInventory.tsx` to list mapped components for Admin, Web, and API Server.
+- **Result**: Comprehensive "Codebase Inventory" tables with architectural purpose descriptions.
 
-### 2. User Management Filtering (Discovery_Orchestrator)
+### 2. Constitution Digitization
 - **Status**: COMPLETED
-- **Activity**: Implemented full-stack filtering (Backend Engine -> API Client -> Frontend UI).
-- **Result**: Real-time filtering by Identity, Access, Activity (Online/Idle), and Verification.
+- **Activity**: Parsed `AGENT_CONSTITUTION.md` and implemented React tables for Hierarchy, Permissions, and Standards.
+- **Result**: Visual "Source-of-Truth" tables in the Governance Dashboard matching the project aesthetics.
+
+### 3. Governance Inventory Expansion
+- **Status**: COMPLETED
+- **Activity**: Expanded file allowlist in `docs-loader.ts` to include all 21 project `.md` files.
+- **Result**: Complete visibility of all documentation assets in the Governance Radar.
 
 ## Next Steps
-- **Ready for**: Final Commit and User Handoff.
+- **Ready for**: User Handoff and Verifying other system components.

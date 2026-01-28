@@ -29,14 +29,88 @@ export const MASTER_FOLDER_MAP: FolderMapItem[] = [
     { intent: 'THE PAST', directory: 'docs/archive/', keyFiles: 'EXECUTION_LOGS_ARCHIVE, WALKTHROUGH_ARCHIVE, AUDIT_REPORT_JAN24' },
 ];
 
-export const FRONTEND_INVENTORY: InventoryItem[] = [
-    { journeyFile: 'AUTH_JOURNEY.md', codeMapped: 'signup/, login/, onboarding/, AuthGuard.tsx' },
-    { journeyFile: 'CORE_APP_JOURNEY.md', codeMapped: 'dashboard/, reports/, Sidebar.tsx, StatsCards.tsx' },
-    { journeyFile: 'EXAM_JOURNEY.md', codeMapped: 'quiz/new, active-session, QuizSelection.tsx' },
-    { journeyFile: 'ADMIN_JOURNEY.md', codeMapped: 'admin-app/ (Pages & ContentManager)' },
-    { journeyFile: 'DOCS_VIEWER_JOURNEY.md', codeMapped: 'admin-app/ (DocsViewer, MarkdownRenderer, GovernanceInventory)' },
-    { journeyFile: 'INFRASTRUCTURE_SPEC.md', codeMapped: 'packages/config, packages/types, packages/db' },
+export const INVENTORY_GROUPS = [
+    {
+        title: 'Governance & Constitution',
+        description: 'The supreme laws and AI governance protocols.',
+        items: [
+            { journeyFile: 'AGENT_CONSTITUTION.md', codeMapped: '.agent/ (AI Governance)' },
+            { journeyFile: 'PROJECT_MANIFESTO.md', codeMapped: 'docs/architecture/ (System Laws)' },
+        ]
+    },
+    {
+        title: 'System Architecture',
+        description: 'High-level boundaries, design systems, and infrastructure.',
+        items: [
+            { journeyFile: 'SYSTEM_ARCHITECTURE.md', codeMapped: 'docs/architecture/ (System Boundary)' },
+            { journeyFile: 'UX_BASELINE.md', codeMapped: 'docs/ux/ (Design System)' },
+            { journeyFile: 'INFRASTRUCTURE_SPEC.md', codeMapped: 'packages/config, packages/types, packages/db' },
+        ]
+    },
+    {
+        title: 'Core Specifications',
+        description: 'Detailed platform logic and operational specs.',
+        items: [
+            { journeyFile: 'CORE_PLATFORM_SPEC.md', codeMapped: 'docs/specs/ (Engine Logic)' },
+            { journeyFile: 'ADMIN_PLATFORM_SPEC.md', codeMapped: 'docs/specs/ (Admin Logic)' },
+        ]
+    },
+    {
+        title: 'User Journeys (UI)',
+        description: 'Frontend contracts mapped to application routes.',
+        items: [
+            { journeyFile: 'AUTH_JOURNEY.md', codeMapped: 'signup/, login/, onboarding/, AuthGuard.tsx' },
+            { journeyFile: 'CORE_APP_JOURNEY.md', codeMapped: 'dashboard/, reports/, Sidebar.tsx, StatsCards.tsx' },
+            { journeyFile: 'EXAM_JOURNEY.md', codeMapped: 'quiz/new, active-session, QuizSelection.tsx' },
+            { journeyFile: 'ADMIN_JOURNEY.md', codeMapped: 'admin-app/ (Pages & ContentManager)' },
+            { journeyFile: 'DOCS_VIEWER_JOURNEY.md', codeMapped: 'admin-app/ (DocsViewer, Turnstiles)' },
+            { journeyFile: 'README.md', codeMapped: 'docs/ (Root Index)' },
+            { journeyFile: '_PAGE_TEMPLATE.md', codeMapped: 'docs/pages/ (Standard Blueprint)' },
+        ]
+    },
+    {
+        title: 'Execution Status',
+        description: 'Live audit logs and real-time state reports.',
+        items: [
+            { journeyFile: 'CURRENT_STATE_REPORT.md', codeMapped: 'docs/execution/ (Real-time Status)' },
+            { journeyFile: 'TASK_HISTORY.md', codeMapped: 'docs/execution/ (Audit Log)' },
+            { journeyFile: 'CURRENT_TASK_LOG.md', codeMapped: 'docs/execution/ (Active Session)' },
+        ]
+    },
+    {
+        title: 'Historical Archives',
+        description: 'Evidence of past work and verification.',
+        items: [
+            { journeyFile: 'EXECUTION_LOGS_ARCHIVE.md', codeMapped: 'docs/archive/ (Historical)' },
+            { journeyFile: 'WALKTHROUGH_ARCHIVE.md', codeMapped: 'docs/archive/ (Verification)' },
+            { journeyFile: 'AUDIT_REPORT_JAN24.md', codeMapped: 'docs/archive/ (Audit)' },
+            { journeyFile: 'WALKTHROUGH_DISCOVERY_ORCHESTRATOR.md', codeMapped: 'admin-app/ (Search & Filters)' },
+        ]
+    }
 ];
+
+export const GOVERNANCE_DATA = {
+    hierarchy: [
+        { rank: '1', source: '@docs/**', description: 'Absolute Source of Truth' },
+        { rank: '2', source: 'Executable artifacts (SQL, migrations)', description: 'Immutable Truth' },
+        { rank: '3', source: 'agent/**', description: 'Behavioral control only' },
+        { rank: '4', source: 'Model reasoning', description: 'Lowest priority' },
+    ],
+    permissions: [
+        { path: '@docs/**', read: '✅', write: '❌', notes: 'Read-only unless user says "update docs".' },
+        { path: 'apps/**', read: '✅', write: '⚠️', notes: 'Write ONLY within requested scope.' },
+        { path: 'packages/**', read: '✅', write: '⚠️', notes: 'Write ONLY for named modules.' },
+        { path: 'agent/**', read: '✅', write: '✅', notes: 'Behavior & orchestration only.' },
+        { path: 'SQL / Migrations', read: '✅', write: '❌', notes: 'Immutable unless user says "modify migration SQL".' },
+    ],
+    standards: [
+        { principle: 'Scalability', description: 'Logic must support millions of users (stateless, pagination).' },
+        { principle: 'Frontend', description: '"Visual WOW Factor" mandatory. Mobile-first (Tailwind).' },
+        { principle: 'BFF Pattern', description: 'Minimize payloads. Aggregate APIs.' },
+        { principle: 'Security', description: 'Zero Trust. RBAC. Automatic Sanitization.' },
+        { principle: 'Database', description: 'Efficient indexing. No SELECT * on hot paths.' },
+    ]
+};
 
 export const COMPONENT_INVENTORY: ComponentAuditItem[] = [
     { component: 'ContentManager.tsx', purpose: 'Centralized orchestrator for question bank hierarchy and data integrity.' },

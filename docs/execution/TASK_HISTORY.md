@@ -45,3 +45,5 @@
 | 2026-01-28 | Executive UI/UX Overhaul | COMPLETED | Redesigned Governance tab to 'Executive White' theme and restored original Question Bank UI. |
 | 2026-01-28 | AI-Engine Driven Filtering & Tabular Docs | COMPLETED | Implemented 'Discovery_Orchestrator' for User Management and tabular Documentation rendering. |
 | 2026-01-28 | Universal Admin Filtering | COMPLETED | Implemented real-time search and filtering across all Admin Question Bank tables, Dashboards, and Documentation Viewer. |
+| 2026-01-28 | Full Codebase Inventory | COMPLETED | Implemented automated inventory tables for Admin App, Web App, and API Server in Governance Dashboard. |
+| 2026-01-28 | Governance Constitution Digitization | COMPLETED | Digitized `AGENT_CONSTITUTION.md` into structured React tables (Hierarchy, Permissions, Standards) for the Governance Dashboard. |

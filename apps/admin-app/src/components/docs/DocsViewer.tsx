@@ -3,11 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { DocCategory, DocFile } from '@/lib/docs-loader';
 import { DocsTabs } from './DocsTabs';
-import { MarkdownRenderer } from './MarkdownRenderer';
-import { getDocContentAction } from '@/app/actions/docs';
 import { GovernanceInventory } from './GovernanceInventory';
-import { DocExplainer } from './DocExplainer';
-
 
 interface DocsViewerProps {
     structure: Record<DocCategory, DocFile[]>;
@@ -15,28 +11,6 @@ interface DocsViewerProps {
 
 export function DocsViewer({ structure }: DocsViewerProps) {
     const [activePath, setActivePath] = useState<string>('RADAR');
-    const [content, setContent] = useState<string>('');
-    const [loading, setLoading] = useState<boolean>(false);
-
-    useEffect(() => {
-        async function loadContent() {
-            if (activePath === 'RADAR') {
-                setContent('');
-                setLoading(false);
-                return;
-            }
-
-            setLoading(true);
-            const result = await getDocContentAction(activePath);
-            if (result.success && result.content !== undefined) {
-                setContent(result.content);
-            } else {
-                setContent(`Error: ${result.error || 'Failed to load content'}`);
-            }
-            setLoading(false);
-        }
-        loadContent();
-    }, [activePath]);
 
     return (
         <div className="flex flex-col gap-10">
@@ -59,37 +33,18 @@ export function DocsViewer({ structure }: DocsViewerProps) {
                             Authorized_Intel // Revision_v2.0 // AI_Flow_Active
                         </h4>
                     </div>
-                    {loading && (
-                        <div className="flex items-center gap-3 px-6 py-2.5 bg-[#FF4B91]/5 border border-[#FF4B91]/20 rounded-full">
-                            <div className="w-2 h-2 bg-[#FF4B91] rounded-full animate-ping shadow-[0_0_10px_#FF4B91]" />
-                            <span className="text-[10px] text-[#FF4B91] font-black uppercase tracking-widest">Decrypting_Stream</span>
-                        </div>
-                    )}
                 </div>
 
                 <div className="flex-1 overflow-y-auto p-12 lg:p-20 custom-scrollbar">
-                    {loading ? (
-                        <div className="flex flex-col items-center justify-center h-[600px] space-y-8">
-                            <div className="relative">
-                                <div className="w-20 h-20 border-4 border-slate-100 border-t-[#FF4B91] rounded-full animate-spin" />
-                                <div className="absolute inset-0 flex items-center justify-center">
-                                    <div className="w-3 h-3 bg-[#FF4B91] rounded-full animate-pulse" />
-                                </div>
+                    <div className="w-full mx-auto animate-in fade-in slide-in-from-bottom-10 duration-1000 px-4">
+                        {activePath === 'RADAR' ? (
+                            <GovernanceInventory />
+                        ) : (
+                            <div className="p-8 border-2 border-dashed border-slate-200 rounded-[2rem] text-center">
+                                <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest">Content Display Disabled by Protocol</p>
                             </div>
-                            <p className="text-slate-400 text-[11px] font-black tracking-[0.5em] uppercase animate-pulse">Synchronizing_Vault</p>
-                        </div>
-                    ) : (
-                        <div className="w-full mx-auto animate-in fade-in slide-in-from-bottom-10 duration-1000 px-4">
-                            {activePath === 'RADAR' ? (
-                                <GovernanceInventory />
-                            ) : (
-                                <div className="w-full">
-                                    <DocExplainer filePath={activePath} />
-                                    <MarkdownRenderer content={content} />
-                                </div>
-                            )}
-                        </div>
-                    )}
+                        )}
+                    </div>
                 </div>
             </div>
         </div>
