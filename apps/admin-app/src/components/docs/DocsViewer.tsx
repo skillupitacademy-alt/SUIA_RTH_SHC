@@ -83,7 +83,7 @@ export function DocsViewer({ structure }: DocsViewerProps) {
                             {activePath === 'RADAR' ? (
                                 <GovernanceInventory />
                             ) : (
-                                <div className="max-w-4xl mx-auto">
+                                <div className="w-full">
                                     <DocExplainer filePath={activePath} />
                                     <MarkdownRenderer content={content} />
                                 </div>

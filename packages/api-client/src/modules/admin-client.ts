@@ -224,14 +224,21 @@ export class AdminClient {
     }>(`/admin/sessions/live?page=${page}&limit=${limit}`);
   }
 
-  async getUsers(page: number = 1, limit: number = 20, status: 'active' | 'deleted' = 'active') {
+  async getUsers(page: number = 1, limit: number = 20, status: 'active' | 'deleted' = 'active', filters?: { search?: string; role?: string; isBlocked?: boolean; isVerified?: boolean; status?: string }) {
+    const query = new URLSearchParams({ page: page.toString(), limit: limit.toString(), status });
+    if (filters?.search) query.append('search', filters.search);
+    if (filters?.role) query.append('role', filters.role);
+    if (filters?.isBlocked !== undefined) query.append('isBlocked', filters.isBlocked ? 'true' : 'false');
+    if (filters?.isVerified !== undefined) query.append('isVerified', filters.isVerified ? 'true' : 'false');
+    if (filters?.status) query.append('xStatus', filters.status);
+
     return this.client.get<{
         users: any[];
         total: number;
         page: number;
         limit: number;
         totalPages: number;
-    }>(`/admin/users?page=${page}&limit=${limit}&status=${status}`);
+    }>(`/admin/users?${query.toString()}`);
   }
 
   async updateUser(id: string, data: any) {

@@ -23,8 +23,17 @@ export async function GET(req: NextRequest) {
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '20');
     const status = searchParams.get('status') as 'active' | 'deleted' || 'active';
+    
+    // New Filters
+    const search = searchParams.get('search') || undefined;
+    const role = searchParams.get('role') || undefined;
+    const isBlockedParam = searchParams.get('isBlocked');
+    const isBlocked = isBlockedParam === 'true' ? true : isBlockedParam === 'false' ? false : undefined;
+    const isVerifiedParam = searchParams.get('isVerified');
+    const isVerified = isVerifiedParam === 'true' ? true : isVerifiedParam === 'false' ? false : undefined;
+    const xStatus = searchParams.get('xStatus') || undefined;
 
-    const data = await AdminEngine.getUsers(page, limit, status);
+    const data = await AdminEngine.getUsers(page, limit, status, { search, role, isBlocked, isVerified, status: xStatus });
     return NextResponse.json(data);
   } catch (error: any) {
     console.error('[ADMIN_USERS] Error:', error.message);

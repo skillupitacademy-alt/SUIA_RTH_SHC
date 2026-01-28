@@ -587,12 +587,78 @@ export class AdminEngine {
   /**
    * Section 16: User Management
    */
-  static async getUsers(page: number = 1, limit: number = 20, status: 'active' | 'deleted' = 'active') {
+  static async getUsers(page: number = 1, limit: number = 20, status: 'active' | 'deleted' = 'active', filters?: { search?: string; role?: string; isBlocked?: boolean; isVerified?: boolean; status?: string }) {
     const offset = (page - 1) * limit;
 
-    const whereClause = status === 'active' 
-        ? isNull(users.deletedAt) 
-        : isNotNull(users.deletedAt);
+    const conditions = [];
+    
+    // Status condition
+    if (status === 'active') {
+        conditions.push(isNull(users.deletedAt));
+    } else {
+        conditions.push(isNotNull(users.deletedAt));
+    }
+
+    // Search condition (Email or Name)
+    if (filters?.search) {
+        const searchPattern = `%${filters.search.toLowerCase()}%`;
+        const profileMatch = await db.select({ id: userProfiles.userId })
+            .from(userProfiles)
+            .where(sql`lower(${userProfiles.name}) ilike ${searchPattern}`);
+        
+        const profileIds = profileMatch.map(m => m.id);
+        
+        if (profileIds.length > 0) {
+            conditions.push(sql`(${users.email} ilike ${searchPattern} or ${users.id} in ${profileIds})`);
+        } else {
+            conditions.push(sql`${users.email} ilike ${searchPattern}`);
+        }
+    }
+
+    // Role condition
+    if (filters?.role) {
+        const roleMatch = await db.select({ id: userRoles.userId })
+            .from(userRoles)
+            .innerJoin(roles, eq(userRoles.roleId, roles.id))
+            .where(eq(roles.name, filters.role.toUpperCase()));
+            
+        const roleUserIds = roleMatch.map(m => m.id);
+        if (roleUserIds.length > 0) {
+            conditions.push(inArray(users.id, roleUserIds));
+        } else {
+            return { users: [], total: 0, page, limit, totalPages: 0 };
+        }
+    }
+
+    // Blocked condition
+    if (filters?.isBlocked !== undefined) {
+        conditions.push(eq(users.isBlocked, filters.isBlocked));
+    }
+
+    // Verified condition
+    if (filters?.isVerified !== undefined) {
+        conditions.push(eq(users.emailVerified, filters.isVerified));
+    }
+
+    // Advanced Status Filter (online, idle, offline)
+    if (filters?.status && filters.isBlocked === undefined) {
+        const now = new Date();
+        const twoMinsAgo = new Date(now.getTime() - 2 * 60 * 1000);
+        const fiveMinsAgo = new Date(now.getTime() - 5 * 60 * 1000);
+
+        if (filters.status === 'online') {
+            conditions.push(gt(users.lastActiveAt, twoMinsAgo));
+        } else if (filters.status === 'idle') {
+            conditions.push(and(
+                gt(users.lastActiveAt, fiveMinsAgo),
+                sql`${users.lastActiveAt} <= ${twoMinsAgo}`
+            ));
+        } else if (filters.status === 'offline') {
+            conditions.push(sql`(${users.lastActiveAt} is null or ${users.lastActiveAt} < ${fiveMinsAgo})`);
+        }
+    }
+
+    const whereClause = and(...conditions);
 
     const [countResult] = await db.select({ count: sql`count(*)` })
         .from(users)

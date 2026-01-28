@@ -37,12 +37,33 @@ export function UserTable() {
     const [isSaving, setIsSaving] = useState(false);
     const [newPassword, setNewPassword] = useState('');
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [filterRole, setFilterRole] = useState('ALL');
+    const [filterBlocked, setFilterBlocked] = useState('ALL'); // ALL, BLOCKED, ACTIVE
+    const [filterVerified, setFilterVerified] = useState('ALL'); // ALL, VERIFIED, UNVERIFIED
 
     const fetchUsers = async () => {
+        setIsLoading(true);
         try {
+            const serverFilters: any = {};
+            if (searchQuery) serverFilters.search = searchQuery;
+            if (filterRole !== 'ALL') serverFilters.role = filterRole;
+
+            // Comprehensive Status Filter
+            if (filterBlocked === 'BLOCKED') {
+                serverFilters.isBlocked = true;
+            } else if (filterBlocked === 'ACTIVE') {
+                serverFilters.isBlocked = false;
+            } else if (['online', 'idle', 'offline'].includes(filterBlocked.toLowerCase())) {
+                serverFilters.status = filterBlocked.toLowerCase();
+            }
+
+            if (filterVerified === 'VERIFIED') serverFilters.isVerified = true;
+            if (filterVerified === 'UNVERIFIED') serverFilters.isVerified = false;
+
             const [activeData, deletedData] = await Promise.all([
-                apiClient.admin.getUsers(page, 10, 'active'),
-                apiClient.admin.getUsers(1, 50, 'deleted') // Fetch recent 50 deleted users
+                apiClient.admin.getUsers(page, 10, 'active', serverFilters),
+                apiClient.admin.getUsers(1, 10, 'deleted')
             ]);
 
             setUsers(activeData.users);
@@ -57,10 +78,16 @@ export function UserTable() {
 
     useEffect(() => {
         fetchUsers();
-        // Poll every 15 seconds to update online status
-        const interval = setInterval(fetchUsers, 15000);
-        return () => clearInterval(interval);
-    }, [page]);
+    }, [page, filterRole, filterBlocked, filterVerified]);
+
+    // Debounced search
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            if (page === 1) fetchUsers();
+            else setPage(1);
+        }, 500);
+        return () => clearTimeout(timer);
+    }, [searchQuery]);
 
     const handleSaveUser = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -137,7 +164,66 @@ export function UserTable() {
     }
 
     return (
-        <>
+        <div className="space-y-6">
+            {/* Filter Bar: Discovery_Orchestrator */}
+            <div className="grid grid-cols-1 xl:grid-cols-4 gap-4 p-6 bg-white border border-primary/10 rounded-[2.5rem] shadow-sm">
+                {/* Search: Identity */}
+                <div className="relative">
+                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground group">
+                        <User size={16} className="group-hover:text-[#FF4B91] transition-colors" />
+                    </div>
+                    <input
+                        type="text"
+                        placeholder="Search Identity (Name/Email)..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="w-full pl-12 pr-4 py-3 bg-slate-50 border-none rounded-2xl text-sm font-bold placeholder:text-slate-300 focus:ring-2 focus:ring-[#FF4B91]/20 transition-all"
+                    />
+                </div>
+
+                {/* Filter: Access Level */}
+                <div className="relative">
+                    <select
+                        value={filterRole}
+                        onChange={(e) => setFilterRole(e.target.value)}
+                        className="w-full px-4 py-3 bg-slate-50 border-none rounded-2xl text-xs font-black uppercase tracking-widest text-slate-600 focus:ring-2 focus:ring-[#FF4B91]/20 appearance-none cursor-pointer"
+                    >
+                        <option value="ALL">All Access Levels</option>
+                        <option value="ADMIN">Administrator</option>
+                        <option value="USER">Standard User</option>
+                    </select>
+                </div>
+
+                {/* Filter: Block Status */}
+                <div className="relative">
+                    <select
+                        value={filterBlocked}
+                        onChange={(e) => setFilterBlocked(e.target.value)}
+                        className="w-full px-4 py-3 bg-slate-50 border-none rounded-2xl text-xs font-black uppercase tracking-widest text-slate-600 focus:ring-2 focus:ring-[#FF4B91]/20 appearance-none cursor-pointer"
+                    >
+                        <option value="ALL">All Statuses</option>
+                        <option value="ONLINE">Signal_Online</option>
+                        <option value="IDLE">Signal_Idle</option>
+                        <option value="OFFLINE">Signal_Offline</option>
+                        <option value="ACTIVE">System_Active</option>
+                        <option value="BLOCKED">System_Blocked</option>
+                    </select>
+                </div>
+
+                {/* Filter: Verification */}
+                <div className="relative">
+                    <select
+                        value={filterVerified}
+                        onChange={(e) => setFilterVerified(e.target.value)}
+                        className="w-full px-4 py-3 bg-slate-50 border-none rounded-2xl text-xs font-black uppercase tracking-widest text-slate-600 focus:ring-2 focus:ring-[#FF4B91]/20 appearance-none cursor-pointer"
+                    >
+                        <option value="ALL">All Verification</option>
+                        <option value="VERIFIED">Dossier_Verified</option>
+                        <option value="UNVERIFIED">Dossier_Pending</option>
+                    </select>
+                </div>
+            </div>
+
             <div className="rounded-[2.5rem] border border-primary/10 bg-white/50 backdrop-blur-xl overflow-hidden shadow-xl">
                 <div className="overflow-x-auto">
                     <table className="w-full text-left">
@@ -163,7 +249,14 @@ export function UserTable() {
                                                 )}
                                             </div>
                                             <div>
-                                                <p className="font-bold text-[#1A1A1A]">{user.profile?.name || 'Unknown Agent'}</p>
+                                                <div className="flex items-center gap-2">
+                                                    <p className="font-bold text-[#1A1A1A]">{user.profile?.name || 'Unknown Agent'}</p>
+                                                    {user.emailVerified && (
+                                                        <div className="p-0.5 rounded-full bg-green-500 text-white" title="Identity Verified">
+                                                            <CheckCircle size={10} />
+                                                        </div>
+                                                    )}
+                                                </div>
                                                 <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                                                     <Mail size={10} />
                                                     {user.email}
@@ -484,6 +577,6 @@ export function UserTable() {
                     </div>
                 </div>
             )}
-        </>
+        </div>
     );
 }
