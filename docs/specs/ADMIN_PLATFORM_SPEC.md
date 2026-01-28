@@ -81,6 +81,11 @@ The Admin Dashboard is the control center of the platform. It answers one core q
 
 #### User & Account Overview
 - **Visible**: Total users, new users, verified vs unverified, locked accounts.
+- **Filtering (Discovery_Orchestrator)**:
+-     - **Identity**: Multi-field search (Name/Email).
+-     - **Access**: Role-based isolation (Admin/User).
+-     - **Activity**: Real-time signal tracking (Online/Idle/Offline).
+-     - **Security**: Block status (Blocked/Active) and Verification (Pending/Verified).
 - **Why**: Track growth and detect suspicious activity.
 
 #### Roles & Permissions (RBAC)

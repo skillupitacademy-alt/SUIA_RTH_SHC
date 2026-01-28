@@ -76,6 +76,20 @@ The platform uses the standard **Tailwind CSS** breakpoint system.
 - **Integrity**: 7D/30D toggles must remain always visible.
 - **Labels**: Use relative labels (`Today`, `Yesterday`) for recent items (<7 days).
 
+## 6. Admin Control Center Standards
+The "Discovery_Orchestrator" pattern defines the standard for high-density administrative filtering.
+
+### Filter Bar Layout
+- **Structure**: Horizontal grid (`1` col mobile, `4` cols xl).
+- **Styling**: `p-6` padding, `border-primary/10`, `rounded-[2.5rem]`, white background with shadow.
+- **Inputs**: `bg-slate-50` with `rounded-2xl`. No borders; use `focus:ring-2` for state.
+
+### Identity & Status
+- **Search**: Debounced (500ms) across name and email.
+- **Verification**: Verified identities MUST display a `CheckCircle` icon in green (`#22c55e`).
+- **Activity**: Pulsating indicators for `Online` (ping effect), static for `Idle`/`Offline`.
+- **Status Labels**: Uppercase, tracked (`tracking-widest`), font-black.
+
 ## Quality of Experience
 - **Enhancement allowed**: UI/UX may be enhanced for clarity, usability, and visual delight.
 - **No Degradation**: UI/UX features MUST NOT be removed or degraded unless explicitly instructed by the user.

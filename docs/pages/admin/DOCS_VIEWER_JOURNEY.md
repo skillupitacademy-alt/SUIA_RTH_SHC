@@ -24,12 +24,13 @@ Provide administrators with a "Single Pane of Glass" view of the system's Laws, 
 
 #### Content Display
 - **Interaction**: Clicking a tab shows a list/sub-tabs of files in that category.
-- **Viewing**: Clicking a file renders the **full, unadulterated Markdown content**.
+- **Viewing**: Clicking a file renders the **Structured Tabular Dashboard**.
 - **Formatting**:
-  - Tables must be rendered as styled HTML tables.
-  - Code blocks must be syntax highlighted.
-  - Headers and Lists must be preserved.
-  - **No Summarization**: Content must be shown in detail.
+  - **Property Detection**: `**Key**: Value` pairs are automatically rendered as horizontal executive rows.
+  - **Headers**: Styled as section dividers with pulsatile icons and pink accents.
+  - **Lists**: Rendered as high-fidelity cards with multi-column grid support.
+  - **Emphasis**: Blockquotes are transformed into "Critical Conflict Protocol" banners.
+  - **No raw document look**: Content must be structured as an investigative interface.
 
 ---
 
@@ -45,8 +46,9 @@ Provide administrators with a "Single Pane of Glass" view of the system's Laws, 
 - `getMarkdownContent(path)`: Returns raw string content.
 
 ### Aesthetic
-- **Theme**: "Secure Terminal" / Enterprise Dark Mode.
-- **Typography**: Monospace for file paths, Sans-serif for prose.
+- **Theme**: "Executive White" / High-Contrast Light Mode.
+- **Typography**: Space Grotesk / Inter for executive titling, Mono for logic streams.
+- **Layout**: Full-width expansion (100% viewport) for command-center feel.
 
 ---
 
