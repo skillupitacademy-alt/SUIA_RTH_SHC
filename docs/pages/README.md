@@ -7,7 +7,6 @@ Page contracts serve as the authoritative technical specification for individual
 The page contracts are organized by **User Journey** to reflect the flow and functional areas of the application:
 
 - **[auth/](file:///d:/onlinewebsites/quiz-platform/docs/pages/auth/)**: `AUTH_JOURNEY.md` (Signup, Onboarding, Login, Recovery).
-- **[auth/](file:///d:/onlinewebsites/quiz-platform/docs/pages/auth/)**: `AUTH_JOURNEY.md` (Signup, Onboarding, Login, Recovery).
 - **[admin/](file:///d:/onlinewebsites/quiz-platform/docs/pages/admin/)**: `ADMIN_JOURNEY.md` (Governance Terminal).
 - **[exams/](file:///d:/onlinewebsites/quiz-platform/docs/pages/exams/)**: `EXAM_JOURNEY.md` (Blueprint Config & Active Session).
 - **CORE**: `CORE_APP_JOURNEY.md` (Dashboard, Reports, Settings).

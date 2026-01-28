@@ -12,6 +12,7 @@ import { SpecViewer } from './SpecViewer';
 import { InfraViewer } from './InfraViewer';
 import { JourneyViewer } from './JourneyViewer';
 import { HealthViewer } from './HealthViewer';
+import { UniversalMarkdownViewer } from './UniversalMarkdownViewer';
 
 interface DocsViewerProps {
     structure: Record<DocCategory, DocFile[]>;
@@ -68,9 +69,7 @@ export function DocsViewer({ structure }: DocsViewerProps) {
                         ) : activePath.includes('CURRENT_STATE_REPORT.md') ? (
                             <HealthViewer />
                         ) : (
-                            <div className="p-8 border-2 border-dashed border-slate-200 rounded-[2rem] text-center">
-                                <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest">Content Display Disabled by Protocol</p>
-                            </div>
+                            <UniversalMarkdownViewer path={activePath} />
                         )}
                     </div>
                 </div>
