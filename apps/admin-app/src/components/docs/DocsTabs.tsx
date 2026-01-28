@@ -26,8 +26,8 @@ export function DocsTabs({ structure, onFileSelect, activePath }: DocsTabsProps)
                         className={cn(
                             "whitespace-nowrap px-8 py-3.5 text-[11px] font-black tracking-[0.2em] uppercase transition-all duration-500 rounded-2xl flex-shrink-0",
                             activeTab === cat
-                                ? "bg-[#1A1A1A] text-white shadow-xl shadow-[#1A1A1A]/20"
-                                : "text-slate-400 hover:text-[#1A1A1A] hover:bg-slate-50"
+                                ? "bg-[#FF4B91] text-white shadow-xl shadow-[#FF4B91]/20"
+                                : "text-slate-400 hover:text-[#FF4B91] hover:bg-slate-50"
                         )}
                     >
                         {cat}

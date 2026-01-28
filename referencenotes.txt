@@ -1,0 +1,25 @@
+In this whole conversation why you took so much time to solve .sql issue 
+
+
+Skill Name		
+Problem Solving
+Code Debugging
+API Design
+Data Analysis
+System Design
+Security Awareness
+Performance Optimization
+Testing & QA
+Version Control
+Agile Methodology
+
+
+
+superadmin@test.com / super123
+
+
+
+I want both div one below the other and accordingly work on layout and UI/UX look and feel use of Question bank page
+
+
+Whatever task we have done and after completion of task what to do please refer @.agents md files and architecture .md files and do needful if anything is pending to be done post task completion
