@@ -31,39 +31,49 @@ export function DocsViewer({ structure }: DocsViewerProps) {
     }, [activePath]);
 
     return (
-        <div className="flex h-[calc(100vh-160px)] gap-6 p-2">
-            {/* Sidebar Navigation */}
-            <div className="w-80 h-full flex-shrink-0">
-                <DocsTabs
-                    structure={structure}
-                    onFileSelect={setActivePath}
-                    activePath={activePath}
-                />
-            </div>
+        <div className="flex flex-col gap-8">
+            {/* Top Navigation Tier */}
+            <DocsTabs
+                structure={structure}
+                onFileSelect={setActivePath}
+                activePath={activePath}
+            />
 
-            {/* Main Content Area */}
-            <div className="flex-1 h-full bg-slate-900/30 border border-slate-800 rounded-xl overflow-hidden shadow-2xl flex flex-col backdrop-blur-sm">
-                <div className="bg-slate-900 border-b border-slate-800 px-6 py-4 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <span className="text-blue-400 font-mono text-xs font-bold uppercase tracking-tighter">Path:</span>
-                        <span className="text-slate-200 font-mono text-xs">{activePath}</span>
+            {/* Content Tier */}
+            <div className="bg-slate-900/40 border border-slate-800 rounded-[2.5rem] overflow-hidden shadow-2xl flex flex-col backdrop-blur-md min-h-[600px]">
+                <div className="bg-slate-900/60 border-b border-slate-800 px-8 py-5 flex items-center justify-between">
+                    <div className="flex flex-col gap-1">
+                        <div className="flex items-center gap-3">
+                            <span className="text-blue-500 font-black text-[10px] uppercase tracking-[0.3em]">Target_Path</span>
+                            <span className="text-slate-200 font-mono text-xs">{activePath}</span>
+                        </div>
+                        <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest italic">
+                            Authorized_Reference // Live_Sync: Active
+                        </h4>
                     </div>
                     {loading && (
-                        <div className="flex items-center gap-2">
-                            <div className="w-2 h-2 bg-blue-500 rounded-full animate-ping" />
-                            <span className="text-[10px] text-blue-500 font-bold uppercase tracking-widest">Updating...</span>
+                        <div className="flex items-center gap-3 px-4 py-2 bg-blue-500/10 border border-blue-500/20 rounded-full">
+                            <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(59,130,246,0.5)]" />
+                            <span className="text-[10px] text-blue-400 font-black uppercase tracking-widest">Deciphering...</span>
                         </div>
                     )}
                 </div>
 
-                <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
+                <div className="flex-1 overflow-y-auto p-10 custom-scrollbar">
                     {loading ? (
-                        <div className="flex flex-col items-center justify-center h-full space-y-4 opacity-50">
-                            <div className="w-12 h-12 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin" />
-                            <p className="text-slate-500 text-sm font-bold tracking-widest uppercase">Deciphering Terminal...</p>
+                        <div className="flex flex-col items-center justify-center h-[400px] space-y-6">
+                            <div className="relative">
+                                <div className="w-16 h-16 border-4 border-blue-500/10 border-t-blue-500 rounded-full animate-spin" />
+                                <div className="absolute inset-0 flex items-center justify-center">
+                                    <div className="w-2 h-2 bg-blue-500 rounded-full animate-ping" />
+                                </div>
+                            </div>
+                            <p className="text-slate-500 text-[10px] font-black tracking-[0.4em] uppercase animate-pulse">Establishing_Nexus_Link</p>
                         </div>
                     ) : (
-                        <MarkdownRenderer content={content} />
+                        <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
+                            <MarkdownRenderer content={content} />
+                        </div>
                     )}
                 </div>
             </div>
