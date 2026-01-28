@@ -79,6 +79,11 @@ The agent MUST STOP and ASK if:
 - **Security**: Zero Trust. RBAC. Automatic Sanitization.
 - **Database**: efficient indexing. No `SELECT *` on hot paths.
 
+### 🛡️ Command Execution Protocol (EFFICIENCY)
+1. **No Redundancy**: NEVER run separate commands (e.g., `git add`, `git commit`) immediately after a combined one-liner unless the combined command explicitly returned an error.
+2. **Shell Syntax**: Use PowerShell-compatible operators (`;`) or separate tool calls. Do NOT use `&&` if it causes execution logic loops.
+3. **Atomic Commits**: Ensure every commit has a meaningful, structured message before execution.
+
 ---
 
 ## 5️⃣ DOCUMENT CHANGE POLICY
