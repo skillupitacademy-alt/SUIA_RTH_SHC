@@ -52,3 +52,5 @@
 | 2026-01-28 | Logical Inventory Grouping | COMPLETED | Restructured massive inventory tables into logical feature-based subgroups (Auth, Dashboard, Content, etc.) for better readability. |
 | 2026-01-28 | Brain Log Digitization | COMPLETED | Digitize `BRAIN_LOG_RESTRUCTURE.md` into 5 high-fidelity React tables mirroring the visual spec of the Governance Constitution. |
 | 2026-01-28 | Proactive Core Digitization | COMPLETED | Proactively digitized `PROJECT_MANIFESTO` and `SYSTEM_ARCHITECTURE` into executive-grade viewers, completing the full "Cycle of Truth" UI overhaul. |
+| 2026-01-28 | Question Bank CRUD Implementation | COMPLETED | Implemented full CRUD suite for Domains, Subjects, Topics, Subtopics, and Skills with cascading logical validation and 'Executive White' UI. |
+| 2026-01-28 | 100% Documentation Digitization | COMPLETED | Completed the transformation of all remaining raw markdown files (Journeys, Logs, Archives) into high-fidelity React viewers. |

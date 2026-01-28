@@ -375,6 +375,34 @@ export const FOLDER_BREAKDOWN: FolderBreakdown[] = [
     { folder: 'docs/', count: 1, purpose: 'Main Documentation Entry Point (README)' },
 ];
 
+export const TASK_HISTORY_DATA = [
+    { date: '2026-01-28', task: 'Question Bank CRUD Implementation', status: 'COMPLETED', summary: 'Implemented full CRUD suite for Domains, Subjects, Topics, Subtopics, and Skills with cascading logical validation.' },
+    { date: '2026-01-28', task: 'Proactive Core Digitization', status: 'COMPLETED', summary: 'Proactively digitized PROJECT_MANIFESTO and SYSTEM_ARCHITECTURE into executive-grade viewers.' },
+    { date: '2026-01-28', task: 'Brain Log Digitization', status: 'COMPLETED', summary: 'Digitized BRAIN_LOG_RESTRUCTURE.md into high-fidelity React tables mirroring the visual spec.' },
+    { date: '2026-01-28', task: 'Logical Inventory Grouping', status: 'COMPLETED', summary: 'Restructured inventory tables into logical feature-based subgroups for improved discoverability.' },
+    { date: '2026-01-28', task: 'Constitution Alignment', status: 'COMPLETED', summary: 'Aligned digitized constitution tables with visual spec (Overview, STOP Conditions, Cycle of Truth).' },
+    { date: '2026-01-28', task: 'Governance Constitution Digitization', status: 'COMPLETED', summary: 'Digitized AGENT_CONSTITUTION.md into structured React tables for the Governance Dashboard.' },
+    { date: '2026-01-28', task: 'Universal Admin Filtering', status: 'COMPLETED', summary: 'Implemented real-time search and filtering across all Admin Question Bank tables and Dashboards.' },
+    { date: '2026-01-28', task: 'AI-Engine Driven Filtering', status: 'COMPLETED', summary: 'Implemented Discovery_Orchestrator for User Management and tabular Documentation rendering.' },
+    { date: '2026-01-28', task: 'Executive UI/UX Overhaul', status: 'COMPLETED', summary: 'Redesigned Governance tab to Executive White theme and restored original Question Bank UI.' },
+    { date: '2026-01-28', task: 'Admin Governance Dashboard', status: 'COMPLETED', summary: 'Implemented high-fidelity documentation viewer with vertical stack layout and Cycle of Truth integration.' },
+    { date: '2026-01-27', task: 'FAANG Standards Mandate', status: 'COMPLETED', summary: 'Updated AGENT_CONSTITUTION.md with SDE-3 level engineering and scalability requirements.' },
+    { date: '2026-01-27', task: 'Enterprise Dashboard Reorg', status: 'COMPLETED', summary: 'Rebuilt Admin Dashboard with horizontal header, Platform Control sidebar, and pink theme.' },
+    { date: '2026-01-27', task: 'Database Schema Sync', status: 'COMPLETED', summary: 'Resolved relational integrity errors and standardized subtopic_id column naming.' },
+    { date: '2026-01-27', task: 'Admin Live Dashboard', status: 'COMPLETED', summary: 'Implemented real-time session tracking, optimized for millions of concurrent users.' },
+    { date: '2026-01-26', task: 'Admin Authentication', status: 'COMPLETED', summary: 'Added AdminAuthService, Admin Login Route, and Page Contracts.' },
+];
+
+export const CURRENT_TASK_DATA = {
+    status: 'IDLE',
+    items: [
+        'Question Bank CRUD Suite (Domains, Subjects, Topics, Subtopics, Skills) 100% COMPLETED.',
+        'Hierarchical Cascading Logic (useAdminHierarchy) live.',
+        'Documentation Streaming API fully operational.',
+        'All high-fidelity governance tables in parity with spec.'
+    ]
+};
+
 export const FILE_PURPOSE_MAP: Record<string, string> = {
     'architecture/PROJECT_MANIFESTO.md': 'The governing document for project standards, documentation placement, and engineering philosophy.',
     'architecture/SYSTEM_ARCHITECTURE.md': 'High-level technical architecture, including service boundaries and data flow diagrams.',

@@ -11,7 +11,10 @@ import { ArchitectureViewer } from './ArchitectureViewer';
 import { SpecViewer } from './SpecViewer';
 import { InfraViewer } from './InfraViewer';
 import { JourneyViewer } from './JourneyViewer';
+import { JourneyFlowViewer } from './JourneyFlowViewer';
+import { ArchiveViewer } from './ArchiveViewer';
 import { HealthViewer } from './HealthViewer';
+import { LogViewer } from './LogViewer';
 import { UniversalMarkdownViewer } from './UniversalMarkdownViewer';
 
 interface DocsViewerProps {
@@ -66,8 +69,16 @@ export function DocsViewer({ structure }: DocsViewerProps) {
                             <InfraViewer />
                         ) : activePath.includes('README.md') && activePath.includes('pages') ? (
                             <JourneyViewer />
+                        ) : activePath.includes('JOURNEY.md') || activePath.includes('_PAGE_TEMPLATE.md') ? (
+                            <JourneyFlowViewer path={activePath} />
+                        ) : activePath.includes('archive/') ? (
+                            <ArchiveViewer path={activePath} />
                         ) : activePath.includes('CURRENT_STATE_REPORT.md') ? (
                             <HealthViewer />
+                        ) : activePath.includes('TASK_HISTORY.md') ? (
+                            <LogViewer type="history" />
+                        ) : activePath.includes('CURRENT_TASK_LOG.md') ? (
+                            <LogViewer type="current" />
                         ) : (
                             <UniversalMarkdownViewer path={activePath} />
                         )}

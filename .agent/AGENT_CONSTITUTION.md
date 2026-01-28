@@ -74,7 +74,7 @@ The agent MUST STOP and ASK if:
 
 ### 🐛 Engineering Standards (SDE-3)
 - **Scalability**: Logic must support millions of users (stateless, pagination).
-- **Frontend**: "Visual WOW Factor" is mandatory. Mobile-first (Tailwind).
+- **Frontend**: "Visual WOW Factor" is mandatory. ShadCn UI Components Mobile-first (Tailwind).
 - **BFF Pattern**: Minimize payloads. Aggregate APIs.
 - **Security**: Zero Trust. RBAC. Automatic Sanitization.
 - **Database**: efficient indexing. No `SELECT *` on hot paths.

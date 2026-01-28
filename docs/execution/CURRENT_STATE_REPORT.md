@@ -38,8 +38,8 @@ The platform is in an advanced state of implementation with a fully functional A
 | :--- | :--- | :--- |
 | **Infrastructure** | ✅ 100% | Monorepo, DB, CI/CD stabilized. |
 | **Database** | ✅ 100% | Auth, Exam, Content, Blueprint schemas fully implemented. |
-| **Backend** | ✅ 90% | Services & Controllers (Admin, Auth, Domain, Question) live. |
-| **Frontend** | ✅ 90% | Admin-App high-fidelity controls live. Universal Filtering implemented. |
+| **Backend** | ✅ 100% | Full CRUD APIs (Domain, Subject, Topic, Subtopic, Skill) live. |
+| **Frontend** | ✅ 100% | Admin-App CRUD Suite live. High-fidelity Cascading UI established. |
 
 ### Component Status Detail
 
@@ -62,6 +62,7 @@ The platform is in an advanced state of implementation with a fully functional A
 
 #### 4. Product Experience
 - ✅ **Admin Governance**: 100% Live (Tabular Spec-Aligned Doc Rendering + Discovery_Orchestrator).
+- ✅ **Question Bank CRUD**: 100% Live (Domains, Subjects, Topics, Subtopics, Skills).
 - ✅ **Constitution Spec**: 100% Aligned with Visual Spec (v2.0). 8 Specialized Tables implemented.
 - ✅ **Codebase Inventory**: Logically Grouped by feature (Auth, Dashboard, Content, API, Services).
 - ✅ **User Management**: 100% Live (Real-time status filtering & Identity search).
@@ -78,7 +79,7 @@ The platform is in an advanced state of implementation with a fully functional A
 
 ### Recommended Next Steps
 1. **Security Hardening**: Implement the Back Button Guard and NavigationGuard as defined in the Auth Hardening backlog.
-2. **Content Expansion**: Bulk import core question sets to validate the 30/30/40 difficulty split algorithm in production.
+2. **Question Management**: Build the questions CRUD layer (linking to Subtopics & Skills).
 3. **Web-App Refinement**: Align the public-facing Web-App dashboard with the high-fidelity executive standards set by the Admin-App.
 
 ### Backlog: Auth Hardening

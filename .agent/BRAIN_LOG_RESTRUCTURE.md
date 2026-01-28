@@ -125,3 +125,10 @@ Reduce documentation fragmentation and improve discoverability by consolidating 
 - **Constitution**: Refactored massive `AGENT_CONSTITUTION.md` tables into `ConstitutionViewer.tsx`. Aligned 8 tables with high-fidelity spec (Overview, STOP Conditions, Cycle of Truth).
 - **Inventory**: Logically grouped 50+ monorepo artifacts into feature-based subgroups (Auth, Dashboard, Content, API, Services).
 - **Outcome**: Achieved 100% "Cycle of Truth" physical-to-logical visual parity.
+
+### 17. Batch 17 (Question Bank CRUD & Hierarchy)
+- **Goal**: Transition Question Bank from static viewing to active classification management.
+- **Hierarchy Management**: Created `useAdminHierarchy.ts` hook to orchestrate multi-level cascading selects (Domain > Subject > Topic > Subtopic).
+- **CRUD Operations**: Implemented 5 high-fidelity management tables (Domains, Subjects, Topics, Subtopics, Skills) with full API integration.
+- **Error Handling**: Standardized `ErrorBanner` feedback loop for all administrative write operations.
+- **Outcome**: Established the core classification foundation for the platform's question engine.
