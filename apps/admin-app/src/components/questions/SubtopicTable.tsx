@@ -5,7 +5,7 @@ import { apiClient } from '@quiz/api-client';
 import { GitBranch, Plus, Edit2, Trash2, X, AlertTriangle, BookOpen, Layers, Hash } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { ErrorBanner } from '../layout/ErrorBanner';
-import { useAdminHierarchy } from '@/hooks/useAdminHierarchy';
+import { useDomains, useSubjects, useTopics } from '@/hooks/useAdminHierarchy';
 
 export function SubtopicTable() {
     const [data, setData] = useState<any[]>([]);
@@ -16,8 +16,6 @@ export function SubtopicTable() {
     const [debouncedSearch, setDebouncedSearch] = useState('');
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-    // Hierarchy data
-    const { domains, subjects, topics, fetchSubjects, fetchTopics } = useAdminHierarchy();
 
     // Modal states
     const [isFormOpen, setIsFormOpen] = useState(false);
@@ -34,6 +32,14 @@ export function SubtopicTable() {
         domainId: '',   // For cascading
         subjectId: ''   // For cascading
     });
+
+    // Hierarchy data
+    const domainsHook = useDomains();
+    const subjectsHook = useSubjects(formData.domainId || undefined);
+    const topicsHook = useTopics(formData.subjectId || undefined);
+    const domains = domainsHook.data;
+    const subjects = subjectsHook.data;
+    const topics = topicsHook.data;
 
     useEffect(() => {
         const timer = setTimeout(() => setDebouncedSearch(searchQuery), 500);
@@ -73,8 +79,7 @@ export function SubtopicTable() {
                 subjectId: topic?.subjectId || ''
             });
 
-            if (subject?.domainId) fetchSubjects(subject.domainId);
-            if (topic?.subjectId) fetchTopics(topic.subjectId);
+            // No manual fetch needed with atomic hooks
         } else {
             setCurrentSubtopic(null);
             setFormData({
@@ -91,12 +96,10 @@ export function SubtopicTable() {
 
     const handleDomainChange = (domainId: string) => {
         setFormData({ ...formData, domainId, subjectId: '', topicId: '' });
-        fetchSubjects(domainId);
     };
 
     const handleSubjectChange = (subjectId: string) => {
         setFormData({ ...formData, subjectId, topicId: '' });
-        fetchTopics(subjectId);
     };
 
     const handleSubmit = async (e: React.FormEvent) => {

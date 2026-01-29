@@ -5,7 +5,7 @@ import { apiClient } from '@quiz/api-client';
 import { BookOpen, Plus, Edit2, Trash2, X, AlertTriangle, Layers } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { ErrorBanner } from '../layout/ErrorBanner';
-import { useAdminHierarchy } from '@/hooks/useAdminHierarchy';
+import { useDomains } from '@/hooks/useAdminHierarchy';
 
 export function SubjectTable() {
     const [data, setData] = useState<any[]>([]);
@@ -17,7 +17,8 @@ export function SubjectTable() {
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
     // Hierarchy data
-    const { domains } = useAdminHierarchy();
+    const domainsHook = useDomains();
+    const domains = domainsHook.data;
 
     // Modal states
     const [isFormOpen, setIsFormOpen] = useState(false);

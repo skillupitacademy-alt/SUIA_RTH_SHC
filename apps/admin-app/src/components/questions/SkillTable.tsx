@@ -5,7 +5,7 @@ import { apiClient } from '@quiz/api-client';
 import { Shield, Plus, Edit2, Trash2, X, AlertTriangle, BookOpen, Layers, Hash, GitBranch } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { ErrorBanner } from '../layout/ErrorBanner';
-import { useAdminHierarchy } from '@/hooks/useAdminHierarchy';
+import { useDomains, useSubjects, useTopics, useSubtopics } from '@/hooks/useAdminHierarchy';
 
 export function SkillTable() {
     const [data, setData] = useState<any[]>([]);
@@ -16,8 +16,6 @@ export function SkillTable() {
     const [debouncedSearch, setDebouncedSearch] = useState('');
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-    // Hierarchy data
-    const { domains, subjects, topics, subtopics, fetchSubjects, fetchTopics, fetchSubtopics } = useAdminHierarchy();
 
     // Modal states
     const [isFormOpen, setIsFormOpen] = useState(false);
@@ -35,6 +33,16 @@ export function SkillTable() {
         subjectId: '',
         topicId: ''
     });
+
+    // Hierarchy data
+    const domainsHook = useDomains();
+    const subjectsHook = useSubjects(formData.domainId || undefined);
+    const topicsHook = useTopics(formData.subjectId || undefined);
+    const subtopicsHook = useSubtopics(formData.topicId || undefined);
+    const domains = domainsHook.data;
+    const subjects = subjectsHook.data;
+    const topics = topicsHook.data;
+    const subtopics = subtopicsHook.data;
 
     useEffect(() => {
         const timer = setTimeout(() => setDebouncedSearch(searchQuery), 500);
@@ -76,9 +84,7 @@ export function SkillTable() {
                 topicId: subtopic?.topicId || ''
             });
 
-            if (subject?.domainId) fetchSubjects(subject.domainId);
-            if (topic?.subjectId) fetchTopics(topic.subjectId);
-            if (subtopic?.topicId) fetchSubtopics(subtopic.topicId);
+            // No manual fetch needed with atomic hooks
         } else {
             setCurrentSkill(null);
             setFormData({
@@ -96,17 +102,14 @@ export function SkillTable() {
 
     const handleDomainChange = (domainId: string) => {
         setFormData({ ...formData, domainId, subjectId: '', topicId: '', subtopicId: '' });
-        fetchSubjects(domainId);
     };
 
     const handleSubjectChange = (subjectId: string) => {
         setFormData({ ...formData, subjectId, topicId: '', subtopicId: '' });
-        fetchTopics(subjectId);
     };
 
     const handleTopicChange = (topicId: string) => {
         setFormData({ ...formData, topicId, subtopicId: '' });
-        fetchSubtopics(topicId);
     };
 
     const handleSubmit = async (e: React.FormEvent) => {

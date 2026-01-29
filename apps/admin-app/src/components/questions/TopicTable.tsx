@@ -5,7 +5,7 @@ import { apiClient } from '@quiz/api-client';
 import { Hash, Plus, Edit2, Trash2, X, AlertTriangle, BookOpen, Layers } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { ErrorBanner } from '../layout/ErrorBanner';
-import { useAdminHierarchy } from '@/hooks/useAdminHierarchy';
+import { useDomains, useSubjects } from '@/hooks/useAdminHierarchy';
 
 export function TopicTable() {
     const [data, setData] = useState<any[]>([]);
@@ -16,8 +16,6 @@ export function TopicTable() {
     const [debouncedSearch, setDebouncedSearch] = useState('');
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-    // Hierarchy data
-    const { domains, subjects, fetchSubjects } = useAdminHierarchy();
 
     // Modal states
     const [isFormOpen, setIsFormOpen] = useState(false);
@@ -33,6 +31,12 @@ export function TopicTable() {
         status: 'active' as 'active' | 'inactive',
         domainId: '' // For cascading selection
     });
+
+    // Hierarchy data
+    const domainsHook = useDomains();
+    const subjectsHook = useSubjects(formData.domainId || undefined);
+    const domains = domainsHook.data;
+    const subjects = subjectsHook.data;
 
     useEffect(() => {
         const timer = setTimeout(() => setDebouncedSearch(searchQuery), 500);
@@ -68,7 +72,7 @@ export function TopicTable() {
                 domainId: topic.subject?.domainId || ''
             });
             if (topic.subject?.domainId) {
-                fetchSubjects(topic.subject.domainId);
+                // No manual fetch needed with atomic hooks
             }
         } else {
             setCurrentTopic(null);
@@ -85,7 +89,6 @@ export function TopicTable() {
 
     const handleDomainChange = (domainId: string) => {
         setFormData({ ...formData, domainId, subjectId: '' });
-        fetchSubjects(domainId);
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
