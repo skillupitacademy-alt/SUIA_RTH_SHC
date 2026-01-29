@@ -144,7 +144,7 @@ export function TopicTable() {
                         <div className="flex justify-between items-start mb-8">
                             <div>
                                 <h3 className="text-2xl font-black text-[#1A1A1A] italic uppercase tracking-tighter">
-                                    {currentTopic ? 'Update_Topic' : 'Initialize_Topic'}
+                                    {currentTopic ? 'Update Topic' : 'Create Topic'}
                                 </h3>
                                 <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1">Authority Management Layer</p>
                             </div>
@@ -223,7 +223,7 @@ export function TopicTable() {
                                 disabled={isSubmitting}
                                 className="w-full py-4 rounded-2xl bg-[#1A1A1A] text-white text-xs font-black uppercase tracking-[0.2em] shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50"
                             >
-                                {isSubmitting ? 'Syncing_Data...' : currentTopic ? 'Execute_Update' : 'Initialize_Vector'}
+                                {isSubmitting ? 'Syncing...' : currentTopic ? 'Update' : 'Create'}
                             </button>
                         </form>
                     </div>
@@ -240,7 +240,7 @@ export function TopicTable() {
                                 <AlertTriangle size={32} />
                             </div>
                             <div>
-                                <h3 className="text-2xl font-black text-[#1A1A1A] italic uppercase tracking-tighter">Confirm_Purge</h3>
+                                <h3 className="text-2xl font-black text-[#1A1A1A] italic uppercase tracking-tighter">Confirm Deletion</h3>
                                 <p className="text-sm font-medium text-muted-foreground mt-2">
                                     You are about to delete the topic <strong className="text-red-600">"{currentTopic?.name}"</strong>. This action is irreversible and may impact child subtopics and questions.
                                 </p>
@@ -257,7 +257,7 @@ export function TopicTable() {
                                     disabled={isSubmitting}
                                     className="px-6 py-4 rounded-2xl bg-red-600 text-white font-black uppercase tracking-widest text-xs hover:bg-red-700 transition-all shadow-lg shadow-red-600/20 disabled:opacity-50"
                                 >
-                                    {isSubmitting ? 'Purging...' : 'Delete_ID'}
+                                    {isSubmitting ? 'Deleting...' : 'Delete'}
                                 </button>
                             </div>
                         </div>
@@ -274,7 +274,7 @@ export function TopicTable() {
                     <div className="relative flex-1 max-w-md group">
                         <input
                             type="text"
-                            placeholder="SEARCH_TOPICS..."
+                            placeholder="Search Topics..."
                             value={searchQuery}
                             onChange={(e) => { setSearchQuery(e.target.value); setPage(1); }}
                             className="w-full bg-slate-50 border-none rounded-2xl px-5 py-3 text-[11px] font-black tracking-widest text-[#1A1A1A] placeholder:text-slate-300 focus:ring-2 focus:ring-orange-500/10 transition-all outline-none border border-transparent shadow-inner"
@@ -289,7 +289,7 @@ export function TopicTable() {
                     className="ml-4 px-6 py-3 rounded-2xl bg-[#FF4B91] hover:bg-[#ff3382] text-white text-[11px] font-black uppercase tracking-widest shadow-xl shadow-[#FF4B91]/20 transition-all flex items-center gap-3 active:scale-95"
                 >
                     <Plus size={16} />
-                    Add_Topic
+                    Add Topic
                 </button>
             </div>
 
@@ -298,7 +298,7 @@ export function TopicTable() {
                     <div className="absolute inset-0 z-10 bg-white/60 backdrop-blur-sm flex items-center justify-center">
                         <div className="flex flex-col items-center gap-3">
                             <div className="w-10 h-10 border-4 border-orange-50 border-t-orange-500 rounded-full animate-spin" />
-                            <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Indexing_Matrix...</p>
+                            <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Refreshing Matrix...</p>
                         </div>
                     </div>
                 )}
@@ -344,8 +344,26 @@ export function TopicTable() {
                                         {item.status}
                                     </span>
                                 </td>
-                                <td className="p-6 text-right text-xs text-muted-foreground">
+                                <td className="p-6 text-right text-xs text-muted-foreground font-medium">
                                     {formatTimeAgo(item.createdAt)}
+                                </td>
+                                <td className="p-6 text-right">
+                                    <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <button
+                                            onClick={() => handleOpenForm(item)}
+                                            className="p-2 rounded-xl bg-slate-50 text-slate-400 hover:text-orange-500 hover:bg-orange-50 transition-all"
+                                            title="Edit Topic"
+                                        >
+                                            <Edit2 size={14} />
+                                        </button>
+                                        <button
+                                            onClick={() => { setCurrentTopic(item); setIsDeleteOpen(true); }}
+                                            className="p-2 rounded-xl bg-slate-50 text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all"
+                                            title="Delete Topic"
+                                        >
+                                            <Trash2 size={14} />
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                         ))}

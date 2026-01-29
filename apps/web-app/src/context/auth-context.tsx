@@ -23,13 +23,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                     await apiClient.auth.getSession();
                     // Session valid
                 } catch (error) {
-                    console.log('Session check failed, trying refresh...');
                     try {
                         const { accessToken } = await apiClient.auth.refresh();
                         apiClient.setAccessToken(accessToken);
                         login(user!, accessToken); // Update store
                     } catch (refreshError) {
-                        console.log('Refresh failed, logging out');
                         logout();
                     }
                 }

@@ -38,12 +38,7 @@ export class QuizEngine {
       },
     });
     
-    console.log(`[QuizEngine] Fetching state for examId=${examId}. Found? ${!!exam}`);
     if (exam) {
-        console.log(`[QuizEngine] Exam status=${exam.status}, Questions=${exam.examQuestions.length}`);
-        if(exam.examQuestions.length > 0) {
-             console.log(`[QuizEngine] Sample Q1: ${JSON.stringify(exam.examQuestions[0])}`);
-        }
     }
 
     if (!exam) throw new Error('Quiz not found');

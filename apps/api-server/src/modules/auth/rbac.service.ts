@@ -10,7 +10,6 @@ export async function verifyAdmin(payload: TokenPayload): Promise<boolean> {
     });
 
     if (user?.isBlocked) {
-        console.warn(`[RBAC] BLOCKED USER attempted admin access: ${payload.userId}`);
         return false;
     }
 
@@ -35,6 +34,5 @@ export async function verifyAdmin(payload: TokenPayload): Promise<boolean> {
         .limit(1);
 
     const passed = userRole.length > 0;
-    console.log(`[RBAC] Result for ${payload.userId}: ${passed ? 'PASSED' : 'FAILED'}`);
     return passed;
 }

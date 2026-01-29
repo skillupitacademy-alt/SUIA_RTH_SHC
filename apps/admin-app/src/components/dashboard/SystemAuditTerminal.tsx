@@ -36,12 +36,12 @@ export function SystemAuditTerminal() {
                     </div>
                     <div>
                         <h3 className="text-2xl font-black uppercase tracking-tighter italic text-white">System Audit</h3>
-                        <p className="text-[10px] font-bold text-[#FF4B91] uppercase tracking-[0.2em] mt-0.5 line-through opacity-80 decoration-2">Confidential_Access</p>
+                        <p className="text-[10px] font-bold text-[#FF4B91] uppercase tracking-[0.2em] mt-0.5 line-through opacity-80 decoration-2">Confidential Access</p>
                     </div>
                 </div>
                 <div className="flex items-center gap-3">
                     <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                    <span className="text-[10px] font-black text-green-500 uppercase tracking-widest">Stream_Active</span>
+                    <span className="text-[10px] font-black text-green-500 uppercase tracking-widest">Stream Active</span>
                 </div>
             </div>
 
@@ -81,7 +81,7 @@ export function SystemAuditTerminal() {
                 <div className="flex items-center gap-6">
                     <div className="flex flex-col">
                         <span className="text-[10px] font-black text-white/40 uppercase tracking-widest mb-1">Status</span>
-                        <span className="text-xs font-black text-green-500 uppercase tracking-tighter italic">Operational_Secure</span>
+                        <span className="text-xs font-black text-green-500 uppercase tracking-tighter italic">Operational Secure</span>
                     </div>
                     <div className="w-px h-8 bg-white/10" />
                     <div className="flex flex-col">

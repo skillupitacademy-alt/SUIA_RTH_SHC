@@ -25,7 +25,6 @@ export async function POST(req: NextRequest) {
     let targetBlueprintId = blueprintId;
 
     if (subjects && subjects.length > 0) {
-      console.log('Generating Enterprise Blueprint for Domain:', blueprintId);
       targetBlueprintId = await blueprintService.generateBlueprint({
         domainId: blueprintId, // Frontend passes domain ID here
         subjectIds: subjects,

@@ -119,7 +119,7 @@ export function DomainTable() {
                         <div className="flex justify-between items-start mb-8">
                             <div>
                                 <h3 className="text-2xl font-black text-[#1A1A1A] italic uppercase tracking-tighter">
-                                    {currentDomain ? 'Update_Domain' : 'Initialize_Domain'}
+                                    {currentDomain ? 'Update Domain' : 'Create Domain'}
                                 </h3>
                                 <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1">Authority Management Layer</p>
                             </div>
@@ -179,7 +179,7 @@ export function DomainTable() {
                                 disabled={isSubmitting}
                                 className="w-full py-4 rounded-2xl bg-[#1A1A1A] text-white text-xs font-black uppercase tracking-[0.2em] shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50"
                             >
-                                {isSubmitting ? 'Syncing_Data...' : currentDomain ? 'Execute_Update' : 'Initialize_Vector'}
+                                {isSubmitting ? 'Syncing...' : currentDomain ? 'Update' : 'Create'}
                             </button>
                         </form>
                     </div>
@@ -196,7 +196,7 @@ export function DomainTable() {
                                 <AlertTriangle size={32} />
                             </div>
                             <div>
-                                <h3 className="text-2xl font-black text-[#1A1A1A] italic uppercase tracking-tighter">Confirm_Purge</h3>
+                                <h3 className="text-2xl font-black text-[#1A1A1A] italic uppercase tracking-tighter">Confirm Deletion</h3>
                                 <p className="text-sm font-medium text-muted-foreground mt-2">
                                     You are about to delete the domain <strong className="text-red-600">"{currentDomain?.name}"</strong>. This action is irreversible and may impact child subjects.
                                 </p>
@@ -213,7 +213,7 @@ export function DomainTable() {
                                     disabled={isSubmitting}
                                     className="px-6 py-4 rounded-2xl bg-red-600 text-white font-black uppercase tracking-widest text-xs hover:bg-red-700 transition-all shadow-lg shadow-red-600/20 disabled:opacity-50"
                                 >
-                                    {isSubmitting ? 'Purging...' : 'Delete_ID'}
+                                    {isSubmitting ? 'Deleting...' : 'Delete'}
                                 </button>
                             </div>
                         </div>
@@ -230,7 +230,7 @@ export function DomainTable() {
                     <div className="relative flex-1 max-w-md group">
                         <input
                             type="text"
-                            placeholder="SEARCH_DOMAINS..."
+                            placeholder="Search Domains..."
                             value={searchQuery}
                             onChange={(e) => { setSearchQuery(e.target.value); setPage(1); }}
                             className="w-full bg-slate-50 border-none rounded-2xl px-5 py-3 text-[11px] font-black tracking-widest text-[#1A1A1A] placeholder:text-slate-300 focus:ring-2 focus:ring-blue-500/10 transition-all outline-none border border-transparent shadow-inner"
@@ -245,7 +245,7 @@ export function DomainTable() {
                     className="ml-4 px-6 py-3 rounded-2xl bg-[#FF4B91] hover:bg-[#ff3382] text-white text-[11px] font-black uppercase tracking-widest shadow-xl shadow-[#FF4B91]/20 transition-all flex items-center gap-3 active:scale-95"
                 >
                     <Plus size={16} />
-                    Add_Domain
+                    Add Domain
                 </button>
             </div>
 
@@ -254,7 +254,7 @@ export function DomainTable() {
                     <div className="absolute inset-0 z-10 bg-white/60 backdrop-blur-sm flex items-center justify-center">
                         <div className="flex flex-col items-center gap-3">
                             <div className="w-10 h-10 border-4 border-blue-50 border-t-blue-500 rounded-full animate-spin" />
-                            <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Indexing_Matrix...</p>
+                            <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Refreshing Matrix...</p>
                         </div>
                     </div>
                 )}

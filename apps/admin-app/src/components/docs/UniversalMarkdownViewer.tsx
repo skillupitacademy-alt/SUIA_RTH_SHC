@@ -36,7 +36,7 @@ export function UniversalMarkdownViewer({ path }: UniversalMarkdownViewerProps) 
         return (
             <div className="flex flex-col items-center justify-center py-40 gap-6">
                 <div className="w-16 h-16 border-4 border-slate-100 border-t-[#FF4B91] rounded-full animate-spin" />
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em]">Decrypting_Intelligence_Stream...</p>
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em]">Loading Intelligence Stream...</p>
             </div>
         );
     }

@@ -15,7 +15,7 @@ export function ErrorBanner({ message, onClose }: ErrorBannerProps) {
                     <ShieldAlert size={20} />
                 </div>
                 <div className="flex-1">
-                    <p className="text-[10px] font-black text-red-500 uppercase tracking-widest mb-0.5">Security_Error</p>
+                    <p className="text-[10px] font-black text-red-500 uppercase tracking-widest mb-0.5">Security Error</p>
                     <p className="text-sm font-bold text-slate-700 leading-tight">{message}</p>
                 </div>
                 <button

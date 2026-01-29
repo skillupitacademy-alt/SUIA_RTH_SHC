@@ -50,14 +50,6 @@ export function CascadingSelect({ onChange, value, hideSkills }: CascadingSelect
         return allSkills;
     }, [selection.topicId, topicSkills, allSkills]);
 
-    // Debugging: Log state transitions for the problematic fields
-    useEffect(() => {
-        if (value) {
-            console.log('[DEBUG] CascadingSelect Prop Value:', value);
-            console.log('[DEBUG] Subtopics Data Status:', { loading: subtopics.loading, count: subtopics.data?.length });
-            console.log('[DEBUG] Skills Data Status:', { loading: skills.loading, count: skills.data?.length });
-        }
-    }, [value, subtopics.loading, skills.loading]);
 
     const handleChange = (level: keyof Selection, val: any) => {
         const next = { ...selection };
@@ -114,7 +106,7 @@ export function CascadingSelect({ onChange, value, hideSkills }: CascadingSelect
                 {value && (
                     <div className="flex items-center gap-2 px-3 py-1 bg-slate-100 rounded-full border border-slate-200">
                         <Binary className="w-3 h-3 text-slate-400" />
-                        <span className="text-[9px] font-bold text-slate-500 uppercase tracking-tighter">Controlled_State_Active</span>
+                        <span className="text-[9px] font-bold text-slate-500 uppercase tracking-tighter">Active Session</span>
                     </div>
                 )}
             </div>

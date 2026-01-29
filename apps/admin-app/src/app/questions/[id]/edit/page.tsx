@@ -32,7 +32,6 @@ export default function EditQuestionPage() {
                 const data = await apiClient.admin.getQuestionById(params.id as string);
 
                 if (data) {
-                    console.log('[DEBUG] Fetched Question Data:', data);
 
                     setQuestion(data);
 
@@ -54,7 +53,6 @@ export default function EditQuestionPage() {
                     });
                 }
             } catch (error: any) {
-                console.error('[CRITICAL] Failed to fetch question:', error);
                 setStatus({ type: 'error', message: 'Failed to load assessment data.' });
             } finally {
                 setIsLoading(false);
@@ -103,7 +101,7 @@ export default function EditQuestionPage() {
         return (
             <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
                 <div className="w-12 h-12 border-4 border-[#FF4B91]/20 border-t-[#FF4B91] rounded-full animate-spin" />
-                <p className="text-xs font-black uppercase tracking-[0.3em] text-muted-foreground">Initializing_Editor...</p>
+                <p className="text-xs font-black uppercase tracking-[0.3em] text-muted-foreground">Initializing Editor...</p>
             </div>
         );
     }
@@ -156,7 +154,7 @@ export default function EditQuestionPage() {
                         </div>
                         <div className="flex items-center gap-3">
                             <Database size={20} className="text-[#FF4B91]" />
-                            <span className="text-xs font-black uppercase tracking-[0.3em] text-[#FF4B91]">Revision_Control</span>
+                            <span className="text-xs font-black uppercase tracking-[0.3em] text-[#FF4B91]">Revision Control</span>
                         </div>
                     </div>
                 </div>

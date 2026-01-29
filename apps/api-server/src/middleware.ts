@@ -6,7 +6,6 @@ import { corsMiddleware } from './modules/auth/cors.middleware';
 import { TokenService } from './modules/auth/token.service';
 
 export async function middleware(request: NextRequest) {
-  console.log('[MIDDLEWARE] Request:', request.method, request.nextUrl.pathname);
   
   // 1. CORS Preflight
   if (request.method === 'OPTIONS') {
@@ -57,9 +56,7 @@ export async function middleware(request: NextRequest) {
     try {
       // In middleware, we just want to ensure it's a valid, unexpired token.
       const payload = await TokenService.verifyAccessToken(token);
-      console.log('[MIDDLEWARE] JWT Validated for user:', payload.userId);
     } catch (err: any) {
-      console.error('[MIDDLEWARE] JWT Verification failed:', err.message);
       const response = NextResponse.json(
         { error: 'Invalid or expired token', message: err.message },
         { status: 401 }
@@ -69,7 +66,6 @@ export async function middleware(request: NextRequest) {
   }
 
   // Debug log after all checks pass
-  console.log('[MIDDLEWARE] PASSED:', request.nextUrl.pathname);
 
   // 5. Proceed and add CORS headers
   const response = NextResponse.next();

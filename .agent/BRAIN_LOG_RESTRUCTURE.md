@@ -145,3 +145,16 @@ Reduce documentation fragmentation and improve discoverability by consolidating 
 - **Build Hardening**: Removed all "ignore" flags for TypeScript/ESLint to enforce a 100% strict build pipeline.
 - **Runtime Safety**: Implemented a global `formatTimeAgo` safety utility in `lib/utils.ts` to prevent `RangeError: Invalid time value` crashes caused by unvalidated API dates.
 - **Outcome**: Achieved a durable, strict codebase that is resistant to both build regressions and runtime exceptions.
+
+### 20. Batch 20 (Skill Matrix Alignment & Runtime Safety)
+- **Goal**: Align physical data representation with database schema and ensure runtime UI stability.
+- **Skill Matrix Alignment**: Refactored `SkillTable.tsx` to align with the `id`, `name`, `category`, and `mapping_type` fields. Flattened the management journey by removing unnecessary hierarchical dependencies for global skills.
+- **Runtime Safety**: Implemented `formatTimeAgo` safety utility across all governance tables to mitigate `RangeError: Invalid time value` crashes.
+- **Environment Stability**: Re-applied strict build enforcement by removing `ignoreBuildErrors` and verifying a zero-error production build.
+- **Outcome**: Achieved 100% parity between the database schema and the Skill Management UI, while hardening the application against common runtime failures.
+### 21. Batch 21 (Human-Friendly UI & Zero-Log Policy)
+- **Goal**: Transition from technical technical jargon to professional UI strings and enforce a zero-log production policy.
+- **UI Refactoring**: Systematically audited and refactored over 100 técnicos underscored labels (e.g., `Add_Domain`, `Confirm_Purge`, `Signal_Online`) into human-readable titles across the `admin-app` and `web-app`.
+- **Zero-Log Implementation**: Performed a global purge of all `console.log`, `console.warn`, and `console.error` statements across all 3 projects and shared packages to ensure production-grade security and silence.
+- **Data Integrity**: Verified `onDelete: "cascade"` logic across the educational hierarchy in the database schema to ensure relational stability.
+- **Outcome**: Achieved a professional, jargon-free user interface and a clean, log-free production environment.

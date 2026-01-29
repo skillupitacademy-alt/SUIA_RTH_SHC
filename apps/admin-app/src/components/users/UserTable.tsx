@@ -158,7 +158,7 @@ export function UserTable() {
                 />
             )}
 
-            {/* Filter Bar: Discovery_Orchestrator */}
+            {/* Filter Bar: Discovery Orchestrator */}
             <div className="grid grid-cols-1 xl:grid-cols-4 gap-4 p-6 bg-white border border-primary/10 rounded-[2.5rem] shadow-sm">
                 <div className="relative">
                     <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground group">
@@ -192,11 +192,11 @@ export function UserTable() {
                         className="w-full px-4 py-3 bg-slate-50 border-none rounded-2xl text-xs font-black uppercase tracking-widest text-slate-600 focus:ring-2 focus:ring-[#FF4B91]/20 appearance-none cursor-pointer"
                     >
                         <option value="ALL">All Statuses</option>
-                        <option value="ONLINE">Signal_Online</option>
-                        <option value="IDLE">Signal_Idle</option>
-                        <option value="OFFLINE">Signal_Offline</option>
-                        <option value="ACTIVE">System_Active</option>
-                        <option value="BLOCKED">System_Blocked</option>
+                        <option value="ONLINE">Online Status</option>
+                        <option value="IDLE">Idle Status</option>
+                        <option value="OFFLINE">Offline Status</option>
+                        <option value="ACTIVE">System Active</option>
+                        <option value="BLOCKED">System Blocked</option>
                     </select>
                 </div>
 
@@ -207,8 +207,8 @@ export function UserTable() {
                         className="w-full px-4 py-3 bg-slate-50 border-none rounded-2xl text-xs font-black uppercase tracking-widest text-slate-600 focus:ring-2 focus:ring-[#FF4B91]/20 appearance-none cursor-pointer"
                     >
                         <option value="ALL">All Verification</option>
-                        <option value="VERIFIED">Dossier_Verified</option>
-                        <option value="UNVERIFIED">Dossier_Pending</option>
+                        <option value="VERIFIED">Verified Users</option>
+                        <option value="UNVERIFIED">Pending Verification</option>
                     </select>
                 </div>
             </div>

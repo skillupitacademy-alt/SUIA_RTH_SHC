@@ -33,7 +33,7 @@ export function ArchiveViewer({ path }: ArchiveViewerProps) {
         return (
             <div className="flex flex-col items-center justify-center py-40 gap-6">
                 <div className="w-16 h-16 border-4 border-slate-100 border-t-slate-400 rounded-full animate-spin" />
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em]">Accessing_Historical_Vault...</p>
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em]">Accessing Historical Vault...</p>
             </div>
         );
     }
@@ -47,10 +47,10 @@ export function ArchiveViewer({ path }: ArchiveViewerProps) {
                 </div>
                 <div className="flex items-center gap-3 mb-4">
                     <Lock size={14} className="text-slate-400" />
-                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em]">Historical_Record_System</span>
+                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em]">Historical Record System</span>
                 </div>
                 <h1 className="text-4xl font-black text-[#1A1A1A] tracking-tighter uppercase italic mb-4">
-                    Intelligence_Archive
+                    Intelligence Archive
                 </h1>
                 <div className="flex items-center gap-4 text-xs font-bold text-slate-400 italic">
                     <History size={14} />
@@ -113,7 +113,7 @@ export function ArchiveViewer({ path }: ArchiveViewerProps) {
 
             <div className="p-12 border-t border-slate-100 text-center mt-20">
                 <p className="text-slate-300 text-[10px] font-black uppercase tracking-[0.5em]">
-                    End of Intelligence Reel // No Further Directives // Vault_Locked
+                    End of Intelligence Reel // No Further Directives // Vault Locked
                 </p>
             </div>
         </div>

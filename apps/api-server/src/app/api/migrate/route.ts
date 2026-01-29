@@ -15,7 +15,6 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    console.log('Running migrations...');
     
     const sql = neon(DATABASE_URL);
     const db = drizzle(sql);
@@ -30,7 +29,6 @@ export async function GET(request: NextRequest) {
       message: 'Migrations completed successfully!' 
     });
   } catch (error: any) {
-    console.error('Migration error:', error);
     return NextResponse.json(
       { 
         error: 'Migration failed', 

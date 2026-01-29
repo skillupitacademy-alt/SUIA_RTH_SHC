@@ -140,7 +140,7 @@ export function QuizSelection() {
         return (
             <div className="flex flex-col items-center justify-center min-h-[400px]">
                 <Loader2 className="h-10 w-10 animate-spin text-primary" />
-                <p className="mt-4 text-muted-foreground font-medium uppercase tracking-[0.2em] text-xs">Synchronizing_Matrix...</p>
+                <p className="mt-4 text-muted-foreground font-medium uppercase tracking-[0.2em] text-xs">Initializing...</p>
             </div>
         );
     }

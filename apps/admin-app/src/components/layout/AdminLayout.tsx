@@ -79,7 +79,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                         </p>
                     </div>
                     <div className="relative z-10 text-xs font-black uppercase tracking-widest text-gray-500">
-                        SYSTEM_ID: RH-9011-GC // SECURE_LAYER_V1
+                        System ID: RH-9011-GC // Secure Layer V1
                     </div>
                 </div>
 

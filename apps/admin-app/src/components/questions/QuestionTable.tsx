@@ -147,7 +147,7 @@ export function QuestionTable() {
                             <FileText size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground/40" />
                             <input
                                 type="text"
-                                placeholder="SEARCH_QUESTION_TEXT..."
+                                placeholder="Search assessment text..."
                                 value={searchQuery}
                                 onChange={(e) => { setSearchQuery(e.target.value); setPage(1); }}
                                 className="w-full bg-slate-50 border-none rounded-2xl pl-12 pr-6 py-3.5 text-[11px] font-black tracking-widest text-[#1A1A1A] placeholder:text-slate-300 focus:ring-2 focus:ring-[#FF4B91]/10 transition-all outline-none border border-transparent shadow-inner"
@@ -183,7 +183,7 @@ export function QuestionTable() {
                     <div className="absolute inset-0 z-10 bg-white/60 backdrop-blur-sm flex items-center justify-center animate-in fade-in duration-300">
                         <div className="flex flex-col items-center gap-4">
                             <div className="w-12 h-12 border-4 border-primary/10 border-t-primary rounded-full animate-spin" />
-                            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">Synchronizing_Matrix...</p>
+                            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">Synchronizing Matrix...</p>
                         </div>
                     </div>
                 )}
@@ -192,9 +192,10 @@ export function QuestionTable() {
                     <table className="w-full text-left font-sans">
                         <thead>
                             <tr className="border-b border-primary/5 bg-primary/5">
-                                <th className="p-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground w-[45%]">Assessment Content & Hierarchy</th>
+                                <th className="p-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground w-[40%]">Assessment Content & Hierarchy</th>
+                                <th className="p-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Type</th>
                                 <th className="p-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Complexity</th>
-                                <th className="p-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Governance</th>
+                                <th className="p-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Status</th>
                                 <th className="p-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground text-right">Operations</th>
                             </tr>
                         </thead>

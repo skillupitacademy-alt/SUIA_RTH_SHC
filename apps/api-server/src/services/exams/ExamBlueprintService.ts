@@ -31,11 +31,9 @@ export class ExamBlueprintService {
   async generateBlueprint(config: BlueprintConfiguration): Promise<string> {
     const { domainId, subjectIds, topicIds, subtopicIds, questionCount, difficultyPreference } = config;
 
-    console.log(`[BlueprintGen] Starting for Domain=${domainId}, Ss=${subjectIds?.length}, Ts=${topicIds?.length}, STs=${subtopicIds?.length}, N=${questionCount}, Diff=${difficultyPreference}`);
 
     // 1. Calculate Distribution based on Preference
     const distribution = this.calculateDistribution(questionCount, difficultyPreference);
-    console.log(`[BlueprintGen] Distribution: ${JSON.stringify(distribution)}`);
 
     // 2. Fetch Eligible Questions by Bucket
     const simpleQuestions = await this.fetchQuestions(distribution.simple, 'simple', domainId, subjectIds, topicIds, subtopicIds);
@@ -69,7 +67,6 @@ export class ExamBlueprintService {
       totalQuestions: questionCount,
     }).returning();
 
-    console.log(`[BlueprintGen] Created Blueprint ID: ${blueprint.id}`);
     return blueprint.id;
   }
 

@@ -291,7 +291,6 @@ export class AuthService {
     });
 
     // In a real app, send email here.
-    console.log(`[VERIFICATION EMAIL] To: ${user.email}, Link: /verify-email?token=${token}`);
     await AuditService.log({ userId, action: 'email_verification_resend_triggered', ip });
     return true;
   }
@@ -311,7 +310,6 @@ export class AuthService {
 
     // 2. Regardless of existence, return success (prevents enumeration)
     if (!user) {
-      console.log(`[PASS RESET] User not found for ${email}. Returning neutral success.`);
       return true; 
     }
 
@@ -336,7 +334,6 @@ export class AuthService {
 
     const resetUrl = `${baseUrl.replace(/\/$/, '')}/reset-password?token=${token}`;
     
-    console.log(`[AUTH SERVICE] Generating ${isAdmin ? 'ADMIN' : 'USER'} Reset Link for ${user.email}: ${resetUrl}`);
     await EmailService.sendPasswordResetEmail(user.email, resetUrl);
 
     return true;

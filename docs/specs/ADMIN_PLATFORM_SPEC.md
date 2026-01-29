@@ -98,10 +98,8 @@ The Admin Dashboard is the control center of the platform. It answers one core q
 
 #### Question Bank Health & Management
 - **Metrics**: Total questions, difficulty distribution (30/30/40), active vs inactive.
-- **Hierarchy Management**:
-    - **Domains/Subjects/Topics**: Full CRUD tables.
-    - **Questions**: Datatable with "Soft Delete" governance.
-- **Workflow**: 5-step wizard for hierarchical question entry (Domain -> Subject -> Topic -> Subtopic -> Question).
+    - **Skills**: Global matrix management (ID, Name, Category, Mapping Type) with direct CRUD, decoupled from strict hierarchy.
+- **Workflow**: 5-step classification wizard (Domain -> Subject -> Topic -> Subtopic -> Question).
 
 #### Exam Blueprint Monitoring
 - **Visible**: Blueprints generated, scope context, generation success/failure logs.

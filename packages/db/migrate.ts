@@ -10,15 +10,12 @@ if (!DATABASE_URL) {
 }
 
 async function runMigrations() {
-  console.log('🔄 Running migrations...');
-  console.log('Database URL:', DATABASE_URL.replace(/:[^:@]+@/, ':****@')); // Hide password
   
-  const sql = neon(DATABASE_URL);
+  const sql = neon(DATABASE_URL!);
   const db = drizzle(sql);
 
   try {
     await migrate(db, { migrationsFolder: './migrations' });
-    console.log('✅ Migrations completed successfully!');
   } catch (error) {
     console.error('❌ Migration failed:', error);
     process.exit(1);

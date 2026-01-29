@@ -71,8 +71,6 @@ function getAdminUrl(): string {
 const API_URL = getApiUrl();
 const ADMIN_URL = getAdminUrl();
 
-console.log('[API-CLIENT] Final API URL:', API_URL);
-console.log('[API-CLIENT] Final Admin URL:', ADMIN_URL);
 
 const baseClient = new FetchClient(API_URL);
 

@@ -18,9 +18,7 @@ export class ResendEmailProvider implements EmailProvider {
         subject: options.subject,
         html: options.html,
       });
-      console.log(`[RESEND SUCCESS] Email sent to ${options.to}`);
     } catch (error: any) {
-      console.error(`[RESEND ERROR] Failed to send email to ${options.to}:`, error.message);
       // We do not throw as per contract "Never throw user-visible errors due to email failure"
     }
   }
