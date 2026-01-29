@@ -1,90 +1,20 @@
 # 📊 Current State Report & Implementation Audit
 
-**Generated**: 2026-01-28
-**Scope**: Project Health, Build Stability, and Feature Completeness.
+**Generated**: 2026-01-29 (Post-Revert)
+**Scope**: Project Health, Design Fidelity, and Functional Stability.
 
 ---
 
-## 1. Build Stability Status
-*Source: IMPLEMENTATION_STATUS.md*
+### Phase 1: Restoration Status
+- **UI Design**: Successfully reverted to the "Executive White" design (pre-ShadCn).
+- **Component Architecture**: Restored legacy high-density components for Tables and Dialogs.
+- **Hook Layer**: Re-implemented individual hierarchy hooks (`useDomains`, `useSubjects`, etc.) to match restored components.
 
-### ✅ Overall Status: 100% Stable
-The build system has been completely stabilized for monorepo development.
+### Phase 2: Functional Preservation
+- **API Connectivity**: Preserved robust `@quiz/api-client` with environment-authoritative URL resolution.
+- **Navigation Safety**: Preserved sanitized `AdminLayout` to prevent 404 errors on dead links.
+- **State Integrity**: Preserved fix for React "uncontrolled to controlled" warnings in `CascadingSelect.tsx`.
 
-### Key Fixes Implemented
-- **Node Version**: Locked to `20.x` in root `package.json`.
-- **Package Manager**: Forced `pnpm@9.15.4`.
-- **Workspace Protocol**: All internal deps use `workspace:*` (fixed registry fetch errors).
-- **Toolchain**:
-    - `.npmrc`: Configured hoisted linker.
-    - `turbo.json`: Updated for Turbo 2.0 (`pipeline` -> `tasks`).
-- **Build Scripts**: Removed `npx` from package scripts to rely on pnpm path resolution.
-
-### Vercel Configuration (Mandatory)
-For each project (`web-app`, `admin-app`, `api-server`):
-- **Framework**: Next.js
-- **Install Command**: `pnpm install`
-- **Node Version**: 20.x
-
----
-
-## 2. Implementation Audit
-*Source: TASK_IMPLEMENTATION_MAPPING.md*
-
-### Executive Summary
-The platform is in an advanced state of implementation with a fully functional Admin Ecosystem and Core Engines.
-
-| Layer | Status | Notes |
-| :--- | :--- | :--- |
-| **Infrastructure** | ✅ 100% | Monorepo, DB, CI/CD stabilized. |
-| **Database** | ✅ 100% | Auth, Exam, Content, Blueprint schemas fully implemented. |
-| **Backend** | ✅ 100% | Full CRUD APIs (Domain, Subject, Topic, Subtopic, Skill) live. |
-| **Frontend** | ✅ 100% | Admin-App CRUD Suite live. High-fidelity Cascading UI established. |
-
-### Component Status Detail
-
-#### 1. Infrastructure
-- ✅ **Monorepo**: Apps (Web/Admin/API) and Packages (DB/UI/Config) created.
-- ✅ **Database**: Drizzle ORM + Neon configured with relational mapping.
-- ✅ **API Client**: Shared typed client created `packages/api-client`.
-
-#### 2. Auth & Admin System
-- ✅ **Schema**: Users, Sessions, Roles, Refresh Tokens, Audit Logs.
-- ✅ **Security**: Dual-Secret Token Verification, RBAC Services, Admin Guards.
-- ✅ **Admin Control**: Live Session Tracking, Growth Analytics, Security Signals.
-
-#### 3. Core Engines
-- ✅ **Schema**: Exams, Questions, Options, Blueprints.
-- ✅ **Engines**:
-    - `AdminEngine` (Content & User Management)
-    - `AuthEngine` (Identity & Session)
-    - `QuestionService` (Question Bank logic)
-
-#### 4. Product Experience
-- ✅ **Admin Governance**: 100% Live (Tabular Spec-Aligned Doc Rendering + Discovery_Orchestrator).
-- ✅ **Question Bank CRUD**: 100% Live (Domains, Subjects, Topics, Subtopics, Skills).
-- ✅ **Constitution Spec**: 100% Aligned with Visual Spec (v2.0). 8 Specialized Tables implemented.
-- ✅ **Codebase Inventory**: Logically Grouped by feature (Auth, Dashboard, Content, API, Services).
-- ✅ **User Management**: 100% Live (Real-time status filtering & Identity search).
-
-### Compliance & Governance Audit
-- **Documentation**: Fully reorganized into semantic folders (Architecture, Specs, Execution).
-- **UX Baseline**: `docs/ux/UX_BASELINE.md` establishes 7D/30D filtering rules.
-- **Dashboard**: Fully compliant with contract (Mobile Nav, Time Filtering).
-
-### Known Risks
-- **Chart Data Density**: 30D view uses dynamic label thinning; verify readability.
-- **Mobile Safe Areas**: Bottom navigation requires margin management.
-- **Git Policy**: Strict local-commit-only rule unless approved.
-
-### Recommended Next Steps
-1. **Security Hardening**: Implement the Back Button Guard and NavigationGuard as defined in the Auth Hardening backlog.
-2. **Question Management**: Build the questions CRUD layer (linking to Subtopics & Skills).
-3. **Web-App Refinement**: Align the public-facing Web-App dashboard with the high-fidelity executive standards set by the Admin-App.
-
-### Backlog: Auth Hardening
-*Source: CORE_PLATFORM_SPEC.md*
-- **Phase 2**: Replace `alert()` with `ErrorBanner`.
-- **Phase 3**: Create `NavigationGuard` and `usePreventBack` hook.
-- **Phase 4**: Hardening via API ping validation.
-
+### Phase 3: Build & Deployment
+- **Build Status**: Verified via local `pnpm build --filter @quiz/admin-app`.
+- **Git State**: Clean commit at restored baseline with manual logic patches.

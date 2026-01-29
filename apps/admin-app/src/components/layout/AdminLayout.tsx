@@ -28,11 +28,11 @@ import { usePresenceHeartbeat } from '@/hooks/usePresenceHeartbeat';
 const ADMIN_NAV = [
     { name: 'Dashboard', href: '/', icon: LayoutDashboard },
     { name: 'Question Bank', href: '/questions', icon: Database },
-    { name: 'Blueprint Manager', href: '/blueprints', icon: FileText },
+    // { name: 'Blueprint Manager', href: '/blueprints', icon: FileText },
     { name: 'Users', href: '/users', icon: Users },
-    { name: 'Audit Logs', href: '/audit', icon: ShieldAlert },
+    // { name: 'Audit Logs', href: '/audit', icon: ShieldAlert },
     { name: 'Governance', href: '/governance', icon: ShieldCheck },
-    { name: 'Settings', href: '/settings', icon: Settings },
+    // { name: 'Settings', href: '/settings', icon: Settings },
 ];
 
 

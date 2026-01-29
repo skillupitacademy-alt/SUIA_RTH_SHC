@@ -23,10 +23,10 @@ interface CascadingSelectProps {
 export function CascadingSelect({ onChange, value, hideSkills }: CascadingSelectProps) {
     // Local state only used if 'value' prop is NOT provided (uncontrolled mode)
     const [localSelection, setLocalSelection] = useState<Selection>({
-        domainId: null,
-        subjectId: null,
-        topicId: null,
-        subtopicId: null,
+        domainId: '',
+        subjectId: '',
+        topicId: '',
+        subtopicId: '',
         skillIds: [],
     });
 

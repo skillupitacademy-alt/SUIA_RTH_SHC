@@ -21,5 +21,106 @@ superadmin@test.com / super123
 
 I want both div one below the other and accordingly work on layout and UI/UX look and feel use of Question bank page
 
+please refer @.agent directory .md files which are the .md files need to be updated after we complete over given task
 
-Whatever task we have done and after completion of task what to do please refer @.agents md files and architecture .md files and do needful if anything is pending to be done post task completion
+Whatever task we have done and after completion of all tasks till now  what to do please refer @.agents md files and architecture .md files and do needful if anything is pending to be done post task completion
+
+
+Let me explain how .md file content to be shown
+
+Tabular format
+
+**Scope**: All Antigravity Agents  
+**Applies To**: Every model, every execution, every task  
+**Priority**: ABSOLUTE  
+**Change Policy**: User-only approval  
+
+Tabular format
+
+## 1️⃣ PURPOSE & HIERARCHY
+This document defines **binding laws** for how AI agents operating in this repository must interpret documentation, organize files, and execute tasks.
+
+### Source-of-Truth Hierarchy
+1. **`@docs/**`** → **Absolute Source of Truth**
+2. **Executable artifacts** (SQL, migrations) → **Immutable Truth**
+3. **`agent/**`** → **Behavioral control only**
+4. **Model reasoning** → **Lowest priority**
+
+> **Conflict Rule**: If a conflict exists, higher authority ALWAYS wins. Agent MUST STOP and ASK the user.
+
+Tabular format
+
+
+## 2️⃣ PERMISSION MATRIX (READ vs WRITE)
+
+| Path | Read | Write | Notes |
+| :--- | :--- | :--- | :--- |
+| **`@docs/**`** | ✅ | ❌ | Read-only unless user says **"update docs"**. |
+| **`apps/**`** | ✅ | ⚠️ | Write ONLY within requested scope. |
+| **`packages/**`** | ✅ | ⚠️ | Write ONLY for named modules. |
+| **`agent/**`** | ✅ | ✅ | Behavior & orchestration only. |
+| **SQL / Migrations** | ✅ | ❌ | Immutable unless user says **"modify migration SQL"**. |
+
+and so on...
+
+
+everything in proper tabular format like shown in snap but dont use document type look show in nice tabular format each component dont use document raw look 
+
+Filtering is missing in all tabs tabular of Question Bank page ,Dashboard page  Domain Structure & Readiness , Governance Terminal
+
+Error while analyzing directory
+Cannot list directory
+governance
+which does not exist.
+Cannot list directory
+governance
+which does not exist.
+
+Error while analyzing directory
+Cannot list directory
+ui
+which does not exist.
+
+npm warn Unknown project config "node-linker". This will stop working in the next major version of npm.
+npm warn Unknown project config "strict-peer-dependencies". This will stop working in the next major version of npm.
+
+
+ npx shadcn@latest add button -y ; npx shadcn@latest add input -y ; npx shadcn@latest add dialog -y ; npx shadcn@latest add select -y ; npx shadcn@latest add card -y ; npx shadcn@latest add table -y Check-In
+npm warn Unknown project config "node-linker". This will stop working in the next major version of npm.
+npm warn Unknown project config "strict-peer-dependencies". This will stop working in the next major version of npm.
+
+
+1. Dev Server vs. Production Build
+When you run npm run dev locally, Next.js uses Turbopack/Webpack in a "lazy" way. It only compiles the specific files and pages you are currently viewing in your browser.
+
+Example: If you are working on the Login page, the build system might never actually check 
+GovernanceInventory.tsx
+ or 
+CascadingSelect.tsx
+.
+Vercel, however, runs a mandatory next build, which compiles every single file in the project at once and performs a strict TypeScript check. If one icon is missing anywhere, the whole build fails.
+2. VS Code "Soft" Errors
+When I am editing code, VS Code shows red squiggles (TypeScript errors), but it doesn't stop the code from being saved or even running in "dev mode." Locally, we tend to rely on the IDE to tell us about errors. Vercel doesn't have an IDE; it uses a strict CLI build that treats any warning or missing name as a fatal error.
+
+3. Path Alias Resolution (@/)
+In the monorepo, the apps are configured to understand @/ as src/. When I moved components into the shared @quiz/ui package:
+
+Locally: Sometimes the build tool "guesses" the path or uses a local cache from when the file was still in the app.
+Vercel: It starts with a 100% clean, empty machine. It follows the 
+tsconfig.json
+ of the package strictly. Since the @quiz/ui package doesn't have a @/ alias (it shouldn't, as it's a shared library), it failed to find files that worked fine when they were still "local" to the Admin app.
+4. Case Sensitivity (Windows vs. Linux)
+You are on Windows (which is case-insensitive), but Vercel runs on Linux (which is case-sensitive).
+
+If I imported Plus from lucide-react but the file reference in a local cache was plus, Windows would let it slide. Linux (Vercel) will throw a "File not found" error immediately.
+How we prevent this now:
+Moving forward, I will run pnpm build or pnpm tsc --noEmit locally before we push. This forces the local machine to act like Vercel and check every single line of code for missing imports or type errors.
+
+I've already run this check for both apps, so the current state of your 
+main
+ branch is officially "Vercel-Safe."
+
+
+
+
+

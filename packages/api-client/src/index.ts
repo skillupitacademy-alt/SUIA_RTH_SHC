@@ -21,8 +21,13 @@ function getApiUrl(): string {
     const hostname = window.location.hostname;
     
     // Vercel Preview/Branch Deployments (Automatic)
+    // admin.xxx.vercel.app -> api.xxx.vercel.app
     if (hostname.includes('vercel.app')) {
-      const apiHostname = hostname.replace('web-app', 'api-server').replace('admin-app', 'api-server');
+      const apiHostname = hostname
+        .replace('web-app.', 'api-server.')
+        .replace('admin-app.', 'api-server.')
+        .replace('web.', 'api.')
+        .replace('admin.', 'api.');
       return `https://${apiHostname}/api`;
     }
 
@@ -48,7 +53,9 @@ function getAdminUrl(): string {
     
     // Vercel Preview/Branch Deployments
     if (hostname.includes('vercel.app')) {
-      const adminHostname = hostname.replace('web-app', 'admin-app');
+      const adminHostname = hostname
+        .replace('web-app.', 'admin-app.')
+        .replace('web.', 'admin.');
       return `https://${adminHostname}`;
     }
 
