@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { apiClient } from '@quiz/api-client';
 import { FileText, Layers, Hash, Activity, Edit3, Trash2, Filter, X, AlertTriangle, Loader2, Sparkles } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
+import { cn, formatTimeAgo } from '@/lib/utils';
 import { CascadingSelect, Selection } from '@/components/entry/CascadingSelect';
 import { MultiSelectField } from '../entry/SelectionFields';
 import { useAllSkills } from '@/hooks/useAdminHierarchy';
@@ -257,7 +258,7 @@ export function QuestionTable() {
                                             </div>
                                             <div className="text-right mt-1">
                                                 <span className="text-[8px] font-bold text-muted-foreground/50 uppercase tracking-tighter">
-                                                    Added {formatDistanceToNow(new Date(q.createdAt))} ago
+                                                    Added {formatTimeAgo(q.createdAt)}
                                                 </span>
                                             </div>
                                         </td>

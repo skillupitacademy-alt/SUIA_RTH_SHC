@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { apiClient } from '@quiz/api-client';
 import { Shield, Plus, Edit2, Trash2, X, AlertTriangle, BookOpen, Layers, Hash, GitBranch } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
+import { formatTimeAgo } from '@/lib/utils';
 import { ErrorBanner } from '../layout/ErrorBanner';
 import { useDomains, useSubjects, useTopics, useSubtopics } from '@/hooks/useAdminHierarchy';
 
@@ -406,7 +407,7 @@ export function SkillTable() {
                                     </span>
                                 </td>
                                 <td className="p-6 text-xs text-muted-foreground font-medium">
-                                    {formatDistanceToNow(new Date(item.createdAt), { addSuffix: true })}
+                                    {formatTimeAgo(item.createdAt)}
                                 </td>
                                 <td className="p-6 text-right">
                                     <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">

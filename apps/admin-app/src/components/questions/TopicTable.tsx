@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { apiClient } from '@quiz/api-client';
 import { Hash, Plus, Edit2, Trash2, X, AlertTriangle, BookOpen, Layers } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
+import { formatTimeAgo } from '@/lib/utils';
 import { ErrorBanner } from '../layout/ErrorBanner';
 import { useDomains, useSubjects } from '@/hooks/useAdminHierarchy';
 
@@ -344,7 +345,7 @@ export function TopicTable() {
                                     </span>
                                 </td>
                                 <td className="p-6 text-right text-xs text-muted-foreground">
-                                    {formatDistanceToNow(new Date(item.createdAt), { addSuffix: true })}
+                                    {formatTimeAgo(item.createdAt)}
                                 </td>
                             </tr>
                         ))}

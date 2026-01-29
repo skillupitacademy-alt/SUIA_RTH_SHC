@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { apiClient } from '@quiz/api-client';
-import { Layers, Globe, Clock, Plus, Edit2, Trash2, X, AlertTriangle } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
+import { Layers, Globe, Clock, Plus, Edit2, Trash2, X, AlertTriangle, Monitor, Shield, BookOpen, Hash, GitBranch } from 'lucide-react';
+import { formatTimeAgo } from '@/lib/utils';
 import { ErrorBanner } from '../layout/ErrorBanner';
 
 export function DomainTable() {
@@ -189,7 +189,7 @@ export function DomainTable() {
             {/* Delete Confirmation Modal */}
             {isDeleteOpen && (
                 <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300">
-                    <div className="bg-white border border-primary/10 rounded-[2.5rem] p-8 max-w-md w-full shadow-2xl relative overflow-hidden">
+                    <div className="bg-white border border-primary/10 rounded-[2.5rem] p-8 max-md w-full shadow-2xl relative overflow-hidden">
                         <div className="absolute top-0 left-0 w-full h-2 bg-red-500" />
                         <div className="flex flex-col items-center text-center gap-6">
                             <div className="h-16 w-16 rounded-full bg-red-100 flex items-center justify-center text-red-600">
@@ -292,7 +292,7 @@ export function DomainTable() {
                                     </span>
                                 </td>
                                 <td className="p-6 text-xs text-muted-foreground font-medium">
-                                    {formatDistanceToNow(new Date(item.createdAt), { addSuffix: true })}
+                                    {formatTimeAgo(item.createdAt)}
                                 </td>
                                 <td className="p-6 text-right">
                                     <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
