@@ -52,7 +52,7 @@ export function TopicTable() {
             setTotalPages(response.totalPages);
         } catch (error) {
             console.error('Failed to fetch topics:', error);
-            setErrorMessage('Network error: Unable to index topic matrix.');
+            setErrorMessage('Connection Error: Unable to load topics at this time.');
         } finally {
             setIsLoading(false);
         }
@@ -88,6 +88,19 @@ export function TopicTable() {
         setIsFormOpen(true);
     };
 
+    const handleCloseForm = () => {
+        setIsFormOpen(false);
+        setErrorMessage(null);
+        setCurrentTopic(null);
+        setFormData({
+            name: '',
+            subjectId: '',
+            description: '',
+            status: 'active',
+            domainId: ''
+        });
+    };
+
     const handleDomainChange = (domainId: string) => {
         setFormData({ ...formData, domainId, subjectId: '' });
     };
@@ -105,11 +118,11 @@ export function TopicTable() {
             } else {
                 await apiClient.admin.createTopic(formData);
             }
-            setIsFormOpen(false);
+            handleCloseForm();
             fetchTopics();
         } catch (error) {
             console.error('Failed to save topic:', error);
-            setErrorMessage('Security constraint or validation failure: Operation rejected.');
+            setErrorMessage('Saving Failed: Please ensure all fields (including parent subject) are correct.');
         } finally {
             setIsSubmitting(false);
         }
@@ -121,10 +134,11 @@ export function TopicTable() {
         try {
             await apiClient.admin.deleteTopic(currentTopic.id);
             setIsDeleteOpen(false);
+            setCurrentTopic(null);
             fetchTopics();
         } catch (error) {
             console.error('Failed to delete topic:', error);
-            setErrorMessage('Dependency violation: Topic is linked to active subtopics or questions.');
+            setErrorMessage('Deletion Blocked: This topic is linked to subtopics or questions and cannot be removed.');
         } finally {
             setIsSubmitting(false);
         }
@@ -146,9 +160,9 @@ export function TopicTable() {
                                 <h3 className="text-2xl font-black text-[#1A1A1A] italic uppercase tracking-tighter">
                                     {currentTopic ? 'Update Topic' : 'Create Topic'}
                                 </h3>
-                                <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1">Authority Management Layer</p>
+                                <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1">Management Console</p>
                             </div>
-                            <button onClick={() => setIsFormOpen(false)} className="p-2 hover:bg-slate-100 rounded-full transition-colors">
+                            <button onClick={handleCloseForm} className="p-2 hover:bg-slate-100 rounded-full transition-colors">
                                 <X size={20} className="text-slate-400" />
                             </button>
                         </div>
@@ -247,10 +261,10 @@ export function TopicTable() {
                             </div>
                             <div className="grid grid-cols-2 gap-4 w-full">
                                 <button
-                                    onClick={() => setIsDeleteOpen(false)}
+                                    onClick={() => { setIsDeleteOpen(false); setCurrentTopic(null); }}
                                     className="px-6 py-4 rounded-2xl border-2 border-slate-100 font-black uppercase tracking-widest text-xs hover:bg-slate-50 transition-all"
                                 >
-                                    Abort
+                                    Cancel
                                 </button>
                                 <button
                                     onClick={handleDelete}

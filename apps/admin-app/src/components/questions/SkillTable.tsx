@@ -40,7 +40,7 @@ export function SkillTable() {
             setTotalPages(response.totalPages);
         } catch (error) {
             console.error('Failed to fetch skills:', error);
-            setErrorMessage('Network error: Unable to index skill matrix.');
+            setErrorMessage('Connection Error: Unable to load skills at this time.');
         } finally {
             setIsLoading(false);
         }
@@ -69,6 +69,17 @@ export function SkillTable() {
         setIsFormOpen(true);
     };
 
+    const handleCloseForm = () => {
+        setIsFormOpen(false);
+        setErrorMessage(null);
+        setCurrentSkill(null);
+        setFormData({
+            name: '',
+            category: '',
+            mappingType: 'conceptual'
+        });
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsSubmitting(true);
@@ -78,11 +89,11 @@ export function SkillTable() {
             } else {
                 await apiClient.admin.createSkill(formData);
             }
-            setIsFormOpen(false);
+            handleCloseForm();
             fetchSkills();
         } catch (error) {
             console.error('Failed to save skill:', error);
-            setErrorMessage('Validation failure: Skill name must be unique.');
+            setErrorMessage('Saving Failed: Please ensure the skill name is unique and try again.');
         } finally {
             setIsSubmitting(false);
         }
@@ -94,10 +105,11 @@ export function SkillTable() {
         try {
             await apiClient.admin.deleteSkill(currentSkill.id);
             setIsDeleteOpen(false);
+            setCurrentSkill(null);
             fetchSkills();
         } catch (error) {
             console.error('Failed to delete skill:', error);
-            setErrorMessage('Constraint violation: Skill is in use.');
+            setErrorMessage('Deletion Blocked: This skill is currently assigned to questions and cannot be removed.');
         } finally {
             setIsSubmitting(false);
         }
@@ -119,9 +131,9 @@ export function SkillTable() {
                                 <h3 className="text-2xl font-black text-[#1A1A1A] italic uppercase tracking-tighter">
                                     {currentSkill ? 'Update Skill' : 'Create Skill'}
                                 </h3>
-                                <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1">Cognitive Matrix Layer</p>
+                                <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1">Management Console</p>
                             </div>
-                            <button onClick={() => setIsFormOpen(false)} className="p-2 hover:bg-slate-100 rounded-full transition-colors">
+                            <button onClick={handleCloseForm} className="p-2 hover:bg-slate-100 rounded-full transition-colors">
                                 <X size={20} className="text-slate-400" />
                             </button>
                         </div>
@@ -193,10 +205,10 @@ export function SkillTable() {
                             </div>
                             <div className="grid grid-cols-2 gap-4 w-full">
                                 <button
-                                    onClick={() => setIsDeleteOpen(false)}
+                                    onClick={() => { setIsDeleteOpen(false); setCurrentSkill(null); }}
                                     className="px-6 py-4 rounded-2xl border-2 border-slate-100 font-black uppercase tracking-widest text-xs hover:bg-slate-50 transition-all"
                                 >
-                                    Abort
+                                    Cancel
                                 </button>
                                 <button
                                     onClick={handleDelete}

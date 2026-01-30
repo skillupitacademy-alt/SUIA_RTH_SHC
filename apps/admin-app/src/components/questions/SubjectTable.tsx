@@ -48,7 +48,7 @@ export function SubjectTable() {
             setTotalPages(response.totalPages);
         } catch (error) {
             console.error('Failed to fetch subjects:', error);
-            setErrorMessage('Network error: Unable to index subject matrix.');
+            setErrorMessage('Connection Error: Unable to load subjects at this time.');
         } finally {
             setIsLoading(false);
         }
@@ -79,6 +79,18 @@ export function SubjectTable() {
         setIsFormOpen(true);
     };
 
+    const handleCloseForm = () => {
+        setIsFormOpen(false);
+        setErrorMessage(null);
+        setCurrentSubject(null);
+        setFormData({
+            name: '',
+            domainId: '',
+            description: '',
+            status: 'active'
+        });
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!formData.domainId) {
@@ -92,11 +104,11 @@ export function SubjectTable() {
             } else {
                 await apiClient.admin.createSubject(formData);
             }
-            setIsFormOpen(false);
+            handleCloseForm();
             fetchSubjects();
         } catch (error) {
             console.error('Failed to save subject:', error);
-            setErrorMessage('Security constraint or validation failure: Operation rejected.');
+            setErrorMessage('Saving Failed: Please ensure all fields (including parent domain) are correct.');
         } finally {
             setIsSubmitting(false);
         }
@@ -108,10 +120,11 @@ export function SubjectTable() {
         try {
             await apiClient.admin.deleteSubject(currentSubject.id);
             setIsDeleteOpen(false);
+            setCurrentSubject(null);
             fetchSubjects();
         } catch (error) {
             console.error('Failed to delete subject:', error);
-            setErrorMessage('Dependency violation: Subject is linked to active topics.');
+            setErrorMessage('Deletion Blocked: This subject is currently linked to active topics and cannot be removed.');
         } finally {
             setIsSubmitting(false);
         }
@@ -133,9 +146,9 @@ export function SubjectTable() {
                                 <h3 className="text-2xl font-black text-[#1A1A1A] italic uppercase tracking-tighter">
                                     {currentSubject ? 'Update Subject' : 'Create Subject'}
                                 </h3>
-                                <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1">Authority Management Layer</p>
+                                <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1">Management Console</p>
                             </div>
-                            <button onClick={() => setIsFormOpen(false)} className="p-2 hover:bg-slate-100 rounded-full transition-colors">
+                            <button onClick={handleCloseForm} className="p-2 hover:bg-slate-100 rounded-full transition-colors">
                                 <X size={20} className="text-slate-400" />
                             </button>
                         </div>
@@ -219,10 +232,10 @@ export function SubjectTable() {
                             </div>
                             <div className="grid grid-cols-2 gap-4 w-full">
                                 <button
-                                    onClick={() => setIsDeleteOpen(false)}
+                                    onClick={() => { setIsDeleteOpen(false); setCurrentSubject(null); }}
                                     className="px-6 py-4 rounded-2xl border-2 border-slate-100 font-black uppercase tracking-widest text-xs hover:bg-slate-50 transition-all"
                                 >
-                                    Abort
+                                    Cancel
                                 </button>
                                 <button
                                     onClick={handleDelete}
@@ -270,7 +283,7 @@ export function SubjectTable() {
                     <div className="absolute inset-0 z-10 bg-white/60 backdrop-blur-sm flex items-center justify-center">
                         <div className="flex flex-col items-center gap-3">
                             <div className="w-10 h-10 border-4 border-purple-50 border-t-purple-500 rounded-full animate-spin" />
-                            <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Refreshing Matrix...</p>
+                            <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Loading subject records...</p>
                         </div>
                     </div>
                 )}

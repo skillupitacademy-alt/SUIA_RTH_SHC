@@ -40,7 +40,7 @@ export function DomainTable() {
             setTotalPages(response.totalPages);
         } catch (error) {
             console.error('Failed to fetch domains:', error);
-            setErrorMessage('Network error: Unable to index domain matrix.');
+            setErrorMessage('Connection Error: Unable to load the domain catalog at this time.');
         } finally {
             setIsLoading(false);
         }
@@ -71,6 +71,18 @@ export function DomainTable() {
         setIsFormOpen(true);
     };
 
+    const handleCloseForm = () => {
+        setIsFormOpen(false);
+        setErrorMessage(null);
+        setCurrentDomain(null);
+        setFormData({
+            name: '',
+            category: '',
+            description: '',
+            status: 'active'
+        });
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsSubmitting(true);
@@ -80,11 +92,11 @@ export function DomainTable() {
             } else {
                 await apiClient.admin.createDomain(formData);
             }
-            setIsFormOpen(false);
+            handleCloseForm();
             fetchDomains();
         } catch (error) {
             console.error('Failed to save domain:', error);
-            setErrorMessage('Security constraint or validation failure: Operation rejected.');
+            setErrorMessage('Saving Failed: Please ensure all fields are correct and try again.');
         } finally {
             setIsSubmitting(false);
         }
@@ -96,10 +108,11 @@ export function DomainTable() {
         try {
             await apiClient.admin.deleteDomain(currentDomain.id);
             setIsDeleteOpen(false);
+            setCurrentDomain(null);
             fetchDomains();
         } catch (error) {
             console.error('Failed to delete domain:', error);
-            setErrorMessage('Dependency violation: Domain is linked to active entities.');
+            setErrorMessage('Deletion Blocked: This domain is currently linked to active subjects or topics and cannot be removed.');
         } finally {
             setIsSubmitting(false);
         }
@@ -121,9 +134,9 @@ export function DomainTable() {
                                 <h3 className="text-2xl font-black text-[#1A1A1A] italic uppercase tracking-tighter">
                                     {currentDomain ? 'Update Domain' : 'Create Domain'}
                                 </h3>
-                                <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1">Authority Management Layer</p>
+                                <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1">Management Console</p>
                             </div>
-                            <button onClick={() => setIsFormOpen(false)} className="p-2 hover:bg-slate-100 rounded-full transition-colors">
+                            <button onClick={handleCloseForm} className="p-2 hover:bg-slate-100 rounded-full transition-colors">
                                 <X size={20} className="text-slate-400" />
                             </button>
                         </div>
@@ -203,10 +216,10 @@ export function DomainTable() {
                             </div>
                             <div className="grid grid-cols-2 gap-4 w-full">
                                 <button
-                                    onClick={() => setIsDeleteOpen(false)}
+                                    onClick={() => { setIsDeleteOpen(false); setCurrentDomain(null); }}
                                     className="px-6 py-4 rounded-2xl border-2 border-slate-100 font-black uppercase tracking-widest text-xs hover:bg-slate-50 transition-all"
                                 >
-                                    Abort
+                                    Cancel
                                 </button>
                                 <button
                                     onClick={handleDelete}
@@ -254,7 +267,7 @@ export function DomainTable() {
                     <div className="absolute inset-0 z-10 bg-white/60 backdrop-blur-sm flex items-center justify-center">
                         <div className="flex flex-col items-center gap-3">
                             <div className="w-10 h-10 border-4 border-blue-50 border-t-blue-500 rounded-full animate-spin" />
-                            <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Refreshing Matrix...</p>
+                            <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Loading domain records...</p>
                         </div>
                     </div>
                 )}

@@ -15,6 +15,15 @@ export class QuizClient {
     return this.client.get<any>(`/domains?id=${domainId}`);
   }
 
+  async getQuestionCount(filters: {
+    domainId: string;
+    subjects?: string[];
+    topicIds?: string[];
+    subtopicIds?: string[];
+  }) {
+    return this.client.post<any>('/quiz/count', filters);
+  }
+
   async startExam(config: { 
     domainId?: string; 
     blueprintId?: string; 

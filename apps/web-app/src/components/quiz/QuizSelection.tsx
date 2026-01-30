@@ -11,10 +11,11 @@ import {
     ArrowRight,
     Clock,
     Layers,
-    ChevronRight,
-    Sparkles,
     Loader2,
-    Activity
+    Activity,
+    ChevronDown,
+    Check,
+    Sparkles
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/store/auth-store';
@@ -56,6 +57,14 @@ export function QuizSelection() {
 
     const [difficulty, setDifficulty] = useState('mixed');
     const [questionCount, setQuestionCount] = useState(10);
+    const [availableCounts, setAvailableCounts] = useState<{
+        simple: number;
+        intermediate: number;
+        expert: number;
+        total: number;
+    } | null>(null);
+    const [fetchingCounts, setFetchingCounts] = useState(false);
+    const [showExtendedCount, setShowExtendedCount] = useState(false);
 
     // Initial load of active domains
     useEffect(() => {
@@ -94,26 +103,64 @@ export function QuizSelection() {
         fetchHierarchy();
     }, [selectedDomain]);
 
+    // Fetch available question counts based on filters
+    useEffect(() => {
+        const fetchCounts = async () => {
+            if (!selectedDomain) {
+                setAvailableCounts(null);
+                return;
+            }
+            setFetchingCounts(true);
+            try {
+                const counts = await apiClient.quiz.getQuestionCount({
+                    domainId: selectedDomain,
+                    subjects: selectedSubjects,
+                    topicIds: selectedTopics,
+                    subtopicIds: selectedSubtopics,
+                });
+                setAvailableCounts(counts);
+            } catch (err) {
+                console.error("Failed to fetch counts", err);
+            } finally {
+                setFetchingCounts(false);
+            }
+        };
+        fetchCounts();
+    }, [selectedDomain, selectedSubjects, selectedTopics, selectedSubtopics]);
+
     // Derived data for steps
     const subjects = fullHierarchy?.subjects || [];
-    const activeSubjects = subjects.filter((s: any) => selectedSubjects.includes(s.id));
+    const activeSubjects = selectedSubjects.length > 0
+        ? subjects.filter((s: any) => selectedSubjects.includes(s.id))
+        : subjects;
 
     const topics = activeSubjects.flatMap((s: any) => s.topics || []);
-    const activeTopics = topics.filter((t: any) => selectedTopics.includes(t.id));
+    const activeTopics = selectedTopics.length > 0
+        ? topics.filter((t: any) => selectedTopics.includes(t.id))
+        : topics;
 
     const subtopics = activeTopics.flatMap((t: any) => t.subtopics || []);
 
     const toggleItem = (list: string[], setList: (val: string[]) => void, id: string, resetChildren?: () => void) => {
         setError(null);
+        if (id === 'all') {
+            setList([]);
+            if (resetChildren) resetChildren();
+            return;
+        }
         const next = list.includes(id) ? list.filter(item => item !== id) : [...list, id];
         setList(next);
         if (resetChildren) resetChildren();
     };
 
+    const isItemSelected = (list: string[], id: string) => {
+        if (id === 'all') return list.length === 0;
+        return list.includes(id);
+    };
+
     const handleStartExam = async () => {
-        if (!selectedDomain) return;
-        if (selectedSubjects.length === 0) {
-            setError("Please select at least one subject to proceed.");
+        if (!selectedDomain) {
+            setError("Please select a domain to proceed.");
             return;
         }
 
@@ -198,6 +245,12 @@ export function QuizSelection() {
                         );
                     })}
                 </div>
+                {selectedDomain && availableCounts && (
+                    <div className="mt-8 flex items-center gap-3 px-6 py-3 bg-primary/5 rounded-2xl w-fit border border-primary/10 animate-in fade-in zoom-in duration-300">
+                        <Activity size={14} className="text-primary animate-pulse" />
+                        <span className="text-[10px] font-black uppercase tracking-widest text-[#1A1A1A]">Available Questions in Domain: <span className="text-primary text-sm ml-1">{availableCounts.total}</span></span>
+                    </div>
+                )}
             </section>
 
             {/* Step 2: Subject Filtering */}
@@ -216,6 +269,20 @@ export function QuizSelection() {
                         </div>
                     ) : (
                         <div className="flex flex-wrap gap-4">
+                            <button
+                                onClick={() => toggleItem(selectedSubjects, setSelectedSubjects, 'all', () => {
+                                    setSelectedTopics([]);
+                                    setSelectedSubtopics([]);
+                                })}
+                                className={cn(
+                                    "px-8 py-4 rounded-[1.5rem] border-2 font-black text-xs uppercase tracking-widest transition-all active:scale-95 shadow-sm",
+                                    isItemSelected(selectedSubjects, 'all')
+                                        ? "border-primary bg-primary text-primary-foreground shadow-xl shadow-primary/20"
+                                        : "border-muted bg-white hover:border-primary/30 text-muted-foreground hover:text-primary"
+                                )}
+                            >
+                                ALL SUBJECTS
+                            </button>
                             {subjects.map((subject: any) => (
                                 <button
                                     key={subject.id}
@@ -225,7 +292,7 @@ export function QuizSelection() {
                                     })}
                                     className={cn(
                                         "px-8 py-4 rounded-[1.5rem] border-2 font-black text-xs uppercase tracking-widest transition-all active:scale-95 shadow-sm",
-                                        selectedSubjects.includes(subject.id)
+                                        isItemSelected(selectedSubjects, subject.id)
                                             ? "border-primary bg-primary text-primary-foreground shadow-xl shadow-primary/20"
                                             : "border-muted bg-white hover:border-primary/30 text-muted-foreground hover:text-primary"
                                     )}
@@ -235,11 +302,17 @@ export function QuizSelection() {
                             ))}
                         </div>
                     )}
+                    {availableCounts && (
+                        <div className="mt-4 flex items-center gap-3 px-6 py-3 bg-primary/5 rounded-2xl w-fit border border-primary/10 animate-in fade-in zoom-in duration-300">
+                            <Activity size={14} className="text-primary animate-pulse" />
+                            <span className="text-[10px] font-black uppercase tracking-widest text-[#1A1A1A]">Subject Refinement Pool: <span className="text-primary text-sm ml-1">{availableCounts.total}</span></span>
+                        </div>
+                    )}
                 </section>
             )}
 
             {/* Step 3: Topic Selection */}
-            {selectedSubjects.length > 0 && topics.length > 0 && (
+            {selectedDomain && topics.length > 0 && (
                 <section className="space-y-8 animate-in slide-in-from-bottom-8 duration-600">
                     <div className="flex items-center gap-4">
                         <div className="h-10 w-10 rounded-2xl bg-primary/10 text-primary flex items-center justify-center font-black text-lg shadow-sm border border-primary/10 italic">3</div>
@@ -249,13 +322,24 @@ export function QuizSelection() {
                         </div>
                     </div>
                     <div className="flex flex-wrap gap-4">
+                        <button
+                            onClick={() => toggleItem(selectedTopics, setSelectedTopics, 'all', () => setSelectedSubtopics([]))}
+                            className={cn(
+                                "px-6 py-3.5 rounded-2xl border-2 font-bold text-[11px] uppercase tracking-widest transition-all active:scale-95",
+                                isItemSelected(selectedTopics, 'all')
+                                    ? "border-primary bg-primary/10 text-primary shadow-md shadow-primary/5"
+                                    : "border-muted-foreground/10 bg-white hover:border-primary/20 text-muted-foreground"
+                            )}
+                        >
+                            ALL TOPICS
+                        </button>
                         {topics.map((topic: any) => (
                             <button
                                 key={topic.id}
                                 onClick={() => toggleItem(selectedTopics, setSelectedTopics, topic.id, () => setSelectedSubtopics([]))}
                                 className={cn(
                                     "px-6 py-3.5 rounded-2xl border-2 font-bold text-[11px] uppercase tracking-widest transition-all active:scale-95",
-                                    selectedTopics.includes(topic.id)
+                                    isItemSelected(selectedTopics, topic.id)
                                         ? "border-primary bg-primary/5 text-primary shadow-md shadow-primary/5"
                                         : "border-muted-foreground/10 bg-white hover:border-primary/20 text-muted-foreground"
                                 )}
@@ -264,11 +348,17 @@ export function QuizSelection() {
                             </button>
                         ))}
                     </div>
+                    {availableCounts && (
+                        <div className="mt-4 flex items-center gap-3 px-6 py-3 bg-primary/5 rounded-2xl w-fit border border-primary/10 animate-in fade-in zoom-in duration-300">
+                            <Activity size={14} className="text-primary animate-pulse" />
+                            <span className="text-[10px] font-black uppercase tracking-widest text-[#1A1A1A]">Topic Filtered Pool: <span className="text-primary text-sm ml-1">{availableCounts.total}</span></span>
+                        </div>
+                    )}
                 </section>
             )}
 
             {/* Step 4: Subtopic Selection */}
-            {selectedTopics.length > 0 && subtopics.length > 0 && (
+            {selectedDomain && subtopics.length > 0 && (
                 <section className="space-y-8 animate-in slide-in-from-bottom-8 duration-700">
                     <div className="flex items-center gap-4">
                         <div className="h-10 w-10 rounded-2xl bg-primary/10 text-primary flex items-center justify-center font-black text-lg shadow-sm border border-primary/10 italic">4</div>
@@ -278,13 +368,24 @@ export function QuizSelection() {
                         </div>
                     </div>
                     <div className="flex flex-wrap gap-3">
+                        <button
+                            onClick={() => toggleItem(selectedSubtopics, setSelectedSubtopics, 'all')}
+                            className={cn(
+                                "px-5 py-3 rounded-xl border-2 font-bold text-[10px] uppercase tracking-widest transition-all active:scale-95",
+                                isItemSelected(selectedSubtopics, 'all')
+                                    ? "border-primary bg-primary/10 text-primary"
+                                    : "border-muted-foreground/5 bg-muted/30 hover:border-primary/20 text-muted-foreground"
+                            )}
+                        >
+                            ALL SUBTOPICS
+                        </button>
                         {subtopics.map((subtopic: any) => (
                             <button
                                 key={subtopic.id}
                                 onClick={() => toggleItem(selectedSubtopics, setSelectedSubtopics, subtopic.id)}
                                 className={cn(
                                     "px-5 py-3 rounded-xl border-2 font-bold text-[10px] uppercase tracking-widest transition-all active:scale-95",
-                                    selectedSubtopics.includes(subtopic.id)
+                                    isItemSelected(selectedSubtopics, subtopic.id)
                                         ? "border-primary bg-primary/10 text-primary"
                                         : "border-muted-foreground/5 bg-muted/30 hover:border-primary/20 text-muted-foreground"
                                 )}
@@ -293,6 +394,12 @@ export function QuizSelection() {
                             </button>
                         ))}
                     </div>
+                    {availableCounts && (
+                        <div className="mt-4 flex items-center gap-3 px-6 py-3 bg-primary/5 rounded-2xl w-fit border border-primary/10 animate-in fade-in zoom-in duration-300">
+                            <Activity size={14} className="text-primary animate-pulse" />
+                            <span className="text-[10px] font-black uppercase tracking-widest text-[#1A1A1A]">Subtopic Final Pool: <span className="text-primary text-sm ml-1">{availableCounts.total}</span></span>
+                        </div>
+                    )}
                 </section>
             )}
 
@@ -319,22 +426,72 @@ export function QuizSelection() {
 
                         <div className="space-y-10">
                             <div>
-                                <label className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground mb-6 block">Question Count</label>
-                                <div className="grid grid-cols-3 gap-4">
-                                    {[5, 10, 20].map(count => (
-                                        <button
-                                            key={count}
-                                            onClick={() => setQuestionCount(count)}
-                                            className={cn(
-                                                "py-4 rounded-2xl border-2 font-black text-xs uppercase tracking-widest transition-all",
-                                                questionCount === count
-                                                    ? "border-primary bg-primary/5 text-primary shadow-lg shadow-primary/5"
-                                                    : "border-muted-foreground/5 bg-transparent text-muted-foreground hover:bg-muted/10 font-bold"
+                                <label className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground mb-6 block">Question Count (Max)</label>
+                                <div className="flex items-center gap-4 flex-wrap">
+                                    {[5, 10, 15, 20].map(count => {
+                                        const totalAvail = availableCounts?.total || 0;
+                                        const isDisabled = (count - totalAvail) > 5;
+                                        return (
+                                            <button
+                                                key={count}
+                                                disabled={isDisabled}
+                                                onClick={() => setQuestionCount(count)}
+                                                className={cn(
+                                                    "px-6 py-4 rounded-2xl border-2 font-black text-xs uppercase tracking-widest transition-all",
+                                                    questionCount === count
+                                                        ? "border-primary bg-primary/5 text-primary shadow-lg shadow-primary/5"
+                                                        : "border-muted-foreground/5 bg-transparent text-muted-foreground hover:bg-muted/10 font-bold",
+                                                    isDisabled && "opacity-20 grayscale cursor-not-allowed"
+                                                )}
+                                            >
+                                                {count} Qs
+                                            </button>
+                                        );
+                                    })}
+
+                                    {(availableCounts?.total || 0) > 20 && (
+                                        <div className="relative">
+                                            <button
+                                                onClick={() => setShowExtendedCount(!showExtendedCount)}
+                                                className={cn(
+                                                    "px-6 py-4 rounded-2xl border-2 font-black text-xs uppercase tracking-widest transition-all flex items-center gap-2",
+                                                    [5, 10, 15, 20].includes(questionCount)
+                                                        ? "border-muted-foreground/5 bg-transparent text-muted-foreground hover:bg-muted/10 font-bold"
+                                                        : "border-primary bg-primary/5 text-primary shadow-lg shadow-primary/5"
+                                                )}
+                                            >
+                                                {![5, 10, 15, 20].includes(questionCount) ? `${questionCount} Qs` : 'More'}
+                                                <ChevronDown size={14} className={cn("transition-transform duration-300", showExtendedCount && "rotate-180")} />
+                                            </button>
+
+                                            {showExtendedCount && (
+                                                <div className="absolute top-full mt-3 left-0 bg-white border border-slate-200 rounded-3xl shadow-2xl p-3 z-50 grid grid-cols-2 gap-2 min-w-[200px] animate-in fade-in slide-in-from-top-2">
+                                                    {Array.from({ length: Math.ceil((availableCounts?.total || 0) / 10) - 2 }, (_, i) => (i + 3) * 10).map(c => {
+                                                        const totalAvail = availableCounts?.total || 0;
+                                                        const isDisabled = (c - totalAvail) > 5;
+                                                        return (
+                                                            <button
+                                                                key={c}
+                                                                disabled={isDisabled}
+                                                                onClick={() => {
+                                                                    setQuestionCount(c);
+                                                                    setShowExtendedCount(false);
+                                                                }}
+                                                                className={cn(
+                                                                    "p-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all text-left flex items-center justify-between",
+                                                                    questionCount === c ? "bg-primary text-white" : "hover:bg-slate-50 text-slate-600",
+                                                                    isDisabled && "opacity-30 grayscale cursor-not-allowed"
+                                                                )}
+                                                            >
+                                                                {c} Questions
+                                                                {questionCount === c && <Check size={12} />}
+                                                            </button>
+                                                        );
+                                                    })}
+                                                </div>
                                             )}
-                                        >
-                                            {count} Qs
-                                        </button>
-                                    ))}
+                                        </div>
+                                    )}
                                 </div>
                             </div>
 

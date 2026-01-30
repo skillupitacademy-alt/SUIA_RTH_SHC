@@ -71,7 +71,7 @@ export function UserTable() {
             setDeletedUsers(deletedData.users);
         } catch (error) {
             console.error('Failed to fetch users:', error);
-            setErrorMessage('Data synchronization failure: Unable to retrieve identity matrix.');
+            setErrorMessage('Connection Error: Unable to sync user accounts at this time.');
         } finally {
             setIsLoading(false);
         }
@@ -103,11 +103,10 @@ export function UserTable() {
 
             await apiClient.admin.updateUser(editingUser.id, payload);
             await fetchUsers();
-            setEditingUser(null);
-            setNewPassword('');
+            handleCloseEdit();
         } catch (error) {
             console.error('Failed to update user:', error);
-            setErrorMessage('Security breach or network failure: Unable to update identity profile.');
+            setErrorMessage('Update Failed: Unable to save changes to this user account.');
         } finally {
             setIsSaving(false);
         }
@@ -119,11 +118,11 @@ export function UserTable() {
         try {
             await apiClient.admin.deleteUser(editingUser.id);
             await fetchUsers();
-            setEditingUser(null);
+            handleCloseEdit();
             setShowDeleteConfirm(false);
         } catch (error) {
             console.error('Failed to delete user:', error);
-            setErrorMessage('Operation aborted: Could not terminate the target session.');
+            setErrorMessage('Action Rejected: This user cannot be terminated from the system.');
         } finally {
             setIsSaving(false);
         }
@@ -145,8 +144,19 @@ export function UserTable() {
         }
     };
 
-    if (isLoading) {
-        return <div className="text-center py-20 text-muted-foreground animate-pulse">Loading Identity Matrix...</div>;
+    const handleCloseEdit = () => {
+        setEditingUser(null);
+        setNewPassword('');
+        setErrorMessage(null);
+    };
+
+    const handleCloseProfile = () => {
+        setSelectedUser(null);
+        setErrorMessage(null);
+    };
+
+    if (isLoading && users.length === 0) {
+        return <div className="text-center py-20 text-muted-foreground animate-pulse">Synchronizing Identity Records...</div>;
     }
 
     return (
@@ -404,7 +414,7 @@ export function UserTable() {
                             <div className="pt-4 flex gap-3">
                                 <button
                                     type="button"
-                                    onClick={() => setEditingUser(null)}
+                                    onClick={handleCloseEdit}
                                     className="flex-1 px-4 py-3 rounded-xl border border-gray-200 text-xs font-black uppercase tracking-widest hover:bg-gray-50 transition-colors"
                                 >
                                     Cancel
@@ -442,10 +452,10 @@ export function UserTable() {
 
                             <div className="pt-6 border-t border-gray-100 flex justify-end">
                                 <button
-                                    onClick={() => setSelectedUser(null)}
+                                    onClick={handleCloseProfile}
                                     className="px-8 py-3 rounded-xl bg-[#1A1A1A] text-white font-black uppercase tracking-widest text-xs hover:bg-black transition-colors"
                                 >
-                                    Close Dossier
+                                    Close
                                 </button>
                             </div>
                         </div>

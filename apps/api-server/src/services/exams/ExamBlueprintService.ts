@@ -40,16 +40,20 @@ export class ExamBlueprintService {
     const intermediateQuestions = await this.fetchQuestions(distribution.intermediate, 'intermediate', domainId, subjectIds, topicIds, subtopicIds);
     const expertQuestions = await this.fetchQuestions(distribution.expert, 'expert', domainId, subjectIds, topicIds, subtopicIds);
 
-    // 3. Validate Pool Sufficiency (Strict Mode)
-    if (simpleQuestions.length < distribution.simple) {
-      throw new Error(`Insufficient pool for SIMPLE questions. Required: ${distribution.simple}, Found: ${simpleQuestions.length}`);
+    // 3. Combine Fragments (Elastic Pool Logic)
+    // If a bucket has fewer questions than requested, we use what's available.
+    // This supports the "Maximum X questions" requirement from the UI.
+    const allQuestionIds = [
+      ...simpleQuestions.map(q => q.id),
+      ...intermediateQuestions.map(q => q.id),
+      ...expertQuestions.map(q => q.id)
+    ];
+
+    if (allQuestionIds.length === 0) {
+      throw new Error(`Zero questions found for the selected criteria.`);
     }
-    if (intermediateQuestions.length < distribution.intermediate) {
-      throw new Error(`Insufficient pool for INTERMEDIATE questions. Required: ${distribution.intermediate}, Found: ${intermediateQuestions.length}`);
-    }
-    if (expertQuestions.length < distribution.expert) {
-      throw new Error(`Insufficient pool for EXPERT questions. Required: ${distribution.expert}, Found: ${expertQuestions.length}`);
-    }
+
+    const actualTotal = allQuestionIds.length;
 
     // 4. Combine IDs
     const timestamp = new Date().toISOString();
@@ -60,11 +64,13 @@ export class ExamBlueprintService {
       description: `Dynamically generated enterprise exam (${questionCount} Qs, ${difficultyPreference}).`,
       domains: [domainId],
 
-      subjects: subjectIds || [], 
-      topics: topicIds || [],
       subtopics: subtopicIds || [],
-      difficultyDistribution: distribution,
-      totalQuestions: questionCount,
+      difficultyDistribution: {
+        simple: simpleQuestions.length,
+        intermediate: intermediateQuestions.length,
+        expert: expertQuestions.length
+      },
+      totalQuestions: actualTotal,
     }).returning();
 
     return blueprint.id;
@@ -103,7 +109,7 @@ export class ExamBlueprintService {
     subjectIds: string[] = [],
     topicIds: string[] = [],
     subtopicIds: string[] = []
-  ) {
+  ): Promise<{ id: string }[]> {
     if (count === 0) return [];
 
     // 1. Resolve Effective Selections
@@ -159,5 +165,96 @@ export class ExamBlueprintService {
       ))
       .orderBy(sql`RANDOM()`)
       .limit(count);
+  }
+
+  /**
+   * Fetches available question counts per difficulty bucket for given filters.
+   */
+  async getAvailableCounts(filters: {
+    domainId: string;
+    subjectIds?: string[];
+    topicIds?: string[];
+    subtopicIds?: string[];
+  }): Promise<{ simple: number; intermediate: number; expert: number; total: number }> {
+    const { domainId, subjectIds, topicIds, subtopicIds } = filters;
+
+    const counts = {
+      simple: 0,
+      intermediate: 0,
+      expert: 0,
+      total: 0
+    };
+
+    const difficulties: ('simple' | 'intermediate' | 'expert')[] = ['simple', 'intermediate', 'expert'];
+
+    for (const diff of difficulties) {
+      counts[diff] = await this.countQuestions(diff, domainId, subjectIds, topicIds, subtopicIds);
+      counts.total += counts[diff];
+    }
+
+    return counts;
+  }
+
+  private async countQuestions(
+    difficulty: 'simple' | 'intermediate' | 'expert',
+    domainId: string,
+    subjectIds: string[] = [],
+    topicIds: string[] = [],
+    subtopicIds: string[] = []
+  ) {
+    const topicParentsOfSubtopics = (subtopicIds?.length || 0) > 0 
+        ? (await db.select({ topicId: subtopics.topicId })
+                  .from(subtopics)
+                  .where(inArray(subtopics.id, subtopicIds!))
+          ).map(r => r.topicId)
+        : [];
+    
+    const actualTopicIds = (topicIds?.length || 0) > 0 
+        ? topicIds!.filter(id => !topicParentsOfSubtopics.includes(id))
+        : [];
+    
+    const subjectParentsOfTopics = actualTopicIds.length > 0 
+        ? (await db.select({ subjectId: topics.subjectId })
+                  .from(topics)
+                  .where(inArray(topics.id, actualTopicIds))
+          ).map(r => r.subjectId)
+        : [];
+    
+    const actualSubjectIds = (subjectIds?.length || 0) > 0
+        ? subjectIds!.filter(id => !subjectParentsOfTopics.includes(id))
+        : [];
+
+    const subtopicCond = (subtopicIds?.length || 0) > 0 ? inArray(questions.subtopicId, subtopicIds!) : null;
+    const topicCond = actualTopicIds.length > 0 ? inArray(questions.topicId, actualTopicIds) : null;
+    
+    let subjectTopicCond = null;
+    if (actualSubjectIds.length > 0) {
+        const subQuery = db.select({ id: topics.id }).from(topics).where(inArray(topics.subjectId, actualSubjectIds));
+        subjectTopicCond = inArray(questions.topicId, subQuery);
+    }
+
+    let domainCond = null;
+    if (!subtopicCond && !topicCond && !subjectTopicCond) {
+        const subjectsSubQuery = db.select({ id: subjects.id }).from(subjects).where(eq(subjects.domainId, domainId));
+        const topicsSubQuery = db.select({ id: topics.id }).from(topics).where(inArray(topics.subjectId, subjectsSubQuery));
+        domainCond = inArray(questions.topicId, topicsSubQuery);
+    }
+
+    const hierarchyCond = or(
+        subtopicCond || undefined, 
+        topicCond || undefined, 
+        subjectTopicCond || undefined, 
+        domainCond || undefined
+    );
+
+    const [res] = await db.select({ count: sql<number>`count(*)` })
+      .from(questions)
+      .where(and(
+          hierarchyCond,
+          eq(questions.status, 'active'),
+          eq(questions.difficulty, difficulty)
+      ));
+    
+    return Number(res.count) || 0;
   }
 }

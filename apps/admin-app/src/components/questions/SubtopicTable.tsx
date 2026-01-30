@@ -55,7 +55,7 @@ export function SubtopicTable() {
             setTotalPages(response.totalPages);
         } catch (error) {
             console.error('Failed to fetch subtopics:', error);
-            setErrorMessage('Network error: Unable to index subtopic matrix.');
+            setErrorMessage('Connection Error: Unable to load subtopics at this time.');
         } finally {
             setIsLoading(false);
         }
@@ -95,6 +95,20 @@ export function SubtopicTable() {
         setIsFormOpen(true);
     };
 
+    const handleCloseForm = () => {
+        setIsFormOpen(false);
+        setErrorMessage(null);
+        setCurrentSubtopic(null);
+        setFormData({
+            name: '',
+            topicId: '',
+            description: '',
+            status: 'active',
+            domainId: '',
+            subjectId: ''
+        });
+    };
+
     const handleDomainChange = (domainId: string) => {
         setFormData({ ...formData, domainId, subjectId: '', topicId: '' });
     };
@@ -116,11 +130,11 @@ export function SubtopicTable() {
             } else {
                 await apiClient.admin.createSubtopic(formData);
             }
-            setIsFormOpen(false);
+            handleCloseForm();
             fetchSubtopics();
         } catch (error) {
             console.error('Failed to save subtopic:', error);
-            setErrorMessage('Security constraint or validation failure: Operation rejected.');
+            setErrorMessage('Saving Failed: Please ensure all parent hierarchy fields are selected.');
         } finally {
             setIsSubmitting(false);
         }
@@ -132,10 +146,11 @@ export function SubtopicTable() {
         try {
             await apiClient.admin.deleteSubtopic(currentSubtopic.id);
             setIsDeleteOpen(false);
+            setCurrentSubtopic(null);
             fetchSubtopics();
         } catch (error) {
             console.error('Failed to delete subtopic:', error);
-            setErrorMessage('Dependency violation: Subtopic is linked to active questions.');
+            setErrorMessage('Deletion Blocked: This subtopic is currently in use and cannot be removed.');
         } finally {
             setIsSubmitting(false);
         }
@@ -157,9 +172,9 @@ export function SubtopicTable() {
                                 <h3 className="text-2xl font-black text-[#1A1A1A] italic uppercase tracking-tighter">
                                     {currentSubtopic ? 'Update Subtopic' : 'Create Subtopic'}
                                 </h3>
-                                <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1">Authority Management Layer</p>
+                                <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1">Management Console</p>
                             </div>
-                            <button onClick={() => setIsFormOpen(false)} className="p-2 hover:bg-slate-100 rounded-full transition-colors">
+                            <button onClick={handleCloseForm} className="p-2 hover:bg-slate-100 rounded-full transition-colors">
                                 <X size={20} className="text-slate-400" />
                             </button>
                         </div>
@@ -273,10 +288,10 @@ export function SubtopicTable() {
                             </div>
                             <div className="grid grid-cols-2 gap-4 w-full">
                                 <button
-                                    onClick={() => setIsDeleteOpen(false)}
+                                    onClick={() => { setIsDeleteOpen(false); setCurrentSubtopic(null); }}
                                     className="px-6 py-4 rounded-2xl border-2 border-slate-100 font-black uppercase tracking-widest text-xs hover:bg-slate-50 transition-all"
                                 >
-                                    Abort
+                                    Cancel
                                 </button>
                                 <button
                                     onClick={handleDelete}

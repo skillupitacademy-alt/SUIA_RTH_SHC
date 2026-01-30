@@ -99,6 +99,7 @@ export function QuestionTable() {
                 setTotalPages(data.totalPages);
             } catch (error) {
                 console.error('Failed to fetch questions:', error);
+                // We keep silence for main table load but could set an error state if requested
             } finally {
                 setIsLoading(false);
             }
@@ -113,13 +114,16 @@ export function QuestionTable() {
         try {
             await apiClient.admin.deleteQuestion(deleteModal.questionId);
             setQuestions(prev => prev.filter(q => q.id !== deleteModal.questionId));
-            setDeleteModal({ isOpen: false, questionId: null, isDeleting: false, error: null });
+            handleCloseDelete();
         } catch (error) {
             console.error('Delete failed:', error);
-            setDeleteModal(prev => ({ ...prev, isDeleting: false, error: 'Authorization failure or system error.' }));
+            setDeleteModal(prev => ({ ...prev, isDeleting: false, error: 'Deletion Failed: System could not process the request.' }));
         }
     };
 
+    const handleCloseDelete = () => {
+        setDeleteModal({ isOpen: false, questionId: null, isDeleting: false, error: null });
+    };
     const openDeleteModal = (id: string) => {
         setDeleteModal({ isOpen: true, questionId: id, isDeleting: false, error: null });
     };
@@ -302,7 +306,7 @@ export function QuestionTable() {
                             </div>
 
                             <div>
-                                <h2 className="text-2xl font-black text-[#1A1A1A] mb-2 text-center uppercase tracking-tight">Security Protocol</h2>
+                                <h2 className="text-2xl font-black text-[#1A1A1A] mb-2 text-center uppercase tracking-tight">Confirm Deletion</h2>
                                 <p className="text-sm font-bold text-muted-foreground">
                                     Are you sure you want to decommission this assessment record? It will be marked as <span className="text-red-500 underline">inactive</span> and removed from active rotations.
                                 </p>
@@ -319,13 +323,13 @@ export function QuestionTable() {
                                     disabled={deleteModal.isDeleting}
                                     className="flex items-center justify-center gap-2 w-full py-4 bg-red-600 hover:bg-red-700 text-white text-xs font-black uppercase tracking-[0.2em] rounded-2xl shadow-lg shadow-red-200 active:scale-95 transition-all disabled:opacity-50"
                                 >
-                                    {deleteModal.isDeleting ? <Loader2 className="w-4 h-4 animate-spin text-white" /> : 'Confirm Decommission'}
+                                    {deleteModal.isDeleting ? <Loader2 className="w-4 h-4 animate-spin text-white" /> : 'Delete Question'}
                                 </button>
                                 <button
-                                    onClick={() => setDeleteModal({ isOpen: false, questionId: null, isDeleting: false, error: null })}
+                                    onClick={handleCloseDelete}
                                     className="w-full py-4 text-xs font-black uppercase tracking-[0.2em] text-slate-400 hover:text-slate-600 transition-colors"
                                 >
-                                    Cancel Request
+                                    Cancel
                                 </button>
                             </div>
                         </div>
