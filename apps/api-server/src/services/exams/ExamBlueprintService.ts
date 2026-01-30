@@ -175,14 +175,15 @@ export class ExamBlueprintService {
     subjectIds?: string[];
     topicIds?: string[];
     subtopicIds?: string[];
-  }): Promise<{ simple: number; intermediate: number; expert: number; total: number }> {
+  }): Promise<{ simple: number; intermediate: number; expert: number; total: number; isReady: boolean }> {
     const { domainId, subjectIds, topicIds, subtopicIds } = filters;
 
     const counts = {
       simple: 0,
       intermediate: 0,
       expert: 0,
-      total: 0
+      total: 0,
+      isReady: false
     };
 
     const difficulties: ('simple' | 'intermediate' | 'expert')[] = ['simple', 'intermediate', 'expert'];
@@ -191,6 +192,9 @@ export class ExamBlueprintService {
       counts[diff] = await this.countQuestions(diff, domainId, subjectIds, topicIds, subtopicIds);
       counts.total += counts[diff];
     }
+
+    // Enterprise Readiness Rule: 4 Simple, 4 Intermediate, 5 Expert
+    counts.isReady = counts.simple >= 4 && counts.intermediate >= 4 && counts.expert >= 5;
 
     return counts;
   }

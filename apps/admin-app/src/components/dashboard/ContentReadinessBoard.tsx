@@ -2,18 +2,31 @@
 
 import { useEffect, useState } from 'react';
 import { apiClient } from '@quiz/api-client';
-import { FileWarning, CheckCircle2, AlertCircle, Layers, Weight, Activity } from 'lucide-react';
+import {
+    FileWarning,
+    CheckCircle2,
+    ChevronRight,
+    ChevronDown,
+    Layers,
+    Weight,
+    Activity,
+    BookOpen,
+    Target,
+    MapPin
+} from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 export function ContentReadinessBoard() {
-    const [topics, setTopics] = useState<any[]>([]);
+    const [domains, setDomains] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
+    const [expandedNodes, setExpandedNodes] = useState<Record<string, boolean>>({});
 
     useEffect(() => {
         const fetch = async () => {
             try {
                 const data = await apiClient.admin.getContentHealth();
-                setTopics(data);
+                setDomains(data);
             } catch (err) {
                 console.error("Failed to fetch content health", err);
             } finally {
@@ -23,29 +36,35 @@ export function ContentReadinessBoard() {
         fetch();
     }, []);
 
-    if (isLoading) return null;
+    const toggleNode = (id: string) => {
+        setExpandedNodes(prev => ({ ...prev, [id]: !prev[id] }));
+    };
 
-    const filteredTopics = topics.filter(t =>
-        t.topicName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        t.domainName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        t.subjectName.toLowerCase().includes(searchQuery.toLowerCase())
+    if (isLoading) return (
+        <div className="flex items-center justify-center p-20">
+            <Activity className="animate-spin text-primary" size={32} />
+        </div>
     );
 
-    const criticalTopics = filteredTopics.filter(t => !t.isReady);
-    const healthyTopicsCount = filteredTopics.filter(t => t.isReady).length;
+    const filteredDomains = domains.filter(d =>
+        d.domainName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        d.subjects?.some((s: any) => s.name.toLowerCase().includes(searchQuery.toLowerCase()))
+    );
+
+    const readyDomainsCount = domains.filter(d => d.isReady).length;
 
     return (
         <div className="p-8 rounded-[2rem] border border-primary/10 bg-muted/5 backdrop-blur-md shadow-sm">
             <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6 mb-8">
                 <div>
-                    <h3 className="text-2xl font-black uppercase tracking-tighter italic text-[#1A1A1A]">Domain Structure & Readiness</h3>
-                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-0.5">Syllabus overview • Question Bank Distribution</p>
+                    <h3 className="text-2xl font-black uppercase tracking-tighter italic text-[#1A1A1A]">Enterprise Governance</h3>
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-0.5">Hierarchical Readiness Audit • Domain to Subtopic</p>
                 </div>
                 <div className="flex items-center gap-4">
                     <div className="relative w-full xl:w-[300px]">
                         <input
                             type="text"
-                            placeholder="SEARCH_STRUCTURE..."
+                            placeholder="SEARCH_HIERARCHY..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             className="w-full bg-white border border-primary/5 rounded-xl px-4 py-2 text-[10px] font-black tracking-widest text-[#1A1A1A] placeholder:text-slate-300 focus:ring-2 focus:ring-[#FF4B91]/10 outline-none shadow-sm"
@@ -53,66 +72,160 @@ export function ContentReadinessBoard() {
                     </div>
                     <div className="px-5 py-2 rounded-full bg-green-500/10 border border-green-500/20 flex items-center gap-2 flex-shrink-0">
                         <CheckCircle2 size={16} className="text-green-500" />
-                        <span className="text-[11px] font-black text-green-600 uppercase tracking-widest">{healthyTopicsCount} Ready</span>
+                        <span className="text-[11px] font-black text-green-600 uppercase tracking-widest">{readyDomainsCount} Domains Ready</span>
                     </div>
                 </div>
             </div>
 
-            <div className="space-y-4 max-h-[500px] overflow-y-auto pr-3 custom-scrollbar">
-                {filteredTopics.map((topic) => (
-                    <div key={topic.topicId} className={`p-5 rounded-[1.75rem] bg-background border transition-all group flex flex-col md:flex-row md:items-center justify-between shadow-sm gap-4 ${topic.isReady ? 'border-muted/50 hover:border-primary/30' : 'border-red-500/30 hover:border-red-500/50 bg-red-500/[0.02]'}`}>
-                        <div className="flex items-center gap-6 flex-1 min-w-[300px]">
-                            <div className={`w-12 h-12 rounded-xl flex items-center justify-center border shadow-sm ${topic.isReady ? 'bg-primary/5 text-primary border-primary/10 shadow-primary/5' : 'bg-red-500/5 text-red-500 border-red-500/10 shadow-red-500/5'}`}>
-                                {topic.isReady ? <Layers size={22} /> : <FileWarning size={22} />}
-                            </div>
-                            <div className="flex-1">
-                                <div className="flex items-center gap-3 mb-0.5">
-                                    <h4 className="text-lg font-black tracking-tight text-[#1A1A1A]">{topic.topicName}</h4>
-                                    <div className="flex items-center gap-2">
-                                        <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest ${topic.status === 'active' ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'}`}>
-                                            {topic.status}
-                                        </span>
-                                        <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-muted border border-muted-foreground/10 text-[9px] font-black uppercase tracking-widest text-muted-foreground">
-                                            <Weight size={10} />
-                                            <span>W: {topic.weight}</span>
-                                        </div>
-                                        <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-muted border border-muted-foreground/10 text-[9px] font-black uppercase tracking-widest text-muted-foreground">
-                                            <Activity size={10} />
-                                            <span>Lvl: {topic.complexity}</span>
-                                        </div>
-                                    </div>
+            <div className="space-y-4 max-h-[700px] overflow-y-auto pr-3 custom-scrollbar">
+                {filteredDomains.map((domain) => (
+                    <div key={domain.domainId} className="space-y-2">
+                        {/* Domain Row */}
+                        <div
+                            onClick={() => toggleNode(domain.domainId)}
+                            className={cn(
+                                "p-5 rounded-3xl border transition-all cursor-pointer group flex items-center justify-between shadow-sm",
+                                domain.isReady ? "bg-white border-primary/10 hover:border-primary/30" : "bg-red-500/[0.02] border-red-500/20 hover:border-red-500/40"
+                            )}
+                        >
+                            <div className="flex items-center gap-4">
+                                <div className={cn(
+                                    "p-2 rounded-xl border",
+                                    domain.isReady ? "bg-primary/5 text-primary border-primary/10" : "bg-red-500/10 text-red-500 border-red-500/20"
+                                )}>
+                                    {domain.isReady ? <Layers size={20} /> : <FileWarning size={20} />}
                                 </div>
-                                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest leading-none">{topic.domainName} • {topic.subjectName}</p>
+                                <div>
+                                    <h4 className="text-lg font-black tracking-tight text-[#1A1A1A] flex items-center gap-2">
+                                        {domain.domainName}
+                                        {domain.isReady ? (
+                                            <span className="text-[9px] bg-green-500/10 text-green-600 px-2 py-0.5 rounded-full uppercase italic">Ready</span>
+                                        ) : (
+                                            <span className="text-[9px] bg-red-500/10 text-red-600 px-2 py-0.5 rounded-full uppercase italic">Action Required</span>
+                                        )}
+                                    </h4>
+                                    <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest leading-none mt-1">
+                                        {domain.subjects?.length || 0} Subjects • {domain.hasBlueprint ? "Blueprint Active" : "No Blueprint"}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="flex items-center gap-6">
+                                <div className="hidden md:grid grid-cols-3 gap-2">
+                                    <StatsBadge label="S" val={domain.stats.simple} target={4} />
+                                    <StatsBadge label="I" val={domain.stats.intermediate} target={4} />
+                                    <StatsBadge label="E" val={domain.stats.expert} target={5} />
+                                </div>
+                                {expandedNodes[domain.domainId] ? <ChevronDown size={20} className="text-muted-foreground" /> : <ChevronRight size={20} className="text-muted-foreground" />}
                             </div>
                         </div>
 
-                        <div className="flex items-center gap-8">
-                            <div className="grid grid-cols-3 gap-3">
-                                <div className="text-center px-4 py-2 rounded-2xl bg-muted/30 border border-muted-foreground/5 min-w-[70px]">
-                                    <p className="text-[9px] font-black text-muted-foreground uppercase mb-1">Simple</p>
-                                    <p className={`text-sm font-black ${topic.stats.simple < 4 ? 'text-red-500' : 'text-[#1A1A1A]'}`}>{topic.stats.simple}/4</p>
-                                </div>
-                                <div className="text-center px-4 py-2 rounded-2xl bg-muted/30 border border-muted-foreground/5 min-w-[70px]">
-                                    <p className="text-[9px] font-black text-muted-foreground uppercase mb-1">Inter.</p>
-                                    <p className={`text-sm font-black ${topic.stats.intermediate < 4 ? 'text-red-500' : 'text-[#1A1A1A]'}`}>{topic.stats.intermediate}/4</p>
-                                </div>
-                                <div className="text-center px-4 py-2 rounded-2xl bg-muted/30 border border-muted-foreground/5 min-w-[70px]">
-                                    <p className="text-[9px] font-black text-muted-foreground uppercase mb-1">Expert</p>
-                                    <p className={`text-sm font-black ${topic.stats.expert < 5 ? 'text-red-500' : 'text-[#1A1A1A]'}`}>{topic.stats.expert}/5</p>
-                                </div>
+                        {/* Subjects Drill-down */}
+                        {expandedNodes[domain.domainId] && (
+                            <div className="ml-8 space-y-2 border-l-2 border-primary/5 pl-4 animate-in slide-in-from-top-2 duration-300">
+                                {domain.subjects?.map((subject: any) => (
+                                    <div key={subject.id} className="space-y-2">
+                                        <div
+                                            onClick={(e) => { e.stopPropagation(); toggleNode(subject.id); }}
+                                            className={cn(
+                                                "p-4 rounded-2xl border bg-white/50 flex items-center justify-between hover:bg-white cursor-pointer transition-all",
+                                                subject.stats.isReady ? "border-primary/5" : "border-red-500/10 bg-red-500/[0.01]"
+                                            )}
+                                        >
+                                            <div className="flex items-center gap-3">
+                                                <BookOpen size={16} className={subject.stats.isReady ? "text-primary/40" : "text-red-500/40"} />
+                                                <span className="text-xs font-black text-[#1A1A1A] uppercase tracking-wider">{subject.name}</span>
+                                                <ReadyIndicator isReady={subject.stats.isReady} />
+                                            </div>
+                                            <div className="flex items-center gap-4">
+                                                <div className="grid grid-cols-3 gap-1.5 transform scale-90">
+                                                    <StatsBadge label="S" val={subject.stats.simple} target={4} />
+                                                    <StatsBadge label="I" val={subject.stats.intermediate} target={4} />
+                                                    <StatsBadge label="E" val={subject.stats.expert} target={5} />
+                                                </div>
+                                                {expandedNodes[subject.id] ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                                            </div>
+                                        </div>
+
+                                        {/* Topics Drill-down */}
+                                        {expandedNodes[subject.id] && (
+                                            <div className="ml-6 space-y-1.5 border-l border-primary/10 pl-4 animate-in slide-in-from-top-1">
+                                                {subject.topics?.map((topic: any) => (
+                                                    <div key={topic.id} className="space-y-1.5">
+                                                        <div
+                                                            onClick={(e) => { e.stopPropagation(); toggleNode(topic.id); }}
+                                                            className="flex items-center justify-between p-3 rounded-xl hover:bg-primary/5 cursor-pointer group"
+                                                        >
+                                                            <div className="flex items-center gap-3">
+                                                                <Target size={14} className="text-muted-foreground/30" />
+                                                                <span className="text-[11px] font-bold text-slate-600">{topic.name}</span>
+                                                                <ReadyIndicator isReady={topic.stats.isReady} />
+                                                            </div>
+                                                            <div className="flex items-center gap-3 scale-75 origin-right">
+                                                                <StatsBadge label="S" val={topic.stats.simple} target={4} />
+                                                                <StatsBadge label="I" val={topic.stats.intermediate} target={4} />
+                                                                <StatsBadge label="E" val={topic.stats.expert} target={5} />
+                                                                {expandedNodes[topic.id] ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Subtopics Drill-down */}
+                                                        {expandedNodes[topic.id] && (
+                                                            <div className="ml-6 space-y-1 pl-4">
+                                                                {topic.subtopics?.map((sub: any) => (
+                                                                    <div key={sub.id} className="flex items-center justify-between p-2 rounded-lg bg-muted/20 text-[10px]">
+                                                                        <div className="flex items-center gap-2">
+                                                                            <MapPin size={10} className="text-muted-foreground/40" />
+                                                                            <span className="font-medium text-muted-foreground uppercase tracking-tight">{sub.name}</span>
+                                                                            <ReadyIndicator isReady={sub.stats.isReady} minimal />
+                                                                        </div>
+                                                                        <div className="flex items-center gap-2 scale-75 origin-right">
+                                                                            <span className={cn(sub.stats.simple < 4 ? "text-red-500" : "text-green-600")}>S:{sub.stats.simple}</span>
+                                                                            <span className={cn(sub.stats.intermediate < 4 ? "text-red-500" : "text-green-600")}>I:{sub.stats.intermediate}</span>
+                                                                            <span className={cn(sub.stats.expert < 5 ? "text-red-500" : "text-green-600")}>E:{sub.stats.expert}</span>
+                                                                        </div>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                ))}
                             </div>
-                            <div className="hidden md:block w-px h-12 bg-muted-foreground/10" />
-                            <div className="min-w-[80px] text-right">
-                                {topic.isReady ? (
-                                    <span className="text-[10px] font-black text-green-500 uppercase tracking-widest italic">Standard_Met</span>
-                                ) : (
-                                    <p className="text-[10px] font-black text-red-500 uppercase tracking-widest leading-tight italic">Action<br />Required</p>
-                                )}
-                            </div>
-                        </div>
+                        )}
                     </div>
                 ))}
             </div>
         </div>
+    );
+}
+
+function StatsBadge({ label, val, target }: { label: string, val: number, target: number }) {
+    const isLow = val < target;
+    return (
+        <div className={cn(
+            "px-2 py-1 rounded-md text-[9px] font-black uppercase tracking-tighter transition-all flex items-center gap-1 min-w-[38px] justify-center",
+            isLow ? "bg-red-500/10 text-red-600 border border-red-500/10" : "bg-green-500/5 text-green-600 border border-green-500/10"
+        )}>
+            <span>{label}</span>
+            <span className="opacity-40">{val}/{target}</span>
+        </div>
+    );
+}
+
+function ReadyIndicator({ isReady, minimal = false }: { isReady: boolean, minimal?: boolean }) {
+    if (minimal) {
+        return <div className={cn("w-1.5 h-1.5 rounded-full", isReady ? "bg-green-500" : "bg-red-500")} />;
+    }
+    return (
+        <span className={cn(
+            "text-[8px] font-black px-1.5 py-0.5 rounded uppercase tracking-widest",
+            isReady ? "bg-green-500/10 text-green-600" : "bg-red-500/10 text-red-600"
+        )}>
+            {isReady ? "READY" : "POOR_POOL"}
+        </span>
     );
 }

@@ -10,33 +10,35 @@ export class AdminEngine {
   /**
    * Section 6: Question Bank Health
    */
+  /**
+   * Section 6: Hierarchical Content Health & Readiness Audit
+   * Returns a complete map of Domain > Subject > Topic > Subtopic readiness.
+   */
   static async getContentHealthReport() {
-    const allTopics = await db.query.topics.findMany({
+    const allDomains = await db.query.domains.findMany({
       with: {
-        subject: { with: { domain: true } },
-        questions: true,
+        subjects: {
+          with: {
+            topics: {
+              with: {
+                subtopics: true
+              }
+            }
+          }
+        }
       }
     });
 
-    return allTopics.map(topic => {
-      const q = topic.questions;
-      const simple = q.filter(x => x.difficulty === 'simple').length;
-      const intermediate = q.filter(x => x.difficulty === 'intermediate').length;
-      const expert = q.filter(x => x.difficulty === 'expert').length;
-      const total = q.length;
-
-      // Enterprise rule: 4 simple (30%), 4 intermediate (30%), 5 expert (40%)
+    // Helper to calculate question stats
+    const getStats = (questionsPool: any[]) => {
+      const simple = questionsPool.filter(x => x.difficulty === 'simple').length;
+      const intermediate = questionsPool.filter(x => x.difficulty === 'intermediate').length;
+      const expert = questionsPool.filter(x => x.difficulty === 'expert').length;
+      const total = questionsPool.length;
       const isReady = simple >= 4 && intermediate >= 4 && expert >= 5;
 
       return {
-        topicId: topic.id,
-        topicName: topic.name,
-        subjectName: topic.subject?.name,
-        domainName: topic.subject?.domain?.name,
-        stats: { total, simple, intermediate, expert },
-        weight: topic.weight,
-        status: topic.status,
-        complexity: topic.complexityLevel,
+        total, simple, intermediate, expert,
         isReady,
         missing: {
           simple: Math.max(0, 4 - simple),
@@ -44,7 +46,76 @@ export class AdminEngine {
           expert: Math.max(0, 5 - expert),
         }
       };
-    });
+    };
+
+    const report = await Promise.all(allDomains.map(async domain => {
+      // 1. Domain Blueprint Check
+      const blueprint = await db.query.examBlueprints.findFirst({
+        where: sql`${examBlueprints.domains} @> ARRAY[${domain.id}]::uuid[]`
+      });
+
+      // 2. Fetch all questions for this domain to calculate aggregate health
+      const domainQuestions = await db.query.questions.findMany({
+        where: sql`${questions.topicId} IN (
+          SELECT id FROM topics WHERE subject_id IN (
+            SELECT id FROM subjects WHERE domain_id = ${domain.id}
+          )
+        )`
+      });
+
+      const domainStats = getStats(domainQuestions);
+
+      // 3. Drill down into hierarchy
+      const subjectsReport = await Promise.all(domain.subjects.map(async subject => {
+        const subjectQuestions = domainQuestions.filter(q => {
+             const topic = domain.subjects.flatMap(s => s.topics).find(t => t.id === q.topicId);
+             return topic?.subjectId === subject.id;
+        });
+        const subjectStats = getStats(subjectQuestions);
+
+        const topicsReport = await Promise.all(subject.topics.map(async topic => {
+          const topicQuestions = domainQuestions.filter(q => q.topicId === topic.id);
+          const topicStats = getStats(topicQuestions);
+
+          const subtopicsReport = topic.subtopics.map(subtopic => {
+            const subtopicQuestions = domainQuestions.filter(q => q.subtopicId === subtopic.id);
+            return {
+              id: subtopic.id,
+              name: subtopic.name,
+              stats: getStats(subtopicQuestions)
+            };
+          });
+
+          return {
+            id: topic.id,
+            name: topic.name,
+            weight: topic.weight,
+            complexity: topic.complexityLevel,
+            status: topic.status,
+            stats: topicStats,
+            subtopics: subtopicsReport
+          };
+        }));
+
+        return {
+          id: subject.id,
+          name: subject.name,
+          stats: subjectStats,
+          topics: topicsReport
+        };
+      }));
+
+      return {
+        domainId: domain.id,
+        domainName: domain.name,
+        hasBlueprint: !!blueprint,
+        stats: domainStats,
+        isReady: domainStats.isReady && !!blueprint,
+        subjects: subjectsReport
+      };
+    }));
+
+    return report;
   }
 
   /**

@@ -62,6 +62,7 @@ export function QuizSelection() {
         intermediate: number;
         expert: number;
         total: number;
+        isReady: boolean;
     } | null>(null);
     const [fetchingCounts, setFetchingCounts] = useState(false);
     const [showExtendedCount, setShowExtendedCount] = useState(false);
@@ -430,7 +431,8 @@ export function QuizSelection() {
                                 <div className="flex items-center gap-4 flex-wrap">
                                     {[5, 10, 15, 20].map(count => {
                                         const totalAvail = availableCounts?.total || 0;
-                                        const isDisabled = (count - totalAvail) > 5;
+                                        const isReady = availableCounts?.isReady;
+                                        const isDisabled = !isReady || (count - totalAvail) > 5;
                                         return (
                                             <button
                                                 key={count}
@@ -468,7 +470,8 @@ export function QuizSelection() {
                                                 <div className="absolute top-full mt-3 left-0 bg-white border border-slate-200 rounded-3xl shadow-2xl p-3 z-50 grid grid-cols-2 gap-2 min-w-[200px] animate-in fade-in slide-in-from-top-2">
                                                     {Array.from({ length: Math.ceil((availableCounts?.total || 0) / 10) - 2 }, (_, i) => (i + 3) * 10).map(c => {
                                                         const totalAvail = availableCounts?.total || 0;
-                                                        const isDisabled = (c - totalAvail) > 5;
+                                                        const isReady = availableCounts?.isReady;
+                                                        const isDisabled = !isReady || (c - totalAvail) > 5;
                                                         return (
                                                             <button
                                                                 key={c}
@@ -493,6 +496,17 @@ export function QuizSelection() {
                                         </div>
                                     )}
                                 </div>
+                                {!availableCounts?.isReady && availableCounts?.total !== undefined && (
+                                    <div className="mt-6 flex items-start gap-3 p-4 rounded-2xl bg-red-500/5 border border-red-500/10">
+                                        <FileWarning className="text-red-500 shrink-0 mt-0.5" size={16} />
+                                        <div>
+                                            <p className="text-[10px] font-black uppercase text-red-600 tracking-widest leading-none mb-1">Governance Alert: 🔴 Action Required</p>
+                                            <p className="text-[9px] font-bold text-red-500/80 leading-relaxed uppercase">
+                                                This selection has a poor question pool ({availableCounts.simple}/4s, {availableCounts.intermediate}/4i, {availableCounts.expert}/5e). Selection is disabled until Admin solves this in Dashboard.
+                                            </p>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
 
                             <div>
@@ -525,9 +539,9 @@ export function QuizSelection() {
                                 <div className="flex items-center gap-2 px-4 py-2 bg-white rounded-full shadow-sm"><Layers size={14} className="text-[#FF4B91]" /> {questionCount} QUESTIONS</div>
                             </div>
                             <button
-                                className="w-full py-6 rounded-[2rem] bg-primary text-primary-foreground text-xl font-black uppercase tracking-widest shadow-2xl shadow-primary/40 flex items-center justify-center gap-4 hover:scale-[1.03] active:scale-[0.98] transition-all disabled:opacity-50 disabled:pointer-events-none"
+                                className="w-full py-6 rounded-[2rem] bg-primary text-primary-foreground text-xl font-black uppercase tracking-widest shadow-2xl shadow-primary/40 flex items-center justify-center gap-4 hover:scale-[1.03] active:scale-[0.98] transition-all disabled:opacity-50 disabled:grayscale disabled:pointer-events-none"
                                 onClick={handleStartExam}
-                                disabled={starting}
+                                disabled={starting || !availableCounts?.isReady}
                             >
                                 {starting ? <Loader2 className="h-7 w-7 animate-spin" /> : (
                                     <>

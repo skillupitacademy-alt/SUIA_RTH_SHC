@@ -4,7 +4,7 @@ import { eq, inArray, sql, and, or, notInArray } from 'drizzle-orm';
 export class SelectionEngine {
   /**
    * Selection logic: 30% Simple, 30% Intermediate, 40% Expert
-   * Strictly enforces question counts per tier.
+   * Strictly enforces question counts per tier as a MAXIMUM (Graceful Degradation).
    */
   static async composeExam(
     userId: string, 
@@ -48,17 +48,16 @@ export class SelectionEngine {
     const finalTopicIds = configTopicIds || legacyTopicIds || blueprint.topics || [];
     const finalSubtopicIds = subtopicIds.length > 0 ? subtopicIds : (blueprint.subtopics || []);
 
-    // Relaxed validation: Check if we have at least SOME level of hierarchy
-    if (!domainId || (finalSubjectIds.length === 0 && finalTopicIds.length === 0 && finalSubtopicIds.length === 0)) {
-       throw new Error('Minimum selection criteria (Subject, Topic or Subtopic) required to compose an exam.');
+    // FLEXIBLE VALIDATION: If we have a DomainID, that is sufficient. 
+    // We only throw if BOTH domain and sub-selections are missing.
+    if (!domainId) {
+       throw new Error('Selection criteria (Domain, Subject, Topic or Subtopic) required to compose an exam.');
     }
 
-    const total = questionCount || blueprint?.totalQuestions || 10;
+    const requestedTotal = questionCount || blueprint?.totalQuestions || 10;
     const difficultyPref = difficulty || 'mixed';
 
     // 2. Resolve Effective Leaf Selections for hierarchical filtering
-    // If a child is selected, it narrows the parent.
-    
     // Find parent Topic IDs for selected Subtopics
     const selectedTopicParents: string[] = finalSubtopicIds.length > 0 
         ? (await db.select({ topicId: subtopics.topicId })
@@ -123,9 +122,9 @@ export class SelectionEngine {
 
     if (difficultyPref === 'mixed') {
       const tiers = [
-        { key: 'simple', target: Math.floor(total * 0.3) },
-        { key: 'intermediate', target: Math.floor(total * 0.3) },
-        { key: 'expert', target: total - Math.floor(total * 0.3) - Math.floor(total * 0.3) },
+        { key: 'simple', target: Math.floor(requestedTotal * 0.3) },
+        { key: 'intermediate', target: Math.floor(requestedTotal * 0.3) },
+        { key: 'expert', target: requestedTotal - Math.floor(requestedTotal * 0.3) - Math.floor(requestedTotal * 0.3) },
       ];
 
       for (const tier of tiers) {
@@ -134,13 +133,14 @@ export class SelectionEngine {
         selectedQuestions.push(...pooled);
       }
     } else {
-      const pooled = await fetchFromPool([difficultyPref], total, []);
+      const pooled = await fetchFromPool([difficultyPref], requestedTotal, []);
       selectedQuestions.push(...pooled);
     }
 
-    // Strict validation
-    if (selectedQuestions.length < total) {
-      throw new Error(`Insufficient questions found for the selected configuration. Found ${selectedQuestions.length}/${total}. Please add more questions to the database for these areas or reduce the question count request.`);
+    // GRACEFUL DEGRADATION: We treat the requested count as a MAXIMUM.
+    // We only throw if ZERO questions are found.
+    if (selectedQuestions.length === 0) {
+      throw new Error(`No questions found for the selected configuration. Please ensure the selected area has active questions.`);
     }
 
     // 4. Create Exam instance
@@ -162,4 +162,3 @@ export class SelectionEngine {
     return { examId: exam.id, status: exam.status };
   }
 }
-
