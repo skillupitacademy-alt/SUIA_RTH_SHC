@@ -12,29 +12,51 @@ import {
     Activity,
     BookOpen,
     Target,
-    MapPin
+    MapPin,
+    Wand2,
+    Zap
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { HierarchyFactoryWizard } from '../content/HierarchyFactoryWizard';
 
 export function ContentReadinessBoard() {
     const [domains, setDomains] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [expandedNodes, setExpandedNodes] = useState<Record<string, boolean>>({});
+    const [factoryModal, setFactoryModal] = useState<{ isOpen: boolean, initialData: any }>({
+        isOpen: false,
+        initialData: null
+    });
+
+    const fetch = async () => {
+        try {
+            const data = await apiClient.admin.getContentHealth();
+            setDomains(data);
+        } catch (err) {
+            console.error("Failed to fetch content health", err);
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     useEffect(() => {
-        const fetch = async () => {
-            try {
-                const data = await apiClient.admin.getContentHealth();
-                setDomains(data);
-            } catch (err) {
-                console.error("Failed to fetch content health", err);
-            } finally {
-                setIsLoading(false);
-            }
-        };
         fetch();
     }, []);
+
+    const openHealWizard = (nodeType: string, node: any, domainId: string) => {
+        let template: any = { domainId };
+
+        if (nodeType === 'domain') {
+            template = { domainId: node.domainId, domainName: node.domainName, subjects: [] };
+        } else if (nodeType === 'subject') {
+            template.subjects = [{ name: node.name, topics: [] }];
+        } else if (nodeType === 'topic') {
+            template.subjects = [{ name: node.subjectName || "PARENT_SUBJECT", topics: [{ name: node.name, subtopics: [] }] }];
+        }
+
+        setFactoryModal({ isOpen: true, initialData: template });
+    };
 
     const toggleNode = (id: string) => {
         setExpandedNodes(prev => ({ ...prev, [id]: !prev[id] }));
@@ -116,6 +138,15 @@ export function ContentReadinessBoard() {
                                     <StatsBadge label="I" val={domain.stats.intermediate} target={4} />
                                     <StatsBadge label="E" val={domain.stats.expert} target={5} />
                                 </div>
+                                {!domain.isReady && (
+                                    <button
+                                        onClick={(e) => { e.stopPropagation(); openHealWizard('domain', domain, domain.domainId); }}
+                                        className="p-2.5 rounded-xl bg-red-500/10 text-red-600 hover:bg-red-500/20 transition-all border border-red-500/10 group-hover:scale-105"
+                                        title="Atomic Repair Domain"
+                                    >
+                                        <Wand2 size={16} />
+                                    </button>
+                                )}
                                 {expandedNodes[domain.domainId] ? <ChevronDown size={20} className="text-muted-foreground" /> : <ChevronRight size={20} className="text-muted-foreground" />}
                             </div>
                         </div>
@@ -143,6 +174,14 @@ export function ContentReadinessBoard() {
                                                     <StatsBadge label="I" val={subject.stats.intermediate} target={4} />
                                                     <StatsBadge label="E" val={subject.stats.expert} target={5} />
                                                 </div>
+                                                {!subject.stats.isReady && (
+                                                    <button
+                                                        onClick={(e) => { e.stopPropagation(); openHealWizard('subject', subject, domain.domainId); }}
+                                                        className="p-1.5 rounded-lg bg-red-500/5 text-red-500 hover:bg-red-500/10 border border-red-500/5"
+                                                    >
+                                                        <Zap size={12} />
+                                                    </button>
+                                                )}
                                                 {expandedNodes[subject.id] ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
                                             </div>
                                         </div>
@@ -165,6 +204,14 @@ export function ContentReadinessBoard() {
                                                                 <StatsBadge label="S" val={topic.stats.simple} target={4} />
                                                                 <StatsBadge label="I" val={topic.stats.intermediate} target={4} />
                                                                 <StatsBadge label="E" val={topic.stats.expert} target={5} />
+                                                                {!topic.stats.isReady && (
+                                                                    <button
+                                                                        onClick={(e) => { e.stopPropagation(); openHealWizard('topic', { ...topic, subjectName: subject.name }, domain.domainId); }}
+                                                                        className="p-1 rounded bg-red-500/10 text-red-500 hover:bg-red-500/20"
+                                                                    >
+                                                                        <Zap size={10} />
+                                                                    </button>
+                                                                )}
                                                                 {expandedNodes[topic.id] ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
                                                             </div>
                                                         </div>
@@ -199,6 +246,13 @@ export function ContentReadinessBoard() {
                     </div>
                 ))}
             </div>
+
+            <HierarchyFactoryWizard
+                isOpen={factoryModal.isOpen}
+                initialData={factoryModal.initialData}
+                onClose={() => setFactoryModal({ isOpen: false, initialData: null })}
+                onSuccess={fetch}
+            />
         </div>
     );
 }

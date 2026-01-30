@@ -171,7 +171,12 @@ Reduce documentation fragmentation and improve discoverability by consolidating 
 - **Consolidation**: Merged documentation into JOURNEY-based structures to comply with `.agent/AGENT_CONSTITUTION.md`.
 
 ### Batch 24: Selection Engine Stability & Cascading Readiness
-- **Stability**: Refactored `SelectionEngine` to implement Graceful Degradation (MAX vs EXACT count logic) and flexible Domain-only filtering.
-- **Hierarchical Governance**: Implemented multi-level health diagnostics (Domain > Subject > Topic > Subtopic) in `AdminEngine`.
-- **UI Alignment**: Overhauled `ContentReadinessBoard` with drill-down views and strictly governed `QuizSelection` start logic based on real-time 🔴/🟢 status.
-- **Outcome**: Achieved 100% success rate for exam creation and established strict content quality standards.
+- **Stability**: Refactored `SelectionEngine` to implement Graceful Degradation (MAX vs EXACT count logic).
+- **Hierarchical Governance**: Implemented multi-level health diagnostics in `AdminEngine`.
+- **Outcome**: Achieved 100% success rate for exam creation.
+
+### Batch 25: Atomic Hierarchy Factory
+- **Factory Engine**: Developed transactional nested upsert logic for bulk seeding (Domain > Subject > Topic > Subtopic > Questions).
+- **UI Tooling**: Created the `HierarchyFactoryWizard` for bulk JSON/YAML processing.
+- **Integration**: Added "Heal Branch" ⚡ buttons to the Governance Board for instant content repair.
+- **Outcome**: Established a high-throughput remedy system for 🔴 readiness gaps.

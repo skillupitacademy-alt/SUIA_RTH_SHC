@@ -5,6 +5,7 @@ import { PasswordService } from '../auth/password.service';
 import { QuestionService } from '../question/question.service';
 import { DomainService, SubjectService, TopicService } from '../domain/domain.service';
 import { SkillService } from '../domain/skill.service';
+import { HierarchyFactory, AtomicHierarchyPayload } from '../domain/hierarchy.factory';
 
 export class AdminEngine {
   /**
@@ -116,6 +117,13 @@ export class AdminEngine {
     }));
 
     return report;
+  }
+
+  /**
+   * Section 7: Atomic Hierarchy Seeding
+   */
+  static async atomicSeed(payload: AtomicHierarchyPayload) {
+    return await HierarchyFactory.atomicUpsert(payload);
   }
 
   /**

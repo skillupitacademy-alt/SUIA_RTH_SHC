@@ -265,4 +265,8 @@ export class AdminClient {
   async login(email: string, password: string) {
     return this.client.post<{ user: any; accessToken: string }>('/admin/auth/login', { email, password });
   }
+
+  async atomicSeed(data: any) {
+    return this.client.post<any>('/admin/hierarchy/atomic', data);
+  }
 }
