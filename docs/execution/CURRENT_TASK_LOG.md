@@ -1,7 +1,7 @@
 # Current Task Log
 
 ## Status: IDLE
-- [x] Human-Friendly UI Refactoring (All 3 projects)
-- [x] Global Zero-Log Enforcement (Production Hardening)
-- [x] DB Cascading Delete Verification
-- [x] All governance tables (Domain...Skill) in 100% parity with spec.
+- [x] Elastic Exam Configuration UI (Adaptive counts, ALL filters)
+- [x] Admin CRUD Hardening (Explicit state reset, Layman messages)
+- [x] Exam Configuration Specification (`docs/pages/exams/EXAM_CONFIGURATION.md`)
+- [x] Documentation Folder Consolidation (Exams/Quiz cleanup)
