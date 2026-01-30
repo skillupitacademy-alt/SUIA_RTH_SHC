@@ -21,6 +21,12 @@ superadmin@test.com / super123
 
 I want both div one below the other and accordingly work on layout and UI/UX look and feel use of Question bank page
 
+pnpm build
+pnpm --filter @quiz/web-app build
+pnpm --filter @
+npx tsc --noEmit
+
+
 please refer @.agent directory .md files which are the .md files need to be updated after we complete over given task
 
 Whatever task we have done and after completion of all tasks till now  what to do please refer @.agents md files and architecture .md files and do needful if anything is pending to be done post task completion

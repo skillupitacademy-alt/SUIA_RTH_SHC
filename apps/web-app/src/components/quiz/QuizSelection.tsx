@@ -15,7 +15,8 @@ import {
     Activity,
     ChevronDown,
     Check,
-    Sparkles
+    Sparkles,
+    FileWarning
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/store/auth-store';

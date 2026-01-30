@@ -10,7 +10,7 @@ export async function POST(req: NextRequest) {
     if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const payload = await TokenService.verifyAccessToken(token);
-    if (payload.role !== 'admin' && payload.role !== 'superadmin') {
+    if (!payload.isAdmin && !payload.roles.includes('admin')) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
