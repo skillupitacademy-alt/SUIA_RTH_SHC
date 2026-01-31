@@ -119,7 +119,7 @@ export function BulkUploadPanel({ topicId, topicName, subtopicId, skillIds, onSu
 ]`;
 
     const aiPrompt = `You are an expert exam content generator.
-Generate 5 high-quality multiple-choice questions for the topic: [INSERT TOPIC HERE]
+Generate 5 high-quality multiple-choice questions for the topic: ${topicName || "[INSERT TOPIC HERE]"}
 Output strictly in the following JSON format:
 
 [
@@ -265,69 +265,69 @@ Output strictly in the following JSON format:
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
 
                 {/* 1. JSON Schema Guide */}
-                <div className="bg-slate-900 rounded-[2rem] p-8 shadow-2xl flex flex-col gap-6 border border-slate-800 relative overflow-hidden group">
+                <div className="bg-white rounded-[2rem] p-8 shadow-xl flex flex-col gap-6 border border-slate-200 relative overflow-hidden group hover:border-blue-300 transition-colors">
                     {/* Header */}
                     <div className="flex items-center justify-between relative z-10">
-                        <div className="flex items-center gap-4 text-white">
-                            <div className="p-2.5 rounded-xl bg-blue-500/20 text-blue-400 border border-blue-500/30">
+                        <div className="flex items-center gap-4">
+                            <div className="p-2.5 rounded-xl bg-blue-50 text-blue-600 border border-blue-100 group-hover:bg-blue-600 group-hover:text-white transition-colors">
                                 <FileJson className="w-6 h-6" />
                             </div>
                             <div>
-                                <h5 className="font-black text-base uppercase tracking-widest">JSON Schema</h5>
-                                <p className="text-xs text-slate-400 font-medium">Strict format required</p>
+                                <h5 className="font-black text-base uppercase tracking-widest text-slate-800">JSON Schema</h5>
+                                <p className="text-xs text-slate-500 font-medium">Strict format required</p>
                             </div>
                         </div>
                         <button
                             onClick={() => copyToClipboard(schemaExample, true)}
-                            className="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-bold transition-all border border-white/5"
+                            className="flex items-center gap-2 px-4 py-2 bg-slate-50 hover:bg-slate-100 text-slate-600 hover:text-blue-600 rounded-xl text-xs font-bold transition-all border border-slate-200 hover:border-blue-200 shadow-sm"
                         >
-                            {copiedSchema ? <Check className="w-4 h-4 text-green-400" /> : <Copy className="w-4 h-4" />}
+                            {copiedSchema ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
                             {copiedSchema ? 'COPIED' : 'COPY'}
                         </button>
                     </div>
 
                     {/* Code Block */}
-                    <div className="relative z-10 bg-black/50 rounded-2xl p-6 border border-white/5 overflow-x-auto">
-                        <pre className="text-sm font-mono leading-relaxed text-blue-200">
+                    <div className="relative z-10 bg-slate-50 rounded-2xl p-6 border border-slate-200 overflow-x-auto group-hover:shadow-inner transition-shadow">
+                        <pre className="text-sm font-mono leading-relaxed text-slate-600 selection:bg-blue-100">
                             {schemaExample}
                         </pre>
                     </div>
 
                     {/* Background decoration */}
-                    <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 blur-[100px] -z-0 group-hover:bg-blue-500/20 transition-all duration-1000" />
+                    <div className="absolute -top-12 -right-12 w-48 h-48 bg-blue-50/50 rounded-full blur-3xl group-hover:bg-blue-100/50 transition-colors duration-700" />
                 </div>
 
                 {/* 2. AI Generator Prompt */}
-                <div className="bg-gradient-to-br from-indigo-900 to-slate-900 rounded-[2rem] p-8 shadow-2xl flex flex-col gap-6 border border-indigo-500/20 relative overflow-hidden group">
+                <div className="bg-white rounded-[2rem] p-8 shadow-xl flex flex-col gap-6 border border-slate-200 relative overflow-hidden group hover:border-[#FF4B91]/30 transition-colors">
                     {/* Header */}
                     <div className="flex items-center justify-between relative z-10">
-                        <div className="flex items-center gap-4 text-white">
-                            <div className="p-2.5 rounded-xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">
+                        <div className="flex items-center gap-4">
+                            <div className="p-2.5 rounded-xl bg-[#FF4B91]/10 text-[#FF4B91] border border-[#FF4B91]/20 group-hover:bg-[#FF4B91] group-hover:text-white transition-colors">
                                 <Sparkles className="w-6 h-6" />
                             </div>
                             <div>
-                                <h5 className="font-black text-base uppercase tracking-widest">AI Generator Prompt</h5>
-                                <p className="text-xs text-slate-400 font-medium">Paste into ChatGPT / Claude</p>
+                                <h5 className="font-black text-base uppercase tracking-widest text-slate-800">AI Generator Prompt</h5>
+                                <p className="text-xs text-slate-500 font-medium">Paste into ChatGPT / Claude</p>
                             </div>
                         </div>
                         <button
                             onClick={() => copyToClipboard(aiPrompt, false)}
-                            className="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-bold transition-all border border-white/5"
+                            className="flex items-center gap-2 px-4 py-2 bg-slate-50 hover:bg-slate-100 text-slate-600 hover:text-[#FF4B91] rounded-xl text-xs font-bold transition-all border border-slate-200 hover:border-[#FF4B91]/30 shadow-sm"
                         >
-                            {copiedPrompt ? <Check className="w-4 h-4 text-green-400" /> : <Copy className="w-4 h-4" />}
+                            {copiedPrompt ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
                             {copiedPrompt ? 'COPIED' : 'COPY'}
                         </button>
                     </div>
 
                     {/* Prompt Content */}
-                    <div className="relative z-10 bg-black/30 rounded-2xl p-6 border border-white/5 overflow-hidden">
-                        <p className="text-sm font-mono text-indigo-200 leading-relaxed whitespace-pre-wrap">
+                    <div className="relative z-10 bg-slate-50 rounded-2xl p-6 border border-slate-200 overflow-hidden group-hover:shadow-inner transition-shadow">
+                        <p className="text-sm font-mono text-slate-600 leading-relaxed whitespace-pre-wrap selection:bg-[#FF4B91]/20">
                             {aiPrompt}
                         </p>
                     </div>
 
-                    {/* Background decoration */}
-                    <div className="absolute bottom-0 left-0 w-64 h-64 bg-indigo-500/10 blur-[100px] -z-0 group-hover:bg-indigo-500/20 transition-all duration-1000" />
+                    {/* Background decoration - Subtle */}
+                    <div className="absolute -bottom-12 -right-12 w-48 h-48 bg-[#FF4B91]/5 rounded-full blur-3xl group-hover:bg-[#FF4B91]/10 transition-colors duration-700" />
                 </div>
             </div>
         </div>

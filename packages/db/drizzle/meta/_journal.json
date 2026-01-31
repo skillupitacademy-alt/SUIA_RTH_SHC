@@ -8,6 +8,13 @@
       "when": 1769525590263,
       "tag": "0000_perpetual_mojo",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1769886574237,
+      "tag": "0001_violet_ultimatum",
+      "breakpoints": true
     }
   ]
 }
