@@ -36,6 +36,12 @@
 - **Context-Aware Factory**: Hierarchy Wizard now auto-fills lineage (Context) and offers smart stubs for missing data gaps.
 - **Deployment**: Verified clean monorepo build, fixed type regressions, and installed branding assets (Favicon).
 
+### Phase 8: Factory High-Fidelity & AI IQ Assistant (Batch 27)
+- **IQ Assistant**: Integrated context-aware AI prompt generator within the factory to assist admins in content generation.
+- **UI/UX Upgrade**: Expanded Factory to 7xl split-pane layout with dedicated intelligence and code editing zones.
+- **Process Visualization**: Implemented animated "Pulse Tracker" to provide real-time feedback during transactional seeding.
+- **File Ingestion**: Added surgical `.json` file upload support to accelerate bulk content seeding from AI outputs.
+
 ### 🛡️ Reliability & Safety
 - **Build Enforcement**: Strict TypeScript/ESLint checks re-enabled (`Exit Code 0` on builds).
 - **Runtime Crash Mitigation**: Global `formatTimeAgo` safety utility implemented across all governance tables.

@@ -63,3 +63,23 @@ graph TD
 
 ### C. Validation
 - Verify "Start Enterprise Exam" is unblocked only when the specific child causing the block is healed.
+
+---
+
+## 4. High-Fidelity IQ Assistant & Intelligence Panel
+The Factory has been upgraded from a simple JSON editor to an **Integrated Intelligence Console**.
+
+### Features
+1.  **Healing IQ Assistant**:
+    *   **Context Isolation**: Automatically detects the specific Domain/Subject/Topic target.
+    *   **AI Prompt Generator**: Pre-formats a professional prompt for external LLMs (ChatGPT/Gemini) that includes strict schema definitions and difficulty enums (`simple`, `intermediate`, `expert`).
+2.  **Surgical File Ingestion**:
+    *   Supports single-click `.json` uploads to quickly populate the factory from AI-generated files.
+3.  **Real-time Process Visualization**:
+    *   Replaces the static rules list with an **Animated Factory Pulse Tracker**.
+    *   Visualizes four key stages: `Integrity Lookup` -> `Transactional Init` -> `Duplicate Filter` -> `Atomic Commit`.
+    *   Provides instant visual feedback (Checkmarks/Loaders) as data is transactionally committed.
+
+### UI Configuration
+- **Dimensions**: Expanded to `max-w-7xl` (Executive Large).
+- **Layout**: Split-pane (Left: Code Environment | Right: Intelligence Desktop).
