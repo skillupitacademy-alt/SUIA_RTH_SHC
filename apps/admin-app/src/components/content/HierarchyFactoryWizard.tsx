@@ -46,30 +46,71 @@ export function HierarchyFactoryWizard({ isOpen, onClose, initialData, onSuccess
     };
 
     const generateTemplate = () => {
-        const template = {
-            domainName: "ENTER_DOMAIN_NAME",
-            subjects: [
-                {
-                    name: "ENTER_SUBJECT_NAME",
-                    topics: [
-                        {
-                            name: "ENTER_TOPIC_NAME",
-                            questions: [
-                                {
-                                    questionText: "Sample Question?",
-                                    difficulty: "simple",
-                                    type: "mcq",
-                                    options: ["Choice A", "Choice B", "Choice C", "Choice D"],
-                                    correctAnswer: "Choice A",
-                                    explanation: "Why A is correct..."
-                                }
-                            ]
-                        }
-                    ]
+        if (initialData) {
+            // Smart Context Mode: Use the provided context to build a surgical stub
+            // Check what level we are at based on the data structure
+            const template = JSON.parse(JSON.stringify(initialData));
+            
+            // Drill down to finding the "gap"
+            if (template.subjects && template.subjects.length > 0) {
+                const subject = template.subjects[0];
+                if (subject.topics && subject.topics.length > 0) {
+                    const topic = subject.topics[0];
+                    // We are at Topic Level -> Add Question Stub
+                    if (!topic.questions || topic.questions.length === 0) {
+                        topic.questions = [
+                            {
+                                questionText: "ENTER_QUESTION_TEXT",
+                                difficulty: "simple",
+                                type: "mcq",
+                                options: ["A", "B", "C", "D"],
+                                correctAnswer: "A",
+                                explanation: "..."
+                            }
+                        ];
+                    }
+                } else {
+                    // We are at Subject Level -> Add Topic Stub
+                    subject.topics = [{
+                        name: "ENTER_TOPIC_NAME",
+                        questions: []
+                    }];
                 }
-            ]
-        };
-        setPayload(JSON.stringify(template, null, 2));
+            } else {
+                // We are at Domain Level -> Add Subject Stub
+                template.subjects = [{
+                    name: "ENTER_SUBJECT_NAME",
+                    topics: []
+                }];
+            }
+            setPayload(JSON.stringify(template, null, 2));
+        } else {
+            // Generic Blank Slate Mode
+            const template = {
+                domainName: "ENTER_DOMAIN_NAME",
+                subjects: [
+                    {
+                        name: "ENTER_SUBJECT_NAME",
+                        topics: [
+                            {
+                                name: "ENTER_TOPIC_NAME",
+                                questions: [
+                                    {
+                                        questionText: "Sample Question?",
+                                        difficulty: "simple",
+                                        type: "mcq",
+                                        options: ["Choice A", "Choice B", "Choice C", "Choice D"],
+                                        correctAnswer: "Choice A",
+                                        explanation: "Why A is correct..."
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            };
+            setPayload(JSON.stringify(template, null, 2));
+        }
     };
 
     if (!isOpen) return null;

@@ -44,15 +44,38 @@ export function ContentReadinessBoard() {
         fetch();
     }, []);
 
-    const openHealWizard = (nodeType: string, node: any, domainId: string) => {
+    const openHealWizard = (nodeType: string, node: any, domainId: string, domainName?: string) => {
         let template: any = { domainId };
 
+        // Smart Context Construction
+        // We use available names to pre-fill the hierarchy so the factory touches the right nodes.
         if (nodeType === 'domain') {
-            template = { domainId: node.domainId, domainName: node.domainName, subjects: [] };
+            template = {
+                domainId: node.domainId,
+                domainName: node.domainName,
+                subjects: []
+            };
         } else if (nodeType === 'subject') {
-            template.subjects = [{ name: node.name, topics: [] }];
+            template = {
+                domainId,
+                domainName: domainName, // Passed from parent
+                subjects: [{
+                    name: node.name,
+                    topics: []
+                }]
+            };
         } else if (nodeType === 'topic') {
-            template.subjects = [{ name: node.subjectName || "PARENT_SUBJECT", topics: [{ name: node.name, subtopics: [] }] }];
+            template = {
+                domainId,
+                domainName: domainName,
+                subjects: [{
+                    name: node.subjectName || "PARENT_SUBJECT",
+                    topics: [{
+                        name: node.name,
+                        questions: [] // Explicitly setting this encourages question filling
+                    }]
+                }]
+            };
         }
 
         setFactoryModal({ isOpen: true, initialData: template });
@@ -138,7 +161,7 @@ export function ContentReadinessBoard() {
                                     <StatsBadge label="I" val={domain.stats.intermediate} target={4} />
                                     <StatsBadge label="E" val={domain.stats.expert} target={5} />
                                 </div>
-                                {!domain.isReady && (
+                                {!domain.isReady && (domain.subjects?.length === 0) && (
                                     <button
                                         onClick={(e) => { e.stopPropagation(); openHealWizard('domain', domain, domain.domainId); }}
                                         className="p-2.5 rounded-xl bg-red-500/10 text-red-600 hover:bg-red-500/20 transition-all border border-red-500/10 group-hover:scale-105"
@@ -174,9 +197,9 @@ export function ContentReadinessBoard() {
                                                     <StatsBadge label="I" val={subject.stats.intermediate} target={4} />
                                                     <StatsBadge label="E" val={subject.stats.expert} target={5} />
                                                 </div>
-                                                {!subject.stats.isReady && (
+                                                {!subject.stats.isReady && (subject.topics?.length === 0) && (
                                                     <button
-                                                        onClick={(e) => { e.stopPropagation(); openHealWizard('subject', subject, domain.domainId); }}
+                                                        onClick={(e) => { e.stopPropagation(); openHealWizard('subject', subject, domain.domainId, domain.domainName); }}
                                                         className="p-1.5 rounded-lg bg-red-500/5 text-red-500 hover:bg-red-500/10 border border-red-500/5"
                                                     >
                                                         <Zap size={12} />
@@ -206,7 +229,7 @@ export function ContentReadinessBoard() {
                                                                 <StatsBadge label="E" val={topic.stats.expert} target={5} />
                                                                 {!topic.stats.isReady && (
                                                                     <button
-                                                                        onClick={(e) => { e.stopPropagation(); openHealWizard('topic', { ...topic, subjectName: subject.name }, domain.domainId); }}
+                                                                        onClick={(e) => { e.stopPropagation(); openHealWizard('topic', { ...topic, subjectName: subject.name }, domain.domainId, domain.domainName); }}
                                                                         className="p-1 rounded bg-red-500/10 text-red-500 hover:bg-red-500/20"
                                                                     >
                                                                         <Zap size={10} />
