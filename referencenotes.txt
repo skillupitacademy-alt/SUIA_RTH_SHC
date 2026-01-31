@@ -23,6 +23,8 @@ I want both div one below the other and accordingly work on layout and UI/UX loo
 
 pnpm build
 pnpm --filter @quiz/web-app build
+pnpm --filter @quiz/api-server build
+pnpm --filter @quiz/admin-app build
 pnpm --filter @
 npx tsc --noEmit
 
@@ -129,4 +131,9 @@ main
 
 
 
+
+AI Prompt Generator:
+Automatically builds a prompt for external AI (ChatGPT/Gemini).
+Includes schema enums: difficulty (simple, intermediate, expert) and type (mcq, code_mcq).
+Includes a "Copy Prompt" action.
 

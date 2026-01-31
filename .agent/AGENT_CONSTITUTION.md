@@ -130,4 +130,6 @@ Any modification to `@docs/**` files MUST:
 > **Agents define behavior.**
 > **Models execute — they do not decide.**
 
-This principle MUST be upheld at all times.
+### 🛡️ Command Execution Protocol (EFFICIENCY)
+...
+4. **Executive Dashboard Rule**: Administrative complex workflows (Seeders/Factories) must use **Full-Screen Executive Consoles** (`inset-0`) with typography scale optimized for readability (`text-xl`/`text-lg`).

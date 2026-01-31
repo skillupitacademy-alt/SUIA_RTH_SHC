@@ -81,5 +81,7 @@ The Factory has been upgraded from a simple JSON editor to an **Integrated Intel
     *   Provides instant visual feedback (Checkmarks/Loaders) as data is transactionally committed.
 
 ### UI Configuration
-- **Dimensions**: Expanded to `max-w-7xl` (Executive Large).
-- **Layout**: Split-pane (Left: Code Environment | Right: Intelligence Desktop).
+- **Dimensions**: Scaled to **Full-Screen Command Center** (fixed inset-0).
+- **Layout**: Split-pane (Left: High-Fidelity Code Environment | Right: Intelligence Desktop).
+- **Typography**: Enhanced font sizes (**text-lg** for Editor, **text-base** for AI Prompts) for zero-strain readability.
+- **Form Factor**: Borderless executive design with high-density padding and increased micro-spacing to eliminate scrollbar friction.
