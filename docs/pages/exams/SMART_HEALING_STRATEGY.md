@@ -80,8 +80,16 @@ The Factory has been upgraded from a simple JSON editor to an **Integrated Intel
     *   Visualizes four key stages: `Integrity Lookup` -> `Transactional Init` -> `Duplicate Filter` -> `Atomic Commit`.
     *   Provides instant visual feedback (Checkmarks/Loaders) as data is transactionally committed.
 
-### UI Configuration
+### UI Configuration (Refined)
 - **Dimensions**: Scaled to **Full-Screen Command Center** (fixed inset-0).
 - **Layout**: Split-pane (Left: High-Fidelity Code Environment | Right: Intelligence Desktop).
 - **Typography**: Enhanced font sizes (**text-lg** for Editor, **text-base** for AI Prompts) for zero-strain readability.
-- **Form Factor**: Borderless executive design with high-density padding and increased micro-spacing to eliminate scrollbar friction.
+- **Form Factor**: Borderless executive design. **Zero-Scroll Policy**: The parent container is strictly `h-screen overflow-hidden`, with internal scrolling restricted to data-heavy panels only.
+- **Header Orchestration**: Utilizes the right-most header space for secondary status/tracking indicators to reduce footer vertical density.
+
+---
+
+## 5. UI Refinement (Task 2026-01-31)
+- **Footer Compression**: Reduced footer height and button scale to optimize for smaller viewports and professional density.
+- **Icon-Centric Utilities**: Reverted secondary action buttons (Copy Prompt) to icon-only states for visual elegance.
+- **Combined Intelligence Payload**: The "Copy" action now aggregates both the structural Metadata (JSON) and the Instruction Context (Prompt) into a single clipboard event.

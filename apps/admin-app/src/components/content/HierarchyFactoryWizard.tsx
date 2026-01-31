@@ -82,8 +82,9 @@ Return ONLY the JSON array inside a "questions" key.`;
     };
 
     const copyToClipboard = (text: string) => {
-        navigator.clipboard.writeText(text);
-        // Could add a toast here if we had a toast system
+        // COMBINED PAYLOAD: JSON Skeleton + Promo Text
+        const combinedPayload = `/* SOURCE JSON SKELETON */\n${payload || JSON.stringify(initialData || {}, null, 2)}\n\n/* SURGICAL INSTRUCTION */\n${text}`;
+        navigator.clipboard.writeText(combinedPayload);
     };
 
     const handleSeed = async () => {
@@ -181,20 +182,32 @@ Return ONLY the JSON array inside a "questions" key.`;
     return createPortal(
         <div className="fixed inset-0 z-[1000] flex flex-col bg-white animate-in fade-in duration-300">
             {/* Header */}
-            <div className="p-8 border-b border-primary/5 flex items-center justify-between bg-primary/[0.02]">
+            <div className="px-12 py-5 border-b border-primary/5 flex items-center justify-between bg-primary/[0.02]">
                 <div className="flex items-center gap-5">
-                    <div className="p-4 bg-primary text-white rounded-[1.5rem] shadow-xl shadow-primary/20 animate-pulse-slow">
-                        <Zap size={32} />
+                    <div className="p-3 bg-primary text-white rounded-2xl shadow-xl shadow-primary/20 animate-pulse-slow">
+                        <Zap size={24} />
                     </div>
                     <div>
-                        <h2 className="text-4xl font-black uppercase tracking-tight italic text-[#1A1A1A]">Atomic Hierarchy Factory</h2>
-                        <p className="text-xs font-bold text-muted-foreground uppercase tracking-[0.2em] mt-1 flex items-center gap-2">
-                            <Activity size={14} className="text-primary" /> Executive Content Intelligence Console
+                        <h2 className="text-3xl font-black uppercase tracking-tight italic text-[#1A1A1A]">Atomic Hierarchy Factory</h2>
+                        <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mt-0.5 flex items-center gap-2">
+                            <Activity size={12} className="text-primary" /> Intelligence Console
                         </p>
                     </div>
                 </div>
-                <button onClick={onClose} className="p-4 hover:bg-muted rounded-full transition-all hover:scale-110 active:scale-90 bg-slate-100 flex items-center justify-center">
-                    <X size={32} className="text-muted-foreground" />
+
+                {/* Header-Integrated Pulse Tracker */}
+                <div className="hidden xl:flex items-center gap-2 bg-white/50 border border-primary/5 rounded-2xl px-4 py-2 mx-10 flex-1 justify-center max-w-2xl">
+                    <HeaderStep label="Lookup" status={executionStep === 'lookup' ? 'active' : (executionStep === 'idle' ? 'pending' : 'done')} />
+                    <div className="w-4 h-px bg-primary/10" />
+                    <HeaderStep label="Init" status={executionStep === 'transaction' ? 'active' : (['idle', 'lookup'].includes(executionStep) ? 'pending' : 'done')} />
+                    <div className="w-4 h-px bg-primary/10" />
+                    <HeaderStep label="Filter" status={executionStep === 'filter' ? 'active' : (['idle', 'lookup', 'transaction'].includes(executionStep) ? 'pending' : 'done')} />
+                    <div className="w-4 h-px bg-primary/10" />
+                    <HeaderStep label="Commit" status={executionStep === 'commit' ? 'active' : (executionStep === 'done' ? 'done' : 'pending')} />
+                </div>
+
+                <button onClick={onClose} className="p-3 hover:bg-muted rounded-full transition-all hover:scale-110 active:scale-90 bg-slate-100 flex items-center justify-center">
+                    <X size={24} className="text-muted-foreground" />
                 </button>
             </div>
 
@@ -258,12 +271,12 @@ Return ONLY the JSON array inside a "questions" key.`;
                 </div>
 
                 {/* Right: Intelligence Panel */}
-                <div className="w-full lg:w-[600px] bg-slate-50/50 flex flex-col p-12 gap-10 overflow-y-auto custom-scrollbar">
-                    <div className="space-y-10">
+                <div className="w-full lg:w-[480px] bg-slate-50/50 flex flex-col p-8 gap-6 overflow-y-auto custom-scrollbar">
+                    <div className="space-y-6">
                         {/* Intelligence Section */}
-                        <div className="p-10 rounded-[3rem] bg-white border border-primary/5 shadow-xl space-y-8">
-                            <h4 className="text-base font-black uppercase tracking-[0.2em] text-[#1A1A1A] flex items-center gap-4">
-                                <Brain size={28} className="text-primary" /> Healing IQ Assistant
+                        <div className="p-8 rounded-[2rem] bg-white border border-primary/5 shadow-xl space-y-6">
+                            <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-[#1A1A1A] flex items-center gap-3">
+                                <Brain size={20} className="text-primary" /> AI IQ Assistant
                             </h4>
 
                             <div className="space-y-8">
@@ -277,38 +290,26 @@ Return ONLY the JSON array inside a "questions" key.`;
                                     </div>
                                 </div>
 
-                                <div className="space-y-4">
-                                    <label className="text-xs font-black uppercase tracking-widest text-[#1A1A1A] ml-2">Surgical AI Prompt</label>
+                                <div className="space-y-3">
+                                    <div className="flex items-center justify-between ml-2">
+                                        <label className="text-[10px] font-black uppercase tracking-widest text-[#1A1A1A]">Surgical AI Prompt</label>
+                                        <button
+                                            onClick={() => copyToClipboard(generateAiPrompt())}
+                                            className="p-2.5 bg-primary/10 text-primary rounded-xl hover:bg-primary hover:text-white transition-all shadow-sm active:scale-90"
+                                            title="Copy Combined Payload (JSON + Instructions)"
+                                        >
+                                            <ClipboardCopy size={16} />
+                                        </button>
+                                    </div>
                                     <div className="relative group/prompt">
                                         <textarea
                                             readOnly
                                             value={generateAiPrompt()}
-                                            className="w-full bg-slate-900 text-slate-300 text-lg p-10 rounded-[2.5rem] font-medium leading-relaxed resize-none h-96 border border-white/5 shadow-2xl group-hover/prompt:border-primary/30 transition-all font-mono"
+                                            className="w-full bg-slate-900 text-slate-300 text-sm p-6 rounded-2xl font-medium leading-relaxed resize-none h-80 border border-white/5 shadow-2xl group-hover/prompt:border-primary/30 transition-all font-mono"
                                         />
-                                        <button
-                                            onClick={() => copyToClipboard(generateAiPrompt())}
-                                            className="absolute right-8 bottom-8 px-8 py-5 bg-primary text-white rounded-2xl shadow-2xl shadow-primary/40 hover:scale-105 active:scale-95 transition-all flex items-center gap-4 group/btn"
-                                            title="Copy to Clipboard"
-                                        >
-                                            <ClipboardCopy size={24} />
-                                            <span className="text-xs font-black uppercase tracking-widest">Copy Prompt</span>
-                                        </button>
                                     </div>
-                                    <p className="text-xs font-bold text-muted-foreground italic px-3 text-center">Paste this into Chat LLM to generate production JSON.</p>
+                                    <p className="text-[9px] font-bold text-muted-foreground italic text-center px-4">Utilize this for external LLM generation.</p>
                                 </div>
-                            </div>
-                        </div>
-
-                        {/* Animated Execution Steps */}
-                        <div className="p-10 rounded-[3rem] bg-white border border-primary/5 shadow-xl space-y-10">
-                            <h4 className="text-base font-black uppercase tracking-[0.2em] text-[#1A1A1A] flex items-center gap-4">
-                                <Activity size={28} className="text-primary" /> Pulse Tracker
-                            </h4>
-                            <div className="space-y-6">
-                                <StepItem label="Integrity Lookup" status={executionStep === 'lookup' ? 'active' : (executionStep === 'idle' ? 'pending' : 'done')} />
-                                <StepItem label="Transactional Init" status={executionStep === 'transaction' ? 'active' : (['idle', 'lookup'].includes(executionStep) ? 'pending' : 'done')} />
-                                <StepItem label="Duplicate Filter" status={executionStep === 'filter' ? 'active' : (['idle', 'lookup', 'transaction'].includes(executionStep) ? 'pending' : 'done')} />
-                                <StepItem label="Atomic Commit" status={executionStep === 'commit' ? 'active' : (executionStep === 'done' ? 'done' : 'pending')} />
                             </div>
                         </div>
 
@@ -349,27 +350,27 @@ Return ONLY the JSON array inside a "questions" key.`;
 
             {/* Footer Controls */}
             {!success && (
-                <div className="px-12 py-10 border-t border-primary/5 bg-primary/[0.01] flex items-center justify-between bg-white">
-                    <div className="flex items-center gap-10">
-                        <div className="flex items-center gap-4">
-                            <div className="w-4 h-4 rounded-full bg-primary animate-ping" />
-                            <span className="text-sm font-black uppercase tracking-widest text-primary">Terminal Ready</span>
-                        </div>
-                        <p className="text-sm font-bold text-muted-foreground uppercase leading-relaxed max-w-2xl">Ensure content complies with professional certification standards before commit.</p>
-                    </div>
+                <div className="px-12 py-6 border-t border-primary/5 bg-white flex items-center justify-between shadow-[0_-10px_40px_rgba(0,0,0,0.03)]">
                     <div className="flex items-center gap-8">
+                        <div className="flex items-center gap-3 px-4 py-2 bg-primary/5 rounded-xl border border-primary/10">
+                            <div className="w-2.5 h-2.5 rounded-full bg-primary animate-pulse" />
+                            <span className="text-[10px] font-black uppercase tracking-widest text-primary">Terminal Ready</span>
+                        </div>
+                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest leading-relaxed max-w-xl">Ensure content compliance with standards.</p>
+                    </div>
+                    <div className="flex items-center gap-4">
                         <button
                             onClick={onClose}
-                            className="px-16 py-7 rounded-[1.5rem] font-black text-sm uppercase tracking-[0.2em] text-muted-foreground hover:bg-muted transition-all"
+                            className="px-8 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest text-muted-foreground hover:bg-slate-50 transition-all border border-transparent hover:border-slate-100"
                         >
                             Discard
                         </button>
                         <button
                             disabled={isProcessing || !payload}
                             onClick={handleSeed}
-                            className="px-24 py-7 rounded-[1.5rem] bg-primary text-white font-black text-sm uppercase tracking-[0.2em] shadow-2xl shadow-primary/40 hover:scale-[1.02] active:scale-95 transition-all flex items-center gap-6 disabled:opacity-50 disabled:grayscale disabled:pointer-events-none group"
+                            className="px-12 py-4 rounded-2xl bg-primary text-white font-black text-[10px] uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center gap-4 disabled:opacity-50 disabled:grayscale disabled:pointer-events-none group"
                         >
-                            {isProcessing ? <Loader2 className="h-8 w-8 animate-spin text-white" /> : <ShieldCheck size={32} className="group-hover:rotate-12 transition-transform" />}
+                            {isProcessing ? <Loader2 className="h-5 w-5 animate-spin text-white" /> : <ShieldCheck size={20} className="group-hover:rotate-12 transition-transform" />}
                             FIRE ATOMIC SEED
                         </button>
                     </div>
@@ -377,6 +378,27 @@ Return ONLY the JSON array inside a "questions" key.`;
             )}
         </div>,
         document.body
+    );
+}
+
+function HeaderStep({ label, status }: { label: string, status: 'pending' | 'active' | 'done' }) {
+    return (
+        <div className={cn(
+            "flex items-center gap-2 transition-all duration-500",
+            status === 'active' ? "opacity-100 scale-105" :
+                status === 'done' ? "opacity-100" : "opacity-40"
+        )}>
+            {status === 'active' ? <Loader2 size={12} className="animate-spin text-primary" /> :
+                status === 'done' ? <CheckCircle size={12} className="text-green-500" /> :
+                    <div className="w-2.5 h-2.5 rounded-full border border-primary/20" />}
+            <span className={cn(
+                "text-[9px] font-black uppercase tracking-[0.15em]",
+                status === 'active' ? "text-primary italic" :
+                    status === 'done' ? "text-green-600" : "text-muted-foreground"
+            )}>
+                {label}
+            </span>
+        </div>
     );
 }
 
