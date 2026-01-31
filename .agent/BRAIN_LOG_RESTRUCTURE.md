@@ -200,3 +200,9 @@ Reduce documentation fragmentation and improve discoverability by consolidating 
 - **Utility Upgrade**: Refined the `Copy Prompt` utility into an icon-only button with **Combined Intelligence Payload** logic (copies both JSON skeleton and instruction context).
 - **Zero-Scroll Policy**: Enforced vertical viewport locking to eliminate parent scrollbars, ensuring the "Executive Console" behaves as a standalone workstation.
 - **Outcome**: Achieved a denser, more visually balanced command center with enhanced copy-paste synergy for external AI agents.
+
+### Batch 31: Skill Matrix Bifurcation & Monorepo Stability
+- **Schema Evolution**: Introduced `skill_category` pgEnum to enforce professional competency boundaries (System Design, API Design, etc.) at the database level.
+- **Admin UI Alignment**: Upgraded the `SkillTable` form from free-text to a structured `<select>` dropdown, ensuring 100% data integrity with professional labels.
+- **Monorepo Stabilization**: Resolved critical type shadowing conflicts in `web-app`'s `AuthStore` and `utils` to achieve system-wide clean builds.
+- **Outcome**: Professionalized the skill taxonomy and secured the monorepo build pipeline for production-grade reliability.

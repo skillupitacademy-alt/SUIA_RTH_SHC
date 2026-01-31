@@ -57,10 +57,16 @@
 - **Header Orchestration**: Relocated state/pulse trackers to the header area, reclaiming central workspace real estate.
 - **Combined Intelligence**: Upgraded the Copy Prompt utility to aggregate JSON metadata and surgical instructions into a single clipboard event.
 - **Zero-Scroll Policy**: Enforced vertical viewport locking to eliminate parent scrollbars globally within the console.
+- **Monorepo Build**: Verified that `@quiz/web-app`, `@quiz/admin-app`, and `@quiz/api-server` all build successfully with 100% type safety.
+
+### Phase 12: Skill Matrix Bifurcation (Batch 31)
+- **Taxonomy Enforcement**: Replaced free-text skill categories with a strict `skill_category` enum to support future granular reporting.
+- **Professional UX**: Upgraded Admin management to use structured dropdowns with human-readable labels (e.g., "Testing & QA", "System Design").
+- **Schema-UI Sync**: Achieved 1:1 parity between database enums, backend service logic, and frontend selection triggers.
 
 ### 🛡️ Reliability & Safety
 - **Build Enforcement**: Strict TypeScript/ESLint checks re-enabled (`Exit Code 0` on builds).
 - **Runtime Crash Mitigation**: Global `formatTimeAgo` safety utility implemented across all governance tables.
 - **Data Parity**: Skills management and UI labels aligned 100% with DB schema and professional UX standards.
-- **Strict Linting**: TypeScript and ESLint compliance is 100% enforced in both admin and web apps.
-- **Monorepo Build**: Verified that `@quiz/web-app`, `@quiz/admin-app`, and `@quiz/api-server` all build successfully with 100% type safety.
+- **Strict Compliance**: TypeScript and ESLint compliance is 100% enforced in both admin and web apps.
+- **Build Pass**: Root `pnpm build` and `npx tsc --noEmit` verified for all 3 apps and shared packages.
