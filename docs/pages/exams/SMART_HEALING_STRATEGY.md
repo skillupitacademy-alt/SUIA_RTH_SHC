@@ -93,3 +93,17 @@ The Factory has been upgraded from a simple JSON editor to an **Integrated Intel
 - **Footer Compression**: Reduced footer height and button scale to optimize for smaller viewports and professional density.
 - **Icon-Centric Utilities**: Reverted secondary action buttons (Copy Prompt) to icon-only states for visual elegance.
 - **Combined Intelligence Payload**: The "Copy" action now aggregates both the structural Metadata (JSON) and the Instruction Context (Prompt) into a single clipboard event.
+
+---
+
+## 6. Reporting Bifurcation Readiness
+To support granular reporting (Domain > Subject > Topic > Subtopic > Skill + Mapping Type), the Factory must enforce strict clinical metadata capture.
+
+### Mandatory Metadata for Healing
+- **Skill Names**: Every question MUST be linked to at least one specific skill (e.g., `React Hooks`).
+- **Mapping Type**: Every skill must have a designated mapping type (`Conceptual`, `Technical`, `Practical`) to allow proficiency dimensions in reports.
+- **Professional Category**: Skills created during healing default to the topic's professional competency area.
+
+### System Enforcement
+- The **AI IQ Assistant** now explicitly requests these fields in its surgical instructions.
+- The **Atomic Commit** stage validates that no question enters the system without a skill association, ensuring zero-gap reporting for future analytics.
