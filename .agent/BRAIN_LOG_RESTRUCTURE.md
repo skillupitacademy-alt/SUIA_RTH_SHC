@@ -233,3 +233,10 @@ Reduce documentation fragmentation and improve discoverability by consolidating 
   - Resolved `ts:2345` build error in `admin.engine.ts` (Subtopics inference).
   - Fixed `api/migrate` route crash by switching to `neon-serverless/migrator`.
 - **Outcome**: Achieved `Exit Code 0` on all monorepo builds (`web-app`, `admin-app`, `api-server`).
+
+### Batch 35: Governance Data Repair & Bulk Upload UI Hardening
+- **Goal**: Resolve "Blank Dashboard" data regression and align Bulk Upload UI with the Reporting Trinity.
+- **Governance Repair**: Identified and uncommented `subtopics` relation in `AdminEngine.getContentHealthReport` to restore the Enterprise Governance Dashboard.
+- **Bulk Upload UI**: Overhauled `BulkUploadPanel` with side-by-side "AI Prompt" & "Schema Guide" layout.
+- **Prompt Engineering**: Integrated a dedicated "AI Generator Prompt" with one-click copy to ensure users generate valid JSON with `mappingType`.
+- **Outcome**: Restored critical dashboard visibility and professionalized the bulk content ingestion workflow.

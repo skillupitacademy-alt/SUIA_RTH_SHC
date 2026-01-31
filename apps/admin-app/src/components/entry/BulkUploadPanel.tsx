@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Upload, FileJson, X, Check, AlertCircle, Trash2 } from 'lucide-react';
+import { Upload, FileJson, X, Check, AlertCircle, Trash2, Copy, Sparkles, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { apiClient } from '@quiz/api-client';
 
@@ -100,8 +100,55 @@ export function BulkUploadPanel({ topicId, subtopicId, skillIds, onSuccess, onEr
         setQuestions([]);
     };
 
+    const [copiedSchema, setCopiedSchema] = useState(false);
+    const [copiedPrompt, setCopiedPrompt] = useState(false);
+
+    const schemaExample = `[
+  {
+    "text": "Identify the primary function of a database index.",
+    "difficulty": "intermediate",
+    "type": "mcq",
+    "mappingType": "conceptual",
+    "options": [
+      { "text": "Speed up data retrieval", "isCorrect": true },
+      { "text": "Reduce disk space", "isCorrect": false }
+    ],
+    "explanation": "Indexes improve query performance by..."
+  }
+]`;
+
+    const aiPrompt = `You are an expert exam content generator.
+Generate 5 high-quality multiple-choice questions for the topic: [INSERT TOPIC HERE]
+Output strictly in the following JSON format:
+
+[
+  {
+    "text": "Question text here...",
+    "difficulty": "intermediate", // simple, intermediate, expert
+    "type": "mcq", // mcq, code_mcq
+    "mappingType": "conceptual", // conceptual, technical, practical
+    "options": [
+      { "text": "Option A", "isCorrect": true },
+      { "text": "Option B", "isCorrect": false }
+    ],
+    "explanation": "Detailed explanation..."
+  }
+]
+`;
+
+    const copyToClipboard = (text: string, isSchema: boolean) => {
+        navigator.clipboard.writeText(text);
+        if (isSchema) {
+            setCopiedSchema(true);
+            setTimeout(() => setCopiedSchema(false), 2000);
+        } else {
+            setCopiedPrompt(true);
+            setTimeout(() => setCopiedPrompt(false), 2000);
+        }
+    };
+
     return (
-        <div className="space-y-6">
+        <div className="space-y-8">
             {!file ? (
                 <div className="relative">
                     <input
@@ -110,67 +157,102 @@ export function BulkUploadPanel({ topicId, subtopicId, skillIds, onSuccess, onEr
                         onChange={handleFileChange}
                         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                     />
-                    <div className="border-2 border-dashed border-slate-200 rounded-3xl p-12 text-center bg-white/40 backdrop-blur-sm hover:border-[#FF4B91]/50 hover:bg-[#FF4B91]/5 transition-all group">
-                        <div className="w-20 h-20 rounded-2xl bg-slate-50 flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform shadow-inner">
-                            <Upload className="w-8 h-8 text-slate-400 group-hover:text-[#FF4B91]" />
+                    <div className="border-2 border-dashed border-slate-200 rounded-[2rem] p-16 text-center bg-white/40 backdrop-blur-sm hover:border-[#FF4B91]/50 hover:bg-[#FF4B91]/5 transition-all group">
+                        <div className="w-24 h-24 rounded-3xl bg-slate-50 flex items-center justify-center mx-auto mb-8 group-hover:scale-110 transition-transform shadow-inner ring-1 ring-slate-100">
+                            <Upload className="w-10 h-10 text-slate-400 group-hover:text-[#FF4B91] transition-colors" />
                         </div>
-                        <h4 className="text-xl font-bold text-slate-800 mb-2 uppercase tracking-tight">Drop JSON File Here</h4>
-                        <p className="text-slate-500 text-sm font-medium">Or click to browse your computer for questions</p>
-                        <div className="mt-6 flex items-center justify-center gap-4 text-[10px] font-black uppercase tracking-widest text-slate-400">
-                            <span>Format: JSON</span>
-                            <span className="w-1 h-1 rounded-full bg-slate-300" />
-                            <span>Limit: 100 per file</span>
+                        <h4 className="text-2xl font-black text-slate-800 mb-3 uppercase tracking-tight">Drop JSON File Here</h4>
+                        <p className="text-slate-500 text-lg font-medium">Or click to browse your computer for questions</p>
+                        <div className="mt-8 flex items-center justify-center gap-6 text-xs font-black uppercase tracking-widest text-slate-400">
+                            <div className="flex items-center gap-2">
+                                <FileJson className="w-4 h-4" />
+                                <span>Format: JSON</span>
+                            </div>
+                            <span className="w-1.5 h-1.5 rounded-full bg-slate-300" />
+                            <div className="flex items-center gap-2">
+                                <AlertCircle className="w-4 h-4" />
+                                <span>Limit: 100 per file</span>
+                            </div>
                         </div>
                     </div>
                 </div>
             ) : (
-                <div className="bg-white/60 backdrop-blur-2xl border border-white/40 rounded-3xl shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-300">
-                    <div className="p-6 border-b border-gray-100 flex items-center justify-between bg-white/40">
-                        <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-xl bg-[#FF4B91]/10 flex items-center justify-center">
-                                <FileJson className="w-6 h-6 text-[#FF4B91]" />
+                <div className="bg-white/60 backdrop-blur-2xl border border-white/40 rounded-[2.5rem] shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-300">
+                    <div className="p-8 border-b border-gray-100 flex items-center justify-between bg-white/40">
+                        <div className="flex items-center gap-6">
+                            <div className="w-16 h-16 rounded-2xl bg-[#FF4B91]/10 flex items-center justify-center shadow-inner">
+                                <FileJson className="w-8 h-8 text-[#FF4B91]" />
                             </div>
                             <div>
-                                <h4 className="font-bold text-slate-900 tracking-tight">{file.name}</h4>
-                                <p className="text-xs font-bold text-green-600 uppercase tracking-widest">{questions.length} questions detected</p>
+                                <h4 className="text-xl font-bold text-slate-900 tracking-tight">{file.name}</h4>
+                                <div className="flex items-center gap-3 mt-1">
+                                    <span className="px-3 py-1 rounded-full bg-green-100 text-green-700 text-xs font-black uppercase tracking-wider border border-green-200">
+                                        {questions.length} Valid Questions
+                                    </span>
+                                </div>
                             </div>
                         </div>
-                        <button onClick={clearFile} className="p-2 hover:bg-red-50 text-slate-400 hover:text-red-500 rounded-xl transition-all">
-                            <Trash2 className="w-5 h-5" />
+                        <button
+                            onClick={clearFile}
+                            className="w-12 h-12 flex items-center justify-center hover:bg-red-50 text-slate-400 hover:text-red-500 rounded-2xl transition-all border border-transparent hover:border-red-100"
+                            title="Remove File"
+                        >
+                            <Trash2 className="w-6 h-6" />
                         </button>
                     </div>
 
-                    <div className="max-h-[400px] overflow-y-auto p-6 space-y-4">
-                        {questions.slice(0, 5).map((q, idx) => (
-                            <div key={idx} className="p-4 bg-white/60 rounded-2xl border border-slate-100 flex items-start gap-4">
-                                <span className="w-6 h-6 rounded-lg bg-slate-100 text-[10px] font-black flex items-center justify-center text-slate-500">{idx + 1}</span>
-                                <div className="space-y-1">
-                                    <p className="text-sm font-bold text-slate-800 line-clamp-1">{q.text || q.questionText}</p>
-                                    <div className="flex items-center gap-3">
-                                        <span className="text-[10px] font-black uppercase text-slate-400">{q.difficulty || 'intermediate'}</span>
-                                        <span className="text-[10px] font-black uppercase text-slate-400">{q.options.length} options</span>
+                    <div className="max-h-[500px] overflow-y-auto p-8 space-y-4 bg-slate-50/30">
+                        {questions.slice(0, 10).map((q, idx) => (
+                            <div key={idx} className="p-5 bg-white rounded-2xl border border-slate-100 shadow-sm flex items-start gap-5 hover:border-[#FF4B91]/30 transition-colors group">
+                                <span className="w-8 h-8 rounded-xl bg-slate-100 text-xs font-black flex items-center justify-center text-slate-500 group-hover:bg-[#FF4B91] group-hover:text-white transition-colors">
+                                    {idx + 1}
+                                </span>
+                                <div className="space-y-2 flex-1">
+                                    <p className="text-base font-bold text-slate-800 line-clamp-2 leading-relaxed">{q.text || q.questionText}</p>
+                                    <div className="flex flex-wrap items-center gap-3">
+                                        <span className={cn(
+                                            "text-[10px] font-black uppercase px-2 py-1 rounded-lg border",
+                                            q.difficulty === 'simple' ? "bg-green-50 text-green-600 border-green-100" :
+                                                q.difficulty === 'intermediate' ? "bg-amber-50 text-amber-600 border-amber-100" :
+                                                    "bg-red-50 text-red-600 border-red-100"
+                                        )}>{q.difficulty || 'intermediate'}</span>
+
+                                        {q.mappingType && (
+                                            <span className="text-[10px] font-black uppercase px-2 py-1 rounded-lg bg-blue-50 text-blue-600 border border-blue-100">
+                                                {q.mappingType}
+                                            </span>
+                                        )}
+
+                                        <span className="text-[10px] font-bold text-slate-400 flex items-center gap-1">
+                                            <Check className="w-3 h-3" /> {q.options.length} Options
+                                        </span>
                                     </div>
                                 </div>
                             </div>
                         ))}
-                        {questions.length > 5 && (
-                            <div className="text-center py-4 text-xs font-bold text-slate-400 uppercase tracking-widest">
-                                + {questions.length - 5} more questions
+                        {questions.length > 10 && (
+                            <div className="text-center py-6 text-sm font-bold text-slate-400 uppercase tracking-widest bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+                                + {questions.length - 10} more questions ready
                             </div>
                         )}
                     </div>
 
-                    <div className="p-6 bg-slate-50/50 border-t border-gray-100 flex justify-end">
+                    <div className="p-8 bg-white border-t border-gray-100 flex justify-between items-center">
+                        <div className="text-xs font-medium text-slate-500">
+                            Targeting: <span className="font-bold text-slate-800">Current Topic</span>
+                        </div>
                         <button
                             onClick={handleUpload}
                             disabled={isUploading || questions.length === 0}
-                            className="flex items-center gap-3 px-8 py-4 bg-[#FF4B91] hover:bg-[#ff3382] text-white font-black uppercase tracking-widest text-xs rounded-xl shadow-lg shadow-[#FF4B91]/20 active:scale-95 transition-all disabled:opacity-50"
+                            className="flex items-center gap-3 px-10 py-5 bg-[#FF4B91] hover:bg-[#ff3382] text-white font-black uppercase tracking-widest text-sm rounded-2xl shadow-xl shadow-[#FF4B91]/20 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:-translate-y-1"
                         >
                             {isUploading ? (
-                                <>Processing...</>
+                                <>
+                                    <Loader2 className="w-5 h-5 animate-spin" /> Processing...
+                                </>
                             ) : (
                                 <>
-                                    <Check className="w-4 h-4" /> Finalize & Upload All
+                                    <Check className="w-5 h-5" /> Finalize & Upload All
                                 </>
                             )}
                         </button>
@@ -178,51 +260,73 @@ export function BulkUploadPanel({ topicId, subtopicId, skillIds, onSuccess, onEr
                 </div>
             )}
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-slate-50/50 border border-slate-100 rounded-3xl p-8">
-                <div className="space-y-4">
-                    <div className="flex items-center gap-3 text-[#1A1A1A]">
-                        <div className="p-2 rounded-xl bg-blue-50 text-blue-600">
-                            <FileJson className="w-5 h-5" />
+            {/* Resources Grid */}
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+
+                {/* 1. JSON Schema Guide */}
+                <div className="bg-slate-900 rounded-[2rem] p-8 shadow-2xl flex flex-col gap-6 border border-slate-800 relative overflow-hidden group">
+                    {/* Header */}
+                    <div className="flex items-center justify-between relative z-10">
+                        <div className="flex items-center gap-4 text-white">
+                            <div className="p-2.5 rounded-xl bg-blue-500/20 text-blue-400 border border-blue-500/30">
+                                <FileJson className="w-6 h-6" />
+                            </div>
+                            <div>
+                                <h5 className="font-black text-base uppercase tracking-widest">JSON Schema</h5>
+                                <p className="text-xs text-slate-400 font-medium">Strict format required</p>
+                            </div>
                         </div>
-                        <h5 className="font-black text-sm uppercase tracking-widest">JSON Schema Guide</h5>
+                        <button
+                            onClick={() => copyToClipboard(schemaExample, true)}
+                            className="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-bold transition-all border border-white/5"
+                        >
+                            {copiedSchema ? <Check className="w-4 h-4 text-green-400" /> : <Copy className="w-4 h-4" />}
+                            {copiedSchema ? 'COPIED' : 'COPY'}
+                        </button>
                     </div>
-                    <div className="bg-slate-900 rounded-2xl p-4 overflow-x-auto">
-                        <pre className="text-[10px] text-blue-400 font-mono leading-relaxed">
-                            {`[
-  {
-    "text": "Identify the primary function of a database index.",
-    "difficulty": "intermediate",
-    "skillIds": ["skill_uuid_1", "skill_uuid_2"],
-    "options": [
-      { "text": "Speed up data retrieval", "isCorrect": true },
-      { "text": "Reduce disk space", "isCorrect": false }
-    ],
-    "explanation": "Indexes improve query performance..."
-  }
-]`}
+
+                    {/* Code Block */}
+                    <div className="relative z-10 bg-black/50 rounded-2xl p-6 border border-white/5 overflow-x-auto">
+                        <pre className="text-sm font-mono leading-relaxed text-blue-200">
+                            {schemaExample}
                         </pre>
                     </div>
+
+                    {/* Background decoration */}
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 blur-[100px] -z-0 group-hover:bg-blue-500/20 transition-all duration-1000" />
                 </div>
 
-                <div className="space-y-4">
-                    <div className="flex items-center gap-3 text-[#1A1A1A]">
-                        <div className="p-2 rounded-xl bg-amber-50 text-amber-600">
-                            <AlertCircle className="w-5 h-5" />
+                {/* 2. AI Generator Prompt */}
+                <div className="bg-gradient-to-br from-indigo-900 to-slate-900 rounded-[2rem] p-8 shadow-2xl flex flex-col gap-6 border border-indigo-500/20 relative overflow-hidden group">
+                    {/* Header */}
+                    <div className="flex items-center justify-between relative z-10">
+                        <div className="flex items-center gap-4 text-white">
+                            <div className="p-2.5 rounded-xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">
+                                <Sparkles className="w-6 h-6" />
+                            </div>
+                            <div>
+                                <h5 className="font-black text-base uppercase tracking-widest">AI Generator Prompt</h5>
+                                <p className="text-xs text-slate-400 font-medium">Paste into ChatGPT / Claude</p>
+                            </div>
                         </div>
-                        <h5 className="font-black text-sm uppercase tracking-widest">Knowledge Base</h5>
+                        <button
+                            onClick={() => copyToClipboard(aiPrompt, false)}
+                            className="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-bold transition-all border border-white/5"
+                        >
+                            {copiedPrompt ? <Check className="w-4 h-4 text-green-400" /> : <Copy className="w-4 h-4" />}
+                            {copiedPrompt ? 'COPIED' : 'COPY'}
+                        </button>
                     </div>
-                    <div className="space-y-3">
-                        <div className="p-4 bg-white border border-slate-100 rounded-2xl">
-                            <p className="text-[11px] font-bold text-slate-600 leading-relaxed italic">
-                                "Mapping skills directly in the JSON allows for high-granularity assessment tagging. Ensure <span className="text-[#FF4B91]">skillIds</span> are included per item for precise mapping."
-                            </p>
-                        </div>
-                        <div className="p-4 bg-white border border-slate-100 rounded-2xl">
-                            <p className="text-[11px] font-bold text-slate-600 leading-relaxed">
-                                Upload is prioritized at the <span className="text-blue-600 underline">Subtopic</span> level. Use this panel to inject bulk content into your assessment matrix.
-                            </p>
-                        </div>
+
+                    {/* Prompt Content */}
+                    <div className="relative z-10 bg-black/30 rounded-2xl p-6 border border-white/5 overflow-hidden">
+                        <p className="text-sm font-mono text-indigo-200 leading-relaxed whitespace-pre-wrap">
+                            {aiPrompt}
+                        </p>
                     </div>
+
+                    {/* Background decoration */}
+                    <div className="absolute bottom-0 left-0 w-64 h-64 bg-indigo-500/10 blur-[100px] -z-0 group-hover:bg-indigo-500/20 transition-all duration-1000" />
                 </div>
             </div>
         </div>
