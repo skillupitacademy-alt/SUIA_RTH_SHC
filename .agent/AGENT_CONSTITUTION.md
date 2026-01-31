@@ -74,7 +74,7 @@ The agent MUST STOP and ASK if:
 
 ### 🐛 Engineering Standards (SDE-3)
 - **Scalability**: Logic must support millions of users (stateless, pagination).
-- **Frontend**: "Visual WOW Factor" is mandatory. ShadCn UI Components Mobile-first (Tailwind). Administrative complex workflows (Seeders/Factories) MUST use **Full-Screen Executive Consoles** (`inset-0`) with typography scale optimized for readability (`text-xl`/`text-lg`).
+- **Frontend**: "Visual WOW Factor" is mandatory. ShadCn UI Components Mobile-first (Tailwind). Administrative complex workflows (Seeders/Factories) MUST use **Full-Screen Executive Consoles** (`inset-0`) with typography scale optimized for readability (`text-xl`/`text-lg`). **Governance**: Enforce strict **Zero-Scroll Policy** (overflow-hidden on parent); utilize header-integrated orchestration for status tracking to maximize primary workspace density.
 - **BFF Pattern**: Minimize payloads. Aggregate APIs.
 - **Security**: Zero Trust. RBAC. Automatic Sanitization.
 - **Database**: efficient indexing. No `SELECT *` on hot paths.

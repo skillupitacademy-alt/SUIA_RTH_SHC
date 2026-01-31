@@ -194,8 +194,9 @@ Reduce documentation fragmentation and improve discoverability by consolidating 
 - **Surgical Upload**: Integrated native JSON file ingestion to bridge the gap between AI outputs and platform seeding.
 - **Outcome**: Established a professional-grade content generation workstation.
 
-### Batch 29: Architectural Decoupling & Immersive UI
-- **Portal Orchestration**: Decoupled `HierarchyFactoryWizard` from the Governance board via **React Portal**, ensuring true top-level rendering and unconstrained full-screen isolation (`z-index: 1000`).
-- **Immersive UX**: Implemented body scroll locking and borderless horizontal split-pane layout for high-density content engineering.
-- **Stability**: Restored 100% build integrity across the monorepo after high-fidelity layout refactoring.
-- **Outcome**: Established a premium, interruption-free "Executive Console" design pattern.
+### Batch 30: Hierarchy Factory UI Refinement & Logic Expansion
+- **UI Architecture**: Tightened footer height (`py-10` -> `py-6`) and scaled down terminal buttons for professional high-density display.
+- **Header Orchestration**: Relocated the `Factory Pulse Tracker` to the header's right-side blank area, utilizing previously dead space to reclaim main workspace real estate.
+- **Utility Upgrade**: Refined the `Copy Prompt` utility into an icon-only button with **Combined Intelligence Payload** logic (copies both JSON skeleton and instruction context).
+- **Zero-Scroll Policy**: Enforced vertical viewport locking to eliminate parent scrollbars, ensuring the "Executive Console" behaves as a standalone workstation.
+- **Outcome**: Achieved a denser, more visually balanced command center with enhanced copy-paste synergy for external AI agents.
