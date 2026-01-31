@@ -211,4 +211,25 @@ Reduce documentation fragmentation and improve discoverability by consolidating 
 - **Deep Integration**: Refactored `HierarchyFactory` (API) to support transactional question-skill linking via `AtomicHierarchyPayload` extensions.
 - **AI Intelligence**: Enhanced the `IQ Assistant` in `HierarchyFactoryWizard` to request professional `skillNames` and `mappingType` dimensions for all generated content.
 - **Reporting Readiness**: Formally integrated the `SMART_HEALING_STRATEGY` with the new Skill Matrix to ensure 100% data coverage for Domain-to-Skill analytics.
-- **Outcome**: Enabled end-to-end clinical reporting by automating the capture of competency metadata during the content seeding phase.
+### Batch 33: Skill Weightage & Dimension Integration (The Reporting Trinity)
+- **Goal**: Transition from binary "Correct/Incorrect" scoring to high-fidelity, multi-dimensional analytical reporting.
+- **The Reporting Trinity**: Integrated **Weight** (1-10), **Category** (Technical, Cognitive, Process), and **Mapping Type** (Conceptual, Technical, Practical) as mandatory metadata.
+- **Schema & Backend**: Standardized `mappingTypeEnum` across `questions` and `skills` tables; updated `AdminEngine` to enforce 3-point metadata persistence during individual and bulk CRUD.
+- **Admin UI Upgrades**:
+  - Enhanced `QuestionEditor` with mandatory nature classification.
+  - Upgraded `SelectionFields` with visual impact badges (`[CATEGORY | W: 10]`).
+  - Added dedicated **Nature** and **Dimension** columns to the Dashboard with executive color-coding.
+- **Governance**: Updated `AGENT_CONSTITUTION.md` to permanently protect the `architecture_lifecycle.md` guide and established the **Reporting Trinity** (Weight/Category/Mapping Type) as binding architectural laws.
+- **Reporting Suite**: Authored and organized 5 authoritative guides in `docs/report/`:
+  - `SYSTEM_REPORTING_SPEC.md`: The unified logic and scoring formula guide.
+  - `CURRICULUM_MASTERY_REPORT.md`: Hierarchy-based performance tracking.
+  - `SKILL_COMP_MATRIX_REPORT.md`: Granular competency quadrants.
+  - `BEHAVIORAL_RADAR_REPORT.md`: Technical/Cognitive/Process profile radars.
+  - `NATURE_OF_KNOWLEDGE_REPORT.md`: Theory vs. Practical (Thinking vs. Doing) analysis.
+### Batch 34: Schema Decoupling & Build Repair
+- **Problem**: Circular dependencies between `domain.ts` and `question.ts` caused TypeScript inference failures in `@quiz/api-server`.
+- **Solution**: Extracted all Drizzle relations into a dedicated `packages/db/src/schema/relations.ts` architecture.
+- **Fixes**:
+  - Resolved `ts:2345` build error in `admin.engine.ts` (Subtopics inference).
+  - Fixed `api/migrate` route crash by switching to `neon-serverless/migrator`.
+- **Outcome**: Achieved `Exit Code 0` on all monorepo builds (`web-app`, `admin-app`, `api-server`).

@@ -6,12 +6,15 @@ import * as questionSchema from './schema/question';
 import * as examSchema from './schema/exam';
 import * as enumsSchema from './schema/enums';
 
+import * as relationsSchema from './schema/relations';
+
 const schema = {
   ...authSchema,
   ...domainSchema,
   ...questionSchema,
   ...examSchema,
   ...enumsSchema,
+  ...relationsSchema,
 };
 
 type Schema = typeof schema;

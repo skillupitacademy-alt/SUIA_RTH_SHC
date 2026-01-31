@@ -13,9 +13,9 @@ export interface AtomicHierarchyPayload {
       subtopics?: {
         id?: string;
         name: string;
-        questions?: (any & { skillNames?: string[]; mappingType?: string })[];
+        questions?: (any & { skillNames?: string[]; mappingType?: string; skillWeight?: number })[];
       }[];
-      questions?: (any & { skillNames?: string[]; mappingType?: string })[]; // Questions at topic level
+      questions?: (any & { skillNames?: string[]; mappingType?: string; skillWeight?: number })[]; // Questions at topic level
     }[];
   }[];
 }
@@ -150,6 +150,7 @@ export class HierarchyFactory {
 
                             const [newSkill] = await tx.insert(skills).values({
                               name: skillName,
+                              weight: sourceQ.skillWeight || 1,
                               category: 'technical', // Default for auto-healing
                               mappingType: finalMappingType
                             }).returning();
@@ -205,6 +206,7 @@ export class HierarchyFactory {
 
                         const [newSkill] = await tx.insert(skills).values({
                           name: skillName,
+                          weight: sourceQ.skillWeight || 1,
                           category: 'technical',
                           mappingType: finalMappingType
                         }).returning();

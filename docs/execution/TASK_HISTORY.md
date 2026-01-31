@@ -26,3 +26,6 @@
 | 2026-01-31 | High-Density UI Refinement | COMPLETED | Tightened footer, relocated pulse trackers to header, and implemented combined intelligence copy payload. |
 | 2026-01-31 | Skill Matrix Bifurcation | COMPLETED | Implemented professional competency enums and structured category selection in Admin UI. |
 | 2026-01-31 | Monorepo Build Stability | COMPLETED | Harmonized AuthStore and Utils across apps to resolve global type conflicts and verify clean builds. |
+| 2026-01-31 | Reporting Trinity Integration | COMPLETED | Integrated Weight (1-10), Mapping Type, and Category as mandatory metadata across Schema, API, and Admin Dash. |
+| 2026-01-31 | Architectural Governance | COMPLETED | Protected mission-critical system mappings via AGENT_CONSTITUTION.md and published unified lifecycle docs. |
+| 2026-01-31 | Schema Decoupling (Batch 34) | COMPLETED | Extracted Drizzle relations to `relations.ts` to resolve circular dependencies and ensure clean API builds. |

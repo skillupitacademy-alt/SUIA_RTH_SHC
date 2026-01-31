@@ -45,6 +45,7 @@ The `docs/` directory is the **single source of truth**.
 | **THE UI** | `docs/pages/` | `CORE_APP_JOURNEY`, `AUTH_JOURNEY`, `ADMIN_JOURNEY`, `EXAM_JOURNEY` |
 | **THE STATUS** | `docs/execution/` | `CURRENT_STATE_REPORT` (Read me!), `TASK_HISTORY`, `CURRENT_TASK_LOG` |
 | **THE RULES** | `docs/ux/` | `UX_BASELINE` |
+| **THE INSIGHTS** | `docs/report/` | `SYSTEM_REPORTING_SPEC`, `BEHAVIORAL_RADAR_REPORT`, `NATURE_OF_KNOWLEDGE_REPORT` |
 | **THE PAST** | `docs/archive/` | `EXECUTION_LOGS_ARCHIVE.md`, `WALKTHROUGH_ARCHIVE.md`, `AUDIT_REPORT_JAN24.md` |
 
 
@@ -134,3 +135,21 @@ Any modification to `@docs/**` files MUST:
 1. **No Redundancy**: NEVER run separate commands (e.g., `git add`, `git commit`) immediately after a combined one-liner unless the combined command explicitly returned an error.
 2. **Shell Syntax**: Use PowerShell-compatible operators (`;`) or separate tool calls. Do NOT use `&&` if it causes execution logic loops.
 3. **Atomic Commits**: Ensure every commit has a meaningful, structured message before execution.
+
+---
+
+## 8️⃣ IMMUTABLE DOCUMENTS (PROHIBITED DELETION)
+The following documents are **PERMANENT REFERENCE GUIDES**. Any agent attempt to delete, move, or rename these files without explicit User confirmation is a **Direct Constitutional Violation**:
+
+1. **`docs/pages/exams/architecture_lifecycle.md`** → Unified System Mapping & Lifecycle Guide.
+2. **`docs/pages/exams/skill-weightage-integration.md`** → Reporting Dimension Standards.
+3. **`docs/report/SYSTEM_REPORTING_SPEC.md`** → Authoritative Analytical Logic Guide.
+
+---
+
+## 9️⃣ THE REPORTING TRINITY (ANALYTICAL LAWS)
+Every piece of assessment content MUST be tagged with the following three dimensions. Any attempt to bypass these is a **Critical Governance Failure**:
+
+1.  **WEIGHT (1-10)**: Defines the impact/criticality of the skill.
+2.  **CATEGORY (TECHNICAL/COGNITIVE/PROCESS)**: Defines the behavioral nature.
+3.  **MAPPING TYPE (CONCEPTUAL/TECHNICAL/PRACTICAL)**: Defines the knowledge nature.

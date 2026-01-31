@@ -362,6 +362,7 @@ export class AdminEngine {
         // skillId: resolvedSkillIds[0], // Keep for backward compat if needed, or null. Deprecated.
         difficulty: data.difficulty || 'intermediate',
         type: data.type === 'multiple' ? 'mcq' : 'mcq',
+        mappingType: (data.mappingType as 'conceptual' | 'technical' | 'practical') || null,
         questionText: data.text || data.questionText,
         options: data.options,
         correctAnswer: correctAnswer,
@@ -369,7 +370,8 @@ export class AdminEngine {
         codeSnippet: data.codeSnippet || null,
         metadata: {
             estimatedTime: data.estimatedTime,
-            tags: data.tags
+            tags: data.tags,
+            skillWeight: data.skillWeight // Future override support
         },
         status: 'active' as const,
         updatedAt: new Date()
@@ -932,6 +934,11 @@ export class AdminEngine {
       where: whereClause,
       orderBy: [desc(questions.createdAt)],
       with: {
+        questionSkills: {
+            with: {
+                skill: true
+            }
+        },
         topic: {
           with: {
             subject: {
@@ -987,6 +994,7 @@ export class AdminEngine {
     if (correctAnswer) updateData.correctAnswer = correctAnswer;
     if (data.explanation !== undefined) updateData.explanation = data.explanation;
     if (data.status) updateData.status = data.status;
+    if (data.mappingType) updateData.mappingType = data.mappingType as 'conceptual' | 'technical' | 'practical';
 
     if (data.estimatedTime !== undefined || data.tags) {
         updateData.metadata = {

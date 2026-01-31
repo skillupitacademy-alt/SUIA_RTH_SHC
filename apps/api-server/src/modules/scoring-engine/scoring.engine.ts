@@ -9,7 +9,15 @@ export class ScoringEngine {
       with: {
         examQuestions: {
           with: {
-            question: true,
+            question: {
+              with: {
+                questionSkills: {
+                  with: {
+                    skill: true
+                  }
+                }
+              }
+            },
           }
         }
       }
@@ -40,50 +48,77 @@ export class ScoringEngine {
 
     const topicMap = new Map(topicData.map(t => [t.id, t]));
 
-    // 2. Analyze performance by various dimensions
+      // 2. Analyze performance by various dimensions
     for (const eqRecord of exam.examQuestions) {
       const q = eqRecord.question;
       const t = topicMap.get(q.topicId);
       if (!t) continue;
 
-      const dims = [
-        { type: 'domain', id: t.subject.domain.id, name: t.subject.domain.name },
-        { type: 'subject', id: t.subject.id, name: t.subject.name },
-        { type: 'topic', id: t.id, name: t.name },
-        { type: 'difficulty', id: q.difficulty, name: q.difficulty.charAt(0).toUpperCase() + q.difficulty.slice(1) },
+      // Extract weights and dimensions
+      const skillsFromQuestion = (eqRecord.question as any).questionSkills?.map((qs: any) => qs.skill) || [];
+      const skillsFromTopic = t.topicSkills.map(ts => ts.skill);
+      
+      // Deduplicate skills by ID
+      const skillMap = new Map();
+      [...skillsFromTopic, ...skillsFromQuestion].forEach(s => skillMap.set(s.id, s));
+      const questionSkillsList = Array.from(skillMap.values());
+
+      const avgWeight = questionSkillsList.length > 0 
+        ? Math.round(questionSkillsList.reduce((sum, s) => sum + (s.weight || 1), 0) / questionSkillsList.length)
+        : 1;
+
+      const baseDims = [
+        { type: 'domain', id: t.subject.domain.id, name: t.subject.domain.name, w: avgWeight },
+        { type: 'subject', id: t.subject.id, name: t.subject.name, w: avgWeight },
+        { type: 'topic', id: t.id, name: t.name, w: avgWeight },
+        { type: 'difficulty', id: q.difficulty, name: q.difficulty.charAt(0).toUpperCase() + q.difficulty.slice(1), w: 1 }, // Difficulty is usually unweighted
       ];
 
       // Add Subtopic if present
       if (q.subtopicId) {
           const st = t.subtopics.find(s => s.id === q.subtopicId);
           if (st) {
-            dims.push({ type: 'subtopic', id: st.id, name: st.name });
+            baseDims.push({ type: 'subtopic', id: st.id, name: st.name, w: avgWeight });
           }
       }
 
-      // Add Skills
-      t.topicSkills.forEach(ts => {
-        dims.push({ type: 'skill', id: ts.skill.id, name: ts.skill.name });
+      // Add Skills, Categories, and Mapping Types
+      questionSkillsList.forEach(skill => {
+        const w = skill.weight || 1;
+        baseDims.push({ type: 'skill', id: skill.id, name: skill.name, w });
+        
+        if (skill.category) {
+          baseDims.push({ type: 'category', id: skill.category, name: skill.category.toUpperCase(), w });
+        }
+        
+        if (skill.mappingType) {
+          baseDims.push({ type: 'mapping_type', id: skill.mappingType, name: skill.mappingType.toUpperCase(), w });
+        }
       });
 
-      for (const d of dims) {
+      for (const d of baseDims) {
         const key = `${d.type}:${d.id}`;
         if (!dimensions[key]) dimensions[key] = { total: 0, correct: 0, name: d.name };
-        dimensions[key].total++;
-        if (eqRecord.isCorrect) dimensions[key].correct++;
+        dimensions[key].total += d.w;
+        if (eqRecord.isCorrect) dimensions[key].correct += d.w;
       }
     }
 
     // 3. Prepare data for results_by_dimension
     const resultsData = Object.entries(dimensions).map(([key, stats]) => {
-      const [type, id] = key.split(':');
+      const parts = key.split(':');
+      const type = parts[0];
+      const id = parts.slice(1).join(':'); // Handle cases where ID might contain colons
+
+      const accuracyValue = stats.total > 0 ? Math.round((stats.correct / stats.total) * 100) : 0;
+      
       return {
         examId,
         dimensionType: type,
         dimensionId: id as string,
         name: stats.name,
-        score: stats.total > 0 ? Math.round((stats.correct / stats.total) * 100) : 0,
-        accuracy: stats.total > 0 ? Math.round((stats.correct / stats.total) * 100) : 0,
+        score: accuracyValue,
+        accuracy: accuracyValue,
        };
     });
 
@@ -95,8 +130,13 @@ export class ScoringEngine {
     }
 
     // 4. Update total score and finalize exam
-    const totalCorrect = exam.examQuestions.filter(q => q.isCorrect).length;
-    const finalScore = Math.round((totalCorrect / exam.examQuestions.length) * 100);
+    const totalQuestions = exam.examQuestions.length;
+    let finalScore = 0;
+    
+    if (totalQuestions > 0) {
+      const totalCorrect = exam.examQuestions.filter(q => q.isCorrect).length;
+      finalScore = Math.round((totalCorrect / totalQuestions) * 100);
+    }
 
     await db.update(exams)
       .set({ 

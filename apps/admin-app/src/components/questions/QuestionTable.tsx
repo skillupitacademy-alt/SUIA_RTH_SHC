@@ -17,6 +17,13 @@ interface QuestionData {
     difficulty: string;
     status: string;
     createdAt: string;
+    mappingType?: string;
+    questionSkills?: Array<{
+        skill: {
+            name: string;
+            category: string;
+        }
+    }>;
     topic?: {
         name: string;
         subject?: {
@@ -196,8 +203,10 @@ export function QuestionTable() {
                     <table className="w-full text-left font-sans">
                         <thead>
                             <tr className="border-b border-primary/5 bg-primary/5">
-                                <th className="p-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground w-[40%]">Assessment Content & Hierarchy</th>
+                                <th className="p-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground w-[35%]">Assessment Content & Hierarchy</th>
                                 <th className="p-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Type</th>
+                                <th className="p-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Nature</th>
+                                <th className="p-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Dimension</th>
                                 <th className="p-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Complexity</th>
                                 <th className="p-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Status</th>
                                 <th className="p-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground text-right">Operations</th>
@@ -229,6 +238,35 @@ export function QuestionTable() {
                                             <span className="px-2 py-0.5 rounded-lg bg-gray-100 text-gray-600 text-[9px] font-black uppercase tracking-wider border border-gray-200">
                                                 {q.type}
                                             </span>
+                                        </td>
+                                        <td className="p-4">
+                                            <span className={cn(
+                                                "px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-wider border",
+                                                q.mappingType === 'conceptual' ? 'bg-blue-50 text-blue-600 border-blue-100' :
+                                                    q.mappingType === 'technical' ? 'bg-purple-50 text-purple-600 border-purple-100' :
+                                                        q.mappingType === 'practical' ? 'bg-teal-50 text-teal-600 border-teal-100' :
+                                                            'bg-gray-50 text-gray-400 border-gray-100'
+                                            )}>
+                                                {q.mappingType || 'Legacy'}
+                                            </span>
+                                        </td>
+                                        <td className="p-4">
+                                            <div className="flex flex-wrap gap-1">
+                                                {q.questionSkills?.length ? (
+                                                    [...new Set(q.questionSkills.map(qs => qs.skill.category))].map(cat => (
+                                                        <span key={cat} className={cn(
+                                                            "px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-wider border",
+                                                            cat === 'technical' ? 'bg-indigo-50 text-indigo-600 border-indigo-100' :
+                                                                cat === 'cognitive' ? 'bg-amber-50 text-amber-600 border-amber-100' :
+                                                                    'bg-emerald-50 text-emerald-600 border-emerald-100'
+                                                        )}>
+                                                            {cat}
+                                                        </span>
+                                                    ))
+                                                ) : (
+                                                    <span className="text-[9px] font-bold text-slate-300 italic">No Dimension</span>
+                                                )}
+                                            </div>
                                         </td>
                                         <td className="p-4">
                                             <span className={`px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-wider border ${q.difficulty === 'simple' ? 'bg-green-100 text-green-700 border-green-200' :

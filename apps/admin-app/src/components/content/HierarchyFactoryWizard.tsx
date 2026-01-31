@@ -75,8 +75,11 @@ Please provide exactly 10 questions in a valid JSON array format that matches th
   "correctAnswer": "the exact string from options",
   "explanation": "string explaining why",
   "skillNames": ["string"],
-  "mappingType": "conceptual" | "technical" | "practical"
+  "mappingType": "conceptual" | "technical" | "practical",
+  "skillWeight": number (1-10)
 }
+
+Determine importance for each skill (1-10): Examples: System Design=10, API Design=8, Agile=3.
 
 Ensure a mix of difficulties (at least 4 simple, 4 intermediate, 5 expert total for the topic if possible).
 Match the tone of professional certification exams. 
@@ -141,7 +144,8 @@ Avoid placeholder text; provide high-quality professional questions.
                             correctAnswer: "A",
                             explanation: "...",
                             skillNames: ["Skill Name"],
-                            mappingType: "technical"
+                            mappingType: "technical",
+                            skillWeight: 5
                         });
                     }
                 } else {
@@ -166,7 +170,8 @@ Avoid placeholder text; provide high-quality professional questions.
                             correctAnswer: "Choice A",
                             explanation: "Why A is correct...",
                             skillNames: ["Sample Skill"],
-                            mappingType: "conceptual"
+                            mappingType: "conceptual",
+                            skillWeight: 5
                         }]
                     }]
                 }]

@@ -122,7 +122,7 @@ export function MultiSelectField({ label, values, options, loading, onChange, pl
                             value={opt.id}
                             className="bg-white text-slate-800 font-bold py-2 px-3 rounded-lg mb-1 last:mb-0 hover:bg-[#FF4B91]/5 checked:bg-[#FF4B91] checked:text-white"
                         >
-                            {opt.name}
+                            {opt.name} {opt.category || opt.weight ? `[${(opt.category || 'N/A').toUpperCase()} | W: ${opt.weight || 1}]` : ''}
                         </option>
                     ))}
                 </select>

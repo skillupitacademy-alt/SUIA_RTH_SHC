@@ -11,6 +11,7 @@ interface QuestionFormData {
     explanation: string;
     difficulty: 'simple' | 'intermediate' | 'expert';
     estimatedTime: number; // seconds
+    mappingType: 'conceptual' | 'technical' | 'practical';
 }
 
 interface QuestionEditorProps {
@@ -30,6 +31,7 @@ export function QuestionEditor({ onSubmit, loading, initialData }: QuestionEdito
         explanation: initialData?.explanation || '',
         difficulty: initialData?.difficulty || 'intermediate',
         estimatedTime: initialData?.estimatedTime || 60,
+        mappingType: initialData?.mappingType || 'conceptual',
     });
 
     const addOption = () => {
@@ -185,42 +187,65 @@ export function QuestionEditor({ onSubmit, loading, initialData }: QuestionEdito
             </div>
 
             {/* Metadata */}
-            <div className="grid grid-cols-2 gap-8">
+            <div className="space-y-6">
                 <div className="space-y-3">
-                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Difficulty</label>
-                    <div className="flex bg-slate-50 p-1.5 rounded-xl border border-slate-200 shadow-inner">
-                        {(['simple', 'intermediate', 'expert'] as const).map((level) => (
+                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Mapping Type (Nature of Question)</label>
+                    <div className="flex bg-slate-100 p-1.5 rounded-xl border border-slate-200 shadow-inner">
+                        {(['conceptual', 'technical', 'practical'] as const).map((type) => (
                             <button
-                                key={level}
+                                key={type}
                                 type="button"
-                                onClick={() => setData({ ...data, difficulty: level })}
+                                onClick={() => setData({ ...data, mappingType: type })}
                                 className={cn(
-                                    "flex-1 py-2 text-[10px] font-black uppercase tracking-wider rounded-lg transition-all",
-                                    data.difficulty === level
-                                        ? "bg-white text-[#1A1A1A] shadow-md border border-slate-100"
+                                    "flex-1 py-3 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all",
+                                    data.mappingType === type
+                                        ? "bg-white text-[#FF4B91] shadow-lg border border-slate-100 scale-[1.02]"
                                         : "text-slate-400 hover:text-slate-600"
                                 )}
                             >
-                                {level}
+                                {type}
                             </button>
                         ))}
                     </div>
                 </div>
 
-                <div className="space-y-3">
-                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Estimated Time</label>
-                    <div className="relative group/time">
-                        <Clock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-hover/time:text-[#FF4B91] transition-colors" />
-                        <input
-                            type="number"
-                            value={isNaN(data.estimatedTime) ? '' : data.estimatedTime}
-                            onChange={(e) => {
-                                const val = parseInt(e.target.value);
-                                setData({ ...data, estimatedTime: isNaN(val) ? 0 : val });
-                            }}
-                            className="w-full h-12 pl-12 pr-4 bg-white border border-slate-200 rounded-xl text-[#1A1A1A] font-bold outline-none focus:border-[#FF4B91]/30 focus:shadow-[0_0_20px_rgba(255,75,145,0.1)] transition-all"
-                        />
-                        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400 uppercase">Seconds</span>
+                <div className="grid grid-cols-2 gap-8">
+                    <div className="space-y-3">
+                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Difficulty</label>
+                        <div className="flex bg-slate-50 p-1.5 rounded-xl border border-slate-200 shadow-inner">
+                            {(['simple', 'intermediate', 'expert'] as const).map((level) => (
+                                <button
+                                    key={level}
+                                    type="button"
+                                    onClick={() => setData({ ...data, difficulty: level })}
+                                    className={cn(
+                                        "flex-1 py-2 text-[10px] font-black uppercase tracking-wider rounded-lg transition-all",
+                                        data.difficulty === level
+                                            ? "bg-white text-[#1A1A1A] shadow-md border border-slate-100"
+                                            : "text-slate-400 hover:text-slate-600"
+                                    )}
+                                >
+                                    {level}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="space-y-3">
+                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Estimated Time</label>
+                        <div className="relative group/time">
+                            <Clock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-hover/time:text-[#FF4B91] transition-colors" />
+                            <input
+                                type="number"
+                                value={isNaN(data.estimatedTime) ? '' : data.estimatedTime}
+                                onChange={(e) => {
+                                    const val = parseInt(e.target.value);
+                                    setData({ ...data, estimatedTime: isNaN(val) ? 0 : val });
+                                }}
+                                className="w-full h-12 pl-12 pr-4 bg-white border border-slate-200 rounded-xl text-[#1A1A1A] font-bold outline-none focus:border-[#FF4B91]/30 focus:shadow-[0_0_20px_rgba(255,75,145,0.1)] transition-all"
+                            />
+                            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400 uppercase">Seconds</span>
+                        </div>
                     </div>
                 </div>
             </div>

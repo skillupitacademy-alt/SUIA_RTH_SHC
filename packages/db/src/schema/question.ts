@@ -1,7 +1,6 @@
 import { pgTable, text, timestamp, uuid, integer, jsonb, primaryKey } from "drizzle-orm/pg-core";
-import { relations } from "drizzle-orm";
 import { topics, subtopics, skills } from "./domain";
-import { statusEnum, questionTypeEnum, difficultyEnum } from "./enums";
+import { statusEnum, questionTypeEnum, difficultyEnum, mappingTypeEnum } from "./enums";
 
 export const questions = pgTable("questions", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -14,6 +13,7 @@ export const questions = pgTable("questions", {
     .references(() => skills.id, { onDelete: "set null" }),
   difficulty: difficultyEnum("difficulty").notNull(),
   type: questionTypeEnum("type").notNull().default("mcq"),
+  mappingType: mappingTypeEnum("mapping_type"),
   questionText: text("question_text").notNull(),
   options: jsonb("options").notNull(), // Array of strings or objects
   correctAnswer: text("correct_answer").notNull(),
@@ -35,27 +35,4 @@ export const questionSkills = pgTable("question_skills", {
       .references(() => skills.id, { onDelete: "cascade" }),
   }, (t) => ({
     pk: primaryKey({ columns: [t.questionId, t.skillId] }),
-  }));
-
-export const questionsRelations = relations(questions, ({ one, many }) => ({
-  topic: one(topics, {
-    fields: [questions.topicId],
-    references: [topics.id],
-  }),
-  subtopic: one(subtopics, {
-    fields: [questions.subtopicId],
-    references: [subtopics.id],
-  }),
-  questionSkills: many(questionSkills),
-}));
-
-export const questionSkillsRelations = relations(questionSkills, ({ one }) => ({
-    question: one(questions, {
-      fields: [questionSkills.questionId],
-      references: [questions.id],
-    }),
-    skill: one(skills, {
-      fields: [questionSkills.skillId],
-      references: [skills.id],
-    }),
   }));

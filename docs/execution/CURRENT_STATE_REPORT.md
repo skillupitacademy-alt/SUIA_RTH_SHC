@@ -64,6 +64,16 @@
 - **Professional UX**: Upgraded Admin management to use structured dropdowns with human-readable labels (e.g., "Testing & QA", "System Design").
 - **Schema-UI Sync**: Achieved 1:1 parity between database enums, backend service logic, and frontend selection triggers.
 
+### Phase 13: Skill Weightage & Dimension Integration (The Reporting Trinity)
+- **Reporting Dimensions**: Integrated Weight (1-10), Mapping Type (Conceptual/Practical/Technical), and Skill Category as mandatory reporting fields.
+- **Full-Stack Mapping**: Achieved end-to-end metadata persistence from the Question Editor through the Admin Engine and into the Database.
+- **Analytical UI**: Upgraded the Question Bank with dedicated columns for Nature and Dimension, providing instant visibility into content distribution.
+- **Architectural Traceability**: Formalized the system mappings in `architecture_lifecycle.md` and protected them via the Agent Constitution.
+
+### Phase 14: Documentation Permeability & Protection
+- **Constitutional Security**: Updated `AGENT_CONSTITUTION.md` to establish the "IMMUTABLE DOCUMENTS" rule, protecting critical architectural guides from deletion.
+- **Traceability**: All dimensions of the educational hierarchy now map 1:1 between the UI, API, and Reporting schemas.
+
 ### 🛡️ Reliability & Safety
 - **Build Enforcement**: Strict TypeScript/ESLint checks re-enabled (`Exit Code 0` on builds).
 - **Runtime Crash Mitigation**: Global `formatTimeAgo` safety utility implemented across all governance tables.
