@@ -50,6 +50,7 @@ Implement extreme scalability for session monitoring and reorganize the UI for a
 ### Frontend: Horizontal Header & Reorganized Sidebar
 - **AdminShell**: Move "ADMIN CORE" logo to the header. Label sidebar as "Platform Control".
 - **Governance Terminal**: Expand to use 100% of available viewport width.
+- **Executive Consoles**: Complex workflows (e.g., Factories) must use borderless **Full-Screen Portals** (`inset-0`) with high-fidelity typography (`text-xl`/`text-lg`).
 - **LiveSessionsList**: Implement pagination controls.
 
 ---
@@ -108,6 +109,12 @@ The Admin Dashboard is the control center of the platform. It answers one core q
 #### Scoring Analytics
 - **Visible**: Avg scores by domain/difficulty, pass/fail trends, gap analysis.
 - **Why**: Measure exam quality and difficulty balance.
+
+#### Atomic Hierarchy Factory (Batch 25-29)
+- **Engine**: Transactional nested upsert logic for bulk content seeding and "Heal Branch" repairs.
+- **UI**: High-fidelity split-pane workstation with AI Intelligence IQ Assistant and native JSON ingestion.
+- **Integrity**: Animated Pulse Tracker for real-time transactional monitoring.
+- **Deployment**: Rendered via React Portal for unconstrained full-screen isolation.
 
 #### Restriction Matrix
 - **Restricted**: Passwords, User Secrets, Individual Answer Data (Privacy).

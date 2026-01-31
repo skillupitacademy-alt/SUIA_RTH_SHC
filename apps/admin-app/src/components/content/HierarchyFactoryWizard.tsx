@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { apiClient } from '@quiz/api-client';
 import {
     Zap,
@@ -36,8 +37,23 @@ export function HierarchyFactoryWizard({ isOpen, onClose, initialData, onSuccess
     const [executionStep, setExecutionStep] = useState<ExecutionStep>('idle');
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState<any>(null);
-    const [isDragging, setIsDragging] = useState(false);
+    const [isMounted, setIsMounted] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
+
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
+
+    useEffect(() => {
+        if (isOpen) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'unset';
+        }
+        return () => {
+            document.body.style.overflow = 'unset';
+        };
+    }, [isOpen]);
 
     // AI Prompt Generation Logic
     const generateAiPrompt = () => {
@@ -160,10 +176,10 @@ Return ONLY the JSON array inside a "questions" key.`;
         reader.readAsText(file);
     };
 
-    if (!isOpen) return null;
+    if (!isOpen || !isMounted) return null;
 
-    return (
-        <div className="fixed inset-0 z-[100] flex flex-col bg-white animate-in fade-in duration-300">
+    return createPortal(
+        <div className="fixed inset-0 z-[1000] flex flex-col bg-white animate-in fade-in duration-300">
             {/* Header */}
             <div className="p-8 border-b border-primary/5 flex items-center justify-between bg-primary/[0.02]">
                 <div className="flex items-center gap-5">
@@ -359,7 +375,8 @@ Return ONLY the JSON array inside a "questions" key.`;
                     </div>
                 </div>
             )}
-        </div>
+        </div>,
+        document.body
     );
 }
 

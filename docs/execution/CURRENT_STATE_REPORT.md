@@ -47,8 +47,16 @@
 - **Typography Scale**: Increased font sizes to **text-lg** (JSON Editor) and **text-sm/base** (AI Prompt) for ultra-clear readability.
 - **Form Factor**: Implemented high-density padding (p-10) and larger header assets (Zap-32) for an executive "Command Center" feel.
 
+### Phase 10: Architectural Decoupling & Portal Orchestration (Batch 29)
+- **UI Decoupling**: Moved `HierarchyFactoryWizard` to a **React Portal** (`document.body`) to prevent parent container layout constraints.
+- **Full-Screen Isolation**: Achieved 100% borderless, top-level rendering with unconstrained `inset-0` sizing.
+- **Scroll Hijacking**: Implemented automatic body scroll locking to ensure an immersive "Console" experience when active.
+- **Final Layout Restoration**: Confirmed horizontal split-pane configuration with SDE-3 typography standards (`text-xl`/`text-lg`).
+- **Governance Alignment**: Reverted unauthorized constitution additions and established the "Executive Console" standard in the `.agent` directory.
+
 ### 🛡️ Reliability & Safety
 - **Build Enforcement**: Strict TypeScript/ESLint checks re-enabled (`Exit Code 0` on builds).
 - **Runtime Crash Mitigation**: Global `formatTimeAgo` safety utility implemented across all governance tables.
 - **Data Parity**: Skills management and UI labels aligned 100% with DB schema and professional UX standards.
 - **Strict Linting**: TypeScript and ESLint compliance is 100% enforced in both admin and web apps.
+- **Monorepo Build**: Verified that `@quiz/web-app`, `@quiz/admin-app`, and `@quiz/api-server` all build successfully with 100% type safety.

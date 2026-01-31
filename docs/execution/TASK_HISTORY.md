@@ -17,6 +17,8 @@
 | 2026-01-29 | Human-Friendly UI Refactor | COMPLETED | Refactored 100+ technical underscored labels into professional display titles. |
 | 2026-01-30 | Elastic Exam Config Redesign | COMPLETED | Implemented 'Maximum' count logic, adaptive dropdowns, and ALL filters with real-time count updates. |
 | 2026-01-30 | Admin CRUD Hardening & Docs | COMPLETED | Hardened all management tables with explicit state resets and layman-friendly error messages; drafted EXAM_CONFIGURATION.md. |
+| 2026-01-31 | Governance Reversion | COMPLETED | Reverted unauthorized modifications to AGENT_CONSTITUTION.md. |
+| 2026-01-31 | Architectural Decoupling | COMPLETED | Implemented React Portal for Factory isolation and restoration of the Horizontal Full-Screen split-pane layout. |
 | 2026-01-31 | Cascading Readiness Governance | COMPLETED | Implemented hierarchical 🔴/🟢 health tree (Domain > Subtopic) and strict Frontend selection governance. |
 | 2026-01-31 | Atomic Hierarchy Factory | COMPLETED | Developed transactional bulk-seeding engine and context-aware "Heal" wizard for content repair. |
 | 2026-01-31 | Deployment & Smart Healing | COMPLETED | Achieved clean `pnpm build`, installed favicon assets, and implemented surgical "Deepest Fault" repair logic. |

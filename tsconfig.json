@@ -28,6 +28,11 @@
             ],
             "@quiz/api-client": [
                 "./packages/api-client/src/index.ts"
+            ],
+            "@/*": [
+                "./apps/web-app/src/*",
+                "./apps/admin-app/src/*",
+                "./apps/api-server/src/*"
             ]
         },
         "noEmit": true

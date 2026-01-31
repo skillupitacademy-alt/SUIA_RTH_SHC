@@ -74,7 +74,7 @@ The agent MUST STOP and ASK if:
 
 ### 🐛 Engineering Standards (SDE-3)
 - **Scalability**: Logic must support millions of users (stateless, pagination).
-- **Frontend**: "Visual WOW Factor" is mandatory. ShadCn UI Components Mobile-first (Tailwind).
+- **Frontend**: "Visual WOW Factor" is mandatory. ShadCn UI Components Mobile-first (Tailwind). Administrative complex workflows (Seeders/Factories) MUST use **Full-Screen Executive Consoles** (`inset-0`) with typography scale optimized for readability (`text-xl`/`text-lg`).
 - **BFF Pattern**: Minimize payloads. Aggregate APIs.
 - **Security**: Zero Trust. RBAC. Automatic Sanitization.
 - **Database**: efficient indexing. No `SELECT *` on hot paths.
@@ -131,5 +131,6 @@ Any modification to `@docs/**` files MUST:
 > **Models execute — they do not decide.**
 
 ### 🛡️ Command Execution Protocol (EFFICIENCY)
-...
-4. **Executive Dashboard Rule**: Administrative complex workflows (Seeders/Factories) must use **Full-Screen Executive Consoles** (`inset-0`) with typography scale optimized for readability (`text-xl`/`text-lg`).
+1. **No Redundancy**: NEVER run separate commands (e.g., `git add`, `git commit`) immediately after a combined one-liner unless the combined command explicitly returned an error.
+2. **Shell Syntax**: Use PowerShell-compatible operators (`;`) or separate tool calls. Do NOT use `&&` if it causes execution logic loops.
+3. **Atomic Commits**: Ensure every commit has a meaningful, structured message before execution.
