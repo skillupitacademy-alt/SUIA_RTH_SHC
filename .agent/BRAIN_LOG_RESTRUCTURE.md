@@ -206,3 +206,9 @@ Reduce documentation fragmentation and improve discoverability by consolidating 
 - **Admin UI Alignment**: Upgraded the `SkillTable` form from free-text to a structured `<select>` dropdown, ensuring 100% data integrity with professional labels.
 - **Monorepo Stabilization**: Resolved critical type shadowing conflicts in `web-app`'s `AuthStore` and `utils` to achieve system-wide clean builds.
 - **Outcome**: Professionalized the skill taxonomy and secured the monorepo build pipeline for production-grade reliability.
+
+### Batch 32: Reporting Bifurcation & Factory Integration
+- **Deep Integration**: Refactored `HierarchyFactory` (API) to support transactional question-skill linking via `AtomicHierarchyPayload` extensions.
+- **AI Intelligence**: Enhanced the `IQ Assistant` in `HierarchyFactoryWizard` to request professional `skillNames` and `mappingType` dimensions for all generated content.
+- **Reporting Readiness**: Formally integrated the `SMART_HEALING_STRATEGY` with the new Skill Matrix to ensure 100% data coverage for Domain-to-Skill analytics.
+- **Outcome**: Enabled end-to-end clinical reporting by automating the capture of competency metadata during the content seeding phase.

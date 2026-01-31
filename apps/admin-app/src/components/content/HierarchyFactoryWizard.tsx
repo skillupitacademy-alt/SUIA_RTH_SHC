@@ -73,12 +73,16 @@ Please provide exactly 10 questions in a valid JSON array format that matches th
   "type": "mcq" | "code_mcq",
   "options": ["string", "string", "string", "string"],
   "correctAnswer": "the exact string from options",
-  "explanation": "string explaining why"
+  "explanation": "string explaining why",
+  "skillNames": ["string"],
+  "mappingType": "conceptual" | "technical" | "practical"
 }
 
 Ensure a mix of difficulties (at least 4 simple, 4 intermediate, 5 expert total for the topic if possible).
 Match the tone of professional certification exams. 
-Return ONLY the JSON array inside a "questions" key.`;
+Return ONLY the JSON array inside a "questions" key.
+Avoid placeholder text; provide high-quality professional questions.
+`;
     };
 
     const copyToClipboard = (text: string) => {
@@ -135,7 +139,9 @@ Return ONLY the JSON array inside a "questions" key.`;
                             type: "mcq",
                             options: ["A", "B", "C", "D"],
                             correctAnswer: "A",
-                            explanation: "..."
+                            explanation: "...",
+                            skillNames: ["Skill Name"],
+                            mappingType: "technical"
                         });
                     }
                 } else {
@@ -158,7 +164,9 @@ Return ONLY the JSON array inside a "questions" key.`;
                             type: "mcq",
                             options: ["Choice A", "Choice B", "Choice C", "Choice D"],
                             correctAnswer: "Choice A",
-                            explanation: "Why A is correct..."
+                            explanation: "Why A is correct...",
+                            skillNames: ["Sample Skill"],
+                            mappingType: "conceptual"
                         }]
                     }]
                 }]

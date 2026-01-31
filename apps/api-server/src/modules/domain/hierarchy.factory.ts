@@ -1,4 +1,4 @@
-import { db, domains, subjects, topics, subtopics, questions, questionSkills } from '@quiz/db';
+import { db, domains, subjects, topics, subtopics, questions, questionSkills, skills } from '@quiz/db';
 import { eq, sql, and } from 'drizzle-orm';
 
 export interface AtomicHierarchyPayload {
@@ -13,9 +13,9 @@ export interface AtomicHierarchyPayload {
       subtopics?: {
         id?: string;
         name: string;
-        questions?: any[];
+        questions?: (any & { skillNames?: string[]; mappingType?: string })[];
       }[];
-      questions?: any[]; // Questions at topic level
+      questions?: (any & { skillNames?: string[]; mappingType?: string })[]; // Questions at topic level
     }[];
   }[];
 }
@@ -114,15 +114,56 @@ export class HierarchyFactory {
 
                   const subtopicResult = { id: subtopicId, name: st.name, questions: 0 };
 
-                  // 5. Bulk Create Questions (Subtopic level)
+                  // 5. Create Questions & Link Skills (Subtopic level)
                   if (st.questions && st.questions.length > 0) {
-                    const questionValues = st.questions.map(q => ({
-                      ...q,
-                      topicId: topicId!,
-                      subtopicId: subtopicId!,
-                      status: 'active'
-                    }));
-                    await tx.insert(questions).values(questionValues);
+                    const questionValues = st.questions.map(q => {
+                      const { skillNames, mappingType, ...dbData } = q;
+                      return {
+                        ...dbData,
+                        topicId: topicId!,
+                        subtopicId: subtopicId!,
+                        status: 'active'
+                      };
+                    });
+
+                    const insertedQuestions = await tx.insert(questions).values(questionValues).returning();
+                    
+                    for (let i = 0; i < insertedQuestions.length; i++) {
+                      const sourceQ = st.questions[i];
+                      const insertedQ = insertedQuestions[i];
+                      
+                      if (sourceQ.skillNames && sourceQ.skillNames.length > 0) {
+                        for (const skillName of sourceQ.skillNames) {
+                          // Resolve or Create Skill
+                          let skillId: string;
+                          const existingSkill = await tx.query.skills.findFirst({
+                            where: eq(skills.name, skillName)
+                          });
+
+                          if (existingSkill) {
+                            skillId = existingSkill.id;
+                          } else {
+                            // Defensive: Ensure mappingType is a valid enum subset
+                            const validMappingTypes = ['conceptual', 'technical', 'practical'];
+                            const mType = sourceQ.mappingType?.toLowerCase() || 'conceptual';
+                            const finalMappingType = validMappingTypes.includes(mType) ? mType : 'conceptual';
+
+                            const [newSkill] = await tx.insert(skills).values({
+                              name: skillName,
+                              category: 'technical', // Default for auto-healing
+                              mappingType: finalMappingType
+                            }).returning();
+                            skillId = newSkill.id;
+                          }
+
+                          // Link Question to Skill
+                          await tx.insert(questionSkills).values({
+                            questionId: insertedQ.id,
+                            skillId
+                          });
+                        }
+                      }
+                    }
                     subtopicResult.questions = st.questions.length;
                   }
 
@@ -130,14 +171,54 @@ export class HierarchyFactory {
                 }
               }
 
-              // 6. Bulk Create Questions (Topic level - if any)
+              // 6. Create Questions & Link Skills (Topic level - if any)
               if (t.questions && t.questions.length > 0) {
-                const questionValues = t.questions.map(q => ({
-                  ...q,
-                  topicId: topicId!,
-                  status: 'active'
-                }));
-                await tx.insert(questions).values(questionValues);
+                const questionValues = t.questions.map(q => {
+                  const { skillNames, mappingType, ...dbData } = q;
+                  return {
+                    ...dbData,
+                    topicId: topicId!,
+                    status: 'active'
+                  };
+                });
+
+                const insertedQuestions = await tx.insert(questions).values(questionValues).returning();
+
+                for (let i = 0; i < insertedQuestions.length; i++) {
+                  const sourceQ = t.questions[i];
+                  const insertedQ = insertedQuestions[i];
+
+                  if (sourceQ.skillNames && sourceQ.skillNames.length > 0) {
+                    for (const skillName of sourceQ.skillNames) {
+                      // Resolve or Create Skill
+                      let skillId: string;
+                      const existingSkill = await tx.query.skills.findFirst({
+                        where: eq(skills.name, skillName)
+                      });
+
+                      if (existingSkill) {
+                        skillId = existingSkill.id;
+                      } else {
+                        const validMappingTypes = ['conceptual', 'technical', 'practical'];
+                        const mType = sourceQ.mappingType?.toLowerCase() || 'conceptual';
+                        const finalMappingType = validMappingTypes.includes(mType) ? mType : 'conceptual';
+
+                        const [newSkill] = await tx.insert(skills).values({
+                          name: skillName,
+                          category: 'technical',
+                          mappingType: finalMappingType
+                        }).returning();
+                        skillId = newSkill.id;
+                      }
+
+                      // Link Question to Skill
+                      await tx.insert(questionSkills).values({
+                        questionId: insertedQ.id,
+                        skillId
+                      });
+                    }
+                  }
+                }
                 topicResult.questions += t.questions.length;
               }
 
