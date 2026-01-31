@@ -1,6 +1,6 @@
 import { pgTable, text, timestamp, uuid, integer, primaryKey } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
-import { statusEnum } from "./enums";
+import { statusEnum, skillCategoryEnum } from "./enums";
 
 // --- EDUCATIONAL HIERARCHY ---
 
@@ -57,7 +57,7 @@ export const subtopics = pgTable("subtopics", {
 export const skills = pgTable("skills", {
   id: uuid("id").primaryKey().defaultRandom(),
   name: text("name").notNull().unique(),
-  category: text("category"),
+  category: skillCategoryEnum("category"),
   mappingType: text("mapping_type"), // conceptual, technical, practical
 });
 

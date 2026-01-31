@@ -5,6 +5,22 @@ import { apiClient } from '@quiz/api-client';
 import { Shield, Plus, Edit2, Trash2, X, AlertTriangle, Hash, Cpu, Settings } from 'lucide-react';
 import { ErrorBanner } from '../layout/ErrorBanner';
 
+const SKILL_CATEGORIES: Record<string, string> = {
+    problem_solving: 'Problem Solving',
+    code_debugging: 'Code Debugging',
+    api_design: 'API Design',
+    data_analysis: 'Data Analysis',
+    system_design: 'System Design',
+    security_awareness: 'Security Awareness',
+    performance_optimization: 'Performance Optimization',
+    testing_qa: 'Testing & QA',
+    version_control: 'Version Control',
+    agile_methodology: 'Agile Methodology',
+    technical: 'Technical',
+    conceptual: 'Conceptual',
+    practical: 'Practical'
+};
+
 export function SkillTable() {
     const [data, setData] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -23,7 +39,7 @@ export function SkillTable() {
     // Form states
     const [formData, setFormData] = useState({
         name: '',
-        category: '',
+        category: 'technical',
         mappingType: 'conceptual' as 'conceptual' | 'technical' | 'practical'
     });
 
@@ -62,7 +78,7 @@ export function SkillTable() {
             setCurrentSkill(null);
             setFormData({
                 name: '',
-                category: '',
+                category: 'technical',
                 mappingType: 'conceptual'
             });
         }
@@ -75,7 +91,7 @@ export function SkillTable() {
         setCurrentSkill(null);
         setFormData({
             name: '',
-            category: '',
+            category: 'technical',
             mappingType: 'conceptual'
         });
     };
@@ -153,14 +169,16 @@ export function SkillTable() {
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Category</label>
-                                    <input
-                                        type="text"
-                                        placeholder="Category..."
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Category Hierarchy</label>
+                                    <select
                                         value={formData.category}
                                         onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                                        className="w-full bg-slate-50 border-none rounded-2xl px-5 py-3 text-sm font-bold text-[#1A1A1A] outline-none"
-                                    />
+                                        className="w-full bg-slate-50 border-none rounded-2xl px-5 py-3 text-sm font-bold text-[#1A1A1A] outline-none appearance-none cursor-pointer"
+                                    >
+                                        {Object.entries(SKILL_CATEGORIES).map(([value, label]) => (
+                                            <option key={value} value={value}>{label}</option>
+                                        ))}
+                                    </select>
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Mapping</label>
@@ -286,7 +304,7 @@ export function SkillTable() {
                                 </td>
                                 <td className="p-6">
                                     <span className="text-[10px] font-black px-2.5 py-1 rounded-lg border border-slate-100 bg-slate-50 text-slate-400 uppercase tracking-wider">
-                                        {item.category || 'GENERAL'}
+                                        {SKILL_CATEGORIES[item.category as keyof typeof SKILL_CATEGORIES] || item.category?.toUpperCase() || 'TECHNICAL'}
                                     </span>
                                 </td>
                                 <td className="p-6">

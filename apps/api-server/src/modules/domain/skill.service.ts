@@ -6,7 +6,7 @@ export class SkillService {
     return await db.query.skills.findMany();
   }
 
-  static async createSkill(data: { name: string; category?: string; mappingType?: string }) {
+  static async createSkill(data: any) {
     return await db.insert(skills).values(data).returning();
   }
 
