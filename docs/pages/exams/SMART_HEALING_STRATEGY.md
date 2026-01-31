@@ -107,3 +107,33 @@ To support granular reporting (Domain > Subject > Topic > Subtopic > Skill + Map
 ### System Enforcement
 - The **AI IQ Assistant** now explicitly requests these fields in its surgical instructions.
 - The **Atomic Commit** stage validates that no question enters the system without a skill association, ensuring zero-gap reporting for future analytics.
+
+---
+
+## 7. Operational Guide: Healing with IQ Assistant
+Follow these steps to resolve "Red" (🔴) or "Blue" (🔵) content gaps in the Admin UI.
+
+### Step 1: Detect the Gap
+- Visit the **Content Readiness Board**.
+- Locate the node with a red status (e.g., `POOR_POOL`).
+- Click the **Heal (⚡)** icon on the **Deepest Fault Node**.
+
+### Step 2: Utilize IQ Assistant
+- The Factory will open with a **Smart Skeleton** (pre-filled lineage).
+- Go to the **Intelligence Desktop** (Right Pane).
+- Click the **Copy Combined Payload** icon.
+- This captures both the **Target JSON Template** and the **Surgical AI Prompt**.
+
+### Step 3: External AI Generation
+- Paste the payload into an LLM (ChatGPT/Gemini).
+- The LLM will use the provided schema to generate precisely what is missing (Questions + Skills + Mapping Types).
+- Copy the generated JSON from the LLM.
+
+### Step 4: Atomic Commit
+- Paste the new JSON into the **Editor** (Left Pane).
+- Click **FIRE ATOMIC SEED**.
+- Watch the **Pulse Tracker** verify duplicate filtering and transactional commitment.
+
+### Result
+- The child node turns Green (🟢).
+- The "Start Enterprise Exam" button is unblocked once the topic reaches the mandatory **13-Question Threshold (4/4/5)**.
