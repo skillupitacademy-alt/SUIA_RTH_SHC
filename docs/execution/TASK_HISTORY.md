@@ -29,3 +29,4 @@
 | 2026-01-31 | Reporting Trinity Integration | COMPLETED | Integrated Weight (1-10), Mapping Type, and Category as mandatory metadata across Schema, API, and Admin Dash. |
 | 2026-01-31 | Architectural Governance | COMPLETED | Protected mission-critical system mappings via AGENT_CONSTITUTION.md and published unified lifecycle docs. |
 | 2026-01-31 | Schema Decoupling (Batch 34) | COMPLETED | Extracted Drizzle relations to `relations.ts` to resolve circular dependencies and ensure clean API builds. |
+| 2026-02-01 | Governance & UI Polish (Batch 35) | COMPLETED | Restored Governance Dashboard visibility, hardened Bulk Upload UI with Dynamic AI Prompt, and enforced "Executive White" aesthetics. |

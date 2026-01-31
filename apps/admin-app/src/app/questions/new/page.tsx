@@ -164,6 +164,7 @@ export default function QuestionEntryPage() {
                             ) : (
                                 <BulkUploadPanel
                                     topicId={selection.topicId!}
+                                    topicName={selection.topicName}
                                     subtopicId={selection.subtopicId}
                                     skillIds={selection.skillIds}
                                     onSuccess={handleBulkSuccess}

@@ -28,6 +28,8 @@ pnpm --filter @quiz/admin-app build
 pnpm --filter @
 npx tsc --noEmit
 
+cmd /c "pnpm build && pnpm --filter @quiz/web-app build && pnpm --filter @quiz/api-server build && pnpm --filter @quiz/admin-app build && npx tsc --noEmit"
+
 
 please refer @.agent directory .md files which are the .md files need to be updated after we complete over given task
 

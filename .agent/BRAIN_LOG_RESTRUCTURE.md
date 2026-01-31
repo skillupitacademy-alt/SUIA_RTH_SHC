@@ -238,5 +238,6 @@ Reduce documentation fragmentation and improve discoverability by consolidating 
 - **Goal**: Resolve "Blank Dashboard" data regression and align Bulk Upload UI with the Reporting Trinity.
 - **Governance Repair**: Identified and uncommented `subtopics` relation in `AdminEngine.getContentHealthReport` to restore the Enterprise Governance Dashboard.
 - **Bulk Upload UI**: Overhauled `BulkUploadPanel` with side-by-side "AI Prompt" & "Schema Guide" layout.
+- **Aesthetic Correction**: Enforced "Executive White" styling on AI Prompt (removing gamified gradients) to comply with Constitution.
 - **Prompt Engineering**: Integrated a dedicated "AI Generator Prompt" with one-click copy to ensure users generate valid JSON with `mappingType`.
 - **Outcome**: Restored critical dashboard visibility and professionalized the bulk content ingestion workflow.

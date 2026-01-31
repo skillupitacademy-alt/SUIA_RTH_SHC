@@ -12,6 +12,11 @@ export interface Selection {
     topicId: string | null;
     subtopicId: string | null;
     skillIds: string[];
+    // Extended metadata for UI
+    domainName?: string;
+    subjectName?: string;
+    topicName?: string;
+    subtopicName?: string;
 }
 
 interface CascadingSelectProps {
@@ -56,17 +61,29 @@ export function CascadingSelect({ onChange, value, hideSkills }: CascadingSelect
         // @ts-ignore
         next[level] = val;
 
-        // Reset children cascadingly ONLY if this is a manual change
+        // Lookup Name Logic
         if (level === 'domainId') {
-            next.subjectId = null;
-            next.topicId = null;
-            next.subtopicId = null;
+            const item = domains.data.find((d: any) => d.id === val);
+            next.domainName = item?.name;
+            // Reset children
+            next.subjectId = null; next.subjectName = undefined;
+            next.topicId = null; next.topicName = undefined;
+            next.subtopicId = null; next.subtopicName = undefined;
         } else if (level === 'subjectId') {
-            next.topicId = null;
-            next.subtopicId = null;
+            const item = subjects.data.find((s: any) => s.id === val);
+            next.subjectName = item?.name;
+            // Reset children
+            next.topicId = null; next.topicName = undefined;
+            next.subtopicId = null; next.subtopicName = undefined;
         } else if (level === 'topicId') {
-            next.subtopicId = null;
+            const item = topics.data.find((t: any) => t.id === val);
+            next.topicName = item?.name;
+            // Reset children
+            next.subtopicId = null; next.subtopicName = undefined;
             next.skillIds = [];
+        } else if (level === 'subtopicId') {
+            const item = subtopics.data.find((s: any) => s.id === val);
+            next.subtopicName = item?.name;
         }
 
         // Update local state if uncontrolled
