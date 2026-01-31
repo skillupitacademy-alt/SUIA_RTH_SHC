@@ -1,6 +1,6 @@
 
-import { neon } from '@neondatabase/serverless';
-import { drizzle } from 'drizzle-orm/neon-http';
+import { Pool } from '@neondatabase/serverless';
+import { drizzle } from 'drizzle-orm/neon-serverless';
 import * as schema from './src/schema/exam';
 import * as domainSchema from './src/schema/domain';
 import dotenv from 'dotenv';
@@ -9,8 +9,8 @@ import path from 'path';
 dotenv.config();
 
 async function check() {
-    const sql = neon(process.env.DATABASE_URL!);
-    const db = drizzle(sql, { schema: { ...schema, ...domainSchema } });
+    const pool = new Pool({ connectionString: process.env.DATABASE_URL! });
+    const db = drizzle(pool, { schema: { ...schema, ...domainSchema } });
 
     console.log("Checking exam_blueprints...");
     const blueprints = await db.select().from(schema.examBlueprints);

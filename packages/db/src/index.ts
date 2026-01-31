@@ -1,5 +1,5 @@
-import { neon } from '@neondatabase/serverless';
-import { drizzle } from 'drizzle-orm/neon-http';
+import { Pool } from '@neondatabase/serverless';
+import { drizzle } from 'drizzle-orm/neon-serverless';
 import * as authSchema from './schema/auth';
 import * as domainSchema from './schema/domain';
 import * as questionSchema from './schema/question';
@@ -26,8 +26,8 @@ export const getDb = (): DbClient => {
         if (!databaseUrl) {
             throw new Error('DATABASE_URL environment variable is required');
         }
-        const sql = neon(databaseUrl);
-        dbInstance = drizzle(sql, { schema });
+        const pool = new Pool({ connectionString: databaseUrl });
+        dbInstance = drizzle(pool, { schema });
     }
     return dbInstance!;
 }

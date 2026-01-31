@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { neon } from '@neondatabase/serverless';
-import { drizzle } from 'drizzle-orm/neon-http';
+import { Pool } from '@neondatabase/serverless';
+import { drizzle } from 'drizzle-orm/neon-serverless';
 import { migrate } from 'drizzle-orm/neon-http/migrator';
 import path from 'path';
 
@@ -15,9 +15,8 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    
-    const sql = neon(DATABASE_URL);
-    const db = drizzle(sql);
+    const pool = new Pool({ connectionString: process.env.DATABASE_URL! });
+    const db = drizzle(pool);
 
     // Path to migrations folder relative to the api-server root
     const migrationsFolder = path.join(process.cwd(), '../../packages/db/migrations');

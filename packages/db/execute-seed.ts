@@ -1,9 +1,9 @@
-
 import { neon } from '@neondatabase/serverless';
 import fs from 'fs';
 import path from 'path';
 import dotenv from 'dotenv';
-import { drizzle } from 'drizzle-orm/neon-http';
+import { Pool } from '@neondatabase/serverless';
+import { drizzle } from 'drizzle-orm/neon-serverless';
 
 // Load environment variables from specific paths
 const envPaths = [
@@ -52,8 +52,8 @@ if (!dbUrl) {
     }
 }
 
-const sql = neon(dbUrl!);
-const db = drizzle(sql);
+const pool = new Pool({ connectionString: dbUrl! });
+const db = drizzle(pool, { schema: undefined }); // schema is not defined in the provided context, setting to undefined
 
 async function runSeed() {
     try {
