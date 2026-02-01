@@ -36,4 +36,4 @@
 | 2026-02-01 | Global Factory Unification (Batch 41/42) | COMPLETED | Eliminated all legacy modals in hierarchy tables; verified global monorepo build integrity. |
 | 2026-02-01 | Surgical Static Blueprinting (Batch 44) | COMPLETED | Implemented `question_ids` storage, Static Override in Selection engine, and ID/Stats handover from Factory. |
 | 2026-02-01 | Orchestration Standard (Batch 45) | COMPLETED | Implemented Dual-Mode Designer, Existence Rule validation, and Calibration Summary UI; authored ORCHESTRATION_STANDARD.md. |
-| 2026-02-01 | Hierarchy Factory 2.0 (Batch 46) | COMPLETED | Standardized global ZLoader style, implemented backend deduplication, and added context-aware selection UI to Hierarchy Factory. |
+| 2026-02-01 | Hierarchy Factory 2.0 & Drizzle Sync (Batch 46/48) | COMPLETED | Standardized ZLoader style, implemented backend deduplication, surgically added missing question_ids column, and unified Drizzle ORM to 0.45.1. |

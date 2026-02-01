@@ -258,3 +258,8 @@ Reduce documentation fragmentation and improve discoverability by consolidating 
 - **Dual-Mode Designer**: Implemented Static/Dynamic protocol selection in `BlueprintFactoryWizard`.
 - **Enforcement**: Deployed the "Existence Rule" and Calibration Summary UI.
 - **Standardization**: Published `ORCHESTRATION_STANDARD.md` as the authoritative governing document.
+### Batch 46/48: Hierarchy 2.0 & Schema Maintenance
+- **Standardization**: Unified `ZLoader` aesthetics and hierarchical selection UI context.
+- **Maintenance**: Surgically added `question_ids` column to `exam_blueprints` to resolve 403 errors.
+- **Stability**: Unified Drizzle ORM to `^0.45.1` and Drizzle Kit to `^0.31.8` monorepo-wide to resolve build conflicts.
+- **Outcome**: 100% Platform synchronization and 🔴 readiness restoration.
