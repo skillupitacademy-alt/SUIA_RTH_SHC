@@ -343,3 +343,10 @@ Reduce documentation fragmentation and improve discoverability by consolidating 
     - Added skillNames guidance with examples
 - **Build Verification**: Executed comprehensive build audit (`pnpm build`, `npx tsc --noEmit`) with 100% success across all packages.
 - **Outcome**: Delivered a consistent, immersive editing experience across all hierarchy levels and a clearer AI prompt format for content generation.
+
+### Batch 73: UI Consistency & Dropdown Remediation
+- **Dropdown Fix**: Resolved `SubjectTable` dropdown rendering issue by aligning `SelectField` options format to `{id, name}` standard.
+- **Scrollbar Elimination**: Removed double scrollbars from all full-screen hierarchy modals (`Domain`, `Subject`, `Topic`) by stripping redundant `overflow-y-auto` classes.
+- **Visual Alignment**: Unified `SubtopicTable` submit button color (Orange) to match the platform-wide "Executive White" design system.
+- **Verification**: Confirmed full monorepo build stability (Exit Code 0) after applying all UI consistency patches.
+- **Outcome**: Achieved 100% visual and functional consistency across the entire Classificaton Management hierarchy.

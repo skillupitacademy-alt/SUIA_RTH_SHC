@@ -186,3 +186,10 @@
     - Added skillNames guidance with concrete examples (e.g., "Problem Solving", "API Design")
 - **Full-Spectrum Verification**: Executed comprehensive build audit across all packages with 100% success.
 - **Outcome**: Achieved a unified, premium editing experience across all hierarchy levels and simplified AI prompt format for improved content generation accuracy.
+
+### Phase 31: UI Consistency Remediation (Batch 73)
+- **Dropdown Functional Repair**: Corrected data mapping in `SubjectTable` to ensure `SelectField` options use the required `{id, name}` format, resolving "blank" dropdown issues.
+- **Scrollbar hygiene**: Sanitized all full-screen hierarchy modals (`Domain`, `Subject`, `Topic`) by removing internal `overflow-y-auto` rules, eliminating confusing double-scrollbar behavior.
+- **Color System Unification**: Aligned the `SubtopicTable` submit button to the standard "Executive Orange" (`bg-[#FF6B2C]`), removing the outlier black button.
+- **Verification**: Executed successful full-stack build (`pnpm build`) and type check (`tsc`) to ensure no regressions from UI patches.
+- **Outcome**: Delivered a flawless, visually consistent "Command Center" experience with zero UX friction.
