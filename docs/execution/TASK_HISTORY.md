@@ -49,4 +49,6 @@
 | 2026-02-02 | JSON Editor Restoration (Batch 63) | COMPLETED | Restored missing JSON Editor header, copy button, and tooltip logic in Hierarchy Factory. |
 | 2026-02-02 | Granular Dropdown Loaders (Batch 64) | COMPLETED | Implemented granular loading state tracking for Domain, Subject, and Topic dropdowns to display spinning indicators. |
 | 2026-02-02 | Login UX Enhancement (Batch 65) | COMPLETED | Added spinning loader and state text to the Admin Login authentication button. |
-| 2026-02-02 | AI Prompt & Hierarchy Restoration (Batch 70) | COMPLETED | Resolved JSX syntax violations in the Factory and implemented contextual AI orchestrations with strict dimension enforcement. |
+| 2026-02-02 | Topic Edit Refactor (Batch 69) | COMPLETED | De-coupled topic modification from Factory; implemented dedicated Topic Edit Modal in TopicTable.tsx. |
+| 2026-02-02 | AI Prompt & Hierarchy Restoration (Batch 70) | COMPLETED | Resolved JSX structure regressions and implemented contextual AI orchestrations with Trinity dimension enforcement. |
+| 2026-02-02 | Hierarchy Aesthetic Restoration (Batch 71) | COMPLETED | Restored "Executive White" aesthetic to all hierarchy edit modals and added Pre-selection Context to Factory IQ Assistant. |

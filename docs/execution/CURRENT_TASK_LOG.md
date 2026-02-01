@@ -1,8 +1,9 @@
-# 🎯 Current Session Objectives (Phase 27: Topic Edit Refactor)
+# 🎯 Current Session Objectives (Phase 29: Hierarchy UI Restoration)
 
 **Generated**: 2026-02-02
 
-- [x] **Label Cleanup**: Removed stylistic underscores from all UI headers and labels in `HierarchyFactoryWizard`.
-- [x] **Topic Edit Modal**: Restored a dedicated, high-fidelity edit form in `TopicTable.tsx`.
-- [x] **Logic Hardening**: Implemented robust ID extraction for cascading dropdowns during edits.
-- [x] **Build Verification**: Verified monorepo integrity (Exit Code 0) after all code refactoring.
+- [x] **Aesthetic Restoration**: Reverted Domain, Subject, Topic, and Subtopic edit modals to "Executive White" styling.
+- [x] **Context Visualization**: Added "Pre-selection Context" readout to `HierarchyFactoryWizard` for AI prompt clarity.
+- [x] **Prompt Refinement**: Verified AI prompt schema output for surgical topic generation.
+- [x] **Build Verification**: Executed full monorepo build and type-check cycle with zero errors (Exit Code 0).
+- [x] **Documentation Sync**: Synchronized Brain Log, State Report, and Task History (Batch 71).

@@ -166,3 +166,8 @@
 - **Schema Parity**: Synchronized JSON templates and AI outputs with the professional database schema, ensuring `correctAnswer` and valid enums are mandatory.
 - **Outcome**: Established a rock-solid, production-ready content factory with the platform's highest intelligence ceiling to date.
 
+### Phase 29: Hierarchy UI Restoration & AI Intelligence Context (Batch 71)
+- **Aesthetic Restoration**: Restored the "Executive White" aesthetic to edit modals in `DomainTable`, `SubjectTable`, `TopicTable`, and `SubtopicTable` while preserving the full-screen layout.
+- **IQ Assistant Enhancement**: Integrated a "Pre-selection Context" section in the `HierarchyFactoryWizard` to explicitly visualize selected parent nodes (Domain, Subject, Topic) for improved AI prompt accuracy.
+- **Monorepo Verification**: Successfully executed full build sequence (`pnpm build`, `tsc --noEmit`) across `web-app`, `admin-app`, and `api-server` with 100% success.
+- **Outcome**: Completed the unification of the hierarchy management suite, combining premium design with advanced AI orchestration.

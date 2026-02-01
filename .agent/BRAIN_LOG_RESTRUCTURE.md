@@ -328,3 +328,8 @@ Reduce documentation fragmentation and improve discoverability by consolidating 
 - **Template Alignment**: Synchronized `generateTemplate` and the `Import Template` UI to match the professional schema requirements (including `correctAnswer`).
 - **Integrity**: Achieved system-wide `Exit Code 0` on full monorepo build and `tsc` verification.
 - **Outcome**: Delivered a rock-solid, production-ready content factory with high-intelligence AI prompting.
+### Batch 71: Hierarchy UI Restoration & Intelligence Context
+- **UI Restoration**: Reverted edit modals for Domains, Subjects, Topics, and Subtopics to the "Executive White" aesthetic while maintaining the 100vw/100vh "Command Center" layout.
+- **IQ Assistant Enhancement**: Added a dedicated "Pre-selection Context" visualization in `HierarchyFactoryWizard` to show active Domain/Subject/Topic nodes above the AI prompt.
+- **Integrity**: Verified monorepo stability with a global `pnpm build` and `tsc --noEmit` audit across all 3 apps and shared packages (Exit Code 0).
+- **Outcome**: Achieved a premium, consistent classification management experience with enhanced AI prompt clarity.

@@ -665,8 +665,38 @@ Please provide a valid JSON object matching this schema:
                                                         </button>
                                                     </ZTooltip>
                                                 </div>
-                                                <div className="flex-1 p-10 overflow-y-auto custom-scrollbar">
-                                                    <div className="p-8 bg-slate-50/80 rounded-3xl border border-primary/5 text-sm font-bold text-slate-600 leading-relaxed font-mono whitespace-pre-wrap selection:bg-[#FF4B91]/20">
+                                                <div className="flex-1 p-10 overflow-y-auto custom-scrollbar space-y-8">
+                                                    {/* Pre-selection Context Visualization */}
+                                                    <div className="p-8 bg-white border border-primary/10 rounded-[2.5rem] shadow-sm space-y-6">
+                                                        <div className="flex items-center gap-3 border-b border-primary/5 pb-4">
+                                                            <div className="w-8 h-8 rounded-xl bg-slate-900 text-[#FF4B91] flex items-center justify-center">
+                                                                <Layers size={16} />
+                                                            </div>
+                                                            <h5 className="text-[10px] font-black uppercase tracking-[0.2em] text-[#1A1A1A]">Pre-selection Context</h5>
+                                                        </div>
+                                                        <div className="grid grid-cols-3 gap-6">
+                                                            <div className="space-y-1.5 container-node">
+                                                                <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 block px-1">Domain</label>
+                                                                <div className="px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-[10px] font-bold text-slate-600 truncate italic">
+                                                                    {initialData?.domainName || hierarchicalChoices.domains.find(d => d.domainId === selections.domainId)?.domainName || "Root Selection"}
+                                                                </div>
+                                                            </div>
+                                                            <div className={cn("space-y-1.5 transition-opacity", !selections.domainId && "opacity-20")}>
+                                                                <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 block px-1">Subject</label>
+                                                                <div className="px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-[10px] font-bold text-slate-600 truncate italic">
+                                                                    {initialData?.subjectName || hierarchicalChoices.subjects.find(s => s.id === selections.subjectId)?.name || "Pending..."}
+                                                                </div>
+                                                            </div>
+                                                            <div className={cn("space-y-1.5 transition-opacity", !selections.subjectId && "opacity-20")}>
+                                                                <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 block px-1">Topic</label>
+                                                                <div className="px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-[10px] font-bold text-slate-600 truncate italic">
+                                                                    {initialData?.topicName || hierarchicalChoices.topics.find(t => t.id === selections.topicId)?.name || "Pending..."}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="p-8 bg-[#1A1A1A] rounded-3xl border border-primary/5 text-sm font-bold text-white/80 leading-relaxed font-mono whitespace-pre-wrap selection:bg-[#FF4B91]/40 shadow-2xl shadow-black/20">
                                                         {generateAiPrompt()}
                                                     </div>
                                                 </div>
