@@ -7,6 +7,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { formatTimeAgo } from '@/lib/utils';
 import { ErrorBanner } from '@/components/layout/ErrorBanner';
 import { useDomains, useSubjects } from '@/hooks/useAdminHierarchy';
+import { HierarchyFactoryWizard } from '@/components/content/HierarchyFactoryWizard';
 
 export function TopicTable() {
     const [data, setData] = useState<any[]>([]);
@@ -150,99 +151,24 @@ export function TopicTable() {
                 <ErrorBanner message={errorMessage} onClose={() => setErrorMessage(null)} />
             )}
 
-            {/* Form Modal */}
-            {isFormOpen && (
-                <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300">
-                    <div className="bg-white border border-primary/10 rounded-[2.5rem] p-8 max-w-lg w-full shadow-2xl relative overflow-hidden">
-                        <div className="absolute top-0 left-0 w-full h-2 bg-[#FF4B91]" />
-                        <div className="flex justify-between items-start mb-8">
-                            <div>
-                                <h3 className="text-2xl font-black text-[#1A1A1A] italic uppercase tracking-tighter">
-                                    {currentTopic ? 'Update Topic' : 'Create Topic'}
-                                </h3>
-                                <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1">Management Console</p>
-                            </div>
-                            <button onClick={handleCloseForm} className="p-2 hover:bg-slate-100 rounded-full transition-colors">
-                                <X size={20} className="text-slate-400" />
-                            </button>
-                        </div>
-
-                        <form onSubmit={handleSubmit} className="space-y-6">
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-2 col-span-2">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Topic Name</label>
-                                    <input
-                                        required
-                                        type="text"
-                                        placeholder="Enter topic name..."
-                                        value={formData.name}
-                                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                        className="w-full bg-slate-50 border-none rounded-2xl px-5 py-3 text-sm font-bold text-[#1A1A1A] focus:ring-2 focus:ring-[#FF4B91]/20 outline-none"
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Parent Domain</label>
-                                    <select
-                                        required
-                                        value={formData.domainId}
-                                        onChange={(e) => handleDomainChange(e.target.value)}
-                                        className="w-full bg-slate-50 border-none rounded-2xl px-5 py-3 text-sm font-bold text-[#1A1A1A] focus:ring-2 focus:ring-[#FF4B91]/20 outline-none appearance-none cursor-pointer"
-                                    >
-                                        <option value="">Select Domain...</option>
-                                        {domains.map(d => (
-                                            <option key={d.id} value={d.id}>{d.name}</option>
-                                        ))}
-                                    </select>
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Parent Subject</label>
-                                    <select
-                                        required
-                                        disabled={!formData.domainId}
-                                        value={formData.subjectId}
-                                        onChange={(e) => setFormData({ ...formData, subjectId: e.target.value })}
-                                        className="w-full bg-slate-50 border-none rounded-2xl px-5 py-3 text-sm font-bold text-[#1A1A1A] focus:ring-2 focus:ring-[#FF4B91]/20 outline-none appearance-none cursor-not-allowed disabled:opacity-50"
-                                    >
-                                        <option value="">Select Subject...</option>
-                                        {subjects.map(s => (
-                                            <option key={s.id} value={s.id}>{s.name}</option>
-                                        ))}
-                                    </select>
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Status</label>
-                                    <select
-                                        value={formData.status}
-                                        onChange={(e) => setFormData({ ...formData, status: e.target.value as any })}
-                                        className="w-full bg-slate-50 border-none rounded-2xl px-5 py-3 text-sm font-bold text-[#1A1A1A] focus:ring-2 focus:ring-[#FF4B91]/20 outline-none appearance-none cursor-pointer"
-                                    >
-                                        <option value="active">Active</option>
-                                        <option value="inactive">Inactive</option>
-                                    </select>
-                                </div>
-                                <div className="space-y-2 col-span-2">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Description</label>
-                                    <textarea
-                                        rows={3}
-                                        placeholder="Provide topic context..."
-                                        value={formData.description}
-                                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                                        className="w-full bg-slate-50 border-none rounded-2xl px-5 py-3 text-sm font-bold text-[#1A1A1A] focus:ring-2 focus:ring-[#FF4B91]/20 outline-none resize-none"
-                                    />
-                                </div>
-                            </div>
-
-                            <button
-                                type="submit"
-                                disabled={isSubmitting}
-                                className="w-full py-4 rounded-2xl bg-[#1A1A1A] text-white text-xs font-black uppercase tracking-[0.2em] shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50"
-                            >
-                                {isSubmitting ? 'Syncing...' : currentTopic ? 'Update' : 'Create'}
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            )}
+            {/* Factory Wizard Integration */}
+            <HierarchyFactoryWizard
+                isOpen={isFormOpen}
+                onClose={() => setIsFormOpen(false)}
+                onSuccess={() => {
+                    setIsFormOpen(false);
+                    fetchTopics();
+                }}
+                initialData={
+                    formData.subjectId
+                        ? {
+                            domainId: formData.domainId,
+                            subjectId: formData.subjectId,
+                            subjectName: subjects.find(s => s.id === formData.subjectId)?.name || ''
+                        }
+                        : null
+                }
+            />
 
             {/* Delete Confirmation Modal */}
             {isDeleteOpen && (

@@ -42,6 +42,7 @@ export function HierarchyFactoryWizard({ isOpen, onClose, initialData, onSuccess
     const [mode, setMode] = useState<FactoryMode>('manual');
     const [manualDomain, setManualDomain] = useState({ name: '', description: '' });
     const [payload, setPayload] = useState(initialData ? JSON.stringify(initialData, null, 2) : '');
+    const [showEditor, setShowEditor] = useState(!!initialData);
     const [isProcessing, setIsProcessing] = useState(false);
     const [executionStep, setExecutionStep] = useState<ExecutionStep>('idle');
     const [error, setError] = useState<string | null>(null);
@@ -80,14 +81,75 @@ export function HierarchyFactoryWizard({ isOpen, onClose, initialData, onSuccess
 
     // AI Prompt Generation Logic
     const generateAiPrompt = () => {
-        return `I need to generate a structured educational domain hierarchy.
+        let base = `I need to generate a structured educational hierarchy.
         
 IMPORTANT REQUIREMENT: 
-The following domains ALREADY EXIST in our system. DO NOT provide records for:
+The following domains ALREADY EXIST in our system. DO NOT provide redundant records for:
 ${existingDomains.join(', ')}
 
-Please provide a valid JSON object matching this schema for NEW domains only:
-{
+Please provide a valid JSON object matching this schema for NEW data only:`;
+
+        if (initialData?.domainId && !initialData.subjectId) {
+            // Subject Context
+            return `${base}\n{
+  "domainId": "${initialData.domainId}",
+  "subjects": [
+    {
+      "name": "string",
+      "topics": [
+        {
+          "name": "string",
+          "questions": [ ... ]
+        }
+      ]
+    }
+  ]
+}\n\n- Focus on generating high-quality ${initialData.domainName || "Domain"} subjects.\n- Return ONLY the JSON object.`;
+        }
+
+        if (initialData?.topicId) {
+            // Subtopic Context - Generate subtopics and questions
+            return `${base}\n{
+  "domainId": "${initialData.domainId}",
+  "subjects": [
+    {
+      "id": "${initialData.subjectId}",
+      "topics": [
+        {
+          "id": "${initialData.topicId}",
+          "subtopics": [
+            {
+              "name": "string",
+              "questions": [ ... ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}\n\n- Focus on generating granular subtopics for ${initialData.topicName || "Topic"}.\n- Return ONLY the JSON object.`;
+        }
+
+        if (initialData?.subjectId) {
+            // Topic Context
+            return `${base}\n{
+  "domainId": "${initialData.domainId}",
+  "subjects": [
+    {
+      "id": "${initialData.subjectId}",
+      "topics": [
+        {
+          "name": "string",
+          "questions": [ ... ]
+        }
+      ]
+    }
+  ]
+}\n\n- Focus on generating specialized topics for ${initialData.subjectName || "Subject"}.\n- Return ONLY the JSON object.`;
+        }
+
+        // Default: Full Domain Hierarchy
+        return `${base}\n{
   "domainName": "string",
   "subjects": [
     {
@@ -95,28 +157,12 @@ Please provide a valid JSON object matching this schema for NEW domains only:
       "topics": [
         {
           "name": "string",
-          "questions": [
-             {
-               "questionText": "string",
-               "difficulty": "simple" | "intermediate" | "expert",
-               "type": "mcq" | "code_mcq",
-               "options": ["string", "string", "string", "string"],
-               "correctAnswer": "exact string",
-               "explanation": "string",
-               "skillNames": ["string"],
-               "mappingType": "conceptual" | "technical" | "practical",
-               "skillWeight": number (1-10)
-             }
-          ]
+          "questions": [ ... ]
         }
       ]
     }
   ]
-}
-
-- Ensure high-quality, professional questions.
-- Return ONLY the JSON object.
-`;
+}\n\n- Ensure high-quality, professional questions.\n- Return ONLY the JSON object.`;
     };
 
     const copyToClipboard = (text: string) => {
@@ -157,7 +203,7 @@ Please provide a valid JSON object matching this schema for NEW domains only:
     };
 
     const generateTemplate = () => {
-        const template = {
+        let template: any = {
             domainName: "ENTER_NEW_DOMAIN",
             subjects: [{
                 name: "TOPIC_AREA_1",
@@ -167,7 +213,25 @@ Please provide a valid JSON object matching this schema for NEW domains only:
                 }]
             }]
         };
+
+        // Contextual schemas
+        if (initialData?.domainId) {
+            template = {
+                domainId: initialData.domainId,
+                subjects: [{ name: "NEW_SUBJECT", topics: [{ name: "TOPIC_A" }] }]
+            };
+        } else if (initialData?.subjectId) {
+            template = {
+                domainId: initialData.domainId,
+                subjects: [{
+                    id: initialData.subjectId,
+                    topics: [{ name: "NEW_TOPIC", questions: [] }]
+                }]
+            };
+        }
+
         setPayload(JSON.stringify(template, null, 2));
+        setShowEditor(true);
     };
 
     const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -176,6 +240,7 @@ Please provide a valid JSON object matching this schema for NEW domains only:
         const reader = new FileReader();
         reader.onload = (event) => {
             setPayload(event.target?.result as string);
+            setShowEditor(true);
             setMode('bulk');
         };
         reader.readAsText(file);
@@ -268,16 +333,31 @@ Please provide a valid JSON object matching this schema for NEW domains only:
                             </div>
                         </div>
                     ) : (
-                        <div className="flex-1 flex flex-col gap-6 animate-in slide-in-from-right-4">
+                        <div className="flex-1 flex flex-col gap-8 animate-in slide-in-from-right-4 overflow-hidden">
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-4">
-                                    <h3 className="text-2xl font-black italic uppercase tracking-tighter text-[#1A1A1A]">Bulk Hierarchy Engine</h3>
-                                    <span className="px-3 py-1 bg-primary/10 text-primary text-[9px] font-black uppercase rounded-lg">JSON STRICT_MODE</span>
+                                    <h3 className="text-3xl font-black italic uppercase tracking-tighter text-[#1A1A1A]">Bulk Hierarchy Engine_</h3>
+                                    <div className="flex items-center gap-2">
+                                        <span className="px-3 py-1 bg-primary/10 text-primary text-[9px] font-black uppercase rounded-lg">JSON STRICT_MODE</span>
+                                        {!showEditor ? (
+                                            <span className="px-3 py-1 bg-slate-100 text-slate-500 text-[9px] font-black uppercase rounded-lg italic">Intelligence Phase</span>
+                                        ) : (
+                                            <span className="px-3 py-1 bg-green-500/10 text-green-600 text-[9px] font-black uppercase rounded-lg italic">Draft Phase</span>
+                                        )}
+                                    </div>
                                 </div>
-                                <div className="flex items-center gap-4">
+                                <div className="flex items-center gap-3">
+                                    {showEditor && (
+                                        <button
+                                            onClick={() => setShowEditor(false)}
+                                            className="px-6 py-2.5 bg-white border border-primary/10 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-50 transition-all flex items-center gap-2"
+                                        >
+                                            <Wand2 size={14} /> Back to Prompt
+                                        </button>
+                                    )}
                                     <button
                                         onClick={() => fileInputRef.current?.click()}
-                                        className="px-6 py-2.5 bg-white border border-primary/10 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-50 transition-all flex items-center gap-2"
+                                        className="px-6 py-2.5 bg-white border border-primary/10 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-50 transition-all flex items-center gap-2 text-[#1A1A1A]"
                                     >
                                         <Upload size={14} /> Upload Manifest
                                     </button>
@@ -286,23 +366,65 @@ Please provide a valid JSON object matching this schema for NEW domains only:
                                         onClick={generateTemplate}
                                         className="px-6 py-2.5 bg-primary/5 text-primary border border-primary/10 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-primary/10 transition-all flex items-center gap-2"
                                     >
-                                        <Wand2 size={14} /> Import Template
+                                        <LayoutGrid size={14} /> Import Template
                                     </button>
                                 </div>
                             </div>
 
-                            <div className="flex-1 relative group">
-                                <textarea
-                                    value={payload}
-                                    onChange={(e) => setPayload(e.target.value)}
-                                    spellCheck={false}
-                                    className="absolute inset-0 w-full h-full bg-[#0F1115] text-[#9CDCFE] border-2 border-primary/5 rounded-[2.5rem] p-10 font-mono text-lg focus:ring-8 focus:ring-primary/5 outline-none transition-all leading-relaxed shadow-2xl resize-none"
-                                    placeholder='{ "domainName": "...", "subjects": [...] }'
-                                />
-                                <div className="absolute right-8 bottom-8 px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-[10px] font-mono text-white/40 backdrop-blur-md">
-                                    CHAR_COUNT: {payload.length}
+                            {!showEditor ? (
+                                <div className="flex-1 flex flex-col gap-6 animate-in zoom-in-95 duration-500 overflow-hidden">
+                                    <div className="flex-1 rounded-[2.5rem] bg-slate-900 border-4 border-white/5 shadow-2xl relative overflow-hidden flex flex-col">
+                                        <div className="px-10 py-8 border-b border-white/5 flex items-center justify-between bg-white/[0.02]">
+                                            <div className="flex items-center gap-4">
+                                                <div className="p-3 bg-[#FF4B91]/10 rounded-xl text-[#FF4B91]">
+                                                    <Brain size={24} />
+                                                </div>
+                                                <h4 className="text-xl font-black uppercase tracking-widest text-white italic">Surgical AI Prompt_</h4>
+                                            </div>
+                                            <button
+                                                onClick={() => {
+                                                    copyToClipboard(generateAiPrompt());
+                                                    setMode('bulk');
+                                                }}
+                                                className="px-8 py-3 bg-white/10 hover:bg-white text-white hover:text-slate-900 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all flex items-center gap-3 active:scale-95"
+                                            >
+                                                <ClipboardCopy size={16} /> Copy Prompt
+                                            </button>
+                                        </div>
+                                        <div className="flex-1 p-10 overflow-y-auto custom-scrollbar">
+                                            <div className="p-8 bg-black/40 rounded-3xl border border-white/10 text-sm font-medium text-slate-300 leading-relaxed font-mono whitespace-pre-wrap selection:bg-[#FF4B91]/30">
+                                                {generateAiPrompt()}
+                                            </div>
+                                        </div>
+                                        <div className="px-10 py-6 border-t border-white/5 bg-black/20 text-center">
+                                            <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] italic">
+                                                Domain check filters active: {existingDomains.length} domains found.
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <button
+                                        onClick={() => setShowEditor(true)}
+                                        className="w-full py-6 rounded-3xl border-2 border-dashed border-primary/10 hover:border-primary/30 hover:bg-primary/[0.02] text-[11px] font-black uppercase tracking-[0.3em] text-muted-foreground transition-all group"
+                                    >
+                                        Already have the JSON? <span className="text-primary group-hover:underline">Enter Manual Manifest Mode_</span>
+                                    </button>
                                 </div>
-                            </div>
+                            ) : (
+                                <div className="flex-1 relative group animate-in fade-in slide-in-from-bottom-4">
+                                    <textarea
+                                        value={payload}
+                                        onChange={(e) => setPayload(e.target.value)}
+                                        spellCheck={false}
+                                        className="absolute inset-0 w-full h-full bg-[#0F1115] text-[#9CDCFE] border-4 border-primary/5 rounded-[2.5rem] p-12 font-mono text-xl focus:ring-[12px] focus:ring-primary/5 outline-none transition-all leading-relaxed shadow-[0_40px_100px_-20px_rgba(0,0,0,0.5)] resize-none selection:bg-primary/20"
+                                        placeholder='{ "domainName": "...", "subjects": [...] }'
+                                    />
+                                    <div className="absolute right-10 bottom-10 px-6 py-3 bg-white/5 border border-white/10 rounded-2xl text-[11px] font-mono text-white/60 backdrop-blur-xl flex items-center gap-3">
+                                        <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                                        PAYLOAD_SIZE: {payload.length} BYTES
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     )}
                 </div>
@@ -323,28 +445,7 @@ Please provide a valid JSON object matching this schema for NEW domains only:
                         </div>
                     </div>
 
-                    {/* AI Assistance */}
-                    {mode === 'bulk' && !success && (
-                        <div className="p-8 rounded-[2rem] bg-slate-900 border border-white/5 shadow-2xl space-y-6">
-                            <div className="flex items-center justify-between">
-                                <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-white flex items-center gap-3">
-                                    <Brain size={18} className="text-[#FF4B91]" /> Surgical AI Prompt
-                                </h4>
-                                <button
-                                    onClick={() => copyToClipboard(generateAiPrompt())}
-                                    className="p-2 bg-white/5 text-white/60 hover:text-white hover:bg-white/10 rounded-lg transition-all"
-                                >
-                                    <ClipboardCopy size={16} />
-                                </button>
-                            </div>
-                            <div className="p-4 bg-black/40 rounded-xl border border-white/5 text-[11px] font-medium text-slate-400 leading-relaxed font-mono whitespace-pre-wrap max-h-60 overflow-y-auto">
-                                {generateAiPrompt()}
-                            </div>
-                            <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest text-center italic">
-                                Domain check filters active: {existingDomains.length} domains found.
-                            </p>
-                        </div>
-                    )}
+                    {/* AI Assistance removed from sidebar - moved to main workspace */}
 
                     {error && (
                         <div className="p-6 rounded-2xl bg-red-50 border border-red-200 text-red-600 animate-in shake-1 space-y-2">
