@@ -1,9 +1,8 @@
-# 🎯 Current Session Objectives (Batch 62: UI Polish & Build)
+# 🎯 Current Session Objectives (Batch 63-65: UI Recovery & UX Loaders)
 
-**Generated**: 2026-02-01
+**Generated**: 2026-02-02
 
-- [x] **Container Alignment**: Synced `HierarchyFactoryWizard` Main/Sidebar containers to exact pixel dimensions (top/bottom), replacing "hanging" layout.
-- [x] **Premium Tooltips**: Replaced native browser tooltips with custom `ZTooltip` components (Dark/Glass, arrow-anchored).
-- [x] **Table Polish**: Fixed "Created" column misalignment in `TopicTable` (Left-aligned).
-- [x] **Edit Assessment Repair**: Reverted heading to "Edit Assessment_", fixed option data mapping bug to restore answer visibility.
-- [x] **Build Integrity**: Verified full monorepo build (Exit Code 0) using semicolon-delimited commands for PowerShell compatibility.
+- [x] **JSON Editor Restoration (Batch 63)**: Re-enabled "JSON Manifest Editor_" header, Copy button, and Tooltip in `HierarchyFactoryWizard`.
+- [x] **Dropdown Loaders (Batch 64)**: Implemented `loadingChoices` state to drive spinning `ZLoader` indicators in Domain/Subject/Topic dropdowns.
+- [x] **Login Feedback (Batch 65)**: Enhanced `AdminLoginPage` button to show "AUTHENTICATING..." + Spinner during network request.
+- [x] **Build Verification**: Verified monorepo integrity (Exit Code 0) after all UI changes.

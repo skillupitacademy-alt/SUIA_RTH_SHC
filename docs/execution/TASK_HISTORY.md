@@ -46,3 +46,6 @@
 | 2026-02-01 | Loader Scaling & Unification (Batch 52.2) | COMPLETED | Standardized all loaders to spinning `Activity` style and reduced global scaling for an executive aesthetic. |
 | 2026-02-01 | Wizard UI & Dropdown Standardization (Batch 52.3) | COMPLETED | Redesigned Hierarchy Wizard with white terminal theme and unified all dropdown loaders to spinning `Activity`. |
 | 2026-02-01 | UI Containers & Tooltips (Batch 62) | COMPLETED | Aligned Hierarchy Wizard containers, implemented premium ZTooltip, fixed Edit Assessment logic, and verified semicolon-driven builds. |
+| 2026-02-02 | JSON Editor Restoration (Batch 63) | COMPLETED | Restored missing JSON Editor header, copy button, and tooltip logic in Hierarchy Factory. |
+| 2026-02-02 | Granular Dropdown Loaders (Batch 64) | COMPLETED | Implemented granular loading state tracking for Domain, Subject, and Topic dropdowns to display spinning indicators. |
+| 2026-02-02 | Login UX Enhancement (Batch 65) | COMPLETED | Added spinning loader and state text to the Admin Login authentication button. |

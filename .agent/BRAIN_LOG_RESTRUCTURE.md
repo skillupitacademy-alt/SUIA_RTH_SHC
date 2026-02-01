@@ -296,3 +296,18 @@ Reduce documentation fragmentation and improve discoverability by consolidating 
 - **Edit Page Fix**: Reverted `Edit Assessment` heading and fixed `options` mapping bug in `QuestionEditor`.
 - **Integrity**: Verified full monorepo build (`web-app`, `admin-app`, `api-server`) with **Exit Code 0**, enforcing semicolon usage for shell compatibility.
 - **Outcome**: Delivered a refined, visually synced, and production-ready Admin UI.
+
+### Batch 63: Hierarchy Wizard JSON Restoration
+- **Feature Recovery**: Restored the "JSON Manifest Editor_" header and "Copy Payload" functionality in `HierarchyFactoryWizard`.
+- **UI Logic**: Re-implemented the `!showEditor` conditional block to correctly display the editor container with `Code2` iconography and tooltip support.
+- **Outcome**: Re-enabled manual JSON manipulation and clipboard export capabilities in the bulk factory engine.
+
+### Batch 64: Granular Dropdown Loaders
+- **UX Enhancement**: Implemented `loadingChoices` state machine in `HierarchyFactoryWizard` to track granular fetching status (Domains, Subjects, Topics).
+- **Visual Feedback**: Connected `SelectField`'s built-in `ZLoader` support to real API network states, replacing hardcoded `false` flags.
+- **Outcome**: Users now see spinning activity indicators within dropdowns during hierarchical data fetching.
+
+### Batch 65: Authentication UX Polish
+- **Component**: Enhanced `AdminLoginPage` authenticate button.
+- **State Feedback**: Added spinning `ZLoader` and "AUTHENTICATING..." text state during the login network request.
+- **Outcome**: Provided immediate visual feedback during the critical authentication handshake.
