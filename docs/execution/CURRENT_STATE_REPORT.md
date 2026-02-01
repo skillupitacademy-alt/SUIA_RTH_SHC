@@ -144,4 +144,5 @@
 ### Phase 26: Reports Tabular Refactor & Multi-Loader Demo (Batch 52)
 - **High-Density Reporting**: Overhauled the Hierarchical Reports dashboard from card-based visualization to a high-density tabular matrix, optimizing horizontal space and data scanning.
 - **Unified Diagnostic Sequence**: Implemented a 3-stage visual audit (`Loader2` -> `Activity` -> `ZLoader`) across both Reports and User Management to facilitate platform standardization.
+- **Hotfix (Batch 52.1)**: Resolved a state management regression in `HierarchyReports.tsx` where the `isPageLoading` state failed to reset, ensuring the `ZLoader` dismisses correctly upon sync completion.
 - **Codebase Decommissioning**: Removed deprecated `ReportCard.tsx` and synchronized all dependent components with the new authoritative reporting schema.

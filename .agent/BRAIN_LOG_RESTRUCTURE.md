@@ -278,5 +278,6 @@ Reduce documentation fragmentation and improve discoverability by consolidating 
 - **Table Conversion**: Refactored `HierarchyReports.tsx` into a high-density table per user request.
 - **Diagnostics Extension**: Extended the sequential loader demo (`Loader2`/`Activity`/`ZLoader`) to the Reporting module.
 - **Loader Fix**: Forced `Loader2` visibility in `UserTable.tsx` by simplifying the loading check.
+- **Hotfix (Batch 52.1)**: Corrected persistent `ZLoader` visibility in the Reports module by explicitly resetting `isPageLoading` in the `finally` block.
 - **Integrity**: Achieved Exit Code 0 on full monorepo build and global type-safety audit.
 - **Outcome**: Established a high-density reporting standard and unified diagnostic sequence for loader preference identification.
