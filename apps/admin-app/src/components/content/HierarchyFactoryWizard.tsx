@@ -212,7 +212,7 @@ Please provide a valid JSON object matching this schema:
         }
 
         if (target === 'subtopic') {
-            return `I need to generate granular SUBTOPICS and complex QUESTIONS for the topic: "${topicName}" within Subject: "${subjectName}".
+            return `I need to generate granular SUBTOPICS and complex QUESTIONS for the topic: "${topicName}".
 
 Please provide a valid JSON object matching this schema:
 {
@@ -229,13 +229,8 @@ Please provide a valid JSON object matching this schema:
               "questions": [
                 {
                   "questionText": "string",
-                  "options": [
-                    { "text": "Option A", "isCorrect": true },
-                    { "text": "Option B", "isCorrect": false },
-                    { "text": "Option C", "isCorrect": false },
-                    { "text": "Option D", "isCorrect": false }
-                  ],
-                  "correctAnswer": "Option A",
+                  "options": ["A", "B", "C", "D"],
+                  "correctAnswer": "string",
                   "difficulty": "simple|intermediate|expert",
                   "mappingType": "conceptual|technical|practical",
                   "skillNames": ["Skill A", "Skill B"]
@@ -252,6 +247,7 @@ Please provide a valid JSON object matching this schema:
 - Ensure 5 subtopics, each with 5 mixed-difficulty questions.
 - difficulty must be one of [simple, intermediate, expert].
 - mappingType must be one of [conceptual, technical, practical].
+- skillNames should be relevant competency names (e.g., "Problem Solving", "API Design").
 - Return ONLY the JSON object.`;
         }
 

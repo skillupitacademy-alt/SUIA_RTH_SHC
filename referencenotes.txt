@@ -139,3 +139,71 @@ Automatically builds a prompt for external AI (ChatGPT/Gemini).
 Includes schema enums: difficulty (simple, intermediate, expert) and type (mcq, code_mcq).
 Includes a "Copy Prompt" action.
 
+
+So now let start with domains CRUD  implementation after clicking Add Domain button the dialog box that appear should be the full screen of window and it should allow manual single domain addition and bulk domain addition and it should provide appropriate json schema for bulk insertion and json schema should have prompt explaining  the json schema requirement and it should specify from domains table that these domains are already exists so dont provide records for this domain and once all necessary data provided then insertion should be done successfully and message should be prompted to admin for individual / bulk insertion.  and do necessary exam_blueprints population is needed when domain get added then notify admin for same 
+
+There should be proper flow steps completion indicator to be visible for admin
+
+Domains table record population started
+Domains table record addition completed
+So many record are added
+exam_blueprints table population started (if this needed)
+exam_blueprints table population addition completed
+and so on...
+
+
+
+
+1. In Add Domain if duplicate domain name arise which is already exist in domain table then those should be skipped and non duplicate domain name should be added in domain table and appropriate message should be displayed to Admin.
+
+2. In Add Subject I should be given UI/UX component to be given list of domains from domain table and then I will select in which domain I will add subject and if the subject is already exist in that domain that it should be skipped and non duplicate subject name should be added in subject table and appropriate message should be displayed to Admin.
+
+In bulk factory option of Bulk subject Factory_ based on subject selection AI prompt for json generation for subject addition should be embedded with selected domain 
+
+3. Same second point should be followed for Topics , Sub topics 
+for example topics -- selection will be based on domain first then subjects in that domains...
+
+I was happy with previous spinner not with this spinner. And Import should be of @/ not ../ type
+
+
+-------
+
+
+I need to generate granular SUBTOPICS and complex QUESTIONS for the topic: "HTML and Semantic Markup".
+
+Please provide a valid JSON object matching this schema:
+{
+  "domainId": "30000000-0000-0000-0000-000000000001",
+  "subjects": [
+    {
+      "id": "090854d0-d1fa-4ca4-8ad4-1f53d1b61fc5",
+      "topics": [
+        {
+          "id": "04a1273e-f5e3-4737-8291-8c01a66fe758",
+          "subtopics": [
+            { 
+              "name": "string", 
+              "questions": [
+                {
+                  "questionText": "string",
+                  "options": ["A", "B", "C", "D"],
+                  "correctAnswer": "string",
+                  "difficulty": "simple|intermediate|expert",
+                  "mappingType": "conceptual|technical|practical",
+                  "skillNames": ["Skill A", "Skill B"]
+                }
+              ] 
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+- Ensure 5 subtopics, each with 5 mixed-difficulty questions.
+- Return ONLY the JSON object.
+   
+For Skull name "skillNames": ["Skill A", "Skill B"] enum values should be provided what value can be shown please guide first 
+
+
