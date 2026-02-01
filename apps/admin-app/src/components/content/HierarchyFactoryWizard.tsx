@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ZLoader } from '@/components/ui/ZLoader';
+import { SelectField } from '@/components/entry/SelectionFields';
 import { BlueprintFactoryWizard } from '@/components/content/BlueprintFactoryWizard';
 
 interface HierarchyFactoryWizardProps {
@@ -77,7 +78,7 @@ export function HierarchyFactoryWizard({ isOpen, onClose, initialData, onSuccess
 
     const fetchExistingDomains = async () => {
         try {
-            const data = await apiClient.admin.getContentHealth();
+            const data = await apiClient.admin.getContentHealthReport();
             setExistingDomains(data.map((d: any) => d.domainName));
             setHierarchicalChoices(prev => ({ ...prev, domains: data }));
         } catch (e) {
@@ -357,8 +358,12 @@ Please provide a valid JSON object matching this schema:
                                 name: "Context API",
                                 questions: [{
                                     questionText: "What is the purpose of Context API?",
-                                    options: ["Data storage", "Prop drilling resolution", "UI styling", "Database sync"],
-                                    correctAnswer: "Prop drilling resolution",
+                                    options: [
+                                        { text: "Data storage", isCorrect: false },
+                                        { text: "Prop drilling resolution", isCorrect: true },
+                                        { text: "UI styling", isCorrect: false },
+                                        { text: "Database sync", isCorrect: false }
+                                    ],
                                     difficulty: "intermediate",
                                     mappingType: "conceptual"
                                 }]
@@ -409,14 +414,17 @@ Please provide a valid JSON object matching this schema:
     return createPortal(
         <div className="fixed inset-0 z-[1000] flex flex-col bg-white animate-in fade-in zoom-in-95 duration-300">
             {/* Header */}
-            <div className="px-12 py-6 border-b border-primary/5 flex items-center justify-between bg-primary/[0.02]">
+            <div className="px-12 py-4 border-b border-primary/5 flex items-center justify-between bg-primary/[0.02]">
                 <div className="flex items-center gap-5">
-                    <div className="p-3.5 bg-[#1A1A1A] text-[#FF4B91] rounded-2xl shadow-xl shadow-black/10">
-                        <Zap size={28} />
+                    <div
+                        className="p-2.5 bg-[#1A1A1A] text-[#FF4B91] rounded-2xl shadow-xl shadow-black/10"
+                        title="Domain Factory Console: An advanced orchestration layer for bulk hierarchy ingestion and atomic state synchronization."
+                    >
+                        <Zap size={24} />
                     </div>
                     <div>
-                        <h2 className="text-3xl font-black uppercase tracking-tighter italic text-[#1A1A1A]">Domain Factory_</h2>
-                        <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mt-1 flex items-center gap-2">
+                        <h2 className="text-xl font-black uppercase tracking-tighter italic text-[#1A1A1A]">Domain Factory_</h2>
+                        <p className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em] mt-0.5 flex items-center gap-2">
                             System-Alpha • Manual Orchestration Active
                         </p>
                     </div>
@@ -425,6 +433,7 @@ Please provide a valid JSON object matching this schema:
                 <div className="flex items-center gap-3 bg-slate-100 p-1.5 rounded-2xl">
                     <button
                         onClick={() => setMode('manual')}
+                        title="Switch to Single Entry Mode: Manually define a single level of hierarchy (Domain, Subject, Topic, or Subtopic)."
                         className={cn(
                             "px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
                             mode === 'manual' ? "bg-white text-primary shadow-sm" : "text-muted-foreground hover:text-primary"
@@ -434,6 +443,7 @@ Please provide a valid JSON object matching this schema:
                     </button>
                     <button
                         onClick={() => setMode('bulk')}
+                        title="Switch to Bulk Engine: Use AI prompts or JSON manifests to insert entire hierarchical branches at once."
                         className={cn(
                             "px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
                             mode === 'bulk' ? "bg-white text-primary shadow-sm" : "text-muted-foreground hover:text-primary"
@@ -443,7 +453,11 @@ Please provide a valid JSON object matching this schema:
                     </button>
                 </div>
 
-                <button onClick={onClose} className="p-3 hover:bg-red-50 text-muted-foreground hover:text-red-500 rounded-2xl transition-all border border-transparent hover:border-red-100 italic font-black uppercase text-[10px] flex items-center gap-2">
+                <button
+                    onClick={onClose}
+                    title="Terminate current factory session and return to management dashboard."
+                    className="p-3 hover:bg-red-50 text-muted-foreground hover:text-red-500 rounded-2xl transition-all border border-transparent hover:border-red-100 italic font-black uppercase text-[10px] flex items-center gap-2"
+                >
                     <X size={20} /> Close Terminal
                 </button>
             </div>
@@ -482,48 +496,47 @@ Please provide a valid JSON object matching this schema:
                                 {(['subject', 'topic', 'subtopic'].includes(initialData?.target)) && (
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         <div className="space-y-3">
-                                            <label className="text-[10px] font-black uppercase tracking-widest text-[#1A1A1A] opacity-40">Target Domain_</label>
-                                            <select
+                                            <SelectField
+                                                label="Target Domain_"
                                                 value={selections.domainId}
-                                                onChange={(e) => setSelections({ ...selections, domainId: e.target.value, subjectId: '', topicId: '' })}
-                                                className="w-full bg-[#FAFAFA] border-2 border-primary/5 rounded-2xl p-4 text-sm font-bold outline-none appearance-none cursor-pointer"
-                                            >
-                                                <option value="">Select Domain</option>
-                                                {hierarchicalChoices.domains.map(d => (
-                                                    <option key={d.domainId} value={d.domainId}>{d.domainName}</option>
-                                                ))}
-                                            </select>
+                                                options={hierarchicalChoices.domains.map(d => ({ id: d.domainId, name: d.domainName }))}
+                                                loading={false}
+                                                onChange={(id) => setSelections({ ...selections, domainId: id, subjectId: '', topicId: '' })}
+                                                placeholder="Select Domain"
+                                                active={true}
+                                                hideCreate={true}
+                                            />
                                         </div>
 
                                         {(['topic', 'subtopic'].includes(initialData?.target)) && (
                                             <div className="space-y-3 animate-in fade-in slide-in-from-top-2">
-                                                <label className="text-[10px] font-black uppercase tracking-widest text-[#1A1A1A] opacity-40">Target Subject_</label>
-                                                <select
+                                                <SelectField
+                                                    label="Target Subject_"
                                                     value={selections.subjectId}
-                                                    onChange={(e) => setSelections({ ...selections, subjectId: e.target.value, topicId: '' })}
-                                                    className="w-full bg-[#FAFAFA] border-2 border-primary/5 rounded-2xl p-4 text-sm font-bold outline-none appearance-none cursor-pointer"
-                                                >
-                                                    <option value="">Select Subject</option>
-                                                    {hierarchicalChoices.subjects.map(s => (
-                                                        <option key={s.id} value={s.id}>{s.name}</option>
-                                                    ))}
-                                                </select>
+                                                    options={hierarchicalChoices.subjects}
+                                                    loading={false}
+                                                    onChange={(id) => setSelections({ ...selections, subjectId: id, topicId: '' })}
+                                                    placeholder="Select Subject"
+                                                    active={!!selections.domainId}
+                                                    hideCreate={true}
+                                                    disabled={!selections.domainId}
+                                                />
                                             </div>
                                         )}
 
                                         {(initialData?.target === 'subtopic') && (
                                             <div className="space-y-3 animate-in fade-in slide-in-from-top-2">
-                                                <label className="text-[10px] font-black uppercase tracking-widest text-[#1A1A1A] opacity-40">Target Topic_</label>
-                                                <select
+                                                <SelectField
+                                                    label="Target Topic_"
                                                     value={selections.topicId}
-                                                    onChange={(e) => setSelections({ ...selections, topicId: e.target.value })}
-                                                    className="w-full bg-[#FAFAFA] border-2 border-primary/5 rounded-2xl p-4 text-sm font-bold outline-none appearance-none cursor-pointer"
-                                                >
-                                                    <option value="">Select Topic</option>
-                                                    {hierarchicalChoices.topics.map(t => (
-                                                        <option key={t.id} value={t.id}>{t.name}</option>
-                                                    ))}
-                                                </select>
+                                                    options={hierarchicalChoices.topics}
+                                                    loading={false}
+                                                    onChange={(id) => setSelections({ ...selections, topicId: id })}
+                                                    placeholder="Select Topic"
+                                                    active={!!selections.subjectId}
+                                                    hideCreate={true}
+                                                    disabled={!selections.subjectId}
+                                                />
                                             </div>
                                         )}
                                     </div>
@@ -562,49 +575,27 @@ Please provide a valid JSON object matching this schema:
                                         )}
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-3">
-                                    {showEditor && (
-                                        <button
-                                            onClick={() => setShowEditor(false)}
-                                            className="px-6 py-2.5 bg-white border border-primary/10 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-50 transition-all flex items-center gap-2"
-                                        >
-                                            <Wand2 size={14} /> Back to Prompt
-                                        </button>
-                                    )}
-                                    <button
-                                        onClick={() => fileInputRef.current?.click()}
-                                        className="px-6 py-2.5 bg-white border border-primary/10 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-50 transition-all flex items-center gap-2 text-[#1A1A1A]"
-                                    >
-                                        <Upload size={14} /> Upload Manifest
-                                    </button>
-                                    <input type="file" ref={fileInputRef} onChange={handleFileUpload} accept=".json" className="hidden" />
-                                    <button
-                                        onClick={generateTemplate}
-                                        className="px-6 py-2.5 bg-primary/5 text-primary border border-primary/10 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-primary/10 transition-all flex items-center gap-2"
-                                    >
-                                        <LayoutGrid size={14} /> Import Template
-                                    </button>
-                                </div>
                             </div>
 
                             {!showEditor ? (
                                 <div className="flex-1 flex flex-col gap-6 animate-in zoom-in-95 duration-500 overflow-hidden">
                                     <div className="flex-1 rounded-[2.5rem] bg-slate-900 border-4 border-white/5 shadow-2xl relative overflow-hidden flex flex-col">
-                                        <div className="px-10 py-8 border-b border-white/5 flex items-center justify-between bg-white/[0.02]">
+                                        <div className="px-10 py-6 border-b border-white/5 flex items-center justify-between bg-white/[0.02]">
                                             <div className="flex items-center gap-4">
-                                                <div className="p-3 bg-[#FF4B91]/10 rounded-xl text-[#FF4B91]">
-                                                    <Brain size={24} />
+                                                <div className="p-2.5 bg-[#FF4B91]/10 rounded-xl text-[#FF4B91]">
+                                                    <Brain size={20} />
                                                 </div>
-                                                <h4 className="text-xl font-black uppercase tracking-widest text-white italic">Surgical AI Prompt_</h4>
+                                                <h4 className="text-lg font-black uppercase tracking-widest text-white italic">Surgical AI Prompt_</h4>
                                             </div>
                                             <button
                                                 onClick={() => {
                                                     copyToClipboard(generateAiPrompt());
                                                     setMode('bulk');
                                                 }}
-                                                className="px-8 py-3 bg-white/10 hover:bg-white text-white hover:text-slate-900 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all flex items-center gap-3 active:scale-95"
+                                                title="Copy complete contextual prompt to clipboard. Paste this into your AI assistant to generate the required JSON manifest."
+                                                className="p-3 bg-white/10 hover:bg-white text-white hover:text-slate-900 rounded-xl transition-all active:scale-95 shadow-lg shadow-black/20"
                                             >
-                                                <ClipboardCopy size={16} /> Copy Prompt
+                                                <ClipboardCopy size={20} />
                                             </button>
                                         </div>
                                         <div className="flex-1 p-10 overflow-y-auto custom-scrollbar">
@@ -621,9 +612,18 @@ Please provide a valid JSON object matching this schema:
 
                                     <button
                                         onClick={() => setShowEditor(true)}
-                                        className="w-full py-6 rounded-3xl border-2 border-dashed border-primary/10 hover:border-primary/30 hover:bg-primary/[0.02] text-[11px] font-black uppercase tracking-[0.3em] text-muted-foreground transition-all group"
+                                        title="Manually paste or edit the JSON manifest if you already have the generated data from an AI session."
+                                        className="w-full group flex flex-col items-center justify-center gap-4 p-12 bg-slate-50 border-2 border-dashed border-slate-200 rounded-[2.5rem] hover:bg-primary/[0.03] hover:border-primary/20 transition-all duration-500"
                                     >
-                                        Already have the JSON? <span className="text-primary group-hover:underline">Enter Manual Manifest Mode_</span>
+                                        <div className="w-16 h-16 rounded-full bg-white border border-slate-200 shadow-sm flex items-center justify-center text-slate-400 group-hover:text-primary group-hover:scale-110 transition-all duration-500">
+                                            <FileJson size={32} />
+                                        </div>
+                                        <div className="text-center">
+                                            <p className="text-[11px] font-black uppercase tracking-[0.3em] text-slate-400 group-hover:text-primary transition-all">
+                                                Already have the JSON? <span className="text-primary italic">Enter Manual Manifest Mode_</span>
+                                            </p>
+                                            <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-2">Unlock Editor for Payload Injection</p>
+                                        </div>
                                     </button>
                                 </div>
                             ) : (
@@ -633,7 +633,17 @@ Please provide a valid JSON object matching this schema:
                                         onChange={(e) => setPayload(e.target.value)}
                                         spellCheck={false}
                                         className="absolute inset-0 w-full h-full bg-[#0F1115] text-[#9CDCFE] border-4 border-primary/5 rounded-[2.5rem] p-12 font-mono text-xl focus:ring-[12px] focus:ring-primary/5 outline-none transition-all leading-relaxed shadow-[0_40px_100px_-20px_rgba(0,0,0,0.5)] resize-none selection:bg-primary/20"
-                                        placeholder='{ "domainName": "...", "subjects": [...] }'
+                                        placeholder='{
+  "domainName": "...",
+  "subjects": [
+    {
+      "name": "...",
+      "topics": [...]
+    }
+  ]
+}
+
+PASTE YOUR JSON MANIFEST HERE_'
                                     />
                                     <div className="absolute right-10 bottom-10 px-6 py-3 bg-white/5 border border-white/10 rounded-2xl text-[11px] font-mono text-white/60 backdrop-blur-xl flex items-center gap-3">
                                         <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
@@ -660,8 +670,6 @@ Please provide a valid JSON object matching this schema:
                             <ExecutionItem label="Hierarchy Sealing" status={executionStep === 'filter' ? 'active' : (executionStep === 'done' ? 'done' : 'pending')} />
                         </div>
                     </div>
-
-                    {/* AI Assistance removed from sidebar - moved to main workspace */}
 
                     {error && (
                         <div className="p-6 rounded-2xl bg-red-50 border border-red-200 text-red-600 animate-in shake-1 space-y-2">
@@ -709,6 +717,7 @@ Please provide a valid JSON object matching this schema:
                                         questionIds: success.questionIds || [],
                                         questionStats: success.questionStats
                                     })}
+                                    title="Open the static configuration panel to lock specific questions and calibrate the assessment blueprint for this domain."
                                     className="w-full py-4 bg-[#1A1A1A] text-white rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] hover:scale-[1.02] transition-all flex items-center justify-center gap-3 px-6 shadow-xl"
                                 >
                                     <ClipboardList size={16} />
@@ -716,6 +725,7 @@ Please provide a valid JSON object matching this schema:
                                 </button>
                                 <button
                                     onClick={onClose}
+                                    title="Close the factory engine and return to the domain overview. All hierarchical records have been safely committed."
                                     className="w-full py-4 bg-white border border-green-200 text-green-700 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] hover:bg-green-100 transition-all flex items-center justify-center gap-3 px-6"
                                 >
                                     Close Engine
@@ -723,6 +733,38 @@ Please provide a valid JSON object matching this schema:
                             </div>
                         </div>
                     )}
+
+                    {/* Utility Clustering at Bottom */}
+                    <div className="mt-auto pt-8 border-t border-primary/5 space-y-3">
+                        {mode === 'bulk' && (
+                            <div className="grid grid-cols-1 gap-3">
+                                {showEditor && (
+                                    <button
+                                        onClick={() => setShowEditor(false)}
+                                        title="Return to the Surgical AI Prompt to copy requirements or verify context. This ensures the manual JSON adheres to the architectural rules of the project."
+                                        className="w-full px-6 py-3.5 bg-white border border-primary/10 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-50 transition-all flex items-center justify-center gap-3 text-slate-600 shadow-sm"
+                                    >
+                                        <Wand2 size={16} /> Back to Prompt
+                                    </button>
+                                )}
+                                <button
+                                    onClick={() => fileInputRef.current?.click()}
+                                    title="Load a .json manifest file from your local storage. This is the fastest way to re-run previously validated batches or bulk-import legacy content."
+                                    className="w-full px-6 py-3.5 bg-white border border-primary/10 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-50 transition-all flex items-center justify-center gap-3 text-slate-600 shadow-sm"
+                                >
+                                    <Upload size={16} /> Upload Manifest
+                                </button>
+                                <input type="file" ref={fileInputRef} onChange={handleFileUpload} accept=".json" className="hidden" />
+                                <button
+                                    onClick={generateTemplate}
+                                    title="Populate the editor with a pre-defined schema matching your current target. Use this as a secure template for manual hierarchy definition."
+                                    className="w-full px-6 py-3.5 bg-primary/5 text-primary border border-primary/10 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-primary/10 transition-all flex items-center justify-center gap-3 shadow-sm shadow-primary/5"
+                                >
+                                    <LayoutGrid size={16} /> Import Template
+                                </button>
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
 
@@ -742,6 +784,7 @@ Please provide a valid JSON object matching this schema:
                     <div className="flex items-center gap-4">
                         <button
                             onClick={onClose}
+                            title="Cancel current operation and close the Terminal. Warning: Uncommitted manual entries or unsaved manifests will be lost."
                             className="px-8 py-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:bg-slate-50 rounded-2xl transition-all"
                         >
                             Abort Process
@@ -749,7 +792,8 @@ Please provide a valid JSON object matching this schema:
                         <button
                             disabled={isProcessing || (mode === 'manual' && !manualEntry.name) || (mode === 'bulk' && !payload)}
                             onClick={handleCreate}
-                            className="px-12 py-4 bg-[#1A1A1A] text-white rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] shadow-2xl shadow-black/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center gap-3 disabled:grayscale disabled:opacity-50"
+                            title={mode === 'manual' ? `Commit the current entry for "${manualEntry.name}" to the live database.` : "Execute the atomic hierarchy insertion. This will validate the JSON, lookup existing records, and perform a transactional commit."}
+                            className="px-12 py-4 bg-[#FF4B91] text-white rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] shadow-2xl shadow-[#FF4B91]/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center gap-3 disabled:grayscale disabled:opacity-50"
                         >
                             {isProcessing ? <ZLoader size="xs" className="text-white" center={false} /> : <ShieldCheck size={16} />}
                             {mode === 'manual' ? `Commit ${initialData?.target || 'Domain'}` : "Fire Bulk Factory"}
