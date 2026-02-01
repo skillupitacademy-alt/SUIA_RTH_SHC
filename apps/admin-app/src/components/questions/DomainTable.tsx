@@ -127,77 +127,99 @@ export function DomainTable() {
                 <ErrorBanner message={errorMessage} onClose={() => setErrorMessage(null)} />
             )}
 
-            {/* Form Modal */}
+            {/* Form Modal - Full Screen */}
             {isFormOpen && (
-                <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300">
-                    <div className="bg-white border border-primary/10 rounded-[2.5rem] p-8 max-w-lg w-full shadow-2xl relative overflow-hidden">
-                        <div className="absolute top-0 left-0 w-full h-2 bg-[#FF4B91]" />
-                        <div className="flex justify-between items-start mb-8">
-                            <div>
-                                <h3 className="text-2xl font-black text-[#1A1A1A] italic uppercase tracking-tighter">
-                                    Update Domain
-                                </h3>
-                                <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1">Management Console</p>
+                <div className="fixed inset-0 z-[100] bg-white animate-in slide-in-from-right duration-300">
+                    <div className="h-full flex flex-col">
+                        {/* Header */}
+                        <div className="px-8 py-6 border-b border-slate-200 flex items-center justify-between bg-white">
+                            <div className="flex items-center gap-4">
+                                <div className="h-12 w-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+                                    <Globe size={24} />
+                                </div>
+                                <div>
+                                    <h3 className="text-2xl font-black text-[#1A1A1A] uppercase tracking-tight">Edit Domain</h3>
+                                    <p className="text-xs font-medium text-slate-500 uppercase tracking-widest mt-0.5">Modify Domain Details</p>
+                                </div>
                             </div>
-                            <button onClick={handleCloseForm} className="p-2 hover:bg-slate-100 rounded-full transition-colors">
-                                <X size={20} className="text-slate-400" />
+                            <button
+                                onClick={handleCloseForm}
+                                className="p-2 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors"
+                            >
+                                <X size={24} />
                             </button>
                         </div>
 
-                        <form onSubmit={handleSubmit} className="space-y-6">
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-2 col-span-2">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Domain Name</label>
-                                    <input
-                                        required
-                                        type="text"
-                                        placeholder="Enter domain name..."
-                                        value={formData.name}
-                                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                        className="w-full bg-slate-50 border-none rounded-2xl px-5 py-3 text-sm font-bold text-[#1A1A1A] focus:ring-2 focus:ring-[#FF4B91]/20 outline-none"
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Category</label>
-                                    <input
-                                        type="text"
-                                        placeholder="Category..."
-                                        value={formData.category}
-                                        onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                                        className="w-full bg-slate-50 border-none rounded-2xl px-5 py-3 text-sm font-bold text-[#1A1A1A] focus:ring-2 focus:ring-[#FF4B91]/20 outline-none"
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Status</label>
-                                    <select
-                                        value={formData.status}
-                                        onChange={(e) => setFormData({ ...formData, status: e.target.value as any })}
-                                        className="w-full bg-slate-50 border-none rounded-2xl px-5 py-3 text-sm font-bold text-[#1A1A1A] focus:ring-2 focus:ring-[#FF4B91]/20 outline-none appearance-none cursor-pointer"
-                                    >
-                                        <option value="active">Active</option>
-                                        <option value="inactive">Inactive</option>
-                                    </select>
-                                </div>
-                                <div className="space-y-2 col-span-2">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Description</label>
-                                    <textarea
-                                        rows={3}
-                                        placeholder="Provide domain context..."
-                                        value={formData.description}
-                                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                                        className="w-full bg-slate-50 border-none rounded-2xl px-5 py-3 text-sm font-bold text-[#1A1A1A] focus:ring-2 focus:ring-[#FF4B91]/20 outline-none resize-none"
-                                    />
-                                </div>
-                            </div>
+                        {/* Form Content */}
+                        <div className="flex-1 overflow-y-auto bg-slate-50/30">
+                            <div className="max-w-3xl mx-auto p-8">
+                                <form onSubmit={handleSubmit} className="space-y-6">
+                                    {/* Domain Name */}
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 pl-1">Domain Name</label>
+                                        <input
+                                            required
+                                            type="text"
+                                            placeholder="Enter domain name..."
+                                            value={formData.name}
+                                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                            className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-slate-300"
+                                        />
+                                    </div>
 
-                            <button
-                                type="submit"
-                                disabled={isSubmitting}
-                                className="w-full py-4 rounded-2xl bg-[#1A1A1A] text-white text-xs font-black uppercase tracking-[0.2em] shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50"
-                            >
-                                {isSubmitting ? 'Syncing...' : 'Update'}
-                            </button>
-                        </form>
+                                    {/* Description */}
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 pl-1">Description</label>
+                                        <textarea
+                                            rows={4}
+                                            placeholder="Brief summary of this domain..."
+                                            value={formData.description}
+                                            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                            className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-slate-300 resize-none"
+                                        />
+                                    </div>
+
+                                    {/* Status */}
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 pl-1">Status</label>
+                                        <div className="flex bg-white p-1.5 rounded-xl border border-slate-200">
+                                            {['active', 'inactive'].map((status) => (
+                                                <button
+                                                    key={status}
+                                                    type="button"
+                                                    onClick={() => setFormData({ ...formData, status: status as any })}
+                                                    className={`flex-1 py-2.5 px-4 rounded-lg text-xs font-black uppercase tracking-wider transition-all ${formData.status === status
+                                                            ? 'bg-[#1A1A1A] text-white shadow-sm'
+                                                            : 'text-slate-400 hover:text-slate-600'
+                                                        }`}
+                                                >
+                                                    {status}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {/* Footer Actions */}
+                                    <div className="pt-8 flex items-center justify-end gap-4">
+                                        <button
+                                            type="button"
+                                            onClick={handleCloseForm}
+                                            className="px-8 py-3 rounded-xl text-slate-600 font-bold uppercase tracking-widest text-xs hover:bg-slate-100 transition-all"
+                                        >
+                                            Cancel
+                                        </button>
+                                        <button
+                                            type="submit"
+                                            disabled={isSubmitting}
+                                            className="px-10 py-3 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-black uppercase tracking-widest text-xs shadow-lg shadow-orange-500/20 transition-all flex items-center gap-2 disabled:opacity-50"
+                                        >
+                                            {isSubmitting ? <ZLoader size="xs" className="text-white" center={false} /> : <Check size={16} />}
+                                            {isSubmitting ? 'Saving...' : 'Save Changes'}
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
                     </div>
                 </div>
             )}
