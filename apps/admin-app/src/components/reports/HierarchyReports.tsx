@@ -11,9 +11,12 @@ import {
     Activity,
     ShieldCheck,
     AlertTriangle,
-    RefreshCw
+    RefreshCw,
+    Loader2,
+    Database,
+    Zap,
+    BarChart3
 } from 'lucide-react';
-import { ReportCard } from './ReportCard';
 import { cn } from '@/lib/utils';
 import { ZLoader } from '@/components/ui/ZLoader';
 
@@ -37,6 +40,8 @@ export const HierarchyReports: React.FC = () => {
     const [reportData, setReportData] = useState<any[]>([]);
     const [viewStack, setViewStack] = useState<any[]>([{ level: 'domain', data: [], title: 'Global Domains' }]);
     const [searchQuery, setSearchQuery] = useState('');
+    const [isActionLoading, setIsActionLoading] = useState(false);
+    const [isPageLoading, setIsPageLoading] = useState(false);
 
     const currentView = viewStack[viewStack.length - 1];
 
@@ -45,9 +50,10 @@ export const HierarchyReports: React.FC = () => {
     }, []);
 
     const fetchReport = async () => {
-        setLoading(true);
+        setIsPageLoading(true);
         try {
             const data = await apiClient.admin.getContentHealthReport();
+            await new Promise(r => setTimeout(r, 800)); // Diagnostic delay for ZLoader
             // Transform for consistent display
             const normalizedData = data.map((d: any) => ({
                 id: d.domainId,
@@ -78,7 +84,11 @@ export const HierarchyReports: React.FC = () => {
         }
     };
 
-    const handleDrillDown = (item: any, nextLevel: string) => {
+    const handleDrillDown = async (item: any, nextLevel: string) => {
+        setIsActionLoading(true);
+        await new Promise(r => setTimeout(r, 1000)); // Diagnostic delay for Activity
+        setIsActionLoading(false);
+
         let nextData: any[] = [];
         let title = '';
 
@@ -108,13 +118,13 @@ export const HierarchyReports: React.FC = () => {
         item.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    if (loading) {
+    if (loading && reportData.length === 0) {
         return (
             <div className="min-h-[60vh] flex flex-col items-center justify-center gap-6">
-                <ZLoader size="xl" />
+                <Loader2 className="w-16 h-16 animate-spin text-[#FF4B91]" />
                 <div className="text-center">
-                    <h3 className="text-xl font-black uppercase italic tracking-tighter text-[#1A1A1A]">Synchronizing Repository_</h3>
-                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground mt-1 animate-pulse">Scanning Assessment Metrics</p>
+                    <h3 className="text-xl font-black uppercase italic tracking-tighter text-[#1A1A1A]">Initializing Diagnostic Matrix_</h3>
+                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground mt-1 animate-pulse">Scanning Assessment Metrics (Loader: Loader2)</p>
                 </div>
             </div>
         );
@@ -200,30 +210,97 @@ export const HierarchyReports: React.FC = () => {
                 </div>
             )}
 
-            {/* Grid Container */}
+            {/* Tabular Layout Container */}
             {filteredData.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 animate-in slide-in-from-bottom-8 duration-700">
-                    {filteredData.map((item: any) => (
-                        <ReportCard
-                            key={item.id}
-                            title={item.name}
-                            count={item.stats.total}
-                            distribution={item.stats}
-                            isReady={item.stats.isReady}
-                            level={currentView.level as any}
-                            onClick={() => {
-                                if (currentView.level === 'domain') handleDrillDown(item, 'subject');
-                                else if (currentView.level === 'subject') handleDrillDown(item, 'topic');
-                                else if (currentView.level === 'topic') handleDrillDown(item, 'subtopic');
-                            }}
-                            subtitle={
-                                currentView.level === 'domain' ? `${item.subjects?.length || 0} Subjects` :
-                                    currentView.level === 'subject' ? `${item.topics?.length || 0} Topics` :
-                                        currentView.level === 'topic' ? `${item.subtopics?.length || 0} Subtopics` :
-                                            'End of Hierarchy'
-                            }
-                        />
-                    ))}
+                <div className="rounded-[2.5rem] border border-primary/10 bg-white/50 backdrop-blur-xl overflow-hidden shadow-2xl animate-in slide-in-from-bottom-8 duration-700">
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left">
+                            <thead className="bg-[#1A1A1A]/5">
+                                <tr>
+                                    <th className="p-8 text-[11px] font-black uppercase tracking-widest text-slate-500">Identity Container</th>
+                                    <th className="p-8 text-[11px] font-black uppercase tracking-widest text-slate-500">Volumetric Data</th>
+                                    <th className="p-8 text-[11px] font-black uppercase tracking-widest text-slate-500">Nature Breakdown</th>
+                                    <th className="p-8 text-[11px] font-black uppercase tracking-widest text-slate-500">Readiness Registry</th>
+                                    <th className="p-8 text-[11px] font-black uppercase tracking-widest text-slate-500 text-right">Navigation</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-primary/5">
+                                {filteredData.map((item: any) => (
+                                    <tr key={item.id} className="group hover:bg-[#FF4B91]/5 transition-all duration-300">
+                                        <td className="p-8">
+                                            <div className="flex items-center gap-6">
+                                                <div className={cn(
+                                                    "h-14 w-14 rounded-2xl flex items-center justify-center shadow-lg transition-transform group-hover:scale-110",
+                                                    item.stats.isReady ? "bg-green-50 text-green-600" : "bg-red-50 text-red-600"
+                                                )}>
+                                                    <Database size={24} />
+                                                </div>
+                                                <div>
+                                                    <p className="text-lg font-black text-[#1A1A1A] tracking-tighter italic uppercase group-hover:text-[#FF4B91] transition-colors">
+                                                        {item.name}
+                                                    </p>
+                                                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-1">
+                                                        {currentView.level === 'domain' ? 'Domain Entity' :
+                                                            currentView.level === 'subject' ? 'Subject Module' :
+                                                                'Topic Component'}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td className="p-8">
+                                            <div className="flex flex-col gap-1">
+                                                <div className="flex items-center gap-2">
+                                                    <Zap size={14} className="text-[#FF4B91]" />
+                                                    <span className="text-xl font-black italic tracking-tighter text-[#1A1A1A]">
+                                                        {item.stats.total}
+                                                    </span>
+                                                </div>
+                                                <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Questions Loaded</span>
+                                            </div>
+                                        </td>
+                                        <td className="p-8">
+                                            <div className="flex gap-4">
+                                                <MetricSmall label="S" value={item.stats.simple} color="text-green-500" />
+                                                <MetricSmall label="I" value={item.stats.intermediate} color="text-blue-500" />
+                                                <MetricSmall label="E" value={item.stats.expert} color="text-red-500" />
+                                            </div>
+                                        </td>
+                                        <td className="p-8">
+                                            {item.stats.isReady ? (
+                                                <div className="flex items-center gap-2 px-4 py-2 bg-green-50 text-green-600 rounded-xl border border-green-100 w-fit shrink-0">
+                                                    <ShieldCheck size={14} />
+                                                    <span className="text-[10px] font-black uppercase tracking-widest">Certified</span>
+                                                </div>
+                                            ) : (
+                                                <div className="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-600 rounded-xl border border-red-100 w-fit shrink-0">
+                                                    <AlertTriangle size={14} />
+                                                    <span className="text-[10px] font-black uppercase tracking-widest">Incomplete</span>
+                                                </div>
+                                            )}
+                                        </td>
+                                        <td className="p-8 text-right">
+                                            <button
+                                                onClick={() => handleDrillDown(item,
+                                                    currentView.level === 'domain' ? 'subject' :
+                                                        currentView.level === 'subject' ? 'topic' : 'subtopic'
+                                                )}
+                                                className="px-6 py-3 bg-white border-2 border-primary/5 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl hover:bg-[#1A1A1A] hover:text-white hover:scale-105 transition-all active:scale-95"
+                                            >
+                                                Enter Container
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                                {filteredData.length > 0 && currentView.level === 'subtopic' && (
+                                    <tr className="bg-slate-50/50">
+                                        <td colSpan={5} className="p-4 text-center text-[9px] font-black uppercase tracking-[0.4em] text-slate-300 italic">
+                                            End of Hierarchical Matrix
+                                        </td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             ) : (
                 <div className="py-32 flex flex-col items-center justify-center text-center bg-white rounded-[3rem] border-2 border-dashed border-primary/10 animate-in zoom-in-95 duration-500">
@@ -234,6 +311,28 @@ export const HierarchyReports: React.FC = () => {
                     <p className="text-muted-foreground font-medium mt-2 max-w-sm">
                         No containers found matching your filter criteria in this hierarchical branch.
                     </p>
+                </div>
+            )}
+
+            {/* Diagnostic Overlays */}
+            {isActionLoading && (
+                <div className="fixed inset-0 z-[300] bg-white/40 backdrop-blur-[4px] flex items-center justify-center animate-in fade-in duration-300">
+                    <div className="bg-white p-12 rounded-[3.5rem] shadow-[0_32px_128px_rgba(0,0,0,0.1)] border-2 border-primary/5 flex flex-col items-center gap-6 scale-110">
+                        <Activity className="w-20 h-20 text-[#FF4B91] animate-pulse" />
+                        <div className="text-center">
+                            <h4 className="text-2xl font-black uppercase italic tracking-tighter">Accessing Branch_</h4>
+                            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[#FF4B91]/60 mt-2">Loader: Activity (Diagnostic)</p>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {isPageLoading && (
+                <div className="fixed inset-0 z-[300] bg-black/10 backdrop-blur-[2px] flex items-center justify-center animate-in fade-in duration-300">
+                    <div className="bg-white p-12 rounded-[3.5rem] shadow-[0_32px_128px_rgba(0,0,0,0.15)] border-2 border-[#FF4B91]/10 flex flex-col items-center gap-6">
+                        <ZLoader size="lg" text="Standardizing Metrics..." />
+                        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground mt-4 italic">Loader: ZLoader (Premium)</p>
+                    </div>
                 </div>
             )}
 
@@ -267,6 +366,13 @@ export const HierarchyReports: React.FC = () => {
         </div>
     );
 };
+
+const MetricSmall = ({ label, value, color }: any) => (
+    <div className="flex flex-col items-center min-w-[32px]">
+        <span className={cn("text-xs font-black", color)}>{value}</span>
+        <span className="text-[8px] font-black uppercase text-slate-300">{label}</span>
+    </div>
+);
 
 const SummaryPanel = ({ icon: Icon, label, value, subvalue, color, bg }: any) => (
     <div className="p-8 rounded-[2.5rem] bg-white border-2 border-primary/5 shadow-xl shadow-muted/5 flex items-center gap-6 group hover:scale-[1.02] transition-all duration-500">

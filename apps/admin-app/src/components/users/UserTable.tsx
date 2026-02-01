@@ -158,11 +158,11 @@ export function UserTable() {
         setErrorMessage(null);
     };
 
-    if (isLoading && users.length === 0) {
+    if (isLoading) {
         return (
             <div className="flex flex-col items-center justify-center py-40 gap-4">
                 <Loader2 className="w-12 h-12 animate-spin text-[#FF4B91]" />
-                <p className="text-xs font-black uppercase tracking-[0.3em] animate-pulse">Synchronizing Identity Records...</p>
+                <p className="text-xs font-black uppercase tracking-[0.3em] animate-pulse">Synchronizing Identity Records... (Loader: Loader2)</p>
             </div>
         );
     }
