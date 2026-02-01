@@ -100,7 +100,14 @@ export default function AdminLoginPage() {
                     disabled={isLoading}
                     className="w-full py-4 rounded-xl bg-primary text-primary-foreground font-black tracking-wide shadow-lg shadow-primary/25 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-2"
                 >
-                    {isLoading ? <ZLoader size="xs" className="text-white" center={false} /> : "AUTHENTICATE"}
+                    {isLoading ? (
+                        <>
+                            <ZLoader size="xs" className="text-white" center={false} />
+                            AUTHENTICATING...
+                        </>
+                    ) : (
+                        "AUTHENTICATE"
+                    )}
                 </button>
             </form>
 
