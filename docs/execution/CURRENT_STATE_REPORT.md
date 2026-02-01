@@ -153,3 +153,11 @@
     - **Clean Terminal UI**: Replaced dark mode AI prompt in `HierarchyFactoryWizard` with a white, dashed-border aesthetic for better visual integration.
     - **Navigation Enhancement**: Increased prominence and spacing of sidebar action buttons (Back to Prompt, Upload, Import) for improved usability.
     - **Dropdown Parity**: Synchronized all `SelectionFields` (including MultiSelect) to use the **Spinning Activity** loader, eliminating inconsistent static loading text.
+
+### Phase 27: Topic Edit Refactor & Aesthetic Cleanup (Batch 69)
+- **Edit Workflow Stability**: De-coupled existing topic modification from the `HierarchyFactoryWizard`. Successfully implemented a dedicated, high-fidelity **Topic Edit Modal** in `TopicTable.tsx`.
+- **Logic Hardening**: Implemented robust ID extraction (including nested object fallback) to ensure parent `domainId` and `subjectId` dropdowns are correctly pre-populated during edits.
+- **Aesthetic Cleanup**: Systematically removed trailing underscores (`_`) from all UI labels and headers in the `HierarchyFactoryWizard` to ensure professional, jargon-free display.
+- **Full-Spectrum Build**: Verified full monorepo integrity across all projects (`web-app`, `admin-app`, `api-server`) with a successful **Exit Code 0** build cycle.
+- **Outcome**: Achieved a stable and isolated single-record edit journey for Topics, while completing the stylistic polish of the bulk factory engine.
+

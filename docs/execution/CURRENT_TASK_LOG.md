@@ -1,8 +1,8 @@
-# 🎯 Current Session Objectives (Batch 63-65: UI Recovery & UX Loaders)
+# 🎯 Current Session Objectives (Phase 27: Topic Edit Refactor)
 
 **Generated**: 2026-02-02
 
-- [x] **JSON Editor Restoration (Batch 63)**: Re-enabled "JSON Manifest Editor_" header, Copy button, and Tooltip in `HierarchyFactoryWizard`.
-- [x] **Dropdown Loaders (Batch 64)**: Implemented `loadingChoices` state to drive spinning `ZLoader` indicators in Domain/Subject/Topic dropdowns.
-- [x] **Login Feedback (Batch 65)**: Enhanced `AdminLoginPage` button to show "AUTHENTICATING..." + Spinner during network request.
-- [x] **Build Verification**: Verified monorepo integrity (Exit Code 0) after all UI changes.
+- [x] **Label Cleanup**: Removed stylistic underscores from all UI headers and labels in `HierarchyFactoryWizard`.
+- [x] **Topic Edit Modal**: Restored a dedicated, high-fidelity edit form in `TopicTable.tsx`.
+- [x] **Logic Hardening**: Implemented robust ID extraction for cascading dropdowns during edits.
+- [x] **Build Verification**: Verified monorepo integrity (Exit Code 0) after all code refactoring.

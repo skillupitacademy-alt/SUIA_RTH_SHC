@@ -116,6 +116,16 @@ The Admin Dashboard is the control center of the platform. It answers one core q
 - **Integrity**: Animated Pulse Tracker for real-time transactional monitoring.
 - **Deployment**: Rendered via React Portal for unconstrained full-screen isolation.
 
+---
+
+## 5. Edit Workflow Architecture (Batch 69)
+### Principles
+- **Separation of Concerns**: Single-record modifications are isolated from bulk-factory engines to prevent UI complexity and state collisions.
+- **Standard Edit Modals**: Existing records (e.g., Topics) use dedicated, lightweight modals for attributes like Name, Description, and Status.
+- **Context Preservation**: Parent hierarchy (Domain/Subject) is extracted and displayed as read-only context during edits to ensure data integrity.
+- **Cascading State**: Dropdowns in Edit forms utilize robust fallback logic (nested object ID detection) to ensure pre-selection stability across all API data structures.
+
+
 #### Restriction Matrix
 - **Restricted**: Passwords, User Secrets, Individual Answer Data (Privacy).
 
