@@ -173,144 +173,141 @@ export function TopicTable() {
                 }
             />
 
-            {/* Standard Edit Form (Update Mode Only) - Restored to Executive White Full-Screen */}
+            {/* Standard Edit Form (Update Mode Only) */}
             {isFormOpen && currentTopic && (
-                <div className="fixed inset-0 z-[1000] bg-white animate-in slide-in-from-bottom-4 duration-500 overflow-hidden flex flex-col">
-                    {/* Header Strip */}
-                    <div className="px-12 py-6 border-b border-primary/5 flex items-center justify-between bg-white sticky top-0 z-20">
-                        <div className="flex items-center gap-4">
-                            <div className="h-12 w-12 rounded-2xl bg-orange-50 text-orange-500 flex items-center justify-center border border-orange-100 shadow-sm">
-                                <Edit2 size={24} />
+                <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300">
+                    <div className="bg-white border border-primary/10 rounded-[2.5rem] p-8 max-w-2xl w-full shadow-2xl relative overflow-hidden flex flex-col max-h-[90vh]">
+                        {/* Header */}
+                        <div className="flex items-center justify-between mb-8">
+                            <div className="flex items-center gap-4">
+                                <div className="h-12 w-12 rounded-2xl bg-orange-50 text-orange-500 flex items-center justify-center border border-orange-100">
+                                    <Edit2 size={24} />
+                                </div>
+                                <div>
+                                    <h3 className="text-2xl font-black text-[#1A1A1A] uppercase tracking-tighter">Edit Topic</h3>
+                                    <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1">Modify Topic Details</p>
+                                </div>
                             </div>
-                            <div>
-                                <h3 className="text-2xl font-black text-[#1A1A1A] uppercase tracking-tighter italic">Edit Topic</h3>
-                                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mt-0.5">Registry Modification • Executive Control</p>
-                            </div>
+                            <button onClick={handleCloseForm} className="p-2 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-red-500 transition-colors">
+                                <X size={20} />
+                            </button>
                         </div>
-                        <button
-                            onClick={handleCloseForm}
-                            className="p-3 rounded-2xl bg-slate-50 hover:bg-slate-100 text-slate-400 hover:text-red-500 transition-all border border-slate-100"
-                        >
-                            <X size={20} />
-                        </button>
-                    </div>
 
-                    {/* Content Area */}
-                    <div className="flex-1 overflow-y-auto bg-slate-50/30 p-12 custom-scrollbar">
-                        <div className="max-w-3xl mx-auto space-y-8 bg-white border border-primary/10 rounded-[2.5rem] p-10 shadow-2xl shadow-primary/5 relative overflow-hidden">
-                            {/* Form Header Context */}
-                            <div className="grid grid-cols-2 gap-6 p-6 bg-slate-50/50 rounded-2xl border border-dashed border-slate-200">
-                                <div className="space-y-1.5">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Parent Domain</label>
-                                    <div className="font-bold text-slate-700 text-sm flex items-center gap-2">
-                                        <Layers size={14} className="text-slate-400" />
+                        {/* Scrollable Form */}
+                        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto space-y-6 pr-2">
+                            {/* Hierarchy (Read-Only Context) */}
+                            <div className="grid grid-cols-2 gap-4 p-4 bg-slate-50/50 rounded-2xl border border-dashed border-slate-200">
+                                <div className="space-y-1">
+                                    <label className="text-[9px] font-black uppercase tracking-widest text-slate-400">Parent Domain</label>
+                                    <div className="font-bold text-slate-700 text-xs flex items-center gap-2">
+                                        <Layers size={12} className="text-slate-400" />
                                         {currentTopic.subject?.domain?.name || 'N/A'}
                                     </div>
                                 </div>
-                                <div className="space-y-1.5">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Parent Subject</label>
-                                    <div className="font-bold text-slate-700 text-sm flex items-center gap-2">
-                                        <BookOpen size={14} className="text-slate-400" />
+                                <div className="space-y-1">
+                                    <label className="text-[9px] font-black uppercase tracking-widest text-slate-400">Parent Subject</label>
+                                    <div className="font-bold text-slate-700 text-xs flex items-center gap-2">
+                                        <BookOpen size={12} className="text-slate-400" />
                                         {currentTopic.subject?.name || 'N/A'}
                                     </div>
                                 </div>
                             </div>
 
-                            {/* Inputs Section */}
-                            <form onSubmit={handleSubmit} className="space-y-8">
-                                <div className="space-y-6">
-                                    <div className="space-y-3">
-                                        <label className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">Topic Nomenclature</label>
-                                        <input
-                                            type="text"
-                                            required
-                                            value={formData.name}
-                                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                            className="w-full px-6 py-4 bg-slate-50 border border-slate-300 rounded-xl text-lg font-black text-[#1A1A1A] focus:outline-none focus:ring-4 focus:ring-orange-500/5 focus:bg-white focus:border-orange-500/20 transition-all placeholder:text-slate-300"
-                                            placeholder="Enter topic name..."
-                                        />
-                                    </div>
+                            {/* Main Inputs */}
+                            <div className="space-y-4">
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 pl-1">Topic Name</label>
+                                    <input
+                                        type="text"
+                                        required
+                                        value={formData.name}
+                                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all placeholder:text-slate-300"
+                                        placeholder="e.g., React Hooks"
+                                    />
+                                </div>
 
-                                    <div className="space-y-3">
-                                        <label className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">Architectural Description</label>
-                                        <textarea
-                                            value={formData.description}
-                                            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                                            rows={5}
-                                            className="w-full px-6 py-4 bg-slate-50 border border-slate-300 rounded-xl text-[13px] font-medium text-slate-600 focus:outline-none focus:ring-4 focus:ring-orange-500/5 focus:bg-white focus:border-orange-500/20 transition-all placeholder:text-slate-300 resize-none leading-relaxed"
-                                            placeholder="Provide technical context for this topic..."
-                                        />
-                                    </div>
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 pl-1">Description</label>
+                                    <textarea
+                                        value={formData.description}
+                                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                        rows={4}
+                                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-600 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all placeholder:text-slate-300 resize-none"
+                                        placeholder="Brief summary of this topic..."
+                                    />
+                                </div>
 
-                                    <div className="space-y-3">
-                                        <label className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">Publication State</label>
-                                        <div className="flex bg-slate-50 p-2 rounded-xl border border-slate-300">
-                                            {['active', 'inactive'].map((status) => (
-                                                <button
-                                                    key={status}
-                                                    type="button"
-                                                    onClick={() => setFormData({ ...formData, status: status as any })}
-                                                    className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${formData.status === status
-                                                        ? 'bg-white text-[#1A1A1A] shadow-sm border border-slate-100 transform scale-[1.02]'
-                                                        : 'text-slate-400 hover:text-slate-600'
-                                                        }`}
-                                                >
-                                                    {status}
-                                                </button>
-                                            ))}
-                                        </div>
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 pl-1">Status</label>
+                                    <div className="flex bg-slate-50 p-1 rounded-xl border border-slate-200">
+                                        {['active', 'inactive'].map((status) => (
+                                            <button
+                                                key={status}
+                                                type="button"
+                                                onClick={() => setFormData({ ...formData, status: status as any })}
+                                                className={`flex-1 py-2 rounded-lg text-xs font-black uppercase tracking-wider transition-all ${formData.status === status
+                                                    ? 'bg-white text-[#1A1A1A] shadow-sm border border-slate-100 transform scale-[1.02]'
+                                                    : 'text-slate-400 hover:text-slate-600'
+                                                    }`}
+                                            >
+                                                {status}
+                                            </button>
+                                        ))}
                                     </div>
                                 </div>
 
-                                {/* Hierarchy Re-assignment (Cautious) */}
-                                <div className="pt-8 border-t border-slate-100">
-                                    <div className="flex items-center gap-3 mb-6">
-                                        <div className="p-2 bg-red-50 text-red-500 rounded-lg">
-                                            <AlertTriangle size={16} />
-                                        </div>
-                                        <p className="text-[10px] font-black uppercase tracking-widest text-red-600">Registry Re-assignment (Caution)</p>
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-6">
+                                {/* Hierarchy Mover (Optional - Advanced) */}
+                                <div className="pt-4 border-t border-slate-100">
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-[#FF4B91] mb-4 flex items-center gap-2">
+                                        <AlertTriangle size={12} />
+                                        Move Hierarchy (Caution)
+                                    </p>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <SelectField
                                             label="Domain"
                                             value={formData.domainId}
-                                            options={domains.map(d => ({ value: d.id, label: d.name }))}
+                                            options={domains.map(d => ({ id: d.id, name: d.name }))}
                                             loading={domainsHook.loading}
                                             onChange={handleDomainChange}
-                                            placeholder="Select Domain"
+                                            placeholder="Change Domain"
+                                            active={false}
+                                            hideCreate={true}
                                         />
                                         <SelectField
                                             label="Subject"
                                             value={formData.subjectId}
-                                            options={subjects.map(s => ({ value: s.id, label: s.name }))}
+                                            options={subjects.map(s => ({ id: s.id, name: s.name }))}
                                             loading={subjectsHook.loading}
                                             disabled={!formData.domainId}
                                             onChange={(id) => setFormData({ ...formData, subjectId: id })}
-                                            placeholder="Select Subject"
+                                            placeholder="Change Subject"
+                                            active={false}
+                                            hideCreate={true}
                                         />
                                     </div>
                                 </div>
+                            </div>
 
-                                {/* Footer Actions */}
-                                <div className="pt-8 border-t border-slate-100 flex items-center justify-end gap-4 sticky bottom-0 bg-white z-10">
-                                    <button
-                                        type="button"
-                                        onClick={handleCloseForm}
-                                        className="px-8 py-4 rounded-2xl text-slate-400 hover:text-slate-600 text-[10px] font-black uppercase tracking-widest transition-all"
-                                    >
-                                        Discard Changes
-                                    </button>
-                                    <button
-                                        type="submit"
-                                        disabled={isSubmitting}
-                                        className="px-12 py-4 rounded-2xl bg-[#1A1A1A] hover:bg-black text-white text-[10px] font-black uppercase tracking-widest shadow-xl shadow-black/10 transition-all flex items-center gap-3 disabled:opacity-50"
-                                    >
-                                        {isSubmitting ? <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" /> : <Check size={18} />}
-                                        {isSubmitting ? 'Committing...' : 'Commit Changes'}
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
+                            {/* Footer */}
+                            <div className="pt-6 border-t border-slate-100 flex items-center justify-end gap-3 sticky bottom-0 bg-white">
+                                <button
+                                    type="button"
+                                    onClick={handleCloseForm}
+                                    className="px-6 py-3 rounded-2xl border-2 border-slate-100 font-black uppercase tracking-widest text-xs hover:bg-slate-50 transition-all"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={isSubmitting}
+                                    className="px-8 py-3 rounded-2xl bg-orange-500 hover:bg-orange-600 text-white font-black uppercase tracking-widest text-xs shadow-lg shadow-orange-500/20 transition-all flex items-center gap-2 disabled:opacity-50"
+                                >
+                                    {isSubmitting ? <ZLoader size="xs" className="text-white" center={false} /> : <Check size={16} />}
+                                    {isSubmitting ? 'Saving...' : 'Save Changes'}
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             )}

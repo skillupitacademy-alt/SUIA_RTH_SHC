@@ -145,31 +145,28 @@ export function SubjectTable() {
                 <ErrorBanner message={errorMessage} onClose={() => setErrorMessage(null)} />
             )}
 
-            {/* Standard Edit Form (Update Mode Only) - Restored to Executive White Full-Screen */}
+            {/* Standard Edit Form (Update Mode Only) */}
             {isFormOpen && currentSubject && (
-                <div className="fixed inset-0 z-[1000] bg-white animate-in slide-in-from-bottom-4 duration-500 overflow-hidden flex flex-col">
-                    {/* Header Strip */}
-                    <div className="px-12 py-6 border-b border-primary/5 flex items-center justify-between bg-white sticky top-0 z-20">
-                        <div className="flex items-center gap-4">
-                            <div className="h-12 w-12 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center border border-purple-100 shadow-sm">
-                                <BookOpen size={24} />
+                <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300">
+                    <div className="bg-white border border-primary/10 rounded-[2.5rem] p-8 max-w-2xl w-full shadow-2xl relative overflow-hidden flex flex-col max-h-[90vh]">
+                        {/* Header */}
+                        <div className="flex items-center justify-between mb-8">
+                            <div className="flex items-center gap-4">
+                                <div className="h-12 w-12 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center border border-purple-100 shadow-sm">
+                                    <BookOpen size={24} />
+                                </div>
+                                <div>
+                                    <h3 className="text-2xl font-black text-[#1A1A1A] uppercase tracking-tighter">Edit Subject</h3>
+                                    <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1">Modify Subject Details</p>
+                                </div>
                             </div>
-                            <div>
-                                <h3 className="text-2xl font-black text-[#1A1A1A] uppercase tracking-tighter italic">Edit Subject</h3>
-                                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mt-0.5">Registry Modification • Executive Control</p>
-                            </div>
+                            <button onClick={handleCloseForm} className="p-2 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-red-500 transition-colors">
+                                <X size={20} />
+                            </button>
                         </div>
-                        <button
-                            onClick={handleCloseForm}
-                            className="p-3 rounded-2xl bg-slate-50 hover:bg-slate-100 text-slate-400 hover:text-red-500 transition-all border border-slate-100"
-                        >
-                            <X size={20} />
-                        </button>
-                    </div>
 
-                    {/* Content Area */}
-                    <div className="flex-1 overflow-y-auto bg-slate-50/30 p-12 custom-scrollbar">
-                        <div className="max-w-3xl mx-auto space-y-8 bg-white border border-primary/10 rounded-[2.5rem] p-10 shadow-2xl shadow-primary/5 relative overflow-hidden">
+                        {/* Scrollable Form */}
+                        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto space-y-6 pr-2">
                             {/* Form Header Context */}
                             <div className="p-6 bg-slate-50/50 rounded-2xl border border-dashed border-slate-200">
                                 <div className="space-y-1.5 text-center">
@@ -182,106 +179,101 @@ export function SubjectTable() {
                             </div>
 
                             {/* Inputs Section */}
-                            <form onSubmit={handleSubmit} className="space-y-8">
-                                <div className="space-y-6">
-                                    <div className="space-y-3">
-                                        <label className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">Subject Nomenclature</label>
-                                        <input
-                                            type="text"
-                                            required
-                                            value={formData.name}
-                                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                            className="w-full px-6 py-4 bg-slate-50 border border-slate-300 rounded-xl text-lg font-black text-[#1A1A1A] focus:outline-none focus:ring-4 focus:ring-purple-500/5 focus:bg-white focus:border-purple-500/20 transition-all placeholder:text-slate-300"
-                                            placeholder="Enter subject name..."
-                                        />
-                                    </div>
-
-                                    <div className="grid grid-cols-2 gap-8">
-                                        <div className="space-y-3">
-                                            <label className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">Sequence Order</label>
-                                            <div className="relative">
-                                                <Hash className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
-                                                <input
-                                                    type="number"
-                                                    value={formData.order}
-                                                    onChange={(e) => setFormData({ ...formData, order: parseInt(e.target.value) })}
-                                                    className="w-full pl-12 pr-6 py-4 bg-slate-50 border border-slate-300 rounded-xl text-sm font-bold text-[#1A1A1A] focus:outline-none focus:ring-4 focus:ring-purple-500/5 focus:bg-white focus:border-purple-500/20 transition-all"
-                                                />
-                                            </div>
-                                        </div>
-                                        <div className="space-y-3">
-                                            <label className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">Publication State</label>
-                                            <div className="flex bg-slate-50 p-2 rounded-xl border border-slate-300">
-                                                {['active', 'inactive'].map((status) => (
-                                                    <button
-                                                        key={status}
-                                                        type="button"
-                                                        onClick={() => setFormData({ ...formData, status: status as any })}
-                                                        className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${formData.status === status
-                                                            ? 'bg-white text-[#1A1A1A] shadow-sm border border-slate-100 transform scale-[1.02]'
-                                                            : 'text-slate-400 hover:text-slate-600'
-                                                            }`}
-                                                    >
-                                                        {status}
-                                                    </button>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div className="space-y-3">
-                                        <label className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">Structural Definition</label>
-                                        <textarea
-                                            value={formData.description}
-                                            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                                            rows={5}
-                                            className="w-full px-6 py-4 bg-slate-50 border border-slate-300 rounded-xl text-[13px] font-medium text-slate-600 focus:outline-none focus:ring-4 focus:ring-purple-500/5 focus:bg-white focus:border-purple-500/20 transition-all placeholder:text-slate-300 resize-none leading-relaxed"
-                                            placeholder="Provide technical definition for this subject..."
-                                        />
-                                    </div>
-                                </div>
-
-                                {/* Hierarchy Re-assignment (Cautious) */}
-                                <div className="pt-8 border-t border-slate-100 p-8 bg-amber-50/20 rounded-3xl border border-amber-100/30">
-                                    <div className="flex items-center gap-3 mb-6">
-                                        <div className="p-2 bg-amber-50 text-amber-600 rounded-lg">
-                                            <AlertTriangle size={16} />
-                                        </div>
-                                        <p className="text-[10px] font-black uppercase tracking-widest text-amber-600">Advanced Hierarchy Control (Caution)</p>
-                                    </div>
-                                    <SelectField
-                                        label="Reassign Parent Domain"
-                                        value={formData.domainId}
-                                        options={domains.map(d => ({ value: d.id, label: d.name }))}
-                                        loading={domainsHook.loading}
-                                        onChange={(id) => setFormData({ ...formData, domainId: id })}
-                                        placeholder="Select new domain..."
+                            <div className="space-y-6">
+                                <div className="space-y-3">
+                                    <label className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">Subject Nomenclature</label>
+                                    <input
+                                        type="text"
+                                        required
+                                        value={formData.name}
+                                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                        className="w-full px-6 py-4 bg-slate-50 border border-slate-300 rounded-xl text-lg font-bold text-[#1A1A1A] focus:outline-none focus:ring-4 focus:ring-purple-500/5 focus:bg-white focus:border-purple-500/20 transition-all placeholder:text-slate-300"
+                                        placeholder="Enter subject name..."
                                     />
-                                    <p className="mt-4 text-[9px] font-bold text-amber-600/50 leading-relaxed italic">
-                                        "Moving this subject will recalibrate the architectural mapping for all subordinate topics."
-                                    </p>
                                 </div>
 
-                                {/* Footer Actions */}
-                                <div className="pt-8 border-t border-slate-100 flex items-center justify-end gap-4 sticky bottom-0 bg-white z-10">
-                                    <button
-                                        type="button"
-                                        onClick={handleCloseForm}
-                                        className="px-8 py-4 rounded-2xl text-slate-400 hover:text-slate-600 text-[10px] font-black uppercase tracking-widest transition-all"
-                                    >
-                                        Discard Changes
-                                    </button>
-                                    <button
-                                        type="submit"
-                                        disabled={isSubmitting}
-                                        className="px-12 py-4 rounded-2xl bg-[#1A1A1A] hover:bg-black text-white text-[10px] font-black uppercase tracking-widest shadow-xl shadow-black/10 transition-all flex items-center gap-3 disabled:opacity-50"
-                                    >
-                                        {isSubmitting ? <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" /> : <Check size={18} />}
-                                        {isSubmitting ? 'Syncing...' : 'Commit Changes'}
-                                    </button>
+                                <div className="grid grid-cols-2 gap-8">
+                                    <div className="space-y-3">
+                                        <label className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">Sequence Order</label>
+                                        <div className="relative">
+                                            <Hash className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
+                                            <input
+                                                type="number"
+                                                value={formData.order}
+                                                onChange={(e) => setFormData({ ...formData, order: parseInt(e.target.value) })}
+                                                className="w-full pl-12 pr-6 py-4 bg-slate-50 border border-slate-300 rounded-xl text-sm font-bold text-[#1A1A1A] focus:outline-none focus:ring-4 focus:ring-purple-500/5 focus:bg-white focus:border-purple-500/20 transition-all"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-3">
+                                        <label className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">Publication State</label>
+                                        <div className="flex bg-slate-50 p-2 rounded-xl border border-slate-300">
+                                            {['active', 'inactive'].map((status) => (
+                                                <button
+                                                    key={status}
+                                                    type="button"
+                                                    onClick={() => setFormData({ ...formData, status: status as any })}
+                                                    className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${formData.status === status
+                                                        ? 'bg-white text-[#1A1A1A] shadow-sm border border-slate-100 transform scale-[1.02]'
+                                                        : 'text-slate-400 hover:text-slate-600'
+                                                        }`}
+                                                >
+                                                    {status}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
                                 </div>
-                            </form>
-                        </div>
+
+                                <div className="space-y-3">
+                                    <label className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">Structural Definition</label>
+                                    <textarea
+                                        value={formData.description}
+                                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                        rows={4}
+                                        className="w-full px-6 py-4 bg-slate-50 border border-slate-300 rounded-xl text-[13px] font-medium text-slate-600 focus:outline-none focus:ring-4 focus:ring-purple-500/5 focus:bg-white focus:border-purple-500/20 transition-all placeholder:text-slate-300 resize-none leading-relaxed"
+                                        placeholder="Provide technical definition for this subject..."
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Hierarchy Re-assignment (Cautious) */}
+                            <div className="pt-8 border-t border-slate-100 p-8 bg-amber-50/20 rounded-3xl border border-amber-100/30">
+                                <div className="flex items-center gap-3 mb-6">
+                                    <div className="p-2 bg-amber-50 text-amber-600 rounded-lg">
+                                        <AlertTriangle size={16} />
+                                    </div>
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-amber-600">Advanced Hierarchy Control (Caution)</p>
+                                </div>
+                                <SelectField
+                                    label="Reassign Parent Domain"
+                                    value={formData.domainId}
+                                    options={domains.map(d => ({ value: d.id, label: d.name }))}
+                                    loading={domainsHook.loading}
+                                    onChange={(id) => setFormData({ ...formData, domainId: id })}
+                                    placeholder="Select new domain..."
+                                />
+                            </div>
+
+                            {/* Footer Actions */}
+                            <div className="pt-8 border-t border-slate-100 flex items-center justify-end gap-4 sticky bottom-0 bg-white z-10">
+                                <button
+                                    type="button"
+                                    onClick={handleCloseForm}
+                                    className="px-8 py-4 rounded-2xl text-slate-400 hover:text-slate-600 text-[10px] font-black uppercase tracking-widest transition-all"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={isSubmitting}
+                                    className="px-12 py-4 rounded-2xl bg-[#1A1A1A] hover:bg-black text-white text-[10px] font-black uppercase tracking-widest shadow-xl shadow-black/10 transition-all flex items-center gap-3 disabled:opacity-50"
+                                >
+                                    {isSubmitting ? <ZLoader size="xs" className="text-white" center={false} /> : <Check size={18} />}
+                                    {isSubmitting ? 'Syncing...' : 'Save Changes'}
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             )}
