@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { apiClient } from '@quiz/api-client';
-import { Users, Clock, Globe, ShieldCheck, Loader2 } from 'lucide-react';
+import { Users, Clock, Globe, ShieldCheck } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { ZLoader } from '@/components/ui/ZLoader';
 

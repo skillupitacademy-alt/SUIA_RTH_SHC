@@ -12,7 +12,6 @@ import {
     ShieldCheck,
     AlertTriangle,
     RefreshCw,
-    Loader2,
     Database,
     Zap,
     BarChart3
@@ -122,11 +121,8 @@ export const HierarchyReports: React.FC = () => {
     if (loading && reportData.length === 0) {
         return (
             <div className="min-h-[60vh] flex flex-col items-center justify-center gap-6">
-                <Loader2 className="w-16 h-16 animate-spin text-[#FF4B91]" />
-                <div className="text-center">
-                    <h3 className="text-xl font-black uppercase italic tracking-tighter text-[#1A1A1A]">Initializing Diagnostic Matrix_</h3>
-                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground mt-1 animate-pulse">Scanning Assessment Metrics (Loader: Loader2)</p>
-                </div>
+                <ZLoader size="lg" text="Initializing Diagnostic Matrix_" />
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground mt-1 animate-pulse italic">Syncing Pulse Diagnostic (Unified Activity)</p>
             </div>
         );
     }
@@ -318,12 +314,8 @@ export const HierarchyReports: React.FC = () => {
             {/* Diagnostic Overlays */}
             {isActionLoading && (
                 <div className="fixed inset-0 z-[300] bg-white/40 backdrop-blur-[4px] flex items-center justify-center animate-in fade-in duration-300">
-                    <div className="bg-white p-12 rounded-[3.5rem] shadow-[0_32px_128px_rgba(0,0,0,0.1)] border-2 border-primary/5 flex flex-col items-center gap-6 scale-110">
-                        <Activity className="w-20 h-20 text-[#FF4B91] animate-spin" />
-                        <div className="text-center">
-                            <h4 className="text-2xl font-black uppercase italic tracking-tighter">Accessing Branch_</h4>
-                            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[#FF4B91]/60 mt-2">Loader: Activity (Diagnostic)</p>
-                        </div>
+                    <div className="bg-white p-12 rounded-[3.5rem] shadow-[0_32px_128px_rgba(0,0,0,0.1)] border-2 border-primary/5 flex flex-col items-center gap-4 scale-100">
+                        <ZLoader size="lg" text="Accessing Branch_" />
                     </div>
                 </div>
             )}

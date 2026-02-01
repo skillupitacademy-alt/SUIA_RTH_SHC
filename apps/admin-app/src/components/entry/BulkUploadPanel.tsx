@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Upload, FileJson, X, Check, AlertCircle, Trash2, Copy, Sparkles, Loader2 } from 'lucide-react';
+import { Upload, FileJson, X, Check, AlertCircle, Trash2, Copy, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ZLoader } from '@/components/ui/ZLoader';
 import { apiClient } from '@quiz/api-client';

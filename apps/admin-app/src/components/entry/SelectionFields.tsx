@@ -1,6 +1,6 @@
 'use client';
 
-import { ChevronDown, Plus, Loader2, Check } from 'lucide-react';
+import { ChevronDown, Plus, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ZLoader } from '@/components/ui/ZLoader';
 

@@ -1,6 +1,7 @@
 'use client';
 
 import { cn } from "@/lib/utils";
+import { Activity } from 'lucide-react';
 
 interface ZLoaderProps {
     className?: string;
@@ -10,26 +11,26 @@ interface ZLoaderProps {
 }
 
 const sizes = {
-    xs: "w-4 h-4 border-2",
-    sm: "w-6 h-6 border-2",
-    md: "w-10 h-10 border-4",
-    lg: "w-16 h-16 border-4",
-    xl: "w-24 h-24 border-8"
+    xs: "w-3 h-3",
+    sm: "w-5 h-5",
+    md: "w-8 h-8",
+    lg: "w-12 h-12",
+    xl: "w-16 h-16"
 };
 
 /**
  * ZLoader - The authoritative loading indicator for the platform.
- * Replaces Activity, Loader2, and ad-hoc CSS spinners.
+ * Unified to use the spinning Activity icon at a smaller scale.
  */
 export function ZLoader({ className, size = "md", text, center = true }: ZLoaderProps) {
     return (
         <div className={cn(
-            "flex flex-col items-center justify-center gap-4",
+            "flex flex-col items-center justify-center gap-3",
             center && "mx-auto",
             className
         )}>
-            <div className={cn(
-                "rounded-full animate-spin border-4 border-slate-100 border-t-[#FF4B91]",
+            <Activity className={cn(
+                "animate-spin text-[#FF4B91]",
                 sizes[size]
             )} />
             {text && (

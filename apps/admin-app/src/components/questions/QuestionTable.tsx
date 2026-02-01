@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { apiClient } from '@quiz/api-client';
-import { FileText, Layers, Hash, Activity, Edit3, Trash2, Filter, X, AlertTriangle, Loader2, Sparkles } from 'lucide-react';
+import { FileText, Layers, Hash, Edit3, Trash2, Filter, X, AlertTriangle, Sparkles } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { cn, formatTimeAgo } from '@/lib/utils';
 import { CascadingSelect, Selection } from '@/components/entry/CascadingSelect';

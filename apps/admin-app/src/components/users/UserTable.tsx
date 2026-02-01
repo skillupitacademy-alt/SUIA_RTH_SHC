@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { apiClient } from '@quiz/api-client';
-import { User, Mail, Calendar, Info, Shield, CheckCircle, XCircle, Trash2, AlertTriangle, Lock, Loader2, Activity } from 'lucide-react';
+import { User, Mail, Calendar, Info, Shield, CheckCircle, XCircle, Trash2, AlertTriangle, Lock } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { ErrorBanner } from '@/components/layout/ErrorBanner';
 import { ZLoader } from '@/components/ui/ZLoader';
@@ -161,8 +161,7 @@ export function UserTable() {
     if (isLoading) {
         return (
             <div className="flex flex-col items-center justify-center py-40 gap-4">
-                <Loader2 className="w-12 h-12 animate-spin text-[#FF4B91]" />
-                <p className="text-xs font-black uppercase tracking-[0.3em] animate-pulse">Synchronizing Identity Records... (Loader: Loader2)</p>
+                <ZLoader size="md" text="Syncing Pulse Diagnostic..." />
             </div>
         );
     }
@@ -494,8 +493,7 @@ export function UserTable() {
             {isActionLoading && (
                 <div className="fixed inset-0 z-[300] bg-white/20 backdrop-blur-[2px] flex items-center justify-center animate-in fade-in duration-200">
                     <div className="bg-white p-8 rounded-3xl shadow-2xl border border-primary/10 flex flex-col items-center gap-4">
-                        <Activity className="w-12 h-12 text-[#FF4B91] animate-spin" />
-                        <p className="text-[10px] font-black uppercase tracking-widest">Accessing Identity...</p>
+                        <ZLoader size="md" text="Accessing Identity..." />
                     </div>
                 </div>
             )}
