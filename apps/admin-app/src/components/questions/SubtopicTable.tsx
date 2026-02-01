@@ -322,7 +322,7 @@ export function SubtopicTable() {
                                     <button
                                         type="submit"
                                         disabled={isSubmitting}
-                                        className="px-12 py-4 rounded-2xl bg-[#1A1A1A] hover:bg-black text-white text-[10px] font-black uppercase tracking-widest shadow-xl shadow-black/10 transition-all flex items-center gap-3 disabled:opacity-50"
+                                        className="px-12 py-4 rounded-2xl bg-[#FF6B2C] hover:bg-[#FF5511] text-white text-[10px] font-black uppercase tracking-widest shadow-xl shadow-orange-500/20 transition-all flex items-center gap-3 disabled:opacity-50"
                                     >
                                         {isSubmitting ? <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" /> : <Check size={18} />}
                                         {isSubmitting ? 'Syncing...' : 'Commit Changes'}

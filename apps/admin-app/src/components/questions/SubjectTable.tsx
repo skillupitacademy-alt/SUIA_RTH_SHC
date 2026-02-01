@@ -168,9 +168,9 @@ export function SubjectTable() {
                             </button>
                         </div>
 
-                        {/* Form Content */}
-                        <div className="flex-1 overflow-y-auto bg-slate-50/30">
-                            <div className="max-w-3xl mx-auto p-8">
+                        {/* Content - Centered with max-w-3xl */}
+                        <div className="flex-1">
+                            <div className="max-w-3xl mx-auto px-8 py-8">
                                 <form onSubmit={handleSubmit} className="space-y-6">
                                     {/* Hierarchy Context (Read-Only) */}
                                     <div className="space-y-2">
@@ -218,8 +218,8 @@ export function SubjectTable() {
                                                     type="button"
                                                     onClick={() => setFormData({ ...formData, status: status as any })}
                                                     className={`flex-1 py-2.5 px-4 rounded-lg text-xs font-black uppercase tracking-wider transition-all ${formData.status === status
-                                                            ? 'bg-[#1A1A1A] text-white shadow-sm'
-                                                            : 'text-slate-400 hover:text-slate-600'
+                                                        ? 'bg-[#1A1A1A] text-white shadow-sm'
+                                                        : 'text-slate-400 hover:text-slate-600'
                                                         }`}
                                                 >
                                                     {status}
@@ -237,10 +237,12 @@ export function SubjectTable() {
                                         <SelectField
                                             label="Domain"
                                             value={formData.domainId}
-                                            options={domains.map(d => ({ value: d.id, label: d.name }))}
+                                            options={domains.map(d => ({ id: d.id, name: d.name }))}
                                             loading={domainsHook.loading}
                                             onChange={(id) => setFormData({ ...formData, domainId: id })}
                                             placeholder="Change Domain"
+                                            active={false}
+                                            hideCreate={true}
                                         />
                                     </div>
 

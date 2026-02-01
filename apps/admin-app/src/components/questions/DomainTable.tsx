@@ -150,9 +150,9 @@ export function DomainTable() {
                             </button>
                         </div>
 
-                        {/* Form Content */}
-                        <div className="flex-1 overflow-y-auto bg-slate-50/30">
-                            <div className="max-w-3xl mx-auto p-8">
+                        {/* Content - Centered with max-w-3xl */}
+                        <div className="flex-1">
+                            <div className="max-w-3xl mx-auto px-8 py-8">
                                 <form onSubmit={handleSubmit} className="space-y-6">
                                     {/* Domain Name */}
                                     <div className="space-y-2">
@@ -189,8 +189,8 @@ export function DomainTable() {
                                                     type="button"
                                                     onClick={() => setFormData({ ...formData, status: status as any })}
                                                     className={`flex-1 py-2.5 px-4 rounded-lg text-xs font-black uppercase tracking-wider transition-all ${formData.status === status
-                                                            ? 'bg-[#1A1A1A] text-white shadow-sm'
-                                                            : 'text-slate-400 hover:text-slate-600'
+                                                        ? 'bg-[#1A1A1A] text-white shadow-sm'
+                                                        : 'text-slate-400 hover:text-slate-600'
                                                         }`}
                                                 >
                                                     {status}
