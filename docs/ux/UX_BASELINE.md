@@ -90,6 +90,18 @@ The "Discovery_Orchestrator" pattern defines the standard for high-density admin
 - **Activity**: Pulsating indicators for `Online` (ping effect), static for `Idle`/`Offline`.
 - **Status Labels**: Uppercase, tracked (`tracking-widest`), font-black.
 
+## 7. Loading Standards
+The platform uses a unified, high-fidelity loading indicator to ensure visual consistency and professional density.
+
+### The ZLoader Standard
+- **Visual**: A `border-4` spin indicator with a `slate-100` background ring and `#FF4B91` (Primary Pink) active segment.
+- **Component**: `ZLoader.tsx` is the sole authorized component for loading states. Use of raw CSS spinners or Lucide icons for loading is prohibited.
+- **Implementation**:
+  - **Inline**: Use `size="xs"` or `size="sm"` for buttons and dropdowns.
+  - **Component Level**: Use `size="md"` for table rows or card contents.
+  - **Page Level**: Use `size="lg"` or `size="xl"` for splash screens and major transitions.
+- **Typography**: Optional descriptive text (e.g., "Authenticating...") should use `font-black` and `tracking-widest` for high visibility.
+
 ## Quality of Experience
 - **Enhancement allowed**: UI/UX may be enhanced for clarity, usability, and visual delight.
 - **No Degradation**: UI/UX features MUST NOT be removed or degraded unless explicitly instructed by the user.

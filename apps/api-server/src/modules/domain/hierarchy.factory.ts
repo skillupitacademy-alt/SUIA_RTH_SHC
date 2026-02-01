@@ -33,6 +33,27 @@ export class HierarchyFactory {
    */
   static async atomicUpsert(payload: AtomicHierarchyPayload) {
     return await db.transaction(async (tx) => {
+      const results = {
+        domainId: null as string | null,
+        subjects: [] as any[],
+        questionIds: [] as string[],
+        questionStats: {
+          simple: 0,
+          intermediate: 0,
+          expert: 0,
+          total: 0
+        },
+        batchDomains: [] as string[],
+        batchSkills: [] as string[],
+        stats: {
+          domains: { added: 0, skipped: 0 },
+          subjects: { added: 0, skipped: 0 },
+          topics: { added: 0, skipped: 0 },
+          subtopics: { added: 0, skipped: 0 },
+          skills: { added: 0, skipped: 0 }
+        }
+      };
+
       // 1. Resolve Domain
       let domainId = payload.domainId;
       if (!domainId && payload.domainName) {
@@ -41,6 +62,7 @@ export class HierarchyFactory {
         });
         if (existing) {
           domainId = existing.id;
+          results.stats.domains.skipped++;
           // Support updating description/category if provided
           if (payload.description || payload.category) {
             await tx.update(domains).set({
@@ -55,26 +77,14 @@ export class HierarchyFactory {
             category: payload.category
           }).returning();
           domainId = newDomain.id;
+          results.stats.domains.added++;
         }
       }
+      results.domainId = domainId || null;
 
       if (!domainId && !payload.batchDomains && !payload.batchSkills) {
         throw new Error('Domain ID, Domain Name, batchDomains, or batchSkills required for atomic upsert.');
       }
-
-      const results = {
-        domainId: domainId || null,
-        subjects: [] as any[],
-        questionIds: [] as string[],
-        questionStats: {
-          simple: 0,
-          intermediate: 0,
-          expert: 0,
-          total: 0
-        },
-        batchDomains: [] as string[],
-        batchSkills: [] as string[]
-      };
 
       // 1.5 Handle Batch Domains
       if (payload.batchDomains) {
@@ -84,6 +94,7 @@ export class HierarchyFactory {
             });
             if (existing) {
                 results.batchDomains.push(existing.id);
+                results.stats.domains.skipped++;
             } else {
                 const [newDomain] = await tx.insert(domains).values({
                     name: bd.name,
@@ -91,6 +102,7 @@ export class HierarchyFactory {
                     category: bd.category
                 }).returning();
                 results.batchDomains.push(newDomain.id);
+                results.stats.domains.added++;
             }
         }
       }
@@ -103,6 +115,7 @@ export class HierarchyFactory {
             });
             if (existing) {
                 results.batchSkills.push(existing.id);
+                results.stats.skills.skipped++;
             } else {
                 const [newSkill] = await tx.insert(skills).values({
                     name: bs.name,
@@ -110,6 +123,7 @@ export class HierarchyFactory {
                     mappingType: bs.mappingType as any || 'conceptual'
                 }).returning();
                 results.batchSkills.push(newSkill.id);
+                results.stats.skills.added++;
             }
         }
       }
@@ -125,12 +139,14 @@ export class HierarchyFactory {
             });
             if (existing) {
               subjectId = existing.id;
+              results.stats.subjects.skipped++;
             } else {
               const [newSub] = await tx.insert(subjects).values({
                 domainId: domainId!,
                 name: s.name,
               }).returning();
               subjectId = newSub.id;
+              results.stats.subjects.added++;
             }
           }
 
@@ -146,12 +162,14 @@ export class HierarchyFactory {
                 });
                 if (existing) {
                   topicId = existing.id;
+                  results.stats.topics.skipped++;
                 } else {
                   const [newTopic] = await tx.insert(topics).values({
                     subjectId: subjectId!,
                     name: t.name,
                   }).returning();
                   topicId = newTopic.id;
+                  results.stats.topics.added++;
                 }
               }
 
@@ -167,16 +185,19 @@ export class HierarchyFactory {
                     });
                     if (existing) {
                       subtopicId = existing.id;
+                      results.stats.subtopics.skipped++;
                     } else {
                       const [newSubtopic] = await tx.insert(subtopics).values({
                         topicId: topicId!,
                         name: st.name,
                       }).returning();
                       subtopicId = newSubtopic.id;
+                      results.stats.subtopics.added++;
                     }
                   }
 
                   const subtopicResult = { id: subtopicId, name: st.name, questions: 0 };
+                  // ... rest of question logic remains the same ...
 
                   // 5. Create Questions & Link Skills (Subtopic level)
                   if (st.questions && st.questions.length > 0) {

@@ -5,11 +5,13 @@ The Domain Factory is a high-performance administrative portal designed for both
 
 ## Core Features
 
-### 1. Unified Domain Factory (`HierarchyFactoryWizard`)
+### 1. Unified Hierarchy Factory 2.0 (`HierarchyFactoryWizard`)
 A full-screen terminal-style workspace that replaces the legacy hierarchy wizard.
-- **Manual Registry**: Single-click registration for new domains.
+- **Manual Registry**: Single-click registration for new domains, subjects, or topics.
+- **Hierarchical Selection**: Integrated selection dropdowns (Domain > Subject > Topic) to allow adding entities within a specific parent context.
 - **Bulk Factory**: JSON-based ingestion for complex hierarchies (Subjects > Topics > Subtopics > Questions).
-- **Surgical AI Prompt**: Generates a context-aware prompt for LLMs that explicitly excludes existing domains to prevent duplicate data insertion.
+- **Intelligent Deduplication**: Backend logic that automatically skips existing entities at ALL levels, preventing data corruption.
+- **Registry Summary**: Post-execution report showing surgical details on entities **Added** vs. **Skipped**.
 - **Execution Timeline**: Real-time progress monitoring through stages: `Data Validation` > `Database Lookup` > `Registry Transaction` > `Hierarchy Sealing`.
 
 ### 2. Manual Blueprint Designer (`BlueprintFactoryWizard`)
@@ -32,7 +34,7 @@ The Governance Dashboard acts as the central auditor for domain health.
 
 ### Backend (API Server)
 - **`AdminEngine`**: Contains Section 10 (Blueprint Management) for CRUD operations.
-- **`HierarchyFactory`**: Handles atomic, transactional upserts of hierarchical data.
+- **`HierarchyFactory`**: Handles atomic, transactional upserts of hierarchical data with built-in deduplication checks for all entity types.
 - **Next.js Route Handlers**: Implemented with async `params` handling to comply with Next.js 15+ standards (e.g., `api/admin/blueprints/[id]/route.ts`).
 
 ### Package Integration

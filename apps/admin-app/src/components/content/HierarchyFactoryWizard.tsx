@@ -56,6 +56,16 @@ export function HierarchyFactoryWizard({ isOpen, onClose, initialData, onSuccess
         questionStats: null as any
     });
     const [existingDomains, setExistingDomains] = useState<string[]>([]);
+    const [hierarchicalChoices, setHierarchicalChoices] = useState({
+        domains: [] as any[],
+        subjects: [] as any[],
+        topics: [] as any[]
+    });
+    const [selections, setSelections] = useState({
+        domainId: initialData?.domainId || '',
+        subjectId: initialData?.subjectId || '',
+        topicId: initialData?.topicId || ''
+    });
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
@@ -69,10 +79,39 @@ export function HierarchyFactoryWizard({ isOpen, onClose, initialData, onSuccess
         try {
             const data = await apiClient.admin.getContentHealth();
             setExistingDomains(data.map((d: any) => d.domainName));
+            setHierarchicalChoices(prev => ({ ...prev, domains: data }));
         } catch (e) {
             console.error("Failed to fetch existing domains", e);
         }
     };
+
+    useEffect(() => {
+        const fetchSubjects = async () => {
+            if (selections.domainId) {
+                try {
+                    const data = await apiClient.admin.getSubjectsByDomain(selections.domainId);
+                    setHierarchicalChoices(prev => ({ ...prev, subjects: data }));
+                } catch (e) { console.error(e); }
+            } else {
+                setHierarchicalChoices(prev => ({ ...prev, subjects: [] }));
+            }
+        };
+        fetchSubjects();
+    }, [selections.domainId]);
+
+    useEffect(() => {
+        const fetchTopics = async () => {
+            if (selections.subjectId) {
+                try {
+                    const data = await apiClient.admin.getTopicsBySubject(selections.subjectId);
+                    setHierarchicalChoices(prev => ({ ...prev, topics: data }));
+                } catch (e) { console.error(e); }
+            } else {
+                setHierarchicalChoices(prev => ({ ...prev, topics: [] }));
+            }
+        };
+        fetchTopics();
+    }, [selections.subjectId]);
 
     useEffect(() => {
         if (isOpen) {
@@ -113,29 +152,32 @@ Please provide a valid JSON object matching this schema:
         }
 
         if (target === 'subject') {
-            return `I need to generate a list of SUBJECTS for the domain: "${initialData.domainName}".
+            const domainName = hierarchicalChoices.domains.find(d => d.domainId === selections.domainId)?.domainName || "Selected Domain";
+            return `I need to generate a list of SUBJECTS for the domain: "${domainName}".
 
 Please provide a valid JSON object matching this schema:
 {
-  "domainId": "${initialData.domainId}",
+  "domainId": "${selections.domainId}",
   "subjects": [
     { "name": "string" }
   ]
 }
 
-- Focus on core areas within "${initialData.domainName}".
+- Focus on core areas within "${domainName}".
 - Return ONLY the JSON object.`;
         }
 
         if (target === 'topic') {
-            return `I need to generate a list of TOPICS for the subject: "${initialData.subjectName}" within "${initialData.domainName}".
+            const domainName = hierarchicalChoices.domains.find(d => d.domainId === selections.domainId)?.domainName || "Selected Domain";
+            const subjectName = hierarchicalChoices.subjects.find(s => s.id === selections.subjectId)?.name || "Selected Subject";
+            return `I need to generate a list of TOPICS for the subject: "${subjectName}" within "${domainName}".
 
 Please provide a valid JSON object matching this schema:
 {
-  "domainId": "${initialData.domainId}",
+  "domainId": "${selections.domainId}",
   "subjects": [
     {
-      "id": "${initialData.subjectId}",
+      "id": "${selections.subjectId}",
       "topics": [
         { "name": "string" }
       ]
@@ -148,17 +190,18 @@ Please provide a valid JSON object matching this schema:
         }
 
         if (target === 'subtopic') {
-            return `I need to generate granular SUBTOPICS and complex QUESTIONS for the topic: "${initialData.topicName}".
+            const topicName = hierarchicalChoices.topics.find(t => t.id === selections.topicId)?.name || "Selected Topic";
+            return `I need to generate granular SUBTOPICS and complex QUESTIONS for the topic: "${topicName}".
 
 Please provide a valid JSON object matching this schema:
 {
-  "domainId": "${initialData.domainId}",
+  "domainId": "${selections.domainId}",
   "subjects": [
     {
-      "id": "${initialData.subjectId}",
+      "id": "${selections.subjectId}",
       "topics": [
         {
-          "id": "${initialData.topicId}",
+          "id": "${selections.topicId}",
           "subtopics": [
             { 
               "name": "string", 
@@ -240,14 +283,14 @@ Please provide a valid JSON object matching this schema:
             if (mode === 'manual') {
                 const target = initialData?.target || 'domain';
                 if (target === 'domain') finalData = { domainName: manualEntry.name };
-                if (target === 'subject') finalData = { domainId: initialData.domainId, subjects: [{ name: manualEntry.name }] };
-                if (target === 'topic') finalData = { domainId: initialData.domainId, subjects: [{ id: initialData.subjectId, topics: [{ name: manualEntry.name }] }] };
+                if (target === 'subject') finalData = { domainId: selections.domainId, subjects: [{ name: manualEntry.name }] };
+                if (target === 'topic') finalData = { domainId: selections.domainId, subjects: [{ id: selections.subjectId, topics: [{ name: manualEntry.name }] }] };
                 if (target === 'subtopic') finalData = {
-                    domainId: initialData.domainId,
+                    domainId: selections.domainId,
                     subjects: [{
-                        id: initialData.subjectId,
+                        id: selections.subjectId,
                         topics: [{
-                            id: initialData.topicId,
+                            id: selections.topicId,
                             subtopics: [{ name: manualEntry.name }]
                         }]
                     }]
@@ -285,7 +328,7 @@ Please provide a valid JSON object matching this schema:
             };
         } else if (target === 'subject') {
             template = {
-                domainId: initialData.domainId || "DOMAIN_UUID",
+                domainId: selections.domainId || "DOMAIN_UUID",
                 subjects: [
                     { name: "Frontend Development" },
                     { name: "Backend Architecture" }
@@ -293,9 +336,9 @@ Please provide a valid JSON object matching this schema:
             };
         } else if (target === 'topic') {
             template = {
-                domainId: initialData.domainId || "DOMAIN_UUID",
+                domainId: selections.domainId || "DOMAIN_UUID",
                 subjects: [{
-                    id: initialData.subjectId || "SUBJECT_UUID",
+                    id: selections.subjectId || "SUBJECT_UUID",
                     topics: [
                         { name: "React Framework" },
                         { name: "Node.js Runtimes" }
@@ -304,11 +347,11 @@ Please provide a valid JSON object matching this schema:
             };
         } else if (target === 'subtopic') {
             template = {
-                domainId: initialData.domainId || "DOMAIN_UUID",
+                domainId: selections.domainId || "DOMAIN_UUID",
                 subjects: [{
-                    id: initialData.subjectId || "SUBJECT_UUID",
+                    id: selections.subjectId || "SUBJECT_UUID",
                     topics: [{
-                        id: initialData.topicId || "TOPIC_UUID",
+                        id: selections.topicId || "TOPIC_UUID",
                         subtopics: [
                             {
                                 name: "Context API",
@@ -435,6 +478,56 @@ Please provide a valid JSON object matching this schema:
                                         className="w-full bg-[#FAFAFA] border-2 border-primary/5 rounded-3xl p-6 text-2xl font-black tracking-tight focus:ring-4 focus:ring-primary/5 focus:border-primary/20 outline-none transition-all placeholder:text-slate-300"
                                     />
                                 </div>
+
+                                {(['subject', 'topic', 'subtopic'].includes(initialData?.target)) && (
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div className="space-y-3">
+                                            <label className="text-[10px] font-black uppercase tracking-widest text-[#1A1A1A] opacity-40">Target Domain_</label>
+                                            <select
+                                                value={selections.domainId}
+                                                onChange={(e) => setSelections({ ...selections, domainId: e.target.value, subjectId: '', topicId: '' })}
+                                                className="w-full bg-[#FAFAFA] border-2 border-primary/5 rounded-2xl p-4 text-sm font-bold outline-none appearance-none cursor-pointer"
+                                            >
+                                                <option value="">Select Domain</option>
+                                                {hierarchicalChoices.domains.map(d => (
+                                                    <option key={d.domainId} value={d.domainId}>{d.domainName}</option>
+                                                ))}
+                                            </select>
+                                        </div>
+
+                                        {(['topic', 'subtopic'].includes(initialData?.target)) && (
+                                            <div className="space-y-3 animate-in fade-in slide-in-from-top-2">
+                                                <label className="text-[10px] font-black uppercase tracking-widest text-[#1A1A1A] opacity-40">Target Subject_</label>
+                                                <select
+                                                    value={selections.subjectId}
+                                                    onChange={(e) => setSelections({ ...selections, subjectId: e.target.value, topicId: '' })}
+                                                    className="w-full bg-[#FAFAFA] border-2 border-primary/5 rounded-2xl p-4 text-sm font-bold outline-none appearance-none cursor-pointer"
+                                                >
+                                                    <option value="">Select Subject</option>
+                                                    {hierarchicalChoices.subjects.map(s => (
+                                                        <option key={s.id} value={s.id}>{s.name}</option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                        )}
+
+                                        {(initialData?.target === 'subtopic') && (
+                                            <div className="space-y-3 animate-in fade-in slide-in-from-top-2">
+                                                <label className="text-[10px] font-black uppercase tracking-widest text-[#1A1A1A] opacity-40">Target Topic_</label>
+                                                <select
+                                                    value={selections.topicId}
+                                                    onChange={(e) => setSelections({ ...selections, topicId: e.target.value })}
+                                                    className="w-full bg-[#FAFAFA] border-2 border-primary/5 rounded-2xl p-4 text-sm font-bold outline-none appearance-none cursor-pointer"
+                                                >
+                                                    <option value="">Select Topic</option>
+                                                    {hierarchicalChoices.topics.map(t => (
+                                                        <option key={t.id} value={t.id}>{t.name}</option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
 
                                 {(initialData?.target === 'domain' || !initialData) && (
                                     <div className="space-y-3">
@@ -588,6 +681,25 @@ Please provide a valid JSON object matching this schema:
                                 <h4 className="text-xl font-black uppercase tracking-tighter text-green-800 italic">Emission Successful_</h4>
                                 <p className="text-[10px] font-bold text-green-700 uppercase tracking-widest mt-1">Domain ID: {success.domainId}</p>
                             </div>
+
+                            {success.stats && (
+                                <div className="p-4 rounded-3xl bg-white/50 border border-green-200/50 space-y-3">
+                                    <h5 className="text-[9px] font-black uppercase tracking-widest text-green-800/60 text-left px-2">Registry Summary_</h5>
+                                    <div className="grid grid-cols-2 gap-2">
+                                        {Object.entries(success.stats).map(([k, v]: [string, any]) => (
+                                            (v.added > 0 || v.skipped > 0) && (
+                                                <div key={k} className="p-3 bg-white rounded-2xl border border-green-100 flex items-center justify-between">
+                                                    <span className="text-[9px] font-black uppercase tracking-widest text-slate-500">{k}</span>
+                                                    <div className="flex gap-2">
+                                                        {v.added > 0 && <span className="text-[9px] font-black px-1.5 py-0.5 bg-green-100 text-green-700 rounded-md">+{v.added}</span>}
+                                                        {v.skipped > 0 && <span className="text-[9px] font-black px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded-md text-nowrap">Skipped: {v.skipped}</span>}
+                                                    </div>
+                                                </div>
+                                            )
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
                             <div className="grid grid-cols-1 gap-3">
                                 <button
                                     onClick={() => setBlueprintModal({

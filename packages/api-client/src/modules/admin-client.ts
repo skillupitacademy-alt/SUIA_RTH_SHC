@@ -48,6 +48,14 @@ export class AdminClient {
     }>(`/admin/topics?${query.toString()}`);
   }
 
+  async getSubjectsByDomain(domainId: string) {
+    return this.getSubjects(1, 100, domainId).then(res => res.data);
+  }
+
+  async getTopicsBySubject(subjectId: string) {
+    return this.getTopics(1, 100, subjectId).then(res => res.data);
+  }
+
   async getTopicSkills(topicId: string) {
     return this.client.get<any[]>(`/admin/topics/${topicId}/skills`);
   }

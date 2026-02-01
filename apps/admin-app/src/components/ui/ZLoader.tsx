@@ -29,7 +29,7 @@ export function ZLoader({ className, size = "md", text, center = true }: ZLoader
             className
         )}>
             <div className={cn(
-                "rounded-full animate-spin border-[#FF4B91]/10 border-t-[#FF4B91]",
+                "rounded-full animate-spin border-4 border-slate-100 border-t-[#FF4B91]",
                 sizes[size]
             )} />
             {text && (

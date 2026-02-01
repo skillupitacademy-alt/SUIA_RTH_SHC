@@ -117,3 +117,11 @@
 - **The Existence Rule**: Implemented mandatory validation that blocks the creation of certifications if the question pool is empty.
 - **Calibration Summary**: Integrated a real-time difficulty breakdown UI (*Total, Simple, Intermediate, Expert*) to ensure high-fidelity exam balancing during commit.
 - **Standardization**: Authored `ORCHESTRATION_STANDARD.md` as the authoritative governing law for blueprint creation.
+
+### Phase 22: Hierarchy Factory 2.0 & ZLoader Standard (Batch 46)
+- **Unified Loading**: Standardized a single, high-fidelity loading indicator (`ZLoader`) across the entire platform, eliminating icon fragmentation.
+- **Hierarchical Seeding**: Enhanced the Hierarchy Factory with surgical selection UI for Domains, Subjects, and Topics, ensuring correct parent context during manual and bulk additions.
+- **Deep Deduplication**: Implemented intelligent backend logic to automatically skip existing entities at all levels of the educational hierarchy.
+- **Diagnostic Feedback**: Upgraded the execution report with a "Registry Summary" that provides precise metrics on items added versus those skipped.
+- **AI Prompt Context**: Refactored JSON prompts to automatically embed selected parent names for context-aware content generation.
+- **Build Hardening**: Verified monorepo-wide integrity and type safety with a successful global build and `tsc` cycle (Exit Code 0).
