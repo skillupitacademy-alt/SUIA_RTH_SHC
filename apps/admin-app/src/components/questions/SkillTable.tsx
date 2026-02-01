@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { apiClient } from '@quiz/api-client';
 import { Shield, Plus, Edit2, Trash2, X, AlertTriangle, Hash, Cpu, Settings } from 'lucide-react';
-import { ErrorBanner } from '../layout/ErrorBanner';
+import { ErrorBanner } from '@/components/layout/ErrorBanner';
 
 const SKILL_CATEGORIES: Record<string, string> = {
     problem_solving: 'Problem Solving',

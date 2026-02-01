@@ -18,7 +18,7 @@ import {
 } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
-import { AdminGuard } from '../auth/AdminGuard';
+import { AdminGuard } from '@/components/auth/AdminGuard';
 import { useAuthStore } from '@/store/auth-store';
 import { apiClient } from '@quiz/api-client';
 import { useEffect } from 'react';

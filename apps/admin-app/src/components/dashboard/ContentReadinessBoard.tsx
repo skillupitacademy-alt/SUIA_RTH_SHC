@@ -17,8 +17,8 @@ import {
     Zap
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { HierarchyFactoryWizard } from '../content/HierarchyFactoryWizard';
-import { BlueprintFactoryWizard } from '../content/BlueprintFactoryWizard';
+import { HierarchyFactoryWizard } from '@/components/content/HierarchyFactoryWizard';
+import { BlueprintFactoryWizard } from '@/components/content/BlueprintFactoryWizard';
 
 export function ContentReadinessBoard() {
     const [domains, setDomains] = useState<any[]>([]);

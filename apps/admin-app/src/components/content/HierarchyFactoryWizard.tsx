@@ -26,7 +26,7 @@ import {
     ClipboardList
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { BlueprintFactoryWizard } from './BlueprintFactoryWizard';
+import { BlueprintFactoryWizard } from '@/components/content/BlueprintFactoryWizard';
 
 interface HierarchyFactoryWizardProps {
     isOpen: boolean;

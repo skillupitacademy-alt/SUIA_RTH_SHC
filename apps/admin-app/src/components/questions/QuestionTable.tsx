@@ -6,7 +6,7 @@ import { FileText, Layers, Hash, Activity, Edit3, Trash2, Filter, X, AlertTriang
 import { formatDistanceToNow } from 'date-fns';
 import { cn, formatTimeAgo } from '@/lib/utils';
 import { CascadingSelect, Selection } from '@/components/entry/CascadingSelect';
-import { MultiSelectField } from '../entry/SelectionFields';
+import { MultiSelectField } from '@/components/entry/SelectionFields';
 import { useAllSkills } from '@/hooks/useAdminHierarchy';
 import Link from 'next/link';
 

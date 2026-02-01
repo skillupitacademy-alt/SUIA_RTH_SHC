@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, useMemo } from 'react';
 import { useDomains, useSubjects, useTopics, useSubtopics, useAllSkills, useTopicSkills } from '@/hooks/useAdminHierarchy';
 import { X, Loader2, Sparkles, Binary } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { SelectField, MultiSelectField } from './SelectionFields';
+import { SelectField, MultiSelectField } from '@/components/entry/SelectionFields';
 
 export interface Selection {
     domainId: string | null;

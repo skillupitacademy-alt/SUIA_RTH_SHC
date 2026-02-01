@@ -5,7 +5,7 @@ import { apiClient } from '@quiz/api-client';
 import { BookOpen, Plus, Edit2, Trash2, X, AlertTriangle, Layers } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { formatTimeAgo } from '@/lib/utils';
-import { ErrorBanner } from '../layout/ErrorBanner';
+import { ErrorBanner } from '@/components/layout/ErrorBanner';
 import { useDomains } from '@/hooks/useAdminHierarchy';
 
 export function SubjectTable() {

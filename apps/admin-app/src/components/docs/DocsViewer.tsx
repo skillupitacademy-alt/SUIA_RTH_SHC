@@ -2,20 +2,20 @@
 
 import React, { useState } from 'react';
 import { DocCategory, DocFile } from '@/lib/docs-loader';
-import { DocsTabs } from './DocsTabs';
-import { GovernanceInventory } from './GovernanceInventory';
-import { ConstitutionViewer } from './ConstitutionViewer';
-import { BrainLogViewer } from './BrainLogViewer';
-import { ManifestoViewer } from './ManifestoViewer';
-import { ArchitectureViewer } from './ArchitectureViewer';
-import { SpecViewer } from './SpecViewer';
-import { InfraViewer } from './InfraViewer';
-import { JourneyViewer } from './JourneyViewer';
-import { JourneyFlowViewer } from './JourneyFlowViewer';
-import { ArchiveViewer } from './ArchiveViewer';
-import { HealthViewer } from './HealthViewer';
-import { LogViewer } from './LogViewer';
-import { UniversalMarkdownViewer } from './UniversalMarkdownViewer';
+import { DocsTabs } from '@/components/docs/DocsTabs';
+import { GovernanceInventory } from '@/components/docs/GovernanceInventory';
+import { ConstitutionViewer } from '@/components/docs/ConstitutionViewer';
+import { BrainLogViewer } from '@/components/docs/BrainLogViewer';
+import { ManifestoViewer } from '@/components/docs/ManifestoViewer';
+import { ArchitectureViewer } from '@/components/docs/ArchitectureViewer';
+import { SpecViewer } from '@/components/docs/SpecViewer';
+import { InfraViewer } from '@/components/docs/InfraViewer';
+import { JourneyViewer } from '@/components/docs/JourneyViewer';
+import { JourneyFlowViewer } from '@/components/docs/JourneyFlowViewer';
+import { ArchiveViewer } from '@/components/docs/ArchiveViewer';
+import { HealthViewer } from '@/components/docs/HealthViewer';
+import { LogViewer } from '@/components/docs/LogViewer';
+import { UniversalMarkdownViewer } from '@/components/docs/UniversalMarkdownViewer';
 
 interface DocsViewerProps {
     structure: Record<DocCategory, DocFile[]>;

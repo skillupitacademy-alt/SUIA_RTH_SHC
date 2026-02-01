@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { apiClient } from '@quiz/api-client';
 import { User, Mail, Calendar, Info, Shield, CheckCircle, XCircle, Trash2, AlertTriangle, Lock } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
-import { ErrorBanner } from '../layout/ErrorBanner';
+import { ErrorBanner } from '@/components/layout/ErrorBanner';
 
 interface UserData {
     id: string;

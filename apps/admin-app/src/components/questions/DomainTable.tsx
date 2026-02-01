@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react';
 import { apiClient } from '@quiz/api-client';
 import { Layers, Globe, Clock, Plus, Edit2, Trash2, X, AlertTriangle, Monitor, Shield, BookOpen, Hash, GitBranch } from 'lucide-react';
 import { formatTimeAgo } from '@/lib/utils';
-import { ErrorBanner } from '../layout/ErrorBanner';
+import { ErrorBanner } from '@/components/layout/ErrorBanner';
+import { HierarchyFactoryWizard } from '@/components/content/HierarchyFactoryWizard';
 
 export function DomainTable() {
     const [data, setData] = useState<any[]>([]);
@@ -18,6 +19,7 @@ export function DomainTable() {
     const [isDeleteOpen, setIsDeleteOpen] = useState(false);
     const [currentDomain, setCurrentDomain] = useState<any>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isFactoryOpen, setIsFactoryOpen] = useState(false);
 
     // Form states
     const [formData, setFormData] = useState({
@@ -132,7 +134,7 @@ export function DomainTable() {
                         <div className="flex justify-between items-start mb-8">
                             <div>
                                 <h3 className="text-2xl font-black text-[#1A1A1A] italic uppercase tracking-tighter">
-                                    {currentDomain ? 'Update Domain' : 'Create Domain'}
+                                    Update Domain
                                 </h3>
                                 <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1">Management Console</p>
                             </div>
@@ -192,7 +194,7 @@ export function DomainTable() {
                                 disabled={isSubmitting}
                                 className="w-full py-4 rounded-2xl bg-[#1A1A1A] text-white text-xs font-black uppercase tracking-[0.2em] shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50"
                             >
-                                {isSubmitting ? 'Syncing...' : currentDomain ? 'Update' : 'Create'}
+                                {isSubmitting ? 'Syncing...' : 'Update'}
                             </button>
                         </form>
                     </div>
@@ -254,7 +256,7 @@ export function DomainTable() {
                     </div>
                 </div>
                 <button
-                    onClick={() => handleOpenForm()}
+                    onClick={() => setIsFactoryOpen(true)}
                     className="ml-4 px-6 py-3 rounded-2xl bg-[#FF4B91] hover:bg-[#ff3382] text-white text-[11px] font-black uppercase tracking-widest shadow-xl shadow-[#FF4B91]/20 transition-all flex items-center gap-3 active:scale-95"
                 >
                     <Plus size={16} />
@@ -347,6 +349,12 @@ export function DomainTable() {
                     <button disabled={page === totalPages} onClick={() => setPage(p => p + 1)} className="px-4 py-2 text-xs font-black uppercase tracking-widest disabled:opacity-50 hover:text-[#FF4B91] transition-colors">Next</button>
                 </div>
             </div>
+
+            <HierarchyFactoryWizard
+                isOpen={isFactoryOpen}
+                onClose={() => setIsFactoryOpen(false)}
+                onSuccess={fetchDomains}
+            />
         </div>
     );
 }

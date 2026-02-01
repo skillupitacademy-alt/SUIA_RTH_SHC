@@ -5,7 +5,7 @@ import { apiClient } from '@quiz/api-client';
 import { Hash, Plus, Edit2, Trash2, X, AlertTriangle, BookOpen, Layers } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { formatTimeAgo } from '@/lib/utils';
-import { ErrorBanner } from '../layout/ErrorBanner';
+import { ErrorBanner } from '@/components/layout/ErrorBanner';
 import { useDomains, useSubjects } from '@/hooks/useAdminHierarchy';
 
 export function TopicTable() {
