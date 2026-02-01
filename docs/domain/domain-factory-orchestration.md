@@ -13,6 +13,10 @@ A full-screen terminal-style workspace that replaces the legacy hierarchy wizard
 - **Intelligent Deduplication**: Backend logic that automatically skips existing entities at ALL levels, preventing data corruption.
 - **Registry Summary**: Post-execution report showing surgical details on entities **Added** vs. **Skipped**.
 - **Execution Timeline**: Real-time progress monitoring through stages: `Data Validation` > `Database Lookup` > `Registry Transaction` > `Hierarchy Sealing`.
+- **AI IQ Assistant v2**: An integrated prompt engineering engine that:
+    - **Contextualizes**: Automatically injects Domain, Subject, and Topic names into GPT prompts.
+    - **Enforces**: Mandates "The Reporting Trinity" (Weight/Category/Type) using explicit enum definitions.
+    - **Validates**: Synchronizes AI logic with the exact platform schema (e.g., `correctAnswer` objects).
 
 ### 2. Manual Blueprint Designer (`BlueprintFactoryWizard`)
 Blueprinting is an explicit administrative action, ensuring total control over exam parameters.

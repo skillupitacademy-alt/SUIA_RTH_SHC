@@ -134,7 +134,8 @@ export class AdminEngine {
 
     const where: any[] = [];
     if (filters?.search) {
-      where.push(sql`${examBlueprints.name} ILIKE ${'%' + filters.search + '%'}`);
+      const searchPattern = `%${filters.search}%`;
+      where.push(sql`(${examBlueprints.name} ILIKE ${searchPattern} OR ${examBlueprints.description} ILIKE ${searchPattern})`);
     }
 
     const data = await db.query.examBlueprints.findMany({
@@ -1010,7 +1011,8 @@ export class AdminEngine {
     }
 
     if (filters?.search) {
-        conditions.push(sql`${questions.questionText} ilike ${`%${filters.search}%`}`);
+        const searchPattern = `%${filters.search}%`;
+        conditions.push(sql`(${questions.questionText} ILIKE ${searchPattern} OR ${questions.correctAnswer} ILIKE ${searchPattern} OR ${questions.explanation} ILIKE ${searchPattern})`);
     }
 
     const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
@@ -1153,7 +1155,8 @@ export class AdminEngine {
     
     const conditions = [];
     if (filters?.search) {
-        conditions.push(sql`${domains.name} ilike ${`%${filters.search}%`}`);
+        const searchPattern = `%${filters.search}%`;
+        conditions.push(sql`(${domains.name} ILIKE ${searchPattern} OR ${domains.category} ILIKE ${searchPattern} OR ${domains.description} ILIKE ${searchPattern})`);
     }
     const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
 
@@ -1181,7 +1184,8 @@ export class AdminEngine {
         conditions.push(eq(subjects.domainId, filters.domainId));
     }
     if (filters?.search) {
-        conditions.push(sql`${subjects.name} ilike ${`%${filters.search}%`}`);
+        const searchPattern = `%${filters.search}%`;
+        conditions.push(sql`(${subjects.name} ILIKE ${searchPattern} OR ${subjects.description} ILIKE ${searchPattern})`);
     }
 
     const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
@@ -1216,7 +1220,8 @@ export class AdminEngine {
         conditions.push(eq(topics.subjectId, filters.subjectId));
     }
     if (filters?.search) {
-        conditions.push(sql`${topics.name} ilike ${`%${filters.search}%`}`);
+        const searchPattern = `%${filters.search}%`;
+        conditions.push(sql`(${topics.name} ILIKE ${searchPattern} OR ${topics.description} ILIKE ${searchPattern})`);
     }
 
     const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
@@ -1255,7 +1260,8 @@ export class AdminEngine {
         conditions.push(eq(subtopics.topicId, filters.topicId));
     }
     if (filters?.search) {
-        conditions.push(sql`${subtopics.name} ilike ${`%${filters.search}%`}`);
+        const searchPattern = `%${filters.search}%`;
+        conditions.push(sql`(${subtopics.name} ILIKE ${searchPattern} OR ${subtopics.description} ILIKE ${searchPattern})`);
     }
 
     const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
@@ -1295,7 +1301,8 @@ export class AdminEngine {
     
     const conditions = [];
     if (filters?.search) {
-        conditions.push(sql`${skills.name} ilike ${`%${filters.search}%`}`);
+        const searchPattern = `%${filters.search}%`;
+        conditions.push(sql`(${skills.name} ILIKE ${searchPattern} OR ${skills.category}::text ILIKE ${searchPattern} OR ${skills.mappingType}::text ILIKE ${searchPattern})`);
     }
     const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
 

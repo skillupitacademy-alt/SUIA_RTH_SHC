@@ -111,20 +111,20 @@ export function CascadingSelect({ onChange, value, hideSkills }: CascadingSelect
     };
 
     return (
-        <div className="space-y-4 p-6 rounded-2xl border border-white/40 bg-white/60 backdrop-blur-2xl shadow-xl relative overflow-hidden group">
+        <div className="space-y-4 p-8 rounded-[2.5rem] border border-slate-300 bg-white/60 backdrop-blur-2xl shadow-2xl relative overflow-hidden group">
             {/* Ambient Background Glow (Subtle Light Mode) */}
             <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-[#FF4B91]/5 rounded-full blur-[100px] -z-10 group-hover:bg-[#FF4B91]/10 transition-all duration-700" />
 
             <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
-                    <div className="h-6 w-1 bg-[#FF4B91] rounded-full shadow-[0_0_15px_rgba(255,75,145,0.5)]" />
-                    <h3 className="text-lg font-black text-[#1A1A1A] tracking-tight uppercase">Target Hierarchy</h3>
+                    <div className="h-7 w-1.5 bg-[#FF4B91] rounded-full shadow-[0_0_20px_rgba(255,75,145,0.6)]" />
+                    <h3 className="text-xl font-black text-[#1A1A1A] tracking-tight uppercase italic">Target Hierarchy</h3>
                 </div>
                 {/* Visual state indicator for debugging */}
                 {value && (
-                    <div className="flex items-center gap-2 px-3 py-1 bg-slate-100 rounded-full border border-slate-200">
-                        <Binary className="w-3 h-3 text-slate-400" />
-                        <span className="text-[9px] font-bold text-slate-500 uppercase tracking-tighter">Active Session</span>
+                    <div className="flex items-center gap-2 px-4 py-1.5 bg-slate-100 rounded-full border border-slate-300">
+                        <Binary className="w-3.5 h-3.5 text-slate-500" />
+                        <span className="text-[10px] font-black text-slate-600 uppercase tracking-[0.1em]">Active Session</span>
                     </div>
                 )}
             </div>
@@ -247,15 +247,15 @@ function QuickCreateModal({ type, onClose, onSuccess, parentId, hooks }: any) {
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-            <div className="w-full max-w-md bg-white border border-white/20 rounded-[2rem] shadow-2xl p-8 relative overflow-hidden">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md p-4 animate-in fade-in duration-300">
+            <div className="w-full max-w-lg bg-white border border-slate-300 rounded-[2.5rem] shadow-2xl p-10 relative overflow-hidden">
                 {/* Glows */}
                 <div className="absolute top-0 right-0 w-[150px] h-[150px] bg-[#FF4B91]/5 rounded-full blur-[60px] -z-10" />
 
                 <div className="flex justify-between items-center mb-8">
                     <div>
-                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#FF4B91]">Quick Add</span>
-                        <h2 className="text-2xl font-black text-[#1A1A1A] capitalize mt-1">New {type}</h2>
+                        <span className="text-[11px] font-black uppercase tracking-[0.2em] text-[#FF4B91]">Quick Registry Entry</span>
+                        <h2 className="text-3xl font-black text-[#1A1A1A] capitalize mt-1 italic tracking-tighter">New {type}</h2>
                     </div>
                     <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 transition-colors">
                         <X className="w-4 h-4" />
@@ -263,16 +263,16 @@ function QuickCreateModal({ type, onClose, onSuccess, parentId, hooks }: any) {
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-6">
-                    <div>
-                        <label className="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wide">Name</label>
+                    <div className="space-y-3">
+                        <label className="block text-[11px] font-black text-slate-600 mb-2 uppercase tracking-[0.1em]">Nomenclature / Identity</label>
                         <input
                             type="text"
                             required
                             autoFocus
                             value={name}
                             onChange={(e) => setName(e.target.value)}
-                            className="w-full h-12 px-4 bg-slate-50 border border-slate-200 rounded-xl text-[#1A1A1A] font-medium focus:border-[#FF4B91] focus:ring-2 focus:ring-[#FF4B91]/10 outline-none transition-all placeholder:text-slate-400"
-                            placeholder={`Enter ${type} name...`}
+                            className="w-full h-14 px-5 bg-slate-50 border border-slate-300 rounded-xl text-[#1A1A1A] text-lg font-black focus:border-[#FF4B91] focus:ring-4 focus:ring-[#FF4B91]/10 outline-none transition-all placeholder:text-slate-300 shadow-sm"
+                            placeholder={`Define the ${type} name...`}
                         />
                     </div>
 

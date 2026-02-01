@@ -159,5 +159,10 @@
 - **Logic Hardening**: Implemented robust ID extraction (including nested object fallback) to ensure parent `domainId` and `subjectId` dropdowns are correctly pre-populated during edits.
 - **Aesthetic Cleanup**: Systematically removed trailing underscores (`_`) from all UI labels and headers in the `HierarchyFactoryWizard` to ensure professional, jargon-free display.
 - **Full-Spectrum Build**: Verified full monorepo integrity across all projects (`web-app`, `admin-app`, `api-server`) with a successful **Exit Code 0** build cycle.
-- **Outcome**: Achieved a stable and isolated single-record edit journey for Topics, while completing the stylistic polish of the bulk factory engine.
+### Phase 28: AI Prompt Engineering & Hierarchy Restoration (Batch 70)
+- **Engine Stability**: Resolved JSX regressions in `HierarchyFactoryWizard.tsx` caused by multiple-window layout shifts; fixed `createPortal` syntax violations.
+- **Reporting Trinity Oversight**: Enforced strict metadata dimensions (Weight, Category, Mapping Type) through explicit enum definitions in the AI prompting engine.
+- **Contextual Awareness**: Implemented automatic parent injection (Domain/Subject/Topic) to provide high-fidelity context for bulk content generation.
+- **Schema Parity**: Synchronized JSON templates and AI outputs with the professional database schema, ensuring `correctAnswer` and valid enums are mandatory.
+- **Outcome**: Established a rock-solid, production-ready content factory with the platform's highest intelligence ceiling to date.
 

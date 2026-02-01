@@ -2,13 +2,14 @@
 
 import { useEffect, useState } from 'react';
 import { apiClient } from '@quiz/api-client';
-import { BookOpen, Plus, Edit2, Trash2, X, AlertTriangle, Layers } from 'lucide-react';
+import { BookOpen, Plus, Edit2, Trash2, X, AlertTriangle, Layers, Globe, Hash, GitBranch, Clock, Settings, Check } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { formatTimeAgo } from '@/lib/utils';
 import { ErrorBanner } from '@/components/layout/ErrorBanner';
 import { ZLoader } from '@/components/ui/ZLoader';
 import { useDomains } from '@/hooks/useAdminHierarchy';
 import { HierarchyFactoryWizard } from '@/components/content/HierarchyFactoryWizard';
+import { SelectField } from '@/components/entry/SelectionFields';
 
 export function SubjectTable() {
     const [data, setData] = useState<any[]>([]);
@@ -25,6 +26,7 @@ export function SubjectTable() {
 
     // Modal states
     const [isFormOpen, setIsFormOpen] = useState(false);
+    const [isFactoryOpen, setIsFactoryOpen] = useState(false);
     const [isDeleteOpen, setIsDeleteOpen] = useState(false);
     const [currentSubject, setCurrentSubject] = useState<any>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -34,7 +36,8 @@ export function SubjectTable() {
         name: '',
         domainId: '',
         description: '',
-        status: 'active' as 'active' | 'inactive'
+        status: 'active' as 'active' | 'inactive',
+        order: 0
     });
 
     useEffect(() => {
@@ -67,18 +70,21 @@ export function SubjectTable() {
                 name: subject.name,
                 domainId: subject.domainId || '',
                 description: subject.description || '',
-                status: subject.status || 'active'
+                status: subject.status || 'active',
+                order: subject.order || 0
             });
+            setIsFormOpen(true);
         } else {
             setCurrentSubject(null);
             setFormData({
                 name: '',
                 domainId: domains[0]?.id || '',
                 description: '',
-                status: 'active'
+                status: 'active',
+                order: 0
             });
+            setIsFactoryOpen(true);
         }
-        setIsFormOpen(true);
     };
 
     const handleCloseForm = () => {
@@ -89,7 +95,8 @@ export function SubjectTable() {
             name: '',
             domainId: '',
             description: '',
-            status: 'active'
+            status: 'active',
+            order: 0
         });
     };
 
@@ -138,12 +145,215 @@ export function SubjectTable() {
                 <ErrorBanner message={errorMessage} onClose={() => setErrorMessage(null)} />
             )}
 
+            {/* Standard Edit Form (Update Mode Only) - Refactored to Full-Screen Executive Console */}
+            {isFormOpen && currentSubject && (
+                <div className="fixed inset-0 z-[1000] flex flex-col bg-white animate-in slide-in-from-bottom-4 duration-500 overflow-hidden">
+                    {/* Header */}
+                    <div className="px-12 py-6 border-b border-primary/5 flex items-center justify-between bg-primary/[0.02]">
+                        <div className="flex items-center gap-5">
+                            <div className="p-3 bg-purple-100 text-purple-600 rounded-2xl shadow-xl shadow-purple-500/10 border border-purple-200">
+                                <BookOpen size={24} />
+                            </div>
+                            <div>
+                                <h3 className="text-2xl font-black text-[#1A1A1A] uppercase tracking-tighter italic">Edit Subject</h3>
+                                <div className="flex items-center gap-2 mt-0.5">
+                                    <p className="text-[11px] font-black text-slate-500 uppercase tracking-[0.2em]">
+                                        Node Modification
+                                    </p>
+                                    <span className="text-slate-300">/</span>
+                                    <p className="text-[11px] font-black text-purple-500 uppercase tracking-[0.2em] flex items-center gap-1.5 font-bold">
+                                        <Globe size={11} />
+                                        {domains.find(d => d.id === formData.domainId)?.name || 'ROOT'}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <button
+                            onClick={handleCloseForm}
+                            className="flex items-center gap-3 px-6 py-3 rounded-2xl bg-slate-50 hover:bg-slate-100 text-slate-400 hover:text-slate-600 text-[11px] font-black uppercase tracking-widest transition-all border border-slate-100"
+                        >
+                            <X size={16} />
+                            Discard Changes
+                        </button>
+                    </div>
+
+                    {/* Workspace */}
+                    <div className="flex-1 overflow-y-auto p-12 custom-scrollbar bg-slate-50/30">
+                        <div className="max-w-5xl mx-auto">
+                            <div className="grid grid-cols-12 gap-12">
+                                {/* Form Section */}
+                                <div className="col-span-8 space-y-10">
+                                    <div className="space-y-8 bg-white p-12 rounded-[2.5rem] border border-primary/5 shadow-sm">
+                                        <div className="space-y-3">
+                                            <label className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 ml-2">Subject Nomenclature</label>
+                                            <input
+                                                required
+                                                type="text"
+                                                placeholder="Enter subject name..."
+                                                value={formData.name}
+                                                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                                className="w-full bg-slate-50 border border-slate-300 rounded-xl px-5 py-3 text-lg font-black text-[#1A1A1A] focus:ring-4 focus:ring-purple-500/5 focus:bg-white focus:border-purple-500/20 outline-none transition-all shadow-sm"
+                                            />
+                                        </div>
+
+                                        <div className="grid grid-cols-2 gap-8">
+                                            <div className="space-y-3">
+                                                <label className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 ml-2">Sequence Order</label>
+                                                <div className="relative">
+                                                    <Hash className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
+                                                    <input
+                                                        type="number"
+                                                        value={formData.order}
+                                                        onChange={(e) => setFormData({ ...formData, order: parseInt(e.target.value) })}
+                                                        className="w-full bg-slate-50 border border-slate-300 rounded-xl pl-12 pr-6 py-3 text-sm font-bold text-[#1A1A1A] focus:ring-4 focus:ring-purple-500/5 focus:bg-white focus:border-purple-500/20 outline-none transition-all shadow-sm"
+                                                    />
+                                                </div>
+                                            </div>
+                                            <div className="space-y-3">
+                                                <label className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 ml-2">Lifecycle Status</label>
+                                                <div className="flex bg-slate-50 p-1.5 rounded-xl border border-slate-300">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setFormData({ ...formData, status: 'active' })}
+                                                        className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${formData.status === 'active' ? 'bg-white text-green-600 shadow-sm border border-slate-100' : 'text-slate-400 hover:text-slate-600'}`}
+                                                    >
+                                                        Active
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setFormData({ ...formData, status: 'inactive' })}
+                                                        className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${formData.status === 'inactive' ? 'bg-white text-red-600 shadow-sm border border-slate-100' : 'text-slate-400 hover:text-slate-600'}`}
+                                                    >
+                                                        Inactive
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="space-y-3">
+                                            <label className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 ml-2">Contextual Description</label>
+                                            <textarea
+                                                rows={4}
+                                                placeholder="Define the scope of this subject..."
+                                                value={formData.description}
+                                                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                                className="w-full bg-slate-50 border border-slate-300 rounded-xl px-6 py-3 text-[13px] font-medium text-slate-600 focus:ring-4 focus:ring-purple-500/5 focus:bg-white focus:border-purple-500/20 outline-none resize-none transition-all leading-relaxed shadow-sm"
+                                            />
+                                        </div>
+
+                                        {/* Advanced Hierarchy Control */}
+                                        <div className="pt-6 border-t border-slate-100">
+                                            <div className="flex items-center gap-3 mb-6">
+                                                <div className="p-2 bg-amber-50 text-amber-600 rounded-lg border border-amber-100">
+                                                    <AlertTriangle size={14} />
+                                                </div>
+                                                <h4 className="text-[11px] font-black uppercase tracking-widest text-slate-600">Advanced Hierarchy Control</h4>
+                                            </div>
+                                            <div className="p-8 bg-amber-50/30 rounded-3xl border border-amber-100/50">
+                                                <div className="grid grid-cols-1 gap-8">
+                                                    <SelectField
+                                                        label="Parent Domain Assignment"
+                                                        value={formData.domainId}
+                                                        options={domains.map(d => ({ value: d.id, label: d.name }))}
+                                                        loading={domainsHook.loading}
+                                                        onChange={(id) => setFormData({ ...formData, domainId: id })}
+                                                        placeholder="Reassign parent domain..."
+                                                    />
+                                                </div>
+                                                <p className="mt-4 text-[10px] font-bold text-amber-600/60 leading-relaxed italic">
+                                                    CAUTION: Reassigning a subject to a different domain will move all associated topics and subtopics. This action may take a few seconds to sync across indices.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Sidebar Info */}
+                                <div className="col-span-4 space-y-8">
+                                    <div className="bg-[#1A1A1A] rounded-[2.5rem] p-8 text-white shadow-2xl relative overflow-hidden group border border-white/5">
+                                        <div className="absolute top-0 right-0 w-48 h-48 bg-purple-500/10 rounded-full -mr-24 -mt-24 blur-3xl group-hover:bg-purple-500/20 transition-all duration-1000" />
+                                        <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-purple-400 mb-8 border-b border-white/10 pb-4">Subject Metrics</h4>
+                                        <div className="space-y-8">
+                                            <div className="flex items-center justify-between">
+                                                <div className="space-y-1">
+                                                    <p className="text-[9px] font-black uppercase tracking-widest text-[#FF4B91]">Layer Level</p>
+                                                    <p className="text-sm font-bold tracking-tight">Intermediate Node</p>
+                                                </div>
+                                                <div className="h-10 w-10 bg-white/5 rounded-xl border border-white/10 flex items-center justify-center text-slate-400">
+                                                    <GitBranch size={18} />
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center justify-between">
+                                                <div className="space-y-1">
+                                                    <p className="text-[9px] font-black uppercase tracking-widest text-purple-400">Created At</p>
+                                                    <p className="text-sm font-bold tracking-tight">{formatTimeAgo(currentSubject.createdAt)}</p>
+                                                </div>
+                                                <div className="h-10 w-10 bg-white/5 rounded-xl border border-white/10 flex items-center justify-center text-slate-400">
+                                                    <Clock size={18} />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="bg-purple-50/50 rounded-[2.5rem] p-10 border border-purple-100/50 relative overflow-hidden text-center">
+                                        <div className="relative z-10">
+                                            <div className="w-16 h-16 bg-white rounded-2xl shadow-xl shadow-purple-500/5 mx-auto flex items-center justify-center mb-6 border border-purple-100">
+                                                <Settings size={24} className="text-purple-500" />
+                                            </div>
+                                            <h5 className="text-[11px] font-black uppercase tracking-[0.2em] text-purple-900 mb-4">Structural Logic</h5>
+                                            <p className="text-xs font-bold text-purple-900/40 leading-relaxed italic">
+                                                "Subjects group related topics within a domain, providing a filtered layer for question generation and curriculum planning."
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Footer */}
+                    <div className="px-12 py-8 border-t border-primary/5 bg-white flex items-center justify-between sticky bottom-0 z-10 shadow-[0_-15px_40px_rgba(0,0,0,0.03)]">
+                        <div className="flex items-center gap-6">
+                            <div className="flex flex-col">
+                                <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest leading-none mb-1">Subject UUID</p>
+                                <p className="text-xs font-bold text-[#1A1A1A] tracking-tighter line-clamp-1 max-w-[150px]">{currentSubject.id}</p>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-4">
+                            <button
+                                onClick={handleCloseForm}
+                                className="px-8 py-4 rounded-2xl text-slate-400 hover:text-slate-600 text-[10px] font-black uppercase tracking-[0.2em] transition-all"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleSubmit}
+                                disabled={isSubmitting}
+                                className="px-14 py-5 rounded-[1.5rem] bg-[#1A1A1A] text-white text-[10px] font-black uppercase tracking-[0.2em] shadow-2xl hover:bg-black active:scale-[0.98] transition-all disabled:opacity-50 flex items-center gap-4 group"
+                            >
+                                {isSubmitting ? (
+                                    <>
+                                        <div className="w-3.5 h-3.5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                                        Processing Sync...
+                                    </>
+                                ) : (
+                                    <>
+                                        <Check size={18} className="group-hover:scale-110 transition-transform" />
+                                        Commit Subject Changes
+                                    </>
+                                )}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Factory Wizard Integration */}
             <HierarchyFactoryWizard
-                isOpen={isFormOpen}
-                onClose={() => setIsFormOpen(false)}
+                isOpen={isFactoryOpen}
+                onClose={() => setIsFactoryOpen(false)}
                 onSuccess={() => {
-                    setIsFormOpen(false);
+                    setIsFactoryOpen(false);
                     fetchSubjects();
                 }}
                 initialData={

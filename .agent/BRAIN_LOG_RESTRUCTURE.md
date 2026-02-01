@@ -318,3 +318,13 @@ Reduce documentation fragmentation and improve discoverability by consolidating 
 - **Logic Hardening**: Implemented robust ID extraction fallback in `handleOpenForm` to ensure parent `domainId` and `subjectId` are correctly pre-populated when editing topics.
 - **Integrity**: Verified full monorepo build stability with an **Exit Code 0** result using the correct package filter (`@quiz/admin-app`).
 - **Outcome**: Achieved a clean, professional admin interface and a stable, isolated single-entry edit workflow.
+
+### Batch 70: AI Prompt Engineering & Hierarchy Restoration
+- **Goal**: Resolve JSX structural regressions and professionalize the AI-driven content generation flow.
+- **Structural Fix**: Corrected `createPortal` syntax violations and unified conditional rendering logic in `HierarchyFactoryWizard.tsx`.
+- **AI Orchestration**: 
+    - Implemented **Contextual Parent Injection** (Domain/Subject/Topic names) into the AI prompt.
+    - Enforced **The Reporting Trinity** (Weight, Category, Mapping Type) through explicit enum definitions in the prompt instructions.
+- **Template Alignment**: Synchronized `generateTemplate` and the `Import Template` UI to match the professional schema requirements (including `correctAnswer`).
+- **Integrity**: Achieved system-wide `Exit Code 0` on full monorepo build and `tsc` verification.
+- **Outcome**: Delivered a rock-solid, production-ready content factory with high-intelligence AI prompting.

@@ -22,8 +22,8 @@ export function SelectField({ label, value, options, loading, disabled, onChange
     return (
         <div className={cn("flex flex-col gap-2 transition-opacity duration-300", disabled && "opacity-50 grayscale")}>
             <label className={cn(
-                "text-[9px] font-black uppercase tracking-[0.2em] transition-colors flex items-center gap-2",
-                active ? "text-[#FF4B91]" : "text-slate-400"
+                "text-[10px] font-black uppercase tracking-[0.2em] transition-colors flex items-center gap-2",
+                active ? "text-[#FF4B91]" : "text-slate-500"
             )}>
                 {icon && icon}
                 {label}
@@ -34,11 +34,11 @@ export function SelectField({ label, value, options, loading, disabled, onChange
                         value={value || ''}
                         onChange={(e) => onChange(e.target.value)}
                         className={cn(
-                            "w-full h-10 pl-3 pr-8 bg-white/50 border rounded-xl text-[#1A1A1A] font-bold text-xs focus:outline-none transition-all appearance-none cursor-pointer backdrop-blur-md shadow-sm",
+                            "w-full h-11 pl-3 pr-8 bg-white/50 border rounded-xl text-[#1A1A1A] font-bold text-[13px] focus:outline-none transition-all appearance-none cursor-pointer backdrop-blur-md shadow-sm",
                             "hover:bg-white/80",
                             active
-                                ? "border-[#FF4B91]/30 focus:border-[#FF4B91] focus:ring-2 focus:ring-[#FF4B91]/10"
-                                : "border-slate-200"
+                                ? "border-[#FF4B91]/40 focus:border-[#FF4B91] focus:ring-2 focus:ring-[#FF4B91]/10 shadow-lg shadow-[#FF4B91]/5"
+                                : "border-slate-300"
                         )}
                         disabled={disabled}
                     >
@@ -59,10 +59,10 @@ export function SelectField({ label, value, options, loading, disabled, onChange
                         onClick={onCreate}
                         disabled={disabled}
                         className={cn(
-                            "flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-xl transition-all border shadow-sm",
+                            "flex-shrink-0 w-11 h-11 flex items-center justify-center rounded-xl transition-all border shadow-sm",
                             active
-                                ? "bg-[#FF4B91]/5 hover:bg-[#FF4B91]/10 text-[#FF4B91] border-[#FF4B91]/20"
-                                : "bg-white/40 text-slate-400 border-slate-200 cursor-not-allowed"
+                                ? "bg-[#FF4B91]/5 hover:bg-[#FF4B91]/10 text-[#FF4B91] border-[#FF4B91]/30"
+                                : "bg-white/40 text-slate-500 border-slate-300 cursor-not-allowed"
                         )}
                         title={`Add new ${label}`}
                     >
@@ -95,8 +95,8 @@ export function MultiSelectField({ label, values, options, loading, onChange, pl
     return (
         <div className={cn("flex flex-col gap-2 transition-opacity duration-300", disabled && "opacity-50 grayscale")}>
             <label className={cn(
-                "text-[9px] font-black uppercase tracking-[0.2em] transition-colors flex items-center gap-2",
-                active ? "text-[#FF4B91]" : "text-slate-400"
+                "text-[10px] font-black uppercase tracking-[0.2em] transition-colors flex items-center gap-2",
+                active ? "text-[#FF4B91]" : "text-slate-500"
             )}>
                 {icon && icon}
                 {label} (Multi)
@@ -108,11 +108,11 @@ export function MultiSelectField({ label, values, options, loading, onChange, pl
                     onChange={handleChange}
                     disabled={disabled}
                     className={cn(
-                        "w-full h-36 p-2 bg-white/70 border rounded-2xl text-[#1A1A1A] font-bold text-xs focus:outline-none transition-all cursor-pointer backdrop-blur-md shadow-sm scrollbar-thin scrollbar-thumb-[#FF4B91]/20",
+                        "w-full h-44 p-3 bg-white/70 border rounded-2xl text-[#1A1A1A] font-bold text-[13px] focus:outline-none transition-all cursor-pointer backdrop-blur-md shadow-sm scrollbar-thin scrollbar-thumb-[#FF4B91]/20",
                         "hover:bg-white",
                         active
-                            ? "border-[#FF4B91]/30 focus:border-[#FF4B91] focus:ring-4 focus:ring-[#FF4B91]/5 shadow-[#FF4B91]/5"
-                            : "border-slate-200"
+                            ? "border-[#FF4B91]/40 focus:border-[#FF4B91] focus:ring-4 focus:ring-[#FF4B91]/5 shadow-[#FF4B91]/10"
+                            : "border-slate-300"
                     )}
                 >
                     {loading && <option disabled className="p-2 italic opacity-50"></option>}
@@ -123,7 +123,7 @@ export function MultiSelectField({ label, values, options, loading, onChange, pl
                             value={opt.id}
                             className="bg-white text-slate-800 font-bold py-2 px-3 rounded-lg mb-1 last:mb-0 hover:bg-[#FF4B91]/5 checked:bg-[#FF4B91] checked:text-white"
                         >
-                            {opt.name} {opt.category || opt.weight ? `[${(opt.category || 'N/A').toUpperCase()} | W: ${opt.weight || 1}]` : ''}
+                            {opt.name} {opt.category || opt.mappingType || opt.weight ? `[${(opt.category || 'N/A').toUpperCase()} | ${(opt.mappingType || 'N/A').toUpperCase()} | W: ${opt.weight || 1}]` : ''}
                         </option>
                     ))}
                 </select>
@@ -138,7 +138,7 @@ export function MultiSelectField({ label, values, options, loading, onChange, pl
                     </div>
                 )}
             </div>
-            <p className="text-[10px] text-slate-400 font-bold italic tracking-tight opacity-70">
+            <p className="text-[11px] text-slate-500 font-bold italic tracking-tight opacity-90">
                 Hold Ctrl/Cmd to select multiple mappings.
             </p>
         </div>

@@ -143,11 +143,21 @@ export function HierarchyFactoryWizard({ isOpen, onClose, initialData, onSuccess
     const generateAiPrompt = () => {
         const target = initialData?.target || 'hierarchy';
 
+        // Resolve parent names from either initialData or state lookups
+        const domainName = initialData?.domainName || hierarchicalChoices.domains.find(d => d.domainId === selections.domainId)?.domainName || "Selected Domain";
+        const subjectName = initialData?.subjectName || hierarchicalChoices.subjects.find(s => s.id === selections.subjectId)?.name || "Selected Subject";
+        const topicName = initialData?.topicName || hierarchicalChoices.topics.find(t => t.id === selections.topicId)?.name || "Selected Topic";
+
         let base = `I need to generate a structured educational hierarchy.
         
 IMPORTANT REQUIREMENT: 
 The following items ALREADY EXIST in our system. DO NOT provide redundant records for existing names.
 ${existingDomains.join(', ')}
+
+ENUM DEFINITIONS:
+- difficulty: choose from [simple | intermediate | expert]
+- mappingType: choose from [conceptual | technical | practical]
+- skillCategory: choose from [technical | conceptual | process]
 
 Please provide a valid JSON object matching this schema for NEW data only:`;
 
@@ -167,7 +177,6 @@ Please provide a valid JSON object matching this schema:
         }
 
         if (target === 'subject') {
-            const domainName = hierarchicalChoices.domains.find(d => d.domainId === selections.domainId)?.domainName || "Selected Domain";
             return `I need to generate a list of SUBJECTS for the domain: "${domainName}".
 
 Please provide a valid JSON object matching this schema:
@@ -183,8 +192,6 @@ Please provide a valid JSON object matching this schema:
         }
 
         if (target === 'topic') {
-            const domainName = hierarchicalChoices.domains.find(d => d.domainId === selections.domainId)?.domainName || "Selected Domain";
-            const subjectName = hierarchicalChoices.subjects.find(s => s.id === selections.subjectId)?.name || "Selected Subject";
             return `I need to generate a list of TOPICS for the subject: "${subjectName}" within "${domainName}".
 
 Please provide a valid JSON object matching this schema:
@@ -205,8 +212,7 @@ Please provide a valid JSON object matching this schema:
         }
 
         if (target === 'subtopic') {
-            const topicName = hierarchicalChoices.topics.find(t => t.id === selections.topicId)?.name || "Selected Topic";
-            return `I need to generate granular SUBTOPICS and complex QUESTIONS for the topic: "${topicName}".
+            return `I need to generate granular SUBTOPICS and complex QUESTIONS for the topic: "${topicName}" within Subject: "${subjectName}".
 
 Please provide a valid JSON object matching this schema:
 {
@@ -223,8 +229,13 @@ Please provide a valid JSON object matching this schema:
               "questions": [
                 {
                   "questionText": "string",
-                  "options": ["A", "B", "C", "D"],
-                  "correctAnswer": "string",
+                  "options": [
+                    { "text": "Option A", "isCorrect": true },
+                    { "text": "Option B", "isCorrect": false },
+                    { "text": "Option C", "isCorrect": false },
+                    { "text": "Option D", "isCorrect": false }
+                  ],
+                  "correctAnswer": "Option A",
                   "difficulty": "simple|intermediate|expert",
                   "mappingType": "conceptual|technical|practical",
                   "skillNames": ["Skill A", "Skill B"]
@@ -239,6 +250,8 @@ Please provide a valid JSON object matching this schema:
 }
 
 - Ensure 5 subtopics, each with 5 mixed-difficulty questions.
+- difficulty must be one of [simple, intermediate, expert].
+- mappingType must be one of [conceptual, technical, practical].
 - Return ONLY the JSON object.`;
         }
 
@@ -265,7 +278,15 @@ Please provide a valid JSON object matching this schema:
       "topics": [
         {
           "name": "string",
-          "questions": [ ... ]
+          "questions": [
+            {
+               "questionText": "string",
+               "options": [{ "text": "...", "isCorrect": true }, ...],
+               "correctAnswer": "...",
+               "difficulty": "simple|intermediate|expert",
+               "mappingType": "conceptual|technical|practical"
+            }
+          ]
         }
       ]
     }
@@ -283,8 +304,6 @@ Please provide a valid JSON object matching this schema:
         setSuccess(null);
 
         try {
-            // Logic moved into setExecutionStep('filter') section for cleaner flow
-
             // Start Animated Sequence
             setExecutionStep('lookup');
             await new Promise(r => setTimeout(r, 800));
@@ -373,11 +392,12 @@ Please provide a valid JSON object matching this schema:
                                 questions: [{
                                     questionText: "What is the purpose of Context API?",
                                     options: [
-                                        { text: "Data storage", isCorrect: false },
                                         { text: "Prop drilling resolution", isCorrect: true },
+                                        { text: "Data storage", isCorrect: false },
                                         { text: "UI styling", isCorrect: false },
                                         { text: "Database sync", isCorrect: false }
                                     ],
+                                    correctAnswer: "Prop drilling resolution",
                                     difficulty: "intermediate",
                                     mappingType: "conceptual"
                                 }]
@@ -390,7 +410,7 @@ Please provide a valid JSON object matching this schema:
             template = {
                 batchSkills: [
                     { name: "Memory Management", category: "technical", mappingType: "technical" },
-                    { name: "Critical Thinking", category: "cognitive", mappingType: "conceptual" }
+                    { name: "Critical Thinking", category: "conceptual", mappingType: "conceptual" }
                 ]
             };
         } else {
@@ -401,7 +421,18 @@ Please provide a valid JSON object matching this schema:
                     name: "TOPIC_AREA_1",
                     topics: [{
                         name: "SPECIFIC_TOPIC",
-                        questions: []
+                        questions: [
+                            {
+                                questionText: "Sample Question?",
+                                options: [
+                                    { text: "Correct Ans", isCorrect: true },
+                                    { text: "Wrong Ans", isCorrect: false }
+                                ],
+                                correctAnswer: "Correct Ans",
+                                difficulty: "intermediate",
+                                mappingType: "technical"
+                            }
+                        ]
                     }]
                 }]
             };
@@ -481,9 +512,12 @@ Please provide a valid JSON object matching this schema:
             {/* Main Workspace */}
             <div className="flex-1 flex overflow-hidden lg:flex-row divide-x divide-primary/5">
                 {/* Workspace Area */}
-                <div className="flex-1 flex flex-col overflow-hidden p-12 gap-10">
+                <div className={cn(
+                    "flex-1 flex flex-col overflow-hidden p-12 gap-10",
+                    mode === 'manual' ? "bg-white" : "bg-white"
+                )}>
                     {mode === 'manual' ? (
-                        <div className="max-w-3xl w-full mx-auto space-y-12 animate-in slide-in-from-left-4">
+                        <div className="max-w-5xl w-full mx-auto space-y-12 animate-in slide-in-from-bottom-4 duration-500">
                             <div className="space-y-4">
                                 <h3 className="text-4xl font-black italic uppercase tracking-tighter text-[#1A1A1A]">
                                     {initialData?.target ? `Single ${initialData.target.charAt(0).toUpperCase() + initialData.target.slice(1)} Registry` : "Single Domain Registry"}
@@ -660,7 +694,6 @@ Please provide a valid JSON object matching this schema:
                                             </>
                                         )}
                                     </div>
-
                                 </div>
                             ) : (
                                 <div className="flex-1 relative group animate-in fade-in slide-in-from-bottom-4 flex flex-col bg-white border-2 border-dashed border-primary/20 rounded-[2.5rem] overflow-hidden shadow-sm hover:border-primary/20 transition-all duration-500">
@@ -714,101 +747,98 @@ PASTE YOUR JSON MANIFEST HERE'
                     )}
                 </div>
 
-                {/* Sidebar: Intelligence & Steps */}
-                <div className="w-full lg:w-[480px] bg-slate-50/50 flex flex-col p-12 gap-10 overflow-hidden border-l border-slate-200/50">
-                    <div className="h-[40px] flex items-center shrink-0">
-                        <h3 className="text-3xl font-black italic uppercase tracking-tighter text-[#1A1A1A]">
-                            Factory Monitor
-                        </h3>
-                    </div>
-
-                    {/* Scrollable Content */}
-                    <div className="flex-1 overflow-y-auto space-y-6 custom-scrollbar pr-2">
-                        {/* execution tracker */}
-                        <div className="p-8 rounded-[2rem] bg-white border border-primary/5 shadow-xl space-y-6">
-                            <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-[#1A1A1A] flex items-center gap-3">
-                                <Activity size={18} className="text-primary" /> Execution Timeline
-                            </h4>
-
-                            <div className="space-y-4">
-                                <ExecutionItem label="Data Validation" status={executionStep === 'idle' ? 'pending' : (['lookup', 'transaction', 'filter', 'blueprint', 'done'].includes(executionStep) ? 'done' : 'pending')} />
-                                <ExecutionItem label="Database Lookup" status={executionStep === 'lookup' ? 'active' : (['transaction', 'filter', 'blueprint', 'done'].includes(executionStep) ? 'done' : 'pending')} />
-                                <ExecutionItem label="Registry Transaction" status={executionStep === 'transaction' ? 'active' : (['filter', 'done'].includes(executionStep) ? 'done' : 'pending')} />
-                                <ExecutionItem label="Hierarchy Sealing" status={executionStep === 'filter' ? 'active' : (executionStep === 'done' ? 'done' : 'pending')} />
-                            </div>
+                {/* Sidebar: Intelligence & Steps (Only visible in Bulk Mode) */}
+                {mode === 'bulk' && (
+                    <div className="w-full lg:w-[480px] bg-slate-50/50 flex flex-col p-12 gap-10 overflow-hidden border-l border-slate-200/50 animate-in slide-in-from-right-4 duration-500">
+                        <div className="h-[40px] flex items-center shrink-0">
+                            <h3 className="text-3xl font-black italic uppercase tracking-tighter text-[#1A1A1A]">
+                                Factory Monitor
+                            </h3>
                         </div>
 
-                        {error && (
-                            <div className="p-6 rounded-2xl bg-red-50 border border-red-200 text-red-600 animate-in shake-1 space-y-2">
-                                <div className="flex items-center gap-2 font-black uppercase text-xs">
-                                    <AlertTriangle size={16} /> Factory Halted
+                        {/* Scrollable Content */}
+                        <div className="flex-1 overflow-y-auto space-y-6 custom-scrollbar pr-2">
+                            {/* execution tracker */}
+                            <div className="p-8 rounded-[2rem] bg-white border border-primary/5 shadow-xl space-y-6">
+                                <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-[#1A1A1A] flex items-center gap-3">
+                                    <Activity size={18} className="text-primary" /> Execution Timeline
+                                </h4>
+
+                                <div className="space-y-4">
+                                    <ExecutionItem label="Data Validation" status={executionStep === 'idle' ? 'pending' : (['lookup', 'transaction', 'filter', 'blueprint', 'done'].includes(executionStep) ? 'done' : 'pending')} />
+                                    <ExecutionItem label="Database Lookup" status={executionStep === 'lookup' ? 'active' : (['transaction', 'filter', 'blueprint', 'done'].includes(executionStep) ? 'done' : 'pending')} />
+                                    <ExecutionItem label="Registry Transaction" status={executionStep === 'transaction' ? 'active' : (['filter', 'done'].includes(executionStep) ? 'done' : 'pending')} />
+                                    <ExecutionItem label="Hierarchy Sealing" status={executionStep === 'filter' ? 'active' : (executionStep === 'done' ? 'done' : 'pending')} />
                                 </div>
-                                <p className="text-[11px] font-bold">{error}</p>
                             </div>
-                        )}
 
-                        {success && (
-                            <div className="p-8 rounded-[2rem] bg-green-50 border border-green-200 animate-in slide-in-from-bottom-4 shadow-2xl shadow-green-500/10 space-y-6 text-center">
-                                <div className="mx-auto w-16 h-16 rounded-full bg-green-500 text-white flex items-center justify-center shadow-lg shadow-green-500/30">
-                                    <CheckCircle2 size={32} />
-                                </div>
-                                <div>
-                                    <h4 className="text-xl font-black uppercase tracking-tighter text-green-800 italic">Emission Successful</h4>
-                                    <p className="text-[10px] font-bold text-green-700 uppercase tracking-widest mt-1">Domain ID: {success.domainId}</p>
-                                </div>
-
-                                {success.stats && (
-                                    <div className="p-4 rounded-3xl bg-white/50 border border-green-200/50 space-y-3">
-                                        <h5 className="text-[9px] font-black uppercase tracking-widest text-green-800/60 text-left px-2">Registry Summary</h5>
-                                        <div className="grid grid-cols-2 gap-2">
-                                            {Object.entries(success.stats).map(([k, v]: [string, any]) => (
-                                                (v.added > 0 || v.skipped > 0) && (
-                                                    <div key={k} className="p-3 bg-white rounded-2xl border border-green-100 flex items-center justify-between">
-                                                        <span className="text-[9px] font-black uppercase tracking-widest text-slate-500">{k}</span>
-                                                        <div className="flex gap-2">
-                                                            {v.added > 0 && <span className="text-[9px] font-black px-1.5 py-0.5 bg-green-100 text-green-700 rounded-md">+{v.added}</span>}
-                                                            {v.skipped > 0 && <span className="text-[9px] font-black px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded-md text-nowrap">Skipped: {v.skipped}</span>}
-                                                        </div>
-                                                    </div>
-                                                )
-                                            ))}
-                                        </div>
+                            {error && (
+                                <div className="p-6 rounded-2xl bg-red-50 border border-red-200 text-red-600 animate-in shake-1 space-y-2">
+                                    <div className="flex items-center gap-2 font-black uppercase text-xs">
+                                        <AlertTriangle size={16} /> Factory Halted
                                     </div>
-                                )}
-                                <div className="grid grid-cols-1 gap-3">
-                                    <button
-                                        onClick={() => setBlueprintModal({
-                                            isOpen: true,
-                                            domainId: success.domainId,
-                                            domainName: manualEntry.name || (mode === 'bulk' && payload ? JSON.parse(payload).domainName : "Assessment"),
-                                            questionIds: success.questionIds || [],
-                                            questionStats: success.questionStats
-                                        })}
-                                        title="Open the static configuration panel to lock specific questions and calibrate the assessment blueprint for this domain."
-                                        className="w-full py-4 bg-[#1A1A1A] text-white rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] hover:scale-[1.02] transition-all flex items-center justify-center gap-3 px-6 shadow-xl"
-                                    >
-                                        <ClipboardList size={16} />
-                                        Configure Blueprint
-                                    </button>
-                                    <button
-                                        onClick={onClose}
-                                        title="Close the factory engine and return to the domain overview. All hierarchical records have been safely committed."
-                                        className="w-full py-4 bg-white border border-green-200 text-green-700 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] hover:bg-green-100 transition-all flex items-center justify-center gap-3 px-6"
-                                    >
-                                        Close Engine
-                                    </button>
+                                    <p className="text-[11px] font-bold">{error}</p>
                                 </div>
-                            </div>
-                        )}
-                    </div>
+                            )}
 
-                    {/* Utility Clustering at Bottom */}
-                    <div className="pt-8 border-t border-primary/5 space-y-3 shrink-0">
-                        {mode === 'bulk' && (
+                            {success && (
+                                <div className="p-8 rounded-[2rem] bg-green-50 border border-green-200 animate-in slide-in-from-bottom-4 shadow-2xl shadow-green-500/10 space-y-6 text-center">
+                                    <div className="mx-auto w-16 h-16 rounded-full bg-green-500 text-white flex items-center justify-center shadow-lg shadow-green-500/30">
+                                        <CheckCircle2 size={32} />
+                                    </div>
+                                    <div>
+                                        <h4 className="text-xl font-black uppercase tracking-tighter text-green-800 italic">Emission Successful</h4>
+                                        <p className="text-[10px] font-bold text-green-700 uppercase tracking-widest mt-1">Domain ID: {success.domainId}</p>
+                                    </div>
+
+                                    {success.stats && (
+                                        <div className="p-4 rounded-3xl bg-white/50 border border-green-200/50 space-y-3">
+                                            <h5 className="text-[9px] font-black uppercase tracking-widest text-green-800/60 text-left px-2">Registry Summary</h5>
+                                            <div className="grid grid-cols-2 gap-2">
+                                                {Object.entries(success.stats).map(([k, v]: [string, any]) => (
+                                                    (v.added > 0 || v.skipped > 0) && (
+                                                        <div key={k} className="p-3 bg-white rounded-2xl border border-green-100 flex items-center justify-between">
+                                                            <span className="text-[9px] font-black uppercase tracking-widest text-slate-500">{k}</span>
+                                                            <div className="flex gap-2">
+                                                                {v.added > 0 && <span className="text-[9px] font-black px-1.5 py-0.5 bg-green-100 text-green-700 rounded-md">+{v.added}</span>}
+                                                                {v.skipped > 0 && <span className="text-[9px] font-black px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded-md text-nowrap">Skipped: {v.skipped}</span>}
+                                                            </div>
+                                                        </div>
+                                                    )
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+                                    <div className="grid grid-cols-1 gap-3">
+                                        <button
+                                            onClick={() => setBlueprintModal({
+                                                isOpen: true,
+                                                domainId: success.domainId,
+                                                domainName: manualEntry.name || (mode === 'bulk' && payload ? JSON.parse(payload).domainName : "Assessment"),
+                                                questionIds: success.questionIds || [],
+                                                questionStats: success.questionStats
+                                            })}
+                                            title="Open the static configuration panel to lock specific questions and calibrate the assessment blueprint for this domain."
+                                            className="w-full py-4 bg-[#1A1A1A] text-white rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] hover:scale-[1.02] transition-all flex items-center justify-center gap-3 px-6 shadow-xl"
+                                        >
+                                            <ClipboardList size={16} />
+                                            Configure Blueprint
+                                        </button>
+                                        <button
+                                            onClick={onClose}
+                                            title="Close the factory engine and return to the domain overview. All hierarchical records have been safely committed."
+                                            className="w-full py-4 bg-white border border-green-200 text-green-700 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] hover:bg-green-100 transition-all flex items-center justify-center gap-3 px-6"
+                                        >
+                                            Close Engine
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Utility Clustering at Bottom */}
+                        <div className="pt-8 border-t border-primary/5 space-y-3 shrink-0">
                             <div className="grid grid-cols-1 gap-5">
-                                {showEditor && (
-                                    null
-                                )}
                                 <ZTooltip content="Load a .json manifest file from your local storage. This is the fastest way to re-run previously validated batches or bulk-import legacy content." side="top">
                                     <button
                                         onClick={() => fileInputRef.current?.click()}
@@ -827,9 +857,9 @@ PASTE YOUR JSON MANIFEST HERE'
                                     </button>
                                 </ZTooltip>
                             </div>
-                        )}
+                        </div>
                     </div>
-                </div>
+                )}
             </div>
 
             {/* Footer */}
@@ -877,7 +907,7 @@ PASTE YOUR JSON MANIFEST HERE'
                     onClose();
                 }}
             />
-        </div >,
+        </div>,
         document.body
     );
 }

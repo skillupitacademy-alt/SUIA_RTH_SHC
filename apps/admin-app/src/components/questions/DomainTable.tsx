@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { apiClient } from '@quiz/api-client';
-import { Layers, Globe, Clock, Plus, Edit2, Trash2, X, AlertTriangle, Monitor, Shield, BookOpen, Hash, GitBranch } from 'lucide-react';
+import { Layers, Globe, Clock, Plus, Edit2, Trash2, X, AlertTriangle, Monitor, Shield, BookOpen, Hash, GitBranch, Check } from 'lucide-react';
 import { formatTimeAgo } from '@/lib/utils';
 import { ErrorBanner } from '@/components/layout/ErrorBanner';
 import { ZLoader } from '@/components/ui/ZLoader';
@@ -127,77 +127,171 @@ export function DomainTable() {
                 <ErrorBanner message={errorMessage} onClose={() => setErrorMessage(null)} />
             )}
 
-            {/* Form Modal */}
-            {isFormOpen && (
-                <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300">
-                    <div className="bg-white border border-primary/10 rounded-[2.5rem] p-8 max-w-lg w-full shadow-2xl relative overflow-hidden">
-                        <div className="absolute top-0 left-0 w-full h-2 bg-[#FF4B91]" />
-                        <div className="flex justify-between items-start mb-8">
-                            <div>
-                                <h3 className="text-2xl font-black text-[#1A1A1A] italic uppercase tracking-tighter">
-                                    Update Domain
-                                </h3>
-                                <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1">Management Console</p>
+            {/* Standard Edit Form (Update Mode Only) - Refactored to Full-Screen Executive Console */}
+            {isFormOpen && currentDomain && (
+                <div className="fixed inset-0 z-[1000] flex flex-col bg-white animate-in slide-in-from-bottom-4 duration-500 overflow-hidden">
+                    {/* Header */}
+                    <div className="px-12 py-6 border-b border-primary/5 flex items-center justify-between bg-primary/[0.02]">
+                        <div className="flex items-center gap-5">
+                            <div className="p-3 bg-blue-100 text-blue-600 rounded-2xl shadow-xl shadow-blue-500/10 border border-blue-200">
+                                <Globe size={24} />
                             </div>
-                            <button onClick={handleCloseForm} className="p-2 hover:bg-slate-100 rounded-full transition-colors">
-                                <X size={20} className="text-slate-400" />
+                            <div>
+                                <h3 className="text-2xl font-black text-[#1A1A1A] uppercase tracking-tighter italic">Edit Domain</h3>
+                                <p className="text-[11px] font-black text-slate-500 uppercase tracking-[0.2em] mt-0.5 flex items-center gap-2">
+                                    Global Architecture <span className="text-blue-500">•</span> Root Registry
+                                </p>
+                            </div>
+                        </div>
+                        <button
+                            onClick={handleCloseForm}
+                            className="flex items-center gap-3 px-6 py-3 rounded-2xl bg-slate-50 hover:bg-slate-100 text-slate-400 hover:text-slate-600 text-[11px] font-black uppercase tracking-widest transition-all border border-slate-100"
+                        >
+                            <X size={16} />
+                            Discard Changes
+                        </button>
+                    </div>
+
+                    {/* Workspace */}
+                    <div className="flex-1 overflow-y-auto p-12 custom-scrollbar bg-slate-50/30">
+                        <div className="max-w-5xl mx-auto">
+                            <div className="grid grid-cols-12 gap-12">
+                                {/* Form Section */}
+                                <div className="col-span-8 space-y-10">
+                                    <div className="space-y-8 bg-white p-12 rounded-[2.5rem] border border-primary/5 shadow-sm">
+                                        <div className="space-y-3">
+                                            <label className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 ml-2">Domain Identity</label>
+                                            <input
+                                                required
+                                                type="text"
+                                                placeholder="Enter domain name..."
+                                                value={formData.name}
+                                                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                                className="w-full bg-slate-50 border border-slate-300 rounded-xl px-5 py-3 text-lg font-black text-[#1A1A1A] focus:ring-4 focus:ring-blue-500/5 focus:bg-white focus:border-blue-500/20 outline-none transition-all shadow-sm"
+                                            />
+                                        </div>
+
+                                        <div className="grid grid-cols-2 gap-8">
+                                            <div className="space-y-3">
+                                                <label className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 ml-2">Taxonomy Category</label>
+                                                <input
+                                                    type="text"
+                                                    placeholder="e.g. Technology, Science..."
+                                                    value={formData.category}
+                                                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                                                    className="w-full bg-slate-50 border border-slate-300 rounded-xl px-5 py-3 text-sm font-bold text-[#1A1A1A] focus:ring-4 focus:ring-blue-500/5 focus:bg-white focus:border-blue-500/20 outline-none transition-all shadow-sm"
+                                                />
+                                            </div>
+                                            <div className="space-y-3">
+                                                <label className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 ml-2">Network Status</label>
+                                                <div className="flex bg-slate-50 p-1.5 rounded-xl border border-slate-300">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setFormData({ ...formData, status: 'active' })}
+                                                        className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${formData.status === 'active' ? 'bg-white text-green-600 shadow-sm border border-slate-100' : 'text-slate-400 hover:text-slate-600'}`}
+                                                    >
+                                                        Active
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setFormData({ ...formData, status: 'inactive' })}
+                                                        className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${formData.status === 'inactive' ? 'bg-white text-red-600 shadow-sm border border-slate-100' : 'text-slate-400 hover:text-slate-600'}`}
+                                                    >
+                                                        Inactive
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="space-y-3">
+                                            <label className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 ml-2">Structural Definition</label>
+                                            <textarea
+                                                rows={4}
+                                                placeholder="Define the high-level boundaries of this domain..."
+                                                value={formData.description}
+                                                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                                className="w-full bg-slate-50 border border-slate-300 rounded-xl px-6 py-3 text-[13px] font-medium text-slate-600 focus:ring-4 focus:ring-blue-500/5 focus:bg-white focus:border-blue-500/20 outline-none resize-none transition-all leading-relaxed shadow-sm"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Sidebar Info */}
+                                <div className="col-span-4 space-y-8">
+                                    <div className="bg-[#1A1A1A] rounded-[2.5rem] p-8 text-white shadow-2xl relative overflow-hidden group border border-white/5">
+                                        <div className="absolute top-0 right-0 w-48 h-48 bg-blue-500/10 rounded-full -mr-24 -mt-24 blur-3xl group-hover:bg-blue-500/20 transition-all duration-1000" />
+                                        <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-400 mb-8 border-b border-white/10 pb-4">Domain Metrics</h4>
+                                        <div className="space-y-8">
+                                            <div className="flex items-center justify-between">
+                                                <div className="space-y-1">
+                                                    <p className="text-[9px] font-black uppercase tracking-widest text-[#FF4B91]">Root Level</p>
+                                                    <p className="text-sm font-bold tracking-tight">Primary Node</p>
+                                                </div>
+                                                <div className="h-10 w-10 bg-white/5 rounded-xl border border-white/10 flex items-center justify-center text-slate-400">
+                                                    <Layers size={18} />
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center justify-between">
+                                                <div className="space-y-1">
+                                                    <p className="text-[9px] font-black uppercase tracking-widest text-blue-400">Created</p>
+                                                    <p className="text-sm font-bold tracking-tight">{formatTimeAgo(currentDomain.createdAt)}</p>
+                                                </div>
+                                                <div className="h-10 w-10 bg-white/5 rounded-xl border border-white/10 flex items-center justify-center text-slate-400">
+                                                    <Clock className="w-[18px] h-[18px]" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="bg-blue-50/50 rounded-[2.5rem] p-10 border border-blue-100/50 relative overflow-hidden text-center">
+                                        <div className="relative z-10">
+                                            <div className="w-16 h-16 bg-white rounded-2xl shadow-xl shadow-blue-500/5 mx-auto flex items-center justify-center mb-6 border border-blue-100">
+                                                <Shield size={24} className="text-blue-500" />
+                                            </div>
+                                            <h5 className="text-[11px] font-black uppercase tracking-[0.2em] text-blue-900 mb-4">Core Integrity</h5>
+                                            <p className="text-xs font-bold text-blue-900/40 leading-relaxed italic">
+                                                "Domain entities act as the root anchors for the entire knowledge graph. Changes here propagate to all subjects, topics, and question banks."
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Footer */}
+                    <div className="px-12 py-8 border-t border-primary/5 bg-white flex items-center justify-between sticky bottom-0 z-10 shadow-[0_-15px_40px_rgba(0,0,0,0.03)]">
+                        <div className="flex items-center gap-6">
+                            <div className="flex flex-col">
+                                <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest leading-none mb-1">Domain ID</p>
+                                <p className="text-xs font-bold text-[#1A1A1A] tracking-tighter line-clamp-1 max-w-[150px]">{currentDomain.id}</p>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-4">
+                            <button
+                                onClick={handleCloseForm}
+                                className="px-8 py-4 rounded-2xl text-slate-400 hover:text-slate-600 text-[10px] font-black uppercase tracking-[0.2em] transition-all"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleSubmit}
+                                disabled={isSubmitting}
+                                className="px-14 py-5 rounded-[1.5rem] bg-[#1A1A1A] text-white text-[10px] font-black uppercase tracking-[0.2em] shadow-2xl hover:bg-black active:scale-[0.98] transition-all disabled:opacity-50 flex items-center gap-4 group"
+                            >
+                                {isSubmitting ? (
+                                    <>
+                                        <div className="w-3.5 h-3.5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                                        Syncing Registry...
+                                    </>
+                                ) : (
+                                    <>
+                                        <Check size={18} className="group-hover:scale-110 transition-transform" />
+                                        Commit Domain Changes
+                                    </>
+                                )}
                             </button>
                         </div>
-
-                        <form onSubmit={handleSubmit} className="space-y-6">
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-2 col-span-2">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Domain Name</label>
-                                    <input
-                                        required
-                                        type="text"
-                                        placeholder="Enter domain name..."
-                                        value={formData.name}
-                                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                        className="w-full bg-slate-50 border-none rounded-2xl px-5 py-3 text-sm font-bold text-[#1A1A1A] focus:ring-2 focus:ring-[#FF4B91]/20 outline-none"
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Category</label>
-                                    <input
-                                        type="text"
-                                        placeholder="Category..."
-                                        value={formData.category}
-                                        onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                                        className="w-full bg-slate-50 border-none rounded-2xl px-5 py-3 text-sm font-bold text-[#1A1A1A] focus:ring-2 focus:ring-[#FF4B91]/20 outline-none"
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Status</label>
-                                    <select
-                                        value={formData.status}
-                                        onChange={(e) => setFormData({ ...formData, status: e.target.value as any })}
-                                        className="w-full bg-slate-50 border-none rounded-2xl px-5 py-3 text-sm font-bold text-[#1A1A1A] focus:ring-2 focus:ring-[#FF4B91]/20 outline-none appearance-none cursor-pointer"
-                                    >
-                                        <option value="active">Active</option>
-                                        <option value="inactive">Inactive</option>
-                                    </select>
-                                </div>
-                                <div className="space-y-2 col-span-2">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Description</label>
-                                    <textarea
-                                        rows={3}
-                                        placeholder="Provide domain context..."
-                                        value={formData.description}
-                                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                                        className="w-full bg-slate-50 border-none rounded-2xl px-5 py-3 text-sm font-bold text-[#1A1A1A] focus:ring-2 focus:ring-[#FF4B91]/20 outline-none resize-none"
-                                    />
-                                </div>
-                            </div>
-
-                            <button
-                                type="submit"
-                                disabled={isSubmitting}
-                                className="w-full py-4 rounded-2xl bg-[#1A1A1A] text-white text-xs font-black uppercase tracking-[0.2em] shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50"
-                            >
-                                {isSubmitting ? 'Syncing...' : 'Update'}
-                            </button>
-                        </form>
                     </div>
                 </div>
             )}
