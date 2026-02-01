@@ -2,8 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import { apiClient } from '@quiz/api-client';
-import { Shield, Plus, Edit2, Trash2, X, AlertTriangle, Hash, Cpu, Settings } from 'lucide-react';
+import { Shield, Plus, Edit2, Trash2, X, AlertTriangle, Hash, Cpu, Settings, Zap } from 'lucide-react';
 import { ErrorBanner } from '@/components/layout/ErrorBanner';
+import { ZLoader } from '@/components/ui/ZLoader';
+import { HierarchyFactoryWizard } from '@/components/content/HierarchyFactoryWizard';
 
 const SKILL_CATEGORIES: Record<string, string> = {
     problem_solving: 'Problem Solving',
@@ -33,6 +35,7 @@ export function SkillTable() {
     // Modal states
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+    const [isFactoryOpen, setIsFactoryOpen] = useState(false);
     const [currentSkill, setCurrentSkill] = useState<any>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -260,22 +263,28 @@ export function SkillTable() {
                         </div>
                     </div>
                 </div>
-                <button
-                    onClick={() => handleOpenForm()}
-                    className="ml-4 px-6 py-3 rounded-2xl bg-[#FF4B91] hover:bg-[#ff3382] text-white text-[11px] font-black uppercase tracking-widest shadow-xl shadow-[#FF4B91]/20 transition-all flex items-center gap-3 active:scale-95"
-                >
-                    <Plus size={16} />
-                    Add Skill
-                </button>
+                <div className="flex items-center gap-3">
+                    <button
+                        onClick={() => setIsFactoryOpen(true)}
+                        className="px-6 py-3 rounded-2xl bg-[#1A1A1A] text-white text-[11px] font-black uppercase tracking-widest shadow-xl shadow-black/10 hover:scale-[1.02] active:scale-95 transition-all flex items-center gap-2 group border border-primary/10"
+                    >
+                        <Zap size={14} className="text-[#FF4B91]" />
+                        Bulk Factory
+                    </button>
+                    <button
+                        onClick={() => handleOpenForm()}
+                        className="px-6 py-3 rounded-2xl bg-[#FF4B91] hover:bg-[#ff3382] text-white text-[11px] font-black uppercase tracking-widest shadow-xl shadow-[#FF4B91]/20 transition-all flex items-center gap-3 active:scale-95"
+                    >
+                        <Plus size={16} />
+                        Add Skill
+                    </button>
+                </div>
             </div>
 
             <div className="rounded-[2.5rem] border border-primary/10 bg-white/50 backdrop-blur-xl overflow-hidden shadow-xl min-h-[400px] relative">
                 {isLoading && (
                     <div className="absolute inset-0 z-10 bg-white/60 backdrop-blur-sm flex items-center justify-center">
-                        <div className="flex flex-col items-center gap-3">
-                            <div className="w-10 h-10 border-4 border-cyan-50 border-t-cyan-500 rounded-full animate-spin" />
-                            <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Refreshing Matrix...</p>
-                        </div>
+                        <ZLoader text="Loading Skill Records_" />
                     </div>
                 )}
                 <table className="w-full text-left">
@@ -355,6 +364,13 @@ export function SkillTable() {
                     <button disabled={page === totalPages} onClick={() => setPage(p => p + 1)} className="px-4 py-2 text-xs font-black uppercase tracking-widest disabled:opacity-50 hover:text-[#FF4B91] transition-colors">Next</button>
                 </div>
             </div>
+
+            <HierarchyFactoryWizard
+                isOpen={isFactoryOpen}
+                onClose={() => setIsFactoryOpen(false)}
+                initialData={{ target: 'skill' }}
+                onSuccess={fetchSkills}
+            />
         </div>
     );
 }

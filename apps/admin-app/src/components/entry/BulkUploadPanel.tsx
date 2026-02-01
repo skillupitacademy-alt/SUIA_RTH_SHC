@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Upload, FileJson, X, Check, AlertCircle, Trash2, Copy, Sparkles, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { ZLoader } from '@/components/ui/ZLoader';
 import { apiClient } from '@quiz/api-client';
 
 interface BulkUploadPanelProps {
@@ -249,7 +250,7 @@ Output strictly in the following JSON format:
                         >
                             {isUploading ? (
                                 <>
-                                    <Loader2 className="w-5 h-5 animate-spin" /> Processing...
+                                    <ZLoader size="xs" className="text-white" center={false} /> Processing...
                                 </>
                             ) : (
                                 <>

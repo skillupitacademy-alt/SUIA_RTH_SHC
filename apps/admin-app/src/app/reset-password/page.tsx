@@ -3,7 +3,8 @@
 import { Suspense, useState, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { apiClient } from '@quiz/api-client';
-import { Loader2, Lock, ShieldCheck, CheckCircle2, AlertTriangle, Eye, EyeOff } from 'lucide-react';
+import { Lock, ShieldCheck, CheckCircle2, AlertTriangle, Eye, EyeOff } from 'lucide-react';
+import { ZLoader } from '@/components/ui/ZLoader';
 import Link from 'next/link';
 
 function ResetPasswordForm() {
@@ -67,8 +68,7 @@ function ResetPasswordForm() {
     if (isVerifying) {
         return (
             <div className="flex flex-col items-center justify-center p-12 space-y-4">
-                <Loader2 className="animate-spin text-primary" size={48} />
-                <p className="text-sm font-black uppercase tracking-widest text-muted-foreground animate-pulse">Establishing Secure Channel...</p>
+                <ZLoader size="lg" text="Establishing Secure Channel..." />
             </div>
         );
     }
@@ -106,8 +106,7 @@ function ResetPasswordForm() {
                     </p>
                 </div>
                 <div className="flex items-center justify-center gap-2">
-                    <Loader2 className="animate-spin text-green-500" size={16} />
-                    <span className="text-[10px] font-black uppercase tracking-widest text-green-600">Secure Handshake in progress</span>
+                    <ZLoader size="xs" text="Secure Handshake in progress" center={false} />
                 </div>
             </div>
         );
@@ -177,7 +176,7 @@ function ResetPasswordForm() {
                     disabled={isLoading}
                     className="w-full py-4 rounded-xl bg-primary text-primary-foreground font-black tracking-wide shadow-lg shadow-primary/25 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-2"
                 >
-                    {isLoading ? <Loader2 className="animate-spin" /> : "FINALIZE RESET"}
+                    {isLoading ? <ZLoader size="xs" className="text-white" center={false} /> : "FINALIZE RESET"}
                 </button>
             </form>
         </div>
@@ -188,8 +187,7 @@ export default function ResetPasswordPage() {
     return (
         <Suspense fallback={
             <div className="flex flex-col items-center justify-center p-12 space-y-4">
-                <Loader2 className="animate-spin text-primary" size={48} />
-                <p className="text-sm font-black uppercase tracking-widest text-muted-foreground animate-pulse">Initializing Security...</p>
+                <ZLoader size="lg" text="Initializing Security..." />
             </div>
         }>
             <ResetPasswordForm />

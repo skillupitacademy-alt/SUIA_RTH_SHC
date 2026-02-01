@@ -10,7 +10,6 @@ import {
     AlertTriangle,
     CheckCircle2,
     X,
-    Loader2,
     ClipboardCopy,
     Wand2,
     ShieldCheck,
@@ -26,6 +25,7 @@ import {
     ClipboardList
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { ZLoader } from '@/components/ui/ZLoader';
 import { BlueprintFactoryWizard } from '@/components/content/BlueprintFactoryWizard';
 
 interface HierarchyFactoryWizardProps {
@@ -40,7 +40,7 @@ type FactoryMode = 'manual' | 'bulk';
 
 export function HierarchyFactoryWizard({ isOpen, onClose, initialData, onSuccess }: HierarchyFactoryWizardProps) {
     const [mode, setMode] = useState<FactoryMode>('manual');
-    const [manualDomain, setManualDomain] = useState({ name: '', description: '' });
+    const [manualEntry, setManualEntry] = useState({ name: '', description: '', category: '', domainId: '', subjectId: '', topicId: '' });
     const [payload, setPayload] = useState(initialData ? JSON.stringify(initialData, null, 2) : '');
     const [showEditor, setShowEditor] = useState(!!initialData);
     const [isProcessing, setIsProcessing] = useState(false);
@@ -87,35 +87,71 @@ export function HierarchyFactoryWizard({ isOpen, onClose, initialData, onSuccess
 
     // AI Prompt Generation Logic
     const generateAiPrompt = () => {
+        const target = initialData?.target || 'hierarchy';
+
         let base = `I need to generate a structured educational hierarchy.
         
 IMPORTANT REQUIREMENT: 
-The following domains ALREADY EXIST in our system. DO NOT provide redundant records for:
+The following items ALREADY EXIST in our system. DO NOT provide redundant records for existing names.
 ${existingDomains.join(', ')}
 
 Please provide a valid JSON object matching this schema for NEW data only:`;
 
-        if (initialData?.domainId && !initialData.subjectId) {
-            // Subject Context
-            return `${base}\n{
+        if (target === 'domain') {
+            return `I need to generate a list of new educational DOMAINS for our quiz platform.
+
+Please provide a valid JSON object matching this schema:
+{
+  "batchDomains": [
+    { "name": "string", "description": "string", "category": "string" }
+  ]
+}
+
+- Focus on unique, high-level educational areas (e.g., "Full Stack Development", "Cloud Architecture").
+- Provide at least 5-10 domains.
+- Return ONLY the JSON object.`;
+        }
+
+        if (target === 'subject') {
+            return `I need to generate a list of SUBJECTS for the domain: "${initialData.domainName}".
+
+Please provide a valid JSON object matching this schema:
+{
+  "domainId": "${initialData.domainId}",
+  "subjects": [
+    { "name": "string" }
+  ]
+}
+
+- Focus on core areas within "${initialData.domainName}".
+- Return ONLY the JSON object.`;
+        }
+
+        if (target === 'topic') {
+            return `I need to generate a list of TOPICS for the subject: "${initialData.subjectName}" within "${initialData.domainName}".
+
+Please provide a valid JSON object matching this schema:
+{
   "domainId": "${initialData.domainId}",
   "subjects": [
     {
-      "name": "string",
+      "id": "${initialData.subjectId}",
       "topics": [
-        {
-          "name": "string",
-          "questions": [ ... ]
-        }
+        { "name": "string" }
       ]
     }
   ]
-}\n\n- Focus on generating high-quality ${initialData.domainName || "Domain"} subjects.\n- Return ONLY the JSON object.`;
+}
+
+- Focus on technical sub-disciplines.
+- Return ONLY the JSON object.`;
         }
 
-        if (initialData?.topicId) {
-            // Subtopic Context - Generate subtopics and questions
-            return `${base}\n{
+        if (target === 'subtopic') {
+            return `I need to generate granular SUBTOPICS and complex QUESTIONS for the topic: "${initialData.topicName}".
+
+Please provide a valid JSON object matching this schema:
+{
   "domainId": "${initialData.domainId}",
   "subjects": [
     {
@@ -124,37 +160,45 @@ Please provide a valid JSON object matching this schema for NEW data only:`;
         {
           "id": "${initialData.topicId}",
           "subtopics": [
-            {
-              "name": "string",
-              "questions": [ ... ]
+            { 
+              "name": "string", 
+              "questions": [
+                {
+                  "questionText": "string",
+                  "options": ["A", "B", "C", "D"],
+                  "correctAnswer": "string",
+                  "difficulty": "simple|intermediate|expert",
+                  "mappingType": "conceptual|technical|practical",
+                  "skillNames": ["Skill A", "Skill B"]
+                }
+              ] 
             }
           ]
         }
       ]
     }
   ]
-}\n\n- Focus on generating granular subtopics for ${initialData.topicName || "Topic"}.\n- Return ONLY the JSON object.`;
+}
+
+- Ensure 5 subtopics, each with 5 mixed-difficulty questions.
+- Return ONLY the JSON object.`;
         }
 
-        if (initialData?.subjectId) {
-            // Topic Context
-            return `${base}\n{
-  "domainId": "${initialData.domainId}",
-  "subjects": [
-    {
-      "id": "${initialData.subjectId}",
-      "topics": [
-        {
-          "name": "string",
-          "questions": [ ... ]
-        }
-      ]
-    }
+        if (target === 'skill') {
+            return `I need to generate a core set of SKILLS to be used across the platform.
+
+Please provide a valid JSON object matching this schema:
+{
+  "batchSkills": [
+    { "name": "string", "category": "technical|conceptual|process", "mappingType": "conceptual|technical|practical" }
   ]
-}\n\n- Focus on generating specialized topics for ${initialData.subjectName || "Subject"}.\n- Return ONLY the JSON object.`;
+}
+
+- Focus on universal competencies (e.g., "Problem Solving", "API Design", "Security Posture").
+- Return ONLY the JSON object.`;
         }
 
-        // Default: Full Domain Hierarchy
+        // Default: Full Domain Hierarchy (Vertical)
         return `${base}\n{
   "domainName": "string",
   "subjects": [
@@ -181,9 +225,7 @@ Please provide a valid JSON object matching this schema for NEW data only:`;
         setSuccess(null);
 
         try {
-            const data = mode === 'manual'
-                ? { domainName: manualDomain.name }
-                : JSON.parse(payload);
+            // Logic moved into setExecutionStep('filter') section for cleaner flow
 
             // Start Animated Sequence
             setExecutionStep('lookup');
@@ -193,7 +235,29 @@ Please provide a valid JSON object matching this schema for NEW data only:`;
             await new Promise(r => setTimeout(r, 600));
 
             setExecutionStep('filter');
-            const result = await apiClient.admin.atomicSeed(data);
+
+            let finalData: any = {};
+            if (mode === 'manual') {
+                const target = initialData?.target || 'domain';
+                if (target === 'domain') finalData = { domainName: manualEntry.name };
+                if (target === 'subject') finalData = { domainId: initialData.domainId, subjects: [{ name: manualEntry.name }] };
+                if (target === 'topic') finalData = { domainId: initialData.domainId, subjects: [{ id: initialData.subjectId, topics: [{ name: manualEntry.name }] }] };
+                if (target === 'subtopic') finalData = {
+                    domainId: initialData.domainId,
+                    subjects: [{
+                        id: initialData.subjectId,
+                        topics: [{
+                            id: initialData.topicId,
+                            subtopics: [{ name: manualEntry.name }]
+                        }]
+                    }]
+                };
+                if (target === 'skill') finalData = { batchSkills: [{ name: manualEntry.name }] };
+            } else {
+                finalData = JSON.parse(payload);
+            }
+
+            const result = await apiClient.admin.atomicSeed(finalData);
 
             setExecutionStep('done');
             await new Promise(r => setTimeout(r, 400));
@@ -209,29 +273,74 @@ Please provide a valid JSON object matching this schema for NEW data only:`;
     };
 
     const generateTemplate = () => {
-        let template: any = {
-            domainName: "ENTER_NEW_DOMAIN",
-            subjects: [{
-                name: "TOPIC_AREA_1",
-                topics: [{
-                    name: "SPECIFIC_TOPIC",
-                    questions: []
-                }]
-            }]
-        };
+        const target = initialData?.target || 'hierarchy';
+        let template: any = {};
 
-        // Contextual schemas
-        if (initialData?.domainId) {
+        if (target === 'domain') {
             template = {
-                domainId: initialData.domainId,
-                subjects: [{ name: "NEW_SUBJECT", topics: [{ name: "TOPIC_A" }] }]
+                batchDomains: [
+                    { name: "Cloud Engineering", description: "Distributed systems and infrastructure.", category: "DevOps" },
+                    { name: "Cybersecurity", description: "Threat detection and mitigation.", category: "Security" }
+                ]
             };
-        } else if (initialData?.subjectId) {
+        } else if (target === 'subject') {
             template = {
-                domainId: initialData.domainId,
+                domainId: initialData.domainId || "DOMAIN_UUID",
+                subjects: [
+                    { name: "Frontend Development" },
+                    { name: "Backend Architecture" }
+                ]
+            };
+        } else if (target === 'topic') {
+            template = {
+                domainId: initialData.domainId || "DOMAIN_UUID",
                 subjects: [{
-                    id: initialData.subjectId,
-                    topics: [{ name: "NEW_TOPIC", questions: [] }]
+                    id: initialData.subjectId || "SUBJECT_UUID",
+                    topics: [
+                        { name: "React Framework" },
+                        { name: "Node.js Runtimes" }
+                    ]
+                }]
+            };
+        } else if (target === 'subtopic') {
+            template = {
+                domainId: initialData.domainId || "DOMAIN_UUID",
+                subjects: [{
+                    id: initialData.subjectId || "SUBJECT_UUID",
+                    topics: [{
+                        id: initialData.topicId || "TOPIC_UUID",
+                        subtopics: [
+                            {
+                                name: "Context API",
+                                questions: [{
+                                    questionText: "What is the purpose of Context API?",
+                                    options: ["Data storage", "Prop drilling resolution", "UI styling", "Database sync"],
+                                    correctAnswer: "Prop drilling resolution",
+                                    difficulty: "intermediate",
+                                    mappingType: "conceptual"
+                                }]
+                            }
+                        ]
+                    }]
+                }]
+            };
+        } else if (target === 'skill') {
+            template = {
+                batchSkills: [
+                    { name: "Memory Management", category: "technical", mappingType: "technical" },
+                    { name: "Critical Thinking", category: "cognitive", mappingType: "conceptual" }
+                ]
+            };
+        } else {
+            // Default Hierarchy template
+            template = {
+                domainName: "ENTER_NEW_DOMAIN",
+                subjects: [{
+                    name: "TOPIC_AREA_1",
+                    topics: [{
+                        name: "SPECIFIC_TOPIC",
+                        questions: []
+                    }]
                 }]
             };
         }
@@ -303,46 +412,54 @@ Please provide a valid JSON object matching this schema for NEW data only:`;
                     {mode === 'manual' ? (
                         <div className="max-w-3xl w-full mx-auto space-y-12 animate-in slide-in-from-left-4">
                             <div className="space-y-4">
-                                <h3 className="text-4xl font-black italic uppercase tracking-tighter text-[#1A1A1A]">Single Domain Registry</h3>
+                                <h3 className="text-4xl font-black italic uppercase tracking-tighter text-[#1A1A1A]">
+                                    {initialData?.target ? `Single ${initialData.target.charAt(0).toUpperCase() + initialData.target.slice(1)} Registry_` : "Single Domain Registry_"}
+                                </h3>
                                 <p className="text-sm font-medium text-muted-foreground leading-relaxed">
-                                    Register a new educational domain. You will be able to customize the **Assessment Blueprint** after registration is complete.
+                                    Register a new {initialData?.target || 'domain'}.
+                                    {(!initialData?.target || initialData.target === 'domain') && " You will be able to customize the Assessment Blueprint after registration is complete."}
+                                    {initialData?.domainName && ` Target Domain: ${initialData.domainName}`}
                                 </p>
                             </div>
 
                             <div className="space-y-8">
                                 <div className="space-y-3">
                                     <label className="text-[10px] font-black uppercase tracking-widest text-primary flex items-center gap-2">
-                                        <Layers size={14} /> Domain Identity Name_
+                                        <Layers size={14} /> {initialData?.target?.toUpperCase() || 'DOMAIN'} IDENTITY NAME_
                                     </label>
                                     <input
                                         type="text"
-                                        placeholder="e.g., Advanced React Engineering"
-                                        value={manualDomain.name}
-                                        onChange={(e) => setManualDomain({ ...manualDomain, name: e.target.value })}
+                                        placeholder={`e.g., Advanced ${initialData?.domainName || 'Engineering'}`}
+                                        value={manualEntry.name}
+                                        onChange={(e) => setManualEntry({ ...manualEntry, name: e.target.value })}
                                         className="w-full bg-[#FAFAFA] border-2 border-primary/5 rounded-3xl p-6 text-2xl font-black tracking-tight focus:ring-4 focus:ring-primary/5 focus:border-primary/20 outline-none transition-all placeholder:text-slate-300"
                                     />
                                 </div>
 
-                                <div className="space-y-3">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-[#1A1A1A] flex items-center gap-2 opacity-40">
-                                        <Activity size={14} /> Factory Compliance_
-                                    </label>
-                                    <div className="p-6 rounded-3xl border border-dashed border-primary/10 bg-primary/[0.01] flex items-center gap-5">
-                                        <div className="w-10 h-10 rounded-full bg-green-500/10 flex items-center justify-center text-green-600">
-                                            <ShieldCheck size={20} />
+                                {(initialData?.target === 'domain' || !initialData) && (
+                                    <div className="space-y-3">
+                                        <label className="text-[10px] font-black uppercase tracking-widest text-[#1A1A1A] flex items-center gap-2 opacity-40">
+                                            <Activity size={14} /> Factory Compliance_
+                                        </label>
+                                        <div className="p-6 rounded-3xl border border-dashed border-primary/10 bg-primary/[0.01] flex items-center gap-5">
+                                            <div className="w-10 h-10 rounded-full bg-green-500/10 flex items-center justify-center text-green-600">
+                                                <ShieldCheck size={20} />
+                                            </div>
+                                            <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
+                                                Blueprint creation is now a **manual Admin action**.
+                                            </p>
                                         </div>
-                                        <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
-                                            Blueprint creation is now a **manual Admin action**.
-                                        </p>
                                     </div>
-                                </div>
+                                )}
                             </div>
                         </div>
                     ) : (
                         <div className="flex-1 flex flex-col gap-8 animate-in slide-in-from-right-4 overflow-hidden">
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-4">
-                                    <h3 className="text-3xl font-black italic uppercase tracking-tighter text-[#1A1A1A]">Bulk Hierarchy Engine_</h3>
+                                    <h3 className="text-3xl font-black italic uppercase tracking-tighter text-[#1A1A1A]">
+                                        {initialData?.target ? `Bulk ${initialData.target} Factory_` : "Bulk Hierarchy Engine_"}
+                                    </h3>
                                     <div className="flex items-center gap-2">
                                         <span className="px-3 py-1 bg-primary/10 text-primary text-[9px] font-black uppercase rounded-lg">JSON STRICT_MODE</span>
                                         {!showEditor ? (
@@ -476,7 +593,7 @@ Please provide a valid JSON object matching this schema for NEW data only:`;
                                     onClick={() => setBlueprintModal({
                                         isOpen: true,
                                         domainId: success.domainId,
-                                        domainName: manualDomain.name || JSON.parse(payload).domainName || "Assessment",
+                                        domainName: manualEntry.name || (mode === 'bulk' && payload ? JSON.parse(payload).domainName : "Assessment"),
                                         questionIds: success.questionIds || [],
                                         questionStats: success.questionStats
                                     })}
@@ -518,12 +635,12 @@ Please provide a valid JSON object matching this schema for NEW data only:`;
                             Abort Process
                         </button>
                         <button
-                            disabled={isProcessing || (mode === 'manual' && !manualDomain.name) || (mode === 'bulk' && !payload)}
+                            disabled={isProcessing || (mode === 'manual' && !manualEntry.name) || (mode === 'bulk' && !payload)}
                             onClick={handleCreate}
                             className="px-12 py-4 bg-[#1A1A1A] text-white rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] shadow-2xl shadow-black/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center gap-3 disabled:grayscale disabled:opacity-50"
                         >
-                            {isProcessing ? <Loader2 size={16} className="animate-spin" /> : <ShieldCheck size={16} />}
-                            {mode === 'manual' ? "Commit Domain" : "Fire Bulk Factory"}
+                            {isProcessing ? <ZLoader size="xs" className="text-white" center={false} /> : <ShieldCheck size={16} />}
+                            {mode === 'manual' ? `Commit ${initialData?.target || 'Domain'}` : "Fire Bulk Factory"}
                         </button>
                     </div>
                 </div>
@@ -553,7 +670,7 @@ function ExecutionItem({ label, status }: { label: string, status: 'pending' | '
                 status === 'done' ? "bg-green-500/[0.02] border-green-500/10" : "bg-transparent border-primary/5 opacity-40 grayscale"
         )}>
             <div className="flex items-center gap-3">
-                {status === 'active' ? <Loader2 size={14} className="animate-spin text-primary" /> :
+                {status === 'active' ? <ZLoader size="xs" center={false} /> :
                     status === 'done' ? <CheckCircle size={14} className="text-green-500" /> :
                         <div className="w-3.5 h-3.5 rounded-full border-2 border-primary/10" />}
                 <span className={cn(

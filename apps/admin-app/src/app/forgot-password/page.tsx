@@ -2,7 +2,8 @@
 
 import { useState } from 'react';
 import { apiClient } from '@quiz/api-client';
-import { Loader2, Mail, ArrowLeft, Send, CheckCircle2 } from 'lucide-react';
+import { Mail, ArrowLeft, Send, CheckCircle2 } from 'lucide-react';
+import { ZLoader } from '@/components/ui/ZLoader';
 import Link from 'next/link';
 
 export default function ForgotPasswordPage() {
@@ -94,7 +95,7 @@ export default function ForgotPasswordPage() {
                         className="w-full py-4 rounded-xl bg-[#1A1A1A] text-white font-black tracking-wide shadow-lg shadow-black/25 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-3 group"
                     >
                         {isLoading ? (
-                            <Loader2 className="animate-spin" />
+                            <ZLoader size="xs" className="text-white" center={false} />
                         ) : (
                             <>
                                 <span>SEND RECOVERY LINK</span>

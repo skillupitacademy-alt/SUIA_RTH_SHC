@@ -17,6 +17,7 @@ import {
     Zap
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { ZLoader } from '@/components/ui/ZLoader';
 import { HierarchyFactoryWizard } from '@/components/content/HierarchyFactoryWizard';
 import { BlueprintFactoryWizard } from '@/components/content/BlueprintFactoryWizard';
 
@@ -53,26 +54,32 @@ export function ContentReadinessBoard() {
         // We use available names to pre-fill the hierarchy so the factory touches the right nodes.
         if (nodeType === 'domain') {
             template = {
+                target: 'subject',
                 domainId: node.domainId,
                 domainName: node.domainName,
                 subjects: []
             };
         } else if (nodeType === 'subject') {
             template = {
+                target: 'topic',
                 domainId,
                 domainName: domainName, // Passed from parent
                 subjects: [{
+                    id: node.id,
                     name: node.name,
                     topics: []
                 }]
             };
         } else if (nodeType === 'topic') {
             template = {
+                target: 'subtopic',
                 domainId,
                 domainName: domainName,
                 subjects: [{
+                    id: node.subjectId,
                     name: node.subjectName || "PARENT_SUBJECT",
                     topics: [{
+                        id: node.id,
                         name: node.name,
                         questions: [] // Explicitly setting this encourages question filling
                     }]
@@ -88,8 +95,8 @@ export function ContentReadinessBoard() {
     };
 
     if (isLoading) return (
-        <div className="flex items-center justify-center p-20">
-            <Activity className="animate-spin text-primary" size={32} />
+        <div className="p-20">
+            <ZLoader size="lg" text="Syncing Content Health_" />
         </div>
     );
 
@@ -109,7 +116,7 @@ export function ContentReadinessBoard() {
                 </div>
                 <div className="flex flex-wrap items-center gap-4">
                     <button
-                        onClick={() => setFactoryModal({ isOpen: true, initialData: null })}
+                        onClick={() => setFactoryModal({ isOpen: true, initialData: { target: 'domain' } })}
                         className="px-6 py-2.5 bg-[#1A1A1A] text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-xl shadow-black/10 hover:scale-[1.02] active:scale-95 transition-all flex items-center gap-2 group"
                     >
                         <Zap size={14} className="text-[#FF4B91]" />

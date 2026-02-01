@@ -4,6 +4,8 @@ import { eq, sql, and } from 'drizzle-orm';
 export interface AtomicHierarchyPayload {
   domainId?: string;
   domainName?: string;
+  description?: string;
+  category?: string;
   subjects?: {
     id?: string;
     name: string;
@@ -15,9 +17,12 @@ export interface AtomicHierarchyPayload {
         name: string;
         questions?: (any & { skillNames?: string[]; mappingType?: string; skillWeight?: number })[];
       }[];
-      questions?: (any & { skillNames?: string[]; mappingType?: string; skillWeight?: number })[]; // Questions at topic level
+      questions?: (any & { skillNames?: string[]; mappingType?: string; skillWeight?: number })[];
     }[];
   }[];
+  // --- BATCH HORIZONTAL OPERATIONS ---
+  batchDomains?: { name: string; description?: string; category?: string }[];
+  batchSkills?: { name: string; category?: string; mappingType?: string }[];
 }
 
 export class HierarchyFactory {
@@ -36,18 +41,29 @@ export class HierarchyFactory {
         });
         if (existing) {
           domainId = existing.id;
+          // Support updating description/category if provided
+          if (payload.description || payload.category) {
+            await tx.update(domains).set({
+                description: payload.description || existing.description,
+                category: payload.category || existing.category
+            }).where(eq(domains.id, domainId));
+          }
         } else {
           const [newDomain] = await tx.insert(domains).values({
             name: payload.domainName,
+            description: payload.description,
+            category: payload.category
           }).returning();
           domainId = newDomain.id;
         }
       }
 
-      if (!domainId) throw new Error('Domain ID or Domain Name required for atomic upsert.');
+      if (!domainId && !payload.batchDomains && !payload.batchSkills) {
+        throw new Error('Domain ID, Domain Name, batchDomains, or batchSkills required for atomic upsert.');
+      }
 
       const results = {
-        domainId,
+        domainId: domainId || null,
         subjects: [] as any[],
         questionIds: [] as string[],
         questionStats: {
@@ -55,11 +71,52 @@ export class HierarchyFactory {
           intermediate: 0,
           expert: 0,
           total: 0
-        }
+        },
+        batchDomains: [] as string[],
+        batchSkills: [] as string[]
       };
+
+      // 1.5 Handle Batch Domains
+      if (payload.batchDomains) {
+        for (const bd of payload.batchDomains) {
+            const existing = await tx.query.domains.findFirst({
+                where: eq(domains.name, bd.name)
+            });
+            if (existing) {
+                results.batchDomains.push(existing.id);
+            } else {
+                const [newDomain] = await tx.insert(domains).values({
+                    name: bd.name,
+                    description: bd.description,
+                    category: bd.category
+                }).returning();
+                results.batchDomains.push(newDomain.id);
+            }
+        }
+      }
+
+      // 1.6 Handle Batch Skills
+      if (payload.batchSkills) {
+        for (const bs of payload.batchSkills) {
+            const existing = await tx.query.skills.findFirst({
+                where: eq(skills.name, bs.name)
+            });
+            if (existing) {
+                results.batchSkills.push(existing.id);
+            } else {
+                const [newSkill] = await tx.insert(skills).values({
+                    name: bs.name,
+                    category: bs.category as any || 'technical',
+                    mappingType: bs.mappingType as any || 'conceptual'
+                }).returning();
+                results.batchSkills.push(newSkill.id);
+            }
+        }
+      }
 
       // 2. Resolve Subjects
       if (payload.subjects) {
+        if (!domainId) throw new Error('Domain context required for hierarchical operations.');
         for (const s of payload.subjects) {
           let subjectId = s.id;
           if (!subjectId) {

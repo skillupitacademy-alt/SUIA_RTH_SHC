@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Shield, ChevronRight, AlertOctagon, Info, Terminal } from 'lucide-react';
+import { ZLoader } from '@/components/ui/ZLoader';
 import { cn } from '@/lib/utils';
 
 interface UniversalMarkdownViewerProps {
@@ -35,8 +36,7 @@ export function UniversalMarkdownViewer({ path }: UniversalMarkdownViewerProps) 
     if (isLoading) {
         return (
             <div className="flex flex-col items-center justify-center py-40 gap-6">
-                <div className="w-16 h-16 border-4 border-slate-100 border-t-[#FF4B91] rounded-full animate-spin" />
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em]">Loading Intelligence Stream...</p>
+                <ZLoader size="lg" text="Loading Intelligence Stream..." />
             </div>
         );
     }

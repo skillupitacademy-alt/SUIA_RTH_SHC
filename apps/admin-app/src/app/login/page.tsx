@@ -4,7 +4,8 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/auth-store';
 import { apiClient } from '@quiz/api-client';
-import { Loader2, ShieldCheck, Lock, Mail } from 'lucide-react';
+import { ShieldCheck, Lock, Mail } from 'lucide-react';
+import { ZLoader } from '@/components/ui/ZLoader';
 import Link from 'next/link';
 
 export default function AdminLoginPage() {
@@ -99,7 +100,7 @@ export default function AdminLoginPage() {
                     disabled={isLoading}
                     className="w-full py-4 rounded-xl bg-primary text-primary-foreground font-black tracking-wide shadow-lg shadow-primary/25 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-2"
                 >
-                    {isLoading ? <Loader2 className="animate-spin" /> : "AUTHENTICATE"}
+                    {isLoading ? <ZLoader size="xs" className="text-white" center={false} /> : "AUTHENTICATE"}
                 </button>
             </form>
 

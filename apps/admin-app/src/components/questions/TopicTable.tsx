@@ -6,6 +6,7 @@ import { Hash, Plus, Edit2, Trash2, X, AlertTriangle, BookOpen, Layers } from 'l
 import { formatDistanceToNow } from 'date-fns';
 import { formatTimeAgo } from '@/lib/utils';
 import { ErrorBanner } from '@/components/layout/ErrorBanner';
+import { ZLoader } from '@/components/ui/ZLoader';
 import { useDomains, useSubjects } from '@/hooks/useAdminHierarchy';
 import { HierarchyFactoryWizard } from '@/components/content/HierarchyFactoryWizard';
 
@@ -162,11 +163,12 @@ export function TopicTable() {
                 initialData={
                     formData.subjectId
                         ? {
+                            target: 'topic',
                             domainId: formData.domainId,
                             subjectId: formData.subjectId,
                             subjectName: subjects.find(s => s.id === formData.subjectId)?.name || ''
                         }
-                        : null
+                        : { target: 'topic' }
                 }
             />
 
@@ -236,10 +238,7 @@ export function TopicTable() {
             <div className="rounded-[2.5rem] border border-primary/10 bg-white/50 backdrop-blur-xl overflow-hidden shadow-xl min-h-[400px] relative">
                 {isLoading && (
                     <div className="absolute inset-0 z-10 bg-white/60 backdrop-blur-sm flex items-center justify-center">
-                        <div className="flex flex-col items-center gap-3">
-                            <div className="w-10 h-10 border-4 border-orange-50 border-t-orange-500 rounded-full animate-spin" />
-                            <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Refreshing Matrix...</p>
-                        </div>
+                        <ZLoader text="Loading Topic Records_" />
                     </div>
                 )}
                 <table className="w-full text-left">

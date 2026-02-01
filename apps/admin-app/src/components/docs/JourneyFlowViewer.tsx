@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { ChevronRight, Terminal, CheckCircle2, Map, Shield, Activity, ListChecks } from 'lucide-react';
+import { ZLoader } from '@/components/ui/ZLoader';
 
 interface JourneyFlowViewerProps {
     path: string;
@@ -32,8 +33,7 @@ export function JourneyFlowViewer({ path }: JourneyFlowViewerProps) {
     if (isLoading) {
         return (
             <div className="flex flex-col items-center justify-center py-40 gap-6">
-                <div className="w-16 h-16 border-4 border-slate-100 border-t-[#FF4B91] rounded-full animate-spin" />
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em]">Optimizing Journey Map...</p>
+                <ZLoader size="lg" text="Optimizing Journey Map..." />
             </div>
         );
     }

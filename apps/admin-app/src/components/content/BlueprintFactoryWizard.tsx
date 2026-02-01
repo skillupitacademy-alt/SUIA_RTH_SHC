@@ -7,7 +7,6 @@ import {
     Activity,
     CheckCircle2,
     X,
-    Loader2,
     ShieldCheck,
     ClipboardList,
     Clock,
@@ -18,6 +17,7 @@ import {
     Lock
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { ZLoader } from '@/components/ui/ZLoader';
 
 interface BlueprintFactoryWizardProps {
     isOpen: boolean;
@@ -327,7 +327,7 @@ export function BlueprintFactoryWizard({ isOpen, onClose, domainId, domainName, 
                                 onClick={handleCreate}
                                 className="px-10 py-4 bg-[#1A1A1A] text-white rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] shadow-xl hover:scale-105 transition-all flex items-center gap-3 disabled:grayscale disabled:opacity-50"
                             >
-                                {isProcessing ? <Loader2 size={16} className="animate-spin" /> : <ShieldCheck size={16} />}
+                                {isProcessing ? <ZLoader size="xs" className="text-white" center={false} /> : <ShieldCheck size={16} />}
                                 Commit Blueprint
                             </button>
                         </div>

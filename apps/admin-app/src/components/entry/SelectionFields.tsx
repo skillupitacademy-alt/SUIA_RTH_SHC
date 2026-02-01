@@ -2,6 +2,7 @@
 
 import { ChevronDown, Plus, Loader2, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { ZLoader } from '@/components/ui/ZLoader';
 
 export interface SelectFieldProps {
     label: string;
@@ -49,7 +50,7 @@ export function SelectField({ label, value, options, loading, disabled, onChange
                         ))}
                     </select>
                     <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 transition-colors group-hover/input:text-[#FF4B91]">
-                        {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ChevronDown className="w-4 h-4" />}
+                        {loading ? <ZLoader size="xs" center={false} /> : <ChevronDown className="w-4 h-4" />}
                     </div>
                 </div>
                 {!hideCreate && onCreate && (

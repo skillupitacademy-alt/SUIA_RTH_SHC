@@ -7,6 +7,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { cn, formatTimeAgo } from '@/lib/utils';
 import { CascadingSelect, Selection } from '@/components/entry/CascadingSelect';
 import { MultiSelectField } from '@/components/entry/SelectionFields';
+import { ZLoader } from '@/components/ui/ZLoader';
 import { useAllSkills } from '@/hooks/useAdminHierarchy';
 import Link from 'next/link';
 
@@ -192,10 +193,7 @@ export function QuestionTable() {
             <div className="rounded-[1.75rem] border border-primary/10 bg-white/50 backdrop-blur-xl overflow-hidden shadow-xl min-h-[400px] relative">
                 {isLoading && (
                     <div className="absolute inset-0 z-10 bg-white/60 backdrop-blur-sm flex items-center justify-center animate-in fade-in duration-300">
-                        <div className="flex flex-col items-center gap-4">
-                            <div className="w-12 h-12 border-4 border-primary/10 border-t-primary rounded-full animate-spin" />
-                            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">Synchronizing Matrix...</p>
-                        </div>
+                        <ZLoader text="Synchronizing Matrix_" />
                     </div>
                 )}
 
@@ -361,7 +359,7 @@ export function QuestionTable() {
                                     disabled={deleteModal.isDeleting}
                                     className="flex items-center justify-center gap-2 w-full py-4 bg-red-600 hover:bg-red-700 text-white text-xs font-black uppercase tracking-[0.2em] rounded-2xl shadow-lg shadow-red-200 active:scale-95 transition-all disabled:opacity-50"
                                 >
-                                    {deleteModal.isDeleting ? <Loader2 className="w-4 h-4 animate-spin text-white" /> : 'Delete Question'}
+                                    {deleteModal.isDeleting ? <ZLoader size="xs" className="text-white" center={false} /> : 'Delete Question'}
                                 </button>
                                 <button
                                     onClick={handleCloseDelete}

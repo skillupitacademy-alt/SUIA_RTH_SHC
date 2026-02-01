@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, useMemo } from 'react';
 import { useDomains, useSubjects, useTopics, useSubtopics, useAllSkills, useTopicSkills } from '@/hooks/useAdminHierarchy';
 import { X, Loader2, Sparkles, Binary } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { ZLoader } from '@/components/ui/ZLoader';
 import { SelectField, MultiSelectField } from '@/components/entry/SelectionFields';
 
 export interface Selection {
@@ -294,7 +295,7 @@ function QuickCreateModal({ type, onClose, onSuccess, parentId, hooks }: any) {
                             disabled={loading || !name.trim()}
                             className="flex items-center gap-2 px-6 py-3 bg-[#FF4B91] hover:bg-[#ff3382] text-white text-xs font-black uppercase tracking-widest rounded-xl shadow-lg shadow-[#FF4B91]/20 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            {loading && <Loader2 className="w-3 h-3 animate-spin" />}
+                            {loading && <ZLoader size="xs" className="text-white" center={false} />}
                             Create {type}
                         </button>
                     </div>

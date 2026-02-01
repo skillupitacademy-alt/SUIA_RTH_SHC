@@ -6,6 +6,7 @@ import { GitBranch, Plus, Edit2, Trash2, X, AlertTriangle, BookOpen, Layers, Has
 import { formatDistanceToNow } from 'date-fns';
 import { formatTimeAgo } from '@/lib/utils';
 import { ErrorBanner } from '@/components/layout/ErrorBanner';
+import { ZLoader } from '@/components/ui/ZLoader';
 import { useDomains, useSubjects, useTopics } from '@/hooks/useAdminHierarchy';
 import { HierarchyFactoryWizard } from '@/components/content/HierarchyFactoryWizard';
 
@@ -174,12 +175,13 @@ export function SubtopicTable() {
                 initialData={
                     formData.topicId
                         ? {
+                            target: 'subtopic',
                             domainId: formData.domainId,
                             subjectId: formData.subjectId,
                             topicId: formData.topicId,
                             topicName: topics.find(t => t.id === formData.topicId)?.name || ''
                         }
-                        : null
+                        : { target: 'subtopic' }
                 }
             />
 
@@ -249,10 +251,7 @@ export function SubtopicTable() {
             <div className="rounded-[2.5rem] border border-primary/10 bg-white/50 backdrop-blur-xl overflow-hidden shadow-xl min-h-[400px] relative">
                 {isLoading && (
                     <div className="absolute inset-0 z-10 bg-white/60 backdrop-blur-sm flex items-center justify-center">
-                        <div className="flex flex-col items-center gap-3">
-                            <div className="w-10 h-10 border-4 border-teal-50 border-t-teal-500 rounded-full animate-spin" />
-                            <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Refreshing Matrix...</p>
-                        </div>
+                        <ZLoader text="Loading Subtopic Records_" />
                     </div>
                 )}
                 <table className="w-full text-left">

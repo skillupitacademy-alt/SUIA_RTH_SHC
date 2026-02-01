@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { apiClient } from '@quiz/api-client';
 import { Users, Clock, Globe, ShieldCheck, Loader2 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
+import { ZLoader } from '@/components/ui/ZLoader';
 
 export function LiveSessionsList() {
     const [sessions, setSessions] = useState<any[]>([]);
@@ -43,8 +44,8 @@ export function LiveSessionsList() {
 
     if (isLoading && sessions.length === 0) {
         return (
-            <div className="flex items-center justify-center p-12">
-                <Loader2 className="animate-spin text-[#FF4B91]" size={32} />
+            <div className="p-20">
+                <ZLoader size="lg" text="Polling Live Traffic_" />
             </div>
         );
     }

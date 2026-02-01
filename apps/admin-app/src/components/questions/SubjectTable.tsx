@@ -6,6 +6,7 @@ import { BookOpen, Plus, Edit2, Trash2, X, AlertTriangle, Layers } from 'lucide-
 import { formatDistanceToNow } from 'date-fns';
 import { formatTimeAgo } from '@/lib/utils';
 import { ErrorBanner } from '@/components/layout/ErrorBanner';
+import { ZLoader } from '@/components/ui/ZLoader';
 import { useDomains } from '@/hooks/useAdminHierarchy';
 import { HierarchyFactoryWizard } from '@/components/content/HierarchyFactoryWizard';
 
@@ -147,8 +148,8 @@ export function SubjectTable() {
                 }}
                 initialData={
                     formData.domainId
-                        ? { domainId: formData.domainId, domainName: domains.find(d => d.id === formData.domainId)?.name || '' }
-                        : null
+                        ? { target: 'subject', domainId: formData.domainId, domainName: domains.find(d => d.id === formData.domainId)?.name || '' }
+                        : { target: 'subject' }
                 }
             />
 
@@ -218,10 +219,7 @@ export function SubjectTable() {
             <div className="rounded-[2.5rem] border border-primary/10 bg-white/50 backdrop-blur-xl overflow-hidden shadow-xl min-h-[400px] relative">
                 {isLoading && (
                     <div className="absolute inset-0 z-10 bg-white/60 backdrop-blur-sm flex items-center justify-center">
-                        <div className="flex flex-col items-center gap-3">
-                            <div className="w-10 h-10 border-4 border-purple-50 border-t-purple-500 rounded-full animate-spin" />
-                            <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Loading subject records...</p>
-                        </div>
+                        <ZLoader text="Loading Subject Records_" />
                     </div>
                 )}
                 <table className="w-full text-left">

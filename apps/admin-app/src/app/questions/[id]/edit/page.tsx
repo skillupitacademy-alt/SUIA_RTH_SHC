@@ -8,6 +8,7 @@ import { CascadingSelect, Selection } from '@/components/entry/CascadingSelect';
 import { Database, ArrowLeft, CheckCircle2, AlertCircle, X, Edit3 } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
+import { ZLoader } from '@/components/ui/ZLoader';
 
 export default function EditQuestionPage() {
     const params = useParams();
@@ -100,8 +101,7 @@ export default function EditQuestionPage() {
     if (isLoading) {
         return (
             <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
-                <div className="w-12 h-12 border-4 border-[#FF4B91]/20 border-t-[#FF4B91] rounded-full animate-spin" />
-                <p className="text-xs font-black uppercase tracking-[0.3em] text-muted-foreground">Initializing Editor...</p>
+                <ZLoader size="lg" text="Initializing Editor..." />
             </div>
         );
     }
