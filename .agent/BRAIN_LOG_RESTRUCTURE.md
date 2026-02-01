@@ -249,3 +249,12 @@ Reduce documentation fragmentation and improve discoverability by consolidating 
 - **Technical Reference**: Authored `docs/domain/domain-factory-orchestration.md` as the authoritative guide for the Enterprise Domain lifecycle.
 - **Stability**: Resolved monorepo-wide build failures related to Next.js 15/16 async route parameters.
 - **Outcome**: Established a manual orchestration model for educational content, completing the "Enterprise Readiness" suite.
+
+### Batch 44: Surgical Static Blueprinting
+- **Deterministic Lock**: Implemented fixed `question_ids` storage in `exam_blueprints` and Static Override in `SelectionEngine`.
+- **Factory Handover**: Synchronized the handover of generated question IDs and stats from the Factory to the Blueprint Designer.
+
+### Batch 45: Orchestration Standard & Enforcement
+- **Dual-Mode Designer**: Implemented Static/Dynamic protocol selection in `BlueprintFactoryWizard`.
+- **Enforcement**: Deployed the "Existence Rule" and Calibration Summary UI.
+- **Standardization**: Published `ORCHESTRATION_STANDARD.md` as the authoritative governing document.

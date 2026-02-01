@@ -106,3 +106,14 @@
 - **Legacy Removal**: Completely replaced legacy creation modals in `SubjectTable.tsx`, `TopicTable.tsx`, and `SubtopicTable.tsx` with the unified Factory IDE.
 - **Contextual Launch**: Adding a Subject or Topic now launches the surgical IDE with a pre-populated contextual template (e.g., injecting Domain ID automatically).
 - **Engineering Excellence**: Verified the entire monorepo integrity with a global `pnpm build` and `tsc --noEmit` check (Exit Code 0).
+
+### Phase 20: Surgical Static Blueprinting (Batch 44)
+- **Deterministic Lock**: Implemented `question_ids` storage in the `exam_blueprints` schema to enable fixed-pool certifications.
+- **Factory Handover**: Enhanced the `HierarchyFactory` to capture and return unique `questionIds` and `questionStats` (difficulty distribution) during atomic upserts.
+- **Static Override**: Upgraded the `SelectionEngine` with a "Static Override" path that bypasses dynamic selection in favor of fixed IDs, eliminating "Insufficient Question" errors.
+
+### Phase 21: Orchestration Standard & Enforcement (Batch 45)
+- **Dual-Mode Designer**: Upgraded the `BlueprintFactoryWizard` with a **Protocol Toggle** (Static Certification vs. Dynamic Practice).
+- **The Existence Rule**: Implemented mandatory validation that blocks the creation of certifications if the question pool is empty.
+- **Calibration Summary**: Integrated a real-time difficulty breakdown UI (*Total, Simple, Intermediate, Expert*) to ensure high-fidelity exam balancing during commit.
+- **Standardization**: Authored `ORCHESTRATION_STANDARD.md` as the authoritative governing law for blueprint creation.

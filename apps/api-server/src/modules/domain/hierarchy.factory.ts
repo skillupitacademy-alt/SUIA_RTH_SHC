@@ -48,7 +48,14 @@ export class HierarchyFactory {
 
       const results = {
         domainId,
-        subjects: [] as any[]
+        subjects: [] as any[],
+        questionIds: [] as string[],
+        questionStats: {
+          simple: 0,
+          intermediate: 0,
+          expert: 0,
+          total: 0
+        }
       };
 
       // 2. Resolve Subjects
@@ -132,6 +139,15 @@ export class HierarchyFactory {
                       const sourceQ = st.questions[i];
                       const insertedQ = insertedQuestions[i];
                       
+                      results.questionIds.push(insertedQ.id);
+
+                      // Increment Stats
+                      const diff = (insertedQ.difficulty || 'simple').toLowerCase();
+                      if (diff === 'simple') results.questionStats.simple++;
+                      else if (diff === 'intermediate') results.questionStats.intermediate++;
+                      else if (diff === 'expert') results.questionStats.expert++;
+                      results.questionStats.total++;
+
                       if (sourceQ.skillNames && sourceQ.skillNames.length > 0) {
                         for (const skillName of sourceQ.skillNames) {
                           // Resolve or Create Skill
@@ -187,6 +203,15 @@ export class HierarchyFactory {
                 for (let i = 0; i < insertedQuestions.length; i++) {
                   const sourceQ = t.questions[i];
                   const insertedQ = insertedQuestions[i];
+
+                  results.questionIds.push(insertedQ.id);
+
+                  // Increment Stats
+                  const diff = (insertedQ.difficulty || 'simple').toLowerCase();
+                  if (diff === 'simple') results.questionStats.simple++;
+                  else if (diff === 'intermediate') results.questionStats.intermediate++;
+                  else if (diff === 'expert') results.questionStats.expert++;
+                  results.questionStats.total++;
 
                   if (sourceQ.skillNames && sourceQ.skillNames.length > 0) {
                     for (const skillName of sourceQ.skillNames) {

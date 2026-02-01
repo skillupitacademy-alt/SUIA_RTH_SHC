@@ -48,7 +48,13 @@ export function HierarchyFactoryWizard({ isOpen, onClose, initialData, onSuccess
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState<any>(null);
     const [isMounted, setIsMounted] = useState(false);
-    const [blueprintModal, setBlueprintModal] = useState({ isOpen: false, domainId: '', domainName: '' });
+    const [blueprintModal, setBlueprintModal] = useState({
+        isOpen: false,
+        domainId: '',
+        domainName: '',
+        questionIds: [] as string[],
+        questionStats: null as any
+    });
     const [existingDomains, setExistingDomains] = useState<string[]>([]);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -467,7 +473,13 @@ Please provide a valid JSON object matching this schema for NEW data only:`;
                             </div>
                             <div className="grid grid-cols-1 gap-3">
                                 <button
-                                    onClick={() => setBlueprintModal({ isOpen: true, domainId: success.domainId, domainName: manualDomain.name || JSON.parse(payload).domainName })}
+                                    onClick={() => setBlueprintModal({
+                                        isOpen: true,
+                                        domainId: success.domainId,
+                                        domainName: manualDomain.name || JSON.parse(payload).domainName || "Assessment",
+                                        questionIds: success.questionIds || [],
+                                        questionStats: success.questionStats
+                                    })}
                                     className="w-full py-4 bg-[#1A1A1A] text-white rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] hover:scale-[1.02] transition-all flex items-center justify-center gap-3 px-6 shadow-xl"
                                 >
                                     <ClipboardList size={16} />
@@ -521,6 +533,8 @@ Please provide a valid JSON object matching this schema for NEW data only:`;
                 isOpen={blueprintModal.isOpen}
                 domainId={blueprintModal.domainId}
                 domainName={blueprintModal.domainName}
+                questionIds={blueprintModal.questionIds}
+                questionStats={blueprintModal.questionStats}
                 onClose={() => {
                     setBlueprintModal(prev => ({ ...prev, isOpen: false }));
                     onClose();

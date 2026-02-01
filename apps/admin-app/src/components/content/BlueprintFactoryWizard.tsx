@@ -12,7 +12,10 @@ import {
     ClipboardList,
     Clock,
     LayoutGrid,
-    AlertTriangle
+    AlertTriangle,
+    Target,
+    Zap,
+    Lock
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -21,10 +24,17 @@ interface BlueprintFactoryWizardProps {
     onClose: () => void;
     domainId: string;
     domainName: string;
+    questionIds?: string[];
+    questionStats?: {
+        simple: number;
+        intermediate: number;
+        expert: number;
+        total: number;
+    } | null;
     onSuccess?: () => void;
 }
 
-export function BlueprintFactoryWizard({ isOpen, onClose, domainId, domainName, onSuccess }: BlueprintFactoryWizardProps) {
+export function BlueprintFactoryWizard({ isOpen, onClose, domainId, domainName, questionIds, questionStats, onSuccess }: BlueprintFactoryWizardProps) {
     const [formData, setFormData] = useState({
         name: `${domainName} Assessment`,
         description: `Official assessment for ${domainName}.`,
@@ -34,7 +44,9 @@ export function BlueprintFactoryWizard({ isOpen, onClose, domainId, domainName, 
             simple: 30,
             intermediate: 30,
             expert: 40
-        }
+        },
+        questionIds: questionIds || [] as string[],
+        blueprintMode: (questionIds && questionIds.length > 0) ? 'static' : 'dynamic' as 'static' | 'dynamic'
     });
 
     const [isProcessing, setIsProcessing] = useState(false);
@@ -49,7 +61,14 @@ export function BlueprintFactoryWizard({ isOpen, onClose, domainId, domainName, 
     useEffect(() => {
         if (isOpen) {
             document.body.style.overflow = 'hidden';
-            setFormData(prev => ({ ...prev, name: `${domainName} Assessment`, description: `Official assessment for ${domainName}.` }));
+            setFormData(prev => ({
+                ...prev,
+                name: `${domainName} Assessment`,
+                description: `Official assessment for ${domainName}.`,
+                totalQuestions: questionIds?.length || 10,
+                questionIds: questionIds || [],
+                blueprintMode: (questionIds && questionIds.length > 0) ? 'static' : 'dynamic'
+            }));
         } else {
             document.body.style.overflow = 'unset';
             setSuccess(false);
@@ -61,6 +80,12 @@ export function BlueprintFactoryWizard({ isOpen, onClose, domainId, domainName, 
     }, [isOpen, domainName]);
 
     const handleCreate = async () => {
+        // Validation: Existence Rule
+        if (formData.blueprintMode === 'static' && formData.questionIds.length === 0) {
+            setError("EXISTENCE RULE VIOLATION: A Static Certification requires a non-empty question set. Please use the Factory to harvest content first.");
+            return;
+        }
+
         setIsProcessing(true);
         setError(null);
 
@@ -71,7 +96,8 @@ export function BlueprintFactoryWizard({ isOpen, onClose, domainId, domainName, 
                 domains: [domainId],
                 totalQuestions: formData.totalQuestions,
                 timeLimit: formData.timeLimit,
-                difficultyDistribution: formData.distribution
+                difficultyDistribution: formData.distribution,
+                questionIds: formData.blueprintMode === 'static' ? formData.questionIds : []
             };
 
             await apiClient.admin.createBlueprint(payload);
@@ -100,7 +126,9 @@ export function BlueprintFactoryWizard({ isOpen, onClose, domainId, domainName, 
                         <div>
                             <h2 className="text-2xl font-black uppercase tracking-tight italic text-[#1A1A1A]">Blueprint Designer_</h2>
                             <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mt-0.5">
-                                Manual Orchestration Mode
+                                {formData.blueprintMode === 'static'
+                                    ? `Static Orchestration Mode (${formData.questionIds.length} Locked)`
+                                    : "Dynamic Orchestration Mode"}
                             </p>
                         </div>
                     </div>
@@ -129,6 +157,54 @@ export function BlueprintFactoryWizard({ isOpen, onClose, domainId, domainName, 
                         </div>
                     ) : (
                         <>
+                            {/* Mode Selector */}
+                            <div className="flex items-center gap-4 p-6 bg-slate-900 rounded-[2rem] border border-white/10 shadow-2xl">
+                                <div className="flex-1">
+                                    <h4 className="text-[10px] font-black text-white/40 uppercase tracking-[0.3em] mb-2 flex items-center gap-2">
+                                        <Zap size={14} className="text-yellow-400" /> Delivery Protocol_
+                                    </h4>
+                                    <p className="text-[11px] font-bold text-slate-300">Choose between a fixed Certification or a random Practice Pool.</p>
+                                </div>
+                                <div className="flex bg-white/5 p-1.5 rounded-2xl border border-white/5">
+                                    <button
+                                        onClick={() => setFormData({ ...formData, blueprintMode: 'static' })}
+                                        className={cn(
+                                            "px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all gap-2 flex items-center",
+                                            formData.blueprintMode === 'static' ? "bg-white text-slate-900 shadow-xl" : "text-white/40 hover:text-white"
+                                        )}
+                                    >
+                                        <Lock size={12} /> Static
+                                    </button>
+                                    <button
+                                        onClick={() => setFormData({ ...formData, blueprintMode: 'dynamic' })}
+                                        className={cn(
+                                            "px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all gap-2 flex items-center",
+                                            formData.blueprintMode === 'dynamic' ? "bg-white text-slate-900 shadow-xl" : "text-white/40 hover:text-white"
+                                        )}
+                                    >
+                                        <Target size={12} /> Dynamic
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Calibration Summary */}
+                            {formData.blueprintMode === 'static' && questionStats && (
+                                <div className="p-8 bg-primary/5 rounded-[2.5rem] border border-primary/10 space-y-4 animate-in zoom-in-95 duration-500">
+                                    <h4 className="text-[10px] font-black text-primary uppercase tracking-[0.3em] flex items-center gap-2">
+                                        <Activity size={14} /> Calibration Summary_
+                                    </h4>
+                                    <div className="grid grid-cols-4 gap-4">
+                                        <StatBox label="Total" val={questionStats.total} color="bg-[#1A1A1A] text-white" />
+                                        <StatBox label="Simple" val={questionStats.simple} color="bg-blue-500/10 text-blue-600" />
+                                        <StatBox label="Inter" val={questionStats.intermediate} color="bg-orange-500/10 text-orange-600" />
+                                        <StatBox label="Expert" val={questionStats.expert} color="bg-purple-500/10 text-purple-600" />
+                                    </div>
+                                    <p className="text-[9px] font-bold text-muted-foreground uppercase text-center tracking-widest pt-2 italic">
+                                        Metrics confirmed by Factory Emission Engine.
+                                    </p>
+                                </div>
+                            )}
+
                             {/* General Settings */}
                             <div className="space-y-6">
                                 <div className="grid grid-cols-2 gap-6">
@@ -238,7 +314,11 @@ export function BlueprintFactoryWizard({ isOpen, onClose, domainId, domainName, 
                                 {error}
                             </div>
                         ) : (
-                            <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-[0.2em]">Manual override active • All settings customizable.</p>
+                            <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-[0.2em]">
+                                {formData.blueprintMode === 'static'
+                                    ? "Certification Protocol Active • Questions Locked."
+                                    : "Practice Protocol Active • Dynamic Delivery."}
+                            </p>
                         )}
                         <div className="flex items-center gap-4">
                             <button onClick={onClose} className="px-6 py-3 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Cancel</button>
@@ -256,6 +336,15 @@ export function BlueprintFactoryWizard({ isOpen, onClose, domainId, domainName, 
             </div>
         </div>,
         document.body
+    );
+}
+
+function StatBox({ label, val, color }: { label: string, val: number, color: string }) {
+    return (
+        <div className={cn("p-4 rounded-3xl flex flex-col items-center justify-center gap-1 border border-primary/5", color)}>
+            <span className="text-sm font-black tracking-tighter">{val}</span>
+            <span className="text-[8px] font-black uppercase tracking-[0.2em] opacity-60 italic">{label}</span>
+        </div>
     );
 }
 

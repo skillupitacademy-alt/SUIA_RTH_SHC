@@ -15,10 +15,13 @@ A full-screen terminal-style workspace that replaces the legacy hierarchy wizard
 ### 2. Manual Blueprint Designer (`BlueprintFactoryWizard`)
 Blueprinting is an explicit administrative action, ensuring total control over exam parameters.
 - **Trigger**: Prompted immediately after successful domain creation or accessible via the Governance Board.
+- **Static Orchestration (Golden Path)**: Automatically locks the blueprint to specific `question_ids` generated during the Factory run, achieving 1:1 parity between creation and delivery.
+- **Dual-Protocol Control**: Allows switching between "Static Certification" (Fixed content) and "Dynamic Practice" (Randomized pool).
 - **Customization**:
   - **Identity**: Custom name and operational description.
   - **Payload**: Configurable question count and time limits.
   - **Difficulty Toning**: Granular percentage distribution (Simple, Intermediate, Expert) with active calibration enforcement (must total 100%).
+  - **Calibration Summary**: Real-time breakdown of difficulty distribution provided by the Factory Emission Engine.
 
 ### 3. Governance Integration (`ContentReadinessBoard`)
 The Governance Dashboard acts as the central auditor for domain health.

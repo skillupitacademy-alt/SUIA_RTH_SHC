@@ -34,3 +34,5 @@
 | 2026-02-01 | Import Style Audit (Batch 39) | COMPLETED | Standardized relative imports to `@/` aliases across 15+ files in the monorepo. |
 | 2026-02-01 | Factory Console Consolidation (Batch 40) | COMPLETED | Unified JSON Terminal and AI Prompt into a single-pane surgical center with modular templates. |
 | 2026-02-01 | Global Factory Unification (Batch 41/42) | COMPLETED | Eliminated all legacy modals in hierarchy tables; verified global monorepo build integrity. |
+| 2026-02-01 | Surgical Static Blueprinting (Batch 44) | COMPLETED | Implemented `question_ids` storage, Static Override in Selection engine, and ID/Stats handover from Factory. |
+| 2026-02-01 | Orchestration Standard (Batch 45) | COMPLETED | Implemented Dual-Mode Designer, Existence Rule validation, and Calibration Summary UI; authored ORCHESTRATION_STANDARD.md. |

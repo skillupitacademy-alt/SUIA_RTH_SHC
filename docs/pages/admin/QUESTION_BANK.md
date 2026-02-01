@@ -26,10 +26,11 @@ The AI assistant is now context-aware and provides level-specific instructions:
 - **Subject Expansion**: Targets specific topic sets within a domain.
 - **Topic Deep-Dive**: Specialized in subtopic partitioning and question harvesting.
 
-## 4. Blueprint Automation flow ⚙️
-Successful domain creation now triggers an automated branching path:
-- **Branch A**: Launch `BlueprintFactoryWizard` to configure exam parameters (Time, Count, Difficulty).
-- **Branch B**: Return to dashboard for post-orchestration governance.
+## 4. Blueprint Automation Flow ⚙️
+Successful hierarchy creation now triggers an automated branching path to the **Blueprint Designer**:
+- **Static Orchestration**: Automatically captures IDs from the Factory run to "Lock" the exam content (ORCHESTRATION_STANDARD).
+- **Manual Calibration**: Admins configure Time, Count, and Difficulty Toning with real-time feedback.
+- **Existence Guard**: Blocks certification creation if the underlying content pool is insufficient.
 
 ## 5. Technical Stack (Traceability)
 - **Engine**: `apps/api-server/src/modules/domain/hierarchy.factory.ts` (Atomic Upsert).

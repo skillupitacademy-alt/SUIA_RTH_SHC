@@ -1,7 +1,8 @@
 # 🎯 Current Session Objectives (COMPLETED)
 
-- [x] **Global Factory Unification**: Replaced legacy modals in Subject/Topic/Subtopic tables with the unified Factory IDE.
-- [x] **Factory IDE Consolidation**: Refactored into a single-pane surgical center with context-aware AI orchestration.
-- [x] **Import Standardization**: Standardized all hierarchy components to use `@/` path aliases across the monorepo.
-- [x] **Blueprint Automation**: Integrated success screen with configuration wizard for new domains.
-- [x] **Verification**: Passed all build checks (`pnpm build`, `tsc`, `web/admin/api`) with Exit Code 0.
+- [x] **Surgical Static Blueprinting**: Implemented deterministic `question_ids` locking at the schema and engine level.
+- [x] **Orchestration Standard**: Formalized the blueprinting creation timeline and authoritative governing laws.
+- [x] **Dual-Mode Designer**: Built the Static vs. Dynamic protocol toggle in the Blueprint Wizard.
+- [x] **Existence Enforcement**: Deployed validation to block certifications with empty question pools.
+- [x] **Calibration Suite**: Integrated real-time difficulty distribution summary for exam balancing.
+- [x] **Global Integrity**: Verified monorepo stability via comprehensive build audits (pnpm build, tsc).

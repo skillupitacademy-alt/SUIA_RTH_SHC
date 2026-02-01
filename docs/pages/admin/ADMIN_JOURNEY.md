@@ -65,3 +65,19 @@ High-fidelity management of the educational hierarchy and content seeding.
 ### Logic
 - **Atomic Upsert**: Partial manifests are upserted into the hierarchy transactionally.
 - **Contextual IQ**: AI prompts adapt dynamically to Domain/Subject/Topic contexts.
+
+---
+
+## 4. Blueprint Orchestration (Deterministic Standard)
+*Source: ORCHESTRATION_STANDARD.md*
+
+### Purpose
+Freezing the delivery of harvested questions for deterministic certification.
+
+### UI Structure
+- **Designer**: Dual-Protocol toggle (Static Cert vs. Dynamic Practice).
+- **Calibration**: Real-time stats grid (Total/Simple/Inter/Expert).
+
+### Logic
+- **Static Lock**: Hard-binds a blueprint to specific `question_ids` from a Factory emission.
+- **Existence Enforcement**: Rejects certification creation if the question set is null to prevent student-facing errors.

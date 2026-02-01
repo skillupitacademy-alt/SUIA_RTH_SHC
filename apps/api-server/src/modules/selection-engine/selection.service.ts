@@ -32,6 +32,37 @@ export class SelectionEngine {
 
     if (!blueprint) throw new Error('Blueprint not found');
 
+    // 1.5 STATIC OVERRIDE: If blueprint has fixed questionIds, bypass dynamic selection
+    if (blueprint.questionIds && blueprint.questionIds.length > 0) {
+      const staticQuestions = await db.query.questions.findMany({
+        where: and(
+          inArray(questions.id, blueprint.questionIds),
+          eq(questions.status, 'active')
+        )
+      });
+
+      if (staticQuestions.length === 0) {
+        throw new Error('This static blueprint refers to questions that no longer exist or are inactive.');
+      }
+
+      // Create Exam instance immediately
+      const [exam] = await db.insert(exams).values({
+        userId,
+        blueprintId: blueprint.id,
+        status: 'started',
+        totalScore: 0,
+      }).returning();
+
+      const examQuestionsData = staticQuestions.map((q, index) => ({
+        examId: exam.id,
+        questionId: q.id,
+        order: index + 1,
+      }));
+
+      await db.insert(examQuestions).values(examQuestionsData);
+      return { examId: exam.id, status: exam.status };
+    }
+
     const domainId = blueprintOrDomainId; 
     const { 
       subjectId, 
