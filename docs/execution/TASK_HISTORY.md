@@ -44,3 +44,4 @@
 | 2026-02-01 | Reports Tabular Refactor & Loader Diagnostics (Batch 52) | COMPLETED | Converted Reports to high-density table and implemented 3-stage diagnostic loader sequence in Reports/Users. |
 | 2026-02-01 | Persistent Loader Hotfix (Batch 52.1) | COMPLETED | Resolved state persistence bug in `HierarchyReports.tsx` where `ZLoader` remained visible after data fetch. |
 | 2026-02-01 | Loader Scaling & Unification (Batch 52.2) | COMPLETED | Standardized all loaders to spinning `Activity` style and reduced global scaling for an executive aesthetic. |
+| 2026-02-01 | Wizard UI & Dropdown Standardization (Batch 52.3) | COMPLETED | Redesigned Hierarchy Wizard with white terminal theme and unified all dropdown loaders to spinning `Activity`. |
