@@ -283,7 +283,7 @@ export function TopicTable() {
                                         {item.status}
                                     </span>
                                 </td>
-                                <td className="p-6 text-right text-xs text-muted-foreground font-medium">
+                                <td className="p-6 text-xs text-muted-foreground font-medium">
                                     {formatTimeAgo(item.createdAt)}
                                 </td>
                                 <td className="p-6 text-right">

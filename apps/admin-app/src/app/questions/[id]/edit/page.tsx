@@ -149,7 +149,7 @@ export default function EditQuestionPage() {
                     </Link>
                     <div className="flex items-end justify-between gap-8 pb-8 border-b border-gray-100">
                         <div className="relative">
-                            <h1 className="text-4xl font-black text-[#1A1A1A] tracking-tighter uppercase italic">Refine Assessment_</h1>
+                            <h1 className="text-4xl font-black text-[#1A1A1A] tracking-tighter uppercase italic">Edit Assessment_</h1>
                             <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mt-2 flex items-center gap-2">
                                 System-Alpha • Manual Orchestration Active • ID: {params.id}
                             </p>
@@ -178,7 +178,11 @@ export default function EditQuestionPage() {
                                 initialData={{
                                     text: question.questionText || question.question_text,
                                     type: question.type === 'mcq' || question.type === 'single' ? 'single' : 'multiple',
-                                    options: question.options,
+                                    options: question.options?.map((o: any) => ({
+                                        id: o.id,
+                                        text: o.text || o.optionText || o.option_text || '',
+                                        isCorrect: o.isCorrect || o.is_correct || false
+                                    })),
                                     explanation: question.explanation,
                                     difficulty: question.difficulty,
                                     estimatedTime: question.metadata?.estimatedTime || question.metadata?.estimated_time || 60,

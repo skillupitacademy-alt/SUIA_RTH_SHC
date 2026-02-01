@@ -22,10 +22,12 @@ import {
     LayoutGrid,
     Search,
     RefreshCw,
-    ClipboardList
+    ClipboardList,
+    ArrowUp
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ZLoader } from '@/components/ui/ZLoader';
+import { ZTooltip } from '@/components/ui/ZTooltip';
 import { SelectField } from '@/components/entry/SelectionFields';
 import { BlueprintFactoryWizard } from '@/components/content/BlueprintFactoryWizard';
 
@@ -416,12 +418,11 @@ Please provide a valid JSON object matching this schema:
             {/* Header */}
             <div className="px-12 py-4 border-b border-primary/5 flex items-center justify-between bg-primary/[0.02]">
                 <div className="flex items-center gap-5">
-                    <div
-                        className="p-2.5 bg-[#1A1A1A] text-[#FF4B91] rounded-2xl shadow-xl shadow-black/10"
-                        title="Domain Factory Console: An advanced orchestration layer for bulk hierarchy ingestion and atomic state synchronization."
-                    >
-                        <Zap size={24} />
-                    </div>
+                    <ZTooltip content="Domain Factory Console: An advanced orchestration layer for bulk hierarchy ingestion and atomic state synchronization." side="bottom">
+                        <div className="p-2.5 bg-[#1A1A1A] text-[#FF4B91] rounded-2xl shadow-xl shadow-black/10">
+                            <Zap size={24} />
+                        </div>
+                    </ZTooltip>
                     <div>
                         <h2 className="text-xl font-black uppercase tracking-tighter italic text-[#1A1A1A]">Domain Factory_</h2>
                         <p className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em] mt-0.5 flex items-center gap-2">
@@ -431,35 +432,38 @@ Please provide a valid JSON object matching this schema:
                 </div>
 
                 <div className="flex items-center gap-3 bg-slate-100 p-1.5 rounded-2xl">
-                    <button
-                        onClick={() => setMode('manual')}
-                        title="Switch to Single Entry Mode: Manually define a single level of hierarchy (Domain, Subject, Topic, or Subtopic)."
-                        className={cn(
-                            "px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
-                            mode === 'manual' ? "bg-white text-primary shadow-sm" : "text-muted-foreground hover:text-primary"
-                        )}
-                    >
-                        Manual Entry
-                    </button>
-                    <button
-                        onClick={() => setMode('bulk')}
-                        title="Switch to Bulk Engine: Use AI prompts or JSON manifests to insert entire hierarchical branches at once."
-                        className={cn(
-                            "px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
-                            mode === 'bulk' ? "bg-white text-primary shadow-sm" : "text-muted-foreground hover:text-primary"
-                        )}
-                    >
-                        Bulk Factory
-                    </button>
+                    <ZTooltip content="Switch to Single Entry Mode: Manually define a single level of hierarchy (Domain, Subject, Topic, or Subtopic)." side="bottom">
+                        <button
+                            onClick={() => setMode('manual')}
+                            className={cn(
+                                "px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
+                                mode === 'manual' ? "bg-white text-primary shadow-sm" : "text-muted-foreground hover:text-primary"
+                            )}
+                        >
+                            Manual Entry
+                        </button>
+                    </ZTooltip>
+                    <ZTooltip content="Switch to Bulk Engine: Use AI prompts or JSON manifests to insert entire hierarchical branches at once." side="bottom">
+                        <button
+                            onClick={() => setMode('bulk')}
+                            className={cn(
+                                "px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
+                                mode === 'bulk' ? "bg-white text-primary shadow-sm" : "text-muted-foreground hover:text-primary"
+                            )}
+                        >
+                            Bulk Factory
+                        </button>
+                    </ZTooltip>
                 </div>
 
-                <button
-                    onClick={onClose}
-                    title="Terminate current factory session and return to management dashboard."
-                    className="p-3 hover:bg-red-50 text-muted-foreground hover:text-red-500 rounded-2xl transition-all border border-transparent hover:border-red-100 italic font-black uppercase text-[10px] flex items-center gap-2"
-                >
-                    <X size={20} /> Close Terminal
-                </button>
+                <ZTooltip content="Terminate current factory session and return to management dashboard." side="bottom">
+                    <button
+                        onClick={onClose}
+                        className="p-3 hover:bg-red-50 text-muted-foreground hover:text-red-500 rounded-2xl transition-all border border-transparent hover:border-red-100 italic font-black uppercase text-[10px] flex items-center gap-2"
+                    >
+                        <X size={20} /> Close Terminal
+                    </button>
+                </ZTooltip>
             </div>
 
             {/* Main Workspace */}
@@ -580,51 +584,71 @@ Please provide a valid JSON object matching this schema:
                             {!showEditor ? (
                                 <div className="flex-1 flex flex-col gap-6 animate-in zoom-in-95 duration-500 overflow-hidden">
                                     <div className="flex-1 rounded-[2.5rem] bg-white border-2 border-dashed border-slate-200 shadow-sm relative overflow-hidden flex flex-col group hover:border-primary/20 transition-all duration-500">
-                                        <div className="px-10 py-6 border-b border-primary/5 flex items-center justify-between bg-slate-50/50">
-                                            <div className="flex items-center gap-4">
-                                                <div className="p-2.5 bg-[#FF4B91]/10 rounded-xl text-[#FF4B91]">
-                                                    <Brain size={20} />
+                                        {!selections.domainId && !initialData?.domainName ? (
+                                            <div className="flex-1 flex flex-col items-center justify-center p-12 text-center space-y-6 animate-in fade-in zoom-in-95">
+                                                <div className="w-20 h-20 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-300 shadow-sm">
+                                                    <ArrowUp size={32} />
                                                 </div>
-                                                <h4 className="text-lg font-black uppercase tracking-widest text-slate-800 italic">Surgical AI Prompt_</h4>
+                                                <div className="space-y-2">
+                                                    <h4 className="text-sm font-black uppercase tracking-[0.2em] text-slate-600">
+                                                        Awaiting Selection
+                                                    </h4>
+                                                    <p className="text-[10px] font-bold text-slate-400 max-w-[280px] mx-auto leading-relaxed">
+                                                        Select Target Hierarchy (up to Subtopic) to unlock the bulk uploader or use the manual text editor below.
+                                                    </p>
+                                                </div>
                                             </div>
-                                            <button
-                                                onClick={() => {
-                                                    copyToClipboard(generateAiPrompt());
-                                                    setMode('bulk');
-                                                }}
-                                                title="Copy complete contextual prompt to clipboard. Paste this into your AI assistant to generate the required JSON manifest."
-                                                className="p-3 bg-white hover:bg-primary text-slate-400 hover:text-white rounded-xl transition-all active:scale-95 shadow-sm hover:shadow-primary/20 border border-slate-100"
-                                            >
-                                                <ClipboardCopy size={20} />
-                                            </button>
-                                        </div>
-                                        <div className="flex-1 p-10 overflow-y-auto custom-scrollbar">
-                                            <div className="p-8 bg-slate-50/80 rounded-3xl border border-primary/5 text-sm font-bold text-slate-600 leading-relaxed font-mono whitespace-pre-wrap selection:bg-[#FF4B91]/20">
-                                                {generateAiPrompt()}
-                                            </div>
-                                        </div>
-                                        <div className="px-10 py-6 border-t border-primary/5 bg-slate-50/50 text-center">
-                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] italic">
-                                                Domain check filters active: {existingDomains.length} domains found.
-                                            </p>
-                                        </div>
+                                        ) : (
+                                            <>
+                                                <div className="px-10 py-6 border-b border-primary/5 flex items-center justify-between bg-slate-50/50">
+                                                    <div className="flex items-center gap-4">
+                                                        <div className="p-2.5 bg-[#FF4B91]/10 rounded-xl text-[#FF4B91]">
+                                                            <Brain size={20} />
+                                                        </div>
+                                                        <h4 className="text-lg font-black uppercase tracking-widest text-slate-800 italic">Surgical AI Prompt_</h4>
+                                                    </div>
+                                                    <ZTooltip content="Copy complete contextual prompt to clipboard. Paste this into your AI assistant to generate the required JSON manifest." side="left">
+                                                        <button
+                                                            onClick={() => {
+                                                                copyToClipboard(generateAiPrompt());
+                                                                setMode('bulk');
+                                                            }}
+                                                            className="p-3 bg-white hover:bg-primary text-slate-400 hover:text-white rounded-xl transition-all active:scale-95 shadow-sm hover:shadow-primary/20 border border-slate-100"
+                                                        >
+                                                            <ClipboardCopy size={20} />
+                                                        </button>
+                                                    </ZTooltip>
+                                                </div>
+                                                <div className="flex-1 p-10 overflow-y-auto custom-scrollbar">
+                                                    <div className="p-8 bg-slate-50/80 rounded-3xl border border-primary/5 text-sm font-bold text-slate-600 leading-relaxed font-mono whitespace-pre-wrap selection:bg-[#FF4B91]/20">
+                                                        {generateAiPrompt()}
+                                                    </div>
+                                                </div>
+                                                <button
+                                                    onClick={() => setShowEditor(true)}
+                                                    className="px-10 py-6 border-t border-primary/5 bg-slate-50/50 hover:bg-slate-100 transition-all text-left flex items-center justify-between group/watermark"
+                                                >
+                                                    <div className="flex items-center gap-4">
+                                                        <div className="p-2 bg-[#FF4B91]/10 rounded-lg text-[#FF4B91] group-hover/watermark:scale-110 transition-all">
+                                                            <FileJson size={18} />
+                                                        </div>
+                                                        <div>
+                                                            <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 group-hover/watermark:text-primary transition-colors">
+                                                                Already have the JSON? Enter Manual Manifest Mode_
+                                                            </p>
+                                                            <p className="text-[9px] font-bold text-slate-400 mt-0.5">
+                                                                Unlock Editor for Payload Injection
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                    <div className="text-slate-300 group-hover/watermark:text-primary transition-colors">
+                                                        <ArrowUp className="rotate-90" size={16} />
+                                                    </div>
+                                                </button>
+                                            </>
+                                        )}
                                     </div>
 
-                                    <button
-                                        onClick={() => setShowEditor(true)}
-                                        title="Manually paste or edit the JSON manifest if you already have the generated data from an AI session."
-                                        className="w-full group flex flex-col items-center justify-center gap-4 p-12 bg-slate-50 border-2 border-dashed border-slate-200 rounded-[2.5rem] hover:bg-primary/[0.03] hover:border-primary/20 transition-all duration-500"
-                                    >
-                                        <div className="w-16 h-16 rounded-full bg-white border border-slate-200 shadow-sm flex items-center justify-center text-slate-400 group-hover:text-primary group-hover:scale-110 transition-all duration-500">
-                                            <FileJson size={32} />
-                                        </div>
-                                        <div className="text-center">
-                                            <p className="text-[11px] font-black uppercase tracking-[0.3em] text-slate-400 group-hover:text-primary transition-all">
-                                                Already have the JSON? <span className="text-primary italic">Enter Manual Manifest Mode_</span>
-                                            </p>
-                                            <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-2">Unlock Editor for Payload Injection</p>
-                                        </div>
-                                    </button>
                                 </div>
                             ) : (
                                 <div className="flex-1 relative group animate-in fade-in slide-in-from-bottom-4">
@@ -656,112 +680,117 @@ PASTE YOUR JSON MANIFEST HERE_'
                 </div>
 
                 {/* Sidebar: Intelligence & Steps */}
-                <div className="w-full lg:w-[480px] bg-slate-50/50 flex flex-col p-8 gap-8 overflow-y-auto">
-                    {/* execution tracker */}
-                    <div className="p-8 rounded-[2rem] bg-white border border-primary/5 shadow-xl space-y-6">
-                        <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-[#1A1A1A] flex items-center gap-3">
-                            <Activity size={18} className="text-primary" /> Execution Timeline
-                        </h4>
-
-                        <div className="space-y-4">
-                            <ExecutionItem label="Data Validation" status={executionStep === 'idle' ? 'pending' : (['lookup', 'transaction', 'filter', 'blueprint', 'done'].includes(executionStep) ? 'done' : 'pending')} />
-                            <ExecutionItem label="Database Lookup" status={executionStep === 'lookup' ? 'active' : (['transaction', 'filter', 'blueprint', 'done'].includes(executionStep) ? 'done' : 'pending')} />
-                            <ExecutionItem label="Registry Transaction" status={executionStep === 'transaction' ? 'active' : (['filter', 'done'].includes(executionStep) ? 'done' : 'pending')} />
-                            <ExecutionItem label="Hierarchy Sealing" status={executionStep === 'filter' ? 'active' : (executionStep === 'done' ? 'done' : 'pending')} />
-                        </div>
+                <div className="w-full lg:w-[480px] bg-slate-50/50 flex flex-col p-12 gap-10 overflow-hidden border-l border-slate-200/50">
+                    <div className="h-[40px] flex items-center shrink-0">
+                        <h3 className="text-3xl font-black italic uppercase tracking-tighter text-[#1A1A1A]">
+                            Factory Monitor_
+                        </h3>
                     </div>
 
-                    {error && (
-                        <div className="p-6 rounded-2xl bg-red-50 border border-red-200 text-red-600 animate-in shake-1 space-y-2">
-                            <div className="flex items-center gap-2 font-black uppercase text-xs">
-                                <AlertTriangle size={16} /> Factory Halted
+                    {/* Scrollable Content */}
+                    <div className="flex-1 overflow-y-auto space-y-6 custom-scrollbar pr-2">
+                        {/* execution tracker */}
+                        <div className="p-8 rounded-[2rem] bg-white border border-primary/5 shadow-xl space-y-6">
+                            <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-[#1A1A1A] flex items-center gap-3">
+                                <Activity size={18} className="text-primary" /> Execution Timeline
+                            </h4>
+
+                            <div className="space-y-4">
+                                <ExecutionItem label="Data Validation" status={executionStep === 'idle' ? 'pending' : (['lookup', 'transaction', 'filter', 'blueprint', 'done'].includes(executionStep) ? 'done' : 'pending')} />
+                                <ExecutionItem label="Database Lookup" status={executionStep === 'lookup' ? 'active' : (['transaction', 'filter', 'blueprint', 'done'].includes(executionStep) ? 'done' : 'pending')} />
+                                <ExecutionItem label="Registry Transaction" status={executionStep === 'transaction' ? 'active' : (['filter', 'done'].includes(executionStep) ? 'done' : 'pending')} />
+                                <ExecutionItem label="Hierarchy Sealing" status={executionStep === 'filter' ? 'active' : (executionStep === 'done' ? 'done' : 'pending')} />
                             </div>
-                            <p className="text-[11px] font-bold">{error}</p>
                         </div>
-                    )}
 
-                    {success && (
-                        <div className="p-8 rounded-[2rem] bg-green-50 border border-green-200 animate-in slide-in-from-bottom-4 shadow-2xl shadow-green-500/10 space-y-6 text-center">
-                            <div className="mx-auto w-16 h-16 rounded-full bg-green-500 text-white flex items-center justify-center shadow-lg shadow-green-500/30">
-                                <CheckCircle2 size={32} />
-                            </div>
-                            <div>
-                                <h4 className="text-xl font-black uppercase tracking-tighter text-green-800 italic">Emission Successful_</h4>
-                                <p className="text-[10px] font-bold text-green-700 uppercase tracking-widest mt-1">Domain ID: {success.domainId}</p>
-                            </div>
-
-                            {success.stats && (
-                                <div className="p-4 rounded-3xl bg-white/50 border border-green-200/50 space-y-3">
-                                    <h5 className="text-[9px] font-black uppercase tracking-widest text-green-800/60 text-left px-2">Registry Summary_</h5>
-                                    <div className="grid grid-cols-2 gap-2">
-                                        {Object.entries(success.stats).map(([k, v]: [string, any]) => (
-                                            (v.added > 0 || v.skipped > 0) && (
-                                                <div key={k} className="p-3 bg-white rounded-2xl border border-green-100 flex items-center justify-between">
-                                                    <span className="text-[9px] font-black uppercase tracking-widest text-slate-500">{k}</span>
-                                                    <div className="flex gap-2">
-                                                        {v.added > 0 && <span className="text-[9px] font-black px-1.5 py-0.5 bg-green-100 text-green-700 rounded-md">+{v.added}</span>}
-                                                        {v.skipped > 0 && <span className="text-[9px] font-black px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded-md text-nowrap">Skipped: {v.skipped}</span>}
-                                                    </div>
-                                                </div>
-                                            )
-                                        ))}
-                                    </div>
+                        {error && (
+                            <div className="p-6 rounded-2xl bg-red-50 border border-red-200 text-red-600 animate-in shake-1 space-y-2">
+                                <div className="flex items-center gap-2 font-black uppercase text-xs">
+                                    <AlertTriangle size={16} /> Factory Halted
                                 </div>
-                            )}
-                            <div className="grid grid-cols-1 gap-3">
-                                <button
-                                    onClick={() => setBlueprintModal({
-                                        isOpen: true,
-                                        domainId: success.domainId,
-                                        domainName: manualEntry.name || (mode === 'bulk' && payload ? JSON.parse(payload).domainName : "Assessment"),
-                                        questionIds: success.questionIds || [],
-                                        questionStats: success.questionStats
-                                    })}
-                                    title="Open the static configuration panel to lock specific questions and calibrate the assessment blueprint for this domain."
-                                    className="w-full py-4 bg-[#1A1A1A] text-white rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] hover:scale-[1.02] transition-all flex items-center justify-center gap-3 px-6 shadow-xl"
-                                >
-                                    <ClipboardList size={16} />
-                                    Configure Blueprint
-                                </button>
-                                <button
-                                    onClick={onClose}
-                                    title="Close the factory engine and return to the domain overview. All hierarchical records have been safely committed."
-                                    className="w-full py-4 bg-white border border-green-200 text-green-700 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] hover:bg-green-100 transition-all flex items-center justify-center gap-3 px-6"
-                                >
-                                    Close Engine
-                                </button>
+                                <p className="text-[11px] font-bold">{error}</p>
                             </div>
-                        </div>
-                    )}
+                        )}
+
+                        {success && (
+                            <div className="p-8 rounded-[2rem] bg-green-50 border border-green-200 animate-in slide-in-from-bottom-4 shadow-2xl shadow-green-500/10 space-y-6 text-center">
+                                <div className="mx-auto w-16 h-16 rounded-full bg-green-500 text-white flex items-center justify-center shadow-lg shadow-green-500/30">
+                                    <CheckCircle2 size={32} />
+                                </div>
+                                <div>
+                                    <h4 className="text-xl font-black uppercase tracking-tighter text-green-800 italic">Emission Successful_</h4>
+                                    <p className="text-[10px] font-bold text-green-700 uppercase tracking-widest mt-1">Domain ID: {success.domainId}</p>
+                                </div>
+
+                                {success.stats && (
+                                    <div className="p-4 rounded-3xl bg-white/50 border border-green-200/50 space-y-3">
+                                        <h5 className="text-[9px] font-black uppercase tracking-widest text-green-800/60 text-left px-2">Registry Summary_</h5>
+                                        <div className="grid grid-cols-2 gap-2">
+                                            {Object.entries(success.stats).map(([k, v]: [string, any]) => (
+                                                (v.added > 0 || v.skipped > 0) && (
+                                                    <div key={k} className="p-3 bg-white rounded-2xl border border-green-100 flex items-center justify-between">
+                                                        <span className="text-[9px] font-black uppercase tracking-widest text-slate-500">{k}</span>
+                                                        <div className="flex gap-2">
+                                                            {v.added > 0 && <span className="text-[9px] font-black px-1.5 py-0.5 bg-green-100 text-green-700 rounded-md">+{v.added}</span>}
+                                                            {v.skipped > 0 && <span className="text-[9px] font-black px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded-md text-nowrap">Skipped: {v.skipped}</span>}
+                                                        </div>
+                                                    </div>
+                                                )
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                                <div className="grid grid-cols-1 gap-3">
+                                    <button
+                                        onClick={() => setBlueprintModal({
+                                            isOpen: true,
+                                            domainId: success.domainId,
+                                            domainName: manualEntry.name || (mode === 'bulk' && payload ? JSON.parse(payload).domainName : "Assessment"),
+                                            questionIds: success.questionIds || [],
+                                            questionStats: success.questionStats
+                                        })}
+                                        title="Open the static configuration panel to lock specific questions and calibrate the assessment blueprint for this domain."
+                                        className="w-full py-4 bg-[#1A1A1A] text-white rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] hover:scale-[1.02] transition-all flex items-center justify-center gap-3 px-6 shadow-xl"
+                                    >
+                                        <ClipboardList size={16} />
+                                        Configure Blueprint
+                                    </button>
+                                    <button
+                                        onClick={onClose}
+                                        title="Close the factory engine and return to the domain overview. All hierarchical records have been safely committed."
+                                        className="w-full py-4 bg-white border border-green-200 text-green-700 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] hover:bg-green-100 transition-all flex items-center justify-center gap-3 px-6"
+                                    >
+                                        Close Engine
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
 
                     {/* Utility Clustering at Bottom */}
-                    <div className="mt-auto pt-8 border-t border-primary/5 space-y-3">
+                    <div className="pt-8 border-t border-primary/5 space-y-3 shrink-0">
                         {mode === 'bulk' && (
                             <div className="grid grid-cols-1 gap-5">
                                 {showEditor && (
-                                    <button
-                                        onClick={() => setShowEditor(false)}
-                                        title="Return to the Surgical AI Prompt to copy requirements or verify context. This ensures the manual JSON adheres to the architectural rules of the project."
-                                        className="w-full px-6 py-4 bg-white border-2 border-slate-200 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-slate-50 hover:border-slate-300 transition-all flex items-center justify-center gap-3 text-slate-600 shadow-sm hover:scale-[1.01]"
-                                    >
-                                        <Wand2 size={16} /> Back to Prompt
-                                    </button>
+                                    null
                                 )}
-                                <button
-                                    onClick={() => fileInputRef.current?.click()}
-                                    title="Load a .json manifest file from your local storage. This is the fastest way to re-run previously validated batches or bulk-import legacy content."
-                                    className="w-full px-6 py-4 bg-slate-100 border-2 border-slate-200 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-slate-200 hover:border-slate-300 transition-all flex items-center justify-center gap-3 text-slate-700 shadow-sm hover:scale-[1.01]"
-                                >
-                                    <Upload size={16} /> Upload Manifest
-                                </button>
+                                <ZTooltip content="Load a .json manifest file from your local storage. This is the fastest way to re-run previously validated batches or bulk-import legacy content." side="top">
+                                    <button
+                                        onClick={() => fileInputRef.current?.click()}
+                                        className="w-full px-6 py-4 bg-slate-100 border-2 border-slate-200 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-slate-200 hover:border-slate-300 transition-all flex items-center justify-center gap-3 text-slate-700 shadow-sm hover:scale-[1.01]"
+                                    >
+                                        <Upload size={16} /> Upload Manifest
+                                    </button>
+                                </ZTooltip>
                                 <input type="file" ref={fileInputRef} onChange={handleFileUpload} accept=".json" className="hidden" />
-                                <button
-                                    onClick={generateTemplate}
-                                    title="Populate the editor with a pre-defined schema matching your current target. Use this as a secure template for manual hierarchy definition."
-                                    className="w-full px-6 py-4 bg-[#FF4B91]/5 text-[#FF4B91] border-2 border-[#FF4B91]/10 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-[#FF4B91]/10 hover:border-[#FF4B91]/20 transition-all flex items-center justify-center gap-3 shadow-none hover:shadow-lg hover:shadow-[#FF4B91]/10 hover:scale-[1.01]"
-                                >
-                                    <LayoutGrid size={16} /> Import Template
-                                </button>
+                                <ZTooltip content="Populate the editor with a pre-defined schema matching your current target. Use this as a secure template for manual hierarchy definition." side="top">
+                                    <button
+                                        onClick={generateTemplate}
+                                        className="w-full px-6 py-4 bg-[#FF4B91]/5 text-[#FF4B91] border-2 border-[#FF4B91]/10 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-[#FF4B91]/10 hover:border-[#FF4B91]/20 transition-all flex items-center justify-center gap-3 shadow-none hover:shadow-lg hover:shadow-[#FF4B91]/10 hover:scale-[1.01]"
+                                    >
+                                        <LayoutGrid size={16} /> Import Template
+                                    </button>
+                                </ZTooltip>
                             </div>
                         )}
                     </div>
