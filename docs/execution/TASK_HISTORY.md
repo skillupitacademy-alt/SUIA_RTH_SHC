@@ -30,3 +30,7 @@
 | 2026-01-31 | Architectural Governance | COMPLETED | Protected mission-critical system mappings via AGENT_CONSTITUTION.md and published unified lifecycle docs. |
 | 2026-01-31 | Schema Decoupling (Batch 34) | COMPLETED | Extracted Drizzle relations to `relations.ts` to resolve circular dependencies and ensure clean API builds. |
 | 2026-02-01 | Governance & UI Polish (Batch 35) | COMPLETED | Restored Governance Dashboard visibility, hardened Bulk Upload UI with Dynamic AI Prompt, and enforced "Executive White" aesthetics. |
+| 2026-02-01 | UI Unification (Batch 38) | COMPLETED | Replaced Domain legacy modal with full-screen Factory IDE; unified entry to Manual Blueprinting. |
+| 2026-02-01 | Import Style Audit (Batch 39) | COMPLETED | Standardized relative imports to `@/` aliases across 15+ files in the monorepo. |
+| 2026-02-01 | Factory Console Consolidation (Batch 40) | COMPLETED | Unified JSON Terminal and AI Prompt into a single-pane surgical center with modular templates. |
+| 2026-02-01 | Global Factory Unification (Batch 41/42) | COMPLETED | Eliminated all legacy modals in hierarchy tables; verified global monorepo build integrity. |

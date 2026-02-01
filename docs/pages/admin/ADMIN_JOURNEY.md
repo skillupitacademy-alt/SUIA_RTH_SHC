@@ -49,3 +49,19 @@ Secure entry point for platform administrators ("Secure Governance Terminal").
 ### Logic
 - Any attempt to access `/signup` on Admin App must redirect to `/login`.
 - **Future Scope**: Invitation-based flow only (`/invite/accept?token=...`).
+
+---
+
+## 3. Question Bank Orchestration (Command Center)
+*Source: QUESTION_BANK.md*
+
+### Purpose
+High-fidelity management of the educational hierarchy and content seeding.
+
+### UI Structure
+- **Dashboard**: High-density tables with status indicators.
+- **Factory**: Full-screen, single-pane surgical IDE with AI assistance.
+
+### Logic
+- **Atomic Upsert**: Partial manifests are upserted into the hierarchy transactionally.
+- **Contextual IQ**: AI prompts adapt dynamically to Domain/Subject/Topic contexts.

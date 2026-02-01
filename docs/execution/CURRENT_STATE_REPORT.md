@@ -86,3 +86,23 @@
 - **Bulk Upload 2.0**: Implemented "Executive White" UI, Dynamic AI Prompt, and Schema Guide side-by-side.
 - **Reporting Trinity**: Verified 8/8 Domains exist; "0 Ready" correctly reflects strict 4/4/5 question readiness criteria.
 - **Aesthetic Enforcement**: Reverted UI gradients to "Executive White" to strictly adhere to the Project Constitution.
+
+### Phase 16: Global UI Unification (Batch 38)
+- **Domain Entry**: Replaced the legacy small modal in `DomainTable.tsx` with the full-screen `HierarchyFactoryWizard`.
+- **Flow Integrity**: Verified that adding a Domain now triggers the "Manual Blueprinting" flow consistently upon success.
+- **Visual Standard**: Enforced the "Executive Console" full-screen standard for the primary entry point of content creation.
+
+### Phase 17: Import Style Standardization (Batch 39)
+- **Path Aliases**: Conducted a monorepo-wide audit and standardized all relative imports (e.g., `../../components`) to use the `@/` path alias.
+- **Code Hygiene**: Eliminated relative import debt in over 15+ files, improving maintainability and refactoring speed.
+- **Type Safety**: Verified that the alias standardization did not introduce regressions in component connectivity or type resolution.
+
+### Phase 18: Factory Console Consolidation (Batch 40)
+- **Single-Pane Orchestration**: Consolidated the AI Prompt and JSON Editor into a single-pane workspace, removing the dual-terminal visual redundancy.
+- **Context-Aware Templates**: Implemented modular "Import Template" logic that provides skeletal JSON structures tailored to Domain, Subject, or Topic contexts.
+- **Surgical AI**: Refactored the AI Prompt generator to be context-aware, automatically injecting relevant IDs and structural requirements based on the current hierarchy level.
+
+### Phase 19: Global Factory Unification (Batch 41/42)
+- **Legacy Removal**: Completely replaced legacy creation modals in `SubjectTable.tsx`, `TopicTable.tsx`, and `SubtopicTable.tsx` with the unified Factory IDE.
+- **Contextual Launch**: Adding a Subject or Topic now launches the surgical IDE with a pre-populated contextual template (e.g., injecting Domain ID automatically).
+- **Engineering Excellence**: Verified the entire monorepo integrity with a global `pnpm build` and `tsc --noEmit` check (Exit Code 0).
