@@ -81,6 +81,7 @@ export const HierarchyReports: React.FC = () => {
             console.error('Failed to fetch report:', error);
         } finally {
             setLoading(false);
+            setIsPageLoading(false);
         }
     };
 
