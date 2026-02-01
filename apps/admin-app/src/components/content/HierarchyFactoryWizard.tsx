@@ -651,13 +651,35 @@ Please provide a valid JSON object matching this schema:
 
                                 </div>
                             ) : (
-                                <div className="flex-1 relative group animate-in fade-in slide-in-from-bottom-4">
-                                    <textarea
-                                        value={payload}
-                                        onChange={(e) => setPayload(e.target.value)}
-                                        spellCheck={false}
-                                        className="absolute inset-0 w-full h-full bg-white text-slate-800 border-2 border-dashed border-primary/20 rounded-[2.5rem] p-12 font-mono text-xl focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all leading-relaxed shadow-sm resize-none selection:bg-primary/20 placeholder:text-slate-300"
-                                        placeholder='{
+                                <div className="flex-1 relative group animate-in fade-in slide-in-from-bottom-4 flex flex-col bg-white border-2 border-dashed border-primary/20 rounded-[2.5rem] overflow-hidden shadow-sm hover:border-primary/20 transition-all duration-500">
+                                    {/* Editor Header */}
+                                    <div className="px-10 py-6 border-b border-primary/5 flex items-center justify-between bg-slate-50/50 shrink-0">
+                                        <div className="flex items-center gap-4">
+                                            <div className="p-2.5 bg-[#FF4B91]/10 rounded-xl text-[#FF4B91]">
+                                                <Code2 size={20} />
+                                            </div>
+                                            <h4 className="text-lg font-black uppercase tracking-widest text-slate-800 italic">JSON Manifest Editor_</h4>
+                                        </div>
+                                        <div className="flex items-center gap-3">
+                                            <ZTooltip content="Copy raw JSON payload." side="left">
+                                                <button
+                                                    onClick={() => copyToClipboard(payload)}
+                                                    className="p-3 bg-white hover:bg-primary text-slate-400 hover:text-white rounded-xl transition-all active:scale-95 shadow-sm hover:shadow-primary/20 border border-slate-100"
+                                                >
+                                                    <ClipboardCopy size={20} />
+                                                </button>
+                                            </ZTooltip>
+                                        </div>
+                                    </div>
+
+                                    {/* Editor Area */}
+                                    <div className="relative flex-1">
+                                        <textarea
+                                            value={payload}
+                                            onChange={(e) => setPayload(e.target.value)}
+                                            spellCheck={false}
+                                            className="absolute inset-0 w-full h-full bg-white text-slate-800 p-10 font-mono text-xl focus:ring-0 outline-none transition-all leading-relaxed resize-none selection:bg-primary/20 placeholder:text-slate-300"
+                                            placeholder='{
   "domainName": "...",
   "subjects": [
     {
@@ -668,10 +690,11 @@ Please provide a valid JSON object matching this schema:
 }
 
 PASTE YOUR JSON MANIFEST HERE_'
-                                    />
-                                    <div className="absolute right-10 bottom-10 px-6 py-3 bg-slate-900 border border-slate-800 rounded-2xl text-[11px] font-mono text-white/90 backdrop-blur-xl flex items-center gap-3 shadow-xl">
-                                        <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                                        PAYLOAD_SIZE: {payload.length} BYTES
+                                        />
+                                        <div className="absolute right-10 bottom-10 px-6 py-3 bg-slate-900 border border-slate-800 rounded-2xl text-[11px] font-mono text-white/90 backdrop-blur-xl flex items-center gap-3 shadow-xl pointer-events-none">
+                                            <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                                            PAYLOAD_SIZE: {payload.length} BYTES
+                                        </div>
                                     </div>
                                 </div>
                             )}
@@ -842,7 +865,7 @@ PASTE YOUR JSON MANIFEST HERE_'
                     onClose();
                 }}
             />
-        </div>,
+        </div >,
         document.body
     );
 }
