@@ -204,7 +204,7 @@ export class AdminClient {
     return this.client.get<any>('/admin/metrics/security');
   }
 
-  async getContentHealth() {
+  async getContentHealthReport() {
     return this.client.get<any[]>('/admin/metrics/content');
   }
 

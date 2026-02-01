@@ -14,7 +14,8 @@ import {
     AlertTriangle,
     Search,
     Users,
-    ShieldCheck
+    ShieldCheck,
+    BarChart3
 } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
@@ -28,11 +29,9 @@ import { usePresenceHeartbeat } from '@/hooks/usePresenceHeartbeat';
 const ADMIN_NAV = [
     { name: 'Dashboard', href: '/', icon: LayoutDashboard },
     { name: 'Question Bank', href: '/questions', icon: Database },
-    // { name: 'Blueprint Manager', href: '/blueprints', icon: FileText },
+    { name: 'Reports', href: '/reports', icon: BarChart3 },
     { name: 'Users', href: '/users', icon: Users },
-    // { name: 'Audit Logs', href: '/audit', icon: ShieldAlert },
     { name: 'Governance', href: '/governance', icon: ShieldCheck },
-    // { name: 'Settings', href: '/settings', icon: Settings },
 ];
 
 

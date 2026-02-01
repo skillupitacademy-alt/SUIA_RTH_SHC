@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import { apiClient } from '@quiz/api-client';
-import { User, Mail, Calendar, Info, Shield, CheckCircle, XCircle, Trash2, AlertTriangle, Lock } from 'lucide-react';
+import { User, Mail, Calendar, Info, Shield, CheckCircle, XCircle, Trash2, AlertTriangle, Lock, Loader2, Activity } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { ErrorBanner } from '@/components/layout/ErrorBanner';
+import { ZLoader } from '@/components/ui/ZLoader';
 
 interface UserData {
     id: string;
@@ -42,6 +43,8 @@ export function UserTable() {
     const [filterBlocked, setFilterBlocked] = useState('ALL');
     const [filterVerified, setFilterVerified] = useState('ALL');
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
+    const [isActionLoading, setIsActionLoading] = useState(false);
+    const [isPageLoading, setIsPageLoading] = useState(false);
 
     const fetchUsers = async () => {
         setIsLoading(true);
@@ -156,7 +159,12 @@ export function UserTable() {
     };
 
     if (isLoading && users.length === 0) {
-        return <div className="text-center py-20 text-muted-foreground animate-pulse">Synchronizing Identity Records...</div>;
+        return (
+            <div className="flex flex-col items-center justify-center py-40 gap-4">
+                <Loader2 className="w-12 h-12 animate-spin text-[#FF4B91]" />
+                <p className="text-xs font-black uppercase tracking-[0.3em] animate-pulse">Synchronizing Identity Records...</p>
+            </div>
+        );
     }
 
     return (
@@ -312,13 +320,23 @@ export function UserTable() {
                                     <td className="p-6 text-right">
                                         <div className="flex items-center justify-end gap-2">
                                             <button
-                                                onClick={() => setEditingUser(user)}
+                                                onClick={async () => {
+                                                    setIsActionLoading(true);
+                                                    await new Promise(r => setTimeout(r, 1000));
+                                                    setIsActionLoading(false);
+                                                    setEditingUser(user);
+                                                }}
                                                 className="px-3 py-1.5 rounded-lg border border-gray-200 text-[#1A1A1A] text-[10px] font-black uppercase tracking-widest hover:bg-black hover:text-white transition-all shadow-sm"
                                             >
                                                 Manage
                                             </button>
                                             <button
-                                                onClick={() => setSelectedUser(user)}
+                                                onClick={async () => {
+                                                    setIsActionLoading(true);
+                                                    await new Promise(r => setTimeout(r, 1000));
+                                                    setIsActionLoading(false);
+                                                    setSelectedUser(user);
+                                                }}
                                                 className="px-3 py-1.5 rounded-lg bg-white border border-gray-200 text-[10px] font-black uppercase tracking-widest hover:bg-gray-50 hover:border-[#FF4B91]/30 hover:text-[#FF4B91] transition-all shadow-sm"
                                             >
                                                 Profile
@@ -334,7 +352,12 @@ export function UserTable() {
                 <div className="p-6 border-t border-primary/5 flex items-center justify-between">
                     <button
                         disabled={page === 1}
-                        onClick={() => setPage(p => p - 1)}
+                        onClick={async () => {
+                            setIsPageLoading(true);
+                            await new Promise(r => setTimeout(r, 800));
+                            setIsPageLoading(false);
+                            setPage(p => p - 1);
+                        }}
                         className="px-4 py-2 text-xs font-black uppercase tracking-widest disabled:opacity-50 hover:text-[#FF4B91] transition-colors"
                     >
                         Previous
@@ -342,7 +365,12 @@ export function UserTable() {
                     <span className="text-xs font-bold text-muted-foreground">Page {page} of {totalPages}</span>
                     <button
                         disabled={page === totalPages}
-                        onClick={() => setPage(p => p + 1)}
+                        onClick={async () => {
+                            setIsPageLoading(true);
+                            await new Promise(r => setTimeout(r, 800));
+                            setIsPageLoading(false);
+                            setPage(p => p + 1);
+                        }}
                         className="px-4 py-2 text-xs font-black uppercase tracking-widest disabled:opacity-50 hover:text-[#FF4B91] transition-colors"
                     >
                         Next
@@ -460,6 +488,21 @@ export function UserTable() {
                             </div>
                         </div>
                     </div>
+                </div>
+            )}
+
+            {isActionLoading && (
+                <div className="fixed inset-0 z-[300] bg-white/20 backdrop-blur-[2px] flex items-center justify-center animate-in fade-in duration-200">
+                    <div className="bg-white p-8 rounded-3xl shadow-2xl border border-primary/10 flex flex-col items-center gap-4">
+                        <Activity className="w-12 h-12 text-[#FF4B91] animate-pulse" />
+                        <p className="text-[10px] font-black uppercase tracking-widest">Accessing Identity...</p>
+                    </div>
+                </div>
+            )}
+
+            {isPageLoading && (
+                <div className="fixed inset-0 z-[300] bg-black/5 backdrop-blur-[1px] flex items-center justify-center animate-in fade-in duration-200">
+                    <ZLoader text="Syncing Matrix..." />
                 </div>
             )}
         </div>

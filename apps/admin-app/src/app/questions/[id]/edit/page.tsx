@@ -141,20 +141,18 @@ export default function EditQuestionPage() {
                 </div>
             )}
 
-            <div className="w-full max-w-[1800px] mx-auto space-y-12 pb-24">
+            <div className="w-full max-w-[1400px] mx-auto space-y-12 pb-24">
                 {/* Header */}
                 <div className="flex flex-col gap-4">
                     <Link href="/questions" className="inline-flex items-center gap-2 text-slate-500 hover:text-[#FF4B91] transition-colors text-xs font-bold uppercase tracking-wider w-fit">
                         <ArrowLeft className="w-4 h-4" /> Back to Question Bank
                     </Link>
-                    <div className="flex items-end justify-between gap-8 pb-8 border-b border-gray-200">
+                    <div className="flex items-end justify-between gap-8 pb-8 border-b border-gray-100">
                         <div className="relative">
-                            <h1 className="text-5xl font-black text-[#1A1A1A] tracking-tighter uppercase italic">Edit Question</h1>
-                            <div className="h-1.5 w-32 bg-[#FF4B91] mt-3 rounded-full shadow-[0_0_20px_rgba(255,75,145,0.4)]" />
-                        </div>
-                        <div className="flex items-center gap-3">
-                            <Database size={20} className="text-[#FF4B91]" />
-                            <span className="text-xs font-black uppercase tracking-[0.3em] text-[#FF4B91]">Revision Control</span>
+                            <h1 className="text-4xl font-black text-[#1A1A1A] tracking-tighter uppercase italic">Refine Assessment_</h1>
+                            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mt-2 flex items-center gap-2">
+                                System-Alpha • Manual Orchestration Active • ID: {params.id}
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -163,7 +161,7 @@ export default function EditQuestionPage() {
                 <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
                     <CascadingSelect
                         value={selection}
-                        onChange={handleSelectionChange}
+                        onChange={setSelection}
                     />
                 </div>
 

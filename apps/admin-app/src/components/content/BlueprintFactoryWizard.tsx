@@ -115,25 +115,32 @@ export function BlueprintFactoryWizard({ isOpen, onClose, domainId, domainName, 
     const totalDist = formData.distribution.simple + formData.distribution.intermediate + formData.distribution.expert;
 
     return createPortal(
-        <div className="fixed inset-0 z-[1100] flex items-center justify-center p-6 bg-slate-900/40 backdrop-blur-md animate-in fade-in duration-300">
-            <div className="w-full max-w-2xl bg-white rounded-[3rem] shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-300">
+        <div className="fixed inset-0 z-[1100] flex flex-col bg-white animate-in fade-in duration-300">
+            <div className="flex-1 flex flex-col overflow-hidden animate-in zoom-in-95 duration-300">
                 {/* Header */}
-                <div className="p-8 border-b border-primary/5 flex items-center justify-between bg-primary/[0.02]">
-                    <div className="flex items-center gap-4">
-                        <div className="p-3 bg-primary text-white rounded-2xl">
+                <div className="px-12 py-4 border-b border-primary/5 flex items-center justify-between bg-primary/[0.02]">
+                    <div className="flex items-center gap-5">
+                        <div
+                            className="p-2.5 bg-[#1A1A1A] text-white rounded-2xl shadow-xl shadow-black/10"
+                            title="Blueprint Designer: A strategic orchestration tool for defining assessment delivery protocols and difficulty toning."
+                        >
                             <ClipboardList size={24} />
                         </div>
                         <div>
-                            <h2 className="text-2xl font-black uppercase tracking-tight italic text-[#1A1A1A]">Blueprint Designer_</h2>
-                            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mt-0.5">
+                            <h2 className="text-xl font-black uppercase tracking-tight italic text-[#1A1A1A]">Blueprint Designer_</h2>
+                            <p className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em] mt-0.5">
                                 {formData.blueprintMode === 'static'
                                     ? `Static Orchestration Mode (${formData.questionIds.length} Locked)`
                                     : "Dynamic Orchestration Mode"}
                             </p>
                         </div>
                     </div>
-                    <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-full transition-all">
-                        <X size={20} className="text-muted-foreground" />
+                    <button
+                        onClick={onClose}
+                        title="Close the Designer and return to the management console. Warning: Unsaved configuration changes will be lost."
+                        className="p-3 hover:bg-red-50 text-muted-foreground hover:text-red-500 rounded-2xl transition-all border border-transparent hover:border-red-100 italic font-black uppercase text-[10px] flex items-center gap-2"
+                    >
+                        <X size={20} /> Close Designer
                     </button>
                 </div>
 
@@ -150,6 +157,7 @@ export function BlueprintFactoryWizard({ isOpen, onClose, domainId, domainName, 
                             </div>
                             <button
                                 onClick={onClose}
+                                title="Exit the Designer and return to the Governance dashboard. Your assessment is now officially part of the hierarchy."
                                 className="px-12 py-4 bg-green-600 text-white rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] hover:bg-green-700 transition-all shadow-xl shadow-green-600/20"
                             >
                                 Return to Governance
@@ -168,6 +176,7 @@ export function BlueprintFactoryWizard({ isOpen, onClose, domainId, domainName, 
                                 <div className="flex bg-white/5 p-1.5 rounded-2xl border border-white/5">
                                     <button
                                         onClick={() => setFormData({ ...formData, blueprintMode: 'static' })}
+                                        title="STATIC MODE: Locks the assessment to a specific set of harvested questions. Recommended for formal Certifications and high-stakes exams where question consistency is critical."
                                         className={cn(
                                             "px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all gap-2 flex items-center",
                                             formData.blueprintMode === 'static' ? "bg-white text-slate-900 shadow-xl" : "text-white/40 hover:text-white"
@@ -177,6 +186,7 @@ export function BlueprintFactoryWizard({ isOpen, onClose, domainId, domainName, 
                                     </button>
                                     <button
                                         onClick={() => setFormData({ ...formData, blueprintMode: 'dynamic' })}
+                                        title="DYNAMIC MODE: Generates a random assessment on-the-fly from the available question pool based on difficulty constraints. Ideal for continuous practice and adaptive learning."
                                         className={cn(
                                             "px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all gap-2 flex items-center",
                                             formData.blueprintMode === 'dynamic' ? "bg-white text-slate-900 shadow-xl" : "text-white/40 hover:text-white"
@@ -214,12 +224,16 @@ export function BlueprintFactoryWizard({ isOpen, onClose, domainId, domainName, 
                                             type="text"
                                             value={formData.name}
                                             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                            title="Assign an authoritative name to this Blueprint. This will be the public identity of the assessment in the testing portal."
                                             className="w-full bg-slate-50 border-2 border-primary/5 rounded-2xl p-4 font-bold text-sm focus:ring-4 focus:ring-primary/5 outline-none transition-all"
                                         />
                                     </div>
                                     <div className="space-y-2">
                                         <label className="text-[10px] font-black uppercase tracking-widest text-[#1A1A1A]">Target Domain_</label>
-                                        <div className="w-full bg-slate-100 border border-primary/5 rounded-2xl p-4 font-black italic text-xs text-primary/60">
+                                        <div
+                                            className="w-full bg-slate-100 border border-primary/5 rounded-2xl p-4 font-black italic text-xs text-primary/60"
+                                            title="The specific hierarchical Domain this blueprint is anchored to. Calibrations performed here will only affect this domain."
+                                        >
                                             {domainName}
                                         </div>
                                     </div>
@@ -229,6 +243,7 @@ export function BlueprintFactoryWizard({ isOpen, onClose, domainId, domainName, 
                                     <textarea
                                         value={formData.description}
                                         onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                        title="Define the operational scope and instructions for this assessment. This information helps students understand what competencies are being tested."
                                         className="w-full bg-slate-50 border-2 border-primary/5 rounded-2xl p-4 font-medium text-sm focus:ring-4 focus:ring-primary/5 outline-none transition-all h-24 resize-none"
                                     />
                                 </div>
@@ -245,6 +260,7 @@ export function BlueprintFactoryWizard({ isOpen, onClose, domainId, domainName, 
                                             type="number"
                                             value={formData.totalQuestions}
                                             onChange={(e) => setFormData({ ...formData, totalQuestions: parseInt(e.target.value) })}
+                                            title="Total number of questions to be presented in a single test session. Higher counts increase assessment depth but may fatigue the student."
                                             className="w-24 bg-white border-2 border-primary/5 rounded-xl p-3 font-black text-center text-lg"
                                         />
                                         <span className="text-[11px] font-bold text-muted-foreground uppercase">Units per Session</span>
@@ -259,6 +275,7 @@ export function BlueprintFactoryWizard({ isOpen, onClose, domainId, domainName, 
                                             type="number"
                                             value={formData.timeLimit}
                                             onChange={(e) => setFormData({ ...formData, timeLimit: parseInt(e.target.value) })}
+                                            title="Global countdown duration in minutes. Ensure this provides adequate time for the assigned question count and difficulty mix."
                                             className="w-24 bg-white border-2 border-primary/5 rounded-xl p-3 font-black text-center text-lg"
                                         />
                                         <span className="text-[11px] font-bold text-muted-foreground uppercase">Minutes Duration</span>
@@ -286,18 +303,21 @@ export function BlueprintFactoryWizard({ isOpen, onClose, domainId, domainName, 
                                         val={formData.distribution.simple}
                                         onChange={(v) => setFormData({ ...formData, distribution: { ...formData.distribution, simple: v } })}
                                         color="text-blue-500"
+                                        title="Percentage of introductory questions. High values create a 'low-friction' entry point for early-stage learners."
                                     />
                                     <TierControl
                                         label="Inter"
                                         val={formData.distribution.intermediate}
                                         onChange={(v) => setFormData({ ...formData, distribution: { ...formData.distribution, intermediate: v } })}
                                         color="text-orange-500"
+                                        title="Percentage of standard operational questions. Represents the core competency required for professional proficiency."
                                     />
                                     <TierControl
                                         label="Expert"
                                         val={formData.distribution.expert}
                                         onChange={(v) => setFormData({ ...formData, distribution: { ...formData.distribution, expert: v } })}
                                         color="text-purple-500"
+                                        title="Percentage of complex, architectural questions. Use high values only for advanced certifications or senior-level vetting."
                                     />
                                 </div>
                             </div>
@@ -321,10 +341,17 @@ export function BlueprintFactoryWizard({ isOpen, onClose, domainId, domainName, 
                             </p>
                         )}
                         <div className="flex items-center gap-4">
-                            <button onClick={onClose} className="px-6 py-3 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Cancel</button>
+                            <button
+                                onClick={onClose}
+                                title="Abort changes and return to the main dashboard. No configuration state will be persisted."
+                                className="px-6 py-3 text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:bg-slate-100 rounded-xl transition-all"
+                            >
+                                Cancel Design
+                            </button>
                             <button
                                 disabled={isProcessing || totalDist !== 100}
                                 onClick={handleCreate}
+                                title="Atomic commit of the Blueprint to the system registry. This will finalize the delivery protocol and make the assessment available for student sessions."
                                 className="px-10 py-4 bg-[#1A1A1A] text-white rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] shadow-xl hover:scale-105 transition-all flex items-center gap-3 disabled:grayscale disabled:opacity-50"
                             >
                                 {isProcessing ? <ZLoader size="xs" className="text-white" center={false} /> : <ShieldCheck size={16} />}
@@ -348,15 +375,18 @@ function StatBox({ label, val, color }: { label: string, val: number, color: str
     );
 }
 
-function TierControl({ label, val, onChange, color }: { label: string, val: number, onChange: (v: number) => void, color: string }) {
+function TierControl({ label, val, onChange, color, title }: { label: string, val: number, onChange: (v: number) => void, color: string, title: string }) {
     return (
-        <div className="space-y-3 p-5 rounded-3xl bg-white border border-primary/5 shadow-sm">
+        <div
+            className="space-y-3 p-5 rounded-3xl bg-white border border-primary/5 shadow-sm transition-all hover:border-primary/20"
+            title={title}
+        >
             <span className={cn("text-[10px] font-black uppercase tracking-widest block text-center", color)}>{label}</span>
             <input
                 type="number"
                 value={val}
                 onChange={(e) => onChange(parseInt(e.target.value) || 0)}
-                className="w-full text-center text-xl font-black focus:outline-none"
+                className="w-full text-center text-xl font-black focus:outline-none bg-transparent"
             />
             <div className="h-1 bg-slate-100 rounded-full overflow-hidden">
                 <div className={cn("h-full transition-all duration-500", color.replace('text', 'bg'))} style={{ width: `${val}%` }} />

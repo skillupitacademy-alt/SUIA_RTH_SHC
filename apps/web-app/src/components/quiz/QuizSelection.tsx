@@ -195,19 +195,20 @@ export function QuizSelection() {
     }
 
     return (
-        <div className="max-w-6xl mx-auto space-y-16">
+        <div className="w-full space-y-24">
             {/* Step 1: Domain Selection */}
-            <section className="space-y-8">
-                <div className="flex items-center gap-4">
-                    <div className="h-10 w-10 rounded-2xl bg-primary/10 text-primary flex items-center justify-center font-black text-lg shadow-sm border border-primary/10 italic">1</div>
+            <section className="space-y-12">
+                <div className="flex items-center gap-6">
+                    <div className="h-14 w-14 rounded-2xl bg-[#FF4B91]/10 text-[#FF4B91] flex items-center justify-center font-black text-2xl shadow-lg border border-[#FF4B91]/10 italic">1</div>
                     <div>
-                        <h2 className="text-3xl font-black tracking-tight uppercase italic text-[#1A1A1A]">Select Domain</h2>
-                        <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1">Core Assessment Area</p>
+                        <h2 className="text-4xl font-black tracking-tighter uppercase italic text-[#1A1A1A]">Select Domain_</h2>
+                        <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em] mt-1 opacity-60">Strategic Assessment Vector</p>
                     </div>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-8">
                     {domains.map((item) => {
                         const Icon = ICON_MAP[item.category?.toLowerCase()] || ICON_MAP[item.id] || Code;
+                        const isSelected = selectedDomain === item.id;
                         return (
                             <button
                                 key={item.id}
@@ -219,30 +220,40 @@ export function QuizSelection() {
                                     setSelectedSubtopics([]);
                                 }}
                                 className={cn(
-                                    "group relative p-8 rounded-[3rem] border-2 transition-all duration-500 text-left overflow-hidden",
-                                    selectedDomain === item.id
-                                        ? "border-primary bg-primary/[0.02] shadow-2xl shadow-primary/10 ring-4 ring-primary/5"
-                                        : "border-muted-foreground/5 bg-white hover:border-primary/40 hover:shadow-xl"
+                                    "group relative p-10 rounded-[3.5rem] border-2 transition-all duration-700 text-left overflow-hidden flex flex-col justify-between min-h-[320px]",
+                                    isSelected
+                                        ? "border-[#FF4B91] bg-white shadow-[0_40px_80px_-20px_rgba(255,75,145,0.15)] ring-8 ring-[#FF4B91]/5 scale-[1.02] z-10"
+                                        : "border-muted-foreground/5 bg-white hover:border-[#FF4B91]/40 hover:shadow-2xl hover:scale-[1.01]"
                                 )}
                             >
-                                <div className={cn(
-                                    "mb-6 p-5 rounded-3xl w-fit transition-all duration-500 group-hover:scale-110",
-                                    selectedDomain === item.id ? "bg-primary text-primary-foreground shadow-lg shadow-primary/30" : "bg-muted text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary"
-                                )}>
-                                    <Icon size={32} />
+                                <div className="relative z-10">
+                                    <div className={cn(
+                                        "mb-8 p-6 rounded-[2rem] w-fit transition-all duration-700 group-hover:rotate-6",
+                                        isSelected
+                                            ? "bg-gradient-to-br from-[#FF4B91] to-[#FF8E9E] text-white shadow-xl shadow-[#FF4B91]/30"
+                                            : "bg-muted text-muted-foreground group-hover:bg-[#FF4B91]/10 group-hover:text-[#FF4B91]"
+                                    )}>
+                                        <Icon size={36} />
+                                    </div>
+                                    <h3 className="text-3xl font-black mb-3 text-[#1A1A1A] tracking-tighter uppercase italic">{item.name}</h3>
+                                    <p className="text-xs text-muted-foreground font-black uppercase tracking-wider leading-relaxed opacity-40">
+                                        {item.description || `Master industry-standard practices and tools in ${item.name}.`}
+                                    </p>
                                 </div>
-                                <h3 className="text-2xl font-black mb-2 text-[#1A1A1A] tracking-tight">{item.name}</h3>
-                                <p className="text-sm text-muted-foreground font-medium leading-relaxed opacity-80">
-                                    {item.description || `Master industry-standard practices and tools in ${item.name}.`}
-                                </p>
 
-                                {selectedDomain === item.id && (
-                                    <div className="absolute top-8 right-8 animate-in fade-in zoom-in duration-300">
-                                        <div className="bg-primary text-white p-1 rounded-full shadow-lg">
-                                            <Sparkles size={14} className="animate-pulse" />
+                                {isSelected && (
+                                    <div className="absolute top-10 right-10 animate-in fade-in zoom-in duration-500">
+                                        <div className="bg-[#FF4B91] text-white p-2 rounded-xl shadow-lg shadow-[#FF4B91]/30">
+                                            <Sparkles size={18} className="animate-pulse" />
                                         </div>
                                     </div>
                                 )}
+
+                                {/* Decorative background element */}
+                                <div className={cn(
+                                    "absolute -bottom-20 -right-20 w-48 h-48 rounded-full blur-[80px] transition-all duration-1000",
+                                    isSelected ? "bg-[#FF4B91]/10 opacity-100" : "bg-primary/5 opacity-0 group-hover:opacity-100"
+                                )} />
                             </button>
                         );
                     })}
@@ -257,17 +268,17 @@ export function QuizSelection() {
 
             {/* Step 2: Subject Filtering */}
             {selectedDomain && (
-                <section className="space-y-8 animate-in slide-in-from-bottom-8 duration-500">
-                    <div className="flex items-center gap-4">
-                        <div className="h-10 w-10 rounded-2xl bg-primary/10 text-primary flex items-center justify-center font-black text-lg shadow-sm border border-primary/10 italic">2</div>
+                <section className="space-y-12 animate-in slide-in-from-bottom-[100px] duration-700">
+                    <div className="flex items-center gap-6">
+                        <div className="h-14 w-14 rounded-2xl bg-[#FF4B91]/10 text-[#FF4B91] flex items-center justify-center font-black text-2xl shadow-lg border border-[#FF4B91]/10 italic">2</div>
                         <div>
-                            <h2 className="text-3xl font-black tracking-tight uppercase italic text-[#1A1A1A]">Refine Subjects</h2>
-                            <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1">Specialized Focus Areas</p>
+                            <h2 className="text-4xl font-black tracking-tighter uppercase italic text-[#1A1A1A]">Refine Subjects_</h2>
+                            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em] mt-1 opacity-60">Specialized Focus Areas</p>
                         </div>
                     </div>
                     {fetchingHierarchy ? (
-                        <div className="flex items-center gap-3 py-4 text-muted-foreground font-bold italic text-sm">
-                            <Loader2 className="h-4 w-4 animate-spin" /> Resolving Catalog...
+                        <div className="flex items-center gap-4 py-8 px-10 rounded-[2.5rem] bg-white border border-muted-foreground/5 shadow-sm text-muted-foreground font-black italic text-sm uppercase tracking-widest">
+                            <Loader2 className="h-5 w-5 animate-spin text-[#FF4B91]" /> Resolving Strategic Catalog...
                         </div>
                     ) : (
                         <div className="flex flex-wrap gap-4">
@@ -277,13 +288,13 @@ export function QuizSelection() {
                                     setSelectedSubtopics([]);
                                 })}
                                 className={cn(
-                                    "px-8 py-4 rounded-[1.5rem] border-2 font-black text-xs uppercase tracking-widest transition-all active:scale-95 shadow-sm",
+                                    "px-10 py-6 rounded-[2rem] border-2 font-black text-[10px] uppercase tracking-[0.2em] transition-all active:scale-95 shadow-sm",
                                     isItemSelected(selectedSubjects, 'all')
-                                        ? "border-primary bg-primary text-primary-foreground shadow-xl shadow-primary/20"
-                                        : "border-muted bg-white hover:border-primary/30 text-muted-foreground hover:text-primary"
+                                        ? "border-[#FF4B91] bg-[#FF4B91] text-white shadow-2xl shadow-[#FF4B91]/30"
+                                        : "border-muted-foreground/5 bg-white hover:border-[#FF4B91]/30 text-muted-foreground hover:text-[#FF4B91]"
                                 )}
                             >
-                                ALL SUBJECTS
+                                [ GLOBAL_SCOPE ]
                             </button>
                             {subjects.map((subject: any) => (
                                 <button
@@ -293,10 +304,10 @@ export function QuizSelection() {
                                         setSelectedSubtopics([]);
                                     })}
                                     className={cn(
-                                        "px-8 py-4 rounded-[1.5rem] border-2 font-black text-xs uppercase tracking-widest transition-all active:scale-95 shadow-sm",
+                                        "px-10 py-6 rounded-[2rem] border-2 font-black text-[10px] uppercase tracking-[0.2em] transition-all active:scale-95 shadow-sm",
                                         isItemSelected(selectedSubjects, subject.id)
-                                            ? "border-primary bg-primary text-primary-foreground shadow-xl shadow-primary/20"
-                                            : "border-muted bg-white hover:border-primary/30 text-muted-foreground hover:text-primary"
+                                            ? "border-[#FF4B91] bg-[#FF4B91] text-white shadow-2xl shadow-[#FF4B91]/30"
+                                            : "border-muted-foreground/5 bg-white hover:border-[#FF4B91]/30 text-muted-foreground hover:text-[#FF4B91]"
                                     )}
                                 >
                                     {subject.name}
@@ -305,9 +316,9 @@ export function QuizSelection() {
                         </div>
                     )}
                     {availableCounts && (
-                        <div className="mt-4 flex items-center gap-3 px-6 py-3 bg-primary/5 rounded-2xl w-fit border border-primary/10 animate-in fade-in zoom-in duration-300">
-                            <Activity size={14} className="text-primary animate-pulse" />
-                            <span className="text-[10px] font-black uppercase tracking-widest text-[#1A1A1A]">Subject Refinement Pool: <span className="text-primary text-sm ml-1">{availableCounts.total}</span></span>
+                        <div className="mt-8 flex items-center gap-4 px-8 py-4 bg-white/40 backdrop-blur-md rounded-[2rem] w-fit border border-[#FF4B91]/10 animate-in fade-in zoom-in duration-300">
+                            <Activity size={16} className="text-[#FF4B91] animate-pulse" />
+                            <span className="text-[11px] font-black uppercase tracking-[0.2em] text-[#1A1A1A]">Sub-Vector Capacity: <span className="text-[#FF4B91] text-lg ml-2 font-black italic">{availableCounts.total}</span></span>
                         </div>
                     )}
                 </section>
@@ -315,35 +326,35 @@ export function QuizSelection() {
 
             {/* Step 3: Topic Selection */}
             {selectedDomain && topics.length > 0 && (
-                <section className="space-y-8 animate-in slide-in-from-bottom-8 duration-600">
-                    <div className="flex items-center gap-4">
-                        <div className="h-10 w-10 rounded-2xl bg-primary/10 text-primary flex items-center justify-center font-black text-lg shadow-sm border border-primary/10 italic">3</div>
+                <section className="space-y-12 animate-in slide-in-from-bottom-[100px] duration-800">
+                    <div className="flex items-center gap-6">
+                        <div className="h-14 w-14 rounded-2xl bg-[#FF4B91]/10 text-[#FF4B91] flex items-center justify-center font-black text-2xl shadow-lg border border-[#FF4B91]/10 italic">3</div>
                         <div>
-                            <h2 className="text-3xl font-black tracking-tight uppercase italic text-[#1A1A1A]">Select Topics</h2>
-                            <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1">Detailed Knowledge Units</p>
+                            <h2 className="text-4xl font-black tracking-tighter uppercase italic text-[#1A1A1A]">Select Topics_</h2>
+                            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em] mt-1 opacity-60">Detailed Knowledge Units</p>
                         </div>
                     </div>
                     <div className="flex flex-wrap gap-4">
                         <button
                             onClick={() => toggleItem(selectedTopics, setSelectedTopics, 'all', () => setSelectedSubtopics([]))}
                             className={cn(
-                                "px-6 py-3.5 rounded-2xl border-2 font-bold text-[11px] uppercase tracking-widest transition-all active:scale-95",
+                                "px-8 py-5 rounded-[1.5rem] border-2 font-black text-[10px] uppercase tracking-[0.2em] transition-all active:scale-95",
                                 isItemSelected(selectedTopics, 'all')
-                                    ? "border-primary bg-primary/10 text-primary shadow-md shadow-primary/5"
-                                    : "border-muted-foreground/10 bg-white hover:border-primary/20 text-muted-foreground"
+                                    ? "border-[#FF4B91] bg-[#FF4B91]/10 text-[#FF4B91] shadow-xl shadow-[#FF4B91]/5"
+                                    : "border-muted-foreground/10 bg-white hover:border-[#FF4B91]/20 text-muted-foreground"
                             )}
                         >
-                            ALL TOPICS
+                            [ TOTAL_CLUSTER ]
                         </button>
                         {topics.map((topic: any) => (
                             <button
                                 key={topic.id}
                                 onClick={() => toggleItem(selectedTopics, setSelectedTopics, topic.id, () => setSelectedSubtopics([]))}
                                 className={cn(
-                                    "px-6 py-3.5 rounded-2xl border-2 font-bold text-[11px] uppercase tracking-widest transition-all active:scale-95",
+                                    "px-8 py-5 rounded-[1.5rem] border-2 font-black text-[10px] uppercase tracking-[0.2em] transition-all active:scale-95",
                                     isItemSelected(selectedTopics, topic.id)
-                                        ? "border-primary bg-primary/5 text-primary shadow-md shadow-primary/5"
-                                        : "border-muted-foreground/10 bg-white hover:border-primary/20 text-muted-foreground"
+                                        ? "border-[#FF4B91] bg-[#FF4B91]/5 text-[#FF4B91] shadow-xl shadow-[#FF4B91]/5"
+                                        : "border-muted-foreground/10 bg-white hover:border-[#FF4B91]/20 text-muted-foreground"
                                 )}
                             >
                                 {topic.name}
@@ -351,9 +362,9 @@ export function QuizSelection() {
                         ))}
                     </div>
                     {availableCounts && (
-                        <div className="mt-4 flex items-center gap-3 px-6 py-3 bg-primary/5 rounded-2xl w-fit border border-primary/10 animate-in fade-in zoom-in duration-300">
-                            <Activity size={14} className="text-primary animate-pulse" />
-                            <span className="text-[10px] font-black uppercase tracking-widest text-[#1A1A1A]">Topic Filtered Pool: <span className="text-primary text-sm ml-1">{availableCounts.total}</span></span>
+                        <div className="mt-8 flex items-center gap-4 px-8 py-4 bg-white/40 backdrop-blur-md rounded-[2rem] w-fit border border-[#FF4B91]/10 animate-in fade-in zoom-in duration-300">
+                            <Activity size={16} className="text-[#FF4B91] animate-pulse" />
+                            <span className="text-[11px] font-black uppercase tracking-[0.2em] text-[#1A1A1A]">Unit Specificity: <span className="text-[#FF4B91] text-lg ml-2 font-black italic">{availableCounts.total}</span></span>
                         </div>
                     )}
                 </section>
@@ -361,35 +372,35 @@ export function QuizSelection() {
 
             {/* Step 4: Subtopic Selection */}
             {selectedDomain && subtopics.length > 0 && (
-                <section className="space-y-8 animate-in slide-in-from-bottom-8 duration-700">
-                    <div className="flex items-center gap-4">
-                        <div className="h-10 w-10 rounded-2xl bg-primary/10 text-primary flex items-center justify-center font-black text-lg shadow-sm border border-primary/10 italic">4</div>
+                <section className="space-y-12 animate-in slide-in-from-bottom-[100px] duration-1000">
+                    <div className="flex items-center gap-6">
+                        <div className="h-14 w-14 rounded-2xl bg-[#FF4B91]/10 text-[#FF4B91] flex items-center justify-center font-black text-2xl shadow-lg border border-[#FF4B91]/10 italic">4</div>
                         <div>
-                            <h2 className="text-3xl font-black tracking-tight uppercase italic text-[#1A1A1A]">Subtopic (Component)</h2>
-                            <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1">Targeted Skill Verification</p>
+                            <h2 className="text-4xl font-black tracking-tighter uppercase italic text-[#1A1A1A]">Subtopic (Component)_</h2>
+                            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em] mt-1 opacity-60">Targeted Skill Verification</p>
                         </div>
                     </div>
-                    <div className="flex flex-wrap gap-3">
+                    <div className="flex flex-wrap gap-4">
                         <button
                             onClick={() => toggleItem(selectedSubtopics, setSelectedSubtopics, 'all')}
                             className={cn(
-                                "px-5 py-3 rounded-xl border-2 font-bold text-[10px] uppercase tracking-widest transition-all active:scale-95",
+                                "px-6 py-4 rounded-xl border-2 font-black text-[10px] uppercase tracking-[0.2em] transition-all active:scale-95",
                                 isItemSelected(selectedSubtopics, 'all')
-                                    ? "border-primary bg-primary/10 text-primary"
-                                    : "border-muted-foreground/5 bg-muted/30 hover:border-primary/20 text-muted-foreground"
+                                    ? "border-[#FF4B91] bg-[#FF4B91]/10 text-[#FF4B91]"
+                                    : "border-muted-foreground/5 bg-muted/30 hover:border-[#FF4B91]/20 text-muted-foreground"
                             )}
                         >
-                            ALL SUBTOPICS
+                            [ ATOMIC_SUM ]
                         </button>
                         {subtopics.map((subtopic: any) => (
                             <button
                                 key={subtopic.id}
                                 onClick={() => toggleItem(selectedSubtopics, setSelectedSubtopics, subtopic.id)}
                                 className={cn(
-                                    "px-5 py-3 rounded-xl border-2 font-bold text-[10px] uppercase tracking-widest transition-all active:scale-95",
+                                    "px-6 py-4 rounded-xl border-2 font-black text-[10px] uppercase tracking-[0.2em] transition-all active:scale-95",
                                     isItemSelected(selectedSubtopics, subtopic.id)
-                                        ? "border-primary bg-primary/10 text-primary"
-                                        : "border-muted-foreground/5 bg-muted/30 hover:border-primary/20 text-muted-foreground"
+                                        ? "border-[#FF4B91] bg-[#FF4B91]/10 text-[#FF4B91]"
+                                        : "border-muted-foreground/5 bg-muted/30 hover:border-[#FF4B91]/20 text-muted-foreground"
                                 )}
                             >
                                 {subtopic.name}
@@ -397,9 +408,9 @@ export function QuizSelection() {
                         ))}
                     </div>
                     {availableCounts && (
-                        <div className="mt-4 flex items-center gap-3 px-6 py-3 bg-primary/5 rounded-2xl w-fit border border-primary/10 animate-in fade-in zoom-in duration-300">
-                            <Activity size={14} className="text-primary animate-pulse" />
-                            <span className="text-[10px] font-black uppercase tracking-widest text-[#1A1A1A]">Subtopic Final Pool: <span className="text-primary text-sm ml-1">{availableCounts.total}</span></span>
+                        <div className="mt-8 flex items-center gap-4 px-8 py-4 bg-white/40 backdrop-blur-md rounded-[2rem] w-fit border border-[#FF4B91]/10 animate-in fade-in zoom-in duration-300">
+                            <Activity size={16} className="text-[#FF4B91] animate-pulse" />
+                            <span className="text-[11px] font-black uppercase tracking-[0.2em] text-[#1A1A1A]">Precision Targeting: <span className="text-[#FF4B91] text-lg ml-2 font-black italic">{availableCounts.total}</span></span>
                         </div>
                     )}
                 </section>
@@ -407,30 +418,30 @@ export function QuizSelection() {
 
             {/* Step 5: Configuration */}
             {selectedDomain && (
-                <section className="space-y-10 animate-in slide-in-from-bottom-8 duration-800">
-                    <div className="flex items-center gap-4">
-                        <div className="h-10 w-10 rounded-2xl bg-primary/10 text-primary flex items-center justify-center font-black text-lg shadow-sm border border-primary/10 italic">5</div>
+                <section className="space-y-16 animate-in slide-in-from-bottom-[100px] duration-1000 pb-32">
+                    <div className="flex items-center gap-6">
+                        <div className="h-14 w-14 rounded-2xl bg-[#FF4B91]/10 text-[#FF4B91] flex items-center justify-center font-black text-2xl shadow-lg border border-[#FF4B91]/10 italic">5</div>
                         <div>
-                            <h2 className="text-3xl font-black tracking-tight uppercase italic text-[#1A1A1A]">Exam Configuration</h2>
-                            <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1">Runtime Parameters</p>
+                            <h2 className="text-4xl font-black tracking-tighter uppercase italic text-[#1A1A1A]">Exam Configuration_</h2>
+                            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em] mt-1 opacity-60">Runtime Parameters</p>
                         </div>
                     </div>
 
                     {error && (
-                        <div className="p-6 rounded-3xl bg-red-500/5 border border-red-500/20 text-red-600 font-extrabold text-xs uppercase tracking-widest flex items-center gap-3 animate-in fade-in duration-300">
-                            <ShieldCheck size={20} />
+                        <div className="p-8 rounded-[2.5rem] bg-red-500/5 border border-red-500/20 text-red-600 font-black text-[10px] uppercase tracking-[0.2em] flex items-center gap-4 animate-in fade-in duration-300">
+                            <ShieldCheck size={24} />
                             {error}
                         </div>
                     )}
 
-                    <div className="grid md:grid-cols-2 gap-12 bg-white/40 backdrop-blur-3xl p-12 rounded-[4rem] border border-white shadow-2xl relative overflow-hidden">
-                        <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-[120px] -z-10" />
+                    <div className="grid xl:grid-cols-3 gap-12 bg-white/60 backdrop-blur-3xl p-16 rounded-[5rem] border border-white shadow-[0_50px_100px_-30px_rgba(0,0,0,0.05)] relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#FF4B91]/5 rounded-full blur-[150px] -z-10" />
 
-                        <div className="space-y-10">
-                            <div>
-                                <label className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground mb-6 block">Question Count (Max)</label>
-                                <div className="flex items-center gap-4 flex-wrap">
-                                    {[5, 10, 15, 20].map(count => {
+                        <div className="xl:col-span-2 space-y-16">
+                            <div className="space-y-8">
+                                <label className="text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground mb-4 block opacity-60">Question Count (Max Capability)</label>
+                                <div className="flex flex-wrap items-center gap-6">
+                                    {[5, 10, 15, 20, 25, 30].map(count => {
                                         const totalAvail = availableCounts?.total || 0;
                                         const isReady = availableCounts?.isReady;
                                         const isDisabled = !isReady || (count - totalAvail) > 5;
@@ -440,114 +451,85 @@ export function QuizSelection() {
                                                 disabled={isDisabled}
                                                 onClick={() => setQuestionCount(count)}
                                                 className={cn(
-                                                    "px-6 py-4 rounded-2xl border-2 font-black text-xs uppercase tracking-widest transition-all",
+                                                    "px-10 py-6 rounded-[2.5rem] border-2 font-black text-xs uppercase tracking-[0.2em] transition-all duration-300",
                                                     questionCount === count
-                                                        ? "border-primary bg-primary/5 text-primary shadow-lg shadow-primary/5"
-                                                        : "border-muted-foreground/5 bg-transparent text-muted-foreground hover:bg-muted/10 font-bold",
-                                                    isDisabled && "opacity-20 grayscale cursor-not-allowed"
+                                                        ? "border-[#FF4B91] bg-[#FF4B91] text-white shadow-2xl shadow-[#FF4B91]/30"
+                                                        : "border-muted-foreground/5 bg-transparent text-muted-foreground hover:bg-[#FF4B91]/5 hover:text-[#FF4B91]",
+                                                    isDisabled && "opacity-10 grayscale cursor-not-allowed"
                                                 )}
                                             >
-                                                {count} Qs
+                                                {count} QUESTIONS
                                             </button>
                                         );
                                     })}
-
-                                    {(availableCounts?.total || 0) > 20 && (
-                                        <div className="relative">
-                                            <button
-                                                onClick={() => setShowExtendedCount(!showExtendedCount)}
-                                                className={cn(
-                                                    "px-6 py-4 rounded-2xl border-2 font-black text-xs uppercase tracking-widest transition-all flex items-center gap-2",
-                                                    [5, 10, 15, 20].includes(questionCount)
-                                                        ? "border-muted-foreground/5 bg-transparent text-muted-foreground hover:bg-muted/10 font-bold"
-                                                        : "border-primary bg-primary/5 text-primary shadow-lg shadow-primary/5"
-                                                )}
-                                            >
-                                                {![5, 10, 15, 20].includes(questionCount) ? `${questionCount} Qs` : 'More'}
-                                                <ChevronDown size={14} className={cn("transition-transform duration-300", showExtendedCount && "rotate-180")} />
-                                            </button>
-
-                                            {showExtendedCount && (
-                                                <div className="absolute top-full mt-3 left-0 bg-white border border-slate-200 rounded-3xl shadow-2xl p-3 z-50 grid grid-cols-2 gap-2 min-w-[200px] animate-in fade-in slide-in-from-top-2">
-                                                    {Array.from({ length: Math.ceil((availableCounts?.total || 0) / 10) - 2 }, (_, i) => (i + 3) * 10).map(c => {
-                                                        const totalAvail = availableCounts?.total || 0;
-                                                        const isReady = availableCounts?.isReady;
-                                                        const isDisabled = !isReady || (c - totalAvail) > 5;
-                                                        return (
-                                                            <button
-                                                                key={c}
-                                                                disabled={isDisabled}
-                                                                onClick={() => {
-                                                                    setQuestionCount(c);
-                                                                    setShowExtendedCount(false);
-                                                                }}
-                                                                className={cn(
-                                                                    "p-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all text-left flex items-center justify-between",
-                                                                    questionCount === c ? "bg-primary text-white" : "hover:bg-slate-50 text-slate-600",
-                                                                    isDisabled && "opacity-30 grayscale cursor-not-allowed"
-                                                                )}
-                                                            >
-                                                                {c} Questions
-                                                                {questionCount === c && <Check size={12} />}
-                                                            </button>
-                                                        );
-                                                    })}
-                                                </div>
-                                            )}
-                                        </div>
-                                    )}
                                 </div>
                                 {!availableCounts?.isReady && availableCounts?.total !== undefined && (
-                                    <div className="mt-6 flex items-start gap-3 p-4 rounded-2xl bg-red-500/5 border border-red-500/10">
-                                        <FileWarning className="text-red-500 shrink-0 mt-0.5" size={16} />
+                                    <div className="mt-8 flex items-start gap-4 p-6 rounded-[2.5rem] bg-red-500/5 border border-red-500/10 max-w-2xl">
+                                        <FileWarning className="text-red-500 shrink-0 mt-1" size={20} />
                                         <div>
-                                            <p className="text-[10px] font-black uppercase text-red-600 tracking-widest leading-none mb-1">Governance Alert: 🔴 Action Required</p>
-                                            <p className="text-[9px] font-bold text-red-500/80 leading-relaxed uppercase">
-                                                This selection has a poor question pool ({availableCounts.simple}/4s, {availableCounts.intermediate}/4i, {availableCounts.expert}/5e). Selection is disabled until Admin solves this in Dashboard.
+                                            <p className="text-[11px] font-black uppercase text-red-600 tracking-[0.2em] leading-none mb-2">Governance Alert: 🔴 Poor Content Pool</p>
+                                            <p className="text-[10px] font-bold text-red-500/70 leading-relaxed uppercase tracking-wide">
+                                                Available Pool: {availableCounts.simple} Simple / {availableCounts.intermediate} Int / {availableCounts.expert} Expert. Required Minimum: 4s/4i/5e. Deployment Blocked.
                                             </p>
                                         </div>
                                     </div>
                                 )}
                             </div>
 
-                            <div>
-                                <label className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground mb-6 block">Difficulty Preference</label>
-                                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                            <div className="space-y-8">
+                                <label className="text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground mb-4 block opacity-60">Difficulty Calibration</label>
+                                <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
                                     {['mixed', 'simple', 'intermediate', 'expert'].map(opt => (
                                         <button
                                             key={opt}
                                             onClick={() => setDifficulty(opt)}
                                             className={cn(
-                                                "py-4 rounded-2xl border-2 font-black text-[10px] uppercase tracking-widest transition-all",
+                                                "py-6 rounded-[2.5rem] border-2 font-black text-[10px] uppercase tracking-[0.2em] transition-all duration-300",
                                                 difficulty === opt
-                                                    ? "border-primary bg-primary/5 text-primary shadow-lg shadow-primary/5"
-                                                    : "border-muted-foreground/5 bg-transparent text-muted-foreground hover:bg-muted/10 font-bold"
+                                                    ? "border-[#FF4B91] bg-[#FF4B91] text-white shadow-2xl shadow-[#FF4B91]/30"
+                                                    : "border-muted-foreground/5 bg-transparent text-muted-foreground hover:bg-[#FF4B91]/5 hover:text-[#FF4B91]"
                                             )}
                                         >
-                                            {opt}
+                                            {opt} SCALE
                                         </button>
                                     ))}
                                 </div>
-                                <p className="mt-6 text-[10px] text-muted-foreground font-bold italic tracking-tight opacity-60">
+                                <p className="mt-8 text-[11px] text-muted-foreground font-black italic tracking-widest opacity-40 uppercase">
                                     * Mixed uses 30/30/40 engine rule. Expert is limited to expert-tier pooled questions.
                                 </p>
                             </div>
                         </div>
 
-                        <div className="flex flex-col justify-end gap-8 bg-muted/20 p-8 rounded-[3rem] border border-muted/30">
-                            <div className="flex items-center gap-6 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/80">
-                                <div className="flex items-center gap-2 px-4 py-2 bg-white rounded-full shadow-sm"><Clock size={14} className="text-primary" /> {Math.ceil(questionCount * 1.5)} MINS</div>
-                                <div className="flex items-center gap-2 px-4 py-2 bg-white rounded-full shadow-sm"><Layers size={14} className="text-[#FF4B91]" /> {questionCount} QUESTIONS</div>
+                        <div className="flex flex-col justify-between gap-12 bg-white/40 backdrop-blur-3xl p-12 rounded-[4rem] border border-white shadow-inner">
+                            <div className="space-y-8">
+                                <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground opacity-60 text-center">Session Forecast</h4>
+                                <div className="space-y-4">
+                                    <div className="flex items-center justify-between px-8 py-5 bg-white rounded-[2rem] shadow-sm">
+                                        <div className="flex items-center gap-3">
+                                            <Clock size={16} className="text-[#FF4B91]" />
+                                            <span className="text-[10px] font-black uppercase tracking-widest opacity-60 text-[#1A1A1A]">Duration</span>
+                                        </div>
+                                        <span className="text-sm font-black italic">{Math.ceil(questionCount * 1.5)} MINS</span>
+                                    </div>
+                                    <div className="flex items-center justify-between px-8 py-5 bg-white rounded-[2rem] shadow-sm">
+                                        <div className="flex items-center gap-3">
+                                            <Layers size={16} className="text-[#FF4B91]" />
+                                            <span className="text-[10px] font-black uppercase tracking-widest opacity-60 text-[#1A1A1A]">Payload</span>
+                                        </div>
+                                        <span className="text-sm font-black italic">{questionCount} Qs</span>
+                                    </div>
+                                </div>
                             </div>
+
                             <button
-                                className="w-full py-6 rounded-[2rem] bg-primary text-primary-foreground text-xl font-black uppercase tracking-widest shadow-2xl shadow-primary/40 flex items-center justify-center gap-4 hover:scale-[1.03] active:scale-[0.98] transition-all disabled:opacity-50 disabled:grayscale disabled:pointer-events-none"
+                                className="w-full py-10 rounded-[3rem] bg-gradient-to-r from-[#FF4B91] to-[#FF8E9E] text-white text-2xl font-black uppercase tracking-[0.2em] shadow-[0_25px_50px_-12px_rgba(255,75,145,0.5)] flex items-center justify-center gap-6 hover:scale-[1.03] active:scale-[0.98] transition-all disabled:opacity-50 disabled:grayscale disabled:pointer-events-none group"
                                 onClick={handleStartExam}
                                 disabled={starting || !availableCounts?.isReady}
                             >
-                                {starting ? <Loader2 className="h-7 w-7 animate-spin" /> : (
+                                {starting ? <Loader2 className="h-10 w-10 animate-spin" /> : (
                                     <>
                                         Start Enterprise Exam
-                                        <ArrowRight size={24} className="group-hover:translate-x-1 transition-transform" />
+                                        <ArrowRight size={32} className="group-hover:translate-x-2 transition-transform duration-300" />
                                     </>
                                 )}
                             </button>

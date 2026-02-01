@@ -395,12 +395,48 @@ export class AdminEngine {
 
   /**
    * Private helper to map frontend question data to database schema.
+   * ROBUST NORMALIZATION: Converts legacy string-array options into high-fidelity objects.
    */
   private static mapQuestionData(data: any, topicId: string, subtopicId?: string, skillId?: string, skillIds?: string[]) {
-    const correctOption = data.options.find((o: any) => o.isCorrect);
-    const correctAnswer = correctOption ? correctOption.text : 'No correct answer provided';
+    // 1. Resolve Options Format (Handle both string arrays and object arrays)
+    const rawOptions = data.options || [];
+    const normalizedOptions = rawOptions.map((opt: any, idx: number) => {
+        // If it's already an object with text, keep it (but ensure id/isCorrect exist)
+        if (typeof opt === 'object' && opt !== null && (opt.text !== undefined || opt.questionText !== undefined)) {
+            return {
+                id: opt.id || crypto.randomUUID(),
+                text: opt.text || opt.questionText || '',
+                isCorrect: !!opt.isCorrect
+            };
+        }
+        // If it's a string, transform it
+        return {
+            id: crypto.randomUUID(),
+            text: String(opt),
+            isCorrect: false // Will be set in next step
+        };
+    });
 
-    // Resolve Skills: Priority = Item Array > Item Single > Context Array > Context Single
+    // 2. Resolve Correct Answer Logic
+    // Priority: Explicit object flag > Text match against data.correctAnswer
+    const providedCorrectAnswerText = data.correctAnswer?.trim();
+    
+    // Check if any option is already marked correct
+    let hasCorrect = normalizedOptions.some((o: any) => o.isCorrect);
+    
+    // If no option is marked, but we have a text-based correctAnswer, try to match it
+    if (!hasCorrect && providedCorrectAnswerText) {
+        normalizedOptions.forEach((o: any) => {
+            if (o.text?.trim() === providedCorrectAnswerText) {
+                o.isCorrect = true;
+                hasCorrect = true;
+            }
+        });
+    }
+
+    const finalCorrectAnswer = normalizedOptions.find((o: any) => o.isCorrect)?.text || providedCorrectAnswerText || 'No correct answer provided';
+
+    // 3. Resolve Skills: Priority = Item Array > Item Single > Context Array > Context Single
     let resolvedSkillIds: string[] = [];
     if (Array.isArray(data.skillIds) && data.skillIds.length > 0) {
        resolvedSkillIds = data.skillIds;
@@ -415,19 +451,18 @@ export class AdminEngine {
     const dbData = {
         topicId: topicId,
         subtopicId: subtopicId || data.subtopicId,
-        // skillId: resolvedSkillIds[0], // Keep for backward compat if needed, or null. Deprecated.
         difficulty: data.difficulty || 'intermediate',
         type: data.type === 'multiple' ? 'mcq' : 'mcq',
         mappingType: (data.mappingType as 'conceptual' | 'technical' | 'practical') || null,
         questionText: data.text || data.questionText,
-        options: data.options,
-        correctAnswer: correctAnswer,
+        options: normalizedOptions, // ALWAYS STORE AS OBJECTS
+        correctAnswer: finalCorrectAnswer,
         explanation: data.explanation || '',
         codeSnippet: data.codeSnippet || null,
         metadata: {
-            estimatedTime: data.estimatedTime,
+            estimatedTime: data.estimatedTime || 60,
             tags: data.tags,
-            skillWeight: data.skillWeight // Future override support
+            skillWeight: data.skillWeight
         },
         status: 'active' as const,
         updatedAt: new Date()
@@ -1031,11 +1066,36 @@ export class AdminEngine {
         }
     }
 
-    // 2. Extract correctAnswer
+    // 2. Resolve & Normalize Options/CorrectAnswer
+    let normalizedOptions = data.options;
     let correctAnswer = data.correctAnswer;
-    if (data.options) {
-        const correctOption = data.options.find((o: any) => o.isCorrect);
-        correctAnswer = correctOption ? correctOption.text : correctAnswer;
+
+    if (data.options && Array.isArray(data.options)) {
+        normalizedOptions = data.options.map((opt: any) => {
+             if (typeof opt === 'object' && opt !== null) {
+                 return {
+                     id: opt.id || crypto.randomUUID(),
+                     text: opt.text || opt.questionText || '',
+                     isCorrect: !!opt.isCorrect
+                 };
+             }
+             return {
+                 id: crypto.randomUUID(),
+                 text: String(opt),
+                 isCorrect: false
+             };
+        });
+
+        // Set isCorrect based on text match if none marked
+        if (!normalizedOptions.some((o: any) => o.isCorrect) && correctAnswer) {
+            normalizedOptions.forEach((o: any) => {
+                if (o.text?.trim() === correctAnswer?.trim()) o.isCorrect = true;
+            });
+        }
+        
+        // Final sync of correctAnswer text based on the marked option
+        const correctOption = normalizedOptions.find((o: any) => o.isCorrect);
+        if (correctOption) correctAnswer = correctOption.text;
     }
 
     // 3. Map to schema
@@ -1046,7 +1106,7 @@ export class AdminEngine {
     if (data.subtopicId) updateData.subtopicId = data.subtopicId;
     if (data.difficulty) updateData.difficulty = data.difficulty;
     if (data.text) updateData.questionText = data.text;
-    if (data.options) updateData.options = data.options;
+    if (normalizedOptions) updateData.options = normalizedOptions;
     if (correctAnswer) updateData.correctAnswer = correctAnswer;
     if (data.explanation !== undefined) updateData.explanation = data.explanation;
     if (data.status) updateData.status = data.status;
