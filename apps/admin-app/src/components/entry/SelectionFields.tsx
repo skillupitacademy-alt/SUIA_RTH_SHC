@@ -42,7 +42,7 @@ export function SelectField({ label, value, options, loading, disabled, onChange
                         )}
                         disabled={disabled}
                     >
-                        <option value="" disabled className="text-slate-400">{loading ? 'Loading...' : placeholder}</option>
+                        <option value="" disabled className="text-slate-400">{placeholder}</option>
                         {options.map((opt) => (
                             <option key={opt.id} value={opt.id} className="bg-white text-slate-800 font-medium">
                                 {opt.name}
@@ -115,7 +115,7 @@ export function MultiSelectField({ label, values, options, loading, onChange, pl
                             : "border-slate-200"
                     )}
                 >
-                    {loading && <option disabled className="p-2 italic opacity-50">Loading skills...</option>}
+                    {loading && <option disabled className="p-2 italic opacity-50"></option>}
                     {!loading && options.length === 0 && <option disabled className="p-2 italic opacity-50">No skills available for this topic</option>}
                     {options.map((opt) => (
                         <option
@@ -127,6 +127,11 @@ export function MultiSelectField({ label, values, options, loading, onChange, pl
                         </option>
                     ))}
                 </select>
+                {loading && (
+                    <div className="absolute top-2 right-2 pointer-events-none">
+                        <ZLoader size="xs" center={false} />
+                    </div>
+                )}
                 {!values.length && !loading && options.length > 0 && (
                     <div className="absolute top-4 left-4 pointer-events-none text-slate-400 text-[10px] font-black uppercase tracking-widest opacity-40">
                         {placeholder}

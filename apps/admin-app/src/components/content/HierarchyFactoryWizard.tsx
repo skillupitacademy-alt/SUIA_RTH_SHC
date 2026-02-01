@@ -579,13 +579,13 @@ Please provide a valid JSON object matching this schema:
 
                             {!showEditor ? (
                                 <div className="flex-1 flex flex-col gap-6 animate-in zoom-in-95 duration-500 overflow-hidden">
-                                    <div className="flex-1 rounded-[2.5rem] bg-slate-900 border-4 border-white/5 shadow-2xl relative overflow-hidden flex flex-col">
-                                        <div className="px-10 py-6 border-b border-white/5 flex items-center justify-between bg-white/[0.02]">
+                                    <div className="flex-1 rounded-[2.5rem] bg-white border-2 border-dashed border-slate-200 shadow-sm relative overflow-hidden flex flex-col group hover:border-primary/20 transition-all duration-500">
+                                        <div className="px-10 py-6 border-b border-primary/5 flex items-center justify-between bg-slate-50/50">
                                             <div className="flex items-center gap-4">
                                                 <div className="p-2.5 bg-[#FF4B91]/10 rounded-xl text-[#FF4B91]">
                                                     <Brain size={20} />
                                                 </div>
-                                                <h4 className="text-lg font-black uppercase tracking-widest text-white italic">Surgical AI Prompt_</h4>
+                                                <h4 className="text-lg font-black uppercase tracking-widest text-slate-800 italic">Surgical AI Prompt_</h4>
                                             </div>
                                             <button
                                                 onClick={() => {
@@ -593,18 +593,18 @@ Please provide a valid JSON object matching this schema:
                                                     setMode('bulk');
                                                 }}
                                                 title="Copy complete contextual prompt to clipboard. Paste this into your AI assistant to generate the required JSON manifest."
-                                                className="p-3 bg-white/10 hover:bg-white text-white hover:text-slate-900 rounded-xl transition-all active:scale-95 shadow-lg shadow-black/20"
+                                                className="p-3 bg-white hover:bg-primary text-slate-400 hover:text-white rounded-xl transition-all active:scale-95 shadow-sm hover:shadow-primary/20 border border-slate-100"
                                             >
                                                 <ClipboardCopy size={20} />
                                             </button>
                                         </div>
                                         <div className="flex-1 p-10 overflow-y-auto custom-scrollbar">
-                                            <div className="p-8 bg-black/40 rounded-3xl border border-white/10 text-sm font-medium text-slate-300 leading-relaxed font-mono whitespace-pre-wrap selection:bg-[#FF4B91]/30">
+                                            <div className="p-8 bg-slate-50/80 rounded-3xl border border-primary/5 text-sm font-bold text-slate-600 leading-relaxed font-mono whitespace-pre-wrap selection:bg-[#FF4B91]/20">
                                                 {generateAiPrompt()}
                                             </div>
                                         </div>
-                                        <div className="px-10 py-6 border-t border-white/5 bg-black/20 text-center">
-                                            <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] italic">
+                                        <div className="px-10 py-6 border-t border-primary/5 bg-slate-50/50 text-center">
+                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] italic">
                                                 Domain check filters active: {existingDomains.length} domains found.
                                             </p>
                                         </div>
@@ -632,7 +632,7 @@ Please provide a valid JSON object matching this schema:
                                         value={payload}
                                         onChange={(e) => setPayload(e.target.value)}
                                         spellCheck={false}
-                                        className="absolute inset-0 w-full h-full bg-[#0F1115] text-[#9CDCFE] border-4 border-primary/5 rounded-[2.5rem] p-12 font-mono text-xl focus:ring-[12px] focus:ring-primary/5 outline-none transition-all leading-relaxed shadow-[0_40px_100px_-20px_rgba(0,0,0,0.5)] resize-none selection:bg-primary/20"
+                                        className="absolute inset-0 w-full h-full bg-white text-slate-800 border-2 border-dashed border-primary/20 rounded-[2.5rem] p-12 font-mono text-xl focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all leading-relaxed shadow-sm resize-none selection:bg-primary/20 placeholder:text-slate-300"
                                         placeholder='{
   "domainName": "...",
   "subjects": [
@@ -645,7 +645,7 @@ Please provide a valid JSON object matching this schema:
 
 PASTE YOUR JSON MANIFEST HERE_'
                                     />
-                                    <div className="absolute right-10 bottom-10 px-6 py-3 bg-white/5 border border-white/10 rounded-2xl text-[11px] font-mono text-white/60 backdrop-blur-xl flex items-center gap-3">
+                                    <div className="absolute right-10 bottom-10 px-6 py-3 bg-slate-900 border border-slate-800 rounded-2xl text-[11px] font-mono text-white/90 backdrop-blur-xl flex items-center gap-3 shadow-xl">
                                         <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
                                         PAYLOAD_SIZE: {payload.length} BYTES
                                     </div>
@@ -737,12 +737,12 @@ PASTE YOUR JSON MANIFEST HERE_'
                     {/* Utility Clustering at Bottom */}
                     <div className="mt-auto pt-8 border-t border-primary/5 space-y-3">
                         {mode === 'bulk' && (
-                            <div className="grid grid-cols-1 gap-3">
+                            <div className="grid grid-cols-1 gap-5">
                                 {showEditor && (
                                     <button
                                         onClick={() => setShowEditor(false)}
                                         title="Return to the Surgical AI Prompt to copy requirements or verify context. This ensures the manual JSON adheres to the architectural rules of the project."
-                                        className="w-full px-6 py-3.5 bg-white border border-primary/10 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-50 transition-all flex items-center justify-center gap-3 text-slate-600 shadow-sm"
+                                        className="w-full px-6 py-4 bg-white border-2 border-slate-200 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-slate-50 hover:border-slate-300 transition-all flex items-center justify-center gap-3 text-slate-600 shadow-sm hover:scale-[1.01]"
                                     >
                                         <Wand2 size={16} /> Back to Prompt
                                     </button>
@@ -750,7 +750,7 @@ PASTE YOUR JSON MANIFEST HERE_'
                                 <button
                                     onClick={() => fileInputRef.current?.click()}
                                     title="Load a .json manifest file from your local storage. This is the fastest way to re-run previously validated batches or bulk-import legacy content."
-                                    className="w-full px-6 py-3.5 bg-white border border-primary/10 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-50 transition-all flex items-center justify-center gap-3 text-slate-600 shadow-sm"
+                                    className="w-full px-6 py-4 bg-slate-100 border-2 border-slate-200 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-slate-200 hover:border-slate-300 transition-all flex items-center justify-center gap-3 text-slate-700 shadow-sm hover:scale-[1.01]"
                                 >
                                     <Upload size={16} /> Upload Manifest
                                 </button>
@@ -758,7 +758,7 @@ PASTE YOUR JSON MANIFEST HERE_'
                                 <button
                                     onClick={generateTemplate}
                                     title="Populate the editor with a pre-defined schema matching your current target. Use this as a secure template for manual hierarchy definition."
-                                    className="w-full px-6 py-3.5 bg-primary/5 text-primary border border-primary/10 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-primary/10 transition-all flex items-center justify-center gap-3 shadow-sm shadow-primary/5"
+                                    className="w-full px-6 py-4 bg-[#FF4B91]/5 text-[#FF4B91] border-2 border-[#FF4B91]/10 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-[#FF4B91]/10 hover:border-[#FF4B91]/20 transition-all flex items-center justify-center gap-3 shadow-none hover:shadow-lg hover:shadow-[#FF4B91]/10 hover:scale-[1.01]"
                                 >
                                     <LayoutGrid size={16} /> Import Template
                                 </button>
