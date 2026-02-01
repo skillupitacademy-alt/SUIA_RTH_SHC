@@ -436,7 +436,7 @@ Please provide a valid JSON object matching this schema:
                         </div>
                     </ZTooltip>
                     <div>
-                        <h2 className="text-xl font-black uppercase tracking-tighter italic text-[#1A1A1A]">Domain Factory_</h2>
+                        <h2 className="text-xl font-black uppercase tracking-tighter italic text-[#1A1A1A]">Domain Factory</h2>
                         <p className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em] mt-0.5 flex items-center gap-2">
                             System-Alpha • Manual Orchestration Active
                         </p>
@@ -486,7 +486,7 @@ Please provide a valid JSON object matching this schema:
                         <div className="max-w-3xl w-full mx-auto space-y-12 animate-in slide-in-from-left-4">
                             <div className="space-y-4">
                                 <h3 className="text-4xl font-black italic uppercase tracking-tighter text-[#1A1A1A]">
-                                    {initialData?.target ? `Single ${initialData.target.charAt(0).toUpperCase() + initialData.target.slice(1)} Registry_` : "Single Domain Registry_"}
+                                    {initialData?.target ? `Single ${initialData.target.charAt(0).toUpperCase() + initialData.target.slice(1)} Registry` : "Single Domain Registry"}
                                 </h3>
                                 <p className="text-sm font-medium text-muted-foreground leading-relaxed">
                                     Register a new {initialData?.target || 'domain'}.
@@ -498,7 +498,7 @@ Please provide a valid JSON object matching this schema:
                             <div className="space-y-8">
                                 <div className="space-y-3">
                                     <label className="text-[10px] font-black uppercase tracking-widest text-primary flex items-center gap-2">
-                                        <Layers size={14} /> {initialData?.target?.toUpperCase() || 'DOMAIN'} IDENTITY NAME_
+                                        <Layers size={14} /> {initialData?.target?.toUpperCase() || 'DOMAIN'} IDENTITY NAME
                                     </label>
                                     <input
                                         type="text"
@@ -513,7 +513,7 @@ Please provide a valid JSON object matching this schema:
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         <div className="space-y-3">
                                             <SelectField
-                                                label="Target Domain_"
+                                                label="Target Domain"
                                                 value={selections.domainId}
                                                 options={hierarchicalChoices.domains.map(d => ({ id: d.domainId, name: d.domainName }))}
                                                 loading={loadingChoices.domains}
@@ -527,7 +527,7 @@ Please provide a valid JSON object matching this schema:
                                         {(['topic', 'subtopic'].includes(initialData?.target)) && (
                                             <div className="space-y-3 animate-in fade-in slide-in-from-top-2">
                                                 <SelectField
-                                                    label="Target Subject_"
+                                                    label="Target Subject"
                                                     value={selections.subjectId}
                                                     options={hierarchicalChoices.subjects}
                                                     loading={loadingChoices.subjects}
@@ -543,7 +543,7 @@ Please provide a valid JSON object matching this schema:
                                         {(initialData?.target === 'subtopic') && (
                                             <div className="space-y-3 animate-in fade-in slide-in-from-top-2">
                                                 <SelectField
-                                                    label="Target Topic_"
+                                                    label="Target Topic"
                                                     value={selections.topicId}
                                                     options={hierarchicalChoices.topics}
                                                     loading={loadingChoices.topics}
@@ -561,7 +561,7 @@ Please provide a valid JSON object matching this schema:
                                 {(initialData?.target === 'domain' || !initialData) && (
                                     <div className="space-y-3">
                                         <label className="text-[10px] font-black uppercase tracking-widest text-[#1A1A1A] flex items-center gap-2 opacity-40">
-                                            <Activity size={14} /> Factory Compliance_
+                                            <Activity size={14} /> Factory Compliance
                                         </label>
                                         <div className="p-6 rounded-3xl border border-dashed border-primary/10 bg-primary/[0.01] flex items-center gap-5">
                                             <div className="w-10 h-10 rounded-full bg-green-500/10 flex items-center justify-center text-green-600">
@@ -580,7 +580,7 @@ Please provide a valid JSON object matching this schema:
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-4">
                                     <h3 className="text-3xl font-black italic uppercase tracking-tighter text-[#1A1A1A]">
-                                        {initialData?.target ? `Bulk ${initialData.target} Factory_` : "Bulk Hierarchy Engine_"}
+                                        {initialData?.target ? `Bulk ${initialData.target} Factory` : "Bulk Hierarchy Engine"}
                                     </h3>
                                     <div className="flex items-center gap-2">
                                         <span className="px-3 py-1 bg-primary/10 text-primary text-[9px] font-black uppercase rounded-lg">JSON STRICT_MODE</span>
@@ -617,7 +617,7 @@ Please provide a valid JSON object matching this schema:
                                                         <div className="p-2.5 bg-[#FF4B91]/10 rounded-xl text-[#FF4B91]">
                                                             <Brain size={20} />
                                                         </div>
-                                                        <h4 className="text-lg font-black uppercase tracking-widest text-slate-800 italic">Surgical AI Prompt_</h4>
+                                                        <h4 className="text-lg font-black uppercase tracking-widest text-slate-800 italic">Surgical AI Prompt</h4>
                                                     </div>
                                                     <ZTooltip content="Copy complete contextual prompt to clipboard. Paste this into your AI assistant to generate the required JSON manifest." side="left">
                                                         <button
@@ -646,7 +646,7 @@ Please provide a valid JSON object matching this schema:
                                                         </div>
                                                         <div>
                                                             <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 group-hover/watermark:text-primary transition-colors">
-                                                                Already have the JSON? Enter Manual Manifest Mode_
+                                                                Already have the JSON? Enter Manual Manifest Mode
                                                             </p>
                                                             <p className="text-[9px] font-bold text-slate-400 mt-0.5">
                                                                 Unlock Editor for Payload Injection
@@ -670,7 +670,7 @@ Please provide a valid JSON object matching this schema:
                                             <div className="p-2.5 bg-[#FF4B91]/10 rounded-xl text-[#FF4B91]">
                                                 <Code2 size={20} />
                                             </div>
-                                            <h4 className="text-lg font-black uppercase tracking-widest text-slate-800 italic">JSON Manifest Editor_</h4>
+                                            <h4 className="text-lg font-black uppercase tracking-widest text-slate-800 italic">JSON Manifest Editor</h4>
                                         </div>
                                         <div className="flex items-center gap-3">
                                             <ZTooltip content="Copy raw JSON payload." side="left">
@@ -701,7 +701,7 @@ Please provide a valid JSON object matching this schema:
   ]
 }
 
-PASTE YOUR JSON MANIFEST HERE_'
+PASTE YOUR JSON MANIFEST HERE'
                                         />
                                         <div className="absolute right-10 bottom-10 px-6 py-3 bg-slate-900 border border-slate-800 rounded-2xl text-[11px] font-mono text-white/90 backdrop-blur-xl flex items-center gap-3 shadow-xl pointer-events-none">
                                             <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
@@ -718,7 +718,7 @@ PASTE YOUR JSON MANIFEST HERE_'
                 <div className="w-full lg:w-[480px] bg-slate-50/50 flex flex-col p-12 gap-10 overflow-hidden border-l border-slate-200/50">
                     <div className="h-[40px] flex items-center shrink-0">
                         <h3 className="text-3xl font-black italic uppercase tracking-tighter text-[#1A1A1A]">
-                            Factory Monitor_
+                            Factory Monitor
                         </h3>
                     </div>
 
@@ -753,13 +753,13 @@ PASTE YOUR JSON MANIFEST HERE_'
                                     <CheckCircle2 size={32} />
                                 </div>
                                 <div>
-                                    <h4 className="text-xl font-black uppercase tracking-tighter text-green-800 italic">Emission Successful_</h4>
+                                    <h4 className="text-xl font-black uppercase tracking-tighter text-green-800 italic">Emission Successful</h4>
                                     <p className="text-[10px] font-bold text-green-700 uppercase tracking-widest mt-1">Domain ID: {success.domainId}</p>
                                 </div>
 
                                 {success.stats && (
                                     <div className="p-4 rounded-3xl bg-white/50 border border-green-200/50 space-y-3">
-                                        <h5 className="text-[9px] font-black uppercase tracking-widest text-green-800/60 text-left px-2">Registry Summary_</h5>
+                                        <h5 className="text-[9px] font-black uppercase tracking-widest text-green-800/60 text-left px-2">Registry Summary</h5>
                                         <div className="grid grid-cols-2 gap-2">
                                             {Object.entries(success.stats).map(([k, v]: [string, any]) => (
                                                 (v.added > 0 || v.skipped > 0) && (
