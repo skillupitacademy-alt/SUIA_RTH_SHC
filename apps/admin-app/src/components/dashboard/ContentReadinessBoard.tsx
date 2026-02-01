@@ -34,7 +34,7 @@ export function ContentReadinessBoard() {
 
     const fetch = async () => {
         try {
-            const data = await apiClient.admin.getContentHealth();
+            const data = await apiClient.admin.getContentHealthReport();
             setDomains(data);
         } catch (err) {
             console.error("Failed to fetch content health", err);
