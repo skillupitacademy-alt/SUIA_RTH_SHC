@@ -144,6 +144,7 @@ The following documents are **PERMANENT REFERENCE GUIDES**. Any agent attempt to
 1. **`docs/pages/exams/architecture_lifecycle.md`** → Unified System Mapping & Lifecycle Guide.
 2. **`docs/pages/exams/skill-weightage-integration.md`** → Reporting Dimension Standards.
 3. **`docs/report/SYSTEM_REPORTING_SPEC.md`** → Authoritative Analytical Logic Guide.
+4. **`docs/domain/domain-factory-orchestration.md`** → Authoritative Domain Factory & Manual Blueprinting Guide.
 
 ---
 
@@ -153,3 +154,8 @@ Every piece of assessment content MUST be tagged with the following three dimens
 1.  **WEIGHT (1-10)**: Defines the impact/criticality of the skill.
 2.  **CATEGORY (TECHNICAL/COGNITIVE/PROCESS)**: Defines the behavioral nature.
 3.  **MAPPING TYPE (CONCEPTUAL/TECHNICAL/PRACTICAL)**: Defines the knowledge nature.
+
+---
+
+## 🔟 ASSESSMENT READINESS LAW (BLUEPRINTING)
+A Domain is **strictly prohibited** from being marked as "Ready" for Students unless a valid **Assessment Blueprint** has been manually configured and calibrated (Question Count, Time Limit, Toning). Automated blueprinting is forbidden; explicit Admin orchestration is the only valid path to readiness.

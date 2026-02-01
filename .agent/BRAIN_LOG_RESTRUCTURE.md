@@ -242,3 +242,10 @@ Reduce documentation fragmentation and improve discoverability by consolidating 
 - **Schema Repair**: Resolved `column "mapping_type" does not exist` error by force-pushing missing ENUMs and columns to the database.
 - **Prompt Engineering**: Integrated a dedicated dynamic "AI Generator Prompt" that adapts to the selected Topic.
 - **Outcome**: Restored critical dashboard visibility, fixed schema errors, and professionalized the bulk content ingestion workflow.
+### Batch 36: Domain Factory & Manual Blueprint Orchestration
+- **Redesign**: Reverted automated background blueprinting in favor of an explicit, admin-led **Manual Blueprinting** model to increase operational customization.
+- **Factory Overhaul**: Launched the full-screen **Domain Factory** workspace with support for single-registry and bulk-factory JSON ingestion.
+- **Blueprint Designer**: Developed the `BlueprintFactoryWizard` featuring real-time difficulty calibration and question/time limit configuration.
+- **Technical Reference**: Authored `docs/domain/domain-factory-orchestration.md` as the authoritative guide for the Enterprise Domain lifecycle.
+- **Stability**: Resolved monorepo-wide build failures related to Next.js 15/16 async route parameters.
+- **Outcome**: Established a manual orchestration model for educational content, completing the "Enterprise Readiness" suite.

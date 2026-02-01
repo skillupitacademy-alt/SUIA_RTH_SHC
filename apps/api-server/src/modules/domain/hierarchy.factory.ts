@@ -150,7 +150,6 @@ export class HierarchyFactory {
 
                             const [newSkill] = await tx.insert(skills).values({
                               name: skillName,
-                              weight: sourceQ.skillWeight || 1,
                               category: 'technical', // Default for auto-healing
                               mappingType: finalMappingType
                             }).returning();
@@ -206,7 +205,6 @@ export class HierarchyFactory {
 
                         const [newSkill] = await tx.insert(skills).values({
                           name: skillName,
-                          weight: sourceQ.skillWeight || 1,
                           category: 'technical',
                           mappingType: finalMappingType
                         }).returning();

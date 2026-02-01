@@ -127,6 +127,62 @@ export class AdminEngine {
   }
 
   /**
+   * Section 10: Blueprint Management (Manual CRUD)
+   */
+  static async getBlueprints(page: number = 1, limit: number = 20, filters?: { search?: string }) {
+    const offset = (page - 1) * limit;
+
+    const where: any[] = [];
+    if (filters?.search) {
+      where.push(sql`${examBlueprints.name} ILIKE ${'%' + filters.search + '%'}`);
+    }
+
+    const data = await db.query.examBlueprints.findMany({
+      where: where.length > 0 ? and(...where) : undefined,
+      limit,
+      offset,
+      orderBy: [desc(examBlueprints.createdAt)],
+    });
+
+    const [countResult] = await db.select({ count: sql`count(*)` }).from(examBlueprints);
+    const total = Number(countResult?.count || 0);
+
+    return {
+      data,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    };
+  }
+
+  static async createBlueprint(data: any) {
+    const [result] = await db.insert(examBlueprints).values(data).returning();
+    return result;
+  }
+
+  static async updateBlueprint(id: string, data: any) {
+    const [result] = await db.update(examBlueprints)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(examBlueprints.id, id))
+      .returning();
+    return result;
+  }
+
+  static async deleteBlueprint(id: string) {
+    const [result] = await db.delete(examBlueprints)
+      .where(eq(examBlueprints.id, id))
+      .returning();
+    return result;
+  }
+
+  static async getBlueprintById(id: string) {
+    return await db.query.examBlueprints.findFirst({
+      where: eq(examBlueprints.id, id)
+    });
+  }
+
+  /**
    * Section 8: Exam Activity Overview
    */
   static async getExamActivity() {

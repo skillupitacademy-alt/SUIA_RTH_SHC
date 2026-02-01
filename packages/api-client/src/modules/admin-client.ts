@@ -266,6 +266,35 @@ export class AdminClient {
     return this.client.post<{ user: any; accessToken: string }>('/admin/auth/login', { email, password });
   }
 
+  async getBlueprints(page: number = 1, limit: number = 20, search?: string) {
+    const query = new URLSearchParams({ page: page.toString(), limit: limit.toString() });
+    if (search) query.append('search', search);
+
+    return this.client.get<{
+        data: any[];
+        total: number;
+        page: number;
+        limit: number;
+        totalPages: number;
+    }>(`/admin/blueprints?${query.toString()}`);
+  }
+
+  async getBlueprintById(id: string) {
+    return this.client.get<any>(`/admin/blueprints/${id}`);
+  }
+
+  async createBlueprint(data: any) {
+    return this.client.post<any>('/admin/blueprints', data);
+  }
+
+  async updateBlueprint(id: string, data: any) {
+    return this.client.patch<any>(`/admin/blueprints/${id}`, data);
+  }
+
+  async deleteBlueprint(id: string) {
+    return this.client.delete<any>(`/admin/blueprints/${id}`);
+  }
+
   async atomicSeed(data: any) {
     return this.client.post<any>('/admin/hierarchy/atomic', data);
   }

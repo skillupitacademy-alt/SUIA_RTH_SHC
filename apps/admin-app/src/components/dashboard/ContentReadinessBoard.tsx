@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { HierarchyFactoryWizard } from '../content/HierarchyFactoryWizard';
+import { BlueprintFactoryWizard } from '../content/BlueprintFactoryWizard';
 
 export function ContentReadinessBoard() {
     const [domains, setDomains] = useState<any[]>([]);
@@ -28,6 +29,7 @@ export function ContentReadinessBoard() {
         isOpen: false,
         initialData: null
     });
+    const [blueprintModal, setBlueprintModal] = useState({ isOpen: false, domainId: '', domainName: '' });
 
     const fetch = async () => {
         try {
@@ -105,7 +107,15 @@ export function ContentReadinessBoard() {
                     <h3 className="text-2xl font-black uppercase tracking-tighter italic text-[#1A1A1A]">Enterprise Governance</h3>
                     <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-0.5">Hierarchical Readiness Audit • Domain to Subtopic</p>
                 </div>
-                <div className="flex items-center gap-4">
+                <div className="flex flex-wrap items-center gap-4">
+                    <button
+                        onClick={() => setFactoryModal({ isOpen: true, initialData: null })}
+                        className="px-6 py-2.5 bg-[#1A1A1A] text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-xl shadow-black/10 hover:scale-[1.02] active:scale-95 transition-all flex items-center gap-2 group"
+                    >
+                        <Zap size={14} className="text-[#FF4B91]" />
+                        <span>Add Domain Factory</span>
+                    </button>
+                    <div className="w-px h-8 bg-black/5 hidden xl:block" />
                     <div className="relative w-full xl:w-[300px]">
                         <input
                             type="text"
@@ -150,7 +160,7 @@ export function ContentReadinessBoard() {
                                         )}
                                     </h4>
                                     <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest leading-none mt-1">
-                                        {domain.subjects?.length || 0} Subjects • {domain.hasBlueprint ? "Blueprint Active" : "No Blueprint"}
+                                        {domain.subjects?.length || 0} Subjects • {domain.hasBlueprint ? "Blueprint Active" : "Blueprint Missing"}
                                     </p>
                                 </div>
                             </div>
@@ -161,15 +171,33 @@ export function ContentReadinessBoard() {
                                     <StatsBadge label="I" val={domain.stats.intermediate} target={4} />
                                     <StatsBadge label="E" val={domain.stats.expert} target={5} />
                                 </div>
-                                {!domain.isReady && (domain.subjects?.length === 0) && (
-                                    <button
-                                        onClick={(e) => { e.stopPropagation(); openHealWizard('domain', domain, domain.domainId); }}
-                                        className="p-2.5 rounded-xl bg-red-500/10 text-red-600 hover:bg-red-500/20 transition-all border border-red-500/10 group-hover:scale-105"
-                                        title="Atomic Repair Domain"
-                                    >
-                                        <Wand2 size={16} />
-                                    </button>
-                                )}
+                                <div className="flex items-center gap-2">
+                                    {!domain.hasBlueprint ? (
+                                        <button
+                                            onClick={(e) => { e.stopPropagation(); setBlueprintModal({ isOpen: true, domainId: domain.domainId, domainName: domain.domainName }); }}
+                                            className="px-4 py-2 bg-primary text-white rounded-xl text-[9px] font-black uppercase tracking-widest hover:scale-105 transition-all shadow-lg shadow-primary/10 flex items-center gap-2"
+                                        >
+                                            <Zap size={12} /> Configure
+                                        </button>
+                                    ) : (
+                                        <button
+                                            onClick={(e) => { e.stopPropagation(); setBlueprintModal({ isOpen: true, domainId: domain.domainId, domainName: domain.domainName }); }}
+                                            className="p-2.5 rounded-xl bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all border border-slate-200"
+                                            title="Edit Blueprint"
+                                        >
+                                            <Activity size={16} />
+                                        </button>
+                                    )}
+                                    {!domain.isReady && (domain.subjects?.length === 0) && (
+                                        <button
+                                            onClick={(e) => { e.stopPropagation(); openHealWizard('domain', domain, domain.domainId); }}
+                                            className="p-2.5 rounded-xl bg-red-500/10 text-red-600 hover:bg-red-500/20 transition-all border border-red-500/10"
+                                            title="Atomic Repair Domain"
+                                        >
+                                            <Wand2 size={16} />
+                                        </button>
+                                    )}
+                                </div>
                                 {expandedNodes[domain.domainId] ? <ChevronDown size={20} className="text-muted-foreground" /> : <ChevronRight size={20} className="text-muted-foreground" />}
                             </div>
                         </div>
@@ -274,6 +302,14 @@ export function ContentReadinessBoard() {
                 isOpen={factoryModal.isOpen}
                 initialData={factoryModal.initialData}
                 onClose={() => setFactoryModal({ isOpen: false, initialData: null })}
+                onSuccess={fetch}
+            />
+
+            <BlueprintFactoryWizard
+                isOpen={blueprintModal.isOpen}
+                domainId={blueprintModal.domainId}
+                domainName={blueprintModal.domainName}
+                onClose={() => setBlueprintModal({ ...blueprintModal, isOpen: false })}
                 onSuccess={fetch}
             />
         </div>
