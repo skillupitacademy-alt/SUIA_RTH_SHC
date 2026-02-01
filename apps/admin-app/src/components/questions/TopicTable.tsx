@@ -69,10 +69,10 @@ export function TopicTable() {
             setCurrentTopic(topic);
             setFormData({
                 name: topic.name,
-                subjectId: topic.subjectId || '',
+                subjectId: topic.subjectId || topic.subject?.id || '',
                 description: topic.description || '',
                 status: topic.status || 'active',
-                domainId: topic.subject?.domainId || ''
+                domainId: topic.subject?.domainId || topic.subject?.domain?.id || ''
             });
             if (topic.subject?.domainId) {
                 // No manual fetch needed with atomic hooks
