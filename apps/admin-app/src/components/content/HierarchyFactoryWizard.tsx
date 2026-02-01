@@ -64,6 +64,11 @@ export function HierarchyFactoryWizard({ isOpen, onClose, initialData, onSuccess
         subjects: [] as any[],
         topics: [] as any[]
     });
+    const [loadingChoices, setLoadingChoices] = useState({
+        domains: false,
+        subjects: false,
+        topics: false
+    });
     const [selections, setSelections] = useState({
         domainId: initialData?.domainId || '',
         subjectId: initialData?.subjectId || '',
@@ -79,22 +84,27 @@ export function HierarchyFactoryWizard({ isOpen, onClose, initialData, onSuccess
     }, [isOpen]);
 
     const fetchExistingDomains = async () => {
+        setLoadingChoices(prev => ({ ...prev, domains: true }));
         try {
             const data = await apiClient.admin.getContentHealthReport();
             setExistingDomains(data.map((d: any) => d.domainName));
             setHierarchicalChoices(prev => ({ ...prev, domains: data }));
         } catch (e) {
             console.error("Failed to fetch existing domains", e);
+        } finally {
+            setLoadingChoices(prev => ({ ...prev, domains: false }));
         }
     };
 
     useEffect(() => {
         const fetchSubjects = async () => {
             if (selections.domainId) {
+                setLoadingChoices(prev => ({ ...prev, subjects: true }));
                 try {
                     const data = await apiClient.admin.getSubjectsByDomain(selections.domainId);
                     setHierarchicalChoices(prev => ({ ...prev, subjects: data }));
                 } catch (e) { console.error(e); }
+                finally { setLoadingChoices(prev => ({ ...prev, subjects: false })); }
             } else {
                 setHierarchicalChoices(prev => ({ ...prev, subjects: [] }));
             }
@@ -105,10 +115,12 @@ export function HierarchyFactoryWizard({ isOpen, onClose, initialData, onSuccess
     useEffect(() => {
         const fetchTopics = async () => {
             if (selections.subjectId) {
+                setLoadingChoices(prev => ({ ...prev, topics: true }));
                 try {
                     const data = await apiClient.admin.getTopicsBySubject(selections.subjectId);
                     setHierarchicalChoices(prev => ({ ...prev, topics: data }));
                 } catch (e) { console.error(e); }
+                finally { setLoadingChoices(prev => ({ ...prev, topics: false })); }
             } else {
                 setHierarchicalChoices(prev => ({ ...prev, topics: [] }));
             }
@@ -504,7 +516,7 @@ Please provide a valid JSON object matching this schema:
                                                 label="Target Domain_"
                                                 value={selections.domainId}
                                                 options={hierarchicalChoices.domains.map(d => ({ id: d.domainId, name: d.domainName }))}
-                                                loading={false}
+                                                loading={loadingChoices.domains}
                                                 onChange={(id) => setSelections({ ...selections, domainId: id, subjectId: '', topicId: '' })}
                                                 placeholder="Select Domain"
                                                 active={true}
@@ -518,7 +530,7 @@ Please provide a valid JSON object matching this schema:
                                                     label="Target Subject_"
                                                     value={selections.subjectId}
                                                     options={hierarchicalChoices.subjects}
-                                                    loading={false}
+                                                    loading={loadingChoices.subjects}
                                                     onChange={(id) => setSelections({ ...selections, subjectId: id, topicId: '' })}
                                                     placeholder="Select Subject"
                                                     active={!!selections.domainId}
@@ -534,7 +546,7 @@ Please provide a valid JSON object matching this schema:
                                                     label="Target Topic_"
                                                     value={selections.topicId}
                                                     options={hierarchicalChoices.topics}
-                                                    loading={false}
+                                                    loading={loadingChoices.topics}
                                                     onChange={(id) => setSelections({ ...selections, topicId: id })}
                                                     placeholder="Select Topic"
                                                     active={!!selections.subjectId}
