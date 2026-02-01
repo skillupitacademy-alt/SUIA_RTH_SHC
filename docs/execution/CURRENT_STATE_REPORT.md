@@ -171,3 +171,18 @@
 - **IQ Assistant Enhancement**: Integrated a "Pre-selection Context" section in the `HierarchyFactoryWizard` to explicitly visualize selected parent nodes (Domain, Subject, Topic) for improved AI prompt accuracy.
 - **Monorepo Verification**: Successfully executed full build sequence (`pnpm build`, `tsc --noEmit`) across `web-app`, `admin-app`, and `api-server` with 100% success.
 - **Outcome**: Completed the unification of the hierarchy management suite, combining premium design with advanced AI orchestration.
+
+### Phase 30: Full-Screen Edit Modals & AI Prompt Format B (Batch 72)
+- **Immersive Edit Experience**: Converted `DomainTable`, `SubjectTable`, and `TopicTable` edit modals to full-screen layouts with `slide-in-from-right` animation for focused, distraction-free editing.
+- **Design System Unification**: Standardized all hierarchy edit forms with:
+    - Professional headers with color-coded icons (Blue for Domain, Purple for Subject, Orange for Topic)
+    - Centered content areas (max-w-3xl) for optimal reading width
+    - Parent hierarchy context displayed in read-only white cards
+    - Consistent orange action buttons across all forms
+    - Status toggles with active/inactive states
+- **AI Prompt Clarity (Format B)**: Refactored `HierarchyFactoryWizard` subtopic prompt from example-based (Format A) to schema-template based (Format B):
+    - Simplified options array to string format: `["A", "B", "C", "D"]`
+    - Explicit enum placeholders: `"simple|intermediate|expert"`, `"conceptual|technical|practical"`
+    - Added skillNames guidance with concrete examples (e.g., "Problem Solving", "API Design")
+- **Full-Spectrum Verification**: Executed comprehensive build audit across all packages with 100% success.
+- **Outcome**: Achieved a unified, premium editing experience across all hierarchy levels and simplified AI prompt format for improved content generation accuracy.

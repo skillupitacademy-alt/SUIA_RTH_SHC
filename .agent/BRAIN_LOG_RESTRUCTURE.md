@@ -333,3 +333,13 @@ Reduce documentation fragmentation and improve discoverability by consolidating 
 - **IQ Assistant Enhancement**: Added a dedicated "Pre-selection Context" visualization in `HierarchyFactoryWizard` to show active Domain/Subject/Topic nodes above the AI prompt.
 - **Integrity**: Verified monorepo stability with a global `pnpm build` and `tsc --noEmit` audit across all 3 apps and shared packages (Exit Code 0).
 - **Outcome**: Achieved a premium, consistent classification management experience with enhanced AI prompt clarity.
+
+### Batch 72: Full-Screen Edit Modals & AI Prompt Format B
+- **Full-Screen Layout**: Converted edit modals for `DomainTable`, `SubjectTable`, and `TopicTable` from centered dialogs to full-screen layouts with `slide-in-from-right` animation.
+- **Design Consistency**: Applied unified professional header with colored icons, centered content areas (max-w-3xl), parent hierarchy context cards, and orange action buttons.
+- **AI Prompt Optimization**: Updated `HierarchyFactoryWizard` subtopic prompt from Format A (example data) to Format B (schema template with enum placeholders):
+    - Simplified options array: `["A", "B", "C", "D"]` instead of object array
+    - Clear enum placeholders: `"simple|intermediate|expert"`
+    - Added skillNames guidance with examples
+- **Build Verification**: Executed comprehensive build audit (`pnpm build`, `npx tsc --noEmit`) with 100% success across all packages.
+- **Outcome**: Delivered a consistent, immersive editing experience across all hierarchy levels and a clearer AI prompt format for content generation.
