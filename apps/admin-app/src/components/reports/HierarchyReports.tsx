@@ -319,7 +319,7 @@ export const HierarchyReports: React.FC = () => {
             {isActionLoading && (
                 <div className="fixed inset-0 z-[300] bg-white/40 backdrop-blur-[4px] flex items-center justify-center animate-in fade-in duration-300">
                     <div className="bg-white p-12 rounded-[3.5rem] shadow-[0_32px_128px_rgba(0,0,0,0.1)] border-2 border-primary/5 flex flex-col items-center gap-6 scale-110">
-                        <Activity className="w-20 h-20 text-[#FF4B91] animate-pulse" />
+                        <Activity className="w-20 h-20 text-[#FF4B91] animate-spin" />
                         <div className="text-center">
                             <h4 className="text-2xl font-black uppercase italic tracking-tighter">Accessing Branch_</h4>
                             <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[#FF4B91]/60 mt-2">Loader: Activity (Diagnostic)</p>

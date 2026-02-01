@@ -494,7 +494,7 @@ export function UserTable() {
             {isActionLoading && (
                 <div className="fixed inset-0 z-[300] bg-white/20 backdrop-blur-[2px] flex items-center justify-center animate-in fade-in duration-200">
                     <div className="bg-white p-8 rounded-3xl shadow-2xl border border-primary/10 flex flex-col items-center gap-4">
-                        <Activity className="w-12 h-12 text-[#FF4B91] animate-pulse" />
+                        <Activity className="w-12 h-12 text-[#FF4B91] animate-spin" />
                         <p className="text-[10px] font-black uppercase tracking-widest">Accessing Identity...</p>
                     </div>
                 </div>
