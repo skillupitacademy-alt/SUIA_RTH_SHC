@@ -150,33 +150,35 @@ export function DomainTable() {
                             </button>
                         </div>
 
-                        {/* Content - Centered with max-w-3xl */}
+                        {/* Content - Landscape Grid */}
                         <div className="flex-1">
-                            <div className="max-w-3xl mx-auto px-8 py-8">
+                            <div className="max-w-5xl mx-auto px-8 py-8">
                                 <form onSubmit={handleSubmit} className="space-y-6">
-                                    {/* Domain Name */}
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 pl-1">Domain Name</label>
-                                        <input
-                                            required
-                                            type="text"
-                                            placeholder="Enter domain name..."
-                                            value={formData.name}
-                                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                            className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-slate-300"
-                                        />
-                                    </div>
+                                    <div className="grid grid-cols-2 gap-6">
+                                        {/* Domain Name */}
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 pl-1">Domain Name</label>
+                                            <input
+                                                required
+                                                type="text"
+                                                placeholder="Enter domain name..."
+                                                value={formData.name}
+                                                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                                className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-slate-300"
+                                            />
+                                        </div>
 
-                                    {/* Category */}
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 pl-1">Category (Reporting Dimension)</label>
-                                        <input
-                                            type="text"
-                                            placeholder="e.g., DevOps, Security, Frontend..."
-                                            value={formData.category || ''}
-                                            onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                                            className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-slate-300"
-                                        />
+                                        {/* Category */}
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 pl-1">Category (Reporting Dimension)</label>
+                                            <input
+                                                type="text"
+                                                placeholder="e.g., DevOps, Security, Frontend..."
+                                                value={formData.category || ''}
+                                                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                                                className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-slate-300"
+                                            />
+                                        </div>
                                     </div>
 
                                     {/* Description */}

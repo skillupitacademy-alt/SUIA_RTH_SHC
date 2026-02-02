@@ -168,32 +168,36 @@ export function SubjectTable() {
                             </button>
                         </div>
 
-                        {/* Content - Centered with max-w-3xl */}
+                        {/* Content - Landscape Grid */}
                         <div className="flex-1">
-                            <div className="max-w-3xl mx-auto px-8 py-8">
+                            <div className="max-w-5xl mx-auto px-8 py-8">
                                 <form onSubmit={handleSubmit} className="space-y-6">
-                                    {/* Hierarchy Context (Read-Only) */}
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 flex items-center gap-1.5">
-                                            <Globe size={12} />
-                                            Parent Domain
-                                        </label>
-                                        <div className="px-4 py-3 bg-white border border-slate-200 rounded-xl">
-                                            <p className="text-sm font-bold text-slate-700">{domains.find(d => d.id === formData.domainId)?.name || 'N/A'}</p>
-                                        </div>
-                                    </div>
-
-                                    {/* Subject Name */}
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 pl-1">Subject Name</label>
-                                        <input
-                                            type="text"
-                                            required
-                                            value={formData.name}
-                                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                            className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all placeholder:text-slate-300"
-                                            placeholder="e.g., Frontend Development"
+                                    <div className="grid grid-cols-2 gap-6">
+                                        {/* Parent Domain */}
+                                        <SelectField
+                                            label="Parent Domain"
+                                            value={formData.domainId}
+                                            options={domains.map(d => ({ id: d.id, name: d.name }))}
+                                            loading={domainsHook.loading}
+                                            onChange={(val) => setFormData({ ...formData, domainId: val })}
+                                            placeholder="Select Domain"
+                                            active={true}
+                                            icon={<Globe size={12} />}
+                                            hideCreate={true}
                                         />
+
+                                        {/* Subject Name */}
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 pl-1">Subject Name</label>
+                                            <input
+                                                type="text"
+                                                required
+                                                value={formData.name}
+                                                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                                className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all placeholder:text-slate-300"
+                                                placeholder="e.g., Frontend Development"
+                                            />
+                                        </div>
                                     </div>
 
                                     {/* Description */}
@@ -226,24 +230,6 @@ export function SubjectTable() {
                                                 </button>
                                             ))}
                                         </div>
-                                    </div>
-
-                                    {/* Hierarchy Reassignment (Caution) */}
-                                    <div className="pt-6 border-t border-slate-200">
-                                        <p className="text-[11px] font-black uppercase tracking-widest text-[#FF4B91] mb-4 flex items-center gap-2">
-                                            <AlertTriangle size={14} />
-                                            Move Hierarchy (Caution)
-                                        </p>
-                                        <SelectField
-                                            label="Domain"
-                                            value={formData.domainId}
-                                            options={domains.map(d => ({ id: d.id, name: d.name }))}
-                                            loading={domainsHook.loading}
-                                            onChange={(id) => setFormData({ ...formData, domainId: id })}
-                                            placeholder="Change Domain"
-                                            active={false}
-                                            hideCreate={true}
-                                        />
                                     </div>
 
                                     {/* Footer Actions */}

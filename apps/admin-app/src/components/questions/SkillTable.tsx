@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import { apiClient } from '@quiz/api-client';
-import { Shield, Plus, Edit2, Trash2, X, AlertTriangle, Hash, Cpu, Settings, Zap } from 'lucide-react';
+import { Shield, Plus, Edit2, Trash2, X, AlertTriangle, Hash, Cpu, Settings, Zap, Check } from 'lucide-react';
 import { ErrorBanner } from '@/components/layout/ErrorBanner';
 import { ZLoader } from '@/components/ui/ZLoader';
+import { SelectField } from '@/components/entry/SelectionFields';
 import { HierarchyFactoryWizard } from '@/components/content/HierarchyFactoryWizard';
 
 const SKILL_CATEGORIES: Record<string, string> = {
@@ -147,7 +148,7 @@ export function SkillTable() {
             {/* Form Modal */}
             {isFormOpen && (
                 <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300">
-                    <div className="bg-white border border-primary/10 rounded-[2.5rem] p-8 max-w-md w-full shadow-2xl relative overflow-hidden">
+                    <div className="bg-white border border-primary/10 rounded-[2.5rem] p-8 max-w-2xl w-full shadow-2xl relative overflow-hidden">
                         <div className="absolute top-0 left-0 w-full h-2 bg-[#FF4B91]" />
                         <div className="flex justify-between items-start mb-8">
                             <div>
@@ -162,70 +163,92 @@ export function SkillTable() {
                         </div>
 
                         <form onSubmit={handleSubmit} className="space-y-6">
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Skill Name</label>
-                                <input
-                                    required
-                                    type="text"
-                                    placeholder="e.g., Problem Solving"
-                                    value={formData.name}
-                                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                    className="w-full bg-slate-50 border-none rounded-2xl px-5 py-3 text-sm font-bold text-[#1A1A1A] outline-none focus:ring-2 focus:ring-[#FF4B91]/10"
+                            {/* Row 1: Name and Weight */}
+                            <div className="grid grid-cols-2 gap-6">
+                                {/* Skill Name */}
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Skill Name</label>
+                                    <input
+                                        required
+                                        type="text"
+                                        placeholder="e.g., Problem Solving"
+                                        value={formData.name}
+                                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                        className="w-full bg-slate-50 border-none rounded-2xl px-5 py-3 text-sm font-bold text-[#1A1A1A] outline-none focus:ring-2 focus:ring-[#FF4B91]/10"
+                                    />
+                                </div>
+
+                                {/* Weight */}
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Weight (1-10)</label>
+                                    <div className="flex items-center gap-4 px-4 py-3 bg-slate-50 rounded-2xl">
+                                        <Zap size={16} className="text-amber-500" />
+                                        <input
+                                            type="range"
+                                            min="1"
+                                            max="10"
+                                            value={formData.weight || 1}
+                                            onChange={(e) => setFormData({ ...formData, weight: parseInt(e.target.value) })}
+                                            className="flex-1 accent-[#FF4B91] h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer"
+                                        />
+                                        <span className="text-sm font-black text-slate-700 w-6 text-center">{formData.weight || 1}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Row 2: Category and Mapping */}
+                            <div className="grid grid-cols-2 gap-6">
+                                {/* Category */}
+                                <SelectField
+                                    label="Category Hierarchy"
+                                    value={formData.category}
+                                    options={[
+                                        ...Object.entries(SKILL_CATEGORIES).map(([id, name]) => ({ id, name }))
+                                    ]}
+                                    loading={false}
+                                    onChange={(val) => setFormData({ ...formData, category: val })}
+                                    placeholder="Select Category"
+                                    active={true}
+                                    icon={<Hash size={12} />}
+                                    hideCreate={true}
+                                />
+
+                                {/* Mapping Type */}
+                                <SelectField
+                                    label="Mapping"
+                                    value={formData.mappingType}
+                                    options={[
+                                        { id: 'conceptual', name: 'Conceptual' },
+                                        { id: 'technical', name: 'Technical' },
+                                        { id: 'practical', name: 'Practical' }
+                                    ]}
+                                    loading={false}
+                                    onChange={(val) => setFormData({ ...formData, mappingType: val as any })}
+                                    placeholder="Select Mapping"
+                                    active={false}
+                                    icon={<Cpu size={12} />}
+                                    hideCreate={true}
                                 />
                             </div>
 
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Category Hierarchy</label>
-                                    <select
-                                        value={formData.category}
-                                        onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                                        className="w-full bg-slate-50 border-none rounded-2xl px-5 py-3 text-sm font-bold text-[#1A1A1A] outline-none appearance-none cursor-pointer"
-                                    >
-                                        {Object.entries(SKILL_CATEGORIES).map(([value, label]) => (
-                                            <option key={value} value={value}>{label}</option>
-                                        ))}
-                                    </select>
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Mapping</label>
-                                    <select
-                                        value={formData.mappingType}
-                                        onChange={(e) => setFormData({ ...formData, mappingType: e.target.value as any })}
-                                        className="w-full bg-slate-50 border-none rounded-2xl px-5 py-3 text-sm font-bold text-[#1A1A1A] outline-none appearance-none"
-                                    >
-                                        <option value="conceptual">Conceptual</option>
-                                        <option value="technical">Technical</option>
-                                        <option value="practical">Practical</option>
-                                    </select>
-                                </div>
+                            {/* Footer Actions */}
+                            <div className="flex justify-end gap-3 pt-4">
+                                <button
+                                    type="button"
+                                    onClick={handleCloseForm}
+                                    className="px-6 py-3 rounded-xl text-slate-500 font-bold text-xs uppercase tracking-widest hover:bg-slate-50 transition-colors"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={isSubmitting}
+                                    className="px-8 py-3 rounded-xl bg-[#1A1A1A] text-white font-bold text-xs uppercase tracking-widest hover:bg-black transition-colors flex items-center gap-2 disabled:opacity-50"
+                                >
+                                    {isSubmitting ? <ZLoader size="xs" className="text-white" center={false} /> : <Check size={16} />}
+                                    {isSubmitting ? 'Saving...' : 'Save Changes'}
+                                </button>
                             </div>
-
-                            {/* Weight Slider */}
-                            <div className="space-y-3 bg-slate-50 p-4 rounded-2xl">
-                                <div className="flex items-center justify-between">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Impact Weight</label>
-                                    <span className="text-xs font-black text-[#FF4B91] bg-white px-3 py-1 rounded-lg shadow-sm">{formData.weight || 1}</span>
-                                </div>
-                                <input
-                                    type="range"
-                                    min="1"
-                                    max="10"
-                                    step="1"
-                                    value={formData.weight || 1}
-                                    onChange={(e) => setFormData({ ...formData, weight: parseInt(e.target.value) })}
-                                    className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#FF4B91]"
-                                />
-                                <p className="text-[9px] text-slate-400 font-bold italic tracking-wide text-right">Used for Proficiency Quadrant Calculation</p>
-                            </div>
-
-                            <button
-                                type="submit"
-                                disabled={isSubmitting}
-                                className="w-full py-4 mt-2 rounded-2xl bg-[#1A1A1A] text-white text-xs font-black uppercase tracking-[0.2em] shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50"
-                            >
-                                {isSubmitting ? 'Syncing...' : currentSkill ? 'Update' : 'Create'}
-                            </button>
                         </form>
                     </div>
                 </div>

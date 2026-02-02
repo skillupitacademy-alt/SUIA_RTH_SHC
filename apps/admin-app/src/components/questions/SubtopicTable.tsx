@@ -196,7 +196,7 @@ export function SubtopicTable() {
 
                     {/* Content Area */}
                     <div className="flex-1 bg-slate-50/30 p-12 custom-scrollbar">
-                        <div className="max-w-3xl mx-auto space-y-8 bg-white border border-primary/10 rounded-[2.5rem] p-10 shadow-2xl shadow-primary/5 relative overflow-hidden">
+                        <div className="max-w-5xl mx-auto space-y-8 bg-white border border-primary/10 rounded-[2.5rem] p-10 shadow-2xl shadow-primary/5 relative overflow-hidden">
                             {/* Form Header Context */}
                             <div className="grid grid-cols-3 gap-4 p-6 bg-slate-50/50 rounded-2xl border border-dashed border-slate-200">
                                 <div className="space-y-1 text-center">
@@ -215,7 +215,8 @@ export function SubtopicTable() {
 
                             {/* Inputs Section */}
                             <form onSubmit={handleSubmit} className="space-y-8">
-                                <div className="space-y-6">
+                                <div className="grid grid-cols-2 gap-8">
+                                    {/* Col 1: Name */}
                                     <div className="space-y-3">
                                         <label className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">Subtopic Nomenclature</label>
                                         <input
@@ -228,8 +229,8 @@ export function SubtopicTable() {
                                         />
                                     </div>
 
-                                    <div className="grid grid-cols-2 gap-8">
-                                        {/* Depth Level */}
+                                    {/* Col 2: Depth & Status */}
+                                    <div className="grid grid-cols-2 gap-6">
                                         <div className="space-y-3">
                                             <label className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">Depth Level</label>
                                             <div className="relative">
@@ -245,7 +246,6 @@ export function SubtopicTable() {
                                             </div>
                                         </div>
 
-                                        {/* Status */}
                                         <div className="space-y-3">
                                             <label className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">Publication State</label>
                                             <div className="flex bg-slate-50 p-2 rounded-xl border border-slate-300">

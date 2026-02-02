@@ -204,11 +204,11 @@ export function TopicTable() {
                             </button>
                         </div>
 
-                        {/* Content - Centered with max-w-3xl */}
+                        {/* Content - Landscape Grid */}
                         <div className="flex-1">
-                            <div className="max-w-3xl mx-auto px-8 py-8">
+                            <div className="max-w-5xl mx-auto px-8 py-8">
                                 <form onSubmit={handleSubmit} className="space-y-6">
-                                    {/* Hierarchy Context (Read-Only) */}
+                                    {/* Row 1: Hierarchy Context (Read-Only) */}
                                     <div className="grid grid-cols-2 gap-6">
                                         <div className="space-y-2">
                                             <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 flex items-center gap-1.5">
@@ -230,32 +230,43 @@ export function TopicTable() {
                                         </div>
                                     </div>
 
-                                    {/* Topic Name */}
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 pl-1">Topic Name</label>
-                                        <input
-                                            type="text"
-                                            required
-                                            value={formData.name}
-                                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                            className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all placeholder:text-slate-300"
-                                            placeholder="e.g., React Hooks"
-                                        />
+                                    {/* Row 2: Name & Status */}
+                                    <div className="grid grid-cols-2 gap-6">
+                                        {/* Topic Name */}
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 pl-1">Topic Name</label>
+                                            <input
+                                                type="text"
+                                                required
+                                                value={formData.name}
+                                                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                                className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all placeholder:text-slate-300"
+                                                placeholder="e.g., React Hooks"
+                                            />
+                                        </div>
+
+                                        {/* Status */}
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 pl-1">Status</label>
+                                            <div className="flex bg-white p-1.5 rounded-xl border border-slate-200">
+                                                {['active', 'inactive'].map((status) => (
+                                                    <button
+                                                        key={status}
+                                                        type="button"
+                                                        onClick={() => setFormData({ ...formData, status: status as any })}
+                                                        className={`flex-1 py-2.5 rounded-lg text-xs font-black uppercase tracking-wider transition-all ${formData.status === status
+                                                            ? 'bg-[#1A1A1A] text-white shadow-sm'
+                                                            : 'text-slate-400 hover:text-slate-600'
+                                                            }`}
+                                                    >
+                                                        {status}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
                                     </div>
 
-                                    {/* Description */}
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 pl-1">Description</label>
-                                        <textarea
-                                            value={formData.description}
-                                            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                                            rows={4}
-                                            className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-600 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all placeholder:text-slate-300 resize-none"
-                                            placeholder="Brief summary of this topic..."
-                                        />
-                                    </div>
-
-                                    {/* Reporting Dimensions */}
+                                    {/* Row 3: Reporting Dimensions */}
                                     <div className="grid grid-cols-2 gap-6 bg-slate-50 p-4 rounded-xl border border-slate-200">
                                         <div className="space-y-3">
                                             <div className="flex items-center justify-between">
@@ -291,25 +302,18 @@ export function TopicTable() {
                                         </div>
                                     </div>
 
-                                    {/* Status */}
+                                    {/* Description */}
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 pl-1">Status</label>
-                                        <div className="flex bg-white p-1.5 rounded-xl border border-slate-200">
-                                            {['active', 'inactive'].map((status) => (
-                                                <button
-                                                    key={status}
-                                                    type="button"
-                                                    onClick={() => setFormData({ ...formData, status: status as any })}
-                                                    className={`flex-1 py-2.5 px-4 rounded-lg text-xs font-black uppercase tracking-wider transition-all ${formData.status === status
-                                                        ? 'bg-[#1A1A1A] text-white shadow-sm'
-                                                        : 'text-slate-400 hover:text-slate-600'
-                                                        }`}
-                                                >
-                                                    {status}
-                                                </button>
-                                            ))}
-                                        </div>
+                                        <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 pl-1">Description</label>
+                                        <textarea
+                                            value={formData.description}
+                                            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                            rows={4}
+                                            className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-600 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all placeholder:text-slate-300 resize-none"
+                                            placeholder="Brief summary of this topic..."
+                                        />
                                     </div>
+
 
                                     {/* Hierarchy Reassignment (Caution) */}
                                     <div className="pt-6 border-t border-slate-200">
@@ -363,45 +367,48 @@ export function TopicTable() {
                                 </form>
                             </div>
                         </div>
-                    </div>
-                </div>
-            )}
+                    </div >
+                </div >
+            )
+            }
 
 
             {/* Delete Confirmation Modal */}
-            {isDeleteOpen && (
-                <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300">
-                    <div className="bg-white border border-primary/10 rounded-[2.5rem] p-8 max-w-md w-full shadow-2xl relative overflow-hidden">
-                        <div className="absolute top-0 left-0 w-full h-2 bg-red-500" />
-                        <div className="flex flex-col items-center text-center gap-6">
-                            <div className="h-16 w-16 rounded-full bg-red-100 flex items-center justify-center text-red-600">
-                                <AlertTriangle size={32} />
-                            </div>
-                            <div>
-                                <h3 className="text-2xl font-black text-[#1A1A1A] italic uppercase tracking-tighter">Confirm Deletion</h3>
-                                <p className="text-sm font-medium text-muted-foreground mt-2">
-                                    You are about to delete the topic <strong className="text-red-600">"{currentTopic?.name}"</strong>. This action is irreversible and may impact child subtopics and questions.
-                                </p>
-                            </div>
-                            <div className="grid grid-cols-2 gap-4 w-full">
-                                <button
-                                    onClick={() => { setIsDeleteOpen(false); setCurrentTopic(null); }}
-                                    className="px-6 py-4 rounded-2xl border-2 border-slate-100 font-black uppercase tracking-widest text-xs hover:bg-slate-50 transition-all"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    onClick={handleDelete}
-                                    disabled={isSubmitting}
-                                    className="px-6 py-4 rounded-2xl bg-red-600 text-white font-black uppercase tracking-widest text-xs hover:bg-red-700 transition-all shadow-lg shadow-red-600/20 disabled:opacity-50"
-                                >
-                                    {isSubmitting ? 'Deleting...' : 'Delete'}
-                                </button>
+            {
+                isDeleteOpen && (
+                    <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300">
+                        <div className="bg-white border border-primary/10 rounded-[2.5rem] p-8 max-w-md w-full shadow-2xl relative overflow-hidden">
+                            <div className="absolute top-0 left-0 w-full h-2 bg-red-500" />
+                            <div className="flex flex-col items-center text-center gap-6">
+                                <div className="h-16 w-16 rounded-full bg-red-100 flex items-center justify-center text-red-600">
+                                    <AlertTriangle size={32} />
+                                </div>
+                                <div>
+                                    <h3 className="text-2xl font-black text-[#1A1A1A] italic uppercase tracking-tighter">Confirm Deletion</h3>
+                                    <p className="text-sm font-medium text-muted-foreground mt-2">
+                                        You are about to delete the topic <strong className="text-red-600">"{currentTopic?.name}"</strong>. This action is irreversible and may impact child subtopics and questions.
+                                    </p>
+                                </div>
+                                <div className="grid grid-cols-2 gap-4 w-full">
+                                    <button
+                                        onClick={() => { setIsDeleteOpen(false); setCurrentTopic(null); }}
+                                        className="px-6 py-4 rounded-2xl border-2 border-slate-100 font-black uppercase tracking-widest text-xs hover:bg-slate-50 transition-all"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        onClick={handleDelete}
+                                        disabled={isSubmitting}
+                                        className="px-6 py-4 rounded-2xl bg-red-600 text-white font-black uppercase tracking-widest text-xs hover:bg-red-700 transition-all shadow-lg shadow-red-600/20 disabled:opacity-50"
+                                    >
+                                        {isSubmitting ? 'Deleting...' : 'Delete'}
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            )}
+                )
+            }
 
             {/* Search Bar & Add Button */}
             <div className="bg-white/50 backdrop-blur-xl border border-primary/10 p-6 rounded-[2rem] shadow-xl relative overflow-hidden flex items-center justify-between">
@@ -512,6 +519,6 @@ export function TopicTable() {
                     <button disabled={page === totalPages} onClick={() => setPage(p => p + 1)} className="px-4 py-2 text-xs font-black uppercase tracking-widest disabled:opacity-50 hover:text-[#FF4B91]">Next</button>
                 </div>
             </div>
-        </div>
+        </div >
     );
 }
