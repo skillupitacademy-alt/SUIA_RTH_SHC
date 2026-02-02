@@ -683,34 +683,28 @@ Please provide a valid JSON object matching this schema:
                                                             <ClipboardCopy size={20} />
                                                         </button>
                                                     </ZTooltip>
+                                                    <div className="w-px h-8 bg-slate-200 mx-1" />
+                                                    <ZTooltip content="Switch to Editor Phase (Paste Payload)." side="left">
+                                                        <button
+                                                            onClick={() => setShowEditor(true)}
+                                                            className="p-3 bg-white hover:bg-primary text-slate-400 hover:text-white rounded-xl transition-all active:scale-95 shadow-sm hover:shadow-primary/20 border border-slate-100 group/editor-nav"
+                                                        >
+                                                            <FileJson size={20} className="group-hover/editor-nav:scale-110 transition-transform" />
+                                                        </button>
+                                                    </ZTooltip>
                                                 </div>
                                                 <div className="flex-1 p-10 overflow-y-auto custom-scrollbar space-y-8">
                                                     {/* Pre-selection Context Visualization */}
                                                     {/* Context Scope Moved to Header */}
 
-                                                    <div className="p-8 bg-slate-50 border border-slate-200/60 rounded-3xl text-sm font-medium text-slate-600 leading-relaxed font-mono whitespace-pre-wrap selection:bg-[#FF4B91]/10 shadow-sm relative overflow-hidden group/prompt">
+                                                    <div className="p-8 bg-slate-50 border border-slate-200/60 rounded-3xl text-sm font-medium text-blue-600 leading-relaxed whitespace-pre-wrap selection:bg-[#FF4B91]/10 shadow-sm relative overflow-hidden group/prompt">
                                                         <div className="absolute top-0 right-0 p-4 opacity-0 group-hover/prompt:opacity-100 transition-opacity pointer-events-none">
                                                             <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Read-Only Preview</span>
                                                         </div>
                                                         {generateAiPrompt()}
                                                     </div>
                                                 </div>
-                                                <button
-                                                    onClick={() => setShowEditor(true)}
-                                                    className="w-full flex-1 min-h-[200px] border-2 border-dashed border-slate-200 hover:border-primary/40 bg-slate-50/30 hover:bg-slate-50 transition-all rounded-[2rem] flex flex-col items-center justify-center gap-6 group/watermark m-6"
-                                                >
-                                                    <div className="w-16 h-16 rounded-full bg-slate-100 group-hover/watermark:bg-primary/5 flex items-center justify-center text-slate-400 group-hover/watermark:text-primary transition-all">
-                                                        <ArrowUp size={24} />
-                                                    </div>
-                                                    <div className="text-center space-y-2">
-                                                        <h5 className="text-xs font-black uppercase tracking-[0.2em] text-slate-400 group-hover/watermark:text-primary transition-colors">
-                                                            Paste {initialData?.target?.toUpperCase() || 'HIERARCHY'} Payload
-                                                        </h5>
-                                                        <p className="text-[10px] font-bold text-slate-300">
-                                                            Switch to Editor Phase
-                                                        </p>
-                                                    </div>
-                                                </button>
+                                                {/* Button Removed - Combined with Header Nav */}
                                             </>
                                         )}
                                     </div>
@@ -745,24 +739,31 @@ Please provide a valid JSON object matching this schema:
                                         </div>
                                     </div>
 
-                                    {/* Editor Area */}
-                                    <div className="relative flex-1">
+                                    {/* Editor Content */}
+                                    <div className="relative flex-1 bg-slate-50/30">
+                                        {!payload && (
+                                            <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0 p-12 opacity-60">
+                                                <div className="w-full h-full border-2 border-dashed border-slate-200 rounded-[2rem] flex flex-col items-center justify-center gap-6">
+                                                    <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center text-slate-300">
+                                                        <ArrowUp size={24} />
+                                                    </div>
+                                                    <div className="text-center space-y-2">
+                                                        <h5 className="text-xs font-black uppercase tracking-[0.2em] text-slate-400">
+                                                            Paste {initialData?.target?.toUpperCase() || 'HIERARCHY'} Payload
+                                                        </h5>
+                                                        <p className="text-[10px] font-bold text-slate-300">
+                                                            Ctrl + V to Insert JSON
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
                                         <textarea
                                             value={payload}
                                             onChange={(e) => setPayload(e.target.value)}
+                                            placeholder="" // Placeholder removed, using watermark
+                                            className="absolute inset-0 w-full h-full p-8 bg-transparent text-sm font-mono text-slate-600 resize-none focus:outline-none z-10 custom-scrollbar selection:bg-[#FF4B91]/20"
                                             spellCheck={false}
-                                            className="absolute inset-0 w-full h-full bg-white text-slate-800 p-10 font-mono text-xl focus:ring-0 outline-none transition-all leading-relaxed resize-none selection:bg-primary/20 placeholder:text-slate-300"
-                                            placeholder='{
-  "domainName": "...",
-  "subjects": [
-    {
-      "name": "...",
-      "topics": [...]
-    }
-  ]
-}
-
-PASTE YOUR JSON MANIFEST HERE'
                                         />
                                         <div className="absolute right-10 bottom-10 px-6 py-3 bg-slate-900 border border-slate-800 rounded-2xl text-[11px] font-mono text-white/90 backdrop-blur-xl flex items-center gap-3 shadow-xl pointer-events-none">
                                             <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />

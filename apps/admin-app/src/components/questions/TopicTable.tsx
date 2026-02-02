@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { apiClient } from '@quiz/api-client';
 import { Hash, Plus, Edit2, Trash2, X, AlertTriangle, BookOpen, Layers, Check, GitBranch, Clock } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
-import { formatTimeAgo } from '@/lib/utils';
+import { formatTimeAgo, cn } from '@/lib/utils';
 import { ErrorBanner } from '@/components/layout/ErrorBanner';
 import { ZLoader } from '@/components/ui/ZLoader';
 import { useDomains, useSubjects } from '@/hooks/useAdminHierarchy';
@@ -38,9 +38,17 @@ export function TopicTable() {
         complexityLevel: 1
     });
 
+    // Context Filters (Validation Requirement)
+    const [selectedContext, setSelectedContext] = useState({
+        domainId: '',
+        subjectId: ''
+    });
+
     // Hierarchy data
     const domainsHook = useDomains();
-    const subjectsHook = useSubjects(formData.domainId || undefined);
+    // Use selected filter for subject list, or form domain if form is open (handled separately usually, but here we can reuse)
+    const subjectsHook = useSubjects(selectedContext.domainId || formData.domainId);
+
     const domains = domainsHook.data;
     const subjects = subjectsHook.data;
 
@@ -170,12 +178,12 @@ export function TopicTable() {
                     fetchTopics();
                 }}
                 initialData={
-                    formData.subjectId
+                    selectedContext.subjectId
                         ? {
                             target: 'topic',
-                            domainId: formData.domainId,
-                            subjectId: formData.subjectId,
-                            subjectName: subjects.find(s => s.id === formData.subjectId)?.name || ''
+                            domainId: selectedContext.domainId,
+                            subjectId: selectedContext.subjectId,
+                            subjectName: subjects.find(s => s.id === selectedContext.subjectId)?.name || ''
                         }
                         : { target: 'topic' }
                 }
@@ -416,6 +424,27 @@ export function TopicTable() {
                     <div className="p-2 rounded-xl bg-orange-50 text-orange-500 shadow-sm border border-orange-100">
                         <Hash className="w-5 h-5" />
                     </div>
+                    {/* Context Selectors */}
+                    <div className="flex items-center gap-2 min-w-[300px]">
+                        <select
+                            value={selectedContext.domainId}
+                            onChange={(e) => setSelectedContext(prev => ({ ...prev, domainId: e.target.value, subjectId: '' }))}
+                            className="bg-slate-50 border-none rounded-xl px-4 py-2 text-[10px] font-bold uppercase tracking-wider text-slate-600 focus:ring-2 focus:ring-orange-500/10 outline-none w-32 truncate"
+                        >
+                            <option value="">All Domains</option>
+                            {domains.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
+                        </select>
+                        <select
+                            value={selectedContext.subjectId}
+                            onChange={(e) => setSelectedContext(prev => ({ ...prev, subjectId: e.target.value }))}
+                            disabled={!selectedContext.domainId}
+                            className="bg-slate-50 border-none rounded-xl px-4 py-2 text-[10px] font-bold uppercase tracking-wider text-slate-600 focus:ring-2 focus:ring-orange-500/10 outline-none w-32 truncate disabled:opacity-50"
+                        >
+                            <option value="">All Subjects</option>
+                            {subjects.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                        </select>
+                    </div>
+                    <div className="w-px h-6 bg-slate-200/50 mx-2" />
                     <div className="relative flex-1 max-w-md group">
                         <input
                             type="text"
@@ -430,8 +459,19 @@ export function TopicTable() {
                     </div>
                 </div>
                 <button
-                    onClick={() => handleOpenForm()}
-                    className="ml-4 px-6 py-3 rounded-2xl bg-[#FF4B91] hover:bg-[#ff3382] text-white text-[11px] font-black uppercase tracking-widest shadow-xl shadow-[#FF4B91]/20 transition-all flex items-center gap-3 active:scale-95"
+                    onClick={() => {
+                        if (!selectedContext.subjectId) {
+                            setErrorMessage("Validation Error: Please select a Domain and Subject context before adding a topic.");
+                            return;
+                        }
+                        handleOpenForm();
+                    }}
+                    className={cn(
+                        "ml-4 px-6 py-3 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all flex items-center gap-3 active:scale-95",
+                        !selectedContext.subjectId
+                            ? "bg-slate-100 text-slate-400 cursor-not-allowed"
+                            : "bg-[#FF4B91] hover:bg-[#ff3382] text-white shadow-xl shadow-[#FF4B91]/20"
+                    )}
                 >
                     <Plus size={16} />
                     Add Topic

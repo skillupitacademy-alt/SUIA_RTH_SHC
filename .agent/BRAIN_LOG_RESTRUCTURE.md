@@ -411,4 +411,18 @@ Reduce documentation fragmentation and improve discoverability by consolidating 
 ### Batch 83: High-Fidelity Refinement
 - **Visual Harmony**: Switched the AI Prompt container from a dark terminal block (`#1A1A1A`) to a **Glassy/Light** aesthetic (`bg-slate-50`) to match the overall application design.
 - **Header Breadcrumbs**: Relocated the "Active Target Scope" (Context) from the body to a compact **Header Breadcrumb** (e.g., `DOMAIN / SUBJECT / TOPIC`). This reduces vertical clutter and aligns with standard information architecture.
+- **Header Breadcrumbs**: Relocated the "Active Target Scope" (Context) from the body to a compact **Header Breadcrumb** (e.g., `DOMAIN / SUBJECT / TOPIC`). This reduces vertical clutter and aligns with standard information architecture.
 - **Outcome**: A polished, consistent UI where metadata is unobtrusive (Header) and content is legible (Light Prompt).
+
+### Batch 84: Editor Phase Transition & Overlay
+- **Symmetric Navigation**: Added an **"Open Editor"** (FileJson) button to the Prompt Header (Top Right), creating a clear entry point to the Draft Phase.
+- **Prompt Expansion**: Removed the large bottom "Paste JSON" button, allowing the AI Prompt container to fully expand and utilize the available vertical space.
+- **Watermark Overlay**: Relocated the beautiful dashed-border Watermark component to be an **Internal Overlay** within the JSON Editor. It appears only when the editor is empty (`!payload`), providing contextual guidance ("PASTE SUBTOPIC PAYLOAD") directly at the point of action.
+- **Watermark Overlay**: Relocated the beautiful dashed-border Watermark component to be an **Internal Overlay** within the JSON Editor. It appears only when the editor is empty (`!payload`), providing contextual guidance ("PASTE SUBTOPIC PAYLOAD") directly at the point of action.
+- **Outcome**: A seamless, context-aware workflow where the UI anticipates the user's intent at every step.
+
+### Batch 85: Validation & Style Polish
+- **Prompt Typography**: Updated the AI Prompt text style to `blue-600` (Sans-Serif), giving it a cleaner, modern schema look without the "code-block" heaviness.
+- **Context Guard Rails**: Added **Context Selectors** (Dropdowns for Domain/Subject/Topic) directly to the **Headers of TopicTable and SubtopicTable**.
+- **Launch Validation**: The "Add Topic" and "Add Subtopic" buttons are now **Disabled** by default. They only become active when the user has explicitly selected the required parent context (e.g., Domain + Subject). This blocks "Contextless Launches" at the source, ensuring the Bulk Factory always receives valid initialization data.
+- **Outcome**: Eliminated the risk of generating generic/invalid prompts by enforcing strict hierarchical boundaries before entry.

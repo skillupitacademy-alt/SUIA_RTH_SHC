@@ -242,3 +242,15 @@
 ### Phase 40: High-Fidelity UI Refinement (Batch 83)
 - **Prompt Visibility**: Replaced the high-contrast "Dark Mode" prompt box with a **Glassy/Light** container to harmonize with the Admin App's aesthetic.
 - **Context Breadcrumbs**: Moved the "Active Target Scope" from the main body to the **Header**, using a compact Breadcrumb trail (Domain / Subject / Topic). This maximizes space for the actual AI Prompt.
+
+### Phase 41: Editor Phase Transition & Overlay (Batch 84)
+- **Symmetric Navigation**: Implemented a two-way navigation toggle:
+    -   **Prompt Phase Header**: Added "Open Editor" button (`FileJson`).
+    -   **Draft Phase Header**: Has "Back to Prompt" button (`ArrowLeft`).
+- **Watermark Overlay**: The dashed "Paste Payload" card is now an **Internal Overlay** within the JSON Editor. It appears only when the text area is empty, serving as a contextual guide without breaking the layout or requiring a separate click to "enter" the editing mode.
+
+### Phase 42: Validation & Style Polish (Batch 85)
+- **Launch Validation**: Implemented strict Context Validation on the "Bulk Factory" launch buttons.
+    -   **TopicTable**: Added Domain/Subject Dropdowns to Header. "Add Topic" is disabled unless both are selected.
+    -   **SubtopicTable**: Added Domain/Subject/Topic Dropdowns to Header. "Add Subtopic" is disabled unless all three are selected.
+- **Prompt Styling**: Refined the AI Prompt text to use `text-blue-600` (Sans-Serif), matching the request for a clearer, schematic appearance.
