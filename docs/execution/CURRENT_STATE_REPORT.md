@@ -238,3 +238,7 @@
 ### Phase 39: UI Polish (Batch 82)
 - **Visual Design**: Re-engineered the Editor Entry Point to use a "Watermark" card style (Dashed border, large centered typography) instead of a standard button.
 - **Intent**: This visual change reinforces the "Empty State" concept, encouraging the user to "fill" the void with data, and mimics the "Awaiting Selection" pattern used elsewhere in the app.
+
+### Phase 40: High-Fidelity UI Refinement (Batch 83)
+- **Prompt Visibility**: Replaced the high-contrast "Dark Mode" prompt box with a **Glassy/Light** container to harmonize with the Admin App's aesthetic.
+- **Context Breadcrumbs**: Moved the "Active Target Scope" from the main body to the **Header**, using a compact Breadcrumb trail (Domain / Subject / Topic). This maximizes space for the actual AI Prompt.

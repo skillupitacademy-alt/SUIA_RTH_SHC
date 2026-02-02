@@ -655,7 +655,22 @@ Please provide a valid JSON object matching this schema:
                                                         <div className="p-2.5 bg-[#FF4B91]/10 rounded-xl text-[#FF4B91]">
                                                             <Brain size={20} />
                                                         </div>
-                                                        <h4 className="text-lg font-black uppercase tracking-widest text-slate-800 italic">Surgical AI Prompt</h4>
+                                                        <div className="flex flex-col">
+                                                            <h4 className="text-lg font-black uppercase tracking-widest text-slate-800 italic">Surgical AI Prompt</h4>
+                                                            <div className="flex items-center gap-1.5 text-[9px] font-bold text-slate-400 mt-0.5">
+                                                                <span className={cn("uppercase tracking-wider", selections.domainId ? "text-[#FF4B91]" : "text-slate-300")}>
+                                                                    {hierarchicalChoices.domains.find(d => d.domainId === selections.domainId)?.domainName || "Domain"}
+                                                                </span>
+                                                                <span className="text-slate-200">/</span>
+                                                                <span className={cn("uppercase tracking-wider", selections.subjectId ? "text-[#FF4B91]" : "text-slate-300")}>
+                                                                    {hierarchicalChoices.subjects.find(s => s.id === selections.subjectId)?.name || "Subject"}
+                                                                </span>
+                                                                <span className="text-slate-200">/</span>
+                                                                <span className={cn("uppercase tracking-wider", selections.topicId ? "text-[#FF4B91]" : "text-slate-300")}>
+                                                                    {hierarchicalChoices.topics.find(t => t.id === selections.topicId)?.name || "Topic"}
+                                                                </span>
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                     <ZTooltip content="Copy complete contextual prompt to clipboard. Paste this into your AI assistant to generate the required JSON manifest." side="left">
                                                         <button
@@ -671,36 +686,12 @@ Please provide a valid JSON object matching this schema:
                                                 </div>
                                                 <div className="flex-1 p-10 overflow-y-auto custom-scrollbar space-y-8">
                                                     {/* Pre-selection Context Visualization */}
-                                                    <div className="p-8 bg-white border border-primary/10 rounded-[2.5rem] shadow-sm space-y-6">
-                                                        <div className="flex items-center gap-3 border-b border-primary/5 pb-4">
-                                                            <div className="w-8 h-8 rounded-xl bg-slate-900 text-[#FF4B91] flex items-center justify-center">
-                                                                <Layers size={16} />
-                                                            </div>
-                                                            <h5 className="text-[10px] font-black uppercase tracking-[0.2em] text-[#1A1A1A]">Active Target Scope</h5>
-                                                        </div>
-                                                        <div className="grid grid-cols-3 gap-6">
-                                                            <div className="space-y-1.5 container-node">
-                                                                <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 block px-1">Domain</label>
-                                                                <div className="px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-[10px] font-bold text-slate-600 truncate italic">
-                                                                    {hierarchicalChoices.domains.find(d => d.domainId === selections.domainId)?.domainName || (selections.domainId === initialData?.domainId ? initialData?.domainName : null) || "Root Selection"}
-                                                                </div>
-                                                            </div>
-                                                            <div className={cn("space-y-1.5 transition-opacity", !selections.domainId && "opacity-20")}>
-                                                                <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 block px-1">Subject</label>
-                                                                <div className="px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-[10px] font-bold text-slate-600 truncate italic">
-                                                                    {hierarchicalChoices.subjects.find(s => s.id === selections.subjectId)?.name || (selections.subjectId === initialData?.subjectId ? initialData?.subjectName : null) || "Pending..."}
-                                                                </div>
-                                                            </div>
-                                                            <div className={cn("space-y-1.5 transition-opacity", !selections.subjectId && "opacity-20")}>
-                                                                <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 block px-1">Topic</label>
-                                                                <div className="px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-[10px] font-bold text-slate-600 truncate italic">
-                                                                    {hierarchicalChoices.topics.find(t => t.id === selections.topicId)?.name || (selections.topicId === initialData?.topicId ? initialData?.topicName : null) || "Pending..."}
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
+                                                    {/* Context Scope Moved to Header */}
 
-                                                    <div className="p-8 bg-[#1A1A1A] rounded-3xl border border-primary/5 text-sm font-bold text-white/80 leading-relaxed font-mono whitespace-pre-wrap selection:bg-[#FF4B91]/40 shadow-2xl shadow-black/20">
+                                                    <div className="p-8 bg-slate-50 border border-slate-200/60 rounded-3xl text-sm font-medium text-slate-600 leading-relaxed font-mono whitespace-pre-wrap selection:bg-[#FF4B91]/10 shadow-sm relative overflow-hidden group/prompt">
+                                                        <div className="absolute top-0 right-0 p-4 opacity-0 group-hover/prompt:opacity-100 transition-opacity pointer-events-none">
+                                                            <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Read-Only Preview</span>
+                                                        </div>
                                                         {generateAiPrompt()}
                                                     </div>
                                                 </div>

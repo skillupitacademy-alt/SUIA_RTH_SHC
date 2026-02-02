@@ -405,4 +405,10 @@ Reduce documentation fragmentation and improve discoverability by consolidating 
 ### Batch 82: UI Polish (Watermark Component)
 - **Visual Refactor**: Replaced the standard "Paste JSON" button with a **Dashed-Border Watermark Card** style (resembling "Awaiting Selection" placeholders).
 - **Dynamic Labeling**: The Watermark now dynamically prompts the specific target (e.g., "PASTE TOPIC PAYLOAD"), reinforcing the current context visibly.
+- **Dynamic Labeling**: The Watermark now dynamically prompts the specific target (e.g., "PASTE TOPIC PAYLOAD"), reinforcing the current context visibly.
 - **Outcome**: The empty state of the Editor pipeline now looks like a "Drop Zone", guiding the user intuitively to the next step.
+
+### Batch 83: High-Fidelity Refinement
+- **Visual Harmony**: Switched the AI Prompt container from a dark terminal block (`#1A1A1A`) to a **Glassy/Light** aesthetic (`bg-slate-50`) to match the overall application design.
+- **Header Breadcrumbs**: Relocated the "Active Target Scope" (Context) from the body to a compact **Header Breadcrumb** (e.g., `DOMAIN / SUBJECT / TOPIC`). This reduces vertical clutter and aligns with standard information architecture.
+- **Outcome**: A polished, consistent UI where metadata is unobtrusive (Header) and content is legible (Light Prompt).
