@@ -220,3 +220,8 @@
 - **Standardization**: Replaced the legacy ad-hoc `<select>` for Skill Category with the robust `SelectField` component, ensuring consistent "Technical/Cognitive/Process" filtering UI.
 - **Visual Flow**: Aligned "Mapped Skills" to start exactly at the "Topic" row baseline, creating a clean horizontal eyeline for the user.
 - **Outcome**: Professionalized the "Content Filter" dashboard component to match the high-fidelity standards of the main "Executive Console".
+
+### Phase 36: Hierarchy Factory Flow Refinement (Batch 79)
+- **UX Policy Enforced**: Reconfigured `HierarchyFactoryWizard` to mandate the "Intelligence Phase" (AI Prompt Display) as the entry point for all bulk operations.
+- **Contextual Bridge**: Resolved the "Missing Prompt" friction point where contextual launches (e.g., "Add Topic") previously skipped the prompt and jumped to the empty Editor.
+- **Outcome**: 100% visibility of the Surgical AI Prompt, ensuring users always have access to the context-aware payload generator before manual entry.

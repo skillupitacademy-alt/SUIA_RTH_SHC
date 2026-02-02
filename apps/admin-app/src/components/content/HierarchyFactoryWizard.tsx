@@ -45,7 +45,7 @@ export function HierarchyFactoryWizard({ isOpen, onClose, initialData, onSuccess
     const [mode, setMode] = useState<FactoryMode>('manual');
     const [manualEntry, setManualEntry] = useState({ name: '', description: '', category: '', domainId: '', subjectId: '', topicId: '' });
     const [payload, setPayload] = useState(initialData ? JSON.stringify(initialData, null, 2) : '');
-    const [showEditor, setShowEditor] = useState(!!initialData);
+    const [showEditor, setShowEditor] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
     const [executionStep, setExecutionStep] = useState<ExecutionStep>('idle');
     const [error, setError] = useState<string | null>(null);

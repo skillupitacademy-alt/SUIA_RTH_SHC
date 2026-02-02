@@ -383,3 +383,8 @@ Reduce documentation fragmentation and improve discoverability by consolidating 
 - **Component Standardization**: Converted "Technical Focus" (Skill Category) from a raw `<select>` to a standardized `SelectField` component.
 - **Visual Balance**: Aligned "Technical Focus" to stack cleanly below "Subtopic" in the left column.
 - **Outcome**: Achieved a balanced, professional "Command Center" layout for complex hierarchical filtering.
+
+### Batch 79: Hierarchy Factory Flow (Prompt Visibility)
+- **UX Policy Change**: Modified `HierarchyFactoryWizard.tsx` to force the "Intelligence Phase" (AI Prompt) display as the initial step for ALL flows, including contextual launches (Add Domain, etc.).
+- **Logic Refactor**: Updated `useState` initialization for `showEditor` to default to `false` instead of `!!initialData`.
+- **Outcome**: Ensures users always see and can copy the Surgical AI Prompt before entering the manual JSON editor.
