@@ -9,6 +9,7 @@ export interface FactoryBlueprint {
         domainName: string;
         subjectName: string;
         topicName: string;
+        subtopicName?: string;
     };
 }
 
@@ -19,7 +20,7 @@ export const PromptService = {
         return `
 ACT AS A SENIOR TECHNICAL EXAMINER.
 Your task is to generate exactly ${total} multiple-choice questions for the following context:
-Context: ${blueprint.context.domainName} > ${blueprint.context.subjectName} > ${blueprint.context.topicName}
+Context: ${blueprint.context.domainName} > ${blueprint.context.subjectName} > ${blueprint.context.topicName}${blueprint.context.subtopicName ? ` > ${blueprint.context.subtopicName}` : ''}
 
 ---
 
