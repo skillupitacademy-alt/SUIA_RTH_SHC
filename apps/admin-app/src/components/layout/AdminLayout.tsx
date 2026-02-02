@@ -29,6 +29,7 @@ import { usePresenceHeartbeat } from '@/hooks/usePresenceHeartbeat';
 const ADMIN_NAV = [
     { name: 'Dashboard', href: '/', icon: LayoutDashboard },
     { name: 'Question Bank', href: '/questions', icon: Database },
+    { name: 'Question Factory', href: '/factory/question-generator', icon: BarChart3 }, // Using BarChart3 as placeholder or BrainCircuit if I import it
     { name: 'Reports', href: '/reports', icon: BarChart3 },
     { name: 'Users', href: '/users', icon: Users },
     { name: 'Governance', href: '/governance', icon: ShieldCheck },

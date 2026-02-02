@@ -7,6 +7,7 @@ import { RBACGovernancePanel } from "@/components/dashboard/RBACGovernancePanel"
 import { BlueprintAuditBoard } from "@/components/dashboard/BlueprintAuditBoard";
 import { SystemAuditTerminal } from "@/components/dashboard/SystemAuditTerminal";
 import { ExamActivityBoard } from "@/components/dashboard/ExamActivityBoard";
+import { QuestionFactoryAIPanel } from "@/components/dashboard/QuestionFactoryAIPanel";
 import { Activity } from "lucide-react";
 
 export default function AdminDashboard() {
@@ -43,6 +44,7 @@ export default function AdminDashboard() {
 
             {/* Content & Blueprint Tier */}
             <div className="flex flex-col gap-8">
+                <QuestionFactoryAIPanel />
                 <div className="w-full">
                     <ContentReadinessBoard />
                 </div>
