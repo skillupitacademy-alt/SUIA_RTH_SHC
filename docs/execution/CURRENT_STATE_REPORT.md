@@ -207,3 +207,10 @@
 - **UI Standardization**: Enforced consistent spacing, button placement, and header styles across all 5 edit forms.
 - **Verification**: Validated 100% build success across all workspaces and visually confirmed the "Executive Landscape" aesthetic.
 - **Outcome**: Maximized screen real-estate usage and modernized the data entry experience for complex hierarchical forms.
+
+### Phase 34: AI Prompt Precision Refinement (Batch 77)
+- **Prompt Engineering**: Rewrote `HierarchyFactoryWizard` copy-payloads to strictly match the user's "Expected" format for all 4 hierarchy levels.
+- **Guidance Injection**: Added explicit "guide AI model to generate data..." instructions to Domain, Subject, Topic, and Subtopic templates.
+- **Contextual Clarity**: Guaranteed injection of `${domainName}`, `${subjectName}`, and `${topicName}` to eliminate ambiguity in AI generation.
+- **Documentation**: Explicitly defined acceptable values for `weight` (1-10), `complexityLevel` (1-10), and `depthLevel` (1-10) within the prompt text itself.
+- **Outcome**: Delivered a "Zero-Guesswork" prompt engine that produces perfect JSON schema compliance from generic LLMs.

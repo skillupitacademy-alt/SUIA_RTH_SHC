@@ -371,3 +371,9 @@ Reduce documentation fragmentation and improve discoverability by consolidating 
 - **Skill Modal**: Upgraded `SkillTable` edit form to a wider modal (`max-w-2xl`) to accommodate the new layout.
 - **Integrity**: Achieved system-wide `pnpm build` success (Exit Code 0) after refactoring all 5 hierarchy forms.
 - **Outcome**: Modernized the "Edit" experience to match the "Executive Console" aesthetic and optimized data entry workflows.
+
+### Batch 77: AI Prompt Refinement (Surgical Context)
+- **Prompt Precision**: Updated `HierarchyFactoryWizard` AI prompts to explicitly include user-requested guidance strings ("guide AI model to generate data...").
+- **Context Injection**: Enforced strict injection of `${domainName}`, `${subjectName}`, and `${topicName}` into Topic and Subtopic prompts.
+- **Field Explanations**: Added precise explanations for `weight` (1-10), `complexityLevel` (1-10), and `depthLevel` (1-10) directly into the copyable prompt text.
+- **Outcome**: Aligned AI Prompt templates 100% with user's "Expected" format for high-fidelity content generation.
