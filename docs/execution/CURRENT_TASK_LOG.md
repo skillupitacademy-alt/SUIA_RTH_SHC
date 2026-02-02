@@ -1,5 +1,5 @@
 # Current Task Log
 
-**Status**: Idle
-**Last Operation**: Batch 85 - Validation & Style Polish
-**Next Step**: Awaiting User Input
+**Status**: Active
+**Last Operation**: Batch 86B - Question Factory Phase 1 (Blueprint & Navigation)
+**Next Step**: Phase 2 (Ingest & Parser) Execution
