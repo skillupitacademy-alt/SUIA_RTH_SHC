@@ -52,6 +52,7 @@
 | 2026-02-02 | AI Prompt Refinement (Batch 77) | COMPLETED | Updated Hierarchy Factory prompts with precise "guide AI model" instructions and field explanations (Weight/Complexity/Depth). |
 | 2026-02-02 | Advanced Filter UI Layout (Batch 78) | COMPLETED | Refactored "Target Hierarchy" grid to align Mapped Skills with Topic; Standardized "Technical Focus" dropdown. |
 | 2026-02-02 | Hierarchy Factory Flow (Batch 79) | COMPLETED | Modified Bulk Factory to always show "Intelligence Phase" (AI Prompt) first, ensuring prompt visibility for all contextual launches. |
+| 2026-02-02 | Dynamic Context Switching (Batch 80) | COMPLETED | Refactored Wizard to allow real-time prompt/context updates when changing dropdowns, overriding initial entry data. |
 | 2026-02-02 | Login UX Enhancement (Batch 65) | COMPLETED | Added spinning loader and state text to the Admin Login authentication button. |
 | 2026-02-02 | Topic Edit Refactor (Batch 69) | COMPLETED | De-coupled topic modification from Factory; implemented dedicated Topic Edit Modal in TopicTable.tsx. |
 | 2026-02-02 | AI Prompt & Hierarchy Restoration (Batch 70) | COMPLETED | Resolved JSX structure regressions and implemented contextual AI orchestrations with Trinity dimension enforcement. |

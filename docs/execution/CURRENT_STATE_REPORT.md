@@ -225,3 +225,8 @@
 - **UX Policy Enforced**: Reconfigured `HierarchyFactoryWizard` to mandate the "Intelligence Phase" (AI Prompt Display) as the entry point for all bulk operations.
 - **Contextual Bridge**: Resolved the "Missing Prompt" friction point where contextual launches (e.g., "Add Topic") previously skipped the prompt and jumped to the empty Editor.
 - **Outcome**: 100% visibility of the Surgical AI Prompt, ensuring users always have access to the context-aware payload generator before manual entry.
+
+### Phase 37: Dynamic Context Switching (Batch 80)
+- **Problem**: Previously, entering the Wizard via a specific row (Contextual Launch) "locked" the UI to that context, ignoring subsequent dropdown changes.
+- **Solution**: Refactored `HierarchyFactoryWizard.tsx` to prioritize the active `selections` state for both Prompt generation and UI display, using `initialData` only as a fallback/initializer.
+- **Outcome**: Users have full freedom to manipulate the Prompt Context in real-time. Changing the "Domain" dropdown instantly updates the AI Prompt instructions and the Pre-selection visualizer.

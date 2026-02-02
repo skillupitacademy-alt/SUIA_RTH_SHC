@@ -388,3 +388,8 @@ Reduce documentation fragmentation and improve discoverability by consolidating 
 - **UX Policy Change**: Modified `HierarchyFactoryWizard.tsx` to force the "Intelligence Phase" (AI Prompt) display as the initial step for ALL flows, including contextual launches (Add Domain, etc.).
 - **Logic Refactor**: Updated `useState` initialization for `showEditor` to default to `false` instead of `!!initialData`.
 - **Outcome**: Ensures users always see and can copy the Surgical AI Prompt before entering the manual JSON editor.
+
+### Batch 80: Dynamic Context Switching
+- **Reactive Prompting**: Decoupled `generateAiPrompt` from static `initialData`, ensuring the prompt text updates in real-time when users change dropdown selections.
+- **Live Context UI**: Updated "Pre-selection Context" visualizers to prioritize the active `selections` state over the initial context snapshot. Renamed label to **Active Target Scope** to reflect dynamic nature.
+- **Outcome**: Users can now trigger a factory flow from one context (e.g. "Database Systems") and dynamically switch to another (e.g. "Cloud Computing") without the UI or Prompt getting "stuck" on the original entry point.

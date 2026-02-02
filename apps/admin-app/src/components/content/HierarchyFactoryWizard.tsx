@@ -144,9 +144,10 @@ export function HierarchyFactoryWizard({ isOpen, onClose, initialData, onSuccess
         const target = initialData?.target || 'hierarchy';
 
         // Resolve parent names from either initialData or state lookups
-        const domainName = initialData?.domainName || hierarchicalChoices.domains.find(d => d.domainId === selections.domainId)?.domainName || "Selected Domain";
-        const subjectName = initialData?.subjectName || hierarchicalChoices.subjects.find(s => s.id === selections.subjectId)?.name || "Selected Subject";
-        const topicName = initialData?.topicName || hierarchicalChoices.topics.find(t => t.id === selections.topicId)?.name || "Selected Topic";
+        // Resolve parent names dynamically from state first (enabling context switching), backing off to initialData only if needed.
+        const domainName = hierarchicalChoices.domains.find(d => d.domainId === selections.domainId)?.domainName || (selections.domainId === initialData?.domainId ? initialData?.domainName : null) || "Selected Domain";
+        const subjectName = hierarchicalChoices.subjects.find(s => s.id === selections.subjectId)?.name || (selections.subjectId === initialData?.subjectId ? initialData?.subjectName : null) || "Selected Subject";
+        const topicName = hierarchicalChoices.topics.find(t => t.id === selections.topicId)?.name || (selections.topicId === initialData?.topicId ? initialData?.topicName : null) || "Selected Topic";
 
         let base = `I need to generate a structured educational hierarchy.
         
@@ -674,25 +675,25 @@ Please provide a valid JSON object matching this schema:
                                                             <div className="w-8 h-8 rounded-xl bg-slate-900 text-[#FF4B91] flex items-center justify-center">
                                                                 <Layers size={16} />
                                                             </div>
-                                                            <h5 className="text-[10px] font-black uppercase tracking-[0.2em] text-[#1A1A1A]">Pre-selection Context</h5>
+                                                            <h5 className="text-[10px] font-black uppercase tracking-[0.2em] text-[#1A1A1A]">Active Target Scope</h5>
                                                         </div>
                                                         <div className="grid grid-cols-3 gap-6">
                                                             <div className="space-y-1.5 container-node">
                                                                 <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 block px-1">Domain</label>
                                                                 <div className="px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-[10px] font-bold text-slate-600 truncate italic">
-                                                                    {initialData?.domainName || hierarchicalChoices.domains.find(d => d.domainId === selections.domainId)?.domainName || "Root Selection"}
+                                                                    {hierarchicalChoices.domains.find(d => d.domainId === selections.domainId)?.domainName || (selections.domainId === initialData?.domainId ? initialData?.domainName : null) || "Root Selection"}
                                                                 </div>
                                                             </div>
                                                             <div className={cn("space-y-1.5 transition-opacity", !selections.domainId && "opacity-20")}>
                                                                 <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 block px-1">Subject</label>
                                                                 <div className="px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-[10px] font-bold text-slate-600 truncate italic">
-                                                                    {initialData?.subjectName || hierarchicalChoices.subjects.find(s => s.id === selections.subjectId)?.name || "Pending..."}
+                                                                    {hierarchicalChoices.subjects.find(s => s.id === selections.subjectId)?.name || (selections.subjectId === initialData?.subjectId ? initialData?.subjectName : null) || "Pending..."}
                                                                 </div>
                                                             </div>
                                                             <div className={cn("space-y-1.5 transition-opacity", !selections.subjectId && "opacity-20")}>
                                                                 <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 block px-1">Topic</label>
                                                                 <div className="px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-[10px] font-bold text-slate-600 truncate italic">
-                                                                    {initialData?.topicName || hierarchicalChoices.topics.find(t => t.id === selections.topicId)?.name || "Pending..."}
+                                                                    {hierarchicalChoices.topics.find(t => t.id === selections.topicId)?.name || (selections.topicId === initialData?.topicId ? initialData?.topicName : null) || "Pending..."}
                                                                 </div>
                                                             </div>
                                                         </div>
