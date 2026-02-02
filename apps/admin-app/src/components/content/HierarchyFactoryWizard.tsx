@@ -45,7 +45,7 @@ type FactoryMode = 'manual' | 'bulk';
 export function HierarchyFactoryWizard({ isOpen, onClose, initialData, onSuccess }: HierarchyFactoryWizardProps) {
     const [mode, setMode] = useState<FactoryMode>('manual');
     const [manualEntry, setManualEntry] = useState({ name: '', description: '', category: '', domainId: '', subjectId: '', topicId: '' });
-    const [payload, setPayload] = useState(initialData ? JSON.stringify(initialData, null, 2) : '');
+    const [payload, setPayload] = useState('');
     const [showEditor, setShowEditor] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
     const [executionStep, setExecutionStep] = useState<ExecutionStep>('idle');
@@ -491,24 +491,46 @@ Please provide a valid JSON object matching this schema:
                         </button>
                     </ZTooltip>
                     <ZTooltip content={
-                        (!selections.domainId && ['subject', 'topic', 'subtopic'].includes(initialData?.target)) ?
-                            "Context Required: Please select a Target Domain in 'Manual Entry' mode to unlock the Bulk AI Factory." :
-                            "Switch to Bulk Engine: Use AI prompts or JSON manifests to insert entire hierarchical branches at once."
+                        (() => {
+                            const t = initialData?.target || 'domain';
+                            if (t === 'subject' && !selections.domainId) return "Locked: Select a Target Domain to unlock Bulk Factory.";
+                            if (t === 'topic' && (!selections.domainId || !selections.subjectId)) return "Locked: Select Domain and Subject to unlock Bulk Factory.";
+                            if (t === 'subtopic' && (!selections.domainId || !selections.subjectId || !selections.topicId)) return "Locked: Select Domain, Subject, and Topic to unlock Bulk Factory.";
+                            return "Switch to Bulk Engine: Use AI prompts or JSON manifests to insert entire hierarchical branches at once.";
+                        })()
                     } side="bottom">
                         <div className="relative">
                             <button
                                 onClick={() => setMode('bulk')}
-                                disabled={(!selections.domainId && ['subject', 'topic', 'subtopic'].includes(initialData?.target))}
+                                disabled={(() => {
+                                    const t = initialData?.target || 'domain';
+                                    if (t === 'subject' && !selections.domainId) return true;
+                                    if (t === 'topic' && (!selections.domainId || !selections.subjectId)) return true;
+                                    if (t === 'subtopic' && (!selections.domainId || !selections.subjectId || !selections.topicId)) return true;
+                                    return false;
+                                })()}
                                 className={cn(
                                     "px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
                                     mode === 'bulk' ? "bg-white text-primary shadow-sm" : "text-muted-foreground hover:text-primary",
-                                    (!selections.domainId && ['subject', 'topic', 'subtopic'].includes(initialData?.target)) && "opacity-50 cursor-not-allowed bg-slate-100"
+                                    (() => {
+                                        const t = initialData?.target || 'domain';
+                                        if (t === 'subject' && !selections.domainId) return true;
+                                        if (t === 'topic' && (!selections.domainId || !selections.subjectId)) return true;
+                                        if (t === 'subtopic' && (!selections.domainId || !selections.subjectId || !selections.topicId)) return true;
+                                        return false;
+                                    })() && "opacity-50 cursor-not-allowed bg-slate-100"
                                 )}
                             >
                                 Bulk Factory
-                                {(!selections.domainId && ['subject', 'topic', 'subtopic'].includes(initialData?.target)) && (
-                                    <div className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse" />
-                                )}
+                                {(() => {
+                                    const t = initialData?.target || 'domain';
+                                    if (t === 'subject' && !selections.domainId) return true;
+                                    if (t === 'topic' && (!selections.domainId || !selections.subjectId)) return true;
+                                    if (t === 'subtopic' && (!selections.domainId || !selections.subjectId || !selections.topicId)) return true;
+                                    return false;
+                                })() && (
+                                        <div className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+                                    )}
                             </button>
                         </div>
                     </ZTooltip>

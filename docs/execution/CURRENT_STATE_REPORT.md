@@ -251,7 +251,7 @@
 
 ### Phase 42: Validation & Style Polish (Batch 85)
 - **Launch Validation**: Implemented strict **Internal Context Guards** within the Factory Wizard.
-    -   **Strategy**: The "Bulk Factory" (AI Prompt) button is **locked** by default heavily relying on `mode='manual'`.
-    -   **Constraint**: Users MUST select the required hierarchy (Domain -> Subject -> Topic) in Manual Mode to "Unlock" the AI Prompt capabilities. A red pulse indicator and tooltip guide this interaction.
-    -   **UI Impact**: Preserved the clean, filter-free design of the Question Bank tables.
+    -   **Strategy**: The "Bulk Factory" (AI Prompt) button uses a **Strict Unlock Pattern**.
+    -   **Constraint**: It requires the **Full Ancestor Path** (e.g., Topic requires Domain + Subject) to be selected in Manual Mode.
+    -   **Editor**: Initialized as **Empty** (`''`) to show the watermark by default, ignoring internal configuration objects.
 - **Prompt Styling**: Refined the AI Prompt text to use `text-blue-600` (Sans-Serif), matching the request for a clearer, schematic appearance.

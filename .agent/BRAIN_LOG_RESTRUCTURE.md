@@ -431,3 +431,10 @@ Reduce documentation fragmentation and improve discoverability by consolidating 
 - **Strategy Shift**: Reverted Table Header Dropdowns to maintain a cleaner UI in the Question Bank.
 - **Internal Guard**: Implemented validation **inside the Wizard**. The "Bulk Factory" (AI Prompt) button is now **Locked/Disabled** if the required context (Domain/Subject) is missing in Manual Mode. A tooltip guides the user to "Select Context to Unlock".
 - **Outcome**: Preserves the clean "Question Bank" UI while still enforcing strict prompt context.
+
+### Batch 86: Factory Logic Refinement
+- **Editor Initialization**: The JSON Editor now initializes as an **Empty String** (`''`) instead of pre-filling with the configuration object. This ensures the "Watermark" is visible by default.
+- **Strict Unlock Logic**: Refined the "Bulk Factory" button validation to require **ALL** ancestor contexts based on target depth.
+    -   *Topic Target*: Requires Domain + Subject.
+    -   *Subtopic Target*: Requires Domain + Subject + Topic.
+-   **Outcome**: Prevents "Partial Context" unlocking (e.g., unlocking Topic mode with only Domain selected) and ensures AI prompts are fully contextualized.
