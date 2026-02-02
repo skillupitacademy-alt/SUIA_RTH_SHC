@@ -249,3 +249,143 @@ Key Feature: 3-Point Balance. It maps the candidate on a radar of Technical (Cod
 Business Insight: It aids in Team Composition. If your team is full of "High Technical / Low Process" developers, this report instantly identifies the "High Process" candidate you need to hire to bring balance.
 
 
+
+A. For Add Domain json Template For Bulk Factory
+
+{
+  "batchDomains": [
+    {
+      "name": "string",
+      "description": "string",
+      "category": "string"
+    }
+  ]
+}
+
+For A section json template is there but appropriate prompt message is missing in json template that can guide AI model to generate 
+data for given json format.
+
+B. For Add Subject json template for Bulk Factory for any selected DropDown option of Domain table values
+
+{
+  "domainId": "30000000-0000-0000-0000-000000000002",
+  "subjects": [
+    {
+      "name": "string"
+    }
+  ]
+}
+
+For B section json template is there but appropriate prompt message is missing in json template that can guide AI model to generate 
+data for given json format for this {domainname} provide subjects.
+
+
+*{domainname} is as per domainId
+
+C. For Add Topic json template for Bulk Factory for any selected DropDown option of Domain table values and Subject table values
+
+{
+  "domainId": "30000000-0000-0000-0000-000000000001",
+  "subjects": [
+    {
+      "id": "090854d0-d1fa-4ca4-8ad4-1f53d1b61fc5",
+      "topics": [
+        {
+          "name": "string",
+          "weight": 1,
+          "complexityLevel": 1
+        }
+      ]
+    }
+  ]
+}
+
+For C section json template is there but appropriate prompt message is missing in json template that can guide AI model to generate 
+data for given json format for this {domainname} , {subjectname} provide topics . And weight key explanation and what all possible values can be given and same explanation for key 
+complexitylevel.
+
+*{domainname} is as per domainId
+*{subjectname} is as per subjectId
+
+D. For Add subtopics  json template for Bulk Factory for any selected DropDown option of Domain table values , Subject table values , topic table values
+
+
+{
+  "domainId": "30000000-0000-0000-0000-000000000001",
+  "subjects": [
+    {
+      "id": "090854d0-d1fa-4ca4-8ad4-1f53d1b61fc5",
+      "topics": [
+        {
+          "id": "04a1273e-f5e3-4737-8291-8c01a66fe758",
+          "subtopics": [
+            {
+              "name": "string",
+              "depthLevel": 1,
+              "questions": [
+                {
+                  "questionText": "string",
+                  "options": [
+                    "A",
+                    "B",
+                    "C",
+                    "D"
+                  ],
+                  "correctAnswer": "string",
+                  "difficulty": "simple|intermediate|expert",
+                  "mappingType": "conceptual|technical|practical",
+                  "skillNames": [
+                    "Skill A",
+                    "Skill B"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+
+For D section json template is there but appropriate prompt message is missing in json template that can guide AI model to generate 
+data for given json format for this {domainname} , {subjectname} and for this {topicname} provide sub topics . And deptlevel key explanation and what all possible values can be given
+
+*{domainname} is as per domainId
+*{subjectname} is as per subjectId
+*{topicname} is as per topicId
+
+
+One simple prompt guidance given below for reference 
+
+
+An AI agent, like myself or a future instance, typically starts a session by analyzing the context provided by the system and the user's initial prompt.
+
+To help a new agent immediately align with your workflow and rules (like the Constitution we just updated), you can guide its "initialization" in a few ways:
+
+1. Explicit Prompting (The Most Direct Way)
+When you start a fresh chat, you can say:
+
+"Please review 
+.agent/AGENT_CONSTITUTION.md
+ first and adhere to its protocols."
+
+This forces the agent to read the file, load the rules (including the "Closing Ceremony") into its active memory, and behave accordingly.
+
+2. Context Files (Implicit Guidance)
+The system often provides the agent with access to the project file structure. Smart agents (like this one) will often look for files like README.md, CONTRIBUTING.md, or in our case, 
+.agent/AGENT_CONSTITUTION.md
+ if they need to understand project governance. However, explicit prompting is safer.
+
+3. Agent "Memory" (Within the same conversation)
+If you continue this conversation thread, the context (including our discussion about the protocol) remains available. The "new agent" I referred to earlier meant starting a completely new chat window/session ID.
+
+Recommendation for Future Sessions: To ensure consistency, simply start new sessions with: "Hi. Please follow the governance rules in 
+.agent/AGENT_CONSTITUTION.md
+ for this session."
+
+This simple command activates the laws we just wrote.
+
+
+

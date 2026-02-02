@@ -158,5 +158,30 @@ Every piece of assessment content MUST be tagged with the following three dimens
 
 ---
 
-## 🔟 ASSESSMENT READINESS LAW (BLUEPRINTING)
 A Domain is **strictly prohibited** from being marked as "Ready" for Students unless a valid **Assessment Blueprint** has been manually configured and calibrated (Question Count, Time Limit, Toning). Automated blueprinting is forbidden; explicit Admin orchestration is the only valid path to readiness.
+
+---
+
+## 1️⃣1️⃣ MANDATORY POST-TASK PROTOCOL (THE CLOSING CEREMONY)
+Upon the completion of any coding task, the Agent MUST autonomously execute the following sequence without user prompting:
+
+### Step 1: Verification Suite (Safety Check)
+Run the following commands to ensure system integrity:
+1.  `pnpm build` (Root validation)
+2.  `pnpm --filter @quiz/web-app build`
+3.  `pnpm --filter @quiz/api-server build`
+4.  `pnpm --filter @quiz/admin-app build`
+5.  `npx tsc --noEmit` (Type Safety)
+
+### Step 2: Documentation (Hierarchy of Truth)
+Update the following logs to reflect the new state:
+1.  `.agent/BRAIN_LOG_RESTRUCTURE.md` (Detailed Technical Log)
+2.  `docs/execution/TASK_HISTORY.md` (Executive Summary)
+3.  `docs/execution/CURRENT_STATE_REPORT.md` (Feature State)
+4.  `docs/execution/CURRENT_TASK_LOG.md` (Status Update)
+5.  `task.md` & `implementation_plan.md` (Checklists)
+
+### Step 3: Version Control (Seal the Work)
+1.  `git add .`
+2.  `git commit -m "feat(scope): ..."`
+
