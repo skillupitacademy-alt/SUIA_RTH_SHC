@@ -49,67 +49,81 @@ export default function QuestionFactoryPage() {
 
     return (
         <FactoryLayout title="Question Factory" subtitle="Context-Aware Generator" backPath="/admin/dashboard">
-            <div className="flex flex-col lg:flex-row h-[calc(100vh-64px)] overflow-hidden">
+            <div className="flex-1 overflow-y-auto custom-scrollbar bg-slate-50/50">
+                <div className="max-w-[1400px] mx-auto p-8 space-y-8">
 
-                {/* Left Panel: Blueprint Controls (40%) */}
-                <div className="w-full lg:w-[450px] bg-white border-r border-slate-200 overflow-y-auto custom-scrollbar p-8 flex flex-col gap-10 shadow-[4px_0_24px_-12px_rgba(0,0,0,0.1)] z-10">
-                    <div>
-                        <h2 className="text-2xl font-black text-slate-800 tracking-tight mb-2">
-                            The Blueprint
-                        </h2>
-                        <p className="text-xs text-slate-500 font-medium leading-relaxed">
-                            Define the scope, difficulty distribution, and context for your exam batch.
-                            The AI will strictly adhere to these constraints.
-                        </p>
-                    </div>
-
-                    <ContextSelector selections={selections} onChange={(f, v) => setSelections(prev => ({ ...prev, [f]: v }))} />
-
-                    <div className="h-px bg-slate-100" />
-
-                    <DistributionMatrix counts={counts} onChange={(f, v) => setCounts(prev => ({ ...prev, [f]: v }))} />
-
-                    <div className="mt-auto pt-8">
-                        <button
-                            onClick={handleCopyPrompt}
-                            disabled={!selections.topicId || !sourceCode}
-                            className={`
-                                w-full py-4 rounded-2xl flex items-center justify-center gap-3 font-black uppercase tracking-widest text-[11px] transition-all
-                                ${(!selections.topicId || !sourceCode)
-                                    ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
-                                    : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-xl shadow-indigo-200 active:scale-[0.98]'
-                                }
-                            `}
-                        >
-                            {isCopying ? <Check size={18} /> : <Copy size={18} />}
-                            {isCopying ? 'Copied!' : 'Copy Smart Prompt'}
-                        </button>
-                        <p className="text-[9px] text-center text-slate-400 mt-3 font-medium">
-                            Use this prompt in ChatGPT / Claude / DeepSeek
-                        </p>
-                    </div>
-                </div>
-
-                {/* Right Panel: Source Material (60%) */}
-                <div className="flex-1 bg-slate-50/50 flex flex-col min-w-0">
-                    <div className="flex-1 p-8 overflow-hidden flex flex-col">
-                        <SourceEditor value={sourceCode} onChange={setSourceCode} />
-                    </div>
-
-                    {/* Phase 2 Teaser (Ingest Box Placeholder) */}
-                    <div className="h-24 border-t border-slate-200 bg-white p-6 flex items-center justify-between opacity-50 grayscale pointer-events-none select-none">
-                        <div className="flex items-center gap-4">
-                            <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400">
-                                <Play size={20} fill="currentColor" />
-                            </div>
+                    {/* Header: Context & Blueprint (Adjacent) */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        {/* 1. Context Selection */}
+                        <div className="bg-white rounded-[2.5rem] p-8 border border-slate-200 shadow-sm flex flex-col gap-6">
                             <div>
-                                <h4 className="text-xs font-black uppercase text-slate-400">Phase 2: Ingest</h4>
-                                <p className="text-[10px] text-slate-300">Run the factory to process results...</p>
+                                <h2 className="text-xl font-black text-slate-800 tracking-tight">The Target</h2>
+                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">1. Define Scoping Context</p>
+                            </div>
+                            <ContextSelector
+                                selections={selections}
+                                onChange={(f, v) => setSelections(prev => ({ ...prev, [f]: v }))}
+                            />
+                        </div>
+
+                        {/* 2. Distribution Matrix */}
+                        <div className="bg-white rounded-[2.5rem] p-8 border border-slate-200 shadow-sm flex flex-col gap-6">
+                            <div>
+                                <h2 className="text-xl font-black text-slate-800 tracking-tight">The Volume</h2>
+                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">2. Difficulty Distribution</p>
+                            </div>
+                            <DistributionMatrix
+                                counts={counts}
+                                onChange={(f, v) => setCounts(prev => ({ ...prev, [f]: v }))}
+                            />
+                        </div>
+                    </div>
+
+                    {/* 3. Source Truth (Full Width Workspace) */}
+                    <div className="bg-white rounded-[2.5rem] p-8 border border-slate-200 shadow-sm flex flex-col min-h-[600px]">
+                        <div className="flex-1 flex flex-col">
+                            <SourceEditor value={sourceCode} onChange={setSourceCode} />
+                        </div>
+                    </div>
+
+                    {/* Phase 2 Teaser (Ingest Container) */}
+                    <div className="bg-slate-100/50 rounded-[2.5rem] border-2 border-dashed border-slate-200 p-12 flex flex-col items-center justify-center text-center opacity-60">
+                        <div className="w-16 h-16 rounded-3xl bg-white shadow-sm flex items-center justify-center text-slate-300 mb-6">
+                            <Play size={32} fill="currentColor" />
+                        </div>
+                        <h3 className="text-sm font-black uppercase tracking-widest text-slate-400">Phase 2: Ingest & Review</h3>
+                        <p className="text-xs text-slate-400 max-w-sm mt-3 font-medium">
+                            The Ingest Engine will be placed here. You will paste the AI results to trigger the semantic validator and review console.
+                        </p>
+                    </div>
+
+                    {/* Floating Action Console */}
+                    <div className="sticky bottom-8 z-30 flex justify-center pt-8">
+                        <div className="bg-white/90 backdrop-blur-xl border border-slate-200 p-5 rounded-[2.5rem] shadow-2xl flex flex-col md:flex-row items-center gap-6 w-full max-w-3xl px-10 border-t-white/50">
+                            <div className="flex-1 text-center md:text-left">
+                                <h4 className="text-xs font-black uppercase text-indigo-600 tracking-widest">Intelligence Action</h4>
+                                <p className="text-[10px] text-slate-500 font-bold uppercase tracking-tighter mt-0.5">Generate Strict-Schema AI Prompt</p>
+                            </div>
+                            <div className="flex items-center gap-4 w-full md:w-auto">
+                                <button
+                                    onClick={handleCopyPrompt}
+                                    disabled={!selections.topicId || !sourceCode}
+                                    className={`
+                                        flex-1 md:flex-none px-10 py-4 rounded-2xl flex items-center justify-center gap-3 font-black uppercase tracking-widest text-[11px] transition-all
+                                        ${(!selections.topicId || !sourceCode)
+                                            ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                                            : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-xl shadow-indigo-200 active:scale-[0.98]'
+                                        }
+                                    `}
+                                >
+                                    {isCopying ? <Check size={18} /> : <Copy size={18} />}
+                                    {isCopying ? 'Copied!' : 'Copy Smart Prompt'}
+                                </button>
                             </div>
                         </div>
                     </div>
-                </div>
 
+                </div>
             </div>
         </FactoryLayout>
     );
