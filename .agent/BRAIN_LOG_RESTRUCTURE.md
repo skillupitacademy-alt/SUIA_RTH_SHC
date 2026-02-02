@@ -377,3 +377,9 @@ Reduce documentation fragmentation and improve discoverability by consolidating 
 - **Context Injection**: Enforced strict injection of `${domainName}`, `${subjectName}`, and `${topicName}` into Topic and Subtopic prompts.
 - **Field Explanations**: Added precise explanations for `weight` (1-10), `complexityLevel` (1-10), and `depthLevel` (1-10) directly into the copyable prompt text.
 - **Outcome**: Aligned AI Prompt templates 100% with user's "Expected" format for high-fidelity content generation.
+
+### Batch 78: Advanced Filter UI Layout (Target Hierarchy)
+- **UI Grid Refactor**: Re-engineered `CascadingSelect.tsx` to a row-spanning 2-column grid. "Mapped Skills" now spans 3 rows on the right, perfectly aligned with the "Topic" top-line.
+- **Component Standardization**: Converted "Technical Focus" (Skill Category) from a raw `<select>` to a standardized `SelectField` component.
+- **Visual Balance**: Aligned "Technical Focus" to stack cleanly below "Subtopic" in the left column.
+- **Outcome**: Achieved a balanced, professional "Command Center" layout for complex hierarchical filtering.

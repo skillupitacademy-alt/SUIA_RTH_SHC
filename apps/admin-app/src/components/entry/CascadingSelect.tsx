@@ -178,54 +178,52 @@ export function CascadingSelect({ onChange, value, hideSkills }: CascadingSelect
                     active={!!selection.subjectId}
                 />
 
-                {/* SUBTOPIC & SKILLS CONTAINER */}
-                <div className={cn(
-                    "grid gap-6 md:col-span-2",
-                    hideSkills ? "grid-cols-1" : "grid-cols-1 md:grid-cols-2"
-                )}>
-                    {/* SUBTOPIC */}
-                    <SelectField
-                        label="Subtopic (Component)"
-                        value={selection.subtopicId}
-                        options={subtopics.data}
-                        loading={subtopics.loading}
-                        disabled={!selection.topicId}
-                        onChange={(id) => handleChange('subtopicId', id)}
-                        onCreate={() => openCreateModal('subtopic')}
-                        placeholder="Select Subtopic"
-                        active={!!selection.topicId}
-                    />
+                {/* MAPPED SKILLS (Multi-Select) - Spans Rows 2-4 */}
+                {!hideSkills && (
+                    <div className="md:row-span-3 h-full flex flex-col">
+                        <MultiSelectField
+                            label="Mapped Skills (Assessment Focus)"
+                            values={selection.skillIds || []}
+                            options={filteredSkills}
+                            loading={skills.loading}
+                            onChange={(ids) => handleChange('skillIds', ids)}
+                            placeholder={`Select ${skillCategory === 'all' ? '' : skillCategory} Skills`}
+                            active={true}
+                            icon={<Sparkles className="w-3 h-3 text-[#FF4B91]" />}
+                        />
+                    </div>
+                )}
 
-                    {/* MAPPED SKILLS (MULTI-SELECT) */}
-                    {!hideSkills && (
-                        <div className="flex flex-col gap-1">
-                            {/* Category Filter */}
-                            <div className="flex justify-end px-1">
-                                <select
-                                    value={skillCategory}
-                                    onChange={(e) => setSkillCategory(e.target.value)}
-                                    className="bg-transparent text-[10px] font-black uppercase tracking-widest text-[#FF4B91] focus:outline-none border-b border-transparent hover:border-[#FF4B91]/30 transition-all cursor-pointer text-right appearance-none"
-                                >
-                                    <option value="technical">Technical Focus</option>
-                                    <option value="cognitive">Cognitive Focus</option>
-                                    <option value="process">Process Focus</option>
-                                    <option value="all">Show All Categories</option>
-                                </select>
-                            </div>
+                {/* SUBTOPIC */}
+                <SelectField
+                    label="Subtopic (Component)"
+                    value={selection.subtopicId}
+                    options={subtopics.data}
+                    loading={subtopics.loading}
+                    disabled={!selection.topicId}
+                    onChange={(id) => handleChange('subtopicId', id)}
+                    onCreate={() => openCreateModal('subtopic')}
+                    placeholder="Select Subtopic"
+                    active={!!selection.topicId}
+                />
 
-                            <MultiSelectField
-                                label="Mapped Skills (Assessment Focus)"
-                                values={selection.skillIds || []}
-                                options={filteredSkills}
-                                loading={skills.loading}
-                                onChange={(ids) => handleChange('skillIds', ids)}
-                                placeholder={`Select ${skillCategory === 'all' ? '' : skillCategory} Skills`}
-                                active={true}
-                                icon={<Sparkles className="w-3 h-3 text-[#FF4B91]" />}
-                            />
-                        </div>
-                    )}
-                </div>
+                {/* TECHNICAL FOCUS (Filter Category) */}
+                <SelectField
+                    label="Technical Focus"
+                    value={skillCategory}
+                    options={[
+                        { id: 'technical', name: 'Technical Focus' },
+                        { id: 'cognitive', name: 'Cognitive Focus' },
+                        { id: 'process', name: 'Process Focus' },
+                        { id: 'all', name: 'Show All Categories' }
+                    ]}
+                    loading={false}
+                    onChange={(val) => setSkillCategory(val)}
+                    placeholder="Select Focus"
+                    active={true}
+                    hideCreate={true}
+                    icon={<Binary className="w-3 h-3 text-[#FF4B91]" />}
+                />
             </div>
 
             {/* Quick Create Modal */}
