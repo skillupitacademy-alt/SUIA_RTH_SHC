@@ -36,6 +36,9 @@ export function CascadingSelect({ onChange, value, hideSkills }: CascadingSelect
         skillIds: [],
     });
 
+    // Advanced Filter State
+    const [skillCategory, setSkillCategory] = useState<string>('technical');
+
     // Effective selection is either the prop (controlled) or local state (uncontrolled)
     const selection = useMemo(() => value || localSelection, [value, localSelection]);
 
@@ -55,6 +58,13 @@ export function CascadingSelect({ onChange, value, hideSkills }: CascadingSelect
         }
         return allSkills;
     }, [selection.topicId, topicSkills, allSkills]);
+
+    // Filter skills based on selected category (for Global list only)
+    const filteredSkills = useMemo(() => {
+        if (!skills.data) return [];
+        if (skillCategory === 'all') return skills.data;
+        return skills.data.filter((s: any) => (s.category || 'technical').toLowerCase() === skillCategory.toLowerCase());
+    }, [skills.data, skillCategory]);
 
 
     const handleChange = (level: keyof Selection, val: any) => {
@@ -188,16 +198,32 @@ export function CascadingSelect({ onChange, value, hideSkills }: CascadingSelect
 
                     {/* MAPPED SKILLS (MULTI-SELECT) */}
                     {!hideSkills && (
-                        <MultiSelectField
-                            label="Mapped Skills (Assessment Focus)"
-                            values={selection.skillIds || []}
-                            options={skills.data}
-                            loading={skills.loading}
-                            onChange={(ids) => handleChange('skillIds', ids)}
-                            placeholder="Select Skills (Global)"
-                            active={true}
-                            icon={<Sparkles className="w-3 h-3 text-[#FF4B91]" />}
-                        />
+                        <div className="flex flex-col gap-1">
+                            {/* Category Filter */}
+                            <div className="flex justify-end px-1">
+                                <select
+                                    value={skillCategory}
+                                    onChange={(e) => setSkillCategory(e.target.value)}
+                                    className="bg-transparent text-[10px] font-black uppercase tracking-widest text-[#FF4B91] focus:outline-none border-b border-transparent hover:border-[#FF4B91]/30 transition-all cursor-pointer text-right appearance-none"
+                                >
+                                    <option value="technical">Technical Focus</option>
+                                    <option value="cognitive">Cognitive Focus</option>
+                                    <option value="process">Process Focus</option>
+                                    <option value="all">Show All Categories</option>
+                                </select>
+                            </div>
+
+                            <MultiSelectField
+                                label="Mapped Skills (Assessment Focus)"
+                                values={selection.skillIds || []}
+                                options={filteredSkills}
+                                loading={skills.loading}
+                                onChange={(ids) => handleChange('skillIds', ids)}
+                                placeholder={`Select ${skillCategory === 'all' ? '' : skillCategory} Skills`}
+                                active={true}
+                                icon={<Sparkles className="w-3 h-3 text-[#FF4B91]" />}
+                            />
+                        </div>
                     )}
                 </div>
             </div>

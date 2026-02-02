@@ -207,3 +207,45 @@ Please provide a valid JSON object matching this schema:
 For Skull name "skillNames": ["Skill A", "Skill B"] enum values should be provided what value can be shown please guide first 
 
 
+
+
+I have analyzed the 5 Report Plans found in docs/report. Here is the breakdown in the fundamental sequence:
+
+1. The Fundamental Blueprint
+File: 
+SYSTEM_REPORTING_SPEC.md
+
+The Plan: This is the Architecture Specification that governs all other reports.
+Core Logic: It establishes the "Intelligence Hub" concept, creating a centralized scoring engine that moves beyond simple "pass/fail".
+Key Innovation: Weighted Scoring. It enforces the rule that not all questions are equal. A correct answer on a "Weight 10" skill impacts the score significantly more than a "Weight 2" skill.
+Role: It acts as the "Controller," defining the 4 Dimensions of Insight (Hierarchy, Skill, Category, Nature) that the other reports implement.
+2. The Educational Landscape (The "What")
+File: 
+CURRICULUM_MASTERY_REPORT.md
+
+The Plan: To visualize Breadth of Knowledge across the Hierarchy.
+Key Feature: Zoomable Proficiency. It tracks mastery from Domain (e.g., "Web Dev") → Subject (e.g., "Frontend") → Topic (e.g., "React Hooks").
+Business Insight: It identifies Specialization vs. Generalization (e.g., "Great at Frontend, weak at Databases"), helping you place candidates in the right team.
+3. The Granular Competency (The "Hard Skills")
+File: 
+SKILL_COMP_MATRIX_REPORT.md
+
+The Plan: To act as a Microscope for specific technical abilities (2,000+ potential skills).
+Key Feature: The Proficiency Quadrant. It categorizes every single skill into 4 buckets: Mastery, Proficient, Developing, or Critical Gap.
+Business Insight: It separates true ability from "resume fluff." A candidate might verify for "React" generally, but this report catches a "Critical Gap" specifically in "Error Handling" (Weight: 8).
+4. The Cognitive Depth (The "Thinking")
+File: 
+NATURE_OF_KNOWLEDGE_REPORT.md
+
+The Plan: To distinguish between Theory and Execution (The "Trinity").
+Key Feature: The "Applied Gap" Index. It measures the distance between a candidate's Conceptual score (Theory) and Practical score (Hands-on).
+Business Insight: Solves the "Professor vs. Hacker" dilemma. It tells you if a candidate knows why it works (Theory) or just how to make it work (Practical), which is crucial for role fit (R&D vs. Ops).
+5. The Professional DNA (The "Profile")
+File: 
+BEHAVIORAL_RADAR_REPORT.md
+
+The Plan: To provide a high-level Summary Profile (Spider Chart).
+Key Feature: 3-Point Balance. It maps the candidate on a radar of Technical (Coding), Cognitive (Problem Solving), and Process (Discipline/Docs).
+Business Insight: It aids in Team Composition. If your team is full of "High Technical / Low Process" developers, this report instantly identifies the "High Process" candidate you need to hire to bring balance.
+
+

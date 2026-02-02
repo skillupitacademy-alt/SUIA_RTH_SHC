@@ -117,15 +117,46 @@ export function MultiSelectField({ label, values, options, loading, onChange, pl
                 >
                     {loading && <option disabled className="p-2 italic opacity-50"></option>}
                     {!loading && options.length === 0 && <option disabled className="p-2 italic opacity-50">No skills available for this topic</option>}
-                    {options.map((opt) => (
-                        <option
-                            key={opt.id}
-                            value={opt.id}
-                            className="bg-white text-slate-800 font-bold py-2 px-3 rounded-lg mb-1 last:mb-0 hover:bg-[#FF4B91]/5 checked:bg-[#FF4B91] checked:text-white"
-                        >
-                            {opt.name} {opt.category || opt.mappingType || opt.weight ? `[${(opt.category || 'N/A').toUpperCase()} | ${(opt.mappingType || 'N/A').toUpperCase()} | W: ${opt.weight || 1}]` : ''}
-                        </option>
-                    ))}
+
+                    {/* Grouped Options Logic */}
+                    {!loading && options.length > 0 && (() => {
+                        // Check if options have category to determine if grouping is needed
+                        const hasCategories = options.some(opt => opt.category);
+
+                        if (!hasCategories) {
+                            return options.map((opt) => (
+                                <option
+                                    key={opt.id}
+                                    value={opt.id}
+                                    className="bg-white text-slate-800 font-bold py-2 px-3 rounded-lg mb-1 last:mb-0 hover:bg-[#FF4B91]/5 checked:bg-[#FF4B91] checked:text-white"
+                                >
+                                    {opt.name} {opt.weight ? `[W: ${opt.weight}]` : ''}
+                                </option>
+                            ));
+                        }
+
+                        // Group by Category
+                        const grouped = options.reduce((acc: any, opt) => {
+                            const cat = (opt.category || 'Uncategorized').toUpperCase();
+                            if (!acc[cat]) acc[cat] = [];
+                            acc[cat].push(opt);
+                            return acc;
+                        }, {});
+
+                        return Object.entries(grouped).map(([category, items]: any) => (
+                            <optgroup key={category} label={category} className="font-black text-slate-400 uppercase tracking-widest text-[10px] my-2">
+                                {items.map((opt: any) => (
+                                    <option
+                                        key={opt.id}
+                                        value={opt.id}
+                                        className="bg-white text-slate-800 font-bold py-2 px-3 rounded-lg mb-1 last:mb-0 hover:bg-[#FF4B91]/5 checked:bg-[#FF4B91] checked:text-white normal-case text-sm"
+                                    >
+                                        {opt.name} {opt.mappingType ? `[${(opt.mappingType).toUpperCase()}]` : ''} {opt.weight ? `[W: ${opt.weight}]` : ''}
+                                    </option>
+                                ))}
+                            </optgroup>
+                        ));
+                    })()}
                 </select>
                 {loading && (
                     <div className="absolute top-2 right-2 pointer-events-none">

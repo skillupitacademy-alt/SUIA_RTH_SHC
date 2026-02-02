@@ -167,6 +167,18 @@ export function DomainTable() {
                                         />
                                     </div>
 
+                                    {/* Category */}
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 pl-1">Category (Reporting Dimension)</label>
+                                        <input
+                                            type="text"
+                                            placeholder="e.g., DevOps, Security, Frontend..."
+                                            value={formData.category || ''}
+                                            onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                                            className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-slate-300"
+                                        />
+                                    </div>
+
                                     {/* Description */}
                                     <div className="space-y-2">
                                         <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 pl-1">Description</label>

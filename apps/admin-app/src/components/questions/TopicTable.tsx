@@ -33,7 +33,9 @@ export function TopicTable() {
         subjectId: '',
         description: '',
         status: 'active' as 'active' | 'inactive',
-        domainId: '' // For cascading selection
+        domainId: '', // For cascading selection
+        weight: 1,
+        complexityLevel: 1
     });
 
     // Hierarchy data
@@ -73,7 +75,9 @@ export function TopicTable() {
                 subjectId: topic.subjectId || topic.subject?.id || '',
                 description: topic.description || '',
                 status: topic.status || 'active',
-                domainId: topic.subject?.domainId || topic.subject?.domain?.id || ''
+                domainId: topic.subject?.domainId || topic.subject?.domain?.id || '',
+                weight: topic.weight || 1,
+                complexityLevel: topic.complexityLevel || 1
             });
             if (topic.subject?.domainId) {
                 // No manual fetch needed with atomic hooks
@@ -85,7 +89,9 @@ export function TopicTable() {
                 subjectId: '',
                 description: '',
                 status: 'active',
-                domainId: ''
+                domainId: '',
+                weight: 1,
+                complexityLevel: 1
             });
         }
         setIsFormOpen(true);
@@ -100,7 +106,9 @@ export function TopicTable() {
             subjectId: '',
             description: '',
             status: 'active',
-            domainId: ''
+            domainId: '',
+            weight: 1,
+            complexityLevel: 1
         });
     };
 
@@ -245,6 +253,42 @@ export function TopicTable() {
                                             className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-600 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all placeholder:text-slate-300 resize-none"
                                             placeholder="Brief summary of this topic..."
                                         />
+                                    </div>
+
+                                    {/* Reporting Dimensions */}
+                                    <div className="grid grid-cols-2 gap-6 bg-slate-50 p-4 rounded-xl border border-slate-200">
+                                        <div className="space-y-3">
+                                            <div className="flex items-center justify-between">
+                                                <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Weight (Impact)</label>
+                                                <span className="text-xs font-black text-orange-600 bg-orange-50 px-2 py-0.5 rounded-md">{formData.weight || 1}</span>
+                                            </div>
+                                            <input
+                                                type="range"
+                                                min="1"
+                                                max="10"
+                                                step="1"
+                                                value={formData.weight || 1}
+                                                onChange={(e) => setFormData({ ...formData, weight: parseInt(e.target.value) })}
+                                                className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-orange-500"
+                                            />
+                                            <p className="text-[9px] text-slate-400 font-medium italic">Higher weight = greater impact on subject mastery.</p>
+                                        </div>
+                                        <div className="space-y-3">
+                                            <div className="flex items-center justify-between">
+                                                <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Complexity</label>
+                                                <span className="text-xs font-black text-slate-600 bg-white border border-slate-200 px-2 py-0.5 rounded-md">{formData.complexityLevel || 1}</span>
+                                            </div>
+                                            <input
+                                                type="range"
+                                                min="1"
+                                                max="10"
+                                                step="1"
+                                                value={formData.complexityLevel || 1}
+                                                onChange={(e) => setFormData({ ...formData, complexityLevel: parseInt(e.target.value) })}
+                                                className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-slate-500"
+                                            />
+                                            <p className="text-[9px] text-slate-400 font-medium italic">1 = Introductory, 10 = Advanced Research.</p>
+                                        </div>
                                     </div>
 
                                     {/* Status */}

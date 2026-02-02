@@ -43,7 +43,8 @@ export function SkillTable() {
     const [formData, setFormData] = useState({
         name: '',
         category: 'technical',
-        mappingType: 'conceptual' as 'conceptual' | 'technical' | 'practical'
+        mappingType: 'conceptual' as 'conceptual' | 'technical' | 'practical',
+        weight: 1
     });
 
     useEffect(() => {
@@ -75,14 +76,16 @@ export function SkillTable() {
             setFormData({
                 name: skill.name,
                 category: skill.category || '',
-                mappingType: skill.mappingType || 'conceptual'
+                mappingType: skill.mappingType || 'conceptual',
+                weight: skill.weight || 1
             });
         } else {
             setCurrentSkill(null);
             setFormData({
                 name: '',
                 category: 'technical',
-                mappingType: 'conceptual'
+                mappingType: 'conceptual',
+                weight: 1
             });
         }
         setIsFormOpen(true);
@@ -95,7 +98,8 @@ export function SkillTable() {
         setFormData({
             name: '',
             category: 'technical',
-            mappingType: 'conceptual'
+            mappingType: 'conceptual',
+            weight: 1
         });
     };
 
@@ -195,6 +199,24 @@ export function SkillTable() {
                                         <option value="practical">Practical</option>
                                     </select>
                                 </div>
+                            </div>
+
+                            {/* Weight Slider */}
+                            <div className="space-y-3 bg-slate-50 p-4 rounded-2xl">
+                                <div className="flex items-center justify-between">
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Impact Weight</label>
+                                    <span className="text-xs font-black text-[#FF4B91] bg-white px-3 py-1 rounded-lg shadow-sm">{formData.weight || 1}</span>
+                                </div>
+                                <input
+                                    type="range"
+                                    min="1"
+                                    max="10"
+                                    step="1"
+                                    value={formData.weight || 1}
+                                    onChange={(e) => setFormData({ ...formData, weight: parseInt(e.target.value) })}
+                                    className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#FF4B91]"
+                                />
+                                <p className="text-[9px] text-slate-400 font-bold italic tracking-wide text-right">Used for Proficiency Quadrant Calculation</p>
                             </div>
 
                             <button

@@ -35,7 +35,8 @@ export function SubtopicTable() {
         status: 'active' as 'active' | 'inactive',
         domainId: '',   // For cascading
         subjectId: '',   // For cascading
-        order: 0
+        order: 0,
+        depthLevel: 1
     });
 
     // Hierarchy data
@@ -82,7 +83,8 @@ export function SubtopicTable() {
                 status: subtopic.status || 'active',
                 domainId: subject?.domainId || '',
                 subjectId: topic?.subjectId || '',
-                order: subtopic.order || 0
+                order: subtopic.order || 0,
+                depthLevel: subtopic.depthLevel || 1
             });
             setIsFormOpen(true);
         } else {
@@ -94,7 +96,8 @@ export function SubtopicTable() {
                 status: 'active',
                 domainId: '',
                 subjectId: '',
-                order: 0
+                order: 0,
+                depthLevel: 1
             });
             setIsFactoryOpen(true);
         }
@@ -111,7 +114,8 @@ export function SubtopicTable() {
             status: 'active',
             domainId: '',
             subjectId: '',
-            order: 0
+            order: 0,
+            depthLevel: 1
         });
     };
 
@@ -225,18 +229,23 @@ export function SubtopicTable() {
                                     </div>
 
                                     <div className="grid grid-cols-2 gap-8">
+                                        {/* Depth Level */}
                                         <div className="space-y-3">
-                                            <label className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">Sequence Order</label>
+                                            <label className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">Depth Level</label>
                                             <div className="relative">
-                                                <Hash className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
+                                                <Layers className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
                                                 <input
                                                     type="number"
-                                                    value={formData.order}
-                                                    onChange={(e) => setFormData({ ...formData, order: parseInt(e.target.value) })}
+                                                    min="1"
+                                                    max="10"
+                                                    value={formData.depthLevel || 1}
+                                                    onChange={(e) => setFormData({ ...formData, depthLevel: parseInt(e.target.value) })}
                                                     className="w-full pl-12 pr-6 py-4 bg-slate-50 border border-slate-300 rounded-xl text-sm font-bold text-[#1A1A1A] focus:outline-none focus:ring-4 focus:ring-teal-500/5 focus:bg-white focus:border-teal-500/20 transition-all"
                                                 />
                                             </div>
                                         </div>
+
+                                        {/* Status */}
                                         <div className="space-y-3">
                                             <label className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">Publication State</label>
                                             <div className="flex bg-slate-50 p-2 rounded-xl border border-slate-300">
@@ -256,17 +265,18 @@ export function SubtopicTable() {
                                             </div>
                                         </div>
                                     </div>
+                                </div>
 
-                                    <div className="space-y-3">
-                                        <label className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">Structural Definition</label>
-                                        <textarea
-                                            value={formData.description}
-                                            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                                            rows={5}
-                                            className="w-full px-6 py-4 bg-slate-50 border border-slate-300 rounded-xl text-[13px] font-medium text-slate-600 focus:outline-none focus:ring-4 focus:ring-teal-500/5 focus:bg-white focus:border-teal-500/20 transition-all placeholder:text-slate-300 resize-none leading-relaxed"
-                                            placeholder="Provide technical definition for this subtopic..."
-                                        />
-                                    </div>
+                                {/* Description */}
+                                <div className="space-y-3">
+                                    <label className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">Structural Definition</label>
+                                    <textarea
+                                        value={formData.description}
+                                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                        rows={5}
+                                        className="w-full px-6 py-4 bg-slate-50 border border-slate-300 rounded-xl text-[13px] font-medium text-slate-600 focus:outline-none focus:ring-4 focus:ring-teal-500/5 focus:bg-white focus:border-teal-500/20 transition-all placeholder:text-slate-300 resize-none leading-relaxed"
+                                        placeholder="Provide technical definition for this subtopic..."
+                                    />
                                 </div>
 
                                 {/* Hierarchy Re-assignment (Cautious) */}
@@ -335,10 +345,11 @@ export function SubtopicTable() {
                                     </button>
                                 </div>
                             </form>
-                        </div>
-                    </div>
-                </div>
-            )}
+                        </div >
+                    </div >
+                </div >
+            )
+            }
 
 
             {/* Factory Wizard Integration */}
@@ -363,39 +374,41 @@ export function SubtopicTable() {
             />
 
             {/* Delete Confirmation Modal */}
-            {isDeleteOpen && (
-                <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300">
-                    <div className="bg-white border border-primary/10 rounded-[2.5rem] p-8 max-w-md w-full shadow-2xl relative overflow-hidden">
-                        <div className="absolute top-0 left-0 w-full h-2 bg-red-500" />
-                        <div className="flex flex-col items-center text-center gap-6">
-                            <div className="h-16 w-16 rounded-full bg-red-100 flex items-center justify-center text-red-600">
-                                <AlertTriangle size={32} />
-                            </div>
-                            <div>
-                                <h3 className="text-2xl font-black text-[#1A1A1A] italic uppercase tracking-tighter">Confirm Deletion</h3>
-                                <p className="text-sm font-medium text-muted-foreground mt-2">
-                                    You are about to delete the subtopic <strong className="text-red-600">"{currentSubtopic?.name}"</strong>. This action is irreversible.
-                                </p>
-                            </div>
-                            <div className="grid grid-cols-2 gap-4 w-full">
-                                <button
-                                    onClick={() => { setIsDeleteOpen(false); setCurrentSubtopic(null); }}
-                                    className="px-6 py-4 rounded-2xl border-2 border-slate-100 font-black uppercase tracking-widest text-xs hover:bg-slate-50 transition-all"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    onClick={handleDelete}
-                                    disabled={isSubmitting}
-                                    className="px-6 py-4 rounded-2xl bg-red-600 text-white font-black uppercase tracking-widest text-xs hover:bg-red-700 transition-all shadow-lg shadow-red-600/20 disabled:opacity-50"
-                                >
-                                    {isSubmitting ? 'Deleting...' : 'Delete'}
-                                </button>
+            {
+                isDeleteOpen && (
+                    <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300">
+                        <div className="bg-white border border-primary/10 rounded-[2.5rem] p-8 max-w-md w-full shadow-2xl relative overflow-hidden">
+                            <div className="absolute top-0 left-0 w-full h-2 bg-red-500" />
+                            <div className="flex flex-col items-center text-center gap-6">
+                                <div className="h-16 w-16 rounded-full bg-red-100 flex items-center justify-center text-red-600">
+                                    <AlertTriangle size={32} />
+                                </div>
+                                <div>
+                                    <h3 className="text-2xl font-black text-[#1A1A1A] italic uppercase tracking-tighter">Confirm Deletion</h3>
+                                    <p className="text-sm font-medium text-muted-foreground mt-2">
+                                        You are about to delete the subtopic <strong className="text-red-600">"{currentSubtopic?.name}"</strong>. This action is irreversible.
+                                    </p>
+                                </div>
+                                <div className="grid grid-cols-2 gap-4 w-full">
+                                    <button
+                                        onClick={() => { setIsDeleteOpen(false); setCurrentSubtopic(null); }}
+                                        className="px-6 py-4 rounded-2xl border-2 border-slate-100 font-black uppercase tracking-widest text-xs hover:bg-slate-50 transition-all"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        onClick={handleDelete}
+                                        disabled={isSubmitting}
+                                        className="px-6 py-4 rounded-2xl bg-red-600 text-white font-black uppercase tracking-widest text-xs hover:bg-red-700 transition-all shadow-lg shadow-red-600/20 disabled:opacity-50"
+                                    >
+                                        {isSubmitting ? 'Deleting...' : 'Delete'}
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            )}
+                )
+            }
 
             {/* Search Bar & Add Button */}
             <div className="bg-white/50 backdrop-blur-xl border border-primary/10 p-6 rounded-[2rem] shadow-xl relative overflow-hidden flex items-center justify-between">
@@ -520,6 +533,6 @@ export function SubtopicTable() {
                     <button disabled={page === totalPages} onClick={() => setPage(p => p + 1)} className="px-4 py-2 text-xs font-black uppercase tracking-widest disabled:opacity-50 hover:text-[#FF4B91] transition-colors">Next</button>
                 </div>
             </div>
-        </div>
+        </div >
     );
 }

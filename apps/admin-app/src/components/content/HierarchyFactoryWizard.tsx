@@ -201,13 +201,19 @@ Please provide a valid JSON object matching this schema:
     {
       "id": "${selections.subjectId}",
       "topics": [
-        { "name": "string" }
+        { 
+          "name": "string",
+          "weight": 1,
+          "complexityLevel": 1
+        }
       ]
     }
   ]
 }
 
 - Focus on technical sub-disciplines.
+- weight: 1 (low impact) to 10 (high impact).
+- complexityLevel: 1 (intro) to 10 (advanced).
 - Return ONLY the JSON object.`;
         }
 
@@ -226,6 +232,7 @@ Please provide a valid JSON object matching this schema:
           "subtopics": [
             { 
               "name": "string", 
+              "depthLevel": 1,
               "questions": [
                 {
                   "questionText": "string",
@@ -245,6 +252,7 @@ Please provide a valid JSON object matching this schema:
 }
 
 - Ensure 5 subtopics, each with 5 mixed-difficulty questions.
+- depthLevel: 1 (foundational) to 10 (architectural).
 - difficulty must be one of [simple, intermediate, expert].
 - mappingType must be one of [conceptual, technical, practical].
 - skillNames should be relevant competency names (e.g., "Problem Solving", "API Design").
@@ -257,11 +265,12 @@ Please provide a valid JSON object matching this schema:
 Please provide a valid JSON object matching this schema:
 {
   "batchSkills": [
-    { "name": "string", "category": "technical|conceptual|process", "mappingType": "conceptual|technical|practical" }
+    { "name": "string", "category": "technical|conceptual|process", "mappingType": "conceptual|technical|practical", "weight": 1 }
   ]
 }
 
 - Focus on universal competencies (e.g., "Problem Solving", "API Design", "Security Posture").
+- weight: 1 (minor) to 10 (critical).
 - Return ONLY the JSON object.`;
         }
 
@@ -352,16 +361,14 @@ Please provide a valid JSON object matching this schema:
         if (target === 'domain') {
             template = {
                 batchDomains: [
-                    { name: "Cloud Engineering", description: "Distributed systems and infrastructure.", category: "DevOps" },
-                    { name: "Cybersecurity", description: "Threat detection and mitigation.", category: "Security" }
+                    { name: "string", description: "string", category: "string" }
                 ]
             };
         } else if (target === 'subject') {
             template = {
                 domainId: selections.domainId || "DOMAIN_UUID",
                 subjects: [
-                    { name: "Frontend Development" },
-                    { name: "Backend Architecture" }
+                    { name: "string" }
                 ]
             };
         } else if (target === 'topic') {
@@ -370,8 +377,7 @@ Please provide a valid JSON object matching this schema:
                 subjects: [{
                     id: selections.subjectId || "SUBJECT_UUID",
                     topics: [
-                        { name: "React Framework" },
-                        { name: "Node.js Runtimes" }
+                        { name: "string", weight: 1, complexityLevel: 1 }
                     ]
                 }]
             };
@@ -384,18 +390,15 @@ Please provide a valid JSON object matching this schema:
                         id: selections.topicId || "TOPIC_UUID",
                         subtopics: [
                             {
-                                name: "Context API",
+                                name: "string",
+                                depthLevel: 1,
                                 questions: [{
-                                    questionText: "What is the purpose of Context API?",
-                                    options: [
-                                        { text: "Prop drilling resolution", isCorrect: true },
-                                        { text: "Data storage", isCorrect: false },
-                                        { text: "UI styling", isCorrect: false },
-                                        { text: "Database sync", isCorrect: false }
-                                    ],
-                                    correctAnswer: "Prop drilling resolution",
-                                    difficulty: "intermediate",
-                                    mappingType: "conceptual"
+                                    questionText: "string",
+                                    options: ["A", "B", "C", "D"],
+                                    correctAnswer: "string",
+                                    difficulty: "simple|intermediate|expert",
+                                    mappingType: "conceptual|technical|practical",
+                                    skillNames: ["Skill A", "Skill B"]
                                 }]
                             }
                         ]
@@ -405,8 +408,7 @@ Please provide a valid JSON object matching this schema:
         } else if (target === 'skill') {
             template = {
                 batchSkills: [
-                    { name: "Memory Management", category: "technical", mappingType: "technical" },
-                    { name: "Critical Thinking", category: "conceptual", mappingType: "conceptual" }
+                    { name: "string", category: "technical|conceptual|process", mappingType: "conceptual|technical|practical" }
                 ]
             };
         } else {
