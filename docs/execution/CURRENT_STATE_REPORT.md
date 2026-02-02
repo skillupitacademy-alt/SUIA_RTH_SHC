@@ -193,3 +193,10 @@
 - **Color System Unification**: Aligned the `SubtopicTable` submit button to the standard "Executive Orange" (`bg-[#FF6B2C]`), removing the outlier black button.
 - **Verification**: Executed successful full-stack build (`pnpm build`) and type check (`tsc`) to ensure no regressions from UI patches.
 - **Outcome**: Delivered a flawless, visually consistent "Command Center" experience with zero UX friction.
+
+### Phase 32: Reporting Compliance & Advanced Filter (Batch 74/75)
+- **Compliance Audit**: Standardized the entire Admin Hierarchy to enforce the "Reporting Trinity" (Weight, Category, Mapping Type) plus Complexity and Depth dimensions locally in all Edit Forms.
+- **AI Intelligence Upgrade**: Refined `HierarchyFactoryWizard` prompts to auto-generate these new dimensions and inject dynamic parent context (`${domainName}`, `${subjectName}`) for higher relevance ("Smart Context").
+- **UX Scalability**: Implemented "Skill Category" filtering and `<optgroup>` segmentation in `CascadingSelect` to elegantly handle 1000+ skill datasets without cognitive overload.
+- **Monorepo Verified**: Confirmed system-wide integrity with a successful global build (`pnpm build`) and type check (`tsc --noEmit`).
+- **Outcome**: Achieved full synchronization between the Database Schema, Admin UI, and AI Factory for high-fidelity reporting and scalable content management.

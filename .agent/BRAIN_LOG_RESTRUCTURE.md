@@ -358,3 +358,9 @@ Reduce documentation fragmentation and improve discoverability by consolidating 
 - **UX/Scalability**: Implemented "Skill Category" filtering and `<optgroup>` segmentation in `CascadingSelect` to handle 1000+ skill datasets.
 - **Verification**: Validated system-wide build stability (`Exit Code 0`) and type safety.
 - **Outcome**: Achieved full synchronization between the Database Schema, Admin UI, and AI Factory for high-fidelity reporting.
+
+### Batch 75: Bulk Factory Prompt Contextualization
+- **Prompt Engineering**: Refined AI instruction templates in `HierarchyFactoryWizard` to inject dynamic parent context (`${domainName}`, `${subjectName}`) for higher relevance.
+- **Schema Guidance**: Added detailed key explanations to prompts for `weight` (Impact 1-10), `complexityLevel` (Difficulty 1-10), and `depthLevel` (Progression 1-10).
+- **Format B Standardization**: Enforced "Format B" JSON structure guidance across all hierarchy levels to ensure AI outputs match the platform's strict ingestion schema.
+- **Outcome**: Delivered a "Smart Context" prompt engine that guides LLMs to generate high-precision, schema-compliant educational data.

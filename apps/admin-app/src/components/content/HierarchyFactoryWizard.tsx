@@ -173,6 +173,7 @@ Please provide a valid JSON object matching this schema:
 
 - Focus on unique, high-level educational areas (e.g., "Full Stack Development", "Cloud Architecture").
 - Provide at least 5-10 domains.
+- guide AI model to generate data for given json format.
 - Return ONLY the JSON object.`;
         }
 
@@ -188,6 +189,7 @@ Please provide a valid JSON object matching this schema:
 }
 
 - Focus on core areas within "${domainName}".
+- guide AI model to generate data for given json format for this ${domainName} provide subjects.
 - Return ONLY the JSON object.`;
         }
 
@@ -212,8 +214,9 @@ Please provide a valid JSON object matching this schema:
 }
 
 - Focus on technical sub-disciplines.
-- weight: 1 (low impact) to 10 (high impact).
-- complexityLevel: 1 (intro) to 10 (advanced).
+- guide AI model to generate data for given json format for this ${domainName} , ${subjectName} provide topics.
+- weight: 1 (low impact) to 10 (high impact). Higher value means higher importance.
+- complexityLevel: 1 (intro) to 10 (advanced). Higher value means more complex.
 - Return ONLY the JSON object.`;
         }
 
@@ -252,7 +255,8 @@ Please provide a valid JSON object matching this schema:
 }
 
 - Ensure 5 subtopics, each with 5 mixed-difficulty questions.
-- depthLevel: 1 (foundational) to 10 (architectural).
+- guide AI model to generate data for given json format for this ${domainName} , ${subjectName} and for this ${topicName} provide sub topics.
+- depthLevel: 1 (foundational) to 10 (architectural). Higher value means deeper knowledge required.
 - difficulty must be one of [simple, intermediate, expert].
 - mappingType must be one of [conceptual, technical, practical].
 - skillNames should be relevant competency names (e.g., "Problem Solving", "API Design").
