@@ -191,7 +191,7 @@ export function SubtopicTable() {
                     </div>
 
                     {/* Content Area */}
-                    <div className="flex-1 overflow-y-auto bg-slate-50/30 p-12 custom-scrollbar">
+                    <div className="flex-1 bg-slate-50/30 p-12 custom-scrollbar">
                         <div className="max-w-3xl mx-auto space-y-8 bg-white border border-primary/10 rounded-[2.5rem] p-10 shadow-2xl shadow-primary/5 relative overflow-hidden">
                             {/* Form Header Context */}
                             <div className="grid grid-cols-3 gap-4 p-6 bg-slate-50/50 rounded-2xl border border-dashed border-slate-200">
@@ -281,28 +281,34 @@ export function SubtopicTable() {
                                         <SelectField
                                             label="Domain"
                                             value={formData.domainId}
-                                            options={domains.map(d => ({ value: d.id, label: d.name }))}
+                                            options={domains.map(d => ({ id: d.id, name: d.name }))}
                                             loading={domainsHook.loading}
                                             onChange={handleDomainChange}
                                             placeholder="Select Domain"
+                                            active={false}
+                                            hideCreate={true}
                                         />
                                         <SelectField
                                             label="Subject"
                                             value={formData.subjectId}
-                                            options={subjects.map(s => ({ value: s.id, label: s.name }))}
+                                            options={subjects.map(s => ({ id: s.id, name: s.name }))}
                                             loading={subjectsHook.loading}
                                             onChange={handleSubjectChange}
                                             placeholder="Select Subject"
                                             disabled={!formData.domainId}
+                                            active={false}
+                                            hideCreate={true}
                                         />
                                         <SelectField
                                             label="Topic"
                                             value={formData.topicId}
-                                            options={topics.map(t => ({ value: t.id, label: t.name }))}
+                                            options={topics.map(t => ({ id: t.id, name: t.name }))}
                                             loading={topicsHook.loading}
                                             onChange={(id) => setFormData({ ...formData, topicId: id })}
                                             placeholder="Select Topic"
                                             disabled={!formData.subjectId}
+                                            active={false}
+                                            hideCreate={true}
                                         />
                                     </div>
                                     <p className="mt-4 text-[9px] font-bold text-amber-600/50 leading-relaxed italic text-center">
