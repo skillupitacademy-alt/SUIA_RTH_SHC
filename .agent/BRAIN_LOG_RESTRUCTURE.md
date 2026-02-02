@@ -392,4 +392,11 @@ Reduce documentation fragmentation and improve discoverability by consolidating 
 ### Batch 80: Dynamic Context Switching
 - **Reactive Prompting**: Decoupled `generateAiPrompt` from static `initialData`, ensuring the prompt text updates in real-time when users change dropdown selections.
 - **Live Context UI**: Updated "Pre-selection Context" visualizers to prioritize the active `selections` state over the initial context snapshot. Renamed label to **Active Target Scope** to reflect dynamic nature.
+- **Live Context UI**: Updated "Pre-selection Context" visualizers to prioritize the active `selections` state over the initial context snapshot. Renamed label to **Active Target Scope** to reflect dynamic nature.
 - **Outcome**: Users can now trigger a factory flow from one context (e.g. "Database Systems") and dynamically switch to another (e.g. "Cloud Computing") without the UI or Prompt getting "stuck" on the original entry point.
+
+### Batch 81: Bulk Factory UX Simplification
+- **Streamlined Workflow**: Removed "Import Template" button (redundant) to focus users on "AI Generation" vs "File Upload" paths.
+- **Clarity**: Renamed "Manual Manifest Mode" to **"Paste JSON Payload"** to explicitly guide the AI-to-Editor copy-paste flow.
+- **Navigation**: Added a **"Back to Intelligence"** (ArrowLeft) button in the Editor Header, resolving a one-way navigation trap.
+- **Outcome**: A cleaner, loop-capable interface: Prompt -> Copy -> Paste -> (Back if needed) -> Validated.

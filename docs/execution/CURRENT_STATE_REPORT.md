@@ -230,3 +230,7 @@
 - **Problem**: Previously, entering the Wizard via a specific row (Contextual Launch) "locked" the UI to that context, ignoring subsequent dropdown changes.
 - **Solution**: Refactored `HierarchyFactoryWizard.tsx` to prioritize the active `selections` state for both Prompt generation and UI display, using `initialData` only as a fallback/initializer.
 - **Outcome**: Users have full freedom to manipulate the Prompt Context in real-time. Changing the "Domain" dropdown instantly updates the AI Prompt instructions and the Pre-selection visualizer.
+
+### Phase 38: Bulk Factory UX Simplification (Batch 81)
+- **Workflow Optimization**: Addressed user feedback to streamline the AI-focused workflow. Removed the "Import Template" button (Manual typing path) to reduce clutter.
+- **Explicit Navigation**: Renamed the primary action to "**Paste JSON Payload**" and added a **Back Button** (Answer Scope) in the Editor, creating a robust bidirectional loop between Prompting and Pasting.

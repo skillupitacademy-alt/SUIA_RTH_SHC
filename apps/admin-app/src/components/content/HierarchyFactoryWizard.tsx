@@ -23,7 +23,8 @@ import {
     Search,
     RefreshCw,
     ClipboardList,
-    ArrowUp
+    ArrowUp,
+    ArrowLeft
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ZLoader } from '@/components/ui/ZLoader';
@@ -713,10 +714,10 @@ Please provide a valid JSON object matching this schema:
                                                         </div>
                                                         <div>
                                                             <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 group-hover/watermark:text-primary transition-colors">
-                                                                Already have the JSON? Enter Manual Manifest Mode
+                                                                Paste JSON Payload
                                                             </p>
                                                             <p className="text-[9px] font-bold text-slate-400 mt-0.5">
-                                                                Unlock Editor for Payload Injection
+                                                                Open Editor to Insert AI Output
                                                             </p>
                                                         </div>
                                                     </div>
@@ -739,6 +740,14 @@ Please provide a valid JSON object matching this schema:
                                             <h4 className="text-lg font-black uppercase tracking-widest text-slate-800 italic">JSON Manifest Editor</h4>
                                         </div>
                                         <div className="flex items-center gap-3">
+                                            <ZTooltip content="Return to Intelligence Scope (Prompt View)." side="left">
+                                                <button
+                                                    onClick={() => setShowEditor(false)}
+                                                    className="p-3 bg-white hover:bg-slate-100 text-slate-400 hover:text-slate-600 rounded-xl transition-all active:scale-95 shadow-sm hover:shadow-slate-200 border border-slate-100"
+                                                >
+                                                    <ArrowLeft size={20} />
+                                                </button>
+                                            </ZTooltip>
                                             <ZTooltip content="Copy raw JSON payload." side="left">
                                                 <button
                                                     onClick={() => copyToClipboard(payload)}
@@ -881,14 +890,6 @@ PASTE YOUR JSON MANIFEST HERE'
                                     </button>
                                 </ZTooltip>
                                 <input type="file" ref={fileInputRef} onChange={handleFileUpload} accept=".json" className="hidden" />
-                                <ZTooltip content="Populate the editor with a pre-defined schema matching your current target. Use this as a secure template for manual hierarchy definition." side="top">
-                                    <button
-                                        onClick={generateTemplate}
-                                        className="w-full px-6 py-4 bg-[#FF4B91]/5 text-[#FF4B91] border-2 border-[#FF4B91]/10 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-[#FF4B91]/10 hover:border-[#FF4B91]/20 transition-all flex items-center justify-center gap-3 shadow-none hover:shadow-lg hover:shadow-[#FF4B91]/10 hover:scale-[1.01]"
-                                    >
-                                        <LayoutGrid size={16} /> Import Template
-                                    </button>
-                                </ZTooltip>
                             </div>
                         </div>
                     </div>
@@ -940,7 +941,7 @@ PASTE YOUR JSON MANIFEST HERE'
                     onClose();
                 }}
             />
-        </div>,
+        </div >,
         document.body
     );
 }
