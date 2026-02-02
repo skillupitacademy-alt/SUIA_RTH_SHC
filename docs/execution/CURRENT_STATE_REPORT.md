@@ -234,3 +234,7 @@
 ### Phase 38: Bulk Factory UX Simplification (Batch 81)
 - **Workflow Optimization**: Addressed user feedback to streamline the AI-focused workflow. Removed the "Import Template" button (Manual typing path) to reduce clutter.
 - **Explicit Navigation**: Renamed the primary action to "**Paste JSON Payload**" and added a **Back Button** (Answer Scope) in the Editor, creating a robust bidirectional loop between Prompting and Pasting.
+
+### Phase 39: UI Polish (Batch 82)
+- **Visual Design**: Re-engineered the Editor Entry Point to use a "Watermark" card style (Dashed border, large centered typography) instead of a standard button.
+- **Intent**: This visual change reinforces the "Empty State" concept, encouraging the user to "fill" the void with data, and mimics the "Awaiting Selection" pattern used elsewhere in the app.

@@ -399,4 +399,10 @@ Reduce documentation fragmentation and improve discoverability by consolidating 
 - **Streamlined Workflow**: Removed "Import Template" button (redundant) to focus users on "AI Generation" vs "File Upload" paths.
 - **Clarity**: Renamed "Manual Manifest Mode" to **"Paste JSON Payload"** to explicitly guide the AI-to-Editor copy-paste flow.
 - **Navigation**: Added a **"Back to Intelligence"** (ArrowLeft) button in the Editor Header, resolving a one-way navigation trap.
+- **Navigation**: Added a **"Back to Intelligence"** (ArrowLeft) button in the Editor Header, resolving a one-way navigation trap.
 - **Outcome**: A cleaner, loop-capable interface: Prompt -> Copy -> Paste -> (Back if needed) -> Validated.
+
+### Batch 82: UI Polish (Watermark Component)
+- **Visual Refactor**: Replaced the standard "Paste JSON" button with a **Dashed-Border Watermark Card** style (resembling "Awaiting Selection" placeholders).
+- **Dynamic Labeling**: The Watermark now dynamically prompts the specific target (e.g., "PASTE TOPIC PAYLOAD"), reinforcing the current context visibly.
+- **Outcome**: The empty state of the Editor pipeline now looks like a "Drop Zone", guiding the user intuitively to the next step.

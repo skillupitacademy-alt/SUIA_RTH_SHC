@@ -706,23 +706,18 @@ Please provide a valid JSON object matching this schema:
                                                 </div>
                                                 <button
                                                     onClick={() => setShowEditor(true)}
-                                                    className="px-10 py-6 border-t border-primary/5 bg-slate-50/50 hover:bg-slate-100 transition-all text-left flex items-center justify-between group/watermark"
+                                                    className="w-full flex-1 min-h-[200px] border-2 border-dashed border-slate-200 hover:border-primary/40 bg-slate-50/30 hover:bg-slate-50 transition-all rounded-[2rem] flex flex-col items-center justify-center gap-6 group/watermark m-6"
                                                 >
-                                                    <div className="flex items-center gap-4">
-                                                        <div className="p-2 bg-[#FF4B91]/10 rounded-lg text-[#FF4B91] group-hover/watermark:scale-110 transition-all">
-                                                            <FileJson size={18} />
-                                                        </div>
-                                                        <div>
-                                                            <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 group-hover/watermark:text-primary transition-colors">
-                                                                Paste JSON Payload
-                                                            </p>
-                                                            <p className="text-[9px] font-bold text-slate-400 mt-0.5">
-                                                                Open Editor to Insert AI Output
-                                                            </p>
-                                                        </div>
+                                                    <div className="w-16 h-16 rounded-full bg-slate-100 group-hover/watermark:bg-primary/5 flex items-center justify-center text-slate-400 group-hover/watermark:text-primary transition-all">
+                                                        <ArrowUp size={24} />
                                                     </div>
-                                                    <div className="text-slate-300 group-hover/watermark:text-primary transition-colors">
-                                                        <ArrowUp className="rotate-90" size={16} />
+                                                    <div className="text-center space-y-2">
+                                                        <h5 className="text-xs font-black uppercase tracking-[0.2em] text-slate-400 group-hover/watermark:text-primary transition-colors">
+                                                            Paste {initialData?.target?.toUpperCase() || 'HIERARCHY'} Payload
+                                                        </h5>
+                                                        <p className="text-[10px] font-bold text-slate-300">
+                                                            Switch to Editor Phase
+                                                        </p>
                                                     </div>
                                                 </button>
                                             </>
