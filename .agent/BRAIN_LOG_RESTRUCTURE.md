@@ -438,3 +438,17 @@ Reduce documentation fragmentation and improve discoverability by consolidating 
     -   *Topic Target*: Requires Domain + Subject.
     -   *Subtopic Target*: Requires Domain + Subject + Topic.
 -   **Outcome**: Prevents "Partial Context" unlocking (e.g., unlocking Topic mode with only Domain selected) and ensures AI prompts are fully contextualized.
+
+ # # #   P h a s e   8 7 :   Q u e s t i o n   F a c t o r y   R e f i n e m e n t   &   I n g e s t   ( P h a s e   1   &   2 ) 
+ -       * * O b j e c t i v e * * :   R e f i n e   Q u e s t i o n   F a c t o r y   G U I   a n d   i m p l e m e n t   I n g e s t   &   P a r s e r   l o g i c . 
+ -       * * I m p l e m e n t a t i o n * * : 
+         -       R e s t o r e d   T o p i c   s e l e c t o r   a n d   e n f o r c e d   2 x 2   g r i d   i n   \ C o n t e x t S e l e c t o r . t s x \ . 
+         -       S y n c h r o n i z e d   d r o p d o w n s   w i t h   \  
+ E x e c u t i v e \   s t y l i n g   ( Q u e s t i o n   B a n k   s t a n d a r d ) . 
+         -       F i x e d   P l u s   ( + )   b u t t o n   l o g i c   a n d   v i s i b i l i t y   i n   \ D i s t r i b u t i o n M a t r i x . t s x \ . 
+         -       R e v e r t e d   T o t a l   A s s e t s   b a d g e   t o   s o f t / l i g h t   a e s t h e t i c . 
+         -       I m p l e m e n t e d   \ J s o n V a l i d a t o r \   w i t h   p r e f i x   s t r i p p i n g   a n d   s c h e m a   e n f o r c e m e n t . 
+         -       E s t a b l i s h e d   \ F a c t o r y C o n t e x t \   f o r   b a t c h   s t a t e   m a n a g e m e n t . 
+         -       I n t e g r a t e d   \ J s o n I n g e s t B o x \   f o r   p a y l o a d   i n g e s t i o n . 
+ -       * * O u t c o m e * * :   P r e m i u m   U I   a l i g n m e n t   a n d   f u n c t i o n a l   b r i d g e   b e t w e e n   A I   o u t p u t   a n d   i n t e r n a l   s t a t e .  
+ 

@@ -40,34 +40,38 @@ export function DistributionMatrix({ counts, onChange }: DistributionMatrixProps
                 {label} (Volume)
             </label>
 
-            <div className="flex items-center gap-4 relative z-10">
+            <div className="flex items-center justify-between gap-4 relative z-10 bg-slate-50/50 p-2 rounded-xl border border-slate-100">
                 <button
                     onClick={() => onChange(field, Math.max(0, value - 1))}
-                    className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-200 hover:bg-slate-100 flex items-center justify-center text-slate-600 transition-all active:scale-90"
+                    type="button"
+                    className="w-10 h-10 rounded-xl bg-white border border-slate-200 hover:bg-slate-100 flex items-center justify-center text-slate-600 transition-all active:scale-90 shadow-sm"
                 >
                     <Minus size={16} />
                 </button>
 
-                <style jsx>{`
-                    input::-webkit-outer-spin-button,
-                    input::-webkit-inner-spin-button {
-                        -webkit-appearance: none;
-                        margin: 0;
-                    }
-                    input[type=number] {
-                        -moz-appearance: textfield;
-                    }
-                `}</style>
-                <input
-                    type="number"
-                    value={value}
-                    onChange={(e) => onChange(field, Math.max(0, parseInt(e.target.value) || 0))}
-                    className="flex-1 text-center font-black text-3xl text-[#1A1A1A] outline-none bg-transparent"
-                />
+                <div className="flex-1 flex justify-center">
+                    <style jsx>{`
+                        input::-webkit-outer-spin-button,
+                        input::-webkit-inner-spin-button {
+                            -webkit-appearance: none;
+                            margin: 0;
+                        }
+                        input[type=number] {
+                            -moz-appearance: textfield;
+                        }
+                    `}</style>
+                    <input
+                        type="number"
+                        value={value}
+                        onChange={(e) => onChange(field, Math.max(0, parseInt(e.target.value) || 0))}
+                        className="w-full text-center font-black text-3xl text-[#1A1A1A] outline-none bg-transparent"
+                    />
+                </div>
 
                 <button
-                    onClick={() => onChange(field, (Number(value) || 0) + 1)}
-                    className="w-10 h-10 rounded-xl bg-[#FF4B91]/5 border border-[#FF4B91]/20 hover:bg-[#FF4B91]/10 flex items-center justify-center text-[#FF4B91] transition-all active:scale-90 shadow-sm"
+                    onClick={() => onChange(field, value + 1)}
+                    type="button"
+                    className="w-10 h-10 rounded-xl bg-[#FF4B91] hover:bg-[#FF4B91]/90 flex items-center justify-center text-white transition-all active:scale-90 shadow-lg shadow-[#FF4B91]/10"
                 >
                     <Plus size={16} />
                 </button>
@@ -84,12 +88,12 @@ export function DistributionMatrix({ counts, onChange }: DistributionMatrixProps
                         2. Quantum Distribution
                     </h3>
                 </div>
-                <div className="flex items-center gap-2 px-4 py-2 bg-slate-900 border border-slate-800 rounded-2xl text-[10px] font-black text-[#FF4B91] uppercase tracking-widest shadow-2xl">
+                <div className="flex items-center gap-2 px-4 py-2 bg-slate-50 border border-slate-200 rounded-2xl text-[10px] font-black text-[#FF4B91] uppercase tracking-widest">
                     <Calculator size={14} /> Total: {total} Assets
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <Counter label="Simple" value={counts.simple} field="simple" color="text-emerald-500" icon={Binary} />
                 <Counter label="Intermediate" value={counts.intermediate} field="intermediate" color="text-indigo-500" icon={BarChart3} />
                 <Counter label="Expert" value={counts.expert} field="expert" color="text-rose-500" icon={BrainCircuit} />

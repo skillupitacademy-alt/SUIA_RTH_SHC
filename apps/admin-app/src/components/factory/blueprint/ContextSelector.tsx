@@ -58,6 +58,19 @@ export function ContextSelector({ selections, onChange }: ContextSelectorProps) 
                 />
 
                 <SelectField
+                    label="Target Topic"
+                    value={selections.topicId}
+                    onChange={(id) => onChange('topicId', id)}
+                    options={topicsHook.data || []}
+                    loading={topicsHook.loading}
+                    disabled={!selections.subjectId}
+                    placeholder="Select Topic"
+                    active={!!selections.subjectId}
+                    icon={<Bookmark className="w-3 h-3" />}
+                    hideCreate={true}
+                />
+
+                <SelectField
                     label="Target Sub-Topic"
                     value={selections.subtopicId}
                     onChange={(id) => onChange('subtopicId', id)}
