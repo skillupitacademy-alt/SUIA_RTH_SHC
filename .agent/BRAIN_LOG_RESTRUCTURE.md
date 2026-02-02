@@ -426,3 +426,8 @@ Reduce documentation fragmentation and improve discoverability by consolidating 
 - **Context Guard Rails**: Added **Context Selectors** (Dropdowns for Domain/Subject/Topic) directly to the **Headers of TopicTable and SubtopicTable**.
 - **Launch Validation**: The "Add Topic" and "Add Subtopic" buttons are now **Disabled** by default. They only become active when the user has explicitly selected the required parent context (e.g., Domain + Subject). This blocks "Contextless Launches" at the source, ensuring the Bulk Factory always receives valid initialization data.
 - **Outcome**: Eliminated the risk of generating generic/invalid prompts by enforcing strict hierarchical boundaries before entry.
+
+*(Revision - Batch 85B)*:
+- **Strategy Shift**: Reverted Table Header Dropdowns to maintain a cleaner UI in the Question Bank.
+- **Internal Guard**: Implemented validation **inside the Wizard**. The "Bulk Factory" (AI Prompt) button is now **Locked/Disabled** if the required context (Domain/Subject) is missing in Manual Mode. A tooltip guides the user to "Select Context to Unlock".
+- **Outcome**: Preserves the clean "Question Bank" UI while still enforcing strict prompt context.

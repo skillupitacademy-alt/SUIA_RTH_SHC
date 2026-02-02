@@ -39,17 +39,10 @@ export function SubtopicTable() {
         depthLevel: 1
     });
 
-    // Context Filters (Validation Requirement)
-    const [selectedContext, setSelectedContext] = useState({
-        domainId: '',
-        subjectId: '',
-        topicId: ''
-    });
-
     // Hierarchy data
     const domainsHook = useDomains();
-    const subjectsHook = useSubjects(selectedContext.domainId || formData.domainId);
-    const topicsHook = useTopics(selectedContext.subjectId || formData.subjectId);
+    const subjectsHook = useSubjects(formData.domainId || undefined);
+    const topicsHook = useTopics(formData.subjectId || undefined);
 
     const domains = domainsHook.data;
     const subjects = subjectsHook.data;
@@ -369,13 +362,13 @@ export function SubtopicTable() {
                     fetchSubtopics();
                 }}
                 initialData={
-                    selectedContext.topicId
+                    formData.topicId
                         ? {
                             target: 'subtopic',
-                            domainId: selectedContext.domainId,
-                            subjectId: selectedContext.subjectId,
-                            topicId: selectedContext.topicId,
-                            topicName: topics.find(t => t.id === selectedContext.topicId)?.name || ''
+                            domainId: formData.domainId,
+                            subjectId: formData.subjectId,
+                            topicId: formData.topicId,
+                            topicName: topics.find(t => t.id === formData.topicId)?.name || ''
                         }
                         : { target: 'subtopic' }
                 }
@@ -424,35 +417,6 @@ export function SubtopicTable() {
                     <div className="p-2 rounded-xl bg-teal-50 text-teal-500 shadow-sm border border-teal-100">
                         <GitBranch className="w-5 h-5" />
                     </div>
-                    {/* Context Selectors */}
-                    <div className="flex items-center gap-2 min-w-[300px]">
-                        <select
-                            value={selectedContext.domainId}
-                            onChange={(e) => setSelectedContext(prev => ({ ...prev, domainId: e.target.value, subjectId: '', topicId: '' }))}
-                            className="bg-slate-50 border-none rounded-xl px-4 py-2 text-[10px] font-bold uppercase tracking-wider text-slate-600 focus:ring-2 focus:ring-teal-500/10 outline-none w-32 truncate"
-                        >
-                            <option value="">All Domains</option>
-                            {domains.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
-                        </select>
-                        <select
-                            value={selectedContext.subjectId}
-                            onChange={(e) => setSelectedContext(prev => ({ ...prev, subjectId: e.target.value, topicId: '' }))}
-                            disabled={!selectedContext.domainId}
-                            className="bg-slate-50 border-none rounded-xl px-4 py-2 text-[10px] font-bold uppercase tracking-wider text-slate-600 focus:ring-2 focus:ring-teal-500/10 outline-none w-32 truncate disabled:opacity-50"
-                        >
-                            <option value="">All Subjects</option>
-                            {subjects.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-                        </select>
-                        <select
-                            value={selectedContext.topicId}
-                            onChange={(e) => setSelectedContext(prev => ({ ...prev, topicId: e.target.value }))}
-                            disabled={!selectedContext.subjectId}
-                            className="bg-slate-50 border-none rounded-xl px-4 py-2 text-[10px] font-bold uppercase tracking-wider text-slate-600 focus:ring-2 focus:ring-teal-500/10 outline-none w-32 truncate disabled:opacity-50"
-                        >
-                            <option value="">All Topics</option>
-                            {topics.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
-                        </select>
-                    </div>
                     <div className="w-px h-6 bg-slate-200/50 mx-2" />
                     <div className="relative flex-1 max-w-md group">
                         <input
@@ -468,19 +432,8 @@ export function SubtopicTable() {
                     </div>
                 </div>
                 <button
-                    onClick={() => {
-                        if (!selectedContext.topicId) {
-                            setErrorMessage("Validation Error: Please select Domain > Subject > Topic context before adding a subtopic.");
-                            return;
-                        }
-                        handleOpenForm();
-                    }}
-                    className={cn(
-                        "ml-4 px-6 py-3 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all flex items-center gap-3 active:scale-95",
-                        !selectedContext.topicId
-                            ? "bg-slate-100 text-slate-400 cursor-not-allowed"
-                            : "bg-[#FF4B91] hover:bg-[#ff3382] text-white shadow-xl shadow-[#FF4B91]/20"
-                    )}
+                    onClick={() => handleOpenForm()}
+                    className="ml-4 px-6 py-3 rounded-2xl bg-[#FF4B91] hover:bg-[#ff3382] text-white text-[11px] font-black uppercase tracking-widest shadow-xl shadow-[#FF4B91]/20 transition-all flex items-center gap-3 active:scale-95"
                 >
                     <Plus size={16} />
                     Add Subtopic

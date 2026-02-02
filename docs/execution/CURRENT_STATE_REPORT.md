@@ -250,7 +250,8 @@
 - **Watermark Overlay**: The dashed "Paste Payload" card is now an **Internal Overlay** within the JSON Editor. It appears only when the text area is empty, serving as a contextual guide without breaking the layout or requiring a separate click to "enter" the editing mode.
 
 ### Phase 42: Validation & Style Polish (Batch 85)
-- **Launch Validation**: Implemented strict Context Validation on the "Bulk Factory" launch buttons.
-    -   **TopicTable**: Added Domain/Subject Dropdowns to Header. "Add Topic" is disabled unless both are selected.
-    -   **SubtopicTable**: Added Domain/Subject/Topic Dropdowns to Header. "Add Subtopic" is disabled unless all three are selected.
+- **Launch Validation**: Implemented strict **Internal Context Guards** within the Factory Wizard.
+    -   **Strategy**: The "Bulk Factory" (AI Prompt) button is **locked** by default heavily relying on `mode='manual'`.
+    -   **Constraint**: Users MUST select the required hierarchy (Domain -> Subject -> Topic) in Manual Mode to "Unlock" the AI Prompt capabilities. A red pulse indicator and tooltip guide this interaction.
+    -   **UI Impact**: Preserved the clean, filter-free design of the Question Bank tables.
 - **Prompt Styling**: Refined the AI Prompt text to use `text-blue-600` (Sans-Serif), matching the request for a clearer, schematic appearance.
