@@ -113,30 +113,25 @@ export function QuestionCard({ question, index, onUpdate, onDelete }: QuestionCa
                     )}
                 </div>
 
-                {/* Optional Code Snippet */}
+                {/* Surgical AI Prompt Style Code Snippet (Light Mode) */}
                 {question.codeSnippet && !isEditing && (
-                    <div className="bg-slate-900 rounded-3xl overflow-hidden shadow-2xl">
-                        <div className="px-6 py-3 bg-slate-800/50 border-b border-white/5 flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                                <Code2 size={14} className="text-[#FF4B91]" />
-                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Source Code Context</span>
-                            </div>
+                    <div className="p-8 bg-slate-50 border border-slate-200/60 rounded-3xl text-sm font-medium text-blue-600 leading-relaxed whitespace-pre-wrap selection:bg-[#FF4B91]/10 shadow-sm relative overflow-hidden group/code">
+                        <div className="absolute top-0 right-0 p-4 opacity-0 group-hover/code:opacity-100 transition-opacity pointer-events-none">
+                            <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Read-Only Preview</span>
                         </div>
-                        <pre className="p-8 text-sm font-mono text-emerald-400 overflow-x-auto custom-scrollbar leading-relaxed">
-                            <code>{question.codeSnippet}</code>
-                        </pre>
+                        {question.codeSnippet}
                     </div>
                 )}
 
                 {isEditing && (
                     <div className="space-y-3">
                         <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest flex items-center gap-2">
-                            <Code2 size={12} /> Code Snippet (Optional)
+                            <Code2 size={12} /> Source Code Context
                         </label>
                         <textarea
                             value={question.codeSnippet}
                             onChange={(e) => onUpdate({ codeSnippet: e.target.value })}
-                            className="w-full min-h-[150px] p-6 rounded-2xl bg-slate-900 text-emerald-400 text-sm font-mono focus:ring-2 focus:ring-[#FF4B91]/10 outline-none transition-all"
+                            className="w-full min-h-[150px] p-6 rounded-3xl bg-slate-50 border border-slate-200/60 text-blue-600 text-sm font-medium focus:ring-2 focus:ring-[#FF4B91]/10 outline-none transition-all placeholder:text-slate-400"
                             placeholder="Paste code snippet here..."
                         />
                     </div>

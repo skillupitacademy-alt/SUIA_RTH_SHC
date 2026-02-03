@@ -443,36 +443,43 @@ Reduce documentation fragmentation and improve discoverability by consolidating 
  -       * * O b j e c t i v e * * :   R e f i n e   Q u e s t i o n   F a c t o r y   G U I   a n d   i m p l e m e n t   I n g e s t   &   P a r s e r   l o g i c . 
  -       * * I m p l e m e n t a t i o n * * : 
          -       R e s t o r e d   T o p i c   s e l e c t o r   a n d   e n f o r c e d   2 x 2   g r i d   i n   \ C o n t e x t S e l e c t o r . t s x \ . 
-         -       S y n c h r o n i z e d   d r o p d o w n s   w i t h   \  
+         -       S y n c h r o n i z e d   d r o p d o w n s   w i t h   \ 
+ 
  E x e c u t i v e \   s t y l i n g   ( Q u e s t i o n   B a n k   s t a n d a r d ) . 
          -       F i x e d   P l u s   ( + )   b u t t o n   l o g i c   a n d   v i s i b i l i t y   i n   \ D i s t r i b u t i o n M a t r i x . t s x \ . 
          -       R e v e r t e d   T o t a l   A s s e t s   b a d g e   t o   s o f t / l i g h t   a e s t h e t i c . 
          -       I m p l e m e n t e d   \ J s o n V a l i d a t o r \   w i t h   p r e f i x   s t r i p p i n g   a n d   s c h e m a   e n f o r c e m e n t . 
          -       E s t a b l i s h e d   \ F a c t o r y C o n t e x t \   f o r   b a t c h   s t a t e   m a n a g e m e n t . 
          -       I n t e g r a t e d   \ J s o n I n g e s t B o x \   f o r   p a y l o a d   i n g e s t i o n . 
- -       * * O u t c o m e * * :   P r e m i u m   U I   a l i g n m e n t   a n d   f u n c t i o n a l   b r i d g e   b e t w e e n   A I   o u t p u t   a n d   i n t e r n a l   s t a t e .  
+ -       * * O u t c o m e * * :   P r e m i u m   U I   a l i g n m e n t   a n d   f u n c t i o n a l   b r i d g e   b e t w e e n   A I   o u t p u t   a n d   i n t e r n a l   s t a t e . 
+ 
  
  # # #   P h a s e   8 8 :   I n g e s t   L o g i c   R e p a i r s   &   M u l t i - S t e p   R o u t i n g 
  -       * * O b j e c t i v e * * :   E n h a n c e   J S O N   i n g e s t i o n   r e s i l i e n c e   a n d   e s t a b l i s h   a   d e d i c a t e d   r e v i e w   f l o w . 
  -       * * I m p l e m e n t a t i o n * * : 
-         -       I m p l e m e n t e d   \  e p a i r J s o n \   u t i l i t y   t o   a u t o - f i x   t r a i l i n g   c o m m a s ,   u n q u o t e d   k e y s ,   a n d   s i n g l e - q u o t e   i s s u e s . 
+         -       I m p l e m e n t e d   \ 
+ e p a i r J s o n \   u t i l i t y   t o   a u t o - f i x   t r a i l i n g   c o m m a s ,   u n q u o t e d   k e y s ,   a n d   s i n g l e - q u o t e   i s s u e s . 
          -       U p g r a d e d   \ J s o n I n g e s t B o x . t s x \   w i t h   a   1 - i n d e x e d   L i n e   N u m b e r   g u t t e r   a n d   s y n c - s c r o l l . 
          -       A d d e d   e r r o r - l i n e   h i g h l i g h t i n g   i n   t h e   i n g e s t   e d i t o r . 
          -       R e f a c t o r e d   \ F a c t o r y P r o v i d e r \   i n t o   a   l a y o u t - l e v e l   w r a p p e r   f o r   s t a t e   p e r s i s t e n c e . 
          -       E s t a b l i s h e d   d e d i c a t e d   \ / f a c t o r y / q u e s t i o n - g e n e r a t o r / r e v i e w \   r o u t e   f o r   s t a c k e d   c a r d   r e v i e w . 
- -       * * O u t c o m e * * :   H i g h - r e s i l i e n c e   i n g e s t i o n   p i p e l i n e   w i t h   p r o d u c t i o n - r e a d y   d e b u g g i n g   t o o l s .  
+ -       * * O u t c o m e * * :   H i g h - r e s i l i e n c e   i n g e s t i o n   p i p e l i n e   w i t h   p r o d u c t i o n - r e a d y   d e b u g g i n g   t o o l s . 
+ 
  
  # # #   P h a s e   8 9 :   Q u e s t i o n   F a c t o r y   P h a s e   3   ( R e v i e w   C o n s o l e ) 
  -       * * O b j e c t i v e * * :   B u i l d   a   h i g h - f i d e l i t y   i n t e r a c t i v e   w o r k s p a c e   f o r   q u e s t i o n   v e r i f i c a t i o n . 
  -       * * I m p l e m e n t a t i o n * * : 
-         -       I m p l e m e n t e d   \ Q u e s t i o n C a r d . t s x \   w i t h   \  
+         -       I m p l e m e n t e d   \ Q u e s t i o n C a r d . t s x \   w i t h   \ 
+ 
  G l a s s y \   a e s t h e t i c ,   f u l l - w i d t h   c o n s t r a i n t ,   a n d   a d a p t i v e - h e i g h t   ( Z e r o - S c r o l l ) . 
          -       I n t e g r a t e d   i n l i n e   e d i t i n g   f o r   q u e s t i o n   c o n t e n t ,   o p t i o n s   ( s e l e c t i o n / t e x t ) ,   a n d   r a t i o n a l e . 
          -       B u i l t   \ R e v i e w C o n s o l e . t s x \   w i t h   a   s t i c k y   m a n a g e m e n t   h e a d e r   a n d   p r o g r e s s   t r a c k i n g . 
          -       S t a t e   s y n c h r o n i z a t i o n   b e t w e e n   \ / f a c t o r y / q u e s t i o n - g e n e r a t o r \   a n d   \ / r e v i e w \   c o n f i r m e d   v i a   p e r s i s t e n t   l a y o u t . 
  -       * * O u t c o m e * * :   P r e m i u m ,   d e d i c a t e d   r e v i e w   e n v i r o n m e n t   t h a t   a l l o w s   s u r g i c a l   c o n t e n t   e d i t i n g   b e f o r e   p e r s i s t e n c e . 
- -       * * N o t e * * :   I d e n t i f i e d   \ N e s t e d  
- Q u o t e \   p a r s i n g   e d g e - c a s e   i n   J S O N   H e a l e r ;   f i x   p l a n n e d   f o r   P h a s e   3 . 5   u p g r a d e .  
+ -       * * N o t e * * :   I d e n t i f i e d   \ N e s t e d 
+ 
+ Q u o t e \   p a r s i n g   e d g e - c a s e   i n   J S O N   H e a l e r ;   f i x   p l a n n e d   f o r   P h a s e   3 . 5   u p g r a d e . 
+ 
  
  # # #   P h a s e   9 0 :   Q u e s t i o n   F a c t o r y   P h   3 . 5   &   3 . 6   ( H e a l e r   &   U X   U p g r a d e s ) 
  -   * * O b j e c t i v e * * :   E n h a n c e   p a r s e r   r e s i l i e n c e   a n d   e d i t o r   t r a n s p a r e n c y . 
@@ -481,12 +488,16 @@ Reduce documentation fragmentation and improve discoverability by consolidating 
          -   * * T r a n s p a r e n c y   U I * * :   A d d e d   H e a l e r   S u m m a r y   b a d g e   s h o w i n g   e s c a p e / s t r i p   s t a t s . 
          -   * * I D E   U X * * :   L o c k e d   e d i t o r   h e i g h t   t o   6 4 0 p x   w i t h   s y n c e d   i n t e r n a l   s c r o l l i n g . 
          -   * * V e r i f i c a t i o n * * :   F u l l   m o n o r e p o   b u i l d   ( @ q u i z / a d m i n - a p p ,   @ q u i z / w e b - a p p ,   @ q u i z / a p i - s e r v e r )   a n d   t s c   - - n o E m i t :   P A S S E D . 
- -   * * O u t c o m e * * :   D e l i v e r e d   a   r o b u s t ,   h i g h - f i d e l i t y   r e v i e w   e n v i r o n m e n t   w i t h   s e l f - h e a l i n g   c a p a b i l i t i e s   a n d   c l e a r   a d m i n   f e e d b a c k .   R e a d y   f o r   P h a s e   4   ( P e r s i s t e n c e ) .  
+ -   * * O u t c o m e * * :   D e l i v e r e d   a   r o b u s t ,   h i g h - f i d e l i t y   r e v i e w   e n v i r o n m e n t   w i t h   s e l f - h e a l i n g   c a p a b i l i t i e s   a n d   c l e a r   a d m i n   f e e d b a c k .   R e a d y   f o r   P h a s e   4   ( P e r s i s t e n c e ) . 
+ 
  
  # # #   P h a s e   9 1 :   Q u e s t i o n   F a c t o r y   P h   3 . 7   &   3 . 7 . 1   ( H e a l e r   R e s i l i e n c e   &   B o u n d a r y   P r e c i s i o n ) 
- -   * * O b j e c t i v e * * :   R e s o l v e   \  
- S u p e r - H e a l e r \   o v e r - e s c a p i n g   a n d   \ T r a i l i n g  
- C o m m a  
+ -   * * O b j e c t i v e * * :   R e s o l v e   \ 
+ 
+ S u p e r - H e a l e r \   o v e r - e s c a p i n g   a n d   \ T r a i l i n g 
+ 
+ C o m m a 
+ 
  T e x t \   t r u n c a t i o n   b u g s . 
  -   * * I m p l e m e n t a t i o n * * : 
          -   * * S u r g i c a l   K e y - T a r g e t e d   H e a l e r * * :   R e s t r i c t e d   r e p a i r s   t o   s p e c i f i c   s c h e m a   k e y s   ( \ q u e s t i o n T e x t \ ,   \ c o d e S n i p p e t \ ,   e t c . ) . 
@@ -494,14 +505,210 @@ Reduce documentation fragmentation and improve discoverability by consolidating 
          -   * * A r r a y - A w a r e   R e p a i r * * :   I n d e p e n d e n t   h e a l i n g   f o r   i t e m s   w i t h i n   t h e   \ o p t i o n s \   a r r a y . 
  -   * * R e s u l t * * :   S u c c e s s f u l l y   e l i m i n a t e d   s t r u c t u r a l   m a n g l i n g   a n d   v a l u e   t r u n c a t i o n .   V e r i f i e d   a g a i n s t   c o m p l e x   p a y l o a d s . 
  -   * * B u i l d * * :   F u l l   m o n o r e p o   c h a i n   b u i l d   ( R o o t   +   a l l   a p p s   +   t s c ) :   P A S S E D . 
- -   * * O u t c o m e * * :   C e r t i f i e d   P h a s e   3   a s   r e a d y   f o r   p r o d u c t i o n   d a t a   i n g e s t i o n .  
+ -   * * O u t c o m e * * :   C e r t i f i e d   P h a s e   3   a s   r e a d y   f o r   p r o d u c t i o n   d a t a   i n g e s t i o n . 
  
- # # #   P h a s e   9 2 :   F e a t u r e   -   S m a r t   P r o m p t   C o m p l i a n c e   ( P h a s e   3 . 8 ) 
- -   * * O b j e c t i v e * * :   P r e v e n t   J S O N   i n g e s t i o n   e r r o r s   a t   t h e   s o u r c e   b y   e n f o r c i n g   s t r i c t   s y n t a x   r u l e s . 
- -   * * C h a n g e s * * :   U p d a t e d   p r o m p t - s e r v i c e . t s   t o   i n c l u d e   S Y N T A X   A N D   F O R M A T T I N G   s e c t i o n : 
-         -   * * N o   M a r k d o w n * * :   F o r b i d d e n   j s o n   c o d e   b l o c k s . 
-         -   * * S t r i c t   E s c a p i n g * * :   E x p l i c i t   i n s t r u c t i o n   t o   e s c a p e   i n t e r n a l   d o u b l e   q u o t e s . 
-         -   * * S i n g l e   L i n e * * :   M a n d a t e d   n e w l i n e   c h a r s   f o r   n e w l i n e s . 
- -   * * V e r i f i c a t i o n * * :   F u l l   m o n o r e p o   b u i l d   ( R o o t ,   A d m i n ,   W e b ,   A P I )   P A S S E D . 
- -   * * O u t c o m e * * :   R e d u c e d   r e l i a n c e   o n   H e a l e r   b y   e n s u r i n g   c l e a n e r   i n i t i a l   A I   o u t p u t .  
  
+### Batch 64: Granular Dropdown Loaders
+- **UX Enhancement**: Implemented `loadingChoices` state machine in `HierarchyFactoryWizard` to track granular fetching status (Domains, Subjects, Topics).
+- **Visual Feedback**: Connected `SelectField`'s built-in `ZLoader` support to real API network states, replacing hardcoded `false` flags.
+- **Outcome**: Users now see spinning activity indicators within dropdowns during hierarchical data fetching.
+
+### Batch 65: Authentication UX Polish
+- **Component**: Enhanced `AdminLoginPage` authenticate button.
+- **State Feedback**: Added spinning `ZLoader` and "AUTHENTICATING..." text state during the login network request.
+- **Outcome**: Provided immediate visual feedback during the critical authentication handshake.
+
+### Batch 69: Finalizing Edit & Factory Labels
+- **Stylistic Cleanup**: Systematically removed trailing underscores (`_`) from all UI labels and headers in the `HierarchyFactoryWizard` for professional aesthetics.
+- **Edit Refactor**: De-coupled existing topic modification from the `HierarchyFactoryWizard`. Successfully re-implemented a dedicated **Topic Edit Modal** in `TopicTable.tsx`.
+- **Logic Hardening**: Implemented robust ID extraction fallback in `handleOpenForm` to ensure parent `domainId` and `subjectId` are correctly pre-populated when editing topics.
+- **Integrity**: Verified full monorepo build stability with an **Exit Code 0** result using the correct package filter (`@quiz/admin-app`).
+- **Outcome**: Achieved a clean, professional admin interface and a stable, isolated single-entry edit workflow.
+
+### Batch 70: AI Prompt Engineering & Hierarchy Restoration
+- **Goal**: Resolve JSX structural regressions and professionalize the AI-driven content generation flow.
+- **Structural Fix**: Corrected `createPortal` syntax violations and unified conditional rendering logic in `HierarchyFactoryWizard.tsx`.
+- **AI Orchestration**: 
+    - Implemented **Contextual Parent Injection** (Domain/Subject/Topic names) into the AI prompt.
+    - Enforced **The Reporting Trinity** (Weight, Category, Mapping Type) through explicit enum definitions in the prompt instructions.
+- **Template Alignment**: Synchronized `generateTemplate` and the `Import Template` UI to match the professional schema requirements (including `correctAnswer`).
+- **Integrity**: Achieved system-wide `Exit Code 0` on full monorepo build and `tsc` verification.
+- **Outcome**: Delivered a rock-solid, production-ready content factory with high-intelligence AI prompting.
+### Batch 71: Hierarchy UI Restoration & Intelligence Context
+- **UI Restoration**: Reverted edit modals for Domains, Subjects, Topics, and Subtopics to the "Executive White" aesthetic while maintaining the 100vw/100vh "Command Center" layout.
+- **IQ Assistant Enhancement**: Added a dedicated "Pre-selection Context" visualization in `HierarchyFactoryWizard` to show active Domain/Subject/Topic nodes above the AI prompt.
+- **Integrity**: Verified monorepo stability with a global `pnpm build` and `tsc --noEmit` audit across all 3 apps and shared packages (Exit Code 0).
+- **Outcome**: Achieved a premium, consistent classification management experience with enhanced AI prompt clarity.
+
+### Batch 72: Full-Screen Edit Modals & AI Prompt Format B
+- **Full-Screen Layout**: Converted edit modals for `DomainTable`, `SubjectTable`, and `TopicTable` from centered dialogs to full-screen layouts with `slide-in-from-right` animation.
+- **Design Consistency**: Applied unified professional header with colored icons, centered content areas (max-w-3xl), parent hierarchy context cards, and orange action buttons.
+- **AI Prompt Optimization**: Updated `HierarchyFactoryWizard` subtopic prompt from Format A (example data) to Format B (schema template with enum placeholders):
+    - Simplified options array: `["A", "B", "C", "D"]` instead of object array
+    - Clear enum placeholders: `"simple|intermediate|expert"`
+    - Added skillNames guidance with examples
+- **Build Verification**: Executed comprehensive build audit (`pnpm build`, `npx tsc --noEmit`) with 100% success across all packages.
+- **Outcome**: Delivered a consistent, immersive editing experience across all hierarchy levels and a clearer AI prompt format for content generation.
+
+### Batch 73: UI Consistency & Dropdown Remediation
+- **Dropdown Fix**: Resolved `SubjectTable` dropdown rendering issue by aligning `SelectField` options format to `{id, name}` standard.
+- **Scrollbar Elimination**: Removed double scrollbars from all full-screen hierarchy modals (`Domain`, `Subject`, `Topic`) by stripping redundant `overflow-y-auto` classes.
+- **Visual Alignment**: Unified `SubtopicTable` submit button color (Orange) to match the platform-wide "Executive White" design system.
+- **Verification**: Confirmed full monorepo build stability (Exit Code 0) after applying all UI consistency patches.
+- **Outcome**: Achieved 100% visual and functional consistency across the entire Classificaton Management hierarchy.
+
+### Batch 74: Reporting Compliance & Advanced Content Filter
+- **Compliance Audit**: Standardized the entire Admin Hierarchy (Domain > Subject > Topic > Subtopic > Skill) to enforce the "Reporting Trinity" plus `Complexity` and `Depth` dimensions.
+- **Data Integrity**: Added missing columns (`category`, `weight`, `complexity`, `depthLevel`) to all Admin Edit Forms.
+- **AI Intelligence**: Updated `HierarchyFactoryWizard` prompts to automatically generate these analytical dimensions.
+- **UX/Scalability**: Implemented "Skill Category" filtering and `<optgroup>` segmentation in `CascadingSelect` to handle 1000+ skill datasets.
+- **Verification**: Validated system-wide build stability (`Exit Code 0`) and type safety.
+- **Outcome**: Achieved full synchronization between the Database Schema, Admin UI, and AI Factory for high-fidelity reporting.
+
+### Batch 75: Bulk Factory Prompt Contextualization
+- **Prompt Engineering**: Refined AI instruction templates in `HierarchyFactoryWizard` to inject dynamic parent context (`${domainName}`, `${subjectName}`) for higher relevance.
+- **Schema Guidance**: Added detailed key explanations to prompts for `weight` (Impact 1-10), `complexityLevel` (Difficulty 1-10), and `depthLevel` (Progression 1-10).
+- **Format B Standardization**: Enforced "Format B" JSON structure guidance across all hierarchy levels to ensure AI outputs match the platform's strict ingestion schema.
+- **Outcome**: Delivered a "Smart Context" prompt engine that guides LLMs to generate high-precision, schema-compliant educational data.
+
+### Batch 76: Hierarchy Landscape Refactor (UI/UX)
+- **Grid Layout**: Converted all Hierarchy Edit Dialogs (Domain, Subject, Topic, Subtopic, Skill) to "Landscape" 2-column grids for maximum screen utilization.
+- **Standardization**: Replaced native `<select>` elements with `SelectField` components in `SkillTable.tsx` and unified dropdowns across all forms.
+- **Skill Modal**: Upgraded `SkillTable` edit form to a wider modal (`max-w-2xl`) to accommodate the new layout.
+- **Integrity**: Achieved system-wide `pnpm build` success (Exit Code 0) after refactoring all 5 hierarchy forms.
+- **Outcome**: Modernized the "Edit" experience to match the "Executive Console" aesthetic and optimized data entry workflows.
+
+### Batch 77: AI Prompt Refinement (Surgical Context)
+- **Prompt Precision**: Updated `HierarchyFactoryWizard` AI prompts to explicitly include user-requested guidance strings ("guide AI model to generate data...").
+- **Context Injection**: Enforced strict injection of `${domainName}`, `${subjectName}`, and `${topicName}` into Topic and Subtopic prompts.
+- **Field Explanations**: Added precise explanations for `weight` (1-10), `complexityLevel` (1-10), and `depthLevel` (1-10) directly into the copyable prompt text.
+- **Outcome**: Aligned AI Prompt templates 100% with user's "Expected" format for high-fidelity content generation.
+
+### Batch 78: Advanced Filter UI Layout (Target Hierarchy)
+- **UI Grid Refactor**: Re-engineered `CascadingSelect.tsx` to a row-spanning 2-column grid. "Mapped Skills" now spans 3 rows on the right, perfectly aligned with the "Topic" top-line.
+- **Component Standardization**: Converted "Technical Focus" (Skill Category) from a raw `<select>` to a standardized `SelectField` component.
+- **Visual Balance**: Aligned "Technical Focus" to stack cleanly below "Subtopic" in the left column.
+- **Outcome**: Achieved a balanced, professional "Command Center" layout for complex hierarchical filtering.
+
+### Batch 79: Hierarchy Factory Flow (Prompt Visibility)
+- **UX Policy Change**: Modified `HierarchyFactoryWizard.tsx` to force the "Intelligence Phase" (AI Prompt) display as the initial step for ALL flows, including contextual launches (Add Domain, etc.).
+- **Logic Refactor**: Updated `useState` initialization for `showEditor` to default to `false` instead of `!!initialData`.
+- **Outcome**: Ensures users always see and can copy the Surgical AI Prompt before entering the manual JSON editor.
+
+### Batch 80: Dynamic Context Switching
+- **Reactive Prompting**: Decoupled `generateAiPrompt` from static `initialData`, ensuring the prompt text updates in real-time when users change dropdown selections.
+- **Live Context UI**: Updated "Pre-selection Context" visualizers to prioritize the active `selections` state over the initial context snapshot. Renamed label to **Active Target Scope** to reflect dynamic nature.
+- **Live Context UI**: Updated "Pre-selection Context" visualizers to prioritize the active `selections` state over the initial context snapshot. Renamed label to **Active Target Scope** to reflect dynamic nature.
+- **Outcome**: Users can now trigger a factory flow from one context (e.g. "Database Systems") and dynamically switch to another (e.g. "Cloud Computing") without the UI or Prompt getting "stuck" on the original entry point.
+
+### Batch 81: Bulk Factory UX Simplification
+- **Streamlined Workflow**: Removed "Import Template" button (redundant) to focus users on "AI Generation" vs "File Upload" paths.
+- **Clarity**: Renamed "Manual Manifest Mode" to **"Paste JSON Payload"** to explicitly guide the AI-to-Editor copy-paste flow.
+- **Navigation**: Added a **"Back to Intelligence"** (ArrowLeft) button in the Editor Header, resolving a one-way navigation trap.
+- **Navigation**: Added a **"Back to Intelligence"** (ArrowLeft) button in the Editor Header, resolving a one-way navigation trap.
+- **Outcome**: A cleaner, loop-capable interface: Prompt -> Copy -> Paste -> (Back if needed) -> Validated.
+
+### Batch 82: UI Polish (Watermark Component)
+- **Visual Refactor**: Replaced the standard "Paste JSON" button with a **Dashed-Border Watermark Card** style (resembling "Awaiting Selection" placeholders).
+- **Dynamic Labeling**: The Watermark now dynamically prompts the specific target (e.g., "PASTE TOPIC PAYLOAD"), reinforcing the current context visibly.
+- **Dynamic Labeling**: The Watermark now dynamically prompts the specific target (e.g., "PASTE TOPIC PAYLOAD"), reinforcing the current context visibly.
+- **Outcome**: The empty state of the Editor pipeline now looks like a "Drop Zone", guiding the user intuitively to the next step.
+
+### Batch 83: High-Fidelity Refinement
+- **Visual Harmony**: Switched the AI Prompt container from a dark terminal block (`#1A1A1A`) to a **Glassy/Light** aesthetic (`bg-slate-50`) to match the overall application design.
+- **Header Breadcrumbs**: Relocated the "Active Target Scope" (Context) from the body to a compact **Header Breadcrumb** (e.g., `DOMAIN / SUBJECT / TOPIC`). This reduces vertical clutter and aligns with standard information architecture.
+- **Header Breadcrumbs**: Relocated the "Active Target Scope" (Context) from the body to a compact **Header Breadcrumb** (e.g., `DOMAIN / SUBJECT / TOPIC`). This reduces vertical clutter and aligns with standard information architecture.
+- **Outcome**: A polished, consistent UI where metadata is unobtrusive (Header) and content is legible (Light Prompt).
+
+### Batch 84: Editor Phase Transition & Overlay
+- **Symmetric Navigation**: Added an **"Open Editor"** (FileJson) button to the Prompt Header (Top Right), creating a clear entry point to the Draft Phase.
+- **Prompt Expansion**: Removed the large bottom "Paste JSON" button, allowing the AI Prompt container to fully expand and utilize the available vertical space.
+- **Watermark Overlay**: Relocated the beautiful dashed-border Watermark component to be an **Internal Overlay** within the JSON Editor. It appears only when the editor is empty (`!payload`), providing contextual guidance ("PASTE SUBTOPIC PAYLOAD") directly at the point of action.
+- **Watermark Overlay**: Relocated the beautiful dashed-border Watermark component to be an **Internal Overlay** within the JSON Editor. It appears only when the editor is empty (`!payload`), providing contextual guidance ("PASTE SUBTOPIC PAYLOAD") directly at the point of action.
+- **Outcome**: A seamless, context-aware workflow where the UI anticipates the user's intent at every step.
+
+### Batch 85: Validation & Style Polish
+- **Prompt Typography**: Updated the AI Prompt text style to `blue-600` (Sans-Serif), giving it a cleaner, modern schema look without the "code-block" heaviness.
+- **Context Guard Rails**: Added **Context Selectors** (Dropdowns for Domain/Subject/Topic) directly to the **Headers of TopicTable and SubtopicTable**.
+- **Launch Validation**: The "Add Topic" and "Add Subtopic" buttons are now **Disabled** by default. They only become active when the user has explicitly selected the required parent context (e.g., Domain + Subject). This blocks "Contextless Launches" at the source, ensuring the Bulk Factory always receives valid initialization data.
+- **Outcome**: Eliminated the risk of generating generic/invalid prompts by enforcing strict hierarchical boundaries before entry.
+
+*(Revision - Batch 85B)*:
+- **Strategy Shift**: Reverted Table Header Dropdowns to maintain a cleaner UI in the Question Bank.
+- **Internal Guard**: Implemented validation **inside the Wizard**. The "Bulk Factory" (AI Prompt) button is now **Locked/Disabled** if the required context (Domain/Subject) is missing in Manual Mode. A tooltip guides the user to "Select Context to Unlock".
+- **Outcome**: Preserves the clean "Question Bank" UI while still enforcing strict prompt context.
+
+### Batch 86: Factory Logic Refinement
+- **Editor Initialization**: The JSON Editor now initializes as an **Empty String** (`''`) instead of pre-filling with the configuration object. This ensures the "Watermark" is visible by default.
+- **Strict Unlock Logic**: Refined the "Bulk Factory" button validation to require **ALL** ancestor contexts based on target depth.
+    -   *Topic Target*: Requires Domain + Subject.
+    -   *Subtopic Target*: Requires Domain + Subject + Topic.
+-   **Outcome**: Prevents "Partial Context" unlocking (e.g., unlocking Topic mode with only Domain selected) and ensures AI prompts are fully contextualized.
+
+### Phase 87: Question Factory Refinement & Ingest (Phase 1 & 2)
+- **Objective**: Refine Question Factory GUI and implement Ingest & Parser logic.
+- **Implementation**:
+    - Restored Topic selector and enforced 2x2 grid in \ContextSelector.tsx\.
+    - Synchronized dropdowns with \Executive\ styling (Question Bank standard).
+    - Fixed Plus (+) button logic and visibility in \DistributionMatrix.tsx\.
+    - Reverted Total Assets badge to soft/light aesthetic.
+    - Implemented \JsonValidator\ with prefix stripping and schema enforcement.
+    - Established \FactoryContext\ for batch state management.
+    - Integrated \JsonIngestBox\ for payload ingestion.
+- **Outcome**: Premium UI alignment and functional bridge between AI output and internal state.
+
+### Phase 88: Ingest Logic Repairs & Multi-Step Routing
+- **Objective**: Enhance JSON ingestion resilience and establish a dedicated review flow.
+- **Implementation**:
+    - Implemented \repairJson\ utility to auto-fix trailing commas, unquoted keys, and single-quote issues.
+    - Upgraded \JsonIngestBox.tsx\ with a 1-indexed Line Number gutter and sync-scroll.
+    - Added error-line highlighting in the ingest editor.
+    - Refactored \FactoryProvider\ into a layout-level wrapper for state persistence.
+    - Established dedicated \/factory/question-generator/review\ route for stacked card review.
+- **Outcome**: High-resilience ingestion pipeline with production-ready debugging tools.
+
+### Phase 89: Question Factory Phase 3 (Review Console)
+- **Objective**: Build a high-fidelity interactive workspace for question verification.
+- **Implementation**:
+    - Implemented \QuestionCard.tsx\ with \Glassy\ aesthetic, full-width constraint, and adaptive-height (Zero-Scroll).
+    - Integrated inline editing for question content, options (selection/text), and rationale.
+    - Built \ReviewConsole.tsx\ with a sticky management header and progress tracking.
+    - State synchronization between \/factory/question-generator\ and \/review\ confirmed via persistent layout.
+- **Outcome**: Premium, dedicated review environment that allows surgical content editing before persistence.
+- **Note**: Identified \Nested\ Quote parsing edge-case in JSON Healer; fix planned for Phase 3.5 upgrade.
+
+### Phase 90: Question Factory Ph 3.5 & 3.6 (Healer & UX Upgrades)
+- **Objective**: Enhance parser resilience and editor transparency.
+- **Implementation**:
+    - **JSON Healer Upgrade**: Implemented contextual escaping for unescaped internal double quotes in values.
+    - **Transparency UI**: Added Healer Summary badge showing escape/strip stats.
+    - **IDE UX**: Locked editor height to 640px with synced internal scrolling.
+    - **Verification**: Full monorepo build (@quiz/admin-app, @quiz/web-app, @quiz/api-server) and tsc --noEmit: PASSED.
+- **Outcome**: Delivered a robust, high-fidelity review environment with self-healing capabilities and clear admin feedback. Ready for Phase 4 (Persistence).
+
+### Phase 91: Question Factory Ph 3.7 & 3.7.1 (Healer Resilience & Boundary Precision)
+- **Objective**: Resolve \Super-Healer\ over-escaping and \Trailing Comma Text\ truncation bugs.
+- **Implementation**:
+    - **Surgical Key-Targeted Healer**: Restricted repairs to specific schema keys (\questionText\, \codeSnippet\, etc.).
+    - **Boundary Safeguards**: Implemented lookahead ensuring quotes only end property values if followed by structural markers (newline, next key, or closing brace).
+    - **Array-Aware Repair**: Independent healing for items within the \options\ array.
+- **Result**: Successfully eliminated structural mangling and value truncation. Verified against complex payloads.
+- **Build**: Full monorepo chain build (Root + all apps + tsc): PASSED.
+- **Outcome**: Certified Phase 3 as ready for production data ingestion.
+
+### Phase 92: Feature - Smart Prompt Compliance (Phase 3.8)
+- **Objective**: Prevent JSON ingestion errors at the source by enforcing strict syntax rules.
+- **Changes**: Updated prompt-service.ts to include SYNTAX AND FORMATTING section:
+    - **No Markdown**: Forbidden json code blocks.
+    - **Strict Escaping**: Explicit instruction to escape internal double quotes.
+    - **Single Line**: Mandated newline chars for newlines.
+- **Verification**: Full monorepo build (Root, Admin, Web, API) PASSED.
+- **Outcome**: Reduced reliance on Healer by ensuring cleaner initial AI output.
+
+### Phase 93: UI Standardization (Phase 3 Complete)
+-   **Objective**: Align Question Factory aesthetics with the "Executive Console" standard (Light Mode, Blue Text).
+-   **Changes**:
+    -   **Code Viewer**: Replaced "Dark Terminal" with "Surgical AI Prompt" light theme (Slate-50 + Blue-600).
+    -   **Consistency**: Matched `HierarchyFactoryWizard` read-only preview styles 1:1.
+-   **Verification**: Verified visual alignment and ran full build check (Exit Code 0).
+-   **Outcome**: Design is now 100% consistent with the platform's visual language. Ready for Phase 4 (Persistence).
