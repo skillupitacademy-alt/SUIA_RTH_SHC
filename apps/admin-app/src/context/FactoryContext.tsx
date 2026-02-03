@@ -29,33 +29,53 @@ export function FactoryProvider({ children }: { children: ReactNode }) {
     const [isIngesting, setIsIngesting] = useState(false);
     const [validationErrors, setValidationErrors] = useState<string[]>([]);
     const [lastHealingReport, setLastHealingReport] = useState<any | null>(null);
+    const [isInitialized, setIsInitialized] = useState(false);
 
     // Hydrate from storage on mount
     React.useEffect(() => {
+        console.log('[Persistence] 🔴 SYSTEM START: Safety Lock ACTIVE. Saving disabled.');
+        console.log('[Persistence] 💿 HYDRATION: Reading from localStorage...');
         try {
             const saved = localStorage.getItem(STORAGE_KEY);
             if (saved) {
                 const parsed = JSON.parse(saved);
-                if (parsed.blueprint) setBlueprint(parsed.blueprint);
-                if (parsed.stagedQuestions) setStagedQuestions(parsed.stagedQuestions);
+                if (parsed.blueprint) {
+                    setBlueprint(parsed.blueprint);
+                    console.log(`[Persistence] ✅ FOUND DATA: Restored Blueprint ID ${parsed.blueprint.topicId}`);
+                }
+                if (parsed.stagedQuestions) {
+                    setStagedQuestions(parsed.stagedQuestions);
+                    console.log(`[Persistence] ✅ FOUND DATA: Restored ${parsed.stagedQuestions.length} questions`);
+                }
+            } else {
+                console.log('[Persistence] ⚪ NO DATA: Starting fresh session.');
             }
         } catch (e) {
-            console.error("Failed to hydrate factory state", e);
+            console.error("[Persistence] ❌ HYDRATION FAILED", e);
+        } finally {
+            setIsInitialized(true);
+            console.log('[Persistence] 🟢 UNLOCKING: Safety Lock REMOVED. System ready.');
         }
     }, []);
 
     // Persist state on changes
     React.useEffect(() => {
+        if (!isInitialized) {
+            // console.warn('[Persistence] ⚠️ BLOCKED: Attempted to save before initialization.');
+            return;
+        }
+
         const timeout = setTimeout(() => {
             try {
                 const state = { blueprint, stagedQuestions };
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+                console.log(`[Persistence] 💾 AUTO-SAVE: Wrote state to storage. Questions: ${stagedQuestions.length}`);
             } catch (e) {
                 console.error("Failed to persist factory state", e);
             }
         }, 500); // Debounce to avoid thrashing storage
         return () => clearTimeout(timeout);
-    }, [blueprint, stagedQuestions]);
+    }, [blueprint, stagedQuestions, isInitialized]);
 
     const ingestRawJson = (json: string): boolean => {
         setIsIngesting(true);

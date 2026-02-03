@@ -325,3 +325,14 @@
     -   Result: **EXIT CODE 0** (Clean Build).
 - **Outcome**: Delivered a resilient, persistent Factory environment ready for heavy-duty content creation.
 
+
+### Phase 5.1.1: Factory Safety Lock & Instrumentation (Batch 97.1)
+- **Objective**: Prevent session loss (Null Overwrite) during rapid hydration from localStorage.
+- **Implementation**:
+    - **Safety Lock**: Added 'isInitialized' guard to 'FactoryContext' to block auto-saving until hydration completes.
+    - **Instrumentation**: Added '[Persistence]' logging prefix for production debugging/auditing.
+    - **UX**: Guaranteed 'Blueprint' context survival across refresh cycles.
+- **Global Verification**:
+    - Build Suite: 'pnpm build' + 'tsc --noEmit' (Exit Code 0).
+- **Outcome**: Achieved 100% session stability and verifiability for the Factor Console.
+
