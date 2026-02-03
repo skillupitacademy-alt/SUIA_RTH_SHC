@@ -21,12 +21,41 @@ interface FactoryContextType {
 
 const FactoryContext = createContext<FactoryContextType | undefined>(undefined);
 
+const STORAGE_KEY = 'quiz-factory-storage-v1';
+
 export function FactoryProvider({ children }: { children: ReactNode }) {
     const [blueprint, setBlueprint] = useState<FactoryBlueprint | null>(null);
     const [stagedQuestions, setStagedQuestions] = useState<GeneratedQuestion[]>([]);
     const [isIngesting, setIsIngesting] = useState(false);
     const [validationErrors, setValidationErrors] = useState<string[]>([]);
     const [lastHealingReport, setLastHealingReport] = useState<any | null>(null);
+
+    // Hydrate from storage on mount
+    React.useEffect(() => {
+        try {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                if (parsed.blueprint) setBlueprint(parsed.blueprint);
+                if (parsed.stagedQuestions) setStagedQuestions(parsed.stagedQuestions);
+            }
+        } catch (e) {
+            console.error("Failed to hydrate factory state", e);
+        }
+    }, []);
+
+    // Persist state on changes
+    React.useEffect(() => {
+        const timeout = setTimeout(() => {
+            try {
+                const state = { blueprint, stagedQuestions };
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+            } catch (e) {
+                console.error("Failed to persist factory state", e);
+            }
+        }, 500); // Debounce to avoid thrashing storage
+        return () => clearTimeout(timeout);
+    }, [blueprint, stagedQuestions]);
 
     const ingestRawJson = (json: string): boolean => {
         setIsIngesting(true);
@@ -70,6 +99,10 @@ export function FactoryProvider({ children }: { children: ReactNode }) {
         setStagedQuestions([]);
         setValidationErrors([]);
         setLastHealingReport(null);
+        // We might want to keep the blueprint (context) active even if we clear questions?
+        // User requested "Clear Batch", usually implies clearing questions.
+        // If they want to switch topic, they usually go back to ingest.
+        // Let's keep blueprint for now, as it's the "folder" we are working in.
     };
 
     return (
