@@ -4,7 +4,6 @@ import { Sidebar } from "@/components/dashboard/Sidebar";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 import { useDashboardStore } from "@/store/dashboard-store";
 import { useEffect } from "react";
-import { cn } from "@/lib/utils";
 import { BookOpen, Calendar, ArrowRight, ChevronLeft } from "lucide-react";
 import Link from "next/link";
 import { MobileNav } from "@/components/dashboard/MobileNav";

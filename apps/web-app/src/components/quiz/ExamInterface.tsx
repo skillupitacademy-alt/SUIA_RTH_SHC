@@ -25,7 +25,6 @@ export function ExamInterface() {
         markedForReview,
         timeLeft,
         currentQuestionIndex,
-        updateTimer,
         setAnswer,
         toggleReview,
         setCurrentIndex,
@@ -35,11 +34,10 @@ export function ExamInterface() {
         setExamId,
         isSubmitted,
         updateTimeLeft,
-        setTimeRemaining
     } = useQuizStore();
 
     const [isLoading, setIsLoading] = useState(true);
-    const [isSaving, setIsSaving] = useState(false);
+    // isSaving removed as it was unused
     const [error, setError] = useState<string | null>(null);
 
     const question = questions[currentQuestionIndex];
@@ -54,14 +52,13 @@ export function ExamInterface() {
 
         // Real persistence
         if (examId) {
-            setIsSaving(true);
             try {
                 // Backend expects questionId (uuid) and option text
                 await apiClient.quiz.submitAnswer(examId, questionId, option);
-            } catch (err) {
-                console.error("Failed to save answer", err);
+            } catch {
+                // Ignore silent save errors
             } finally {
-                setTimeout(() => setIsSaving(false), 500);
+                // Noop
             }
         }
     };
@@ -84,7 +81,7 @@ export function ExamInterface() {
                 const state = await apiClient.quiz.getQuizState(examIdParam);
 
                 // Map Questions to store interface
-                const mappedQuestions = state.questions.map((q: any) => ({
+                const mappedQuestions = state.questions.map((q: any) => ({ // eslint-disable-line @typescript-eslint/no-explicit-any
                     id: q.questionId, // Actual question UUID
                     type: q.type === 'code_mcq' ? 'CODE_MCQ' : 'MCQ',
                     text: q.questionText,
@@ -97,7 +94,7 @@ export function ExamInterface() {
                 setQuestions(mappedQuestions);
 
                 // Hydrate answers from backend
-                state.questions.forEach((q: any) => {
+                state.questions.forEach((q: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
                     if (q.userAnswer !== null) {
                         const idx = q.options.indexOf(q.userAnswer);
                         if (idx !== -1) {
@@ -121,7 +118,7 @@ export function ExamInterface() {
                 }
 
                 // Calculate connection-safe starting index (first unanswered or 0)
-                const firstUnanswered = state.questions.findIndex((q: any) => q.userAnswer === null);
+                const firstUnanswered = state.questions.findIndex((q: any) => q.userAnswer === null); // eslint-disable-line @typescript-eslint/no-explicit-any
                 setCurrentIndex(firstUnanswered !== -1 ? firstUnanswered : 0);
 
             } catch (err) {

@@ -14,7 +14,7 @@ interface AuthGuardProps {
 export function AuthGuard({ children, requireAdmin = false }: AuthGuardProps) {
     const router = useRouter();
     const pathname = usePathname();
-    const { user, login, logout } = useAuthStore();
+    const { user, login } = useAuthStore();
     const [isChecking, setIsChecking] = useState(true);
 
     useEffect(() => {
@@ -52,7 +52,7 @@ export function AuthGuard({ children, requireAdmin = false }: AuthGuardProps) {
                     return;
                 }
 
-            } catch (err) {
+            } catch {
                 if (pathname !== '/login' && pathname !== '/signup') {
                     router.push(`/login?redirect=${encodeURIComponent(pathname)}`);
                 }

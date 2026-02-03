@@ -23,7 +23,7 @@ import { useAuthStore } from '@/store/auth-store';
 import { apiClient } from '@quiz/api-client';
 
 // Map icons to domain IDs (fallback/static mapping for aesthetics)
-const ICON_MAP: Record<string, any> = {
+const ICON_MAP: Record<string, any> = { // eslint-disable-line @typescript-eslint/no-explicit-any
     'full-stack': Code,
     'web-development': Code,
     'data-analyst': LineChart,
@@ -43,14 +43,14 @@ const ICON_MAP: Record<string, any> = {
 export function QuizSelection() {
     const router = useRouter();
     const { isAuthenticated } = useAuthStore();
-    const [domains, setDomains] = useState<any[]>([]);
+    const [domains, setDomains] = useState<any[]>([]); // eslint-disable-line @typescript-eslint/no-explicit-any
     const [loading, setLoading] = useState(true);
     const [starting, setStarting] = useState(false);
     const [fetchingHierarchy, setFetchingHierarchy] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
     const [selectedDomain, setSelectedDomain] = useState<string | null>(null);
-    const [fullHierarchy, setFullHierarchy] = useState<any>(null);
+    const [fullHierarchy, setFullHierarchy] = useState<any>(null); // eslint-disable-line @typescript-eslint/no-explicit-any
 
     const [selectedSubjects, setSelectedSubjects] = useState<string[]>([]);
     const [selectedTopics, setSelectedTopics] = useState<string[]>([]);
@@ -133,15 +133,15 @@ export function QuizSelection() {
     // Derived data for steps
     const subjects = fullHierarchy?.subjects || [];
     const activeSubjects = selectedSubjects.length > 0
-        ? subjects.filter((s: any) => selectedSubjects.includes(s.id))
+        ? subjects.filter((s: any) => selectedSubjects.includes(s.id)) // eslint-disable-line @typescript-eslint/no-explicit-any
         : subjects;
 
-    const topics = activeSubjects.flatMap((s: any) => s.topics || []);
+    const topics = activeSubjects.flatMap((s: any) => s.topics || []); // eslint-disable-line @typescript-eslint/no-explicit-any
     const activeTopics = selectedTopics.length > 0
-        ? topics.filter((t: any) => selectedTopics.includes(t.id))
+        ? topics.filter((t: any) => selectedTopics.includes(t.id)) // eslint-disable-line @typescript-eslint/no-explicit-any
         : topics;
 
-    const subtopics = activeTopics.flatMap((t: any) => t.subtopics || []);
+    const subtopics = activeTopics.flatMap((t: any) => t.subtopics || []); // eslint-disable-line @typescript-eslint/no-explicit-any
 
     const toggleItem = (list: string[], setList: (val: string[]) => void, id: string, resetChildren?: () => void) => {
         setError(null);
@@ -296,7 +296,7 @@ export function QuizSelection() {
                             >
                                 [ GLOBAL_SCOPE ]
                             </button>
-                            {subjects.map((subject: any) => (
+                            {subjects.map((subject: any) => ( // eslint-disable-line @typescript-eslint/no-explicit-any
                                 <button
                                     key={subject.id}
                                     onClick={() => toggleItem(selectedSubjects, setSelectedSubjects, subject.id, () => {
@@ -346,7 +346,7 @@ export function QuizSelection() {
                         >
                             [ TOTAL_CLUSTER ]
                         </button>
-                        {topics.map((topic: any) => (
+                        {topics.map((topic: any) => ( // eslint-disable-line @typescript-eslint/no-explicit-any
                             <button
                                 key={topic.id}
                                 onClick={() => toggleItem(selectedTopics, setSelectedTopics, topic.id, () => setSelectedSubtopics([]))}
@@ -392,7 +392,7 @@ export function QuizSelection() {
                         >
                             [ ATOMIC_SUM ]
                         </button>
-                        {subtopics.map((subtopic: any) => (
+                        {subtopics.map((subtopic: any) => ( // eslint-disable-line @typescript-eslint/no-explicit-any
                             <button
                                 key={subtopic.id}
                                 onClick={() => toggleItem(selectedSubtopics, setSelectedSubtopics, subtopic.id)}

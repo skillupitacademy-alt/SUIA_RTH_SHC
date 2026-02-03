@@ -15,7 +15,7 @@ import { useEffect } from "react";
 
 export default function DashboardPage() {
     const { user } = useAuthStore();
-    const { data, fetchDashboard, loading } = useDashboardStore();
+    const { data, fetchDashboard } = useDashboardStore();
 
     useEffect(() => {
         fetchDashboard();

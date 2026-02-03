@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { cn } from '@/lib/utils';
 
 export function ProgressChart({ trendData = [] }: { trendData?: Array<{ score: number; date: string }> }) {
-    const { fetchDashboard, loading } = useDashboardStore();
+    const { fetchDashboard } = useDashboardStore();
     const [range, setRange] = useState('7d');
 
     const handleRangeChange = (newRange: string) => {

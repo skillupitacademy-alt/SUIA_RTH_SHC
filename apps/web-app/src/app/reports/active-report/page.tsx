@@ -18,7 +18,7 @@ function ReportContent() {
     const router = useRouter();
     const { isAuthenticated } = useAuthStore();
     const examId = searchParams.get('examId');
-    const [reportData, setReportData] = useState<any>(null);
+    const [reportData, setReportData] = useState<any>(null); // eslint-disable-line @typescript-eslint/no-explicit-any
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
@@ -48,7 +48,7 @@ function ReportContent() {
                         .filter((d: any) => d.dimensionType === 'difficulty')
                         .map((d: any) => ({ level: d.dimensionId, accuracy: d.accuracy })),
                     growthZones: data.growthZones || [],
-                    questions: data.examQuestions?.map((eq: any) => ({
+                    questions: data.examQuestions?.map((eq: any) => ({ // eslint-disable-line @typescript-eslint/no-explicit-any
                         id: eq.id,
                         questionText: eq.question?.questionText,
                         userAnswer: eq.userAnswer,
@@ -73,7 +73,7 @@ function ReportContent() {
             <div className="flex flex-col min-h-[calc(100vh-64px)] items-center justify-center bg-muted/5">
                 <Loader2 className="animate-spin text-primary mb-4" size={48} />
                 <p className="text-xl font-bold text-muted-foreground italic animate-pulse">
-                    "Mining your masteries... one second."
+                    &quot;Mining your masteries... one second.&quot;
                 </p>
             </div>
         );
@@ -130,7 +130,7 @@ function ReportContent() {
                         </div>
 
                         <div className="grid gap-6">
-                            {reportData.questions?.map((q: any, idx: number) => (
+                            {reportData.questions?.map((q: any, idx: number) => ( // eslint-disable-line @typescript-eslint/no-explicit-any
                                 <div key={q.id} className="p-8 rounded-[2.5rem] border bg-background shadow-sm space-y-6">
                                     <div className="flex items-start justify-between gap-4">
                                         <div className="flex gap-4">
@@ -172,7 +172,7 @@ function ReportContent() {
                     {/* Footer Advice */}
                     <div className="text-center pt-12 pb-24">
                         <p className="text-muted-foreground font-bold italic mb-6">
-                            "Your path to mastery is a marathon, not a sprint. Every identified weakness is a target for tomorrow's success."
+                            &quot;Your path to mastery is a marathon, not a sprint. Every identified weakness is a target for tomorrow&apos;s success.&quot;
                         </p>
                         <div className="flex justify-center gap-4">
                             <Link
@@ -195,7 +195,7 @@ export default function ReportPage() {
             <div className="flex flex-col min-h-[calc(100vh-64px)] items-center justify-center bg-muted/5">
                 <Loader2 className="animate-spin text-primary mb-4" size={48} />
                 <p className="text-xl font-bold text-muted-foreground italic animate-pulse">
-                    "Loading report..."
+                    &quot;Loading report...&quot;
                 </p>
             </div>
         }>

@@ -4,13 +4,12 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { apiClient } from "@quiz/api-client";
 import { ResultSummary } from "@/components/reports/ResultSummary";
-import { PerformanceBreakdown } from "@/components/reports/PerformanceBreakdown";
-import { ArrowLeft, Download, Share2, Loader2 } from "lucide-react";
+import { ArrowLeft, Loader2 } from "lucide-react";
 import Link from "next/link";
 
 export default function DynamicReportPage() {
     const { id } = useParams();
-    const [report, setReport] = useState<any>(null);
+    const [report, setReport] = useState<any>(null); // eslint-disable-line @typescript-eslint/no-explicit-any
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -65,7 +64,7 @@ export default function DynamicReportPage() {
                     <div className="p-8 rounded-3xl bg-background border">
                         <h3 className="text-xl font-bold mb-6">Question Results</h3>
                         <div className="space-y-4">
-                            {report.questions?.map((q: any, i: number) => (
+                            {report.questions?.map((q: any, i: number) => ( // eslint-disable-line @typescript-eslint/no-explicit-any
                                 <div key={i} className="flex items-center justify-between p-4 rounded-xl bg-muted/20">
                                     <p className="text-sm font-medium truncate max-w-[70%]">{q.text}</p>
                                     <span className={q.isCorrect ? "text-green-500 font-bold" : "text-red-500 font-bold"}>

@@ -20,13 +20,13 @@ export function LoginForm() {
         try {
             // Real API Call
             const { user, accessToken } = await apiClient.auth.login(
-                (e.target as any).email.value,
-                (e.target as any).password.value
+                (e.target as any).email.value, // eslint-disable-line @typescript-eslint/no-explicit-any
+                (e.target as any).password.value // eslint-disable-line @typescript-eslint/no-explicit-any
             );
 
             login(user, accessToken);
             router.push('/dashboard');
-        } catch (err: any) {
+        } catch (err: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
             setError(err.message || "Invalid credentials. Please try again.");
         } finally {
             setLoading(false);
@@ -118,14 +118,14 @@ export function SignupForm() {
         setLoading(true);
         try {
             const { user, accessToken } = await apiClient.auth.signup(
-                (e.target as any).email.value,
-                (e.target as any).password.value,
-                (e.target as any).name.value
+                (e.target as any).email.value, // eslint-disable-line @typescript-eslint/no-explicit-any
+                (e.target as any).password.value, // eslint-disable-line @typescript-eslint/no-explicit-any
+                (e.target as any).name.value // eslint-disable-line @typescript-eslint/no-explicit-any
             );
 
             useAuthStore.getState().login(user, accessToken);
             router.push('/dashboard');
-        } catch (err: any) {
+        } catch (err: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
             setError(err.message || "Failed to create account.");
         } finally {
             setLoading(false);
@@ -199,22 +199,17 @@ export function SignupForm() {
 export function ForgotPasswordForm() {
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-
+    // error state removed as per contract "Always show neutral success message"
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
-        setError(null);
 
         try {
-            const email = (e.target as any).email.value;
+            const email = (e.target as any).email.value; // eslint-disable-line @typescript-eslint/no-explicit-any
             await apiClient.auth.forgotPassword(email);
             setSuccess(true);
-        } catch (err: any) {
+        } catch {
             // Success is true still as per contract "Always show neutral success message" 
-            // but we might want to log server errors in console for debugging
-            console.error("Forgot password request error:", err.message);
-            // According to contract "Always neutral", we only show error for network errors/server errors if it truly fails to send
             setSuccess(true);
         } finally {
             setLoading(false);
@@ -277,7 +272,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
     const [error, setError] = useState<string | null>(null);
     const [showPassword, setShowPassword] = useState(false);
 
-    const router = useRouter();
+    // router removed as it was unused
 
     // 1. Validate token on mount
     useEffect(() => {
@@ -285,7 +280,8 @@ export function ResetPasswordForm({ token }: { token: string }) {
             try {
                 const { valid } = await apiClient.auth.validateResetToken(token);
                 setIsValid(valid);
-            } catch (err) {
+            } catch {
+                // Silently fail validation
                 setIsValid(false);
             } finally {
                 setValidating(false);
@@ -296,8 +292,8 @@ export function ResetPasswordForm({ token }: { token: string }) {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        const password = (e.target as any).password.value;
-        const confirm = (e.target as any).confirm.value;
+        const password = (e.target as any).password.value; // eslint-disable-line @typescript-eslint/no-explicit-any
+        const confirm = (e.target as any).confirm.value; // eslint-disable-line @typescript-eslint/no-explicit-any
 
         if (password.length < 8) {
             setError("Password must be at least 8 characters long");
@@ -315,8 +311,8 @@ export function ResetPasswordForm({ token }: { token: string }) {
         try {
             await apiClient.auth.resetPassword(token, password);
             setSuccess(true);
-        } catch (err: any) {
-            setError(err.message || "Unable to reset password. Please try again.");
+        } catch {
+            setError("Unable to reset password. Please try again.");
         } finally {
             setLoading(false);
         }

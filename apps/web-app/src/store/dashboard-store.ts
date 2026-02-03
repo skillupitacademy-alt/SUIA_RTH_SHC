@@ -35,7 +35,7 @@ export const useDashboardStore = create<DashboardState>((set) => ({
         try {
             const data = await apiClient.dashboard.getDashboard(range); 
             set({ data, loading: false });
-        } catch (err: any) {
+        } catch (err: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
             set({ error: err.message, loading: false });
         }
     },

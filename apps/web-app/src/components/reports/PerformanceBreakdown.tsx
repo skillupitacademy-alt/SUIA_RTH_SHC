@@ -1,4 +1,4 @@
-import { TrendingUp, TrendingDown, BookOpen, Star, AlertCircle } from 'lucide-react';
+import { TrendingUp, BookOpen, Star } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface PerformanceBreakdownProps {
