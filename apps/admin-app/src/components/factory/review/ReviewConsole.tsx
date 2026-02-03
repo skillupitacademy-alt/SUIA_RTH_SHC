@@ -11,7 +11,7 @@ import { cn } from '@/lib/utils';
 import { GeneratedQuestion } from '@/types/factory';
 
 export function ReviewConsole() {
-    const { stagedQuestions, updateQuestion, removeQuestion, clearStage } = useFactory();
+    const { stagedQuestions, updateQuestion, removeQuestion, clearStage, resetFactory } = useFactory();
 
     const handleDeleteAll = () => {
         if (confirm("Are you sure you want to clear all staged questions? This cannot be undone.")) {
@@ -115,8 +115,8 @@ export function ReviewConsole() {
                 // We should probably show a summary toast or modal
                 alert(`Success! Saved ${result.insertedCount} questions and created ${result.newSkillsCreated} new skills.`);
 
-                // Clear the stage
-                clearStage();
+                // Reset the entire factory workspace after successful commitment
+                resetFactory();
 
                 // Optional: Redirect back or show confetti
                 window.location.href = '/factory/question-generator';
