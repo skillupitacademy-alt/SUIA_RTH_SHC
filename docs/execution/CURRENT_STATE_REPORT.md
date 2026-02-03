@@ -428,3 +428,14 @@
     - **Rationale**: Ensures robust compatibility between Next.js server/client boundaries and pure-ESM third-party libraries.
 - **Verification**: strict build sequence (pnpm build, scoped builds, tsc) PASSED.
 - **Status**: **READY FOR DEPLOYMENT**. Committing to Release Candidate.
+### Phase 23: Hierarchy UI Standardization (Executive Stack)
+- **Review Cards**: Standardized all hierarchy levels (Domains, Subjects, Skills, Topics, Subtopics) into a high-fidelity Vertical Card Stack.
+- **Metadata Visibility**: Integrated domain classification, subject lineage, and skill impact metrics into every card.
+- **Batch Deletion**: Unified batch deletion logic using `AlertDialog` across all hierarchy layers.
+- **Factory Access**: Standardized "Bulk Factory" entry points in all hierarchy tables.
+
+### Phase 24: Executive Aesthetic Refinement (Batch 110)
+- **UI Tone-down**: Removed high-contrast "fancy" elements (dark index circles, rotations) to align with original project aesthetic.
+- **Index Standardization**: Implemented clean, color-coded index badges (`bg-*-50`, `text-*-600`) for all content cards.
+- **Factory UI Polish**: Refined the orchestration IDE with "Inquiry Stage" and "Draft Stage" labels and toned down factory headers.
+- **System Integrity**: Verified monorepo build and type safety (Exit Code 0).

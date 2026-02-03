@@ -54,8 +54,8 @@ export function SubtopicReviewCard({
                     </div>
 
                     <div className={cn(
-                        "w-10 h-10 rounded-2xl flex items-center justify-center font-black italic shadow-lg transition-all duration-500",
-                        isSelected ? "bg-teal-500 text-white rotate-3 scale-110" : "bg-slate-900 text-teal-500"
+                        "w-10 h-10 rounded-2xl flex items-center justify-center font-bold border-2 transition-all duration-300",
+                        isSelected ? "bg-teal-600 text-white border-teal-600 shadow-lg" : "bg-teal-50 text-teal-600 border-teal-100"
                     )}>
                         #{index + 1}
                     </div>

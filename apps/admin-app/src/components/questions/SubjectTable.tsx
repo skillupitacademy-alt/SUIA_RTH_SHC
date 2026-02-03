@@ -440,14 +440,14 @@ export function SubjectTable() {
                 <div className="flex items-center gap-3">
                     <button
                         onClick={() => setIsFactoryOpen(true)}
-                        className="px-6 py-3 rounded-2xl bg-[#1A1A1A] text-white text-[11px] font-black uppercase tracking-widest shadow-xl shadow-black/10 hover:scale-[1.02] active:scale-95 transition-all flex items-center gap-2 group border border-primary/10"
+                        className="px-6 py-3 rounded-2xl bg-slate-900 text-white text-[10px] font-bold uppercase tracking-wider shadow-lg hover:bg-slate-800 transition-all flex items-center gap-2"
                     >
                         <Plus size={14} className="text-[#FF4B91]" />
                         Bulk Factory
                     </button>
                     <button
-                        onClick={() => handleOpenForm()}
-                        className="px-6 py-3 rounded-2xl bg-[#FF4B91] hover:bg-[#ff3382] text-white text-[11px] font-black uppercase tracking-widest shadow-xl shadow-[#FF4B91]/20 transition-all flex items-center gap-3 active:scale-95"
+                        onClick={() => handleOpenForm()} // Open for Create
+                        className="px-6 py-3 rounded-2xl bg-[#FF4B91] hover:bg-[#ff3382] text-white text-[10px] font-bold uppercase tracking-wider shadow-lg shadow-[#FF4B91]/20 transition-all flex items-center gap-3 active:scale-95"
                     >
                         <Plus size={16} />
                         Add Subject

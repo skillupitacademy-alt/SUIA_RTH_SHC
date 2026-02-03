@@ -54,8 +54,8 @@ export function TopicReviewCard({
                     </div>
 
                     <div className={cn(
-                        "w-10 h-10 rounded-2xl flex items-center justify-center font-black italic shadow-lg transition-all duration-500",
-                        isSelected ? "bg-orange-500 text-white rotate-3 scale-110" : "bg-slate-900 text-orange-500"
+                        "w-10 h-10 rounded-2xl flex items-center justify-center font-bold border-2 transition-all duration-300",
+                        isSelected ? "bg-orange-600 text-white border-orange-600 shadow-lg" : "bg-orange-50 text-orange-600 border-orange-100"
                     )}>
                         #{index + 1}
                     </div>

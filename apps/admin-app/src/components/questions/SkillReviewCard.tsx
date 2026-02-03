@@ -64,8 +64,8 @@ export function SkillReviewCard({
                     </div>
 
                     <div className={cn(
-                        "w-10 h-10 rounded-2xl flex items-center justify-center font-black italic shadow-lg transition-all duration-500",
-                        isSelected ? "bg-cyan-500 text-white rotate-3 scale-110" : "bg-slate-900 text-cyan-400"
+                        "w-10 h-10 rounded-2xl flex items-center justify-center font-bold border-2 transition-all duration-300",
+                        isSelected ? "bg-cyan-600 text-white border-cyan-600 shadow-lg" : "bg-cyan-50 text-cyan-600 border-cyan-100"
                     )}>
                         #{index + 1}
                     </div>
@@ -107,10 +107,29 @@ export function SkillReviewCard({
             {/* Main Content Area */}
             <div className="p-8 flex gap-8">
                 {/* Left: Metadata Column */}
-                <div className="w-40 flex-shrink-0 space-y-4">
-                    <div className="flex items-center gap-2 px-4 py-3 rounded-2xl bg-amber-50/50 border border-amber-100 text-[10px] font-bold text-amber-600">
-                        <Zap size={12} className="text-amber-500" />
-                        <span>Weight: {skill.weight || 1}</span>
+                <div className="w-64 flex-shrink-0 space-y-4">
+                    <div className="p-5 rounded-3xl bg-slate-50 border border-slate-200 flex flex-col gap-4">
+                        <div className="flex flex-col gap-1">
+                            <h4 className="text-[9px] font-black uppercase tracking-widest text-slate-400">Classification</h4>
+                            <div className="flex items-center gap-2 text-cyan-600">
+                                <Hash size={14} />
+                                <span className="text-sm font-black uppercase tracking-tight">{SKILL_CATEGORIES[skill.category] || skill.category || 'General'}</span>
+                            </div>
+                        </div>
+                        <div className="flex flex-col gap-1 border-t border-slate-200 pt-4">
+                            <h4 className="text-[9px] font-black uppercase tracking-widest text-slate-400">Application</h4>
+                            <div className="flex items-center gap-2 text-slate-500">
+                                <Cpu size={14} />
+                                <span className="text-sm font-black uppercase tracking-tight">{skill.mappingType || 'conceptual'}</span>
+                            </div>
+                        </div>
+                        <div className="flex flex-col gap-1 border-t border-slate-200 pt-4">
+                            <h4 className="text-[9px] font-black uppercase tracking-widest text-slate-400">Global Weight</h4>
+                            <div className="flex items-center gap-2 text-amber-600">
+                                <Zap size={14} className="text-amber-500" />
+                                <span className="text-sm font-black uppercase tracking-tight">Impact: {skill.weight || 1}</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
 

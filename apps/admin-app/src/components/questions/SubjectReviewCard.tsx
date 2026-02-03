@@ -52,8 +52,8 @@ export function SubjectReviewCard({
                     </div>
 
                     <div className={cn(
-                        "w-10 h-10 rounded-2xl flex items-center justify-center font-black italic shadow-lg transition-all duration-500",
-                        isSelected ? "bg-purple-500 text-white rotate-3 scale-110" : "bg-slate-900 text-purple-400"
+                        "w-10 h-10 rounded-2xl flex items-center justify-center font-bold border-2 transition-all duration-300",
+                        isSelected ? "bg-indigo-600 text-white border-indigo-600 shadow-lg" : "bg-indigo-50 text-indigo-600 border-indigo-100"
                     )}>
                         #{index + 1}
                     </div>
@@ -98,7 +98,17 @@ export function SubjectReviewCard({
             {/* Main Content Area */}
             <div className="p-8 flex gap-8">
                 {/* Left: Metadata Column */}
-                <div className="w-52 flex-shrink-0 space-y-4">
+                <div className="w-64 flex-shrink-0 space-y-4">
+                    <div className="p-5 rounded-3xl bg-slate-50 border border-slate-200 flex flex-col gap-4">
+                        <div className="flex flex-col gap-1">
+                            <h4 className="text-[9px] font-black uppercase tracking-widest text-slate-400">Hierarchy Root</h4>
+                            <div className="flex items-center gap-2 text-purple-600">
+                                <Layers size={14} />
+                                <span className="text-sm font-black uppercase tracking-tight">{subject.domain?.name || 'Unlinked'}</span>
+                            </div>
+                        </div>
+                    </div>
+
                     <div className="flex items-center gap-2 px-4 py-3 rounded-2xl bg-slate-50/50 border border-slate-100 text-[10px] font-bold text-slate-400">
                         <Clock size={12} />
                         <span>Created {formatTimeAgo(subject.createdAt)}</span>

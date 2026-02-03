@@ -10,6 +10,14 @@ import { useDomains, useSubjects } from '@/hooks/useAdminHierarchy';
 import { HierarchyFactoryWizard } from '@/components/content/HierarchyFactoryWizard';
 import { SelectField } from '@/components/entry/SelectionFields';
 import { TopicReviewCard } from './TopicReviewCard';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { apiClient } from '@quiz/api-client';
 
 export function TopicTable() {
@@ -25,6 +33,7 @@ export function TopicTable() {
     // Modal states
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+    const [isFactoryOpen, setIsFactoryOpen] = useState(false);
     const [currentTopic, setCurrentTopic] = useState<any>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -177,15 +186,11 @@ export function TopicTable() {
     };
 
     const handleBatchDelete = async () => {
-        if (selectedIds.size === 0) return;
-
-        const confirmed = window.confirm(`CRITICAL ACTION: You are about to permanently delete ${selectedIds.size} topics and all their nested subtopics/questions. This cannot be undone. Proceed?`);
-        if (!confirmed) return;
-
         setIsBatchDeleting(true);
         try {
             await apiClient.admin.batchDeleteTopics(Array.from(selectedIds));
             setSelectedIds(new Set());
+            setIsDeleteOpen(false);
             fetchTopics();
         } catch (error: any) {
             setErrorMessage(`Batch Deletion Failed: ${error.message}`);
@@ -202,10 +207,10 @@ export function TopicTable() {
 
             {/* Factory WizardIntegration */}
             <HierarchyFactoryWizard
-                isOpen={isFormOpen && !currentTopic}
-                onClose={() => setIsFormOpen(false)}
+                isOpen={isFactoryOpen}
+                onClose={() => setIsFactoryOpen(false)}
                 onSuccess={() => {
-                    setIsFormOpen(false);
+                    setIsFactoryOpen(false);
                     fetchTopics();
                 }}
                 initialData={
@@ -413,41 +418,45 @@ export function TopicTable() {
 
 
             {/* Delete Confirmation Modal */}
-            {
-                isDeleteOpen && (
-                    <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300">
-                        <div className="bg-white border border-primary/10 rounded-[2.5rem] p-8 max-w-md w-full shadow-2xl relative overflow-hidden">
-                            <div className="absolute top-0 left-0 w-full h-2 bg-red-500" />
-                            <div className="flex flex-col items-center text-center gap-6">
-                                <div className="h-16 w-16 rounded-full bg-red-100 flex items-center justify-center text-red-600">
-                                    <AlertTriangle size={32} />
-                                </div>
-                                <div>
-                                    <h3 className="text-2xl font-black text-[#1A1A1A] italic uppercase tracking-tighter">Confirm Deletion</h3>
-                                    <p className="text-sm font-medium text-muted-foreground mt-2">
-                                        You are about to delete the topic <strong className="text-red-600">"{currentTopic?.name}"</strong>. This action is irreversible and may impact child subtopics and questions.
-                                    </p>
-                                </div>
-                                <div className="grid grid-cols-2 gap-4 w-full">
-                                    <button
-                                        onClick={() => { setIsDeleteOpen(false); setCurrentTopic(null); }}
-                                        className="px-6 py-4 rounded-2xl border-2 border-slate-100 font-black uppercase tracking-widest text-xs hover:bg-slate-50 transition-all"
-                                    >
-                                        Cancel
-                                    </button>
-                                    <button
-                                        onClick={handleDelete}
-                                        disabled={isSubmitting}
-                                        className="px-6 py-4 rounded-2xl bg-red-600 text-white font-black uppercase tracking-widest text-xs hover:bg-red-700 transition-all shadow-lg shadow-red-600/20 disabled:opacity-50"
-                                    >
-                                        {isSubmitting ? 'Deleting...' : 'Delete'}
-                                    </button>
-                                </div>
-                            </div>
+            <AlertDialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
+                <AlertDialogContent className="bg-white rounded-[2rem] border border-slate-100 p-0 overflow-hidden max-w-md">
+                    <div className="absolute top-0 left-0 w-full h-1.5 bg-red-500" />
+                    <div className="p-8 flex flex-col items-center text-center gap-6">
+                        <div className="h-16 w-16 rounded-full bg-red-50 text-red-500 flex items-center justify-center mb-2">
+                            <Trash2 size={32} />
+                        </div>
+
+                        <div className="space-y-2">
+                            <AlertDialogTitle className="text-2xl font-black text-slate-800 uppercase tracking-tight">
+                                Confirm Deletion
+                            </AlertDialogTitle>
+                            <AlertDialogDescription className="text-slate-500 font-medium leading-relaxed">
+                                {currentTopic ? (
+                                    <>You are about to delete the topic <strong className="text-red-600">"{currentTopic.name}"</strong>. This action is irreversible and may impact child subtopics and questions.</>
+                                ) : (
+                                    <>You are about to delete <strong className="text-red-600">{selectedIds.size} topics</strong> and all their nested content. This cannot be undone.</>
+                                )}
+                            </AlertDialogDescription>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4 w-full pt-4">
+                            <AlertDialogCancel
+                                onClick={() => { setIsDeleteOpen(false); setCurrentTopic(null); }}
+                                className="rounded-xl border-2 border-slate-100 py-6 font-bold uppercase tracking-wider text-xs hover:bg-slate-50 hover:text-slate-800"
+                            >
+                                Cancel
+                            </AlertDialogCancel>
+                            <AlertDialogAction
+                                onClick={currentTopic ? handleDelete : handleBatchDelete}
+                                className="rounded-xl bg-red-600 py-6 font-black uppercase tracking-wider text-xs hover:bg-red-700 shadow-xl shadow-red-500/20 text-white"
+                                disabled={isSubmitting || isBatchDeleting}
+                            >
+                                {isSubmitting || isBatchDeleting ? 'Processing...' : 'Delete Forever'}
+                            </AlertDialogAction>
                         </div>
                     </div>
-                )
-            }
+                </AlertDialogContent>
+            </AlertDialog>
 
             {/* Search Bar & Add Button */}
             <div className="bg-white/50 backdrop-blur-xl border border-primary/10 p-6 rounded-[2rem] shadow-xl relative overflow-hidden flex items-center justify-between">
@@ -469,6 +478,13 @@ export function TopicTable() {
                     </div>
                 </div>
                 <div className="flex items-center gap-3">
+                    <button
+                        onClick={() => setIsFactoryOpen(true)}
+                        className="px-6 py-3 rounded-2xl bg-slate-900 text-white text-[10px] font-bold uppercase tracking-wider shadow-lg hover:bg-slate-800 transition-all flex items-center gap-2"
+                    >
+                        <Plus size={14} className="text-[#FF4B91]" />
+                        Bulk Factory
+                    </button>
                     {data.length > 0 && (
                         <button
                             onClick={toggleSelectAll}
@@ -479,7 +495,7 @@ export function TopicTable() {
                     )}
                     <button
                         onClick={() => handleOpenForm()}
-                        className="px-6 py-3 rounded-2xl bg-[#FF4B91] hover:bg-[#ff3382] text-white text-[11px] font-black uppercase tracking-widest shadow-xl shadow-[#FF4B91]/20 transition-all flex items-center gap-3 active:scale-95"
+                        className="px-6 py-3 rounded-2xl bg-[#FF4B91] hover:bg-[#ff3382] text-white text-[10px] font-bold uppercase tracking-wider shadow-lg shadow-[#FF4B91]/20 transition-all flex items-center gap-3 active:scale-95"
                     >
                         <Plus size={16} />
                         Add Topic
@@ -553,7 +569,7 @@ export function TopicTable() {
 
                             <div className="flex items-center gap-3">
                                 <button
-                                    onClick={handleBatchDelete}
+                                    onClick={() => { setCurrentTopic(null); setIsDeleteOpen(true); }}
                                     disabled={isBatchDeleting}
                                     className="flex items-center gap-3 px-6 py-3 rounded-2xl bg-rose-500/10 hover:bg-rose-500 text-rose-500 hover:text-white transition-all group disabled:opacity-50"
                                 >

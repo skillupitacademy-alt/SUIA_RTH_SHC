@@ -224,7 +224,7 @@ export function DomainTable() {
                     </button>
                     <button
                         onClick={() => setIsDeleteOpen(true)}
-                        className="px-6 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-black uppercase tracking-widest shadow-lg shadow-red-600/20 transition-all active:scale-95 flex items-center gap-2"
+                        className="px-6 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-bold uppercase tracking-wider shadow-lg shadow-red-600/20 transition-all active:scale-95 flex items-center gap-2"
                     >
                         <Trash2 size={14} />
                         Delete Selection
@@ -418,13 +418,22 @@ export function DomainTable() {
                         </div>
                     </div>
                 </div>
-                <button
-                    onClick={() => handleOpenForm()} // Open for Create
-                    className="ml-4 px-6 py-3 rounded-2xl bg-[#FF4B91] hover:bg-[#ff3382] text-white text-[11px] font-black uppercase tracking-widest shadow-xl shadow-[#FF4B91]/20 transition-all flex items-center gap-3 active:scale-95"
-                >
-                    <Plus size={16} />
-                    Add Domain
-                </button>
+                <div className="flex items-center gap-3">
+                    <button
+                        onClick={() => setIsFactoryOpen(true)}
+                        className="px-6 py-3 rounded-2xl bg-slate-900 text-white text-[10px] font-bold uppercase tracking-wider shadow-lg hover:bg-slate-800 transition-all flex items-center gap-2"
+                    >
+                        <Plus size={14} className="text-[#FF4B91]" />
+                        Bulk Factory
+                    </button>
+                    <button
+                        onClick={() => handleOpenForm()} // Open for Create
+                        className="px-6 py-3 rounded-2xl bg-[#FF4B91] hover:bg-[#ff3382] text-white text-[10px] font-bold uppercase tracking-wider shadow-lg shadow-[#FF4B91]/20 transition-all flex items-center gap-3 active:scale-95"
+                    >
+                        <Plus size={16} />
+                        Add Domain
+                    </button>
+                </div>
             </div>
 
             {/* DOMAIN CARD STACK */}

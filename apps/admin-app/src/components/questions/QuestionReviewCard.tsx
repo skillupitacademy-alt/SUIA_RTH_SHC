@@ -71,8 +71,8 @@ export function QuestionReviewCard({
                     </div>
 
                     <div className={cn(
-                        "w-10 h-10 rounded-2xl flex items-center justify-center font-black italic shadow-lg transition-all duration-500",
-                        isSelected ? "bg-[#FF4B91] text-white rotate-3 scale-110" : "bg-slate-900 text-[#FF4B91]"
+                        "w-10 h-10 rounded-2xl flex items-center justify-center font-bold border-2 transition-all duration-300",
+                        isSelected ? "bg-[#FF4B91] text-white border-[#FF4B91] shadow-lg" : "bg-pink-50 text-[#FF4B91] border-pink-100"
                     )}>
                         #{index + 1}
                     </div>

@@ -466,14 +466,14 @@ Please provide a valid JSON object matching this schema:
             <div className="px-12 py-4 border-b border-primary/5 flex items-center justify-between bg-primary/[0.02]">
                 <div className="flex items-center gap-5">
                     <ZTooltip content="Domain Factory Console: An advanced orchestration layer for bulk hierarchy ingestion and atomic state synchronization." side="bottom">
-                        <div className="p-2.5 bg-[#1A1A1A] text-[#FF4B91] rounded-2xl shadow-xl shadow-black/10">
+                        <div className="p-2.5 bg-slate-900 text-[#FF4B91] rounded-2xl shadow-xl shadow-slate-900/10">
                             <Zap size={24} />
                         </div>
                     </ZTooltip>
                     <div>
-                        <h2 className="text-xl font-black uppercase tracking-tighter italic text-[#1A1A1A]">Domain Factory</h2>
-                        <p className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em] mt-0.5 flex items-center gap-2">
-                            System-Alpha • Manual Orchestration Active
+                        <h2 className="text-xl font-bold uppercase tracking-tight text-slate-900">Domain Factory</h2>
+                        <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-[0.2em] mt-0.5 flex items-center gap-2">
+                            System Core • Manual Orchestration
                         </p>
                     </div>
                 </div>
@@ -654,11 +654,11 @@ Please provide a valid JSON object matching this schema:
                                         {initialData?.target ? `Bulk ${initialData.target} Factory` : "Bulk Hierarchy Engine"}
                                     </h3>
                                     <div className="flex items-center gap-2">
-                                        <span className="px-3 py-1 bg-primary/10 text-primary text-[9px] font-black uppercase rounded-lg">JSON STRICT_MODE</span>
+                                        <span className="px-3 py-1 bg-primary/10 text-primary text-[9px] font-bold uppercase rounded-lg">JSON STRICT</span>
                                         {!showEditor ? (
-                                            <span className="px-3 py-1 bg-slate-100 text-slate-500 text-[9px] font-black uppercase rounded-lg italic">Intelligence Phase</span>
+                                            <span className="px-3 py-1 bg-slate-100 text-slate-500 text-[9px] font-bold uppercase rounded-lg">Inquiry Stage</span>
                                         ) : (
-                                            <span className="px-3 py-1 bg-green-500/10 text-green-600 text-[9px] font-black uppercase rounded-lg italic">Draft Phase</span>
+                                            <span className="px-3 py-1 bg-green-500/10 text-green-600 text-[9px] font-bold uppercase rounded-lg">Draft Stage</span>
                                         )}
                                     </div>
                                 </div>

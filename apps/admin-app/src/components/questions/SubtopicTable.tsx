@@ -24,8 +24,8 @@ export function SubtopicTable() {
 
     // Modal states
     const [isFormOpen, setIsFormOpen] = useState(false);
-    const [isFactoryOpen, setIsFactoryOpen] = useState(false);
     const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+    const [isFactoryOpen, setIsFactoryOpen] = useState(false);
     const [currentSubtopic, setCurrentSubtopic] = useState<any>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -105,7 +105,7 @@ export function SubtopicTable() {
                 order: 0,
                 depthLevel: 1
             });
-            setIsFactoryOpen(true);
+            setIsFactoryOpen(true); // Open factory for new subtopic
         }
     };
 
@@ -189,15 +189,11 @@ export function SubtopicTable() {
     };
 
     const handleBatchDelete = async () => {
-        if (selectedIds.size === 0) return;
-
-        const confirmed = window.confirm(`CRITICAL ACTION: You are about to permanently delete ${selectedIds.size} subtopics and all their nested questions. This cannot be undone. Proceed?`);
-        if (!confirmed) return;
-
         setIsBatchDeleting(true);
         try {
             await apiClient.admin.batchDeleteSubtopics(Array.from(selectedIds));
             setSelectedIds(new Set());
+            setIsDeleteOpen(false);
             fetchSubtopics();
         } catch (error: any) {
             setErrorMessage(`Batch Deletion Failed: ${error.message}`);
@@ -426,7 +422,12 @@ export function SubtopicTable() {
                                 <div>
                                     <h3 className="text-2xl font-black text-[#1A1A1A] italic uppercase tracking-tighter">Confirm Deletion</h3>
                                     <p className="text-sm font-medium text-muted-foreground mt-2">
-                                        You are about to delete the subtopic <strong className="text-red-600">"{currentSubtopic?.name}"</strong>. This action is irreversible.
+                                        {currentSubtopic ? (
+                                            <>You are about to delete the subtopic <strong className="text-red-600">"{currentSubtopic.name}"</strong>.</>
+                                        ) : (
+                                            <>You are about to delete <strong className="text-red-600">{selectedIds.size} subtopics</strong> and all their nested questions.</>
+                                        )}
+                                        {" "}This action is irreversible.
                                     </p>
                                 </div>
                                 <div className="grid grid-cols-2 gap-4 w-full">
@@ -437,11 +438,11 @@ export function SubtopicTable() {
                                         Cancel
                                     </button>
                                     <button
-                                        onClick={handleDelete}
-                                        disabled={isSubmitting}
+                                        onClick={currentSubtopic ? handleDelete : handleBatchDelete}
+                                        disabled={isSubmitting || isBatchDeleting}
                                         className="px-6 py-4 rounded-2xl bg-red-600 text-white font-black uppercase tracking-widest text-xs hover:bg-red-700 transition-all shadow-lg shadow-red-600/20 disabled:opacity-50"
                                     >
-                                        {isSubmitting ? 'Deleting...' : 'Delete'}
+                                        {isSubmitting || isBatchDeleting ? 'Processing...' : 'Delete'}
                                     </button>
                                 </div>
                             </div>
@@ -471,6 +472,13 @@ export function SubtopicTable() {
                     </div>
                 </div>
                 <div className="flex items-center gap-3">
+                    <button
+                        onClick={() => setIsFactoryOpen(true)}
+                        className="px-6 py-3 rounded-2xl bg-slate-900 text-white text-[10px] font-bold uppercase tracking-wider shadow-lg hover:bg-slate-800 transition-all flex items-center gap-2"
+                    >
+                        <Plus size={14} className="text-[#FF4B91]" />
+                        Bulk Factory
+                    </button>
                     {data.length > 0 && (
                         <button
                             onClick={toggleSelectAll}
@@ -555,7 +563,7 @@ export function SubtopicTable() {
 
                             <div className="flex items-center gap-3">
                                 <button
-                                    onClick={handleBatchDelete}
+                                    onClick={() => { setCurrentSubtopic(null); setIsDeleteOpen(true); }}
                                     disabled={isBatchDeleting}
                                     className="flex items-center gap-3 px-6 py-3 rounded-2xl bg-rose-500/10 hover:bg-rose-500 text-rose-500 hover:text-white transition-all group disabled:opacity-50"
                                 >

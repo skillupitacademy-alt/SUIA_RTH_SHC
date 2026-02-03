@@ -52,8 +52,8 @@ export function DomainReviewCard({
                     </div>
 
                     <div className={cn(
-                        "w-10 h-10 rounded-2xl flex items-center justify-center font-black italic shadow-lg transition-all duration-500",
-                        isSelected ? "bg-blue-500 text-white rotate-3 scale-110" : "bg-slate-900 text-blue-400"
+                        "w-10 h-10 rounded-2xl flex items-center justify-center font-bold border-2 transition-all duration-300",
+                        isSelected ? "bg-blue-600 text-white border-blue-600 shadow-lg" : "bg-blue-50 text-blue-600 border-blue-100"
                     )}>
                         #{index + 1}
                     </div>
@@ -98,7 +98,17 @@ export function DomainReviewCard({
             {/* Main Content Area */}
             <div className="p-8 flex gap-8">
                 {/* Left: Metadata Column */}
-                <div className="w-52 flex-shrink-0 space-y-4">
+                <div className="w-64 flex-shrink-0 space-y-4">
+                    <div className="p-5 rounded-3xl bg-slate-50 border border-slate-200 flex flex-col gap-4">
+                        <div className="flex flex-col gap-1">
+                            <h4 className="text-[9px] font-black uppercase tracking-widest text-slate-400">Classification</h4>
+                            <div className="flex items-center gap-2 text-blue-600">
+                                <Globe size={14} />
+                                <span className="text-sm font-black uppercase tracking-tight">{domain.category || 'General'}</span>
+                            </div>
+                        </div>
+                    </div>
+
                     <div className="flex items-center gap-2 px-4 py-3 rounded-2xl bg-slate-50/50 border border-slate-100 text-[10px] font-bold text-slate-400">
                         <Clock size={12} />
                         <span>Created {formatTimeAgo(domain.createdAt)}</span>
@@ -133,6 +143,6 @@ export function DomainReviewCard({
                     </div>
                 </div>
             </div>
-        </div>
+        </div >
     );
 }

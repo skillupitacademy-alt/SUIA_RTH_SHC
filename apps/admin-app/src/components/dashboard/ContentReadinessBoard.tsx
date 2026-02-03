@@ -117,7 +117,7 @@ export function ContentReadinessBoard() {
                 <div className="flex flex-wrap items-center gap-4">
                     <button
                         onClick={() => setFactoryModal({ isOpen: true, initialData: { target: 'domain' } })}
-                        className="px-6 py-2.5 bg-[#1A1A1A] text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-xl shadow-black/10 hover:scale-[1.02] active:scale-95 transition-all flex items-center gap-2 group"
+                        className="px-6 py-2.5 bg-slate-900 text-white rounded-xl text-[10px] font-bold uppercase tracking-wider shadow-lg hover:bg-slate-800 transition-all flex items-center gap-2"
                     >
                         <Zap size={14} className="text-[#FF4B91]" />
                         <span>Add Domain Factory</span>
@@ -173,12 +173,12 @@ export function ContentReadinessBoard() {
                             </div>
 
                             <div className="flex items-center gap-6">
-                                <div className="hidden md:grid grid-cols-3 gap-2">
+                                <div className="hidden md:grid grid-cols-3 gap-2 w-[180px]">
                                     <StatsBadge label="S" val={domain.stats.simple} target={4} />
                                     <StatsBadge label="I" val={domain.stats.intermediate} target={4} />
                                     <StatsBadge label="E" val={domain.stats.expert} target={5} />
                                 </div>
-                                <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-2 w-[140px] justify-end">
                                     {!domain.hasBlueprint ? (
                                         <button
                                             onClick={(e) => { e.stopPropagation(); setBlueprintModal({ isOpen: true, domainId: domain.domainId, domainName: domain.domainName }); }}
@@ -205,7 +205,9 @@ export function ContentReadinessBoard() {
                                         </button>
                                     )}
                                 </div>
-                                {expandedNodes[domain.domainId] ? <ChevronDown size={20} className="text-muted-foreground" /> : <ChevronRight size={20} className="text-muted-foreground" />}
+                                <div className="w-8 flex justify-center">
+                                    {expandedNodes[domain.domainId] ? <ChevronDown size={20} className="text-muted-foreground" /> : <ChevronRight size={20} className="text-muted-foreground" />}
+                                </div>
                             </div>
                         </div>
 
