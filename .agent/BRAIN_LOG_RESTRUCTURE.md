@@ -791,3 +791,11 @@ Reduce documentation fragmentation and improve discoverability by consolidating 
     - Auto-cleared `sourceCode` upon successful ingestion.
 - **UI**: Added a **"Reset Workspace"** button in the context header (always visible with subtle opacity) for explicit control.
 - **Outcome**: Achieved a perfect balance between session safety (saving progress) and operational hygiene (starting clean activities).
+
+### Batch 103: Security & Data Hygiene (Zero-Leakage)
+- **Problem**: Persistent `localStorage` in the Question Factory posed a security risk for shared devices or session termination.
+- **Action**: Implemented **Strict Hygiene Model**.
+- **Logic**: 
+    - Added unmount cleanup to `FactoryProvider` to wipe `localStorage` when leaving the page.
+    - Added security watcher to `AdminGuard` to purge storage upon `isAuthenticated` loss.
+- **Outcome**: Data exists only during active use; surgically wiped upon navigation or logout.

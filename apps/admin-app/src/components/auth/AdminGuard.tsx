@@ -57,6 +57,15 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
         return () => window.removeEventListener('auth:unauthorized', handleUnauthorized);
     }, [isAuthenticated, user, initialized, router, logout, token]);
 
+    // SECURITY: Surveillance for session termination
+    // If auth state is lost, surgically clear potentially sensitive Factory data
+    useEffect(() => {
+        if (initialized && !isAuthenticated) {
+            console.warn("Security: Session terminated. Purging Question Factory storage.");
+            localStorage.removeItem('quiz-factory-storage-v1');
+        }
+    }, [isAuthenticated, initialized]);
+
     // Synchronously ensure token is set before rendering children
     // This allows child components (AdminMetricsGrid) to use apiClient immediately in their effects
     if (token) {

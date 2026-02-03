@@ -229,3 +229,4 @@ Glassy aesthetic, full-width constraint, and adaptive-height (Zero-Scroll).
 
 | 2026-02-03 | Unified Factory State | COMPLETED | Migrated local page state to global FactoryContext to resolve state disconnect and 'Null Blueprint' errors. |
 | 2026-02-03 | Persistence Hygiene (Batch 102) | COMPLETED | Implemented resetFactory, auto-clearing source editor, and **Always-Visible** Workspace Reset UI with automatic post-save cleanup. |
+| 2026-02-03 | Security Hygiene (Batch 103) | COMPLETED | Implemented 'Forget on Leave' logic and logout-triggered storage purge for Zero-Leakage security. |

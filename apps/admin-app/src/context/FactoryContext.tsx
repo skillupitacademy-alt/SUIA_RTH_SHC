@@ -64,6 +64,14 @@ export function FactoryProvider({ children }: { children: ReactNode }) {
         } finally {
             setIsInitialized(true);
         }
+
+        // UNMOUNT CLEANUP: "Forget on Leave" Security Policy
+        // This ensures data is wiped when navigating away from the Factory area
+        return () => {
+            // Note: We don't call resetFactory() directly here because we want to 
+            // surgically wipe storage immediately to prevent leakage
+            localStorage.removeItem(STORAGE_KEY);
+        };
     }, []);
 
     // Persist state on changes
