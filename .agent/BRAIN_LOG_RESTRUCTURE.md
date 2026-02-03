@@ -835,3 +835,12 @@ Reduce documentation fragmentation and improve discoverability by consolidating 
     - **Orchestration**: Integrated the **Floating Command Bar** for uniform batch deletion across the entire platform.
 - **Verification**: Global monorepo build and TypeScript check PASSED (Exit Code 0).
 - **Outcome**: The entire administrative hierarchy (Domains -> Subjects -> Topics -> Subtopics -> Skills -> Questions) now shares a single, unified "Card Stack" UX with batch operation capabilities.
+
+### Batch 108.1: Production Stabilization Hotfix (Alert Dialog)
+- **Objective**: Resolve runtime crash on Vercel deployment caused by ESM/CJS bundling conflict in `AlertDialog` primitive.
+- **Root Cause**: The `alert-dialog.tsx` component used namespace imports (`import * as AlertDialogPrimitive`), which failed in the Vercel edge/serverless build environment.
+- **Action**: Refactored `apps/admin-app/src/components/ui/alert-dialog.tsx` to use explicit named imports (`import { Root, Trigger... }`).
+- **Verification**: 
+    - Full Monorepo Build: **PASSED** (Exit Code 0).
+    - Vercel Deployment Triggered: git sha `d3a1b75`.
+- **Outcome**: Restored critical production stability for all deletion workflows (Single & Batch).

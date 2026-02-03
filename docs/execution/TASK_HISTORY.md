@@ -23,3 +23,4 @@
 | 2026-02-03 | Question Bank Migration (Batch 106) | COMPLETED | Converted live Question Bank to Vertical Stack of Cards; Implemented mass-decommissioning API. |
 | 2026-02-03 | Hierarchy Stacks (Batch 107) | COMPLETED | Migrated Topics/Subtopics to Vertical Cards; Implemented Batch Deletion API for Tier 1 hierarchy. |
 | 2026-02-03 | Hierarchy Complete (Batch 108) | COMPLETED | Migrated Domains, Subjects, and Skills to Vertical Cards; Full Batch Deletion across all levels. |
+| 2026-02-03 | Prod Hotfix (Batch 108.1) | COMPLETED | Refactored `AlertDialog` to use named imports to resolve Vercel runtime crash. |
