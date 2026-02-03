@@ -306,4 +306,8 @@ export class AdminClient {
   async atomicSeed(data: any) {
     return this.client.post<any>('/admin/hierarchy/atomic', data);
   }
+
+  async saveFactoryBatch(data: { questions: any[], topicId: string, subtopicId?: string }) {
+    return this.client.post<any>('/factory/save', data);
+  }
 }

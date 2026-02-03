@@ -30,6 +30,47 @@ export function ReviewConsole() {
     // Calculate ready status 
     const readyCount = stagedQuestions.length;
 
+    const [isSaving, setIsSaving] = React.useState(false);
+    const { blueprint } = useFactory();
+
+    const handleSave = async () => {
+        if (!blueprint) {
+            alert("No blueprint context found. Please return to Ingest.");
+            return;
+        }
+
+        setIsSaving(true);
+        try {
+            // Import dynamically to avoid SSR issues if needed, or just use the global
+            const { apiClient } = await import('@quiz/api-client');
+
+            const payload = {
+                questions: stagedQuestions,
+                topicId: blueprint.topicId,
+                subtopicId: blueprint.subtopicId
+            };
+
+            const result = await apiClient.admin.saveFactoryBatch(payload);
+
+            if (result.success) {
+                // Success!
+                // We should probably show a summary toast or modal
+                alert(`Success! Saved ${result.insertedCount} questions and created ${result.newSkillsCreated} new skills.`);
+
+                // Clear the stage
+                clearStage();
+
+                // Optional: Redirect back or show confetti
+                window.location.href = '/factory/question-generator';
+            }
+        } catch (error) {
+            console.error("Save failed", error);
+            alert("Failed to save batch. Check console for details.");
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
     return (
         <div className="w-full space-y-8 pb-32">
             {/* STICKY MANAGEMENT HEADER */}
@@ -59,10 +100,19 @@ export function ReviewConsole() {
 
                     <div className="flex items-center gap-2 pr-2">
                         <button
-                            className="px-6 py-3 rounded-2xl bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest flex items-center gap-2 hover:bg-[#FF4B91] transition-all active:scale-95 shadow-xl shadow-slate-900/10"
-                            onClick={() => alert("Persistence Phase 4 coming soon!")}
+                            className="px-6 py-3 rounded-2xl bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest flex items-center gap-2 hover:bg-[#FF4B91] transition-all active:scale-95 shadow-xl shadow-slate-900/10 disabled:opacity-50 disabled:cursor-not-allowed"
+                            onClick={handleSave}
+                            disabled={isSaving || readyCount === 0}
                         >
-                            <Save size={14} /> Commit to Question Bank
+                            {isSaving ? (
+                                <>
+                                    <RefreshCcw size={14} className="animate-spin" /> Committing...
+                                </>
+                            ) : (
+                                <>
+                                    <Save size={14} /> Commit to Question Bank
+                                </>
+                            )}
                         </button>
 
                         <div className="w-[1px] h-8 bg-slate-100 mx-2" />
