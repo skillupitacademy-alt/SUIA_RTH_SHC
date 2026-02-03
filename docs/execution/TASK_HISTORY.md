@@ -21,3 +21,4 @@
 | 2026-02-03 | Taxonomy Governance (Batch 104) | COMPLETED | Implemented 'Selector vs Creator' model with Taxonomy Injection, Strict Mode, and Skill Remapping UI. |
 | 2026-02-03 | Batch Operations Pilot (Batch 105) | COMPLETED | Implemented multi-select selection engine, Floating Command Bar, and batch deletion for Factory Staging. |
 | 2026-02-03 | Question Bank Migration (Batch 106) | COMPLETED | Converted live Question Bank to Vertical Stack of Cards; Implemented mass-decommissioning API. |
+| 2026-02-03 | Hierarchy Stacks (Batch 107) | COMPLETED | Migrated Topics/Subtopics to Vertical Cards; Implemented Batch Deletion API for Tier 1 hierarchy. |

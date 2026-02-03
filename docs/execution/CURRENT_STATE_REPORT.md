@@ -393,3 +393,13 @@
     - **UI Refactor**: Replaced `QuestionTable.tsx` with a premium **Stack of Cards** layout and integrated the **Floating Command Bar**.
 - **Verification**: Global monorepo build and TypeScript check PASSED (Exit Code 0).
 - **Outcome**: Successfully transitioned the first core production interface to the new vertical card standard.
+### Phase 10: Hierarchy Stacks (Tier 1) - Batch Operations (Batch 107)
+- **Objective**: Modernize Tier 1 hierarchy management and enable bulk data hygiene for Topics and Subtopics.
+- **Implementation**:
+    - **Backend**: Added `deleteTopicsBatch` and `deleteSubtopicsBatch` to Service and Engine layers.
+    - **API**: Created dedicated batch-delete endpoints for topics and subtopics with transactional integrity.
+    - **UI Refactor**: Converted `TopicTable` and `SubtopicTable` from static grids to high-fidelity **Card Stacks**.
+    - **Contextual Awareness**: Integrated lineage breadcrumbs (Domain > Subject) directly into hierarchy cards.
+    - **Orchestration**: Connected the **Floating Command Bar** to enable rapid multi-select decommissioning of hierarchy nodes.
+- **Verification**: Global monorepo build and TypeScript check PASSED (Exit Code 0).
+- **Outcome**: Unified the administrative management experience across Questions and Hierarchy; eliminated manual single-delete overhead.

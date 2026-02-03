@@ -663,6 +663,16 @@ export class AdminEngine {
     return result;
   }
 
+  static async deleteTopicsBatch(ids: string[], adminId: string) {
+    const deleted = await TopicService.deleteTopicsBatch(ids);
+    await AuditService.log({
+      userId: adminId,
+      action: 'admin_batch_delete_topics',
+      metadata: { count: deleted.length, ids },
+    });
+    return deleted;
+  }
+
   // --- SUBTOPIC MANAGEMENT ---
   static async createSubtopic(data: any, adminId: string) {
     const result = await TopicService.createSubtopic(data);
@@ -680,6 +690,16 @@ export class AdminEngine {
     const result = await TopicService.deleteSubtopic(id);
     await AuditService.log({ userId: adminId, action: 'admin_delete_subtopic', metadata: { subtopicId: id } });
     return result;
+  }
+
+  static async deleteSubtopicsBatch(ids: string[], adminId: string) {
+    const deleted = await TopicService.deleteSubtopicsBatch(ids);
+    await AuditService.log({
+      userId: adminId,
+      action: 'admin_batch_delete_subtopics',
+      metadata: { count: deleted.length, ids },
+    });
+    return deleted;
   }
 
   // --- SKILL MANAGEMENT ---

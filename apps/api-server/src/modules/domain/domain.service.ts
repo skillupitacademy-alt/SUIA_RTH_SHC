@@ -1,5 +1,5 @@
 import { db, domains, subjects, topics, subtopics } from '@quiz/db';
-import { eq, sql, and } from 'drizzle-orm';
+import { eq, sql, and, inArray } from 'drizzle-orm';
 
 export class DomainService {
   static async getAllDomains() {
@@ -95,6 +95,10 @@ export class TopicService {
     return await db.delete(subtopics).where(eq(subtopics.id, id)).returning();
   }
 
+  static async deleteSubtopicsBatch(ids: string[]) {
+    return await db.delete(subtopics).where(inArray(subtopics.id, ids)).returning();
+  }
+
   static async createTopic(data: any) {
     return await db.insert(topics).values(data).returning();
   }
@@ -105,5 +109,9 @@ export class TopicService {
 
   static async deleteTopic(id: string) {
     return await db.delete(topics).where(eq(topics.id, id)).returning();
+  }
+
+  static async deleteTopicsBatch(ids: string[]) {
+    return await db.delete(topics).where(inArray(topics.id, ids)).returning();
   }
 }

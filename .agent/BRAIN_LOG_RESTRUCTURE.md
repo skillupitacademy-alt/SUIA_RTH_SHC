@@ -812,3 +812,16 @@ Reduce documentation fragmentation and improve discoverability by consolidating 
     - **Live Adaptor**: Created `QuestionReviewCard.tsx` bound to production hierarchy (Domain/Subject/Topic breadcrumbs).
     - **Batch Operations**: Integrated the **Floating Command Bar** for context-aware multi-select deletion from the live database.
 - **Outcome**: Successfully transitioned core production management to the "Card Standard", achieving platform-wide aesthetic and functional parity.
+### Batch 107: Hierarchy Stacks & Batch Deletion (Topics/Subtopics)
+- **Problem**: Legacy Tier 1 hierarchy management (Topics/Subtopics) remained on static tables without bulk cleanup capabilities.
+- **Action**: Migrated Topics and Subtopics to the "Executive Stack" (Card-based) standard with Multi-Selection.
+- **Backend Implementation**:
+    - Added `deleteTopicsBatch` and `deleteSubtopicsBatch` to `TopicService` and `AdminEngine`.
+    - Created `POST /api/admin/topics/batch-delete` and `POST /api/admin/subtopics/batch-delete` routes with audit logging.
+- **UI Refactor**:
+    - Converted `TopicTable.tsx` and `SubtopicTable.tsx` to high-fidelity **Vertical Card Stacks**.
+    - Created `TopicReviewCard.tsx` and `SubtopicReviewCard.tsx` with hierarchical breadcrumbs (Domain/Subject).
+- **Control Plane**:
+    - Integrated the **Floating Command Bar** for bulk operations across both views.
+    - Extended `@quiz/api-client` with new batch primitives.
+- **Outcome**: Achieved 100% UI/UX parity between Question Bank and Hierarchy Management; enabled high-throughput content cleanup for admins.

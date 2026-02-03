@@ -74,12 +74,19 @@ const ADMIN_URL = getAdminUrl();
 
 const baseClient = new FetchClient(API_URL);
 
+export * from './modules/auth-client';
+export * from './modules/quiz-client';
+export * from './modules/admin-client';
+export * from './modules/dashboard-client';
+export * from './modules/report-client';
+
 export const apiClient = {
   auth: new AuthClient(baseClient),
   quiz: new QuizClient(baseClient),
   admin: new AdminClient(baseClient),
   dashboard: new DashboardClient(baseClient),
   reports: new ReportClient(baseClient),
+  client: baseClient, // Export the base client for advanced usage
   setAccessToken: (token: string | null) => baseClient.setAccessToken(token),
   getAdminUrl: () => ADMIN_URL,
 };

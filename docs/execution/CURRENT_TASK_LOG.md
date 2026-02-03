@@ -1,18 +1,17 @@
 # Current Task Log
 
-**Task**: Phase 9 Complete - Question Bank Migration (Core)
+**Task**: Phase 10 Complete - Hierarchy Stacks & Batch Deletion (Tier 1)
 **Status**: Verification Passed (Build & Type Safe)
 **Date**: 2026-02-03
 
 ## Recent Actions
-- **Infrastructure**: Added `deleteQuestionsBatch` to Service, Engine, and API Router.
-- **API Client**: Integrated `batchDeleteQuestions` into the monorepo client package.
-- **UI Refactor**: Converted legacy `QuestionTable` to a high-fidelity **Stack of Cards** gallery.
-- **Live Adaptation**: Implemented `QuestionReviewCard` with lineage breadcrumbs and status indicators.
-- **Control Plane**: Connected the **Floating Command Bar** to live database batch-delete operations.
+- **Infrastructure**: Added `deleteTopicsBatch` and `deleteSubtopicsBatch` to TopicService and AdminEngine.
+- **API Client**: Extended the client package with batch deletion methods for topics and subtopics.
+- **UI Refactor**: Converted `TopicTable` and `SubtopicTable` to high-fidelity **Stack of Cards** gallery.
+- **Live Adaptation**: Implemented `TopicReviewCard` and `SubtopicReviewCard` with lineage breadcrumbs.
+- **Control Plane**: Integrated the **Floating Command Bar** for multi-select batch operations.
 - **Compliance**: Verified full monorepo build and TS check (Exit Code 0).
 
 ## Next Steps
-- Phase 10: Hierarchy Stacks (Tier 1) - Migrate Subtopics and Topics to vertical card format.
-- Display parent breadcrumbs (Domain/Subject) on cards for complete context.
-- Implement selection engine for Hierarchy tabs.
+- Phase 11: Hierarchy Stacks (Tier 2) & Skills - Migrate Domains, Subjects, and Skills to vertical Stacks.
+- Global Selection: Uniform selection engine across every management tab.
