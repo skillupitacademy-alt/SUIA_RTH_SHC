@@ -31,7 +31,27 @@ export function ReviewConsole() {
     const readyCount = stagedQuestions.length;
 
     const [isSaving, setIsSaving] = React.useState(false);
+    const [existingSkills, setExistingSkills] = React.useState<Set<string>>(new Set());
     const { blueprint } = useFactory();
+
+    // Fetch existing skills on mount to prevent duplicates/typos
+    React.useEffect(() => {
+        const fetchSkills = async () => {
+            if (!blueprint?.topicId) return;
+            try {
+                // Dynamically import to keep bundle small if needed
+                const { apiClient } = await import('@quiz/api-client');
+                const skills = await apiClient.admin.getTopicSkills(blueprint.topicId);
+                // Normalize to lowercase for comparison
+                const skillNames = new Set(skills.map((s: any) => s.name?.toLowerCase()));
+                setExistingSkills(skillNames);
+                console.log("Fetched existing skills for validation:", skillNames.size);
+            } catch (err) {
+                console.error("Failed to fetch existing skills context", err);
+            }
+        };
+        fetchSkills();
+    }, [blueprint?.topicId]);
 
     const handleSave = async () => {
         if (!blueprint) {
@@ -147,6 +167,7 @@ export function ReviewConsole() {
                         <QuestionCard
                             question={q}
                             index={idx}
+                            existingSkills={existingSkills}
                             onUpdate={(updates) => handleUpdate(idx, updates)}
                             onDelete={() => handleDelete(idx)}
                         />

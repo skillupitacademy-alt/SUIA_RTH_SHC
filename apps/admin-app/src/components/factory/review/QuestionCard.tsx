@@ -13,11 +13,12 @@ import remarkGfm from 'remark-gfm';
 interface QuestionCardProps {
     question: GeneratedQuestion;
     index: number;
+    existingSkills?: Set<string>; // Optional to support legacy use
     onUpdate: (updates: Partial<GeneratedQuestion>) => void;
     onDelete: () => void;
 }
 
-export function QuestionCard({ question, index, onUpdate, onDelete }: QuestionCardProps) {
+export function QuestionCard({ question, index, existingSkills, onUpdate, onDelete }: QuestionCardProps) {
     const [isEditing, setIsEditing] = useState(false);
     const [isRationaleOpen, setIsRationaleOpen] = useState(false);
 
@@ -236,11 +237,24 @@ export function QuestionCard({ question, index, onUpdate, onDelete }: QuestionCa
 
                         {/* Skill Badges */}
                         <div className="mt-8 flex flex-wrap gap-2">
-                            {question.skillNames.map((skill, sIdx) => (
-                                <span key={sIdx} className="px-3 py-1 rounded-lg bg-white border border-slate-200 text-[#FF4B91] text-[9px] font-black uppercase tracking-widest shadow-sm">
-                                    {skill}
-                                </span>
-                            ))}
+                            {question.skillNames.map((skill, sIdx) => {
+                                const isNew = existingSkills && existingSkills.size > 0 && !existingSkills.has(skill.toLowerCase());
+                                return (
+                                    <span
+                                        key={sIdx}
+                                        className={cn(
+                                            "px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest shadow-sm border transition-colors",
+                                            isNew
+                                                ? "bg-orange-50 border-orange-200 text-orange-600 ring-2 ring-orange-500/10"
+                                                : "bg-white border-slate-200 text-[#FF4B91]"
+                                        )}
+                                        title={isNew ? "New Skill (Will be created)" : "Existing Skill"}
+                                    >
+                                        {skill}
+                                        {isNew && <span className="ml-1.5 text-[8px] px-1 py-px rounded bg-orange-100 text-orange-700">NEW</span>}
+                                    </span>
+                                );
+                            })}
                         </div>
                     </div>
                 )}
