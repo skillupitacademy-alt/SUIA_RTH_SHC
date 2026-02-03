@@ -782,3 +782,12 @@ Reduce documentation fragmentation and improve discoverability by consolidating 
 - **Logic**: Disabled the "Process & Review" action and locked the editor until a Target Topic is selected.
 - **UI**: Added amber warning badges and context-aware placeholders to guide the user.
 - **Outcome**: Eliminated the primary source of empty blueprint states, ensuring data integrity across the review pipeline.
+
+### Batch 102: Persistence Strategy Refinement (Batch 97.5)
+- **Problem**: Persistence caused "sticky" data across different activities (Source Editor remained full; no easy way to clear context).
+- **Action**: Implemented the **Hygiene Layer**.
+- **Logic**: 
+    - Added `resetFactory` to clear all state and `localStorage`.
+    - Auto-cleared `sourceCode` upon successful ingestion.
+- **UI**: Added a hover-triggered **"Reset Workspace"** button in the context header for explicit control.
+- **Outcome**: Achieved a perfect balance between session safety (saving progress) and operational hygiene (starting clean activities).
