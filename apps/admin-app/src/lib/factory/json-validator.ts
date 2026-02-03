@@ -2,6 +2,29 @@ import { GeneratedQuestion, ValidationResult } from '../../types/factory';
 
 export const JsonValidator = {
     /**
+     * Attempts to heal common JSON syntax errors from AI
+     */
+    repairJson: (raw: string): string => {
+        let healed = raw.trim();
+
+        // 1. Remove trailing commas before closing braces/brackets
+        healed = healed.replace(/,\s*([\]}])/g, '$1');
+
+        // 2. Fix unquoted keys (basic version for common technical keys)
+        // This targets alphanumeric keys that aren't wrapped in quotes
+        healed = healed.replace(/([{,]\s*)([a-zA-Z0-9_]+)(\s*:)/g, '$1"$2"$3');
+
+        // 3. Convert single quotes to double quotes for keys/values
+        // This is tricky but we target common patterns
+        // Replace single quotes that start or end a string (near :, {, [, ,, ], })
+        healed = healed.replace(/([{,\[:])\s*'([^']*)'\s*([,\]}])/g, (match, p1, p2, p3) => {
+            return `${p1}"${p2}"${p3}`;
+        });
+
+        return healed;
+    },
+
+    /**
      * Cleans conversational text from AI and extracts the JSON array
      */
     cleanJson: (raw: string): string => {
@@ -10,13 +33,11 @@ export const JsonValidator = {
         // Remove markdown code blocks if present
         if (cleaned.startsWith('```')) {
             const lines = cleaned.split('\n');
-            // Remove first line (```json or ```) and last line (```)
             if (lines[0].startsWith('```')) lines.shift();
             if (lines[lines.length - 1].startsWith('```')) lines.pop();
             cleaned = lines.join('\n').trim();
         }
 
-        // Find the first '{' or '[' and the last '}' or ']'
         const firstBrace = cleaned.indexOf('{');
         const firstBracket = cleaned.indexOf('[');
         const start = firstBrace !== -1 && (firstBracket === -1 || firstBrace < firstBracket) ? firstBrace : firstBracket;
@@ -26,10 +47,10 @@ export const JsonValidator = {
         const end = Math.max(lastBrace, lastBracket);
 
         if (start !== -1 && end !== -1 && end > start) {
-            return cleaned.substring(start, end + 1);
+            cleaned = cleaned.substring(start, end + 1);
         }
 
-        return cleaned;
+        return JsonValidator.repairJson(cleaned);
     },
 
     /**

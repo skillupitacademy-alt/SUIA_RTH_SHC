@@ -14,9 +14,7 @@ import { JsonIngestBox } from '@/components/factory/ingest/JsonIngestBox';
 
 export default function QuestionFactoryPage() {
     return (
-        <FactoryProvider>
-            <QuestionFactoryContent />
-        </FactoryProvider>
+        <QuestionFactoryContent />
     );
 }
 
