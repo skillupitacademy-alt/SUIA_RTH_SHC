@@ -844,3 +844,12 @@ Reduce documentation fragmentation and improve discoverability by consolidating 
     - Full Monorepo Build: **PASSED** (Exit Code 0).
     - Vercel Deployment Triggered: git sha `d3a1b75`.
 - **Outcome**: Restored critical production stability for all deletion workflows (Single & Batch).
+
+### Batch 108.2: Production Stabilization Hotfix (ESM Transpilation)
+- **Objective**: Resolve Vercel runtime crash ("White Screen") affecting Question Bank and Hierarchy views.
+- **Root Cause**: Next.js production environment failed to correctly bundle pure-ESM dependencies (`react-markdown`, `remark-gfm`, `lucide-react`) within the CommonJS/Interop layer, leading to client-side hydration failures.
+- **Action**: Updated `apps/admin-app/next.config.js` to explicitly list these packages in `transpilePackages`.
+- **Verification**: 
+    - Full Build Suite (Web/API/Admin/TSC): **PASSED** (Exit Code 0).
+    - Verified `DomainReviewCard` and `QuestionReviewCard` dependencies are now transpiled.
+- **Outcome**: Eliminated module loading errors, restoring full dashboard functionality.

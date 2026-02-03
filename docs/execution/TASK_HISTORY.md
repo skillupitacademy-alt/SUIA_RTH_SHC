@@ -24,3 +24,4 @@
 | 2026-02-03 | Hierarchy Stacks (Batch 107) | COMPLETED | Migrated Topics/Subtopics to Vertical Cards; Implemented Batch Deletion API for Tier 1 hierarchy. |
 | 2026-02-03 | Hierarchy Complete (Batch 108) | COMPLETED | Migrated Domains, Subjects, and Skills to Vertical Cards; Full Batch Deletion across all levels. |
 | 2026-02-03 | Prod Hotfix (Batch 108.1) | COMPLETED | Refactored `AlertDialog` to use named imports to resolve Vercel runtime crash. |
+| 2026-02-03 | Prod Hotfix (Batch 108.2) | COMPLETED | Configured `next.config.js` to transpile ESM packages (`react-markdown`, `lucide-react`) to fix production "White Screen". |

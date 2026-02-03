@@ -420,3 +420,11 @@
     - **Validation**: Verified full compatibility with `@radix-ui/react-alert-dialog` across both local `next dev` and production builds.
 - **Verification**: Global monorepo build PASSED (Exit Code 0).
 - **Status**: **STABLE**. All batch operations (Tier 1, 2, 3) are fully operational.
+
+### Phase 11.2: Production Resilience Hotfix (ESM Layers)
+- **Objective**: Resolve remaining "White Screen" crashes in Question Bank and Admin Hierarchy.
+- **Implementation**:
+    - **Configuration**: Added `react-markdown`, `remark-gfm`, and `lucide-react` to `transpilePackages` in `admin-app`.
+    - **Rationale**: Ensures robust compatibility between Next.js server/client boundaries and pure-ESM third-party libraries.
+- **Verification**: strict build sequence (pnpm build, scoped builds, tsc) PASSED.
+- **Status**: **READY FOR DEPLOYMENT**. Committing to Release Candidate.
