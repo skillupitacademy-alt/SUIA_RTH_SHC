@@ -10,6 +10,8 @@ import { MultiSelectField } from '@/components/entry/SelectionFields';
 import { ZLoader } from '@/components/ui/ZLoader';
 import { useAllSkills } from '@/hooks/useAdminHierarchy';
 import Link from 'next/link';
+import { QuestionReviewCard } from './QuestionReviewCard';
+import { toast } from 'sonner';
 
 interface QuestionData {
     id: string;
@@ -66,6 +68,9 @@ export function QuestionTable() {
         isDeleting: false,
         error: null
     });
+
+    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+    const [isBatchDeleting, setIsBatchDeleting] = useState(false);
 
     const handleFilterChange = useCallback((selection: Selection) => {
         setFilters(prev => {
@@ -129,11 +134,47 @@ export function QuestionTable() {
         }
     };
 
+    const openDeleteModal = (id: string) => {
+        setDeleteModal({ isOpen: true, questionId: id, isDeleting: false, error: null });
+    };
+
     const handleCloseDelete = () => {
         setDeleteModal({ isOpen: false, questionId: null, isDeleting: false, error: null });
     };
-    const openDeleteModal = (id: string) => {
-        setDeleteModal({ isOpen: true, questionId: id, isDeleting: false, error: null });
+
+    const toggleSelect = (id: string, selected: boolean) => {
+        setSelectedIds(prev => {
+            const next = new Set(prev);
+            if (selected) next.add(id);
+            else next.delete(id);
+            return next;
+        });
+    };
+
+    const toggleSelectAll = () => {
+        if (selectedIds.size === questions.length) {
+            setSelectedIds(new Set());
+        } else {
+            setSelectedIds(new Set(questions.map(q => q.id)));
+        }
+    };
+
+    const handleBatchDelete = async () => {
+        if (selectedIds.size === 0) return;
+
+        setIsBatchDeleting(true);
+        try {
+            const idsToDelete = Array.from(selectedIds);
+            await apiClient.admin.batchDeleteQuestions(idsToDelete);
+            setQuestions(prev => prev.filter(q => !selectedIds.has(q.id)));
+            setSelectedIds(new Set());
+            toast.success(`Successfully deleted ${idsToDelete.length} assessments.`);
+        } catch (error) {
+            console.error('Batch delete failed:', error);
+            toast.error('System failed to process batch deletion.');
+        } finally {
+            setIsBatchDeleting(false);
+        }
     };
 
     return (
@@ -189,146 +230,102 @@ export function QuestionTable() {
                 </div>
             </div>
 
-            {/* Table Area */}
-            <div className="rounded-[1.75rem] border border-primary/10 bg-white/50 backdrop-blur-xl overflow-hidden shadow-xl min-h-[400px] relative">
+            {/* Question Stack Area */}
+            <div className="relative min-h-[400px]">
                 {isLoading && (
-                    <div className="absolute inset-0 z-10 bg-white/60 backdrop-blur-sm flex items-center justify-center animate-in fade-in duration-300">
+                    <div className="absolute inset-0 z-40 bg-white/60 backdrop-blur-sm flex items-center justify-center animate-in fade-in duration-300 rounded-[1.75rem]">
                         <ZLoader text="Synchronizing Matrix_" />
                     </div>
                 )}
 
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left font-sans">
-                        <thead>
-                            <tr className="border-b border-primary/5 bg-primary/5">
-                                <th className="p-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground w-[35%]">Assessment Content & Hierarchy</th>
-                                <th className="p-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Type</th>
-                                <th className="p-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Nature</th>
-                                <th className="p-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Dimension</th>
-                                <th className="p-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Complexity</th>
-                                <th className="p-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Status</th>
-                                <th className="p-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground text-right">Operations</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-primary/5">
-                            {questions.length === 0 && !isLoading ? (
-                                <tr>
-                                    <td colSpan={4} className="p-20 text-center">
-                                        <p className="text-sm font-bold text-muted-foreground uppercase tracking-widest">No matching assessments found.</p>
-                                    </td>
-                                </tr>
-                            ) : (
-                                questions.map((q) => (
-                                    <tr key={q.id} className="group hover:bg-primary/5 transition-colors">
-                                        <td className="p-4">
-                                            <div className="space-y-1">
-                                                <p className="font-bold text-[#1A1A1A] line-clamp-2 text-[13px] leading-snug">{q.questionText}</p>
-                                                <div className="flex items-center gap-2 text-[9px] uppercase font-black tracking-widest text-muted-foreground/60">
-                                                    <span>{q.topic?.subject?.domain?.name || 'N/A'}</span>
-                                                    <span>/</span>
-                                                    <span>{q.topic?.subject?.name || 'N/A'}</span>
-                                                    <span>/</span>
-                                                    <span className="text-[#FF4B91]">{q.topic?.name || 'N/A'}</span>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td className="p-4">
-                                            <span className="px-2 py-0.5 rounded-lg bg-gray-100 text-gray-600 text-[9px] font-black uppercase tracking-wider border border-gray-200">
-                                                {q.type}
-                                            </span>
-                                        </td>
-                                        <td className="p-4">
-                                            <span className={cn(
-                                                "px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-wider border",
-                                                q.mappingType === 'conceptual' ? 'bg-blue-50 text-blue-600 border-blue-100' :
-                                                    q.mappingType === 'technical' ? 'bg-purple-50 text-purple-600 border-purple-100' :
-                                                        q.mappingType === 'practical' ? 'bg-teal-50 text-teal-600 border-teal-100' :
-                                                            'bg-gray-50 text-gray-400 border-gray-100'
-                                            )}>
-                                                {q.mappingType || 'Legacy'}
-                                            </span>
-                                        </td>
-                                        <td className="p-4">
-                                            <div className="flex flex-wrap gap-1">
-                                                {q.questionSkills?.length ? (
-                                                    [...new Set(q.questionSkills.map(qs => qs.skill.category))].map(cat => (
-                                                        <span key={cat} className={cn(
-                                                            "px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-wider border",
-                                                            cat === 'technical' ? 'bg-indigo-50 text-indigo-600 border-indigo-100' :
-                                                                cat === 'cognitive' ? 'bg-amber-50 text-amber-600 border-amber-100' :
-                                                                    'bg-emerald-50 text-emerald-600 border-emerald-100'
-                                                        )}>
-                                                            {cat}
-                                                        </span>
-                                                    ))
-                                                ) : (
-                                                    <span className="text-[9px] font-bold text-slate-300 italic">No Dimension</span>
-                                                )}
-                                            </div>
-                                        </td>
-                                        <td className="p-4">
-                                            <span className={`px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-wider border ${q.difficulty === 'simple' ? 'bg-green-100 text-green-700 border-green-200' :
-                                                q.difficulty === 'mean' || q.difficulty === 'intermediate' ? 'bg-orange-100 text-orange-700 border-orange-200' :
-                                                    'bg-red-100 text-red-700 border-red-200'
-                                                }`}>
-                                                {q.difficulty}
-                                            </span>
-                                        </td>
-                                        <td className="p-4">
-                                            <div className="flex items-center gap-2">
-                                                <div className={`w-1.5 h-1.5 rounded-full ${q.status === 'active' ? 'bg-green-500 animate-pulse' : 'bg-gray-400'}`} />
-                                                <span className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">{q.status}</span>
-                                            </div>
-                                        </td>
-                                        <td className="p-4">
-                                            <div className="flex items-center justify-end gap-2">
-                                                <Link
-                                                    href={`/questions/${q.id}/edit`}
-                                                    className="p-1.5 rounded-lg bg-primary/5 text-primary hover:bg-primary hover:text-white transition-all border border-primary/10"
-                                                    title="Edit Assessment"
-                                                >
-                                                    <Edit3 className="w-3.5 h-3.5" />
-                                                </Link>
-                                                <button
-                                                    onClick={() => openDeleteModal(q.id)}
-                                                    className="p-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-600 hover:text-white transition-all border border-red-100"
-                                                    title="Delete Assessment"
-                                                >
-                                                    <Trash2 className="w-3.5 h-3.5" />
-                                                </button>
-                                            </div>
-                                            <div className="text-right mt-1">
-                                                <span className="text-[8px] font-bold text-muted-foreground/50 uppercase tracking-tighter">
-                                                    Added {formatTimeAgo(q.createdAt)}
-                                                </span>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))
-                            )}
-                        </tbody>
-                    </table>
+                {/* Question List */}
+                <div className="space-y-6">
+                    {questions.length === 0 && !isLoading ? (
+                        <div className="rounded-[1.75rem] border border-primary/10 bg-white/50 backdrop-blur-xl p-20 text-center shadow-xl">
+                            <p className="text-sm font-bold text-muted-foreground uppercase tracking-widest italic">No matching assessments found in the database.</p>
+                        </div>
+                    ) : (
+                        questions.map((q, idx) => (
+                            <QuestionReviewCard
+                                key={q.id}
+                                question={q}
+                                index={(page - 1) * 20 + idx}
+                                isSelected={selectedIds.has(q.id)}
+                                onSelect={toggleSelect}
+                                onDeleteRequest={openDeleteModal}
+                            />
+                        ))
+                    )}
                 </div>
 
-                {/* Pagination */}
-                <div className="p-6 border-t border-primary/5 flex items-center justify-between">
-                    <button
-                        disabled={page === 1}
-                        onClick={() => setPage(p => p - 1)}
-                        className="px-4 py-2 text-xs font-black uppercase tracking-widest disabled:opacity-50 hover:text-[#FF4B91] transition-colors"
-                    >
-                        Previous
-                    </button>
-                    <span className="text-xs font-bold text-muted-foreground">Page {page} of {totalPages}</span>
-                    <button
-                        disabled={page === totalPages}
-                        onClick={() => setPage(p => p + 1)}
-                        className="px-4 py-2 text-xs font-black uppercase tracking-widest disabled:opacity-50 hover:text-[#FF4B91] transition-colors"
-                    >
-                        Next
-                    </button>
-                </div>
+                {/* Floating Command Bar */}
+                {selectedIds.size > 0 && (
+                    <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-bottom-5 duration-500">
+                        <div className="bg-slate-900/90 backdrop-blur-2xl border border-white/10 rounded-full px-8 py-4 shadow-[0_20px_50px_rgba(0,0,0,0.3)] flex items-center gap-8 min-w-[500px]">
+                            <div className="flex items-center gap-4 border-r border-white/10 pr-8">
+                                <div className="w-10 h-10 rounded-xl bg-[#FF4B91] flex items-center justify-center text-white font-black shadow-lg shadow-[#FF4B91]/20">
+                                    {selectedIds.size}
+                                </div>
+                                <div>
+                                    <p className="text-[10px] font-black uppercase text-white tracking-widest">Assessments Selected</p>
+                                    <p className="text-[9px] font-bold text-slate-400">Database Batch Operations Ready</p>
+                                </div>
+                            </div>
+
+                            <div className="flex items-center gap-3">
+                                <button
+                                    onClick={toggleSelectAll}
+                                    className="px-5 py-2.5 rounded-xl bg-white/10 text-white text-[10px] font-black uppercase tracking-widest hover:bg-white/20 transition-all border border-white/5"
+                                >
+                                    {selectedIds.size === questions.length ? 'Deselect All' : 'Select Page'}
+                                </button>
+
+                                <button
+                                    onClick={handleBatchDelete}
+                                    disabled={isBatchDeleting}
+                                    className="px-6 py-2.5 rounded-xl bg-red-500 text-white text-[10px] font-black uppercase tracking-widest hover:bg-red-600 transition-all shadow-lg shadow-red-500/20 flex items-center gap-2 group disabled:opacity-50"
+                                >
+                                    {isBatchDeleting ? (
+                                        <ZLoader size="xs" className="text-white" center={false} />
+                                    ) : (
+                                        <>
+                                            <Trash2 size={12} className="group-hover:rotate-12 transition-transform" />
+                                            Delete Selected
+                                        </>
+                                    )}
+                                </button>
+                            </div>
+
+                            <button
+                                onClick={() => setSelectedIds(new Set())}
+                                className="ml-auto p-2 text-slate-400 hover:text-white transition-colors"
+                            >
+                                <X size={20} />
+                            </button>
+                        </div>
+                    </div>
+                )}
             </div>
+
+            {/* Pagination */}
+            <div className="p-6 border-t border-primary/5 flex items-center justify-between">
+                <button
+                    disabled={page === 1}
+                    onClick={() => setPage(p => p - 1)}
+                    className="px-4 py-2 text-xs font-black uppercase tracking-widest disabled:opacity-50 hover:text-[#FF4B91] transition-colors"
+                >
+                    Previous
+                </button>
+                <span className="text-xs font-bold text-muted-foreground">Page {page} of {totalPages}</span>
+                <button
+                    disabled={page === totalPages}
+                    onClick={() => setPage(p => p + 1)}
+                    className="px-4 py-2 text-xs font-black uppercase tracking-widest disabled:opacity-50 hover:text-[#FF4B91] transition-colors"
+                >
+                    Next
+                </button>
+            </div>
+
             {/* Delete Confirmation Modal */}
             {deleteModal.isOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">

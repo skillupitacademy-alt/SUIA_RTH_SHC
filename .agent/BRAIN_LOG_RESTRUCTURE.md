@@ -802,3 +802,13 @@ Reduce documentation fragmentation and improve discoverability by consolidating 
     - **Strict Mode**: Added a UI toggle to forbid AI from creating any new skill names.
     - **Review Remapping**: Enhanced `QuestionCard` with a dropdown to allow manual re-linking of suggested skills back to official records.
 - **Outcome**: Eliminated database pollution; ensured 100% brand/taxonomy alignment for all generated questions.
+
+### Batch 106: Question Bank Migration (Core Migration)
+- **Problem**: Production Question Bank view was a legacy, low-density table that didn't support batch operations or modern visual standards.
+- **Goal**: Migrate the first core production table to the vertical "Stack of Cards" standard.
+- **Action**: 
+    - **Backend Infrastructure**: Implemented `POST /api/admin/questions/batch-delete` with Drizzle `inArray` optimization and Audit Service integration.
+    - **UI Refactor**: Replaced `QuestionTable.tsx` with a high-fidelity **Card Stack Gallery**.
+    - **Live Adaptor**: Created `QuestionReviewCard.tsx` bound to production hierarchy (Domain/Subject/Topic breadcrumbs).
+    - **Batch Operations**: Integrated the **Floating Command Bar** for context-aware multi-select deletion from the live database.
+- **Outcome**: Successfully transitioned core production management to the "Card Standard", achieving platform-wide aesthetic and functional parity.

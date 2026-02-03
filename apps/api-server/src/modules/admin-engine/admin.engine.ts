@@ -1150,6 +1150,21 @@ export class AdminEngine {
     return deleted;
   }
 
+  static async deleteQuestionsBatch(ids: string[], adminId: string) {
+    const deleted = await db.update(questions)
+        .set({ status: 'inactive', updatedAt: new Date() })
+        .where(inArray(questions.id, ids))
+        .returning();
+
+    await AuditService.log({
+      userId: adminId,
+      action: 'admin_batch_delete_questions',
+      metadata: { count: deleted.length, ids },
+    });
+
+    return deleted;
+  }
+
   static async getDomains(page: number = 1, limit: number = 20, filters?: { search?: string }) {
     const offset = (page - 1) * limit;
     

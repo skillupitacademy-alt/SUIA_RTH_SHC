@@ -383,3 +383,13 @@
     - **Card Upgrades**: Enhanced `QuestionCard` with high-fidelity checkboxes and selection-aware visual states (Glow/Scale).
 - **Verification**: Global monorepo build and TypeScript check PASSED (Exit Code 0).
 - **Outcome**: Established the "Selector Standard" as the foundation for platform-wide card-based management.
+
+### Phase 9: Question Bank - Core Migration (Batch 106)
+- **Objective**: Convert the live database Question Bank from a legacy table to a high-fidelity Vertical Stack of Cards.
+- **Implementation**:
+    - **Backend API**: Implemented `POST /api/admin/questions/batch-delete` for mass-decommissioning production assets.
+    - **Service Layer**: Added `deleteQuestionsBatch` to `QuestionService` and `AdminEngine` with full audit logging support.
+    - **Live Adaptation**: Created `QuestionReviewCard.tsx` specifically for production data (Status, Lineage, UUIDs).
+    - **UI Refactor**: Replaced `QuestionTable.tsx` with a premium **Stack of Cards** layout and integrated the **Floating Command Bar**.
+- **Verification**: Global monorepo build and TypeScript check PASSED (Exit Code 0).
+- **Outcome**: Successfully transitioned the first core production interface to the new vertical card standard.

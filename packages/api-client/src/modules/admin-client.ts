@@ -192,6 +192,10 @@ export class AdminClient {
     return this.client.delete<any>(`/admin/questions/${id}`);
   }
 
+  async batchDeleteQuestions(ids: string[]) {
+    return this.client.post<any>('/admin/questions/batch-delete', { ids });
+  }
+
   async getMetrics() {
     return this.client.get<any>('/admin/metrics');
   }

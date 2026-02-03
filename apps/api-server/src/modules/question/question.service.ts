@@ -114,4 +114,8 @@ export class QuestionService {
   static async deleteQuestion(id: string) {
     return await db.delete(questions).where(eq(questions.id, id)).returning();
   }
+
+  static async deleteQuestionsBatch(ids: string[]) {
+    return await db.delete(questions).where(inArray(questions.id, ids)).returning();
+  }
 }

@@ -1,16 +1,18 @@
 # Current Task Log
 
-**Task**: Phase 8 Pilot Complete - Batch Operations & Selection Console
+**Task**: Phase 9 Complete - Question Bank Migration (Core)
 **Status**: Verification Passed (Build & Type Safe)
 **Date**: 2026-02-03
 
 ## Recent Actions
-- **Selection Engine**: Implemented `selectedIndices` and `removeBatch` logic in context.
-- **Floating UI**: Developed premium "Selection Command Bar" for multi-tier batch actions.
-- **Visual Feedback**: Added high-fidelity checkboxes and "Selection Glow" to Question Cards.
+- **Infrastructure**: Added `deleteQuestionsBatch` to Service, Engine, and API Router.
+- **API Client**: Integrated `batchDeleteQuestions` into the monorepo client package.
+- **UI Refactor**: Converted legacy `QuestionTable` to a high-fidelity **Stack of Cards** gallery.
+- **Live Adaptation**: Implemented `QuestionReviewCard` with lineage breadcrumbs and status indicators.
+- **Control Plane**: Connected the **Floating Command Bar** to live database batch-delete operations.
 - **Compliance**: Verified full monorepo build and TS check (Exit Code 0).
 
 ## Next Steps
-- Transition Question Bank (Database) from Table to Vertical Stack Card layout.
-- Implement `POST /api/admin/questions/batch-delete` for live data persistence.
-- Phase 10: Standardize Subtopics and Topics with the "Stack" UI.
+- Phase 10: Hierarchy Stacks (Tier 1) - Migrate Subtopics and Topics to vertical card format.
+- Display parent breadcrumbs (Domain/Subject) on cards for complete context.
+- Implement selection engine for Hierarchy tabs.
