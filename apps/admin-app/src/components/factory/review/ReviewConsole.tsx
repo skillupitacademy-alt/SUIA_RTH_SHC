@@ -11,7 +11,8 @@ import { cn } from '@/lib/utils';
 import { GeneratedQuestion } from '@/types/factory';
 
 export function ReviewConsole() {
-    const { stagedQuestions, updateQuestion, removeQuestion, clearStage, resetFactory } = useFactory();
+    const { stagedQuestions, updateQuestion, removeQuestion, removeBatch, clearStage, resetFactory } = useFactory();
+    const [selectedIndices, setSelectedIndices] = React.useState<Set<number>>(new Set());
 
     const handleDeleteAll = () => {
         if (confirm("Are you sure you want to clear all staged questions? This cannot be undone.")) {
@@ -25,6 +26,37 @@ export function ReviewConsole() {
 
     const handleDelete = (index: number) => {
         removeQuestion(index);
+        // Clean up selection if needed
+        if (selectedIndices.has(index)) {
+            const next = new Set(selectedIndices);
+            next.delete(index);
+            setSelectedIndices(next);
+        }
+    };
+
+    const handleBatchDelete = () => {
+        if (selectedIndices.size === 0) return;
+        if (confirm(`Are you sure you want to delete ${selectedIndices.size} selected questions?`)) {
+            removeBatch(Array.from(selectedIndices));
+            setSelectedIndices(new Set());
+        }
+    };
+
+    const toggleSelect = (index: number, selected: boolean) => {
+        setSelectedIndices(prev => {
+            const next = new Set(prev);
+            if (selected) next.add(index);
+            else next.delete(index);
+            return next;
+        });
+    };
+
+    const toggleSelectAll = () => {
+        if (selectedIndices.size === stagedQuestions.length) {
+            setSelectedIndices(new Set());
+        } else {
+            setSelectedIndices(new Set(stagedQuestions.map((_, i) => i)));
+        }
     };
 
     // Calculate ready status 
@@ -129,6 +161,36 @@ export function ReviewConsole() {
 
     return (
         <div className="w-full space-y-8 pb-32">
+            {/* FLOATING SELECTION COMMAND BAR */}
+            {selectedIndices.size > 0 && (
+                <div className="fixed top-28 left-1/2 -translate-x-1/2 z-[60] animate-in slide-in-from-top-4 duration-500">
+                    <div className="bg-slate-900 text-white rounded-3xl py-3 px-8 flex items-center gap-6 shadow-2xl ring-4 ring-[#FF4B91]/10">
+                        <div className="flex items-center gap-3 pr-6 border-r border-white/10">
+                            <div className="w-8 h-8 rounded-xl bg-[#FF4B91] flex items-center justify-center font-black text-sm">
+                                {selectedIndices.size}
+                            </div>
+                            <span className="text-[10px] font-black uppercase tracking-[0.2em]">Selected</span>
+                        </div>
+
+                        <div className="flex items-center gap-4">
+                            <button
+                                onClick={toggleSelectAll}
+                                className="text-[10px] font-black uppercase tracking-widest hover:text-[#FF4B91] transition-colors"
+                            >
+                                {selectedIndices.size === stagedQuestions.length ? 'Deselect All' : 'Select All'}
+                            </button>
+
+                            <button
+                                onClick={handleBatchDelete}
+                                className="flex items-center gap-2 bg-rose-500 hover:bg-rose-600 px-6 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 shadow-lg shadow-rose-500/20"
+                            >
+                                <Trash2 size={14} /> Delete Selected
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* STICKY MANAGEMENT HEADER */}
             <div className="sticky top-4 z-50 w-full">
                 <div className="bg-white/80 backdrop-blur-xl border border-slate-200 rounded-[2rem] p-4 flex items-center justify-between shadow-2xl shadow-slate-200/50">
@@ -205,8 +267,10 @@ export function ReviewConsole() {
                             index={idx}
                             officialSkills={officialSkills}
                             isDuplicate={duplicateMap.has(idx)}
+                            isSelected={selectedIndices.has(idx)}
                             onUpdate={(updates) => handleUpdate(idx, updates)}
                             onDelete={() => handleDelete(idx)}
+                            onSelect={(selected) => toggleSelect(idx, selected)}
                         />
                     </div>
                 ))}

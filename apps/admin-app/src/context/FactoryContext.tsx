@@ -18,6 +18,7 @@ interface FactoryContextType {
     ingestRawJson: (json: string) => boolean;
     updateQuestion: (index: number, updates: Partial<GeneratedQuestion>) => void;
     removeQuestion: (index: number) => void;
+    removeBatch: (indices: number[]) => void;
     clearStage: () => void;
     resetFactory: () => void;
 }
@@ -136,6 +137,12 @@ export function FactoryProvider({ children }: { children: ReactNode }) {
         setStagedQuestions(prev => prev.filter((_, i) => i !== index));
     };
 
+    const removeBatch = (indices: number[]) => {
+        const indexSet = new Set(indices);
+        setStagedQuestions(prev => prev.filter((_, i) => !indexSet.has(i)));
+        toast.info(`Removed ${indices.length} questions from stage.`);
+    };
+
     const clearStage = () => {
         setStagedQuestions([]);
         setValidationErrors([]);
@@ -165,6 +172,7 @@ export function FactoryProvider({ children }: { children: ReactNode }) {
             ingestRawJson,
             updateQuestion,
             removeQuestion,
+            removeBatch,
             clearStage,
             resetFactory
         }}>

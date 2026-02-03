@@ -17,9 +17,20 @@ interface QuestionCardProps {
     isDuplicate?: boolean;
     onUpdate: (updates: Partial<GeneratedQuestion>) => void;
     onDelete: () => void;
+    isSelected?: boolean;
+    onSelect?: (selected: boolean) => void;
 }
 
-export function QuestionCard({ question, index, officialSkills, isDuplicate, onUpdate, onDelete }: QuestionCardProps) {
+export function QuestionCard({
+    question,
+    index,
+    officialSkills,
+    isDuplicate,
+    onUpdate,
+    onDelete,
+    isSelected = false,
+    onSelect
+}: QuestionCardProps) {
     const [isEditing, setIsEditing] = useState(false);
     const [isRationaleOpen, setIsRationaleOpen] = useState(false);
 
@@ -40,6 +51,11 @@ export function QuestionCard({ question, index, officialSkills, isDuplicate, onU
             isEditing && "ring-2 ring-[#FF4B91] border-transparent shadow-2xl",
             isDuplicate && "ring-2 ring-rose-500 border-rose-200 bg-rose-50"
         )}>
+            {/* SELECTION OVERLAY GLOW */}
+            {isSelected && (
+                <div className="absolute inset-0 bg-[#FF4B91]/[0.02] pointer-events-none animate-in fade-in duration-500" />
+            )}
+
             {/* Duplicate Warning Banner */}
             {isDuplicate && (
                 <div className="w-full bg-rose-500 text-white text-[10px] font-black uppercase tracking-widest py-1 text-center animate-pulse">
@@ -48,8 +64,21 @@ export function QuestionCard({ question, index, officialSkills, isDuplicate, onU
             )}
             {/* 1. Header Area: Identity & Metadata */}
             <div className="px-10 py-6 border-b border-slate-100 flex flex-wrap items-center justify-between gap-4 bg-slate-50/30">
-                <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-2xl bg-slate-900 text-[#FF4B91] flex items-center justify-center font-black italic shadow-lg">
+                <div className="flex items-center gap-6">
+                    {/* CHECKBOX SECTOR */}
+                    <div className="flex items-center">
+                        <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={(e) => onSelect?.(e.target.checked)}
+                            className="w-5 h-5 rounded-lg border-2 border-slate-200 text-[#FF4B91] focus:ring-[#FF4B91]/20 cursor-pointer transition-all checked:border-[#FF4B91]"
+                        />
+                    </div>
+
+                    <div className={cn(
+                        "w-10 h-10 rounded-2xl flex items-center justify-center font-black italic shadow-lg transition-all duration-500",
+                        isSelected ? "bg-[#FF4B91] text-white rotate-3 scale-110" : "bg-slate-900 text-[#FF4B91]"
+                    )}>
                         #{index + 1}
                     </div>
                     <div>
