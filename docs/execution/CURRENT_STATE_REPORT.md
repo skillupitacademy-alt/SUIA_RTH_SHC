@@ -364,3 +364,12 @@
 - **Global Verification**:
     - Build Suite: Clean build of `@quiz/admin-app` (Exit Code 0) ✅.
 - **Outcome**: Eliminated the user error path that led to empty blueprint states in the Review Console.
+
+### Phase 7: Taxonomy Governance & Integrity (Batch 104)
+- **Objective**: Prevent "Taxonomy Smog" by enforcing AI adherence to official skills.
+- **Implementation**:
+    - **Selector Mode**: Shifted AI role from "Creator" to "Selector" via official skill injection in prompts.
+    - **Strict Mode Toggle**: Added UI control to forbid new skill creation during generation.
+    - **Skill Remapping**: Implemented dynamic dropdowns in `QuestionCard` for manual reconciliation of AI suggestions.
+- **Verification**: Global monorepo build and TypeScript check PASSED (Exit Code 0).
+- **Outcome**: Ensured 100% data integrity and consistency for the Question Factory taxonomy.

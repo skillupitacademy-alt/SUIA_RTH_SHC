@@ -41,4 +41,6 @@ export interface FactoryBlueprint {
         intermediate: number;
         expert: number;
     };
+    knownSkills?: string[];
+    strictMode?: boolean;
 }

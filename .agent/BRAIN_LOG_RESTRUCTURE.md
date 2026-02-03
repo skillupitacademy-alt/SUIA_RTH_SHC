@@ -792,10 +792,13 @@ Reduce documentation fragmentation and improve discoverability by consolidating 
 - **UI**: Added a **"Reset Workspace"** button in the context header (always visible with subtle opacity) for explicit control.
 - **Outcome**: Achieved a perfect balance between session safety (saving progress) and operational hygiene (starting clean activities).
 
-### Batch 103: Security & Data Hygiene (Zero-Leakage)
-- **Problem**: Persistent `localStorage` in the Question Factory posed a security risk for shared devices or session termination.
-- **Action**: Implemented **Strict Hygiene Model**.
-- **Logic**: 
-    - Added unmount cleanup to `FactoryProvider` to wipe `localStorage` when leaving the page.
-    - Added security watcher to `AdminGuard` to purge storage upon `isAuthenticated` loss.
 - **Outcome**: Data exists only during active use; surgically wiped upon navigation or logout.
+
+### Batch 104: Taxonomy Governance (Selector vs Creator)
+- **Problem**: AI-driven skill tagging produced redundant, messy talent taxonomies ("Taxonomy Smog").
+- **Action**: Shifted AI from a "Creator" to a "Selector" of official skills.
+- **Logic**: 
+    - **Prompt Injection**: Official database skills are now injected into the "Smart Prompt" with strict mapping instructions.
+    - **Strict Mode**: Added a UI toggle to forbid AI from creating any new skill names.
+    - **Review Remapping**: Enhanced `QuestionCard` with a dropdown to allow manual re-linking of suggested skills back to official records.
+- **Outcome**: Eliminated database pollution; ensured 100% brand/taxonomy alignment for all generated questions.

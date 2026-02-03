@@ -11,7 +11,8 @@ import { toast } from 'sonner';
 
 import { FactoryProvider, useFactory } from '@/context/FactoryContext';
 import { JsonIngestBox } from '@/components/factory/ingest/JsonIngestBox';
-import { RefreshCcw } from 'lucide-react';
+import { RefreshCcw, ShieldCheck } from 'lucide-react';
+import { useTopicSkills } from '@/hooks/useAdminHierarchy';
 
 export default function QuestionFactoryPage() {
     return (
@@ -22,6 +23,9 @@ export default function QuestionFactoryPage() {
 function QuestionFactoryContent() {
     const { stagedQuestions, blueprint, setBlueprint, sourceCode, setSourceCode, resetFactory } = useFactory();
     const [isCopying, setIsCopying] = useState(false);
+
+    // Taxonomy Governance: Fetch official skills for the active Topic
+    const { data: officialSkills, loading: loadingSkills } = useTopicSkills(blueprint.topicId);
 
     const handleCopyPrompt = async () => {
         if (!blueprint.topicId) {
@@ -35,10 +39,12 @@ function QuestionFactoryContent() {
 
         setIsCopying(true);
         try {
-            // Context resolution (can be enhanced further once we have names in context)
+            // Context resolution with TAXONOMY INJECTION
             const prompt = PromptService.generateTechnicalPrompt({
                 sourceCode,
                 counts: blueprint.counts,
+                knownSkills: officialSkills?.map((s: any) => s.name) || [],
+                strictMode: blueprint.strictMode,
                 context: {
                     domainName: "Target Domain",
                     subjectName: "Target Subject",
@@ -48,7 +54,7 @@ function QuestionFactoryContent() {
             });
 
             await navigator.clipboard.writeText(prompt);
-            toast.success("Prompt Copied to Clipboard!");
+            toast.success("Prompt Copied with Taxonomy Injection!");
         } catch (err) {
             toast.error("Failed to copy prompt.");
         } finally {
@@ -127,6 +133,24 @@ function QuestionFactoryContent() {
                                 <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">Generate Surgical AI Prompt</p>
                             </div>
                             <div className="flex items-center gap-4 w-full md:w-auto">
+                                {/* Strict Mode Toggle */}
+                                <button
+                                    onClick={() => setBlueprint({ strictMode: !blueprint.strictMode })}
+                                    className={`
+                                        flex items-center gap-3 px-6 py-4 rounded-xl border transition-all
+                                        ${blueprint.strictMode
+                                            ? 'bg-emerald-500/10 border-emerald-500/50 text-emerald-500 shadow-sm shadow-emerald-500/10'
+                                            : 'bg-slate-800 border-slate-700 text-slate-400'
+                                        }
+                                    `}
+                                    title={blueprint.strictMode ? "Taxonomy Check Enabled" : "Taxonomy Check Disabled"}
+                                >
+                                    <ShieldCheck size={18} className={blueprint.strictMode ? 'animate-pulse' : ''} />
+                                    <span className="text-[10px] font-black uppercase tracking-widest hidden lg:inline">
+                                        {blueprint.strictMode ? "Strict" : "Legacy"}
+                                    </span>
+                                </button>
+
                                 <button
                                     onClick={handleCopyPrompt}
                                     disabled={!blueprint.topicId || !sourceCode}

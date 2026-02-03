@@ -31,7 +31,9 @@ const DEFAULT_BLUEPRINT: FactoryBlueprint = {
     subjectId: '',
     topicId: '',
     subtopicId: '',
-    counts: { simple: 2, intermediate: 5, expert: 3 }
+    counts: { simple: 2, intermediate: 5, expert: 3 },
+    knownSkills: [],
+    strictMode: true
 };
 
 export function FactoryProvider({ children }: { children: ReactNode }) {

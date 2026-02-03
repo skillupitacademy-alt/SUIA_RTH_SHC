@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { GeneratedQuestion } from '@/types/factory';
 import {
     Edit3, Trash2, CheckCircle2, ChevronDown, ChevronUp,
-    Layers, Target, Activity, Code2, AlertCircle, Info
+    Layers, Target, Activity, Code2, AlertCircle, Info, Sparkles
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import ReactMarkdown from 'react-markdown';
@@ -13,13 +13,13 @@ import remarkGfm from 'remark-gfm';
 interface QuestionCardProps {
     question: GeneratedQuestion;
     index: number;
-    existingSkills?: Set<string>; // Optional to support legacy use
+    officialSkills?: any[]; // Array of skill objects { id, name }
     isDuplicate?: boolean;
     onUpdate: (updates: Partial<GeneratedQuestion>) => void;
     onDelete: () => void;
 }
 
-export function QuestionCard({ question, index, existingSkills, isDuplicate, onUpdate, onDelete }: QuestionCardProps) {
+export function QuestionCard({ question, index, officialSkills, isDuplicate, onUpdate, onDelete }: QuestionCardProps) {
     const [isEditing, setIsEditing] = useState(false);
     const [isRationaleOpen, setIsRationaleOpen] = useState(false);
 
@@ -243,24 +243,49 @@ export function QuestionCard({ question, index, existingSkills, isDuplicate, onU
                             </p>
                         )}
 
-                        {/* Skill Badges */}
-                        <div className="mt-8 flex flex-wrap gap-2">
+                        <div className="mt-8 flex flex-wrap gap-4">
                             {question.skillNames.map((skill, sIdx) => {
-                                const isNew = existingSkills && existingSkills.size > 0 && !existingSkills.has(skill.toLowerCase());
+                                const isNew = officialSkills && officialSkills.length > 0 &&
+                                    !officialSkills.some(s => s.name?.toLowerCase() === skill.toLowerCase());
+
                                 return (
-                                    <span
-                                        key={sIdx}
-                                        className={cn(
-                                            "px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest shadow-sm border transition-colors",
+                                    <div key={sIdx} className="flex flex-col gap-2">
+                                        <div className={cn(
+                                            "px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest shadow-sm border transition-all flex items-center gap-3",
                                             isNew
                                                 ? "bg-orange-50 border-orange-200 text-orange-600 ring-2 ring-orange-500/10"
                                                 : "bg-white border-slate-200 text-[#FF4B91]"
-                                        )}
-                                        title={isNew ? "New Skill (Will be created)" : "Existing Skill"}
-                                    >
-                                        {skill}
-                                        {isNew && <span className="ml-1.5 text-[8px] px-1 py-px rounded bg-orange-100 text-orange-700">NEW</span>}
-                                    </span>
+                                        )}>
+                                            <Sparkles size={10} className={isNew ? "text-orange-400" : "text-[#FF4B91] opacity-40"} />
+                                            <span>{skill}</span>
+                                            {isNew && <span className="text-[8px] px-1.5 py-0.5 rounded bg-orange-100 text-orange-700 font-bold">SUGGESTED</span>}
+                                        </div>
+
+                                        {/* REMAP DROPDOWN */}
+                                        <div className="relative group/remap">
+                                            <select
+                                                value={officialSkills?.find(s => s.name?.toLowerCase() === skill.toLowerCase())?.name || "new"}
+                                                onChange={(e) => {
+                                                    const nextSkills = [...question.skillNames];
+                                                    if (e.target.value === "new") {
+                                                        // Keep current, but it will be flagged as new
+                                                    } else {
+                                                        nextSkills[sIdx] = e.target.value;
+                                                        onUpdate({ skillNames: nextSkills });
+                                                    }
+                                                }}
+                                                className="w-full bg-slate-100/50 hover:bg-slate-100 border border-slate-200/60 rounded-lg px-3 py-1.5 text-[9px] font-bold text-slate-500 appearance-none outline-none transition-all cursor-pointer"
+                                            >
+                                                <option value="new">✧ Create as New Skill</option>
+                                                <optgroup label="Official Taxonomy">
+                                                    {officialSkills?.map(s => (
+                                                        <option key={s.id} value={s.name}>{s.name}</option>
+                                                    ))}
+                                                </optgroup>
+                                            </select>
+                                            <ChevronDown size={10} className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400" />
+                                        </div>
+                                    </div>
                                 );
                             })}
                         </div>

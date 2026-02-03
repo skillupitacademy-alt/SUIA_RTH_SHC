@@ -31,7 +31,7 @@ export function ReviewConsole() {
     const readyCount = stagedQuestions.length;
 
     const [isSaving, setIsSaving] = React.useState(false);
-    const [existingSkills, setExistingSkills] = React.useState<Set<string>>(new Set());
+    const [officialSkills, setOfficialSkills] = React.useState<any[]>([]);
     const [duplicateMap, setDuplicateMap] = React.useState<Map<number, string>>(new Map()); // Index -> Original ID
     const { blueprint } = useFactory();
 
@@ -43,9 +43,7 @@ export function ReviewConsole() {
                 // Dynamically import to keep bundle small if needed
                 const { apiClient } = await import('@quiz/api-client');
                 const skills = await apiClient.admin.getTopicSkills(blueprint.topicId);
-                // Normalize to lowercase for comparison
-                const skillNames = new Set(skills.map((s: any) => s.name?.toLowerCase()));
-                setExistingSkills(skillNames);
+                setOfficialSkills(skills);
             } catch (err) {
                 console.error("Failed to fetch existing skills context", err);
             }
@@ -205,7 +203,7 @@ export function ReviewConsole() {
                         <QuestionCard
                             question={q}
                             index={idx}
-                            existingSkills={existingSkills}
+                            officialSkills={officialSkills}
                             isDuplicate={duplicateMap.has(idx)}
                             onUpdate={(updates) => handleUpdate(idx, updates)}
                             onDelete={() => handleDelete(idx)}
