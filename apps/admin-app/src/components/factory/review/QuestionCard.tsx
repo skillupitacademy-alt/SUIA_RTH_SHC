@@ -14,11 +14,12 @@ interface QuestionCardProps {
     question: GeneratedQuestion;
     index: number;
     existingSkills?: Set<string>; // Optional to support legacy use
+    isDuplicate?: boolean;
     onUpdate: (updates: Partial<GeneratedQuestion>) => void;
     onDelete: () => void;
 }
 
-export function QuestionCard({ question, index, existingSkills, onUpdate, onDelete }: QuestionCardProps) {
+export function QuestionCard({ question, index, existingSkills, isDuplicate, onUpdate, onDelete }: QuestionCardProps) {
     const [isEditing, setIsEditing] = useState(false);
     const [isRationaleOpen, setIsRationaleOpen] = useState(false);
 
@@ -36,8 +37,15 @@ export function QuestionCard({ question, index, existingSkills, onUpdate, onDele
     return (
         <div className={cn(
             "w-full bg-white border border-slate-200 rounded-[2.5rem] shadow-sm hover:shadow-xl hover:border-slate-300 transition-all duration-500 overflow-hidden flex flex-col group",
-            isEditing && "ring-2 ring-[#FF4B91] border-transparent shadow-2xl"
+            isEditing && "ring-2 ring-[#FF4B91] border-transparent shadow-2xl",
+            isDuplicate && "ring-2 ring-rose-500 border-rose-200 bg-rose-50"
         )}>
+            {/* Duplicate Warning Banner */}
+            {isDuplicate && (
+                <div className="w-full bg-rose-500 text-white text-[10px] font-black uppercase tracking-widest py-1 text-center animate-pulse">
+                    ⚠️ Duplicate Detected - This question already exists in this topic
+                </div>
+            )}
             {/* 1. Header Area: Identity & Metadata */}
             <div className="px-10 py-6 border-b border-slate-100 flex flex-wrap items-center justify-between gap-4 bg-slate-50/30">
                 <div className="flex items-center gap-4">

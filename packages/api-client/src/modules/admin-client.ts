@@ -310,4 +310,8 @@ export class AdminClient {
   async saveFactoryBatch(data: { questions: any[], topicId: string, subtopicId?: string }) {
     return this.client.post<any>('/factory/save', data);
   }
+
+  async checkDuplicates(data: { questions: { questionText: string }[], topicId: string }) {
+    return this.client.post<{ details: any[], foundCount: number }>('/factory/check-duplicates', data);
+  }
 }

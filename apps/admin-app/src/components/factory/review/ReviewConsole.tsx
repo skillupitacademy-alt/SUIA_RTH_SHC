@@ -32,6 +32,7 @@ export function ReviewConsole() {
 
     const [isSaving, setIsSaving] = React.useState(false);
     const [existingSkills, setExistingSkills] = React.useState<Set<string>>(new Set());
+    const [duplicateMap, setDuplicateMap] = React.useState<Map<number, string>>(new Map()); // Index -> Original ID
     const { blueprint } = useFactory();
 
     // Fetch existing skills on mount to prevent duplicates/typos
@@ -53,10 +54,48 @@ export function ReviewConsole() {
         fetchSkills();
     }, [blueprint?.topicId]);
 
+    // Check for duplicates when staged questions change
+    React.useEffect(() => {
+        const checkDuplicates = async () => {
+            if (!blueprint?.topicId || stagedQuestions.length === 0) {
+                setDuplicateMap(new Map());
+                return;
+            }
+
+            try {
+                const { apiClient } = await import('@quiz/api-client');
+                const result = await apiClient.admin.checkDuplicates({
+                    questions: stagedQuestions.map(q => ({ questionText: q.questionText })),
+                    topicId: blueprint.topicId
+                });
+
+                if (result.details && result.details.length > 0) {
+                    const nextMap = new Map();
+                    result.details.forEach((d: any) => nextMap.set(d.index, d.originalId));
+                    setDuplicateMap(nextMap);
+                } else {
+                    setDuplicateMap(new Map());
+                }
+            } catch (error) {
+                console.error("Duplicate check failed", error);
+            }
+        };
+
+        // Debounce slightly to avoid rapid firing if questions are updated frequently
+        const timer = setTimeout(checkDuplicates, 500);
+        return () => clearTimeout(timer);
+    }, [stagedQuestions, blueprint?.topicId]);
+
     const handleSave = async () => {
         if (!blueprint) {
             alert("No blueprint context found. Please return to Ingest.");
             return;
+        }
+
+        if (duplicateMap.size > 0) {
+            if (!confirm(`Warning: ${duplicateMap.size} duplicate questions detected. Do you want to proceed and potentially create duplicates?`)) {
+                return;
+            }
         }
 
         setIsSaving(true);
@@ -168,6 +207,7 @@ export function ReviewConsole() {
                             question={q}
                             index={idx}
                             existingSkills={existingSkills}
+                            isDuplicate={duplicateMap.has(idx)}
                             onUpdate={(updates) => handleUpdate(idx, updates)}
                             onDelete={() => handleDelete(idx)}
                         />
