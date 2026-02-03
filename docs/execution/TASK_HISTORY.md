@@ -19,3 +19,4 @@
 | 2026-02-03 | Persistence Hygiene (Batch 102) | COMPLETED | Implemented resetFactory, auto-clearing source editor, and **Always-Visible** Workspace Reset UI with automatic post-save cleanup. |
 | 2026-02-03 | Security Hygiene (Batch 103) | COMPLETED | Implemented 'Forget on Leave' logic and logout-triggered storage purge for Zero-Leakage security. |
 | 2026-02-03 | Taxonomy Governance (Batch 104) | COMPLETED | Implemented 'Selector vs Creator' model with Taxonomy Injection, Strict Mode, and Skill Remapping UI. |
+| 2026-02-03 | Batch Operations Pilot (Batch 105) | COMPLETED | Implemented multi-select selection engine, Floating Command Bar, and batch deletion for Factory Staging. |

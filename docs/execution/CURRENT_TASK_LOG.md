@@ -1,15 +1,16 @@
 # Current Task Log
 
-**Task**: Phase 7 Complete - Taxonomy Governance & Integrity
-**Status**: Closing Ceremony (Git Commit)
+**Task**: Phase 8 Pilot Complete - Batch Operations & Selection Console
+**Status**: Verification Passed (Build & Type Safe)
 **Date**: 2026-02-03
 
 ## Recent Actions
-- **Taxonomy Injection**: Automated official skill retrieval and prompt injection for AI generation.
-- **Selector UI**: Implemented 'Strict Mode' toggle in Question Factory landing page.
-- **Remapping Logic**: Added interactive skill remapping dropdowns to AI review cards.
-- **Hardening**: Verified monorepo integrity (Exit Code 0) across all apps and servers.
+- **Selection Engine**: Implemented `selectedIndices` and `removeBatch` logic in context.
+- **Floating UI**: Developed premium "Selection Command Bar" for multi-tier batch actions.
+- **Visual Feedback**: Added high-fidelity checkboxes and "Selection Glow" to Question Cards.
+- **Compliance**: Verified full monorepo build and TS check (Exit Code 0).
 
 ## Next Steps
-- Monitor taxonomy health in production database.
-- Proceed to Phase 8: Batch Deletion and Advanced Multi-Select (Future).
+- Transition Question Bank (Database) from Table to Vertical Stack Card layout.
+- Implement `POST /api/admin/questions/batch-delete` for live data persistence.
+- Phase 10: Standardize Subtopics and Topics with the "Stack" UI.
