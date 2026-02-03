@@ -9,7 +9,7 @@ interface FactoryLayoutProps {
     backPath?: string;
 }
 
-export function FactoryLayout({ children, title, subtitle, backPath = '/admin' }: FactoryLayoutProps) {
+export function FactoryLayout({ children, title, subtitle, backPath = '/' }: FactoryLayoutProps) {
     return (
         <div className="min-h-screen bg-slate-50 flex flex-col">
             {/* Factory Header */}

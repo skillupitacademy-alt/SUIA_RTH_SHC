@@ -44,32 +44,24 @@ export function FactoryProvider({ children }: { children: ReactNode }) {
 
     // Hydrate from storage on mount
     React.useEffect(() => {
-        console.log('[Persistence] 🔴 SYSTEM START: Safety Lock ACTIVE. Saving disabled.');
-        console.log('[Persistence] 💿 HYDRATION: Reading from localStorage...');
         try {
             const saved = localStorage.getItem(STORAGE_KEY);
             if (saved) {
                 const parsed = JSON.parse(saved);
                 if (parsed.blueprint) {
                     setBlueprintState(parsed.blueprint);
-                    console.log(`[Persistence] ✅ FOUND DATA: Restored Blueprint (Topic: ${parsed.blueprint.topicId || 'None'})`);
                 }
                 if (parsed.stagedQuestions) {
                     setStagedQuestions(parsed.stagedQuestions);
-                    console.log(`[Persistence] ✅ FOUND DATA: Restored ${parsed.stagedQuestions.length} questions`);
                 }
                 if (parsed.sourceCode) {
                     setSourceCode(parsed.sourceCode);
-                    console.log(`[Persistence] ✅ FOUND DATA: Restored Source Code (${parsed.sourceCode.length} chars)`);
                 }
-            } else {
-                console.log('[Persistence] ⚪ NO DATA: Starting fresh session.');
             }
         } catch (e) {
             console.error("[Persistence] ❌ HYDRATION FAILED", e);
         } finally {
             setIsInitialized(true);
-            console.log('[Persistence] 🟢 UNLOCKING: Safety Lock REMOVED. System ready.');
         }
     }, []);
 
@@ -83,7 +75,6 @@ export function FactoryProvider({ children }: { children: ReactNode }) {
             try {
                 const state = { blueprint, stagedQuestions, sourceCode };
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-                console.log(`[Persistence] 💾 AUTO-SAVE: Wrote state to storage. Questions: ${stagedQuestions.length}, Blueprint Topic: ${blueprint.topicId || 'None'}`);
             } catch (e) {
                 console.error("Failed to persist factory state", e);
             }

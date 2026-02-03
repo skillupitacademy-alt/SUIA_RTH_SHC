@@ -346,3 +346,21 @@
     - Build Suite: 'pnpm build' + 'npx tsc --noEmit' (Exit Code 0) ✅.
     - Filtered Builds: '@quiz/web-app', '@quiz/api-server', '@quiz/admin-app' (Pass) ✅.
 - **Outcome**: Established a single source of truth for the entire Factory lifecycle, preventing data loss and 'Null Blueprint' errors.
+
+### Phase 5.1.3: Dashboard Route Correction (Batch 97.3)
+- **Objective**: Fix 404 errors on "Back" navigation and redirects.
+- **Implementation**:
+    - **Route Normalization**: Updated legacy `/admin/dashboard` and `/admin` links to the correct root `/`.
+    - **Default Safety**: Set `FactoryLayout`'s default `backPath` to `/`.
+- **Global Verification**:
+    - Build Suite: `@quiz/admin-app` (Exit Code 0) ✅.
+- **Outcome**: Seamless navigation experience between the Factory and the Enterprise Dashboard.
+
+### Phase 5.1.4: Context Validation Gate (Batch 97.4)
+- **Objective**: Prevent "Missing Blueprint" errors by enforcing context selection before ingestion.
+- **Implementation**:
+    - **Logic Guard**: Disabled "Process & Review" action if `blueprint.topicId` is undefined.
+    - **UI Feedback**: Added amber warning badges and informative placeholders to the `JsonIngestBox`.
+- **Global Verification**:
+    - Build Suite: Clean build of `@quiz/admin-app` (Exit Code 0) ✅.
+- **Outcome**: Eliminated the user error path that led to empty blueprint states in the Review Console.

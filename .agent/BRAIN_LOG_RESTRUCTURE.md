@@ -770,3 +770,15 @@ Reduce documentation fragmentation and improve discoverability by consolidating 
 - **Action**: Unified 'selections', 'counts', and 'sourceCode' into global `FactoryContext`.
 - **Logic**: Linked `ContextSelector` and `DistributionMatrix` directly to shared state; forced debounced `localStorage` sync on every metadata change.
 - **Outcome**: 100% state reliability across Navigation and Refresh cycles.
+
+### Batch 100: Dashboard Navigation Alignment (Batch 97.3)
+- **Problem**: 404 errors encountered when navigating to legacy `/admin/dashboard` and `/admin`.
+- **Action**: Performed global route normalization. Updated `QuestionFactoryPage` and `FactoryLayout` to point to the correct root `/`.
+- **Outcome**: Restored seamless "Back" navigation from the Factory to the Enterprise Dashboard.
+
+### Batch 101: Context Validation Gate (Batch 97.4)
+- **Problem**: User error (pasting JSON before context selection) led to "Missing Blueprint" errors in the Review Console.
+- **Action**: Implemented a strict **Validation Gate** in `JsonIngestBox.tsx`.
+- **Logic**: Disabled the "Process & Review" action and locked the editor until a Target Topic is selected.
+- **UI**: Added amber warning badges and context-aware placeholders to guide the user.
+- **Outcome**: Eliminated the primary source of empty blueprint states, ensuring data integrity across the review pipeline.

@@ -46,7 +46,6 @@ export function ReviewConsole() {
                 // Normalize to lowercase for comparison
                 const skillNames = new Set(skills.map((s: any) => s.name?.toLowerCase()));
                 setExistingSkills(skillNames);
-                console.log("Fetched existing skills for validation:", skillNames.size);
             } catch (err) {
                 console.error("Failed to fetch existing skills context", err);
             }

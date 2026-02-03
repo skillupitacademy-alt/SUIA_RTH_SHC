@@ -56,7 +56,7 @@ function QuestionFactoryContent() {
     };
 
     return (
-        <FactoryLayout title="Question Factory" subtitle="Context-Aware Generator" backPath="/admin/dashboard">
+        <FactoryLayout title="Question Factory" subtitle="Context-Aware Generator" backPath="/">
             <div className="flex-1 overflow-y-auto custom-scrollbar bg-slate-50/50">
                 <div className="max-w-[1400px] mx-auto p-8 space-y-8 pb-32">
 

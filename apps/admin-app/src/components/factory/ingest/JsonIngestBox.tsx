@@ -5,12 +5,22 @@ import { cn } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
 
 export function JsonIngestBox() {
-    const { ingestRawJson, isIngesting, validationErrors, clearStage, stagedQuestions, lastHealingReport } = useFactory();
+    const {
+        ingestRawJson,
+        isIngesting,
+        validationErrors,
+        stagedQuestions,
+        lastHealingReport,
+        blueprint
+    } = useFactory();
+
     const [rawJson, setRawJson] = useState('');
     const [errorInfo, setErrorInfo] = useState<{ line?: number; column?: number; message?: string } | null>(null);
     const router = useRouter();
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const gutterRef = useRef<HTMLDivElement>(null);
+
+    const isContextMissing = !blueprint.topicId;
 
     // Sync scroll between gutter and textarea
     const handleScroll = () => {
@@ -24,17 +34,11 @@ export function JsonIngestBox() {
     const lineNumbers = Array.from({ length: Math.max(25, lineCount) }, (_, i) => i + 1);
 
     const handleIngest = () => {
-        if (!rawJson.trim()) return;
+        if (!rawJson.trim() || isContextMissing) return;
         setErrorInfo(null);
 
         const success = ingestRawJson(rawJson);
         if (success) {
-            // If it was modified (healed), we stay on the page for a moment to show stats if not immediate
-            // But usually we go to review. However, if the user wants to "check", we can stay.
-            // For now, let's keep the redirect but the user can see the report if they go back.
-            // Actually, if it's successful, we might want to show the stats BEFORE redirecting if the admin needs to "confirm".
-            // But the request says "admin can get some summary update". 
-            // Let's keep the redirect for now as it's a "process & review" step.
             router.push('/factory/question-generator/review');
         } else {
             // Attempt to extract line/column from the first error if it looks like a parsing error
@@ -61,6 +65,11 @@ export function JsonIngestBox() {
                     </h3>
                 </div>
                 <div className="flex items-center gap-2">
+                    {isContextMissing && (
+                        <div className="flex items-center gap-2 px-3 py-1 bg-amber-50 text-amber-600 rounded-full text-[9px] font-black uppercase tracking-widest border border-amber-100 animate-in fade-in duration-300">
+                            <AlertTriangle size={10} /> Context Missing: Select Topic First
+                        </div>
+                    )}
                     <div className="flex items-center gap-2 px-3 py-1 bg-emerald-50 text-emerald-600 rounded-full text-[9px] font-black uppercase tracking-widest border border-emerald-100">
                         <Zap size={10} /> Healing Active
                     </div>
@@ -82,6 +91,11 @@ export function JsonIngestBox() {
                         <h4 className="text-sm font-black uppercase tracking-widest text-[#1A1A1A] italic">Payload Editor</h4>
                     </div>
                     <div className="flex items-center gap-3">
+                        {isContextMissing && (
+                            <div className="text-[9px] font-black text-amber-500 bg-amber-50 px-4 py-2 rounded-xl border border-amber-100 uppercase tracking-widest flex items-center gap-2">
+                                <AlertTriangle size={12} /> Target Context (Topic) Not Set
+                            </div>
+                        )}
                         {lastHealingReport?.modified && (
                             <div className="flex items-center gap-4 px-4 py-2 bg-emerald-50 border border-emerald-100 rounded-xl animate-in fade-in slide-in-from-right-4 duration-500">
                                 <div className="flex items-center gap-2">
@@ -140,8 +154,12 @@ export function JsonIngestBox() {
                         value={rawJson}
                         onChange={(e) => setRawJson(e.target.value)}
                         onScroll={handleScroll}
-                        placeholder="PASTE THE AI-GENERATED JSON PAYLOAD HERE..."
-                        className="flex-1 p-8 bg-transparent text-sm font-mono text-slate-700 resize-none focus:outline-none custom-scrollbar selection:bg-[#FF4B91]/10 leading-[24px]"
+                        placeholder={isContextMissing ? "PLEASE SELECT A TARGET TOPIC TO UNLOCK THE EDITOR..." : "PASTE THE AI-GENERATED JSON PAYLOAD HERE..."}
+                        disabled={isContextMissing}
+                        className={cn(
+                            "flex-1 p-8 bg-transparent text-sm font-mono text-slate-700 resize-none focus:outline-none custom-scrollbar selection:bg-[#FF4B91]/10 leading-[24px]",
+                            isContextMissing && "opacity-50 cursor-not-allowed bg-slate-50/30"
+                        )}
                         spellCheck={false}
                     />
                 </div>
@@ -168,10 +186,10 @@ export function JsonIngestBox() {
                         )}
                         <button
                             onClick={handleIngest}
-                            disabled={!rawJson || isIngesting}
+                            disabled={!rawJson || isIngesting || isContextMissing}
                             className={cn(
                                 "px-10 py-4 rounded-xl flex items-center gap-3 font-black uppercase tracking-widest text-[11px] transition-all active:scale-95",
-                                !rawJson || isIngesting
+                                (!rawJson || isIngesting || isContextMissing)
                                     ? "bg-slate-200 text-slate-400 cursor-not-allowed"
                                     : "bg-[#FF4B91] text-white shadow-xl shadow-[#FF4B91]/10 hover:bg-[#FF4B91]/90"
                             )}
