@@ -1,10 +1,24 @@
+'use client';
+
 import { useEffect, useState } from 'react';
 import { apiClient } from '@quiz/api-client';
-import { Layers, Globe, Clock, Plus, Edit2, Trash2, X, AlertTriangle, Monitor, Shield, BookOpen, Hash, GitBranch, Check } from 'lucide-react';
-import { formatTimeAgo } from '@/lib/utils';
+import { Globe, Plus, AlertTriangle, Check, Trash2 } from 'lucide-react';
 import { ErrorBanner } from '@/components/layout/ErrorBanner';
 import { ZLoader } from '@/components/ui/ZLoader';
 import { HierarchyFactoryWizard } from '@/components/content/HierarchyFactoryWizard';
+import { DomainReviewCard } from './DomainReviewCard';
+import { cn } from '@/lib/utils';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { X } from 'lucide-react';
 
 export function DomainTable() {
     const [data, setData] = useState<any[]>([]);
@@ -14,6 +28,10 @@ export function DomainTable() {
     const [searchQuery, setSearchQuery] = useState('');
     const [debouncedSearch, setDebouncedSearch] = useState('');
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+    // Batch Operation State
+    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+    const [isBatchDeleting, setIsBatchDeleting] = useState(false);
 
     // Modal states
     const [isFormOpen, setIsFormOpen] = useState(false);
@@ -41,6 +59,7 @@ export function DomainTable() {
             const response = await apiClient.admin.getDomains(page, 20, debouncedSearch || undefined);
             setData(response.data);
             setTotalPages(response.totalPages);
+            setSelectedIds(new Set()); // Reset selection on refresh
         } catch (error) {
             console.error('Failed to fetch domains:', error);
             setErrorMessage('Connection Error: Unable to load the domain catalog at this time.');
@@ -53,6 +72,55 @@ export function DomainTable() {
         fetchDomains();
     }, [page, debouncedSearch]);
 
+    // --- SELECTION LOGIC ---
+    const handleSelect = (id: string, selected: boolean) => {
+        const newSelected = new Set(selectedIds);
+        if (selected) {
+            newSelected.add(id);
+        } else {
+            newSelected.delete(id);
+        }
+        setSelectedIds(newSelected);
+    };
+
+    const handleSelectAll = (selected: boolean) => {
+        if (selected) {
+            // Select all currently visible
+            const allIds = data.map(d => d.id);
+            setSelectedIds(new Set(allIds));
+        } else {
+            setSelectedIds(new Set());
+        }
+    };
+
+    const handleBatchDelete = async () => {
+        if (selectedIds.size === 0) return;
+
+        // If single item selected, use standard delete flow for better UX (optional, but consistent)
+        if (selectedIds.size === 1) {
+            const id = Array.from(selectedIds)[0];
+            const item = data.find(d => d.id === id);
+            if (item) {
+                setCurrentDomain(item);
+                setIsDeleteOpen(true);
+                return;
+            }
+        }
+
+        setIsBatchDeleting(true);
+        try {
+            await apiClient.admin.batchDeleteDomains(Array.from(selectedIds));
+            setSelectedIds(new Set());
+            fetchDomains();
+        } catch (error) {
+            console.error('Batch delete failed:', error);
+            setErrorMessage('Batch Deletion Failed: Some domains could not be removed (they may have dependencies).');
+        } finally {
+            setIsBatchDeleting(false);
+        }
+    };
+
+    // --- FORM LOGIC ---
     const handleOpenForm = (domain: any = null) => {
         if (domain) {
             setCurrentDomain(domain);
@@ -106,10 +174,19 @@ export function DomainTable() {
     };
 
     const handleDelete = async () => {
-        if (!currentDomain) return;
+        if (!currentDomain && selectedIds.size === 0) return;
+
         setIsSubmitting(true);
         try {
-            await apiClient.admin.deleteDomain(currentDomain.id);
+            if (selectedIds.size > 0 && !currentDomain) {
+                // Should be handled by batch delete specific modal if we want one, 
+                // but for now we reuse logic or just divert to batch function
+                await apiClient.admin.batchDeleteDomains(Array.from(selectedIds));
+                setSelectedIds(new Set());
+            } else if (currentDomain) {
+                await apiClient.admin.deleteDomain(currentDomain.id);
+            }
+
             setIsDeleteOpen(false);
             setCurrentDomain(null);
             fetchDomains();
@@ -122,12 +199,40 @@ export function DomainTable() {
     };
 
     return (
-        <div className="space-y-4">
+        <div className="space-y-6 relative min-h-[600px]">
             {errorMessage && (
                 <ErrorBanner message={errorMessage} onClose={() => setErrorMessage(null)} />
             )}
 
-            {/* Form Modal - Full Screen */}
+            {/* FLOATING COMMAND BAR */}
+            <div className={cn(
+                "fixed bottom-8 left-1/2 -translate-x-1/2 z-50 bg-[#1A1A1A] text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-6 transition-all duration-300 border border-white/10",
+                selectedIds.size > 0 ? "translate-y-0 opacity-100" : "translate-y-24 opacity-0 pointer-events-none"
+            )}>
+                <div className="flex items-center gap-4 border-r border-white/10 pr-6">
+                    <div className="flex flex-col">
+                        <span className="text-xs font-bold text-white/40 uppercase tracking-widest">Selection</span>
+                        <span className="text-xl font-black">{selectedIds.size} <span className="text-sm font-bold text-white/40">domains</span></span>
+                    </div>
+                </div>
+                <div className="flex items-center gap-3">
+                    <button
+                        onClick={() => setSelectedIds(new Set())}
+                        className="px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-widest hover:bg-white/10 transition-colors"
+                    >
+                        Clear
+                    </button>
+                    <button
+                        onClick={() => setIsDeleteOpen(true)}
+                        className="px-6 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-black uppercase tracking-widest shadow-lg shadow-red-600/20 transition-all active:scale-95 flex items-center gap-2"
+                    >
+                        <Trash2 size={14} />
+                        Delete Selection
+                    </button>
+                </div>
+            </div>
+
+            {/* Standard Edit Form (Update Mode Only) */}
             {isFormOpen && (
                 <div className="fixed inset-0 z-[100] bg-white animate-in slide-in-from-right duration-300">
                     <div className="h-full flex flex-col">
@@ -138,8 +243,12 @@ export function DomainTable() {
                                     <Globe size={24} />
                                 </div>
                                 <div>
-                                    <h3 className="text-2xl font-black text-[#1A1A1A] uppercase tracking-tight">Edit Domain</h3>
-                                    <p className="text-xs font-medium text-slate-500 uppercase tracking-widest mt-0.5">Modify Domain Details</p>
+                                    <h3 className="text-2xl font-black text-[#1A1A1A] uppercase tracking-tight">
+                                        {currentDomain ? 'Edit Domain' : 'New Domain'}
+                                    </h3>
+                                    <p className="text-xs font-medium text-slate-500 uppercase tracking-widest mt-0.5">
+                                        {currentDomain ? 'Modify Domain Details' : 'Create New Hierarchy Root'}
+                                    </p>
                                 </div>
                             </div>
                             <button
@@ -151,7 +260,7 @@ export function DomainTable() {
                         </div>
 
                         {/* Content - Landscape Grid */}
-                        <div className="flex-1">
+                        <div className="flex-1 overflow-y-auto">
                             <div className="max-w-5xl mx-auto px-8 py-8">
                                 <form onSubmit={handleSubmit} className="space-y-6">
                                     <div className="grid grid-cols-2 gap-6">
@@ -225,7 +334,7 @@ export function DomainTable() {
                                         <button
                                             type="submit"
                                             disabled={isSubmitting}
-                                            className="px-10 py-3 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-black uppercase tracking-widest text-xs shadow-lg shadow-orange-500/20 transition-all flex items-center gap-2 disabled:opacity-50"
+                                            className="px-10 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-black uppercase tracking-widest text-xs shadow-lg shadow-blue-500/20 transition-all flex items-center gap-2 disabled:opacity-50"
                                         >
                                             {isSubmitting ? <ZLoader size="xs" className="text-white" center={false} /> : <Check size={16} />}
                                             {isSubmitting ? 'Saving...' : 'Save Changes'}
@@ -238,44 +347,53 @@ export function DomainTable() {
                 </div>
             )}
 
+            {/* Factory Wizard Integration */}
+            <HierarchyFactoryWizard
+                isOpen={isFactoryOpen}
+                onClose={() => setIsFactoryOpen(false)}
+                initialData={{ target: 'domain' }}
+                onSuccess={fetchDomains}
+            />
 
             {/* Delete Confirmation Modal */}
-            {isDeleteOpen && (
-                <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300">
-                    <div className="bg-white border border-primary/10 rounded-[2.5rem] p-8 max-md w-full shadow-2xl relative overflow-hidden">
-                        <div className="absolute top-0 left-0 w-full h-2 bg-red-500" />
-                        <div className="flex flex-col items-center text-center gap-6">
-                            <div className="h-16 w-16 rounded-full bg-red-100 flex items-center justify-center text-red-600">
-                                <AlertTriangle size={32} />
-                            </div>
-                            <div>
-                                <h3 className="text-2xl font-black text-[#1A1A1A] italic uppercase tracking-tighter">Confirm Deletion</h3>
-                                <p className="text-sm font-medium text-muted-foreground mt-2">
-                                    You are about to delete the domain <strong className="text-red-600">"{currentDomain?.name}"</strong>. This action is irreversible and may impact child subjects.
-                                </p>
-                            </div>
-                            <div className="grid grid-cols-2 gap-4 w-full">
-                                <button
-                                    onClick={() => { setIsDeleteOpen(false); setCurrentDomain(null); }}
-                                    className="px-6 py-4 rounded-2xl border-2 border-slate-100 font-black uppercase tracking-widest text-xs hover:bg-slate-50 transition-all"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    onClick={handleDelete}
-                                    disabled={isSubmitting}
-                                    className="px-6 py-4 rounded-2xl bg-red-600 text-white font-black uppercase tracking-widest text-xs hover:bg-red-700 transition-all shadow-lg shadow-red-600/20 disabled:opacity-50"
-                                >
-                                    {isSubmitting ? 'Deleting...' : 'Delete'}
-                                </button>
-                            </div>
+            <AlertDialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
+                <AlertDialogContent className="bg-white rounded-[2rem] border border-slate-100 p-0 overflow-hidden max-w-md">
+                    <div className="absolute top-0 left-0 w-full h-1.5 bg-red-500" />
+                    <div className="p-8 flex flex-col items-center text-center gap-6">
+                        <div className="h-16 w-16 rounded-full bg-red-50 text-red-500 flex items-center justify-center mb-2">
+                            <Trash2 size={32} />
+                        </div>
+
+                        <div className="space-y-2">
+                            <AlertDialogTitle className="text-2xl font-black text-slate-800 uppercase tracking-tight">
+                                Confirm Deletion
+                            </AlertDialogTitle>
+                            <AlertDialogDescription className="text-slate-500 font-medium leading-relaxed">
+                                {selectedIds.size > 1
+                                    ? `You are about to permanently delete ${selectedIds.size} domains. This action cannot be undone.`
+                                    : `You are about to delete "${currentDomain?.name}". This action cannot be undone.`
+                                }
+                            </AlertDialogDescription>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4 w-full pt-4">
+                            <AlertDialogCancel className="rounded-xl border-2 border-slate-100 py-6 font-bold uppercase tracking-wider text-xs hover:bg-slate-50 hover:text-slate-800">
+                                Cancel
+                            </AlertDialogCancel>
+                            <AlertDialogAction
+                                onClick={handleDelete}
+                                className="rounded-xl bg-red-600 py-6 font-black uppercase tracking-wider text-xs hover:bg-red-700 shadow-xl shadow-red-500/20 text-white"
+                                disabled={isSubmitting}
+                            >
+                                {isSubmitting ? 'Deleting...' : 'Delete Forever'}
+                            </AlertDialogAction>
                         </div>
                     </div>
-                </div>
-            )}
+                </AlertDialogContent>
+            </AlertDialog>
 
-            {/* Search Bar & Add Button */}
-            <div className="bg-white/50 backdrop-blur-xl border border-primary/10 p-6 rounded-[2rem] shadow-xl relative overflow-hidden flex items-center justify-between">
+            {/* HEADER & SEARCH */}
+            <div className="bg-white/50 backdrop-blur-xl border border-primary/10 p-6 rounded-[2rem] shadow-xl relative overflow-hidden flex items-center justify-between z-10">
                 <div className="flex items-center gap-4 flex-1">
                     <div className="p-2 rounded-xl bg-blue-50 text-blue-500 shadow-sm border border-blue-100">
                         <Globe className="w-5 h-5" />
@@ -288,13 +406,20 @@ export function DomainTable() {
                             onChange={(e) => { setSearchQuery(e.target.value); setPage(1); }}
                             className="w-full bg-slate-50 border-none rounded-2xl px-5 py-3 text-[11px] font-black tracking-widest text-[#1A1A1A] placeholder:text-slate-300 focus:ring-2 focus:ring-blue-500/10 transition-all outline-none border border-transparent shadow-inner"
                         />
-                        <div className="absolute right-4 top-1/2 -translate-y-1/2 opacity-20 group-hover:opacity-100 transition-opacity">
-                            <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse" />
+                        {/* SELECT ALL CHECKBOX */}
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white border border-slate-100 cursor-pointer hover:border-blue-200 transition-all">
+                            <input
+                                type="checkbox"
+                                checked={data.length > 0 && selectedIds.size === data.length}
+                                onChange={(e) => handleSelectAll(e.target.checked)}
+                                className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-offset-0 focus:ring-0 cursor-pointer"
+                            />
+                            <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400">Select All</span>
                         </div>
                     </div>
                 </div>
                 <button
-                    onClick={() => setIsFactoryOpen(true)}
+                    onClick={() => handleOpenForm()} // Open for Create
                     className="ml-4 px-6 py-3 rounded-2xl bg-[#FF4B91] hover:bg-[#ff3382] text-white text-[11px] font-black uppercase tracking-widest shadow-xl shadow-[#FF4B91]/20 transition-all flex items-center gap-3 active:scale-95"
                 >
                     <Plus size={16} />
@@ -302,73 +427,36 @@ export function DomainTable() {
                 </button>
             </div>
 
-            <div className="rounded-[2.5rem] border border-primary/10 bg-white/50 backdrop-blur-xl overflow-hidden shadow-xl min-h-[400px] relative">
-                {isLoading && (
-                    <div className="absolute inset-0 z-10 bg-white/60 backdrop-blur-sm flex items-center justify-center">
-                        <ZLoader text="Loading Domain Records_" />
-                    </div>
-                )}
-                <table className="w-full text-left">
-                    <thead>
-                        <tr className="border-b border-primary/5 bg-primary/5">
-                            <th className="p-6 text-[11px] font-black uppercase tracking-widest text-muted-foreground w-[30%]">Domain</th>
-                            <th className="p-6 text-[11px] font-black uppercase tracking-widest text-muted-foreground">Category</th>
-                            <th className="p-6 text-[11px] font-black uppercase tracking-widest text-muted-foreground">Status</th>
-                            <th className="p-6 text-[11px] font-black uppercase tracking-widest text-muted-foreground">Created</th>
-                            <th className="p-6 text-[11px] font-black uppercase tracking-widest text-muted-foreground text-right">Settings</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-primary/5">
-                        {data.map((item) => (
-                            <tr key={item.id} className="group hover:bg-primary/5 transition-colors">
-                                <td className="p-6">
-                                    <div className="flex items-center gap-3">
-                                        <div className="h-8 w-8 rounded-lg bg-blue-50 text-blue-500 flex items-center justify-center">
-                                            <Globe size={16} />
-                                        </div>
-                                        <div>
-                                            <p className="font-bold text-[#1A1A1A]">{item.name}</p>
-                                            <p className="text-[9px] text-muted-foreground font-medium uppercase tracking-tighter truncate max-w-[200px]">{item.description || 'No context provided'}</p>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td className="p-6 text-sm font-medium text-muted-foreground">
-                                    <span className="text-[10px] font-black border border-slate-100 bg-slate-50 px-2 py-1 rounded-md uppercase text-slate-400">{item.category || 'GENERAL'}</span>
-                                </td>
-                                <td className="p-6">
-                                    <span className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider border ${item.status === 'active' ? 'bg-green-100 text-green-700 border-green-200' : 'bg-gray-100 text-gray-500 border-gray-200'
-                                        }`}>
-                                        {item.status}
-                                    </span>
-                                </td>
-                                <td className="p-6 text-xs text-muted-foreground font-medium">
-                                    {formatTimeAgo(item.createdAt)}
-                                </td>
-                                <td className="p-6 text-right">
-                                    <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <button
-                                            onClick={() => handleOpenForm(item)}
-                                            className="p-2 rounded-xl bg-slate-50 text-slate-400 hover:text-blue-500 hover:bg-blue-50 transition-all"
-                                            title="Edit Domain"
-                                        >
-                                            <Edit2 size={14} />
-                                        </button>
-                                        <button
-                                            onClick={() => { setCurrentDomain(item); setIsDeleteOpen(true); }}
-                                            className="p-2 rounded-xl bg-slate-50 text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all"
-                                            title="Delete Domain"
-                                        >
-                                            <Trash2 size={14} />
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
+            {/* DOMAIN CARD STACK */}
+            {isLoading ? (
+                <div className="min-h-[400px] flex items-center justify-center">
+                    <ZLoader text="Loading Domains..." />
+                </div>
+            ) : (
+                <div className="grid grid-cols-1 gap-4">
+                    {data.map((domain, index) => (
+                        <DomainReviewCard
+                            key={domain.id}
+                            domain={domain}
+                            index={index + (page - 1) * 20}
+                            isSelected={selectedIds.has(domain.id)}
+                            onSelect={handleSelect}
+                            onDeleteRequest={(d) => { setCurrentDomain(d); setIsDeleteOpen(true); }}
+                            onEditRequest={(d) => handleOpenForm(d)}
+                        />
+                    ))}
+                    {data.length === 0 && (
+                        <div className="text-center py-20 opacity-50">
+                            <Globe className="w-16 h-16 mx-auto mb-4 text-slate-300" />
+                            <h3 className="text-lg font-bold text-slate-500">No domains found</h3>
+                        </div>
+                    )}
+                </div>
+            )}
 
-                {/* Pagination */}
-                <div className="p-6 border-t border-primary/5 flex items-center justify-between bg-slate-50/50">
+            {/* Pagination */}
+            {totalPages > 1 && (
+                <div className="p-6 flex items-center justify-between bg-slate-50/50 rounded-3xl mt-8">
                     <button disabled={page === 1} onClick={() => setPage(p => p - 1)} className="px-4 py-2 text-xs font-black uppercase tracking-widest disabled:opacity-50 hover:text-[#FF4B91] transition-colors">Previous</button>
                     <div className="flex items-center gap-2">
                         {Array.from({ length: totalPages }).map((_, i) => (
@@ -383,14 +471,7 @@ export function DomainTable() {
                     </div>
                     <button disabled={page === totalPages} onClick={() => setPage(p => p + 1)} className="px-4 py-2 text-xs font-black uppercase tracking-widest disabled:opacity-50 hover:text-[#FF4B91] transition-colors">Next</button>
                 </div>
-            </div>
-
-            <HierarchyFactoryWizard
-                isOpen={isFactoryOpen}
-                onClose={() => setIsFactoryOpen(false)}
-                initialData={{ target: 'domain' }}
-                onSuccess={fetchDomains}
-            />
+            )}
         </div>
     );
 }

@@ -825,3 +825,13 @@ Reduce documentation fragmentation and improve discoverability by consolidating 
     - Integrated the **Floating Command Bar** for bulk operations across both views.
     - Extended `@quiz/api-client` with new batch primitives.
 - **Outcome**: Achieved 100% UI/UX parity between Question Bank and Hierarchy Management; enabled high-throughput content cleanup for admins.
+
+### Batch 108: Hierarchy Batch Deletion (Tier 2/3) - Domains, Subjects, Skills
+- **Objective**: Complete the "Card Stack" migration for the remaining hierarchy levels (Domains, Subjects, Skills) and enable global batch operations.
+- **Implementation**:
+    - **Backend**: Added `batchDeleteDomains`, `batchDeleteSubjects`, and `batchDeleteSkills` to Admin Engine with audit logging.
+    - **UI Refactor**: Converted `DomainTable`, `SubjectTable`, and `SkillTable` to vertical **Card Stacks**.
+    - **Components**: Created `DomainReviewCard`, `SubjectReviewCard`, and `SkillReviewCard` with specialized metadata visualization.
+    - **Orchestration**: Integrated the **Floating Command Bar** for uniform batch deletion across the entire platform.
+- **Verification**: Global monorepo build and TypeScript check PASSED (Exit Code 0).
+- **Outcome**: The entire administrative hierarchy (Domains -> Subjects -> Topics -> Subtopics -> Skills -> Questions) now shares a single, unified "Card Stack" UX with batch operation capabilities.

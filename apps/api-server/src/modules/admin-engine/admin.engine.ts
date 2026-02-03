@@ -556,6 +556,16 @@ export class AdminEngine {
     return result;
   }
 
+  static async deleteDomainsBatch(ids: string[], adminId: string) {
+    const deleted = await DomainService.deleteDomainsBatch(ids);
+    await AuditService.log({
+      userId: adminId,
+      action: 'admin_batch_delete_domains',
+      metadata: { count: deleted.length, ids },
+    });
+    return deleted;
+  }
+
   /**
    * Approves a new domain for public visibility.
    */
@@ -644,6 +654,16 @@ export class AdminEngine {
     return result;
   }
 
+  static async deleteSubjectsBatch(ids: string[], adminId: string) {
+    const deleted = await SubjectService.deleteSubjectsBatch(ids);
+    await AuditService.log({
+      userId: adminId,
+      action: 'admin_batch_delete_subjects',
+      metadata: { count: deleted.length, ids },
+    });
+    return deleted;
+  }
+
   // --- TOPIC MANAGEMENT ---
   static async createTopic(data: any, adminId: string) {
     const result = await TopicService.createTopic(data);
@@ -719,6 +739,16 @@ export class AdminEngine {
     const result = await SkillService.deleteSkill(id);
     await AuditService.log({ userId: adminId, action: 'admin_delete_skill', metadata: { skillId: id } });
     return result;
+  }
+
+  static async deleteSkillsBatch(ids: string[], adminId: string) {
+    const deleted = await SkillService.deleteSkillsBatch(ids);
+    await AuditService.log({
+      userId: adminId,
+      action: 'admin_batch_delete_skills',
+      metadata: { count: deleted.length, ids },
+    });
+    return deleted;
   }
 
   static async mapTopicToSkills(topicId: string, skillIds: string[], adminId: string) {

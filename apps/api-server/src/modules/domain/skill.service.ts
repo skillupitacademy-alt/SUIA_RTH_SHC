@@ -14,6 +14,10 @@ export class SkillService {
     return await db.delete(skills).where(eq(skills.id, id)).returning();
   }
 
+  static async deleteSkillsBatch(ids: string[]) {
+    return await db.delete(skills).where(inArray(skills.id, ids)).returning();
+  }
+
   /**
    * Links skills to a topic.
    */

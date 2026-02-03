@@ -46,6 +46,10 @@ export class DomainService {
   static async deleteDomain(id: string) {
     return await db.delete(domains).where(eq(domains.id, id)).returning();
   }
+
+  static async deleteDomainsBatch(ids: string[]) {
+    return await db.delete(domains).where(inArray(domains.id, ids)).returning();
+  }
 }
 
 export class SubjectService {
@@ -66,6 +70,10 @@ export class SubjectService {
 
   static async deleteSubject(id: string) {
     return await db.delete(subjects).where(eq(subjects.id, id)).returning();
+  }
+
+  static async deleteSubjectsBatch(ids: string[]) {
+    return await db.delete(subjects).where(inArray(subjects.id, ids)).returning();
   }
 }
 

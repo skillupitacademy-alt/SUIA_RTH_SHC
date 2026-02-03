@@ -124,6 +124,10 @@ export class AdminClient {
     return this.client.delete<any>(`/admin/domains/${id}`);
   }
 
+  async batchDeleteDomains(ids: string[]) {
+    return this.client.post<any>('/admin/domains/batch-delete', { ids });
+  }
+
   async createSubject(data: any) {
     return this.client.post<any>('/admin/subjects', data);
   }
@@ -134,6 +138,10 @@ export class AdminClient {
 
   async deleteSubject(id: string) {
     return this.client.delete<any>(`/admin/subjects/${id}`);
+  }
+
+  async batchDeleteSubjects(ids: string[]) {
+    return this.client.post<any>('/admin/subjects/batch-delete', { ids });
   }
 
   async createTopic(data: any) {
@@ -178,6 +186,10 @@ export class AdminClient {
 
   async deleteSkill(id: string) {
     return this.client.delete<any>(`/admin/skills/${id}`);
+  }
+
+  async batchDeleteSkills(ids: string[]) {
+    return this.client.post<any>('/admin/skills/batch-delete', { ids });
   }
 
   async mapTopicSkills(topicId: string, skillIds: string[]) {
