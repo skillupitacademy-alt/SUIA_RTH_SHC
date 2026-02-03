@@ -11,6 +11,7 @@ import { toast } from 'sonner';
 
 import { FactoryProvider, useFactory } from '@/context/FactoryContext';
 import { JsonIngestBox } from '@/components/factory/ingest/JsonIngestBox';
+import { RefreshCcw } from 'lucide-react';
 
 export default function QuestionFactoryPage() {
     return (
@@ -19,7 +20,7 @@ export default function QuestionFactoryPage() {
 }
 
 function QuestionFactoryContent() {
-    const { stagedQuestions, blueprint, setBlueprint, sourceCode, setSourceCode } = useFactory();
+    const { stagedQuestions, blueprint, setBlueprint, sourceCode, setSourceCode, resetFactory } = useFactory();
     const [isCopying, setIsCopying] = useState(false);
 
     const handleCopyPrompt = async () => {
@@ -63,11 +64,25 @@ function QuestionFactoryContent() {
                     {/* Header: Context & Blueprint (Adjacent) */}
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
                         {/* 1. Context Selection */}
-                        <div className="bg-white rounded-[2.5rem] p-10 border border-slate-200 shadow-sm flex flex-col gap-6">
+                        <div className="bg-white rounded-[2.5rem] p-10 border border-slate-200 shadow-sm flex flex-col gap-6 relative group">
                             <ContextSelector
                                 selections={blueprint}
                                 onChange={(f, v) => setBlueprint({ [f]: v })}
                             />
+
+                            {/* Reset Escape Hatch */}
+                            <button
+                                onClick={() => {
+                                    if (confirm("This will wipe all selections, source material, and staging questions. Reset workspace?")) {
+                                        resetFactory();
+                                    }
+                                }}
+                                className="absolute top-8 right-8 p-3 rounded-xl hover:bg-rose-50 text-slate-300 hover:text-rose-500 transition-all opacity-0 group-hover:opacity-100 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest"
+                                title="Reset Workspace"
+                            >
+                                <RefreshCcw size={14} />
+                                <span className="hidden md:inline">Reset Workspace</span>
+                            </button>
                         </div>
 
                         {/* 2. Distribution Matrix */}

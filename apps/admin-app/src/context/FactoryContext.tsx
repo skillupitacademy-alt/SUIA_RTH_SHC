@@ -19,6 +19,7 @@ interface FactoryContextType {
     updateQuestion: (index: number, updates: Partial<GeneratedQuestion>) => void;
     removeQuestion: (index: number) => void;
     clearStage: () => void;
+    resetFactory: () => void;
 }
 
 const FactoryContext = createContext<FactoryContextType | undefined>(undefined);
@@ -97,6 +98,7 @@ export function FactoryProvider({ children }: { children: ReactNode }) {
 
             if (result.isValid) {
                 setStagedQuestions(result.questions);
+                setSourceCode(''); // Clear source material once staged
                 toast.success(`Successfully ingested ${result.questions.length} questions!`);
                 return true;
             } else {
@@ -128,10 +130,16 @@ export function FactoryProvider({ children }: { children: ReactNode }) {
         setStagedQuestions([]);
         setValidationErrors([]);
         setLastHealingReport(null);
-        // We might want to keep the blueprint (context) active even if we clear questions?
-        // User requested "Clear Batch", usually implies clearing questions.
-        // If they want to switch topic, they usually go back to ingest.
-        // Let's keep blueprint for now, as it's the "folder" we are working in.
+    };
+
+    const resetFactory = () => {
+        setBlueprintState(DEFAULT_BLUEPRINT);
+        setSourceCode('');
+        setStagedQuestions([]);
+        setValidationErrors([]);
+        setLastHealingReport(null);
+        localStorage.removeItem(STORAGE_KEY);
+        toast.info("Workspace has been reset.");
     };
 
     return (
@@ -147,7 +155,8 @@ export function FactoryProvider({ children }: { children: ReactNode }) {
             ingestRawJson,
             updateQuestion,
             removeQuestion,
-            clearStage
+            clearStage,
+            resetFactory
         }}>
             {children}
         </FactoryContext.Provider>
