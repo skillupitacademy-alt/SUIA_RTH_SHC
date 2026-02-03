@@ -712,3 +712,31 @@ Reduce documentation fragmentation and improve discoverability by consolidating 
     -   **Consistency**: Matched `HierarchyFactoryWizard` read-only preview styles 1:1.
 -   **Verification**: Verified visual alignment and ran full build check (Exit Code 0).
 -   **Outcome**: Design is now 100% consistent with the platform's visual language. Ready for Phase 4 (Persistence).
+
+### Phase 94: Question Factory Phase 4 (Persistence & Connectivity)
+- **Objective**: Connect the Staging Environment to the Prod Database via transactional batch insert.
+- **Implementation**:
+    - **API Endpoint**: Created /api/factory/save with transactional integrity (Questions + Skills).
+    - **Skill Logic**: Implemented 'Get or Create' logic for skills, enforcing lowercase normalization.
+    - **Client**: Added saveFactoryBatch to AdminClient and connected ReviewConsole (Commit) button.
+    - **Feedback**: Implemented success alerts showing 'Inserted Count' and 'New Skills Created'.
+- **Outcome**: Enabled mass ingestion of generated content into the core database.
+
+### Phase 95: Question Factory Phase 4.1 (Skill Governance)
+- **Objective**: Prevent skill pollution (typos/duplicates) at the source.
+- **Implementation**:
+    - **Visual Indicators**: Added 'New' (Orange) vs 'Existing' (Grey) badges in QuestionCard.
+    - **Pre-Validation**: ReviewConsole fetches existing topic skills on mount to diff against staged content.
+    - **UX**: Highlighted 'New Skills' to prompt user review before commit.
+- **Outcome**: Empowers Content Managers to catch 'Reacjs' vs 'React' errors before they pollute the DB.
+
+### Phase 96: Question Factory Phase 5 (Duplicate Intelligence)
+- **Objective**: Prevent content redundancy (Duplicate Questions).
+- **Implementation**:
+    - **API**: Implemented /api/factory/check-duplicates to scan for identical question text within the Topic.
+    - **Real-Time Check**: Integrated debounced check in ReviewConsole.
+    - **Alerts**: Added **RED** 'Duplicate Detected' banners in QuestionCard.
+    - **Safeguard**: Added confirmation dialog if 'Commit' is pressed while duplicates exist.
+- **Verification**: Verified build (Exit Code 0) and functional logic (Blockers/Alerts).
+- **Outcome**: Completed the 'Intelligence & Hygiene' layer of the Factory.
+
