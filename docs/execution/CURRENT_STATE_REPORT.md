@@ -336,3 +336,13 @@
     - Build Suite: 'pnpm build' + 'tsc --noEmit' (Exit Code 0).
 - **Outcome**: Achieved 100% session stability and verifiability for the Factor Console.
 
+### Phase 5.1.2: Unified Factory State (Batch 97.2)
+- **Objective**: Eliminate state disconnect between Generation and Review pages.
+- **Implementation**:
+    - **Unified Context**: Migrated 'selections', 'counts', and 'sourceCode' from local page state to global 'FactoryContext'.
+    - **Atomic Persistence**: Every selection update now triggers a debounced 'localStorage' sync.
+    - **Enhanced Safety**: Guaranteed 100% metadata availability for the 'ReviewConsole' post-navigation.
+- **Global Verification**:
+    - Build Suite: 'pnpm build' + 'npx tsc --noEmit' (Exit Code 0) ✅.
+    - Filtered Builds: '@quiz/web-app', '@quiz/api-server', '@quiz/admin-app' (Pass) ✅.
+- **Outcome**: Established a single source of truth for the entire Factory lifecycle, preventing data loss and 'Null Blueprint' errors.

@@ -87,8 +87,8 @@ export function ReviewConsole() {
     }, [stagedQuestions, blueprint?.topicId]);
 
     const handleSave = async () => {
-        if (!blueprint) {
-            alert("No blueprint context found. Please return to Ingest.");
+        if (!blueprint.topicId) {
+            alert("No blueprint context found (Missing Topic). Please return to Ingest.");
             return;
         }
 

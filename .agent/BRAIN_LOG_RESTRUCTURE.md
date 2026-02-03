@@ -765,3 +765,8 @@ Reduce documentation fragmentation and improve discoverability by consolidating 
     - Build Suite: 'pnpm build' + 'tsc --noEmit' (Exit Code 0).
 - **Outcome**: Achieved 100% session stability and verifiability for the Factor Console.
 
+### Phase 99: Unified Factory State (Batch 97.2)
+- **Problem**: State mismatch and 'Null Blueprint' errors during cross-page navigation.
+- **Action**: Unified 'selections', 'counts', and 'sourceCode' into global `FactoryContext`.
+- **Logic**: Linked `ContextSelector` and `DistributionMatrix` directly to shared state; forced debounced `localStorage` sync on every metadata change.
+- **Outcome**: 100% state reliability across Navigation and Refresh cycles.

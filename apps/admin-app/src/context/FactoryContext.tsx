@@ -6,13 +6,15 @@ import { JsonValidator } from '../lib/factory/json-validator';
 import { toast } from 'sonner';
 
 interface FactoryContextType {
-    blueprint: FactoryBlueprint | null;
+    blueprint: FactoryBlueprint;
+    sourceCode: string;
     stagedQuestions: GeneratedQuestion[];
     isIngesting: boolean;
     validationErrors: string[];
     lastHealingReport: any | null;
 
-    setBlueprint: (blueprint: FactoryBlueprint) => void;
+    setBlueprint: (blueprint: Partial<FactoryBlueprint>) => void;
+    setSourceCode: (code: string) => void;
     ingestRawJson: (json: string) => boolean;
     updateQuestion: (index: number, updates: Partial<GeneratedQuestion>) => void;
     removeQuestion: (index: number) => void;
@@ -23,8 +25,17 @@ const FactoryContext = createContext<FactoryContextType | undefined>(undefined);
 
 const STORAGE_KEY = 'quiz-factory-storage-v1';
 
+const DEFAULT_BLUEPRINT: FactoryBlueprint = {
+    domainId: '',
+    subjectId: '',
+    topicId: '',
+    subtopicId: '',
+    counts: { simple: 2, intermediate: 5, expert: 3 }
+};
+
 export function FactoryProvider({ children }: { children: ReactNode }) {
-    const [blueprint, setBlueprint] = useState<FactoryBlueprint | null>(null);
+    const [blueprint, setBlueprintState] = useState<FactoryBlueprint>(DEFAULT_BLUEPRINT);
+    const [sourceCode, setSourceCode] = useState('');
     const [stagedQuestions, setStagedQuestions] = useState<GeneratedQuestion[]>([]);
     const [isIngesting, setIsIngesting] = useState(false);
     const [validationErrors, setValidationErrors] = useState<string[]>([]);
@@ -40,12 +51,16 @@ export function FactoryProvider({ children }: { children: ReactNode }) {
             if (saved) {
                 const parsed = JSON.parse(saved);
                 if (parsed.blueprint) {
-                    setBlueprint(parsed.blueprint);
-                    console.log(`[Persistence] ✅ FOUND DATA: Restored Blueprint ID ${parsed.blueprint.topicId}`);
+                    setBlueprintState(parsed.blueprint);
+                    console.log(`[Persistence] ✅ FOUND DATA: Restored Blueprint (Topic: ${parsed.blueprint.topicId || 'None'})`);
                 }
                 if (parsed.stagedQuestions) {
                     setStagedQuestions(parsed.stagedQuestions);
                     console.log(`[Persistence] ✅ FOUND DATA: Restored ${parsed.stagedQuestions.length} questions`);
+                }
+                if (parsed.sourceCode) {
+                    setSourceCode(parsed.sourceCode);
+                    console.log(`[Persistence] ✅ FOUND DATA: Restored Source Code (${parsed.sourceCode.length} chars)`);
                 }
             } else {
                 console.log('[Persistence] ⚪ NO DATA: Starting fresh session.');
@@ -61,21 +76,24 @@ export function FactoryProvider({ children }: { children: ReactNode }) {
     // Persist state on changes
     React.useEffect(() => {
         if (!isInitialized) {
-            // console.warn('[Persistence] ⚠️ BLOCKED: Attempted to save before initialization.');
             return;
         }
 
         const timeout = setTimeout(() => {
             try {
-                const state = { blueprint, stagedQuestions };
+                const state = { blueprint, stagedQuestions, sourceCode };
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-                console.log(`[Persistence] 💾 AUTO-SAVE: Wrote state to storage. Questions: ${stagedQuestions.length}`);
+                console.log(`[Persistence] 💾 AUTO-SAVE: Wrote state to storage. Questions: ${stagedQuestions.length}, Blueprint Topic: ${blueprint.topicId || 'None'}`);
             } catch (e) {
                 console.error("Failed to persist factory state", e);
             }
         }, 500); // Debounce to avoid thrashing storage
         return () => clearTimeout(timeout);
-    }, [blueprint, stagedQuestions, isInitialized]);
+    }, [blueprint, stagedQuestions, sourceCode, isInitialized]);
+
+    const setBlueprint = (updates: Partial<FactoryBlueprint>) => {
+        setBlueprintState(prev => ({ ...prev, ...updates }));
+    };
 
     const ingestRawJson = (json: string): boolean => {
         setIsIngesting(true);
@@ -128,11 +146,13 @@ export function FactoryProvider({ children }: { children: ReactNode }) {
     return (
         <FactoryContext.Provider value={{
             blueprint,
+            sourceCode,
             stagedQuestions,
             isIngesting,
             validationErrors,
             lastHealingReport,
             setBlueprint,
+            setSourceCode,
             ingestRawJson,
             updateQuestion,
             removeQuestion,

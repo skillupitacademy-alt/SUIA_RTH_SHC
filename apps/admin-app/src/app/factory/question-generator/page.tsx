@@ -19,14 +19,11 @@ export default function QuestionFactoryPage() {
 }
 
 function QuestionFactoryContent() {
-    const { stagedQuestions } = useFactory();
-    const [selections, setSelections] = useState({ domainId: '', subjectId: '', topicId: '', subtopicId: '' });
-    const [sourceCode, setSourceCode] = useState('');
-    const [counts, setCounts] = useState({ simple: 2, intermediate: 5, expert: 3 });
+    const { stagedQuestions, blueprint, setBlueprint, sourceCode, setSourceCode } = useFactory();
     const [isCopying, setIsCopying] = useState(false);
 
     const handleCopyPrompt = async () => {
-        if (!selections.topicId) {
+        if (!blueprint.topicId) {
             toast.error("Please select a Topic first.");
             return;
         }
@@ -37,14 +34,15 @@ function QuestionFactoryContent() {
 
         setIsCopying(true);
         try {
+            // Context resolution (can be enhanced further once we have names in context)
             const prompt = PromptService.generateTechnicalPrompt({
                 sourceCode,
-                counts,
+                counts: blueprint.counts,
                 context: {
                     domainName: "Target Domain",
                     subjectName: "Target Subject",
                     topicName: "Target Topic",
-                    subtopicName: selections.subtopicId ? "Target Sub-topic" : undefined
+                    subtopicName: blueprint.subtopicId ? "Target Sub-topic" : undefined
                 }
             });
 
@@ -67,16 +65,16 @@ function QuestionFactoryContent() {
                         {/* 1. Context Selection */}
                         <div className="bg-white rounded-[2.5rem] p-10 border border-slate-200 shadow-sm flex flex-col gap-6">
                             <ContextSelector
-                                selections={selections}
-                                onChange={(f, v) => setSelections(prev => ({ ...prev, [f]: v }))}
+                                selections={blueprint}
+                                onChange={(f, v) => setBlueprint({ [f]: v })}
                             />
                         </div>
 
                         {/* 2. Distribution Matrix */}
                         <div className="bg-white rounded-[2.5rem] p-10 border border-slate-200 shadow-sm flex flex-col gap-6">
                             <DistributionMatrix
-                                counts={counts}
-                                onChange={(f, v) => setCounts(prev => ({ ...prev, [f]: v }))}
+                                counts={blueprint.counts}
+                                onChange={(f, v) => setBlueprint({ counts: { ...blueprint.counts, [f]: v } })}
                             />
                         </div>
                     </div>
@@ -116,10 +114,10 @@ function QuestionFactoryContent() {
                             <div className="flex items-center gap-4 w-full md:w-auto">
                                 <button
                                     onClick={handleCopyPrompt}
-                                    disabled={!selections.topicId || !sourceCode}
+                                    disabled={!blueprint.topicId || !sourceCode}
                                     className={`
                                         flex-1 md:flex-none px-12 py-5 rounded-2xl flex items-center justify-center gap-3 font-black uppercase tracking-widest text-[11px] transition-all
-                                        ${(!selections.topicId || !sourceCode)
+                                        ${(!blueprint.topicId || !sourceCode)
                                             ? 'bg-slate-800 text-slate-600 cursor-not-allowed'
                                             : 'bg-[#FF4B91] hover:bg-[#FF4B91]/90 text-white shadow-xl shadow-[#FF4B91]/10 active:scale-[0.98]'
                                         }

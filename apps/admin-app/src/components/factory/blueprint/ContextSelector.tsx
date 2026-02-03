@@ -11,7 +11,7 @@ interface ContextSelectorProps {
         domainId: string;
         subjectId: string;
         topicId: string;
-        subtopicId: string;
+        subtopicId?: string;
     };
     onChange: (field: 'domainId' | 'subjectId' | 'topicId' | 'subtopicId', value: string) => void;
 }
@@ -72,7 +72,7 @@ export function ContextSelector({ selections, onChange }: ContextSelectorProps) 
 
                 <SelectField
                     label="Target Sub-Topic"
-                    value={selections.subtopicId}
+                    value={selections.subtopicId || ''}
                     onChange={(id) => onChange('subtopicId', id)}
                     options={subtopicsHook.data || []}
                     loading={subtopicsHook.loading}
