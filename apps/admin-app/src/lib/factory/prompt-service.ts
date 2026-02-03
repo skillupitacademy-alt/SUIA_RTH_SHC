@@ -40,15 +40,25 @@ For each question, you must calculate and include:
 
 ---
 
-### REQUIREMENT 3: JSON SCHEMA (CRITICAL)
-You must return ONLY a raw JSON object. Do not wrap it in markdown block quotes.
-The output must match this schema EXACTLY:
+### REQUIREMENT 3: SYNTAX & FORMATTING (CRITICAL)
+You must follow these syntax rules EXACTLY to ensure the output is machine-readable:
+1. **NO MARKDOWN**: Do not wrap output in markdown code blocks (\`\`\`json). Return raw JSON only.
+2. **STRICT ESCAPING**: All internal double quotes inside strings (especially in "codeSnippet" and "explanation") MUST be escaped with a backslash.
+   - CORRECT: "var x = \"hello\";"
+   - INCORRECT: "var x = "hello";"
+3. **SINGLE LINE STRINGS**: All values must be single-line strings. Use literal \\n for newlines. Do not use multi-line strings.
+4. **NO TRAILING COMMAS**: Verify that no trailing commas exist after the last item in arrays or objects.
+
+---
+
+### REQUIREMENT 4: JSON SCHEMA
+You must return ONLY a raw JSON object matching this schema:
 
 {
   "questions": [
     {
       "questionText": "The actual question string?",
-      "codeSnippet": "Optional code block content if needed (e.g. function body)",
+      "codeSnippet": "Optional code block content (using \\n for line breaks)",
       "options": ["Option A", "Option B", "Option C", "Option D"],
       "correctAnswer": "Exact string matching one of the options",
       "explanation": "Detailed rationale explaining why the answer is correct.",
