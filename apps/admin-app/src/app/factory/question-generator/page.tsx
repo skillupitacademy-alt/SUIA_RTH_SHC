@@ -77,7 +77,7 @@ function QuestionFactoryContent() {
                                         resetFactory();
                                     }
                                 }}
-                                className="absolute top-8 right-8 p-3 rounded-xl hover:bg-rose-50 text-slate-300 hover:text-rose-500 transition-all opacity-0 group-hover:opacity-100 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest"
+                                className="absolute top-8 right-8 p-3 rounded-xl bg-rose-50/50 hover:bg-rose-50 text-rose-300 hover:text-rose-500 transition-all opacity-40 hover:opacity-100 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest border border-rose-100/50"
                                 title="Reset Workspace"
                             >
                                 <RefreshCcw size={14} />

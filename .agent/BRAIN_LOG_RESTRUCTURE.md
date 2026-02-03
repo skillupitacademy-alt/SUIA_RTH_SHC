@@ -789,5 +789,5 @@ Reduce documentation fragmentation and improve discoverability by consolidating 
 - **Logic**: 
     - Added `resetFactory` to clear all state and `localStorage`.
     - Auto-cleared `sourceCode` upon successful ingestion.
-- **UI**: Added a hover-triggered **"Reset Workspace"** button in the context header for explicit control.
+- **UI**: Added a **"Reset Workspace"** button in the context header (always visible with subtle opacity) for explicit control.
 - **Outcome**: Achieved a perfect balance between session safety (saving progress) and operational hygiene (starting clean activities).
