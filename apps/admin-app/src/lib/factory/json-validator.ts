@@ -4,34 +4,93 @@ export const JsonValidator = {
     /**
      * Attempts to heal common JSON syntax errors from AI
      */
-    repairJson: (raw: string): string => {
+    repairJson: (raw: string): { healed: string, stats: any } => {
         let healed = raw.trim();
+        const stats = {
+            trailingCommas: 0,
+            unescapedQuotes: 0,
+            unquotedKeys: 0
+        };
 
-        // 1. Remove trailing commas before closing braces/brackets
+        // 1. Contextual Content Healing: Escape unescaped internal double quotes in values
+        // We target specific keys that usually contain text/code to avoid mangling the whole structure
+        const keysToHeal = ['questionText', 'codeSnippet', 'explanation', 'correctAnswer', 'options'];
+        keysToHeal.forEach(key => {
+            // Regex matches "key": " ... " where the end is followed by structural markers
+            // We use a stricter lookahead to ensure the comma isn't just part of the text
+            const regex = new RegExp(`("${key}"\\s*:\\s*")([\\s\\S]*?)("\\s*(?=[}\\]]|,\\s*(?:\\r?\\n|"[^"]+"\\s*:|}|\])))`, 'g');
+            healed = healed.replace(regex, (match: string, prefix: string, content: string, suffix: string) => {
+                // Safeguard: If the captured content contains another key, it's a boundary violation
+                const hasAnotherKey = /"[a-zA-Z0-9_]+"\s*:/.test(content);
+                if (hasAnotherKey) return match;
+
+                if (content.includes('"')) {
+                    const unescapedMatches = content.match(/(?<!\\)"/g);
+                    if (unescapedMatches) {
+                        stats.unescapedQuotes += unescapedMatches.length;
+                        const escapedContent = content.replace(/(?<!\\)"/g, '\\"');
+                        return `${prefix}${escapedContent}${suffix}`;
+                    }
+                }
+                return match;
+            });
+        });
+
+        // 2. Specialized Repair for arrays (specifically the options array)
+        healed = healed.replace(/("options"\s*:\s*\[)([\s\S]*?)(\]\s*(?=[,}\]]))/, (match: string, prefix: string, content: string, suffix: string) => {
+            // Split by comma followed by a quote to identify individual items
+            const items = content.split(/,(?=\s*")/);
+            const repairedItems = items.map(item => {
+                // Match from the first quote to the last quote of this item
+                const itemMatch = item.match(/(\s*")([\s\S]*)(")/);
+                if (itemMatch && itemMatch.length >= 4) {
+                    const p = itemMatch[1];
+                    const c = itemMatch[2];
+                    const s = itemMatch[3];
+                    const escaped = c.replace(/(?<!\\)"/g, '\\"');
+                    if (escaped !== c) {
+                        const matches = escaped.match(/\\"/g);
+                        if (matches) stats.unescapedQuotes += matches.length;
+                    }
+                    return `${p}${escaped}${s}`;
+                }
+                return item;
+            });
+            return `${prefix}${repairedItems.join(',')}${suffix}`;
+        });
+
+        // 2. Remove trailing commas before closing braces/brackets
+        const commaCount = (healed.match(/,\s*(?=[\]}])/g) || []).length;
+        stats.trailingCommas += commaCount;
         healed = healed.replace(/,\s*([\]}])/g, '$1');
 
-        // 2. Fix unquoted keys (basic version for common technical keys)
-        // This targets alphanumeric keys that aren't wrapped in quotes
-        healed = healed.replace(/([{,]\s*)([a-zA-Z0-9_]+)(\s*:)/g, '$1"$2"$3');
+        // 3. Fix unquoted keys
+        const keyMatch = healed.match(/([{,]\s*)([a-zA-Z0-9_]+)(\s*:)/g);
+        if (keyMatch) {
+            stats.unquotedKeys += keyMatch.length;
+            healed = healed.replace(/([{,]\s*)([a-zA-Z0-9_]+)(\s*:)/g, '$1"$2"$3');
+        }
 
-        // 3. Convert single quotes to double quotes for keys/values
-        // This is tricky but we target common patterns
-        // Replace single quotes that start or end a string (near :, {, [, ,, ], })
+        // 4. Convert single quotes to double quotes for keys/values
         healed = healed.replace(/([{,\[:])\s*'([^']*)'\s*([,\]}])/g, (match, p1, p2, p3) => {
             return `${p1}"${p2}"${p3}`;
         });
 
-        return healed;
+        return { healed, stats };
     },
 
     /**
      * Cleans conversational text from AI and extracts the JSON array
      */
-    cleanJson: (raw: string): string => {
+    cleanJson: (raw: string): { cleaned: string, report: any } => {
         let cleaned = raw.trim();
+        let conversationalStrip = false;
         
+        const original = cleaned;
+
         // Remove markdown code blocks if present
         if (cleaned.startsWith('```')) {
+            conversationalStrip = true;
             const lines = cleaned.split('\n');
             if (lines[0].startsWith('```')) lines.shift();
             if (lines[lines.length - 1].startsWith('```')) lines.pop();
@@ -47,10 +106,26 @@ export const JsonValidator = {
         const end = Math.max(lastBrace, lastBracket);
 
         if (start !== -1 && end !== -1 && end > start) {
+            if (start > 0 || end < cleaned.length - 1) {
+                conversationalStrip = true;
+            }
             cleaned = cleaned.substring(start, end + 1);
         }
 
-        return JsonValidator.repairJson(cleaned);
+        const { healed, stats } = JsonValidator.repairJson(cleaned);
+        
+        const modified = conversationalStrip || stats.trailingCommas > 0 || stats.unescapedQuotes > 0 || stats.unquotedKeys > 0;
+
+        return { 
+            cleaned: healed, 
+            report: {
+                modified,
+                stats: {
+                    ...stats,
+                    conversationalStrip
+                }
+            }
+        };
     },
 
     /**
@@ -60,11 +135,14 @@ export const JsonValidator = {
         const result: ValidationResult = {
             isValid: true,
             errors: [],
-            questions: []
+            questions: [],
+            healingReport: undefined
         };
 
         try {
-            const cleaned = JsonValidator.cleanJson(jsonString);
+            const { cleaned, report } = JsonValidator.cleanJson(jsonString);
+            result.healingReport = report;
+            
             const parsed = JSON.parse(cleaned);
             
             // AI might wrap in { "questions": [...] } or just return [...]

@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
 
 export function JsonIngestBox() {
-    const { ingestRawJson, isIngesting, validationErrors, clearStage, stagedQuestions } = useFactory();
+    const { ingestRawJson, isIngesting, validationErrors, clearStage, stagedQuestions, lastHealingReport } = useFactory();
     const [rawJson, setRawJson] = useState('');
     const [errorInfo, setErrorInfo] = useState<{ line?: number; column?: number; message?: string } | null>(null);
     const router = useRouter();
@@ -21,7 +21,7 @@ export function JsonIngestBox() {
 
     // Calculate line numbers
     const lineCount = rawJson.split('\n').length;
-    const lineNumbers = Array.from({ length: Math.max(10, lineCount) }, (_, i) => i + 1);
+    const lineNumbers = Array.from({ length: Math.max(25, lineCount) }, (_, i) => i + 1);
 
     const handleIngest = () => {
         if (!rawJson.trim()) return;
@@ -29,6 +29,12 @@ export function JsonIngestBox() {
 
         const success = ingestRawJson(rawJson);
         if (success) {
+            // If it was modified (healed), we stay on the page for a moment to show stats if not immediate
+            // But usually we go to review. However, if the user wants to "check", we can stay.
+            // For now, let's keep the redirect but the user can see the report if they go back.
+            // Actually, if it's successful, we might want to show the stats BEFORE redirecting if the admin needs to "confirm".
+            // But the request says "admin can get some summary update". 
+            // Let's keep the redirect for now as it's a "process & review" step.
             router.push('/factory/question-generator/review');
         } else {
             // Attempt to extract line/column from the first error if it looks like a parsing error
@@ -46,7 +52,7 @@ export function JsonIngestBox() {
     };
 
     return (
-        <div className="space-y-6 flex-1 flex flex-col min-h-[500px]">
+        <div className="space-y-6 flex-1 flex flex-col">
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                     <div className="h-6 w-1 bg-[#FF4B91] rounded-full" />
@@ -66,7 +72,7 @@ export function JsonIngestBox() {
                 </div>
             </div>
 
-            <div className="flex-1 relative group bg-white border border-slate-200 rounded-[2.5rem] overflow-hidden shadow-sm flex flex-col">
+            <div className="flex-1 relative group bg-white border border-slate-200 rounded-[2.5rem] overflow-hidden shadow-sm flex flex-col min-h-[640px] max-h-[640px]">
                 {/* Editor Header */}
                 <div className="px-10 py-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
                     <div className="flex items-center gap-4">
@@ -75,18 +81,45 @@ export function JsonIngestBox() {
                         </div>
                         <h4 className="text-sm font-black uppercase tracking-widest text-[#1A1A1A] italic">Payload Editor</h4>
                     </div>
-                    {errorInfo?.line && (
-                        <div className="text-[10px] font-black text-rose-500 bg-rose-50 px-4 py-2 rounded-xl border border-rose-100 uppercase tracking-widest">
-                            Error detected at Line {errorInfo.line}
-                        </div>
-                    )}
+                    <div className="flex items-center gap-3">
+                        {lastHealingReport?.modified && (
+                            <div className="flex items-center gap-4 px-4 py-2 bg-emerald-50 border border-emerald-100 rounded-xl animate-in fade-in slide-in-from-right-4 duration-500">
+                                <div className="flex items-center gap-2">
+                                    <CheckCircle2 size={12} className="text-emerald-500" />
+                                    <span className="text-[9px] font-black text-emerald-600 uppercase tracking-widest">Healer Summary:</span>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    {lastHealingReport.stats.unescapedQuotes > 0 && (
+                                        <span className="text-[9px] font-bold text-emerald-500 bg-white px-2 py-0.5 rounded-md border border-emerald-100">
+                                            {lastHealingReport.stats.unescapedQuotes} Quotes Escaped
+                                        </span>
+                                    )}
+                                    {lastHealingReport.stats.trailingCommas > 0 && (
+                                        <span className="text-[9px] font-bold text-emerald-500 bg-white px-2 py-0.5 rounded-md border border-emerald-100">
+                                            {lastHealingReport.stats.trailingCommas} Commas Removed
+                                        </span>
+                                    )}
+                                    {lastHealingReport.stats.conversationalStrip && (
+                                        <span className="text-[9px] font-bold text-emerald-500 bg-white px-2 py-0.5 rounded-md border border-emerald-100">
+                                            Conversational Strip Active
+                                        </span>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+                        {errorInfo?.line && (
+                            <div className="text-[10px] font-black text-rose-500 bg-rose-50 px-4 py-2 rounded-xl border border-rose-100 uppercase tracking-widest">
+                                Error at Line {errorInfo.line}
+                            </div>
+                        )}
+                    </div>
                 </div>
 
                 <div className="relative flex-1 bg-white flex overflow-hidden">
                     {/* Gutter */}
                     <div
                         ref={gutterRef}
-                        className="w-16 bg-slate-50/50 border-r border-slate-100 flex flex-col items-center pt-8 text-[11px] font-mono text-slate-300 pointer-events-none select-none overflow-hidden"
+                        className="w-16 bg-slate-50/50 border-r border-slate-100 flex flex-col items-center pt-8 text-[11px] font-mono text-slate-300 pointer-events-none select-none overflow-y-hidden"
                     >
                         {lineNumbers.map(n => (
                             <div
@@ -120,21 +153,32 @@ export function JsonIngestBox() {
                             Surgical Extraction & Repair
                         </p>
                         <p className="text-[9px] text-slate-400 font-medium italic">
-                            Trailing commas, unquoted keys, and single-quotes are auto-healed.
+                            Full-height IDE mode. Auto-healing fixes structural and content errors on the fly.
                         </p>
                     </div>
-                    <button
-                        onClick={handleIngest}
-                        disabled={!rawJson || isIngesting}
-                        className={cn(
-                            "px-10 py-4 rounded-xl flex items-center gap-3 font-black uppercase tracking-widest text-[11px] transition-all active:scale-95",
-                            !rawJson || isIngesting
-                                ? "bg-slate-200 text-slate-400 cursor-not-allowed"
-                                : "bg-[#FF4B91] text-white shadow-xl shadow-[#FF4B91]/10 hover:bg-[#FF4B91]/90"
+                    <div className="flex items-center gap-3">
+                        {rawJson && (
+                            <button
+                                onClick={() => setRawJson('')}
+                                className="p-4 rounded-xl text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-all active:scale-95"
+                                title="Clear Editor"
+                            >
+                                <Trash2 size={16} />
+                            </button>
                         )}
-                    >
-                        <Import size={16} /> {isIngesting ? 'Processing...' : 'Process & Review'}
-                    </button>
+                        <button
+                            onClick={handleIngest}
+                            disabled={!rawJson || isIngesting}
+                            className={cn(
+                                "px-10 py-4 rounded-xl flex items-center gap-3 font-black uppercase tracking-widest text-[11px] transition-all active:scale-95",
+                                !rawJson || isIngesting
+                                    ? "bg-slate-200 text-slate-400 cursor-not-allowed"
+                                    : "bg-[#FF4B91] text-white shadow-xl shadow-[#FF4B91]/10 hover:bg-[#FF4B91]/90"
+                            )}
+                        >
+                            <Import size={16} /> {isIngesting ? 'Processing...' : 'Process & Review'}
+                        </button>
+                    </div>
                 </div>
 
                 {/* Verification Overlay */}

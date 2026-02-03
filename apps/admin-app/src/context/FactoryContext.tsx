@@ -10,6 +10,7 @@ interface FactoryContextType {
     stagedQuestions: GeneratedQuestion[];
     isIngesting: boolean;
     validationErrors: string[];
+    lastHealingReport: any | null;
 
     setBlueprint: (blueprint: FactoryBlueprint) => void;
     ingestRawJson: (json: string) => boolean;
@@ -25,13 +26,16 @@ export function FactoryProvider({ children }: { children: ReactNode }) {
     const [stagedQuestions, setStagedQuestions] = useState<GeneratedQuestion[]>([]);
     const [isIngesting, setIsIngesting] = useState(false);
     const [validationErrors, setValidationErrors] = useState<string[]>([]);
+    const [lastHealingReport, setLastHealingReport] = useState<any | null>(null);
 
     const ingestRawJson = (json: string): boolean => {
         setIsIngesting(true);
         setValidationErrors([]);
+        setLastHealingReport(null);
 
         try {
             const result: ValidationResult = JsonValidator.validateBatch(json);
+            setLastHealingReport(result.healingReport || null);
 
             if (result.isValid) {
                 setStagedQuestions(result.questions);
@@ -65,6 +69,7 @@ export function FactoryProvider({ children }: { children: ReactNode }) {
     const clearStage = () => {
         setStagedQuestions([]);
         setValidationErrors([]);
+        setLastHealingReport(null);
     };
 
     return (
@@ -73,6 +78,7 @@ export function FactoryProvider({ children }: { children: ReactNode }) {
             stagedQuestions,
             isIngesting,
             validationErrors,
+            lastHealingReport,
             setBlueprint,
             ingestRawJson,
             updateQuestion,

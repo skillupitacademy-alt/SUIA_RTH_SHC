@@ -14,10 +14,21 @@ export interface GeneratedQuestion {
     skillNames: string[];
 }
 
+export interface HealingReport {
+    modified: boolean;
+    stats: {
+        trailingCommas: number;
+        unescapedQuotes: number;
+        unquotedKeys: number;
+        conversationalStrip: boolean;
+    };
+}
+
 export interface ValidationResult {
     isValid: boolean;
     errors: string[];
     questions: GeneratedQuestion[];
+    healingReport?: HealingReport;
 }
 
 export interface FactoryBlueprint {

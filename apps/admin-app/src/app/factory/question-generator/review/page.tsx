@@ -5,6 +5,7 @@ import { FactoryLayout } from '@/components/layout/FactoryLayout';
 import { FactoryProvider, useFactory } from '@/context/FactoryContext';
 import { ChevronLeft, Info } from 'lucide-react';
 import Link from 'next/link';
+import { ReviewConsole } from '@/components/factory/review/ReviewConsole';
 
 export default function QuestionReviewPage() {
     return (
@@ -48,15 +49,7 @@ function QuestionReviewContent() {
                             </p>
                         </div>
                     ) : (
-                        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-5 duration-700">
-                            {/* Phase 3 Cards will go here */}
-                            <div className="bg-white rounded-[2.5rem] p-12 border border-slate-200 shadow-xl flex flex-col items-center justify-center text-center">
-                                <h3 className="text-sm font-black uppercase tracking-widest text-[#1A1A1A]">Phase 3: Interactive Review</h3>
-                                <p className="text-xs text-slate-400 max-w-sm mt-3 font-medium italic">
-                                    Displaying your {stagedQuestions.length} questions in vertical stack soon.
-                                </p>
-                            </div>
-                        </div>
+                        <ReviewConsole />
                     )}
 
                 </div>
