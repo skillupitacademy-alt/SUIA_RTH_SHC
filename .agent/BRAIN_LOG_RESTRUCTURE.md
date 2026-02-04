@@ -913,3 +913,29 @@ Reduce documentation fragmentation and improve discoverability by consolidating 
   - **Architectural Cleanup**: Deleted `setAccessToken` property and method from `@quiz/api-client` to prevent future token-based regressions.
   - **Verification**: Executed global `pnpm build` and `npx tsc --noEmit` and achieved **Exit Code 0**.
 - **Outcome**: Delivered a 100% purified, cookie-based authentication architecture with zero token leakage vectors remaining in the browser storage.
+
+### 108. Secure & Scalable Caching Implementation (Batch 115)
+- **Objective**: Implement blueprint and session caching with per-user security and scalable ID sampling.
+- **Actions**:
+  - **Secure Session Caching**: Implemented `SessionService.syncSession` with per-user cache keys (`exam-header:${userId}:${examId}`) and post-retrieval ownership verification.
+  - **Scalable Selection**: Replaced `ORDER BY RANDOM()` in `ExamBlueprintService` with Fisher-Yates ID sampling (RT-001 compliant).
+  - **Comprehensive Invalidation**: Extended `AdminEngine` to clear both specific blueprint IDs and domain-based cache entries.
+  - **API Integration**: Wired session caching into `QuizEngine.getQuizState` to optimize core exam flows.
+- **Outcome**: Delivered a secure, scalable, and memory-efficient caching layer with robust invalidation.
+
+### 109. Final Caching Refinement & Polish (Batch 116)
+- **Objective**: Fix remaining edge cases in session and invalidation logic and polish logging output.
+- **Actions**:
+  - **Bug Fix**: Fixed missing return statement in `SessionService.resumePayload`.
+  - **Refined Invalidation**: Updated `AdminEngine.updateBlueprint` to account for both old and new domain-based cache entries.
+  - **UX/DX Polish**: Removed emoji-based mojibake from `CacheService` debug logs to ensure compatibility across all log viewers.
+- **Outcome**: Finalized caching and session layers to 100% production readiness.
+
+### 110. Distributed Rate Limiting Implementation (Batch 117)
+- **Objective**: Transition to distributed rate limiting using Edge-compatible Redis.
+- **Actions**:
+  - **Infrastructure**: Integrated `@upstash/redis` for Edge-runtime compatibility.
+  - **Service Layer**: Added atomic `increment` with fallback to `CacheService`.
+  - **Middleware**: Refactored `rate-limit.middleware.ts` to use `TokenService` and unified counters.
+  - **Verified**: Verified via `pnpm build ; npx tsc --noEmit` (**Exit Code 0**).
+- **Outcome**: Robust, distributed throttling ready for horizontal scaling and Vercel Edge deployments.
