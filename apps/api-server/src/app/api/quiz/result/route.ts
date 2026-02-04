@@ -45,7 +45,25 @@ export async function GET(req: NextRequest) {
       console.log(`[AUDIT] Admin ${payload.userId} accessed Exam ${examId} owned by ${exam.userId}`);
     }
 
-    if (exam.status !== 'completed') return NextResponse.json({ error: 'Exam not completed' }, { status: 400 });
+    if (exam.status === 'processing' || exam.status === 'started') {
+      return NextResponse.json({ 
+        id: exam.id,
+        status: exam.status,
+        message: 'Exam is still being processed. Please poll again in a few seconds.' 
+      }, { status: 202 });
+    }
+
+    if (exam.status === 'failed') {
+      return NextResponse.json({ 
+        id: exam.id,
+        status: 'failed',
+        error: 'Background scoring failed. Please contact support.' 
+      }, { status: 500 });
+    }
+
+    if (exam.status !== 'completed') {
+      return NextResponse.json({ error: `Exam status is ${exam.status}` }, { status: 400 });
+    }
 
     // Resolve human-readable names for dimensions
     const topicIds = exam.dimensions
