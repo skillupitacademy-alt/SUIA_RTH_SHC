@@ -11,5 +11,6 @@
 | CACHE-001 | Cache | Cache blueprints/session config | P2 | COMPLETED | DATA-001 | M |
 | OPS-001 | Ops | Distributed rate limiting | P2 | COMPLETED | None | M |
 | PIPE-001 | Scoring | Move scoring async | P2 | IN PROGRESS | RT-001 | L |
+| UI-001 | UI | 550px Stationary Console | P1 | COMPLETED | None | M |
 | SCALE-001 | Scale | Multi-region failover | P3 | BACKLOG | PIPE-001 | L |
 | ANALYTICS-001 | Analytics | Warehouse + materialized views | P3 | BACKLOG | PIPE-001 | L |
