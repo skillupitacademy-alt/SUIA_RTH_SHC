@@ -7,6 +7,7 @@ import { TokenService } from './modules/auth/token.service';
 import { verifyAdmin } from './modules/auth/rbac.service';
 
 export async function middleware(request: NextRequest) {
+  console.log('cookie:', request.headers.get('cookie'));
   
   // 1. CORS Preflight
   if (request.method === 'OPTIONS') {
