@@ -1,15 +1,14 @@
 # Current Task Log
 
-**Task**: Auth Hardening (P1) - AUTH-001
+**Task**: Selection Optimization (P1) - RT-001
 **Status**: COMPLETED
 **Date**: 2026-02-04
 
 ## Recent Actions
-- **AUTH-001**: Moved `accessToken` to `httpOnly` secure cookies with `.realtutorialhub.com` domain scope.
-- **Frontend Refactor**: Completely removed `localStorage` token management from `web-app` and `admin-app`.
-- **Middleware Update**: Enhanced middleware to extract tokens from cookies while maintaining strict CSRF enforcement.
-- **Verification**: Passed 100% build and type-check suite: `pnpm build && npx tsc --noEmit`.
+- **RT-001**: Implemented two-step ID-based question selection to replace non-scalable `ORDER BY RANDOM()`.
+- **Fisher-Yates Shuffle**: Added in-memory shuffle logic for high-performance randomization.
+- **Verification**: Verified via `tsc --noEmit` to ensure type safety in selection logic.
 
 ## Next Steps
-- **Next Remediation**: Address P1 performance items (RT-001: Question Selection Optimization).
-- **Session Migration**: Announcement to users regarding forced logout on next deployment.
+- **Next Remediation**: Address P1 data items (DATA-001: DB Indexing Optimization).
+- **Performance Benchmarking**: Monitor selection speed in production as question count increases.

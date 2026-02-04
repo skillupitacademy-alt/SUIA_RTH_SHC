@@ -871,3 +871,10 @@ Reduce documentation fragmentation and improve discoverability by consolidating 
   - Purged `localStorage` token management in `zustand` stores.
   - Synchronized `AdminGuard`, `AuthGuard`, and `AuthProvider` with the new auth model.
 - **Outcome**: Achieved FAANG-standard session security and cross-subdomain SSO capability.
+
+### 103. Selection Optimization (P1)
+- **Goal**: Optimize question selection for large-scale datasets.
+- **Actions**:
+  - Refactored `selection.service.ts` to use a two-step `SELECT id` -> `SHUFFLE` -> `SELECT *` pattern.
+  - Eliminated the non-scalable `ORDER BY RANDOM()` SQL bottleneck.
+- **Outcome**: Future-proofed the exam engine for massive question pool growth.

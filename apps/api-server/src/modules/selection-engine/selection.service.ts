@@ -139,15 +139,31 @@ export class SelectionEngine {
           domainCond || undefined
       );
 
-      return await db.query.questions.findMany({
-        where: and(
+      // STEP 1: Fetch Only IDs (Scalable)
+      const allIds = await db.select({ id: questions.id })
+        .from(questions)
+        .where(and(
           hierarchyCond,
           inArray(questions.difficulty, diffs as any),
           excludeIds.length > 0 ? notInArray(questions.id, excludeIds) : undefined,
           eq(questions.status, 'active')
-        ),
-        limit: count,
-        orderBy: sql`RANDOM()`,
+        ));
+
+      if (allIds.length === 0) return [];
+
+      // STEP 2: In-memory Shuffle (Fisher-Yates)
+      const shuffledIds = allIds.map(row => row.id);
+      for (let i = shuffledIds.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffledIds[i], shuffledIds[j]] = [shuffledIds[j], shuffledIds[i]];
+      }
+
+      // STEP 3: Take subset
+      const subsetIds = shuffledIds.slice(0, count);
+
+      // STEP 4: Fetch full question details for the subset
+      return await db.query.questions.findMany({
+        where: inArray(questions.id, subsetIds)
       });
     };
 

@@ -449,3 +449,7 @@
 - **Purged Client Storage**: Eliminated all `localStorage` token traces, mitigating XSS theft vectors.
 - **State Integrity**: Refactored `AdminGuard`, `AuthGuard`, and `AuthProvider` to correctly handle cookie-based sessions.
 - **Verified Suite**: Confirmed 100% monorepo build and TSC pass (Exit Code 0).
+### Phase 103: Selection Optimization (P1)
+- **Scalable Selection**: Replaced `ORDER BY RANDOM()` with an ID-based selection and Fisher-Yates shuffle strategy.
+- **Improved Performance**: Reduced DB load by fetching full question data only for the final selected subset.
+- **Verified Type-Safety**: Passed `tsc` check for the updated `SelectionEngine`.
