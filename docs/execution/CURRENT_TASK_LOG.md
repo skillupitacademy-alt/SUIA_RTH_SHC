@@ -1,14 +1,15 @@
 # Current Task Log
 
-**Task**: Cookie-First Auth Finalization & Repair
+**Task**: Distributed Rate Limiting & Secure Caching Refinement
 **Status**: COMPLETED
 **Date**: 2026-02-04
 
 ## Recent Actions
-- **Auth Verification**: Audited and standardized all `api-server` route handlers to use central `getAccessToken` helper with cookie priority.
-- **Syntax Fixes**: Surgically repaired 30+ instances of `\n` literals in route handlers to restore build eligibility.
-- **Verification**: Passed root system build suite and TypeScript checks (Exit Code 0).
+- **Distributed Rate Limiting**: Implemented `@upstash/redis` integration with 200ms "Quick or Skip" timeouts and 30s circuit breaker cooldown.
+- **Secure Caching**: Refactored `SessionService` to use per-user keys (`exam-header:${userId}:${examId}`) and strict ownership checks after cache hits.
+- **Scalable Selection**: Replaced `RANDOM()` in `ExamBlueprintService` with RT-001 compliant ID sampling.
+- **Verification**: Passed monorepo production build and TypeScript checks (**Exit Code 0**).
 
 ## Next Steps
-- **Backlog Review**: Evaluate P2 remediation items (Analytics & Performance).
-- **Deployment**: Final handoff for production environment sync.
+- **PIPE-001**: Transition scoring engine to an asynchronous background pipeline.
+- **Verification**: Implement polling-safe result retrieval for the frontend.

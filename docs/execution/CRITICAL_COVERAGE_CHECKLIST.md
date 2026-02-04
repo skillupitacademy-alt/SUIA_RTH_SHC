@@ -26,6 +26,7 @@ This checklist confirms that all critical concerns are captured in the concernfo
 - Covered in: docs/architecture/SCALE_ARCHITECTURE.md (Sampling strategy)
 - Covered in: docs/platform/SCALABILITY_PLAN.md (Phase 1a)
 - Covered in: docs/execution/IMPLEMENTATION_BACKLOG.md (RT-001)
+- Covered in: docs/execution/walkthroughs/walkthrough_cache.md
 
 6) Async scoring pipeline
 - Covered in: docs/architecture/SCALE_ARCHITECTURE.md (Async scoring)
@@ -35,6 +36,7 @@ This checklist confirms that all critical concerns are captured in the concernfo
 7) Distributed rate limiting
 - Covered in: docs/platform/SCALABILITY_PLAN.md
 - Covered in: docs/execution/IMPLEMENTATION_BACKLOG.md (OPS-001)
+- Covered in: docs/execution/walkthroughs/walkthrough_rate_limiting.md
 - Covered in: docs/risk/RISK_REGISTER.md
 
 8) Database indexing for hot paths

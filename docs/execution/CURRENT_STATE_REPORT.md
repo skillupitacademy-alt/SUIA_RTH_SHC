@@ -472,3 +472,17 @@
 - **Purge Audit**: 100% removal of `localStorage` token fragments and internal Bearer token dependencies verified.
 - **standardization**: Standardized all frontend heartbeat and session hooks to use cookie-aware `apiClient`.
 - **Final Certification**: Verified system integrity with root `pnpm build` and `tsc` (**Exit Code 0**).
+
+### Phase 108: Secure & Scalable Caching Implementation (P2)
+- **Session Security**: Implemented per-user session caching with strict post-retrieval ownership verification.
+- **Scalable Selection**: Transitioned `ExamBlueprintService` to Fisher-Yates ID sampling, eliminating SQL `RANDOM()`.
+- **Cache Integrity**: Automated blueprint cache invalidation for both ID-based and domain-based lookups.
+
+### Phase 109: System Hardening & Polish
+- **Execution Safety**: Fixed critical session resume bugs and refined domain-based cache eviction logic.
+- **DX Optimization**: Cleaned debug logging artifacts and standardized cache service instrumentation.
+
+### Phase 110: Distributed Rate Limiting (OPS-001)
+- **Edge Resilience**: Integrated `@upstash/redis` with a 200ms "Quick or Skip" timeout and a 30s circuit breaker.
+- **Atomic Throttling**: Implemented atomic increment logic with guaranteed local fallback for zero-latency impact.
+- **Technical Certification**: Achieved full monorepo build and type-check pass (**Exit Code 0**).

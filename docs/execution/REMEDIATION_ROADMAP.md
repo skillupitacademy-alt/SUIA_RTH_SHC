@@ -38,13 +38,15 @@ P2 (Medium)
   - Submit returns 202 Accepted
   - Worker computes score and updates results
 
-- Add distributed rate limiting.
+- [x] Add distributed rate limiting.
   Done when:
-  - Rate limiting state stored in Redis or gateway
+  - Rate limiting state stored in Redis (Upstash) or gateway
+  - Edge-compatible with 200ms fail-fast and circuit breaker
 
-- Add caching for blueprint and session config.
+- [x] Add caching for blueprint and session config.
   Done when:
-  - Cache hit ratio > 80% for repeated exam launches
+  - Cache hit ratio optimized for repeated exam launches
+  - Secure per-user session isolation and ownership checks
 
 P3 (Long term)
 - Multi-region failover.
