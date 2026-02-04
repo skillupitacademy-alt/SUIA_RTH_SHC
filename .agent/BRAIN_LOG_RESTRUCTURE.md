@@ -886,3 +886,13 @@ Reduce documentation fragmentation and improve discoverability by consolidating 
   - Added partial index on active questions to minimize selection latency.
   - Addressed missing indexes on security-critical tables (`refresh_tokens`, `audit_logs`).
 - **Outcome**: Targeted performance gains across auth, hierarchy, and exam engines.
+
+### 105. Environment Recovery & Build Verification (Batch 112)
+- **Problem**: Persistent `MODULE_NOT_FOUND` error during `next build` across the monorepo, suggesting a broken `next` binary/package state.
+- **Goal**: Restore a 100% stable build environment on Node v20.x while maintaining `next@16.1.6`.
+- **Actions**:
+  - **Surgical Cleanup**: Recursively deleted all `node_modules` folders to eliminate broken symlinks.
+  - **Store Sanitization**: Executed `pnpm store prune` to purge any corrupted package iterations of `next@16.1.6` from the global cache.
+  - **Fresh Ingestion**: Performed a clean `pnpm install`, forcing a fresh download and re-linking of the dependency tree.
+  - **Validation**: Executed the "Safety Check" sequence (pnpm build, scoped builds, tsc) with 100% SUCCESS.
+- **Outcome**: Restored the "Executive Console" build pipeline to a rock-solid, verifiable state with **Exit Code 0** system-wide.
