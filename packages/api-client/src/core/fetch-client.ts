@@ -1,13 +1,8 @@
 export class FetchClient {
   private baseUrl: string;
-  private accessToken: string | null = null;
 
   constructor(baseUrl: string) {
     this.baseUrl = baseUrl;
-  }
-
-  setAccessToken(token: string | null) {
-    this.accessToken = token;
   }
 
   private getCookie(name: string): string | null {

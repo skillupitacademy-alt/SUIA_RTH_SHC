@@ -30,7 +30,7 @@ export function useSessionManager() {
         const now = Date.now();
         // Only send heartbeat if active recently (e.g. within last 2 minutes)
         if (now - lastActivityRef.current < 2 * 60 * 1000) {
-            await fetch('/api/auth/heartbeat', { method: 'POST', headers: { 'Authorization': `Bearer ${localStorage.getItem('accessToken')}` } });
+            await apiClient.auth.heartbeat();
         }
       } catch (e) {
         console.error('Heartbeat failed', e);
@@ -45,10 +45,8 @@ export function useSessionManager() {
       if (now - lastActivityRef.current > IDLE_TIMEOUT_MS) {
         // User is Idle > 5 mins
         console.warn('User idle timeout. Logging out...');
-        // Clear tokens
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
-        // Redirect
+        // Correct Logout: Session is cleared via cookies on server
+        // We just need to redirect to login
         router.push('/login?reason=idle');
       }
     };

@@ -87,6 +87,5 @@ export const apiClient = {
   dashboard: new DashboardClient(baseClient),
   reports: new ReportClient(baseClient),
   client: baseClient, // Export the base client for advanced usage
-  setAccessToken: (token: string | null) => baseClient.setAccessToken(token),
   getAdminUrl: () => ADMIN_URL,
 };
