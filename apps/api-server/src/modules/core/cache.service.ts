@@ -6,13 +6,15 @@ interface CacheOptions {
   maxSize?: number;
 }
 
-const REDIS_TIMEOUT_MS = 2000; // 2s timeout for rate limiting operations
+const REDIS_TIMEOUT_MS = 200; // 200ms "Quick or Skip"
+const REDIS_COOLDOWN_MS = 30000; // 30s cooldown on failure
 
 export class CacheService {
   private static instance: CacheService;
   private cache: LRUCache<string, any>;
   private redis: Redis | null = null;
   private isDebug: boolean;
+  private redisDeadUntil: number = 0;
 
   private constructor() {
     this.isDebug = process.env.DEBUG_CACHE === 'true';
@@ -48,16 +50,26 @@ export class CacheService {
   }
 
   /**
-   * Helper to wrap Redis calls with a timeout
+   * Helper to wrap Redis calls with a timeout and cooldown
    */
   private async withTimeout<T>(promise: Promise<T>, fallback: T): Promise<T> {
+    if (!this.redis) return fallback;
+
+    // Circuit Breaker: Skip if in cooldown
+    if (Date.now() < this.redisDeadUntil) {
+      if (this.isDebug) console.log('[Cache] Redis in cooldown, skipping...');
+      return fallback;
+    }
+
     const timeout = new Promise<T>((_, reject) => {
       setTimeout(() => reject(new Error('Redis Timeout')), REDIS_TIMEOUT_MS);
     });
+
     try {
       return await Promise.race([promise, timeout]);
-    } catch (e) {
-      console.error(`[Cache] Redis operation failed or timed out:`, e);
+    } catch (e: any) {
+      console.error(`[Cache] Redis operation failed or timed out. Entering ${REDIS_COOLDOWN_MS / 1000}s cooldown:`, e?.message || e);
+      this.redisDeadUntil = Date.now() + REDIS_COOLDOWN_MS;
       return fallback;
     }
   }
@@ -150,26 +162,21 @@ export class CacheService {
    */
   public async increment(key: string, windowMs: number): Promise<{ count: number; ttlRem: number }> {
     try {
+      // 1. Try Redis with aggressive timeout & cooldown
       if (this.redis) {
-        try {
-          // Wrap INCR logic in timeout
-          const result = await this.withTimeout((async () => {
-            const count = await this.redis!.incr(key);
-            if (count === 1) {
-              await this.redis!.pexpire(key, windowMs);
-            }
-            const ttl = await this.redis!.pttl(key);
-            return { count, ttlRem: Math.max(1, Math.ceil(ttl / 1000)) };
-          })(), null);
+        const result = await this.withTimeout((async () => {
+          const count = await this.redis!.incr(key);
+          if (count === 1) {
+            await this.redis!.pexpire(key, windowMs);
+          }
+          const ttl = await this.redis!.pttl(key);
+          return { count, ttlRem: Math.max(1, Math.ceil(ttl / 1000)) };
+        })(), null);
 
-          if (result) return result;
-          // If result is null (timeout/failure), fall through to local
-        } catch (e) {
-          // Already logged in withTimeout
-        }
+        if (result) return result;
       }
 
-      // Local Fallback
+      // 2. Local Fallback
       let count = (this.cache.get(key) as number) || 0;
       count++;
       
@@ -178,7 +185,6 @@ export class CacheService {
       if (count === 1) {
         this.cache.set(key, count, { ttl: windowMs });
       } else {
-        // Correctness fix: Get actual remaining TTL from lru-cache
         const remainingMs = this.cache.getRemainingTTL(key);
         if (remainingMs > 0) {
           ttlRemSeconds = Math.ceil(remainingMs / 1000);
