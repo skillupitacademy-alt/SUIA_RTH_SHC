@@ -1,34 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { TokenService } from './token.service';
+import { cacheService } from '../core/cache.service';
 
-const cache = new Map<string, { count: number; expires: number }>();
 const WINDOW_MS = 15 * 60 * 1000;
-const MAX_IP_REQUESTS = 1000; // Increased to support high-density admin dashboard
-const MAX_USER_REQUESTS = 2000; // Users get higher limits than raw IPs
+const MAX_IP_REQUESTS = 1000;
+const MAX_USER_REQUESTS = 2000;
 
 export async function rateLimit(request: NextRequest) {
-  const now = Date.now();
-  
-  // 1. IP Tracking
   const ip = request.headers.get('x-forwarded-for')?.split(',')[0] || 'unknown';
-  const ipRecord = cache.get(`ip:${ip}`);
   
-  if (ipRecord && now < ipRecord.expires && ipRecord.count >= MAX_IP_REQUESTS) {
-    return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
-  }
-
-  // 2. User Tracking (Authenticated Throttling)
-  let token = request.cookies.get('accessToken')?.value;
-  
-  // Fallback to Authorization header if cookie is not present
-  if (!token) {
-    const authHeader = request.headers.get('authorization');
-    if (authHeader?.startsWith('Bearer ')) {
-      token = authHeader.split(' ')[1];
-    }
-  }
-
-  let userId = null;
+  // 1. Resolve Auth (Standard + Admin)
+  const token = TokenService.getAccessToken(request);
+  let userId: string | null = null;
   
   if (token) {
     try {
@@ -39,20 +22,40 @@ export async function rateLimit(request: NextRequest) {
     }
   }
 
-  if (userId) {
-    const userRecord = cache.get(`user:${userId}`);
-    if (userRecord && now < userRecord.expires && userRecord.count >= MAX_USER_REQUESTS) {
-      return NextResponse.json({ error: 'User rate limit exceeded' }, { status: 429 });
-    }
-    
-    // Update user cache
-    const current = userRecord && now < userRecord.expires ? userRecord.count : 0;
-    cache.set(`user:${userId}`, { count: current + 1, expires: userRecord?.expires || now + WINDOW_MS });
-  }
+  // 2. Apply Limits
+  try {
+    // Tracking both IP and User (if present)
+    const ipKey = `ratelimit:ip:${ip}`;
+    const { count: ipCount, ttlRem: ipTtl } = await cacheService.increment(ipKey, WINDOW_MS);
 
-  // Update IP cache
-  const ipCurrent = ipRecord && now < ipRecord.expires ? ipRecord.count : 0;
-  cache.set(`ip:${ip}`, { count: ipCurrent + 1, expires: ipRecord?.expires || now + WINDOW_MS });
+    if (ipCount > MAX_IP_REQUESTS) {
+      return NextResponse.json(
+        { error: 'Too many requests' }, 
+        { 
+          status: 429,
+          headers: { 'Retry-After': ipTtl.toString() }
+        }
+      );
+    }
+
+    if (userId) {
+      const userKey = `ratelimit:user:${userId}`;
+      const { count: userCount, ttlRem: userTtl } = await cacheService.increment(userKey, WINDOW_MS);
+
+      if (userCount > MAX_USER_REQUESTS) {
+        return NextResponse.json(
+          { error: 'User rate limit exceeded' }, 
+          { 
+            status: 429,
+            headers: { 'Retry-After': userTtl.toString() }
+          }
+        );
+      }
+    }
+  } catch (error) {
+    console.error('[RateLimit] Error processing limits:', error);
+    // Graceful fallback: Allow request if limiter fails
+  }
 
   return null;
 }
