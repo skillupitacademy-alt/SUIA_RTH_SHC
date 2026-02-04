@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, uuid, integer, primaryKey } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, uuid, integer, primaryKey, index } from "drizzle-orm/pg-core";
 import { statusEnum, skillCategoryEnum, mappingTypeEnum } from "./enums";
 
 // --- EDUCATIONAL HIERARCHY ---
@@ -24,7 +24,9 @@ export const subjects = pgTable("subjects", {
   status: statusEnum("status").notNull().default("active"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
-});
+}, (t) => ({
+  idx_subjects_domain_id: index("idx_subjects_domain_id").on(t.domainId),
+}));
 
 export const topics = pgTable("topics", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -38,7 +40,9 @@ export const topics = pgTable("topics", {
   status: statusEnum("status").notNull().default("active"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
-});
+}, (t) => ({
+  idx_topics_subject_id: index("idx_topics_subject_id").on(t.subjectId),
+}));
 
 export const subtopics = pgTable("subtopics", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -49,7 +53,9 @@ export const subtopics = pgTable("subtopics", {
   description: text("description"),
   depthLevel: integer("depth_level").notNull().default(1),
   createdAt: timestamp("created_at").notNull().defaultNow(),
-});
+}, (t) => ({
+  idx_subtopics_topic_id: index("idx_subtopics_topic_id").on(t.topicId),
+}));
 
 // --- SKILL MAPPING ---
 

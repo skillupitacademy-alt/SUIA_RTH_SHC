@@ -878,3 +878,11 @@ Reduce documentation fragmentation and improve discoverability by consolidating 
   - Refactored `selection.service.ts` to use a two-step `SELECT id` -> `SHUFFLE` -> `SELECT *` pattern.
   - Eliminated the non-scalable `ORDER BY RANDOM()` SQL bottleneck.
 - **Outcome**: Future-proofed the exam engine for massive question pool growth.
+
+### 104. Data Optimization (P1)
+- **Goal**: Optimize database Traversal and locking for high-volume quiz generation.
+- **Actions**:
+  - Implemented explicitly named indexes targeting foreign key paths and filtering criteria.
+  - Added partial index on active questions to minimize selection latency.
+  - Addressed missing indexes on security-critical tables (`refresh_tokens`, `audit_logs`).
+- **Outcome**: Targeted performance gains across auth, hierarchy, and exam engines.

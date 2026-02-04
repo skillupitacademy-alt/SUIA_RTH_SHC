@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, uuid, boolean, primaryKey, integer } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, uuid, boolean, primaryKey, integer, index } from "drizzle-orm/pg-core";
 
 // --- CORE IDENTITY ---
 
@@ -70,7 +70,9 @@ export const refreshTokens = pgTable("refresh_tokens", {
   revoked: boolean("revoked").notNull().default(false),
   lastActiveAt: timestamp("last_active_at").notNull().defaultNow(), // Added for presence tracking
   createdAt: timestamp("created_at").notNull().defaultNow(),
-});
+}, (t) => ({
+  idx_refresh_tokens_user_id: index("idx_refresh_tokens_user_id").on(t.userId),
+}));
 
 // --- SECURITY HARDENING ---
 
@@ -82,7 +84,9 @@ export const auditLogs = pgTable("audit_logs", {
   device: text("device"),
   metadata: text("metadata"), // JSON string for extra info
   createdAt: timestamp("created_at").notNull().defaultNow(),
-});
+}, (t) => ({
+  idx_audit_logs_user_id: index("idx_audit_logs_user_id").on(t.userId),
+}));
 
 export const loginAttempts = pgTable("login_attempts", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -92,7 +96,9 @@ export const loginAttempts = pgTable("login_attempts", {
   lockedUntil: timestamp("locked_until"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
-});
+}, (t) => ({
+  idx_login_attempts_ip: index("idx_login_attempts_ip").on(t.ip),
+}));
 
 export const revokedTokens = pgTable("revoked_tokens", {
   id: uuid("id").primaryKey().defaultRandom(),

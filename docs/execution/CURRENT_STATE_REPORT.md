@@ -453,3 +453,7 @@
 - **Scalable Selection**: Replaced `ORDER BY RANDOM()` with an ID-based selection and Fisher-Yates shuffle strategy.
 - **Improved Performance**: Reduced DB load by fetching full question data only for the final selected subset.
 - **Verified Type-Safety**: Passed `tsc` check for the updated `SelectionEngine`.
+### Phase 104: Data Optimization (P1)
+- **High-Impact Indexing**: Established 10 new indexes targeting auth security, hierarchy Traversal, and exam ordering.
+- **Partial Indexing**: Implemented `idx_questions_active_partial` to optimize selection from the active pool.
+- **Strict Verification**: Confirmed system stability through a full monorepo build and TSC verification sequence.

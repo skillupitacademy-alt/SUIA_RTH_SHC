@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, uuid, integer, jsonb, pgEnum, boolean } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, uuid, integer, jsonb, pgEnum, boolean, index } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { users } from "./auth";
 import { domains, subjects, topics } from "./domain";
@@ -36,7 +36,9 @@ export const exams = pgTable("exams", {
   totalScore: integer("total_score"),
   startedAt: timestamp("started_at").notNull().defaultNow(),
   completedAt: timestamp("completed_at"),
-});
+}, (t) => ({
+  idx_exams_user_id_status: index("idx_exams_user_id_status").on(t.userId, t.status),
+}));
 
 export const examQuestions = pgTable("exam_questions", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -50,7 +52,9 @@ export const examQuestions = pgTable("exam_questions", {
   isCorrect: boolean("is_correct"),
   responseMetadata: jsonb("response_metadata"), // e.g., time taken per question
   order: integer("order").notNull(),
-});
+}, (t) => ({
+  idx_exam_questions_exam_order: index("idx_exam_questions_exam_order").on(t.examId, t.order),
+}));
 
 export const resultsByDimension = pgTable("results_by_dimension", {
   id: uuid("id").primaryKey().defaultRandom(),

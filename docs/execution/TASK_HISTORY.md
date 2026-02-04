@@ -30,3 +30,4 @@
 | 2026-02-04 | Security Hardening (P0) | COMPLETED | Locked `/api/migrate`, factory routes, and enforced exam ownership (SEC-001/002/003). |
 | 2026-02-04 | Auth Hardening (P1) | COMPLETED | Moved access tokens to `httpOnly` secure cookies; Purged `localStorage` tokens. |
 | 2026-02-04 | Selection Optimization (P1) | COMPLETED | Replaced `ORDER BY RANDOM()` with scalable ID-based shuffle (RT-001). |
+| 2026-02-04 | Data Optimization (P1)      | COMPLETED | Implemented high-impact indexes across auth, hierarchy, and exams (DATA-001). |
