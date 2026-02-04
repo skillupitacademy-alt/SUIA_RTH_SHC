@@ -48,9 +48,17 @@ export class SessionService {
     const timeLimit = exam.blueprint?.timeLimit || 60; // Default 60 mins
 
     if (timeElapsed > timeLimit) {
-      // Auto-submit
-      await ScoringEngine.calculateExamResults(examId);
-      return await db.query.exams.findFirst({ where: eq(exams.id, examId) });
+      // Auto-submit: Mark as processing and trigger scoring (non-blocking)
+      await db.update(exams)
+        .set({ status: 'processing' as any })
+        .where(eq(exams.id, examId));
+
+      ScoringEngine.calculateExamResults(examId).catch(err => {
+        console.error(`[SessionService] Async auto-submit scoring failed for ${examId}:`, err);
+      });
+
+      // Return the updated status immediately
+      return { ...exam, status: 'processing' };
     }
 
     return exam;
