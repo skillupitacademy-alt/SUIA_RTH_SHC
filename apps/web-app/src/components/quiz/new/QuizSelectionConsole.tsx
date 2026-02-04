@@ -7,40 +7,33 @@ import { TopicChip } from './TopicChip';
 import { Code, Shield, Cloud, Database, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-const DOMAINS = [
-    {
-        id: 'full-stack',
-        name: 'Full Stack Development',
-        description: 'HTML, CSS, JavaScript, React, Node.js',
-        icon: Code,
-        coverage: 80,
-        accent: 'blue'
-    },
-    {
-        id: 'cybersecurity',
-        name: 'Cybersecurity',
-        description: 'Network Security, Ethical Hacking, Cryptography',
-        icon: Shield,
-        coverage: 65,
-        accent: 'purple'
-    },
-    {
-        id: 'cloud-computing',
-        name: 'Cloud Computing',
-        description: 'AWS, Azure, Google Cloud, DevOps',
-        icon: Cloud,
-        coverage: 90,
-        accent: 'green'
-    },
-    {
-        id: 'data-science',
-        name: 'Data Science & AI',
-        description: 'Python, Machine Learning, Deep Learning, SQL',
-        icon: Database,
-        coverage: 75,
-        accent: 'orange'
-    }
+const DOMAINS = Array.from({ length: 20 }).map((_, i) => ({
+    id: `domain-${i + 1}`,
+    name: ['Full Stack Dev', 'Cyber Security', 'Cloud Arch', 'Data Science', 'DevOps Ops', 'AI/ML Engine', 'Mobile Apps', 'Blockchain'][i % 8] + (i >= 8 ? ` ${Math.floor(i / 8) + 1}` : ''),
+    description: 'Strategic mastery of modern digital systems and architecture.',
+    coverage: 65 + (i * 2) % 35,
+    icon: [Code, Shield, Cloud, Database, Code, Shield, Cloud, Database][i % 8],
+    accent: ['blue', 'purple', 'green', 'orange'][i % 4]
+}));
+
+const SUBJECTS = [
+    { id: 's1', name: 'Software Engineering' },
+    { id: 's2', name: 'System Design' },
+    { id: 's3', name: 'Core Fundamentals' },
+    { id: 's4', name: 'Security Arch' },
 ];
+
+const TOPICS = Array.from({ length: 24 }).map((_, i) => ({
+    id: `topic-${i + 1}`,
+    name: ['React Hooks', 'Redis Cache', 'SQL Joins', 'Auth Flow', 'K8s Pods', 'CI/CD Flow'][i % 6] + (i >= 6 ? ` ${Math.floor(i / 6) + 1}` : ''),
+    subjects: ['s1', 's2']
+}));
+
+const SUBTOPICS = Array.from({ length: 12 }).map((_, i) => ({
+    id: `sub-${i + 1}`,
+    name: `Module ${i + 1}: ${['Deep Dive', 'Efficiency', 'Hardening', 'Scaling'][i % 4]}`,
+    topics: [`topic-${(i % 24) + 1}`]
+}));
 
 export function QuizSelectionConsole() {
     const [step, setStep] = useState(1);
@@ -50,10 +43,14 @@ export function QuizSelectionConsole() {
     const [selectedSubtopics, setSelectedSubtopics] = useState<string[]>([]);
     const [loading, setLoading] = useState(false);
 
+    // Pagination State (Surgical Addition)
+    const [page, setPage] = useState(0);
+    const PAGE_SIZE = 6;
+
     const toggleDomain = (id: string) => {
-        setSelectedDomains(prev =>
-            prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
-        );
+        // Enforce Single Select per user instruction
+        setSelectedDomains([id]);
+        // Reset child levels
         setSelectedSubjects([]);
         setSelectedTopics([]);
         setSelectedSubtopics([]);
@@ -80,19 +77,81 @@ export function QuizSelectionConsole() {
         );
     };
 
+    const handleNext = () => {
+        if (step < 4) {
+            setStep(step + 1);
+            setPage(0); // Reset page on step change
+        }
+    };
+
+    const handleBack = () => {
+        if (step > 1) {
+            setStep(step - 1);
+            setPage(0); // Reset page on step change
+        }
+    };
+
+    const handleLoadMore = () => {
+        const totalItems = step === 1 ? DOMAINS.length : (step === 3 ? TOPICS.length : 0);
+        const totalPages = Math.ceil(totalItems / PAGE_SIZE);
+        setPage((prev) => (prev + 1) % totalPages);
+    };
+
+    // Derived Data
+    const currentDomain = selectedDomains.length > 0 ? DOMAINS.find(d => d.id === selectedDomains[0]) : null;
+    const currentSubjects = SUBJECTS.filter(s => selectedSubjects.includes(s.id));
+    const currentTopics = TOPICS.filter(t => selectedTopics.includes(t.id));
+    const currentSubtopics = SUBTOPICS.filter(st => selectedSubtopics.includes(st.id));
+
     return (
-        <div className="flex flex-col lg:flex-row gap-12 max-w-[1400px] mx-auto min-h-[600px]">
-            {/* Left Pane (65%) */}
-            <div className="w-full lg:w-[65%] space-y-12 pb-20">
-                {step === 1 && (
-                    <div className="space-y-10 animate-in fade-in slide-in-from-left-4 duration-700">
-                        <div>
-                            <h2 className="text-4xl font-black font-outfit tracking-tighter text-[#1A1A1A] mb-2 uppercase">Select Domain</h2>
+        <div className="flex flex-col lg:flex-row gap-12 max-w-[1400px] mx-auto min-h-[750px] relative">
+            {/* Left Pane (65%) - Surgical Stationary Overhaul */}
+            <div className="w-full lg:w-[65%] flex flex-col relative pb-32">
+
+                {/* Header Section (Zero Layout Shift) */}
+                <div className="mb-12 min-h-[100px]">
+                    {step === 1 && (
+                        <div className="animate-in fade-in slide-in-from-left-4 duration-700">
+                            <h2 className="text-4xl font-black font-outfit tracking-tighter text-[#1A1A1A] mb-2 uppercase">
+                                Select Domain ({DOMAINS.length})
+                            </h2>
                             <p className="text-muted-foreground font-inter font-medium opacity-70">Choose your area of expertise to begin the assessment.</p>
                         </div>
+                    )}
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                            {DOMAINS.map((domain) => (
+                    {step === 2 && (
+                        <div className="animate-in fade-in slide-in-from-left-4 duration-700">
+                            <h2 className="text-4xl font-black font-outfit tracking-tighter text-[#1A1A1A] mb-2 uppercase">
+                                Refine Subjects ({SUBJECTS.length})
+                            </h2>
+                            <p className="text-muted-foreground font-inter font-medium opacity-70 text-sm">Select the core subjects for your assessment pool.</p>
+                        </div>
+                    )}
+
+                    {step === 3 && (
+                        <div className="animate-in fade-in slide-in-from-left-4 duration-700">
+                            <h2 className="text-4xl font-black font-outfit tracking-tighter text-[#1A1A1A] mb-2 uppercase">
+                                Select Topics ({TOPICS.length})
+                            </h2>
+                            <p className="text-muted-foreground font-inter font-medium opacity-70">High-density grid of strategic knowledge units.</p>
+                        </div>
+                    )}
+
+                    {step === 4 && (
+                        <div className="animate-in fade-in slide-in-from-left-4 duration-700">
+                            <h2 className="text-4xl font-black font-outfit tracking-tighter text-[#1A1A1A] mb-2 uppercase">
+                                Fine-tune Subtopics ({SUBTOPICS.length})
+                            </h2>
+                            <p className="text-muted-foreground font-inter font-medium opacity-70">Pinpoint specific skills for deeper evaluation.</p>
+                        </div>
+                    )}
+                </div>
+
+                {/* Content Area (Stationary Grid via Slicing) */}
+                <div className="flex-1 overflow-visible">
+                    {step === 1 && (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 animate-in fade-in duration-500">
+                            {DOMAINS.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE).map((domain) => (
                                 <DomainCard
                                     key={domain.id}
                                     {...domain}
@@ -102,152 +161,117 @@ export function QuizSelectionConsole() {
                                 />
                             ))}
                         </div>
+                    )}
 
-                        {selectedDomains.length > 0 && (
-                            <div className="flex justify-end pt-8 animate-in fade-in zoom-in duration-500">
-                                <button
-                                    onClick={() => setStep(2)}
-                                    className="px-12 py-4 rounded-xl bg-[#FF2D55] text-white font-bold font-outfit uppercase tracking-widest shadow-[0_10px_30px_rgba(255,45,85,0.2)] hover:shadow-[0_15px_40px_rgba(255,45,85,0.4)] transition-all active:scale-95"
-                                >
-                                    Continue
-                                </button>
-                            </div>
+                    {step === 2 && (
+                        <div className="flex flex-wrap gap-4 animate-in fade-in duration-500">
+                            {SUBJECTS.map((sub) => (
+                                <TopicChip
+                                    key={sub.id}
+                                    {...sub}
+                                    selectedCount={selectedSubjects.includes(sub.id) ? 1 : 0}
+                                    totalCount={1}
+                                    isSelected={selectedSubjects.includes(sub.id)}
+                                    onToggle={toggleSubject}
+                                />
+                            ))}
+                        </div>
+                    )}
+
+                    {step === 3 && (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 animate-in fade-in duration-500">
+                            {TOPICS.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE).map((topic) => (
+                                <TopicChip
+                                    key={topic.id}
+                                    {...topic}
+                                    selectedCount={selectedTopics.includes(topic.id) ? 5 : 0}
+                                    totalCount={10}
+                                    isSelected={selectedTopics.includes(topic.id)}
+                                    onToggle={toggleTopic}
+                                />
+                            ))}
+                        </div>
+                    )}
+
+                    {step === 4 && (
+                        <div className="flex flex-wrap gap-4 animate-in fade-in duration-500">
+                            {SUBTOPICS.map((subtopic) => (
+                                <TopicChip
+                                    key={subtopic.id}
+                                    {...subtopic}
+                                    selectedCount={selectedSubtopics.includes(subtopic.id) ? 1 : 0}
+                                    totalCount={1}
+                                    isSelected={selectedSubtopics.includes(subtopic.id)}
+                                    onToggle={toggleSubtopic}
+                                />
+                            ))}
+                        </div>
+                    )}
+                </div>
+
+                {/* Fixed Action Footer (Absolute Anchored) */}
+                <div className="absolute bottom-0 left-0 right-0 py-8 flex items-center justify-between border-t border-gray-100 bg-white/50 backdrop-blur-sm z-20">
+                    <button
+                        onClick={handleBack}
+                        disabled={step === 1}
+                        className={cn(
+                            "px-8 py-3 rounded-xl font-bold font-outfit text-sm uppercase tracking-widest transition-all",
+                            step === 1 ? "opacity-20 cursor-not-allowed" : "text-[#FF2D55] hover:underline"
                         )}
-                    </div>
-                )}
+                    >
+                        [ BACK ]
+                    </button>
 
-                {step === 2 && (
-                    <div className="space-y-10 animate-in fade-in slide-in-from-left-4 duration-700">
-                        <div>
-                            <button onClick={() => setStep(1)} className="text-[#FF2D55] text-xs font-bold uppercase tracking-widest mb-4 hover:underline">← Back to Domains</button>
-                            <h2 className="text-4xl font-black font-outfit tracking-tighter text-[#1A1A1A] mb-2 uppercase">Refine Subjects</h2>
-                            <p className="text-muted-foreground font-inter font-medium opacity-70 text-sm">Select the core subjects for your assessment pool.</p>
-                        </div>
+                    {(step === 1 || step === 3) && (
+                        <button
+                            onClick={handleLoadMore}
+                            className="px-8 py-3 rounded-xl bg-gray-50 text-gray-500 font-bold font-outfit text-sm uppercase tracking-widest hover:bg-gray-100 transition-all border border-gray-200"
+                        >
+                            LOAD MORE
+                        </button>
+                    )}
 
-                        <div className="space-y-8">
-                            <div className="flex flex-wrap gap-4">
-                                {['Software Engineering', 'Data Science', 'Product Management', 'Design', 'Mobile', 'Cloud', 'DevOps'].map(sub => (
-                                    <TopicChip
-                                        key={sub}
-                                        id={sub}
-                                        name={sub}
-                                        selectedCount={12}
-                                        totalCount={20}
-                                        isSelected={selectedSubjects.includes(sub)}
-                                        onToggle={toggleSubject}
-                                    />
-                                ))}
-                            </div>
-                        </div>
-
-                        <div className="flex justify-end pt-8">
-                            <button
-                                onClick={() => setStep(3)}
-                                disabled={selectedSubjects.length === 0}
-                                className="px-12 py-4 rounded-xl bg-[#FF2D55] text-white font-bold font-outfit uppercase tracking-widest shadow-[0_10px_30px_rgba(255,45,85,0.2)] disabled:opacity-50 transition-all hover:shadow-[0_15px_40px_rgba(255,45,85,0.4)]"
-                            >
-                                Continue to Topics
-                            </button>
-                        </div>
-                    </div>
-                )}
-
-                {step === 3 && (
-                    <div className="space-y-10 animate-in fade-in slide-in-from-left-4 duration-700">
-                        <div>
-                            <button onClick={() => setStep(2)} className="text-[#FF2D55] text-xs font-bold uppercase tracking-widest mb-4 hover:underline">← Back to Subjects</button>
-                            <h2 className="text-4xl font-black font-outfit tracking-tighter text-[#1A1A1A] mb-2 uppercase">Select Topics</h2>
-                            <p className="text-muted-foreground font-inter font-medium opacity-70">High-density grid of strategic knowledge units.</p>
-                        </div>
-
-                        <div className="space-y-10">
-                            {selectedSubjects.map(subject => (
-                                <div key={subject} className="space-y-4">
-                                    <h3 className="text-lg font-bold font-outfit text-[#1A1A1A] uppercase tracking-wider">{subject}</h3>
-                                    <div className="flex flex-wrap gap-4">
-                                        {['Algorithms', 'System Design', 'Frontend', 'Backend', 'Deployment', 'Testing'].map(topic => (
-                                            <TopicChip
-                                                key={topic}
-                                                id={`${subject}-${topic}`}
-                                                name={topic}
-                                                selectedCount={selectedTopics.includes(`${subject}-${topic}`) ? 8 : 0}
-                                                totalCount={12}
-                                                isSelected={selectedTopics.includes(`${subject}-${topic}`)}
-                                                onToggle={toggleTopic}
-                                            />
-                                        ))}
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-
-                        <div className="flex justify-end pt-12">
-                            <button
-                                onClick={() => setStep(4)}
-                                disabled={selectedTopics.length === 0}
-                                className="px-12 py-4 rounded-xl bg-[#FF2D55] text-white font-bold font-outfit uppercase tracking-widest shadow-[0_10px_30px_rgba(255,45,85,0.2)] disabled:opacity-50 transition-all"
-                            >
-                                Continue to Subtopics
-                            </button>
-                        </div>
-                    </div>
-                )}
-
-                {step === 4 && (
-                    <div className="space-y-10 animate-in fade-in slide-in-from-left-4 duration-700">
-                        <div>
-                            <button onClick={() => setStep(3)} className="text-[#FF2D55] text-xs font-bold uppercase tracking-widest mb-4 hover:underline">← Back to Topics</button>
-                            <h2 className="text-4xl font-black font-outfit tracking-tighter text-[#1A1A1A] mb-2 uppercase">Fine-tune Subtopics</h2>
-                            <p className="text-muted-foreground font-inter font-medium opacity-70">Pinpoint specific skills for deeper evaluation.</p>
-                        </div>
-
-                        <div className="space-y-10">
-                            {selectedTopics.map(topic => (
-                                <div key={topic} className="space-y-4">
-                                    <h3 className="text-lg font-bold font-outfit text-[#1A1A1A] uppercase tracking-wider">{topic.split('-').pop()}</h3>
-                                    <div className="flex flex-wrap gap-4">
-                                        {['Fundamentals', 'Advanced Patterns', 'Performance', 'Security', 'Testing'].map(subtopic => (
-                                            <TopicChip
-                                                key={subtopic}
-                                                id={`${topic}-${subtopic}`}
-                                                name={subtopic}
-                                                selectedCount={selectedSubtopics.includes(`${topic}-${subtopic}`) ? 1 : 0}
-                                                totalCount={5}
-                                                isSelected={selectedSubtopics.includes(`${topic}-${subtopic}`)}
-                                                onToggle={toggleSubtopic}
-                                            />
-                                        ))}
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-
-                        <div className="p-8 rounded-3xl bg-white border border-gray-100 shadow-sm flex items-center justify-between">
-                            <div className="flex items-center gap-4 text-muted-foreground">
-                                <Shield className="text-[#FF2D55]" size={20} />
-                                <span className="text-sm font-bold font-outfit uppercase tracking-widest">Assessment Configuration Finalized</span>
-                            </div>
-                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">Ready to initialize environment</span>
-                        </div>
-                    </div>
-                )}
+                    <button
+                        onClick={handleNext}
+                        disabled={
+                            (step === 1 && selectedDomains.length === 0) ||
+                            (step === 2 && selectedSubjects.length === 0) ||
+                            (step === 3 && selectedTopics.length === 0) ||
+                            (step === 4 && selectedSubtopics.length === 0)
+                        }
+                        className={cn(
+                            "px-12 py-4 rounded-xl font-bold font-outfit uppercase tracking-widest transition-all",
+                            ((step === 1 && selectedDomains.length > 0) ||
+                                (step === 2 && selectedSubjects.length > 0) ||
+                                (step === 3 && selectedTopics.length > 0) ||
+                                (step === 4 && selectedSubtopics.length > 0))
+                                ? "bg-[#FF2D55] text-white shadow-[0_10px_30px_rgba(255,45,85,0.2)] hover:shadow-[0_15px_40px_rgba(255,45,85,0.4)] active:scale-95"
+                                : "bg-gray-100 text-gray-300 cursor-not-allowed"
+                        )}
+                    >
+                        {step === 4 ? "FINALIZE →" : "CONTINUE →"}
+                    </button>
+                </div>
             </div>
 
-            {/* Right Pane (35%) */}
-            <div className="w-full lg:w-[35%]">
+            {/* Right Pane (35%) - Dynamic Summary */}
+            <div className="w-full lg:w-[35%] flex flex-col">
                 <AssessmentSummary
-                    domainName={selectedDomains.length > 0 ? `${selectedDomains.length} Domains` : 'Not Selected'}
+                    domainName={currentDomain?.name || 'Not Selected'}
                     subjectsCount={selectedSubjects.length}
                     topicsCount={selectedTopics.length}
-                    questionCount={40 + selectedTopics.length * 8 + selectedSubtopics.length * 2}
+                    questionCount={20 + selectedTopics.length * 5 + selectedSubtopics.length * 2}
                     difficulty="Intermediate"
-                    totalPoints={200 + selectedTopics.length * 20 + selectedSubtopics.length * 5}
+                    totalPoints={100 + selectedTopics.length * 15 + selectedSubtopics.length * 5}
                     isReady={step === 4 && selectedSubtopics.length > 0}
                     onStart={() => {
                         setLoading(true);
                         setTimeout(() => setLoading(false), 2000);
                     }}
                     loading={loading}
+                    selectedSubjects={currentSubjects.map(s => s.name)}
+                    selectedTopics={currentTopics.map(t => t.name)}
+                    selectedSubtopics={currentSubtopics.map(st => st.name)}
                 />
             </div>
         </div>
