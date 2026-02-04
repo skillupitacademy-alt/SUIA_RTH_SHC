@@ -40,7 +40,7 @@ export class CacheService {
       const value = this.cache.get(key) as T | undefined;
       
       if (this.isDebug) {
-        console.log(`[Cache] ${value ? '✅ HIT' : '❌ MISS'}: ${key}`);
+        console.log(`[Cache] ${value ? '[HIT]' : '[MISS]'}: ${key}`);
       }
       
       return value ?? null;
@@ -54,7 +54,7 @@ export class CacheService {
     try {
       this.cache.set(key, value, { ttl });
       if (this.isDebug) {
-        console.log(`[Cache] 📥 SET: ${key} (TTL: ${ttl ?? 'default'})`);
+        console.log(`[Cache] [SET]: ${key} (TTL: ${ttl ?? 'default'})`);
       }
     } catch (error) {
       console.error(`[Cache] Error setting key ${key}:`, error);
@@ -65,7 +65,7 @@ export class CacheService {
     try {
       this.cache.delete(key);
       if (this.isDebug) {
-        console.log(`[Cache] 🗑️ DEL: ${key}`);
+        console.log(`[Cache] [DEL]: ${key}`);
       }
     } catch (error) {
       console.error(`[Cache] Error deleting key ${key}:`, error);

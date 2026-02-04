@@ -165,6 +165,11 @@ export class AdminEngine {
   }
 
   static async updateBlueprint(id: string, data: any) {
+    // 1. Fetch current to resolve old domains before update
+    const existing = await db.query.examBlueprints.findFirst({
+      where: eq(examBlueprints.id, id)
+    });
+
     const [result] = await db.update(examBlueprints)
       .set({ ...data, updatedAt: new Date() })
       .where(eq(examBlueprints.id, id))
@@ -174,7 +179,14 @@ export class AdminEngine {
       // Invalidate specific ID
       await cacheService.del(`blueprint:${id}`);
       
-      // Invalidate Domain-based paths if they exist
+      // Invalidate OLD Domain-based paths
+      if (existing?.domains && Array.isArray(existing.domains)) {
+        for (const domainId of existing.domains) {
+          await cacheService.del(`blueprint:${domainId}`);
+        }
+      }
+
+      // Invalidate NEW Domain-based paths
       if (result.domains && Array.isArray(result.domains)) {
         for (const domainId of result.domains) {
           await cacheService.del(`blueprint:${domainId}`);
@@ -186,6 +198,7 @@ export class AdminEngine {
     
     return result;
   }
+
 
   static async deleteBlueprint(id: string) {
     // 1. Fetch current to resolve domains before deletion

@@ -71,5 +71,7 @@ export class SessionService {
         }
       }
     });
+
+    return exam;
   }
 }
