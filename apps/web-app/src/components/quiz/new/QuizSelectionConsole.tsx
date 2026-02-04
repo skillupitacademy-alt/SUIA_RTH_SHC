@@ -45,7 +45,7 @@ export function QuizSelectionConsole() {
 
     // Pagination State (Surgical Addition)
     const [page, setPage] = useState(0);
-    const PAGE_SIZE = 4;
+    const PAGE_SIZE = 6;
 
     const toggleDomain = (id: string) => {
         // Enforce Single Select per user instruction
@@ -91,16 +91,10 @@ export function QuizSelectionConsole() {
         }
     };
 
-    const handleNextPage = () => {
+    const handleLoadMore = () => {
         const totalItems = step === 1 ? DOMAINS.length : (step === 3 ? TOPICS.length : 0);
         const totalPages = Math.ceil(totalItems / PAGE_SIZE);
         setPage((prev) => (prev + 1) % totalPages);
-    };
-
-    const handlePrevPage = () => {
-        const totalItems = step === 1 ? DOMAINS.length : (step === 3 ? TOPICS.length : 0);
-        const totalPages = Math.ceil(totalItems / PAGE_SIZE);
-        setPage((prev) => (prev - 1 + totalPages) % totalPages);
     };
 
     // Derived Data
@@ -110,9 +104,9 @@ export function QuizSelectionConsole() {
     const currentSubtopics = SUBTOPICS.filter(st => selectedSubtopics.includes(st.id));
 
     return (
-        <div className="flex flex-col lg:flex-row gap-12 max-w-[1400px] mx-auto min-h-[550px] relative">
-            {/* Left Pane (65%) - Surgical Stationary Overhaul V3 */}
-            <div className="w-full lg:w-[65%] h-[550px] flex flex-col relative pb-32">
+        <div className="flex flex-col lg:flex-row gap-12 max-w-[1400px] mx-auto min-h-[750px] relative">
+            {/* Left Pane (65%) - Surgical Stationary Overhaul */}
+            <div className="w-full lg:w-[65%] flex flex-col relative pb-32">
 
                 {/* Header Section (Zero Layout Shift) */}
                 <div className="mb-12 min-h-[100px]">
@@ -156,7 +150,7 @@ export function QuizSelectionConsole() {
                 {/* Content Area (Stationary Grid via Slicing) */}
                 <div className="flex-1 overflow-visible">
                     {step === 1 && (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 animate-in fade-in duration-500">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 animate-in fade-in duration-500">
                             {DOMAINS.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE).map((domain) => (
                                 <DomainCard
                                     key={domain.id}
@@ -170,11 +164,13 @@ export function QuizSelectionConsole() {
                     )}
 
                     {step === 2 && (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 animate-in fade-in duration-500">
+                        <div className="flex flex-wrap gap-4 animate-in fade-in duration-500">
                             {SUBJECTS.map((sub) => (
                                 <TopicChip
                                     key={sub.id}
                                     {...sub}
+                                    selectedCount={selectedSubjects.includes(sub.id) ? 1 : 0}
+                                    totalCount={1}
                                     isSelected={selectedSubjects.includes(sub.id)}
                                     onToggle={toggleSubject}
                                 />
@@ -183,11 +179,13 @@ export function QuizSelectionConsole() {
                     )}
 
                     {step === 3 && (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 animate-in fade-in duration-500">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 animate-in fade-in duration-500">
                             {TOPICS.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE).map((topic) => (
                                 <TopicChip
                                     key={topic.id}
                                     {...topic}
+                                    selectedCount={selectedTopics.includes(topic.id) ? 5 : 0}
+                                    totalCount={10}
                                     isSelected={selectedTopics.includes(topic.id)}
                                     onToggle={toggleTopic}
                                 />
@@ -196,11 +194,13 @@ export function QuizSelectionConsole() {
                     )}
 
                     {step === 4 && (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 animate-in fade-in duration-500">
+                        <div className="flex flex-wrap gap-4 animate-in fade-in duration-500">
                             {SUBTOPICS.map((subtopic) => (
                                 <TopicChip
                                     key={subtopic.id}
                                     {...subtopic}
+                                    selectedCount={selectedSubtopics.includes(subtopic.id) ? 1 : 0}
+                                    totalCount={1}
                                     isSelected={selectedSubtopics.includes(subtopic.id)}
                                     onToggle={toggleSubtopic}
                                 />
@@ -209,39 +209,27 @@ export function QuizSelectionConsole() {
                     )}
                 </div>
 
-                {/* Fixed Action Footer (Absolute Anchored) - Synchronized Branding */}
+                {/* Fixed Action Footer (Absolute Anchored) */}
                 <div className="absolute bottom-0 left-0 right-0 py-8 flex items-center justify-between border-t border-gray-100 bg-white/50 backdrop-blur-sm z-20">
-                    <div className="flex gap-4">
-                        <button
-                            onClick={handleBack}
-                            disabled={step === 1}
-                            className={cn(
-                                "px-8 py-3 rounded-xl font-bold font-outfit text-sm uppercase tracking-widest transition-all",
-                                step === 1
-                                    ? "bg-gray-100 text-gray-300 cursor-not-allowed"
-                                    : "bg-[#FF2D55] text-white shadow-[0_10px_30px_rgba(255,45,85,0.2)] hover:shadow-[0_15px_40px_rgba(255,45,85,0.4)] active:scale-95"
-                            )}
-                        >
-                            [ BACK ]
-                        </button>
-
-                        {(step === 1 || step === 3) && (
-                            <div className="flex gap-2">
-                                <button
-                                    onClick={handlePrevPage}
-                                    className="px-6 py-3 rounded-xl bg-[#FF2D55] text-white font-bold font-outfit text-sm uppercase tracking-widest shadow-[0_10px_30px_rgba(255,45,85,0.2)] hover:shadow-[0_15px_40px_rgba(255,45,85,0.4)] active:scale-95 transition-all"
-                                >
-                                    [ ← PREV ]
-                                </button>
-                                <button
-                                    onClick={handleNextPage}
-                                    className="px-6 py-3 rounded-xl bg-[#FF2D55] text-white font-bold font-outfit text-sm uppercase tracking-widest shadow-[0_10px_30px_rgba(255,45,85,0.2)] hover:shadow-[0_15px_40px_rgba(255,45,85,0.4)] active:scale-95 transition-all"
-                                >
-                                    [ NEXT → ]
-                                </button>
-                            </div>
+                    <button
+                        onClick={handleBack}
+                        disabled={step === 1}
+                        className={cn(
+                            "px-8 py-3 rounded-xl font-bold font-outfit text-sm uppercase tracking-widest transition-all",
+                            step === 1 ? "opacity-20 cursor-not-allowed" : "text-[#FF2D55] hover:underline"
                         )}
-                    </div>
+                    >
+                        [ BACK ]
+                    </button>
+
+                    {(step === 1 || step === 3) && (
+                        <button
+                            onClick={handleLoadMore}
+                            className="px-8 py-3 rounded-xl bg-gray-50 text-gray-500 font-bold font-outfit text-sm uppercase tracking-widest hover:bg-gray-100 transition-all border border-gray-200"
+                        >
+                            LOAD MORE
+                        </button>
+                    )}
 
                     <button
                         onClick={handleNext}
@@ -261,13 +249,13 @@ export function QuizSelectionConsole() {
                                 : "bg-gray-100 text-gray-300 cursor-not-allowed"
                         )}
                     >
-                        {step === 4 ? "FINALIZE" : "CONTINUE"}
+                        {step === 4 ? "FINALIZE →" : "CONTINUE →"}
                     </button>
                 </div>
             </div>
 
-            {/* Right Pane (35%) - Dynamic Summary (550px Stationary Frame) */}
-            <div className="w-full lg:w-[35%] h-[550px] flex flex-col">
+            {/* Right Pane (35%) - Dynamic Summary */}
+            <div className="w-full lg:w-[35%] flex flex-col">
                 <AssessmentSummary
                     domainName={currentDomain?.name || 'Not Selected'}
                     subjectsCount={selectedSubjects.length}
