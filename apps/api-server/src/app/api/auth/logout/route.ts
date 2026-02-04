@@ -15,7 +15,13 @@ export async function POST(req: NextRequest) {
   }
 
   const response = NextResponse.json({ message: 'Logged out' });
-  response.cookies.delete('refreshToken');
-  response.cookies.delete('admin_refreshToken');
+  const cookieDomain = process.env.COOKIE_DOMAIN || '.realtutorialhub.com';
+  
+  const options = { path: '/', domain: cookieDomain };
+  response.cookies.delete({ name: 'accessToken', ...options });
+  response.cookies.delete({ name: 'refreshToken', ...options });
+  response.cookies.delete({ name: 'admin_accessToken', ...options });
+  response.cookies.delete({ name: 'admin_refreshToken', ...options });
+  
   return response;
 }

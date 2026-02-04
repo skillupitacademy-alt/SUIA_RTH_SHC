@@ -25,14 +25,14 @@ export default function AdminLoginPage() {
 
         try {
             // STRICT BOUNDARY: Use Admin Client (hits /api/admin/auth/login)
-            const { user, accessToken } = await apiClient.admin.login(formData.email, formData.password);
+            const { user } = await apiClient.admin.login(formData.email, formData.password);
 
             // Redundant check (API should handle this), but safe for UI
             if (!user.isAdmin) {
                 throw new Error("Access Denied: Governance Privileges Required.");
             }
 
-            login(user, accessToken);
+            login(user);
             router.push('/');
         } catch (err: any) {
             console.error(err);

@@ -25,8 +25,19 @@ export class QuizEngine {
   /**
    * Retrieves the current state of a quiz session.
    */
-  static async getQuizState(examId: string) {
+  static async getQuizState(examId: string, userId: string) {
     const exam = await db.query.exams.findFirst({
+      where: eq(exams.id, examId),
+    });
+
+    if (!exam) throw new Error('Quiz not found');
+
+    if (exam.userId !== userId) {
+      throw new Error('Unauthorized: You do not own this quiz session');
+    }
+
+    // Secondary fetch with relations if authorized
+    const fullExam = await db.query.exams.findFirst({
       where: eq(exams.id, examId),
       with: {
         examQuestions: {
@@ -38,18 +49,15 @@ export class QuizEngine {
       },
     });
     
-    if (exam) {
-    }
-
-    if (!exam) throw new Error('Quiz not found');
+    if (!fullExam) throw new Error('Quiz not found');
 
     return {
-      id: exam.id,
-      status: exam.status,
-      startedAt: exam.startedAt,
-      completedAt: exam.completedAt,
-      totalScore: exam.totalScore,
-      questions: exam.examQuestions.map((eq) => ({
+      id: fullExam.id,
+      status: fullExam.status,
+      startedAt: fullExam.startedAt,
+      completedAt: fullExam.completedAt,
+      totalScore: fullExam.totalScore,
+      questions: fullExam.examQuestions.map((eq) => ({
         id: eq.id,
         questionId: eq.questionId,
         questionText: eq.question.questionText,

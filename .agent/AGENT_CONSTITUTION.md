@@ -185,3 +185,104 @@ Update the following logs to reflect the new state:
 1.  `git add .`
 2.  `git commit -m "feat(scope): ..."`
 
+
+
+# Engineering Guardrails (Merged from concernforproject)
+
+# AGENT_CONSTITUTION (Project Guardrails)
+
+Purpose
+- This constitution defines non-negotiable engineering rules to prevent known risks and scalability failures.
+- It is designed to be appended into the main project AGENT_CONSTITUTION.md later.
+
+Authority
+- This document overrides conflicting local conventions unless the user explicitly says otherwise.
+
+1) Security and Access Control
+1.1 No public migrations
+- /api/migrate must never be public in production.
+- Allowed only via internal secret header or offline CLI.
+
+1.2 Admin-only factory and governance endpoints
+- All factory and admin write routes must enforce RBAC at the server.
+- Do not rely on frontend gating for admin privileges.
+
+1.3 Exam ownership
+- Every exam read/write must verify ownership (userId must match) or admin role.
+
+1.4 Token storage
+- Access tokens must NOT be stored in localStorage or sessionStorage.
+- Use httpOnly, secure cookies for access and refresh tokens.
+
+1.5 CSRF rules
+- All mutations must require CSRF or equivalent double-submit protection.
+- Do not bypass CSRF validation unless the request is internal and authenticated.
+
+2) Data Integrity and Transactions
+2.1 Transaction safety
+- Any multi-table write must use transactions or compensating actions.
+- No partial writes on failures (e.g., exam + exam_questions).
+
+2.2 Idempotency
+- All write endpoints must accept idempotency keys.
+- Duplicate submissions must be safe and return the same outcome.
+
+3) Scalability Requirements
+3.1 Query design
+- No ORDER BY RANDOM in production paths.
+- Use indexed sampling, pre-shuffled pools, or deterministic selection.
+
+3.2 Database indexes
+- Add indexes for hot query paths (exam_id, question_id, topic_id, difficulty, status, created_at).
+
+3.3 Async scoring
+- Scoring must be asynchronous for large exams.
+- Request path returns accepted status and result polling or notification.
+
+3.4 Distributed rate limiting
+- In-memory rate limits are not allowed in production.
+- Use Redis or gateway-level rate limits.
+
+3.5 Caching
+- Cache hot configs, blueprints, and session state in Redis.
+- Do not rely on database for every autosave or heartbeat.
+
+4) Reliability and Observability
+4.1 SLOs
+- Define SLOs for launch, autosave, submit, scoring, and reporting.
+
+4.2 Telemetry
+- Structured logs with requestId, userId, tenantId.
+- Traces across gateway, services, and database.
+
+4.3 Alerts
+- Alerts for error spikes, latency breaches, queue lag, and DB saturation.
+
+5) Privacy and Compliance
+5.1 PII handling
+- Minimize PII in logs and analytics.
+- Encrypt PII at rest.
+
+5.2 Audit logs
+- Every admin action must be audited.
+- Audit logs are immutable.
+
+6) Testing and Release
+6.1 Load tests
+- Load testing is required before production launch for exam flows.
+
+6.2 Release gates
+- No release if SLO or security checks fail.
+
+7) Documentation and Change Control
+7.1 Contract-first
+- Update .md contracts before code changes.
+- Keep docs synchronized with behavior.
+
+7.2 No silent assumptions
+- Every major assumption (scale targets, data retention, limits) must be documented.
+
+Enforcement
+- Any violation must be flagged and fixed before further development.
+- If a rule conflicts with a user instruction, request clarification.
+

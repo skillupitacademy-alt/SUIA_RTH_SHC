@@ -3,9 +3,40 @@ import { Pool } from '@neondatabase/serverless';
 import { drizzle } from 'drizzle-orm/neon-serverless';
 import { migrate } from 'drizzle-orm/neon-serverless/migrator';
 import path from 'path';
+import { TokenService } from '@/modules/auth/token.service';
+import { verifyAdmin } from '@/modules/auth/rbac.service';
 
 export async function GET(request: NextRequest) {
   try {
+    // 1. Check for Internal Migration Secret (P0-SEC-001)
+    const MIGRATION_SECRET = process.env.MIGRATION_SECRET;
+    const clientSecret = request.headers.get('x-migration-secret');
+
+    let isAuthorized = false;
+
+    if (MIGRATION_SECRET && clientSecret === MIGRATION_SECRET) {
+      isAuthorized = true;
+    } else {
+      // 2. Fallback to Admin Authentication
+      const authHeader = request.headers.get('authorization');
+      if (authHeader?.startsWith('Bearer ')) {
+        const token = authHeader.split(' ')[1];
+        try {
+          const payload = await TokenService.verifyAccessToken(token);
+          isAuthorized = await verifyAdmin(payload);
+        } catch {
+          // Ignore token errors, authorization remains false
+        }
+      }
+    }
+
+    if (!isAuthorized) {
+      return NextResponse.json(
+        { error: 'Unauthorized: Valid migration secret or admin token required' },
+        { status: 401 }
+      );
+    }
+
     const DATABASE_URL = process.env.DATABASE_URL;
     
     if (!DATABASE_URL) {

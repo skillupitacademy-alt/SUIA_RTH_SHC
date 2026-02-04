@@ -439,3 +439,13 @@
 - **Index Standardization**: Implemented clean, color-coded index badges (`bg-*-50`, `text-*-600`) for all content cards.
 - **Factory UI Polish**: Refined the orchestration IDE with "Inquiry Stage" and "Draft Stage" labels and toned down factory headers.
 - **System Integrity**: Verified monorepo build and type safety (Exit Code 0).
+### Phase 101: Security Hardening & Zero-Vulnerability (P0)
+- **Migrate Lockdown**: Secured `/api/migrate` against unauthorized database resets.
+- **Central RBAC**: Consolidated admin role enforcement into the `middleware.ts` for `/api/admin` and `/api/factory`.
+- **Exam Ownership**: Secured the Quiz journey by enforcing strict `userId` matching for `exam` records in the `ExamEngine`.
+- **Integrity**: Confirmed high-fidelity build status (Exit Code 0) across the monorepo.
+### Phase 102: Auth Hardening (P1)
+- **Cookie Transition**: Migrated `accessToken` from browser storage to secure `httpOnly` cookies for cross-subdomain SSO.
+- **Purged Client Storage**: Eliminated all `localStorage` token traces, mitigating XSS theft vectors.
+- **State Integrity**: Refactored `AdminGuard`, `AuthGuard`, and `AuthProvider` to correctly handle cookie-based sessions.
+- **Verified Suite**: Confirmed 100% monorepo build and TSC pass (Exit Code 0).

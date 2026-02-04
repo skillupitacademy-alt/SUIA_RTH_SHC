@@ -2,6 +2,8 @@
 import { NextResponse } from "next/server";
 import { db, questions, skills, questionSkills } from "@quiz/db";
 import { eq, inArray, sql } from "drizzle-orm";
+import { TokenService } from "@/modules/auth/token.service";
+import { verifyAdmin } from "@/modules/auth/rbac.service";
 
 // Define strict types locally to ensure safety without circular deps
 type Difficulty = 'simple' | 'intermediate' | 'expert';
@@ -28,6 +30,20 @@ interface SavePayload {
 
 export async function POST(req: Request) {
   try {
+    // 1. Defense-in-Depth Admin Check (P0-SEC-002)
+    const authHeader = req.headers.get('authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+      return NextResponse.json({ error: "Authentication required" }, { status: 401 });
+    }
+
+    const token = authHeader.split(' ')[1];
+    const payload = await TokenService.verifyAccessToken(token);
+    const isAdmin = await verifyAdmin(payload);
+
+    if (!isAdmin) {
+      return NextResponse.json({ error: "Forbidden: Admin access only" }, { status: 403 });
+    }
+
     const { questions: newQuestions, topicId, subtopicId } = (await req.json()) as SavePayload;
 
     if (!newQuestions?.length || !topicId) {

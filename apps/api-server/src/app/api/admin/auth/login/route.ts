@@ -18,22 +18,35 @@ export async function POST(req: Request) {
     
     const result = await AdminAuthService.login(email, password, ip);
 
-    // Set Refresh Token HTTP-Only Cookie
+    // Set Cookies
+    const cookieDomain = process.env.COOKIE_DOMAIN || '.realtutorialhub.com';
+    const isProd = process.env.NODE_ENV === 'production';
+
     const response = NextResponse.json({
         user: {
             id: result.user.id,
             email: result.user.email,
             name: result.user.profile?.name,
             isAdmin: true
-        },
-        accessToken: result.accessToken
+        }
+        // accessToken removed from body
     });
 
-    response.cookies.set('adminRefreshToken', result.refreshToken, {
+    response.cookies.set('admin_accessToken', result.accessToken, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
-        path: '/api/admin',
+        secure: isProd,
+        sameSite: 'lax',
+        path: '/',
+        domain: cookieDomain,
+        maxAge: 15 * 60
+    });
+
+    response.cookies.set('admin_refreshToken', result.refreshToken, {
+        httpOnly: true,
+        secure: isProd,
+        sameSite: 'lax',
+        path: '/',
+        domain: cookieDomain,
         maxAge: 7 * 24 * 60 * 60
     });
 

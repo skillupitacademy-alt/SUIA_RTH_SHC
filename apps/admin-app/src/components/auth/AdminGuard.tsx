@@ -7,7 +7,7 @@ import { apiClient } from '@quiz/api-client';
 import { ZLoader } from '@/components/ui/ZLoader';
 
 export function AdminGuard({ children }: { children: React.ReactNode }) {
-    const { user, isAuthenticated, initialized, token } = useAuthStore(); // Unpack token
+    const { user, isAuthenticated, initialized } = useAuthStore();
     const router = useRouter();
     const { logout } = useAuthStore();
 
@@ -22,14 +22,7 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
         // Hardening: Revalidate session state with server
         const revalidate = async () => {
             try {
-                // Ensure token is set before validation call
-                if (token) {
-                    apiClient.setAccessToken(token);
-                } else {
-                    console.warn("AdminGuard: No token available for revalidation");
-                    throw new Error("No token");
-                }
-
+                // Access token is now handled via httpOnly cookies automatically
                 const { user: validatedUser } = await apiClient.auth.getSession();
                 if (!validatedUser.isAdmin) throw new Error("Revoked");
             } catch (err: any) {
@@ -43,7 +36,6 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
             }
         };
 
-
         revalidate();
 
         // Circuit Breaker: Listen for global 401 events from FetchClient
@@ -55,7 +47,7 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
 
         window.addEventListener('auth:unauthorized', handleUnauthorized);
         return () => window.removeEventListener('auth:unauthorized', handleUnauthorized);
-    }, [isAuthenticated, user, initialized, router, logout, token]);
+    }, [isAuthenticated, user, initialized, router, logout]);
 
     // SECURITY: Surveillance for session termination
     // If auth state is lost, surgically clear potentially sensitive Factory data
@@ -65,12 +57,6 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
             localStorage.removeItem('quiz-factory-storage-v1');
         }
     }, [isAuthenticated, initialized]);
-
-    // Synchronously ensure token is set before rendering children
-    // This allows child components (AdminMetricsGrid) to use apiClient immediately in their effects
-    if (token) {
-        apiClient.setAccessToken(token);
-    }
 
     if (!initialized || !isAuthenticated || !user?.isAdmin) {
         return (

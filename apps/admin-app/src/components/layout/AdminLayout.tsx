@@ -41,14 +41,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     usePresenceHeartbeat();
     const router = useRouter();
     const pathname = usePathname();
-    const { token, logout } = useAuthStore();
+    const { logout } = useAuthStore();
     const { showWarning, confirmLogout, cancelNavigation } = useStrictNavigation();
 
-    useEffect(() => {
-        if (token) {
-            apiClient.setAccessToken(token);
-        }
-    }, [token]);
+    // Access token is now handled via httpOnly cookies automatically
 
     const handleLogout = () => {
         logout();

@@ -7,13 +7,17 @@ export class ExamEngine {
   /**
    * Handles individual question submission within an exam.
    */
-  static async submitAnswer(examId: string, questionId: string, answer: string) {
+  static async submitAnswer(examId: string, questionId: string, answer: string, userId: string) {
     const exam = await db.query.exams.findFirst({
       where: eq(exams.id, examId),
     });
 
     if (!exam || exam.status !== 'started') {
       throw new Error('Exam is not active');
+    }
+
+    if (exam.userId !== userId) {
+      throw new Error('Unauthorized: You do not own this exam session');
     }
 
     // Timer Logic: Check if exam time has expired
@@ -64,13 +68,17 @@ export class ExamEngine {
   /**
    * Finalizes the exam and triggers scoring.
    */
-  static async completeExam(examId: string) {
+  static async completeExam(examId: string, userId: string) {
     const exam = await db.query.exams.findFirst({
       where: eq(exams.id, examId),
     });
 
     if (!exam || exam.status === 'completed') {
       throw new Error('Exam is already completed or not found');
+    }
+
+    if (exam.userId !== userId) {
+      throw new Error('Unauthorized: You do not own this exam session');
     }
 
     // Trigger Scoring Engine (calculated in previous phase)

@@ -26,9 +26,7 @@ export class FetchClient {
       ...options.headers as Record<string, string>,
     };
 
-    if (this.accessToken) {
-      headers['Authorization'] = `Bearer ${this.accessToken}`;
-    }
+    // Access token is now handled via httpOnly cookies automatically
 
     // Add CSRF token for mutation requests
     const isMutation = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(options.method || 'GET');

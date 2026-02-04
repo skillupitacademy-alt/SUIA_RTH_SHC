@@ -12,10 +12,9 @@ interface User {
 
 interface AuthState {
   user: User | null;
-  token: string | null;
   isAuthenticated: boolean;
   initialized: boolean;
-  login: (user: User, token: string) => void;
+  login: (user: User) => void;
   logout: () => void;
   completeOnboarding: () => void;
   setInitialized: (val: boolean) => void;
@@ -27,16 +26,13 @@ export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
       user: null,
-      token: null,
       isAuthenticated: false,
       initialized: false,
-      login: (user, token) => {
-        apiClient.setAccessToken(token);
-        set({ user, token, isAuthenticated: true });
+      login: (user) => {
+        set({ user, isAuthenticated: true });
       },
       logout: () => {
-        apiClient.setAccessToken(null);
-        set({ user: null, token: null, isAuthenticated: false });
+        set({ user: null, isAuthenticated: false });
       },
       completeOnboarding: () => 
         set((state) => ({
@@ -47,9 +43,6 @@ export const useAuthStore = create<AuthState>()(
     {
       name: 'quiz-platform-auth',
       onRehydrateStorage: () => (state) => {
-        if (state?.token) {
-          apiClient.setAccessToken(state.token);
-        }
         state?.setInitialized(true);
       }
     }

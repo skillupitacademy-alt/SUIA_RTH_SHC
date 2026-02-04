@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 export const dynamic = 'force-dynamic';
 import { db, exams } from '@quiz/db';
 import { eq } from 'drizzle-orm';
+import { TokenService } from '@/modules/auth/token.service';
+import { verifyAdmin } from '@/modules/auth/rbac.service';
 
 /**
  * GET QUIZ RESULT
@@ -9,6 +11,10 @@ import { eq } from 'drizzle-orm';
  */
 export async function GET(req: NextRequest) {
   try {
+    const token = req.headers.get('authorization')?.split(' ')[1];
+    if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+    const payload = await TokenService.verifyAccessToken(token);
     const { searchParams } = new URL(req.url);
     const examId = searchParams.get('examId');
     if (!examId) return NextResponse.json({ error: 'examId required' }, { status: 400 });
@@ -28,6 +34,17 @@ export async function GET(req: NextRequest) {
     });
 
     if (!exam) return NextResponse.json({ error: 'Exam not found' }, { status: 404 });
+
+    // SEC-003: Ownership check
+    if (exam.userId !== payload.userId) {
+      const isAdmin = await verifyAdmin(payload);
+      if (!isAdmin) {
+        return NextResponse.json({ error: 'Unauthorized: You do not own this exam' }, { status: 403 });
+      }
+      // TODO: Audit log for admin access (SEC-003 requirement)
+      console.log(`[AUDIT] Admin ${payload.userId} accessed Exam ${examId} owned by ${exam.userId}`);
+    }
+
     if (exam.status !== 'completed') return NextResponse.json({ error: 'Exam not completed' }, { status: 400 });
 
     // Resolve human-readable names for dimensions

@@ -3,10 +3,10 @@ import { useAuthStore } from '@/store/auth-store';
 import { apiClient } from '@quiz/api-client';
 
 export function usePresenceHeartbeat() {
-    const { token } = useAuthStore();
+    const { isAuthenticated, initialized } = useAuthStore();
 
     useEffect(() => {
-        if (!token) return;
+        if (!initialized || !isAuthenticated) return;
 
         // Initial heartbeat
         apiClient.auth.heartbeat().catch(() => {});
@@ -17,5 +17,5 @@ export function usePresenceHeartbeat() {
         }, 60000);
 
         return () => clearInterval(interval);
-    }, [token]);
+    }, [isAuthenticated, initialized]);
 }

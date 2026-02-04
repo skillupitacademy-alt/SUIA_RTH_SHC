@@ -27,3 +27,5 @@
 | 2026-02-03 | Hierarchy Refinement | COMPLETED | Toned down "fancy" elements; Standardized index badges & factory buttons. |
 | 2026-02-03 | Final Validation | COMPLETED | System integrity verified with root pnpm build and tsc check. |
 | 2026-02-04 | UI Refinement (User Feedback) | COMPLETED | Converted System Audit to Light Theme; Aligned Readiness Board buttons. |
+| 2026-02-04 | Security Hardening (P0) | COMPLETED | Locked `/api/migrate`, factory routes, and enforced exam ownership (SEC-001/002/003). |
+| 2026-02-04 | Auth Hardening (P1) | COMPLETED | Moved access tokens to `httpOnly` secure cookies; Purged `localStorage` tokens. |

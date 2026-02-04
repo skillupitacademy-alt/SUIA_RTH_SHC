@@ -853,3 +853,21 @@ Reduce documentation fragmentation and improve discoverability by consolidating 
     - Full Build Suite (Web/API/Admin/TSC): **PASSED** (Exit Code 0).
     - Verified `DomainReviewCard` and `QuestionReviewCard` dependencies are now transpiled.
 - **Outcome**: Eliminated module loading errors, restoring full dashboard functionality.
+
+### 101. Security Hardening (P0)
+- **Goal**: Lock down critical system entry points as per the AGENT_CONSTITUTION.
+- **Actions**:
+  - Implemented `MIGRATION_SECRET` and Admin fallback for database migrations.
+  - Centralized RBAC logic in `middleware.ts` using `RBACService.verifyAdmin`.
+  - Enforced ownership checks in `ExamEngine` for `submitAnswer`, `completeExam`, and `getQuizState`.
+  - Secured `api/quiz/result` with admin-access audit logging.
+- **Outcome**: Eliminated critical P0 security risks (SEC-001, SEC-002, SEC-003).
+
+### 102. Auth Hardening (P1)
+- **Goal**: Eliminate XSS token theft vectors by moving to `httpOnly` cookies.
+- **Actions**:
+  - Implemented secure cookie delivery for `accessToken` in `login`, `signup`, and `refresh` routes.
+  - Refactored `api-client` to rely on automatic browser cookie transmission.
+  - Purged `localStorage` token management in `zustand` stores.
+  - Synchronized `AdminGuard`, `AuthGuard`, and `AuthProvider` with the new auth model.
+- **Outcome**: Achieved FAANG-standard session security and cross-subdomain SSO capability.

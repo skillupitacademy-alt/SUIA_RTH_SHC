@@ -17,19 +17,30 @@ export async function POST(req: NextRequest) {
     
     const { accessToken, refreshToken: newRefreshToken } = await AuthService.refresh(tokenToUse!, ip);
 
-    const response = NextResponse.json({ accessToken });
+    const response = NextResponse.json({ success: true }); // No accessToken in body
 
-    const domain = isAdmin 
-      ? process.env.ADMIN_COOKIE_DOMAIN 
-      : process.env.USER_COOKIE_DOMAIN;
+    const cookieDomain = process.env.COOKIE_DOMAIN || '.realtutorialhub.com';
+    const isProd = process.env.NODE_ENV === 'production';
 
+    // Re-issue Access Token Cookie
+    const accessTokenCookieName = isAdmin ? 'admin_accessToken' : 'accessToken';
+    response.cookies.set(accessTokenCookieName, accessToken, {
+      httpOnly: true,
+      secure: isProd,
+      sameSite: 'lax',
+      maxAge: 15 * 60,
+      path: '/',
+      domain: cookieDomain,
+    });
+
+    // Rotate Refresh Token Cookie
     response.cookies.set(cookieName, newRefreshToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      secure: isProd,
+      sameSite: 'lax',
       maxAge: 7 * 24 * 60 * 60,
       path: '/',
-      domain: domain || undefined,
+      domain: cookieDomain,
     });
 
     return response;

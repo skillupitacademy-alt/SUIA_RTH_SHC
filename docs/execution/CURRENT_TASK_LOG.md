@@ -1,16 +1,15 @@
 # Current Task Log
 
-**Task**: Hierarchy UI Standardization & Executive Refinement (Batch 110)
+**Task**: Auth Hardening (P1) - AUTH-001
 **Status**: COMPLETED
 **Date**: 2026-02-04
 
 ## Recent Actions
-- **UI Refinement**: Toned down "fancy" elements (dark index circles, rotations, black font weights).
-- **Review Cards**: Standardized all hierarchy cards with color-coded clean index badges.
-- **Factory IDE**: Refined labels (Inquiry Stage, Draft Stage) and simplified button styles (bg-slate-900).
-- **Consistency**: Unified "Bulk Factory" and "Add" buttons across all 6 management tabs.
-- **Verification**: Initiated global build: `pnpm build`.
+- **AUTH-001**: Moved `accessToken` to `httpOnly` secure cookies with `.realtutorialhub.com` domain scope.
+- **Frontend Refactor**: Completely removed `localStorage` token management from `web-app` and `admin-app`.
+- **Middleware Update**: Enhanced middleware to extract tokens from cookies while maintaining strict CSRF enforcement.
+- **Verification**: Passed 100% build and type-check suite: `pnpm build && npx tsc --noEmit`.
 
 ## Next Steps
-- **Final Built Verification**: Ensure 100% build pass on root.
-- **Commit**: Final git commit and task closure.
+- **Next Remediation**: Address P1 performance items (RT-001: Question Selection Optimization).
+- **Session Migration**: Announcement to users regarding forced logout on next deployment.

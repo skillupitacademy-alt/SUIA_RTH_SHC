@@ -19,12 +19,12 @@ export function LoginForm() {
         setLoading(true);
         try {
             // Real API Call
-            const { user, accessToken } = await apiClient.auth.login(
+            const { user } = await apiClient.auth.login(
                 (e.target as any).email.value, // eslint-disable-line @typescript-eslint/no-explicit-any
                 (e.target as any).password.value // eslint-disable-line @typescript-eslint/no-explicit-any
             );
 
-            login(user, accessToken);
+            login(user);
             router.push('/dashboard');
         } catch (err: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
             setError(err.message || "Invalid credentials. Please try again.");
@@ -117,13 +117,13 @@ export function SignupForm() {
         e.preventDefault();
         setLoading(true);
         try {
-            const { user, accessToken } = await apiClient.auth.signup(
+            const { user } = await apiClient.auth.signup(
                 (e.target as any).email.value, // eslint-disable-line @typescript-eslint/no-explicit-any
                 (e.target as any).password.value, // eslint-disable-line @typescript-eslint/no-explicit-any
                 (e.target as any).name.value // eslint-disable-line @typescript-eslint/no-explicit-any
             );
 
-            useAuthStore.getState().login(user, accessToken);
+            useAuthStore.getState().login(user);
             router.push('/dashboard');
         } catch (err: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
             setError(err.message || "Failed to create account.");
