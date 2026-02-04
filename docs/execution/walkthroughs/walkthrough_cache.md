@@ -1,34 +1,29 @@
-# Walkthrough: CACHE-001 - Blueprint & Session Caching
+# Walkthrough: CACHE-001 - Secured & Scalable Caching (Refined)
 
-Successfully implemented a robust, per-instance caching layer to optimize database load on high-frequency query paths.
+The caching implementation has been refined to meet strict security and scalability requirements, including per-user session isolation and elimination of legacy randomization.
 
-## Key Accomplishments
+## Key Path Improvements
 
-### 1. ⚡ Bounded LRU Cache Service
-- Created a centralized `CacheService` using `lru-cache` with a strict `max: 500` limit to prevent memory exhaustion.
-- Implemented **Stable Hashing** for filter-based cache keys (ensuring `blueprint-counts` hits even with different object key orders).
-- **Fail-Safe Pattern**: Wrapped all cache operations in try-catch-fallback blocks to ensure the API never fails due to cache errors.
+### 1. 🛡️ User-Secured Session Caching
+- **Implementation**: `SessionService.syncSession` now requires a `userId`.
+- **Isolation**: Cache keys are now formatted as `exam-header:${userId}:${examId}`, ensuring zero cross-user data leakage.
+- **Verification**: Ownership is explicitly re-verified *after* cache retrieval to prevent any bypass of security rules.
+- **Wiring**: Integrated into `QuizEngine.getQuizState` to optimize repeat visits to active exams.
 
-### 2. 🛡️ Per-User Session Caching
-- Unified active exam session caching (2-minute TTL) with mandatory post-retrieval ownership verification.
-- Integrated caching into `SelectionEngine` for blueprint resolution (10-minute TTL).
+### 2. ⚡ Scalable Blueprint Selection (No `RANDOM()`)
+- **RT-001 Alignment**: Updated `ExamBlueprintService` to use the ID-sampling pattern.
+- **Logic**: Now fetches all matching question IDs, shuffles them in-memory using Fisher-Yates, and slices the required subset. This prevents full-table scans with `ORDER BY RANDOM()`.
 
-### 3. 🧹 Proactive Invalidation
-- Standardized blueprint invalidation in `AdminEngine`.
-- Manual updates to blueprints via `PATCH` or `DELETE` now explicitly flush related cache keys and prefixes.
+### 3. 🧹 Deep Cache Invalidation
+- **Comprehensive Purge**: `AdminEngine` now fetches blueprint associations before updates/deletions.
+- **Domain-Aware**: Invalidation now clears both the specific blueprint ID *and* any domain-based blueprint keys (e.g., `blueprint:${domainId}`) to ensure consistency across all entry points.
 
-## Technical Validation
+## Technical Maintenance
+- **Repo Hygiene**: Removed `build_error_cache.log` and updated `.gitignore` to prevent future log leakage.
+- **Stability**: Verified logic through code review and integration into core `QuizEngine` routes.
 
-### Build Integrity
-- **Command**: `pnpm build --filter @quiz/api-server`
-- **Result**: `Exit code: 0` (after resolving Next.js 16 middleware location and implicit `any` type issues).
-
-### Cache Flow Verification
-- **Counts Cache**: Verified that repeated navigation in the "Exam Selection" UI hits the cache instead of counting tens of thousands of rows in the DB.
-- **Session Sync**: Verified that `heartbeat` and `sync` calls for active exams use the cached header, reducing DB-join overhead.
-
-## Verification Checklist
+## Final Verification Checklist
 - [x] Case: Multiple users accessing different exams (Isolated Keys).
-- [x] Case: Admin updates a blueprint (Immediate Invalidation).
-- [x] Case: Cache service error (DB Fallback).
-- [x] Case: Large filter combinations (Bounded Memory).
+- [x] Case: Admin updates a blueprint (Immediate Invalidation of ID + Domain).
+- [x] Case: Enterprise blueprint generation (Scalable ID sampling).
+- [x] Case: API State retrieval (Cache hit via `syncSession`).

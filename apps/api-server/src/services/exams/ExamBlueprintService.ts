@@ -157,16 +157,27 @@ export class ExamBlueprintService {
         domainCond || undefined
     );
 
-    // 3. Fetch randomized
-    return await db.select({ id: questions.id })
+    // 3. Fetch randomized using RT-001 ID Sampling
+    // STEP 1: Fetch Only IDs (Scalable)
+    const allIds = await db.select({ id: questions.id })
       .from(questions)
       .where(and(
           hierarchyCond,
           eq(questions.status, 'active'),
           eq(questions.difficulty, difficulty)
-      ))
-      .orderBy(sql`RANDOM()`)
-      .limit(count);
+      ));
+
+    if (allIds.length === 0) return [];
+
+    // STEP 2: In-memory Shuffle (Fisher-Yates)
+    const shuffledIds = allIds.map(row => row.id);
+    for (let i = shuffledIds.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffledIds[i], shuffledIds[j]] = [shuffledIds[j], shuffledIds[i]];
+    }
+
+    // STEP 3: Take subset
+    return shuffledIds.slice(0, count).map(id => ({ id }));
   }
 
   /**

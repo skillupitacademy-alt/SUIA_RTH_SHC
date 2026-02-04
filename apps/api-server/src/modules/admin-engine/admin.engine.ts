@@ -171,7 +171,16 @@ export class AdminEngine {
       .returning();
 
     if (result) {
+      // Invalidate specific ID
       await cacheService.del(`blueprint:${id}`);
+      
+      // Invalidate Domain-based paths if they exist
+      if (result.domains && Array.isArray(result.domains)) {
+        for (const domainId of result.domains) {
+          await cacheService.del(`blueprint:${domainId}`);
+        }
+      }
+
       await cacheService.delByPrefix('blueprint-counts:');
     }
     
@@ -179,17 +188,31 @@ export class AdminEngine {
   }
 
   static async deleteBlueprint(id: string) {
+    // 1. Fetch current to resolve domains before deletion
+    const existing = await db.query.examBlueprints.findFirst({
+      where: eq(examBlueprints.id, id)
+    });
+
     const [result] = await db.delete(examBlueprints)
       .where(eq(examBlueprints.id, id))
       .returning();
 
     if (result) {
       await cacheService.del(`blueprint:${id}`);
+      
+      // Clear legacy/domain associations
+      if (existing?.domains && Array.isArray(existing.domains)) {
+        for (const domainId of existing.domains) {
+          await cacheService.del(`blueprint:${domainId}`);
+        }
+      }
+
       await cacheService.delByPrefix('blueprint-counts:');
     }
 
     return result;
   }
+
 
 
   static async getBlueprintById(id: string) {

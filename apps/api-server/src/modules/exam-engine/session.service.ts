@@ -8,8 +8,8 @@ export class SessionService {
   /**
    * Recovers a session or auto-submits if time has expired.
    */
-  static async syncSession(examId: string) {
-    const cacheKey = `exam-header:${examId}`;
+  static async syncSession(examId: string, userId: string) {
+    const cacheKey = `exam-header:${userId}:${examId}`;
     let exam: any = null;
 
     try {
@@ -36,6 +36,12 @@ export class SessionService {
     }
 
     if (!exam) throw new Error('Session not found');
+    
+    // STRICT OWNERSHIP CHECK: Enforce even on cache hits
+    if (exam.userId !== userId) {
+      throw new Error('Unauthorized: You do not own this exam session');
+    }
+
     if (exam.status === 'completed') return exam;
 
     const timeElapsed = (Date.now() - new Date(exam.startedAt).getTime()) / 60000;
@@ -53,11 +59,11 @@ export class SessionService {
   /**
    * Resumes a session from the last unanswered question.
    */
-  static async resumePayload(examId: string) {
-    await this.syncSession(examId);
+  static async resumePayload(examId: string, userId: string) {
+    await this.syncSession(examId, userId);
     
-    return await db.query.exams.findFirst({
-      where: eq(exams.id, examId),
+    const exam = await db.query.exams.findFirst({
+      where: and(eq(exams.id, examId), eq(exams.userId, userId)),
       with: {
         examQuestions: {
           orderBy: (eq, { asc }) => [asc(eq.order)],

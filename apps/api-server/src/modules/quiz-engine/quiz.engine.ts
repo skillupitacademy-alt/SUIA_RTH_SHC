@@ -1,6 +1,8 @@
 import { db, exams, examQuestions, questions } from '@quiz/db';
 import { eq, and, sql } from 'drizzle-orm';
 import { SelectionEngine } from '../selection-engine/selection.service';
+import { SessionService } from '../exam-engine/session.service';
+
 
 export class QuizEngine {
   /**
@@ -26,15 +28,13 @@ export class QuizEngine {
    * Retrieves the current state of a quiz session.
    */
   static async getQuizState(examId: string, userId: string) {
-    const exam = await db.query.exams.findFirst({
-      where: eq(exams.id, examId),
-    });
+    // benefit from cache + ownership validation
+    const header = await SessionService.syncSession(examId, userId);
 
-    if (!exam) throw new Error('Quiz not found');
-
-    if (exam.userId !== userId) {
+    if (header.userId !== userId) {
       throw new Error('Unauthorized: You do not own this quiz session');
     }
+
 
     // Secondary fetch with relations if authorized
     const fullExam = await db.query.exams.findFirst({
