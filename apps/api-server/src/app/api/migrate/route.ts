@@ -48,8 +48,9 @@ export async function GET(request: NextRequest) {
     const pool = new Pool({ connectionString: process.env.DATABASE_URL! });
     const db = drizzle(pool);
 
-    // Path to migrations folder relative to the api-server root
-    const migrationsFolder = path.join(process.cwd(), '../../packages/db/migrations');
+    // Robust package-based resolution (Avoiding fragile ../../ paths)
+    const dbPackagePath = path.dirname(require.resolve('@quiz/db/package.json'));
+    const migrationsFolder = path.join(dbPackagePath, 'migrations');
     
     await migrate(db, { migrationsFolder });
 
