@@ -1,5 +1,7 @@
 import { db, questions, examBlueprints, exams, examQuestions, topics, subtopics, subjects as subjectsTable } from '@quiz/db';
 import { eq, inArray, sql, and, or, notInArray } from 'drizzle-orm';
+import { cacheService } from '../core/cache.service';
+
 
 export class SelectionEngine {
   /**
@@ -20,14 +22,33 @@ export class SelectionEngine {
     }
   ) {
     // 1. Resolve Blueprint
-    let blueprint = await db.query.examBlueprints.findFirst({
-      where: eq(examBlueprints.id, blueprintOrDomainId),
-    });
+    const blueprintCacheKey = `blueprint:${blueprintOrDomainId}`;
+    let blueprint: any = null;
+
+    try {
+      blueprint = await cacheService.get(blueprintCacheKey);
+    } catch (e) {
+      console.warn('[Selection] Cache lookup failed', e);
+    }
 
     if (!blueprint) {
       blueprint = await db.query.examBlueprints.findFirst({
-        where: sql`${examBlueprints.domains} @> ARRAY[${blueprintOrDomainId}]::uuid[]`,
+        where: eq(examBlueprints.id, blueprintOrDomainId),
       });
+
+      if (!blueprint) {
+        blueprint = await db.query.examBlueprints.findFirst({
+          where: sql`${examBlueprints.domains} @> ARRAY[${blueprintOrDomainId}]::uuid[]`,
+        });
+      }
+
+      if (blueprint) {
+        try {
+          await cacheService.set(blueprintCacheKey, blueprint, 1000 * 60 * 10); // 10 min TTL
+        } catch (e) {
+          console.warn('[Selection] Cache storage failed', e);
+        }
+      }
     }
 
     if (!blueprint) throw new Error('Blueprint not found');
@@ -98,7 +119,7 @@ export class SelectionEngine {
         : [];
     
     // "Actual" Topics = selected topics that have NO selected subtopics
-    const actualTopicIds = finalTopicIds.filter(id => !selectedTopicParents.includes(id));
+    const actualTopicIds = finalTopicIds.filter((id: string) => !selectedTopicParents.includes(id));
     
     // Find parent Subject IDs for selected Topics
     const selectedSubjectParents: string[] = finalTopicIds.length > 0 
@@ -109,7 +130,7 @@ export class SelectionEngine {
         : [];
     
     // "Actual" Subjects = selected subjects that have NO selected topics
-    const actualSubjectIds = finalSubjectIds.filter(id => !selectedSubjectParents.includes(id));
+    const actualSubjectIds = finalSubjectIds.filter((id: string) => !selectedSubjectParents.includes(id));
 
     // 3. Select Questions
     const selectedQuestions: any[] = [];

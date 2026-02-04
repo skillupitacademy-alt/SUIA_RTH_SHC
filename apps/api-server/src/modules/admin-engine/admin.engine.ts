@@ -6,6 +6,8 @@ import { QuestionService } from '../question/question.service';
 import { DomainService, SubjectService, TopicService } from '../domain/domain.service';
 import { SkillService } from '../domain/skill.service';
 import { HierarchyFactory, AtomicHierarchyPayload } from '../domain/hierarchy.factory';
+import { cacheService } from '../core/cache.service';
+
 
 export class AdminEngine {
   /**
@@ -167,6 +169,12 @@ export class AdminEngine {
       .set({ ...data, updatedAt: new Date() })
       .where(eq(examBlueprints.id, id))
       .returning();
+
+    if (result) {
+      await cacheService.del(`blueprint:${id}`);
+      await cacheService.delByPrefix('blueprint-counts:');
+    }
+    
     return result;
   }
 
@@ -174,8 +182,15 @@ export class AdminEngine {
     const [result] = await db.delete(examBlueprints)
       .where(eq(examBlueprints.id, id))
       .returning();
+
+    if (result) {
+      await cacheService.del(`blueprint:${id}`);
+      await cacheService.delByPrefix('blueprint-counts:');
+    }
+
     return result;
   }
+
 
   static async getBlueprintById(id: string) {
     return await db.query.examBlueprints.findFirst({

@@ -1,5 +1,7 @@
 import { db, questions, examBlueprints, topics, subtopics, subjects, domains } from "@quiz/db";
 import { eq, and, or, inArray, sql } from "drizzle-orm";
+import { cacheService } from "@/modules/core/cache.service";
+
 
 
 /**
@@ -176,7 +178,17 @@ export class ExamBlueprintService {
     topicIds?: string[];
     subtopicIds?: string[];
   }): Promise<{ simple: number; intermediate: number; expert: number; total: number; isReady: boolean }> {
+    const cacheKey = cacheService.generateKey('blueprint-counts', filters);
+
+    try {
+      const cached = await cacheService.get<any>(cacheKey);
+      if (cached) return cached;
+    } catch (e) {
+      console.warn('[Blueprint] Cache lookup failed, falling back to DB', e);
+    }
+
     const { domainId, subjectIds, topicIds, subtopicIds } = filters;
+
 
     const counts = {
       simple: 0,
@@ -196,8 +208,15 @@ export class ExamBlueprintService {
     // Enterprise Readiness Rule: 4 Simple, 4 Intermediate, 5 Expert
     counts.isReady = counts.simple >= 4 && counts.intermediate >= 4 && counts.expert >= 5;
 
+    try {
+      await cacheService.set(cacheKey, counts, 1000 * 60 * 5); // 5 minute TTL
+    } catch (e) {
+      console.warn('[Blueprint] Cache storage failed', e);
+    }
+
     return counts;
   }
+
 
   private async countQuestions(
     difficulty: 'simple' | 'intermediate' | 'expert',

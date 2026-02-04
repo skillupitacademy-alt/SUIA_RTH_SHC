@@ -1,18 +1,39 @@
 import { db, exams, examQuestions } from '@quiz/db';
 import { eq, and, sql, lt } from 'drizzle-orm';
+import { cacheService } from '../core/cache.service';
 import { ScoringEngine } from '../scoring-engine/scoring.engine';
+
 
 export class SessionService {
   /**
    * Recovers a session or auto-submits if time has expired.
    */
   static async syncSession(examId: string) {
-    const exam = await db.query.exams.findFirst({
-      where: eq(exams.id, examId),
-      with: {
-        blueprint: true,
-      },
-    });
+    const cacheKey = `exam-header:${examId}`;
+    let exam: any = null;
+
+    try {
+      exam = await cacheService.get(cacheKey);
+    } catch (e) {
+      console.warn('[Session] Cache lookup failed', e);
+    }
+
+    if (!exam) {
+      exam = await db.query.exams.findFirst({
+        where: eq(exams.id, examId),
+        with: {
+          blueprint: true,
+        },
+      });
+
+      if (exam) {
+        try {
+          await cacheService.set(cacheKey, exam, 1000 * 60 * 2); // 2 min TTL for active session meta
+        } catch (e) {
+          console.warn('[Session] Cache storage failed', e);
+        }
+      }
+    }
 
     if (!exam) throw new Error('Session not found');
     if (exam.status === 'completed') return exam;
