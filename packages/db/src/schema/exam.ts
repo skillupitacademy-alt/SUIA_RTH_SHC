@@ -4,7 +4,7 @@ import { users } from "./auth";
 import { domains, subjects, topics } from "./domain";
 import { questions } from "./question";
 
-export const examStatusEnum = pgEnum("exam_status", ["started", "completed", "abandoned"]);
+export const examStatusEnum = pgEnum("exam_status", ["started", "processing", "completed", "abandoned", "failed"]);
 
 export const examBlueprints = pgTable("exam_blueprints", {
   id: uuid("id").primaryKey().defaultRandom(),

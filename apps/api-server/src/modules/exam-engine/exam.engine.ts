@@ -73,17 +73,24 @@ export class ExamEngine {
       where: eq(exams.id, examId),
     });
 
-    if (!exam || exam.status === 'completed') {
-      throw new Error('Exam is already completed or not found');
+    if (!exam || exam.status === 'completed' || exam.status === 'processing') {
+      throw new Error('Exam is already completed/processing or not found');
     }
 
     if (exam.userId !== userId) {
       throw new Error('Unauthorized: You do not own this exam session');
     }
 
-    // Trigger Scoring Engine (calculated in previous phase)
-    const finalScore = await ScoringEngine.calculateExamResults(examId);
+    // 1. Mark as processing immediately
+    await db.update(exams)
+      .set({ status: 'processing' as any }) // using any to bypass enum check if types aren't synced yet
+      .where(eq(exams.id, examId));
 
-    return { examId, finalScore };
+    // 2. Trigger Scoring Engine (Background)
+    ScoringEngine.calculateExamResults(examId).catch(err => {
+      console.error(`[ExamEngine] Async scoring trigger failed for ${examId}:`, err);
+    });
+
+    return { examId, status: 'processing' };
   }
 }
