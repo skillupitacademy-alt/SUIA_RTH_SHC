@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+﻿import { NextRequest, NextResponse } from 'next/server';
 import { AdminEngine } from '@/modules/admin-engine/admin.engine';
 import { TokenService } from '@/modules/auth/token.service';
 import { verifyAdmin } from '@/modules/auth/rbac.service';
@@ -7,12 +7,10 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
   try {
-    const authHeader = req.headers.get('authorization');
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    const token = TokenService.getAccessToken(req);
+    if (!token) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-
-    const token = authHeader.split(' ')[1];
     const payload = await TokenService.verifyAccessToken(token);
 
     if (!(await verifyAdmin(payload))) {
@@ -40,3 +38,4 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
+

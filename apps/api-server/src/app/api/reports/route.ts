@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+﻿import { NextRequest, NextResponse } from 'next/server';
 export const dynamic = 'force-dynamic';
 import { ReportEngine } from '@/modules/report-engine/report.engine';
 import { TokenService } from '@/modules/auth/token.service';
@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const id = searchParams.get('id');
 
-    const token = req.headers.get('authorization')?.split(' ')[1];
+    const token = TokenService.getAccessToken(req);
     if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const payload = await TokenService.verifyAccessToken(token);
@@ -28,3 +28,4 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
+

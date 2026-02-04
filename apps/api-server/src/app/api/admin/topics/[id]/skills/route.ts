@@ -11,12 +11,11 @@ export async function GET(
 ) {
     try {
         const { id } = await params;
-        const authHeader = req.headers.get('authorization');
-        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        const token = TokenService.getAccessToken(req);
+        if (!token) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        const token = authHeader.split(' ')[1];
         const payload = await TokenService.verifyAccessToken(token);
 
         if (!(await verifyAdmin(payload))) {
@@ -37,12 +36,11 @@ export async function POST(
 ) {
     try {
         const { id } = await params;
-        const authHeader = req.headers.get('authorization');
-        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        const token = TokenService.getAccessToken(req);
+        if (!token) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        const token = authHeader.split(' ')[1];
         const payload = await TokenService.verifyAccessToken(token);
 
         if (!(await verifyAdmin(payload))) {

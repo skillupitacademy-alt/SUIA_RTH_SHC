@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+﻿import { NextRequest, NextResponse } from 'next/server';
 export const dynamic = 'force-dynamic';
 import { AuthService } from '@/modules/auth/auth.service';
 import { TokenService } from '@/modules/auth/token.service';
@@ -7,7 +7,7 @@ import { eq } from 'drizzle-orm';
 
 export async function PUT(req: NextRequest) {
   try {
-    const token = req.headers.get('authorization')?.split(' ')[1];
+    const token = TokenService.getAccessToken(req);
     if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const payload = await TokenService.verifyAccessToken(token);
@@ -29,3 +29,4 @@ export async function PUT(req: NextRequest) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
+

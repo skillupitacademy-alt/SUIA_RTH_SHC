@@ -8,8 +8,7 @@ export const dynamic = 'force-dynamic';
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
-    const authHeader = req.headers.get('authorization');
-    const token = authHeader?.split(' ')[1];
+    const token = TokenService.getAccessToken(req);
     if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const payload = await TokenService.verifyAccessToken(token);
@@ -27,8 +26,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
-    const authHeader = req.headers.get('authorization');
-    const token = authHeader?.split(' ')[1];
+    const token = TokenService.getAccessToken(req);
     if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const payload = await TokenService.verifyAccessToken(token);
@@ -48,8 +46,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
-    const authHeader = req.headers.get('authorization');
-    const token = authHeader?.split(' ')[1];
+    const token = TokenService.getAccessToken(req);
     if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const payload = await TokenService.verifyAccessToken(token);

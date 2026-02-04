@@ -1,10 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server';
+﻿import { NextRequest, NextResponse } from 'next/server';
 export const dynamic = 'force-dynamic';
 import { AdminEngine } from '@/modules/admin-engine/admin.engine';
 import { TokenService } from '@/modules/auth/token.service';
 
 async function verifyAdmin(req: NextRequest) {
-  const token = req.headers.get('authorization')?.split(' ')[1];
+  const token = TokenService.getAccessToken(req);
   if (!token) return null;
   const payload = await TokenService.verifyAccessToken(token);
   const isAdmin = payload.roles.includes('ADMIN') || payload.roles.includes('SUPER_ADMIN');
@@ -23,3 +23,4 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
+

@@ -5,12 +5,11 @@ import { AuthService } from '@/modules/auth/auth.service';
 
 export async function POST(req: NextRequest) {
   try {
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader?.startsWith('Bearer ')) {
+    const token = TokenService.getAccessToken(req);
+    if (!token) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const token = authHeader.split(' ')[1];
     let payload;
     try {
         // Try verifying as normal user first

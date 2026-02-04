@@ -7,13 +7,12 @@ import { eq, and, inArray } from 'drizzle-orm';
 export const dynamic = 'force-dynamic';
 
 async function verifyAdmin(req: NextRequest) {
-    const authHeader = req.headers.get('authorization');
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    const token = TokenService.getAccessToken(req);
+    if (!token) {
         return { error: 'Unauthorized', status: 401 };
     }
 
     try {
-        const token = authHeader.split(' ')[1];
         const payload = await TokenService.verifyAccessToken(token);
 
         const userRole = await db.select()

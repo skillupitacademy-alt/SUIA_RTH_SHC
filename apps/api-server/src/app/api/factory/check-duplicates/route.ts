@@ -13,12 +13,11 @@ interface DuplicateCheckPayload {
 export async function POST(req: Request) {
   try {
     // 1. Defense-in-Depth Admin Check (P0-SEC-002)
-    const authHeader = req.headers.get('authorization');
-    if (!authHeader?.startsWith('Bearer ')) {
+    const token = TokenService.getAccessToken(req);
+    if (!token) {
       return NextResponse.json({ error: "Authentication required" }, { status: 401 });
     }
 
-    const token = authHeader.split(' ')[1];
     const payload = await TokenService.verifyAccessToken(token);
     const isAdmin = await verifyAdmin(payload);
 

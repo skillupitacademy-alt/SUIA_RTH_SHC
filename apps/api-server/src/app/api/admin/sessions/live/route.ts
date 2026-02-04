@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+﻿import { NextRequest, NextResponse } from 'next/server';
 export const dynamic = 'force-dynamic';
 import { AdminEngine } from '@/modules/admin-engine/admin.engine';
 import { TokenService } from '@/modules/auth/token.service';
@@ -8,7 +8,7 @@ import { TokenService } from '@/modules/auth/token.service';
  */
 export async function GET(req: NextRequest) {
   try {
-    const token = req.headers.get('authorization')?.split(' ')[1];
+    const token = TokenService.getAccessToken(req);
     if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const payload = await TokenService.verifyAccessToken(token, true);
@@ -24,3 +24,4 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: error.message }, { status: 403 });
   }
 }
+
