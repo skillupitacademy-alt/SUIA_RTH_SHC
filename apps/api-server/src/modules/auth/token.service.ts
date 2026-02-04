@@ -17,6 +17,21 @@ export class TokenService {
   private static readonly ADMIN_SECRET = new TextEncoder().encode(process.env.ADMIN_JWT_SECRET || process.env.JWT_SECRET!);
 
   /**
+   * Universal token extraction: Cookie-First, Header-Fallback
+   */
+  static getAccessToken(req: any): string | undefined {
+    // 1. Check Cookies (Primary for secure web sessions)
+    const cookieToken = req.cookies.get('accessToken')?.value || 
+                        req.cookies.get('admin_accessToken')?.value;
+    
+    if (cookieToken) return cookieToken;
+
+    // 2. Check Authorization Header (Fallback for legacy/mobile/tooling)
+    const headerToken = req.headers.get('authorization')?.replace('Bearer ', '');
+    return headerToken || undefined;
+  }
+
+  /**
    * Universal SHA-256 hashing using Web Crypto API.
    * Works in both Node.js 16+ and Edge Runtime.
    */

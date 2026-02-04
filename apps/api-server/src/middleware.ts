@@ -43,13 +43,7 @@ export async function middleware(request: NextRequest) {
     request.nextUrl.pathname === '/api/status';
 
   if (!isPublicRoute) {
-    let token = request.headers.get('authorization')?.replace('Bearer ', '');
-    
-    // Fallback to cookies if Header is missing
-    if (!token) {
-      token = request.cookies.get('accessToken')?.value || 
-              request.cookies.get('admin_accessToken')?.value;
-    }
+    const token = TokenService.getAccessToken(request);
 
     if (!token) {
       const response = NextResponse.json(

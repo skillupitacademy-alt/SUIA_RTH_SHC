@@ -17,10 +17,9 @@ export async function GET(request: NextRequest) {
     if (MIGRATION_SECRET && clientSecret === MIGRATION_SECRET) {
       isAuthorized = true;
     } else {
-      // 2. Fallback to Admin Authentication
-      const authHeader = request.headers.get('authorization');
-      if (authHeader?.startsWith('Bearer ')) {
-        const token = authHeader.split(' ')[1];
+      // 2. Fallback to Admin Authentication (Supports Cookie and Header)
+      const token = TokenService.getAccessToken(request);
+      if (token) {
         try {
           const payload = await TokenService.verifyAccessToken(token);
           isAuthorized = await verifyAdmin(payload);
