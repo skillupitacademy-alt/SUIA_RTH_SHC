@@ -1,6 +1,27 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=Inter:wght@400;500;600;700;800;900&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer utilities {
+  .glass-morphism {
+    @apply bg-white/70 backdrop-blur-[16px] border border-white/20;
+  }
+  
+  .pink-glow {
+    box-shadow: 0 0 20px rgba(255, 45, 85, 0.2), 0 0 40px rgba(255, 45, 85, 0.1);
+  }
+  
+  .pink-glow-border {
+    @apply border-[#FF2D55] ring-4 ring-[#FF2D55]/10;
+    box-shadow: 0 0 15px rgba(255, 45, 85, 0.3);
+  }
+
+  .text-shadow-pink {
+    text-shadow: 0 0 10px rgba(255, 45, 85, 0.5);
+  }
+}
 
 :root {
   /* Default Theme A */

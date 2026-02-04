@@ -1,19 +1,19 @@
-import { QuizSelection } from "@/components/quiz/QuizSelection";
+import { QuizSelectionConsole } from "@/components/quiz/new/QuizSelectionConsole";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 
 export default function NewQuizPage() {
     return (
         <AuthGuard>
-            <div className="min-h-screen bg-muted/5 py-16 px-8 md:px-16 overflow-x-hidden">
-                <div className="w-full mb-20 text-center">
-                    <h1 className="text-5xl md:text-7xl font-black tracking-tighter mb-6 uppercase italic text-[#1A1A1A]">
-                        Start New Assessment_
+            <div className="min-h-screen bg-[#F9FAFB] py-16 px-8 md:px-16 overflow-x-hidden">
+                <div className="max-w-[1400px] mx-auto mb-16">
+                    <h1 className="text-5xl md:text-6xl font-black tracking-tighter mb-4 font-outfit text-[#1A1A1A]">
+                        Launch Evaluation_
                     </h1>
-                    <p className="text-lg md:text-xl text-muted-foreground max-w-4xl mx-auto font-medium uppercase tracking-wide opacity-70">
-                        Configure your enterprise environment. Select a domain and subjects to generate your adaptive exam.
+                    <p className="text-lg text-muted-foreground font-inter font-medium opacity-60">
+                        Strategic ecosystem configuration. Finalize your domain and subjects to initialize the assessment.
                     </p>
                 </div>
-                <QuizSelection />
+                <QuizSelectionConsole />
             </div>
         </AuthGuard>
     );
