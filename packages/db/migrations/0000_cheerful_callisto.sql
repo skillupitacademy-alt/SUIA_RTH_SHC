@@ -1,7 +1,9 @@
 CREATE TYPE "public"."difficulty" AS ENUM('simple', 'intermediate', 'expert');--> statement-breakpoint
+CREATE TYPE "public"."mapping_type" AS ENUM('conceptual', 'technical', 'practical');--> statement-breakpoint
 CREATE TYPE "public"."question_type" AS ENUM('mcq', 'code_mcq');--> statement-breakpoint
+CREATE TYPE "public"."skill_category" AS ENUM('technical', 'cognitive', 'process');--> statement-breakpoint
 CREATE TYPE "public"."status" AS ENUM('active', 'inactive', 'draft');--> statement-breakpoint
-CREATE TYPE "public"."exam_status" AS ENUM('started', 'completed', 'abandoned');--> statement-breakpoint
+CREATE TYPE "public"."exam_status" AS ENUM('started', 'processing', 'completed', 'abandoned', 'failed');--> statement-breakpoint
 CREATE TABLE "audit_logs" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"user_id" uuid,
@@ -90,6 +92,8 @@ CREATE TABLE "users" (
 	"password_hash" text NOT NULL,
 	"email_verified" boolean DEFAULT false NOT NULL,
 	"is_blocked" boolean DEFAULT false NOT NULL,
+	"last_active_at" timestamp DEFAULT now(),
+	"deleted_at" timestamp,
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	"updated_at" timestamp DEFAULT now() NOT NULL,
 	CONSTRAINT "users_email_unique" UNIQUE("email")
@@ -118,8 +122,9 @@ CREATE TABLE "domains" (
 CREATE TABLE "skills" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"name" text NOT NULL,
-	"category" text,
-	"mapping_type" text,
+	"category" "skill_category",
+	"mapping_type" "mapping_type",
+	"weight" integer DEFAULT 1 NOT NULL,
 	CONSTRAINT "skills_name_unique" UNIQUE("name")
 );
 --> statement-breakpoint
@@ -169,6 +174,7 @@ CREATE TABLE "exam_blueprints" (
 	"subject_ids" uuid[],
 	"topic_ids" uuid[],
 	"subtopic_ids" uuid[],
+	"question_ids" uuid[],
 	"total_questions" integer DEFAULT 10 NOT NULL,
 	"time_limit" integer,
 	"difficulty_distribution" jsonb DEFAULT '{"simple":30,"intermediate":30,"expert":40}'::jsonb NOT NULL,
@@ -219,6 +225,7 @@ CREATE TABLE "questions" (
 	"skill_id" uuid,
 	"difficulty" "difficulty" NOT NULL,
 	"type" "question_type" DEFAULT 'mcq' NOT NULL,
+	"mapping_type" "mapping_type",
 	"question_text" text NOT NULL,
 	"options" jsonb NOT NULL,
 	"correct_answer" text NOT NULL,
@@ -254,4 +261,14 @@ ALTER TABLE "question_skills" ADD CONSTRAINT "question_skills_question_id_questi
 ALTER TABLE "question_skills" ADD CONSTRAINT "question_skills_skill_id_skills_id_fk" FOREIGN KEY ("skill_id") REFERENCES "public"."skills"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "questions" ADD CONSTRAINT "questions_topic_id_topics_id_fk" FOREIGN KEY ("topic_id") REFERENCES "public"."topics"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "questions" ADD CONSTRAINT "questions_subtopic_id_subtopics_id_fk" FOREIGN KEY ("subtopic_id") REFERENCES "public"."subtopics"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "questions" ADD CONSTRAINT "questions_skill_id_skills_id_fk" FOREIGN KEY ("skill_id") REFERENCES "public"."skills"("id") ON DELETE set null ON UPDATE no action;
+ALTER TABLE "questions" ADD CONSTRAINT "questions_skill_id_skills_id_fk" FOREIGN KEY ("skill_id") REFERENCES "public"."skills"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+CREATE INDEX "idx_audit_logs_user_id" ON "audit_logs" USING btree ("user_id");--> statement-breakpoint
+CREATE INDEX "idx_login_attempts_ip" ON "login_attempts" USING btree ("ip");--> statement-breakpoint
+CREATE INDEX "idx_refresh_tokens_user_id" ON "refresh_tokens" USING btree ("user_id");--> statement-breakpoint
+CREATE INDEX "idx_subjects_domain_id" ON "subjects" USING btree ("domain_id");--> statement-breakpoint
+CREATE INDEX "idx_subtopics_topic_id" ON "subtopics" USING btree ("topic_id");--> statement-breakpoint
+CREATE INDEX "idx_topics_subject_id" ON "topics" USING btree ("subject_id");--> statement-breakpoint
+CREATE INDEX "idx_exam_questions_exam_order" ON "exam_questions" USING btree ("exam_id","order");--> statement-breakpoint
+CREATE INDEX "idx_exams_user_id_status" ON "exams" USING btree ("user_id","status");--> statement-breakpoint
+CREATE INDEX "idx_questions_selection_filter" ON "questions" USING btree ("topic_id","subtopic_id","difficulty");--> statement-breakpoint
+CREATE INDEX "idx_questions_active_partial" ON "questions" USING btree ("id") WHERE "questions"."status" = 'active';

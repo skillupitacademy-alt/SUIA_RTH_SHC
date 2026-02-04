@@ -1,1 +1,0 @@
-ALTER TABLE "exam_blueprints" ADD COLUMN "question_ids" uuid[];
