@@ -61,4 +61,7 @@ This checklist confirms that all critical concerns are captured in the concernfo
 - Covered in: docs/execution/CURRENT_STATE_REPORT.md (Phase 116)
 - Status: COMPLETED
 
-If you want, I can add a similar checklist for non-critical (nice-to-have) items.
+13) Console Mode Toggle (Basic/Advanced Persona Alignment)
+- Covered in: docs/execution/walkthroughs/walkthrough_console_mode_toggle.md
+- Covered in: docs/execution/CURRENT_STATE_REPORT.md (Phase 117)
+- Status: COMPLETED

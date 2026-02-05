@@ -1,17 +1,16 @@
 # Current Task Log
 
-**Task**: Universal Scope Enforcement & Security Hardening
+**Task**: Console Mode Toggle (Basic/Advanced)
 **Status**: COMPLETED
-**Date**: 2026-02-05
+**Date**: 2026-02-06
 
 ## Recent Actions
-- **Scope-Aware extraction**: Upgraded `TokenService` to support explicit namespace targeting, prioritizing correct cookies for each app context.
-- **Universal Hardening**: Refactored 60+ API routes to use explicit scope verification (`admin` vs `user`).
-- **Identity Isolation**: Implemented scope-aware header fallback, ensuring tokens are verified against the correct secret-scope pair.
-- **Service Repair**: Restored broken method mappings for specialized admin routes (e.g., `deleteQuestionsBatch`, `getAccountMetrics`, `publishQuestion`).
-- **Exam Engine Sync**: Updated quiz interaction routes to map correctly to `SelectionEngine`, `ReportEngine`, and `ExamEngine` for user-scoped sessions.
-- **Technical Certification**: Verified platform-wide build success and 100% TypeScript type-safety (Exit Code 0).
+- **Mode State**: Implemented `mode` state management and high-fidelity toggle UI in `QuizSelectionConsole.tsx`.
+- **Enforcement Hook**: Added `useEffect` for deterministic clamping (Max 2 Subjects, 3 Topics, 0 Subtopics) and question count presets.
+- **Navigation Logic**: Upgraded `handleNext` to support step-skipping (3 -> 5) in Basic mode.
+- **HUD Alignment**: Updated `DottedProgressBar` to visually disable Step 4 and adjusted `JourneyBadge` for mode display.
+- **Validation**: Verified build stability and type-safety across the monorepo.
 
 ## Next Steps
-- **SEC-004**: Implement automated token revocation on security signals (threat level detection).
-- **OPS-003**: Finalize environment-authoritative secret rotation policy for production secrets.
+- **INT-001**: Implement `POST /api/quiz/start` transactional integration.
+- **GUI-002**: Design and implement the Active Assessment HUD (Stationary 700px frame).
