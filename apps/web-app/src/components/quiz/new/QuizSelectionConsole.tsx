@@ -274,6 +274,13 @@ export function QuizSelectionConsole() {
     };
 
     const handleBack = () => {
+        if (mode === 'basic' && (step === 5 || step === 4)) {
+            setStep(3);
+            setPage(0);
+            setSelectionError(null);
+            return;
+        }
+
         if (step > 1) {
             setStep(step - 1);
             setPage(0); // Reset page on step change
@@ -333,24 +340,6 @@ export function QuizSelectionConsole() {
                                     Strategic Ecosystem Configuration
                                 </p>
                             </div>
-
-                            {/* Repositioned Toggle: Below Launch Evaluation */}
-                            <div className="flex bg-gray-100 rounded-lg p-0.5 border border-gray-200 w-fit">
-                                {(['basic', 'advanced'] as const).map((m) => (
-                                    <button
-                                        key={m}
-                                        onClick={() => setMode(m)}
-                                        className={cn(
-                                            "px-6 py-2 rounded-md text-[13px] font-black font-outfit uppercase tracking-tight transition-all",
-                                            mode === m
-                                                ? "bg-[#FF2D55] text-white shadow-sm"
-                                                : "text-gray-500 hover:text-gray-700"
-                                        )}
-                                    >
-                                        {m}
-                                    </button>
-                                ))}
-                            </div>
                         </div>
                     </div>
 
@@ -367,9 +356,27 @@ export function QuizSelectionConsole() {
                                 {currentMeta.title} {currentMeta.count > 0 && `(${currentMeta.count})`}
                             </h2>
                         </div>
-                        <p className="text-sm text-muted-foreground font-inter font-medium opacity-70 max-w-md leading-tight min-h-[40px]">
+                        <p className="text-sm text-muted-foreground font-inter font-medium opacity-70 max-w-md leading-tight min-h-[40px] mb-4">
                             {currentMeta.desc}
                         </p>
+
+                        {/* Repositioned Toggle: Directly Below Description (Right-Bottom) */}
+                        <div className="flex bg-gray-100 rounded-lg p-0.5 border border-gray-200 w-fit">
+                            {(['basic', 'advanced'] as const).map((m) => (
+                                <button
+                                    key={m}
+                                    onClick={() => setMode(m)}
+                                    className={cn(
+                                        "px-6 py-2 rounded-md text-[13px] font-black font-outfit uppercase tracking-tight transition-all",
+                                        mode === m
+                                            ? "bg-[#FF2D55] text-white shadow-sm"
+                                            : "text-gray-500 hover:text-gray-700"
+                                    )}
+                                >
+                                    {m}
+                                </button>
+                            ))}
+                        </div>
                     </div>
                 </div>
             </div>
@@ -435,7 +442,7 @@ export function QuizSelectionConsole() {
                             </div>
                         )}
 
-                        {step === 4 && (
+                        {mode === 'advanced' && step === 4 && (
                             <div className="grid grid-cols-1 sm:grid-cols-4 gap-x-6 gap-y-12 animate-in fade-in duration-500">
                                 {paginatedSubtopics.map((subtopic) => (
                                     <TopicChip
@@ -450,15 +457,15 @@ export function QuizSelectionConsole() {
 
                         {/* Step 5: Engine Calibration (Refactored Dark HUD) */}
                         {step === 5 && (
-                            <div className="animate-in fade-in duration-500 h-full flex flex-col pt-6">
-                                <div className="space-y-6">
+                            <div className="animate-in fade-in duration-500 h-full flex flex-col pt-6 overflow-auto pr-2 custom-scrollbar">
+                                <div className="space-y-8">
                                     {/* Section 1: Difficulty Tier */}
                                     <div className="space-y-4">
                                         <div className="flex items-center gap-2 mb-1">
                                             <div className="h-4 w-1 bg-[#FF2D55] rounded-full" />
                                             <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-400">Difficulty Tier</p>
                                         </div>
-                                        <div className="grid grid-cols-3 gap-6">
+                                        <div className="grid grid-cols-4 gap-6">
                                             {[
                                                 { id: 'mixed', name: 'Mixed', desc: 'Mastery Blend' },
                                                 { id: 'beginner', name: 'Foundations', desc: 'Core Knowledge' },
@@ -469,7 +476,7 @@ export function QuizSelectionConsole() {
                                                     disabled={isLocked}
                                                     onClick={() => setDifficulty(tier.id)}
                                                     className={cn(
-                                                        "p-6 rounded-[1.25rem] border-2 transition-all duration-300 group relative flex flex-col items-center justify-center min-h-[120px]",
+                                                        "p-6 rounded-[1.25rem] border-2 transition-all duration-300 group relative flex flex-col items-center justify-center min-h-[80px]",
                                                         difficulty === tier.id
                                                             ? "bg-[#FF2D55] border-[#FF2D55] shadow-[0_10px_30px_rgba(255,45,85,0.2)]"
                                                             : "bg-[#2B2B2B] border-transparent hover:bg-[#3D3D3D]",
@@ -484,11 +491,12 @@ export function QuizSelectionConsole() {
                                                     </p>
                                                 </button>
                                             ))}
+                                            <div className="invisible" /> {/* Spacer for col-4 */}
                                         </div>
                                     </div>
 
-                                    {/* Section 2: Total Density (Refactored Dark Grid) - 10% Push */}
-                                    <div className="space-y-4 mt-[10%]">
+                                    {/* Section 2: Total Density (Refactored Dark Grid) - Fixed mt-8 */}
+                                    <div className="space-y-4">
                                         <div className="flex items-center gap-2 mb-1">
                                             <div className="h-4 w-1 bg-[#FF2D55] rounded-full" />
                                             <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-400">Total Density</p>
@@ -514,8 +522,8 @@ export function QuizSelectionConsole() {
                                         </div>
                                     </div>
 
-                                    {/* Resulting Logic Display - 5% Push */}
-                                    <div className={cn("bg-gray-50/50 p-6 rounded-3xl border border-gray-300 mt-[5%] transition-all", isLocked && "opacity-50 grayscale")}>
+                                    {/* Resulting Logic Display - Fixed mt-6 */}
+                                    <div className={cn("bg-gray-50/50 p-6 rounded-3xl border border-gray-300 mt-6 transition-all", isLocked && "opacity-50 grayscale")}>
                                         <div className="flex justify-between items-center">
                                             <div className="space-y-0.5">
                                                 <p className="text-3xl font-black font-outfit text-[#1A1A1A] tracking-tighter">~{Math.ceil(questionCount * 1.5)} MINS</p>

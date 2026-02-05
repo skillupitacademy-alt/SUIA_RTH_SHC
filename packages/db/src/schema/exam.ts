@@ -56,6 +56,20 @@ export const examQuestions = pgTable("exam_questions", {
   idx_exam_questions_exam_order: index("idx_exam_questions_exam_order").on(t.examId, t.order),
 }));
 
+export const idempotencyKeys = pgTable("idempotency_keys", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  key: text("key").notNull(),
+  examId: uuid("exam_id")
+    .notNull()
+    .references(() => exams.id, { onDelete: "cascade" }),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (t) => ({
+  unq_user_key: index("unq_user_key").on(t.userId, t.key), // Using index + unique constraint pattern
+}));
+
 export const resultsByDimension = pgTable("results_by_dimension", {
   id: uuid("id").primaryKey().defaultRandom(),
   examId: uuid("exam_id")
@@ -102,6 +116,16 @@ export const examQuestionsRelations = relations(examQuestions, ({ one }) => ({
 export const resultsByDimensionRelations = relations(resultsByDimension, ({ one }) => ({
   exam: one(exams, {
     fields: [resultsByDimension.examId],
+    references: [exams.id],
+  }),
+}));
+export const idempotencyKeysRelations = relations(idempotencyKeys, ({ one }) => ({
+  user: one(users, {
+    fields: [idempotencyKeys.userId],
+    references: [users.id],
+  }),
+  exam: one(exams, {
+    fields: [idempotencyKeys.examId],
     references: [exams.id],
   }),
 }));

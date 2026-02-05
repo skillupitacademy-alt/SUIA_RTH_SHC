@@ -5,8 +5,9 @@
 **Date**: 2026-02-06
 
 ## Recent Actions
-- **Mode State**: Implemented `mode` state management and repositioned 13px toggle UI in `QuizSelectionConsole.tsx`.
-- **Branding**: Added pink-themed branding placeholder on the far left.
+- **Mode State**: Implemented `mode` state management and final right-bottom toggle UI in `QuizSelectionConsole.tsx`.
+- **Navigation Safety**: Hardened `handleBack` for Basic mode (skip Step 4) and added strict render guards.
+- **Step 5 Grid**: Aligned Difficulty and Density grids; fixed layout shifts with targeted overflow and fixed margins.
 - **Enforcement Hook**: Added `useEffect` for deterministic clamping (Max 2 Subjects, 3 Topics, 0 Subtopics) and question count presets.
 - **Navigation Logic**: Upgraded `handleNext` to support step-skipping (3 -> 5) in Basic mode.
 - **HUD Alignment**: Updated `DottedProgressBar` to visually disable Step 4 and adjusted `JourneyBadge` for mode display.
