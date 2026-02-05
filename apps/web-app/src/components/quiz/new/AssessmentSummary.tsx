@@ -158,12 +158,12 @@ export function AssessmentSummary({
                     </div>
 
                     {isReady && !isLocked && (
-                        <div className="mt-auto pt-4 border-t border-gray-300">
+                        <div className="mt-auto pt-4 border-t border-gray-300 pointer-events-auto">
                             <button
                                 onClick={onStart}
                                 disabled={loading}
                                 className={cn(
-                                    "w-full min-h-[56px] rounded-xl bg-gradient-to-br from-[#FF2D55] to-[#D4145A] text-white font-black font-outfit uppercase tracking-[0.1em] shadow-[0_12px_30px_rgba(255,45,85,0.3)] flex items-center justify-center gap-3 transition-all active:scale-95 disabled:grayscale disabled:opacity-30 group hover:shadow-[0_15px_40px_rgba(255,45,85,0.45)]",
+                                    "w-full min-h-[56px] rounded-xl bg-gradient-to-br from-[#FF2D55] to-[#D4145A] text-white font-black font-outfit uppercase tracking-[0.1em] shadow-[0_12px_30px_rgba(255,45,85,0.3)] flex items-center justify-center gap-3 transition-all active:scale-95 disabled:grayscale disabled:opacity-30 group hover:shadow-[0_15px_40px_rgba(255,45,85,0.45)] pointer-events-auto",
                                     "animate-in fade-in zoom-in duration-500 shadow-[0_0_30px_rgba(255,45,85,0.5)] border-2 border-white/20"
                                 )}
                             >

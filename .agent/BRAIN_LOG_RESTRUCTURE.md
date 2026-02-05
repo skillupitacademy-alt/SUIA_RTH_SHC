@@ -1032,30 +1032,37 @@ Reduce documentation fragmentation and improve discoverability by consolidating 
 - **Robustness**: Atomic race-condition handling in `startExam`; concurrent triggers for the same key now resolve to the same session gracefully.
 - **UX Fallback**: Support for domain-only starts via "Virtual Blueprints" (Option 2 choice).
 - **Verification**: Verified `Exit Code 0` on full monorepo build.
-### Batch 119: Viewport Recovery & HUD Symmetrization
+### Batch 121: Viewport Recovery & HUD Symmetrization
 - **Objective**: Fix vertical occlusion on small screens and achieve perfect pane symmetry.
 - **HUD Compression**: Compressed global body height from `h-600` to `h-530` to guarantee visibility on standard laptops (~620px total depth).
 - **Symmetry Lock**: Synchronized both Selection and Summary panes to the same `h-530` baseline for a unified vertical eyeline across the footer action bar.
 - **Vertical Hygiene**: Removed redundant Difficulty/Density labels and tightened padding in Step 5 content and result cards.
 - **Certification**: Verified system-wide integrity with full build and type-check (Exit Code 0).
 
-### Batch 120: Database Alignment & HUD Symmetrization
+### Batch 122: Database Alignment & HUD Symmetrization
 - **Objective**: Synchronize production schema and finalize vertical spatial symmetry.
 - **Database Alignment**: Executed `db:generate` and `drizzle-kit push` to resolve ENUM conflicts and align the Neon production database.
 - **HUD Symmetrization**: Implemented a **10/80/10** vertical split in the Left Pane (`pt-20`, `pb-53`) to achieve perfect horizontal top-alignment with the Assessment Summary.
 - **Air Cushion**: Enforced a 53px bottom buffer to protect the navigation buttons from grid overflow.
 - **Certification**: Verified system-wide integrity with successful `pnpm build` and `tsc --noEmit`.
-### Batch 121: Aesthetic HUD & Global State Lock
+### Batch 123: Aesthetic HUD & Global State Lock
 - **Objective**: Finalize header hierarchy, remove progress complexity, and implement launch-state suspension.
 - **Header Refactor**: Inverted the header architecture. Moved "Step Orientation" (JourneyBadge/Title/Icon) to the **Left** and "Launch Evaluation" Branding to the **Right**.
 - **Progress Removal**: Completely removed `DottedProgressBar` to maximize horizontal scanability.
 - **Symmetry Restoration**: Returned vertical buffers to **53px (10/80/10)** following user feedback, aligning both Choice and Summary panes to the same `Y=53` baseline.
 - **Global Lock Logic**: Implemented `isLocked` state in `QuizSelectionConsole`. Once assessment initiates, the entire Selection Pane (Left) dims to **10% opacity** and disables all interactions via `pointer-events-none`.
 - **Verification**: Certified with `pnpm build ; npx tsc --noEmit` (Exit Code 0).
-### Batch 122: Unified HUD Baseline & No-Scroll Policy
+### Batch 124: Unified HUD Baseline & No-Scroll Policy
 - **Objective**: Establish a unified vertical start line and strictly prohibit internal scrollbars across the launch console.
 - **Baseline Synchronization**: Standardized the content anchor for both Choice and Summary panes using a shared `pt-6` wrapper, achieving a perfect horizontal eyeline across all 5 steps.
 - **Overflow Control**: Strictly avoided `overflow-auto`. Implemented list clamping in `AssessmentSummary` (max 3 items + "+X more" badge) and enforced pagination as the sole matrix overflow guard.
 - **Step 5 Block Refactor**: Re-engineered Step 5 as a stable vertical stack with fixed gaps, eliminating layout jumps.
 - **Footer Pinning**: Locked the action bar at the absolute bottom using `mt-auto`, ensuring buttons never shift position.
 - **Verification**: System integrity confirmed with root `pnpm build` and `tsc --noEmit` checks (Exit Code 0).
+### Batch 123: HUD Highlight Fix & Arm Lock Refinement
+- **Objective**: Resolve pixel-level clipping on selection glows and enforce a rigorous "Armed" lock state.
+- **Visual Repair**: Changed `Matrix Zone` to `overflow-visible` and applied `px-2` horizontal padding; selection rings/shadows are now 100% visible even on right-edge cards/chips.
+- **Defense-in-Depth**: Implemented dual-layer interaction blocking: visual (`pointer-events-none` on selection pane) and logic-level (`if (isLocked || isArmed) return;` on all handlers/setters).
+- **Dual CTA Accessibility**: Specifically exempted both the Footer "MISSION ARMED" button and the Summary "Launch Assessment" button from the armed-lock via `pointer-events-auto`.
+- **Navigation Freeze**: Mode toggles, pagination, and Back/Continue paths are strictly frozen once the mission is armed.
+- **Certification**: Full build and tsc cycle passed (`Exit Code 0`).

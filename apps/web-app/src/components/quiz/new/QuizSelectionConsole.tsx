@@ -202,6 +202,7 @@ export function QuizSelectionConsole() {
     }, [mode]);
 
     const toggleDomain = (id: string) => {
+        if (isLocked || isArmed) return;
         // Enforce Single Select per user instruction
         setSelectedDomains([id]);
         // Reset child levels
@@ -211,6 +212,7 @@ export function QuizSelectionConsole() {
     };
 
     const toggleSubject = (id: string) => {
+        if (isLocked || isArmed) return;
         setSelectedSubjects(prev => {
             if (prev.includes(id)) {
                 setSelectionError(null);
@@ -229,6 +231,7 @@ export function QuizSelectionConsole() {
     };
 
     const toggleTopic = (id: string) => {
+        if (isLocked || isArmed) return;
         const cap = mode === 'basic' ? 3 : 4;
         setSelectedTopics(prev => {
             if (prev.includes(id)) {
@@ -246,6 +249,7 @@ export function QuizSelectionConsole() {
     };
 
     const toggleSubtopic = (id: string) => {
+        if (isLocked || isArmed) return;
         setSelectedSubtopics(prev => {
             if (prev.includes(id)) {
                 setSelectionError(null);
@@ -261,6 +265,17 @@ export function QuizSelectionConsole() {
     };
 
     const handleNext = () => {
+        if (isLocked || isArmed) {
+            // Special exemption: If armed but not locked, and we're at step 5, 
+            // handleNext (which initiates launch) is allowed if it's the launch trigger.
+            // But here handleNext sets isArmed to true, so it's already "Next" in step 5.
+            if (step === 5 && isArmed && !isLocked) {
+                // Launch logic would typically be handled by the CTA button itself (onStart)
+                // but if this button is clicked again, we handle it as Launch.
+                setIsLocked(true);
+            }
+            return;
+        }
         if (step === 5) {
             setIsArmed(true);
             return;
@@ -274,6 +289,7 @@ export function QuizSelectionConsole() {
     };
 
     const handleBack = () => {
+        if (isLocked || isArmed) return;
         if (mode === 'basic' && (step === 5 || step === 4)) {
             setStep(3);
             setPage(0);
@@ -289,10 +305,12 @@ export function QuizSelectionConsole() {
     };
 
     const handlePrevPage = () => {
+        if (isLocked || isArmed) return;
         setPage((prev) => Math.max(0, prev - 1));
     };
 
     const handleNextPage = () => {
+        if (isLocked || isArmed) return;
         const totalItems = step === 1 ? domains.length : (step === 3 ? topics.length : (step === 2 ? subjects.length : (step === 4 ? subtopics.length : 0)));
         const totalPages = Math.ceil(totalItems / currentPageSize);
         setPage((prev) => Math.min(totalPages - 1, prev + 1));
