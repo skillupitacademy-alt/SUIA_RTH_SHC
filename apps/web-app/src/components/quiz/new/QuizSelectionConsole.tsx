@@ -172,165 +172,164 @@ export function QuizSelectionConsole() {
     const paginatedTopics = topics.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
 
     return (
-        <div className="flex flex-col lg:flex-row gap-12 max-w-[1400px] mx-auto min-h-[750px] relative">
-            {/* Left Pane (65%) - Surgical Stationary Overhaul */}
-            <div className="w-full lg:w-[65%] flex flex-col relative pb-32">
-
-                {/* Header Section (Zero Layout Shift) */}
-                <div className="mb-12 min-h-[100px]">
-                    {loading && domains.length === 0 ? (
-                        <div className="flex items-center gap-3 text-[#FF2D55] animate-pulse">
-                            <Loader2 className="animate-spin" size={24} />
-                            <span className="font-outfit font-bold uppercase tracking-widest text-lg">Syncing with Intelligence Hub...</span>
-                        </div>
-                    ) : (
-                        <>
-                            {step === 1 && (
-                                <div className="animate-in fade-in slide-in-from-left-4 duration-700">
-                                    <h2 className="text-4xl font-black font-outfit tracking-tighter text-[#1A1A1A] mb-2 uppercase">
-                                        Select Domain ({domains.length})
-                                    </h2>
-                                    <p className="text-muted-foreground font-inter font-medium opacity-70">Choose your area of expertise to begin the assessment.</p>
-                                </div>
-                            )}
-
-                            {step === 2 && (
-                                <div className="animate-in fade-in slide-in-from-left-4 duration-700">
-                                    <h2 className="text-4xl font-black font-outfit tracking-tighter text-[#1A1A1A] mb-2 uppercase">
-                                        Refine Subjects ({subjects.length})
-                                    </h2>
-                                    <p className="text-muted-foreground font-inter font-medium opacity-70 text-sm">Select the core subjects for your assessment pool.</p>
-                                </div>
-                            )}
-
-                            {step === 3 && (
-                                <div className="animate-in fade-in slide-in-from-left-4 duration-700">
-                                    <h2 className="text-4xl font-black font-outfit tracking-tighter text-[#1A1A1A] mb-2 uppercase">
-                                        Select Topics ({topics.length})
-                                    </h2>
-                                    <p className="text-muted-foreground font-inter font-medium opacity-70">High-density grid of strategic knowledge units.</p>
-                                </div>
-                            )}
-
-                            {step === 4 && (
-                                <div className="animate-in fade-in slide-in-from-left-4 duration-700">
-                                    <h2 className="text-4xl font-black font-outfit tracking-tighter text-[#1A1A1A] mb-2 uppercase">
-                                        Fine-tune Subtopics ({subtopics.length})
-                                    </h2>
-                                    <p className="text-muted-foreground font-inter font-medium opacity-70">Pinpoint specific skills for deeper evaluation.</p>
-                                </div>
-                            )}
-                        </>
-                    )}
-                </div>
-
-                {/* Content Area (Stationary Grid via Slicing) - LOCKED HEIGHT 550px */}
-                <div className="h-[550px] overflow-visible">
-                    {step === 1 && (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 animate-in fade-in duration-500">
-                            {paginatedDomains.map((domain, idx) => (
-                                <DomainCard
-                                    key={domain.id}
-                                    {...domain}
-                                    {...getDomainMeta(idx + page * PAGE_SIZE)}
-                                    isSelected={selectedDomains.includes(domain.id)}
-                                    onSelect={toggleDomain}
-                                    accentColor={getDomainMeta(idx + page * PAGE_SIZE).accent}
-                                />
-                            ))}
-                        </div>
-                    )}
-
-                    {step === 2 && (
-                        <div className="flex flex-wrap gap-4 animate-in fade-in duration-500">
-                            {subjects.map((sub) => (
-                                <TopicChip
-                                    key={sub.id}
-                                    {...sub}
-                                    isSelected={selectedSubjects.includes(sub.id)}
-                                    onToggle={toggleSubject}
-                                />
-                            ))}
-                        </div>
-                    )}
-
-                    {step === 3 && (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 animate-in fade-in duration-500">
-                            {paginatedTopics.map((topic) => (
-                                <TopicChip
-                                    key={topic.id}
-                                    {...topic}
-                                    isSelected={selectedTopics.includes(topic.id)}
-                                    onToggle={toggleTopic}
-                                />
-                            ))}
-                        </div>
-                    )}
-
-                    {step === 4 && (
-                        <div className="flex flex-wrap gap-4 animate-in fade-in duration-500">
-                            {subtopics.map((subtopic) => (
-                                <TopicChip
-                                    key={subtopic.id}
-                                    {...subtopic}
-                                    isSelected={selectedSubtopics.includes(subtopic.id)}
-                                    onToggle={toggleSubtopic}
-                                />
-                            ))}
-                        </div>
-                    )}
-                </div>
-
-                {/* Fixed Action Footer (Absolute Anchored) */}
-                <div className="absolute bottom-0 left-0 right-0 py-8 flex items-center justify-between border-t border-gray-100 bg-white/50 backdrop-blur-sm z-20">
-                    <button
-                        onClick={handleBack}
-                        disabled={step === 1}
-                        className={cn(
-                            "px-12 py-4 rounded-xl font-bold font-outfit text-sm uppercase tracking-widest transition-all",
-                            step === 1
-                                ? "bg-gray-100 text-gray-300 cursor-not-allowed"
-                                : "bg-[#FF2D55] text-white shadow-[0_10px_30px_rgba(255,45,85,0.2)] hover:shadow-[0_15px_40px_rgba(255,45,85,0.45)] active:scale-95"
+        <div className="max-w-[1400px] mx-auto min-h-[850px] relative px-4 sm:px-6 lg:px-8 py-12">
+            {/* Header Section (Full Width Top Row) */}
+            <div className="mb-12 min-h-[100px]">
+                {loading && domains.length === 0 ? (
+                    <div className="flex items-center gap-3 text-[#FF2D55] animate-pulse">
+                        <Loader2 className="animate-spin" size={24} />
+                        <span className="font-outfit font-bold uppercase tracking-widest text-lg">Syncing with Intelligence Hub...</span>
+                    </div>
+                ) : (
+                    <>
+                        {step === 1 && (
+                            <div className="animate-in fade-in slide-in-from-left-4 duration-700">
+                                <h2 className="text-4xl font-black font-outfit tracking-tighter text-[#1A1A1A] mb-2 uppercase">
+                                    Select Domain ({domains.length})
+                                </h2>
+                                <p className="text-muted-foreground font-inter font-medium opacity-70">Choose your area of expertise to begin the assessment.</p>
+                            </div>
                         )}
-                    >
-                        BACK
-                    </button>
 
-                    {(step === 1 || step === 3) && (
-                        <button
-                            onClick={handleLoadMore}
-                            className="px-12 py-4 rounded-xl bg-[#FF2D55] text-white font-bold font-outfit text-sm uppercase tracking-widest shadow-[0_10px_30px_rgba(255,45,85,0.2)] hover:shadow-[0_15px_40px_rgba(255,45,85,0.45)] active:scale-95 transition-all"
-                        >
-                            LOAD MORE
-                        </button>
-                    )}
-
-                    <button
-                        onClick={handleNext}
-                        disabled={
-                            (step === 1 && selectedDomains.length === 0) ||
-                            (step === 2 && selectedSubjects.length === 0) ||
-                            (step === 3 && selectedTopics.length === 0) ||
-                            (step === 4 && selectedSubtopics.length === 0)
-                        }
-                        className={cn(
-                            "px-12 py-4 rounded-xl font-bold font-outfit uppercase tracking-widest transition-all",
-                            ((step === 1 && selectedDomains.length > 0) ||
-                                (step === 2 && selectedSubjects.length > 0) ||
-                                (step === 3 && selectedTopics.length > 0) ||
-                                (step === 4 && selectedSubtopics.length > 0))
-                                ? "bg-[#FF2D55] text-white shadow-[0_10px_30px_rgba(255,45,85,0.2)] hover:shadow-[0_15px_40_rgba(255,45,85,0.45)] active:scale-95"
-                                : "bg-gray-100 text-gray-300 cursor-not-allowed"
+                        {step === 2 && (
+                            <div className="animate-in fade-in slide-in-from-left-4 duration-700">
+                                <h2 className="text-4xl font-black font-outfit tracking-tighter text-[#1A1A1A] mb-2 uppercase">
+                                    Refine Subjects ({subjects.length})
+                                </h2>
+                                <p className="text-muted-foreground font-inter font-medium opacity-70 text-sm">Select the core subjects for your assessment pool.</p>
+                            </div>
                         )}
-                    >
-                        {step === 4 ? "FINALIZE →" : "CONTINUE →"}
-                    </button>
-                </div>
+
+                        {step === 3 && (
+                            <div className="animate-in fade-in slide-in-from-left-4 duration-700">
+                                <h2 className="text-4xl font-black font-outfit tracking-tighter text-[#1A1A1A] mb-2 uppercase">
+                                    Select Topics ({topics.length})
+                                </h2>
+                                <p className="text-muted-foreground font-inter font-medium opacity-70">High-density grid of strategic knowledge units.</p>
+                            </div>
+                        )}
+
+                        {step === 4 && (
+                            <div className="animate-in fade-in slide-in-from-left-4 duration-700">
+                                <h2 className="text-4xl font-black font-outfit tracking-tighter text-[#1A1A1A] mb-2 uppercase">
+                                    Fine-tune Subtopics ({subtopics.length})
+                                </h2>
+                                <p className="text-muted-foreground font-inter font-medium opacity-70">Pinpoint specific skills for deeper evaluation.</p>
+                            </div>
+                        )}
+                    </>
+                )}
             </div>
 
-            {/* Right Pane (35%) - Dynamic Summary aligned with Grid */}
-            <div className="w-full lg:w-[35%] flex flex-col pt-[148px]">
-                <div className="h-[550px] relative">
+            <div className="flex flex-col lg:flex-row gap-12 items-stretch">
+                {/* Left Pane (65%) - Locked Height Console */}
+                <div className="w-full lg:w-[65%] flex flex-col relative h-[650px]">
+                    {/* Content Area (Stationary Grid via Slicing) */}
+                    <div className="flex-1 overflow-visible">
+                        {step === 1 && (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 animate-in fade-in duration-500">
+                                {paginatedDomains.map((domain, idx) => (
+                                    <DomainCard
+                                        key={domain.id}
+                                        {...domain}
+                                        {...getDomainMeta(idx + page * PAGE_SIZE)}
+                                        isSelected={selectedDomains.includes(domain.id)}
+                                        onSelect={toggleDomain}
+                                        accentColor={getDomainMeta(idx + page * PAGE_SIZE).accent}
+                                    />
+                                ))}
+                            </div>
+                        )}
+
+                        {step === 2 && (
+                            <div className="flex flex-wrap gap-4 animate-in fade-in duration-500">
+                                {subjects.map((sub) => (
+                                    <TopicChip
+                                        key={sub.id}
+                                        {...sub}
+                                        isSelected={selectedSubjects.includes(sub.id)}
+                                        onToggle={toggleSubject}
+                                    />
+                                ))}
+                            </div>
+                        )}
+
+                        {step === 3 && (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 animate-in fade-in duration-500">
+                                {paginatedTopics.map((topic) => (
+                                    <TopicChip
+                                        key={topic.id}
+                                        {...topic}
+                                        isSelected={selectedTopics.includes(topic.id)}
+                                        onToggle={toggleTopic}
+                                    />
+                                ))}
+                            </div>
+                        )}
+
+                        {step === 4 && (
+                            <div className="flex flex-wrap gap-4 animate-in fade-in duration-500">
+                                {subtopics.map((subtopic) => (
+                                    <TopicChip
+                                        key={subtopic.id}
+                                        {...subtopic}
+                                        isSelected={selectedSubtopics.includes(subtopic.id)}
+                                        onToggle={toggleSubtopic}
+                                    />
+                                ))}
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Fixed Action Footer (Absolute Anchored) */}
+                    <div className="mt-auto py-8 flex items-center justify-between border-t border-gray-100 bg-white/50 backdrop-blur-sm z-20">
+                        <button
+                            onClick={handleBack}
+                            disabled={step === 1}
+                            className={cn(
+                                "px-12 py-4 rounded-xl font-bold font-outfit text-sm uppercase tracking-widest transition-all",
+                                step === 1
+                                    ? "bg-gray-100 text-gray-300 cursor-not-allowed"
+                                    : "bg-[#FF2D55] text-white shadow-[0_10px_30px_rgba(255,45,85,0.2)] hover:shadow-[0_15px_40px_rgba(255,45,85,0.45)] active:scale-95"
+                            )}
+                        >
+                            BACK
+                        </button>
+
+                        {(step === 1 || step === 3) && (
+                            <button
+                                onClick={handleLoadMore}
+                                className="px-12 py-4 rounded-xl bg-[#FF2D55] text-white font-bold font-outfit text-sm uppercase tracking-widest shadow-[0_10px_30px_rgba(255,45,85,0.2)] hover:shadow-[0_15px_40px_rgba(255,45,85,0.45)] active:scale-95 transition-all"
+                            >
+                                LOAD MORE
+                            </button>
+                        )}
+
+                        <button
+                            onClick={handleNext}
+                            disabled={
+                                (step === 1 && selectedDomains.length === 0) ||
+                                (step === 2 && selectedSubjects.length === 0) ||
+                                (step === 3 && selectedTopics.length === 0) ||
+                                (step === 4 && selectedSubtopics.length === 0)
+                            }
+                            className={cn(
+                                "px-12 py-4 rounded-xl font-bold font-outfit uppercase tracking-widest transition-all",
+                                ((step === 1 && selectedDomains.length > 0) ||
+                                    (step === 2 && selectedSubjects.length > 0) ||
+                                    (step === 3 && selectedTopics.length > 0) ||
+                                    (step === 4 && selectedSubtopics.length > 0))
+                                    ? "bg-[#FF2D55] text-white shadow-[0_10px_30px_rgba(255,45,85,0.2)] hover:shadow-[0_15px_40_rgba(255,45,85,0.45)] active:scale-95"
+                                    : "bg-gray-100 text-gray-300 cursor-not-allowed"
+                            )}
+                        >
+                            {step === 4 ? "FINALIZE →" : "CONTINUE →"}
+                        </button>
+                    </div>
+                </div>
+
+                {/* Right Pane (35%) - Aligned Top & Bottom */}
+                <div className="w-full lg:w-[35%] flex flex-col h-[650px]">
                     <AssessmentSummary
                         domainName={currentDomain?.name || 'Not Selected'}
                         subjectsCount={selectedSubjects.length}
