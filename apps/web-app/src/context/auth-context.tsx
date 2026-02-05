@@ -15,11 +15,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     useEffect(() => {
         const initAuth = async () => {
-            // Re-validate session on mount using the httpOnly cookie
             try {
+                // Re-validate session on mount using the httpOnly cookie
                 const session = await apiClient.auth.getSession();
                 if (session && session.user) {
                     login(session.user);
+                } else {
+                    // If session returns successfully but without a user, we are logged out
+                    logout();
                 }
             } catch (error) {
                 // If session is invalid, try refresh logic
@@ -28,16 +31,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                     const session = await apiClient.auth.getSession();
                     if (session && session.user) {
                         login(session.user);
+                    } else {
+                        logout();
                     }
                 } catch (refreshError) {
                     logout();
                 }
+            } finally {
+                setLoading(false);
             }
-            setLoading(false);
         };
 
+        const handleUnauthorized = () => {
+            logout();
+        };
+
+        window.addEventListener('auth:unauthorized', handleUnauthorized);
         initAuth();
-    }, [login, logout]); // Essential store methods
+
+        return () => {
+            window.removeEventListener('auth:unauthorized', handleUnauthorized);
+        };
+    }, [login, logout]);
 
     return (
         <AuthContext.Provider value={{ user, loading, login, logout, isAuthenticated }}>

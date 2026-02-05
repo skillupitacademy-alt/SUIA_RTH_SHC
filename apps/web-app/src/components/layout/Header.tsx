@@ -3,27 +3,32 @@
 import Link from 'next/link';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { LayoutDashboard, LogIn, UserPlus, LogOut, User } from 'lucide-react';
-import { useAuthStore } from '@/store/auth-store';
-import { useRouter } from 'next/navigation';
+import { useAuth } from '@/context/auth-context';
+import { useRouter, usePathname } from 'next/navigation';
 
 export function Header() {
-    const { isAuthenticated, user, logout } = useAuthStore();
+    const { isAuthenticated, user, logout, loading } = useAuth();
     const router = useRouter();
+    const pathname = usePathname();
 
     const handleLogout = () => {
         logout();
         router.push('/');
     };
 
+    const isAuthPage = pathname === '/login' || pathname === '/signup';
+
     return (
         <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
             <div className="container flex h-14 items-center justify-between px-6 mx-auto">
                 <div className="flex items-center gap-6 md:gap-8">
                     <Link href="/" className="flex items-center space-x-2">
-                        <span className="inline-block font-bold text-xl text-primary">QuizPlatform</span>
+                        <span className="inline-block font-bold text-xl text-primary font-mono tracking-tighter">
+                            QUIZ<span className="text-foreground">PLATFORM</span>
+                        </span>
                     </Link>
                     <nav className="flex gap-6">
-                        {isAuthenticated && (
+                        {isAuthenticated && !loading && !isAuthPage && (
                             <Link
                                 href="/dashboard"
                                 className="flex items-center text-sm font-medium text-muted-foreground hover:text-primary transition-colors"
@@ -37,7 +42,12 @@ export function Header() {
                 <div className="flex items-center gap-4">
                     <ThemeToggle />
                     <nav className="flex items-center gap-2">
-                        {!isAuthenticated ? (
+                        {loading ? (
+                            <div className="flex items-center gap-4">
+                                <div className="h-4 w-20 animate-pulse bg-muted rounded" />
+                                <div className="h-9 w-20 animate-pulse bg-muted rounded-md" />
+                            </div>
+                        ) : !isAuthenticated || isAuthPage ? (
                             <>
                                 <Link
                                     href="/login"

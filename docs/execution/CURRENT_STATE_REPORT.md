@@ -503,3 +503,10 @@
 - **Header Stability**: Stabilized the "Launch Evaluation" header against dynamic Step 5 content shifts via top-aligned flex rules.
 - **Contrast Optimization**: Boosted Executive Hairline density to **gray-300** for high-fidelity architectural clarity.
 - **Technical Certification**: Verified monorepo integrity with successful `pnpm build` and `tsc --noEmit` checks.
+
+### Phase 114: Auth State Synchronization & "Lying UI" Resolution
+- **"Lying UI" Fix**: Resolved the race condition where stale `localStorage` data showed the user name/logout briefly on refresh while the session was expired.
+- **Verified-First Header**: Refactored the global Header to respect the `loading` state from `AuthProvider`, ensuring only verified auth states are rendered.
+- **Synchronized State**: Forced `AuthGuard` into a definitive `logout()` on session failure, guaranteeing the global store is cleared before redirecting to `/login`.
+- **Global Interceptor**: Registered a platform-wide `auth:unauthorized` listener in the root `AuthProvider` to purge stale sessions instantly upon any 401 API response.
+- **Technical Certification**: Verified monorepo integrity with 100% build and type-check success (**Exit Code 0**).

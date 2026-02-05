@@ -977,3 +977,13 @@ Reduce documentation fragmentation and improve discoverability by consolidating 
     - **Tactical Contrast**: Boosted global hairline dividers to **gray-300** for boardroom-ready definition.
 - **Technical Certification**: Verified full monorepo build and type-safety check (**Exit Code 0**).
 - **Outcome**: Delivered a secure, high-fidelity HUD with surgical feedback and orientation stability.
+
+### Batch 114: Auth State Synchronization & "Lying UI" Fix
+- **Problem**: Stale user data in `localStorage` caused the Header to show the user profile briefly on refresh before the server-side session checkout completed, resulting in a "flash of Ajay" even when the session was expired.
+- **Solution**: Implemented a **Verified-First** rendering policy for the global header.
+- **Implementation**:
+    - **AuthContext**: Unified `loading` state logic to ensure `initAuth` completes before UI hydration allows authenticated renders.
+    - **Header Refactor**: Switched from direct `useAuthStore` access to `useAuth` context, rendering a pulse-skeleton during the verification phase.
+    - **Race Condition Resolution**: Forced `AuthGuard` into a `logout()` call upon verification failure to ensure the global store is cleared before redirecting to `/login`.
+    - **Global Interceptor**: Added `auth:unauthorized` event listener to `AuthProvider` to clear the store instantly on any 401 response.
+- **Outcome**: Eliminated authentication artifacts, ensuring a truthful UI that always reflects the server-side session status.
