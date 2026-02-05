@@ -23,7 +23,9 @@ export function QuizSelectionConsole() {
 
     // Pagination State
     const [page, setPage] = useState(0);
-    const PAGE_SIZE = 4;
+    const domainPageSize = 4;
+    const subPageSize = 6;
+    const currentPageSize = step === 1 ? domainPageSize : subPageSize;
 
     // UI Meta helper (for icons and accents in Domain Cards)
     const getDomainMeta = (index: number) => {
@@ -157,8 +159,8 @@ export function QuizSelectionConsole() {
     };
 
     const handleLoadMore = () => {
-        const totalItems = step === 1 ? domains.length : (step === 3 ? topics.length : 0);
-        const totalPages = Math.ceil(totalItems / PAGE_SIZE);
+        const totalItems = step === 1 ? domains.length : (step === 3 ? topics.length : (step === 2 ? subjects.length : (step === 4 ? subtopics.length : 0)));
+        const totalPages = Math.ceil(totalItems / currentPageSize);
         setPage((prev) => (prev + 1) % totalPages);
     };
 
@@ -168,13 +170,15 @@ export function QuizSelectionConsole() {
     const currentTopics = topics.filter(t => selectedTopics.includes(t.id));
     const currentSubtopics = subtopics.filter(st => selectedSubtopics.includes(st.id));
 
-    const paginatedDomains = domains.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
-    const paginatedTopics = topics.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
+    const paginatedDomains = domains.slice(page * currentPageSize, (page + 1) * currentPageSize);
+    const paginatedTopics = topics.slice(page * currentPageSize, (page + 1) * currentPageSize);
+    const paginatedSubjects = subjects.slice(page * currentPageSize, (page + 1) * currentPageSize);
+    const paginatedSubtopics = subtopics.slice(page * currentPageSize, (page + 1) * currentPageSize);
 
     return (
         <div className="max-w-[1400px] mx-auto min-h-[850px] relative px-4 sm:px-6 lg:px-8 py-12">
             {/* Header Section (Full Width Top Row) */}
-            <div className="mb-10 min-h-[100px]">
+            <div className="mb-9 min-h-[100px]">
                 {loading && domains.length === 0 ? (
                     <div className="flex items-center gap-3 text-[#FF2D55] animate-pulse">
                         <Loader2 className="animate-spin" size={24} />
@@ -232,18 +236,18 @@ export function QuizSelectionConsole() {
                                     <DomainCard
                                         key={domain.id}
                                         {...domain}
-                                        {...getDomainMeta(idx + page * PAGE_SIZE)}
+                                        {...getDomainMeta(idx + page * currentPageSize)}
                                         isSelected={selectedDomains.includes(domain.id)}
                                         onSelect={toggleDomain}
-                                        accentColor={getDomainMeta(idx + page * PAGE_SIZE).accent}
+                                        accentColor={getDomainMeta(idx + page * currentPageSize).accent}
                                     />
                                 ))}
                             </div>
                         )}
 
                         {step === 2 && (
-                            <div className="flex flex-wrap gap-4 animate-in fade-in duration-500">
-                                {subjects.map((sub) => (
+                            <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 animate-in fade-in duration-500">
+                                {paginatedSubjects.map((sub) => (
                                     <TopicChip
                                         key={sub.id}
                                         {...sub}
@@ -255,7 +259,7 @@ export function QuizSelectionConsole() {
                         )}
 
                         {step === 3 && (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 animate-in fade-in duration-500">
+                            <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 animate-in fade-in duration-500">
                                 {paginatedTopics.map((topic) => (
                                     <TopicChip
                                         key={topic.id}
@@ -268,8 +272,8 @@ export function QuizSelectionConsole() {
                         )}
 
                         {step === 4 && (
-                            <div className="flex flex-wrap gap-4 animate-in fade-in duration-500">
-                                {subtopics.map((subtopic) => (
+                            <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 animate-in fade-in duration-500">
+                                {paginatedSubtopics.map((subtopic) => (
                                     <TopicChip
                                         key={subtopic.id}
                                         {...subtopic}
@@ -296,7 +300,7 @@ export function QuizSelectionConsole() {
                             BACK
                         </button>
 
-                        {(step === 1 || step === 3) && (
+                        {(step === 1 || step === 3 || step === 2 || step === 4) && (
                             <button
                                 onClick={handleLoadMore}
                                 className="px-12 py-4 rounded-xl bg-[#FF2D55] text-white font-bold font-outfit text-sm uppercase tracking-widest shadow-[0_10px_30px_rgba(255,45,85,0.2)] hover:shadow-[0_15px_40px_rgba(255,45,85,0.45)] active:scale-95 transition-all"
@@ -329,7 +333,7 @@ export function QuizSelectionConsole() {
                 </div>
 
                 {/* Right Pane (35%) - Aligned Top & Bottom */}
-                <div className="w-full lg:w-[35%] flex flex-col h-[650px] pt-2">
+                <div className="w-full lg:w-[35%] flex flex-col h-[650px] pt-[136px]">
                     <AssessmentSummary
                         domainName={currentDomain?.name || 'Not Selected'}
                         subjectsCount={selectedSubjects.length}
