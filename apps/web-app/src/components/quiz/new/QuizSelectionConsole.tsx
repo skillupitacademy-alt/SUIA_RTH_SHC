@@ -360,12 +360,16 @@ export function QuizSelectionConsole() {
                             {(['basic', 'advanced'] as const).map((m) => (
                                 <button
                                     key={m}
-                                    onClick={() => setMode(m)}
+                                    onClick={() => {
+                                        if (isLocked || isArmed) return;
+                                        setMode(m);
+                                    }}
                                     className={cn(
                                         "px-6 py-2 rounded-md text-[13px] font-black font-outfit uppercase tracking-tight transition-all",
                                         mode === m
                                             ? "bg-[#FF2D55] text-white shadow-sm"
-                                            : "text-gray-500 hover:text-gray-700"
+                                            : "text-gray-500 hover:text-gray-700",
+                                        (isLocked || isArmed) && "opacity-50 cursor-not-allowed"
                                     )}
                                 >
                                     {m}
@@ -390,7 +394,7 @@ export function QuizSelectionConsole() {
                 {/* Left Pane (65%) - Locked Height Console (h-530) */}
                 <div className={cn(
                     "w-full lg:w-[65%] flex flex-col relative h-[530px] transition-all duration-700",
-                    isLocked ? "opacity-10 pointer-events-none" : "opacity-100"
+                    isLocked ? "opacity-10 pointer-events-none" : (isArmed ? "opacity-50 pointer-events-none" : "opacity-100")
                 )}>
                     {/* Unified Start Line: pt-6 matching Right Pane */}
                     <div className="flex-1 flex flex-col pt-6">
@@ -402,7 +406,7 @@ export function QuizSelectionConsole() {
                             )}
 
                             {/* Matrix Zone (No internal scrollbars allowed) */}
-                            <div className="h-full flex flex-col overflow-hidden">
+                            <div className="h-full flex flex-col overflow-visible px-2">
                                 <div className="flex-1">
                                     {step === 1 && (
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-6 animate-in fade-in duration-500">
@@ -471,14 +475,17 @@ export function QuizSelectionConsole() {
                                                     ].map((tier) => (
                                                         <button
                                                             key={tier.id}
-                                                            disabled={isLocked}
-                                                            onClick={() => setDifficulty(tier.id)}
+                                                            disabled={isLocked || isArmed}
+                                                            onClick={() => {
+                                                                if (isLocked || isArmed) return;
+                                                                setDifficulty(tier.id);
+                                                            }}
                                                             className={cn(
                                                                 "p-4 rounded-[1.25rem] border-2 transition-all duration-300 group relative flex flex-col items-center justify-center min-h-[80px]",
                                                                 difficulty === tier.id
                                                                     ? "bg-[#FF2D55] border-[#FF2D55] shadow-[0_10px_30px_rgba(255,45,85,0.2)]"
                                                                     : "bg-[#2B2B2B] border-transparent hover:bg-[#3D3D3D]",
-                                                                isLocked && "opacity-50 pointer-events-none"
+                                                                (isLocked || isArmed) && "opacity-50 pointer-events-none"
                                                             )}
                                                         >
                                                             <p className="text-base font-black font-outfit uppercase tracking-tight text-white">
@@ -497,14 +504,17 @@ export function QuizSelectionConsole() {
                                                     {(mode === 'basic' ? [10, 15, 20, 25] : [5, 10, 15, 20, 25, 30, 40, 50]).map((v) => (
                                                         <button
                                                             key={v}
-                                                            disabled={isLocked}
-                                                            onClick={() => setQuestionCount(v)}
+                                                            disabled={isLocked || isArmed}
+                                                            onClick={() => {
+                                                                if (isLocked || isArmed) return;
+                                                                setQuestionCount(v);
+                                                            }}
                                                             className={cn(
                                                                 "p-4 rounded-[1.25rem] border-2 transition-all duration-300 group relative flex flex-col items-center justify-center min-h-[80px]",
                                                                 questionCount === v
                                                                     ? "bg-[#FF2D55] border-[#FF2D55] shadow-[0_10px_30px_rgba(255,45,85,0.2)]"
                                                                     : "bg-[#2B2B2B] border-transparent hover:bg-[#3D3D3D]",
-                                                                isLocked && "opacity-50 pointer-events-none"
+                                                                (isLocked || isArmed) && "opacity-50 pointer-events-none"
                                                             )}
                                                         >
                                                             <div className="text-xl font-black font-outfit text-white tracking-tighter">{v}</div>
@@ -597,7 +607,7 @@ export function QuizSelectionConsole() {
                                     (step === 2 && selectedSubjects.length === 0) ||
                                     (step === 3 && selectedTopics.length === 0) ||
                                     (step === 4 && selectedSubtopics.length === 0)))) && "opacity-20 pointer-events-none shadow-none",
-                                step === 5 && isArmed && "bg-white text-[#FF2D55] border-2 border-[#FF2D55] shadow-none cursor-default active:scale-100"
+                                step === 5 && isArmed && "bg-white text-[#FF2D55] border-2 border-[#FF2D55] shadow-none cursor-default active:scale-100 pointer-events-auto"
                             )}
                         >
                             {step === 5 ? (isArmed ? "MISSION ARMED 🚀" : "INITIATE ASSESSMENT 🚀") : (step === 4 ? "CALIBRATE ENGINE →" : "CONTINUE →")}
