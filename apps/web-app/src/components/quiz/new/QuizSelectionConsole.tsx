@@ -23,8 +23,8 @@ export function QuizSelectionConsole() {
 
     // Pagination State
     const [page, setPage] = useState(0);
-    const domainPageSize = 4;
-    const subPageSize = 6;
+    const domainPageSize = 6;
+    const subPageSize = 12;
     const currentPageSize = step === 1 ? domainPageSize : subPageSize;
 
     // UI Meta helper (for icons and accents in Domain Cards)
@@ -178,7 +178,7 @@ export function QuizSelectionConsole() {
     return (
         <div className="max-w-[1400px] mx-auto min-h-[850px] relative px-4 sm:px-6 lg:px-8 py-12">
             {/* Header Section (Full Width Top Row) */}
-            <div className="mb-9 min-h-[100px]">
+            <div className="mb-8 min-h-[100px]">
                 {loading && domains.length === 0 ? (
                     <div className="flex items-center gap-3 text-[#FF2D55] animate-pulse">
                         <Loader2 className="animate-spin" size={24} />
@@ -227,7 +227,7 @@ export function QuizSelectionConsole() {
 
             <div className="flex flex-col lg:flex-row gap-12 items-stretch">
                 {/* Left Pane (65%) - Locked Height Console */}
-                <div className="w-full lg:w-[65%] flex flex-col relative h-[750px]">
+                <div className="w-full lg:w-[65%] flex flex-col relative h-[725px]">
                     {/* Content Area (Stationary Grid via Slicing) */}
                     <div className="flex-1 overflow-visible">
                         {step === 1 && (
@@ -333,7 +333,7 @@ export function QuizSelectionConsole() {
                 </div>
 
                 {/* Right Pane (35%) - Aligned Top & Bottom */}
-                <div className="w-full lg:w-[35%] flex flex-col h-[750px] pt-0">
+                <div className="w-full lg:w-[35%] flex flex-col h-[725px] pt-0">
                     <AssessmentSummary
                         domainName={currentDomain?.name || 'Not Selected'}
                         subjectsCount={selectedSubjects.length}
