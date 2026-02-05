@@ -9,13 +9,22 @@ const MAX_USER_REQUESTS = 2000;
 export async function rateLimit(request: NextRequest) {
   const ip = request.headers.get('x-forwarded-for')?.split(',')[0] || 'unknown';
   
-  // 1. Resolve Auth (Standard + Admin)
-  const token = TokenService.getAccessToken(request);
+  // 1. Resolve Scope & Auth (Absolute Isolation)
+  const path = request.nextUrl.pathname;
+  let scope: 'admin' | 'user' | undefined;
+
+  if (path.startsWith('/api/admin') || path.startsWith('/api/factory') || path === '/api/migrate') {
+    scope = 'admin';
+  } else if (path.startsWith('/api/quiz') || path.startsWith('/api/auth') || path.startsWith('/api/reports') || path.startsWith('/api/dashboard')) {
+    scope = 'user';
+  }
+
+  const token = scope ? TokenService.getAccessToken(request, { scope }) : undefined;
   let userId: string | null = null;
   
-  if (token) {
+  if (token && scope) {
     try {
-      const payload = await TokenService.verifyAccessToken(token);
+      const payload = await TokenService.verifyAccessToken(token, scope === 'admin');
       userId = payload.userId;
     } catch {
       // Invalid token, ignore user-based limit

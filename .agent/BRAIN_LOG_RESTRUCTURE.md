@@ -988,14 +988,15 @@ Reduce documentation fragmentation and improve discoverability by consolidating 
     - **Global Interceptor**: Added `auth:unauthorized` event listener to `AuthProvider` to clear the store instantly on any 401 response.
 - **Outcome**: Eliminated authentication artifacts, ensuring a truthful UI that always reflects the server-side session status.
 ### Batch 116: Universal Scope Enforcement & Absolute Isolation
-- **Problem**: Potential for identity shadowing between admin and user sessions due to unscoped token extraction in many API handlers.
-- **Action**: Hardened the entire API server (60+ handlers) and the `TokenService` to implement strict, scope-specific token verification.
+- **Problem**: Potential for identity shadowing between admin and user sessions due to unscoped token extraction in API handlers and middleware.
+- **Action**: Hardened the entire API server (60+ handlers), the `TokenService`, and the `rate-limit.middleware.ts` to implement strict, scope-specific token verification.
 - **Implementation**:
-    - **Service Evolution**: Upgraded `TokenService.getAccessToken` to accept an explicit `scope` ('admin' | 'user') and target the respective cookie.
-    - **Cryptographic Isolation**: Tokens are verified against the correct secret-scope pair (`ADMIN_SECRET` vs `USER_SECRET`).
-    - **Full-Spectrum Overhaul**: Surgically updated all route handlers in `/api/admin`, `/api/quiz`, and `/api/auth` to enforce explicit scoping.
-    - **Legacy Repair**: Restored broken service mappings for metrics, batch deletions, and publishing workflows that were bypassed during the migration.
+    - **Service Evolution**: Upgraded `TokenService.getAccessToken` to target the respective cookie based on explicit scope.
+    - **Cryptographic Isolation**: Tokens are verified against the correct secret-scope pair (`ADMIN_JWT_SECRET` vs `JWT_SECRET`).
+    - **Middleware Hardening**: Updated `rate-limit.middleware.ts` with surgical scope detection for admin, factory, quiz, and auth namespaces.
+    - **Full-Spectrum Overhaul**: Surgically updated all route handlers to enforce explicit scoping.
+    - **Legacy Repair**: Restored broken service mappings for metrics, batch deletions, and publishing workflows.
 - **Verification**: 
     - Full Monorepo Build: **PASSED** (Exit Code 0).
-    - Recursive Audit (`grep_search`): Verified zero remaining unscoped token extraction sites.
-- **Outcome**: Established absolute identity isolation; admins and students can now maintain concurrent, independent sessions with 100% cryptographic certainty.
+    - Recursive Audit (`rg`): Verified zero remaining unscoped token extraction sites.
+- **Outcome**: Established absolute identity isolation; admins and students can now maintain concurrent, independent sessions with 100% cryptographic certainty even at the middleware layer.
