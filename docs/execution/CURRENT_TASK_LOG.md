@@ -11,6 +11,7 @@
 - **Timing Standardization**: Global transition to `durationSeconds` for all timer logic in `SessionService` and `ExamEngine`.
 - **Virtual Fallback**: Implemented domain-only start fallback (Option 2) allowing for practice sessions without pre-defined blueprints.
 - **Certification**: Platform-wide `pnpm build` and `tsc --noEmit` passed with `Exit Code 0`.
+- **Drizzle Baselining**: Fixed production migration registry mismatch. Baselined `0000` and `0001` to `drizzle.__drizzle_migrations` to ensure future migration safety.
 
 ## Next Steps
 - **GUI-003**: Connect `QuizSelectionConsole` to the new `/api/quiz/start` endpoint (Step D).
