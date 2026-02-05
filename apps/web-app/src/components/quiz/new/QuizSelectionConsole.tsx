@@ -8,30 +8,54 @@ import { Code, Shield, Cloud, Database, Check, Loader2, Activity, ChevronLeft, C
 import { cn } from '@/lib/utils';
 import { apiClient } from '@quiz/api-client';
 
-const JourneyBadge = ({ text }: { text: string }) => (
-    <div className="inline-flex items-center px-4 py-1.5 rounded-full border-2 border-[#FF2D55]/20 bg-white shadow-sm animate-in zoom-in duration-500">
-        <span className="text-[10px] font-black font-outfit text-[#FF2D55] uppercase tracking-[0.2em]">{text}</span>
+const JourneyBadge = ({ text, mode, onModeChange }: { text: string; mode?: 'basic' | 'advanced', onModeChange?: (m: 'basic' | 'advanced') => void }) => (
+    <div className="flex flex-col items-end gap-2">
+        {onModeChange && (
+            <div className="flex bg-gray-100 rounded-lg p-0.5 border border-gray-200">
+                {(['basic', 'advanced'] as const).map((m) => (
+                    <button
+                        key={m}
+                        onClick={() => onModeChange(m)}
+                        className={cn(
+                            "px-3 py-1 rounded-md text-[9px] font-black font-outfit uppercase tracking-tighter transition-all",
+                            mode === m
+                                ? "bg-[#FF2D55] text-white shadow-sm"
+                                : "text-gray-500 hover:text-gray-700"
+                        )}
+                    >
+                        {m}
+                    </button>
+                ))}
+            </div>
+        )}
+        <div className="inline-flex items-center px-4 py-1.5 rounded-full border-2 border-[#FF2D55]/20 bg-white shadow-sm animate-in zoom-in duration-500">
+            <span className="text-[10px] font-black font-outfit text-[#FF2D55] uppercase tracking-[0.2em]">{text}</span>
+        </div>
     </div>
 );
 
-const DottedProgressBar = ({ currentStep }: { currentStep: number }) => (
+const DottedProgressBar = ({ currentStep, mode }: { currentStep: number; mode: 'basic' | 'advanced' }) => (
     <div className="flex items-center gap-4">
-        {[1, 2, 3, 4, 5].map((s) => (
-            <div key={s} className="flex items-center">
-                <div className={cn(
-                    "w-3 h-3 rounded-full border-2 transition-all duration-500",
-                    s < currentStep ? "bg-[#FF2D55] border-[#FF2D55]" :
-                        s === currentStep ? "bg-[#FF2D55] border-[#FF2D55] shadow-[0_0_20px_rgba(255,45,85,0.5)] scale-125" :
-                            "bg-transparent border-gray-300"
-                )} />
-                {s < 5 && (
+        {[1, 2, 3, 4, 5].map((s) => {
+            const isDot4Basic = mode === 'basic' && s === 4;
+            return (
+                <div key={s} className="flex items-center">
                     <div className={cn(
-                        "w-12 h-[2px] mx-1 transition-all duration-500",
-                        s < currentStep ? "bg-[#FF2D55]" : "bg-gray-200/80"
+                        "w-3 h-3 rounded-full border-2 transition-all duration-500",
+                        isDot4Basic ? "bg-transparent border-gray-200 opacity-30" :
+                            s < currentStep ? "bg-[#FF2D55] border-[#FF2D55]" :
+                                s === currentStep ? "bg-[#FF2D55] border-[#FF2D55] shadow-[0_0_20px_rgba(255,45,85,0.5)] scale-125" :
+                                    "bg-transparent border-gray-300"
                     )} />
-                )}
-            </div>
-        ))}
+                    {s < 5 && (
+                        <div className={cn(
+                            "w-12 h-[2px] mx-1 transition-all duration-500",
+                            (s < currentStep && !(mode === 'basic' && s === 3)) || (mode === 'basic' && s === 3 && currentStep === 5) ? "bg-[#FF2D55]" : "bg-gray-200/80"
+                        )} />
+                    )}
+                </div>
+            );
+        })}
     </div>
 );
 
@@ -46,6 +70,7 @@ export function QuizSelectionConsole() {
     const [selectedSubjects, setSelectedSubjects] = useState<string[]>([]);
     const [selectedTopics, setSelectedTopics] = useState<string[]>([]);
     const [selectedSubtopics, setSelectedSubtopics] = useState<string[]>([]);
+    const [mode, setMode] = useState<'basic' | 'advanced'>('basic');
     const [loading, setLoading] = useState(false);
     const [selectionError, setSelectionError] = useState<string | null>(null);
 
@@ -148,6 +173,52 @@ export function QuizSelectionConsole() {
         }
     }, [selectedTopics]);
 
+    // Mode Clamping Rules
+    useEffect(() => {
+        if (mode === 'basic') {
+            let trimmed = false;
+
+            // 1. Clear Subtopics
+            if (selectedSubtopics.length > 0) {
+                setSelectedSubtopics([]);
+                trimmed = true;
+            }
+
+            // 2. Clamp Subjects (Max 2)
+            if (selectedSubjects.length > 2) {
+                setSelectedSubjects(prev => prev.slice(0, 2));
+                trimmed = true;
+            }
+
+            // 3. Clamp Topics (Max 3)
+            if (selectedTopics.length > 3) {
+                setSelectedTopics(prev => prev.slice(0, 3));
+                trimmed = true;
+            }
+
+            // 4. Clamp Question Count
+            const presets = [10, 15, 20, 25];
+            if (!presets.includes(questionCount)) {
+                // Find nearest
+                const nearest = presets.reduce((prev, curr) =>
+                    Math.abs(curr - questionCount) < Math.abs(prev - questionCount) ? curr : prev
+                );
+                setQuestionCount(nearest);
+                trimmed = true;
+            }
+
+            // 5. Navigation Safety
+            if (step === 4) {
+                setStep(3);
+            }
+
+            if (trimmed) {
+                setSelectionError("BASIC MODE: trimmed to max 2 subjects / 3 topics");
+                setTimeout(() => setSelectionError(null), 3000);
+            }
+        }
+    }, [mode]);
+
     const toggleDomain = (id: string) => {
         // Enforce Single Select per user instruction
         setSelectedDomains([id]);
@@ -163,8 +234,9 @@ export function QuizSelectionConsole() {
                 setSelectionError(null);
                 return prev.filter(x => x !== id);
             }
-            if (prev.length >= 4) {
-                setSelectionError("SUBJECT LIMIT REACHED: MAX 4 SELECTIONS ALLOWED");
+            const cap = mode === 'basic' ? 2 : 4;
+            if (prev.length >= cap) {
+                setSelectionError(`${mode.toUpperCase()} MODE: MAX ${cap} SUBJECTS ALLOWED`);
                 return prev;
             }
             setSelectionError(null);
@@ -175,13 +247,14 @@ export function QuizSelectionConsole() {
     };
 
     const toggleTopic = (id: string) => {
+        const cap = mode === 'basic' ? 3 : 4;
         setSelectedTopics(prev => {
             if (prev.includes(id)) {
                 setSelectionError(null);
                 return prev.filter(x => x !== id);
             }
-            if (prev.length >= 4) {
-                setSelectionError("TOPIC LIMIT REACHED: MAX 4 SELECTIONS ALLOWED");
+            if (prev.length >= cap) {
+                setSelectionError(`${mode.toUpperCase()} MODE: MAX ${cap} TOPICS ALLOWED`);
                 return prev;
             }
             setSelectionError(null);
@@ -211,7 +284,8 @@ export function QuizSelectionConsole() {
             return;
         }
         if (step < 5) {
-            setStep(step + 1);
+            const nextStep = (mode === 'basic' && step === 3) ? 5 : step + 1;
+            setStep(nextStep);
             setPage(0); // Reset page on step change
             setSelectionError(null);
         }
@@ -249,10 +323,10 @@ export function QuizSelectionConsole() {
     // Metadata for Journey Orientation
     const journeyInfo = {
         1: { title: "Select Domain", badge: "Foundation Architecture", desc: "Choose your area of expertise to begin the assessment.", count: domains.length },
-        2: { title: "Refine Subjects", badge: "Curriculum Calibration", desc: "Select the core subjects for your assessment pool.", count: subjects.length },
-        3: { title: "Select Topics", badge: "Knowledge Mapping", desc: "High-density grid of strategic knowledge units.", count: topics.length },
+        2: { title: "Refine Subjects", badge: "Curriculum Calibration", desc: mode === 'basic' ? "Select core subjects (Max 2 for Basic mode)." : "Select the core subjects for your assessment pool.", count: subjects.length },
+        3: { title: "Select Topics", badge: "Knowledge Mapping", desc: mode === 'basic' ? "Strategic knowledge units (Max 3 for Basic mode)." : "High-density grid of strategic knowledge units.", count: topics.length },
         4: { title: "Fine-tune Subtopics", badge: "Expert Precision", desc: "Pinpoint specific skills for deeper evaluation.", count: subtopics.length },
-        5: { title: "Calibrate Engine", badge: "Engine Mastery", desc: "Finalize your assessment session by tuning the difficulty tier and question volume.", count: 0 }
+        5: { title: "Calibrate Engine", badge: "Engine Mastery", desc: mode === 'basic' ? "Finalize your assessment session with simplified presets." : "Finalize your assessment session by tuning the difficulty tier and question volume.", count: 0 }
     };
 
     const currentMeta = journeyInfo[step as keyof typeof journeyInfo];
@@ -274,13 +348,13 @@ export function QuizSelectionConsole() {
 
                     {/* Center: Heartbeat Progress */}
                     <div className="flex justify-center flex-1">
-                        <DottedProgressBar currentStep={step} />
+                        <DottedProgressBar currentStep={step} mode={mode} />
                     </div>
-
+                    [diff_chunk_split]
                     {/* Right: Step Orientation */}
                     <div className="flex flex-col items-start lg:items-end text-left lg:text-right flex-none min-w-fit">
                         <div className="flex items-center gap-4 mb-2 whitespace-nowrap">
-                            <JourneyBadge text={currentMeta.badge} />
+                            <JourneyBadge text={currentMeta.badge} mode={mode} onModeChange={setMode} />
                             <h2 className="text-3xl font-black font-outfit tracking-tight text-[#1A1A1A] uppercase">
                                 {currentMeta.title} {currentMeta.count > 0 && `(${currentMeta.count})`}
                             </h2>
@@ -412,7 +486,7 @@ export function QuizSelectionConsole() {
                                             <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-400">Total Density</p>
                                         </div>
                                         <div className="grid grid-cols-4 gap-6">
-                                            {[5, 10, 15, 20, 25, 30, 40, 50].map((v) => (
+                                            {(mode === 'basic' ? [10, 15, 20, 25] : [5, 10, 15, 20, 25, 30, 40, 50]).map((v) => (
                                                 <button
                                                     key={v}
                                                     disabled={isLocked}
