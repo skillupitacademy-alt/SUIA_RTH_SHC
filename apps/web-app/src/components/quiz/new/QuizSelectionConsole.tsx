@@ -392,141 +392,152 @@ export function QuizSelectionConsole() {
                 )}
             </div>
             <div className="flex flex-col lg:flex-row gap-12 items-stretch">
-                {/* Left Pane (65%) - Locked Height Console (h-530 compression) */}
+                {/* Left Pane (65%) - Locked Height Console (h-530) */}
                 <div className="w-full lg:w-[65%] flex flex-col relative h-[530px]">
-                    {/* Content Area (Stationary Grid via Slicing) */}
-                    <div className="flex-1 overflow-visible relative">
-                        {loading && (
-                            <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/10 backdrop-blur-[2px] rounded-[1.25rem] animate-in fade-in duration-300">
-                                <Activity className="animate-spin text-[#FF2D55]" size={48} />
-                            </div>
-                        )}
-                        {step === 1 && (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4 animate-in fade-in duration-500">
-                                {paginatedDomains.map((domain, idx) => (
-                                    <DomainCard
-                                        key={domain.id}
-                                        {...domain}
-                                        {...getDomainMeta(idx + page * currentPageSize)}
-                                        isSelected={selectedDomains.includes(domain.id)}
-                                        onSelect={toggleDomain}
-                                        accentColor={getDomainMeta(idx + page * currentPageSize).accent}
-                                    />
-                                ))}
-                            </div>
-                        )}
+                    {/* Symmetrical Container: 10% Top (20px align), 80% Matrix, 10% Bottom (53px gap) */}
+                    <div className="flex-1 flex flex-col pt-[20px]">
+                        <div className="flex-1 relative">
+                            {loading && (
+                                <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/10 backdrop-blur-[2px] rounded-[1.25rem] animate-in fade-in duration-300">
+                                    <Activity className="animate-spin text-[#FF2D55]" size={48} />
+                                </div>
+                            )}
 
-                        {step === 2 && (
-                            <div className="grid grid-cols-1 sm:grid-cols-4 gap-x-6 gap-y-12 animate-in fade-in duration-500">
-                                {paginatedSubjects.map((sub) => (
-                                    <TopicChip
-                                        key={sub.id}
-                                        {...sub}
-                                        isSelected={selectedSubjects.includes(sub.id)}
-                                        onToggle={toggleSubject}
-                                    />
-                                ))}
-                            </div>
-                        )}
+                            {/* Matrix Zone (80%) */}
+                            <div className="h-full flex flex-col justify-between overflow-visible">
+                                <div className="flex-1">
+                                    {step === 1 && (
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4 animate-in fade-in duration-500">
+                                            {paginatedDomains.map((domain, idx) => (
+                                                <DomainCard
+                                                    key={domain.id}
+                                                    {...domain}
+                                                    {...getDomainMeta(idx + page * currentPageSize)}
+                                                    isSelected={selectedDomains.includes(domain.id)}
+                                                    onSelect={toggleDomain}
+                                                    accentColor={getDomainMeta(idx + page * currentPageSize).accent}
+                                                />
+                                            ))}
+                                        </div>
+                                    )}
 
-                        {step === 3 && (
-                            <div className="grid grid-cols-1 sm:grid-cols-4 gap-x-6 gap-y-12 animate-in fade-in duration-500">
-                                {paginatedTopics.map((topic) => (
-                                    <TopicChip
-                                        key={topic.id}
-                                        {...topic}
-                                        isSelected={selectedTopics.includes(topic.id)}
-                                        onToggle={toggleTopic}
-                                    />
-                                ))}
-                            </div>
-                        )}
+                                    {step === 2 && (
+                                        <div className="grid grid-cols-1 sm:grid-cols-4 gap-x-6 gap-y-12 animate-in fade-in duration-500">
+                                            {paginatedSubjects.map((sub) => (
+                                                <TopicChip
+                                                    key={sub.id}
+                                                    {...sub}
+                                                    isSelected={selectedSubjects.includes(sub.id)}
+                                                    onToggle={toggleSubject}
+                                                />
+                                            ))}
+                                        </div>
+                                    )}
 
-                        {mode === 'advanced' && step === 4 && (
-                            <div className="grid grid-cols-1 sm:grid-cols-4 gap-x-6 gap-y-12 animate-in fade-in duration-500">
-                                {paginatedSubtopics.map((subtopic) => (
-                                    <TopicChip
-                                        key={subtopic.id}
-                                        {...subtopic}
-                                        isSelected={selectedSubtopics.includes(subtopic.id)}
-                                        onToggle={toggleSubtopic}
-                                    />
-                                ))}
-                            </div>
-                        )}
+                                    {step === 3 && (
+                                        <div className="grid grid-cols-1 sm:grid-cols-4 gap-x-6 gap-y-12 animate-in fade-in duration-500">
+                                            {paginatedTopics.map((topic) => (
+                                                <TopicChip
+                                                    key={topic.id}
+                                                    {...topic}
+                                                    isSelected={selectedTopics.includes(topic.id)}
+                                                    onToggle={toggleTopic}
+                                                />
+                                            ))}
+                                        </div>
+                                    )}
 
-                        {/* Step 5: Engine Calibration (Refactored Dark HUD) */}
-                        {step === 5 && (
-                            <div className="animate-in fade-in duration-500 h-full flex flex-col pt-2 overflow-auto pr-2 custom-scrollbar">
-                                <div className="space-y-3">
-                                    {/* Section 1: Difficulty Tier */}
-                                    <div className="grid grid-cols-4 gap-6">
-                                        {[
-                                            { id: 'mixed', name: 'Mixed', desc: 'Mastery Blend' },
-                                            { id: 'beginner', name: 'Foundations', desc: 'Core Knowledge' },
-                                            { id: 'expert', name: 'Elite', desc: 'Expert Level' }
-                                        ].map((tier) => (
-                                            <button
-                                                key={tier.id}
-                                                disabled={isLocked}
-                                                onClick={() => setDifficulty(tier.id)}
-                                                className={cn(
-                                                    "p-4 rounded-[1.25rem] border-2 transition-all duration-300 group relative flex flex-col items-center justify-center min-h-[80px]",
-                                                    difficulty === tier.id
-                                                        ? "bg-[#FF2D55] border-[#FF2D55] shadow-[0_10px_30px_rgba(255,45,85,0.2)]"
-                                                        : "bg-[#2B2B2B] border-transparent hover:bg-[#3D3D3D]",
-                                                    isLocked && "opacity-50 pointer-events-none"
-                                                )}
-                                            >
-                                                <p className="text-base font-black font-outfit uppercase tracking-tight text-white">
-                                                    {tier.name}
-                                                </p>
-                                                <p className="text-[9px] font-bold uppercase tracking-wider opacity-60 mt-0.5 text-white">
-                                                    {tier.desc}
-                                                </p>
-                                            </button>
-                                        ))}
-                                        <div className="invisible" /> {/* Spacer for col-4 */}
-                                    </div>
+                                    {mode === 'advanced' && step === 4 && (
+                                        <div className="grid grid-cols-1 sm:grid-cols-4 gap-x-6 gap-y-12 animate-in fade-in duration-500">
+                                            {paginatedSubtopics.map((subtopic) => (
+                                                <TopicChip
+                                                    key={subtopic.id}
+                                                    {...subtopic}
+                                                    isSelected={selectedSubtopics.includes(subtopic.id)}
+                                                    onToggle={toggleSubtopic}
+                                                />
+                                            ))}
+                                        </div>
+                                    )}
 
-                                    {/* Section 2: Total Density */}
-                                    <div className="grid grid-cols-4 gap-6">
-                                        {(mode === 'basic' ? [10, 15, 20, 25] : [5, 10, 15, 20, 25, 30, 40, 50]).map((v) => (
-                                            <button
-                                                key={v}
-                                                disabled={isLocked}
-                                                onClick={() => setQuestionCount(v)}
-                                                className={cn(
-                                                    "p-4 rounded-[1.25rem] border-2 transition-all duration-300 group relative flex flex-col items-center justify-center min-h-[80px]",
-                                                    questionCount === v
-                                                        ? "bg-[#FF2D55] border-[#FF2D55] shadow-[0_10px_30px_rgba(255,45,85,0.2)]"
-                                                        : "bg-[#2B2B2B] border-transparent hover:bg-[#3D3D3D]",
-                                                    isLocked && "opacity-50 pointer-events-none"
-                                                )}
-                                            >
-                                                <div className="text-xl font-black font-outfit text-white tracking-tighter">{v}</div>
-                                                <div className="text-[9px] font-black uppercase tracking-widest text-white/40 group-hover:text-white/60 transition-colors">Questions</div>
-                                            </button>
-                                        ))}
-                                    </div>
+                                    {/* Step 5: Engine Calibration (Refactored Dark HUD) */}
+                                    {step === 5 && (
+                                        <div className="animate-in fade-in duration-500 h-full flex flex-col overflow-auto pr-2 custom-scrollbar">
+                                            <div className="space-y-4">
+                                                {/* Section 1: Difficulty Tier */}
+                                                <div className="grid grid-cols-4 gap-6">
+                                                    {[
+                                                        { id: 'mixed', name: 'Mixed', desc: 'Mastery Blend' },
+                                                        { id: 'beginner', name: 'Foundations', desc: 'Core Knowledge' },
+                                                        { id: 'expert', name: 'Elite', desc: 'Expert Level' }
+                                                    ].map((tier) => (
+                                                        <button
+                                                            key={tier.id}
+                                                            disabled={isLocked}
+                                                            onClick={() => setDifficulty(tier.id)}
+                                                            className={cn(
+                                                                "p-4 rounded-[1.25rem] border-2 transition-all duration-300 group relative flex flex-col items-center justify-center min-h-[80px]",
+                                                                difficulty === tier.id
+                                                                    ? "bg-[#FF2D55] border-[#FF2D55] shadow-[0_10px_30px_rgba(255,45,85,0.2)]"
+                                                                    : "bg-[#2B2B2B] border-transparent hover:bg-[#3D3D3D]",
+                                                                isLocked && "opacity-50 pointer-events-none"
+                                                            )}
+                                                        >
+                                                            <p className="text-base font-black font-outfit uppercase tracking-tight text-white">
+                                                                {tier.name}
+                                                            </p>
+                                                            <p className="text-[9px] font-bold uppercase tracking-wider opacity-60 mt-0.5 text-white">
+                                                                {tier.desc}
+                                                            </p>
+                                                        </button>
+                                                    ))}
+                                                    <div className="invisible" /> {/* Spacer for col-4 */}
+                                                </div>
 
-                                    {/* Resulting Logic Display */}
-                                    <div className={cn("bg-gray-50/50 p-4 rounded-3xl border border-gray-300 transition-all", isLocked && "opacity-50 grayscale")}>
-                                        <div className="flex justify-between items-center">
-                                            <div className="space-y-0.5">
-                                                <p className="text-2xl font-black font-outfit text-[#1A1A1A] tracking-tighter">~{Math.ceil(questionCount * 1.5)} MINS</p>
-                                                <p className="text-[9px] font-black uppercase tracking-widest text-[#FF2D55]">Calculated Duration</p>
-                                            </div>
-                                            <div className="h-8 w-[1px] bg-gray-300" />
-                                            <div className="text-right">
-                                                <p className="text-2xl font-black font-outfit text-[#1A1A1A] tracking-tighter">{difficulty.toUpperCase()}</p>
-                                                <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Mastery Profile</p>
+                                                {/* Section 2: Total Density */}
+                                                <div className="grid grid-cols-4 gap-6">
+                                                    {(mode === 'basic' ? [10, 15, 20, 25] : [5, 10, 15, 20, 25, 30, 40, 50]).map((v) => (
+                                                        <button
+                                                            key={v}
+                                                            disabled={isLocked}
+                                                            onClick={() => setQuestionCount(v)}
+                                                            className={cn(
+                                                                "p-4 rounded-[1.25rem] border-2 transition-all duration-300 group relative flex flex-col items-center justify-center min-h-[80px]",
+                                                                questionCount === v
+                                                                    ? "bg-[#FF2D55] border-[#FF2D55] shadow-[0_10px_30px_rgba(255,45,85,0.2)]"
+                                                                    : "bg-[#2B2B2B] border-transparent hover:bg-[#3D3D3D]",
+                                                                isLocked && "opacity-50 pointer-events-none"
+                                                            )}
+                                                        >
+                                                            <div className="text-xl font-black font-outfit text-white tracking-tighter">{v}</div>
+                                                            <div className="text-[9px] font-black uppercase tracking-widest text-white/40 group-hover:text-white/60 transition-colors">Questions</div>
+                                                        </button>
+                                                    ))}
+                                                </div>
+
+                                                {/* Resulting Logic Display */}
+                                                <div className={cn("bg-gray-50/50 p-4 rounded-3xl border border-gray-300 transition-all", isLocked && "opacity-50 grayscale")}>
+                                                    <div className="flex justify-between items-center">
+                                                        <div className="space-y-0.5">
+                                                            <p className="text-2xl font-black font-outfit text-[#1A1A1A] tracking-tighter">~{Math.ceil(questionCount * 1.5)} MINS</p>
+                                                            <p className="text-[9px] font-black uppercase tracking-widest text-[#FF2D55]">Calculated Duration</p>
+                                                        </div>
+                                                        <div className="h-8 w-[1px] bg-gray-300" />
+                                                        <div className="text-right">
+                                                            <p className="text-2xl font-black font-outfit text-[#1A1A1A] tracking-tighter">{difficulty.toUpperCase()}</p>
+                                                            <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Mastery Profile</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
+                                    )}
                                 </div>
+
+                                {/* BOTTOM AIR CUSHION (10% ≈ 53px) */}
+                                <div className="h-[53px] flex-shrink-0" />
                             </div>
-                        )}
+                        </div>
                     </div>
 
                     {/* Fixed Action Footer (Absolute Anchored) with Hairline */}
@@ -615,6 +626,6 @@ export function QuizSelectionConsole() {
                     />
                 </div>
             </div>
-        </div >
+        </div>
     );
 }

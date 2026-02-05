@@ -1014,6 +1014,7 @@ Reduce documentation fragmentation and improve discoverability by consolidating 
 - **Durable Idempotency**: Implemented the `idempotency_keys` table in the database with a `uniqueIndex` on `(user_id, key)` to prevent duplicate session creation during retries.
 - **Data Integrity**: Added `uniqueIndex(examId, questionId)` to the `exam_questions` table for guaranteed idempotent answer upserts.
 - **Reliability**: Added `duration_seconds` to the `exams` table to snapshot time limits at launch, securing the session against downstream blueprint drift.
+- **Standards**: Enforced the `@/` path alias standard across all modified files, eliminating relative import debt.
 - **Verification**: Confirmed system-wide stability with a perfect `Exit Code 0` on full monorepo build and `tsc --noEmit` check.
 ### Batch 119: Viewport Recovery & HUD Symmetrization
 - **Objective**: Fix vertical occlusion on small screens and achieve perfect pane symmetry.
