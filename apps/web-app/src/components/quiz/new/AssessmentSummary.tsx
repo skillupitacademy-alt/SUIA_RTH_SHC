@@ -39,7 +39,7 @@ export function AssessmentSummary({
                 <div className="absolute -top-24 -right-24 w-56 h-56 bg-[#FF2D55]/10 rounded-full blur-[90px] group-hover:bg-[#FF2D55]/20 transition-all duration-700" />
 
                 <div className="relative z-10 flex-1 flex flex-col h-full">
-                    <h2 className="text-lg font-black font-outfit tracking-tight text-[#1A1A1A] mb-4 uppercase italic">Assessment Summary</h2>
+                    <h2 className="text-lg font-black font-outfit tracking-tight text-[#1A1A1A] mb-4 uppercase">Assessment Summary</h2>
 
                     <div className="space-y-4 flex-1">
                         <div className="flex flex-col gap-1">
@@ -47,50 +47,60 @@ export function AssessmentSummary({
                                 <Shield size={13} className="text-[#FF2D55]" />
                                 <span className="text-[9px] font-bold font-inter uppercase tracking-widest opacity-60">Domain</span>
                             </div>
-                            <span className="text-xs font-bold font-inter text-[#1A1A1A] pl-5 truncate">{domainName}</span>
+                            <span className="text-xs font-bold font-inter text-[#1A1A1A] pl-5 truncate">
+                                {domainName !== 'Not Selected' ? domainName : (
+                                    <span className="opacity-20 italic">Awaiting Selection...</span>
+                                )}
+                            </span>
                         </div>
 
-                        {selectedSubjects.length > 0 && (
-                            <div className="flex flex-col gap-2">
-                                <div className="flex items-center gap-2 text-muted-foreground">
-                                    <Tag size={13} className="text-[#FF2D55]" />
-                                    <span className="text-[9px] font-bold font-inter uppercase tracking-widest opacity-60">Subjects</span>
-                                </div>
-                                <div className="flex flex-wrap gap-1 pl-5">
-                                    {selectedSubjects.map(s => (
+                        <div className="flex flex-col gap-2">
+                            <div className="flex items-center gap-2 text-muted-foreground">
+                                <Tag size={13} className="text-[#FF2D55]" />
+                                <span className="text-[9px] font-bold font-inter uppercase tracking-widest opacity-60">Subjects</span>
+                            </div>
+                            <div className="flex flex-wrap gap-1 pl-5 min-h-[1.5rem]">
+                                {selectedSubjects.length > 0 ? (
+                                    selectedSubjects.map(s => (
                                         <span key={s} className="px-2 py-0.5 bg-gray-50 text-[9px] font-bold text-gray-500 rounded border border-gray-100 uppercase tracking-tighter">{s}</span>
-                                    ))}
-                                </div>
+                                    ))
+                                ) : (
+                                    <span className="text-[9px] font-bold text-gray-300 uppercase tracking-tighter italic opacity-40">None Selected</span>
+                                )}
                             </div>
-                        )}
+                        </div>
 
-                        {selectedTopics.length > 0 && (
-                            <div className="flex flex-col gap-2">
-                                <div className="flex items-center gap-2 text-muted-foreground">
-                                    <Check size={13} className="text-[#FF2D55]" />
-                                    <span className="text-[9px] font-bold font-inter uppercase tracking-widest opacity-60">Knowledge Units</span>
-                                </div>
-                                <div className="flex flex-wrap gap-1 pl-5">
-                                    {selectedTopics.map(t => (
+                        <div className="flex flex-col gap-2">
+                            <div className="flex items-center gap-2 text-muted-foreground">
+                                <Check size={13} className="text-[#FF2D55]" />
+                                <span className="text-[9px] font-bold font-inter uppercase tracking-widest opacity-60">Knowledge Units</span>
+                            </div>
+                            <div className="flex flex-wrap gap-1 pl-5 min-h-[1.5rem]">
+                                {selectedTopics.length > 0 ? (
+                                    selectedTopics.map(t => (
                                         <span key={t} className="px-2 py-0.5 bg-[#FF2D55]/5 text-[9px] font-bold text-[#FF2D55] rounded border border-[#FF2D55]/10 uppercase tracking-tighter">{t}</span>
-                                    ))}
-                                </div>
+                                    ))
+                                ) : (
+                                    <span className="text-[9px] font-bold text-gray-300 uppercase tracking-tighter italic opacity-40">None Selected</span>
+                                )}
                             </div>
-                        )}
+                        </div>
 
-                        {selectedSubtopics.length > 0 && (
-                            <div className="flex flex-col gap-2">
-                                <div className="flex items-center gap-2 text-muted-foreground">
-                                    <Clock size={13} className="text-[#FF2D55]" />
-                                    <span className="text-[9px] font-bold font-inter uppercase tracking-widest opacity-60">Precision Skills</span>
-                                </div>
-                                <div className="flex flex-wrap gap-1 pl-5">
-                                    {selectedSubtopics.map(st => (
-                                        <span key={st} className="px-2 py-0.5 bg-[#FF2D55]/10 text-[9px] font-black text-[#FF2D55] rounded border border-[#FF2D55]/20 uppercase tracking-tighter italic">{st}</span>
-                                    ))}
-                                </div>
+                        <div className="flex flex-col gap-2">
+                            <div className="flex items-center gap-2 text-muted-foreground">
+                                <Clock size={13} className="text-[#FF2D55]" />
+                                <span className="text-[9px] font-bold font-inter uppercase tracking-widest opacity-60">Precision Skills</span>
                             </div>
-                        )}
+                            <div className="flex flex-wrap gap-1 pl-5 min-h-[1.5rem]">
+                                {selectedSubtopics.length > 0 ? (
+                                    selectedSubtopics.map(st => (
+                                        <span key={st} className="px-2 py-0.5 bg-[#FF2D55]/10 text-[9px] font-black text-[#FF2D55] rounded border border-[#FF2D55]/20 uppercase tracking-tighter italic">{st}</span>
+                                    ))
+                                ) : (
+                                    <span className="text-[9px] font-bold text-gray-300 uppercase tracking-tighter italic opacity-40">None Selected</span>
+                                )}
+                            </div>
+                        </div>
 
                         <div className="h-px bg-gradient-to-r from-transparent via-gray-100 to-transparent w-full my-2" />
 

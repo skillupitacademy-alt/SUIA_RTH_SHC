@@ -11,9 +11,10 @@
 - **Stationary UX**: Enforced a fixed 700px viewport height for both panes to ensure "Zero Vertical Jump" between steps.
 - **Internal Optimization**: Tightened `AssessmentSummary` spacing and font scales to elegantly fill the 700px frame with up to 13 items.
 - **Selection Logic**: Implemented a **4-selection cap** per category with active warning messages to maintain focus.
-- **Advanced Pagination**: Replaced "Load More" with a symmetrical **Symmetrical Pagination Cluster** (`[ < ] [ 01 / 02 ] [ > ]`) for professional navigation.
-- **Loading Precision**: Implemented centered, label-free **Activity loaders** (Admin style) and synchronized header visibility during API transitions.
-- **Header Refinement**: Removed title underscores and optimized vertical rhythm between the main header, section header, and selection grid.
+- **Advanced Pagination**: Replaced "Load More" with a **Symmetrical Pagination Cluster** (`[ < ] [ 01 / 02 ] [ > ]`) that remains **persistent** (Gray-disabled at boundaries).
+- **Loading Precision**: Implemented centered, label-free **Activity loaders** (Admin style) inside the grid area, preserving header visibility for structural continuity.
+- **Structural Stability**: Reconfigured the `AssessmentSummary` to show all category headings (Domain, Subjects, etc.) **by default** for a predictable layout.
+- **Header Refinement**: Sanitized main titles and optimized vertical rhythm (reduced main header margin to **`mb-6`** and section gap to **`mb-10`**).
 - **Symmetrical Spacing**: Reduced container padding to `pt-10` and synchronized right-pane with `pt-0` for perfect horizontal symmetry.
 - **Verification**: Verified zero-error production build and full TypeScript type-safety (Exit Code 0).
 

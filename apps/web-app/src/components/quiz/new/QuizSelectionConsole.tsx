@@ -213,55 +213,47 @@ export function QuizSelectionConsole() {
         <div className="max-w-[1400px] mx-auto min-h-[800px] relative px-4 sm:px-6 lg:px-8 pt-4 pb-12">
             {/* Header Section (Full Width Top Row) */}
             <div className="mb-10 min-h-[100px] flex flex-col justify-end">
-                {loading ? (
-                    <div className="flex-1 flex items-center justify-center">
-                        <Activity className="animate-spin text-[#FF2D55]" size={32} />
+                {step === 1 && (
+                    <div className="animate-in fade-in slide-in-from-left-4 duration-700">
+                        <h2 className="text-4xl font-black font-outfit tracking-tighter text-[#1A1A1A] mb-2 uppercase">
+                            Select Domain ({domains.length})
+                        </h2>
+                        <p className="text-muted-foreground font-inter font-medium opacity-70">Choose your area of expertise to begin the assessment.</p>
                     </div>
-                ) : (
-                    <>
-                        {step === 1 && (
-                            <div className="animate-in fade-in slide-in-from-left-4 duration-700">
-                                <h2 className="text-4xl font-black font-outfit tracking-tighter text-[#1A1A1A] mb-2 uppercase">
-                                    Select Domain ({domains.length})
-                                </h2>
-                                <p className="text-muted-foreground font-inter font-medium opacity-70">Choose your area of expertise to begin the assessment.</p>
-                            </div>
-                        )}
+                )}
 
-                        {step === 2 && (
-                            <div className="animate-in fade-in slide-in-from-left-4 duration-700">
-                                <h2 className="text-4xl font-black font-outfit tracking-tighter text-[#1A1A1A] mb-2 uppercase">
-                                    Refine Subjects ({subjects.length})
-                                </h2>
-                                <p className="text-muted-foreground font-inter font-medium opacity-70 text-sm">Select the core subjects for your assessment pool.</p>
-                            </div>
-                        )}
+                {step === 2 && (
+                    <div className="animate-in fade-in slide-in-from-left-4 duration-700">
+                        <h2 className="text-4xl font-black font-outfit tracking-tighter text-[#1A1A1A] mb-2 uppercase">
+                            Refine Subjects ({subjects.length})
+                        </h2>
+                        <p className="text-muted-foreground font-inter font-medium opacity-70 text-sm">Select the core subjects for your assessment pool.</p>
+                    </div>
+                )}
 
-                        {step === 3 && (
-                            <div className="animate-in fade-in slide-in-from-left-4 duration-700">
-                                <h2 className="text-4xl font-black font-outfit tracking-tighter text-[#1A1A1A] mb-2 uppercase">
-                                    Select Topics ({topics.length})
-                                </h2>
-                                <p className="text-muted-foreground font-inter font-medium opacity-70">High-density grid of strategic knowledge units.</p>
-                            </div>
-                        )}
+                {step === 3 && (
+                    <div className="animate-in fade-in slide-in-from-left-4 duration-700">
+                        <h2 className="text-4xl font-black font-outfit tracking-tighter text-[#1A1A1A] mb-2 uppercase">
+                            Select Topics ({topics.length})
+                        </h2>
+                        <p className="text-muted-foreground font-inter font-medium opacity-70">High-density grid of strategic knowledge units.</p>
+                    </div>
+                )}
 
-                        {step === 4 && (
-                            <div className="animate-in fade-in slide-in-from-left-4 duration-700">
-                                <h2 className="text-4xl font-black font-outfit tracking-tighter text-[#1A1A1A] mb-2 uppercase">
-                                    Fine-tune Subtopics ({subtopics.length})
-                                </h2>
-                                <p className="text-muted-foreground font-inter font-medium opacity-70">Pinpoint specific skills for deeper evaluation.</p>
-                            </div>
-                        )}
+                {step === 4 && (
+                    <div className="animate-in fade-in slide-in-from-left-4 duration-700">
+                        <h2 className="text-4xl font-black font-outfit tracking-tighter text-[#1A1A1A] mb-2 uppercase">
+                            Fine-tune Subtopics ({subtopics.length})
+                        </h2>
+                        <p className="text-muted-foreground font-inter font-medium opacity-70">Pinpoint specific skills for deeper evaluation.</p>
+                    </div>
+                )}
 
-                        {selectionError && (
-                            <div className="mt-2 flex items-center gap-2 text-[#FF2D55] animate-in slide-in-from-top-2 duration-300">
-                                <div className="h-1.5 w-1.5 rounded-full bg-[#FF2D55] animate-pulse" />
-                                <span className="text-[10px] font-black uppercase tracking-widest">{selectionError}</span>
-                            </div>
-                        )}
-                    </>
+                {selectionError && (
+                    <div className="mt-2 flex items-center gap-2 text-[#FF2D55] animate-in slide-in-from-top-2 duration-300">
+                        <div className="h-1.5 w-1.5 rounded-full bg-[#FF2D55] animate-pulse" />
+                        <span className="text-[10px] font-black uppercase tracking-widest">{selectionError}</span>
+                    </div>
                 )}
             </div>
 
