@@ -18,10 +18,10 @@ export async function GET(request: NextRequest) {
       isAuthorized = true;
     } else {
       // 2. Fallback to Admin Authentication (Supports Cookie and Header)
-      const token = TokenService.getAccessToken(request);
+      const token = TokenService.getAccessToken(request, { scope: 'admin' });
       if (token) {
         try {
-          const payload = await TokenService.verifyAccessToken(token);
+          const payload = await TokenService.verifyAccessToken(token, true);
           isAuthorized = await verifyAdmin(payload);
         } catch {
           // Ignore token errors, authorization remains false

@@ -12,10 +12,10 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const id = searchParams.get('id');
 
-    const token = TokenService.getAccessToken(req);
-    if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const token = TokenService.getAccessToken(req, { scope: 'user' });
+    if (!token) return NextResponse.json({ error: 'Unauthorized', scope: 'user' }, { status: 401 });
 
-    const payload = await TokenService.verifyAccessToken(token);
+    const payload = await TokenService.verifyAccessToken(token, false);
 
     if (id) {
        const report = await ReportEngine.getExamReport(id);

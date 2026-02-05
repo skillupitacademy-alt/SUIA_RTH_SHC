@@ -5,10 +5,10 @@ import { TokenService } from '@/modules/auth/token.service';
 
 export async function GET(req: NextRequest) {
   try {
-    const token = TokenService.getAccessToken(req);
-    if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const token = TokenService.getAccessToken(req, { scope: 'user' });
+    if (!token) return NextResponse.json({ error: 'Unauthorized', scope: 'user' }, { status: 401 });
 
-    const payload = await TokenService.verifyAccessToken(token);
+    const payload = await TokenService.verifyAccessToken(token, false);
     const range = req.nextUrl.searchParams.get('range') || '7d';
     const from = req.nextUrl.searchParams.get('from') || undefined;
     const to = req.nextUrl.searchParams.get('to') || undefined;
