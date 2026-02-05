@@ -493,4 +493,5 @@
 - **Heartbeat Progress**: Expanded the 5-point **Dotted Progress Bar** with high-contrast active/inactive states.
 - **Unified Logic**: Synchronized footer buttons to use persistent "Pink Opacity" logic with a 5-step state machine.
 - **Structural Rigidity**: Locked the 700px viewport and reserved vertical slots for zero-shift transitions.
+- **HUD Compression**: Achieved a 30% vertical shift by stripping top padding and tightening global margins for a "Heads-Up Display" feel.
 - **Technical Certification**: Verified codebase integrity with a successful root `pnpm build` and `tsc` cycle (Exit Code 0).

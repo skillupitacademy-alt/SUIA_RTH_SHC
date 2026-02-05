@@ -256,9 +256,9 @@ export function QuizSelectionConsole() {
     const currentMeta = journeyInfo[step as keyof typeof journeyInfo];
 
     return (
-        <div className="max-w-[1400px] mx-auto relative px-4 sm:px-6 lg:px-8 pt-4 pb-12">
+        <div className="max-w-[1400px] mx-auto relative px-4 sm:px-6 lg:px-8 pt-0 pb-12">
             {/* Executive Dashboard Header (Stateless Baseline) */}
-            <div className="mb-6 border-b border-gray-100 pb-6">
+            <div className="mb-2 border-b border-gray-100 pb-6">
                 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-12">
                     {/* Left: Global Context */}
                     <div className="flex-none min-w-fit">
@@ -290,7 +290,7 @@ export function QuizSelectionConsole() {
                 </div>
             </div>
 
-            <div className="h-[1px] bg-gray-100/80 w-full mb-8" />
+            <div className="h-[1px] bg-gray-100/80 w-full mb-2" />
 
             <div className="min-h-[32px] mb-4">
                 {selectionError && (
