@@ -21,13 +21,13 @@ const DottedProgressBar = ({ currentStep }: { currentStep: number }) => (
                 <div className={cn(
                     "w-3 h-3 rounded-full border-2 transition-all duration-500",
                     s < currentStep ? "bg-[#FF2D55] border-[#FF2D55]" :
-                        s === currentStep ? "bg-white border-[#FF2D55] shadow-[0_0_15px_rgba(255,45,85,0.4)] scale-125" :
+                        s === currentStep ? "bg-[#FF2D55] border-[#FF2D55] shadow-[0_0_20px_rgba(255,45,85,0.5)] scale-125" :
                             "bg-transparent border-gray-300"
                 )} />
                 {s < 5 && (
                     <div className={cn(
                         "w-12 h-[2px] mx-1 transition-all duration-500",
-                        s < currentStep ? "bg-[#FF2D55]" : "bg-gray-100"
+                        s < currentStep ? "bg-[#FF2D55]" : "bg-gray-200/80"
                     )} />
                 )}
             </div>
@@ -52,6 +52,8 @@ export function QuizSelectionConsole() {
     // Engine Calibration State (Step 5)
     const [difficulty, setDifficulty] = useState('mixed');
     const [questionCount, setQuestionCount] = useState(20);
+    const [isArmed, setIsArmed] = useState(false);
+    const [isLocked, setIsLocked] = useState(false);
 
     // Pagination State
     const [page, setPage] = useState(0);
@@ -204,14 +206,14 @@ export function QuizSelectionConsole() {
     };
 
     const handleNext = () => {
+        if (step === 5) {
+            setIsArmed(true);
+            return;
+        }
         if (step < 5) {
             setStep(step + 1);
             setPage(0); // Reset page on step change
             setSelectionError(null);
-        } else {
-            // Initiate final launch logic
-            setLoading(true);
-            setTimeout(() => setLoading(false), 2000);
         }
     };
 
@@ -250,7 +252,7 @@ export function QuizSelectionConsole() {
         2: { title: "Refine Subjects", badge: "Curriculum Calibration", desc: "Select the core subjects for your assessment pool.", count: subjects.length },
         3: { title: "Select Topics", badge: "Knowledge Mapping", desc: "High-density grid of strategic knowledge units.", count: topics.length },
         4: { title: "Fine-tune Subtopics", badge: "Expert Precision", desc: "Pinpoint specific skills for deeper evaluation.", count: subtopics.length },
-        5: { title: "Calibrate Engine", badge: "Engine Mastery", desc: "Finalize your assessment session by tuning the difficulty tier and question volume.", count: 1 }
+        5: { title: "Calibrate Engine", badge: "Engine Mastery", desc: "Finalize your assessment session by tuning the difficulty tier and question volume.", count: 0 }
     };
 
     const currentMeta = journeyInfo[step as keyof typeof journeyInfo];
@@ -258,7 +260,7 @@ export function QuizSelectionConsole() {
     return (
         <div className="max-w-[1400px] mx-auto relative px-4 sm:px-6 lg:px-8 pt-0 pb-12">
             {/* Executive Dashboard Header (Stateless Baseline) */}
-            <div className="mb-1 border-b border-gray-100 pb-2">
+            <div className="mb-1 border-b border-gray-200/80 pb-2">
                 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-12">
                     {/* Left: Global Context */}
                     <div className="flex-none min-w-fit">
@@ -280,7 +282,7 @@ export function QuizSelectionConsole() {
                         <div className="flex items-center gap-4 mb-2 whitespace-nowrap">
                             <JourneyBadge text={currentMeta.badge} />
                             <h2 className="text-3xl font-black font-outfit tracking-tight text-[#1A1A1A] uppercase">
-                                {currentMeta.title} ({currentMeta.count})
+                                {currentMeta.title} {currentMeta.count > 0 && `(${currentMeta.count})`}
                             </h2>
                         </div>
                         <p className="text-sm text-muted-foreground font-inter font-medium opacity-70 max-w-md leading-relaxed">
@@ -290,7 +292,7 @@ export function QuizSelectionConsole() {
                 </div>
             </div>
 
-            <div className="h-[1px] bg-gray-100/80 w-full mb-1" />
+            <div className="h-[1px] bg-gray-200/80 w-full mb-1" />
 
             <div className="min-h-[32px] mb-4">
                 {selectionError && (
@@ -366,15 +368,15 @@ export function QuizSelectionConsole() {
 
                         {/* Step 5: Engine Calibration (Refactored Dark HUD) */}
                         {step === 5 && (
-                            <div className="animate-in fade-in zoom-in duration-500 h-full flex flex-col pt-2">
+                            <div className="animate-in fade-in duration-500 h-full flex flex-col pt-6">
                                 <div className="space-y-6">
                                     {/* Section 1: Difficulty Tier */}
-                                    <div className="space-y-3">
+                                    <div className="space-y-4">
                                         <div className="flex items-center gap-2 mb-1">
                                             <div className="h-4 w-1 bg-[#FF2D55] rounded-full" />
                                             <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-400">Difficulty Tier</p>
                                         </div>
-                                        <div className="grid grid-cols-3 gap-3">
+                                        <div className="grid grid-cols-3 gap-6">
                                             {[
                                                 { id: 'mixed', name: 'Mixed', desc: 'Mastery Blend' },
                                                 { id: 'beginner', name: 'Foundations', desc: 'Core Knowledge' },
@@ -382,18 +384,20 @@ export function QuizSelectionConsole() {
                                             ].map((tier) => (
                                                 <button
                                                     key={tier.id}
+                                                    disabled={isLocked}
                                                     onClick={() => setDifficulty(tier.id)}
                                                     className={cn(
-                                                        "p-4 rounded-xl border-2 transition-all duration-300 group relative flex flex-col items-center justify-center min-h-[100px]",
+                                                        "p-6 rounded-[1.25rem] border-2 transition-all duration-300 group relative flex flex-col items-center justify-center min-h-[120px]",
                                                         difficulty === tier.id
                                                             ? "bg-[#FF2D55] border-[#FF2D55] shadow-[0_10px_30px_rgba(255,45,85,0.2)]"
-                                                            : "bg-[#2B2B2B] border-transparent hover:bg-[#3d3d3d]"
+                                                            : "bg-[#2B2B2B] border-transparent hover:bg-[#3D3D3D]",
+                                                        isLocked && "opacity-50 pointer-events-none"
                                                     )}
                                                 >
-                                                    <p className={cn("text-base font-black font-outfit uppercase tracking-tight", difficulty === tier.id ? "text-white" : "text-white")}>
+                                                    <p className="text-base font-black font-outfit uppercase tracking-tight text-white">
                                                         {tier.name}
                                                     </p>
-                                                    <p className={cn("text-[9px] font-bold uppercase tracking-wider opacity-60 mt-1", difficulty === tier.id ? "text-white" : "text-white")}>
+                                                    <p className="text-[9px] font-bold uppercase tracking-wider opacity-60 mt-1 text-white">
                                                         {tier.desc}
                                                     </p>
                                                 </button>
@@ -401,22 +405,24 @@ export function QuizSelectionConsole() {
                                         </div>
                                     </div>
 
-                                    {/* Section 2: Total Density (Refactored Dark Grid) */}
-                                    <div className="space-y-3">
+                                    {/* Section 2: Total Density (Refactored Dark Grid) - 10% Push */}
+                                    <div className="space-y-4 mt-[10%]">
                                         <div className="flex items-center gap-2 mb-1">
                                             <div className="h-4 w-1 bg-[#FF2D55] rounded-full" />
                                             <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-400">Total Density</p>
                                         </div>
-                                        <div className="grid grid-cols-4 gap-3">
+                                        <div className="grid grid-cols-4 gap-6">
                                             {[5, 10, 15, 20, 25, 30, 40, 50].map((v) => (
                                                 <button
                                                     key={v}
+                                                    disabled={isLocked}
                                                     onClick={() => setQuestionCount(v)}
                                                     className={cn(
-                                                        "p-4 rounded-xl border-2 transition-all duration-300 group relative flex flex-col items-center justify-center",
+                                                        "p-6 rounded-[1.25rem] border-2 transition-all duration-300 group relative flex flex-col items-center justify-center min-h-[80px]",
                                                         questionCount === v
                                                             ? "bg-[#FF2D55] border-[#FF2D55] shadow-[0_10px_30px_rgba(255,45,85,0.2)]"
-                                                            : "bg-[#2B2B2B] border-transparent hover:bg-[#3d3d3d]"
+                                                            : "bg-[#2B2B2B] border-transparent hover:bg-[#3D3D3D]",
+                                                        isLocked && "opacity-50 pointer-events-none"
                                                     )}
                                                 >
                                                     <div className="text-xl font-black font-outfit text-white tracking-tighter">{v}</div>
@@ -426,14 +432,14 @@ export function QuizSelectionConsole() {
                                         </div>
                                     </div>
 
-                                    {/* Resulting Logic Display */}
-                                    <div className="bg-gray-50/50 p-6 rounded-3xl border border-gray-100/50 mt-2">
+                                    {/* Resulting Logic Display - 5% Push */}
+                                    <div className={cn("bg-gray-50/50 p-6 rounded-3xl border border-gray-200/80 mt-[5%] transition-all", isLocked && "opacity-50 grayscale")}>
                                         <div className="flex justify-between items-center">
                                             <div className="space-y-0.5">
                                                 <p className="text-3xl font-black font-outfit text-[#1A1A1A] tracking-tighter">~{Math.ceil(questionCount * 1.5)} MINS</p>
                                                 <p className="text-[10px] font-black uppercase tracking-widest text-[#FF2D55]">Calculated Duration</p>
                                             </div>
-                                            <div className="h-8 w-[1px] bg-gray-200" />
+                                            <div className="h-8 w-[1px] bg-gray-200/80" />
                                             <div className="text-right">
                                                 <p className="text-3xl font-black font-outfit text-[#1A1A1A] tracking-tighter">{difficulty.toUpperCase()}</p>
                                                 <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Mastery Profile</p>
@@ -446,14 +452,14 @@ export function QuizSelectionConsole() {
                     </div>
 
                     {/* Fixed Action Footer (Absolute Anchored) with Hairline */}
-                    <div className="h-[1px] bg-gray-100/50 w-full mt-auto" />
+                    <div className="h-[1px] bg-gray-200/80 w-full mt-auto" />
                     <div className="py-8 flex items-center justify-between border-gray-100 bg-white/50 backdrop-blur-sm z-20">
                         <button
                             onClick={handleBack}
                             disabled={step === 1}
                             className={cn(
                                 "px-12 py-4 rounded-xl font-bold font-outfit text-sm uppercase tracking-widest transition-all bg-[#FF2D55] text-white shadow-[0_10px_30px_rgba(255,45,85,0.2)] hover:shadow-[0_15px_40px_rgba(255,45,85,0.45)] active:scale-95",
-                                step === 1 && "opacity-20 pointer-events-none shadow-none"
+                                (step === 1 || isLocked) && "opacity-20 pointer-events-none shadow-none"
                             )}
                         >
                             BACK
@@ -462,16 +468,16 @@ export function QuizSelectionConsole() {
                         <div className="flex items-center gap-3">
                             <button
                                 onClick={handlePrevPage}
-                                disabled={page === 0 || loading}
+                                disabled={page === 0 || loading || isLocked || step === 5}
                                 className={cn(
                                     "p-4 rounded-xl transition-all active:scale-95 bg-[#FF2D55] text-white shadow-[0_10px_30px_rgba(255,45,85,0.2)] hover:shadow-[0_15px_40px_rgba(255,45,85,0.45)]",
-                                    (page === 0 || loading) && "opacity-20 pointer-events-none shadow-none"
+                                    (page === 0 || loading || isLocked || step === 5) && "opacity-20 pointer-events-none shadow-none"
                                 )}
                             >
                                 <ChevronLeft size={20} />
                             </button>
 
-                            <div className="px-6 py-4 rounded-xl border border-gray-100 bg-white/50 backdrop-blur-sm flex items-center justify-center min-w-[120px]">
+                            <div className={cn("px-6 py-4 rounded-xl border border-gray-100 bg-white/50 backdrop-blur-sm flex items-center justify-center min-w-[120px] transition-opacity", step === 5 && "opacity-10 pointer-events-none")}>
                                 <span className="text-[10px] font-black font-outfit text-gray-500 uppercase tracking-[0.2em]">
                                     {String(page + 1).padStart(2, '0')} / {String(Math.max(1, Math.ceil((step === 1 ? domains.length : (step === 3 ? topics.length : (step === 2 ? subjects.length : (step === 4 ? subtopics.length : 0)))) / currentPageSize))).padStart(2, '0')}
                                 </span>
@@ -479,10 +485,10 @@ export function QuizSelectionConsole() {
 
                             <button
                                 onClick={handleNextPage}
-                                disabled={page >= Math.ceil((step === 1 ? domains.length : (step === 3 ? topics.length : (step === 2 ? subjects.length : (step === 4 ? subtopics.length : 0)))) / currentPageSize) - 1 || loading}
+                                disabled={page >= Math.ceil((step === 1 ? domains.length : (step === 3 ? topics.length : (step === 2 ? subjects.length : (step === 4 ? subtopics.length : 0)))) / currentPageSize) - 1 || loading || isLocked || step === 5}
                                 className={cn(
                                     "p-4 rounded-xl transition-all active:scale-95 bg-[#FF2D55] text-white shadow-[0_10px_30px_rgba(255,45,85,0.2)] hover:shadow-[0_15px_40px_rgba(255,45,85,0.45)]",
-                                    (page >= Math.ceil((step === 1 ? domains.length : (step === 3 ? topics.length : (step === 2 ? subjects.length : (step === 4 ? subtopics.length : 0)))) / currentPageSize) - 1 || loading) && "opacity-20 pointer-events-none shadow-none"
+                                    (page >= Math.ceil((step === 1 ? domains.length : (step === 3 ? topics.length : (step === 2 ? subjects.length : (step === 4 ? subtopics.length : 0)))) / currentPageSize) - 1 || loading || isLocked || step === 5) && "opacity-20 pointer-events-none shadow-none"
                                 )}
                             >
                                 <ChevronRight size={20} />
@@ -492,6 +498,7 @@ export function QuizSelectionConsole() {
                         <button
                             onClick={handleNext}
                             disabled={
+                                (isLocked) ||
                                 (step === 1 && selectedDomains.length === 0) ||
                                 (step === 2 && selectedSubjects.length === 0) ||
                                 (step === 3 && selectedTopics.length === 0) ||
@@ -499,19 +506,20 @@ export function QuizSelectionConsole() {
                             }
                             className={cn(
                                 "px-12 py-4 rounded-xl font-bold font-outfit uppercase tracking-widest transition-all bg-[#FF2D55] text-white shadow-[0_10px_30px_rgba(255,45,85,0.2)] hover:shadow-[0_15px_40_rgba(255,45,85,0.45)] active:scale-95",
-                                (step < 5 && ((step === 1 && selectedDomains.length === 0) ||
+                                (isLocked || (step < 5 && ((step === 1 && selectedDomains.length === 0) ||
                                     (step === 2 && selectedSubjects.length === 0) ||
                                     (step === 3 && selectedTopics.length === 0) ||
-                                    (step === 4 && selectedSubtopics.length === 0))) && "opacity-20 pointer-events-none shadow-none"
+                                    (step === 4 && selectedSubtopics.length === 0)))) && "opacity-20 pointer-events-none shadow-none",
+                                step === 5 && isArmed && "bg-white text-[#FF2D55] border-2 border-[#FF2D55] shadow-none cursor-default active:scale-100"
                             )}
                         >
-                            {step === 5 ? "INITIATE ASSESSMENT 🚀" : (step === 4 ? "CALIBRATE ENGINE →" : "CONTINUE →")}
+                            {step === 5 ? (isArmed ? "MISSION ARMED 🚀" : "INITIATE ASSESSMENT 🚀") : (step === 4 ? "CALIBRATE ENGINE →" : "CONTINUE →")}
                         </button>
                     </div>
                 </div>
 
                 {/* Right Pane (35%) - Aligned Top & Bottom */}
-                <div className="w-full lg:w-[35%] flex flex-col h-[700px] pt-0">
+                <div className="w-full lg:w-[35%] flex flex-col h-[600px] pt-0">
                     <AssessmentSummary
                         domainName={currentDomain?.name || 'Not Selected'}
                         subjectsCount={selectedSubjects.length}
@@ -519,11 +527,9 @@ export function QuizSelectionConsole() {
                         questionCount={questionCount}
                         difficulty={difficulty.charAt(0).toUpperCase() + difficulty.slice(1)}
                         totalPoints={100 + selectedTopics.length * 15 + selectedSubtopics.length * 5}
-                        isReady={step === 5}
-                        onStart={() => {
-                            setLoading(true);
-                            setTimeout(() => setLoading(false), 2000);
-                        }}
+                        isReady={isArmed}
+                        onStart={() => setIsLocked(true)}
+                        isLocked={isLocked}
                         loading={loading}
                         selectedSubjects={currentSubjects.map(s => s.name)}
                         selectedTopics={currentTopics.map(t => t.name)}

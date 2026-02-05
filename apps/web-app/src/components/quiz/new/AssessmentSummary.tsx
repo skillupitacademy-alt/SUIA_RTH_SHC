@@ -12,6 +12,7 @@ interface AssessmentSummaryProps {
     totalPoints: number;
     onStart: () => void;
     isReady: boolean;
+    isLocked?: boolean;
     loading?: boolean;
     selectedSubjects?: string[];
     selectedTopics?: string[];
@@ -27,14 +28,18 @@ export function AssessmentSummary({
     totalPoints,
     onStart,
     isReady,
+    isLocked = false,
     loading = false,
     selectedSubjects = [],
     selectedTopics = [],
     selectedSubtopics = []
 }: AssessmentSummaryProps) {
     return (
-        <aside className="w-full flex flex-col h-full">
-            <div className="glass-morphism pink-glow rounded-[2rem] p-5 space-y-2 relative overflow-hidden group transition-all duration-500 hover:shadow-[0_0_50px_rgba(255,45,85,0.15)] flex-1 flex flex-col">
+        <aside className="w-full flex flex-col h-full max-h-[600px]">
+            <div className={cn(
+                "glass-morphism pink-glow rounded-[2rem] p-5 space-y-2 relative overflow-hidden group transition-all duration-500 hover:shadow-[0_0_50px_rgba(255,45,85,0.15)] flex-1 flex flex-col border border-gray-200/80",
+                isLocked && "opacity-60 grayscale"
+            )}>
                 {/* Visual Aura */}
                 <div className="absolute -top-24 -right-24 w-56 h-56 bg-[#FF2D55]/10 rounded-full blur-[90px] group-hover:bg-[#FF2D55]/20 transition-all duration-700" />
 
@@ -64,7 +69,7 @@ export function AssessmentSummary({
                             <div className="flex flex-wrap gap-1 pl-5 min-h-[1.5rem]">
                                 {selectedSubjects.length > 0 ? (
                                     selectedSubjects.map(s => (
-                                        <span key={s} className="px-2 py-0.5 bg-gray-50 text-[9px] font-bold text-gray-500 rounded border border-gray-100 uppercase tracking-tighter">{s}</span>
+                                        <span key={s} className="px-2 py-0.5 bg-gray-100 text-[9px] font-bold text-gray-500 rounded border border-gray-200/50 uppercase tracking-tighter">{s}</span>
                                     ))
                                 ) : (
                                     <span className="text-[9px] font-bold text-gray-300 uppercase tracking-tighter italic opacity-40">None Selected</span>
@@ -137,30 +142,41 @@ export function AssessmentSummary({
                         </div>
                     </div>
 
-                    <div className="mt-auto pt-4 border-t border-gray-100/50">
-                        <button
-                            onClick={onStart}
-                            disabled={!isReady || loading}
-                            className={cn(
-                                "w-full min-h-[56px] rounded-xl bg-gradient-to-br from-[#FF2D55] to-[#D4145A] text-white font-black font-outfit uppercase tracking-[0.1em] shadow-[0_12px_30px_rgba(255,45,85,0.3)] flex items-center justify-center gap-3 transition-all active:scale-95 disabled:grayscale disabled:opacity-30 group hover:shadow-[0_15px_40px_rgba(255,45,85,0.45)]",
-                                isReady && "animate-in fade-in zoom-in duration-500 shadow-[0_0_30px_rgba(255,45,85,0.5)] border-2 border-white/20"
-                            )}
-                        >
-                            {loading ? (
-                                <div className="flex items-center gap-3">
-                                    <Activity size={18} className="animate-spin" />
-                                    <span>INITIALIZING...</span>
-                                </div>
-                            ) : (
-                                <>
-                                    Launch Assessment
-                                    <div className="bg-white/20 p-1.5 rounded-full">
-                                        <Play size={12} fill="currentColor" />
+                    {isReady && !isLocked && (
+                        <div className="mt-auto pt-4 border-t border-gray-200/80">
+                            <button
+                                onClick={onStart}
+                                disabled={loading}
+                                className={cn(
+                                    "w-full min-h-[56px] rounded-xl bg-gradient-to-br from-[#FF2D55] to-[#D4145A] text-white font-black font-outfit uppercase tracking-[0.1em] shadow-[0_12px_30px_rgba(255,45,85,0.3)] flex items-center justify-center gap-3 transition-all active:scale-95 disabled:grayscale disabled:opacity-30 group hover:shadow-[0_15px_40px_rgba(255,45,85,0.45)]",
+                                    "animate-in fade-in zoom-in duration-500 shadow-[0_0_30px_rgba(255,45,85,0.5)] border-2 border-white/20"
+                                )}
+                            >
+                                {loading ? (
+                                    <div className="flex items-center gap-3">
+                                        <Activity size={18} className="animate-spin" />
+                                        <span>INITIALIZING...</span>
                                     </div>
-                                </>
-                            )}
-                        </button>
-                    </div>
+                                ) : (
+                                    <>
+                                        Launch Assessment
+                                        <div className="bg-white/20 p-1.5 rounded-full">
+                                            <Play size={12} fill="currentColor" />
+                                        </div>
+                                    </>
+                                )}
+                            </button>
+                        </div>
+                    )}
+
+                    {isLocked && (
+                        <div className="mt-auto pt-4 border-t border-gray-200/80">
+                            <div className="w-full min-h-[56px] rounded-xl bg-gray-100 text-gray-400 font-black font-outfit uppercase tracking-[0.1em] flex items-center justify-center gap-3 border-2 border-dashed border-gray-200/50">
+                                <Activity size={18} className="animate-pulse" />
+                                <span>INITIALIZING...</span>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
         </aside>
