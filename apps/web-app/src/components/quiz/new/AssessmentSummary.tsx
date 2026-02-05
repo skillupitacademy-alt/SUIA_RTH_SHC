@@ -1,6 +1,6 @@
 'use client';
 
-import { Clock, Layers, Shield, Tag, Play, Check } from 'lucide-react';
+import { Clock, Layers, Shield, Tag, Play, Check, Activity } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface AssessmentSummaryProps {
@@ -127,16 +127,21 @@ export function AssessmentSummary({
                         </div>
                     </div>
 
-                    <div className="mt-auto pt-6 border-t border-gray-100/50 space-y-3">
+                    <div className="mt-auto pt-6 border-t border-gray-100/50">
                         <button
                             onClick={onStart}
                             disabled={!isReady || loading}
                             className={cn(
-                                "w-full py-4 rounded-xl bg-gradient-to-br from-[#FF2D55] to-[#D4145A] text-white font-black font-outfit uppercase tracking-[0.1em] shadow-[0_12px_30px_rgba(255,45,85,0.3)] flex items-center justify-center gap-3 transition-all active:scale-95 disabled:grayscale disabled:opacity-30 group hover:shadow-[0_15px_40px_rgba(255,45,85,0.45)]",
+                                "w-full min-h-[64px] rounded-xl bg-gradient-to-br from-[#FF2D55] to-[#D4145A] text-white font-black font-outfit uppercase tracking-[0.1em] shadow-[0_12px_30px_rgba(255,45,85,0.3)] flex items-center justify-center gap-3 transition-all active:scale-95 disabled:grayscale disabled:opacity-30 group hover:shadow-[0_15px_40px_rgba(255,45,85,0.45)]",
                                 isReady && "animate-in fade-in zoom-in duration-500 shadow-[0_0_30px_rgba(255,45,85,0.5)]"
                             )}
                         >
-                            {loading ? 'INITIALIZING...' : (
+                            {loading ? (
+                                <div className="flex items-center gap-3">
+                                    <Activity size={18} className="animate-spin" />
+                                    <span>INITIALIZING...</span>
+                                </div>
+                            ) : (
                                 <>
                                     Launch Assessment
                                     <div className="bg-white/20 p-1.5 rounded-full">
@@ -145,12 +150,6 @@ export function AssessmentSummary({
                                 </>
                             )}
                         </button>
-
-                        {!isReady && !loading && (
-                            <p className="text-[9px] text-center text-muted-foreground font-bold uppercase tracking-widest opacity-40">
-                                Selection Phase: Required Steps Remaining
-                            </p>
-                        )}
                     </div>
                 </div>
             </div>

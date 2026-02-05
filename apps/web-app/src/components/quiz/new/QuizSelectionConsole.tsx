@@ -8,6 +8,12 @@ import { Code, Shield, Cloud, Database, Check, Loader2, Activity, ChevronLeft, C
 import { cn } from '@/lib/utils';
 import { apiClient } from '@quiz/api-client';
 
+const JourneyBadge = ({ text }: { text: string }) => (
+    <div className="inline-flex items-center px-4 py-1.5 rounded-full border-2 border-[#FF2D55]/20 bg-white shadow-sm animate-in zoom-in duration-500">
+        <span className="text-[10px] font-black font-outfit text-[#FF2D55] uppercase tracking-[0.2em]">{text}</span>
+    </div>
+);
+
 export function QuizSelectionConsole() {
     const [step, setStep] = useState(1);
     const [domains, setDomains] = useState<any[]>([]);
@@ -215,46 +221,60 @@ export function QuizSelectionConsole() {
             <div className="mb-10 min-h-[100px] flex flex-col justify-end">
                 {step === 1 && (
                     <div className="animate-in fade-in slide-in-from-left-4 duration-700">
-                        <h2 className="text-4xl font-black font-outfit tracking-tighter text-[#1A1A1A] mb-2 uppercase">
-                            Select Domain ({domains.length})
-                        </h2>
+                        <div className="flex items-center gap-4 mb-3">
+                            <h2 className="text-4xl font-black font-outfit tracking-tighter text-[#1A1A1A] uppercase">
+                                Select Domain ({domains.length})
+                            </h2>
+                            <JourneyBadge text="Foundation Architecture" />
+                        </div>
                         <p className="text-muted-foreground font-inter font-medium opacity-70">Choose your area of expertise to begin the assessment.</p>
                     </div>
                 )}
 
                 {step === 2 && (
                     <div className="animate-in fade-in slide-in-from-left-4 duration-700">
-                        <h2 className="text-4xl font-black font-outfit tracking-tighter text-[#1A1A1A] mb-2 uppercase">
-                            Refine Subjects ({subjects.length})
-                        </h2>
+                        <div className="flex items-center gap-4 mb-3">
+                            <h2 className="text-4xl font-black font-outfit tracking-tighter text-[#1A1A1A] uppercase">
+                                Refine Subjects ({subjects.length})
+                            </h2>
+                            <JourneyBadge text="Curriculum Calibration" />
+                        </div>
                         <p className="text-muted-foreground font-inter font-medium opacity-70 text-sm">Select the core subjects for your assessment pool.</p>
                     </div>
                 )}
 
                 {step === 3 && (
                     <div className="animate-in fade-in slide-in-from-left-4 duration-700">
-                        <h2 className="text-4xl font-black font-outfit tracking-tighter text-[#1A1A1A] mb-2 uppercase">
-                            Select Topics ({topics.length})
-                        </h2>
+                        <div className="flex items-center gap-4 mb-3">
+                            <h2 className="text-4xl font-black font-outfit tracking-tighter text-[#1A1A1A] uppercase">
+                                Select Topics ({topics.length})
+                            </h2>
+                            <JourneyBadge text="Knowledge Mapping" />
+                        </div>
                         <p className="text-muted-foreground font-inter font-medium opacity-70">High-density grid of strategic knowledge units.</p>
                     </div>
                 )}
 
                 {step === 4 && (
                     <div className="animate-in fade-in slide-in-from-left-4 duration-700">
-                        <h2 className="text-4xl font-black font-outfit tracking-tighter text-[#1A1A1A] mb-2 uppercase">
-                            Fine-tune Subtopics ({subtopics.length})
-                        </h2>
+                        <div className="flex items-center gap-4 mb-3">
+                            <h2 className="text-4xl font-black font-outfit tracking-tighter text-[#1A1A1A] uppercase">
+                                Fine-tune Subtopics ({subtopics.length})
+                            </h2>
+                            <JourneyBadge text="Precision Tuning" />
+                        </div>
                         <p className="text-muted-foreground font-inter font-medium opacity-70">Pinpoint specific skills for deeper evaluation.</p>
                     </div>
                 )}
 
-                {selectionError && (
-                    <div className="mt-2 flex items-center gap-2 text-[#FF2D55] animate-in slide-in-from-top-2 duration-300">
-                        <div className="h-1.5 w-1.5 rounded-full bg-[#FF2D55] animate-pulse" />
-                        <span className="text-[10px] font-black uppercase tracking-widest">{selectionError}</span>
-                    </div>
-                )}
+                <div className="min-h-[32px] mt-2">
+                    {selectionError && (
+                        <div className="flex items-center gap-2 text-[#FF2D55] animate-in slide-in-from-top-2 duration-300">
+                            <div className="h-1.5 w-1.5 rounded-full bg-[#FF2D55] animate-pulse" />
+                            <span className="text-[10px] font-black uppercase tracking-widest">{selectionError}</span>
+                        </div>
+                    )}
+                </div>
             </div>
 
             <div className="flex flex-col lg:flex-row gap-12 items-stretch">
