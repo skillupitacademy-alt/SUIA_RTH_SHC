@@ -1,9 +1,7 @@
-
 import { NextResponse } from "next/server";
 import { db, questions } from "@quiz/db";
 import { eq, and, inArray } from "drizzle-orm";
 import { TokenService } from "@/modules/auth/token.service";
-import { verifyAdmin } from "@/modules/auth/rbac.service";
 
 interface DuplicateCheckPayload {
   questions: { questionText: string }[];
@@ -13,17 +11,12 @@ interface DuplicateCheckPayload {
 export async function POST(req: Request) {
   try {
     // 1. Defense-in-Depth Admin Check (P0-SEC-002)
-    const token = TokenService.getAccessToken(req);
+    const token = TokenService.getAccessToken(req, { scope: 'admin' });
     if (!token) {
-      return NextResponse.json({ error: "Authentication required" }, { status: 401 });
+      return NextResponse.json({ error: "Authentication required", scope: 'admin' }, { status: 401 });
     }
 
-    const payload = await TokenService.verifyAccessToken(token);
-    const isAdmin = await verifyAdmin(payload);
-
-    if (!isAdmin) {
-      return NextResponse.json({ error: "Forbidden: Admin access only" }, { status: 403 });
-    }
+    const payload = await TokenService.verifyAccessToken(token, true);
 
     const { questions: checkQuestions, topicId } = (await req.json()) as DuplicateCheckPayload;
 
@@ -32,8 +25,6 @@ export async function POST(req: Request) {
     }
 
     // 1. Fetch all existing question texts for this topic
-    // Optimization: In a real large-scale system, we'd use hashes or a vector DB.
-    // For now, fetching texts for the topic is acceptable given typical topic sizes (<1000 questions).
     const existingQuestions = await db
       .select({ id: questions.id, text: questions.questionText })
       .from(questions)
@@ -72,8 +63,8 @@ export async function POST(req: Request) {
   } catch (error) {
     console.error("Duplicate Check Error:", error);
     return NextResponse.json(
-      { error: "Failed to check duplicates" },
-      { status: 500 }
+      { error: error instanceof Error ? error.message : "Access denied" },
+      { status: 403 }
     );
   }
 }

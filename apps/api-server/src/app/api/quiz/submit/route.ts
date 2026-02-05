@@ -9,10 +9,10 @@ import { TokenService } from '@/modules/auth/token.service';
  */
 export async function POST(req: NextRequest) {
   try {
-    const token = TokenService.getAccessToken(req);
-    if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const token = TokenService.getAccessToken(req, { scope: 'user' });
+    if (!token) return NextResponse.json({ error: 'Unauthorized', scope: 'user' }, { status: 401 });
 
-    const payload = await TokenService.verifyAccessToken(token);
+    const payload = await TokenService.verifyAccessToken(token, false);
     const { examId } = await req.json();
     const result = await ExamEngine.completeExam(examId, payload.userId);
     return NextResponse.json(result);

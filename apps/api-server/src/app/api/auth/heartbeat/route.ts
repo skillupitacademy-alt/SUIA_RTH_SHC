@@ -1,33 +1,24 @@
-
 import { NextRequest, NextResponse } from 'next/server';
+import { db, users } from '@quiz/db';
+import { eq } from 'drizzle-orm';
 import { TokenService } from '@/modules/auth/token.service';
-import { AuthService } from '@/modules/auth/auth.service';
+
+export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest) {
   try {
-    const token = TokenService.getAccessToken(req);
-    if (!token) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const token = TokenService.getAccessToken(req, { scope: 'user' });
+    if (!token) return NextResponse.json({ error: 'Unauthorized', scope: 'user' }, { status: 401 });
 
-    let payload;
-    try {
-        // Try verifying as normal user first
-        payload = await TokenService.verifyAccessToken(token);
-    } catch {
-        // Fallback or explicit failure
-        return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
-    }
+    const payload = await TokenService.verifyAccessToken(token, false);
+    
+    // Update last active
+    await db.update(users)
+      .set({ lastActiveAt: new Date() })
+      .where(eq(users.id, payload.userId));
 
-    if (!payload?.userId) {
-        return NextResponse.json({ error: 'Invalid token payload' }, { status: 401 });
-    }
-
-    await AuthService.heartbeat(payload.userId);
-
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ status: 'ok', timestamp: new Date().toISOString() });
   } catch (error: any) {
-    console.error('Heartbeat failed:', error);
-    return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json({ error: error.message }, { status: 401 });
   }
 }

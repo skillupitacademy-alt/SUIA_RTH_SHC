@@ -43,16 +43,11 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const token = TokenService.getAccessToken(req);
+    const token = TokenService.getAccessToken(req, { scope: 'admin' });
     if (!token) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized', scope: 'admin' }, { status: 401 });
     }
-
-    const payload = await TokenService.verifyAccessToken(token);
-
-    if (!(await verifyAdmin(payload))) {
-        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-    }
+    const payload = await TokenService.verifyAccessToken(token, true);
 
     const body = await req.json();
     const result = await AdminEngine.createQuestion(body, payload.userId);

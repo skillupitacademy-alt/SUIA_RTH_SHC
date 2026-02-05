@@ -1,62 +1,50 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { AdminEngine } from '@/modules/admin-engine/admin.engine';
 import { TokenService } from '@/modules/auth/token.service';
-import { verifyAdmin } from '@/modules/auth/rbac.service';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  try {
-    const { id } = await params;
-    const token = TokenService.getAccessToken(req);
-    if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-    const payload = await TokenService.verifyAccessToken(token);
-    if (!(await verifyAdmin(payload))) {
-        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+async function verifyAdmin(req: NextRequest) {
+    const token = TokenService.getAccessToken(req, { scope: 'admin' });
+    if (!token) {
+        return { error: 'Unauthorized', scope: 'admin', status: 401 };
     }
 
-    const result = await AdminEngine.getBlueprintById(id);
-    return NextResponse.json(result);
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
+    try {
+        const payload = await TokenService.verifyAccessToken(token, true);
+        return { userId: payload.userId };
+    } catch (err) {
+        return { error: 'Unauthorized', status: 401 };
+    }
 }
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  try {
     const { id } = await params;
-    const token = TokenService.getAccessToken(req);
-    if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const auth = await verifyAdmin(req);
+    if (auth.error) return NextResponse.json({ error: auth.error, scope: auth.scope }, { status: auth.status });
 
-    const payload = await TokenService.verifyAccessToken(token);
-    if (!(await verifyAdmin(payload))) {
-        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    try {
+        const body = await req.json();
+        // AdminEngine.updateBlueprint(id, data) - 2 args
+        const result = await AdminEngine.updateBlueprint(id, body);
+        return NextResponse.json(result);
+    } catch (error: any) {
+        console.error('[ADMIN_BLUEPRINT_PATCH] Error:', error.message);
+        return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
     }
-
-    const body = await req.json();
-    const result = await AdminEngine.updateBlueprint(id, body);
-    
-    return NextResponse.json(result);
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
 }
 
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  try {
     const { id } = await params;
-    const token = TokenService.getAccessToken(req);
-    if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const auth = await verifyAdmin(req);
+    if (auth.error) return NextResponse.json({ error: auth.error, scope: auth.scope }, { status: auth.status });
 
-    const payload = await TokenService.verifyAccessToken(token);
-    if (!(await verifyAdmin(payload))) {
-        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    try {
+        // AdminEngine.deleteBlueprint(id) - 1 arg
+        const result = await AdminEngine.deleteBlueprint(id);
+        return NextResponse.json(result);
+    } catch (error: any) {
+        console.error('[ADMIN_BLUEPRINT_DELETE] Error:', error.message);
+        return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
     }
-
-    const result = await AdminEngine.deleteBlueprint(id);
-    return NextResponse.json(result);
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
 }

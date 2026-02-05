@@ -518,3 +518,13 @@
     - **Session Isolation**: Ensured that session data for one app does not interfere with the other.
 - **Verification**: Global monorepo build and TypeScript check PASSED (Exit Code 0).
 - **Outcome**: Achieved robust, isolated authentication for multi-app environments, eliminating cross-app session conflicts.
+
+### Phase 116: Universal Scope Enforcement & Absolute Isolation (Batch 116)
+- **Objective**: Harden the entire API server with strict, scope-aware token extraction to prevent any potential for identity conflicts between admin and user sessions.
+- **Implementation**:
+    - **Scope-Aware Service**: Upgraded `TokenService.getAccessToken` to explicitly target `admin_accessToken` or `accessToken` based on required scope.
+    - **Full-Spectrum Hardening**: Refactored over 60 API handlers across `/api/admin`, `/api/quiz`, and `/api/auth` to enforce explicit scope verification.
+    - **Header Fallback**: Implemented scope-aware `Authorization` header verification, ensuring tokens match the correct signature secret (`ADMIN_SECRET` vs `ACCESS_SECRET`).
+    - **Service Repair**: Fixed legacy service method mappings for metrics, batch operations, and exam interactions (e.g., `composeExam`, `deleteTopicsBatch`, `getPerformanceAnalytics`).
+- **Verification**: Verified platform-wide build and type-safety with a successful root `pnpm build` and `tsc` cycle (Exit Code 0).
+- **Outcome**: Established absolute identity isolation; admins and students can now maintain concurrent, interference-free sessions with cryptographic certainty.

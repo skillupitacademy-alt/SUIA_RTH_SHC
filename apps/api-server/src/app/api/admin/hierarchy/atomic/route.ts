@@ -4,23 +4,30 @@ import { TokenService } from '@/modules/auth/token.service';
 
 export const dynamic = 'force-dynamic';
 
-export async function POST(req: NextRequest) {
-  try {
-    const token = TokenService.getAccessToken(req);
-    if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-    const payload = await TokenService.verifyAccessToken(token);
-    if (!payload.isAdmin && !payload.roles.includes('admin')) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+async function verifyAdmin(req: NextRequest) {
+    const token = TokenService.getAccessToken(req, { scope: 'admin' });
+    if (!token) {
+        return { error: 'Unauthorized', scope: 'admin', status: 401 };
     }
 
-    const body = await req.json();
-    const result = await AdminEngine.atomicSeed(body);
-
-    return NextResponse.json(result);
-  } catch (error: any) {
-    console.error('Atomic Seed Error:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
+    try {
+        const payload = await TokenService.verifyAccessToken(token, true);
+        return { userId: payload.userId };
+    } catch (err) {
+        return { error: 'Unauthorized', status: 401 };
+    }
 }
 
+export async function POST(req: NextRequest) {
+    const auth = await verifyAdmin(req);
+    if (auth.error) return NextResponse.json({ error: auth.error, scope: auth.scope }, { status: auth.status });
+
+    try {
+        const body = await req.json();
+        const result = await AdminEngine.atomicSeed(body);
+        return NextResponse.json(result);
+    } catch (error: any) {
+        console.error('[ADMIN_HIERARCHY_ATOMIC] Error:', error.message);
+        return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
+    }
+}

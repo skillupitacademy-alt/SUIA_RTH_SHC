@@ -1,9 +1,7 @@
-
 import { NextResponse } from "next/server";
 import { db, questions, skills, questionSkills } from "@quiz/db";
 import { eq, inArray, sql } from "drizzle-orm";
 import { TokenService } from "@/modules/auth/token.service";
-import { verifyAdmin } from "@/modules/auth/rbac.service";
 
 // Define strict types locally to ensure safety without circular deps
 type Difficulty = 'simple' | 'intermediate' | 'expert';
@@ -31,17 +29,12 @@ interface SavePayload {
 export async function POST(req: Request) {
   try {
     // 1. Defense-in-Depth Admin Check (P0-SEC-002)
-    const token = TokenService.getAccessToken(req);
+    const token = TokenService.getAccessToken(req, { scope: 'admin' });
     if (!token) {
-      return NextResponse.json({ error: "Authentication required" }, { status: 401 });
+      return NextResponse.json({ error: "Authentication required", scope: 'admin' }, { status: 401 });
     }
 
-    const payload = await TokenService.verifyAccessToken(token);
-    const isAdmin = await verifyAdmin(payload);
-
-    if (!isAdmin) {
-      return NextResponse.json({ error: "Forbidden: Admin access only" }, { status: 403 });
-    }
+    const payload = await TokenService.verifyAccessToken(token, true);
 
     const { questions: newQuestions, topicId, subtopicId } = (await req.json()) as SavePayload;
 
@@ -76,9 +69,7 @@ export async function POST(req: Request) {
                     mappingType: "technical" as const, // Cast to literal for enum compatibility
                 }))
             );
-            // Re-fetch because returning inside .map in values() can be tricky with types sometimes, 
-            // but returning() works. Let's stick to simple logic or just re-select if needed.
-            // Actually, returning() is fine.
+            
             const created = await tx.select({ id: skills.id, name: skills.name })
                 .from(skills)
                 .where(inArray(skills.name, skillsToCreate));
@@ -90,7 +81,6 @@ export async function POST(req: Request) {
 
         // 3. Insert Questions and Link Skills
         for (const q of newQuestions) {
-            // A. Insert Question
             const [insertedQ] = await tx
                 .insert(questions)
                 .values({
@@ -108,7 +98,6 @@ export async function POST(req: Request) {
                 .returning({ id: questions.id });
 
             if (insertedQ) {
-                // B. Link Skills
                 const qSkillIds = (q.skillNames || [])
                     .map((name) => finalSkillMap.get(name.toLowerCase().trim()))
                     .filter(Boolean) as string[];
@@ -133,8 +122,8 @@ export async function POST(req: Request) {
   } catch (error) {
     console.error("Factory Save Error:", error);
     return NextResponse.json(
-      { error: "Failed to save batch", details: error instanceof Error ? error.message : "Unknown" },
-      { status: 500 }
+      { error: error instanceof Error ? error.message : "Access denied" },
+      { status: 403 }
     );
   }
 }

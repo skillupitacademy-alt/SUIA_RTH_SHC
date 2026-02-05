@@ -1,33 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { AdminEngine } from '@/modules/admin-engine/admin.engine';
 import { TokenService } from '@/modules/auth/token.service';
-import { db, userRoles, roles, questions } from '@quiz/db';
-import { eq, and, inArray } from 'drizzle-orm';
+import { db, questions } from '@quiz/db';
+import { eq } from 'drizzle-orm';
 
 export const dynamic = 'force-dynamic';
 
 async function verifyAdmin(req: NextRequest) {
-    const token = TokenService.getAccessToken(req);
+    const token = TokenService.getAccessToken(req, { scope: 'admin' });
     if (!token) {
-        return { error: 'Unauthorized', status: 401 };
+        return { error: 'Unauthorized', scope: 'admin', status: 401 };
     }
 
     try {
-        const payload = await TokenService.verifyAccessToken(token);
-
-        const userRole = await db.select()
-            .from(userRoles)
-            .innerJoin(roles, eq(userRoles.roleId, roles.id))
-            .where(and(
-                eq(userRoles.userId, payload.userId),
-                inArray(roles.name, ['admin', 'ADMIN', 'super_admin', 'SUPER_ADMIN'])
-            ))
-            .limit(1);
-
-        if (userRole.length === 0) {
-            return { error: 'Forbidden', status: 403 };
-        }
-
+        const payload = await TokenService.verifyAccessToken(token, true);
         return { userId: payload.userId };
     } catch (err) {
         return { error: 'Unauthorized', status: 401 };

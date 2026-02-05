@@ -1,26 +1,33 @@
 ﻿import { NextRequest, NextResponse } from 'next/server';
-export const dynamic = 'force-dynamic';
 import { AdminEngine } from '@/modules/admin-engine/admin.engine';
 import { TokenService } from '@/modules/auth/token.service';
 
+export const dynamic = 'force-dynamic';
+
 async function verifyAdmin(req: NextRequest) {
-  const token = TokenService.getAccessToken(req);
-  if (!token) return null;
-  const payload = await TokenService.verifyAccessToken(token);
-  const isAdmin = payload.roles.includes('ADMIN') || payload.roles.includes('SUPER_ADMIN');
-  return isAdmin ? payload : null;
+    const token = TokenService.getAccessToken(req, { scope: 'admin' });
+    if (!token) {
+        return { error: 'Unauthorized', scope: 'admin', status: 401 };
+    }
+
+    try {
+        const payload = await TokenService.verifyAccessToken(token, true);
+        return { userId: payload.userId };
+    } catch (err) {
+        return { error: 'Unauthorized', status: 401 };
+    }
 }
 
 export async function POST(req: NextRequest) {
-  const admin = await verifyAdmin(req);
-  if (!admin) return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
+    const auth = await verifyAdmin(req);
+    if (auth.error) return NextResponse.json({ error: auth.error, scope: auth.scope }, { status: auth.status });
 
-  try {
-    const { questionId } = await req.json();
-    const result = await AdminEngine.publishQuestion(questionId, admin.userId);
-    return NextResponse.json(result);
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
+    try {
+        const body = await req.json();
+        const result = await AdminEngine.publishQuestion(body.id, auth.userId!);
+        return NextResponse.json(result);
+    } catch (error: any) {
+        console.error('[ADMIN_PUBLISH] Error:', error.message);
+        return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
+    }
 }
-

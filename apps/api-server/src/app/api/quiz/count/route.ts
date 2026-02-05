@@ -1,32 +1,21 @@
 ﻿import { NextRequest, NextResponse } from 'next/server';
-export const dynamic = 'force-dynamic';
 import { TokenService } from '@/modules/auth/token.service';
 import { ExamBlueprintService } from '@/services/exams/ExamBlueprintService';
 
-const blueprintService = new ExamBlueprintService();
+export const dynamic = 'force-dynamic';
 
-/**
- * GET QUESTION COUNT
- * POST /api/quiz/count
- */
 export async function POST(req: NextRequest) {
   try {
-    const token = TokenService.getAccessToken(req);
-    if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const token = TokenService.getAccessToken(req, { scope: 'user' });
+    if (!token) return NextResponse.json({ error: 'Unauthorized', scope: 'user' }, { status: 401 });
 
-    const payload = await TokenService.verifyAccessToken(token);
-    const { domainId, subjects, topicIds, subtopicIds } = await req.json();
+    await TokenService.verifyAccessToken(token, false);
+    const body = await req.json();
 
-    const counts = await blueprintService.getAvailableCounts({
-      domainId,
-      subjectIds: subjects,
-      topicIds,
-      subtopicIds
-    });
-
-    return NextResponse.json(counts);
+    const blueprintService = new ExamBlueprintService();
+    const result = await blueprintService.getAvailableCounts(body);
+    return NextResponse.json(result);
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: error.message }, { status: 400 });
   }
 }
-

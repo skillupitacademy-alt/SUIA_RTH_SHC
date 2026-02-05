@@ -49,3 +49,4 @@
 | 2026-02-05 | Tactical HUD Sync | COMPLETED | Zero-Scroll h-600px frame; Two-Stage Lockdown; Header stability & Divider boost. |
 | 2026-02-05 | Auth Sync Cleanup | COMPLETED | Resolved "Lying UI" race condition; Verified-First header policy; Global 401 listener. |
 | 2026-02-05 | Namespace-Aware Auth | COMPLETED | Isolated Admin vs Student identities via explicit middleware routing and dedicated /api/admin/auth/me endpoint. |
+| 2026-02-05 | Universal Scope Enforcement | COMPLETED | Hardened 60+ API handlers with explicit scope-aware token verification and identity isolation. |

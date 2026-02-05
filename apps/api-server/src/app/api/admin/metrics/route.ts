@@ -5,8 +5,8 @@ import { TokenService } from '@/modules/auth/token.service';
 
 export async function GET(req: NextRequest) {
   try {
-    const token = TokenService.getAccessToken(req);
-    if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const token = TokenService.getAccessToken(req, { scope: 'admin' });
+    if (!token) return NextResponse.json({ error: 'Unauthorized', scope: 'admin' }, { status: 401 });
 
     const payload = await TokenService.verifyAccessToken(token, true); // true for isAdmin check
     

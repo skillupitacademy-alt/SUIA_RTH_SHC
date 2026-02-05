@@ -1,27 +1,32 @@
 ﻿import { NextRequest, NextResponse } from 'next/server';
-export const dynamic = 'force-dynamic';
 import { AdminEngine } from '@/modules/admin-engine/admin.engine';
 import { TokenService } from '@/modules/auth/token.service';
 
-/**
- * Route for fetching live sessions
- */
-export async function GET(req: NextRequest) {
-  try {
-    const token = TokenService.getAccessToken(req);
-    if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+export const dynamic = 'force-dynamic';
 
-    const payload = await TokenService.verifyAccessToken(token, true);
-    
-    const { searchParams } = new URL(req.url);
-    const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '10');
-    const search = searchParams.get('search') || undefined;
+async function verifyAdmin(req: NextRequest) {
+    const token = TokenService.getAccessToken(req, { scope: 'admin' });
+    if (!token) {
+        return { error: 'Unauthorized', scope: 'admin', status: 401 };
+    }
 
-    const result = await AdminEngine.getLiveSessions(page, limit, { search });
-    return NextResponse.json(result);
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 403 });
-  }
+    try {
+        const payload = await TokenService.verifyAccessToken(token, true);
+        return { userId: payload.userId };
+    } catch (err) {
+        return { error: 'Unauthorized', status: 401 };
+    }
 }
 
+export async function GET(req: NextRequest) {
+    const auth = await verifyAdmin(req);
+    if (auth.error) return NextResponse.json({ error: auth.error, scope: auth.scope }, { status: auth.status });
+
+    try {
+        const data = await AdminEngine.getLiveSessions();
+        return NextResponse.json(data);
+    } catch (error: any) {
+        console.error('[ADMIN_SESSIONS_LIVE] Error:', error.message);
+        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    }
+}

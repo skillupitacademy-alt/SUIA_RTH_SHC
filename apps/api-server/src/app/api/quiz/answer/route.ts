@@ -1,20 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
-export const dynamic = 'force-dynamic';
 import { ExamEngine } from '@/modules/exam-engine/exam.engine';
 import { TokenService } from '@/modules/auth/token.service';
 
-/**
- * SUBMIT ANSWER
- * POST /api/quiz/answer
- */
+export const dynamic = 'force-dynamic';
+
 export async function POST(req: NextRequest) {
   try {
-    const token = TokenService.getAccessToken(req);
-    if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const token = TokenService.getAccessToken(req, { scope: 'user' });
+    if (!token) return NextResponse.json({ error: 'Unauthorized', scope: 'user' }, { status: 401 });
 
-    const payload = await TokenService.verifyAccessToken(token);
-    const { examId, questionId, answer } = await req.json();
-    const result = await ExamEngine.submitAnswer(examId, questionId, answer, payload.userId);
+    const payload = await TokenService.verifyAccessToken(token, false);
+    const body = await req.json();
+    
+    const result = await ExamEngine.submitAnswer(
+      body.examId,
+      body.questionId,
+      body.answer,
+      payload.userId
+    );
     return NextResponse.json(result);
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 400 });

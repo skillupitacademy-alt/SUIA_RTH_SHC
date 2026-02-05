@@ -4,11 +4,14 @@ import { AdminEngine } from '@/modules/admin-engine/admin.engine';
 import { TokenService } from '@/modules/auth/token.service';
 
 async function verifyAdmin(req: NextRequest) {
-  const token = TokenService.getAccessToken(req);
+  const token = TokenService.getAccessToken(req, { scope: 'admin' });
   if (!token) return null;
-  const payload = await TokenService.verifyAccessToken(token);
-  const isAdmin = payload.roles.includes('ADMIN') || payload.roles.includes('SUPER_ADMIN');
-  return isAdmin ? payload : null;
+  try {
+     const payload = await TokenService.verifyAccessToken(token, true);
+     return payload;
+  } catch {
+     return null;
+  }
 }
 
 export async function POST(req: NextRequest) {

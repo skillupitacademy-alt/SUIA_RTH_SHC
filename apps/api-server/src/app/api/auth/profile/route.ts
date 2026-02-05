@@ -1,32 +1,41 @@
 ﻿import { NextRequest, NextResponse } from 'next/server';
-export const dynamic = 'force-dynamic';
-import { AuthService } from '@/modules/auth/auth.service';
-import { TokenService } from '@/modules/auth/token.service';
 import { db, userProfiles } from '@quiz/db';
 import { eq } from 'drizzle-orm';
+import { TokenService } from '@/modules/auth/token.service';
 
-export async function PUT(req: NextRequest) {
+export const dynamic = 'force-dynamic';
+
+export async function GET(req: NextRequest) {
   try {
-    const token = TokenService.getAccessToken(req);
-    if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const token = TokenService.getAccessToken(req, { scope: 'user' });
+    if (!token) return NextResponse.json({ error: 'Unauthorized', scope: 'user' }, { status: 401 });
 
-    const payload = await TokenService.verifyAccessToken(token);
-    const data = await req.json();
+    const payload = await TokenService.verifyAccessToken(token, false);
+    const profile = await db.query.userProfiles.findFirst({
+      where: eq(userProfiles.userId, payload.userId),
+    });
 
-    // Update user profile in DB
-    await db.update(userProfiles)
-      .set({
-        educationLevel: data.educationLevel,
-        professionalStatus: data.role,
-        experienceYears: parseInt(data.experience) || 0,
-        domainInterest: data.domain ? [data.domain] : [],
-        updatedAt: new Date(),
-      })
-      .where(eq(userProfiles.userId, payload.userId));
-
-    return NextResponse.json({ message: 'Profile updated' });
+    return NextResponse.json(profile || { error: 'Profile not found' });
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: error.message }, { status: 401 });
   }
 }
 
+export async function PATCH(req: NextRequest) {
+  try {
+    const token = TokenService.getAccessToken(req, { scope: 'user' });
+    if (!token) return NextResponse.json({ error: 'Unauthorized', scope: 'user' }, { status: 401 });
+
+    const payload = await TokenService.verifyAccessToken(token, false);
+    const body = await req.json();
+
+    const [updated] = await db.update(userProfiles)
+      .set({ ...body, updatedAt: new Date() })
+      .where(eq(userProfiles.userId, payload.userId))
+      .returning();
+
+    return NextResponse.json(updated);
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 400 });
+  }
+}
