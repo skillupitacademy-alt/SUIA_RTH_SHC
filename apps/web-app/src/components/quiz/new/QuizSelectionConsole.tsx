@@ -321,7 +321,7 @@ export function QuizSelectionConsole() {
     const currentMeta = journeyInfo[step as keyof typeof journeyInfo];
 
     return (
-        <div className="max-w-[1400px] mx-auto relative px-4 sm:px-6 lg:px-8 pt-0 pb-12">
+        <div className="max-w-[1400px] mx-auto relative px-4 sm:px-6 lg:px-8 pt-0 pb-6">
             {/* Executive Dashboard Header (Stateless Baseline) */}
             <div className="mb-1 border-b border-gray-300 pb-2">
                 <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-12 pt-2">
@@ -392,8 +392,8 @@ export function QuizSelectionConsole() {
                 )}
             </div>
             <div className="flex flex-col lg:flex-row gap-12 items-stretch">
-                {/* Left Pane (65%) - Locked Height Console */}
-                <div className="w-full lg:w-[65%] flex flex-col relative h-[600px]">
+                {/* Left Pane (65%) - Locked Height Console (h-530 compression) */}
+                <div className="w-full lg:w-[65%] flex flex-col relative h-[530px]">
                     {/* Content Area (Stationary Grid via Slicing) */}
                     <div className="flex-1 overflow-visible relative">
                         {loading && (
@@ -531,7 +531,7 @@ export function QuizSelectionConsole() {
 
                     {/* Fixed Action Footer (Absolute Anchored) with Hairline */}
                     <div className="h-[1px] bg-gray-300 w-full mt-auto" />
-                    <div className="py-8 flex items-center justify-between border-gray-100 bg-white/50 backdrop-blur-sm z-20">
+                    <div className="py-6 flex items-center justify-between border-gray-100 bg-white/50 backdrop-blur-sm z-20">
                         <button
                             onClick={handleBack}
                             disabled={step === 1}
@@ -596,8 +596,8 @@ export function QuizSelectionConsole() {
                     </div>
                 </div>
 
-                {/* Right Pane (35%) - Aligned Top & Bottom */}
-                <div className="w-full lg:w-[35%] flex flex-col h-[600px] pt-0">
+                {/* Right Pane (35%) - Aligned Top & Bottom (h-530) */}
+                <div className="w-full lg:w-[35%] flex flex-col h-[530px] pt-0">
                     <AssessmentSummary
                         domainName={currentDomain?.name || 'Not Selected'}
                         subjectsCount={selectedSubjects.length}

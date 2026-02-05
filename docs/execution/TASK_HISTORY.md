@@ -52,3 +52,6 @@
 | 2026-02-05 | Universal Scope Enforcement | COMPLETED | Hardened 60+ API handlers with explicit scope-aware token verification and identity isolation. |
 | 2026-02-06 | Console Mode Toggle & Branding | COMPLETED | Implemented Basic/Advanced mode with pink branding anchor, repositioned 13px toggle, and auto-clamping. |
 | 2026-02-06 | Console UI Polish & Alignment | COMPLETED | Finalized toggle on right, aligned Step 5 grids, and bulletproofed Basic mode navigation. |
+| 2026-02-06 | Idempotency Hardening | COMPLETED | DB-backed unique index for Idempotency-Key; Answer upsert safety. |
+| 2026-02-06 | Exam Schema Refinement | COMPLETED | Added snapshot duration to exams; Atomic question ordering. |
+| 2026-02-06 | Viewport Recovery (h-530) | COMPLETED | Compressed console height and synchronized pane alignments for zero-occlusion. |

@@ -1008,3 +1008,16 @@ Reduce documentation fragmentation and improve discoverability by consolidating 
     - Full Monorepo Build: **PASSED** (Exit Code 0).
     - Recursive Audit (`rg`): Verified zero remaining unscoped token extraction sites.
 - **Outcome**: Established absolute identity isolation; admins and students can now maintain concurrent, independent sessions with 100% cryptographic certainty even at the middleware layer.
+### Batch 118: Transactional Launch & Schema Hardening
+- **Objective**: Establish a bulletproof foundation for the Transactional Launch engine, ensuring 100% idempotency and reliable timekeeping for high-concurrency assessment sessions.
+- **Contract-First**: Authored `EXAM_API_CONTRACTS.md` defining strict payloads for `/api/quiz/start`, `/api/quiz/state`, and `/api/quiz/answer`.
+- **Durable Idempotency**: Implemented the `idempotency_keys` table in the database with a `uniqueIndex` on `(user_id, key)` to prevent duplicate session creation during retries.
+- **Data Integrity**: Added `uniqueIndex(examId, questionId)` to the `exam_questions` table for guaranteed idempotent answer upserts.
+- **Reliability**: Added `duration_seconds` to the `exams` table to snapshot time limits at launch, securing the session against downstream blueprint drift.
+- **Verification**: Confirmed system-wide stability with a perfect `Exit Code 0` on full monorepo build and `tsc --noEmit` check.
+### Batch 119: Viewport Recovery & HUD Symmetrization
+- **Objective**: Fix vertical occlusion on small screens and achieve perfect pane symmetry.
+- **HUD Compression**: Compressed global body height from `h-600` to `h-530` to guarantee visibility on standard laptops (~620px total depth).
+- **Symmetry Lock**: Synchronized both Selection and Summary panes to the same `h-530` baseline for a unified vertical eyeline across the footer action bar.
+- **Vertical Hygiene**: Removed redundant Difficulty/Density labels and tightened padding in Step 5 content and result cards.
+- **Certification**: Verified system-wide integrity with full build and type-check (Exit Code 0).

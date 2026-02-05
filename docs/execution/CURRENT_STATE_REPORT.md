@@ -534,3 +534,15 @@
 - **Branding**: Integrated a pink accented placeholder (`#FF2D55`) as a visual anchor on the far left of the header.
 - **Dynamic Navigation**: Enabled Step 4 (Subtopics) bypass and updated the Dotted Progress Bar to reflect 4 active steps in Basic mode.
 - **Integrity verified**: Monorepo-wide build and type-safety check passed (Exit Code 0).
+
+### Phase 31: Transactional Idempotency & Schema Hardening (Batch 118)
+- **Durable Idempotency**: Implemented `idempotencyKeys` table with `uniqueIndex(userId, key)` to guarantee single-session creation per intent.
+- **Answer Stability**: Added `uniqueIndex(examId, questionId)` to ensure idempotent answer processing and prevent duplicate records.
+- **Reliable Timekeeping**: Integrated `durationSeconds` into the `exams` table for immutable time limits at launch.
+- **Order Integrity**: Enforced `uniqueIndex(examId, order)` to prevent question sequence collisions.
+- **Technical Certification**: Verified codebase integrity with a successful root `pnpm build` and `tsc` cycle (Exit Code 0).
+### Phase 32: Viewport Recovery & HUD Symmetrization (Batch 119)
+- **Viewport Lock**: Compressed the Launch Console to `h-530`, ensuring a ~620px total vertical footprint for zero-occlusion on 768p displays.
+- **Symmetry Engineering**: Synchronized Left and Right pane baselines to ensure action buttons (Back/Initiate) share a perfect horizontal alignment.
+- **Spacing Tightening**: Eliminated redundant labels and reduced card/grid padding to maximize density without losing readability.
+- **Integrity Verified**: Monorepo build and `tsc --noEmit` passed with 100% success.
