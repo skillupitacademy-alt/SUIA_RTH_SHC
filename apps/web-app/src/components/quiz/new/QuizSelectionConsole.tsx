@@ -247,12 +247,12 @@ export function QuizSelectionConsole() {
     const currentMeta = journeyInfo[step as keyof typeof journeyInfo];
 
     return (
-        <div className="max-w-[1400px] mx-auto min-h-[900px] relative px-4 sm:px-6 lg:px-8 pt-4 pb-12">
+        <div className="max-w-[1400px] mx-auto relative px-4 sm:px-6 lg:px-8 pt-4 pb-12">
             {/* Executive Dashboard Header (Stateless Baseline) */}
-            <div className="mb-12 border-b border-gray-100 pb-10">
-                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
+            <div className="mb-6 border-b border-gray-100 pb-6">
+                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-12">
                     {/* Left: Global Context */}
-                    <div className="flex-1">
+                    <div className="flex-none min-w-fit">
                         <h1 className="text-5xl md:text-6xl font-black tracking-tighter font-outfit text-[#1A1A1A]">
                             Launch Evaluation
                         </h1>
@@ -267,21 +267,21 @@ export function QuizSelectionConsole() {
                     </div>
 
                     {/* Right: Step Orientation */}
-                    <div className="flex flex-col items-start lg:items-end text-left lg:text-right flex-1 min-w-[300px]">
-                        <div className="flex items-center gap-4 mb-2">
+                    <div className="flex flex-col items-start lg:items-end text-left lg:text-right flex-none min-w-fit">
+                        <div className="flex items-center gap-4 mb-2 whitespace-nowrap">
                             <JourneyBadge text={currentMeta.badge} />
                             <h2 className="text-3xl font-black font-outfit tracking-tight text-[#1A1A1A] uppercase">
                                 {currentMeta.title} ({currentMeta.count})
                             </h2>
                         </div>
-                        <p className="text-sm text-muted-foreground font-inter font-medium opacity-70 max-w-sm leading-relaxed">
+                        <p className="text-sm text-muted-foreground font-inter font-medium opacity-70 max-w-md leading-relaxed">
                             {currentMeta.desc}
                         </p>
                     </div>
                 </div>
             </div>
 
-            <div className="min-h-[32px] mb-6">
+            <div className="min-h-[32px] mb-4">
                 {selectionError && (
                     <div className="flex items-center gap-2 text-[#FF2D55] animate-in slide-in-from-top-2 duration-300">
                         <div className="h-1.5 w-1.5 rounded-full bg-[#FF2D55] animate-pulse" />
@@ -373,10 +373,8 @@ export function QuizSelectionConsole() {
                             onClick={handleBack}
                             disabled={step === 1}
                             className={cn(
-                                "px-12 py-4 rounded-xl font-bold font-outfit text-sm uppercase tracking-widest transition-all",
-                                step === 1
-                                    ? "bg-gray-100 text-gray-300 cursor-not-allowed"
-                                    : "bg-[#FF2D55] text-white shadow-[0_10px_30px_rgba(255,45,85,0.2)] hover:shadow-[0_15px_40px_rgba(255,45,85,0.45)] active:scale-95"
+                                "px-12 py-4 rounded-xl font-bold font-outfit text-sm uppercase tracking-widest transition-all bg-[#FF2D55] text-white shadow-[0_10px_30px_rgba(255,45,85,0.2)] hover:shadow-[0_15px_40px_rgba(255,45,85,0.45)] active:scale-95",
+                                step === 1 && "opacity-20 pointer-events-none shadow-none"
                             )}
                         >
                             BACK
@@ -421,13 +419,11 @@ export function QuizSelectionConsole() {
                                 (step === 4 && selectedSubtopics.length === 0)
                             }
                             className={cn(
-                                "px-12 py-4 rounded-xl font-bold font-outfit uppercase tracking-widest transition-all",
-                                ((step === 1 && selectedDomains.length > 0) ||
-                                    (step === 2 && selectedSubjects.length > 0) ||
-                                    (step === 3 && selectedTopics.length > 0) ||
-                                    (step === 4 && selectedSubtopics.length > 0))
-                                    ? "bg-[#FF2D55] text-white shadow-[0_10px_30px_rgba(255,45,85,0.2)] hover:shadow-[0_15px_40_rgba(255,45,85,0.45)] active:scale-95"
-                                    : "bg-gray-100 text-gray-300 cursor-not-allowed"
+                                "px-12 py-4 rounded-xl font-bold font-outfit uppercase tracking-widest transition-all bg-[#FF2D55] text-white shadow-[0_10px_30px_rgba(255,45,85,0.2)] hover:shadow-[0_15px_40_rgba(255,45,85,0.45)] active:scale-95",
+                                ((step === 1 && selectedDomains.length === 0) ||
+                                    (step === 2 && selectedSubjects.length === 0) ||
+                                    (step === 3 && selectedTopics.length === 0) ||
+                                    (step === 4 && selectedSubtopics.length === 0)) && "opacity-20 pointer-events-none shadow-none"
                             )}
                         >
                             {step === 4 ? "FINALIZE →" : "CONTINUE →"}
