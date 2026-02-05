@@ -258,7 +258,7 @@ export function QuizSelectionConsole() {
     return (
         <div className="max-w-[1400px] mx-auto relative px-4 sm:px-6 lg:px-8 pt-0 pb-12">
             {/* Executive Dashboard Header (Stateless Baseline) */}
-            <div className="mb-2 border-b border-gray-100 pb-6">
+            <div className="mb-1 border-b border-gray-100 pb-2">
                 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-12">
                     {/* Left: Global Context */}
                     <div className="flex-none min-w-fit">
@@ -290,7 +290,7 @@ export function QuizSelectionConsole() {
                 </div>
             </div>
 
-            <div className="h-[1px] bg-gray-100/80 w-full mb-2" />
+            <div className="h-[1px] bg-gray-100/80 w-full mb-1" />
 
             <div className="min-h-[32px] mb-4">
                 {selectionError && (
@@ -365,24 +365,24 @@ export function QuizSelectionConsole() {
                         )}
 
                         {step === 5 && (
-                            <div className="max-w-2xl animate-in fade-in zoom-in duration-500 h-full flex flex-col pt-8">
-                                <div className="space-y-10">
-                                    <div className="space-y-6">
-                                        <div className="flex items-center gap-3 mb-6">
-                                            <div className="h-6 w-1 bg-[#FF2D55] rounded-full" />
-                                            <p className="text-xs font-black uppercase tracking-[0.3em] text-gray-400">Difficulty Tier</p>
+                            <div className="animate-in fade-in zoom-in duration-500 h-full flex flex-col pt-4">
+                                <div className="space-y-8">
+                                    <div className="space-y-4">
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <div className="h-4 w-1 bg-[#FF2D55] rounded-full" />
+                                            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-400">Difficulty Tier</p>
                                         </div>
-                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        <div className="grid grid-cols-3 gap-4">
                                             {[
-                                                { id: 'mixed', name: 'Mixed', desc: 'Enterprise Mastery Blend (30/30/40)' },
-                                                { id: 'beginner', name: 'Foundations', desc: 'Core Knowledge Focus (100% Simple)' },
-                                                { id: 'expert', name: 'Elite', desc: 'Expert Level Verification (100% Expert)' }
+                                                { id: 'mixed', name: 'Mixed', desc: 'Mastery Blend' },
+                                                { id: 'beginner', name: 'Foundations', desc: 'Core Knowledge' },
+                                                { id: 'expert', name: 'Elite', desc: 'Expert Level' }
                                             ].map((tier) => (
                                                 <button
                                                     key={tier.id}
                                                     onClick={() => setDifficulty(tier.id)}
                                                     className={cn(
-                                                        "p-6 rounded-2xl border-2 text-left transition-all duration-300 group relative",
+                                                        "p-6 rounded-2xl border-2 text-center transition-all duration-300 group relative flex flex-col items-center justify-center min-h-[140px]",
                                                         difficulty === tier.id
                                                             ? "border-[#FF2D55] bg-[#FF2D55]/[0.02] shadow-[0_10px_30px_rgba(255,45,85,0.1)]"
                                                             : "border-gray-100 hover:border-gray-200 bg-white"
@@ -392,10 +392,10 @@ export function QuizSelectionConsole() {
                                                         "h-2 w-2 rounded-full absolute top-4 right-4 transition-all",
                                                         difficulty === tier.id ? "bg-[#FF2D55] scale-100" : "bg-gray-100 scale-0"
                                                     )} />
-                                                    <p className={cn("font-black font-outfit uppercase tracking-tight mb-2", difficulty === tier.id ? "text-[#FF2D55]" : "text-[#1A1A1A]")}>
+                                                    <p className={cn("text-lg font-black font-outfit uppercase tracking-tight mb-2", difficulty === tier.id ? "text-[#FF2D55]" : "text-[#1A1A1A]")}>
                                                         {tier.name}
                                                     </p>
-                                                    <p className="text-[10px] font-medium text-muted-foreground leading-tight uppercase opacity-60">
+                                                    <p className="text-[9px] font-bold text-muted-foreground leading-tight uppercase opacity-60">
                                                         {tier.desc}
                                                     </p>
                                                 </button>
@@ -403,34 +403,36 @@ export function QuizSelectionConsole() {
                                         </div>
                                     </div>
 
-                                    <div className="space-y-6">
-                                        <div className="flex items-center gap-3 mb-6">
-                                            <div className="h-6 w-1 bg-[#FF2D55] rounded-full" />
-                                            <p className="text-xs font-black uppercase tracking-[0.3em] text-gray-400">Total Density</p>
+                                    <div className="space-y-4">
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <div className="h-4 w-1 bg-[#FF2D55] rounded-full" />
+                                            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-400">Total Density</p>
                                         </div>
-                                        <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm relative overflow-hidden group">
-                                            <div className="flex justify-between items-end mb-8">
-                                                <div className="space-y-1">
-                                                    <p className="text-4xl font-black font-outfit text-[#1A1A1A]">{questionCount}</p>
-                                                    <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Session Questions</p>
+                                        <div className="bg-gray-50/50 p-10 rounded-3xl border border-gray-100/50 relative overflow-hidden group">
+                                            <div className="flex justify-between items-center">
+                                                <div className="space-y-0.5">
+                                                    <p className="text-6xl font-black font-outfit text-[#1A1A1A] tracking-tighter">{questionCount}</p>
+                                                    <p className="text-[10px] font-black uppercase tracking-widest text-[#FF2D55]">Questions</p>
+                                                </div>
+                                                <div className="flex-1 px-12">
+                                                    <input
+                                                        type="range"
+                                                        min="5"
+                                                        max="50"
+                                                        step="5"
+                                                        value={questionCount}
+                                                        onChange={(e) => setQuestionCount(parseInt(e.target.value))}
+                                                        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-[#FF2D55] hover:bg-gray-300 transition-all"
+                                                    />
+                                                    <div className="flex justify-between mt-4">
+                                                        <span className="text-[10px] font-black text-gray-300 uppercase tracking-widest">Minimal</span>
+                                                        <span className="text-[10px] font-black text-gray-300 uppercase tracking-widest">Enterprise</span>
+                                                    </div>
                                                 </div>
                                                 <div className="text-right">
-                                                    <p className="text-lg font-black font-outfit text-[#FF2D55]">~{Math.ceil(questionCount * 1.5)} MIN</p>
-                                                    <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Estimated Duration</p>
+                                                    <p className="text-3xl font-black font-outfit text-[#1A1A1A]">~{Math.ceil(questionCount * 1.5)}</p>
+                                                    <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Est. Minutes</p>
                                                 </div>
-                                            </div>
-                                            <input
-                                                type="range"
-                                                min="5"
-                                                max="50"
-                                                step="5"
-                                                value={questionCount}
-                                                onChange={(e) => setQuestionCount(parseInt(e.target.value))}
-                                                className="w-full h-2 bg-gray-100 rounded-lg appearance-none cursor-pointer accent-[#FF2D55] hover:bg-gray-200 transition-all"
-                                            />
-                                            <div className="flex justify-between mt-4">
-                                                <span className="text-[10px] font-black text-gray-300">5 QNS</span>
-                                                <span className="text-[10px] font-black text-gray-300">50 QNS</span>
                                             </div>
                                         </div>
                                     </div>
