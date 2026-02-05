@@ -560,7 +560,7 @@ export function QuizSelectionConsole() {
                                     )}
                                 </div>
 
-                                {/* BOTTOM AIR CUSHION (10% ≈ 53px) */}
+                                {/* BOTTOM AIR CUSHION (10% ~ 53px) */}
 
                             </div>
                         </div>
@@ -620,7 +620,7 @@ export function QuizSelectionConsole() {
                                 (step === 4 && selectedSubtopics.length === 0)
                             }
                             className={cn(
-                                "px-12 py-4 rounded-xl font-bold font-outfit uppercase tracking-widest transition-all bg-[#FF2D55] text-white shadow-[0_10px_30px_rgba(255,45,85,0.2)] hover:shadow-[0_15px_40_rgba(255,45,85,0.45)] active:scale-95",
+                                "px-12 py-4 rounded-xl font-bold font-outfit uppercase tracking-widest transition-all bg-[#FF2D55] text-white shadow-[0_10px_30px_rgba(255,45,85,0.2)] hover:shadow-[0_15px_40px_rgba(255,45,85,0.45)] active:scale-95",
                                 (isLocked || (step < 5 && ((step === 1 && selectedDomains.length === 0) ||
                                     (step === 2 && selectedSubjects.length === 0) ||
                                     (step === 3 && selectedTopics.length === 0) ||

@@ -11,11 +11,11 @@ async function verify() {
   const pool = new Pool({ connectionString: DATABASE_URL });
   
   try {
-    console.log('🔍 Starting Migration Verification (Minimal Dependencies)...\n');
+    console.log('[INFO] Starting Migration Verification (Minimal Dependencies)...\n');
 
     // 1. Table existence
     const tableRes = await pool.query(`select to_regclass('public.idempotency_keys') as idempotency_keys_table;`);
-    console.log('1. Table "idempotency_keys":', tableRes.rows[0].idempotency_keys_table ? '✅ EXISTS' : '❌ MISSING');
+    console.log('1. Table "idempotency_keys":', tableRes.rows[0].idempotency_keys_table ? '[OK] EXISTS' : '[FAIL] MISSING');
 
     // 2. Column existence
     const columnRes = await pool.query(`
@@ -23,7 +23,7 @@ async function verify() {
       from information_schema.columns
       where table_name='exams' and column_name='duration_seconds';
     `);
-    console.log('2. Column "exams.duration_seconds":', columnRes.rows.length > 0 ? '✅ EXISTS' : '❌ MISSING');
+    console.log('2. Column "exams.duration_seconds":', columnRes.rows.length > 0 ? '[OK] EXISTS' : '[FAIL] MISSING');
 
     // 3. Indexes existence
     const indexRes = await pool.query(`
@@ -38,21 +38,34 @@ async function verify() {
     
     console.log('3. Unique Indexes:');
     expectedIndexes.forEach(idx => {
-      console.log(`   - ${idx}: ${foundIndexes.includes(idx) ? '✅ EXISTS' : '❌ MISSING'}`);
+      console.log(`   - ${idx}: ${foundIndexes.includes(idx) ? '[OK] EXISTS' : '[FAIL] MISSING'}`);
     });
 
-    // 4. Drizzle Journal check
+    // 4. Drizzle Journal check (Corrected)
+    console.log('\n4. Drizzle Registry Check:');
     try {
-      const drizzleRes = await pool.query(`
-        SELECT tag FROM "__drizzle_migrations" ORDER BY created_at DESC LIMIT 1;
-      `);
-      console.log('\n4. Latest Drizzle Migration:', drizzleRes.rows[0]?.tag || 'None');
-    } catch (e) {
-      console.log('\n4. Latest Drizzle Migration: [Unable to query __drizzle_migrations table]');
+      // Check if table exists first preventing crash if missing
+      const tableCheck = await pool.query(`SELECT to_regclass('drizzle.__drizzle_migrations') as reg;`);
+      if (!tableCheck.rows[0].reg) {
+         console.log('   - Table "drizzle.__drizzle_migrations": [FAIL] MISSING');
+      } else {
+         const countRes = await pool.query('SELECT COUNT(*) AS count FROM drizzle.__drizzle_migrations');
+         console.log('   - Row Count:', countRes.rows[0].count);
+
+         const rowsRes = await pool.query('SELECT id, hash, created_at FROM drizzle.__drizzle_migrations ORDER BY created_at DESC LIMIT 5');
+         if (rowsRes.rows.length > 0) {
+             console.log('   - Latest rows:');
+             rowsRes.rows.forEach(r => console.log(`     [${r.id}] ${r.created_at} | ${r.hash}`));
+         } else {
+             console.log('   - No migrations recorded.');
+         }
+      }
+    } catch (e: any) {
+      console.log('   - Error querying registry:', e.message);
     }
 
   } catch (error) {
-    console.error('❌ Verification failed:', error);
+    console.error('[ERROR] Verification failed:', error);
   } finally {
     await pool.end();
   }

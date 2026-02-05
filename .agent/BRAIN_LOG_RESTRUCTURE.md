@@ -1066,3 +1066,8 @@ Reduce documentation fragmentation and improve discoverability by consolidating 
 - **Dual CTA Accessibility**: Specifically exempted both the Footer "MISSION ARMED" button and the Summary "Launch Assessment" button from the armed-lock via `pointer-events-auto`.
 - **Navigation Freeze**: Mode toggles, pagination, and Back/Continue paths are strictly frozen once the mission is armed.
 - **Certification**: Full build and tsc cycle passed (`Exit Code 0`).
+### Batch 124: UI Polish & Typo Cleanup
+- **Objective**: Detailed text and encoding cleanup for the Launch Console.
+- **Text Repair**: Replaced mojibake characters in "MISSION ARMED / INITIATE ASSESSMENT" buttons with correct rocket launcher emoji (🚀) and arrow glyphs (→).
+- **Style Fix**: Corrected a typo in the footer button shadow class (`hover:shadow-[...40_rgba...]` -> `40px`).
+- **Certification**: Validated with `pnpm build` (Exit Code 0).
