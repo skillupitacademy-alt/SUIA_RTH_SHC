@@ -392,8 +392,8 @@ export function QuizSelectionConsole() {
                     "w-full lg:w-[65%] flex flex-col relative h-[530px] transition-all duration-700",
                     isLocked ? "opacity-10 pointer-events-none" : "opacity-100"
                 )}>
-                    {/* Symmetrical Container: 15px Top, 15px Bottom gap */}
-                    <div className="flex-1 flex flex-col pt-[15px]">
+                    {/* Symmetrical Container: 53px Top (10%), 80% Matrix, 53px Bottom (10%) */}
+                    <div className="flex-1 flex flex-col pt-[53px]">
                         <div className="flex-1 relative">
                             {loading && (
                                 <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/10 backdrop-blur-[2px] rounded-[1.25rem] animate-in fade-in duration-300">
@@ -532,8 +532,8 @@ export function QuizSelectionConsole() {
                                     )}
                                 </div>
 
-                                {/* BOTTOM AIR CUSHION (15px) */}
-                                <div className="h-[15px] flex-shrink-0" />
+                                {/* BOTTOM AIR CUSHION (10% ≈ 53px) */}
+                                <div className="h-[53px] flex-shrink-0" />
                             </div>
                         </div>
                     </div>
@@ -606,7 +606,7 @@ export function QuizSelectionConsole() {
                 </div>
 
                 {/* Right Pane (35%) - Aligned Top & Bottom (h-530) */}
-                <div className="w-full lg:w-[35%] flex flex-col h-[530px] pt-0">
+                <div className="w-full lg:w-[35%] flex flex-col h-[530px] pt-[53px]">
                     <AssessmentSummary
                         domainName={currentDomain?.name || 'Not Selected'}
                         subjectsCount={selectedSubjects.length}
