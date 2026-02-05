@@ -260,8 +260,8 @@ export function QuizSelectionConsole() {
     return (
         <div className="max-w-[1400px] mx-auto relative px-4 sm:px-6 lg:px-8 pt-0 pb-12">
             {/* Executive Dashboard Header (Stateless Baseline) */}
-            <div className="mb-1 border-b border-gray-200/80 pb-2">
-                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-12">
+            <div className="mb-1 border-b border-gray-300 pb-2">
+                <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-12 pt-2">
                     {/* Left: Global Context */}
                     <div className="flex-none min-w-fit">
                         <h1 className="text-5xl md:text-6xl font-black tracking-tighter font-outfit text-[#1A1A1A]">
@@ -285,14 +285,14 @@ export function QuizSelectionConsole() {
                                 {currentMeta.title} {currentMeta.count > 0 && `(${currentMeta.count})`}
                             </h2>
                         </div>
-                        <p className="text-sm text-muted-foreground font-inter font-medium opacity-70 max-w-md leading-relaxed">
+                        <p className="text-sm text-muted-foreground font-inter font-medium opacity-70 max-w-md leading-tight min-h-[40px]">
                             {currentMeta.desc}
                         </p>
                     </div>
                 </div>
             </div>
 
-            <div className="h-[1px] bg-gray-200/80 w-full mb-1" />
+            <div className="h-[1px] bg-gray-300 w-full mb-1" />
 
             <div className="min-h-[32px] mb-4">
                 {selectionError && (
@@ -433,13 +433,13 @@ export function QuizSelectionConsole() {
                                     </div>
 
                                     {/* Resulting Logic Display - 5% Push */}
-                                    <div className={cn("bg-gray-50/50 p-6 rounded-3xl border border-gray-200/80 mt-[5%] transition-all", isLocked && "opacity-50 grayscale")}>
+                                    <div className={cn("bg-gray-50/50 p-6 rounded-3xl border border-gray-300 mt-[5%] transition-all", isLocked && "opacity-50 grayscale")}>
                                         <div className="flex justify-between items-center">
                                             <div className="space-y-0.5">
                                                 <p className="text-3xl font-black font-outfit text-[#1A1A1A] tracking-tighter">~{Math.ceil(questionCount * 1.5)} MINS</p>
                                                 <p className="text-[10px] font-black uppercase tracking-widest text-[#FF2D55]">Calculated Duration</p>
                                             </div>
-                                            <div className="h-8 w-[1px] bg-gray-200/80" />
+                                            <div className="h-8 w-[1px] bg-gray-300" />
                                             <div className="text-right">
                                                 <p className="text-3xl font-black font-outfit text-[#1A1A1A] tracking-tighter">{difficulty.toUpperCase()}</p>
                                                 <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Mastery Profile</p>
@@ -452,14 +452,14 @@ export function QuizSelectionConsole() {
                     </div>
 
                     {/* Fixed Action Footer (Absolute Anchored) with Hairline */}
-                    <div className="h-[1px] bg-gray-200/80 w-full mt-auto" />
+                    <div className="h-[1px] bg-gray-300 w-full mt-auto" />
                     <div className="py-8 flex items-center justify-between border-gray-100 bg-white/50 backdrop-blur-sm z-20">
                         <button
                             onClick={handleBack}
                             disabled={step === 1}
                             className={cn(
                                 "px-12 py-4 rounded-xl font-bold font-outfit text-sm uppercase tracking-widest transition-all bg-[#FF2D55] text-white shadow-[0_10px_30px_rgba(255,45,85,0.2)] hover:shadow-[0_15px_40px_rgba(255,45,85,0.45)] active:scale-95",
-                                (step === 1 || isLocked) && "opacity-20 pointer-events-none shadow-none"
+                                (step === 1 || isLocked || isArmed) && "opacity-20 pointer-events-none shadow-none"
                             )}
                         >
                             BACK

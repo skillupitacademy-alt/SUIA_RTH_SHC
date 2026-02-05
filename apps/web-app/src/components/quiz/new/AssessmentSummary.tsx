@@ -37,7 +37,7 @@ export function AssessmentSummary({
     return (
         <aside className="w-full flex flex-col h-full max-h-[600px]">
             <div className={cn(
-                "glass-morphism pink-glow rounded-[2rem] p-5 space-y-2 relative overflow-hidden group transition-all duration-500 hover:shadow-[0_0_50px_rgba(255,45,85,0.15)] flex-1 flex flex-col border border-gray-200/80",
+                "glass-morphism pink-glow rounded-[2rem] p-5 space-y-2 relative overflow-hidden group transition-all duration-500 hover:shadow-[0_0_50px_rgba(255,45,85,0.15)] flex-1 flex flex-col border border-gray-300",
                 isLocked && "opacity-60 grayscale"
             )}>
                 {/* Visual Aura */}
@@ -59,7 +59,7 @@ export function AssessmentSummary({
                             </span>
                         </div>
 
-                        <div className="h-[1px] bg-gray-100/50 w-full ml-5" />
+                        <div className="h-[1px] bg-gray-300 w-full ml-5" />
 
                         <div className="flex flex-col gap-2">
                             <div className="flex items-center gap-2 text-muted-foreground">
@@ -77,7 +77,7 @@ export function AssessmentSummary({
                             </div>
                         </div>
 
-                        <div className="h-[1px] bg-gray-100/50 w-full ml-5" />
+                        <div className="h-[1px] bg-gray-300 w-full ml-5" />
 
                         <div className="flex flex-col gap-2">
                             <div className="flex items-center gap-2 text-muted-foreground">
@@ -95,7 +95,7 @@ export function AssessmentSummary({
                             </div>
                         </div>
 
-                        <div className="h-[1px] bg-gray-100/50 w-full ml-5" />
+                        <div className="h-[1px] bg-gray-300 w-full ml-5" />
 
                         <div className="flex flex-col gap-2">
                             <div className="flex items-center gap-2 text-muted-foreground">
@@ -113,9 +113,9 @@ export function AssessmentSummary({
                             </div>
                         </div>
 
-                        <div className="h-[1px] bg-gray-100/80 w-full my-2" />
+                        <div className="h-[1px] bg-gray-300 w-full my-2" />
 
-                        <div className="grid grid-cols-2 gap-4 bg-gray-50/50 p-3 rounded-xl border border-gray-100/50">
+                        <div className="grid grid-cols-2 gap-4 bg-gray-50/50 p-3 rounded-xl border border-gray-300">
                             <div className="space-y-0.5">
                                 <p className="text-[8px] font-black text-gray-400 uppercase tracking-[0.2em]">Est. Time</p>
                                 <p className="text-base font-black font-outfit text-[#1A1A1A]">{Math.ceil(questionCount * 1.5)} MIN</p>
@@ -131,11 +131,11 @@ export function AssessmentSummary({
                                 <div className="h-1 w-1 rounded-full bg-[#FF2D55]" />
                                 <p className="text-[9px] font-black font-outfit text-[#1A1A1A] uppercase tracking-widest">Engine Calibration</p>
                             </div>
-                            <div className="flex justify-between items-center bg-white p-2 rounded-lg border border-gray-100 shadow-sm">
+                            <div className="flex justify-between items-center bg-white p-2 rounded-lg border border-gray-200 shadow-sm">
                                 <span className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest">Difficulty</span>
                                 <span className="text-[9px] font-black text-[#1A1A1A] uppercase">{difficulty}</span>
                             </div>
-                            <div className="flex justify-between items-center bg-white p-2 rounded-lg border border-gray-100 shadow-sm">
+                            <div className="flex justify-between items-center bg-white p-2 rounded-lg border border-gray-200 shadow-sm">
                                 <span className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest">Potential</span>
                                 <span className="text-[9px] font-black text-[#FF2D55] uppercase tracking-tighter">{totalPoints} PTS</span>
                             </div>
@@ -143,7 +143,7 @@ export function AssessmentSummary({
                     </div>
 
                     {isReady && !isLocked && (
-                        <div className="mt-auto pt-4 border-t border-gray-200/80">
+                        <div className="mt-auto pt-4 border-t border-gray-300">
                             <button
                                 onClick={onStart}
                                 disabled={loading}
@@ -170,7 +170,7 @@ export function AssessmentSummary({
                     )}
 
                     {isLocked && (
-                        <div className="mt-auto pt-4 border-t border-gray-200/80">
+                        <div className="mt-auto pt-4 border-t border-gray-300">
                             <div className="w-full min-h-[56px] rounded-xl bg-gray-100 text-gray-400 font-black font-outfit uppercase tracking-[0.1em] flex items-center justify-center gap-3 border-2 border-dashed border-gray-200/50">
                                 <Activity size={18} className="animate-pulse" />
                                 <span>INITIALIZING...</span>
