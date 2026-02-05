@@ -19,6 +19,10 @@ export class AuthClient {
     return this.client.get<{ user: any }>('/auth/me');
   }
 
+  async getAdminSession() {
+    return this.client.get<{ user: any }>('/admin/auth/me');
+  }
+
   async logout() {
     return this.client.post('/auth/logout', {});
   }

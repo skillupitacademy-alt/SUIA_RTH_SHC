@@ -43,11 +43,19 @@ export async function middleware(request: NextRequest) {
     request.nextUrl.pathname === '/api/status';
 
   if (!isPublicRoute) {
-    const token = TokenService.getAccessToken(request);
+    const pathname = request.nextUrl.pathname;
+    
+    // 4.1 Determine Auth Scope (P0-SEC-004)
+    let scope: 'admin' | 'user' = 'user';
+    if (pathname.startsWith('/api/admin') || pathname.startsWith('/api/factory')) {
+      scope = 'admin';
+    }
+
+    const token = TokenService.getAccessToken(request, { scope });
 
     if (!token) {
       const response = NextResponse.json(
-        { error: 'Authentication required' },
+        { error: 'Authentication required', scope },
         { status: 401 }
       );
       return corsMiddleware(request, response);
@@ -55,10 +63,9 @@ export async function middleware(request: NextRequest) {
 
     try {
       // In middleware, we just want to ensure it's a valid, unexpired token.
-      const payload = await TokenService.verifyAccessToken(token);
+      const payload = await TokenService.verifyAccessToken(token, scope === 'admin');
 
-      // 4.1 Central RBAC Enforcement (P0-SEC-002)
-      const pathname = request.nextUrl.pathname;
+      // 4.2 Central RBAC Enforcement (P0-SEC-002)
       const isAdminRoute = (pathname.startsWith('/api/admin') && !pathname.startsWith('/api/admin/auth')) || 
                            pathname.startsWith('/api/factory');
 

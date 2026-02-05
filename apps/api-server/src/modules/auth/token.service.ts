@@ -17,14 +17,24 @@ export class TokenService {
   private static readonly ADMIN_SECRET = new TextEncoder().encode(process.env.ADMIN_JWT_SECRET || process.env.JWT_SECRET!);
 
   /**
-   * Universal token extraction: Cookie-First, Header-Fallback
+   * Universal token extraction: Scope-Aware
    */
-  static getAccessToken(req: any): string | undefined {
-    // 1. Check Cookies (Primary for secure web sessions)
-    const cookieToken = req.cookies.get('accessToken')?.value || 
-                        req.cookies.get('admin_accessToken')?.value;
-    
-    if (cookieToken) return cookieToken;
+  static getAccessToken(req: any, options?: { scope?: 'admin' | 'user' }): string | undefined {
+    const scope = options?.scope;
+
+    // 1. Check Cookies based on scope
+    if (scope === 'admin') {
+        const adminToken = req.cookies.get('admin_accessToken')?.value;
+        if (adminToken) return adminToken;
+    } else if (scope === 'user') {
+        const userToken = req.cookies.get('accessToken')?.value;
+        if (userToken) return userToken;
+    } else {
+        // Fallback for non-scoped requests (legacy/default behavior)
+        const cookieToken = req.cookies.get('accessToken')?.value || 
+                            req.cookies.get('admin_accessToken')?.value;
+        if (cookieToken) return cookieToken;
+    }
 
     // 2. Check Authorization Header (Fallback for legacy/mobile/tooling)
     const headerToken = req.headers.get('authorization')?.replace('Bearer ', '');

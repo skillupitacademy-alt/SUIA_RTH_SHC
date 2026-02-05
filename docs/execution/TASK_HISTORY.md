@@ -48,3 +48,4 @@
 | 2026-02-05 | Zero-Scroll HUD    | COMPLETED | Fixed h-600px lock, Dark Item refactor for Step 5, and grid density optimization. |
 | 2026-02-05 | Tactical HUD Sync | COMPLETED | Zero-Scroll h-600px frame; Two-Stage Lockdown; Header stability & Divider boost. |
 | 2026-02-05 | Auth Sync Cleanup | COMPLETED | Resolved "Lying UI" race condition; Verified-First header policy; Global 401 listener. |
+| 2026-02-05 | Namespace-Aware Auth | COMPLETED | Isolated Admin vs Student identities via explicit middleware routing and dedicated /api/admin/auth/me endpoint. |
