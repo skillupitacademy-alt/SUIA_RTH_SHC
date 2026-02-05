@@ -1044,3 +1044,10 @@ Reduce documentation fragmentation and improve discoverability by consolidating 
 - **Symmetry Restoration**: Returned vertical buffers to **53px (10/80/10)** following user feedback, aligning both Choice and Summary panes to the same `Y=53` baseline.
 - **Global Lock Logic**: Implemented `isLocked` state in `QuizSelectionConsole`. Once assessment initiates, the entire Selection Pane (Left) dims to **10% opacity** and disables all interactions via `pointer-events-none`.
 - **Verification**: Certified with `pnpm build ; npx tsc --noEmit` (Exit Code 0).
+### Batch 122: Unified HUD Baseline & No-Scroll Policy
+- **Objective**: Establish a unified vertical start line and strictly prohibit internal scrollbars across the launch console.
+- **Baseline Synchronization**: Standardized the content anchor for both Choice and Summary panes using a shared `pt-6` wrapper, achieving a perfect horizontal eyeline across all 5 steps.
+- **Overflow Control**: Strictly avoided `overflow-auto`. Implemented list clamping in `AssessmentSummary` (max 3 items + "+X more" badge) and enforced pagination as the sole matrix overflow guard.
+- **Step 5 Block Refactor**: Re-engineered Step 5 as a stable vertical stack with fixed gaps, eliminating layout jumps.
+- **Footer Pinning**: Locked the action bar at the absolute bottom using `mt-auto`, ensuring buttons never shift position.
+- **Verification**: System integrity confirmed with root `pnpm build` and `tsc --noEmit` checks (Exit Code 0).

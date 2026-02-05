@@ -392,8 +392,8 @@ export function QuizSelectionConsole() {
                     "w-full lg:w-[65%] flex flex-col relative h-[530px] transition-all duration-700",
                     isLocked ? "opacity-10 pointer-events-none" : "opacity-100"
                 )}>
-                    {/* Symmetrical Container: 53px Top (10%), 80% Matrix, 53px Bottom (10%) */}
-                    <div className="flex-1 flex flex-col pt-[53px]">
+                    {/* Unified Start Line: pt-6 matching Right Pane */}
+                    <div className="flex-1 flex flex-col pt-6">
                         <div className="flex-1 relative">
                             {loading && (
                                 <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/10 backdrop-blur-[2px] rounded-[1.25rem] animate-in fade-in duration-300">
@@ -401,11 +401,11 @@ export function QuizSelectionConsole() {
                                 </div>
                             )}
 
-                            {/* Matrix Zone (80%) */}
-                            <div className="h-full flex flex-col justify-between overflow-visible">
+                            {/* Matrix Zone (No internal scrollbars allowed) */}
+                            <div className="h-full flex flex-col overflow-hidden">
                                 <div className="flex-1">
                                     {step === 1 && (
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4 animate-in fade-in duration-500">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-6 animate-in fade-in duration-500">
                                             {paginatedDomains.map((domain, idx) => (
                                                 <DomainCard
                                                     key={domain.id}
@@ -458,10 +458,10 @@ export function QuizSelectionConsole() {
                                         </div>
                                     )}
 
-                                    {/* Step 5: Engine Calibration (Refactored Dark HUD) */}
+                                    {/* Step 5: Engine Calibration (Normalized Vertical Stack) */}
                                     {step === 5 && (
-                                        <div className="animate-in fade-in duration-500 h-full flex flex-col overflow-auto pr-2 custom-scrollbar">
-                                            <div className="space-y-4">
+                                        <div className="animate-in fade-in duration-500 h-full flex flex-col">
+                                            <div className="flex-1 flex flex-col gap-8">
                                                 {/* Section 1: Difficulty Tier */}
                                                 <div className="grid grid-cols-4 gap-6">
                                                     {[
@@ -513,8 +513,8 @@ export function QuizSelectionConsole() {
                                                     ))}
                                                 </div>
 
-                                                {/* Resulting Logic Display */}
-                                                <div className={cn("bg-gray-50/50 p-4 rounded-3xl border border-gray-300 transition-all", isLocked && "opacity-50 grayscale")}>
+                                                {/* Resulting Logic Display (Bottom Block) */}
+                                                <div className={cn("bg-gray-50/50 p-4 rounded-3xl border border-gray-300 mt-auto transition-all", isLocked && "opacity-50 grayscale")}>
                                                     <div className="flex justify-between items-center">
                                                         <div className="space-y-0.5">
                                                             <p className="text-2xl font-black font-outfit text-[#1A1A1A] tracking-tighter">~{Math.ceil(questionCount * 1.5)} MINS</p>
@@ -533,7 +533,7 @@ export function QuizSelectionConsole() {
                                 </div>
 
                                 {/* BOTTOM AIR CUSHION (10% ≈ 53px) */}
-                                <div className="h-[53px] flex-shrink-0" />
+
                             </div>
                         </div>
                     </div>
@@ -605,8 +605,8 @@ export function QuizSelectionConsole() {
                     </div>
                 </div>
 
-                {/* Right Pane (35%) - Aligned Top & Bottom (h-530) */}
-                <div className="w-full lg:w-[35%] flex flex-col h-[530px] pt-[53px]">
+                {/* Right Pane (35%) - Symmetrical pt-6 Baseline */}
+                <div className="w-full lg:w-[35%] flex flex-col h-[530px] pt-6">
                     <AssessmentSummary
                         domainName={currentDomain?.name || 'Not Selected'}
                         subjectsCount={selectedSubjects.length}

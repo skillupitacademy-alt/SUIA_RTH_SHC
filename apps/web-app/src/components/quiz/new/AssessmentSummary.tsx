@@ -68,9 +68,14 @@ export function AssessmentSummary({
                             </div>
                             <div className="flex flex-wrap gap-1 pl-5 min-h-[1.5rem]">
                                 {selectedSubjects.length > 0 ? (
-                                    selectedSubjects.map(s => (
-                                        <span key={s} className="px-2 py-0.5 bg-gray-100 text-[9px] font-bold text-gray-500 rounded border border-gray-200/50 uppercase tracking-tighter">{s}</span>
-                                    ))
+                                    <>
+                                        {selectedSubjects.slice(0, 3).map(s => (
+                                            <span key={s} className="px-2 py-0.5 bg-gray-100 text-[9px] font-bold text-gray-500 rounded border border-gray-200/50 uppercase tracking-tighter">{s}</span>
+                                        ))}
+                                        {selectedSubjects.length > 3 && (
+                                            <span className="px-2 py-0.5 bg-gray-50 text-[9px] font-black text-gray-400 rounded border border-dashed border-gray-200 uppercase tracking-tighter">+{selectedSubjects.length - 3} MORE</span>
+                                        )}
+                                    </>
                                 ) : (
                                     <span className="text-[9px] font-bold text-gray-300 uppercase tracking-tighter italic opacity-40">None Selected</span>
                                 )}
@@ -86,9 +91,14 @@ export function AssessmentSummary({
                             </div>
                             <div className="flex flex-wrap gap-1 pl-5 min-h-[1.5rem]">
                                 {selectedTopics.length > 0 ? (
-                                    selectedTopics.map(t => (
-                                        <span key={t} className="px-2 py-0.5 bg-[#FF2D55]/5 text-[9px] font-bold text-[#FF2D55] rounded border border-[#FF2D55]/10 uppercase tracking-tighter">{t}</span>
-                                    ))
+                                    <>
+                                        {selectedTopics.slice(0, 3).map(t => (
+                                            <span key={t} className="px-2 py-0.5 bg-[#FF2D55]/5 text-[9px] font-bold text-[#FF2D55] rounded border border-[#FF2D55]/10 uppercase tracking-tighter">{t}</span>
+                                        ))}
+                                        {selectedTopics.length > 3 && (
+                                            <span className="px-2 py-0.5 bg-[#FF2D55]/5 text-[9px] font-black text-[#FF2D55]/40 rounded border border-dashed border-[#FF2D55]/10 uppercase tracking-tighter">+{selectedTopics.length - 3} MORE</span>
+                                        )}
+                                    </>
                                 ) : (
                                     <span className="text-[9px] font-bold text-gray-300 uppercase tracking-tighter italic opacity-40">None Selected</span>
                                 )}
@@ -104,9 +114,14 @@ export function AssessmentSummary({
                             </div>
                             <div className="flex flex-wrap gap-1 pl-5 min-h-[1.5rem]">
                                 {selectedSubtopics.length > 0 ? (
-                                    selectedSubtopics.map(st => (
-                                        <span key={st} className="px-2 py-0.5 bg-[#FF2D55]/10 text-[9px] font-black text-[#FF2D55] rounded border border-[#FF2D55]/20 uppercase tracking-tighter italic">{st}</span>
-                                    ))
+                                    <>
+                                        {selectedSubtopics.slice(0, 3).map(st => (
+                                            <span key={st} className="px-2 py-0.5 bg-[#FF2D55]/10 text-[9px] font-black text-[#FF2D55] rounded border border-[#FF2D55]/20 uppercase tracking-tighter italic">{st}</span>
+                                        ))}
+                                        {selectedSubtopics.length > 3 && (
+                                            <span className="px-2 py-0.5 bg-[#FF2D55]/10 text-[9px] font-black text-[#FF2D55]/40 rounded border border-dashed border-[#FF2D55]/20 uppercase tracking-tighter">+{selectedSubtopics.length - 3} MORE</span>
+                                        )}
+                                    </>
                                 ) : (
                                     <span className="text-[9px] font-bold text-gray-300 uppercase tracking-tighter italic opacity-40">None Selected</span>
                                 )}

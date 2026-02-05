@@ -58,3 +58,4 @@
 | 2026-02-06 | Viewport Recovery (h-530) | COMPLETED | Compressed console height and synchronized pane alignments for zero-occlusion. |
 | 2026-02-06 | DB Sync & HUD Symmetry | COMPLETED | Synchronized Neon DB; Implemented 10/80/10 vertical split for perfect pane alignment. |
 | 2026-02-06 | Aesthetic HUD & Lock | COMPLETED | Inverted header (Title Left/Branding Right); Removed progress; Implemented 10% opacity selection lock. |
+| 2026-02-06 | Unified HUD Baseline | COMPLETED | Shared pt-6 baseline across panes; No scrollbars policy; List clamping (+X more); Footer pinned with mt-auto. |

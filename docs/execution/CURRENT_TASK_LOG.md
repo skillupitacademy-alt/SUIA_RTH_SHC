@@ -11,7 +11,11 @@
 - **Resume Protocol**: Built-in state recovery that returns the existing session and first question if a retry occurs.
 - **Selection Refactor**: Decoupled `SelectionEngine` from persistence to allow atomic wrapping by the `ExamEngine`.
 - **API Hardening**: Updated `/api/quiz/start` to enforce the technical contract and handle idempotency headers.
-- **Validation**: Verified system stability with a perfect `pnpm build` and `tsc --noEmit` cycle (`Exit Code 0`).
+- **HUD Aesthetic Refactor**: Inverted header (Title Left, Branding Right) and removed progress tracker.
+- **Global Opacity Lock**: Selection pane dims to 10% and disables interaction post-launch.
+- **Unified HUD Baseline**: Implemented shared `pt-6` padding across Selection and Summary panes for a unified start line.
+- **No-Scroll Strategy**: Enforced purely paginated matrix and implemented list clamping (+X more) in the Summary pane.
+- **Certification**: Monorepo build and type-check passed with `Exit Code 0`.
 
 ## Next Steps
 - **INT-003**: Implement `ExamEngine.submitAnswer` and `ExamEngine.completeExam` logic.
