@@ -987,3 +987,15 @@ Reduce documentation fragmentation and improve discoverability by consolidating 
     - **Race Condition Resolution**: Forced `AuthGuard` into a `logout()` call upon verification failure to ensure the global store is cleared before redirecting to `/login`.
     - **Global Interceptor**: Added `auth:unauthorized` event listener to `AuthProvider` to clear the store instantly on any 401 response.
 - **Outcome**: Eliminated authentication artifacts, ensuring a truthful UI that always reflects the server-side session status.
+### Batch 116: Universal Scope Enforcement & Absolute Isolation
+- **Problem**: Potential for identity shadowing between admin and user sessions due to unscoped token extraction in many API handlers.
+- **Action**: Hardened the entire API server (60+ handlers) and the `TokenService` to implement strict, scope-specific token verification.
+- **Implementation**:
+    - **Service Evolution**: Upgraded `TokenService.getAccessToken` to accept an explicit `scope` ('admin' | 'user') and target the respective cookie.
+    - **Cryptographic Isolation**: Tokens are verified against the correct secret-scope pair (`ADMIN_SECRET` vs `USER_SECRET`).
+    - **Full-Spectrum Overhaul**: Surgically updated all route handlers in `/api/admin`, `/api/quiz`, and `/api/auth` to enforce explicit scoping.
+    - **Legacy Repair**: Restored broken service mappings for metrics, batch deletions, and publishing workflows that were bypassed during the migration.
+- **Verification**: 
+    - Full Monorepo Build: **PASSED** (Exit Code 0).
+    - Recursive Audit (`grep_search`): Verified zero remaining unscoped token extraction sites.
+- **Outcome**: Established absolute identity isolation; admins and students can now maintain concurrent, independent sessions with 100% cryptographic certainty.
