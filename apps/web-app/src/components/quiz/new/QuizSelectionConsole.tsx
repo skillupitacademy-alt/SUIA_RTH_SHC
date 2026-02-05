@@ -227,7 +227,7 @@ export function QuizSelectionConsole() {
 
             <div className="flex flex-col lg:flex-row gap-12 items-stretch">
                 {/* Left Pane (65%) - Locked Height Console */}
-                <div className="w-full lg:w-[65%] flex flex-col relative h-[550px]">
+                <div className="w-full lg:w-[65%] flex flex-col relative h-[750px]">
                     {/* Content Area (Stationary Grid via Slicing) */}
                     <div className="flex-1 overflow-visible">
                         {step === 1 && (
@@ -333,7 +333,7 @@ export function QuizSelectionConsole() {
                 </div>
 
                 {/* Right Pane (35%) - Aligned Top & Bottom */}
-                <div className="w-full lg:w-[35%] flex flex-col h-[550px] pt-0">
+                <div className="w-full lg:w-[35%] flex flex-col h-[750px] pt-0">
                     <AssessmentSummary
                         domainName={currentDomain?.name || 'Not Selected'}
                         subjectsCount={selectedSubjects.length}

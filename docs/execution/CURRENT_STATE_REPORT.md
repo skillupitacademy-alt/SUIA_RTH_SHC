@@ -488,8 +488,8 @@
 - **Technical Certification**: Achieved full monorepo build and type-check pass (**Exit Code 0**).
 
 ### Phase 112: Symmetrical Alignment & Baseline Synchronization
-- **Topline Synchronization**: Aligned the `AssessmentSummary` top edge with the first row of the Content Grid by setting padding to `pt-0`.
-- **Bottomline Lock**: Locked both Left and Right containers to a stationary **550px frame height**, achieving perfect horizontal balance.
-- **High-Density Framework**: Implemented a 4-column grid for Sub-level selection (6-item limit) to maximize information density.
+- **Topline Sync**: Set Right Pane padding to `pt-0` to perfectly align the `AssessmentSummary` top edge with the first row of Selection Grid items.
+- **Bottomline Lock**: Locked both Left and Right containers to a stationary **750px frame height**, ensuring both panes terminate exactly at the navigation footer baseline.
+- **Internal Optimization**: Expanded `AssessmentSummary` internal spacing (p-10, space-y-8) to eliminate dead zones and ensure frame parity at 750px.
 - **Zero-Scroll Policy**: Redesigned internal spacing (`p-6`, `space-y-4`) to eliminate scrollbars and fit within the 550px boundary.
 - **Technical Certification**: Verified codebase integrity with a successful root `pnpm build` and `tsc` cycle (Exit Code 0).
