@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { AssessmentSummary } from './AssessmentSummary';
 import { DomainCard } from './DomainCard';
 import { TopicChip } from './TopicChip';
-import { Code, Shield, Cloud, Database, Check, Loader2 } from 'lucide-react';
+import { Code, Shield, Cloud, Database, Check, Loader2, Activity, ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { apiClient } from '@quiz/api-client';
 
@@ -188,10 +188,14 @@ export function QuizSelectionConsole() {
         }
     };
 
-    const handleLoadMore = () => {
+    const handlePrevPage = () => {
+        setPage((prev) => Math.max(0, prev - 1));
+    };
+
+    const handleNextPage = () => {
         const totalItems = step === 1 ? domains.length : (step === 3 ? topics.length : (step === 2 ? subjects.length : (step === 4 ? subtopics.length : 0)));
         const totalPages = Math.ceil(totalItems / currentPageSize);
-        setPage((prev) => (prev + 1) % totalPages);
+        setPage((prev) => Math.min(totalPages - 1, prev + 1));
     };
 
     // Derived Data
@@ -208,11 +212,10 @@ export function QuizSelectionConsole() {
     return (
         <div className="max-w-[1400px] mx-auto min-h-[800px] relative px-4 sm:px-6 lg:px-8 pt-4 pb-12">
             {/* Header Section (Full Width Top Row) */}
-            <div className="mb-6 min-h-[100px] flex flex-col justify-end">
-                {loading && domains.length === 0 ? (
-                    <div className="flex items-center gap-3 text-[#FF2D55] animate-pulse">
-                        <Loader2 className="animate-spin" size={24} />
-                        <span className="font-outfit font-bold uppercase tracking-widest text-lg">Syncing with Intelligence Hub...</span>
+            <div className="mb-10 min-h-[100px] flex flex-col justify-end">
+                {loading ? (
+                    <div className="flex-1 flex items-center justify-center">
+                        <Activity className="animate-spin text-[#FF2D55]" size={32} />
                     </div>
                 ) : (
                     <>
@@ -266,7 +269,12 @@ export function QuizSelectionConsole() {
                 {/* Left Pane (65%) - Locked Height Console */}
                 <div className="w-full lg:w-[65%] flex flex-col relative h-[700px]">
                     {/* Content Area (Stationary Grid via Slicing) */}
-                    <div className="flex-1 overflow-visible">
+                    <div className="flex-1 overflow-visible relative">
+                        {loading && (
+                            <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/10 backdrop-blur-[2px] rounded-[1.25rem] animate-in fade-in duration-300">
+                                <Activity className="animate-spin text-[#FF2D55]" size={48} />
+                            </div>
+                        )}
                         {step === 1 && (
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4 animate-in fade-in duration-500">
                                 {paginatedDomains.map((domain, idx) => (
@@ -337,14 +345,39 @@ export function QuizSelectionConsole() {
                             BACK
                         </button>
 
-                        {(step === 1 || step === 3 || step === 2 || step === 4) && (
+                        <div className="flex items-center gap-3">
                             <button
-                                onClick={handleLoadMore}
-                                className="px-12 py-4 rounded-xl bg-[#FF2D55] text-white font-bold font-outfit text-sm uppercase tracking-widest shadow-[0_10px_30px_rgba(255,45,85,0.2)] hover:shadow-[0_15px_40px_rgba(255,45,85,0.45)] active:scale-95 transition-all"
+                                onClick={handlePrevPage}
+                                disabled={page === 0 || loading}
+                                className={cn(
+                                    "p-4 rounded-xl transition-all active:scale-95 disabled:grayscale disabled:opacity-20",
+                                    page === 0
+                                        ? "bg-gray-100 text-gray-300 cursor-not-allowed"
+                                        : "bg-[#FF2D55] text-white shadow-[0_10px_30px_rgba(255,45,85,0.2)] hover:shadow-[0_15px_40px_rgba(255,45,85,0.45)]"
+                                )}
                             >
-                                LOAD MORE
+                                <ChevronLeft size={20} />
                             </button>
-                        )}
+
+                            <div className="px-6 py-4 rounded-xl border border-gray-100 bg-white/50 backdrop-blur-sm flex items-center justify-center min-w-[120px]">
+                                <span className="text-[10px] font-black font-outfit text-gray-500 uppercase tracking-[0.2em]">
+                                    {String(page + 1).padStart(2, '0')} / {String(Math.max(1, Math.ceil((step === 1 ? domains.length : (step === 3 ? topics.length : (step === 2 ? subjects.length : (step === 4 ? subtopics.length : 0)))) / currentPageSize))).padStart(2, '0')}
+                                </span>
+                            </div>
+
+                            <button
+                                onClick={handleNextPage}
+                                disabled={page >= Math.ceil((step === 1 ? domains.length : (step === 3 ? topics.length : (step === 2 ? subjects.length : (step === 4 ? subtopics.length : 0)))) / currentPageSize) - 1 || loading}
+                                className={cn(
+                                    "p-4 rounded-xl transition-all active:scale-95 disabled:grayscale disabled:opacity-20",
+                                    page >= Math.ceil((step === 1 ? domains.length : (step === 3 ? topics.length : (step === 2 ? subjects.length : (step === 4 ? subtopics.length : 0)))) / currentPageSize) - 1
+                                        ? "bg-gray-100 text-gray-300 cursor-not-allowed"
+                                        : "bg-[#FF2D55] text-white shadow-[0_10px_30px_rgba(255,45,85,0.2)] hover:shadow-[0_15px_40px_rgba(255,45,85,0.45)]"
+                                )}
+                            >
+                                <ChevronRight size={20} />
+                            </button>
+                        </div>
 
                         <button
                             onClick={handleNext}
