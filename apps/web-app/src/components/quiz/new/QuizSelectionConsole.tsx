@@ -23,7 +23,7 @@ export function QuizSelectionConsole() {
 
     // Pagination State
     const [page, setPage] = useState(0);
-    const PAGE_SIZE = 6;
+    const PAGE_SIZE = 4;
 
     // UI Meta helper (for icons and accents in Domain Cards)
     const getDomainMeta = (index: number) => {
@@ -174,7 +174,7 @@ export function QuizSelectionConsole() {
     return (
         <div className="max-w-[1400px] mx-auto min-h-[850px] relative px-4 sm:px-6 lg:px-8 py-12">
             {/* Header Section (Full Width Top Row) */}
-            <div className="mb-12 min-h-[100px]">
+            <div className="mb-10 min-h-[100px]">
                 {loading && domains.length === 0 ? (
                     <div className="flex items-center gap-3 text-[#FF2D55] animate-pulse">
                         <Loader2 className="animate-spin" size={24} />
@@ -329,7 +329,7 @@ export function QuizSelectionConsole() {
                 </div>
 
                 {/* Right Pane (35%) - Aligned Top & Bottom */}
-                <div className="w-full lg:w-[35%] flex flex-col h-[650px]">
+                <div className="w-full lg:w-[35%] flex flex-col h-[650px] pt-2">
                     <AssessmentSummary
                         domainName={currentDomain?.name || 'Not Selected'}
                         subjectsCount={selectedSubjects.length}
