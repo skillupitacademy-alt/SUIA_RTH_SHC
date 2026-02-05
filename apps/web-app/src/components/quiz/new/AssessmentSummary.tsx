@@ -34,96 +34,110 @@ export function AssessmentSummary({
 }: AssessmentSummaryProps) {
     return (
         <aside className="w-full flex flex-col h-full">
-            <div className="glass-morphism pink-glow rounded-[2.25rem] p-8 space-y-6 relative overflow-hidden group transition-all duration-500 hover:shadow-[0_0_50px_rgba(255,45,85,0.15)] flex-1 flex flex-col">
+            <div className="glass-morphism pink-glow rounded-[2rem] p-7 space-y-4 relative overflow-hidden group transition-all duration-500 hover:shadow-[0_0_50px_rgba(255,45,85,0.15)] flex-1 flex flex-col">
                 {/* Visual Aura */}
-                <div className="absolute -top-24 -right-24 w-60 h-60 bg-[#FF2D55]/10 rounded-full blur-[100px] group-hover:bg-[#FF2D55]/20 transition-all duration-700" />
+                <div className="absolute -top-24 -right-24 w-56 h-56 bg-[#FF2D55]/10 rounded-full blur-[90px] group-hover:bg-[#FF2D55]/20 transition-all duration-700" />
 
                 <div className="relative z-10 flex-1 flex flex-col h-full">
-                    <h2 className="text-xl font-black font-outfit tracking-tight text-[#1A1A1A] mb-6 uppercase italic">Assessment Summary</h2>
+                    <h2 className="text-lg font-black font-outfit tracking-tight text-[#1A1A1A] mb-4 uppercase italic">Assessment Summary</h2>
 
-                    <div className="space-y-6 flex-1">
-                        <div className="flex flex-col gap-1.5">
-                            <div className="flex items-center gap-2.5 text-muted-foreground">
-                                <Shield size={14} className="text-[#FF2D55]" />
-                                <span className="text-[10px] font-bold font-inter uppercase tracking-widest opacity-60">Domain</span>
+                    <div className="space-y-4 flex-1">
+                        <div className="flex flex-col gap-1">
+                            <div className="flex items-center gap-2 text-muted-foreground">
+                                <Shield size={13} className="text-[#FF2D55]" />
+                                <span className="text-[9px] font-bold font-inter uppercase tracking-widest opacity-60">Domain</span>
                             </div>
-                            <span className="text-sm font-bold font-inter text-[#1A1A1A] pl-7 truncate">{domainName}</span>
+                            <span className="text-xs font-bold font-inter text-[#1A1A1A] pl-5 truncate">{domainName}</span>
                         </div>
 
                         {selectedSubjects.length > 0 && (
-                            <div className="flex flex-col gap-3">
-                                <div className="flex items-center gap-2.5 text-muted-foreground">
-                                    <Tag size={14} className="text-[#FF2D55]" />
-                                    <span className="text-[10px] font-bold font-inter uppercase tracking-widest opacity-60">Selected Subjects</span>
+                            <div className="flex flex-col gap-2">
+                                <div className="flex items-center gap-2 text-muted-foreground">
+                                    <Tag size={13} className="text-[#FF2D55]" />
+                                    <span className="text-[9px] font-bold font-inter uppercase tracking-widest opacity-60">Subjects</span>
                                 </div>
-                                <div className="flex flex-wrap gap-1.5 pl-7 max-h-[100px] overflow-y-auto scrollbar-hide">
+                                <div className="flex flex-wrap gap-1 pl-5">
                                     {selectedSubjects.map(s => (
-                                        <span key={s} className="px-2.5 py-1 bg-gray-50 text-[10px] font-bold text-gray-500 rounded-lg border border-gray-100 uppercase tracking-tighter">{s}</span>
+                                        <span key={s} className="px-2 py-0.5 bg-gray-50 text-[9px] font-bold text-gray-500 rounded border border-gray-100 uppercase tracking-tighter">{s}</span>
                                     ))}
                                 </div>
                             </div>
                         )}
 
                         {selectedTopics.length > 0 && (
-                            <div className="flex flex-col gap-3">
-                                <div className="flex items-center gap-2.5 text-muted-foreground">
-                                    <Check size={14} className="text-[#FF2D55]" />
-                                    <span className="text-[10px] font-bold font-inter uppercase tracking-widest opacity-60">Knowledge Units</span>
+                            <div className="flex flex-col gap-2">
+                                <div className="flex items-center gap-2 text-muted-foreground">
+                                    <Check size={13} className="text-[#FF2D55]" />
+                                    <span className="text-[9px] font-bold font-inter uppercase tracking-widest opacity-60">Knowledge Units</span>
                                 </div>
-                                <div className="flex flex-wrap gap-1.5 pl-7 max-h-[120px] overflow-y-auto scrollbar-hide">
+                                <div className="flex flex-wrap gap-1 pl-5">
                                     {selectedTopics.map(t => (
-                                        <span key={t} className="px-2.5 py-1 bg-[#FF2D55]/5 text-[10px] font-bold text-[#FF2D55] rounded-lg border border-[#FF2D55]/10 uppercase tracking-tighter">{t}</span>
+                                        <span key={t} className="px-2 py-0.5 bg-[#FF2D55]/5 text-[9px] font-bold text-[#FF2D55] rounded border border-[#FF2D55]/10 uppercase tracking-tighter">{t}</span>
                                     ))}
                                 </div>
                             </div>
                         )}
 
-                        <div className="h-px bg-gradient-to-r from-transparent via-gray-100 to-transparent w-full my-4" />
+                        {selectedSubtopics.length > 0 && (
+                            <div className="flex flex-col gap-2">
+                                <div className="flex items-center gap-2 text-muted-foreground">
+                                    <Clock size={13} className="text-[#FF2D55]" />
+                                    <span className="text-[9px] font-bold font-inter uppercase tracking-widest opacity-60">Precision Skills</span>
+                                </div>
+                                <div className="flex flex-wrap gap-1 pl-5">
+                                    {selectedSubtopics.map(st => (
+                                        <span key={st} className="px-2 py-0.5 bg-[#FF2D55]/10 text-[9px] font-black text-[#FF2D55] rounded border border-[#FF2D55]/20 uppercase tracking-tighter italic">{st}</span>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
 
-                        <div className="grid grid-cols-2 gap-8">
+                        <div className="h-px bg-gradient-to-r from-transparent via-gray-100 to-transparent w-full my-2" />
+
+                        <div className="grid grid-cols-2 gap-6">
                             <div className="space-y-0.5">
-                                <p className="text-[9px] font-black text-gray-400 uppercase tracking-[0.2em]">Est. Time</p>
-                                <p className="text-lg font-black font-outfit text-[#1A1A1A]">{Math.ceil(questionCount * 1.5)} MIN</p>
+                                <p className="text-[8px] font-black text-gray-400 uppercase tracking-[0.2em]">Est. Time</p>
+                                <p className="text-base font-black font-outfit text-[#1A1A1A]">{Math.ceil(questionCount * 1.5)} MIN</p>
                             </div>
                             <div className="space-y-0.5">
-                                <p className="text-[9px] font-black text-gray-400 uppercase tracking-[0.2em]">Volume</p>
-                                <p className="text-lg font-black font-outfit text-[#1A1A1A]">{questionCount} Qs</p>
+                                <p className="text-[8px] font-black text-gray-400 uppercase tracking-[0.2em]">Volume</p>
+                                <p className="text-base font-black font-outfit text-[#1A1A1A]">{questionCount} Qs</p>
                             </div>
                         </div>
 
-                        <div className="space-y-3 pt-6 border-t border-gray-100 mt-4">
-                            <div className="flex justify-between text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                        <div className="space-y-2 pt-4 border-t border-gray-100 mt-2">
+                            <div className="flex justify-between text-[9px] font-bold text-muted-foreground uppercase tracking-widest">
                                 <span>Complexity</span>
                                 <span className="text-[#1A1A1A]">{difficulty}</span>
                             </div>
-                            <div className="flex justify-between text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                            <div className="flex justify-between text-[9px] font-bold text-muted-foreground uppercase tracking-widest">
                                 <span>Potential</span>
                                 <span className="text-[#FF2D55] font-black">{totalPoints} PTS</span>
                             </div>
                         </div>
                     </div>
 
-                    <div className="mt-auto pt-8 border-t border-gray-100/50 space-y-4">
+                    <div className="mt-auto pt-6 border-t border-gray-100/50 space-y-3">
                         <button
                             onClick={onStart}
                             disabled={!isReady || loading}
                             className={cn(
-                                "w-full py-5 rounded-2xl bg-gradient-to-br from-[#FF2D55] to-[#D4145A] text-white font-black font-outfit uppercase tracking-[0.15em] shadow-[0_15px_35px_rgba(255,45,85,0.3)] flex items-center justify-center gap-3 transition-all active:scale-95 disabled:grayscale disabled:opacity-30 group hover:shadow-[0_20px_45px_rgba(255,45,85,0.45)]",
+                                "w-full py-4 rounded-xl bg-gradient-to-br from-[#FF2D55] to-[#D4145A] text-white font-black font-outfit uppercase tracking-[0.1em] shadow-[0_12px_30px_rgba(255,45,85,0.3)] flex items-center justify-center gap-3 transition-all active:scale-95 disabled:grayscale disabled:opacity-30 group hover:shadow-[0_15px_40px_rgba(255,45,85,0.45)]",
                                 isReady && "animate-in fade-in zoom-in duration-500 shadow-[0_0_30px_rgba(255,45,85,0.5)]"
                             )}
                         >
                             {loading ? 'INITIALIZING...' : (
                                 <>
                                     Launch Assessment
-                                    <div className="bg-white/20 p-2 rounded-full">
-                                        <Play size={14} fill="currentColor" />
+                                    <div className="bg-white/20 p-1.5 rounded-full">
+                                        <Play size={12} fill="currentColor" />
                                     </div>
                                 </>
                             )}
                         </button>
 
                         {!isReady && !loading && (
-                            <p className="text-[10px] text-center text-muted-foreground font-bold uppercase tracking-widest opacity-40">
+                            <p className="text-[9px] text-center text-muted-foreground font-bold uppercase tracking-widest opacity-40">
                                 Selection Phase: Required Steps Remaining
                             </p>
                         )}

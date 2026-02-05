@@ -20,6 +20,7 @@ export function QuizSelectionConsole() {
     const [selectedTopics, setSelectedTopics] = useState<string[]>([]);
     const [selectedSubtopics, setSelectedSubtopics] = useState<string[]>([]);
     const [loading, setLoading] = useState(false);
+    const [selectionError, setSelectionError] = useState<string | null>(null);
 
     // Pagination State
     const [page, setPage] = useState(0);
@@ -124,30 +125,58 @@ export function QuizSelectionConsole() {
     };
 
     const toggleSubject = (id: string) => {
-        setSelectedSubjects(prev =>
-            prev.includes(id) ? prev.filter(x => x !== id) : [id] // Force single for now to match flow
-        );
+        setSelectedSubjects(prev => {
+            if (prev.includes(id)) {
+                setSelectionError(null);
+                return prev.filter(x => x !== id);
+            }
+            if (prev.length >= 4) {
+                setSelectionError("SUBJECT LIMIT REACHED: MAX 4 SELECTIONS ALLOWED");
+                return prev;
+            }
+            setSelectionError(null);
+            return [...prev, id];
+        });
         setSelectedTopics([]);
         setSelectedSubtopics([]);
     };
 
     const toggleTopic = (id: string) => {
-        setSelectedTopics(prev =>
-            prev.includes(id) ? prev.filter(x => x !== id) : [id]
-        );
+        setSelectedTopics(prev => {
+            if (prev.includes(id)) {
+                setSelectionError(null);
+                return prev.filter(x => x !== id);
+            }
+            if (prev.length >= 4) {
+                setSelectionError("TOPIC LIMIT REACHED: MAX 4 SELECTIONS ALLOWED");
+                return prev;
+            }
+            setSelectionError(null);
+            return [...prev, id];
+        });
         setSelectedSubtopics([]);
     };
 
     const toggleSubtopic = (id: string) => {
-        setSelectedSubtopics(prev =>
-            prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
-        );
+        setSelectedSubtopics(prev => {
+            if (prev.includes(id)) {
+                setSelectionError(null);
+                return prev.filter(x => x !== id);
+            }
+            if (prev.length >= 4) {
+                setSelectionError("SUBTOPIC LIMIT REACHED: MAX 4 SELECTIONS ALLOWED");
+                return prev;
+            }
+            setSelectionError(null);
+            return [...prev, id];
+        });
     };
 
     const handleNext = () => {
         if (step < 4) {
             setStep(step + 1);
             setPage(0); // Reset page on step change
+            setSelectionError(null);
         }
     };
 
@@ -155,6 +184,7 @@ export function QuizSelectionConsole() {
         if (step > 1) {
             setStep(step - 1);
             setPage(0); // Reset page on step change
+            setSelectionError(null);
         }
     };
 
@@ -176,9 +206,9 @@ export function QuizSelectionConsole() {
     const paginatedSubtopics = subtopics.slice(page * currentPageSize, (page + 1) * currentPageSize);
 
     return (
-        <div className="max-w-[1400px] mx-auto min-h-[850px] relative px-4 sm:px-6 lg:px-8 py-12">
+        <div className="max-w-[1400px] mx-auto min-h-[800px] relative px-4 sm:px-6 lg:px-8 pt-4 pb-12">
             {/* Header Section (Full Width Top Row) */}
-            <div className="mb-8 min-h-[100px]">
+            <div className="mb-6 min-h-[100px] flex flex-col justify-end">
                 {loading && domains.length === 0 ? (
                     <div className="flex items-center gap-3 text-[#FF2D55] animate-pulse">
                         <Loader2 className="animate-spin" size={24} />
@@ -221,17 +251,24 @@ export function QuizSelectionConsole() {
                                 <p className="text-muted-foreground font-inter font-medium opacity-70">Pinpoint specific skills for deeper evaluation.</p>
                             </div>
                         )}
+
+                        {selectionError && (
+                            <div className="mt-2 flex items-center gap-2 text-[#FF2D55] animate-in slide-in-from-top-2 duration-300">
+                                <div className="h-1.5 w-1.5 rounded-full bg-[#FF2D55] animate-pulse" />
+                                <span className="text-[10px] font-black uppercase tracking-widest">{selectionError}</span>
+                            </div>
+                        )}
                     </>
                 )}
             </div>
 
             <div className="flex flex-col lg:flex-row gap-12 items-stretch">
                 {/* Left Pane (65%) - Locked Height Console */}
-                <div className="w-full lg:w-[65%] flex flex-col relative h-[725px]">
+                <div className="w-full lg:w-[65%] flex flex-col relative h-[700px]">
                     {/* Content Area (Stationary Grid via Slicing) */}
                     <div className="flex-1 overflow-visible">
                         {step === 1 && (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 animate-in fade-in duration-500">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4 animate-in fade-in duration-500">
                                 {paginatedDomains.map((domain, idx) => (
                                     <DomainCard
                                         key={domain.id}
@@ -246,7 +283,7 @@ export function QuizSelectionConsole() {
                         )}
 
                         {step === 2 && (
-                            <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 animate-in fade-in duration-500">
+                            <div className="grid grid-cols-1 sm:grid-cols-4 gap-x-6 gap-y-12 animate-in fade-in duration-500">
                                 {paginatedSubjects.map((sub) => (
                                     <TopicChip
                                         key={sub.id}
@@ -259,7 +296,7 @@ export function QuizSelectionConsole() {
                         )}
 
                         {step === 3 && (
-                            <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 animate-in fade-in duration-500">
+                            <div className="grid grid-cols-1 sm:grid-cols-4 gap-x-6 gap-y-12 animate-in fade-in duration-500">
                                 {paginatedTopics.map((topic) => (
                                     <TopicChip
                                         key={topic.id}
@@ -272,7 +309,7 @@ export function QuizSelectionConsole() {
                         )}
 
                         {step === 4 && (
-                            <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 animate-in fade-in duration-500">
+                            <div className="grid grid-cols-1 sm:grid-cols-4 gap-x-6 gap-y-12 animate-in fade-in duration-500">
                                 {paginatedSubtopics.map((subtopic) => (
                                     <TopicChip
                                         key={subtopic.id}
@@ -333,7 +370,7 @@ export function QuizSelectionConsole() {
                 </div>
 
                 {/* Right Pane (35%) - Aligned Top & Bottom */}
-                <div className="w-full lg:w-[35%] flex flex-col h-[725px] pt-0">
+                <div className="w-full lg:w-[35%] flex flex-col h-[700px] pt-0">
                     <AssessmentSummary
                         domainName={currentDomain?.name || 'Not Selected'}
                         subjectsCount={selectedSubjects.length}

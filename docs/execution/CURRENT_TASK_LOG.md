@@ -8,10 +8,11 @@
 - **Stepped UI Flow**: Implemented a 4-step progressive journey for assessment selection (Domain > Subject > Topic > Subtopic).
 - **Live Integration**: Connected the console to the production API, enabling dynamic metadata fetching (category, description, skill names).
 - **Layout Alignment**: Synchronized the topline of the Assessment Summary with the first row of selection grid items and locked the bottomline to the action footer.
-- **Stationary UX**: Enforced a fixed 725px viewport height for both panes to ensure "Zero Vertical Jump" between steps.
-- **Internal Optimization**: Expanded `AssessmentSummary` spacing and font scales to elegantly fill the 725px frame without vertical distention.
-- **High-Density Grid**: Transitioned to a **6-item (2x3)** domain grid and a **12-item (4x3)** sub-selection grid for maximum information density.
-- **Symmetrical Spacing**: Calibrated header margin to `mb-8` and synchronized right-pane with `pt-0` to ensure pixel-perfect horizontal symmetry.
+- **Stationary UX**: Enforced a fixed 700px viewport height for both panes to ensure "Zero Vertical Jump" between steps.
+- **Internal Optimization**: Tightened `AssessmentSummary` spacing and font scales to elegantly fill the 700px frame with up to 13 items.
+- **Selection Logic**: Implemented a **4-selection cap** per category with active warning messages to maintain focus.
+- **Precision Summary**: Integrated Subtopics into the sidebar summary for full disclosure.
+- **Symmetrical Spacing**: Reduced container padding to `pt-4` and synchronized right-pane with `pt-0` for perfect horizontal symmetry.
 - **Verification**: Verified zero-error production build and full TypeScript type-safety (Exit Code 0).
 
 ## Next Steps
