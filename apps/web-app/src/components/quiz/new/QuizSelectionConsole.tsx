@@ -325,40 +325,35 @@ export function QuizSelectionConsole() {
             {/* Executive Dashboard Header (Stateless Baseline) */}
             <div className="mb-1 border-b border-gray-300 pb-2">
                 <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-12 pt-2">
-                    {/* Left: Global Context with Branding Placeholder */}
-                    <div className="flex items-center gap-6 min-w-fit">
-                        {/* New 2nd Image Component Position: FAR LEFT - Pink Refined */}
-                        <div className="w-16 h-16 rounded-2xl bg-[#FF2D55]/10 border-2 border-[#FF2D55]/40 flex items-center justify-center group hover:bg-[#FF2D55]/20 transition-colors">
-                            <Activity className="text-[#FF2D55]" size={32} />
-                        </div>
-                        <div className="space-y-3">
-                            <div>
-                                <h1 className="text-5xl md:text-6xl font-black tracking-tighter font-outfit text-[#1A1A1A]">
-                                    Launch Evaluation
-                                </h1>
-                                <p className="text-xs text-muted-foreground font-inter font-medium opacity-60 mt-1 uppercase tracking-[0.3em]">
-                                    Strategic Ecosystem Configuration
-                                </p>
+                    {/* Left: Step Orientation & Heading */}
+                    <div className="flex flex-col items-start text-left flex-none min-w-fit">
+                        <div className="flex items-center gap-6 mb-2 whitespace-nowrap">
+                            {/* Heart Icon Positioned FAR LEFT */}
+                            <div className="w-16 h-16 rounded-2xl bg-[#FF2D55]/10 border-2 border-[#FF2D55]/40 flex items-center justify-center group hover:bg-[#FF2D55]/20 transition-colors">
+                                <Activity className="text-[#FF2D55]" size={32} />
                             </div>
-                        </div>
-                    </div>
-
-                    {/* Center: Heartbeat Progress */}
-                    <div className="flex justify-center flex-1">
-                        <DottedProgressBar currentStep={step} mode={mode} />
-                    </div>
-
-                    {/* Right: Step Orientation */}
-                    <div className="flex flex-col items-start lg:items-end text-left lg:text-right flex-none min-w-fit">
-                        <div className="flex items-center gap-4 mb-2 whitespace-nowrap">
-                            <JourneyBadge text={currentMeta.badge} />
-                            <h2 className="text-3xl font-black font-outfit tracking-tight text-[#1A1A1A] uppercase">
-                                {currentMeta.title} {currentMeta.count > 0 && `(${currentMeta.count})`}
-                            </h2>
+                            <div className="flex flex-col">
+                                <JourneyBadge text={currentMeta.badge} />
+                                <h2 className="text-3xl font-black font-outfit tracking-tight text-[#1A1A1A] uppercase mt-1">
+                                    {currentMeta.title} {currentMeta.count > 0 && `(${currentMeta.count})`}
+                                </h2>
+                            </div>
                         </div>
                         <p className="text-sm text-muted-foreground font-inter font-medium opacity-70 max-w-md leading-tight min-h-[40px] mb-4">
                             {currentMeta.desc}
                         </p>
+                    </div>
+
+                    {/* Right: Branding & Toggle */}
+                    <div className="flex flex-col items-end text-right min-w-fit flex-1">
+                        <div className="space-y-1 mb-4">
+                            <h1 className="text-5xl md:text-6xl font-black tracking-tighter font-outfit text-[#1A1A1A]">
+                                Launch Evaluation
+                            </h1>
+                            <p className="text-xs text-muted-foreground font-inter font-medium opacity-60 uppercase tracking-[0.3em]">
+                                Strategic Ecosystem Configuration
+                            </p>
+                        </div>
 
                         {/* Repositioned Toggle: Directly Below Description (Right-Bottom) */}
                         <div className="flex bg-gray-100 rounded-lg p-0.5 border border-gray-200 w-fit">
@@ -393,9 +388,12 @@ export function QuizSelectionConsole() {
             </div>
             <div className="flex flex-col lg:flex-row gap-12 items-stretch">
                 {/* Left Pane (65%) - Locked Height Console (h-530) */}
-                <div className="w-full lg:w-[65%] flex flex-col relative h-[530px]">
-                    {/* Symmetrical Container: 10% Top (20px align), 80% Matrix, 10% Bottom (53px gap) */}
-                    <div className="flex-1 flex flex-col pt-[20px]">
+                <div className={cn(
+                    "w-full lg:w-[65%] flex flex-col relative h-[530px] transition-all duration-700",
+                    isLocked ? "opacity-10 pointer-events-none" : "opacity-100"
+                )}>
+                    {/* Symmetrical Container: 15px Top, 15px Bottom gap */}
+                    <div className="flex-1 flex flex-col pt-[15px]">
                         <div className="flex-1 relative">
                             {loading && (
                                 <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/10 backdrop-blur-[2px] rounded-[1.25rem] animate-in fade-in duration-300">
@@ -534,8 +532,8 @@ export function QuizSelectionConsole() {
                                     )}
                                 </div>
 
-                                {/* BOTTOM AIR CUSHION (10% ≈ 53px) */}
-                                <div className="h-[53px] flex-shrink-0" />
+                                {/* BOTTOM AIR CUSHION (15px) */}
+                                <div className="h-[15px] flex-shrink-0" />
                             </div>
                         </div>
                     </div>

@@ -36,12 +36,25 @@ async function verify() {
   console.log('3) Indexes Found:', indexCheck.map(i => i.indexname).join(', ') || 'NONE');
 
   // 4) drizzle migration proof
-  const drizzleCheck = await sql`
-    select table_name
+  console.log('4) Drizzle Tracking:');
+  const drizzleTables = await sql`
+    select table_name, table_schema
     from information_schema.tables
     where table_name like '%drizzle%';
   `;
-  console.log('4) Drizzle Tables:', drizzleCheck.map(t => t.table_name).join(', ') || 'NONE');
+  if (drizzleTables.length === 0) {
+    console.log('   - No Drizzle tables found.');
+  } else {
+    for (const t of drizzleTables) {
+      console.log(`   - Found: ${t.table_schema}.${t.table_name}`);
+      try {
+        const logs = await sql(`select id, hash, created_at from "${t.table_schema}"."${t.table_name}" order by created_at desc limit 5`);
+        logs.forEach((m: any) => console.log(`     - ID: ${m.id} | Created: ${new Date(m.created_at).toLocaleString()}`));
+      } catch (e: any) {
+        console.log(`     - Error reading ${t.table_name}: ${e.message}`);
+      }
+    }
+  }
   
   console.log('------------------------------------\n');
 }
