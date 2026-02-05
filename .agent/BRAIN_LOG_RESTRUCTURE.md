@@ -773,13 +773,13 @@ Reduce documentation fragmentation and improve discoverability by consolidating 
     - Build Suite: 'pnpm build' + 'tsc --noEmit' (Exit Code 0).
 - **Outcome**: Achieved 100% session stability and verifiability for the Factor Console.
 
-### Batch 117: Console Mode Toggle (Basic/Advanced)
-- **Objective**: Streamline the student assessment selection for different user personas.
-- **Toggle Implementation**: Added a high-fidelity pill-shaped segmented control in the console header.
-- **Enforcement Logic**: Implemented strict auto-clamping for Basic mode (Max 2 Subjects, 3 Topics, Hidden Subtopics, Restricted Question Count Presets).
-- **Navigation Strategy**: Dynamic step skipping (3 -> 5) and visually disabled 4th dot in the progress bar for Basic mode.
-- **Intelligence**: System-wide auto-trimming with "Safe Caps" enforcement and situational user messaging.
-- **Outcome**: Delivered a simplified, safer "Basic" experience while preserving "Advanced" power-user capabilities.
+### Batch 117: Console Mode Toggle (Basic/Advanced Refinement)
+- **Objective**: Streamline student persona selection with professional-grade UI hierarchy.
+- **Toggle Strategy**: Repositioned the mode toggle below the "Launch Evaluation" title; increased font size to `13px` for high visibility.
+- **Branding Anchor**: Implemented a pink accented (`#FF2D55`) branding placeholder on the far left.
+- **Enforcement Logic**: Strict auto-clamping for Basic mode (Max 2 Subjects, 3 Topics, Hidden Subtopics, Restricted Question Count Presets).
+- **Navigation**: Dynamic step skipping (3 -> 5) and visually disabled 4th dot in the progress bar for Basic mode.
+- **Outcome**: Delivered a simplified, balanced "Basic" experience with strong branding anchors and clear persona switching.
 
 ### Phase 99: Unified Factory State (Batch 97.2)
 - **Problem**: State mismatch and 'Null Blueprint' errors during cross-page navigation.

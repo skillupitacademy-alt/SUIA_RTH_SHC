@@ -528,9 +528,9 @@
     - **Service Repair**: Fixed legacy service method mappings for metrics, batch operations, and exam interactions (e.g., `composeExam`, `deleteTopicsBatch`, `getPerformanceAnalytics`).
 - **Verification**: Verified platform-wide build and type-safety with a successful root `pnpm build` and `tsc` cycle (Exit Code 0).
 - **Outcome**: Established absolute identity isolation; admins and students can now maintain concurrent, interference-free sessions with cryptographic certainty.
-### Phase 117: Console Mode Toggle (Basic/Advanced)
+### Phase 117: Console Mode Toggle & Branding Refinement
 - **Persona Alignment**: Introduced a "Basic" mode for simplified student journeys, enforcing 2 subjects and 3 topics maximum.
-- **Enforcement Logic**: Implemented auto-clamping and deterministic trimming when switching from Advanced to Basic mode.
+- **UI Hierarchy**: Repositioned the mode toggle below the title with an enhanced 13px font for better accessibility.
+- **Branding**: Integrated a pink accented placeholder (`#FF2D55`) as a visual anchor on the far left of the header.
 - **Dynamic Navigation**: Enabled Step 4 (Subtopics) bypass and updated the Dotted Progress Bar to reflect 4 active steps in Basic mode.
-- **Aesthetic Integration**: Added a premium segmented toggle and updated the Journey Badge to show active mode.
 - **Integrity verified**: Monorepo-wide build and type-safety check passed (Exit Code 0).
