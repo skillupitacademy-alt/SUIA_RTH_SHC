@@ -55,8 +55,8 @@ export function QuizSelectionConsole() {
 
     // Pagination State
     const [page, setPage] = useState(0);
-    const domainPageSize = 6;
-    const subPageSize = 12;
+    const domainPageSize = 4;
+    const subPageSize = 8;
     const currentPageSize = step === 1 ? domainPageSize : subPageSize;
 
     // UI Meta helper (for icons and accents in Domain Cards)
@@ -302,7 +302,7 @@ export function QuizSelectionConsole() {
             </div>
             <div className="flex flex-col lg:flex-row gap-12 items-stretch">
                 {/* Left Pane (65%) - Locked Height Console */}
-                <div className="w-full lg:w-[65%] flex flex-col relative h-[700px]">
+                <div className="w-full lg:w-[65%] flex flex-col relative h-[600px]">
                     {/* Content Area (Stationary Grid via Slicing) */}
                     <div className="flex-1 overflow-visible relative">
                         {loading && (
@@ -364,15 +364,17 @@ export function QuizSelectionConsole() {
                             </div>
                         )}
 
+                        {/* Step 5: Engine Calibration (Refactored Dark HUD) */}
                         {step === 5 && (
-                            <div className="animate-in fade-in zoom-in duration-500 h-full flex flex-col pt-4">
-                                <div className="space-y-8">
-                                    <div className="space-y-4">
-                                        <div className="flex items-center gap-2 mb-2">
+                            <div className="animate-in fade-in zoom-in duration-500 h-full flex flex-col pt-2">
+                                <div className="space-y-6">
+                                    {/* Section 1: Difficulty Tier */}
+                                    <div className="space-y-3">
+                                        <div className="flex items-center gap-2 mb-1">
                                             <div className="h-4 w-1 bg-[#FF2D55] rounded-full" />
                                             <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-400">Difficulty Tier</p>
                                         </div>
-                                        <div className="grid grid-cols-3 gap-4">
+                                        <div className="grid grid-cols-3 gap-3">
                                             {[
                                                 { id: 'mixed', name: 'Mixed', desc: 'Mastery Blend' },
                                                 { id: 'beginner', name: 'Foundations', desc: 'Core Knowledge' },
@@ -382,20 +384,16 @@ export function QuizSelectionConsole() {
                                                     key={tier.id}
                                                     onClick={() => setDifficulty(tier.id)}
                                                     className={cn(
-                                                        "p-6 rounded-2xl border-2 text-center transition-all duration-300 group relative flex flex-col items-center justify-center min-h-[140px]",
+                                                        "p-4 rounded-xl border-2 transition-all duration-300 group relative flex flex-col items-center justify-center min-h-[100px]",
                                                         difficulty === tier.id
-                                                            ? "border-[#FF2D55] bg-[#FF2D55]/[0.02] shadow-[0_10px_30px_rgba(255,45,85,0.1)]"
-                                                            : "border-gray-100 hover:border-gray-200 bg-white"
+                                                            ? "bg-[#FF2D55] border-[#FF2D55] shadow-[0_10px_30px_rgba(255,45,85,0.2)]"
+                                                            : "bg-[#2B2B2B] border-transparent hover:bg-[#3d3d3d]"
                                                     )}
                                                 >
-                                                    <div className={cn(
-                                                        "h-2 w-2 rounded-full absolute top-4 right-4 transition-all",
-                                                        difficulty === tier.id ? "bg-[#FF2D55] scale-100" : "bg-gray-100 scale-0"
-                                                    )} />
-                                                    <p className={cn("text-lg font-black font-outfit uppercase tracking-tight mb-2", difficulty === tier.id ? "text-[#FF2D55]" : "text-[#1A1A1A]")}>
+                                                    <p className={cn("text-base font-black font-outfit uppercase tracking-tight", difficulty === tier.id ? "text-white" : "text-white")}>
                                                         {tier.name}
                                                     </p>
-                                                    <p className="text-[9px] font-bold text-muted-foreground leading-tight uppercase opacity-60">
+                                                    <p className={cn("text-[9px] font-bold uppercase tracking-wider opacity-60 mt-1", difficulty === tier.id ? "text-white" : "text-white")}>
                                                         {tier.desc}
                                                     </p>
                                                 </button>
@@ -403,36 +401,42 @@ export function QuizSelectionConsole() {
                                         </div>
                                     </div>
 
-                                    <div className="space-y-4">
-                                        <div className="flex items-center gap-2 mb-2">
+                                    {/* Section 2: Total Density (Refactored Dark Grid) */}
+                                    <div className="space-y-3">
+                                        <div className="flex items-center gap-2 mb-1">
                                             <div className="h-4 w-1 bg-[#FF2D55] rounded-full" />
                                             <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-400">Total Density</p>
                                         </div>
-                                        <div className="bg-gray-50/50 p-10 rounded-3xl border border-gray-100/50 relative overflow-hidden group">
-                                            <div className="flex justify-between items-center">
-                                                <div className="space-y-0.5">
-                                                    <p className="text-6xl font-black font-outfit text-[#1A1A1A] tracking-tighter">{questionCount}</p>
-                                                    <p className="text-[10px] font-black uppercase tracking-widest text-[#FF2D55]">Questions</p>
-                                                </div>
-                                                <div className="flex-1 px-12">
-                                                    <input
-                                                        type="range"
-                                                        min="5"
-                                                        max="50"
-                                                        step="5"
-                                                        value={questionCount}
-                                                        onChange={(e) => setQuestionCount(parseInt(e.target.value))}
-                                                        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-[#FF2D55] hover:bg-gray-300 transition-all"
-                                                    />
-                                                    <div className="flex justify-between mt-4">
-                                                        <span className="text-[10px] font-black text-gray-300 uppercase tracking-widest">Minimal</span>
-                                                        <span className="text-[10px] font-black text-gray-300 uppercase tracking-widest">Enterprise</span>
-                                                    </div>
-                                                </div>
-                                                <div className="text-right">
-                                                    <p className="text-3xl font-black font-outfit text-[#1A1A1A]">~{Math.ceil(questionCount * 1.5)}</p>
-                                                    <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Est. Minutes</p>
-                                                </div>
+                                        <div className="grid grid-cols-4 gap-3">
+                                            {[5, 10, 15, 20, 25, 30, 40, 50].map((v) => (
+                                                <button
+                                                    key={v}
+                                                    onClick={() => setQuestionCount(v)}
+                                                    className={cn(
+                                                        "p-4 rounded-xl border-2 transition-all duration-300 group relative flex flex-col items-center justify-center",
+                                                        questionCount === v
+                                                            ? "bg-[#FF2D55] border-[#FF2D55] shadow-[0_10px_30px_rgba(255,45,85,0.2)]"
+                                                            : "bg-[#2B2B2B] border-transparent hover:bg-[#3d3d3d]"
+                                                    )}
+                                                >
+                                                    <div className="text-xl font-black font-outfit text-white tracking-tighter">{v}</div>
+                                                    <div className="text-[9px] font-black uppercase tracking-widest text-white/40 group-hover:text-white/60 transition-colors">Questions</div>
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {/* Resulting Logic Display */}
+                                    <div className="bg-gray-50/50 p-6 rounded-3xl border border-gray-100/50 mt-2">
+                                        <div className="flex justify-between items-center">
+                                            <div className="space-y-0.5">
+                                                <p className="text-3xl font-black font-outfit text-[#1A1A1A] tracking-tighter">~{Math.ceil(questionCount * 1.5)} MINS</p>
+                                                <p className="text-[10px] font-black uppercase tracking-widest text-[#FF2D55]">Calculated Duration</p>
+                                            </div>
+                                            <div className="h-8 w-[1px] bg-gray-200" />
+                                            <div className="text-right">
+                                                <p className="text-3xl font-black font-outfit text-[#1A1A1A] tracking-tighter">{difficulty.toUpperCase()}</p>
+                                                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Mastery Profile</p>
                                             </div>
                                         </div>
                                     </div>

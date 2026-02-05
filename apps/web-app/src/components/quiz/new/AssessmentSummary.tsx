@@ -34,14 +34,14 @@ export function AssessmentSummary({
 }: AssessmentSummaryProps) {
     return (
         <aside className="w-full flex flex-col h-full">
-            <div className="glass-morphism pink-glow rounded-[2rem] p-7 space-y-4 relative overflow-hidden group transition-all duration-500 hover:shadow-[0_0_50px_rgba(255,45,85,0.15)] flex-1 flex flex-col">
+            <div className="glass-morphism pink-glow rounded-[2rem] p-5 space-y-2 relative overflow-hidden group transition-all duration-500 hover:shadow-[0_0_50px_rgba(255,45,85,0.15)] flex-1 flex flex-col">
                 {/* Visual Aura */}
                 <div className="absolute -top-24 -right-24 w-56 h-56 bg-[#FF2D55]/10 rounded-full blur-[90px] group-hover:bg-[#FF2D55]/20 transition-all duration-700" />
 
                 <div className="relative z-10 flex-1 flex flex-col h-full">
-                    <h2 className="text-lg font-black font-outfit tracking-tight text-[#1A1A1A] mb-4 uppercase">Assessment Summary</h2>
+                    <h2 className="text-base font-black font-outfit tracking-tight text-[#1A1A1A] mb-1 uppercase">Assessment Summary</h2>
 
-                    <div className="space-y-4 flex-1">
+                    <div className="space-y-2 flex-1 flex flex-col">
                         <div className="flex flex-col gap-1">
                             <div className="flex items-center gap-2 text-muted-foreground">
                                 <Shield size={13} className="text-[#FF2D55]" />
@@ -108,9 +108,9 @@ export function AssessmentSummary({
                             </div>
                         </div>
 
-                        <div className="h-[1px] bg-gray-100/80 w-full my-4" />
+                        <div className="h-[1px] bg-gray-100/80 w-full my-2" />
 
-                        <div className="grid grid-cols-2 gap-6 bg-gray-50/50 p-4 rounded-xl border border-gray-100/50">
+                        <div className="grid grid-cols-2 gap-4 bg-gray-50/50 p-3 rounded-xl border border-gray-100/50">
                             <div className="space-y-0.5">
                                 <p className="text-[8px] font-black text-gray-400 uppercase tracking-[0.2em]">Est. Time</p>
                                 <p className="text-base font-black font-outfit text-[#1A1A1A]">{Math.ceil(questionCount * 1.5)} MIN</p>
@@ -121,29 +121,29 @@ export function AssessmentSummary({
                             </div>
                         </div>
 
-                        <div className="space-y-3 pt-4">
-                            <div className="flex items-center gap-2 mb-2">
+                        <div className="space-y-2 pt-2">
+                            <div className="flex items-center gap-2 mb-1">
                                 <div className="h-1 w-1 rounded-full bg-[#FF2D55]" />
-                                <p className="text-[10px] font-black font-outfit text-[#1A1A1A] uppercase tracking-widest">Engine Calibration</p>
+                                <p className="text-[9px] font-black font-outfit text-[#1A1A1A] uppercase tracking-widest">Engine Calibration</p>
                             </div>
-                            <div className="flex justify-between items-center bg-white p-3 rounded-lg border border-gray-100 shadow-sm">
-                                <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Difficulty</span>
-                                <span className="text-[10px] font-black text-[#1A1A1A] uppercase">{difficulty}</span>
+                            <div className="flex justify-between items-center bg-white p-2 rounded-lg border border-gray-100 shadow-sm">
+                                <span className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest">Difficulty</span>
+                                <span className="text-[9px] font-black text-[#1A1A1A] uppercase">{difficulty}</span>
                             </div>
-                            <div className="flex justify-between items-center bg-white p-3 rounded-lg border border-gray-100 shadow-sm">
-                                <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Potential</span>
-                                <span className="text-[10px] font-black text-[#FF2D55] uppercase tracking-tighter">{totalPoints} PTS</span>
+                            <div className="flex justify-between items-center bg-white p-2 rounded-lg border border-gray-100 shadow-sm">
+                                <span className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest">Potential</span>
+                                <span className="text-[9px] font-black text-[#FF2D55] uppercase tracking-tighter">{totalPoints} PTS</span>
                             </div>
                         </div>
                     </div>
 
-                    <div className="mt-auto pt-6 border-t border-gray-100/50">
+                    <div className="mt-auto pt-4 border-t border-gray-100/50">
                         <button
                             onClick={onStart}
                             disabled={!isReady || loading}
                             className={cn(
-                                "w-full min-h-[64px] rounded-xl bg-gradient-to-br from-[#FF2D55] to-[#D4145A] text-white font-black font-outfit uppercase tracking-[0.1em] shadow-[0_12px_30px_rgba(255,45,85,0.3)] flex items-center justify-center gap-3 transition-all active:scale-95 disabled:grayscale disabled:opacity-30 group hover:shadow-[0_15px_40px_rgba(255,45,85,0.45)]",
-                                isReady && "animate-in fade-in zoom-in duration-500 shadow-[0_0_30px_rgba(255,45,85,0.5)]"
+                                "w-full min-h-[56px] rounded-xl bg-gradient-to-br from-[#FF2D55] to-[#D4145A] text-white font-black font-outfit uppercase tracking-[0.1em] shadow-[0_12px_30px_rgba(255,45,85,0.3)] flex items-center justify-center gap-3 transition-all active:scale-95 disabled:grayscale disabled:opacity-30 group hover:shadow-[0_15px_40px_rgba(255,45,85,0.45)]",
+                                isReady && "animate-in fade-in zoom-in duration-500 shadow-[0_0_30px_rgba(255,45,85,0.5)] border-2 border-white/20"
                             )}
                         >
                             {loading ? (

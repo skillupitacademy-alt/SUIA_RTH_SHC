@@ -20,6 +20,9 @@
 - **Radial 60% Shift**: Executed a secondary 60% vertical shift by minimizing header padding and hairline margins to the absolute baseline.
 - **Executive Grid (Step 5)**: Refactored Calibration items into high-fidelity grid cards with symmetrical spread, matching the structural weight of previous steps.
 - **Instrument Density**: Upgraded the Volume control into a high-contrast Master Instrument Module with oversized typography (`text-6xl`).
+- **One-Viewport Guarantee**: Locked console and summary to **h-600px** and optimized grid density (2x2 for Domains, 2x4 for Subjects, 4x2 for Topics) to ensure zero scrolling on 1080p screens.
+- **Dark HUD Refactor (Step 5)**: Swapped white cards and sliders for high-density **Dark Chips** (`bg-[#2B2B2B]`) for both Difficulty and Volume selection, matching the executive dark-mode aesthetic.
+- **Micro-Spaced Summary**: Reduced vertical gaps in `AssessmentSummary` from `space-y-4` to `space-y-2` and tightened section margins to fit all data stacks.
 
 ## Next Steps
 - **ENG-001**: Scale the stepped logic to the assessment submission and real-time result viewing journey.

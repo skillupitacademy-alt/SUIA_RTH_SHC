@@ -493,6 +493,6 @@
 - **Heartbeat Progress**: Expanded the 5-point **Dotted Progress Bar** with high-contrast active/inactive states.
 - **Unified Logic**: Synchronized footer buttons to use persistent "Pink Opacity" logic with a 5-step state machine.
 - **Structural Rigidity**: Locked the 700px viewport and reserved vertical slots for zero-shift transitions.
-- **HUD Compression**: Achieved a 30% vertical shift (Initial) followed by a **Radial 60% Shift** (Final) to perfectly frame the UI at the viewport topline.
-- **Executive Grid (Step 5)**: Standardized Calibration items to match the high-fidelity selection grid look & feel.
+- **HUD Compression**: Achieved a 30% vertical shift (Initial) followed by a **Radial 60% Shift** (Final) and a strict **h-600px** height lock for zero-scroll viewport stability.
+- **Executive Grid (Step 5)**: Refactored Calibration UI into high-contrast **Dark Item Chips** for Difficulty and Volume, removing the slider for a more surgical discrete interaction.
 - **Technical Certification**: Verified codebase integrity with a successful root `pnpm build` and `tsc` cycle (Exit Code 0).
