@@ -14,6 +14,27 @@ const JourneyBadge = ({ text }: { text: string }) => (
     </div>
 );
 
+const DottedProgressBar = ({ currentStep }: { currentStep: number }) => (
+    <div className="flex items-center gap-4">
+        {[1, 2, 3, 4].map((s) => (
+            <div key={s} className="flex items-center">
+                <div className={cn(
+                    "w-3 h-3 rounded-full border-2 transition-all duration-500",
+                    s < currentStep ? "bg-[#FF2D55] border-[#FF2D55]" :
+                        s === currentStep ? "bg-white border-[#FF2D55] shadow-[0_0_15px_rgba(255,45,85,0.4)] scale-125" :
+                            "bg-transparent border-gray-200"
+                )} />
+                {s < 4 && (
+                    <div className={cn(
+                        "w-12 h-[2px] mx-1 transition-all duration-500",
+                        s < currentStep ? "bg-[#FF2D55]" : "bg-gray-100"
+                    )} />
+                )}
+            </div>
+        ))}
+    </div>
+);
+
 export function QuizSelectionConsole() {
     const [step, setStep] = useState(1);
     const [domains, setDomains] = useState<any[]>([]);
@@ -204,7 +225,7 @@ export function QuizSelectionConsole() {
         setPage((prev) => Math.min(totalPages - 1, prev + 1));
     };
 
-    // Derived Data
+    // Derived Data for Stationary Logic
     const currentDomain = domains.find(d => d.id === selectedDomains[0]);
     const currentSubjects = subjects.filter(s => selectedSubjects.includes(s.id));
     const currentTopics = topics.filter(t => selectedTopics.includes(t.id));
@@ -215,57 +236,61 @@ export function QuizSelectionConsole() {
     const paginatedSubjects = subjects.slice(page * currentPageSize, (page + 1) * currentPageSize);
     const paginatedSubtopics = subtopics.slice(page * currentPageSize, (page + 1) * currentPageSize);
 
+    // Metadata for Journey Orientation
+    const journeyInfo = {
+        1: { title: "Select Domain", badge: "Foundation Architecture", desc: "Choose your area of expertise to begin the assessment.", count: domains.length },
+        2: { title: "Refine Subjects", badge: "Curriculum Calibration", desc: "Select the core subjects for your assessment pool.", count: subjects.length },
+        3: { title: "Select Topics", badge: "Knowledge Mapping", desc: "High-density grid of strategic knowledge units.", count: topics.length },
+        4: { title: "Fine-tune Subtopics", badge: "Precision Tuning", desc: "Pinpoint specific skills for deeper evaluation.", count: subtopics.length }
+    };
+
+    const currentMeta = journeyInfo[step as keyof typeof journeyInfo];
+
     return (
-        <div className="max-w-[1400px] mx-auto min-h-[800px] relative px-4 sm:px-6 lg:px-8 pt-4 pb-12">
-            {/* Header Section (Full Width Top Row) */}
-            <div className="mb-10 min-h-[100px] flex flex-col justify-end">
-                {step === 1 && (
-                    <div className="animate-in fade-in slide-in-from-left-4 duration-700">
-                        <div className="flex items-center gap-4 mb-3">
-                            <h2 className="text-4xl font-black font-outfit tracking-tighter text-[#1A1A1A] uppercase">
-                                Select Domain ({domains.length})
-                            </h2>
-                            <JourneyBadge text="Foundation Architecture" />
-                        </div>
-                        <p className="text-muted-foreground font-inter font-medium opacity-70">Choose your area of expertise to begin the assessment.</p>
+        <div className="max-w-[1400px] mx-auto min-h-[900px] relative px-4 sm:px-6 lg:px-8 pt-4 pb-12">
+            {/* Executive Dashboard Header (Stateless Baseline) */}
+            <div className="mb-12 border-b border-gray-100 pb-10">
+                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
+                    {/* Left: Global Context */}
+                    <div className="flex-1">
+                        <h1 className="text-5xl md:text-6xl font-black tracking-tighter font-outfit text-[#1A1A1A]">
+                            Launch Evaluation
+                        </h1>
+                        <p className="text-xs text-muted-foreground font-inter font-medium opacity-60 mt-1 uppercase tracking-[0.3em]">
+                            Strategic Ecosystem Configuration
+                        </p>
                     </div>
-                )}
 
-                {step === 2 && (
-                    <div className="animate-in fade-in slide-in-from-left-4 duration-700">
-                        <div className="flex items-center gap-4 mb-3">
-                            <h2 className="text-4xl font-black font-outfit tracking-tighter text-[#1A1A1A] uppercase">
-                                Refine Subjects ({subjects.length})
-                            </h2>
-                            <JourneyBadge text="Curriculum Calibration" />
-                        </div>
-                        <p className="text-muted-foreground font-inter font-medium opacity-70 text-sm">Select the core subjects for your assessment pool.</p>
+                    {/* Center: Heartbeat Progress */}
+                    <div className="flex justify-center flex-1">
+                        <DottedProgressBar currentStep={step} />
                     </div>
-                )}
 
-                {step === 3 && (
-                    <div className="animate-in fade-in slide-in-from-left-4 duration-700">
-                        <div className="flex items-center gap-4 mb-3">
-                            <h2 className="text-4xl font-black font-outfit tracking-tighter text-[#1A1A1A] uppercase">
-                                Select Topics ({topics.length})
+                    {/* Right: Step Orientation */}
+                    <div className="flex flex-col items-start lg:items-end text-left lg:text-right flex-1 min-w-[300px]">
+                        <div className="flex items-center gap-4 mb-2">
+                            <JourneyBadge text={currentMeta.badge} />
+                            <h2 className="text-3xl font-black font-outfit tracking-tight text-[#1A1A1A] uppercase">
+                                {currentMeta.title} ({currentMeta.count})
                             </h2>
-                            <JourneyBadge text="Knowledge Mapping" />
                         </div>
-                        <p className="text-muted-foreground font-inter font-medium opacity-70">High-density grid of strategic knowledge units.</p>
+                        <p className="text-sm text-muted-foreground font-inter font-medium opacity-70 max-w-sm leading-relaxed">
+                            {currentMeta.desc}
+                        </p>
                     </div>
-                )}
+                </div>
+            </div>
 
-                {step === 4 && (
-                    <div className="animate-in fade-in slide-in-from-left-4 duration-700">
-                        <div className="flex items-center gap-4 mb-3">
-                            <h2 className="text-4xl font-black font-outfit tracking-tighter text-[#1A1A1A] uppercase">
-                                Fine-tune Subtopics ({subtopics.length})
-                            </h2>
-                            <JourneyBadge text="Precision Tuning" />
-                        </div>
-                        <p className="text-muted-foreground font-inter font-medium opacity-70">Pinpoint specific skills for deeper evaluation.</p>
+            <div className="min-h-[32px] mb-6">
+                {selectionError && (
+                    <div className="flex items-center gap-2 text-[#FF2D55] animate-in slide-in-from-top-2 duration-300">
+                        <div className="h-1.5 w-1.5 rounded-full bg-[#FF2D55] animate-pulse" />
+                        <span className="text-[10px] font-black uppercase tracking-widest">{selectionError}</span>
                     </div>
                 )}
+            </div>
+
+            <div className="flex flex-col lg:flex-row gap-12 items-stretch">
 
                 <div className="min-h-[32px] mt-2">
                     {selectionError && (
@@ -362,10 +387,8 @@ export function QuizSelectionConsole() {
                                 onClick={handlePrevPage}
                                 disabled={page === 0 || loading}
                                 className={cn(
-                                    "p-4 rounded-xl transition-all active:scale-95 disabled:grayscale disabled:opacity-20",
-                                    page === 0
-                                        ? "bg-gray-100 text-gray-300 cursor-not-allowed"
-                                        : "bg-[#FF2D55] text-white shadow-[0_10px_30px_rgba(255,45,85,0.2)] hover:shadow-[0_15px_40px_rgba(255,45,85,0.45)]"
+                                    "p-4 rounded-xl transition-all active:scale-95 bg-[#FF2D55] text-white shadow-[0_10px_30px_rgba(255,45,85,0.2)] hover:shadow-[0_15px_40px_rgba(255,45,85,0.45)]",
+                                    (page === 0 || loading) && "opacity-20 pointer-events-none shadow-none"
                                 )}
                             >
                                 <ChevronLeft size={20} />
@@ -381,10 +404,8 @@ export function QuizSelectionConsole() {
                                 onClick={handleNextPage}
                                 disabled={page >= Math.ceil((step === 1 ? domains.length : (step === 3 ? topics.length : (step === 2 ? subjects.length : (step === 4 ? subtopics.length : 0)))) / currentPageSize) - 1 || loading}
                                 className={cn(
-                                    "p-4 rounded-xl transition-all active:scale-95 disabled:grayscale disabled:opacity-20",
-                                    page >= Math.ceil((step === 1 ? domains.length : (step === 3 ? topics.length : (step === 2 ? subjects.length : (step === 4 ? subtopics.length : 0)))) / currentPageSize) - 1
-                                        ? "bg-gray-100 text-gray-300 cursor-not-allowed"
-                                        : "bg-[#FF2D55] text-white shadow-[0_10px_30px_rgba(255,45,85,0.2)] hover:shadow-[0_15px_40px_rgba(255,45,85,0.45)]"
+                                    "p-4 rounded-xl transition-all active:scale-95 bg-[#FF2D55] text-white shadow-[0_10px_30px_rgba(255,45,85,0.2)] hover:shadow-[0_15px_40px_rgba(255,45,85,0.45)]",
+                                    (page >= Math.ceil((step === 1 ? domains.length : (step === 3 ? topics.length : (step === 2 ? subjects.length : (step === 4 ? subtopics.length : 0)))) / currentPageSize) - 1 || loading) && "opacity-20 pointer-events-none shadow-none"
                                 )}
                             >
                                 <ChevronRight size={20} />
@@ -435,6 +456,6 @@ export function QuizSelectionConsole() {
                     />
                 </div>
             </div>
-        </div>
+        </div >
     );
 }
