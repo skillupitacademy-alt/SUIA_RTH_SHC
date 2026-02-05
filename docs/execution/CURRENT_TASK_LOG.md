@@ -14,6 +14,9 @@
 - **HUD Symmetrization**: Synchronized selection and summary pane baselines for perfect horizontal baseline alignment.
 - **Database Maintenance**: Synchronized Neon production schema via `drizzle-kit push` (Batch 120).
 - **HUD 10/80/10 Split**: Implemented top/bottom fixed margins with an 80% matrix for vertical symmetry.
+- **HUD Aesthetic Refactor**: Inverted header (Title Left, Branding Right) and removed progress tracker.
+- **Global Opacity Lock**: Selection pane dims to 10% and disables interaction post-launch.
+- **Certification**: Full monorepo build and type-check passed (`Exit Code 0`).
 
 ## Next Steps
 - **INT-001**: Implement `ExamEngine.startExam` orchestration logic (Step B).

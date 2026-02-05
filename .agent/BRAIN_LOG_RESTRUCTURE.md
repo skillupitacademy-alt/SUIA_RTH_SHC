@@ -1037,3 +1037,10 @@ Reduce documentation fragmentation and improve discoverability by consolidating 
 - **HUD Symmetrization**: Implemented a **10/80/10** vertical split in the Left Pane (`pt-20`, `pb-53`) to achieve perfect horizontal top-alignment with the Assessment Summary.
 - **Air Cushion**: Enforced a 53px bottom buffer to protect the navigation buttons from grid overflow.
 - **Certification**: Verified system-wide integrity with successful `pnpm build` and `tsc --noEmit`.
+### Batch 121: Aesthetic HUD & Global State Lock
+- **Objective**: Finalize header hierarchy, remove progress complexity, and implement launch-state suspension.
+- **Header Refactor**: Inverted the header architecture. Moved "Step Orientation" (JourneyBadge/Title/Icon) to the **Left** and "Launch Evaluation" Branding to the **Right**.
+- **Progress Removal**: Completely removed `DottedProgressBar` to maximize horizontal scanability.
+- **Symmetry Restoration**: Returned vertical buffers to **53px (10/80/10)** following user feedback, aligning both Choice and Summary panes to the same `Y=53` baseline.
+- **Global Lock Logic**: Implemented `isLocked` state in `QuizSelectionConsole`. Once assessment initiates, the entire Selection Pane (Left) dims to **10% opacity** and disables all interactions via `pointer-events-none`.
+- **Verification**: Certified with `pnpm build ; npx tsc --noEmit` (Exit Code 0).
