@@ -17,7 +17,7 @@ const JourneyBadge = ({ text, mode, onModeChange }: { text: string; mode?: 'basi
                         key={m}
                         onClick={() => onModeChange(m)}
                         className={cn(
-                            "px-3 py-1 rounded-md text-[9px] font-black font-outfit uppercase tracking-tighter transition-all",
+                            "px-4 py-1.5 rounded-md text-[11px] font-black font-outfit uppercase tracking-tight transition-all",
                             mode === m
                                 ? "bg-[#FF2D55] text-white shadow-sm"
                                 : "text-gray-500 hover:text-gray-700"
@@ -29,7 +29,7 @@ const JourneyBadge = ({ text, mode, onModeChange }: { text: string; mode?: 'basi
             </div>
         )}
         <div className="inline-flex items-center px-4 py-1.5 rounded-full border-2 border-[#FF2D55]/20 bg-white shadow-sm animate-in zoom-in duration-500">
-            <span className="text-[10px] font-black font-outfit text-[#FF2D55] uppercase tracking-[0.2em]">{text}</span>
+            <span className="text-[12px] font-black font-outfit text-[#FF2D55] uppercase tracking-[0.2em]">{text}</span>
         </div>
     </div>
 );
@@ -336,21 +336,27 @@ export function QuizSelectionConsole() {
             {/* Executive Dashboard Header (Stateless Baseline) */}
             <div className="mb-1 border-b border-gray-300 pb-2">
                 <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-12 pt-2">
-                    {/* Left: Global Context */}
-                    <div className="flex-none min-w-fit">
-                        <h1 className="text-5xl md:text-6xl font-black tracking-tighter font-outfit text-[#1A1A1A]">
-                            Launch Evaluation
-                        </h1>
-                        <p className="text-xs text-muted-foreground font-inter font-medium opacity-60 mt-1 uppercase tracking-[0.3em]">
-                            Strategic Ecosystem Configuration
-                        </p>
+                    {/* Left: Global Context with Branding Placeholder */}
+                    <div className="flex items-center gap-6 min-w-fit">
+                        {/* New 2nd Image Component Position: FAR LEFT */}
+                        <div className="w-16 h-16 rounded-2xl bg-gray-100 border-2 border-dashed border-gray-300 flex items-center justify-center group hover:bg-gray-200 transition-colors">
+                            <Activity className="text-gray-400 group-hover:text-[#FF2D55] transition-colors" size={32} />
+                        </div>
+                        <div>
+                            <h1 className="text-5xl md:text-6xl font-black tracking-tighter font-outfit text-[#1A1A1A]">
+                                Launch Evaluation
+                            </h1>
+                            <p className="text-xs text-muted-foreground font-inter font-medium opacity-60 mt-1 uppercase tracking-[0.3em]">
+                                Strategic Ecosystem Configuration
+                            </p>
+                        </div>
                     </div>
 
                     {/* Center: Heartbeat Progress */}
                     <div className="flex justify-center flex-1">
                         <DottedProgressBar currentStep={step} mode={mode} />
                     </div>
-                    [diff_chunk_split]
+
                     {/* Right: Step Orientation */}
                     <div className="flex flex-col items-start lg:items-end text-left lg:text-right flex-none min-w-fit">
                         <div className="flex items-center gap-4 mb-2 whitespace-nowrap">
