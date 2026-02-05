@@ -44,10 +44,13 @@ export class SessionService {
 
     if (exam.status === 'completed') return exam;
 
-    const timeElapsed = (Date.now() - new Date(exam.startedAt).getTime()) / 60000;
-    const timeLimit = exam.blueprint?.timeLimit || 60; // Default 60 mins
+    const startTime = new Date(exam.startedAt).getTime();
+    const timeElapsedSeconds = Math.floor((Date.now() - startTime) / 1000);
+    
+    // Task D: Prioritize durationSeconds
+    const durationSeconds = exam.durationSeconds || (exam.blueprint?.timeLimit ? exam.blueprint.timeLimit * 60 : 3600);
 
-    if (timeElapsed > timeLimit) {
+    if (timeElapsedSeconds > durationSeconds) {
       // Auto-submit: Mark as processing and trigger scoring (non-blocking)
       await db.update(exams)
         .set({ status: 'processing' as any })
@@ -66,11 +69,13 @@ export class SessionService {
 
   /**
    * Resumes a session from the last unanswered question.
+   * Task A: Returns a sanitized "student-safe" payload.
    */
   static async resumePayload(examId: string, userId: string) {
-    await this.syncSession(examId, userId);
+    const exam = await this.syncSession(examId, userId);
     
-    const exam = await db.query.exams.findFirst({
+    // Fetch full state for internal calculations but sanitize before returning
+    const fullExam = await db.query.exams.findFirst({
       where: and(eq(exams.id, examId), eq(exams.userId, userId)),
       with: {
         examQuestions: {
@@ -80,6 +85,37 @@ export class SessionService {
       }
     });
 
-    return exam;
+    if (!fullExam) throw new Error('Exam state lost');
+
+    // Calculate progress
+    const answeredCount = fullExam.examQuestions.filter(q => q.userAnswer !== null).length;
+    
+    // Find first unanswered question
+    const currentEq = fullExam.examQuestions.find(q => q.userAnswer === null) || fullExam.examQuestions[fullExam.examQuestions.length - 1];
+
+    const startTime = new Date(fullExam.startedAt).getTime();
+    const timeElapsedSeconds = Math.floor((Date.now() - startTime) / 1000);
+    const durationSeconds = fullExam.durationSeconds || (exam.blueprint?.timeLimit ? exam.blueprint.timeLimit * 60 : 3600);
+
+    return {
+      examId: fullExam.id,
+      status: fullExam.status,
+      remainingTimeSeconds: Math.max(0, durationSeconds - timeElapsedSeconds),
+      progress: {
+        totalQuestions: fullExam.examQuestions.length,
+        answeredCount,
+      },
+      currentQuestion: currentEq ? {
+        id: currentEq.question.id,
+        questionText: currentEq.question.questionText,
+        options: currentEq.question.options,
+        codeSnippet: currentEq.question.codeSnippet,
+        type: currentEq.question.type,
+        difficulty: currentEq.question.difficulty,
+        topicId: currentEq.question.topicId,
+        subtopicId: currentEq.question.subtopicId,
+        order: currentEq.order
+      } : null
+    };
   }
 }

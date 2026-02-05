@@ -17,9 +17,10 @@ export async function GET(req: NextRequest) {
 
     const result = await ReportEngine.getExamReport(examId);
     
-    // Security Check: Ensure user owns the exam they are requesting results for
-    // ReportEngine doesn't seem to check owner in getExamReport, so we should check basic ownership
-    // in future iterations or check results here.
+    // Task B: Security Check: Ensure user owns the exam they are requesting results for
+    if (result.userId !== payload.userId) {
+      return NextResponse.json({ error: 'Forbidden: You do not own this exam session' }, { status: 403 });
+    }
     
     return NextResponse.json(result);
   } catch (error: any) {

@@ -1024,6 +1024,14 @@ Reduce documentation fragmentation and improve discoverability by consolidating 
 - **Resume Protocol**: Built-in resume logic that detects existing sessions via header and returns high-fidelity state without redundant pool sampling.
 - **API Hardening**: Standardized `/api/quiz/start` with the official technical contract.
 - **Verification**: Zero-fault build and type-safety cycle (Exit Code 0).
+
+### Batch 120: P0 Hardening & Virtual Blueprints
+- **Objective**: Harden the backend security posture and handle high-concurrency race conditions before frontend wiring.
+- **Sanitization**: `resumePayload` is now "student-safe"; zero leakage of correct answers in the state response.
+- **Security**: Strict ownership enforcement on results and session synchronization.
+- **Robustness**: Atomic race-condition handling in `startExam`; concurrent triggers for the same key now resolve to the same session gracefully.
+- **UX Fallback**: Support for domain-only starts via "Virtual Blueprints" (Option 2 choice).
+- **Verification**: Verified `Exit Code 0` on full monorepo build.
 ### Batch 119: Viewport Recovery & HUD Symmetrization
 - **Objective**: Fix vertical occlusion on small screens and achieve perfect pane symmetry.
 - **HUD Compression**: Compressed global body height from `h-600` to `h-530` to guarantee visibility on standard laptops (~620px total depth).

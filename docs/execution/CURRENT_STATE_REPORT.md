@@ -548,6 +548,14 @@
 - **Resume Capability**: Enabled automatic session resumption if the same `Idempotency-Key` is provided, returning the existing exam state and first question.
 - **API Hardening**: Fully updated `/api/quiz/start` to utilize the new engine and enforce idempotency through headers.
 - **Verification**: Verified platform-wide build and type-safety (Exit Code 0).
+
+### Phase 33: P0 Hardening & Virtual Blueprints (Batch 120)
+- **Sanitized State**: Refactored `SessionService.resumePayload` to return "student-safe" questions, preventing `correctAnswer` leakage.
+- **Ownership Enforcement**: Added strict ownership checks to `/api/quiz/result` route (Task B) and `syncSession` (Task A).
+- **Collision Resilience**: Wrapped `startExam` in race-condition handling logic; concurrent idempotent requests now re-query and return the same mission session instead of failing with 400.
+- **Timing Standardization**: Global transition to `durationSeconds` for all timer logic in `SessionService` and `ExamEngine`.
+- **Virtual Fallback**: Implemented "Option 2" for domain-only starts; `SelectionEngine` now generates a virtual blueprint on-the-fly if no assessment template exists for the target domain.
+- **Certification**: Full build and tsc cycle passed (`Exit Code 0`).
 ### Phase 32: Viewport Recovery & HUD Symmetrization (Batch 119)
 - **Viewport Lock**: Compressed the Launch Console to `h-530`, ensuring a ~620px total vertical footprint for zero-occlusion on 768p displays.
 - **Symmetry Engineering**: Synchronized Left and Right pane baselines to ensure action buttons (Back/Initiate) share a perfect horizontal alignment.

@@ -14,30 +14,120 @@ export class ExamEngine {
     idempotencyKey?: string,
     config?: any
   ) {
-    return await db.transaction(async (tx) => {
-      // 1. Idempotency Check
-      if (idempotencyKey) {
-        const existingKey = await tx.query.idempotencyKeys.findFirst({
+    try {
+      return await db.transaction(async (tx) => {
+        // 1. Idempotency Check
+        if (idempotencyKey) {
+          const existingKey = await tx.query.idempotencyKeys.findFirst({
+            where: and(
+              eq(idempotencyKeys.userId, userId),
+              eq(idempotencyKeys.key, idempotencyKey)
+            ),
+          });
+
+          if (existingKey) {
+            // Resume flow...
+            const exam = await tx.query.exams.findFirst({
+              where: eq(exams.id, existingKey.examId),
+              with: {
+                examQuestions: {
+                  with: {
+                    question: true
+                  },
+                  orderBy: (eqs, { asc }) => [asc(eqs.order)]
+                }
+              }
+            });
+
+            if (exam) {
+              return {
+                examId: exam.id,
+                status: exam.status,
+                totalQuestions: exam.examQuestions.length,
+                durationSeconds: exam.durationSeconds,
+                remainingSeconds: exam.durationSeconds ? 
+                  Math.max(0, exam.durationSeconds - Math.floor((Date.now() - exam.startedAt.getTime()) / 1000)) : 
+                  null,
+                firstQuestion: exam.examQuestions[0]?.question ? {
+                  id: exam.examQuestions[0].question.id,
+                  questionText: exam.examQuestions[0].question.questionText,
+                  options: exam.examQuestions[0].question.options,
+                  codeSnippet: exam.examQuestions[0].question.codeSnippet,
+                  type: exam.examQuestions[0].question.type,
+                  order: exam.examQuestions[0].order
+                } : null
+              };
+            }
+          }
+        }
+
+        // 2. Selection Phase
+        const { questions, blueprint } = await SelectionEngine.composeExam(userId, blueprintOrDomainId, config);
+
+        // 3. Persistence Phase
+        const [exam] = await tx.insert(exams).values({
+          userId,
+          blueprintId: blueprint.id,
+          status: 'started',
+          durationSeconds: blueprint.timeLimit ? blueprint.timeLimit * 60 : null,
+          totalScore: 0,
+        }).returning();
+
+        const examQuestionsData = questions.map((q, index) => ({
+          examId: exam.id,
+          questionId: q.id,
+          order: index + 1,
+        }));
+
+        await tx.insert(examQuestions).values(examQuestionsData);
+
+        // 4. Record Idempotency Key
+        if (idempotencyKey) {
+          await tx.insert(idempotencyKeys).values({
+            userId,
+            key: idempotencyKey,
+            examId: exam.id,
+          });
+        }
+
+        return {
+          examId: exam.id,
+          status: exam.status,
+          totalQuestions: questions.length,
+          durationSeconds: exam.durationSeconds,
+          remainingSeconds: exam.durationSeconds,
+          firstQuestion: {
+            id: questions[0].id,
+            questionText: questions[0].questionText,
+            options: questions[0].options,
+            codeSnippet: questions[0].codeSnippet,
+            type: questions[0].type,
+            order: 1
+          }
+        };
+      });
+    } catch (error: any) {
+      // Task C: Collision Handling (Postgres 23505 Unique Violation)
+      if (error.code === '23505' && error.message.includes('unq_user_key')) {
+        console.warn(`[ExamEngine] Idempotency race detected for user ${userId}. Re-fetching session.`);
+        // Re-run startExam without a transaction block at the entry (it will hit the "existingKey" check)
+        const existingKey = await db.query.idempotencyKeys.findFirst({
           where: and(
             eq(idempotencyKeys.userId, userId),
-            eq(idempotencyKeys.key, idempotencyKey)
+            eq(idempotencyKeys.key, idempotencyKey!)
           ),
         });
-
         if (existingKey) {
-          // Resume: Fetch existing exam state
-          const exam = await tx.query.exams.findFirst({
+           // Direct recovery
+           const exam = await db.query.exams.findFirst({
             where: eq(exams.id, existingKey.examId),
             with: {
               examQuestions: {
-                with: {
-                  question: true
-                },
+                with: { question: true },
                 orderBy: (eqs, { asc }) => [asc(eqs.order)]
               }
             }
           });
-
           if (exam) {
             return {
               examId: exam.id,
@@ -59,52 +149,8 @@ export class ExamEngine {
           }
         }
       }
-
-      // 2. Selection Phase (External call but inside transaction logic)
-      const { questions, blueprint } = await SelectionEngine.composeExam(userId, blueprintOrDomainId, config);
-
-      // 3. Persistence Phase
-      const [exam] = await tx.insert(exams).values({
-        userId,
-        blueprintId: blueprint.id,
-        status: 'started',
-        durationSeconds: blueprint.timeLimit ? blueprint.timeLimit * 60 : null,
-        totalScore: 0,
-      }).returning();
-
-      const examQuestionsData = questions.map((q, index) => ({
-        examId: exam.id,
-        questionId: q.id,
-        order: index + 1,
-      }));
-
-      await tx.insert(examQuestions).values(examQuestionsData);
-
-      // 4. Record Idempotency Key
-      if (idempotencyKey) {
-        await tx.insert(idempotencyKeys).values({
-          userId,
-          key: idempotencyKey,
-          examId: exam.id,
-        });
-      }
-
-      return {
-        examId: exam.id,
-        status: exam.status,
-        totalQuestions: questions.length,
-        durationSeconds: exam.durationSeconds,
-        remainingSeconds: exam.durationSeconds,
-        firstQuestion: {
-          id: questions[0].id,
-          questionText: questions[0].questionText,
-          options: questions[0].options,
-          codeSnippet: questions[0].codeSnippet,
-          type: questions[0].type,
-          order: 1
-        }
-      };
-    });
+      throw error;
+    }
   }
 
   /**
@@ -113,6 +159,7 @@ export class ExamEngine {
   static async submitAnswer(examId: string, questionId: string, answer: string, userId: string) {
     const exam = await db.query.exams.findFirst({
       where: eq(exams.id, examId),
+      with: { blueprint: true }
     });
 
     if (!exam || exam.status !== 'started') {
@@ -123,21 +170,18 @@ export class ExamEngine {
       throw new Error('Unauthorized: You do not own this exam session');
     }
 
-    // Timer Logic: Check if exam time has expired
-    if (exam.blueprintId) {
-        const blueprint = await db.query.examBlueprints.findFirst({
-            where: eq(examBlueprints.id, exam.blueprintId)
-        });
-        
-        if (blueprint && blueprint.timeLimit) {
-            const timeElapsed = (Date.now() - new Date(exam.startedAt).getTime()) / 1000 / 60; // in minutes
-            if (timeElapsed > blueprint.timeLimit) {
-                await db.update(exams)
-                    .set({ status: 'abandoned' })
-                    .where(eq(exams.id, examId));
-                throw new Error('Exam time limit exceeded. Session abandoned.');
-            }
-        }
+    // Task D: Timer Logic: Check if exam time has expired
+    const startTime = new Date(exam.startedAt).getTime();
+    const timeElapsedSeconds = Math.floor((Date.now() - startTime) / 1000);
+    
+    // Priority: snapshot durationSeconds > blueprint timeLimit > default 3600
+    const durationSeconds = exam.durationSeconds || (exam.blueprint?.timeLimit ? exam.blueprint.timeLimit * 60 : 3600);
+
+    if (timeElapsedSeconds > durationSeconds) {
+        await db.update(exams)
+            .set({ status: 'abandoned' })
+            .where(eq(exams.id, examId));
+        throw new Error('Exam time limit exceeded. Session abandoned.');
     }
 
     const eqRecord = await db.query.examQuestions.findFirst({

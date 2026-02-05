@@ -43,6 +43,7 @@ export class ReportEngine {
 
     return {
       id: exam.id,
+      userId: exam.userId,
       score: correctAnswers,
       total: totalQuestions,
       percentage: scorePercentage,

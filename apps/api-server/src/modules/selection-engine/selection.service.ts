@@ -53,7 +53,20 @@ export class SelectionEngine {
       }
     }
 
-    if (!blueprint) throw new Error('Blueprint not found');
+    if (!blueprint) {
+      // Decision 2: Option 2 - Virtual Blueprint Fallback
+      blueprint = {
+        id: null, // Virtual
+        name: 'Quick Assessment',
+        totalQuestions: config?.questionCount || 10,
+        timeLimit: 30, // Default 30 mins
+        difficultyDistribution: { simple: 30, intermediate: 30, expert: 40 },
+        subjects: config?.subjectIds || [],
+        topics: config?.topicIds || [],
+        subtopics: config?.subtopicIds || []
+      };
+      console.log(`[Selection] Initialized Virtual Blueprint for: ${blueprintOrDomainId}`);
+    }
 
     // 1.5 STATIC OVERRIDE: If blueprint has fixed questionIds, bypass dynamic selection
     if (blueprint.questionIds && blueprint.questionIds.length > 0) {

@@ -12,7 +12,13 @@ export async function POST(req: NextRequest) {
     const payload = await TokenService.verifyAccessToken(token, false);
     const body = await req.json();
 
-    const idempotencyKey = req.headers.get('idempotency-key') || undefined;
+    const idempotencyKey = req.headers.get('idempotency-key') || req.headers.get('Idempotency-Key');
+
+    if (!idempotencyKey) {
+      return NextResponse.json({ 
+        error: 'Missing Idempotency-Key header. This endpoint requires a unique key for reliable session orchestration.' 
+      }, { status: 400 });
+    }
 
     const { domainId, blueprintId, ...config } = body;
     
