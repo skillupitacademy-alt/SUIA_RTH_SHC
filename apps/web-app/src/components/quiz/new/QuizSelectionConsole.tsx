@@ -457,82 +457,70 @@ export function QuizSelectionConsole() {
 
                         {/* Step 5: Engine Calibration (Refactored Dark HUD) */}
                         {step === 5 && (
-                            <div className="animate-in fade-in duration-500 h-full flex flex-col pt-6 overflow-auto pr-2 custom-scrollbar">
-                                <div className="space-y-8">
+                            <div className="animate-in fade-in duration-500 h-full flex flex-col pt-2 overflow-auto pr-2 custom-scrollbar">
+                                <div className="space-y-3">
                                     {/* Section 1: Difficulty Tier */}
-                                    <div className="space-y-4">
-                                        <div className="flex items-center gap-2 mb-1">
-                                            <div className="h-4 w-1 bg-[#FF2D55] rounded-full" />
-                                            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-400">Difficulty Tier</p>
-                                        </div>
-                                        <div className="grid grid-cols-4 gap-6">
-                                            {[
-                                                { id: 'mixed', name: 'Mixed', desc: 'Mastery Blend' },
-                                                { id: 'beginner', name: 'Foundations', desc: 'Core Knowledge' },
-                                                { id: 'expert', name: 'Elite', desc: 'Expert Level' }
-                                            ].map((tier) => (
-                                                <button
-                                                    key={tier.id}
-                                                    disabled={isLocked}
-                                                    onClick={() => setDifficulty(tier.id)}
-                                                    className={cn(
-                                                        "p-6 rounded-[1.25rem] border-2 transition-all duration-300 group relative flex flex-col items-center justify-center min-h-[80px]",
-                                                        difficulty === tier.id
-                                                            ? "bg-[#FF2D55] border-[#FF2D55] shadow-[0_10px_30px_rgba(255,45,85,0.2)]"
-                                                            : "bg-[#2B2B2B] border-transparent hover:bg-[#3D3D3D]",
-                                                        isLocked && "opacity-50 pointer-events-none"
-                                                    )}
-                                                >
-                                                    <p className="text-base font-black font-outfit uppercase tracking-tight text-white">
-                                                        {tier.name}
-                                                    </p>
-                                                    <p className="text-[9px] font-bold uppercase tracking-wider opacity-60 mt-1 text-white">
-                                                        {tier.desc}
-                                                    </p>
-                                                </button>
-                                            ))}
-                                            <div className="invisible" /> {/* Spacer for col-4 */}
-                                        </div>
+                                    <div className="grid grid-cols-4 gap-6">
+                                        {[
+                                            { id: 'mixed', name: 'Mixed', desc: 'Mastery Blend' },
+                                            { id: 'beginner', name: 'Foundations', desc: 'Core Knowledge' },
+                                            { id: 'expert', name: 'Elite', desc: 'Expert Level' }
+                                        ].map((tier) => (
+                                            <button
+                                                key={tier.id}
+                                                disabled={isLocked}
+                                                onClick={() => setDifficulty(tier.id)}
+                                                className={cn(
+                                                    "p-4 rounded-[1.25rem] border-2 transition-all duration-300 group relative flex flex-col items-center justify-center min-h-[80px]",
+                                                    difficulty === tier.id
+                                                        ? "bg-[#FF2D55] border-[#FF2D55] shadow-[0_10px_30px_rgba(255,45,85,0.2)]"
+                                                        : "bg-[#2B2B2B] border-transparent hover:bg-[#3D3D3D]",
+                                                    isLocked && "opacity-50 pointer-events-none"
+                                                )}
+                                            >
+                                                <p className="text-base font-black font-outfit uppercase tracking-tight text-white">
+                                                    {tier.name}
+                                                </p>
+                                                <p className="text-[9px] font-bold uppercase tracking-wider opacity-60 mt-0.5 text-white">
+                                                    {tier.desc}
+                                                </p>
+                                            </button>
+                                        ))}
+                                        <div className="invisible" /> {/* Spacer for col-4 */}
                                     </div>
 
-                                    {/* Section 2: Total Density (Refactored Dark Grid) - Fixed mt-8 */}
-                                    <div className="space-y-4">
-                                        <div className="flex items-center gap-2 mb-1">
-                                            <div className="h-4 w-1 bg-[#FF2D55] rounded-full" />
-                                            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-400">Total Density</p>
-                                        </div>
-                                        <div className="grid grid-cols-4 gap-6">
-                                            {(mode === 'basic' ? [10, 15, 20, 25] : [5, 10, 15, 20, 25, 30, 40, 50]).map((v) => (
-                                                <button
-                                                    key={v}
-                                                    disabled={isLocked}
-                                                    onClick={() => setQuestionCount(v)}
-                                                    className={cn(
-                                                        "p-6 rounded-[1.25rem] border-2 transition-all duration-300 group relative flex flex-col items-center justify-center min-h-[80px]",
-                                                        questionCount === v
-                                                            ? "bg-[#FF2D55] border-[#FF2D55] shadow-[0_10px_30px_rgba(255,45,85,0.2)]"
-                                                            : "bg-[#2B2B2B] border-transparent hover:bg-[#3D3D3D]",
-                                                        isLocked && "opacity-50 pointer-events-none"
-                                                    )}
-                                                >
-                                                    <div className="text-xl font-black font-outfit text-white tracking-tighter">{v}</div>
-                                                    <div className="text-[9px] font-black uppercase tracking-widest text-white/40 group-hover:text-white/60 transition-colors">Questions</div>
-                                                </button>
-                                            ))}
-                                        </div>
+                                    {/* Section 2: Total Density */}
+                                    <div className="grid grid-cols-4 gap-6">
+                                        {(mode === 'basic' ? [10, 15, 20, 25] : [5, 10, 15, 20, 25, 30, 40, 50]).map((v) => (
+                                            <button
+                                                key={v}
+                                                disabled={isLocked}
+                                                onClick={() => setQuestionCount(v)}
+                                                className={cn(
+                                                    "p-4 rounded-[1.25rem] border-2 transition-all duration-300 group relative flex flex-col items-center justify-center min-h-[80px]",
+                                                    questionCount === v
+                                                        ? "bg-[#FF2D55] border-[#FF2D55] shadow-[0_10px_30px_rgba(255,45,85,0.2)]"
+                                                        : "bg-[#2B2B2B] border-transparent hover:bg-[#3D3D3D]",
+                                                    isLocked && "opacity-50 pointer-events-none"
+                                                )}
+                                            >
+                                                <div className="text-xl font-black font-outfit text-white tracking-tighter">{v}</div>
+                                                <div className="text-[9px] font-black uppercase tracking-widest text-white/40 group-hover:text-white/60 transition-colors">Questions</div>
+                                            </button>
+                                        ))}
                                     </div>
 
-                                    {/* Resulting Logic Display - Fixed mt-6 */}
-                                    <div className={cn("bg-gray-50/50 p-6 rounded-3xl border border-gray-300 mt-6 transition-all", isLocked && "opacity-50 grayscale")}>
+                                    {/* Resulting Logic Display */}
+                                    <div className={cn("bg-gray-50/50 p-4 rounded-3xl border border-gray-300 transition-all", isLocked && "opacity-50 grayscale")}>
                                         <div className="flex justify-between items-center">
                                             <div className="space-y-0.5">
-                                                <p className="text-3xl font-black font-outfit text-[#1A1A1A] tracking-tighter">~{Math.ceil(questionCount * 1.5)} MINS</p>
-                                                <p className="text-[10px] font-black uppercase tracking-widest text-[#FF2D55]">Calculated Duration</p>
+                                                <p className="text-2xl font-black font-outfit text-[#1A1A1A] tracking-tighter">~{Math.ceil(questionCount * 1.5)} MINS</p>
+                                                <p className="text-[9px] font-black uppercase tracking-widest text-[#FF2D55]">Calculated Duration</p>
                                             </div>
                                             <div className="h-8 w-[1px] bg-gray-300" />
                                             <div className="text-right">
-                                                <p className="text-3xl font-black font-outfit text-[#1A1A1A] tracking-tighter">{difficulty.toUpperCase()}</p>
-                                                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Mastery Profile</p>
+                                                <p className="text-2xl font-black font-outfit text-[#1A1A1A] tracking-tighter">{difficulty.toUpperCase()}</p>
+                                                <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Mastery Profile</p>
                                             </div>
                                         </div>
                                     </div>

@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, uuid, integer, jsonb, pgEnum, boolean, index } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, uuid, integer, jsonb, pgEnum, boolean, index, uniqueIndex } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { users } from "./auth";
 import { domains, subjects, topics } from "./domain";
@@ -34,6 +34,7 @@ export const exams = pgTable("exams", {
     .references(() => examBlueprints.id, { onDelete: "set null" }),
   status: examStatusEnum("status").notNull().default("started"),
   totalScore: integer("total_score"),
+  durationSeconds: integer("duration_seconds"), // Snapshotted from blueprint or provided at start
   startedAt: timestamp("started_at").notNull().defaultNow(),
   completedAt: timestamp("completed_at"),
 }, (t) => ({
@@ -53,6 +54,8 @@ export const examQuestions = pgTable("exam_questions", {
   responseMetadata: jsonb("response_metadata"), // e.g., time taken per question
   order: integer("order").notNull(),
 }, (t) => ({
+  unq_exam_question: uniqueIndex("unq_exam_question").on(t.examId, t.questionId),
+  unq_exam_order: uniqueIndex("unq_exam_order").on(t.examId, t.order),
   idx_exam_questions_exam_order: index("idx_exam_questions_exam_order").on(t.examId, t.order),
 }));
 
@@ -67,7 +70,7 @@ export const idempotencyKeys = pgTable("idempotency_keys", {
     .references(() => exams.id, { onDelete: "cascade" }),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 }, (t) => ({
-  unq_user_key: index("unq_user_key").on(t.userId, t.key), // Using index + unique constraint pattern
+  unq_user_key: uniqueIndex("unq_user_key").on(t.userId, t.key),
 }));
 
 export const resultsByDimension = pgTable("results_by_dimension", {
