@@ -1016,9 +1016,24 @@ Reduce documentation fragmentation and improve discoverability by consolidating 
 - **Reliability**: Added `duration_seconds` to the `exams` table to snapshot time limits at launch, securing the session against downstream blueprint drift.
 - **Standards**: Enforced the `@/` path alias standard across all modified files, eliminating relative import debt.
 - **Verification**: Confirmed system-wide stability with a perfect `Exit Code 0` on full monorepo build and `tsc --noEmit` check.
+
+### Batch 119: Transactional Core & Idempotent Start
+- **Objective**: Finalize the backend orchestration for assessment sessions, moving from selection logic to atomic, idempotent transactions.
+- **Engine Refactor**: Decoupled `SelectionEngine` from DB persistence to enable transaction wrapping.
+- **Master Orchestrator**: Implemented `ExamEngine.startExam` with full transaction support for `exams`, `exam_questions`, and `idempotency_keys`.
+- **Resume Protocol**: Built-in resume logic that detects existing sessions via header and returns high-fidelity state without redundant pool sampling.
+- **API Hardening**: Standardized `/api/quiz/start` with the official technical contract.
+- **Verification**: Zero-fault build and type-safety cycle (Exit Code 0).
 ### Batch 119: Viewport Recovery & HUD Symmetrization
 - **Objective**: Fix vertical occlusion on small screens and achieve perfect pane symmetry.
 - **HUD Compression**: Compressed global body height from `h-600` to `h-530` to guarantee visibility on standard laptops (~620px total depth).
 - **Symmetry Lock**: Synchronized both Selection and Summary panes to the same `h-530` baseline for a unified vertical eyeline across the footer action bar.
 - **Vertical Hygiene**: Removed redundant Difficulty/Density labels and tightened padding in Step 5 content and result cards.
 - **Certification**: Verified system-wide integrity with full build and type-check (Exit Code 0).
+
+### Batch 120: Database Alignment & HUD Symmetrization
+- **Objective**: Synchronize production schema and finalize vertical spatial symmetry.
+- **Database Alignment**: Executed `db:generate` and `drizzle-kit push` to resolve ENUM conflicts and align the Neon production database.
+- **HUD Symmetrization**: Implemented a **10/80/10** vertical split in the Left Pane (`pt-20`, `pb-53`) to achieve perfect horizontal top-alignment with the Assessment Summary.
+- **Air Cushion**: Enforced a 53px bottom buffer to protect the navigation buttons from grid overflow.
+- **Certification**: Verified system-wide integrity with successful `pnpm build` and `tsc --noEmit`.

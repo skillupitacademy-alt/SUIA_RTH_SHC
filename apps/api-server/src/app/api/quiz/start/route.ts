@@ -1,6 +1,6 @@
 ﻿import { NextRequest, NextResponse } from 'next/server';
-import { SelectionEngine } from '@/modules/selection-engine/selection.service';
 import { TokenService } from '@/modules/auth/token.service';
+import { ExamEngine } from '@/modules/exam-engine/exam.engine';
 
 export const dynamic = 'force-dynamic';
 
@@ -12,10 +12,25 @@ export async function POST(req: NextRequest) {
     const payload = await TokenService.verifyAccessToken(token, false);
     const body = await req.json();
 
-    // SelectionEngine.composeExam(userId, blueprintOrDomainId, config)
-    const { domainId, ...config } = body;
-    const exam = await SelectionEngine.composeExam(payload.userId, domainId, config);
-    return NextResponse.json(exam);
+    const idempotencyKey = req.headers.get('idempotency-key') || undefined;
+
+    const { domainId, blueprintId, ...config } = body;
+    
+    // Use blueprintId if provided, otherwise fallback to domainId
+    const targetId = blueprintId || domainId;
+
+    if (!targetId) {
+      return NextResponse.json({ error: 'blueprintId or domainId is required' }, { status: 400 });
+    }
+
+    const examData = await ExamEngine.startExam(
+      payload.userId, 
+      targetId, 
+      idempotencyKey, 
+      config
+    );
+
+    return NextResponse.json(examData);
   } catch (error: any) {
     console.error('[QUIZ_START] Error:', error.message);
     return NextResponse.json({ error: error.message }, { status: 400 });

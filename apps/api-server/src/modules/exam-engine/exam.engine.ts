@@ -1,9 +1,112 @@
-import { db, examQuestions, exams, examBlueprints } from '@quiz/db';
+import { db, examQuestions, exams, examBlueprints, idempotencyKeys } from '@quiz/db';
 import { eq, and } from 'drizzle-orm';
 import { ScoringEngine } from '../scoring-engine/scoring.engine';
 import { AnswerEvaluationEngine } from '../answer-engine/answer.engine';
+import { SelectionEngine } from '../selection-engine/selection.service';
 
 export class ExamEngine {
+  /**
+   * Starts a new exam session or resumes an existing one based on idempotency key.
+   */
+  static async startExam(
+    userId: string,
+    blueprintOrDomainId: string,
+    idempotencyKey?: string,
+    config?: any
+  ) {
+    return await db.transaction(async (tx) => {
+      // 1. Idempotency Check
+      if (idempotencyKey) {
+        const existingKey = await tx.query.idempotencyKeys.findFirst({
+          where: and(
+            eq(idempotencyKeys.userId, userId),
+            eq(idempotencyKeys.key, idempotencyKey)
+          ),
+        });
+
+        if (existingKey) {
+          // Resume: Fetch existing exam state
+          const exam = await tx.query.exams.findFirst({
+            where: eq(exams.id, existingKey.examId),
+            with: {
+              examQuestions: {
+                with: {
+                  question: true
+                },
+                orderBy: (eqs, { asc }) => [asc(eqs.order)]
+              }
+            }
+          });
+
+          if (exam) {
+            return {
+              examId: exam.id,
+              status: exam.status,
+              totalQuestions: exam.examQuestions.length,
+              durationSeconds: exam.durationSeconds,
+              remainingSeconds: exam.durationSeconds ? 
+                Math.max(0, exam.durationSeconds - Math.floor((Date.now() - exam.startedAt.getTime()) / 1000)) : 
+                null,
+              firstQuestion: exam.examQuestions[0]?.question ? {
+                id: exam.examQuestions[0].question.id,
+                questionText: exam.examQuestions[0].question.questionText,
+                options: exam.examQuestions[0].question.options,
+                codeSnippet: exam.examQuestions[0].question.codeSnippet,
+                type: exam.examQuestions[0].question.type,
+                order: exam.examQuestions[0].order
+              } : null
+            };
+          }
+        }
+      }
+
+      // 2. Selection Phase (External call but inside transaction logic)
+      const { questions, blueprint } = await SelectionEngine.composeExam(userId, blueprintOrDomainId, config);
+
+      // 3. Persistence Phase
+      const [exam] = await tx.insert(exams).values({
+        userId,
+        blueprintId: blueprint.id,
+        status: 'started',
+        durationSeconds: blueprint.timeLimit ? blueprint.timeLimit * 60 : null,
+        totalScore: 0,
+      }).returning();
+
+      const examQuestionsData = questions.map((q, index) => ({
+        examId: exam.id,
+        questionId: q.id,
+        order: index + 1,
+      }));
+
+      await tx.insert(examQuestions).values(examQuestionsData);
+
+      // 4. Record Idempotency Key
+      if (idempotencyKey) {
+        await tx.insert(idempotencyKeys).values({
+          userId,
+          key: idempotencyKey,
+          examId: exam.id,
+        });
+      }
+
+      return {
+        examId: exam.id,
+        status: exam.status,
+        totalQuestions: questions.length,
+        durationSeconds: exam.durationSeconds,
+        remainingSeconds: exam.durationSeconds,
+        firstQuestion: {
+          id: questions[0].id,
+          questionText: questions[0].questionText,
+          options: questions[0].options,
+          codeSnippet: questions[0].codeSnippet,
+          type: questions[0].type,
+          order: 1
+        }
+      };
+    });
+  }
+
   /**
    * Handles individual question submission within an exam.
    */

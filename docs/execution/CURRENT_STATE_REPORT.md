@@ -541,6 +541,13 @@
 - **Reliable Timekeeping**: Integrated `durationSeconds` into the `exams` table for immutable time limits at launch.
 - **Order Integrity**: Enforced `uniqueIndex(examId, order)` to prevent question sequence collisions.
 - **Technical Certification**: Verified codebase integrity with a successful root `pnpm build` and `tsc` cycle (Exit Code 0).
+
+### Phase 32: Transactional Core & Idempotent Start (Batch 119)
+- **Engine Refactor**: Decoupled `SelectionEngine` from persistence, allowing it to return raw question payloads to the transaction controller.
+- **Transactional Launch**: Implemented `ExamEngine.startExam` using a full DB transaction to handle idempotency key checking and multi-table insertion (exams + questions) atomically.
+- **Resume Capability**: Enabled automatic session resumption if the same `Idempotency-Key` is provided, returning the existing exam state and first question.
+- **API Hardening**: Fully updated `/api/quiz/start` to utilize the new engine and enforce idempotency through headers.
+- **Verification**: Verified platform-wide build and type-safety (Exit Code 0).
 ### Phase 32: Viewport Recovery & HUD Symmetrization (Batch 119)
 - **Viewport Lock**: Compressed the Launch Console to `h-530`, ensuring a ~620px total vertical footprint for zero-occlusion on 768p displays.
 - **Symmetry Engineering**: Synchronized Left and Right pane baselines to ensure action buttons (Back/Initiate) share a perfect horizontal alignment.
