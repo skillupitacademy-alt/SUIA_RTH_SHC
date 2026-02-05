@@ -79,10 +79,22 @@ export class SubjectService {
 
 export class TopicService {
   static async getTopicsBySubject(subjectId: string) {
-    return await db.query.topics.findMany({
+    const results = await db.query.topics.findMany({
       where: and(eq(topics.subjectId, subjectId), eq(topics.status, 'active')),
       orderBy: [topics.complexityLevel],
+      with: {
+        topicSkills: {
+          with: {
+            skill: true
+          }
+        }
+      }
     });
+
+    return results.map(topic => ({
+      ...topic,
+      skillName: topic.topicSkills?.[0]?.skill?.name
+    }));
   }
 
   static async getSubtopicsByTopic(topicId: string) {

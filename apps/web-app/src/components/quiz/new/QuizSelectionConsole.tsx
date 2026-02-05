@@ -1,51 +1,116 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { AssessmentSummary } from './AssessmentSummary';
 import { DomainCard } from './DomainCard';
 import { TopicChip } from './TopicChip';
-import { Code, Shield, Cloud, Database, Check } from 'lucide-react';
+import { Code, Shield, Cloud, Database, Check, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-
-const DOMAINS = Array.from({ length: 20 }).map((_, i) => ({
-    id: `domain-${i + 1}`,
-    name: ['Full Stack Dev', 'Cyber Security', 'Cloud Arch', 'Data Science', 'DevOps Ops', 'AI/ML Engine', 'Mobile Apps', 'Blockchain'][i % 8] + (i >= 8 ? ` ${Math.floor(i / 8) + 1}` : ''),
-    description: 'Strategic mastery of modern digital systems and architecture.',
-    coverage: 65 + (i * 2) % 35,
-    icon: [Code, Shield, Cloud, Database, Code, Shield, Cloud, Database][i % 8],
-    accent: ['blue', 'purple', 'green', 'orange'][i % 4]
-}));
-
-const SUBJECTS = [
-    { id: 's1', name: 'Software Engineering' },
-    { id: 's2', name: 'System Design' },
-    { id: 's3', name: 'Core Fundamentals' },
-    { id: 's4', name: 'Security Arch' },
-];
-
-const TOPICS = Array.from({ length: 24 }).map((_, i) => ({
-    id: `topic-${i + 1}`,
-    name: ['React Hooks', 'Redis Cache', 'SQL Joins', 'Auth Flow', 'K8s Pods', 'CI/CD Flow'][i % 6] + (i >= 6 ? ` ${Math.floor(i / 6) + 1}` : ''),
-    subjects: ['s1', 's2']
-}));
-
-const SUBTOPICS = Array.from({ length: 12 }).map((_, i) => ({
-    id: `sub-${i + 1}`,
-    name: `Module ${i + 1}: ${['Deep Dive', 'Efficiency', 'Hardening', 'Scaling'][i % 4]}`,
-    topics: [`topic-${(i % 24) + 1}`]
-}));
+import { apiClient } from '@quiz/api-client';
 
 export function QuizSelectionConsole() {
     const [step, setStep] = useState(1);
+    const [domains, setDomains] = useState<any[]>([]);
+    const [subjects, setSubjects] = useState<any[]>([]);
+    const [topics, setTopics] = useState<any[]>([]);
+    const [subtopics, setSubtopics] = useState<any[]>([]);
+
     const [selectedDomains, setSelectedDomains] = useState<string[]>([]);
     const [selectedSubjects, setSelectedSubjects] = useState<string[]>([]);
     const [selectedTopics, setSelectedTopics] = useState<string[]>([]);
     const [selectedSubtopics, setSelectedSubtopics] = useState<string[]>([]);
     const [loading, setLoading] = useState(false);
 
-    // Pagination State (Surgical Addition)
+    // Pagination State
     const [page, setPage] = useState(0);
     const PAGE_SIZE = 6;
+
+    // UI Meta helper (for icons and accents in Domain Cards)
+    const getDomainMeta = (index: number) => {
+        const icons = [Code, Shield, Cloud, Database];
+        const accents = ['blue', 'purple', 'green', 'orange'];
+        return {
+            icon: icons[index % icons.length],
+            accent: accents[index % accents.length]
+        };
+    };
+
+    // Initial Domains Fetch
+    useEffect(() => {
+        const fetchDomains = async () => {
+            setLoading(true);
+            try {
+                const data = await apiClient.quiz.getDomains();
+                setDomains(data || []);
+            } catch (err) {
+                console.error('Failed to fetch domains', err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchDomains();
+    }, []);
+
+    // Subject Fetch (Triggered by Domain Selection)
+    useEffect(() => {
+        if (selectedDomains.length > 0) {
+            const fetchSubjects = async () => {
+                setLoading(true);
+                try {
+                    const data = await apiClient.quiz.getSubjects(selectedDomains[0]);
+                    setSubjects(data || []);
+                } catch (err) {
+                    console.error('Failed to fetch subjects', err);
+                } finally {
+                    setLoading(false);
+                }
+            };
+            fetchSubjects();
+        } else {
+            setSubjects([]);
+        }
+    }, [selectedDomains]);
+
+    // Topic Fetch (Triggered by Subject Selection)
+    useEffect(() => {
+        if (selectedSubjects.length > 0) {
+            const fetchTopics = async () => {
+                setLoading(true);
+                try {
+                    // Fetch for the first selected subject (or could be multiple if logic permits)
+                    const data = await apiClient.quiz.getTopics(selectedSubjects[0]);
+                    setTopics(data || []);
+                } catch (err) {
+                    console.error('Failed to fetch topics', err);
+                } finally {
+                    setLoading(false);
+                }
+            };
+            fetchTopics();
+        } else {
+            setTopics([]);
+        }
+    }, [selectedSubjects]);
+
+    // Subtopic Fetch (Triggered by Topic Selection)
+    useEffect(() => {
+        if (selectedTopics.length > 0) {
+            const fetchSubtopics = async () => {
+                setLoading(true);
+                try {
+                    const data = await apiClient.quiz.getSubtopics(selectedTopics[0]);
+                    setSubtopics(data || []);
+                } catch (err) {
+                    console.error('Failed to fetch subtopics', err);
+                } finally {
+                    setLoading(false);
+                }
+            };
+            fetchSubtopics();
+        } else {
+            setSubtopics([]);
+        }
+    }, [selectedTopics]);
 
     const toggleDomain = (id: string) => {
         // Enforce Single Select per user instruction
@@ -58,7 +123,7 @@ export function QuizSelectionConsole() {
 
     const toggleSubject = (id: string) => {
         setSelectedSubjects(prev =>
-            prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+            prev.includes(id) ? prev.filter(x => x !== id) : [id] // Force single for now to match flow
         );
         setSelectedTopics([]);
         setSelectedSubtopics([]);
@@ -66,7 +131,7 @@ export function QuizSelectionConsole() {
 
     const toggleTopic = (id: string) => {
         setSelectedTopics(prev =>
-            prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+            prev.includes(id) ? prev.filter(x => x !== id) : [id]
         );
         setSelectedSubtopics([]);
     };
@@ -92,16 +157,19 @@ export function QuizSelectionConsole() {
     };
 
     const handleLoadMore = () => {
-        const totalItems = step === 1 ? DOMAINS.length : (step === 3 ? TOPICS.length : 0);
+        const totalItems = step === 1 ? domains.length : (step === 3 ? topics.length : 0);
         const totalPages = Math.ceil(totalItems / PAGE_SIZE);
         setPage((prev) => (prev + 1) % totalPages);
     };
 
     // Derived Data
-    const currentDomain = selectedDomains.length > 0 ? DOMAINS.find(d => d.id === selectedDomains[0]) : null;
-    const currentSubjects = SUBJECTS.filter(s => selectedSubjects.includes(s.id));
-    const currentTopics = TOPICS.filter(t => selectedTopics.includes(t.id));
-    const currentSubtopics = SUBTOPICS.filter(st => selectedSubtopics.includes(st.id));
+    const currentDomain = domains.find(d => d.id === selectedDomains[0]);
+    const currentSubjects = subjects.filter(s => selectedSubjects.includes(s.id));
+    const currentTopics = topics.filter(t => selectedTopics.includes(t.id));
+    const currentSubtopics = subtopics.filter(st => selectedSubtopics.includes(st.id));
+
+    const paginatedDomains = domains.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
+    const paginatedTopics = topics.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
 
     return (
         <div className="flex flex-col lg:flex-row gap-12 max-w-[1400px] mx-auto min-h-[750px] relative">
@@ -110,54 +178,64 @@ export function QuizSelectionConsole() {
 
                 {/* Header Section (Zero Layout Shift) */}
                 <div className="mb-12 min-h-[100px]">
-                    {step === 1 && (
-                        <div className="animate-in fade-in slide-in-from-left-4 duration-700">
-                            <h2 className="text-4xl font-black font-outfit tracking-tighter text-[#1A1A1A] mb-2 uppercase">
-                                Select Domain ({DOMAINS.length})
-                            </h2>
-                            <p className="text-muted-foreground font-inter font-medium opacity-70">Choose your area of expertise to begin the assessment.</p>
+                    {loading && domains.length === 0 ? (
+                        <div className="flex items-center gap-3 text-[#FF2D55] animate-pulse">
+                            <Loader2 className="animate-spin" size={24} />
+                            <span className="font-outfit font-bold uppercase tracking-widest text-lg">Syncing with Intelligence Hub...</span>
                         </div>
-                    )}
+                    ) : (
+                        <>
+                            {step === 1 && (
+                                <div className="animate-in fade-in slide-in-from-left-4 duration-700">
+                                    <h2 className="text-4xl font-black font-outfit tracking-tighter text-[#1A1A1A] mb-2 uppercase">
+                                        Select Domain ({domains.length})
+                                    </h2>
+                                    <p className="text-muted-foreground font-inter font-medium opacity-70">Choose your area of expertise to begin the assessment.</p>
+                                </div>
+                            )}
 
-                    {step === 2 && (
-                        <div className="animate-in fade-in slide-in-from-left-4 duration-700">
-                            <h2 className="text-4xl font-black font-outfit tracking-tighter text-[#1A1A1A] mb-2 uppercase">
-                                Refine Subjects ({SUBJECTS.length})
-                            </h2>
-                            <p className="text-muted-foreground font-inter font-medium opacity-70 text-sm">Select the core subjects for your assessment pool.</p>
-                        </div>
-                    )}
+                            {step === 2 && (
+                                <div className="animate-in fade-in slide-in-from-left-4 duration-700">
+                                    <h2 className="text-4xl font-black font-outfit tracking-tighter text-[#1A1A1A] mb-2 uppercase">
+                                        Refine Subjects ({subjects.length})
+                                    </h2>
+                                    <p className="text-muted-foreground font-inter font-medium opacity-70 text-sm">Select the core subjects for your assessment pool.</p>
+                                </div>
+                            )}
 
-                    {step === 3 && (
-                        <div className="animate-in fade-in slide-in-from-left-4 duration-700">
-                            <h2 className="text-4xl font-black font-outfit tracking-tighter text-[#1A1A1A] mb-2 uppercase">
-                                Select Topics ({TOPICS.length})
-                            </h2>
-                            <p className="text-muted-foreground font-inter font-medium opacity-70">High-density grid of strategic knowledge units.</p>
-                        </div>
-                    )}
+                            {step === 3 && (
+                                <div className="animate-in fade-in slide-in-from-left-4 duration-700">
+                                    <h2 className="text-4xl font-black font-outfit tracking-tighter text-[#1A1A1A] mb-2 uppercase">
+                                        Select Topics ({topics.length})
+                                    </h2>
+                                    <p className="text-muted-foreground font-inter font-medium opacity-70">High-density grid of strategic knowledge units.</p>
+                                </div>
+                            )}
 
-                    {step === 4 && (
-                        <div className="animate-in fade-in slide-in-from-left-4 duration-700">
-                            <h2 className="text-4xl font-black font-outfit tracking-tighter text-[#1A1A1A] mb-2 uppercase">
-                                Fine-tune Subtopics ({SUBTOPICS.length})
-                            </h2>
-                            <p className="text-muted-foreground font-inter font-medium opacity-70">Pinpoint specific skills for deeper evaluation.</p>
-                        </div>
+                            {step === 4 && (
+                                <div className="animate-in fade-in slide-in-from-left-4 duration-700">
+                                    <h2 className="text-4xl font-black font-outfit tracking-tighter text-[#1A1A1A] mb-2 uppercase">
+                                        Fine-tune Subtopics ({subtopics.length})
+                                    </h2>
+                                    <p className="text-muted-foreground font-inter font-medium opacity-70">Pinpoint specific skills for deeper evaluation.</p>
+                                </div>
+                            )}
+                        </>
                     )}
                 </div>
 
-                {/* Content Area (Stationary Grid via Slicing) */}
-                <div className="flex-1 overflow-visible">
+                {/* Content Area (Stationary Grid via Slicing) - LOCKED HEIGHT 550px */}
+                <div className="h-[550px] overflow-visible">
                     {step === 1 && (
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 animate-in fade-in duration-500">
-                            {DOMAINS.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE).map((domain) => (
+                            {paginatedDomains.map((domain, idx) => (
                                 <DomainCard
                                     key={domain.id}
                                     {...domain}
+                                    {...getDomainMeta(idx + page * PAGE_SIZE)}
                                     isSelected={selectedDomains.includes(domain.id)}
                                     onSelect={toggleDomain}
-                                    accentColor={domain.accent}
+                                    accentColor={getDomainMeta(idx + page * PAGE_SIZE).accent}
                                 />
                             ))}
                         </div>
@@ -165,12 +243,10 @@ export function QuizSelectionConsole() {
 
                     {step === 2 && (
                         <div className="flex flex-wrap gap-4 animate-in fade-in duration-500">
-                            {SUBJECTS.map((sub) => (
+                            {subjects.map((sub) => (
                                 <TopicChip
                                     key={sub.id}
                                     {...sub}
-                                    selectedCount={selectedSubjects.includes(sub.id) ? 1 : 0}
-                                    totalCount={1}
                                     isSelected={selectedSubjects.includes(sub.id)}
                                     onToggle={toggleSubject}
                                 />
@@ -180,12 +256,10 @@ export function QuizSelectionConsole() {
 
                     {step === 3 && (
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 animate-in fade-in duration-500">
-                            {TOPICS.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE).map((topic) => (
+                            {paginatedTopics.map((topic) => (
                                 <TopicChip
                                     key={topic.id}
                                     {...topic}
-                                    selectedCount={selectedTopics.includes(topic.id) ? 5 : 0}
-                                    totalCount={10}
                                     isSelected={selectedTopics.includes(topic.id)}
                                     onToggle={toggleTopic}
                                 />
@@ -195,12 +269,10 @@ export function QuizSelectionConsole() {
 
                     {step === 4 && (
                         <div className="flex flex-wrap gap-4 animate-in fade-in duration-500">
-                            {SUBTOPICS.map((subtopic) => (
+                            {subtopics.map((subtopic) => (
                                 <TopicChip
                                     key={subtopic.id}
                                     {...subtopic}
-                                    selectedCount={selectedSubtopics.includes(subtopic.id) ? 1 : 0}
-                                    totalCount={1}
                                     isSelected={selectedSubtopics.includes(subtopic.id)}
                                     onToggle={toggleSubtopic}
                                 />
@@ -215,17 +287,19 @@ export function QuizSelectionConsole() {
                         onClick={handleBack}
                         disabled={step === 1}
                         className={cn(
-                            "px-8 py-3 rounded-xl font-bold font-outfit text-sm uppercase tracking-widest transition-all",
-                            step === 1 ? "opacity-20 cursor-not-allowed" : "text-[#FF2D55] hover:underline"
+                            "px-12 py-4 rounded-xl font-bold font-outfit text-sm uppercase tracking-widest transition-all",
+                            step === 1
+                                ? "bg-gray-100 text-gray-300 cursor-not-allowed"
+                                : "bg-[#FF2D55] text-white shadow-[0_10px_30px_rgba(255,45,85,0.2)] hover:shadow-[0_15px_40px_rgba(255,45,85,0.45)] active:scale-95"
                         )}
                     >
-                        [ BACK ]
+                        BACK
                     </button>
 
                     {(step === 1 || step === 3) && (
                         <button
                             onClick={handleLoadMore}
-                            className="px-8 py-3 rounded-xl bg-gray-50 text-gray-500 font-bold font-outfit text-sm uppercase tracking-widest hover:bg-gray-100 transition-all border border-gray-200"
+                            className="px-12 py-4 rounded-xl bg-[#FF2D55] text-white font-bold font-outfit text-sm uppercase tracking-widest shadow-[0_10px_30px_rgba(255,45,85,0.2)] hover:shadow-[0_15px_40px_rgba(255,45,85,0.45)] active:scale-95 transition-all"
                         >
                             LOAD MORE
                         </button>
@@ -245,7 +319,7 @@ export function QuizSelectionConsole() {
                                 (step === 2 && selectedSubjects.length > 0) ||
                                 (step === 3 && selectedTopics.length > 0) ||
                                 (step === 4 && selectedSubtopics.length > 0))
-                                ? "bg-[#FF2D55] text-white shadow-[0_10px_30px_rgba(255,45,85,0.2)] hover:shadow-[0_15px_40px_rgba(255,45,85,0.4)] active:scale-95"
+                                ? "bg-[#FF2D55] text-white shadow-[0_10px_30px_rgba(255,45,85,0.2)] hover:shadow-[0_15px_40_rgba(255,45,85,0.45)] active:scale-95"
                                 : "bg-gray-100 text-gray-300 cursor-not-allowed"
                         )}
                     >
@@ -254,25 +328,27 @@ export function QuizSelectionConsole() {
                 </div>
             </div>
 
-            {/* Right Pane (35%) - Dynamic Summary */}
-            <div className="w-full lg:w-[35%] flex flex-col">
-                <AssessmentSummary
-                    domainName={currentDomain?.name || 'Not Selected'}
-                    subjectsCount={selectedSubjects.length}
-                    topicsCount={selectedTopics.length}
-                    questionCount={20 + selectedTopics.length * 5 + selectedSubtopics.length * 2}
-                    difficulty="Intermediate"
-                    totalPoints={100 + selectedTopics.length * 15 + selectedSubtopics.length * 5}
-                    isReady={step === 4 && selectedSubtopics.length > 0}
-                    onStart={() => {
-                        setLoading(true);
-                        setTimeout(() => setLoading(false), 2000);
-                    }}
-                    loading={loading}
-                    selectedSubjects={currentSubjects.map(s => s.name)}
-                    selectedTopics={currentTopics.map(t => t.name)}
-                    selectedSubtopics={currentSubtopics.map(st => st.name)}
-                />
+            {/* Right Pane (35%) - Dynamic Summary aligned with Grid */}
+            <div className="w-full lg:w-[35%] flex flex-col pt-[148px]">
+                <div className="h-[550px] relative">
+                    <AssessmentSummary
+                        domainName={currentDomain?.name || 'Not Selected'}
+                        subjectsCount={selectedSubjects.length}
+                        topicsCount={selectedTopics.length}
+                        questionCount={20 + selectedTopics.length * 5 + selectedSubtopics.length * 2}
+                        difficulty="Intermediate"
+                        totalPoints={100 + selectedTopics.length * 15 + selectedSubtopics.length * 5}
+                        isReady={step === 4 && selectedSubtopics.length > 0}
+                        onStart={() => {
+                            setLoading(true);
+                            setTimeout(() => setLoading(false), 2000);
+                        }}
+                        loading={loading}
+                        selectedSubjects={currentSubjects.map(s => s.name)}
+                        selectedTopics={currentTopics.map(t => t.name)}
+                        selectedSubtopics={currentSubtopics.map(st => st.name)}
+                    />
+                </div>
             </div>
         </div>
     );

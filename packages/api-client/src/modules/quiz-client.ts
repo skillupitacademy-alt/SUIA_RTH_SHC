@@ -15,6 +15,19 @@ export class QuizClient {
     return this.client.get<any>(`/domains?id=${domainId}`);
   }
 
+  async getSubjects(domainId: string) {
+    return this.client.get<any[]>(`/subjects?domainId=${domainId}`);
+  }
+
+  async getTopics(subjectId: string) {
+    return this.client.get<any[]>(`/topics?subjectId=${subjectId}`);
+  }
+
+  async getSubtopics(topicId: string) {
+    // Note: Assuming there is a public subtopics endpoint or it's handled via topics
+    return this.client.get<any[]>(`/subtopics?topicId=${topicId}`);
+  }
+
   async getQuestionCount(filters: {
     domainId: string;
     subjects?: string[];

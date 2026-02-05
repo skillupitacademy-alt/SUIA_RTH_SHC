@@ -7,6 +7,7 @@ interface DomainCardProps {
     id: string;
     name: string;
     description: string;
+    category: string;
     icon: any; // Lucide icon
     coverage: number;
     isSelected: boolean;
@@ -18,6 +19,7 @@ export function DomainCard({
     id,
     name,
     description,
+    category,
     icon: Icon,
     coverage,
     isSelected,
@@ -59,11 +61,16 @@ export function DomainCard({
                     <Icon size={24} strokeWidth={2.5} />
                 </div>
 
-                {isSelected && (
-                    <div className="bg-[#FF2D55] text-white p-1 rounded-md animate-in zoom-in duration-300">
-                        <Check size={14} strokeWidth={3} />
-                    </div>
-                )}
+                <div className="flex flex-col items-end gap-2">
+                    {isSelected && (
+                        <div className="bg-[#FF2D55] text-white p-1 rounded-md animate-in zoom-in duration-300">
+                            <Check size={14} strokeWidth={3} />
+                        </div>
+                    )}
+                    <span className="text-[10px] font-bold px-2 py-1 rounded-lg bg-gray-100 text-gray-500 uppercase tracking-tighter">
+                        {category}
+                    </span>
+                </div>
             </div>
 
             {/* Content */}
