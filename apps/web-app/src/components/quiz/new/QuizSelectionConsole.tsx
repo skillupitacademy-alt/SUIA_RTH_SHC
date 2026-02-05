@@ -289,19 +289,6 @@ export function QuizSelectionConsole() {
                     </div>
                 )}
             </div>
-
-            <div className="flex flex-col lg:flex-row gap-12 items-stretch">
-
-                <div className="min-h-[32px] mt-2">
-                    {selectionError && (
-                        <div className="flex items-center gap-2 text-[#FF2D55] animate-in slide-in-from-top-2 duration-300">
-                            <div className="h-1.5 w-1.5 rounded-full bg-[#FF2D55] animate-pulse" />
-                            <span className="text-[10px] font-black uppercase tracking-widest">{selectionError}</span>
-                        </div>
-                    )}
-                </div>
-            </div>
-
             <div className="flex flex-col lg:flex-row gap-12 items-stretch">
                 {/* Left Pane (65%) - Locked Height Console */}
                 <div className="w-full lg:w-[65%] flex flex-col relative h-[700px]">
