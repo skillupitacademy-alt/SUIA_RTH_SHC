@@ -16,15 +16,15 @@ const JourneyBadge = ({ text }: { text: string }) => (
 
 const DottedProgressBar = ({ currentStep }: { currentStep: number }) => (
     <div className="flex items-center gap-4">
-        {[1, 2, 3, 4].map((s) => (
+        {[1, 2, 3, 4, 5].map((s) => (
             <div key={s} className="flex items-center">
                 <div className={cn(
                     "w-3 h-3 rounded-full border-2 transition-all duration-500",
                     s < currentStep ? "bg-[#FF2D55] border-[#FF2D55]" :
                         s === currentStep ? "bg-white border-[#FF2D55] shadow-[0_0_15px_rgba(255,45,85,0.4)] scale-125" :
-                            "bg-transparent border-gray-200"
+                            "bg-transparent border-gray-300"
                 )} />
-                {s < 4 && (
+                {s < 5 && (
                     <div className={cn(
                         "w-12 h-[2px] mx-1 transition-all duration-500",
                         s < currentStep ? "bg-[#FF2D55]" : "bg-gray-100"
@@ -48,6 +48,10 @@ export function QuizSelectionConsole() {
     const [selectedSubtopics, setSelectedSubtopics] = useState<string[]>([]);
     const [loading, setLoading] = useState(false);
     const [selectionError, setSelectionError] = useState<string | null>(null);
+
+    // Engine Calibration State (Step 5)
+    const [difficulty, setDifficulty] = useState('mixed');
+    const [questionCount, setQuestionCount] = useState(20);
 
     // Pagination State
     const [page, setPage] = useState(0);
@@ -200,10 +204,14 @@ export function QuizSelectionConsole() {
     };
 
     const handleNext = () => {
-        if (step < 4) {
+        if (step < 5) {
             setStep(step + 1);
             setPage(0); // Reset page on step change
             setSelectionError(null);
+        } else {
+            // Initiate final launch logic
+            setLoading(true);
+            setTimeout(() => setLoading(false), 2000);
         }
     };
 
@@ -241,7 +249,8 @@ export function QuizSelectionConsole() {
         1: { title: "Select Domain", badge: "Foundation Architecture", desc: "Choose your area of expertise to begin the assessment.", count: domains.length },
         2: { title: "Refine Subjects", badge: "Curriculum Calibration", desc: "Select the core subjects for your assessment pool.", count: subjects.length },
         3: { title: "Select Topics", badge: "Knowledge Mapping", desc: "High-density grid of strategic knowledge units.", count: topics.length },
-        4: { title: "Fine-tune Subtopics", badge: "Precision Tuning", desc: "Pinpoint specific skills for deeper evaluation.", count: subtopics.length }
+        4: { title: "Fine-tune Subtopics", badge: "Expert Precision", desc: "Pinpoint specific skills for deeper evaluation.", count: subtopics.length },
+        5: { title: "Calibrate Engine", badge: "Engine Mastery", desc: "Finalize your assessment session by tuning the difficulty tier and question volume.", count: 1 }
     };
 
     const currentMeta = journeyInfo[step as keyof typeof journeyInfo];
@@ -280,6 +289,8 @@ export function QuizSelectionConsole() {
                     </div>
                 </div>
             </div>
+
+            <div className="h-[1px] bg-gray-100/80 w-full mb-8" />
 
             <div className="min-h-[32px] mb-4">
                 {selectionError && (
@@ -352,10 +363,85 @@ export function QuizSelectionConsole() {
                                 ))}
                             </div>
                         )}
+
+                        {step === 5 && (
+                            <div className="max-w-2xl animate-in fade-in zoom-in duration-500 h-full flex flex-col pt-8">
+                                <div className="space-y-10">
+                                    <div className="space-y-6">
+                                        <div className="flex items-center gap-3 mb-6">
+                                            <div className="h-6 w-1 bg-[#FF2D55] rounded-full" />
+                                            <p className="text-xs font-black uppercase tracking-[0.3em] text-gray-400">Difficulty Tier</p>
+                                        </div>
+                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                            {[
+                                                { id: 'mixed', name: 'Mixed', desc: 'Enterprise Mastery Blend (30/30/40)' },
+                                                { id: 'beginner', name: 'Foundations', desc: 'Core Knowledge Focus (100% Simple)' },
+                                                { id: 'expert', name: 'Elite', desc: 'Expert Level Verification (100% Expert)' }
+                                            ].map((tier) => (
+                                                <button
+                                                    key={tier.id}
+                                                    onClick={() => setDifficulty(tier.id)}
+                                                    className={cn(
+                                                        "p-6 rounded-2xl border-2 text-left transition-all duration-300 group relative",
+                                                        difficulty === tier.id
+                                                            ? "border-[#FF2D55] bg-[#FF2D55]/[0.02] shadow-[0_10px_30px_rgba(255,45,85,0.1)]"
+                                                            : "border-gray-100 hover:border-gray-200 bg-white"
+                                                    )}
+                                                >
+                                                    <div className={cn(
+                                                        "h-2 w-2 rounded-full absolute top-4 right-4 transition-all",
+                                                        difficulty === tier.id ? "bg-[#FF2D55] scale-100" : "bg-gray-100 scale-0"
+                                                    )} />
+                                                    <p className={cn("font-black font-outfit uppercase tracking-tight mb-2", difficulty === tier.id ? "text-[#FF2D55]" : "text-[#1A1A1A]")}>
+                                                        {tier.name}
+                                                    </p>
+                                                    <p className="text-[10px] font-medium text-muted-foreground leading-tight uppercase opacity-60">
+                                                        {tier.desc}
+                                                    </p>
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-6">
+                                        <div className="flex items-center gap-3 mb-6">
+                                            <div className="h-6 w-1 bg-[#FF2D55] rounded-full" />
+                                            <p className="text-xs font-black uppercase tracking-[0.3em] text-gray-400">Total Density</p>
+                                        </div>
+                                        <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm relative overflow-hidden group">
+                                            <div className="flex justify-between items-end mb-8">
+                                                <div className="space-y-1">
+                                                    <p className="text-4xl font-black font-outfit text-[#1A1A1A]">{questionCount}</p>
+                                                    <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Session Questions</p>
+                                                </div>
+                                                <div className="text-right">
+                                                    <p className="text-lg font-black font-outfit text-[#FF2D55]">~{Math.ceil(questionCount * 1.5)} MIN</p>
+                                                    <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Estimated Duration</p>
+                                                </div>
+                                            </div>
+                                            <input
+                                                type="range"
+                                                min="5"
+                                                max="50"
+                                                step="5"
+                                                value={questionCount}
+                                                onChange={(e) => setQuestionCount(parseInt(e.target.value))}
+                                                className="w-full h-2 bg-gray-100 rounded-lg appearance-none cursor-pointer accent-[#FF2D55] hover:bg-gray-200 transition-all"
+                                            />
+                                            <div className="flex justify-between mt-4">
+                                                <span className="text-[10px] font-black text-gray-300">5 QNS</span>
+                                                <span className="text-[10px] font-black text-gray-300">50 QNS</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
 
-                    {/* Fixed Action Footer (Absolute Anchored) */}
-                    <div className="mt-auto py-8 flex items-center justify-between border-t border-gray-100 bg-white/50 backdrop-blur-sm z-20">
+                    {/* Fixed Action Footer (Absolute Anchored) with Hairline */}
+                    <div className="h-[1px] bg-gray-100/50 w-full mt-auto" />
+                    <div className="py-8 flex items-center justify-between border-gray-100 bg-white/50 backdrop-blur-sm z-20">
                         <button
                             onClick={handleBack}
                             disabled={step === 1}
@@ -407,13 +493,13 @@ export function QuizSelectionConsole() {
                             }
                             className={cn(
                                 "px-12 py-4 rounded-xl font-bold font-outfit uppercase tracking-widest transition-all bg-[#FF2D55] text-white shadow-[0_10px_30px_rgba(255,45,85,0.2)] hover:shadow-[0_15px_40_rgba(255,45,85,0.45)] active:scale-95",
-                                ((step === 1 && selectedDomains.length === 0) ||
+                                (step < 5 && ((step === 1 && selectedDomains.length === 0) ||
                                     (step === 2 && selectedSubjects.length === 0) ||
                                     (step === 3 && selectedTopics.length === 0) ||
-                                    (step === 4 && selectedSubtopics.length === 0)) && "opacity-20 pointer-events-none shadow-none"
+                                    (step === 4 && selectedSubtopics.length === 0))) && "opacity-20 pointer-events-none shadow-none"
                             )}
                         >
-                            {step === 4 ? "FINALIZE →" : "CONTINUE →"}
+                            {step === 5 ? "INITIATE ASSESSMENT 🚀" : (step === 4 ? "CALIBRATE ENGINE →" : "CONTINUE →")}
                         </button>
                     </div>
                 </div>
@@ -424,10 +510,10 @@ export function QuizSelectionConsole() {
                         domainName={currentDomain?.name || 'Not Selected'}
                         subjectsCount={selectedSubjects.length}
                         topicsCount={selectedTopics.length}
-                        questionCount={20 + selectedTopics.length * 5 + selectedSubtopics.length * 2}
-                        difficulty="Intermediate"
+                        questionCount={questionCount}
+                        difficulty={difficulty.charAt(0).toUpperCase() + difficulty.slice(1)}
                         totalPoints={100 + selectedTopics.length * 15 + selectedSubtopics.length * 5}
-                        isReady={step === 4 && selectedSubtopics.length > 0}
+                        isReady={step === 5}
                         onStart={() => {
                             setLoading(true);
                             setTimeout(() => setLoading(false), 2000);

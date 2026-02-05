@@ -54,6 +54,8 @@ export function AssessmentSummary({
                             </span>
                         </div>
 
+                        <div className="h-[1px] bg-gray-100/50 w-full ml-5" />
+
                         <div className="flex flex-col gap-2">
                             <div className="flex items-center gap-2 text-muted-foreground">
                                 <Tag size={13} className="text-[#FF2D55]" />
@@ -69,6 +71,8 @@ export function AssessmentSummary({
                                 )}
                             </div>
                         </div>
+
+                        <div className="h-[1px] bg-gray-100/50 w-full ml-5" />
 
                         <div className="flex flex-col gap-2">
                             <div className="flex items-center gap-2 text-muted-foreground">
@@ -86,6 +90,8 @@ export function AssessmentSummary({
                             </div>
                         </div>
 
+                        <div className="h-[1px] bg-gray-100/50 w-full ml-5" />
+
                         <div className="flex flex-col gap-2">
                             <div className="flex items-center gap-2 text-muted-foreground">
                                 <Clock size={13} className="text-[#FF2D55]" />
@@ -102,27 +108,31 @@ export function AssessmentSummary({
                             </div>
                         </div>
 
-                        <div className="h-px bg-gradient-to-r from-transparent via-gray-100 to-transparent w-full my-2" />
+                        <div className="h-[1px] bg-gray-100/80 w-full my-4" />
 
-                        <div className="grid grid-cols-2 gap-6">
+                        <div className="grid grid-cols-2 gap-6 bg-gray-50/50 p-4 rounded-xl border border-gray-100/50">
                             <div className="space-y-0.5">
                                 <p className="text-[8px] font-black text-gray-400 uppercase tracking-[0.2em]">Est. Time</p>
                                 <p className="text-base font-black font-outfit text-[#1A1A1A]">{Math.ceil(questionCount * 1.5)} MIN</p>
                             </div>
                             <div className="space-y-0.5">
-                                <p className="text-[8px] font-black text-gray-400 uppercase tracking-[0.2em]">Volume</p>
-                                <p className="text-base font-black font-outfit text-[#1A1A1A]">{questionCount} Qs</p>
+                                <p className="text-[8px] font-black text-gray-400 uppercase tracking-[0.2em]">Questions</p>
+                                <p className="text-base font-black font-outfit text-[#1A1A1A]">{questionCount}</p>
                             </div>
                         </div>
 
-                        <div className="space-y-2 pt-4 border-t border-gray-100 mt-2">
-                            <div className="flex justify-between text-[9px] font-bold text-muted-foreground uppercase tracking-widest">
-                                <span>Complexity</span>
-                                <span className="text-[#1A1A1A]">{difficulty}</span>
+                        <div className="space-y-3 pt-4">
+                            <div className="flex items-center gap-2 mb-2">
+                                <div className="h-1 w-1 rounded-full bg-[#FF2D55]" />
+                                <p className="text-[10px] font-black font-outfit text-[#1A1A1A] uppercase tracking-widest">Engine Calibration</p>
                             </div>
-                            <div className="flex justify-between text-[9px] font-bold text-muted-foreground uppercase tracking-widest">
-                                <span>Potential</span>
-                                <span className="text-[#FF2D55] font-black">{totalPoints} PTS</span>
+                            <div className="flex justify-between items-center bg-white p-3 rounded-lg border border-gray-100 shadow-sm">
+                                <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Difficulty</span>
+                                <span className="text-[10px] font-black text-[#1A1A1A] uppercase">{difficulty}</span>
+                            </div>
+                            <div className="flex justify-between items-center bg-white p-3 rounded-lg border border-gray-100 shadow-sm">
+                                <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Potential</span>
+                                <span className="text-[10px] font-black text-[#FF2D55] uppercase tracking-tighter">{totalPoints} PTS</span>
                             </div>
                         </div>
                     </div>
