@@ -55,3 +55,4 @@
 | 2026-02-06 | Idempotency Hardening | COMPLETED | DB-backed unique index for Idempotency-Key; Answer upsert safety. |
 | 2026-02-06 | Exam Schema Refinement | COMPLETED | Added snapshot duration to exams; Atomic question ordering. |
 | 2026-02-06 | Viewport Recovery (h-530) | COMPLETED | Compressed console height and synchronized pane alignments for zero-occlusion. |
+| 2026-02-06 | DB Sync & HUD Symmetry | COMPLETED | Synchronized Neon DB; Implemented 10/80/10 vertical split for perfect pane alignment. |

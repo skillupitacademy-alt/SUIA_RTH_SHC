@@ -12,6 +12,8 @@
 - **Validation**: Verified build stability and type-safety across the monorepo with `pnpm build` and `tsc --noEmit`.
 - **UI Viewport Fix**: Compressed HUD to `h-530` and removed redundant labels to fix bottom-button occlusion.
 - **HUD Symmetrization**: Synchronized selection and summary pane baselines for perfect horizontal baseline alignment.
+- **Database Maintenance**: Synchronized Neon production schema via `drizzle-kit push` (Batch 120).
+- **HUD 10/80/10 Split**: Implemented top/bottom fixed margins with an 80% matrix for vertical symmetry.
 
 ## Next Steps
 - **INT-001**: Implement `ExamEngine.startExam` orchestration logic (Step B).
