@@ -24,6 +24,11 @@
 - **Dark HUD Refactor (Step 5)**: Swapped white cards and sliders for high-density **Dark Chips** (`bg-[#2B2B2B]`) for both Difficulty and Volume selection, matching the executive dark-mode aesthetic.
 - **Micro-Spaced Summary**: Reduced vertical gaps in `AssessmentSummary` from `space-y-4` to `space-y-2` and tightened section margins to fit all data stacks.
 
+- **Tactical Lockdown**: Implemented Two-Stage activation (Arming > Lockdown) and disabled BACK button in armed state.
+- **Header Synchronization**: Locked Header alignment to `items-start` with persistent `min-h` to prevent Step 5 shift.
+- **Executive Visibility**: Darkened all dividers to `gray-300` and hairline borders for superior contrast.
+- **One-Viewport Sync**: Synchronized both panes at a hard-coded **h-600px** with symmetrical vertical pushes (10%/5%).
+
 ## Next Steps
 - **ENG-001**: Scale the stepped logic to the assessment submission and real-time result viewing journey.
 - **OPS-001**: Implement automated environment cleanup for ephemeral assessment sessions.
