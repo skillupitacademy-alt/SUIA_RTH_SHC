@@ -45,8 +45,16 @@ export class QuizClient {
     subtopicIds?: string[];
     difficulty?: string; 
     questionCount?: number 
-  }) {
-    return this.client.post<{ examId: string; questions: any[] }>('/quiz/start', config);
+  }, idempotencyKey?: string) {
+    const headers: Record<string, string> = {};
+    if (idempotencyKey) {
+        headers['Idempotency-Key'] = idempotencyKey;
+    }
+    return this.client.request<{ examId: string; questions: any[] }>('/quiz/start', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(config)
+    });
   }
 
   async submitAnswer(examId: string, questionId: string, answer: string) {

@@ -298,21 +298,8 @@ export function QuizSelectionConsole() {
             };
 
             // 3. Execute Transaction
-            const res = await fetch('/api/quiz/start', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Idempotency-Key': idempotencyKey
-                },
-                body: JSON.stringify(payload)
-                // credentials: 'include' is default for same-origin fetch, but explicit is safer if cross-site
-            });
-
-            const data = await res.json();
-
-            if (!res.ok) {
-                throw new Error(data.error || 'Failed to start assessment');
-            }
+            // Refactored to use apiClient for correct URL/CSRF handling
+            const data = await apiClient.quiz.startExam(payload, idempotencyKey);
 
             // 4. Navigate to Active HUD
             router.push(`/exam/${data.examId}`);
