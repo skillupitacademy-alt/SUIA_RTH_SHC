@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
     if (!idempotencyKey) {
       return NextResponse.json({ 
         error: 'Missing Idempotency-Key header. This endpoint requires a unique key for reliable session orchestration.' 
-      }, { status: 400 });
+      }, { status: 422 });
     }
 
     const { domainId, blueprintId, ...config } = body;
@@ -45,9 +45,9 @@ export async function POST(req: NextRequest) {
     }
 
     // 3. Difficulty Validation
-    // Allowed values matches DB distribution keys + user-friendly aliases if supported by selection engine
-    // Based on user request: mixed/foundations/elite vs simple/intermediate/expert
-    const allowedDifficulties = ['simple', 'intermediate', 'expert', 'mixed', 'foundations', 'elite'];
+    // Allowed values matches DB distribution keys: mixed | simple | intermediate | expert
+    // Legacy mapping (foundations->simple, elite->expert) must happen on client-side.
+    const allowedDifficulties = ['simple', 'intermediate', 'expert', 'mixed'];
     if (config.difficulty && !allowedDifficulties.includes(config.difficulty)) {
         return NextResponse.json({ 
             error: `Invalid difficulty. Allowed: ${allowedDifficulties.join(', ')}` 

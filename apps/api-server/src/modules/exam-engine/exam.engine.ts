@@ -209,7 +209,7 @@ export class ExamEngine {
       })
       .where(eq(examQuestions.id, eqRecord.id));
 
-    return { isCorrect };
+    return;
   }
 
   /**

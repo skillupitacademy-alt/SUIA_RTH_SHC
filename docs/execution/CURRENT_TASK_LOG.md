@@ -20,6 +20,10 @@
 ## Recent Actions
 - **Engine Calibration (Task F)**: Normalized Frontend Difficulty (`simple`, `expert`). Removed legacy terms.
 - **Final Proof (Step 7)**: Validated full security chain. System is hardened.
+- **Punch List (Step 8)**:
+    - **Strict Validation**: `/api/quiz/start` now rejects `foundations`/`elite` (must be `simple`/`expert`).
+    - **Error Codes**: Missing `Idempotency-Key` returns `422 Unprocessable Entity` (was 400).
+    - **Engine Safety**: `ExamEngine.submitAnswer` now returns `void` (stripped `isCorrect`).
 
 ## Next Steps
 1. **GUI-003**: Wire up `QuizSelectionConsole` -> `/api/quiz/start`.

@@ -1040,6 +1040,7 @@ Reduce documentation fragmentation and improve discoverability by consolidating 
 - **Objective**: Finalize Exam Integrity Hardening (Phase 34) and calibrate Frontend Difficulty (Task F).
 - **Detail**:
     - **Final Proof (Step 7)**: Executed full "Dry Run" of the exam lifecycle. Verified strict chain of custody: Start (Caps) -> Answer (Sanitized) -> Submit (Idempotent) -> Result/Report (Gated).
+    - **Punch List (Step 8)**: Addressed final hardening gaps. Removed support for legacy difficulties in API (strict `simple`/`expert` enforcement). Changed `submitAnswer` to return `void` for absolute safety. Standardized `422` error codes for missing headers.
     - **Engine Calibration (Task F)**: Refactored `QuizSelectionConsole` to use standard difficulty keys (`simple`, `mixed`, `expert`). Implemented `normalizeDifficulty` for graceful handling of legacy `beginner`/`elite` states. Updated `OnboardingWizard` text.
 - **Outcome**: The Exam Lifecycle is fully hardened against leakage, tampering, and concurrency. Frontend and Backend definitions are aligned.
 - **Verification**: `pnpm build` passed [Exit Code 0].
