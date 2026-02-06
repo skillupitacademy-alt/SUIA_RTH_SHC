@@ -15,6 +15,12 @@ export async function GET(req: NextRequest) {
 
     if (!examId) return NextResponse.json({ error: 'Missing examId' }, { status: 400 });
 
+    // Guardrail: Validate UUID format to prevent SQL errors
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(examId)) {
+        return NextResponse.json({ error: 'Invalid examId format' }, { status: 422 });
+    }
+
     const state = await SessionService.resumePayload(examId, payload.userId);
     return NextResponse.json(state);
   } catch (error: any) {

@@ -302,6 +302,11 @@ export function QuizSelectionConsole() {
             const data = await apiClient.quiz.startExam(payload, { idempotencyKey });
 
             // 4. Navigate to Active HUD
+            // Guardrail: Ensure examId is valid before redirecting
+            if (!data?.examId || data.examId === 'undefined') {
+                throw new Error('Start exam failed: missing examId in response');
+            }
+
             // Officially cutting over to Premium HUD
             router.push(`/exam/${data.examId}`);
 

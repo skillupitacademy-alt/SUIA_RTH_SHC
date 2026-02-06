@@ -39,6 +39,14 @@ export default function ActiveExamPage({ params }: { params: { examId: string } 
     // 1. Initial Fetch & Gating
     useEffect(() => {
         const fetchState = async () => {
+            // Guardrail: Validate examId format before proceeding
+            const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+            if (!params.examId || params.examId === 'undefined' || !uuidRegex.test(params.examId)) {
+                console.warn('[ActiveExamPage] Invalid examId detected, redirecting to console.');
+                router.replace('/quiz/new');
+                return;
+            }
+
             try {
                 const data = await apiClient.quiz.getQuizState(params.examId);
 
@@ -160,7 +168,7 @@ export default function ActiveExamPage({ params }: { params: { examId: string } 
                 <p className="text-gray-400 mt-2 max-w-md">{error}</p>
             </div>
             <button
-                onClick={() => router.push('/console')}
+                onClick={() => router.push('/quiz/new')}
                 className="px-8 py-3 bg-[#FF2D55] text-white font-bold rounded-xl shadow-lg hover:shadow-[#FF2D55]/20 transition-all"
             >
                 Return to Command Center
