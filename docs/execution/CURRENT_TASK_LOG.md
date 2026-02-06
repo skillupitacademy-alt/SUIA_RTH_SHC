@@ -35,24 +35,12 @@
 ## Recent Actions
 - **Phase 1: Reporting Convergence**: Implemented async polling and data mapping for results. Handled `processing` status with retry backoff.
 - **Strict Mode Guard**: Verified that the prompt enforces absolute taxonomy alignment when strict mode is active.
-- **Certification**: Root `pnpm build` passed (Exit Code 0).
-
-### Batch 129: Real-time Timer Sync & State Hardening (Phase 2)
-- **Eliminated Drift**: Removed manual question-count based time estimation in `ExamInterface`.
-- **Backend Injection**: Wired HUD to consume `remainingTimeSeconds` directly from `apiClient.quiz.getQuizState`.
-- **Continuity & Isolation**: Forced re-sync on mount (removed optimization) and added mandatory store reset before hydration to prevent cross-exam contamination.
-- **Status Gating**: Implemented automated redirect to results for completed/processing sessions.
 - **Verification**: Root `pnpm build` passed (Exit Code 0).
 
 ### Batch 130: API Client Type Alignment (Phase 3)
 - **Strong Typing**: Introduced `QuizState` and `QuizResultResponse` (discriminated union) in `api-client`.
-- **Consumer Alignment**: Refactored `ExamInterface`, `active-report`, and `exam/[examId]` to remove `any` casts and rely on official interfaces.
-- **Nuance Preservation**: Kept `startExam.remainingSeconds` distinct from `getQuizState.remainingTimeSeconds` to match backend implementation.
-- **Verification**: `pnpm build` passed (Exit Code 0).
-
-### Batch 130: API Client Type Alignment (Phase 3)
-- **Strong Typing**: Introduced `QuizState` and `QuizResultResponse` (discriminated union) in `api-client`.
-- **Consumer Alignment**: Refactored `ExamInterface`, `active-report`, and `exam/[examId]` to remove `any` casts and rely on official interfaces.
-- **Nuance Preservation**: Kept `startExam.remainingSeconds` distinct from `getQuizState.remainingTimeSeconds` to match backend implementation.
-- **Verification**: `pnpm build` passed (Exit Code 0).
+- **Consumer Alignment**: Refactored `ExamInterface`, `active-report`, and `exam/[examId]` to rely on official interfaces. Removed most `any` casts (some remain in mapping logic for legacy compatibility).
+- **Verification**: Root `pnpm build` passed (Exit Code 0).
+- **Hygiene**: Removed `tsc_output.txt`, updated `.gitignore`, and migrated walkthrough documents.
 - **Final Certification**: Full monorepo build and type-check verified (Exit Code 0).
+

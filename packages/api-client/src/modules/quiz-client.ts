@@ -31,7 +31,7 @@ export type QuizResultResponse =
       total: number;
       percentage: number;
       statusLabel: 'passed' | 'failed';
-      timeTaken: string;
+      timeTaken?: string;
       performance: {
         topic?: Array<{ id: string; name: string; score: number; accuracy: number }>;
         difficulty?: Array<{ id: string; name: string; score: number; accuracy: number }>;
