@@ -9,11 +9,11 @@ export function usePresenceHeartbeat() {
         if (!initialized || !isAuthenticated) return;
 
         // Initial heartbeat
-        apiClient.auth.heartbeat().catch(() => {});
+        apiClient.auth.adminHeartbeat().catch(() => {});
 
         // Ping every 60 seconds
         const interval = setInterval(() => {
-            apiClient.auth.heartbeat().catch(() => {});
+            apiClient.auth.adminHeartbeat().catch(() => {});
         }, 60000);
 
         return () => clearInterval(interval);

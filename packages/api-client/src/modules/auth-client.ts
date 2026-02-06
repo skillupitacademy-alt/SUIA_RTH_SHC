@@ -50,4 +50,8 @@ export class AuthClient {
   async heartbeat() {
     return this.client.post('/auth/heartbeat', {});
   }
+
+  async adminHeartbeat() {
+    return this.client.post('/admin/auth/heartbeat', {});
+  }
 }

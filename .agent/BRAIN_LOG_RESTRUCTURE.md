@@ -1090,3 +1090,16 @@ Reduce documentation fragmentation and improve discoverability by consolidating 
 - **Text Repair**: Replaced mojibake characters in "MISSION ARMED / INITIATE ASSESSMENT" buttons with correct rocket launcher emoji (🚀) and arrow glyphs (→).
 - **Style Fix**: Corrected a typo in the footer button shadow class (`hover:shadow-[...40_rgba...]` -> `40px`).
 - **Certification**: Validated with `pnpm build` (Exit Code 0).
+
+### Batch 125: Frontend Connectivity (Step 1)
+- **Objective**: Wire `QuizSelectionConsole` to fixed transactional start API.
+- **Transactional Launch**: Implemented `handleLaunch` with client-generated `Idempotency-Key` (UUID).
+- **Strict Payload**: Enforced normalized difficulty (`simple`/`expert`) and array caps before sending.
+- **UX Integration**: Wired "MISSION ARMED" footer and Summary panel buttons to the launch logic.
+- **Outcome**: Console successfully initiates exams and redirects to `/exam/[id]`.
+- **Certification**: `pnpm build` passed [Exit Code 0].
+
+### Hotfix: Admin Heartbeat (401 Logic)
+- **Problem**: Admin app auto-logged out because `/api/auth/heartbeat` enforced user scope.
+- **Fix**: Created `/api/admin/auth/heartbeat` (admin scope) and updated `usePresenceHeartbeat` to use `AuthClient.adminHeartbeat`.
+- **Certification**: `pnpm build` passed.
