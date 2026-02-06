@@ -14,7 +14,7 @@
 - **Drizzle Baselining**: Fixed production migration registry mismatch. Baselined `0000` and `0001` to `drizzle.__drizzle_migrations` to ensure future migration safety.
 - **Launch Repair (Task A)**: Updated `FetchClient` to support custom headers and `QuizClient` to enforce `Idempotency-Key` via headers.
 - **Launch Repair (Task B)**: Connected `QuizSelectionConsole` to `apiClient` with correct redirect to `/quiz/active-session`.
-- **State Repair (Task C)**: Updated `/api/quiz/state` (SessionService) to return `questions[]` and legacy fields for frontend compatibility.
+- **Launch Repair (Task D)**: Patched legacy `QuizSelection.tsx` to align with strict `startExam` signature (`subjectIds`, `Idempotency-Key`).
 - **Result Gating (Step 3)**: Hardened `/api/quiz/result` with strict order: Query -> Ownership Check (403) -> Status Gate (409/202) -> Sanitized Generation.
 - **Status**: `READY` (Exam Integrity Hardening Complete)
 

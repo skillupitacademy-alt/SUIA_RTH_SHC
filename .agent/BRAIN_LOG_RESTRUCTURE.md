@@ -1111,4 +1111,4 @@ Reduce documentation fragmentation and improve discoverability by consolidating 
 - **Frontend**: Wired `QuizSelectionConsole` to correct `apiClient` method and redirected to legacy `/quiz/active-session`.
 - **Backend**: Enhanced `SessionService.resumePayload` to return `questions[]` and full schema for `ExamInterface`.
 - **Outcome**: Transactional launch now hits valid API endpoints with correct headers and maps state correctly.
-- **Certification**: `pnpm build` passed [Exit Code 0].
+- **Legacy Interop**: Patched `QuizSelection.tsx` to use new transactional signature to prevent build regression.

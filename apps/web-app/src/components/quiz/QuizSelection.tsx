@@ -168,13 +168,16 @@ export function QuizSelection() {
 
         setStarting(true);
         try {
+            // Legacy console now uses strict transactional start
             const exam = await apiClient.quiz.startExam({
                 blueprintId: selectedDomain,
-                subjects: selectedSubjects,
+                subjectIds: selectedSubjects,
                 topicIds: selectedTopics.length > 0 ? selectedTopics : undefined,
                 subtopicIds: selectedSubtopics.length > 0 ? selectedSubtopics : undefined,
                 difficulty,
                 questionCount
+            }, {
+                idempotencyKey: crypto.randomUUID()
             });
 
             router.push(`/quiz/active-session?examId=${exam.examId}`);
