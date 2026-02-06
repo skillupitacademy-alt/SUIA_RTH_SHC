@@ -40,7 +40,7 @@ export class QuizClient {
   async startExam(config: { 
     domainId?: string; 
     blueprintId?: string; 
-    subjects?: string[]; 
+    subjectIds?: string[]; 
     topicIds?: string[];
     subtopicIds?: string[];
     difficulty?: string; 

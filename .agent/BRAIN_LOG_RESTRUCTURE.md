@@ -1097,7 +1097,7 @@ Reduce documentation fragmentation and improve discoverability by consolidating 
 - **Strict Payload**: Enforced normalized difficulty (`simple`/`expert`) and array caps before sending.
 - **UX Integration**: Wired "MISSION ARMED" footer and Summary panel buttons to the launch logic.
 - **Outcome**: Console successfully initiates exams and redirects to `/exam/[id]`.
-- **Refactor (Step 1)**: Switched from raw `fetch` to `apiClient.quiz.startExam` to resolve URL/CSRF/Credentials issues.
+- **Refactor (Step 1)**: Switched to `apiClient.quiz.startExam` (Fixed type `subjectIds` mismatch and `FetchClient.request` visibility) to resolve URL/CSRF/Credentials issues.
 - **Route (Step 2)**: Created `/exam/[examId]` skeleton to satisfy redirect requirements.
 - **Certification**: `pnpm build` passed [Exit Code 0].
 

@@ -10,10 +10,10 @@
 - **Race Condition Resilience**: Bulletoofed `ExamEngine.startExam` for idempotency races; concurrent starts now correctly re-query and return the existing session.
 - **Timing Standardization**: Global transition to `durationSeconds` for all timer logic in `SessionService` and `ExamEngine`.
 - **Virtual Fallback**: Implemented domain-only start fallback (Option 2) allowing for practice sessions without pre-defined blueprints.
-- **Certification**: Platform-wide `pnpm build` and `tsc --noEmit` passed with `Exit Code 0`.
+- **API Client (Hotfix)**: Opened `FetchClient.request` (public) and corrected `QuizClient` types (`subjectIds`) to support Transactional Launch requirements.
 - **Drizzle Baselining**: Fixed production migration registry mismatch. Baselined `0000` and `0001` to `drizzle.__drizzle_migrations` to ensure future migration safety.
-- **Phase 35 Step 1**: Wired "Launch Assessment" to `/api/quiz/start` (Refactored to use `apiClient` for correct URL/CSRF).
-- **Phase 35 Step 2**: Created `/exam/[examId]` skeleton route to handle redirect.
+- **Phase 35 Step 1**: Wired "Launch Assessment" to `/api/quiz/start`. Refactored to use `apiClient` (Fixed `subjectIds` type mismatch and URL/CSRF handling).
+- **Phase 35 Step 2**: Created `/exam/[examId]` skeleton route (Step 2 Pending Implementation).
 - **Result Gating (Step 3)**: Hardened `/api/quiz/result` with strict order: Query -> Ownership Check (403) -> Status Gate (409/202) -> Sanitized Generation.
 - **Status**: `READY` (Exam Integrity Hardening Complete)
 
