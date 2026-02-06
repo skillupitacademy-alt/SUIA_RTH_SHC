@@ -33,7 +33,7 @@ P1 (High)
   - Query plans confirm index usage
 
 P2 (Medium)
-- Move scoring to async pipeline.
+- [x] Move scoring to async pipeline.
   Done when:
   - Submit returns 202 Accepted
   - Worker computes score and updates results

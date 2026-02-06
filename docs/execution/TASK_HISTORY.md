@@ -62,3 +62,6 @@
 | 2026-02-06 | Unified HUD Baseline | COMPLETED | Shared pt-6 baseline across panes; No scrollbars policy; List clamping (+X more); Footer pinned with mt-auto. |
 | 2026-02-06 | HUD Highlight & Lock | COMPLETED | Fixed selection clipping with overflow-visible/px-2; Implemented defense-in-depth guards (isArmed); Enabled dual CTAs. |
 | 2026-02-06 | HUD Text Polish | COMPLETED | Corrected mojibake artifacts in button labels; Fixed Tailwind shadow typo; Cleaned comments. |
+| 2026-02-06 | Difficulty Calibration | COMPLETED | Normalized frontend difficulty to canonical `simple/expert` keys; Removed legacy terms. |
+| 2026-02-06 | Start Route Hardening | COMPLETED | Enforced strict array types/caps and allowed difficulty values in `/api/quiz/start`. |
+| 2026-02-06 | Exam Integrity (Phase 34) | COMPLETED | Full lifecycle hardening (Answers, Results, Reports, Idempotency); Verified via Dry Run. |

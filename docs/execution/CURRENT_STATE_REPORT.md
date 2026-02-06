@@ -561,3 +561,14 @@
 - **Symmetry Engineering**: Synchronized Left and Right pane baselines to ensure action buttons (Back/Initiate) share a perfect horizontal alignment.
 - **Spacing Tightening**: Eliminated redundant labels and reduced card/grid padding to maximize density without losing readability.
 - **Integrity Verified**: Monorepo build and `tsc --noEmit` passed with 100% success.
+### Phase 34: Exam Integrity Hardening (Batch 126)
+- **Objective**: Harden the exam lifecycle against data leakage, state tampering, and concurrency issues.
+- **Engine Logic**:
+    - **Strict Validation**: `/api/quiz/start` enforces caps (max 50 questions, max 20 filters) and strict difficulty keys (`simple`, `intermediate`, `expert`, `mixed`).
+    - **Atomic Idempotency**: `submit` operations use a prefixed `submit:<key>` strategy to prevent double-scoring or race conditions.
+    - **Chain of Custody**: `ExamEngine` enforces strict ownership checks before any state transition or result viewing.
+    - **Leak Prevention**: `submitAnswer` checks correctness internally but returns `void`, ensuring the API never exposes `isCorrect`.
+- **Frontend Alignment**:
+    - **Calibration**: `QuizSelectionConsole` normalized to use Canonical Difficulty keys (`simple`, `expert`), removing legacy `foundations`/`elite` logic.
+    - **UX**: Updated `OnboardingWizard` text to match the professional "Expert" terminology.
+- **Certification**: Full "Dry Run" of the lifecycle passed; Monorepo build and `tsc` passed (Exit Code 0).
