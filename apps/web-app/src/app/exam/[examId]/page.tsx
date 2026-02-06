@@ -17,8 +17,8 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
-import { getTheme } from '@/lib/exam-themes';
-import { ThemeSwitcher } from '@/components/exam/ThemeSwitcher';
+import { EXAM_THEMES } from '@/lib/exam-themes';
+
 
 // Detailed Question Status
 type QuestionStatus = 'current' | 'answered' | 'flagged' | 'unvisited';
@@ -40,8 +40,8 @@ export default function ActiveExamPage() {
     const [timeLeft, setTimeLeft] = useState<number | null>(null);
     const [confirmSubmit, setConfirmSubmit] = useState(false);
 
-    // Theme Configuration
-    const theme = getTheme(searchParams.get('theme'));
+    // Use Executive Minimal theme (finalized choice)
+    const theme = EXAM_THEMES.executive;
 
     // 1. Initial Fetch & Gating
     useEffect(() => {
@@ -193,9 +193,6 @@ export default function ActiveExamPage() {
 
     return (
         <div className={cn("min-h-screen text-gray-900 font-inter selection:bg-pink-500/30", theme.colors.pageBackground)}>
-            {/* Theme Switcher (Dev Only) */}
-            <ThemeSwitcher />
-
             {/* TOP NAVIGATION HUD */}
             <header className={cn(
                 "sticky top-0 z-50 border-b px-6 flex items-center justify-between backdrop-blur-xl",
@@ -478,26 +475,27 @@ export default function ActiveExamPage() {
                 </div>
             </main>
 
+
             {/* MODALS */}
             {confirmSubmit && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/80 backdrop-blur-md">
-                    <div className="glass-morphism rounded-[3rem] p-10 max-w-lg w-full text-center space-y-8 animate-in zoom-in-95 duration-200">
-                        <div className="w-20 h-20 rounded-full bg-[#FF2D55]/10 border border-[#FF2D55]/20 flex items-center justify-center mx-auto pink-glow">
-                            <Info size={40} className="text-[#FF2D55]" />
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm">
+                    <div className="bg-white rounded-3xl p-10 max-w-lg w-full text-center space-y-8 shadow-2xl animate-in zoom-in-95 duration-200 border border-gray-200">
+                        <div className="w-20 h-20 rounded-full bg-pink-50 border-2 border-pink-200 flex items-center justify-center mx-auto">
+                            <Info size={40} className="text-pink-500" />
                         </div>
 
                         <div>
-                            <h2 className="text-3xl font-black font-outfit uppercase">Commit Evaluation?</h2>
-                            <p className="text-gray-400 mt-4 leading-relaxed">
-                                You have completed <span className="text-white font-bold">{Object.keys(state.localAnswers).length} out of {state.questions.length}</span> objectives.
+                            <h2 className="text-3xl font-black font-outfit uppercase text-gray-900">Commit Evaluation?</h2>
+                            <p className="text-gray-600 mt-4 leading-relaxed">
+                                You have completed <span className="text-gray-900 font-bold">{Object.keys(state.localAnswers).length} out of {state.questions.length}</span> objectives.
                                 Terminating the session now will finalize your scores.
                             </p>
                         </div>
 
                         {Object.keys(state.localAnswers).length < state.questions.length && (
-                            <div className="bg-[#FF2D55]/5 border border-[#FF2D55]/20 p-4 rounded-2xl flex items-start gap-4 text-left">
-                                <AlertCircle size={20} className="text-[#FF2D55] shrink-0 mt-0.5" />
-                                <p className="text-xs text-[#FF2D55]/80 font-bold uppercase tracking-wide">
+                            <div className="bg-pink-50 border-2 border-pink-200 p-4 rounded-xl flex items-start gap-4 text-left">
+                                <AlertCircle size={20} className="text-pink-500 shrink-0 mt-0.5" />
+                                <p className="text-xs text-pink-600 font-bold uppercase tracking-wide">
                                     Warning: Unanswered questions will be marked as incorrect.
                                 </p>
                             </div>
@@ -506,14 +504,14 @@ export default function ActiveExamPage() {
                         <div className="grid grid-cols-2 gap-4">
                             <button
                                 onClick={() => setConfirmSubmit(false)}
-                                className="px-8 py-4 rounded-2xl border border-white/10 font-bold hover:bg-white/5 transition-all text-sm uppercase tracking-widest"
+                                className="px-8 py-4 rounded-xl border-2 border-gray-300 font-bold hover:bg-gray-50 transition-all text-sm uppercase tracking-widest text-gray-700"
                             >
                                 Continue
                             </button>
                             <button
                                 onClick={submitExam}
                                 disabled={isSubmitting}
-                                className="px-8 py-4 rounded-2xl bg-[#FF2D55] text-white font-black font-outfit shadow-lg pink-glow hover:scale-105 transition-all text-sm uppercase flex items-center justify-center gap-2"
+                                className="px-8 py-4 rounded-xl bg-pink-500 text-white font-black font-outfit shadow-lg shadow-pink-500/20 hover:scale-105 transition-all text-sm uppercase flex items-center justify-center gap-2"
                             >
                                 {isSubmitting ? <Loader2 size={18} className="animate-spin" /> : 'Confirm Terminate'}
                             </button>
