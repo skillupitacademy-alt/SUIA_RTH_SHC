@@ -328,6 +328,7 @@ export const BRAIN_LOG_DATA = {
         { batch: '14', action: 'Full Codebase Traceability', created: '—', merged: 'Mapped schema files, root configs, env files, backend services to logical specs' },
         { batch: '15', action: 'Frontend Traceability Audit', created: '—', merged: 'Mapped .tsx files to user journey documents (AUTH_JOURNEY.md, CORE_APP_JOURNEY.md, etc.)' },
         { batch: '16', action: 'Constitution & Inventory Refinement', created: '—', merged: 'Refactored AGENT_CONSTITUTION.md into ConstitutionViewer.tsx, grouped 50+ artifacts logically' },
+        { batch: '17', action: 'Exam Entry UX Reliability', created: '—', merged: 'Upgraded QuizSelectionConsole.tsx with rich error banners and handled contextual redirects.' },
     ],
     impact: [
         { metric: 'File Count Reduction', result: '~60 → ~30' },
@@ -376,6 +377,7 @@ export const FOLDER_BREAKDOWN: FolderBreakdown[] = [
 ];
 
 export const TASK_HISTORY_DATA = [
+    { date: '2026-02-07', task: 'Exam Entry UX Reliability', status: 'COMPLETED', summary: 'Implemented Launch Failure banners and contextual redirects for invalid exam session links.' },
     { date: '2026-01-28', task: 'Question Bank CRUD Implementation', status: 'COMPLETED', summary: 'Implemented full CRUD suite for Domains, Subjects, Topics, Subtopics, and Skills with cascading logical validation.' },
     { date: '2026-01-28', task: 'Proactive Core Digitization', status: 'COMPLETED', summary: 'Proactively digitized PROJECT_MANIFESTO and SYSTEM_ARCHITECTURE into executive-grade viewers.' },
     { date: '2026-01-28', task: 'Brain Log Digitization', status: 'COMPLETED', summary: 'Digitized BRAIN_LOG_RESTRUCTURE.md into high-fidelity React tables mirroring the visual spec.' },

@@ -43,8 +43,8 @@ export default function ActiveExamPage() {
             // Guardrail: Validate examId format before proceeding
             const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
             if (!examId || examId === 'undefined' || !uuidRegex.test(examId)) {
-                console.warn('[ActiveExamPage] Invalid examId detected, redirecting to Mission Control (/quiz/new).');
-                router.replace('/quiz/new');
+                console.warn('[ActiveExamPage] Invalid examId detected, redirecting to Mission Control (/quiz/new?error=invalid_exam).');
+                router.replace('/quiz/new?error=invalid_exam');
                 return;
             }
 

@@ -1,13 +1,14 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useState, useEffect, Suspense } from 'react';
 import { apiClient } from '@quiz/api-client';
 import { AssessmentSummary } from './AssessmentSummary';
 import { DomainCard } from './DomainCard';
 import { TopicChip } from './TopicChip';
-import { Code, Shield, Cloud, Database, Check, Loader2, Activity, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Code, Shield, Cloud, Database, Check, Loader2, Activity, ChevronLeft, ChevronRight, AlertCircle, X, ExternalLink, RefreshCcw, BookOpen } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import Link from 'next/link';
 
 const JourneyBadge = ({ text }: { text: string }) => (
     <div className="flex flex-col items-end gap-2">
@@ -43,6 +44,18 @@ const DottedProgressBar = ({ currentStep, mode }: { currentStep: number; mode: '
 );
 
 export function QuizSelectionConsole() {
+    return (
+        <Suspense fallback={
+            <div className="flex items-center justify-center p-20">
+                <Loader2 className="animate-spin text-[#FF2D55]" size={48} />
+            </div>
+        }>
+            <QuizSelectionConsoleContent />
+        </Suspense>
+    );
+}
+
+function QuizSelectionConsoleContent() {
     const router = useRouter();
     const [step, setStep] = useState(1);
     const [domains, setDomains] = useState<any[]>([]);
@@ -57,6 +70,16 @@ export function QuizSelectionConsole() {
     const [mode, setMode] = useState<'basic' | 'advanced'>('basic');
     const [loading, setLoading] = useState(false);
     const [selectionError, setSelectionError] = useState<string | null>(null);
+    const [launchError, setLaunchError] = useState<{ title: string; reason: string } | null>(null);
+
+    const searchParams = useSearchParams();
+    const [showInvalidLinkError, setShowInvalidLinkError] = useState(false);
+
+    useEffect(() => {
+        if (searchParams.get('error') === 'invalid_exam') {
+            setShowInvalidLinkError(true);
+        }
+    }, [searchParams]);
 
     // Engine Calibration State (Step 5)
     // NORMALIZATION: Ensuring we strictly use backend-supported values (simple/mixed/expert)
@@ -313,11 +336,12 @@ export function QuizSelectionConsole() {
 
         } catch (err: any) {
             console.error('Launch failed:', err);
-            setSelectionError(err.message || "Launch failed. Please try again.");
+            setLaunchError({
+                title: 'Couldn’t start your assessment',
+                reason: err.message || "Launch failed. Please try again."
+            });
             setIsLocked(false);
             setLoading(false);
-            // Auto-clear error after 5s
-            setTimeout(() => setSelectionError(null), 5000);
         }
     };
 
@@ -456,7 +480,81 @@ export function QuizSelectionConsole() {
 
             <div className="h-[1px] bg-gray-300 w-full mb-1" />
 
-            <div className="min-h-[32px] mb-4">
+            <div className="min-h-[32px] mb-4 space-y-4">
+                {/* Task C: Invalid Link Banner */}
+                {showInvalidLinkError && (
+                    <div className="flex items-center justify-between p-4 rounded-2xl bg-[#FF2D55]/5 border border-[#FF2D55]/20 animate-in slide-in-from-top-2 duration-300">
+                        <div className="flex items-center gap-3">
+                            <AlertCircle className="text-[#FF2D55]" size={20} />
+                            <p className="text-sm font-bold text-[#FF2D55]">
+                                We couldn’t open that exam session link. Please start a new assessment.
+                            </p>
+                        </div>
+                        <button
+                            onClick={() => setShowInvalidLinkError(false)}
+                            className="p-1 hover:bg-[#FF2D55]/10 rounded-lg transition-colors text-[#FF2D55]"
+                        >
+                            <X size={18} />
+                        </button>
+                    </div>
+                )}
+
+                {/* Task A: Launch Error Banner */}
+                {launchError && (
+                    <div className="p-6 rounded-[2.5rem] bg-[#FF2D55] text-white shadow-xl shadow-[#FF2D55]/20 animate-in zoom-in-95 duration-300 relative overflow-hidden">
+                        <div className="absolute top-0 right-0 p-8 opacity-10 rotate-12">
+                            <AlertCircle size={120} />
+                        </div>
+
+                        <div className="relative z-10 flex flex-col gap-6">
+                            <div className="flex items-start justify-between">
+                                <div className="flex flex-col gap-1">
+                                    <h3 className="text-2xl font-black font-outfit uppercase tracking-tighter">
+                                        {launchError.title}
+                                    </h3>
+                                    <p className="text-white/80 text-sm font-medium max-w-xl">
+                                        {launchError.reason}
+                                    </p>
+                                </div>
+                                <button
+                                    onClick={() => setLaunchError(null)}
+                                    className="p-2 hover:bg-white/10 rounded-full transition-all"
+                                >
+                                    <X size={24} />
+                                </button>
+                            </div>
+
+                            <div className="flex flex-col sm:flex-row items-center gap-4">
+                                <button
+                                    onClick={() => {
+                                        setLaunchError(null);
+                                        handleLaunch();
+                                    }}
+                                    className="flex items-center gap-2 px-6 py-3 bg-white text-[#FF2D55] rounded-xl font-black font-outfit text-sm uppercase shadow-lg hover:scale-105 transition-all"
+                                >
+                                    <RefreshCcw size={18} />
+                                    Try Again
+                                </button>
+
+                                <Link
+                                    href="/dashboard/my-exams"
+                                    className="flex items-center gap-2 px-6 py-3 bg-black/20 hover:bg-black/30 text-white border border-white/20 rounded-xl font-bold text-sm transition-all"
+                                >
+                                    <BookOpen size={18} />
+                                    Go to My Exams
+                                </Link>
+
+                                <div className="flex items-center gap-2 text-white/60">
+                                    <div className="w-1.5 h-1.5 rounded-full bg-white/40" />
+                                    <span className="text-[10px] font-black uppercase tracking-widest leading-none">
+                                        Relax filters: reduce topics or switch to Mixed mode
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 {selectionError && (
                     <div className="flex items-center gap-2 text-[#FF2D55] animate-in slide-in-from-top-2 duration-300">
                         <div className="h-1.5 w-1.5 rounded-full bg-[#FF2D55] animate-pulse" />
