@@ -1112,3 +1112,10 @@ Reduce documentation fragmentation and improve discoverability by consolidating 
 - **Backend**: Enhanced `SessionService.resumePayload` to return `questions[]` and full schema for `ExamInterface`.
 - **Outcome**: Transactional launch now hits valid API endpoints with correct headers and maps state correctly.
 - **Type Hygiene**: Aligned `QuizClient` types with true backend shapes and added missing `order` field to `SessionService` payload.
+
+### Batch 127: Skill Injection Visibility & Taxonomy Enforcement
+- **Goal**: Enable visibility of official skill injection in the Question Factory and enforce taxonomy alignment in AI prompts.
+- **UI Logic**: Modified `QuestionFactoryPage.tsx` to include an `officialSkills.length` badge in the Intelligence Phase footer, providing real-time feedback on injected metadata.
+- **Prompt Engineering**: Verified and documented the `PromptService.generateTechnicalPrompt` logic which maps existing skills and enforces a `CRITICAL RULE` for strict adherence to official taxonomy.
+- **Verification**: Executed the mandatory root build sequence (`pnpm build`, `tsc --noEmit`) with a perfect **Exit Code 0** result.
+- **Outcome**: Delivered a transparent and secure content generation workflow that prevents skill pollution and hallucinatory taxonomy.

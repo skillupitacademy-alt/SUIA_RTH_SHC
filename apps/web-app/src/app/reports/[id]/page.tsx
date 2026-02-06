@@ -11,25 +11,88 @@ export default function DynamicReportPage() {
     const { id } = useParams();
     const [report, setReport] = useState<any>(null); // eslint-disable-line @typescript-eslint/no-explicit-any
     const [loading, setLoading] = useState(true);
+    const [isProcessing, setIsProcessing] = useState(false);
+    const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
     useEffect(() => {
+        let isMounted = true;
+        const delays = [1000, 2000, 4000, 8000, 10000];
+        let retryCount = 0;
+
         const fetchReport = async () => {
+            if (!id) return;
+
             try {
-                const data = await apiClient.reports.getExamReport(id as string);
-                setReport(data);
+                const data = await apiClient.quiz.getResult(id as string);
+
+                if (data.status === 'processing' || data.status === 'started') {
+                    if (isMounted) setIsProcessing(true);
+
+                    if (retryCount < 20) {
+                        const delay = delays[Math.min(retryCount, delays.length - 1)];
+                        retryCount++;
+                        setTimeout(fetchReport, delay);
+                        return;
+                    } else {
+                        if (isMounted) {
+                            setErrorMsg("Scoring is taking longer than expected.");
+                            setLoading(false);
+                            setIsProcessing(false);
+                        }
+                        return;
+                    }
+                }
+
+                const mappedData = {
+                    score: data.score,
+                    total: data.total,
+                    status: (data.statusLabel || (data.percentage >= 70 ? 'passed' : 'failed')) as 'passed' | 'failed',
+                    questions: data.questions?.map((q: any) => ({
+                        text: q.text,
+                        isCorrect: q.isCorrect
+                    }))
+                };
+
+                if (isMounted) {
+                    setReport(mappedData);
+                    setIsProcessing(false);
+                    setLoading(false);
+                }
             } catch (err) {
                 console.error("Failed to fetch report", err);
-            } finally {
-                setLoading(false);
+                if (isMounted) {
+                    setErrorMsg("Unable to retrieve results.");
+                    setLoading(false);
+                }
             }
         };
-        if (id) fetchReport();
+
+        fetchReport();
+        return () => { isMounted = false; };
     }, [id]);
 
-    if (loading) {
+    if (loading || isProcessing) {
         return (
-            <div className="flex h-screen items-center justify-center">
+            <div className="flex flex-col h-screen items-center justify-center gap-4">
                 <Loader2 className="animate-spin text-primary" size={48} />
+                <p className="text-sm font-bold text-muted-foreground animate-pulse uppercase tracking-widest">
+                    {isProcessing ? "Processing Results..." : "Loading Report..."}
+                </p>
+            </div>
+        );
+    }
+
+    if (errorMsg) {
+        return (
+            <div className="flex h-screen flex-col items-center justify-center gap-4 text-center">
+                <h1 className="text-2xl font-bold">Report Status</h1>
+                <p className="text-gray-600">{errorMsg}</p>
+                <button
+                    onClick={() => window.location.reload()}
+                    className="px-6 py-2 bg-primary text-white rounded-lg"
+                >
+                    Retry
+                </button>
             </div>
         );
     }

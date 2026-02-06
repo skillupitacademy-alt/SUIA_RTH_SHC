@@ -20,61 +20,125 @@ function ReportContent() {
     const examId = searchParams.get('examId');
     const [reportData, setReportData] = useState<any>(null); // eslint-disable-line @typescript-eslint/no-explicit-any
     const [isLoading, setIsLoading] = useState(true);
+    const [isProcessing, setIsProcessing] = useState(false);
+    const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
     useEffect(() => {
-        const fetchReport = async () => {
-            if (!isAuthenticated) return;
+        let isMounted = true;
+        const delays = [1000, 2000, 4000, 8000, 10000];
+        let retryCount = 0;
 
-            if (!examId) {
-                router.push('/dashboard');
+        const fetchReport = async () => {
+            if (!isAuthenticated || !examId) {
+                if (!examId && isMounted) router.push('/dashboard');
                 return;
             }
 
             try {
                 const data = await apiClient.quiz.getResult(examId);
 
+                if (data.status === 'processing' || data.status === 'started') {
+                    if (isMounted) setIsProcessing(true);
+
+                    if (retryCount < 20) { // Max ~2 mins
+                        const delay = delays[Math.min(retryCount, delays.length - 1)];
+                        retryCount++;
+                        setTimeout(fetchReport, delay);
+                        return;
+                    } else {
+                        if (isMounted) {
+                            setErrorMsg("Scoring is taking longer than expected. Please check back in a few minutes.");
+                            setIsLoading(false);
+                            setIsProcessing(false);
+                        }
+                        return;
+                    }
+                }
+
+                if (data.status === 'failed' || data.status === 'abandoned') {
+                    if (isMounted) {
+                        setErrorMsg(`The assessment session was ${data.status}.`);
+                        setIsLoading(false);
+                        setIsProcessing(false);
+                    }
+                    return;
+                }
+
                 // Map API data to UI format
                 const mappedData = {
-                    score: Math.round((data.totalScore / 100) * (data.examQuestions?.length || 10)),
-                    total: data.examQuestions?.length || 10,
-                    totalPercent: data.totalScore,
+                    score: data.score,
+                    total: data.total,
+                    totalPercent: Math.round(data.percentage),
                     timeTaken: data.timeTaken || "00:00",
-                    percentile: 85,
-                    status: (data.totalScore >= 70 ? 'passed' : 'failed') as 'passed' | 'failed',
-                    topics: data.dimensions
-                        .filter((d: any) => d.dimensionType === 'topic')
-                        .map((d: any) => ({ name: d.name || 'Unknown', score: d.score, total: 100 })),
-                    difficulty: data.dimensions
-                        .filter((d: any) => d.dimensionType === 'difficulty')
-                        .map((d: any) => ({ level: d.dimensionId, accuracy: d.accuracy })),
+                    percentile: 85, // Meta/External calc
+                    status: (data.statusLabel || (data.percentage >= 70 ? 'passed' : 'failed')) as 'passed' | 'failed',
+                    topics: (data.performance?.topic || []).map((t: any) => ({
+                        name: t.name || 'Unknown',
+                        score: Math.round(t.accuracy),
+                        total: 100
+                    })),
+                    difficulty: (data.performance?.difficulty || []).map((d: any) => ({
+                        level: d.id,
+                        accuracy: Math.round(d.accuracy)
+                    })),
                     growthZones: data.growthZones || [],
-                    questions: data.examQuestions?.map((eq: any) => ({ // eslint-disable-line @typescript-eslint/no-explicit-any
-                        id: eq.id,
-                        questionText: eq.question?.questionText,
-                        userAnswer: eq.userAnswer,
-                        correctAnswer: eq.question?.correctAnswer,
-                        isCorrect: eq.isCorrect
+                    questions: data.questions?.map((q: any, idx: number) => ({
+                        id: q.id || `q-${idx}`,
+                        questionText: q.text,
+                        userAnswer: q.userAnswer,
+                        correctAnswer: q.correctAnswer, // Sanitized by backend
+                        isCorrect: q.isCorrect
                     }))
                 };
 
-                setReportData(mappedData);
-            } catch (err) {
+                if (isMounted) {
+                    setReportData(mappedData);
+                    setIsProcessing(false);
+                    setIsLoading(false);
+                }
+            } catch (err: any) {
                 console.error("Failed to load report", err);
-            } finally {
-                setIsLoading(false);
+                if (isMounted) {
+                    setErrorMsg("Unable to retrieve report. Please ensure your assessment was submitted.");
+                    setIsLoading(false);
+                }
             }
         };
 
         fetchReport();
+        return () => { isMounted = false; };
     }, [examId, router, isAuthenticated]);
 
-    if (isLoading) {
+    if (isLoading || isProcessing) {
         return (
             <div className="flex flex-col min-h-[calc(100vh-64px)] items-center justify-center bg-muted/5">
                 <Loader2 className="animate-spin text-primary mb-4" size={48} />
                 <p className="text-xl font-bold text-muted-foreground italic animate-pulse">
-                    &quot;Mining your masteries... one second.&quot;
+                    {isProcessing ? "\"Calculating your masteries... one second.\"" : "\"Mining your results...\""}
                 </p>
+                {isProcessing && (
+                    <p className="text-sm text-muted-foreground/60 mt-4">Scoring engine is currently processing your submission.</p>
+                )}
+            </div>
+        );
+    }
+
+    if (errorMsg) {
+        return (
+            <div className="flex flex-col min-h-[calc(100vh-64px)] items-center justify-center bg-muted/5 p-6 text-center">
+                <div className="bg-background p-12 rounded-[3rem] border-2 border-primary/20 shadow-2xl space-y-6 max-w-md">
+                    <h2 className="text-2xl font-black italic uppercase">Assessment Update</h2>
+                    <p className="text-muted-foreground font-medium leading-relaxed">{errorMsg}</p>
+                    <button
+                        onClick={() => window.location.reload()}
+                        className="w-full py-4 rounded-2xl bg-primary text-primary-foreground font-black shadow-lg shadow-primary/20 hover:scale-105 transition-transform"
+                    >
+                        RETRY STATUS CHECK
+                    </button>
+                    <Link href="/dashboard" className="block text-sm font-bold text-muted-foreground hover:text-primary underline">
+                        Return to Dashboard
+                    </Link>
+                </div>
             </div>
         );
     }
@@ -157,7 +221,7 @@ function ReportContent() {
                                                 {q.userAnswer || "No Answer"}
                                             </p>
                                         </div>
-                                        {!q.isCorrect && (
+                                        {q.correctAnswer && !q.isCorrect && (
                                             <div className="p-4 rounded-2xl bg-green-50 border border-green-100">
                                                 <p className="text-[10px] font-black uppercase text-green-600 tracking-widest mb-2">Recommended Correct</p>
                                                 <p className="font-bold text-sm text-green-800">{q.correctAnswer}</p>

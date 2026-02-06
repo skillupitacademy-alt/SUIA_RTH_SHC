@@ -130,7 +130,17 @@ function QuestionFactoryContent() {
                         <div className="bg-slate-900 border border-slate-800 p-6 rounded-[2.5rem] shadow-2xl flex flex-col md:flex-row items-center gap-6 w-full max-w-3xl px-12 pointer-events-auto mb-4">
                             <div className="flex-1 text-center md:text-left">
                                 <h4 className="text-xs font-black uppercase text-[#FF4B91] tracking-widest italic">Intelligence Phase</h4>
-                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">Generate Surgical AI Prompt</p>
+                                <div className="flex items-center gap-2 mt-0.5">
+                                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Generate Surgical AI Prompt</p>
+                                    {officialSkills && officialSkills.length > 0 && (
+                                        <div className="flex items-center gap-1.5 px-2 py-0.5 bg-emerald-500/10 border border-emerald-500/20 rounded-md">
+                                            <div className="w-1 h-1 bg-emerald-500 rounded-full animate-pulse" />
+                                            <span className="text-[8px] font-black text-emerald-500 uppercase tracking-tighter">
+                                                {officialSkills.length} SKILLS INJECTED
+                                            </span>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                             <div className="flex items-center gap-4 w-full md:w-auto">
                                 {/* Strict Mode Toggle */}

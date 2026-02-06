@@ -32,3 +32,9 @@
 ## Next Steps
 1. **GUI-003**: Wire up `QuizSelectionConsole` -> `/api/quiz/start`.
 2. **GUI-004**: Build Active Exam HUD.
+
+## Recent Actions
+- **Skill Injection Verification**: Confirmed that official skills are correctly mapped and injected into the AI prompt for taxonomy alignment.
+- **UI Enhancement**: Added a dynamic badge in `QuestionFactoryPage` to show the count of injected skills.
+- **Strict Mode Guard**: Verified that the prompt enforces absolute taxonomy alignment when strict mode is active.
+- **Final Certification**: Full monorepo build and type-check verified (Exit Code 0).

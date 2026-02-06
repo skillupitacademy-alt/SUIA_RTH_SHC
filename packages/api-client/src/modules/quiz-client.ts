@@ -1,3 +1,13 @@
+/*
+ * Tracking Logs / Release Notes:
+ *
+ * **Type Hygiene**: Aligned `QuizClient` types with true backend shapes and added missing `order` field to `SessionService` payload.
+ * ### Batch 128: Results & Reporting Stability (Phase 1)
+ * - **Polling Implementation**: Added backoff polling (1s-10s) to `active-report` and `[id]` pages to handle async scoring (`status: processing`).
+ * - **Data Alignment**: Mapped new `performance` dimensions (topic/difficulty) and sanitized `questions` list to current HUD components.
+ * - **Fail-Safety**: Implemented graceful error recovery for blocked or failed scoring sessions.
+ * - **Certification**: Root `pnpm build` passed (Exit Code 0).
+ */
 import { FetchClient } from '../core/fetch-client';
 
 export class QuizClient {
