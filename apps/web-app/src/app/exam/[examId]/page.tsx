@@ -42,7 +42,7 @@ export default function ActiveExamPage({ params }: { params: { examId: string } 
             // Guardrail: Validate examId format before proceeding
             const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
             if (!params.examId || params.examId === 'undefined' || !uuidRegex.test(params.examId)) {
-                console.warn('[ActiveExamPage] Invalid examId detected, redirecting to console.');
+                console.warn('[ActiveExamPage] Invalid examId detected, redirecting to Mission Control (/quiz/new).');
                 router.replace('/quiz/new');
                 return;
             }

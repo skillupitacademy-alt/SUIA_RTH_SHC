@@ -60,8 +60,8 @@
 - **Certification**: Workspace is verified clean and synchronized.
 
 ### Batch 136: Navigation Guardrails & Undefined ID Fix
-- **Hardening**: Implemented `examId` validation in `QuizSelectionConsole.tsx` to block navigation to `"undefined"`.
-- **Gating**: Added UUID validation in `ActiveExamPage` with redirect to `/quiz/new`.
+- **Hardening**: Implemented `examId` (UUID) validation in `QuizSelectionConsole.tsx` to block navigation to `"undefined"` or malformed IDs.
+- **Gating**: Added strict UUID validation in `ActiveExamPage` with redirect to `/quiz/new` and polished log messages.
 - **API Defense**: Enforced UUID regex in `api/quiz/state` route (422 response).
-- **Verification**: Verified via `turbo build` and `pnpm type-check`.
+- **Verification**: Verified via `turbo build` and `pnpm type-check` with Exit Code 0.
 

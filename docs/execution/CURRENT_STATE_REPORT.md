@@ -592,6 +592,6 @@
 - **Status**: **STABLE & SYNCHRONIZED**.
 
 ### Phase 38: Navigation Guardrails & Undefined ID Fix (Batch 136)
-- **Frontend Gating**: Hardened `QuizSelectionConsole.tsx` and `ActiveExamPage` with check-and-redirect logic for invalid IDs.
+- **Frontend Gating**: Hardened `QuizSelectionConsole.tsx` and `ActiveExamPage` with check-and-redirect logic for missing, "undefined", or malformed IDs using UUID validation.
 - **Route Integrity**: Added UUID validation to the API layer to protect against malformed SQL queries.
-- **Certification**: Workspace remains stable with passing builds and type-checks.
+- **Certification**: Workspace remains stable with passing builds and type-checks (Exit Code 0).
