@@ -302,8 +302,8 @@ export function QuizSelectionConsole() {
             const data = await apiClient.quiz.startExam(payload, { idempotencyKey });
 
             // 4. Navigate to Active HUD
-            // Redirect to existing legacy page as requested
-            router.push(`/quiz/active-session?examId=${data.examId}`);
+            // Officially cutting over to Premium HUD
+            router.push(`/exam/${data.examId}`);
 
         } catch (err: any) {
             console.error('Launch failed:', err);
