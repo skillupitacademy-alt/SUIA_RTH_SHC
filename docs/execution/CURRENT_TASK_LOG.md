@@ -33,17 +33,13 @@
 1. **Phase 3**: Cutover Redirect (Console to Premium HUD).
 
 ## Recent Actions
-- **Phase 2: Premium HUD**: Built the High-Fidelity Active Exam HUD with tactical sidebar and synchronized timer.
-- **Phase 1: Hygiene**: Cleaned build artifacts and migrated documentation.
-- **Phase 3 (Core)**: Type alignment in `QuizClient`.
-- **Phase 1: Reporting Convergence**: Implemented async polling and data mapping for results. Handled `processing` status with retry backoff.
-- **Strict Mode Guard**: Verified that the prompt enforces absolute taxonomy alignment when strict mode is active.
-- **Verification**: Root `pnpm build` passed (Exit Code 0).
+- **Global Taxonomy Injection**: Fully integrated the system-wide skill taxonomy into the Question Factory prompt.
+- **Context Resolution**: Fixed hardcoded context strings by resolving domain, subject, and topic names from application state.
+- **Prompt Refinement**: Hardened AI instructions to prioritize selection from official taxonomy.
+- **Final Certification**: Full monorepo build and type-check verified (Exit Code 0).
 
 ### Batch 130: API Client Type Alignment (Phase 3)
 - **Strong Typing**: Introduced `QuizState` and `QuizResultResponse` (discriminated union) in `api-client`.
 - **Consumer Alignment**: Refactored `ExamInterface`, `active-report`, and `exam/[examId]` to rely on official interfaces. Removed most `any` casts (some remain in mapping logic for legacy compatibility).
-- **Verification**: Root `pnpm build` passed (Exit Code 0).
-- **Hygiene**: Removed `tsc_output.txt`, updated `.gitignore`, and migrated walkthrough documents.
 - **Final Certification**: Full monorepo build and type-check verified (Exit Code 0).
 

@@ -1126,9 +1126,9 @@ Reduce documentation fragmentation and improve discoverability by consolidating 
 - **Status Gating**: Implemented automated redirect to results for completed/processing sessions.
 - **Verification**: `pnpm build` passed (Exit Code 0).
 
-### Batch 127: Skill Injection Visibility & Taxonomy Enforcement
-- **Goal**: Enable visibility of official skill injection in the Question Factory and enforce taxonomy alignment in AI prompts.
-- **UI Logic**: Modified `QuestionFactoryPage.tsx` to include an `officialSkills.length` badge in the Intelligence Phase footer, providing real-time feedback on injected metadata.
-- **Prompt Engineering**: Verified and documented the `PromptService.generateTechnicalPrompt` logic which maps existing skills and enforces a `CRITICAL RULE` for strict adherence to official taxonomy.
+### Batch 127: Global Taxonomy Injection & Contextual Overhaul
+- **Goal**: Resolve hardcoded prompt context and provide AI with the full system taxonomy for better skill mapping.
+- **UI Logic**: Modified `QuestionFactoryPage.tsx` to use `useAllSkills` and resolved human-readable names for domain, subject, and topic.
+- **Prompt Engineering**: Hardened `PromptService.ts` to explicitly instruct the AI to select from the provided global taxonomy list.
 - **Verification**: Executed the mandatory root build sequence (`pnpm build`, `tsc --noEmit`) with a perfect **Exit Code 0** result.
-- **Outcome**: Delivered a transparent and secure content generation workflow that prevents skill pollution and hallucinatory taxonomy.
+- **Outcome**: A high-fidelity content generation workflow that uses the full official taxonomy and provides precise pedagogical context.

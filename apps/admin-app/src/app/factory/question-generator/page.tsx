@@ -12,7 +12,7 @@ import { toast } from 'sonner';
 import { FactoryProvider, useFactory } from '@/context/FactoryContext';
 import { JsonIngestBox } from '@/components/factory/ingest/JsonIngestBox';
 import { RefreshCcw, ShieldCheck } from 'lucide-react';
-import { useTopicSkills } from '@/hooks/useAdminHierarchy';
+import { useDomains, useSubjects, useTopics, useSubtopics, useAllSkills } from '@/hooks/useAdminHierarchy';
 
 export default function QuestionFactoryPage() {
     return (
@@ -24,8 +24,14 @@ function QuestionFactoryContent() {
     const { stagedQuestions, blueprint, setBlueprint, sourceCode, setSourceCode, resetFactory } = useFactory();
     const [isCopying, setIsCopying] = useState(false);
 
-    // Taxonomy Governance: Fetch official skills for the active Topic
-    const { data: officialSkills, loading: loadingSkills } = useTopicSkills(blueprint.topicId);
+    // Context resolution hooks for human-readable names
+    const { data: domains } = useDomains();
+    const { data: subjects } = useSubjects(blueprint.domainId);
+    const { data: topics } = useTopics(blueprint.subjectId);
+    const { data: subtopics } = useSubtopics(blueprint.topicId);
+
+    // Taxonomy Governance: Fetch ALL skills for global selection
+    const { data: globalSkills, loading: loadingSkills } = useAllSkills();
 
     const handleCopyPrompt = async () => {
         if (!blueprint.topicId) {
@@ -39,22 +45,28 @@ function QuestionFactoryContent() {
 
         setIsCopying(true);
         try {
-            // Context resolution with TAXONOMY INJECTION
+            // Resolve Names from IDs
+            const domainName = domains?.find((d: any) => d.id === blueprint.domainId)?.name || "Target Domain";
+            const subjectName = subjects?.find((s: any) => s.id === blueprint.subjectId)?.name || "Target Subject";
+            const topicName = topics?.find((t: any) => t.id === blueprint.topicId)?.name || "Target Topic";
+            const subtopicName = subtopics?.find((st: any) => st.id === blueprint.subtopicId)?.name;
+
+            // Context resolution with GLOBAL TAXONOMY INJECTION
             const prompt = PromptService.generateTechnicalPrompt({
                 sourceCode,
                 counts: blueprint.counts,
-                knownSkills: officialSkills?.map((s: any) => s.name) || [],
+                knownSkills: globalSkills?.map((s: any) => s.name) || [],
                 strictMode: blueprint.strictMode,
                 context: {
-                    domainName: "Target Domain",
-                    subjectName: "Target Subject",
-                    topicName: "Target Topic",
-                    subtopicName: blueprint.subtopicId ? "Target Sub-topic" : undefined
+                    domainName,
+                    subjectName,
+                    topicName,
+                    subtopicName
                 }
             });
 
             await navigator.clipboard.writeText(prompt);
-            toast.success("Prompt Copied with Taxonomy Injection!");
+            toast.success("Prompt Copied with Global Taxonomy!");
         } catch (err) {
             toast.error("Failed to copy prompt.");
         } finally {
@@ -132,11 +144,11 @@ function QuestionFactoryContent() {
                                 <h4 className="text-xs font-black uppercase text-[#FF4B91] tracking-widest italic">Intelligence Phase</h4>
                                 <div className="flex items-center gap-2 mt-0.5">
                                     <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Generate Surgical AI Prompt</p>
-                                    {officialSkills && officialSkills.length > 0 && (
+                                    {globalSkills && globalSkills.length > 0 && (
                                         <div className="flex items-center gap-1.5 px-2 py-0.5 bg-emerald-500/10 border border-emerald-500/20 rounded-md">
                                             <div className="w-1 h-1 bg-emerald-500 rounded-full animate-pulse" />
                                             <span className="text-[8px] font-black text-emerald-500 uppercase tracking-tighter">
-                                                {officialSkills.length} SKILLS INJECTED
+                                                {globalSkills.length} GLOBAL SKILLS INJECTED
                                             </span>
                                         </div>
                                     )}

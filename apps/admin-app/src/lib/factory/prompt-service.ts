@@ -44,7 +44,7 @@ You MUST generate the questions with this exact difficulty breakdown:
 For each question, you must calculate and include:
 1. 'depthLevel' (Integer 1-10): Rate the complexity (1=Syntax, 5=Pattern, 10=Architecture).
 2. 'mappingType': Label as 'conceptual' (Theory), 'technical' (Syntax), or 'practical' (Real-world).
-3. 'skillNames': Extract specific technical terms from the source code (e.g., 'React Hooks', 'State Management') as an array of strings.
+3. 'skillNames': Select the most relevant technical terms from the provided ### OFFICIAL TAXONOMY list. You may only extract from source code if the taxonomy is empty or if Strict Mode is OFF.
 
 ---
 

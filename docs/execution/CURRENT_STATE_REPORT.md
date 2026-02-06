@@ -573,8 +573,9 @@
     - **UX**: Updated `OnboardingWizard` text to match the professional "Expert" terminology.
 - **Certification**: Full "Dry Run" of the lifecycle passed; Monorepo build and `tsc` passed (Exit Code 0).
 
-### Phase 35: Skill Injection Visibility & Taxonomy Alignment (Batch 127)
-- **Official Skill Injection**: Verified that `PromptService.ts` correctly targets official skills for the selected Topic and injects them into the `### OFFICIAL TAXONOMY` section.
-- **Strict Mode Enforcement**: Confirmed that enabling the Shield icon triggers a `CRITICAL RULE` in the prompt, forbidding the AI from generating new skills.
-- **UI Visibility**: Implemented a dynamic "X SKILLS INJECTED" badge in the `QuestionFactoryPage` footer to provide immediate feedback on taxonomy alignment.
-- **Technical Certification**: Verified codebase integrity with a successful root `pnpm build` and `tsc` cycle (Exit Code 0).
+### Phase 35: Global Taxonomy Injection & Context Resolution (Batch 127)
+- **Global Skill Access**: Overhauled the Question Factory to fetch the entire system taxonomy (via `useAllSkills`). This ensures AI can select from the full set of official skills rather than being limited to topic-mapped ones.
+- **Context Resolution Fix**: Resolved a bug where context names were hardcoded as "Target Domain". Now correctly resolves actual names from IDs using hierarchy hooks.
+- **Instruction Hardening**: Refined `PromptService.ts` to explicitly command the AI to select from the injected `### OFFICIAL TAXONOMY`.
+- **UI Visibility**: Updated the footer badge to show "X GLOBAL SKILLS INJECTED" for better transparency.
+- **Technical Certification**: Full monorepo build and `tsc` cycle passing (Exit Code 0).
