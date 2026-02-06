@@ -64,4 +64,8 @@
 - **Gating**: Added strict UUID validation in `ActiveExamPage` with redirect to `/quiz/new` and polished log messages.
 - **API Defense**: Enforced UUID regex in `api/quiz/state` route (422 response).
 - **Verification**: Verified via `turbo build` and `pnpm type-check` with Exit Code 0.
-
+### Batch 137: Dashboard Health & Auth Stability
+- **Navigation**: Created `/dashboard/reports`, `/dashboard/path`, and `/dashboard/certs` to resolve 404s.
+- **Links**: Updated `DashboardPage.tsx` to use `/exam/` route for active sessions.
+- **Persistence**: Switched to `SameSite: 'none'` and `Secure: true` for tokens to fix cross-subdomain 401s.
+- **Verification**: `turbo build` and `pnpm type-check` verified (Exit Code 0).

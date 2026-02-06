@@ -26,8 +26,8 @@ export async function POST(req: NextRequest) {
     const accessTokenCookieName = isAdmin ? 'admin_accessToken' : 'accessToken';
     response.cookies.set(accessTokenCookieName, accessToken, {
       httpOnly: true,
-      secure: isProd,
-      sameSite: 'lax',
+      secure: true,
+      sameSite: 'none',
       maxAge: 15 * 60,
       path: '/',
       domain: cookieDomain,
@@ -36,8 +36,8 @@ export async function POST(req: NextRequest) {
     // Rotate Refresh Token Cookie
     response.cookies.set(cookieName, newRefreshToken, {
       httpOnly: true,
-      secure: isProd,
-      sameSite: 'lax',
+      secure: true,
+      sameSite: 'none',
       maxAge: 7 * 24 * 60 * 60,
       path: '/',
       domain: cookieDomain,

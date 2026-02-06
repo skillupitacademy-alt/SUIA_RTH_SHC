@@ -30,8 +30,8 @@ export async function POST(req: NextRequest) {
     const accessTokenCookieName = isAdmin ? 'admin_accessToken' : 'accessToken';
     response.cookies.set(accessTokenCookieName, accessToken, {
       httpOnly: true,
-      secure: isProd,
-      sameSite: 'lax',
+      secure: true, // Always true for cross-domain stability
+      sameSite: 'none', // Needed for api. subdomain to quiz. subdomain
       maxAge: 15 * 60, // 15 minutes
       path: '/',
       domain: cookieDomain,
@@ -41,8 +41,8 @@ export async function POST(req: NextRequest) {
     const refreshCookieName = isAdmin ? 'admin_refreshToken' : 'refreshToken';
     response.cookies.set(refreshCookieName, refreshToken, {
       httpOnly: true,
-      secure: isProd,
-      sameSite: 'lax',
+      secure: true,
+      sameSite: 'none',
       maxAge: 7 * 24 * 60 * 60, // 7 days
       path: '/',
       domain: cookieDomain,
