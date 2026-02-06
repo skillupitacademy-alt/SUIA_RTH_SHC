@@ -50,6 +50,7 @@ export class QuizClient {
       examId: string; 
       status: string;
       remainingTimeSeconds: number;
+      questions: any[]; 
     }>('/quiz/start', config, {
         headers: {
             'Idempotency-Key': opts.idempotencyKey
@@ -58,11 +59,13 @@ export class QuizClient {
   }
 
   async submitAnswer(examId: string, questionId: string, answer: string) {
-    return this.client.post<{ isCorrect: boolean }>('/quiz/answer', { examId, questionId, answer });
+    // Backend returns sanitized ACK only (no correctness)
+    return this.client.post<{ success: boolean; status: string }>('/quiz/answer', { examId, questionId, answer });
   }
 
   async submitExam(examId: string) {
-    return this.client.post<{ score: number; reportId: string }>('/quiz/submit', { examId });
+    // Backend returns 202 Accepted for async processing or 200 if immediate
+    return this.client.post<{ success: boolean; status: string; reportId?: string }>('/quiz/submit', { examId });
   }
 
   async getResult(examId: string) {

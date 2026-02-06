@@ -111,8 +111,8 @@ export class SessionService {
       // Full question list (sanitized)
       questions: fullExam.examQuestions.map(eq => ({
         id: eq.question.id,
-        text: eq.question.questionText, // ExamInterface expects 'text' or 'questionText'? Checking interface... actually usually matches DB or has adaptation. 
-        // Let's provide both to be safe or standard. The DB has questionText.
+        questionId: eq.question.id, // Explicitly provide questionId for ExamInterface mapping
+        text: eq.question.questionText, 
         questionText: eq.question.questionText,
         options: eq.question.options,
         codeSnippet: eq.question.codeSnippet,
