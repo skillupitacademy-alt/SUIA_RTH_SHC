@@ -12,7 +12,7 @@
 - **Virtual Fallback**: Implemented domain-only start fallback (Option 2) allowing for practice sessions without pre-defined blueprints.
 - **Certification**: Platform-wide `pnpm build` and `tsc --noEmit` passed with `Exit Code 0`.
 - **Drizzle Baselining**: Fixed production migration registry mismatch. Baselined `0000` and `0001` to `drizzle.__drizzle_migrations` to ensure future migration safety.
-- **Answer Security (Step 1)**: Hardened `/api/quiz/answer` to return a sanitized ACK only, preventing any exam-time correctness leakage.
+- **Phase 35 Step 1**: Wired "Launch Assessment" to `/api/quiz/start` with Idempotency + Validation.
 - **Report Security (Step 2)**: Secured `/api/reports` with strict pre-check ownership enforcement and status gating. `ReportEngine` now defaults to sanitized output (no correct answers).
 - **Result Gating (Step 3)**: Hardened `/api/quiz/result` with strict order: Query -> Ownership Check (403) -> Status Gate (409/202) -> Sanitized Generation.
 - **Status**: `READY` (Exam Integrity Hardening Complete)

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { AssessmentSummary } from './AssessmentSummary';
 import { DomainCard } from './DomainCard';
 import { TopicChip } from './TopicChip';
@@ -42,6 +43,7 @@ const DottedProgressBar = ({ currentStep, mode }: { currentStep: number; mode: '
 );
 
 export function QuizSelectionConsole() {
+    const router = useRouter();
     const [step, setStep] = useState(1);
     const [domains, setDomains] = useState<any[]>([]);
     const [subjects, setSubjects] = useState<any[]>([]);
@@ -273,18 +275,69 @@ export function QuizSelectionConsole() {
         });
     };
 
+
+    // Transactional Launch Logic
+    const handleLaunch = async () => {
+        if (isLocked) return;
+        setIsLocked(true); // Lock UI immediately
+        setLoading(true);  // Show loader overlay on LEFT pane (via loading state)
+
+        try {
+            // 1. Generate Idempotency Key
+            const idempotencyKey = crypto.randomUUID();
+
+            // 2. Construct Payload
+            const payload = {
+                domainId: selectedDomains[0], // Prefer domainId as primary context
+                // Backend expects arrays, UI guarantees single/multi select validation
+                subjectIds: selectedSubjects.length > 0 ? selectedSubjects : undefined,
+                topicIds: selectedTopics.length > 0 ? selectedTopics : undefined,
+                subtopicIds: selectedSubtopics.length > 0 ? selectedSubtopics : undefined,
+                difficulty: difficulty, // Already normalized
+                questionCount: questionCount
+            };
+
+            // 3. Execute Transaction
+            const res = await fetch('/api/quiz/start', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Idempotency-Key': idempotencyKey
+                },
+                body: JSON.stringify(payload)
+                // credentials: 'include' is default for same-origin fetch, but explicit is safer if cross-site
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                throw new Error(data.error || 'Failed to start assessment');
+            }
+
+            // 4. Navigate to Active HUD
+            router.push(`/exam/${data.examId}`);
+
+        } catch (err: any) {
+            console.error('Launch failed:', err);
+            setSelectionError(err.message || "Launch failed. Please try again.");
+            setIsLocked(false);
+            setLoading(false);
+            // Auto-clear error after 5s
+            setTimeout(() => setSelectionError(null), 5000);
+        }
+    };
+
     const handleNext = () => {
-        if (isLocked || isArmed) {
-            // Special exemption: If armed but not locked, and we're at step 5, 
-            // handleNext (which initiates launch) is allowed if it's the launch trigger.
-            // But here handleNext sets isArmed to true, so it's already "Next" in step 5.
-            if (step === 5 && isArmed && !isLocked) {
-                // Launch logic would typically be handled by the CTA button itself (onStart)
-                // but if this button is clicked again, we handle it as Launch.
-                setIsLocked(true);
+        if (isLocked) return; // Strict lock check
+
+        if (isArmed) {
+            // If already armed and at step 5, this is the LAUNCH trigger
+            if (step === 5) {
+                handleLaunch();
             }
             return;
         }
+
         if (step === 5) {
             setIsArmed(true);
             return;
@@ -652,7 +705,7 @@ export function QuizSelectionConsole() {
                         difficulty={difficulty.charAt(0).toUpperCase() + difficulty.slice(1)}
                         totalPoints={100 + selectedTopics.length * 15 + selectedSubtopics.length * 5}
                         isReady={isArmed}
-                        onStart={() => setIsLocked(true)}
+                        onStart={handleLaunch}
                         isLocked={isLocked}
                         loading={loading}
                         selectedSubjects={currentSubjects.map(s => s.name)}
