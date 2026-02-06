@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback, useMemo } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import { apiClient, QuizState } from '@quiz/api-client';
 import {
     Loader2,
@@ -27,8 +27,9 @@ interface HUDState extends QuizState {
     localAnswers: Record<string, string>;
 }
 
-export default function ActiveExamPage({ params }: { params: { examId: string } }) {
+export default function ActiveExamPage() {
     const router = useRouter();
+    const { examId } = useParams<{ examId: string }>();
     const [state, setState] = useState<HUDState | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -41,19 +42,19 @@ export default function ActiveExamPage({ params }: { params: { examId: string } 
         const fetchState = async () => {
             // Guardrail: Validate examId format before proceeding
             const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-            if (!params.examId || params.examId === 'undefined' || !uuidRegex.test(params.examId)) {
+            if (!examId || examId === 'undefined' || !uuidRegex.test(examId)) {
                 console.warn('[ActiveExamPage] Invalid examId detected, redirecting to Mission Control (/quiz/new).');
                 router.replace('/quiz/new');
                 return;
             }
 
             try {
-                const data = await apiClient.quiz.getQuizState(params.examId);
+                const data = await apiClient.quiz.getQuizState(examId);
 
                 // Status Gating (P0 Requirement)
                 const terminalStatuses = ['completed', 'processing', 'failed', 'abandoned'];
                 if (terminalStatuses.includes(data.status)) {
-                    router.replace(`/reports/active-report?examId=${params.examId}`);
+                    router.replace(`/reports/active-report?examId=${examId}`);
                     return;
                 }
 
@@ -81,7 +82,7 @@ export default function ActiveExamPage({ params }: { params: { examId: string } 
         };
 
         fetchState();
-    }, [params.examId, router]);
+    }, [examId, router]);
 
     // 2. Mission Timer Tick
     useEffect(() => {
@@ -104,7 +105,7 @@ export default function ActiveExamPage({ params }: { params: { examId: string } 
 
         try {
             // Persistence (No raw fetch - using apiClient)
-            await apiClient.quiz.submitAnswer(params.examId, questionId, optionId);
+            await apiClient.quiz.submitAnswer(examId, questionId, optionId);
         } catch (err) {
             console.error('Critical: Failed to persist answer', err);
             // In a real premium app, we might show a "Sync Error" toast here
@@ -129,8 +130,8 @@ export default function ActiveExamPage({ params }: { params: { examId: string } 
         if (isSubmitting) return;
         setIsSubmitting(true);
         try {
-            await apiClient.quiz.submitExam(params.examId);
-            router.replace(`/reports/active-report?examId=${params.examId}`);
+            await apiClient.quiz.submitExam(examId);
+            router.replace(`/reports/active-report?examId=${examId}`);
         } catch (err) {
             console.error('Failed to submit exam', err);
             setIsSubmitting(false);
@@ -187,7 +188,7 @@ export default function ActiveExamPage({ params }: { params: { examId: string } 
                     <div className="h-4 w-[1px] bg-white/10 mx-2" />
                     <div>
                         <h2 className="text-xs font-black font-outfit uppercase tracking-widest text-gray-500">Active Campaign</h2>
-                        <p className="text-sm font-bold truncate max-w-[200px]">{params.examId}</p>
+                        <p className="text-sm font-bold truncate max-w-[200px]">{examId}</p>
                     </div>
                 </div>
 
