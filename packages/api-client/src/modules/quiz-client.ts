@@ -45,15 +45,15 @@ export class QuizClient {
     subtopicIds?: string[];
     difficulty?: string; 
     questionCount?: number 
-  }, idempotencyKey?: string) {
-    const headers: Record<string, string> = {};
-    if (idempotencyKey) {
-        headers['Idempotency-Key'] = idempotencyKey;
-    }
-    return this.client.request<{ examId: string; questions: any[] }>('/quiz/start', {
-        method: 'POST',
-        headers,
-        body: JSON.stringify(config)
+  }, opts: { idempotencyKey: string }) {
+    return this.client.post<{ 
+      examId: string; 
+      status: string;
+      remainingTimeSeconds: number;
+    }>('/quiz/start', config, {
+        headers: {
+            'Idempotency-Key': opts.idempotencyKey
+        }
     });
   }
 

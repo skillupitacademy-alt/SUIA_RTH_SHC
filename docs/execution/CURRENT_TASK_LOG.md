@@ -12,8 +12,9 @@
 - **Virtual Fallback**: Implemented domain-only start fallback (Option 2) allowing for practice sessions without pre-defined blueprints.
 - **API Client (Hotfix)**: Opened `FetchClient.request` (public) and corrected `QuizClient` types (`subjectIds`) to support Transactional Launch requirements.
 - **Drizzle Baselining**: Fixed production migration registry mismatch. Baselined `0000` and `0001` to `drizzle.__drizzle_migrations` to ensure future migration safety.
-- **Phase 35 Step 1**: Wired "Launch Assessment" to `/api/quiz/start`. Refactored to use `apiClient` (Fixed `subjectIds` type mismatch and URL/CSRF handling).
-- **Phase 35 Step 2**: Created `/exam/[examId]` skeleton route (Step 2 Pending Implementation).
+- **Launch Repair (Task A)**: Updated `FetchClient` to support custom headers and `QuizClient` to enforce `Idempotency-Key` via headers.
+- **Launch Repair (Task B)**: Connected `QuizSelectionConsole` to `apiClient` with correct redirect to `/quiz/active-session`.
+- **State Repair (Task C)**: Updated `/api/quiz/state` (SessionService) to return `questions[]` and legacy fields for frontend compatibility.
 - **Result Gating (Step 3)**: Hardened `/api/quiz/result` with strict order: Query -> Ownership Check (403) -> Status Gate (409/202) -> Sanitized Generation.
 - **Status**: `READY` (Exam Integrity Hardening Complete)
 

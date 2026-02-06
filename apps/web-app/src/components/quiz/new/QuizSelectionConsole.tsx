@@ -299,10 +299,11 @@ export function QuizSelectionConsole() {
 
             // 3. Execute Transaction
             // Refactored to use apiClient for correct URL/CSRF handling
-            const data = await apiClient.quiz.startExam(payload, idempotencyKey);
+            const data = await apiClient.quiz.startExam(payload, { idempotencyKey });
 
             // 4. Navigate to Active HUD
-            router.push(`/exam/${data.examId}`);
+            // Redirect to existing legacy page as requested
+            router.push(`/quiz/active-session?examId=${data.examId}`);
 
         } catch (err: any) {
             console.error('Launch failed:', err);

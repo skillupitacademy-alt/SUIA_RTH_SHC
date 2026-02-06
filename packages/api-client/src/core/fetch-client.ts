@@ -53,33 +53,36 @@ export class FetchClient {
     return response.json();
   }
 
-  get<T>(endpoint: string) {
-    return this.request<T>(endpoint, { method: 'GET' });
+  get<T>(endpoint: string, options?: RequestInit) {
+    return this.request<T>(endpoint, { ...options, method: 'GET' });
   }
 
-  post<T>(endpoint: string, body: any) {
+  post<T>(endpoint: string, body: any, options?: RequestInit) {
     return this.request<T>(endpoint, {
+      ...options,
       method: 'POST',
       body: JSON.stringify(body),
     });
   }
 
-  put<T>(endpoint: string, body: any) {
+  put<T>(endpoint: string, body: any, options?: RequestInit) {
     return this.request<T>(endpoint, {
+      ...options,
       method: 'PUT',
       body: JSON.stringify(body),
     });
   }
 
-  patch<T>(endpoint: string, body: any) {
+  patch<T>(endpoint: string, body: any, options?: RequestInit) {
     return this.request<T>(endpoint, {
+      ...options,
       method: 'PATCH',
       body: JSON.stringify(body),
     });
   }
 
-  delete<T>(endpoint: string) {
-    return this.request<T>(endpoint, { method: 'DELETE' });
+  delete<T>(endpoint: string, options?: RequestInit) {
+    return this.request<T>(endpoint, { ...options, method: 'DELETE' });
   }
 }
 

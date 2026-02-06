@@ -99,12 +99,27 @@ export class SessionService {
 
     return {
       examId: fullExam.id,
+      // Mapped legacy fields for ExamInterface.tsx compatibility
+      id: fullExam.id,
+      startedAt: fullExam.startedAt,
       status: fullExam.status,
       remainingTimeSeconds: Math.max(0, durationSeconds - timeElapsedSeconds),
       progress: {
         totalQuestions: fullExam.examQuestions.length,
         answeredCount,
       },
+      // Full question list (sanitized)
+      questions: fullExam.examQuestions.map(eq => ({
+        id: eq.question.id,
+        text: eq.question.questionText, // ExamInterface expects 'text' or 'questionText'? Checking interface... actually usually matches DB or has adaptation. 
+        // Let's provide both to be safe or standard. The DB has questionText.
+        questionText: eq.question.questionText,
+        options: eq.question.options,
+        codeSnippet: eq.question.codeSnippet,
+        type: eq.question.type,
+        difficulty: eq.question.difficulty,
+        userAnswer: eq.userAnswer
+      })),
       currentQuestion: currentEq ? {
         id: currentEq.question.id,
         questionText: currentEq.question.questionText,

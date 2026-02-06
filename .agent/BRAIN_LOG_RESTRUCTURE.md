@@ -1105,3 +1105,10 @@ Reduce documentation fragmentation and improve discoverability by consolidating 
 - **Problem**: Admin app auto-logged out because `/api/auth/heartbeat` enforced user scope.
 - **Fix**: Created `/api/admin/auth/heartbeat` (admin scope) and updated `usePresenceHeartbeat` to use `AuthClient.adminHeartbeat`.
 - **Certification**: `pnpm build` passed.
+### Batch 126: Launch Evaluation Repair (Final Fix)
+- **Objective**: Fix Launch Console network logic and Backend state compatibility.
+- **Client**: Updated `FetchClient` to accept `options` (for headers) and `QuizClient` to require `idempotencyKey` via header.
+- **Frontend**: Wired `QuizSelectionConsole` to correct `apiClient` method and redirected to legacy `/quiz/active-session`.
+- **Backend**: Enhanced `SessionService.resumePayload` to return `questions[]` and full schema for `ExamInterface`.
+- **Outcome**: Transactional launch now hits valid API endpoints with correct headers and maps state correctly.
+- **Certification**: `pnpm build` passed [Exit Code 0].
