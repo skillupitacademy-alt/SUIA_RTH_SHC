@@ -1111,4 +1111,4 @@ Reduce documentation fragmentation and improve discoverability by consolidating 
 - **Frontend**: Wired `QuizSelectionConsole` to correct `apiClient` method and redirected to legacy `/quiz/active-session`.
 - **Backend**: Enhanced `SessionService.resumePayload` to return `questions[]` and full schema for `ExamInterface`.
 - **Outcome**: Transactional launch now hits valid API endpoints with correct headers and maps state correctly.
-- **State Compatibility**: Aligned `SessionService` payload with `ExamInterface` (`questionId`, `id`) and removed `isCorrect` from `QuizClient` types.
+- **Type Hygiene**: Aligned `QuizClient` types with true backend shapes and added missing `order` field to `SessionService` payload.

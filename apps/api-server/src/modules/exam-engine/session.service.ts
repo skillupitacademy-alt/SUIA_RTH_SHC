@@ -118,7 +118,8 @@ export class SessionService {
         codeSnippet: eq.question.codeSnippet,
         type: eq.question.type,
         difficulty: eq.question.difficulty,
-        userAnswer: eq.userAnswer
+        userAnswer: eq.userAnswer,
+        order: eq.order
       })),
       currentQuestion: currentEq ? {
         id: currentEq.question.id,
