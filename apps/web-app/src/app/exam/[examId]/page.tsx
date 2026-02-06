@@ -161,22 +161,28 @@ export default function ActiveExamPage() {
 
     // 5. Render Helpers
     if (loading) return (
-        <div className="flex h-screen flex-col items-center justify-center gap-4 bg-[#0A0A0A]">
-            <Loader2 className="animate-spin text-[#FF2D55]" size={48} />
-            <p className="text-[#FF2D55] font-black font-outfit uppercase tracking-tighter">Initializing Mission Control...</p>
+        <div className={cn("flex h-screen flex-col items-center justify-center gap-4", theme.colors.pageBackground)}>
+            <Loader2 className="animate-spin text-pink-500" size={48} />
+            <p className="text-pink-500 font-black font-outfit uppercase tracking-tighter">Initializing Mission Control...</p>
         </div>
     );
 
     if (error) return (
-        <div className="flex h-screen flex-col items-center justify-center gap-6 text-center bg-[#0A0A0A] p-6">
-            <AlertCircle className="text-[#FF2D55]" size={64} />
+        <div className={cn("flex h-screen flex-col items-center justify-center gap-6 text-center p-6", theme.colors.pageBackground)}>
+            <AlertCircle className="text-pink-500" size={64} />
             <div>
-                <h1 className="text-3xl font-black text-white font-outfit uppercase">Connection Severed</h1>
-                <p className="text-gray-400 mt-2 max-w-md">{error}</p>
+                <h1 className="text-3xl font-black text-gray-900 font-outfit uppercase">Connection Severed</h1>
+                <p className="text-gray-600 mt-2 max-w-md">{error}</p>
             </div>
             <button
                 onClick={() => router.push('/quiz/new')}
-                className="px-8 py-3 bg-[#FF2D55] text-white font-bold rounded-xl shadow-lg hover:shadow-[#FF2D55]/20 transition-all"
+                className={cn(
+                    "px-8 py-3 font-bold transition-all",
+                    theme.colors.primaryButton,
+                    theme.colors.primaryButtonText,
+                    theme.effects.buttonRadius,
+                    theme.effects.primaryButtonShadow
+                )}
             >
                 Return to Command Center
             </button>
@@ -191,24 +197,28 @@ export default function ActiveExamPage() {
             <ThemeSwitcher />
 
             {/* TOP NAVIGATION HUD */}
-            <header className="sticky top-0 z-50 h-16 border-b border-white/5 bg-black/50 backdrop-blur-xl px-6 flex items-center justify-between">
+            <header className={cn(
+                "sticky top-0 z-50 border-b px-6 flex items-center justify-between backdrop-blur-xl",
+                theme.spacing.headerHeight,
+                "bg-white/90 border-gray-200"
+            )}>
                 <div className="flex items-center gap-4">
-                    <div className="w-8 h-8 rounded-lg bg-[#FF2D55] flex items-center justify-center font-black italic">!G</div>
-                    <div className="h-4 w-[1px] bg-white/10 mx-2" />
+                    <div className="w-8 h-8 rounded-lg bg-pink-500 flex items-center justify-center font-black italic text-white">!G</div>
+                    <div className="h-4 w-[1px] bg-gray-200 mx-2" />
                     <div>
                         <h2 className="text-xs font-black font-outfit uppercase tracking-widest text-gray-500">Active Campaign</h2>
-                        <p className="text-sm font-bold truncate max-w-[200px]">{examId}</p>
+                        <p className="text-sm font-bold truncate max-w-[200px] text-gray-900">{examId}</p>
                     </div>
                 </div>
 
                 <div className={cn(
                     "flex items-center gap-3 px-6 py-2 rounded-full border transition-all duration-500",
-                    isNearEnd ? "border-[#FF2D55]/50 bg-[#FF2D55]/10 pink-glow animate-pulse" : "border-white/10 bg-white/5"
+                    isNearEnd ? "border-pink-500/50 bg-pink-50 animate-pulse" : "border-gray-200 bg-gray-50"
                 )}>
-                    <Timer size={18} className={isNearEnd ? "text-[#FF2D55]" : "text-gray-400"} />
+                    <Timer size={18} className={isNearEnd ? "text-pink-500" : "text-gray-600"} />
                     <span className={cn(
                         "font-mono font-black text-lg tabular-nums",
-                        isNearEnd ? "text-[#FF2D55] text-shadow-pink" : "text-white"
+                        isNearEnd ? "text-pink-500" : "text-gray-900"
                     )}>
                         {formatTime(timeLeft || 0)}
                     </span>
@@ -217,7 +227,7 @@ export default function ActiveExamPage() {
                 <div className="flex items-center gap-3">
                     <button
                         onClick={() => setConfirmSubmit(true)}
-                        className="px-6 py-2 bg-[#FF2D55] text-white text-sm font-black font-outfit rounded-full hover:scale-105 active:scale-95 transition-all shadow-lg shadow-[#FF2D55]/20"
+                        className="px-6 py-2 bg-pink-500 text-white text-sm font-black font-outfit rounded-full hover:scale-105 active:scale-95 transition-all shadow-lg shadow-pink-500/20"
                     >
                         TERMINATE SESSION
                     </button>
@@ -227,10 +237,14 @@ export default function ActiveExamPage() {
             <main className="max-w-[1400px] mx-auto p-6 grid grid-cols-1 lg:grid-cols-12 gap-8 mt-4">
                 {/* LEFT: TACTICAL SIDEBAR */}
                 <aside className="lg:col-span-3 space-y-6 order-2 lg:order-1">
-                    <div className="glass-morphism rounded-3xl p-6 bg-white/5">
+                    <div className={cn(
+                        "rounded-3xl p-6 border",
+                        theme.colors.questionCard,
+                        theme.colors.questionCardBorder
+                    )}>
                         <div className="flex items-center justify-between mb-6">
-                            <h3 className="font-outfit font-black uppercase text-xs tracking-widest text-[#FF2D55]">Tactical Map</h3>
-                            <span className="text-[10px] bg-white/10 px-2 py-0.5 rounded font-mono text-gray-400">
+                            <h3 className="font-outfit font-black uppercase text-xs tracking-widest text-pink-500">Tactical Map</h3>
+                            <span className="text-[10px] bg-gray-100 px-2 py-0.5 rounded font-mono text-gray-600">
                                 {Object.keys(state.localAnswers).length}/{state.questions.length} COMPLETE
                             </span>
                         </div>
@@ -241,26 +255,35 @@ export default function ActiveExamPage() {
                                 const isAnswered = !!state.localAnswers[q.questionId];
                                 const isFlagged = state.flags[q.questionId];
 
+                                // Determine chip styling based on state
+                                let chipClasses = '';
+                                if (isCurrent) {
+                                    chipClasses = theme.colors.tacticalChipCurrent;
+                                } else if (isFlagged) {
+                                    chipClasses = theme.colors.tacticalChipFlagged;
+                                } else if (isAnswered) {
+                                    chipClasses = theme.colors.tacticalChipAnswered;
+                                } else {
+                                    chipClasses = theme.colors.tacticalChipUnvisited;
+                                }
+
                                 return (
                                     <button
                                         key={q.questionId}
                                         onClick={() => goToQuestion(idx)}
                                         className={cn(
-                                            "aspect-square rounded-xl border flex items-center justify-center transition-all relative overflow-hidden group",
-                                            isCurrent ? "bg-[#FF2D55] border-[#FF2D55] pink-glow" :
-                                                isAnswered ? "bg-white/10 border-white/20 hover:border-[#FF2D55]/50" :
-                                                    "bg-white/5 border-white/10 hover:border-white/30"
+                                            "aspect-square border-2 flex items-center justify-center transition-all duration-150 relative overflow-hidden hover:scale-105 active:scale-95",
+                                            theme.spacing.tacticalChipSize,
+                                            theme.effects.chipRadius,
+                                            chipClasses
                                         )}
                                     >
-                                        <span className={cn(
-                                            "text-xs font-black font-outfit",
-                                            isCurrent ? "text-white" : isAnswered ? "text-white" : "text-gray-500 group-hover:text-white"
-                                        )}>
+                                        <span className="text-[11px] font-black font-outfit">
                                             {(idx + 1).toString().padStart(2, '0')}
                                         </span>
                                         {isFlagged && (
-                                            <div className="absolute top-1 right-1">
-                                                <Flag size={8} fill="currentColor" className="text-[#FF2D55]" />
+                                            <div className="absolute top-0.5 right-0.5">
+                                                <Flag size={8} fill="currentColor" className="text-orange-500" />
                                             </div>
                                         )}
                                     </button>
@@ -268,32 +291,36 @@ export default function ActiveExamPage() {
                             })}
                         </div>
 
-                        <div className="mt-8 space-y-3 pt-6 border-t border-white/5">
-                            <div className="flex items-center gap-3 text-[10px] font-bold text-gray-500 uppercase tracking-widest">
-                                <div className="w-2 h-2 rounded bg-[#FF2D55] pink-glow" /> Active Position
+                        <div className="mt-8 space-y-3 pt-6 border-t border-gray-200">
+                            <div className="flex items-center gap-3 text-[10px] font-bold text-gray-600 uppercase tracking-widest">
+                                <div className="w-2 h-2 rounded bg-pink-500" /> Active Position
                             </div>
-                            <div className="flex items-center gap-3 text-[10px] font-bold text-gray-500 uppercase tracking-widest">
-                                <div className="w-2 h-2 rounded bg-white/20" /> Answered
+                            <div className="flex items-center gap-3 text-[10px] font-bold text-gray-600 uppercase tracking-widest">
+                                <div className="w-2 h-2 rounded bg-green-500" /> Answered
                             </div>
-                            <div className="flex items-center gap-3 text-[10px] font-bold text-gray-500 uppercase tracking-widest">
-                                <Flag size={8} className="text-[#FF2D55]" fill="currentColor" /> Marked for Review
+                            <div className="flex items-center gap-3 text-[10px] font-bold text-gray-600 uppercase tracking-widest">
+                                <Flag size={8} className="text-orange-500" fill="currentColor" /> Marked for Review
                             </div>
                         </div>
                     </div>
 
-                    <div className="glass-morphism rounded-3xl p-6 bg-white/5 border-dashed border-white/10">
+                    <div className={cn(
+                        "rounded-3xl p-6 border",
+                        theme.colors.questionCard,
+                        theme.colors.questionCardBorder
+                    )}>
                         <div className="flex items-center gap-3 mb-4">
-                            <LayoutDashboard size={14} className="text-[#FF2D55]" />
-                            <h3 className="font-bold text-sm tracking-tight">Mission Metrics</h3>
+                            <LayoutDashboard size={14} className="text-pink-500" />
+                            <h3 className="font-bold text-sm tracking-tight text-gray-900">Mission Metrics</h3>
                         </div>
                         <div className="space-y-1">
-                            <div className="flex justify-between text-xs text-gray-500 mb-1">
+                            <div className="flex justify-between text-xs text-gray-600 mb-1">
                                 <span>Completion</span>
                                 <span>{Math.round((Object.keys(state.localAnswers).length / state.questions.length) * 100)}%</span>
                             </div>
-                            <div className="h-1 bg-white/5 rounded-full overflow-hidden">
+                            <div className="h-1 bg-gray-200 rounded-full overflow-hidden">
                                 <div
-                                    className="h-full bg-[#FF2D55] transition-all duration-1000"
+                                    className="h-full bg-pink-500 transition-all duration-1000"
                                     style={{ width: `${(Object.keys(state.localAnswers).length / state.questions.length) * 100}%` }}
                                 />
                             </div>
@@ -323,10 +350,11 @@ export default function ActiveExamPage() {
                             <button
                                 onClick={() => toggleFlag(currentQuestion.questionId)}
                                 className={cn(
-                                    "flex items-center gap-2 px-5 py-3 rounded-2xl border transition-all font-bold text-sm",
+                                    "flex items-center gap-2 px-5 py-3 border-2 transition-all font-bold text-sm",
+                                    theme.effects.buttonRadius,
                                     state.flags[currentQuestion.questionId]
-                                        ? "bg-[#FF2D55]/10 border-[#FF2D55] text-[#FF2D55]"
-                                        : "bg-white/5 border-white/10 text-gray-400 hover:bg-white/10"
+                                        ? "bg-pink-50 border-pink-500 text-pink-600"
+                                        : "bg-white border-gray-300 text-gray-600 hover:bg-gray-50"
                                 )}
                             >
                                 <Flag size={16} fill={state.flags[currentQuestion.questionId] ? 'currentColor' : 'none'} />
@@ -337,11 +365,11 @@ export default function ActiveExamPage() {
                         {/* Content Area */}
                         <div className="flex-grow space-y-10">
                             {currentQuestion.codeSnippet && (
-                                <div className="rounded-3xl border border-white/10 bg-black/40 p-6 font-mono text-sm leading-relaxed relative group">
-                                    <div className="absolute top-0 right-8 px-4 py-1.5 bg-white/5 rounded-b-xl border-x border-b border-white/10 text-[10px] font-black text-gray-500 uppercase tracking-widest">
+                                <div className="rounded-2xl border-2 border-gray-200 bg-gray-50 p-6 font-mono text-sm leading-relaxed relative group">
+                                    <div className="absolute top-0 right-8 px-4 py-1.5 bg-gray-100 rounded-b-xl border-x-2 border-b-2 border-gray-200 text-[10px] font-black text-gray-600 uppercase tracking-widest">
                                         Source Fragment
                                     </div>
-                                    <pre className="overflow-x-auto pt-4 text-pink-50/90 whitespace-pre-wrap">
+                                    <pre className="overflow-x-auto pt-4 text-gray-800 whitespace-pre-wrap">
                                         <code>{currentQuestion.codeSnippet}</code>
                                     </pre>
                                 </div>
