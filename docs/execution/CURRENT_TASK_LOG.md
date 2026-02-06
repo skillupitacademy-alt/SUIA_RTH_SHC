@@ -30,10 +30,11 @@
     - **Engine Safety**: `ExamEngine.submitAnswer` returned void.
 
 ## Next Steps
-1. **GUI-003**: Wire up `QuizSelectionConsole` -> `/api/quiz/start`.
-2. **GUI-004**: Build Active Exam HUD.
+1. **P0 Hardening Phase 2**: Sync Timer to Backend (`remainingTimeSeconds`).
+2. **GUI-004**: Build Premium Active Exam HUD.
 
 ## Recent Actions
+- **Phase 1: Reporting Convergence**: Implemented async polling and data mapping for results. Handled `processing` status with retry backoff.
 - **Skill Injection Verification**: Confirmed that official skills are correctly mapped and injected into the AI prompt for taxonomy alignment.
 - **UI Enhancement**: Added a dynamic badge in `QuestionFactoryPage` to show the count of injected skills.
 - **Strict Mode Guard**: Verified that the prompt enforces absolute taxonomy alignment when strict mode is active.

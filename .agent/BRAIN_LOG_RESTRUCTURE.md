@@ -1113,6 +1113,12 @@ Reduce documentation fragmentation and improve discoverability by consolidating 
 - **Outcome**: Transactional launch now hits valid API endpoints with correct headers and maps state correctly.
 - **Type Hygiene**: Aligned `QuizClient` types with true backend shapes and added missing `order` field to `SessionService` payload.
 
+### Batch 128: Results & Reporting Stability (Phase 1)
+- **Polling Implementation**: Added backoff polling (1s-10s) to `active-report` and `[id]` pages to handle async scoring (`status: processing`).
+- **Data Alignment**: Mapped new `performance` dimensions (topic/difficulty) and sanitized `questions` list to current HUD components.
+- **Fail-Safety**: Implemented graceful error recovery for blocked or failed scoring sessions.
+- **Certification**: Root `pnpm build` passed (Exit Code 0).
+
 ### Batch 127: Skill Injection Visibility & Taxonomy Enforcement
 - **Goal**: Enable visibility of official skill injection in the Question Factory and enforce taxonomy alignment in AI prompts.
 - **UI Logic**: Modified `QuestionFactoryPage.tsx` to include an `officialSkills.length` badge in the Intelligence Phase footer, providing real-time feedback on injected metadata.
