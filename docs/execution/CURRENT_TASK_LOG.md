@@ -30,12 +30,18 @@
     - **Engine Safety**: `ExamEngine.submitAnswer` returned void.
 
 ## Next Steps
-1. **P0 Hardening Phase 2**: Sync Timer to Backend (`remainingTimeSeconds`).
+1. **API Client Type Alignment** (Phase 3).
 2. **GUI-004**: Build Premium Active Exam HUD.
 
 ## Recent Actions
 - **Phase 1: Reporting Convergence**: Implemented async polling and data mapping for results. Handled `processing` status with retry backoff.
-- **Skill Injection Verification**: Confirmed that official skills are correctly mapped and injected into the AI prompt for taxonomy alignment.
-- **UI Enhancement**: Added a dynamic badge in `QuestionFactoryPage` to show the count of injected skills.
 - **Strict Mode Guard**: Verified that the prompt enforces absolute taxonomy alignment when strict mode is active.
+- **Certification**: Root `pnpm build` passed (Exit Code 0).
+
+### Batch 129: Real-time Timer Sync & State Hardening (Phase 2)
+- **Eliminated Drift**: Removed manual question-count based time estimation in `ExamInterface`.
+- **Backend Injection**: Wired HUD to consume `remainingTimeSeconds` directly from `apiClient.quiz.getQuizState`.
+- **Continuity & Isolation**: Forced re-sync on mount (removed optimization) and added mandatory store reset before hydration to prevent cross-exam contamination.
+- **Status Gating**: Implemented automated redirect to results for completed/processing sessions.
+- **Verification**: Root `pnpm build` passed (Exit Code 0).
 - **Final Certification**: Full monorepo build and type-check verified (Exit Code 0).

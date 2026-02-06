@@ -1119,6 +1119,13 @@ Reduce documentation fragmentation and improve discoverability by consolidating 
 - **Fail-Safety**: Implemented graceful error recovery for blocked or failed scoring sessions.
 - **Certification**: Root `pnpm build` passed (Exit Code 0).
 
+### Batch 129: Real-time Timer Sync & State Hardening (Phase 2)
+- **Eliminated Drift**: Removed manual question-count based time estimation in `ExamInterface`.
+- **Backend Injection**: Wired HUD to consume `remainingTimeSeconds` directly from `apiClient.quiz.getQuizState`.
+- **Continuity & Isolation**: Forced re-sync on mount (removed optimization) and added mandatory store reset before hydration to prevent cross-exam contamination.
+- **Status Gating**: Implemented automated redirect to results for completed/processing sessions.
+- **Verification**: `pnpm build` passed (Exit Code 0).
+
 ### Batch 127: Skill Injection Visibility & Taxonomy Enforcement
 - **Goal**: Enable visibility of official skill injection in the Question Factory and enforce taxonomy alignment in AI prompts.
 - **UI Logic**: Modified `QuestionFactoryPage.tsx` to include an `officialSkills.length` badge in the Intelligence Phase footer, providing real-time feedback on injected metadata.

@@ -70,15 +70,15 @@ export function ExamInterface() {
                 return;
             }
 
-            // Avoid re-fetch if we already have the state and ID matches
-            if (questions.length > 0 && examId === examIdParam) {
-                setIsLoading(false);
-                return;
-            }
-
             try {
                 setIsLoading(true);
                 const state = await apiClient.quiz.getQuizState(examIdParam);
+
+                // Status Gating (Phase 2 Revision)
+                if (state.status === 'completed' || state.status === 'processing' || state.status === 'failed') {
+                    router.replace(`/reports/active-report?examId=${examIdParam}`);
+                    return;
+                }
 
                 // Map Questions to store interface
                 const mappedQuestions = state.questions.map((q: any) => ({ // eslint-disable-line @typescript-eslint/no-explicit-any
@@ -90,8 +90,10 @@ export function ExamInterface() {
                     difficulty: q.difficulty || 'Intermediate'
                 }));
 
+                // Reset and Hydrate Store (Phase 2 Revision)
+                // Using startQuiz to clear old state and set initial duration
+                useQuizStore.getState().startQuiz(mappedQuestions, null, state.remainingTimeSeconds || 0);
                 setExamId(state.id);
-                setQuestions(mappedQuestions);
 
                 // Hydrate answers from backend
                 state.questions.forEach((q: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
@@ -102,20 +104,6 @@ export function ExamInterface() {
                         }
                     }
                 });
-
-                // Initialize Timer based on server start time
-                if (state.startedAt) {
-                    const startTime = new Date(state.startedAt).getTime();
-                    const now = Date.now();
-                    const elapsedSeconds = Math.floor((now - startTime) / 1000);
-                    // Standard duration logic: 1.5 mins per question * total questions (recovered from state or questions length)
-                    // Since state might not have 'config', we estimate or assume defaults.
-                    // Better approach: use totalQuestions from blueprint or state if available.
-                    // For now, let's assume 1.5 mins per question as per Exam logic standard.
-                    const totalDuration = Math.ceil(mappedQuestions.length * 1.5 * 60);
-                    const remaining = totalDuration - elapsedSeconds;
-                    useQuizStore.getState().setTimeRemaining(remaining > 0 ? remaining : 0);
-                }
 
                 // Calculate connection-safe starting index (first unanswered or 0)
                 const firstUnanswered = state.questions.findIndex((q: any) => q.userAnswer === null); // eslint-disable-line @typescript-eslint/no-explicit-any
