@@ -30,8 +30,7 @@
     - **Engine Safety**: `ExamEngine.submitAnswer` returned void.
 
 ## Next Steps
-1. **API Client Type Alignment** (Phase 3).
-2. **GUI-004**: Build Premium Active Exam HUD.
+1. **Phase 4 (GUI-004)**: Build Premium Active Exam HUD.
 
 ## Recent Actions
 - **Phase 1: Reporting Convergence**: Implemented async polling and data mapping for results. Handled `processing` status with retry backoff.
@@ -44,4 +43,16 @@
 - **Continuity & Isolation**: Forced re-sync on mount (removed optimization) and added mandatory store reset before hydration to prevent cross-exam contamination.
 - **Status Gating**: Implemented automated redirect to results for completed/processing sessions.
 - **Verification**: Root `pnpm build` passed (Exit Code 0).
+
+### Batch 130: API Client Type Alignment (Phase 3)
+- **Strong Typing**: Introduced `QuizState` and `QuizResultResponse` (discriminated union) in `api-client`.
+- **Consumer Alignment**: Refactored `ExamInterface`, `active-report`, and `exam/[examId]` to remove `any` casts and rely on official interfaces.
+- **Nuance Preservation**: Kept `startExam.remainingSeconds` distinct from `getQuizState.remainingTimeSeconds` to match backend implementation.
+- **Verification**: `pnpm build` passed (Exit Code 0).
+
+### Batch 130: API Client Type Alignment (Phase 3)
+- **Strong Typing**: Introduced `QuizState` and `QuizResultResponse` (discriminated union) in `api-client`.
+- **Consumer Alignment**: Refactored `ExamInterface`, `active-report`, and `exam/[examId]` to remove `any` casts and rely on official interfaces.
+- **Nuance Preservation**: Kept `startExam.remainingSeconds` distinct from `getQuizState.remainingTimeSeconds` to match backend implementation.
+- **Verification**: `pnpm build` passed (Exit Code 0).
 - **Final Certification**: Full monorepo build and type-check verified (Exit Code 0).

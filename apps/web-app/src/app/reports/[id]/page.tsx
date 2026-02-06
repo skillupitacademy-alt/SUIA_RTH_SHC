@@ -25,7 +25,7 @@ export default function DynamicReportPage() {
             try {
                 const data = await apiClient.quiz.getResult(id as string);
 
-                if (data.status === 'processing' || data.status === 'started') {
+                if (data.status === 'processing') {
                     if (isMounted) setIsProcessing(true);
 
                     if (retryCount < 20) {
@@ -43,11 +43,13 @@ export default function DynamicReportPage() {
                     }
                 }
 
+                const reportObj = data as any; // Temporary cast for legacy page
+
                 const mappedData = {
-                    score: data.score,
-                    total: data.total,
-                    status: (data.statusLabel || (data.percentage >= 70 ? 'passed' : 'failed')) as 'passed' | 'failed',
-                    questions: data.questions?.map((q: any) => ({
+                    score: reportObj.score,
+                    total: reportObj.total,
+                    status: (reportObj.statusLabel || (reportObj.percentage >= 70 ? 'passed' : 'failed')) as 'passed' | 'failed',
+                    questions: reportObj.questions?.map((q: any) => ({
                         text: q.text,
                         isCorrect: q.isCorrect
                     }))

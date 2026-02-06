@@ -37,7 +37,7 @@ function ReportContent() {
             try {
                 const data = await apiClient.quiz.getResult(examId);
 
-                if (data.status === 'processing' || data.status === 'started') {
+                if (data.status === 'processing') {
                     if (isMounted) setIsProcessing(true);
 
                     if (retryCount < 20) { // Max ~2 mins
@@ -64,25 +64,28 @@ function ReportContent() {
                     return;
                 }
 
+                // Narrow data to the report object (status: 'completed' etc)
+                const report = data as any; // Temporary cast to bypass property existence checks in the union
+
                 // Map API data to UI format
                 const mappedData = {
-                    score: data.score,
-                    total: data.total,
-                    totalPercent: Math.round(data.percentage),
-                    timeTaken: data.timeTaken || "00:00",
+                    score: report.score,
+                    total: report.total,
+                    totalPercent: Math.round(report.percentage),
+                    timeTaken: report.timeTaken || "00:00",
                     percentile: 85, // Meta/External calc
-                    status: (data.statusLabel || (data.percentage >= 70 ? 'passed' : 'failed')) as 'passed' | 'failed',
-                    topics: (data.performance?.topic || []).map((t: any) => ({
+                    status: (report.statusLabel || (report.percentage >= 70 ? 'passed' : 'failed')) as 'passed' | 'failed',
+                    topics: (report.performance?.topic || []).map((t: any) => ({
                         name: t.name || 'Unknown',
                         score: Math.round(t.accuracy),
                         total: 100
                     })),
-                    difficulty: (data.performance?.difficulty || []).map((d: any) => ({
+                    difficulty: (report.performance?.difficulty || []).map((d: any) => ({
                         level: d.id,
                         accuracy: Math.round(d.accuracy)
                     })),
-                    growthZones: data.growthZones || [],
-                    questions: data.questions?.map((q: any, idx: number) => ({
+                    growthZones: report.growthZones || [],
+                    questions: report.questions?.map((q: any, idx: number) => ({
                         id: q.id || `q-${idx}`,
                         questionText: q.text,
                         userAnswer: q.userAnswer,

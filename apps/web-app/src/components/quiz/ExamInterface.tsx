@@ -81,10 +81,10 @@ export function ExamInterface() {
                 }
 
                 // Map Questions to store interface
-                const mappedQuestions = state.questions.map((q: any) => ({ // eslint-disable-line @typescript-eslint/no-explicit-any
+                const mappedQuestions = state.questions.map((q) => ({
                     id: q.questionId, // Actual question UUID
-                    type: q.type === 'code_mcq' ? 'CODE_MCQ' : 'MCQ',
-                    text: q.questionText,
+                    type: (q.type === 'code_mcq' ? 'CODE_MCQ' : 'MCQ') as 'MCQ' | 'CODE_MCQ',
+                    text: q.text,
                     code: q.codeSnippet || "",
                     options: q.options,
                     difficulty: q.difficulty || 'Intermediate'

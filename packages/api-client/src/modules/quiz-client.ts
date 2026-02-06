@@ -1,5 +1,50 @@
 import { FetchClient } from '../core/fetch-client';
 
+export interface QuizState {
+  id: string;
+  examId: string;
+  status: 'started' | 'processing' | 'completed' | 'failed' | 'abandoned';
+  remainingTimeSeconds: number;
+  startedAt: string;
+  progress: {
+    totalQuestions: number;
+    answeredCount: number;
+  };
+  questions: Array<{
+    questionId: string;
+    text: string;
+    options: string[];
+    codeSnippet?: string | null;
+    type: string;
+    difficulty: string;
+    userAnswer: string | null;
+    order: number;
+  }>;
+}
+
+export type QuizResultResponse = 
+  | { status: 'processing'; message: string }
+  | { 
+      id: string;
+      status: 'completed' | 'failed' | 'abandoned';
+      score: number;
+      total: number;
+      percentage: number;
+      statusLabel: 'passed' | 'failed';
+      timeTaken: string;
+      performance: {
+        topic?: Array<{ id: string; name: string; score: number; accuracy: number }>;
+        difficulty?: Array<{ id: string; name: string; score: number; accuracy: number }>;
+      };
+      questions: Array<{
+        text: string;
+        userAnswer: string | null;
+        correctAnswer?: string;
+        explanation?: string;
+        isCorrect: boolean;
+      }>;
+    };
+
 export class QuizClient {
   private client: FetchClient;
 
@@ -24,7 +69,6 @@ export class QuizClient {
   }
 
   async getSubtopics(topicId: string) {
-    // Note: Assuming there is a public subtopics endpoint or it's handled via topics
     return this.client.get<any[]>(`/subtopics?topicId=${topicId}`);
   }
 
@@ -51,7 +95,7 @@ export class QuizClient {
       status: string;
       totalQuestions: number;
       durationSeconds: number | null;
-      remainingSeconds: number | null;
+      remainingSeconds: number | null; // Keep remainingSeconds as per backend startExam
       firstQuestion: {
         id: string;
         questionText: string;
@@ -68,19 +112,17 @@ export class QuizClient {
   }
 
   async submitAnswer(examId: string, questionId: string, answer: string) {
-    // Backend returns sanitized ACK only (no correctness)
     return this.client.post<{ 
       success: boolean; 
       data: { 
         examId: string; 
         questionId: string; 
-        status: string 
+        status: 'recorded' 
       } 
     }>('/quiz/answer', { examId, questionId, answer });
   }
 
   async submitExam(examId: string) {
-    // Backend returns status transition info
     return this.client.post<{ 
       examId: string; 
       status: 'processing' | 'completed' | 'failed' | 'abandoned'; 
@@ -88,10 +130,10 @@ export class QuizClient {
   }
 
   async getResult(examId: string) {
-    return this.client.get<any>(`/quiz/result?examId=${examId}`);
+    return this.client.get<QuizResultResponse>(`/quiz/result?examId=${examId}`);
   }
 
   async getQuizState(examId: string) {
-    return this.client.get<any>(`/quiz/state?examId=${examId}`);
+    return this.client.get<QuizState>(`/quiz/state?examId=${examId}`);
   }
 }

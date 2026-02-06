@@ -2,21 +2,16 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { apiClient } from '@quiz/api-client';
+import { apiClient, QuizState } from '@quiz/api-client';
 import { Loader2, AlertCircle } from 'lucide-react';
 
-interface ExamState {
-    examId: string;
-    questions: any[];
+interface ExtendedExamState extends QuizState {
     currentQuestionIndex: number;
-    answers: Record<string, string>;
-    remainingTimeSeconds: number;
-    status: 'started' | 'processing' | 'completed' | 'failed';
 }
 
 export default function ActiveExamPage({ params }: { params: { examId: string } }) {
     const router = useRouter();
-    const [state, setState] = useState<ExamState | null>(null);
+    const [state, setState] = useState<ExtendedExamState | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [submitting, setSubmitting] = useState(false);
@@ -27,13 +22,20 @@ export default function ActiveExamPage({ params }: { params: { examId: string } 
             try {
                 const data = await apiClient.quiz.getQuizState(params.examId);
 
-                // Status Handling
-                if (data.status === 'completed' || data.status === 'processing') {
-                    router.replace(`/exam/${params.examId}/result`);
+                // Status Handling (Phase 3 Hardening)
+                if (data.status === 'completed' || data.status === 'processing' || data.status === 'failed') {
+                    router.replace(`/reports/active-report?examId=${params.examId}`);
                     return;
                 }
 
-                setState(data);
+                // Calculate local current index
+                const firstUnanswered = data.questions.findIndex(q => q.userAnswer === null);
+                const currentIndex = firstUnanswered !== -1 ? firstUnanswered : 0;
+
+                setState({
+                    ...data,
+                    currentQuestionIndex: currentIndex
+                });
             } catch (err: any) {
                 console.error('Failed to load exam:', err);
                 if (err.message.includes('403') || err.message.includes('Unauthorized')) {
