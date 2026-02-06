@@ -25,7 +25,7 @@ export default function DashboardPage() {
         <AuthGuard>
             <div className="flex min-h-[calc(100vh-64px)]">
                 <Sidebar />
-                <main className="flex-1 p-6 md:p-10 pb-24 md:pb-10 space-y-10 overflow-y-auto">
+                <main className="flex-1 p-6 md:p-10 pb-24 md:pb-10 space-y-10 overflow-y-auto bg-muted/5">
                     {/* Welcome Header */}
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                         <div>
@@ -52,12 +52,12 @@ export default function DashboardPage() {
                             <h3 className="text-xl font-bold px-1">Recent Activity</h3>
                             <div className="space-y-4">
                                 {data?.recentActivity?.length === 0 ? (
-                                    <div className="p-8 text-center border rounded-3xl border-dashed bg-muted/10 text-muted-foreground">
+                                    <div className="p-8 text-center border-2 border-gray-200 rounded-xl bg-gray-50 text-gray-600">
                                         <p className="text-sm font-medium">No exams taken yet</p>
                                     </div>
                                 ) : (
                                     data?.recentActivity?.map((activity) => (
-                                        <div key={activity.id} className="p-5 rounded-3xl border bg-muted/20 hover:bg-muted/40 transition-colors group">
+                                        <div key={activity.id} className="p-5 rounded-xl border-2 border-gray-200 bg-white hover:bg-gray-50 transition-colors group">
                                             <div className="flex items-center justify-between">
                                                 <div>
                                                     <div className="flex items-center gap-2 mb-1">
@@ -76,7 +76,7 @@ export default function DashboardPage() {
                                                         </p>
                                                     )}
                                                 </div>
-                                                <Link href={activity.status === 'completed' ? `/reports/active-report?examId=${activity.id}` : `/exam/${activity.id}`} className="h-10 w-10 rounded-full bg-background border flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-all">
+                                                <Link href={activity.status === 'completed' ? `/reports/active-report?examId=${activity.id}` : `/exam/${activity.id}`} className="h-10 w-10 rounded-full bg-white border-2 border-gray-200 flex items-center justify-center group-hover:bg-pink-500 group-hover:text-white transition-all">
                                                     <ArrowRight size={18} />
                                                 </Link>
                                             </div>
@@ -84,7 +84,7 @@ export default function DashboardPage() {
                                     ))
                                 )}
                             </div>
-                            <Link href="/dashboard/my-exams" className="flex items-center justify-center w-full py-4 rounded-3xl border-2 border-dashed border-muted-foreground/20 text-muted-foreground font-bold hover:border-primary/40 hover:text-primary transition-all">
+                            <Link href="/dashboard/my-exams" className="flex items-center justify-center w-full py-4 rounded-xl border-2 border-gray-300 text-gray-700 font-bold hover:border-pink-500 hover:text-pink-500 hover:bg-pink-50 transition-all">
                                 View All Quizzes
                             </Link>
                         </div>

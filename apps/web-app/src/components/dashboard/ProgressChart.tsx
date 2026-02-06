@@ -21,18 +21,18 @@ export function ProgressChart({ trendData = [] }: { trendData?: Array<{ score: n
     const points = displayData.map((d, i) => `${i * step},${height - (d.score / max) * height}`).join(' ');
 
     return (
-        <div className="p-8 rounded-3xl border bg-background shadow-sm h-full flex flex-col">
+        <div className="p-8 rounded-xl border-2 border-gray-200 bg-white shadow-sm h-full flex flex-col">
             <div className="flex items-center justify-between mb-6">
                 <div>
-                    <h3 className="text-lg font-bold">Recent Scores (%)</h3>
-                    <p className="text-sm text-muted-foreground">Accuracy trend over last {displayData.length} completed exams</p>
+                    <h3 className="text-lg font-bold text-gray-900">Recent Scores (%)</h3>
+                    <p className="text-sm text-gray-600">Accuracy trend over last {displayData.length} completed exams</p>
                 </div>
-                <div className="flex items-center gap-2 bg-muted/30 p-1 rounded-xl">
+                <div className="flex items-center gap-2 bg-gray-100 p-1 rounded-xl">
                     <button
                         onClick={() => handleRangeChange('7d')}
                         className={cn(
                             "px-4 py-1.5 rounded-lg text-xs font-bold transition-all",
-                            range === '7d' ? "bg-background shadow-sm text-primary" : "text-muted-foreground hover:text-foreground"
+                            range === '7d' ? "bg-white shadow-sm text-pink-500" : "text-gray-600 hover:text-gray-900"
                         )}
                     >
                         7D
@@ -41,7 +41,7 @@ export function ProgressChart({ trendData = [] }: { trendData?: Array<{ score: n
                         onClick={() => handleRangeChange('30d')}
                         className={cn(
                             "px-4 py-1.5 rounded-lg text-xs font-bold transition-all",
-                            range === '30d' ? "bg-background shadow-sm text-primary" : "text-muted-foreground hover:text-foreground"
+                            range === '30d' ? "bg-white shadow-sm text-pink-500" : "text-gray-600 hover:text-gray-900"
                         )}
                     >
                         30D
@@ -75,7 +75,7 @@ export function ProgressChart({ trendData = [] }: { trendData?: Array<{ score: n
                     {/* Line */}
                     <polyline
                         fill="none"
-                        stroke="hsl(var(--primary))"
+                        stroke="#FF2D55"
                         strokeWidth="4"
                         strokeLinecap="round"
                         strokeLinejoin="round"
@@ -97,8 +97,8 @@ export function ProgressChart({ trendData = [] }: { trendData?: Array<{ score: n
                                     cx={cx}
                                     cy={cy}
                                     r="6"
-                                    fill="hsl(var(--background))"
-                                    stroke="hsl(var(--primary))"
+                                    fill="white"
+                                    stroke="#FF2D55"
                                     strokeWidth="3"
                                     className="cursor-pointer transition-all group-hover/dot:r-8"
                                 />
@@ -109,7 +109,7 @@ export function ProgressChart({ trendData = [] }: { trendData?: Array<{ score: n
                                         width="60"
                                         height="35"
                                         rx="8"
-                                        fill="hsl(var(--primary))"
+                                        fill="#FF2D55"
                                     />
                                     <text
                                         x={cx}
