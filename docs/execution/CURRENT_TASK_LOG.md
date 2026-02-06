@@ -30,9 +30,12 @@
     - **Engine Safety**: `ExamEngine.submitAnswer` returned void.
 
 ## Next Steps
-1. **Phase 4 (GUI-004)**: Build Premium Active Exam HUD.
+1. **Phase 3**: Cutover Redirect (Console to Premium HUD).
 
 ## Recent Actions
+- **Phase 2: Premium HUD**: Built the High-Fidelity Active Exam HUD with tactical sidebar and synchronized timer.
+- **Phase 1: Hygiene**: Cleaned build artifacts and migrated documentation.
+- **Phase 3 (Core)**: Type alignment in `QuizClient`.
 - **Phase 1: Reporting Convergence**: Implemented async polling and data mapping for results. Handled `processing` status with retry backoff.
 - **Strict Mode Guard**: Verified that the prompt enforces absolute taxonomy alignment when strict mode is active.
 - **Verification**: Root `pnpm build` passed (Exit Code 0).
