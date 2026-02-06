@@ -8,7 +8,6 @@ import { DomainCard } from './DomainCard';
 import { TopicChip } from './TopicChip';
 import { Code, Shield, Cloud, Database, Check, Loader2, Activity, ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { apiClient } from '@quiz/api-client';
 
 const JourneyBadge = ({ text }: { text: string }) => (
     <div className="flex flex-col items-end gap-2">
