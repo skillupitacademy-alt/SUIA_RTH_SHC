@@ -1157,3 +1157,16 @@ Reduce documentation fragmentation and improve discoverability by consolidating 
     - **Architecture Safety**: Wrapped the console in a `Suspense` boundary to ensure stable `useSearchParams()` behavior in Next.js App Router.
 - **Verification**: Root `pnpm build` and `tsc --noEmit` PASSED (Exit Code 0).
 - **Outcome**: Achieved a professional, resilient entry experience for all assessment sessions.
+
+### Batch 140: Premium HUD Theme System (Phase 1)
+- **Problem**: Active Exam HUD had critical UI/UX issues: low-contrast answer options (nearly invisible), no clear selection states, poor button hierarchy, and overall "washed out" appearance.
+- **Goal**: Create 3 distinct visual theme variants that fix visibility issues while allowing user to compare and choose the best design.
+- **Action**:
+    - **Theme Infrastructure**: Created `exam-themes.ts` with 3 complete theme configurations (Executive Minimal, Premium Dark, Pixel Perfect Console).
+    - **Theme Switcher**: Built floating dev-only component (`ThemeSwitcher.tsx`) for live theme switching via query parameters.
+    - **Answer Options**: Applied theme-specific styling with high-contrast backgrounds (white), dark readable text, clear 2px borders, obvious selection states (pink border + checkmark), and larger touch targets (min-h-[60px]).
+    - **Question Card**: Updated to use theme-specific backgrounds, borders, padding, and border radius.
+    - **Navigation Buttons**: Implemented clear visual hierarchy with pink primary button (SAVE & NEXT) and outlined secondary button (PREVIOUS).
+    - **Page Background**: Applied theme-specific backgrounds for better readability.
+- **Verification**: `pnpm build` and `npx tsc --noEmit` PASSED (Exit Code 0).
+- **Outcome**: Users can now switch between 3 working themes live in the browser. All themes fix the core visibility issues. Phase 2 pending (tactical map, header, remaining elements).

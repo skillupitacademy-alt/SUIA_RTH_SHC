@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback, useMemo } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import { apiClient, QuizState } from '@quiz/api-client';
 import {
     Loader2,
@@ -17,6 +17,8 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
+import { getTheme } from '@/lib/exam-themes';
+import { ThemeSwitcher } from '@/components/exam/ThemeSwitcher';
 
 // Detailed Question Status
 type QuestionStatus = 'current' | 'answered' | 'flagged' | 'unvisited';
@@ -29,6 +31,7 @@ interface HUDState extends QuizState {
 
 export default function ActiveExamPage() {
     const router = useRouter();
+    const searchParams = useSearchParams();
     const { examId } = useParams<{ examId: string }>();
     const [state, setState] = useState<HUDState | null>(null);
     const [loading, setLoading] = useState(true);
@@ -36,6 +39,9 @@ export default function ActiveExamPage() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [timeLeft, setTimeLeft] = useState<number | null>(null);
     const [confirmSubmit, setConfirmSubmit] = useState(false);
+
+    // Theme Configuration
+    const theme = getTheme(searchParams.get('theme'));
 
     // 1. Initial Fetch & Gating
     useEffect(() => {
@@ -180,7 +186,10 @@ export default function ActiveExamPage() {
     if (!state || !currentQuestion) return null;
 
     return (
-        <div className="min-h-screen bg-[#0A0A0A] text-white font-inter selection:bg-[#FF2D55]/30">
+        <div className={cn("min-h-screen text-gray-900 font-inter selection:bg-pink-500/30", theme.colors.pageBackground)}>
+            {/* Theme Switcher (Dev Only) */}
+            <ThemeSwitcher />
+
             {/* TOP NAVIGATION HUD */}
             <header className="sticky top-0 z-50 h-16 border-b border-white/5 bg-black/50 backdrop-blur-xl px-6 flex items-center justify-between">
                 <div className="flex items-center gap-4">
@@ -294,9 +303,15 @@ export default function ActiveExamPage() {
 
                 {/* RIGHT: QUESTION ENGINE */}
                 <div className="lg:col-span-9 space-y-6 order-1 lg:order-2">
-                    <div className="glass-morphism rounded-[2.5rem] p-4 lg:p-10 min-h-[600px] flex flex-col">
+                    <div className={cn(
+                        "border flex flex-col min-h-[520px]",
+                        theme.colors.questionCard,
+                        theme.colors.questionCardBorder,
+                        theme.spacing.questionCardPadding,
+                        theme.effects.questionCardRadius
+                    )}>
                         {/* Header Area */}
-                        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-10 pb-8 border-b border-white/5">
+                        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-10 pb-8 border-b border-gray-200">
                             <div>
                                 <span className="inline-block px-3 py-1 rounded-full bg-[#FF2D55]/10 border border-[#FF2D55]/20 text-[#FF2D55] text-[10px] font-black uppercase tracking-tighter mb-3">
                                     Strategic Analysis • SEC-{(state.currentIndex + 1).toString().padStart(3, '0')}
@@ -344,22 +359,34 @@ export default function ActiveExamPage() {
                                             key={oIdx}
                                             onClick={() => handleSelectOption(currentQuestion.questionId, optionText)}
                                             className={cn(
-                                                "group flex items-start gap-4 p-6 rounded-3xl border transition-all text-left relative",
+                                                "group flex items-start gap-4 border-2 transition-all duration-150 text-left relative active:scale-95",
+                                                theme.spacing.answerOptionPadding,
+                                                theme.spacing.answerMinHeight,
+                                                theme.effects.answerRadius,
                                                 isSelected
-                                                    ? "bg-[#FF2D55]/10 border-[#FF2D55] pink-glow ring-1 ring-[#FF2D55]"
-                                                    : "bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/30"
+                                                    ? cn(
+                                                        theme.colors.answerSelected,
+                                                        `border-2 ${theme.colors.answerSelectedBorder}`,
+                                                        theme.effects.selectedShadow
+                                                    )
+                                                    : cn(
+                                                        theme.colors.answerUnselected,
+                                                        `border-2 ${theme.colors.answerUnselectedBorder}`,
+                                                        "hover:border-gray-400 hover:shadow-sm"
+                                                    )
                                             )}
                                         >
                                             <div className={cn(
-                                                "mt-0.5 w-6 h-6 rounded-full border flex items-center justify-center transition-all shrink-0",
-                                                isSelected ? "bg-[#FF2D55] border-[#FF2D55]" : "border-white/20 group-hover:border-white/50"
+                                                "mt-0.5 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all shrink-0",
+                                                isSelected ? "bg-pink-500 border-pink-500" : "border-gray-300 group-hover:border-gray-400"
                                             )}>
-                                                {isSelected ? <CheckCircle2 size={12} className="text-white" /> : <Circle size={10} className="text-white/20" />}
+                                                {isSelected ? <CheckCircle2 size={14} className="text-white" /> : <Circle size={10} className="text-gray-400" />}
                                             </div>
                                             <div className="space-y-1">
                                                 <span className={cn(
-                                                    "text-sm font-bold block leading-relaxed",
-                                                    isSelected ? "text-white" : "text-gray-400 group-hover:text-white"
+                                                    theme.typography.answerTextSize,
+                                                    "font-medium block leading-relaxed",
+                                                    isSelected ? theme.colors.answerSelectedText : theme.colors.answerUnselectedText
                                                 )}>
                                                     {optionText}
                                                 </span>
@@ -371,24 +398,29 @@ export default function ActiveExamPage() {
                         </div>
 
                         {/* Footer Controls */}
-                        <div className="mt-16 pt-8 border-t border-white/5 flex items-center justify-between">
+                        <div className="mt-16 pt-8 border-t border-gray-200 flex items-center justify-between">
                             <button
                                 onClick={() => goToQuestion(state.currentIndex - 1)}
                                 disabled={state.currentIndex === 0}
-                                className="flex items-center gap-2 px-6 py-4 rounded-2xl bg-white/5 border border-white/10 text-sm font-bold disabled:opacity-30 transition-all hover:bg-white/10"
+                                className={cn(
+                                    "flex items-center gap-2 px-6 py-3 border-2 text-sm font-bold disabled:opacity-30 transition-all duration-150 hover:shadow-sm",
+                                    theme.colors.secondaryButton,
+                                    theme.colors.secondaryButtonText,
+                                    theme.effects.buttonRadius
+                                )}
                             >
                                 <ChevronLeft size={18} />
                                 PREVIOUS
                             </button>
 
-                            <div className="hidden md:flex items-center gap-1.5 px-4 py-2 bg-white/5 rounded-full border border-white/10">
-                                <span className="text-[10px] font-black text-[#FF2D55] uppercase tracking-widest px-2">Checkpoint</span>
+                            <div className="hidden md:flex items-center gap-1.5 px-4 py-2 bg-gray-100 rounded-full border border-gray-200">
+                                <span className="text-[10px] font-black text-pink-500 uppercase tracking-widest px-2">Checkpoint</span>
                                 {state.questions.map((_, i) => (
                                     <div
                                         key={i}
                                         className={cn(
                                             "w-1.5 h-1.5 rounded-full transition-all",
-                                            i === state.currentIndex ? "bg-[#FF2D55] w-4" : i < state.currentIndex ? "bg-white/20" : "bg-white/5"
+                                            i === state.currentIndex ? "bg-pink-500 w-4" : i < state.currentIndex ? "bg-gray-400" : "bg-gray-200"
                                         )}
                                     />
                                 ))}
@@ -402,7 +434,13 @@ export default function ActiveExamPage() {
                                         goToQuestion(state.currentIndex + 1);
                                     }
                                 }}
-                                className="flex items-center gap-2 px-6 py-4 rounded-2xl bg-white text-black text-sm font-black font-outfit shadow-xl hover:scale-105 active:scale-95 transition-all"
+                                className={cn(
+                                    "flex items-center gap-2 px-8 py-3 text-sm font-black font-outfit transition-all duration-150 hover:scale-105 active:scale-95",
+                                    theme.colors.primaryButton,
+                                    theme.colors.primaryButtonText,
+                                    theme.effects.buttonRadius,
+                                    theme.effects.primaryButtonShadow
+                                )}
                             >
                                 {state.currentIndex === state.questions.length - 1 ? 'FINISH' : 'SAVE & NEXT'}
                                 <ChevronRight size={18} />

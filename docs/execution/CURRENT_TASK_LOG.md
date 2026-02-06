@@ -69,3 +69,8 @@
 - **Links**: Updated `DashboardPage.tsx` to use `/exam/` route for active sessions.
 - **Persistence**: Switched to `SameSite: 'none'` and `Secure: true` for tokens to fix cross-subdomain 401s.
 - **Verification**: `turbo build` and `pnpm type-check` verified (Exit Code 0).
+### Batch 140: Premium HUD Theme System (Phase 1)
+- **Theme System**: Created `exam-themes.ts` with 3 theme configurations (Executive, Premium, Pixel) and `ThemeSwitcher.tsx` for live switching.
+- **UI Fixes**: Applied high-contrast styling to answer options (white bg, dark text, clear borders), question card, and navigation buttons.
+- **Integration**: Integrated theme system into `ActiveExamPage` with query parameter support (`?theme=executive|premium|pixel`).
+- **Verification**: `pnpm build` and `npx tsc --noEmit` verified (Exit Code 0).
