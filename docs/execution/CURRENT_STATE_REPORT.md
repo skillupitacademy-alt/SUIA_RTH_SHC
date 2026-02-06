@@ -579,3 +579,8 @@
 - **Instruction Hardening**: Refined `PromptService.ts` to explicitly command the AI to select from the injected `### OFFICIAL TAXONOMY`.
 - **UI Visibility**: Updated the footer badge to show "X GLOBAL SKILLS INJECTED" for better transparency.
 - **Technical Certification**: Full monorepo build and `tsc` cycle passing (Exit Code 0).
+
+### Phase 36: JavaScript Readiness & CORS Infrastructure (Batch 134)
+- **Data Readiness**: Verified that the "JavaScript Fundamentals" topic now meets the 4/4/5 difficulty threshold (6 Simple, 6 Intermediate, 6 Expert).
+- **Infrasructure Hardening**: Patched `cors.middleware.ts` to permit the `Idempotency-Key` header, resolving preflight failures during exam launch.
+- **Outcome**: The JavaScript quiz is now fully operational from both a data and protocol perspective.

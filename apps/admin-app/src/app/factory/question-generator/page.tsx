@@ -13,6 +13,7 @@ import { FactoryProvider, useFactory } from '@/context/FactoryContext';
 import { JsonIngestBox } from '@/components/factory/ingest/JsonIngestBox';
 import { RefreshCcw, ShieldCheck } from 'lucide-react';
 import { useDomains, useSubjects, useTopics, useSubtopics, useAllSkills } from '@/hooks/useAdminHierarchy';
+import { ZConfirmationDialog } from '@/components/ui/ZConfirmationDialog';
 
 export default function QuestionFactoryPage() {
     return (
@@ -23,6 +24,7 @@ export default function QuestionFactoryPage() {
 function QuestionFactoryContent() {
     const { stagedQuestions, blueprint, setBlueprint, sourceCode, setSourceCode, resetFactory } = useFactory();
     const [isCopying, setIsCopying] = useState(false);
+    const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
 
     // Context resolution hooks for human-readable names
     const { data: domains } = useDomains();
@@ -76,6 +78,15 @@ function QuestionFactoryContent() {
 
     return (
         <FactoryLayout title="Question Factory" subtitle="Context-Aware Generator" backPath="/">
+            <ZConfirmationDialog
+                isOpen={isResetConfirmOpen}
+                onClose={() => setIsResetConfirmOpen(false)}
+                onConfirm={() => resetFactory()}
+                title="Reset Workspace?"
+                description="This will wipe all selections, source material, and staging questions. This action is irreversible."
+                variant="danger"
+                confirmText="Reset Everything"
+            />
             <div className="flex-1 overflow-y-auto custom-scrollbar bg-slate-50/50">
                 <div className="max-w-[1400px] mx-auto p-8 space-y-8 pb-32">
 
@@ -90,11 +101,7 @@ function QuestionFactoryContent() {
 
                             {/* Reset Escape Hatch */}
                             <button
-                                onClick={() => {
-                                    if (confirm("This will wipe all selections, source material, and staging questions. Reset workspace?")) {
-                                        resetFactory();
-                                    }
-                                }}
+                                onClick={() => setIsResetConfirmOpen(true)}
                                 className="absolute top-8 right-8 p-3 rounded-xl bg-rose-50/50 hover:bg-rose-50 text-rose-300 hover:text-rose-500 transition-all opacity-40 hover:opacity-100 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest border border-rose-100/50"
                                 title="Reset Workspace"
                             >

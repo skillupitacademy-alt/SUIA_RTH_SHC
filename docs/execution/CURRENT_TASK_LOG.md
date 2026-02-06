@@ -48,3 +48,9 @@
 - **Certification**: Full monorepo build and `tsc` verified (Exit Code 0).
 - **Cleanup**: Verified all Phase 1-5 objectives are operational and pushed.
 
+### Batch 134: JavaScript Readiness & CORS Infrastructure
+- **Diagnosis**: Mapped "FullStack" -> "Front End" -> "JavaScript Fundamentals" hierarchy. Identified 1 Expert question shortfall (4/5).
+- **Resolution**: Re-queried and confirmed 18 questions (6 Simple, 6 Intermediate, 6 Expert) meeting the 4/4/5 threshold.
+- **CORS Fix**: Added `Idempotency-Key` to allowed headers in `cors.middleware.ts` to unblock exam launch.
+- **Verification**: Confirmed data readiness and infrastructure accessibility.
+

@@ -10,14 +10,39 @@ import {
 import { cn } from '@/lib/utils';
 import { GeneratedQuestion } from '@/types/factory';
 
+import { toast } from 'sonner';
+import { ZConfirmationDialog } from '@/components/ui/ZConfirmationDialog';
+
 export function ReviewConsole() {
     const { stagedQuestions, updateQuestion, removeQuestion, removeBatch, clearStage, resetFactory } = useFactory();
     const [selectedIndices, setSelectedIndices] = React.useState<Set<number>>(new Set());
 
+    // --- DIALOG STATES ---
+    const [dialogConfig, setDialogConfig] = React.useState<{
+        isOpen: boolean;
+        title: string;
+        description: string;
+        onConfirm: () => void;
+        variant: 'danger' | 'warning' | 'info';
+    }>({
+        isOpen: false,
+        title: '',
+        description: '',
+        onConfirm: () => { },
+        variant: 'info'
+    });
+
+    const openDialog = (config: Omit<typeof dialogConfig, 'isOpen'>) => {
+        setDialogConfig({ ...config, isOpen: true });
+    };
+
     const handleDeleteAll = () => {
-        if (confirm("Are you sure you want to clear all staged questions? This cannot be undone.")) {
-            clearStage();
-        }
+        openDialog({
+            title: "Clear All Questions?",
+            description: "Are you sure you want to wipe the staging area? This action cannot be undone.",
+            variant: 'danger',
+            onConfirm: clearStage
+        });
     };
 
     const handleUpdate = (index: number, updates: Partial<GeneratedQuestion>) => {
@@ -36,10 +61,15 @@ export function ReviewConsole() {
 
     const handleBatchDelete = () => {
         if (selectedIndices.size === 0) return;
-        if (confirm(`Are you sure you want to delete ${selectedIndices.size} selected questions?`)) {
-            removeBatch(Array.from(selectedIndices));
-            setSelectedIndices(new Set());
-        }
+        openDialog({
+            title: "Delete Selection?",
+            description: `Are you sure you want to delete ${selectedIndices.size} selected questions?`,
+            variant: 'danger',
+            onConfirm: () => {
+                removeBatch(Array.from(selectedIndices));
+                setSelectedIndices(new Set());
+            }
+        });
     };
 
     const toggleSelect = (index: number, selected: boolean) => {
@@ -115,23 +145,10 @@ export function ReviewConsole() {
         return () => clearTimeout(timer);
     }, [stagedQuestions, blueprint?.topicId]);
 
-    const handleSave = async () => {
-        if (!blueprint.topicId) {
-            alert("No blueprint context found (Missing Topic). Please return to Ingest.");
-            return;
-        }
-
-        if (duplicateMap.size > 0) {
-            if (!confirm(`Warning: ${duplicateMap.size} duplicate questions detected. Do you want to proceed and potentially create duplicates?`)) {
-                return;
-            }
-        }
-
+    const performCommit = async () => {
         setIsSaving(true);
         try {
-            // Import dynamically to avoid SSR issues if needed, or just use the global
             const { apiClient } = await import('@quiz/api-client');
-
             const payload = {
                 questions: stagedQuestions,
                 topicId: blueprint.topicId,
@@ -141,26 +158,47 @@ export function ReviewConsole() {
             const result = await apiClient.admin.saveFactoryBatch(payload);
 
             if (result.success) {
-                // Success!
-                // We should probably show a summary toast or modal
-                alert(`Success! Saved ${result.insertedCount} questions and created ${result.newSkillsCreated} new skills.`);
-
-                // Reset the entire factory workspace after successful commitment
+                toast.success(`Success! Saved ${result.insertedCount} questions and created ${result.newSkillsCreated} new skills.`);
                 resetFactory();
-
-                // Optional: Redirect back or show confetti
                 window.location.href = '/factory/question-generator';
             }
         } catch (error) {
             console.error("Save failed", error);
-            alert("Failed to save batch. Check console for details.");
+            toast.error("Failed to save batch. Check console for details.");
         } finally {
             setIsSaving(false);
         }
     };
 
+    const handleSave = async () => {
+        if (!blueprint.topicId) {
+            toast.error("No blueprint context found (Missing Topic). Please return to Ingest.");
+            return;
+        }
+
+        if (duplicateMap.size > 0) {
+            openDialog({
+                title: "Duplicates Detected",
+                description: `Warning: ${duplicateMap.size} duplicate questions detected. Do you want to proceed and potentially create duplicates?`,
+                variant: 'warning',
+                onConfirm: performCommit
+            });
+            return;
+        }
+
+        performCommit();
+    };
+
     return (
         <div className="w-full space-y-8 pb-32">
+            <ZConfirmationDialog
+                isOpen={dialogConfig.isOpen}
+                onClose={() => setDialogConfig(prev => ({ ...prev, isOpen: false }))}
+                onConfirm={dialogConfig.onConfirm}
+                title={dialogConfig.title}
+                description={dialogConfig.description}
+                variant={dialogConfig.variant}
+            />
             {/* FLOATING SELECTION COMMAND BAR */}
             {selectedIndices.size > 0 && (
                 <div className="fixed top-28 left-1/2 -translate-x-1/2 z-[60] animate-in slide-in-from-top-4 duration-500">
