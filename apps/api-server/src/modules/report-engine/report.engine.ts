@@ -18,7 +18,7 @@ export class ReportEngine {
     };
   }
 
-  static async getExamReport(examId: string) {
+  static async getExamReport(examId: string, options: { includeCorrectAnswers?: boolean } = {}) {
     const exam = await db.query.exams.findFirst({
       where: eq(exams.id, examId),
       with: {
@@ -41,20 +41,24 @@ export class ReportEngine {
     const correctAnswers = exam.examQuestions.filter(eq => eq.isCorrect).length;
     const scorePercentage = totalQuestions > 0 ? (correctAnswers / totalQuestions) * 100 : 0;
 
+    const includeCorrect = options.includeCorrectAnswers === true;
+
     return {
       id: exam.id,
       userId: exam.userId,
+      status: exam.status, // Required for status gating
       score: correctAnswers,
       total: totalQuestions,
       percentage: scorePercentage,
-      status: scorePercentage >= 70 ? 'passed' : 'failed',
+      statusLabel: scorePercentage >= 70 ? 'passed' : 'failed',
       completedAt: exam.completedAt,
       blueprint: exam.blueprint,
       performance: results.reduce((acc: any, r) => {
         if (!acc[r.dimensionType]) acc[r.dimensionType] = [];
+        // Map engine result to report format
         acc[r.dimensionType].push({
           id: r.dimensionId,
-          name: r.name,
+          name: r.name, // Fallback if name is joined (removed r.dimension?.name as relation is not joined)
           score: r.score,
           accuracy: r.accuracy
         });
@@ -63,7 +67,8 @@ export class ReportEngine {
       questions: exam.examQuestions.map(eq => ({
         text: eq.question.questionText,
         userAnswer: eq.userAnswer,
-        correctAnswer: eq.question.correctAnswer,
+        correctAnswer: includeCorrect ? eq.question.correctAnswer : undefined,
+        explanation: includeCorrect ? eq.question.explanation : undefined,
         isCorrect: eq.isCorrect,
       }))
     };

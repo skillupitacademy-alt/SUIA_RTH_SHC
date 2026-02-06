@@ -1,5 +1,7 @@
 ﻿import { NextRequest, NextResponse } from 'next/server';
 export const dynamic = 'force-dynamic';
+import { db, exams } from '@quiz/db';
+import { eq } from 'drizzle-orm';
 import { ReportEngine } from '@/modules/report-engine/report.engine';
 import { TokenService } from '@/modules/auth/token.service';
 
@@ -18,7 +20,35 @@ export async function GET(req: NextRequest) {
     const payload = await TokenService.verifyAccessToken(token, false);
 
     if (id) {
-       const report = await ReportEngine.getExamReport(id);
+       // Step 2 Hardening: Pre-check Ownership & Status
+       const examCheck = await db.query.exams.findFirst({
+         where: eq(exams.id, id),
+         columns: {
+           userId: true,
+           status: true,
+         }
+       });
+
+       if (!examCheck) {
+         return NextResponse.json({ error: 'Report not found' }, { status: 404 });
+       }
+
+       // 1. Strict Ownership
+       if (examCheck.userId !== payload.userId) {
+         return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+       }
+
+       // 2. Status Gating
+       if (examCheck.status === 'started') {
+         return NextResponse.json({ error: 'Exam in progress' }, { status: 409 });
+       }
+       if (examCheck.status === 'processing') {
+         // Retry-After header could be added here
+         return NextResponse.json({ status: 'processing', message: 'Report generating...' }, { status: 202 });
+       }
+
+       // 3. Sanitized Report Generation (Step 4 contract: default is safe)
+       const report = await ReportEngine.getExamReport(id, { includeCorrectAnswers: false });
        return NextResponse.json(report);
     }
 

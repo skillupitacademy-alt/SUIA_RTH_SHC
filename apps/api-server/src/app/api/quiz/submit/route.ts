@@ -14,7 +14,11 @@ export async function POST(req: NextRequest) {
 
     const payload = await TokenService.verifyAccessToken(token, false);
     const { examId } = await req.json();
-    const result = await ExamEngine.completeExam(examId, payload.userId);
+    const idempotencyKey = req.headers.get('idempotency-key') || undefined;
+    
+    // Step 5 Hardening: Pass idempotency key for safe retries
+    const result = await ExamEngine.completeExam(examId, payload.userId, idempotencyKey);
+    
     return NextResponse.json(result);
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 400 });

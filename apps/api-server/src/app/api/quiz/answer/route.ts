@@ -18,7 +18,16 @@ export async function POST(req: NextRequest) {
       body.answer,
       payload.userId
     );
-    return NextResponse.json(result);
+    
+    // Step 1 Hardening: Sanitize response. Do NOT return isCorrect/correctAnswer.
+    return NextResponse.json({
+      success: true,
+      data: {
+        examId: body.examId,
+        questionId: body.questionId,
+        status: 'recorded'
+      }
+    });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 400 });
   }

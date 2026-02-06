@@ -22,11 +22,49 @@ export async function POST(req: NextRequest) {
 
     const { domainId, blueprintId, ...config } = body;
     
+    // Step 6 Hardening: Input Validation & Caps
+    // 1. Question Count Cap
+    if (config.questionCount !== undefined) {
+        if (typeof config.questionCount !== 'number' || config.questionCount < 5 || config.questionCount > 50) {
+            return NextResponse.json({ 
+                error: 'questionCount must be between 5 and 50' 
+            }, { status: 422 });
+        }
+    }
+
+    // 2. Selection Array Caps (Max 20 items per filter to prevent DB query explosion)
+    const arrayFields = ['subjectIds', 'topicIds', 'subtopicIds'];
+    for (const field of arrayFields) {
+        if (config[field] && Array.isArray(config[field])) {
+            if (config[field].length > 20) {
+                 return NextResponse.json({ 
+                    error: `${field} cannot contain more than 20 items` 
+                }, { status: 422 });
+            }
+        }
+    }
+
+    // 3. Difficulty Validation
+    // Allowed values matches DB distribution keys + user-friendly aliases if supported by selection engine
+    // Based on user request: mixed/foundations/elite vs simple/intermediate/expert
+    const allowedDifficulties = ['simple', 'intermediate', 'expert', 'mixed', 'foundations', 'elite'];
+    if (config.difficulty && !allowedDifficulties.includes(config.difficulty)) {
+        return NextResponse.json({ 
+            error: `Invalid difficulty. Allowed: ${allowedDifficulties.join(', ')}` 
+        }, { status: 422 });
+    }
+
     // Use blueprintId if provided, otherwise fallback to domainId
     const targetId = blueprintId || domainId;
 
     if (!targetId) {
       return NextResponse.json({ error: 'blueprintId or domainId is required' }, { status: 400 });
+    }
+
+    // 4. UUID Format Validation (Basic Regex)
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(targetId)) {
+         return NextResponse.json({ error: 'Invalid ID format for blueprintId/domainId' }, { status: 422 });
     }
 
     const examData = await ExamEngine.startExam(

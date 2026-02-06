@@ -1027,8 +1027,26 @@ Reduce documentation fragmentation and improve discoverability by consolidating 
 
 ### Batch 120: P0 Hardening & Virtual Blueprints
 - **Objective**: Harden the backend security posture and handle high-concurrency race conditions before frontend wiring.
-- **Sanitization**: `resumePayload` is now "student-safe"; zero leakage of correct answers in the state response.
-- **Security**: Strict ownership enforcement on results and session synchronization.
+- **Step 1: Answer Sanitization**: Modified `/api/quiz/answer` to strip all correctness feedback (`isCorrect`, `explanation`). Returns only `{ success: true, status: 'recorded' }`.
+- **Step 2: Secured Reports**: Locked down `/api/reports`. Enforced strict ownership (token.userId === report.userId) and status gating (409 for 'started', 202 for 'processing') BEFORE generation. `ReportEngine` now sanitizes answers by default.
+- **Step 3: Secured Quiz Results**: Applied identical query-first security pattern to `/api/quiz/result`. Access is strictly gated by Exam Status, providing robust protection against premature result snooping.
+- **Step 5: Submit Idempotency**: Handled `Idempotency-Key` header with `submit:` prefixing. `ExamEngine.completeExam` now uses atomic status transitions (`started` -> `processing`) to ensure scoring is triggered exactly once, while supporting graceful replays for clients.
+- **Step 6: Start Validation Caps**: Applied defense-in-depth to `/api/quiz/start`. Enforced strict parameter limits (max 50 questions, max 20 filter items) and valid UUIDs/Difficulties with `422 Unprocessable Entity` responses.
+- **Task F: Engine Calibration**: Normalized `QuizSelectionConsole` to use backend-canonical difficulties (`simple` | `mixed` | `expert`). Replaced all legacy UI terms (Foundations/Elite) and added runtime normalization for `beginner`/`advanced` -> `simple`/`expert`.
+- **Step 7: Final Proof**: Completed full lifecycle dry run. Verified Chain of Custody: Start Caps -> Answer Sanitization -> Submit Idempotency -> Result/Report Gating.
+- **Certification**: `pnpm build` passed [Exit Code 0].
+
+## Batch 126: Integrity Hardening Complete (Step 7 + Task F)
+- **Objective**: Finalize Exam Integrity Hardening (Phase 34) and calibrate Frontend Difficulty (Task F).
+- **Detail**:
+    - **Final Proof (Step 7)**: Executed full "Dry Run" of the exam lifecycle. Verified strict chain of custody: Start (Caps) -> Answer (Sanitized) -> Submit (Idempotent) -> Result/Report (Gated).
+    - **Engine Calibration (Task F)**: Refactored `QuizSelectionConsole` to use standard difficulty keys (`simple`, `mixed`, `expert`). Implemented `normalizeDifficulty` for graceful handling of legacy `beginner`/`elite` states. Updated `OnboardingWizard` text.
+- **Outcome**: The Exam Lifecycle is fully hardened against leakage, tampering, and concurrency. Frontend and Backend definitions are aligned.
+- **Verification**: `pnpm build` passed [Exit Code 0].
+
+## Next Steps
+- **GUI-003**: Connect `QuizSelectionConsole` to Start API.
+- **GUI-004**: Active Exam HUD Implementation.d session synchronization.
 - **Robustness**: Atomic race-condition handling in `startExam`; concurrent triggers for the same key now resolve to the same session gracefully.
 - **UX Fallback**: Support for domain-only starts via "Virtual Blueprints" (Option 2 choice).
 - **Verification**: Verified `Exit Code 0` on full monorepo build.

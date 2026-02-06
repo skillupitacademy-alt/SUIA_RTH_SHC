@@ -57,7 +57,16 @@ export function QuizSelectionConsole() {
     const [selectionError, setSelectionError] = useState<string | null>(null);
 
     // Engine Calibration State (Step 5)
-    const [difficulty, setDifficulty] = useState('mixed');
+    // NORMALIZATION: Ensuring we strictly use backend-supported values (simple/mixed/expert)
+    const normalizeDifficulty = (val: string) => {
+        const v = val.toLowerCase();
+        if (v === 'beginner' || v === 'foundations') return 'simple';
+        if (v === 'advanced' || v === 'elite') return 'expert';
+        if (['simple', 'mixed', 'expert'].includes(v)) return v;
+        return 'mixed'; // Default fallback
+    };
+
+    const [difficulty, setDifficulty] = useState(normalizeDifficulty('mixed')); // Initial state guaranteed normalized
     const [questionCount, setQuestionCount] = useState(20);
     const [isArmed, setIsArmed] = useState(false);
     const [isLocked, setIsLocked] = useState(false);
@@ -488,15 +497,15 @@ export function QuizSelectionConsole() {
                                                 <div className="grid grid-cols-4 gap-6">
                                                     {[
                                                         { id: 'mixed', name: 'Mixed', desc: 'Mastery Blend' },
-                                                        { id: 'beginner', name: 'Foundations', desc: 'Core Knowledge' },
-                                                        { id: 'expert', name: 'Elite', desc: 'Expert Level' }
+                                                        { id: 'simple', name: 'Simple', desc: 'Core Knowledge' }, // Replaced 'beginner'/'Foundations'
+                                                        { id: 'expert', name: 'Expert', desc: 'Expert Level' }    // Replaced 'expert'/'Elite' (name change)
                                                     ].map((tier) => (
                                                         <button
                                                             key={tier.id}
                                                             disabled={isLocked || isArmed}
                                                             onClick={() => {
                                                                 if (isLocked || isArmed) return;
-                                                                setDifficulty(tier.id);
+                                                                setDifficulty(normalizeDifficulty(tier.id));
                                                             }}
                                                             className={cn(
                                                                 "p-4 rounded-[1.25rem] border-2 transition-all duration-300 group relative flex flex-col items-center justify-center min-h-[80px]",

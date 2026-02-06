@@ -201,7 +201,7 @@ export function OnboardingWizard() {
                             </div>
                         </div>
                         <div>
-                            <h2 className="text-5xl font-black mb-4">You&apos;re Elite!</h2>
+                            <h2 className="text-5xl font-black mb-4">You&apos;re an Expert!</h2>
                             <p className="text-muted-foreground text-xl max-w-md mx-auto leading-relaxed">
                                 We&apos;re finalizing your workspace for
                                 <span className="text-primary font-bold italic block text-2xl mt-2">

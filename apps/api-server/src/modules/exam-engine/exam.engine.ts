@@ -214,30 +214,77 @@ export class ExamEngine {
 
   /**
    * Finalizes the exam and triggers scoring.
+   * STRICT ORDER:
+   * 1. Resolve Exam ID (from ID or Idempotency Key)
+   * 2. Strict Ownership Check (Throw if fail) -> Never reveal existence/status to non-owner
+   * 3. Idempotency/Status Replay (If already processing/completed, return status)
+   * 4. Atomic Transition (started -> processing)
+   * 5. Trigger Scoring (Only if atomic transition succeeded)
    */
-  static async completeExam(examId: string, userId: string) {
-    const exam = await db.query.exams.findFirst({
-      where: eq(exams.id, examId),
-    });
+  static async completeExam(examId: string, userId: string, idempotencyKey?: string) {
+    let targetExamId = examId;
 
-    if (!exam || exam.status === 'completed' || exam.status === 'processing') {
-      throw new Error('Exam is already completed/processing or not found');
+    // 1. Idempotency Resolution (Resolve Exam ID from Key if provided)
+    if (idempotencyKey) {
+        const existingKey = await db.query.idempotencyKeys.findFirst({
+            where: and(
+                eq(idempotencyKeys.userId, userId),
+                eq(idempotencyKeys.key, `submit:${idempotencyKey}`)
+            ),
+        });
+        if (existingKey) {
+            targetExamId = existingKey.examId;
+        }
     }
 
+    // Fetch Exam state
+    const exam = await db.query.exams.findFirst({
+      where: eq(exams.id, targetExamId),
+    });
+
+    if (!exam) {
+      throw new Error('Exam not found');
+    }
+
+    // 2. Strict Ownership Check
     if (exam.userId !== userId) {
       throw new Error('Unauthorized: You do not own this exam session');
     }
 
-    // 1. Mark as processing immediately
-    await db.update(exams)
-      .set({ status: 'processing' as any }) // using any to bypass enum check if types aren't synced yet
-      .where(eq(exams.id, examId));
+    // 3. Graceful Replay (Idempotency)
+    if (exam.status === 'completed' || exam.status === 'processing') {
+        return { examId: targetExamId, status: exam.status };
+    }
 
-    // 2. Trigger Scoring Engine (Background)
-    ScoringEngine.calculateExamResults(examId).catch(err => {
-      console.error(`[ExamEngine] Async scoring trigger failed for ${examId}:`, err);
-    });
+    // 4. Atomic Transition (started -> processing)
+    // Only update if status is currently 'started'. This prevents race conditions.
+    const updated = await db.update(exams)
+      .set({ 
+          status: 'processing' as any,
+          completedAt: new Date()
+      }) 
+      .where(and(
+          eq(exams.id, targetExamId),
+          eq(exams.status, 'started')
+      ))
+      .returning({ id: exams.id });
 
-    return { examId, status: 'processing' };
+    // 5. Trigger Scoring (Only if we were the ones who transitioned it)
+    if (updated.length > 0) {
+        // Record Idempotency Key (if provided and we won the race)
+        if (idempotencyKey) {
+            await db.insert(idempotencyKeys).values({
+                userId,
+                key: `submit:${idempotencyKey}`,
+                examId: targetExamId,
+            }).onConflictDoNothing(); // Safe to ignore if key already exists (though unlikely given strict order)
+        }
+
+        ScoringEngine.calculateExamResults(targetExamId).catch(err => {
+            console.error(`[ExamEngine] Async scoring trigger failed for ${targetExamId}:`, err);
+        });
+    }
+
+    return { examId: targetExamId, status: 'processing' };
   }
 }
