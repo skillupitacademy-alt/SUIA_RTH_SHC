@@ -1147,3 +1147,13 @@ Reduce documentation fragmentation and improve discoverability by consolidating 
 - **Cleanup**: Purged all diagnostic scripts (`query-neon.js`, `find-hierarchy.ts`, `find-ids.ts`, etc.) to restore codebase hygiene.
 - **Verification**: Executed the "Closing Ceremony" verification suite (`pnpm build`, filtered builds, `tsc --noEmit`) with **Exit Code 0**.
 - **Governance**: Updated the mandatory documentation suite (`CURRENT_STATE_REPORT`, `TASK_HISTORY`, `CURRENT_TASK_LOG`) as per `.agent/AGENT_CONSTITUTION.md`.
+### Batch 139: Exam Entry UX Reliability
+- **Problem**: Exam launch failures and invalid session links resulted in "silent" redirects or poor error feedback, confusing users.
+- **Goal**: Implement a robust error handling UX with rich banners and contextual awareness.
+- **Action**: 
+    - **Selection Console**: Replaced the basic error state with a prominent `<LaunchErrorBanner />` feature in `QuizSelectionConsole`.
+    - **Recovery Paths**: Added "Try Again" and "Relax Filters" hints to the error banner to provide immediate corrective actions.
+    - **Contextual Redirects**: Modified `ActiveExamPage` to pass `?error=invalid_exam` during failure redirects; the Console now detects this and shows a specific "Session Invalid" alert.
+    - **Architecture Safety**: Wrapped the console in a `Suspense` boundary to ensure stable `useSearchParams()` behavior in Next.js App Router.
+- **Verification**: Root `pnpm build` and `tsc --noEmit` PASSED (Exit Code 0).
+- **Outcome**: Achieved a professional, resilient entry experience for all assessment sessions.
