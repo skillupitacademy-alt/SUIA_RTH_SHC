@@ -33,9 +33,15 @@ export async function POST(req: NextRequest) {
     }
 
     // 2. Selection Array Caps (Max 20 items per filter to prevent DB query explosion)
-    const arrayFields = ['subjectIds', 'topicIds', 'subtopicIds'];
+    const arrayFields = ['subjectIds', 'topicIds', 'subtopicIds', 'topics']; // Added legacy 'topics'
     for (const field of arrayFields) {
-        if (config[field] && Array.isArray(config[field])) {
+        if (config[field] !== undefined) {
+            // "Forever Safe": Reject non-array values explicitly
+            if (!Array.isArray(config[field])) {
+                return NextResponse.json({ 
+                    error: `${field} must be an array` 
+                }, { status: 422 });
+            }
             if (config[field].length > 20) {
                  return NextResponse.json({ 
                     error: `${field} cannot contain more than 20 items` 
@@ -58,7 +64,7 @@ export async function POST(req: NextRequest) {
     const targetId = blueprintId || domainId;
 
     if (!targetId) {
-      return NextResponse.json({ error: 'blueprintId or domainId is required' }, { status: 400 });
+      return NextResponse.json({ error: 'blueprintId or domainId is required' }, { status: 422 });
     }
 
     // 4. UUID Format Validation (Basic Regex)

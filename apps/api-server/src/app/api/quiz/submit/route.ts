@@ -19,8 +19,18 @@ export async function POST(req: NextRequest) {
     // Step 5 Hardening: Pass idempotency key for safe retries
     const result = await ExamEngine.completeExam(examId, payload.userId, idempotencyKey);
     
+    if (result.status === 'processing') {
+        return NextResponse.json(result, { status: 202 });
+    }
+
     return NextResponse.json(result);
   } catch (error: any) {
+    if (error.message.includes('Unauthorized') || error.message.includes('do not own')) {
+        return NextResponse.json({ error: error.message }, { status: 403 });
+    }
+    if (error.message.includes('Exam not found')) {
+        return NextResponse.json({ error: error.message }, { status: 404 });
+    }
     return NextResponse.json({ error: error.message }, { status: 400 });
   }
 }

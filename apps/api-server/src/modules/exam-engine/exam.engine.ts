@@ -252,16 +252,16 @@ export class ExamEngine {
     }
 
     // 3. Graceful Replay (Idempotency)
-    if (exam.status === 'completed' || exam.status === 'processing') {
+    if (exam.status === 'completed' || exam.status === 'processing' || exam.status === 'failed' || exam.status === 'abandoned') {
         return { examId: targetExamId, status: exam.status };
     }
 
     // 4. Atomic Transition (started -> processing)
     // Only update if status is currently 'started'. This prevents race conditions.
+    // NOTE: We do NOT set completedAt here. ScoringEngine sets it when truly done.
     const updated = await db.update(exams)
       .set({ 
-          status: 'processing' as any,
-          completedAt: new Date()
+          status: 'processing' as any
       }) 
       .where(and(
           eq(exams.id, targetExamId),
