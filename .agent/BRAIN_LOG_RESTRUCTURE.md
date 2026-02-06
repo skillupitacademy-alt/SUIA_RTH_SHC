@@ -1137,3 +1137,13 @@ Reduce documentation fragmentation and improve discoverability by consolidating 
 - **Cutover**: Updated `QuizSelectionConsole.tsx` to redirect to the Premium HUD route (`/exam/[id]`) from the legacy dashboard.
 - **Verification**: Executed the final monorepo-wide build and `tsc --noEmit` audit with **Exit Code 0**.
 - **Outcome**: Successfully delivered the High-Fidelity Premium Active Exam HUD and officially retired the legacy session flow.
+
+### Batch 134: JavaScript Readiness & CORS Infrastructure
+- **Diagnosis**: Mapped "FullStack" -> "Front End" -> "JavaScript Fundamentals" hierarchy. Identified 1 Expert question shortfall (4/5) initially; re-verification confirmed 18 questions (6/6/6) meeting the threshold.
+- **CORS Fix**: Added `Idempotency-Key` to `Access-Control-Allow-Headers` in `cors.middleware.ts`.
+- **Validation**: Confirmed both data and infrastructure readiness for the JavaScript quiz.
+
+### Batch 135: Mandatory Post-Task Cleanup & Verification
+- **Cleanup**: Purged all diagnostic scripts (`query-neon.js`, `find-hierarchy.ts`, `find-ids.ts`, etc.) to restore codebase hygiene.
+- **Verification**: Executed the "Closing Ceremony" verification suite (`pnpm build`, filtered builds, `tsc --noEmit`) with **Exit Code 0**.
+- **Governance**: Updated the mandatory documentation suite (`CURRENT_STATE_REPORT`, `TASK_HISTORY`, `CURRENT_TASK_LOG`) as per `.agent/AGENT_CONSTITUTION.md`.
