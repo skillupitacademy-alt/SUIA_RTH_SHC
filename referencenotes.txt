@@ -35,6 +35,8 @@ please refer @.agent directory .md files which are the .md files need to be upda
 
 Whatever task we have done and after completion of all tasks till now  what to do please refer @.agents md files and architecture .md files and do needful if anything is pending to be done post task completion
 
+
+
 pnpm build
 npx tsc --noEmit
 
@@ -392,6 +394,41 @@ Recommendation for Future Sessions: To ensure consistency, simply start new sess
  for this session."
 
 This simple command activates the laws we just wrote.
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+To support you across "two different windows" (which logically means two separate workstreams), I use a methodology of Contextual Isolation. Here is how I manage it practically within your project:
+
+1. Architectural Isolation (Implementation Plans)
+I create a dedicated Implementation Plan artifact for each task.
+
+Plan A: Focuses on the logic, UI, or API for the first task.
+Plan B: Focuses on the requirements for the second. This prevents the technical requirements of one from "bleeding" into the other.
+2. Version Control Isolation (Git Branching)
+I can manage the two tasks in separate Git branches:
+
+I'll commit Task 1's work to feature/task-one.
+I'll commit Task 2's work to feature/task-two. This allows you to test or revert one without affecting the other, essentially giving you two "parallel versions" of your project.
+3. Unified Progress Tracking (
+task.md
+)
+I use the 
+task.md
+ file in the @execution area as our Master Command Center. I'll divide it into two clear sections:
+
+## [TASK A] Description
+## [TASK B] Description As I finish tool calls for one, I check them off and switch context to the other.
+4. Cross-App Orchestration
+Since your project is a monorepo, I can work on the web-app for one task and the admin-app or api-server for the other simultaneously.
+
+To get started, please tell me:
+
+What is Task 1 (the first workstream)?
+What is Task 2 (the second workstream)?
+Once you define them, I will create the separate plans and we can begin!
+
+
 
 
 

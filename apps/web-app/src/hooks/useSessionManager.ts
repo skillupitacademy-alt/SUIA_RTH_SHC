@@ -1,6 +1,6 @@
 
 import { useEffect, useRef, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { apiClient } from '@quiz/api-client';
 
 const IDLE_TIMEOUT_MS = 5 * 60 * 1000; // 5 minutes
@@ -8,6 +8,7 @@ const HEARTBEAT_INTERVAL_MS = 60 * 1000; // 1 minute
 
 export function useSessionManager() {
   const router = useRouter();
+  const pathname = usePathname();
   const lastActivityRef = useRef<number>(Date.now());
   const heartbeatRef = useRef<NodeJS.Timeout | null>(null);
   const checkIdleRef = useRef<NodeJS.Timeout | null>(null);
@@ -28,12 +29,17 @@ export function useSessionManager() {
     const sendHeartbeat = async () => {
       try {
         const now = Date.now();
-        // Only send heartbeat if active recently (e.g. within last 2 minutes)
-        if (now - lastActivityRef.current < 2 * 60 * 1000) {
-            await apiClient.auth.heartbeat();
+        const isActiveExam = pathname?.startsWith('/exam/') || pathname?.startsWith('/quiz/active-session');
+        
+        // During active exam: ALWAYS send heartbeat (even if idle)
+        // Otherwise: Only send if user was active recently
+        const shouldSendHeartbeat = isActiveExam || (now - lastActivityRef.current < 2 * 60 * 1000);
+        
+        if (shouldSendHeartbeat) {
+          await apiClient.auth.heartbeat();
         }
       } catch (e) {
-        console.error('Heartbeat failed', e);
+        console.error('[Session] Heartbeat failed', e);
       }
     };
     
@@ -41,10 +47,19 @@ export function useSessionManager() {
 
     // 4. Idle Check Loop (Enforce Logout)
     const checkIdle = () => {
+      // CRITICAL: Skip idle check during active exams
+      // Prevents session expiry while user is taking assessment (even if reading long questions)
+      const isActiveExam = pathname?.startsWith('/exam/') || pathname?.startsWith('/quiz/active-session');
+      
+      if (isActiveExam) {
+        console.log('[Session] Idle check skipped: Active exam in progress');
+        return;
+      }
+
       const now = Date.now();
       if (now - lastActivityRef.current > IDLE_TIMEOUT_MS) {
         // User is Idle > 5 mins
-        console.warn('User idle timeout. Logging out...');
+        console.warn('[Session] User idle timeout. Logging out...');
         // Correct Logout: Session is cleared via cookies on server
         // We just need to redirect to login
         router.push('/login?reason=idle');
@@ -62,5 +77,5 @@ export function useSessionManager() {
       if (heartbeatRef.current) clearInterval(heartbeatRef.current);
       if (checkIdleRef.current) clearInterval(checkIdleRef.current);
     };
-  }, [router]);
+  }, [router, pathname]);
 }

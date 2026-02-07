@@ -75,3 +75,9 @@
 - **UI Fixes (Phase 2)**: Applied theme styling to tactical map chips (state-specific colors), header (theme-specific heights), code blocks (readable backgrounds), loading/error states, and flag button.
 - **Finalization (Phase 3)**: User selected Executive Minimal. Set as default, removed ThemeSwitcher, enhanced confirmation modal.
 - **Verification**: `pnpm build` and `npx tsc --noEmit` verified (Exit Code 0) for all phases.
+### Batch 141: Session Exam Protection (Phase 1 - P0)
+- **Idle Timeout Skip**: Modified `useSessionManager.ts` to skip 5-min idle check on `/exam/*` and `/quiz/active-session` routes.
+- **Heartbeat Continuation**: Heartbeat now continues every 1 minute during active exams, even if user is idle (reading long questions).
+- **Route Detection**: Used `usePathname()` hook for clean route detection and added to dependencies.
+- **401/403 Verification**: Confirmed existing event-based handler (no duplicate redirect added).
+- **Verification**: `pnpm build` and `npx tsc --noEmit` verified (Exit Code 0).
