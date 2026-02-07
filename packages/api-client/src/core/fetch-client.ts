@@ -39,9 +39,25 @@ export class FetchClient {
     });
 
     if (!response.ok) {
-      if (response.status === 401) {
+      if (response.status === 401 || response.status === 403) {
         if (typeof window !== 'undefined') {
-            window.dispatchEvent(new CustomEvent('auth:unauthorized'));
+          // 1. Dispatch event for any listeners (cleanup, etc.)
+          window.dispatchEvent(new CustomEvent('auth:unauthorized'));
+
+          // 2. Redirect Fallback with "Redirect Once" guard
+          const currentPath = window.location.pathname;
+          const search = window.location.search;
+          const isLoginPage = currentPath === '/login';
+          const isAlreadyRedirecting = (window as any).__authRedirecting;
+
+          if (!isLoginPage && !isAlreadyRedirecting) {
+            (window as any).__authRedirecting = true;
+            console.warn(`[API] ${response.status} detected. Redirecting to login...`);
+            
+            const redirectUrl = encodeURIComponent(currentPath + search);
+            const reason = response.status === 401 ? 'session_expired' : 'unauthorized';
+            window.location.href = `/login?redirect=${redirectUrl}&reason=${reason}`;
+          }
         }
       }
       // Clone response to read body twice if needed (though we only read once here)

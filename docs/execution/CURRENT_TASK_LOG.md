@@ -79,5 +79,5 @@
 - **Idle Timeout Skip**: Modified `useSessionManager.ts` to skip 5-min idle check on `/exam/*` and `/quiz/active-session` routes.
 - **Heartbeat Continuation**: Heartbeat now continues every 1 minute during active exams, even if user is idle (reading long questions).
 - **Route Detection**: Used `usePathname()` hook for clean route detection and added to dependencies.
-- **401/403 Verification**: Confirmed existing event-based handler (no duplicate redirect added).
+- **Redirect Fallback**: Implemented robust 401/403 redirect fallback in `fetch-client.ts` with a "redirect once" guard to prevent infinite loaders.
 - **Verification**: `pnpm build` and `npx tsc --noEmit` verified (Exit Code 0).
