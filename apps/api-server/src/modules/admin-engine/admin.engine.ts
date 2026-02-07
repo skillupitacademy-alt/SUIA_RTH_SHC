@@ -1276,13 +1276,26 @@ export class AdminEngine {
     }
     const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
 
-    const [countResult] = await db.select({ count: sql`count(*)` }).from(domains).where(whereClause);
-    const data = await db.query.domains.findMany({
-        where: whereClause,
-        limit,
-        offset,
-        orderBy: [desc(domains.createdAt)]
-    });
+    const [countResult] = await db.select({ count: sql`count(${domains.id})` }).from(domains).where(whereClause);
+    
+    const data = await db.select({
+        id: domains.id,
+        name: domains.name,
+        description: domains.description,
+        category: domains.category,
+        status: domains.status,
+        createdAt: domains.createdAt,
+        updatedAt: domains.updatedAt,
+        subjectsCount: sql<number>`cast(count(${subjects.id}) as integer)`.mapWith(Number)
+    })
+    .from(domains)
+    .leftJoin(subjects, eq(domains.id, subjects.domainId))
+    .where(whereClause)
+    .groupBy(domains.id)
+    .limit(limit)
+    .offset(offset)
+    .orderBy(desc(domains.createdAt));
+
     return {
         data,
         total: Number(countResult?.count || 0),
@@ -1306,19 +1319,29 @@ export class AdminEngine {
 
     const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
 
-    const [countResult] = await db.select({ count: sql`count(*)` })
+    const [countResult] = await db.select({ count: sql`count(${subjects.id})` })
         .from(subjects)
         .where(whereClause);
 
-    const data = await db.query.subjects.findMany({
-        limit,
-        offset,
-        where: whereClause,
-        orderBy: [desc(subjects.createdAt)],
-        with: {
-            domain: true
-        }
-    });
+    const data = await db.select({
+        id: subjects.id,
+        domainId: subjects.domainId,
+        name: subjects.name,
+        description: subjects.description,
+        order: subjects.order,
+        status: subjects.status,
+        createdAt: subjects.createdAt,
+        updatedAt: subjects.updatedAt,
+        topicsCount: sql<number>`cast(count(${topics.id}) as integer)`.mapWith(Number)
+    })
+    .from(subjects)
+    .leftJoin(topics, eq(subjects.id, topics.subjectId))
+    .where(whereClause)
+    .groupBy(subjects.id)
+    .limit(limit)
+    .offset(offset)
+    .orderBy(desc(subjects.createdAt));
+
     return {
         data,
         total: Number(countResult?.count || 0),
@@ -1342,23 +1365,32 @@ export class AdminEngine {
 
     const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
 
-    const [countResult] = await db.select({ count: sql`count(*)` })
+    const [countResult] = await db.select({ count: sql`count(${topics.id})` })
         .from(topics)
         .where(whereClause);
 
-    const data = await db.query.topics.findMany({
-        limit,
-        offset,
-        where: whereClause,
-        orderBy: [desc(topics.createdAt)],
-        with: {
-            subject: {
-                with: {
-                    domain: true
-                }
-            }
-        }
-    });
+    const data = await db.select({
+        id: topics.id,
+        subjectId: topics.subjectId,
+        name: topics.name,
+        description: topics.description,
+        complexityLevel: topics.complexityLevel,
+        weight: topics.weight,
+        status: topics.status,
+        createdAt: topics.createdAt,
+        updatedAt: topics.updatedAt,
+        subtopicsCount: sql<number>`cast(count(distinct ${subtopics.id}) as integer)`.mapWith(Number),
+        questionsCount: sql<number>`cast(count(distinct ${questions.id}) as integer)`.mapWith(Number)
+    })
+    .from(topics)
+    .leftJoin(subtopics, eq(topics.id, subtopics.topicId))
+    .leftJoin(questions, eq(topics.id, questions.topicId))
+    .where(whereClause)
+    .groupBy(topics.id)
+    .limit(limit)
+    .offset(offset)
+    .orderBy(desc(topics.createdAt));
+
     return {
         data,
         total: Number(countResult?.count || 0),
@@ -1382,27 +1414,27 @@ export class AdminEngine {
 
     const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
 
-    const [countResult] = await db.select({ count: sql`count(*)` })
+    const [countResult] = await db.select({ count: sql`count(${subtopics.id})` })
         .from(subtopics)
         .where(whereClause);
 
-    const data = await db.query.subtopics.findMany({
-        limit,
-        offset,
-        where: whereClause,
-        orderBy: [desc(subtopics.createdAt)],
-        with: {
-            topic: {
-                with: {
-                    subject: {
-                        with: {
-                            domain: true
-                        }
-                    }
-                }
-            }
-        }
-    });
+    const data = await db.select({
+        id: subtopics.id,
+        topicId: subtopics.topicId,
+        name: subtopics.name,
+        description: subtopics.description,
+        depthLevel: subtopics.depthLevel,
+        createdAt: subtopics.createdAt,
+        questionsCount: sql<number>`cast(count(${questions.id}) as integer)`.mapWith(Number)
+    })
+    .from(subtopics)
+    .leftJoin(questions, eq(subtopics.id, questions.subtopicId))
+    .where(whereClause)
+    .groupBy(subtopics.id)
+    .limit(limit)
+    .offset(offset)
+    .orderBy(desc(subtopics.createdAt));
+
     return {
         data,
         total: Number(countResult?.count || 0),

@@ -612,10 +612,11 @@
 - **Build Integrity**: Verified with `pnpm build` and `npx tsc --noEmit` (Exit Code 0) for all phases.
 - **Status**: **PRODUCTION-READY**. Active Exam HUD now uses Executive Minimal theme exclusively. All UI/UX issues resolved.
 ### Phase 2 Refinement completion
-| Date       | Phase Name         | Status    | Description                                                              |
-|------------|--------------------|-----------|--------------------------------------------------------------------------|
+| Date | Phase Name | Status | Description |
+|---|---|---|---|
 | 2026-02-07 | Session Reliability| COMPLETED | Protected active exams from idle timeout and implemented 401/403 redirect fallback. |
-| 2026-02-07 | My Exams Page UX   | COMPLETED | Restored Executive White look, ported ZLoader, and fixed backend "Quick Quiz" fallback. |
+| 2026-02-07 | My Exams Page UX | COMPLETED | Restored Executive White look, ported ZLoader, and fixed backend "Quick Quiz" fallback. |
+| 2026-02-08 | Hierarchy Data | COMPLETED | Restored aggregate child counts across all hierarchy levels for data integrity. |
 
 ### Phase 35: Session Reliability Hardening (Batch 141)
 - **Session Protection**: Modified `useSessionManager.ts` to strictly skip the 5-minute idle timeout on `/exam/*` and `/quiz/active-session` routes, preventing data loss during examinations.

@@ -37,12 +37,12 @@ Whatever task we have done and after completion of all tasks till now  what to d
 
 
 
-pnpm build
-npx tsc --noEmit
+1 pnpm build
+2. npx tsc --noEmit
 
-please refer @.agent directory .md files which are the .md files need to be updated after we complete over given task and update necessary .md files of @execution folder
+3. please refer @.agent directory .md files which are the .md files need to be updated after we complete over given task and update necessary .md files of @execution folder
 
-then local repo git commit when multiple command of git is appended then use ; not &&
+4. then local repo git commit when multiple command of git is appended then use ; not &&
 
 Let me explain how .md file content to be shown
 
