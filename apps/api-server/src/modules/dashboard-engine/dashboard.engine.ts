@@ -39,9 +39,10 @@ export class DashboardEngine {
     const recentCompletedExams = await db.query.exams.findMany({
       where: baseFilter,
       orderBy: [desc(exams.completedAt)],
-      limit: 4,
+      limit: 100, // Fetch more for history
       with: {
         blueprint: true,
+        dimensions: true, // Fetch dimensions in the same query to avoid N+1
       }
     });
 
@@ -92,13 +93,27 @@ export class DashboardEngine {
         score: t.score || 0,
         date: t.completedAt ? t.completedAt.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }) : 'Unknown'
       })),
-      recentActivity: recentCompletedExams.map(e => ({
-        id: e.id,
-        title: e.blueprint?.name || 'Quick Quiz',
-        score: e.totalScore,
-        relativeTime: this.getRelativeTime(e.completedAt!),
-        status: e.status,
-      })),
+      recentActivity: recentCompletedExams.map(e => {
+        // Derive title: Blueprint Name > Dimensions (Topic > Subject > Domain)
+        let derivedTitle: string | null | undefined = e.blueprint?.name;
+        
+        if (!derivedTitle && e.dimensions && e.dimensions.length > 0) {
+            const topic = e.dimensions.find(d => d.dimensionType === 'topic');
+            const subject = e.dimensions.find(d => d.dimensionType === 'subject');
+            const domain = e.dimensions.find(d => d.dimensionType === 'domain');
+            
+            // Prefer Topic, then Subject, then Domain name if available
+            derivedTitle = topic?.name || subject?.name || domain?.name;
+        }
+
+        return {
+          id: e.id,
+          title: derivedTitle ?? 'Self-Paced Quiz',
+          score: e.totalScore,
+          relativeTime: this.getRelativeTime(e.completedAt!),
+          status: e.status,
+        };
+      }),
     };
   }
 }

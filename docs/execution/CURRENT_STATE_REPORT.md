@@ -611,6 +611,12 @@
 - **Phase 3 - Finalization**: User selected **Executive Minimal** theme. Set as default, removed ThemeSwitcher component, enhanced confirmation modal to match Executive aesthetic (clean white background, clear hierarchy, professional styling).
 - **Build Integrity**: Verified with `pnpm build` and `npx tsc --noEmit` (Exit Code 0) for all phases.
 - **Status**: **PRODUCTION-READY**. Active Exam HUD now uses Executive Minimal theme exclusively. All UI/UX issues resolved.
+### Phase 2 Refinement completion
+| Date       | Phase Name         | Status    | Description                                                              |
+|------------|--------------------|-----------|--------------------------------------------------------------------------|
+| 2026-02-07 | Session Reliability| COMPLETED | Protected active exams from idle timeout and implemented 401/403 redirect fallback. |
+| 2026-02-07 | My Exams Page UX   | COMPLETED | Restored Executive White look, ported ZLoader, and fixed backend "Quick Quiz" fallback. |
+
 ### Phase 35: Session Reliability Hardening (Batch 141)
 - **Session Protection**: Modified `useSessionManager.ts` to strictly skip the 5-minute idle timeout on `/exam/*` and `/quiz/active-session` routes, preventing data loss during examinations.
 - **Heartbeat Persistence**: Upgraded heartbeat logic to continue every 1 minute during active exams regardless of user activity, ensuring backend session persistence even during long reading periods.
@@ -618,10 +624,9 @@
 - **Duality Logic**: Successfully verified that the existing 401 event listener in `auth-context.tsx` is preserved while providing an automatic emergency exit for unhandled authentication failures.
 - **Verification**: Global root `pnpm build` and `npx tsc --noEmit` verified (Exit Code 0) across all packages.
 
-### Phase 36: My Exams UX Modernization (Batch 142)
-- **State Locking**: Refactored `MyExamsPage.tsx` to use mutually exclusive rendering logic, eliminating layout shifts between loading/empty/list states.
-- **Full-Card Interactivity**: Converted exam items into fully clickable `Link` cards for a more modern, professional engagement model.
-- **Pagination Standard**: Implemented 7-per-page pagination with Executive Minimal controls, optimizing performance and scannability.
-- **Typography Upgrade**: Scaled headers to `text-3xl/4xl` and applied high-contrast performance badges to match the FAANG SDE-3 standard.
-- **Sorting Reliability**: Maintained server-authoritative sorting (completedAt DESC) to ensure chronological accuracy without string-based fragility.
-- **Verification**: `pnpm build` and `npx tsc --noEmit` verified (Exit Code 0).
+### Phase 36: My Exams UX Refinement (Batch 142)
+- **Aesthetic Alignment**: Reverted `MyExamsPage.tsx` to the Executive White look with pink accents (#FF2D55), ensuring consistency with the platform branding.
+- **Component Standardisation**: Ported `ZLoader` from `admin-app` to `web-app` for unified loading indicators.
+- **Backend Intelligence**: Optimized `DashboardEngine.ts` to derive exam titles from dimension metadata (Topic/Subject/Domain) via a single DB query (no N+1).
+- **Self-Paced Titles**: Resolved "Quick Quiz" fallback by providing contextual names based on the assessment's dimension focus.
+- **Verification**: All packages passed building and type checks (Exit Code 0).
