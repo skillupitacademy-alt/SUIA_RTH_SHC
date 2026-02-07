@@ -617,3 +617,11 @@
 - **Redirect Fallback**: Implemented a robust 401/403 redirect fallback in `fetch-client.ts` with a "redirect once" guard (`window.__authRedirecting`) to eliminate infinite loading states.
 - **Duality Logic**: Successfully verified that the existing 401 event listener in `auth-context.tsx` is preserved while providing an automatic emergency exit for unhandled authentication failures.
 - **Verification**: Global root `pnpm build` and `npx tsc --noEmit` verified (Exit Code 0) across all packages.
+
+### Phase 36: My Exams UX Modernization (Batch 142)
+- **State Locking**: Refactored `MyExamsPage.tsx` to use mutually exclusive rendering logic, eliminating layout shifts between loading/empty/list states.
+- **Full-Card Interactivity**: Converted exam items into fully clickable `Link` cards for a more modern, professional engagement model.
+- **Pagination Standard**: Implemented 7-per-page pagination with Executive Minimal controls, optimizing performance and scannability.
+- **Typography Upgrade**: Scaled headers to `text-3xl/4xl` and applied high-contrast performance badges to match the FAANG SDE-3 standard.
+- **Sorting Reliability**: Maintained server-authoritative sorting (completedAt DESC) to ensure chronological accuracy without string-based fragility.
+- **Verification**: `pnpm build` and `npx tsc --noEmit` verified (Exit Code 0).
