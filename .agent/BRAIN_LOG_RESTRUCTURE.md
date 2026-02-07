@@ -1168,3 +1168,13 @@ Reduce documentation fragmentation and improve discoverability by consolidating 
     - **Phase 3 - Finalization**: User selected **Executive Minimal** theme. Set Executive as default, removed ThemeSwitcher component, enhanced confirmation modal to match Executive aesthetic (clean white background, clear hierarchy, professional styling).
 - **Verification**: `pnpm build` and `npx tsc --noEmit` PASSED (Exit Code 0) for all phases.
 - **Outcome**: Active Exam HUD now uses Executive Minimal theme with clean, professional aesthetic. All UI/UX issues resolved. Production-ready.
+
+### Batch 141: Session Reliability (P0)
+- **Problem**: Users were experiencing session timeouts (5-min idle) during active exams, leading to failed submissions and data loss. Infinite loaders also occurred when sessions expired mid-request.
+- **Goal**: Harden session management to protect active exams and provide robust auth failure recovery.
+- **Action**:
+    - **Session Manager**: Modified `useSessionManager.ts` to skip idle check on `/exam/*` and `/quiz/active-session` routes.
+    - **Heartbeat persistence**: Forced heartbeat requests every 1-min during active exams even if the user is idle (reading).
+    - **Redirect Fallback**: Added a fail-safe redirect to `/login` in `fetch-client.ts` for 401/403 errors, protected by a `window.__authRedirecting` guard to prevent double-navigations.
+    - **Verification**: `pnpm build` and `npx tsc --noEmit` PASSED (Exit Code 0).
+- **Outcome**: Achieved high-fidelity session reliability for assessment takers. Users are protected from idle timeouts during exams and have a clear recovery path on session expiry.

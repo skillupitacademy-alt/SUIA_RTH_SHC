@@ -611,3 +611,9 @@
 - **Phase 3 - Finalization**: User selected **Executive Minimal** theme. Set as default, removed ThemeSwitcher component, enhanced confirmation modal to match Executive aesthetic (clean white background, clear hierarchy, professional styling).
 - **Build Integrity**: Verified with `pnpm build` and `npx tsc --noEmit` (Exit Code 0) for all phases.
 - **Status**: **PRODUCTION-READY**. Active Exam HUD now uses Executive Minimal theme exclusively. All UI/UX issues resolved.
+### Phase 35: Session Reliability Hardening (Batch 141)
+- **Session Protection**: Modified `useSessionManager.ts` to strictly skip the 5-minute idle timeout on `/exam/*` and `/quiz/active-session` routes, preventing data loss during examinations.
+- **Heartbeat Persistence**: Upgraded heartbeat logic to continue every 1 minute during active exams regardless of user activity, ensuring backend session persistence even during long reading periods.
+- **Redirect Fallback**: Implemented a robust 401/403 redirect fallback in `fetch-client.ts` with a "redirect once" guard (`window.__authRedirecting`) to eliminate infinite loading states.
+- **Duality Logic**: Successfully verified that the existing 401 event listener in `auth-context.tsx` is preserved while providing an automatic emergency exit for unhandled authentication failures.
+- **Verification**: Global root `pnpm build` and `npx tsc --noEmit` verified (Exit Code 0) across all packages.

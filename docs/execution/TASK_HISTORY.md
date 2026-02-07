@@ -71,3 +71,4 @@
 | 2026-02-07 | Diagnostic Cleanup | COMPLETED | Purged temporary database scripts and verified system-wide build integrity. |
 | 2026-02-07 | Navigation Guardrails | COMPLETED | Implemented UUID validation and redirects to prevent `undefined` exam ID navigation. |
 | 2026-02-07 | Dashboard & Auth Health | COMPLETED | Fixed dashboard 404s and hardened cross-subdomain auth cookies. |
+| 2026-02-07 | Session Reliability | COMPLETED | Protected active exams from idle timeout and implemented 401/403 redirect fallback. |
