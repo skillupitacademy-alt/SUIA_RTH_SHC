@@ -1213,3 +1213,11 @@ Reduce documentation fragmentation and improve discoverability by consolidating 
 - **Layout Refactor**: Refactored the Action Console in `question-generator/page.tsx` into a full-width, 3-row desktop layout for better visual balance.
 - **Structural Alignment**: Centered Row 1 (Title) and Row 2 (Controls), and anchored Row 3 (Helper Text) to the bottom-right, maintaining muted typography.
 - **Verification**: Verified via `pnpm build` and `tsc --noEmit` with Exit Code 0.
+
+### Batch 155: Final Locked UI Refinements
+- **Shell Logic**: Modified `AppShell.tsx` to conditionally render the global `Footer` based on the active pathname (exclusive to `/`).
+- **Layout Fluidity**: Refactored `page.tsx` (`/quiz/new`) to remove absolute height offsets, enabling flexible `flex-1` expansion within the `AppShell` container.
+- **Step 5 Calibration**: Updated advanced question options count list to exactly `[10, 20, 30, 40]`.
+- **UI Purge**: Removed the duration/mastery summary strip from the calibration pane to reduce visual noise.
+- **Aesthetic Alignment**: Synchronized the "Back" button's design tokens (colors, shadows, hover states) with the "Confirm Mission" primary button family.
+- **Outcome**: Achieved a 100% stable, zero-scroll viewport with professional-grade UI consistency.

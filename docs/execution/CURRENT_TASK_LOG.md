@@ -124,3 +124,10 @@
 - **Layout Refactor**: Refactored the Action Console in `question-generator/page.tsx` into a full-width, 3-row desktop layout for better visual balance.
 - **Structural Alignment**: Centered Row 1 (Title) and Row 2 (Controls), and anchored Row 3 (Helper Text) to the bottom-right, maintaining muted typography.
 - **Verification**: Verified via `pnpm build` and `tsc --noEmit` with Exit Code 0.
+
+### Batch 155: Final Locked Refinements (Feb 08, 2026)
+- **Conditional Footer**: Implemented pathname-aware rendering in `AppShell.tsx` (Homepage only).
+- **Viewport Stability**: Removed hardcoded heights in `page.tsx` for fluid `flex-1` scaling within Shell.
+- **Step 5 Cleanup**: Stripped duration/mastery strip; Rebalanced Difficulty/Count layout.
+- **Aesthetic Unification**: Unified "Back" button styling with the pink "Confirm" button family.
+- **Verification**: Verified zero-scroll stability and build integrity (Exit Code 0).

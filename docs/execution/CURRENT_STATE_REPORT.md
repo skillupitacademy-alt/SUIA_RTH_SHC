@@ -667,3 +667,10 @@
 - **Visual Centering**: Re-engineered the control rail (Strict Mode, Skills, Copy) with a centered grid architecture and a standardized `h-12` vertical rhythm.
 - **Reporting Sync**: Secured the "Intelligence Phase" branding and anchored helper text to the bottom-right, maintaining muted WCAG-compliant contrast ratios.
 - **Verification**: Verified zero logic regressions in the Prompt Generation engine; confirmed 100% build and type-safety (Exit Code 0).
+
+### Phase 45: Final Locked Refinements & Viewport Stability (Batch 155)
+- **Shell Architecture**: Implemented dynamic footer rendering in `AppShell.tsx` to preserve "Executive Console" immersion on launch routes.
+- **Viewport Lockdown**: Eliminated route-specific height math for a fluid, Shell-governed `flex-col` distribution.
+- **Step 5 Precision**: Standardized Advanced Question options and purged legacy duration strips for a cleaner calibration HUD.
+- **Visual Cohesion**: Achieved 1:1 aesthetic parity between navigation controls and primary action buttons.
+- **Verification**: Confirmed 100% build stability and type-safety across the monorepo.
