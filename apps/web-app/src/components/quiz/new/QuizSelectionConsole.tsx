@@ -6,42 +6,8 @@ import { apiClient } from '@quiz/api-client';
 import { AssessmentSummary } from './AssessmentSummary';
 import { DomainCard } from './DomainCard';
 import { TopicChip } from './TopicChip';
-import { Code, Shield, Cloud, Database, Check, Loader2, Activity, ChevronLeft, ChevronRight, AlertCircle, X, ExternalLink, RefreshCcw, BookOpen } from 'lucide-react';
+import { Code, Shield, Cloud, Database, Loader2, Activity, ChevronLeft, ChevronRight, AlertCircle, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import Link from 'next/link';
-
-const JourneyBadge = ({ text }: { text: string }) => (
-    <div className="flex flex-col items-end gap-2">
-        <div className="inline-flex items-center px-4 py-1.5 rounded-full border-2 border-[#FF2D55]/20 bg-white shadow-sm animate-in zoom-in duration-500">
-            <span className="text-[12px] font-black font-outfit text-[#FF2D55] uppercase tracking-[0.2em]">{text}</span>
-        </div>
-    </div>
-);
-
-const DottedProgressBar = ({ currentStep, mode }: { currentStep: number; mode: 'basic' | 'advanced' }) => (
-    <div className="flex items-center gap-4">
-        {[1, 2, 3, 4, 5].map((s) => {
-            const isDot4Basic = mode === 'basic' && s === 4;
-            return (
-                <div key={s} className="flex items-center">
-                    <div className={cn(
-                        "w-3 h-3 rounded-full border-2 transition-all duration-500",
-                        isDot4Basic ? "bg-transparent border-gray-200 opacity-30" :
-                            s < currentStep ? "bg-[#FF2D55] border-[#FF2D55]" :
-                                s === currentStep ? "bg-[#FF2D55] border-[#FF2D55] shadow-[0_0_20px_rgba(255,45,85,0.5)] scale-125" :
-                                    "bg-transparent border-gray-300"
-                    )} />
-                    {s < 5 && (
-                        <div className={cn(
-                            "w-12 h-[2px] mx-1 transition-all duration-500",
-                            (s < currentStep && !(mode === 'basic' && s === 3)) || (mode === 'basic' && s === 3 && currentStep === 5) ? "bg-[#FF2D55]" : "bg-gray-200/80"
-                        )} />
-                    )}
-                </div>
-            );
-        })}
-    </div>
-);
 
 export function QuizSelectionConsole() {
     return (
@@ -95,16 +61,6 @@ function QuizSelectionConsoleContent() {
     const [questionCount, setQuestionCount] = useState(20);
     const [isArmed, setIsArmed] = useState(false);
     const [isLocked, setIsLocked] = useState(false);
-
-    // Proportional HUD Brain: Dynamic capacity based on viewport height
-    const [innerHeight, setInnerHeight] = useState(typeof window !== 'undefined' ? window.innerHeight : 900);
-
-    useEffect(() => {
-        if (typeof window === 'undefined') return;
-        const handleResize = () => setInnerHeight(window.innerHeight);
-        window.addEventListener('resize', handleResize);
-        return () => window.removeEventListener('resize', handleResize);
-    }, []);
 
     // Pagination State
     const [page, setPage] = useState(0);
@@ -416,13 +372,13 @@ function QuizSelectionConsoleContent() {
     const paginatedSubjects = subjects.slice(page * currentPageSize, (page + 1) * currentPageSize);
     const paginatedSubtopics = subtopics.slice(page * currentPageSize, (page + 1) * currentPageSize);
 
-    // Metadata for Journey Orientation (Brief Professional Strings - No Emoji)
+    // Metadata for Journey Orientation
     const journeyInfo = {
-        1: { title: "Select Domain", badge: "Foundation Architecture", desc: "Select Primary Domain", count: domains.length },
-        2: { title: "Refine Subjects", badge: "Curriculum Calibration", desc: "Refine Core Subjects", count: subjects.length },
-        3: { title: "Select Topics", badge: "Knowledge Mapping", desc: "Map Knowledge Units", count: topics.length },
-        4: { title: "Fine-tune Subtopics", badge: "Expert Precision", desc: "Pinpoint Expert Skills", count: subtopics.length },
-        5: { title: "Calibrate Engine", badge: "Engine Mastery", desc: "Finalize Engine Tier", count: 0 }
+        1: { title: "Select Domain", badge: "Foundation Architecture", desc: "Choose your area of expertise to begin the assessment.", count: domains.length },
+        2: { title: "Refine Subjects", badge: "Curriculum Calibration", desc: mode === 'basic' ? "Select core subjects (Max 2 for Basic mode)." : "Select the core subjects for your assessment pool.", count: subjects.length },
+        3: { title: "Select Topics", badge: "Knowledge Mapping", desc: mode === 'basic' ? "Strategic knowledge units (Max 3 for Basic mode)." : "High-density grid of strategic knowledge units.", count: topics.length },
+        4: { title: "Fine-tune Subtopics", badge: "Expert Precision", desc: "Pinpoint specific skills for deeper evaluation.", count: subtopics.length },
+        5: { title: "Calibrate Engine", badge: "Engine Mastery", desc: mode === 'basic' ? "Finalize your assessment session with simplified presets." : "Finalize your assessment session by tuning the difficulty tier and question volume.", count: 0 }
     };
 
     const currentMeta = journeyInfo[step as keyof typeof journeyInfo];
@@ -443,8 +399,11 @@ function QuizSelectionConsoleContent() {
                         </p>
                     </div>
 
-                    {/* Column 2: EMPTY (BREADCRUMB REMOVED) */}
+                    {/* Column 2: Plain Text Journey Context */}
                     <div className="flex justify-center text-center">
+                        <span className="text-[clamp(16px,1.2vw,20px)] font-bold font-outfit text-[#1A1A1A]/80 uppercase tracking-widest px-4">
+                            {currentMeta.badge}
+                        </span>
                     </div>
 
                     {/* Column 3: Launch Branding & Toggle */}
@@ -696,7 +655,7 @@ function QuizSelectionConsoleContent() {
                                 : "bg-[#FF2D55] text-white hover:bg-[#E61D44] shadow-[#FF2D55]/30 hover:shadow-xl hover:shadow-[#FF2D55]/40 hover:scale-[1.05] active:scale-95"
                         )}
                     >
-                        <span>{isArmed ? (step === 5 ? 'INITIATE LAUNCH' : 'CONFIRM MISSION') : (step === 5 ? 'CONFIRM MISSION' : 'CONTINUE JOURNEY')}</span>
+                        <span>{step === 5 ? (isArmed ? 'INITIATE LAUNCH' : 'CONFIRM MISSION') : (step === 4 ? 'CALIBRATE ENGINE' : 'CONTINUE JOURNEY')}</span>
                         <ChevronRight size={18} className={cn("transition-transform", !isArmed && "group-hover:translate-x-1")} />
                     </button>
                 </div>
