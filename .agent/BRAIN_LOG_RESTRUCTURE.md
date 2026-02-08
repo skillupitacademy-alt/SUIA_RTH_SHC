@@ -1248,3 +1248,10 @@ Reduce documentation fragmentation and improve discoverability by consolidating 
 - **Hybrid Capacity Brain**: Implemented 800px vertical breakpoint for 3x3 vs 3x2 grid auto-switching.
 - **Shadow Buffer Protocol**: Integrated 12px safe zones to prevent selection glow clipping with "Flush" edges.
 - **Proportional Stretching**: Updated grid items to `h-full` for edge-to-edge alignment against cockpit boundaries.
+
+### Batch 163: Safeguarded Fixed Geometry HUD (Feb 08, 2026)
+- **Viewport Lock**: Anchored page height to `calc(100dvh - 56px)` to eliminate scrollbars while preserving global site header integrity.
+- **Fixed Capacity Grids**: Enforced strict 2x3 (Domain) and 3x3 (Topics) paging logic for deterministic layout density.
+- **Non-Stretching Geometry**: Standardized fixed card heights (210px/140px) and `items-start` behavior to prevent vertical expansion.
+- **Pink-Ghost Refinement**: Applied brand-consistent pink disabled styling across all HUD controls (Back/Next/Pagination).
+- **Verification**: Synchronous build Integrity (`pnpm build`; `tsc --noEmit`) verified with Exit Code 0.
