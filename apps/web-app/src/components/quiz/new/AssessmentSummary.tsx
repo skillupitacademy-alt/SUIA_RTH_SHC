@@ -35,7 +35,7 @@ export function AssessmentSummary({
     selectedSubtopics = []
 }: AssessmentSummaryProps) {
     return (
-        <aside className="w-full flex flex-col h-full max-h-[600px]">
+        <aside className="w-full h-full flex flex-col">
             <div className={cn(
                 "glass-morphism pink-glow rounded-[2rem] p-5 space-y-2 relative overflow-hidden group transition-all duration-500 hover:shadow-[0_0_50px_rgba(255,45,85,0.15)] flex-1 flex flex-col border border-gray-300",
                 isLocked && "opacity-60 grayscale"

@@ -486,7 +486,7 @@ function QuizSelectionConsoleContent() {
 
             {/* Main Interactive Zone (COCKPIT FEEL: NO HEAVY GUTTERS) */}
             <div className="flex-1 flex flex-col min-h-0 relative overflow-hidden px-4">
-                <div className="flex-1 flex gap-8 items-stretch pt-2 pb-4 min-h-0">
+                <div className="flex-1 flex gap-6 items-stretch pt-2 pb-4 min-h-0">
 
                     {/* Left/Main Pane */}
                     <div className={cn(
@@ -542,7 +542,7 @@ function QuizSelectionConsoleContent() {
                             )}
 
                             {step === 1 && (
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 duration-300 items-start overflow-visible">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 duration-300 items-start overflow-visible">
                                     {paginatedDomains.map((domain, idx) => (
                                         <DomainCard
                                             key={domain.id}
@@ -557,7 +557,7 @@ function QuizSelectionConsoleContent() {
                             )}
 
                             {(step === 2 || step === 3 || step === 4) && (
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 duration-300 items-start overflow-visible">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 duration-300 items-start overflow-visible">
                                     {(step === 2 ? paginatedSubjects : step === 3 ? paginatedTopics : paginatedSubtopics).map((item) => (
                                         <TopicChip
                                             key={item.id}
@@ -570,7 +570,7 @@ function QuizSelectionConsoleContent() {
                             )}
 
                             {step === 5 && (
-                                <div className="duration-300 h-full flex flex-col gap-8 py-2">
+                                <div className="duration-300 h-full flex flex-col gap-6 py-2">
                                     {/* Top Row: Difficulty Tier */}
                                     <div className="space-y-4">
                                         <p className="text-[10px] font-black font-outfit text-gray-400 uppercase tracking-[0.2em] mb-4">Engine Tier Selection</p>
@@ -585,14 +585,14 @@ function QuizSelectionConsoleContent() {
                                                     disabled={isLocked || isArmed}
                                                     onClick={() => setDifficulty(normalizeDifficulty(tier.id))}
                                                     className={cn(
-                                                        "p-6 rounded-[1.5rem] border-2 transition-all duration-300 flex flex-col items-center justify-center min-h-[100px]",
+                                                        "p-6 rounded-[1.25rem] border-2 transition-all duration-300 flex flex-col items-start justify-center min-h-[100px] text-left relative overflow-hidden",
                                                         difficulty === tier.id
-                                                            ? "bg-[#FF2D55] border-[#FF2D55] shadow-lg shadow-[#FF2D55]/20 scale-[1.02]"
-                                                            : "bg-white border-gray-100 hover:border-[#FF2D55]/20 hover:bg-gray-50/50"
+                                                            ? "bg-[#FF2D55] text-white border-[#FF2D55] shadow-[0_10px_30px_rgba(255,45,85,0.4)] scale-[1.02] z-10"
+                                                            : "bg-[#2D2D2D] text-white/90 border-transparent hover:border-[#FF2D55]/30 hover:bg-[#3D3D3D] hover:scale-[1.01]"
                                                     )}
                                                 >
-                                                    <p className={cn("text-base font-black font-outfit uppercase tracking-tight", difficulty === tier.id ? "text-white" : "text-[#1A1A1A]")}>{tier.name}</p>
-                                                    <p className={cn("text-[10px] font-bold uppercase tracking-wider opacity-60", difficulty === tier.id ? "text-white" : "text-muted-foreground")}>{tier.desc}</p>
+                                                    <p className={cn("text-base font-bold font-inter leading-tight mb-2", difficulty === tier.id ? "text-white" : "text-white")}>{tier.name}</p>
+                                                    <p className={cn("text-[11px] font-medium font-inter leading-relaxed", difficulty === tier.id ? "text-white/80" : "text-white/40")}>{tier.desc}</p>
                                                 </button>
                                             ))}
                                         </div>
@@ -608,14 +608,14 @@ function QuizSelectionConsoleContent() {
                                                     disabled={isLocked || isArmed}
                                                     onClick={() => setQuestionCount(v)}
                                                     className={cn(
-                                                        "p-4 rounded-xl border-2 transition-all duration-300 flex flex-col items-center justify-center min-h-[80px]",
+                                                        "p-5 rounded-[1.25rem] border-2 transition-all duration-300 flex flex-col items-start justify-center min-h-[80px] text-left relative overflow-hidden",
                                                         questionCount === v
-                                                            ? "bg-[#FF2D55] border-[#FF2D55] shadow-lg shadow-[#FF2D55]/20 scale-[1.02]"
-                                                            : "bg-white border-gray-100 hover:border-[#FF2D55]/20 hover:bg-gray-50/50"
+                                                            ? "bg-[#FF2D55] text-white border-[#FF2D55] shadow-[0_10px_30px_rgba(255,45,85,0.4)] scale-[1.02] z-10"
+                                                            : "bg-[#2D2D2D] text-white/90 border-transparent hover:border-[#FF2D55]/30 hover:bg-[#3D3D3D] hover:scale-[1.01]"
                                                     )}
                                                 >
-                                                    <div className={cn("text-xl font-black font-outfit leading-none", questionCount === v ? "text-white" : "text-[#1A1A1A]")}>{v}</div>
-                                                    <div className={cn("text-[8px] font-black uppercase tracking-widest", questionCount === v ? "text-white/60" : "text-muted-foreground/40")}>Questions</div>
+                                                    <div className={cn("text-xl font-bold font-inter leading-none mb-1", questionCount === v ? "text-white" : "text-white")}>{v}</div>
+                                                    <div className={cn("text-[10px] font-bold uppercase tracking-widest", questionCount === v ? "text-white/60" : "text-white/40")}>Questions</div>
                                                 </button>
                                             ))}
                                         </div>
@@ -664,7 +664,7 @@ function QuizSelectionConsoleContent() {
 
                     {/* Right Pane: Summary (Only Step 5) */}
                     {step === 5 && (
-                        <div className="w-[35%] flex flex-col duration-300 h-[525px] max-h-[525px]">
+                        <div className="w-[35%] flex flex-col duration-300 h-full">
                             <AssessmentSummary
                                 domainName={currentDomain?.name || 'Not Selected'}
                                 subjectsCount={selectedSubjects.length}
