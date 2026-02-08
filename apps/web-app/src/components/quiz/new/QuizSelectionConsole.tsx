@@ -424,7 +424,7 @@ function QuizSelectionConsoleContent() {
 
                     {/* Column 1: Step Orientation */}
                     <div className="flex flex-col items-start min-w-0">
-                        <h2 className="text-[clamp(36px,2.2vw,44px)] font-bold font-outfit tracking-tighter text-[#1A1A1A] leading-[1.1] mb-1">
+                        <h2 className="text-[36px] font-bold font-outfit tracking-tighter text-[#1A1A1A] leading-[1.1] mb-1">
                             {currentMeta.title} {currentMeta.count > 0 && `(${currentMeta.count})`}
                         </h2>
                         <p className="text-[10px] text-[#FF2D55] font-black uppercase tracking-[0.15em] opacity-80">
@@ -432,20 +432,13 @@ function QuizSelectionConsoleContent() {
                         </p>
                     </div>
 
-                    {/* Column 2: Plain Text Journey Context */}
+                    {/* Column 2: EMPTY (BREADCRUMB REMOVED) */}
                     <div className="flex justify-center text-center">
-                        <span className="text-[clamp(16px,1.2vw,20px)] font-bold font-outfit text-[#1A1A1A]/80 uppercase tracking-widest truncate px-4">
-                            {step === 1 ? "Strategic Ecosystem" :
-                                step === 2 ? currentDomain?.name :
-                                    step === 3 ? `${currentDomain?.name} / ${currentSubjects[0]?.name || '...'}` :
-                                        step === 4 ? `${currentSubjects[0]?.name} / ${currentTopics[0]?.name || '...'}` :
-                                            "Engine Calibration"}
-                        </span>
                     </div>
 
                     {/* Column 3: Launch Branding & Toggle */}
                     <div className="flex flex-col items-end gap-1.5 min-w-0">
-                        <h1 className="text-[clamp(36px,2.2vw,44px)] font-black tracking-tighter font-outfit text-[#1A1A1A] leading-none">
+                        <h1 className="text-[36px] font-black tracking-tighter font-outfit text-[#1A1A1A] leading-none">
                             Launch Evaluation
                         </h1>
                         <div className="flex bg-gray-100/80 rounded-lg p-0.5 border border-gray-200 w-fit backdrop-blur-sm">
@@ -491,17 +484,13 @@ function QuizSelectionConsoleContent() {
                 )}
             </div>
 
-            {/* Main Interactive Zone (FULL WIDTH FOR STEPS 1-4) */}
-            <div className={cn(
-                "flex-1 flex flex-col min-h-0 relative overflow-hidden transition-all duration-300",
-                step < 5 ? "px-4" : "px-4 md:px-12" // FULL WIDTH FOR STEPS 1-4
-            )}>
-                <div className="flex-1 flex gap-8 items-stretch pt-4 pb-4 min-h-0">
+            {/* Main Interactive Zone (COCKPIT FEEL: NO HEAVY GUTTERS) */}
+            <div className="flex-1 flex flex-col min-h-0 relative overflow-hidden px-4">
+                <div className="flex-1 flex gap-8 items-stretch pt-2 pb-4 min-h-0">
 
                     {/* Left/Main Pane */}
                     <div className={cn(
-                        "flex flex-col h-full transition-all duration-700 relative",
-                        step < 5 ? "pb-[88px]" : "pb-0", // NO VIEWPORT LOCK FOR STEP 5
+                        "flex flex-col h-full relative pb-[88px]", // ALWAYS DOCKED FOOTER SPACE
                         step === 5 ? "w-[65%]" : "w-full",
                         isLocked ? "opacity-30 pointer-events-none" : (isArmed ? "opacity-50 pointer-events-none" : "opacity-100")
                     )}>
@@ -544,19 +533,16 @@ function QuizSelectionConsoleContent() {
                             </div>
                         )}
 
-                        {/* STATIONARY LAYOUT: Enforced 560px heart for Steps 1-4 */}
-                        <div className={cn(
-                            "flex-1 flex flex-col relative overflow-visible px-4 pt-10",
-                            step < 5 && "h-[560px] min-h-[560px] max-h-[560px]" // FIXED HEIGHT LOCK
-                        )}>
+                        {/* STATIONARY LAYOUT: Enforced 560px heart for ALL steps */}
+                        <div className="flex-1 flex flex-col relative overflow-visible p-4 h-[560px] min-h-[560px] max-h-[560px]">
                             {loading && (
-                                <div className="absolute inset-x-2 inset-y-2 z-50 flex items-center justify-center bg-white/50 backdrop-blur-[1px] rounded-[1.25rem] animate-in fade-in duration-300">
+                                <div className="absolute inset-x-2 inset-y-2 z-50 flex items-center justify-center bg-white/50 backdrop-blur-[1px] rounded-[1.25rem]">
                                     <Activity className="animate-spin text-[#FF2D55]" size={32} />
                                 </div>
                             )}
 
                             {step === 1 && (
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 animate-in fade-in zoom-in-95 duration-500 items-start overflow-visible">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 duration-300 items-start overflow-visible">
                                     {paginatedDomains.map((domain, idx) => (
                                         <DomainCard
                                             key={domain.id}
@@ -571,7 +557,7 @@ function QuizSelectionConsoleContent() {
                             )}
 
                             {(step === 2 || step === 3 || step === 4) && (
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 animate-in fade-in zoom-in-95 duration-500 items-start overflow-visible">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 duration-300 items-start overflow-visible">
                                     {(step === 2 ? paginatedSubjects : step === 3 ? paginatedTopics : paginatedSubtopics).map((item) => (
                                         <TopicChip
                                             key={item.id}
@@ -584,7 +570,7 @@ function QuizSelectionConsoleContent() {
                             )}
 
                             {step === 5 && (
-                                <div className="animate-in fade-in zoom-in-95 duration-500 h-full flex flex-col justify-between py-2">
+                                <div className="duration-300 h-full flex flex-col gap-8 py-2">
                                     {/* Top Row: Difficulty Tier */}
                                     <div className="space-y-4">
                                         <p className="text-[10px] font-black font-outfit text-gray-400 uppercase tracking-[0.2em] mb-4">Engine Tier Selection</p>
@@ -638,9 +624,8 @@ function QuizSelectionConsoleContent() {
                             )}
                         </div>
 
-                        {/* Scoped Footer (Step 5 logic included here) */}
-                        {/* STABILIZED: FOOTER IS ABSOLUTELY ANCHORED AT BOTTOM OF LEFT PANE */}
-                        <div className="absolute bottom-0 left-0 right-0 h-[88px] border-t border-gray-200 bg-white z-[50] px-4 md:px-12 flex items-center justify-between">
+                        {/* Scoped Footer: Fixed at bottom of Selection container (Left Pane width) */}
+                        <div className="absolute bottom-0 left-0 right-0 h-[88px] border-t border-gray-200 bg-white z-[50] px-4 flex items-center justify-between">
                             <button
                                 onClick={handleBack}
                                 disabled={step === 1 || isLocked || isArmed}
@@ -679,7 +664,7 @@ function QuizSelectionConsoleContent() {
 
                     {/* Right Pane: Summary (Only Step 5) */}
                     {step === 5 && (
-                        <div className="w-[35%] flex flex-col animate-in fade-in slide-in-from-right-4 duration-500">
+                        <div className="w-[35%] flex flex-col duration-300 h-[560px] max-h-[560px]">
                             <AssessmentSummary
                                 domainName={currentDomain?.name || 'Not Selected'}
                                 subjectsCount={selectedSubjects.length}
