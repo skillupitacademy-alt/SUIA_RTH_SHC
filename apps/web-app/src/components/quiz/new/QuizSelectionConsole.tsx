@@ -539,7 +539,7 @@ function QuizSelectionConsoleContent() {
                         )}
 
                         {/* REFACTORED: REMOVED overflow-hidden and ADDED p-2 buffer around grid */}
-                        <div className="flex-1 flex flex-col min-h-0 pt-2 relative overflow-visible px-4 pt-4">
+                        <div className="flex-1 flex flex-col min-h-0 relative overflow-visible px-4 pt-4">
                             {loading && (
                                 <div className="absolute inset-x-2 inset-y-2 z-50 flex items-center justify-center bg-white/50 backdrop-blur-[1px] rounded-[1.25rem] animate-in fade-in duration-300">
                                     <Activity className="animate-spin text-[#FF2D55]" size={32} />
@@ -660,7 +660,7 @@ function QuizSelectionConsoleContent() {
                                 )}
                             >
                                 <span>
-                                    {step === 5 ? (isArmed ? "INITIATE LAUNCH" : "CONFIRM MISSION") : (step === 4 ? "CALIBRATE ENGINE" : "CONTINUE JOURNEY")}
+                                    {step === 5 ? (isArmed ? "INITIATE LAUNCH 🚀" : "CONFIRM MISSION 🚀") : (step === 4 ? "CALIBRATE ENGINE" : "CONTINUE JOURNEY")}
                                 </span>
                                 <ChevronRight size={18} />
                             </button>
