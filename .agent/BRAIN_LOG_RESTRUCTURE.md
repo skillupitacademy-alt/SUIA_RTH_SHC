@@ -1236,4 +1236,15 @@ Reduce documentation fragmentation and improve discoverability by consolidating 
 - **Grid Elasticity**: Decoupled selection grids from rigid `grid-rows-2 h-full` structures, enabling `items-start` alignment for better visual rhythm on low-card pages.
 - **Footer Anchoring**: Stabilized the dashboard footer using solid `bg-white` and deterministic `mt-auto` placement within the `flex-col` shell.
 - **Pink System Migration**: Replaced opaque button styles with the high-fidelity Pink system (`#FF2D551A` bg / `#FF2D5533` border) for Back and Pagination controls.
-- **Shadow Physics**: Refined card selection shadows and rings to use internal containment, preventing edge clipping at the CSS container level.
+
+### Batch 160: Unified HUD Geometry (Feb 08, 2026)
+- **Height Lock**: Reduced interaction zone to a fixed 525px for stability across steps.
+- **Grid Density**: Standardized to 3x3 grids (9 items) for Steps 2-4 and 3-column grids for Step 5.
+- **Pillar Symmetry**: Expanded Assessment Summary to fill full viewport height as a side pillar.
+- **Gutter Normalization**: Enforced uniform `gap-6` (24px) gutters across all sections.
+
+### Batch 161: Proportional Viewport HUD & Zero-Scroll (Feb 08, 2026)
+- **Viewport Stack**: Partitioned HUD into dynamic `dvh` slices (8/12/8/60/12) for absolute zero-scroll stability.
+- **Hybrid Capacity Brain**: Implemented 800px vertical breakpoint for 3x3 vs 3x2 grid auto-switching.
+- **Shadow Buffer Protocol**: Integrated 12px safe zones to prevent selection glow clipping with "Flush" edges.
+- **Proportional Stretching**: Updated grid items to `h-full` for edge-to-edge alignment against cockpit boundaries.
