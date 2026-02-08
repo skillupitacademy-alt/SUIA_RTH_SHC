@@ -418,38 +418,36 @@ function QuizSelectionConsoleContent() {
 
     return (
         <div className="w-full flex-1 flex flex-col min-h-0 relative">
-            {/* Executive Dashboard Header (Stateless Baseline) - Compacted */}
-            <div className="flex-none px-4 md:px-6 pt-2 pb-3 border-b border-gray-200">
-                <div className="flex items-start justify-between gap-6">
-                    {/* Left: Step Orientation & Heading */}
-                    <div className="flex flex-col items-start text-left shrink-0">
-                        <div className="flex items-center gap-4 mb-1.5 whitespace-nowrap">
-                            <div className="w-10 h-10 rounded-xl bg-[#FF2D55]/10 border-2 border-[#FF2D55]/40 flex items-center justify-center group hover:bg-[#FF2D55]/20 transition-colors">
-                                <Activity className="text-[#FF2D55]" size={20} />
-                            </div>
-                            <div className="flex flex-col">
-                                <JourneyBadge text={currentMeta.badge} />
-                                <h2 className="text-xl font-black font-outfit tracking-tight text-[#1A1A1A] uppercase leading-none mt-1">
-                                    {currentMeta.title} {currentMeta.count > 0 && `(${currentMeta.count})`}
-                                </h2>
-                            </div>
-                        </div>
-                        <p className="text-[11px] text-muted-foreground font-inter font-medium opacity-70 max-w-sm leading-tight">
+            {/* Refined 3-Part Header Section */}
+            <div className="flex-none px-4 md:px-12 pt-6 pb-4 border-b border-gray-200">
+                <div className="grid grid-cols-3 items-center gap-8">
+
+                    {/* Column 1: Step Orientation */}
+                    <div className="flex flex-col items-start min-w-0">
+                        <h2 className="text-[clamp(36px,2.2vw,44px)] font-bold font-outfit tracking-tighter text-[#1A1A1A] leading-[1.1] mb-1">
+                            {currentMeta.title} {currentMeta.count > 0 && `(${currentMeta.count})`}
+                        </h2>
+                        <p className="text-xs text-muted-foreground font-inter font-medium opacity-70 max-w-sm leading-tight italic">
                             {currentMeta.desc}
                         </p>
                     </div>
 
-                    {/* Right: Branding & Toggle */}
-                    <div className="flex flex-col items-end text-right flex-1">
-                        <div className="mb-1.5">
-                            <h1 className="text-2xl font-black tracking-tighter font-outfit text-[#1A1A1A] leading-none mb-1">
-                                Launch Evaluation
-                            </h1>
-                            <p className="text-[8px] text-muted-foreground font-inter font-medium opacity-60 uppercase tracking-[0.2em] leading-none">
-                                Strategic Ecosystem Configuration
-                            </p>
-                        </div>
+                    {/* Column 2: Plain Text Journey Context */}
+                    <div className="flex justify-center text-center">
+                        <span className="text-[clamp(16px,1.2vw,20px)] font-bold font-outfit text-[#1A1A1A]/80 uppercase tracking-widest truncate px-4">
+                            {step === 1 ? "Strategic Ecosystem" :
+                                step === 2 ? currentDomain?.name :
+                                    step === 3 ? `${currentDomain?.name} / ${currentSubjects[0]?.name || '...'}` :
+                                        step === 4 ? `${currentSubjects[0]?.name} / ${currentTopics[0]?.name || '...'}` :
+                                            "Engine Calibration"}
+                        </span>
+                    </div>
 
+                    {/* Column 3: Launch Branding & Toggle */}
+                    <div className="flex flex-col items-end gap-3 min-w-0">
+                        <h1 className="text-[clamp(36px,2.2vw,44px)] font-black tracking-tighter font-outfit text-[#1A1A1A] leading-none">
+                            Launch Evaluation
+                        </h1>
                         <div className="flex bg-gray-100/80 rounded-lg p-0.5 border border-gray-200 w-fit backdrop-blur-sm">
                             {(['basic', 'advanced'] as const).map((m) => (
                                 <button
@@ -459,7 +457,7 @@ function QuizSelectionConsoleContent() {
                                         setMode(m);
                                     }}
                                     className={cn(
-                                        "px-5 py-1.5 rounded-md text-[11px] font-black font-outfit uppercase tracking-tight transition-all",
+                                        "px-6 py-1.5 rounded-md text-[11px] font-black font-outfit uppercase tracking-tight transition-all",
                                         mode === m
                                             ? "bg-[#FF2D55] text-white shadow-sm"
                                             : "text-gray-500 hover:text-gray-700",
@@ -494,8 +492,7 @@ function QuizSelectionConsoleContent() {
             </div>
 
             {/* Main Interactive Zone */}
-            <div className="flex-1 flex flex-col min-h-0 relative px-4 md:px-6 overflow-hidden">
-                {/* Content area: deterministic vertical fit, no scrolls */}
+            <div className="flex-1 flex flex-col min-h-0 relative px-4 md:px-12 overflow-hidden">
                 <div className="flex-1 flex gap-8 items-stretch pt-6 pb-4 min-h-0">
 
                     {/* Left/Main Pane */}
@@ -504,7 +501,37 @@ function QuizSelectionConsoleContent() {
                         step === 5 ? "w-[65%]" : "w-full",
                         isLocked ? "opacity-30 pointer-events-none" : (isArmed ? "opacity-50 pointer-events-none" : "opacity-100")
                     )}>
-                        <div className="flex-1 overflow-hidden">
+
+                        {/* Compact Pagination Header (Secondary Control) - Steps 1-4 Only */}
+                        {step < 5 && (
+                            <div className="flex justify-end items-center mb-4 pr-2">
+                                <div className="flex items-center gap-2 bg-gray-50/50 p-1 rounded-lg border border-gray-200 shadow-sm backdrop-blur-sm">
+                                    <button
+                                        onClick={handlePrevPage}
+                                        disabled={page === 0 || loading || isLocked}
+                                        className="p-1.5 rounded-md hover:bg-[#FF2D55]/5 hover:text-[#FF2D55] text-gray-400 transition-all disabled:opacity-20 disabled:grayscale"
+                                        title="Previous Page"
+                                    >
+                                        <ChevronLeft size={14} />
+                                    </button>
+                                    <div className="px-2 min-w-[60px] text-center border-x border-gray-200">
+                                        <span className="text-[10px] font-black font-outfit text-gray-500 uppercase tracking-widest">
+                                            {String(page + 1).padStart(2, '0')} / {String(Math.max(1, Math.ceil((step === 1 ? domains.length : (step === 3 ? topics.length : (step === 2 ? subjects.length : (step === 4 ? subtopics.length : 0)))) / currentPageSize))).padStart(2, '0')}
+                                        </span>
+                                    </div>
+                                    <button
+                                        onClick={handleNextPage}
+                                        disabled={page >= Math.ceil((step === 1 ? domains.length : (step === 3 ? topics.length : (step === 2 ? subjects.length : (step === 4 ? subtopics.length : 0)))) / currentPageSize) - 1 || loading || isLocked}
+                                        className="p-1.5 rounded-md hover:bg-[#FF2D55]/5 hover:text-[#FF2D55] text-gray-400 transition-all disabled:opacity-20 disabled:grayscale"
+                                        title="Next Page"
+                                    >
+                                        <ChevronRight size={14} />
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+
+                        <div className="flex-1 flex flex-col min-h-0 overflow-hidden pt-2">
                             {loading && (
                                 <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/50 backdrop-blur-[1px] rounded-[1.25rem] animate-in fade-in duration-300">
                                     <Activity className="animate-spin text-[#FF2D55]" size={32} />
@@ -540,64 +567,114 @@ function QuizSelectionConsoleContent() {
                             )}
 
                             {step === 5 && (
-                                <div className="animate-in fade-in zoom-in-95 duration-500 h-full flex flex-col gap-4 overflow-hidden">
-                                    <div className="grid grid-cols-3 gap-4">
-                                        {[
-                                            { id: 'mixed', name: 'Mixed', desc: 'Mastery Blend' },
-                                            { id: 'simple', name: 'Simple', desc: 'Core Knowledge' },
-                                            { id: 'expert', name: 'Expert', desc: 'Expert Level' }
-                                        ].map((tier) => (
-                                            <button
-                                                key={tier.id}
-                                                disabled={isLocked || isArmed}
-                                                onClick={() => setDifficulty(normalizeDifficulty(tier.id))}
-                                                className={cn(
-                                                    "p-4 rounded-[1.25rem] border-2 transition-all duration-300 flex flex-col items-center justify-center min-h-[90px]",
-                                                    difficulty === tier.id
-                                                        ? "bg-[#FF2D55] border-[#FF2D55] shadow-lg shadow-[#FF2D55]/20"
-                                                        : "bg-[#2B2B2B] border-transparent hover:bg-[#3D3D3D]"
-                                                )}
-                                            >
-                                                <p className="text-sm font-black font-outfit uppercase tracking-tight text-white">{tier.name}</p>
-                                                <p className="text-[9px] font-bold uppercase tracking-wider opacity-60 text-white">{tier.desc}</p>
-                                            </button>
-                                        ))}
+                                <div className="animate-in fade-in zoom-in-95 duration-500 h-full flex flex-col justify-between py-2">
+                                    {/* Top Row: Difficulty Tier */}
+                                    <div className="space-y-4">
+                                        <p className="text-[10px] font-black font-outfit text-gray-400 uppercase tracking-[0.2em] mb-4">Engine Tier Selection</p>
+                                        <div className="grid grid-cols-3 gap-6">
+                                            {[
+                                                { id: 'mixed', name: 'Mixed', desc: 'Mastery Blend' },
+                                                { id: 'simple', name: 'Simple', desc: 'Core Knowledge' },
+                                                { id: 'expert', name: 'Expert', desc: 'Expert Level' }
+                                            ].map((tier) => (
+                                                <button
+                                                    key={tier.id}
+                                                    disabled={isLocked || isArmed}
+                                                    onClick={() => setDifficulty(normalizeDifficulty(tier.id))}
+                                                    className={cn(
+                                                        "p-6 rounded-[1.5rem] border-2 transition-all duration-300 flex flex-col items-center justify-center min-h-[100px]",
+                                                        difficulty === tier.id
+                                                            ? "bg-[#FF2D55] border-[#FF2D55] shadow-lg shadow-[#FF2D55]/20 scale-[1.02]"
+                                                            : "bg-white border-gray-100 hover:border-[#FF2D55]/20 hover:bg-gray-50/50"
+                                                    )}
+                                                >
+                                                    <p className={cn("text-base font-black font-outfit uppercase tracking-tight", difficulty === tier.id ? "text-white" : "text-[#1A1A1A]")}>{tier.name}</p>
+                                                    <p className={cn("text-[10px] font-bold uppercase tracking-wider opacity-60", difficulty === tier.id ? "text-white" : "text-muted-foreground")}>{tier.desc}</p>
+                                                </button>
+                                            ))}
+                                        </div>
                                     </div>
 
-                                    <div className="grid grid-cols-4 gap-4">
-                                        {(mode === 'basic' ? [10, 15, 20, 25] : [5, 10, 15, 20, 25, 30, 40, 50]).map((v) => (
-                                            <button
-                                                key={v}
-                                                disabled={isLocked || isArmed}
-                                                onClick={() => setQuestionCount(v)}
-                                                className={cn(
-                                                    "p-3 rounded-xl border-2 transition-all duration-300 flex flex-col items-center justify-center min-h-[70px]",
-                                                    questionCount === v
-                                                        ? "bg-[#FF2D55] border-[#FF2D55] shadow-lg shadow-[#FF2D55]/20"
-                                                        : "bg-[#2B2B2B] border-transparent hover:bg-[#3D3D3D]"
-                                                )}
-                                            >
-                                                <div className="text-lg font-black font-outfit text-white leading-none">{v}</div>
-                                                <div className="text-[8px] font-black uppercase tracking-widest text-white/40">Questions</div>
-                                            </button>
-                                        ))}
+                                    {/* Middle Row: Question Count */}
+                                    <div className="space-y-4">
+                                        <p className="text-[10px] font-black font-outfit text-gray-400 uppercase tracking-[0.2em] mb-4">Density Calibration</p>
+                                        <div className="grid grid-cols-4 gap-4">
+                                            {(mode === 'basic' ? [10, 15, 20, 25] : [5, 10, 15, 20, 25, 30, 40, 50]).map((v) => (
+                                                <button
+                                                    key={v}
+                                                    disabled={isLocked || isArmed}
+                                                    onClick={() => setQuestionCount(v)}
+                                                    className={cn(
+                                                        "p-4 rounded-xl border-2 transition-all duration-300 flex flex-col items-center justify-center min-h-[80px]",
+                                                        questionCount === v
+                                                            ? "bg-[#FF2D55] border-[#FF2D55] shadow-lg shadow-[#FF2D55]/20 scale-[1.02]"
+                                                            : "bg-white border-gray-100 hover:border-[#FF2D55]/20 hover:bg-gray-50/50"
+                                                    )}
+                                                >
+                                                    <div className={cn("text-xl font-black font-outfit leading-none", questionCount === v ? "text-white" : "text-[#1A1A1A]")}>{v}</div>
+                                                    <div className={cn("text-[8px] font-black uppercase tracking-widest", questionCount === v ? "text-white/60" : "text-muted-foreground/40")}>Questions</div>
+                                                </button>
+                                            ))}
+                                        </div>
                                     </div>
 
-                                    <div className="mt-auto bg-gray-50 p-3 rounded-xl border border-gray-200">
+                                    {/* Bottom Row: Summary / Duration Strip */}
+                                    <div className="bg-gray-900 rounded-[1.5rem] p-6 shadow-2xl">
                                         <div className="flex justify-between items-center">
-                                            <div className="space-y-0.5">
-                                                <p className="text-lg font-black font-outfit text-[#1A1A1A] tracking-tighter">~{Math.ceil(questionCount * 1.5)} MINS</p>
-                                                <p className="text-[8px] font-black uppercase tracking-widest text-[#FF2D55]">Calculated Duration</p>
+                                            <div className="flex items-center gap-6">
+                                                <div className="p-3 rounded-2xl bg-white/10 backdrop-blur-md">
+                                                    <Activity className="text-[#FF2D55]" size={24} />
+                                                </div>
+                                                <div className="space-y-0.5">
+                                                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#FF2D55]">Calculated Duration</p>
+                                                    <p className="text-2xl font-black font-outfit text-white tracking-tighter">~{Math.ceil(questionCount * 1.5)} MINS</p>
+                                                </div>
                                             </div>
-                                            <div className="h-6 w-[1px] bg-gray-300" />
+                                            <div className="h-12 w-[1px] bg-white/10 mx-8" />
                                             <div className="text-right">
-                                                <p className="text-lg font-black font-outfit text-[#1A1A1A] tracking-tighter">{difficulty.toUpperCase()}</p>
-                                                <p className="text-[8px] font-black uppercase tracking-widest text-muted-foreground">Mastery Profile</p>
+                                                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40">Mastery Profile</p>
+                                                <p className="text-2xl font-black font-outfit text-white tracking-tighter uppercase">{difficulty}</p>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             )}
+                        </div>
+
+                        {/* Scoped Footer (Step 5 logic included here) */}
+                        <div className="flex-none h-[88px] border-t border-gray-200 bg-white/50 backdrop-blur-md z-[50] -mx-4 md:-mx-12 px-4 md:px-12 flex items-center justify-between mt-auto">
+                            <button
+                                onClick={handleBack}
+                                disabled={step === 1 || isLocked || isArmed}
+                                className={cn(
+                                    "group flex items-center gap-3 px-8 py-3.5 rounded-xl font-black font-outfit text-xs uppercase tracking-widest transition-all",
+                                    "bg-white border-2 border-gray-200 text-gray-400 hover:border-[#FF2D55]/30 hover:shadow-xl hover:shadow-[#FF2D55]/10 hover:text-[#FF2D55] hover:scale-[1.02] active:scale-95 disabled:opacity-30 disabled:pointer-events-none shadow-sm"
+                                )}
+                            >
+                                <ChevronLeft size={16} className="transition-transform group-hover:-translate-x-1" />
+                                <span>BACK</span>
+                            </button>
+
+                            <button
+                                onClick={handleNext}
+                                disabled={
+                                    (isLocked) ||
+                                    (step === 1 && selectedDomains.length === 0) ||
+                                    (step === 2 && selectedSubjects.length === 0) ||
+                                    (step === 3 && selectedTopics.length === 0) ||
+                                    (step === 4 && selectedSubtopics.length === 0)
+                                }
+                                className={cn(
+                                    "flex items-center gap-4 px-12 py-3.5 rounded-xl font-bold font-outfit text-sm uppercase tracking-widest transition-all",
+                                    "bg-[#FF2D55] text-white shadow-lg shadow-[#FF2D55]/20 hover:shadow-xl hover:shadow-[#FF2D55]/30 hover:scale-[1.02] active:scale-95 disabled:opacity-30 disabled:pointer-events-none",
+                                    step === 5 && isArmed && "bg-black hover:bg-black/90 scale-100 shadow-none ring-2 ring-offset-2 ring-black"
+                                )}
+                            >
+                                <span>
+                                    {step === 5 ? (isArmed ? "INITIATE LAUNCH 🚀" : "CONFIRM MISSION 🚀") : (step === 4 ? "CALIBRATE ENGINE" : "CONTINUE JOURNEY")}
+                                </span>
+                                <ChevronRight size={18} />
+                            </button>
                         </div>
                     </div>
 
@@ -624,79 +701,6 @@ function QuizSelectionConsoleContent() {
                 </div>
             </div>
 
-            {/* Stable Balanced Footer - No Jumping */}
-            <div className="flex-none h-[88px] border-t border-gray-300 bg-white/50 backdrop-blur-md z-[50]">
-                <div className="h-full w-full flex items-center px-4 md:px-12">
-                    {/* Zone 1: Back (25%) */}
-                    <div className="w-[25%] flex justify-start">
-                        <button
-                            onClick={handleBack}
-                            disabled={step === 1 || isLocked || isArmed}
-                            className={cn(
-                                "group flex items-center gap-3 px-8 py-3.5 rounded-xl font-bold font-outfit text-xs uppercase tracking-widest transition-all",
-                                "bg-white border-2 border-gray-200 text-gray-400 hover:border-[#FF2D55]/30 hover:text-[#FF2D55] active:scale-95 disabled:opacity-30 disabled:pointer-events-none"
-                            )}
-                        >
-                            <ChevronLeft size={16} className="transition-transform group-hover:-translate-x-1" />
-                            <span>BACK</span>
-                        </button>
-                    </div>
-
-                    {/* Zone 2: Pagination (30%) */}
-                    <div className="w-[30%] flex justify-center">
-                        <div className={cn(
-                            "flex items-center gap-3 transition-all",
-                            step === 5 ? "opacity-20 pointer-events-none grayscale" : "opacity-100"
-                        )}>
-                            <button
-                                onClick={handlePrevPage}
-                                disabled={page === 0 || loading || isLocked}
-                                className="p-3 rounded-lg border-2 border-gray-100 bg-white text-gray-400 hover:border-[#FF2D55]/30 hover:text-[#FF2D55] transition-all disabled:opacity-30"
-                            >
-                                <ChevronLeft size={18} />
-                            </button>
-
-                            <div className="min-w-[100px] text-center">
-                                <span className="text-[10px] font-black font-outfit text-gray-500 uppercase tracking-[0.2em]">
-                                    {String(page + 1).padStart(2, '0')} / {String(Math.max(1, Math.ceil((step === 1 ? domains.length : (step === 3 ? topics.length : (step === 2 ? subjects.length : (step === 4 ? subtopics.length : 0)))) / currentPageSize))).padStart(2, '0')}
-                                </span>
-                            </div>
-
-                            <button
-                                onClick={handleNextPage}
-                                disabled={page >= Math.ceil((step === 1 ? domains.length : (step === 3 ? topics.length : (step === 2 ? subjects.length : (step === 4 ? subtopics.length : 0)))) / currentPageSize) - 1 || loading || isLocked}
-                                className="p-3 rounded-lg border-2 border-gray-100 bg-white text-gray-400 hover:border-[#FF2D55]/30 hover:text-[#FF2D55] transition-all disabled:opacity-30"
-                            >
-                                <ChevronRight size={18} />
-                            </button>
-                        </div>
-                    </div>
-
-                    {/* Zone 3: CTA (45%) */}
-                    <div className="w-[45%] flex justify-end">
-                        <button
-                            onClick={handleNext}
-                            disabled={
-                                (isLocked) ||
-                                (step === 1 && selectedDomains.length === 0) ||
-                                (step === 2 && selectedSubjects.length === 0) ||
-                                (step === 3 && selectedTopics.length === 0) ||
-                                (step === 4 && selectedSubtopics.length === 0)
-                            }
-                            className={cn(
-                                "flex items-center gap-4 px-12 py-4 rounded-xl font-bold font-outfit text-sm uppercase tracking-widest transition-all",
-                                "bg-[#FF2D55] text-white shadow-lg shadow-[#FF2D55]/20 hover:shadow-xl hover:shadow-[#FF2D55]/30 hover:scale-[1.02] active:scale-95 disabled:opacity-30 disabled:pointer-events-none",
-                                step === 5 && isArmed && "bg-black hover:bg-black/90 scale-100 shadow-none ring-2 ring-offset-2 ring-black"
-                            )}
-                        >
-                            <span>
-                                {step === 5 ? (isArmed ? "INITIATE LAUNCH 🚀" : "CONFIRM MISSION 🚀") : (step === 4 ? "CALIBRATE ENGINE" : "CONTINUE JOURNEY")}
-                            </span>
-                            <ChevronRight size={18} />
-                        </button>
-                    </div>
-                </div>
-            </div>
         </div>
     );
 }

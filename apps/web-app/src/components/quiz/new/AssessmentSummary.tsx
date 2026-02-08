@@ -44,113 +44,113 @@ export function AssessmentSummary({
                 <div className="absolute -top-24 -right-24 w-56 h-56 bg-[#FF2D55]/10 rounded-full blur-[90px] group-hover:bg-[#FF2D55]/20 transition-all duration-700" />
 
                 <div className="relative z-10 flex-1 flex flex-col h-full">
-                    <h2 className="text-base font-black font-outfit tracking-tight text-[#1A1A1A] mb-1 uppercase">Assessment Summary</h2>
+                    <h2 className="text-sm font-black font-outfit tracking-tight text-[#1A1A1A] mb-2 uppercase">Assessment Summary</h2>
 
-                    <div className="space-y-2 flex-1 flex flex-col">
-                        <div className="flex flex-col gap-1">
+                    <div className="space-y-1.5 flex-1 flex flex-col">
+                        <div className="flex flex-col gap-0.5">
                             <div className="flex items-center gap-2 text-muted-foreground">
-                                <Shield size={13} className="text-[#FF2D55]" />
-                                <span className="text-[9px] font-bold font-inter uppercase tracking-widest opacity-60">Domain</span>
+                                <Shield size={12} className="text-[#FF2D55]" />
+                                <span className="text-[8px] font-bold font-inter uppercase tracking-widest opacity-60">Domain</span>
                             </div>
-                            <span className="text-xs font-bold font-inter text-[#1A1A1A] pl-5 truncate">
+                            <span className="text-[11px] font-bold font-inter text-[#1A1A1A] pl-5 truncate">
                                 {domainName !== 'Not Selected' ? domainName : (
                                     <span className="opacity-20 italic">Awaiting Selection...</span>
                                 )}
                             </span>
                         </div>
 
-                        <div className="h-[1px] bg-gray-300 w-full ml-5" />
+                        <div className="h-[1px] bg-gray-200 w-full ml-5" />
 
-                        <div className="flex flex-col gap-2">
+                        <div className="flex flex-col gap-1.5">
                             <div className="flex items-center gap-2 text-muted-foreground">
-                                <Tag size={13} className="text-[#FF2D55]" />
-                                <span className="text-[9px] font-bold font-inter uppercase tracking-widest opacity-60">Subjects</span>
+                                <Tag size={12} className="text-[#FF2D55]" />
+                                <span className="text-[8px] font-bold font-inter uppercase tracking-widest opacity-60">Subjects</span>
                             </div>
-                            <div className="flex flex-wrap gap-1 pl-5 min-h-[1.5rem]">
+                            <div className="flex flex-wrap gap-1 pl-5 min-h-[1.2rem]">
                                 {selectedSubjects.length > 0 ? (
                                     <>
                                         {selectedSubjects.slice(0, 3).map(s => (
-                                            <span key={s} className="px-2 py-0.5 bg-gray-100 text-[9px] font-bold text-gray-500 rounded border border-gray-200/50 uppercase tracking-tighter">{s}</span>
+                                            <span key={s} className="px-1.5 py-0.5 bg-gray-100 text-[8px] font-bold text-gray-500 rounded border border-gray-200/50 uppercase tracking-tighter">{s}</span>
                                         ))}
                                         {selectedSubjects.length > 3 && (
-                                            <span className="px-2 py-0.5 bg-gray-50 text-[9px] font-black text-gray-400 rounded border border-dashed border-gray-200 uppercase tracking-tighter">+{selectedSubjects.length - 3} MORE</span>
+                                            <span className="px-1.5 py-0.5 bg-gray-50 text-[8px] font-black text-gray-400 rounded border border-dashed border-gray-200 uppercase tracking-tighter">+{selectedSubjects.length - 3}</span>
                                         )}
                                     </>
                                 ) : (
-                                    <span className="text-[9px] font-bold text-gray-300 uppercase tracking-tighter italic opacity-40">None Selected</span>
+                                    <span className="text-[8px] font-bold text-gray-300 uppercase tracking-tighter italic opacity-40">None Selected</span>
                                 )}
                             </div>
                         </div>
 
-                        <div className="h-[1px] bg-gray-300 w-full ml-5" />
+                        <div className="h-[1px] bg-gray-200 w-full ml-5" />
 
-                        <div className="flex flex-col gap-2">
+                        <div className="flex flex-col gap-1.5">
                             <div className="flex items-center gap-2 text-muted-foreground">
-                                <Check size={13} className="text-[#FF2D55]" />
-                                <span className="text-[9px] font-bold font-inter uppercase tracking-widest opacity-60">Knowledge Units</span>
+                                <Check size={12} className="text-[#FF2D55]" />
+                                <span className="text-[8px] font-bold font-inter uppercase tracking-widest opacity-60">Knowledge Units</span>
                             </div>
-                            <div className="flex flex-wrap gap-1 pl-5 min-h-[1.5rem]">
+                            <div className="flex flex-wrap gap-1 pl-5 min-h-[1.2rem]">
                                 {selectedTopics.length > 0 ? (
                                     <>
                                         {selectedTopics.slice(0, 3).map(t => (
-                                            <span key={t} className="px-2 py-0.5 bg-[#FF2D55]/5 text-[9px] font-bold text-[#FF2D55] rounded border border-[#FF2D55]/10 uppercase tracking-tighter">{t}</span>
+                                            <span key={t} className="px-1.5 py-0.5 bg-[#FF2D55]/5 text-[8px] font-bold text-[#FF2D55] rounded border border-[#FF2D55]/10 uppercase tracking-tighter">{t}</span>
                                         ))}
                                         {selectedTopics.length > 3 && (
-                                            <span className="px-2 py-0.5 bg-[#FF2D55]/5 text-[9px] font-black text-[#FF2D55]/40 rounded border border-dashed border-[#FF2D55]/10 uppercase tracking-tighter">+{selectedTopics.length - 3} MORE</span>
+                                            <span className="px-1.5 py-0.5 bg-[#FF2D55]/5 text-[8px] font-black text-[#FF2D55]/40 rounded border border-dashed border-[#FF2D55]/10 uppercase tracking-tighter">+{selectedTopics.length - 3}</span>
                                         )}
                                     </>
                                 ) : (
-                                    <span className="text-[9px] font-bold text-gray-300 uppercase tracking-tighter italic opacity-40">None Selected</span>
+                                    <span className="text-[8px] font-bold text-gray-300 uppercase tracking-tighter italic opacity-40">None Selected</span>
                                 )}
                             </div>
                         </div>
 
-                        <div className="h-[1px] bg-gray-300 w-full ml-5" />
+                        <div className="h-[1px] bg-gray-200 w-full ml-5" />
 
-                        <div className="flex flex-col gap-2">
+                        <div className="flex flex-col gap-1.5">
                             <div className="flex items-center gap-2 text-muted-foreground">
-                                <Clock size={13} className="text-[#FF2D55]" />
-                                <span className="text-[9px] font-bold font-inter uppercase tracking-widest opacity-60">Precision Skills</span>
+                                <Clock size={12} className="text-[#FF2D55]" />
+                                <span className="text-[8px] font-bold font-inter uppercase tracking-widest opacity-60">Precision Skills</span>
                             </div>
-                            <div className="flex flex-wrap gap-1 pl-5 min-h-[1.5rem]">
+                            <div className="flex flex-wrap gap-1 pl-5 min-h-[1.2rem]">
                                 {selectedSubtopics.length > 0 ? (
                                     <>
                                         {selectedSubtopics.slice(0, 3).map(st => (
-                                            <span key={st} className="px-2 py-0.5 bg-[#FF2D55]/10 text-[9px] font-black text-[#FF2D55] rounded border border-[#FF2D55]/20 uppercase tracking-tighter italic">{st}</span>
+                                            <span key={st} className="px-1.5 py-0.5 bg-[#FF2D55]/10 text-[8px] font-black text-[#FF2D55] rounded border border-[#FF2D55]/20 uppercase tracking-tighter italic">{st}</span>
                                         ))}
                                         {selectedSubtopics.length > 3 && (
-                                            <span className="px-2 py-0.5 bg-[#FF2D55]/10 text-[9px] font-black text-[#FF2D55]/40 rounded border border-dashed border-[#FF2D55]/20 uppercase tracking-tighter">+{selectedSubtopics.length - 3} MORE</span>
+                                            <span className="px-1.5 py-0.5 bg-[#FF2D55]/10 text-[8px] font-black text-[#FF2D55]/40 rounded border border-dashed border-[#FF2D55]/20 uppercase tracking-tighter">+{selectedSubtopics.length - 3}</span>
                                         )}
                                     </>
                                 ) : (
-                                    <span className="text-[9px] font-bold text-gray-300 uppercase tracking-tighter italic opacity-40">None Selected</span>
+                                    <span className="text-[8px] font-bold text-gray-300 uppercase tracking-tighter italic opacity-40">None Selected</span>
                                 )}
                             </div>
                         </div>
 
-                        <div className="h-[1px] bg-gray-300 w-full my-1" />
+                        <div className="h-[1px] bg-gray-200 w-full my-0.5" />
 
-                        <div className="grid grid-cols-2 gap-3 bg-gray-50/50 p-2.5 rounded-xl border border-gray-300">
+                        <div className="grid grid-cols-2 gap-2 bg-gray-50/50 p-2 rounded-xl border border-gray-200">
                             <div className="space-y-0.5">
                                 <p className="text-[7px] font-black text-gray-400 uppercase tracking-[0.2em]">Est. Time</p>
-                                <p className="text-sm font-black font-outfit text-[#1A1A1A]">{Math.ceil(questionCount * 1.5)} MIN</p>
+                                <p className="text-[13px] font-black font-outfit text-[#1A1A1A]">{Math.ceil(questionCount * 1.5)} MIN</p>
                             </div>
                             <div className="space-y-0.5">
                                 <p className="text-[7px] font-black text-gray-400 uppercase tracking-[0.2em]">Questions</p>
-                                <p className="text-sm font-black font-outfit text-[#1A1A1A]">{questionCount}</p>
+                                <p className="text-[13px] font-black font-outfit text-[#1A1A1A]">{questionCount}</p>
                             </div>
                         </div>
 
-                        <div className="space-y-1.5 pt-1.5">
+                        <div className="space-y-1 pt-1 opacity-80 scale-95 origin-left">
                             <div className="flex items-center gap-2 mb-0.5">
                                 <div className="h-1 w-1 rounded-full bg-[#FF2D55]" />
                                 <p className="text-[8px] font-black font-outfit text-[#1A1A1A] uppercase tracking-widest">Engine Calibration</p>
                             </div>
-                            <div className="flex justify-between items-center bg-white p-1.5 rounded-lg border border-gray-200 shadow-sm">
+                            <div className="flex justify-between items-center bg-white p-1 rounded-lg border border-gray-100 shadow-sm">
                                 <span className="text-[7px] font-bold text-muted-foreground uppercase tracking-widest">Difficulty</span>
                                 <span className="text-[8px] font-black text-[#1A1A1A] uppercase">{difficulty}</span>
                             </div>
-                            <div className="flex justify-between items-center bg-white p-1.5 rounded-lg border border-gray-200 shadow-sm">
+                            <div className="flex justify-between items-center bg-white p-1 rounded-lg border border-gray-100 shadow-sm">
                                 <span className="text-[7px] font-bold text-muted-foreground uppercase tracking-widest">Potential</span>
                                 <span className="text-[8px] font-black text-[#FF2D55] uppercase tracking-tighter">{totalPoints} PTS</span>
                             </div>
@@ -158,13 +158,13 @@ export function AssessmentSummary({
                     </div>
 
                     {isReady && !isLocked && (
-                        <div className="mt-auto pt-4 border-t border-gray-300 pointer-events-auto">
+                        <div className="mt-auto pt-3 border-t border-gray-200 pointer-events-auto">
                             <button
                                 onClick={onStart}
                                 disabled={loading}
                                 className={cn(
-                                    "w-full min-h-[56px] rounded-xl bg-gradient-to-br from-[#FF2D55] to-[#D4145A] text-white font-black font-outfit uppercase tracking-[0.1em] shadow-[0_12px_30px_rgba(255,45,85,0.3)] flex items-center justify-center gap-3 transition-all active:scale-95 disabled:grayscale disabled:opacity-30 group hover:shadow-[0_15px_40px_rgba(255,45,85,0.45)] pointer-events-auto",
-                                    "animate-in fade-in zoom-in duration-500 shadow-[0_0_30px_rgba(255,45,85,0.5)] border-2 border-white/20"
+                                    "w-full min-h-[48px] rounded-xl bg-gradient-to-br from-[#FF2D55] to-[#D4145A] text-white font-black font-outfit text-xs uppercase tracking-[0.1em] shadow-[0_8px_20px_rgba(255,45,85,0.25)] flex items-center justify-center gap-3 transition-all active:scale-95 disabled:grayscale disabled:opacity-30 group hover:shadow-[0_12px_30px_rgba(255,45,85,0.4)] pointer-events-auto",
+                                    "animate-in fade-in zoom-in duration-500 border-2 border-white/20"
                                 )}
                             >
                                 {loading ? (
