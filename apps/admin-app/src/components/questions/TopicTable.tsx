@@ -10,6 +10,7 @@ import { useDomains, useSubjects } from '@/hooks/useAdminHierarchy';
 import { HierarchyFactoryWizard } from '@/components/content/HierarchyFactoryWizard';
 import { SelectField } from '@/components/entry/SelectionFields';
 import { TopicReviewCard } from './TopicReviewCard';
+import { ZPortalModal } from '@/components/ui/ZPortalModal';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -226,195 +227,192 @@ export function TopicTable() {
             />
 
             {/* Standard Edit Form (Update Mode Only) - Full Screen */}
-            {isFormOpen && currentTopic && (
-                <div className="fixed inset-0 z-[100] bg-white animate-in slide-in-from-right duration-300">
-                    <div className="h-full flex flex-col">
-                        {/* Header */}
-                        <div className="px-8 py-6 border-b border-slate-200 flex items-center justify-between bg-white">
-                            <div className="flex items-center gap-4">
-                                <div className="h-12 w-12 rounded-xl bg-orange-50 text-orange-500 flex items-center justify-center">
-                                    <Edit2 size={24} />
-                                </div>
-                                <div>
-                                    <h3 className="text-2xl font-black text-[#1A1A1A] uppercase tracking-tight">Edit Topic</h3>
-                                    <p className="text-xs font-medium text-slate-500 uppercase tracking-widest mt-0.5">Modify Topic Details</p>
-                                </div>
+            <ZPortalModal isOpen={isFormOpen && !!currentTopic} zIndex={100}>
+                <div className="h-full flex flex-col bg-white animate-in slide-in-from-right duration-300">
+                    {/* Header */}
+                    <div className="px-8 py-6 border-b border-slate-200 flex items-center justify-between bg-white">
+                        <div className="flex items-center gap-4">
+                            <div className="h-12 w-12 rounded-xl bg-orange-50 text-orange-500 flex items-center justify-center">
+                                <Edit2 size={24} />
                             </div>
-                            <button
-                                onClick={handleCloseForm}
-                                className="p-2 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors"
-                            >
-                                <X size={24} />
-                            </button>
+                            <div>
+                                <h3 className="text-2xl font-black text-[#1A1A1A] uppercase tracking-tight">Edit Topic</h3>
+                                <p className="text-xs font-medium text-slate-500 uppercase tracking-widest mt-0.5">Modify Topic Details</p>
+                            </div>
                         </div>
+                        <button
+                            onClick={handleCloseForm}
+                            className="p-2 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors"
+                        >
+                            <X size={24} />
+                        </button>
+                    </div>
 
-                        {/* Content - Landscape Grid */}
-                        <div className="flex-1">
-                            <div className="max-w-5xl mx-auto px-8 py-8">
-                                <form onSubmit={handleSubmit} className="space-y-6">
-                                    {/* Row 1: Hierarchy Context (Read-Only) */}
-                                    <div className="grid grid-cols-2 gap-6">
-                                        <div className="space-y-2">
-                                            <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 flex items-center gap-1.5">
-                                                <Layers size={12} />
-                                                Parent Domain
-                                            </label>
-                                            <div className="px-4 py-3 bg-white border border-slate-200 rounded-xl">
-                                                <p className="text-sm font-bold text-slate-700">{currentTopic.subject?.domain?.name || 'N/A'}</p>
-                                            </div>
-                                        </div>
-                                        <div className="space-y-2">
-                                            <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 flex items-center gap-1.5">
-                                                <BookOpen size={12} />
-                                                Parent Subject
-                                            </label>
-                                            <div className="px-4 py-3 bg-white border border-slate-200 rounded-xl">
-                                                <p className="text-sm font-bold text-slate-700">{currentTopic.subject?.name || 'N/A'}</p>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {/* Row 2: Name & Status */}
-                                    <div className="grid grid-cols-2 gap-6">
-                                        {/* Topic Name */}
-                                        <div className="space-y-2">
-                                            <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 pl-1">Topic Name</label>
-                                            <input
-                                                type="text"
-                                                required
-                                                value={formData.name}
-                                                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                                className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all placeholder:text-slate-300"
-                                                placeholder="e.g., React Hooks"
-                                            />
-                                        </div>
-
-                                        {/* Status */}
-                                        <div className="space-y-2">
-                                            <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 pl-1">Status</label>
-                                            <div className="flex bg-white p-1.5 rounded-xl border border-slate-200">
-                                                {['active', 'inactive'].map((status) => (
-                                                    <button
-                                                        key={status}
-                                                        type="button"
-                                                        onClick={() => setFormData({ ...formData, status: status as any })}
-                                                        className={`flex-1 py-2.5 rounded-lg text-xs font-black uppercase tracking-wider transition-all ${formData.status === status
-                                                            ? 'bg-[#1A1A1A] text-white shadow-sm'
-                                                            : 'text-slate-400 hover:text-slate-600'
-                                                            }`}
-                                                    >
-                                                        {status}
-                                                    </button>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {/* Row 3: Reporting Dimensions */}
-                                    <div className="grid grid-cols-2 gap-6 bg-slate-50 p-4 rounded-xl border border-slate-200">
-                                        <div className="space-y-3">
-                                            <div className="flex items-center justify-between">
-                                                <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Weight (Impact)</label>
-                                                <span className="text-xs font-black text-orange-600 bg-orange-50 px-2 py-0.5 rounded-md">{formData.weight || 1}</span>
-                                            </div>
-                                            <input
-                                                type="range"
-                                                min="1"
-                                                max="10"
-                                                step="1"
-                                                value={formData.weight || 1}
-                                                onChange={(e) => setFormData({ ...formData, weight: parseInt(e.target.value) })}
-                                                className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-orange-500"
-                                            />
-                                            <p className="text-[9px] text-slate-400 font-medium italic">Higher weight = greater impact on subject mastery.</p>
-                                        </div>
-                                        <div className="space-y-3">
-                                            <div className="flex items-center justify-between">
-                                                <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Complexity</label>
-                                                <span className="text-xs font-black text-slate-600 bg-white border border-slate-200 px-2 py-0.5 rounded-md">{formData.complexityLevel || 1}</span>
-                                            </div>
-                                            <input
-                                                type="range"
-                                                min="1"
-                                                max="10"
-                                                step="1"
-                                                value={formData.complexityLevel || 1}
-                                                onChange={(e) => setFormData({ ...formData, complexityLevel: parseInt(e.target.value) })}
-                                                className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-slate-500"
-                                            />
-                                            <p className="text-[9px] text-slate-400 font-medium italic">1 = Introductory, 10 = Advanced Research.</p>
-                                        </div>
-                                    </div>
-
-                                    {/* Description */}
+                    {/* Content - Landscape Grid */}
+                    <div className="flex-1 overflow-y-auto">
+                        <div className="max-w-5xl mx-auto px-8 py-8">
+                            <form onSubmit={handleSubmit} className="space-y-6">
+                                {/* Row 1: Hierarchy Context (Read-Only) */}
+                                <div className="grid grid-cols-2 gap-6">
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 pl-1">Description</label>
-                                        <textarea
-                                            value={formData.description}
-                                            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                                            rows={4}
-                                            className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-600 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all placeholder:text-slate-300 resize-none"
-                                            placeholder="Brief summary of this topic..."
+                                        <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 flex items-center gap-1.5">
+                                            <Layers size={12} />
+                                            Parent Domain
+                                        </label>
+                                        <div className="px-4 py-3 bg-white border border-slate-200 rounded-xl">
+                                            <p className="text-sm font-bold text-slate-700">{currentTopic?.subject?.domain?.name || 'N/A'}</p>
+                                        </div>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 flex items-center gap-1.5">
+                                            <BookOpen size={12} />
+                                            Parent Subject
+                                        </label>
+                                        <div className="px-4 py-3 bg-white border border-slate-200 rounded-xl">
+                                            <p className="text-sm font-bold text-slate-700">{currentTopic?.subject?.name || 'N/A'}</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Row 2: Name & Status */}
+                                <div className="grid grid-cols-2 gap-6">
+                                    {/* Topic Name */}
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 pl-1">Topic Name</label>
+                                        <input
+                                            type="text"
+                                            required
+                                            value={formData.name}
+                                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                            className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all placeholder:text-slate-300"
+                                            placeholder="e.g., React Hooks"
                                         />
                                     </div>
 
-
-                                    {/* Hierarchy Reassignment (Caution) */}
-                                    <div className="pt-6 border-t border-slate-200">
-                                        <p className="text-[11px] font-black uppercase tracking-widest text-[#FF4B91] mb-4 flex items-center gap-2">
-                                            <AlertTriangle size={14} />
-                                            Move Hierarchy (Caution)
-                                        </p>
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <SelectField
-                                                label="Domain"
-                                                value={formData.domainId}
-                                                options={domains.map(d => ({ id: d.id, name: d.name }))}
-                                                loading={domainsHook.loading}
-                                                onChange={handleDomainChange}
-                                                placeholder="Change Domain"
-                                                active={false}
-                                                hideCreate={true}
-                                            />
-                                            <SelectField
-                                                label="Subject"
-                                                value={formData.subjectId}
-                                                options={subjects.map(s => ({ id: s.id, name: s.name }))}
-                                                loading={subjectsHook.loading}
-                                                disabled={!formData.domainId}
-                                                onChange={(id) => setFormData({ ...formData, subjectId: id })}
-                                                placeholder="Change Subject"
-                                                active={false}
-                                                hideCreate={true}
-                                            />
+                                    {/* Status */}
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 pl-1">Status</label>
+                                        <div className="flex bg-white p-1.5 rounded-xl border border-slate-200">
+                                            {['active', 'inactive'].map((status) => (
+                                                <button
+                                                    key={status}
+                                                    type="button"
+                                                    onClick={() => setFormData({ ...formData, status: status as any })}
+                                                    className={`flex-1 py-2.5 rounded-lg text-xs font-black uppercase tracking-wider transition-all ${formData.status === status
+                                                        ? 'bg-[#1A1A1A] text-white shadow-sm'
+                                                        : 'text-slate-400 hover:text-slate-600'
+                                                        }`}
+                                                >
+                                                    {status}
+                                                </button>
+                                            ))}
                                         </div>
                                     </div>
+                                </div>
 
-                                    {/* Footer Actions */}
-                                    <div className="pt-8 flex items-center justify-end gap-4">
-                                        <button
-                                            type="button"
-                                            onClick={handleCloseForm}
-                                            className="px-8 py-3 rounded-xl text-slate-600 font-bold uppercase tracking-widest text-xs hover:bg-slate-100 transition-all"
-                                        >
-                                            Cancel
-                                        </button>
-                                        <button
-                                            type="submit"
-                                            disabled={isSubmitting}
-                                            className="px-10 py-3 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-black uppercase tracking-widest text-xs shadow-lg shadow-orange-500/20 transition-all flex items-center gap-2 disabled:opacity-50"
-                                        >
-                                            {isSubmitting ? <ZLoader size="xs" className="text-white" center={false} /> : <Check size={16} />}
-                                            {isSubmitting ? 'Saving...' : 'Save Changes'}
-                                        </button>
+                                {/* Row 3: Reporting Dimensions */}
+                                <div className="grid grid-cols-2 gap-6 bg-slate-50 p-4 rounded-xl border border-slate-200">
+                                    <div className="space-y-3">
+                                        <div className="flex items-center justify-between">
+                                            <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Weight (Impact)</label>
+                                            <span className="text-xs font-black text-orange-600 bg-orange-50 px-2 py-0.5 rounded-md">{formData.weight || 1}</span>
+                                        </div>
+                                        <input
+                                            type="range"
+                                            min="1"
+                                            max="10"
+                                            step="1"
+                                            value={formData.weight || 1}
+                                            onChange={(e) => setFormData({ ...formData, weight: parseInt(e.target.value) })}
+                                            className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-orange-500"
+                                        />
+                                        <p className="text-[9px] text-slate-400 font-medium italic">Higher weight = greater impact on subject mastery.</p>
                                     </div>
-                                </form>
-                            </div>
+                                    <div className="space-y-3">
+                                        <div className="flex items-center justify-between">
+                                            <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Complexity</label>
+                                            <span className="text-xs font-black text-slate-600 bg-white border border-slate-200 px-2 py-0.5 rounded-md">{formData.complexityLevel || 1}</span>
+                                        </div>
+                                        <input
+                                            type="range"
+                                            min="1"
+                                            max="10"
+                                            step="1"
+                                            value={formData.complexityLevel || 1}
+                                            onChange={(e) => setFormData({ ...formData, complexityLevel: parseInt(e.target.value) })}
+                                            className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-slate-500"
+                                        />
+                                        <p className="text-[9px] text-slate-400 font-medium italic">1 = Introductory, 10 = Advanced Research.</p>
+                                    </div>
+                                </div>
+
+                                {/* Description */}
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 pl-1">Description</label>
+                                    <textarea
+                                        value={formData.description}
+                                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                        rows={4}
+                                        className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-600 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all placeholder:text-slate-300 resize-none"
+                                        placeholder="Brief summary of this topic..."
+                                    />
+                                </div>
+
+
+                                {/* Hierarchy Reassignment (Caution) */}
+                                <div className="pt-6 border-t border-slate-200">
+                                    <p className="text-[11px] font-black uppercase tracking-widest text-[#FF4B91] mb-4 flex items-center gap-2">
+                                        <AlertTriangle size={14} />
+                                        Move Hierarchy (Caution)
+                                    </p>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <SelectField
+                                            label="Domain"
+                                            value={formData.domainId}
+                                            options={domains.map(d => ({ id: d.id, name: d.name }))}
+                                            loading={domainsHook.loading}
+                                            onChange={handleDomainChange}
+                                            placeholder="Change Domain"
+                                            active={false}
+                                            hideCreate={true}
+                                        />
+                                        <SelectField
+                                            label="Subject"
+                                            value={formData.subjectId}
+                                            options={subjects.map(s => ({ id: s.id, name: s.name }))}
+                                            loading={subjectsHook.loading}
+                                            disabled={!formData.domainId}
+                                            onChange={(id) => setFormData({ ...formData, subjectId: id })}
+                                            placeholder="Change Subject"
+                                            active={false}
+                                            hideCreate={true}
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* Footer Actions */}
+                                <div className="pt-8 flex items-center justify-end gap-4">
+                                    <button
+                                        type="button"
+                                        onClick={handleCloseForm}
+                                        className="px-8 py-3 rounded-xl text-slate-600 font-bold uppercase tracking-widest text-xs hover:bg-slate-100 transition-all"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        disabled={isSubmitting}
+                                        className="px-10 py-3 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-black uppercase tracking-widest text-xs shadow-lg shadow-orange-500/20 transition-all flex items-center gap-2 disabled:opacity-50"
+                                    >
+                                        {isSubmitting ? <ZLoader size="xs" className="text-white" center={false} /> : <Check size={16} />}
+                                        {isSubmitting ? 'Saving...' : 'Save Changes'}
+                                    </button>
+                                </div>
+                            </form>
                         </div>
-                    </div >
-                </div >
-            )
-            }
+                    </div>
+                </div>
+            </ZPortalModal>
 
 
             {/* Delete Confirmation Modal */}

@@ -376,7 +376,7 @@ const SummaryPanel = ({ icon: Icon, label, value, subvalue, color, bg }: any) =>
             <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-0.5">{label}</p>
             <div className="flex items-baseline gap-2">
                 <span className={cn("text-3xl font-black italic tracking-tighter", color)}>{value}</span>
-                <span className="text-[9px] font-black uppercase tracking-widest text-[#1A1A1A]/40">{subvalue}</span>
+                <span className="text-[9px] font-black uppercase tracking-widest text-[#1A1A1A]">{subvalue}</span>
             </div>
         </div>
     </div>

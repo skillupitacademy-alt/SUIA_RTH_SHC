@@ -8,6 +8,7 @@ import { ZLoader } from '@/components/ui/ZLoader';
 import { SelectField } from '@/components/entry/SelectionFields';
 import { HierarchyFactoryWizard } from '@/components/content/HierarchyFactoryWizard';
 import { SkillReviewCard } from './SkillReviewCard';
+import { ZPortalModal } from '@/components/ui/ZPortalModal';
 import { cn } from '@/lib/utils';
 import {
     AlertDialog,
@@ -236,123 +237,121 @@ export function SkillTable() {
             </div>
 
             {/* Form Modal */}
-            {isFormOpen && (
-                <div className="fixed inset-0 z-[100] bg-white animate-in slide-in-from-right duration-300">
-                    <div className="h-full flex flex-col">
-                        <div className="px-8 py-6 border-b border-slate-200 flex items-center justify-between bg-white">
-                            <div className="flex items-center gap-4">
-                                <div className="h-12 w-12 rounded-xl bg-cyan-50 text-cyan-600 flex items-center justify-center">
-                                    <Shield size={24} />
-                                </div>
-                                <div>
-                                    <h3 className="text-2xl font-black text-[#1A1A1A] uppercase tracking-tight">
-                                        {currentSkill ? 'Edit Skill' : 'New Skill'}
-                                    </h3>
-                                    <p className="text-xs font-medium text-slate-500 uppercase tracking-widest mt-0.5">
-                                        {currentSkill ? 'Update Skill Definition' : 'Define New Skill Node'}
-                                    </p>
-                                </div>
+            <ZPortalModal isOpen={isFormOpen} zIndex={100}>
+                <div className="h-full flex flex-col bg-white animate-in slide-in-from-right duration-300">
+                    <div className="px-8 py-6 border-b border-slate-200 flex items-center justify-between bg-white">
+                        <div className="flex items-center gap-4">
+                            <div className="h-12 w-12 rounded-xl bg-cyan-50 text-cyan-600 flex items-center justify-center">
+                                <Shield size={24} />
                             </div>
-                            <button onClick={handleCloseForm} className="p-2 hover:bg-slate-100 rounded-full transition-colors">
-                                <X size={20} className="text-slate-400" />
-                            </button>
+                            <div>
+                                <h3 className="text-2xl font-black text-[#1A1A1A] uppercase tracking-tight">
+                                    {currentSkill ? 'Edit Skill' : 'New Skill'}
+                                </h3>
+                                <p className="text-xs font-medium text-slate-500 uppercase tracking-widest mt-0.5">
+                                    {currentSkill ? 'Update Skill Definition' : 'Define New Skill Node'}
+                                </p>
+                            </div>
                         </div>
+                        <button onClick={handleCloseForm} className="p-2 hover:bg-slate-100 rounded-full transition-colors">
+                            <X size={20} className="text-slate-400" />
+                        </button>
+                    </div>
 
-                        <div className="flex-1 overflow-y-auto">
-                            <div className="max-w-4xl mx-auto px-8 py-8">
-                                <form onSubmit={handleSubmit} className="space-y-6">
-                                    {/* Row 1: Name and Weight */}
-                                    <div className="grid grid-cols-2 gap-6">
-                                        {/* Skill Name */}
-                                        <div className="space-y-2">
-                                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Skill Name</label>
+                    <div className="flex-1 overflow-y-auto">
+                        <div className="max-w-4xl mx-auto px-8 py-8">
+                            <form onSubmit={handleSubmit} className="space-y-6">
+                                {/* Row 1: Name and Weight */}
+                                <div className="grid grid-cols-2 gap-6">
+                                    {/* Skill Name */}
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Skill Name</label>
+                                        <input
+                                            required
+                                            type="text"
+                                            placeholder="e.g., Problem Solving"
+                                            value={formData.name}
+                                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                            className="w-full bg-slate-50 border-none rounded-2xl px-5 py-3 text-sm font-bold text-[#1A1A1A] outline-none focus:ring-2 focus:ring-[#FF4B91]/10"
+                                        />
+                                    </div>
+
+                                    {/* Weight */}
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Weight (1-10)</label>
+                                        <div className="flex items-center gap-4 px-4 py-3 bg-slate-50 rounded-2xl">
+                                            <Zap size={16} className="text-amber-500" />
                                             <input
-                                                required
-                                                type="text"
-                                                placeholder="e.g., Problem Solving"
-                                                value={formData.name}
-                                                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                                className="w-full bg-slate-50 border-none rounded-2xl px-5 py-3 text-sm font-bold text-[#1A1A1A] outline-none focus:ring-2 focus:ring-[#FF4B91]/10"
+                                                type="range"
+                                                min="1"
+                                                max="10"
+                                                value={formData.weight || 1}
+                                                onChange={(e) => setFormData({ ...formData, weight: parseInt(e.target.value) })}
+                                                className="flex-1 accent-[#FF4B91] h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer"
                                             />
-                                        </div>
-
-                                        {/* Weight */}
-                                        <div className="space-y-2">
-                                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Weight (1-10)</label>
-                                            <div className="flex items-center gap-4 px-4 py-3 bg-slate-50 rounded-2xl">
-                                                <Zap size={16} className="text-amber-500" />
-                                                <input
-                                                    type="range"
-                                                    min="1"
-                                                    max="10"
-                                                    value={formData.weight || 1}
-                                                    onChange={(e) => setFormData({ ...formData, weight: parseInt(e.target.value) })}
-                                                    className="flex-1 accent-[#FF4B91] h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer"
-                                                />
-                                                <span className="text-sm font-black text-slate-700 w-6 text-center">{formData.weight || 1}</span>
-                                            </div>
+                                            <span className="text-sm font-black text-slate-700 w-6 text-center">{formData.weight || 1}</span>
                                         </div>
                                     </div>
+                                </div>
 
-                                    {/* Row 2: Category and Mapping */}
-                                    <div className="grid grid-cols-2 gap-6">
-                                        {/* Category */}
-                                        <SelectField
-                                            label="Category Hierarchy"
-                                            value={formData.category}
-                                            options={[
-                                                ...Object.entries(SKILL_CATEGORIES).map(([id, name]) => ({ id, name }))
-                                            ]}
-                                            loading={false}
-                                            onChange={(val) => setFormData({ ...formData, category: val })}
-                                            placeholder="Select Category"
-                                            active={true}
-                                            icon={<Hash size={12} />}
-                                            hideCreate={true}
-                                        />
+                                {/* Row 2: Category and Mapping */}
+                                <div className="grid grid-cols-2 gap-6">
+                                    {/* Category */}
+                                    <SelectField
+                                        label="Category Hierarchy"
+                                        value={formData.category}
+                                        options={[
+                                            ...Object.entries(SKILL_CATEGORIES).map(([id, name]) => ({ id, name }))
+                                        ]}
+                                        loading={false}
+                                        onChange={(val) => setFormData({ ...formData, category: val })}
+                                        placeholder="Select Category"
+                                        active={true}
+                                        icon={<Hash size={12} />}
+                                        hideCreate={true}
+                                    />
 
-                                        {/* Mapping Type */}
-                                        <SelectField
-                                            label="Mapping"
-                                            value={formData.mappingType}
-                                            options={[
-                                                { id: 'conceptual', name: 'Conceptual' },
-                                                { id: 'technical', name: 'Technical' },
-                                                { id: 'practical', name: 'Practical' }
-                                            ]}
-                                            loading={false}
-                                            onChange={(val) => setFormData({ ...formData, mappingType: val as any })}
-                                            placeholder="Select Mapping"
-                                            active={false}
-                                            icon={<Cpu size={12} />}
-                                            hideCreate={true}
-                                        />
-                                    </div>
+                                    {/* Mapping Type */}
+                                    <SelectField
+                                        label="Mapping"
+                                        value={formData.mappingType}
+                                        options={[
+                                            { id: 'conceptual', name: 'Conceptual' },
+                                            { id: 'technical', name: 'Technical' },
+                                            { id: 'practical', name: 'Practical' }
+                                        ]}
+                                        loading={false}
+                                        onChange={(val) => setFormData({ ...formData, mappingType: val as any })}
+                                        placeholder="Select Mapping"
+                                        active={false}
+                                        icon={<Cpu size={12} />}
+                                        hideCreate={true}
+                                    />
+                                </div>
 
-                                    {/* Footer Actions */}
-                                    <div className="flex justify-end gap-3 pt-4">
-                                        <button
-                                            type="button"
-                                            onClick={handleCloseForm}
-                                            className="px-6 py-3 rounded-xl text-slate-500 font-bold text-xs uppercase tracking-widest hover:bg-slate-50 transition-colors"
-                                        >
-                                            Cancel
-                                        </button>
-                                        <button
-                                            type="submit"
-                                            disabled={isSubmitting}
-                                            className="px-8 py-3 rounded-xl bg-[#1A1A1A] text-white font-bold text-xs uppercase tracking-widest hover:bg-black transition-colors flex items-center gap-2 disabled:opacity-50"
-                                        >
-                                            {isSubmitting ? <ZLoader size="xs" className="text-white" center={false} /> : <Check size={16} />}
-                                            {isSubmitting ? 'Saving...' : 'Save Changes'}
-                                        </button>
-                                    </div>
-                                </form>
-                            </div>
+                                {/* Footer Actions */}
+                                <div className="flex justify-end gap-3 pt-4">
+                                    <button
+                                        type="button"
+                                        onClick={handleCloseForm}
+                                        className="px-6 py-3 rounded-xl text-slate-500 font-bold text-xs uppercase tracking-widest hover:bg-slate-50 transition-colors"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        disabled={isSubmitting}
+                                        className="px-8 py-3 rounded-xl bg-[#1A1A1A] text-white font-bold text-xs uppercase tracking-widest hover:bg-black transition-colors flex items-center gap-2 disabled:opacity-50"
+                                    >
+                                        {isSubmitting ? <ZLoader size="xs" className="text-white" center={false} /> : <Check size={16} />}
+                                        {isSubmitting ? 'Saving...' : 'Save Changes'}
+                                    </button>
+                                </div>
+                            </form>
                         </div>
                     </div>
                 </div>
-            )}
+            </ZPortalModal>
 
             <HierarchyFactoryWizard
                 isOpen={isFactoryOpen}

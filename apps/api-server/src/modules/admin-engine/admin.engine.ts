@@ -719,13 +719,13 @@ export class AdminEngine {
   static async createTopic(data: any, adminId: string) {
     const result = await TopicService.createTopic(data);
     await AuditService.log({ userId: adminId, action: 'admin_create_topic', metadata: { topicId: result[0].id } });
-    return result[0];
+    return (await this.getEnrichedTopicInternal(result[0].id)) ?? result[0];
   }
 
   static async updateTopic(id: string, data: any, adminId: string) {
     const result = await TopicService.updateTopic(id, data);
     await AuditService.log({ userId: adminId, action: 'admin_update_topic', metadata: { topicId: id } });
-    return result[0];
+    return (await this.getEnrichedTopicInternal(id)) ?? result[0];
   }
 
   static async deleteTopic(id: string, adminId: string) {
@@ -745,16 +745,58 @@ export class AdminEngine {
   }
 
   // --- SUBTOPIC MANAGEMENT ---
+  private static async getEnrichedSubtopicInternal(subtopicId: string) {
+    const [result] = await db.select({
+      id: subtopics.id,
+      topicId: subtopics.topicId,
+      name: subtopics.name,
+      description: subtopics.description,
+      depthLevel: subtopics.depthLevel,
+      createdAt: subtopics.createdAt,
+      topicName: topics.name,
+      subjectId: subjects.id,
+      subjectName: subjects.name,
+      domainId: domains.id,
+      domainName: domains.name,
+      questionsCount: sql<number>`cast(count(${questions.id}) as integer)`.mapWith(Number)
+    })
+    .from(subtopics)
+    .leftJoin(questions, eq(subtopics.id, questions.subtopicId))
+    .leftJoin(topics, eq(subtopics.topicId, topics.id))
+    .leftJoin(subjects, eq(topics.subjectId, subjects.id))
+    .leftJoin(domains, eq(subjects.domainId, domains.id))
+    .where(eq(subtopics.id, subtopicId))
+    .groupBy(subtopics.id, topics.name, subjects.id, subjects.name, domains.id, domains.name);
+
+    if (!result) return null;
+
+    return {
+      ...result,
+      topic: result.topicName ? {
+        id: result.topicId,
+        name: result.topicName,
+        subject: result.subjectName ? {
+          id: result.subjectId,
+          name: result.subjectName,
+          domain: result.domainName ? { 
+            id: result.domainId,
+            name: result.domainName 
+          } : null
+        } : null
+      } : null
+    };
+  }
+
   static async createSubtopic(data: any, adminId: string) {
     const result = await TopicService.createSubtopic(data);
     await AuditService.log({ userId: adminId, action: 'admin_create_subtopic', metadata: { subtopicId: result[0].id } });
-    return result[0];
+    return (await this.getEnrichedSubtopicInternal(result[0].id)) ?? result[0];
   }
 
   static async updateSubtopic(id: string, data: any, adminId: string) {
     const result = await TopicService.updateSubtopic(id, data);
     await AuditService.log({ userId: adminId, action: 'admin_update_subtopic', metadata: { subtopicId: id } });
-    return result[0];
+    return (await this.getEnrichedSubtopicInternal(id)) ?? result[0];
   }
 
   static async deleteSubtopic(id: string, adminId: string) {
@@ -1388,6 +1430,7 @@ export class AdminEngine {
         updatedAt: topics.updatedAt,
         subjectName: subjects.name,
         domainName: domains.name,
+        domainId: domains.id,
         subtopicsCount: sql<number>`cast(count(distinct ${subtopics.id}) as integer)`.mapWith(Number),
         questionsCount: sql<number>`cast(count(distinct ${questions.id}) as integer)`.mapWith(Number)
     })
@@ -1397,7 +1440,7 @@ export class AdminEngine {
     .leftJoin(subjects, eq(topics.subjectId, subjects.id))
     .leftJoin(domains, eq(subjects.domainId, domains.id))
     .where(whereClause)
-    .groupBy(topics.id, subjects.name, domains.name)
+    .groupBy(topics.id, subjects.name, domains.name, domains.id)
     .limit(limit)
     .offset(offset)
     .orderBy(desc(topics.createdAt));
@@ -1405,8 +1448,12 @@ export class AdminEngine {
     const data = result.map(t => ({
         ...t,
         subject: t.subjectName ? { 
+            id: t.subjectId,
             name: t.subjectName,
-            domain: t.domainName ? { name: t.domainName } : null
+            domain: t.domainName ? { 
+                id: t.domainId,
+                name: t.domainName 
+            } : null
         } : null
     }));
 
@@ -1446,7 +1493,9 @@ export class AdminEngine {
         createdAt: subtopics.createdAt,
         topicName: topics.name,
         subjectName: subjects.name,
+        subjectId: subjects.id,
         domainName: domains.name,
+        domainId: domains.id,
         questionsCount: sql<number>`cast(count(${questions.id}) as integer)`.mapWith(Number)
     })
     .from(subtopics)
@@ -1455,7 +1504,7 @@ export class AdminEngine {
     .leftJoin(subjects, eq(topics.subjectId, subjects.id))
     .leftJoin(domains, eq(subjects.domainId, domains.id))
     .where(whereClause)
-    .groupBy(subtopics.id, topics.name, subjects.name, domains.name)
+    .groupBy(subtopics.id, topics.name, subjects.name, subjects.id, domains.name, domains.id)
     .limit(limit)
     .offset(offset)
     .orderBy(desc(subtopics.createdAt));
@@ -1463,10 +1512,15 @@ export class AdminEngine {
     const data = result.map(s => ({
         ...s,
         topic: s.topicName ? {
+            id: s.topicId,
             name: s.topicName,
             subject: s.subjectName ? {
+                id: s.subjectId,
                 name: s.subjectName,
-                domain: s.domainName ? { name: s.domainName } : null
+                domain: s.domainName ? { 
+                    id: s.domainId,
+                    name: s.domainName 
+                } : null
             } : null
         } : null
     }));
@@ -1525,6 +1579,7 @@ export class AdminEngine {
     };
   }
 
+
   static async getSkillsByTopic(topicId: string) {
     const data = await db.query.topicSkills.findMany({
         where: eq(topicSkills.topicId, topicId),
@@ -1534,5 +1589,42 @@ export class AdminEngine {
     });
     // Extract just the skill objects
     return data.map(ts => ts.skill);
+  }
+
+  // --- ENRICHMENT HELPERS ---
+
+  private static async getEnrichedTopicInternal(id: string) {
+    const [result] = await db.select({
+        id: topics.id,
+        subjectId: topics.subjectId,
+        name: topics.name,
+        description: topics.description,
+        complexityLevel: topics.complexityLevel,
+        weight: topics.weight,
+        status: topics.status,
+        createdAt: topics.createdAt,
+        updatedAt: topics.updatedAt,
+        subjectName: subjects.name,
+        domainName: domains.name,
+        domainId: domains.id
+    })
+    .from(topics)
+    .leftJoin(subjects, eq(topics.subjectId, subjects.id))
+    .leftJoin(domains, eq(subjects.domainId, domains.id))
+    .where(eq(topics.id, id));
+
+    if (!result) return null;
+
+    return {
+        ...result,
+        subject: result.subjectName ? {
+            id: result.subjectId,
+            name: result.subjectName,
+            domain: result.domainName ? {
+                id: result.domainId,
+                name: result.domainName
+            } : null
+        } : null
+    };
   }
 }

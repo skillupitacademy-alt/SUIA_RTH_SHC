@@ -8,6 +8,7 @@ import { ZLoader } from '@/components/ui/ZLoader';
 import { HierarchyFactoryWizard } from '@/components/content/HierarchyFactoryWizard';
 import { DomainReviewCard } from './DomainReviewCard';
 import { cn } from '@/lib/utils';
+import { ZPortalModal } from '@/components/ui/ZPortalModal';
 import {
     AlertDialog,
     AlertDialogAction,

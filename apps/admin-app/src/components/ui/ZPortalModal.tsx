@@ -1,0 +1,48 @@
+'use client';
+
+import React, { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
+import { useScrollLock } from '@/hooks/useScrollLock';
+
+interface ZPortalModalProps {
+    children: React.ReactNode;
+    isOpen: boolean;
+    onClose?: () => void;
+    zIndex?: number;
+}
+
+/**
+ * ZPortalModal renders its children into a React Portal at document.body.
+ * It automatically applies scroll locking to the background and ensures
+ * full viewport coverage with a high z-index.
+ */
+export function ZPortalModal({
+    children,
+    isOpen,
+    onClose,
+    zIndex = 1000
+}: ZPortalModalProps) {
+    const [mounted, setMounted] = useState(false);
+
+    // Apply scroll lock when open
+    useScrollLock(isOpen);
+
+    useEffect(() => {
+        setMounted(true);
+        return () => setMounted(false);
+    }, []);
+
+    if (!mounted || !isOpen) return null;
+
+    return createPortal(
+        <div
+            className="fixed inset-0 w-screen h-[100dvh] overflow-hidden flex flex-col bg-white"
+            style={{ zIndex }}
+            aria-modal="true"
+            role="dialog"
+        >
+            {children}
+        </div>,
+        document.body
+    );
+}

@@ -333,7 +333,7 @@ function StatsBadge({ label, val, target }: { label: string, val: number, target
             isLow ? "bg-red-500/10 text-red-600 border border-red-500/10" : "bg-green-500/5 text-green-600 border border-green-500/10"
         )}>
             <span>{label}</span>
-            <span className="opacity-40">{val}/{target}</span>
+            <span className="">{val}/{target}</span>
         </div>
     );
 }

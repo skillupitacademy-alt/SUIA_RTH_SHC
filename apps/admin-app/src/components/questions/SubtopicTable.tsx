@@ -10,6 +10,7 @@ import { useDomains, useSubjects, useTopics } from '@/hooks/useAdminHierarchy';
 import { HierarchyFactoryWizard } from '@/components/content/HierarchyFactoryWizard';
 import { SelectField } from '@/components/entry/SelectionFields';
 import { SubtopicReviewCard } from './SubtopicReviewCard';
+import { ZPortalModal } from '@/components/ui/ZPortalModal';
 import { apiClient } from '@quiz/api-client';
 
 export function SubtopicTable() {
@@ -79,7 +80,7 @@ export function SubtopicTable() {
     const handleOpenForm = (subtopic: any = null) => {
         if (subtopic) {
             setCurrentSubtopic(subtopic);
-            
+
             // Robust lineage extraction with fallbacks
             const topic = subtopic.topic;
             const topicId = subtopic.topicId || topic?.id || '';
@@ -213,9 +214,9 @@ export function SubtopicTable() {
                 <ErrorBanner message={errorMessage} onClose={() => setErrorMessage(null)} />
             )}
 
-            {/* Standard Edit Form (Update Mode Only) - Restored to Executive White Full-Screen */}
-            {isFormOpen && currentSubtopic && (
-                <div className="fixed inset-0 z-[1000] bg-white animate-in slide-in-from-bottom-4 duration-500 overflow-hidden flex flex-col">
+            {/* Modalized Form */}
+            <ZPortalModal isOpen={isFormOpen && !!currentSubtopic} zIndex={100}>
+                <div className="h-full flex flex-col bg-white animate-in slide-in-from-bottom-4 duration-500">
                     {/* Header Strip */}
                     <div className="px-12 py-6 border-b border-primary/5 flex items-center justify-between bg-white sticky top-0 z-20">
                         <div className="flex items-center gap-4">
@@ -236,7 +237,7 @@ export function SubtopicTable() {
                     </div>
 
                     {/* Content Area */}
-                    <div className="flex-1 bg-slate-50/30 p-12 custom-scrollbar">
+                    <div className="flex-1 bg-slate-50/30 p-12 custom-scrollbar overflow-y-auto">
                         <div className="max-w-5xl mx-auto space-y-8 bg-white border border-primary/10 rounded-[2.5rem] p-10 shadow-2xl shadow-primary/5 relative overflow-hidden">
                             {/* Form Header Context */}
                             <div className="grid grid-cols-3 gap-4 p-6 bg-slate-50/50 rounded-2xl border border-dashed border-slate-200">
@@ -381,16 +382,15 @@ export function SubtopicTable() {
                                         disabled={isSubmitting}
                                         className="px-12 py-4 rounded-2xl bg-[#FF6B2C] hover:bg-[#FF5511] text-white text-[10px] font-black uppercase tracking-widest shadow-xl shadow-orange-500/20 transition-all flex items-center gap-3 disabled:opacity-50"
                                     >
-                                        {isSubmitting ? <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" /> : <Check size={18} />}
+                                        {isSubmitting ? <ZLoader size="xs" className="text-white" center={false} /> : <Check size={18} />}
                                         {isSubmitting ? 'Syncing...' : 'Commit Changes'}
                                     </button>
                                 </div>
                             </form>
-                        </div >
-                    </div >
-                </div >
-            )
-            }
+                        </div>
+                    </div>
+                </div>
+            </ZPortalModal>
 
 
             {/* Factory Wizard Integration */}
