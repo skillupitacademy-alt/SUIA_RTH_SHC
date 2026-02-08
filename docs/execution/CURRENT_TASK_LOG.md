@@ -139,3 +139,13 @@
 - **Pink Button System**: Implemented `#FF2D551A` (10%) background and `#FF2D5533` (20%) border for Back/Pagination buttons.
 - **Card Refinement**: Migrated `DomainCard` and `TopicChip` to internal `ring-inset` selection borders.
 - **Verification**: Build Success & zero-clipping confirmed.
+
+### Batch 160: Unified HUD Geometry (Feb 08, 2026)
+- **Constraint Management**: Locked interaction zone to 525px; Standardized 3x3 grids for Steps 2-4.
+- **Visual Symmetery**: Expanded Assessment Summary to full-height pillar; Normalized gap-6 gutters.
+
+### Batch 161: Proportional Viewport HUD & Zero-Scroll (Feb 08, 2026)
+- **Architecture**: Implemented 8/12/8/60/12 dvh stack for 100% stable zero-scroll cockpit.
+- **Logic**: Hybrid capacity brain (3x3 vs 3x2) based on 800px viewport height breakpoint.
+- **Aesthetic**: 12px shadow buffer protection; h-full component stretching for flush look.
+- **Verification**: Zero-scroll and build integrity (pnpm build; tsc --noEmit) verified with Exit Code 0.
