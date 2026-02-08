@@ -23,7 +23,7 @@ export function TopicChip({
         <button
             onClick={() => onToggle(id)}
             className={cn(
-                "flex flex-col items-start justify-center p-6 rounded-[1.25rem] transition-all duration-300 w-full text-left border-2 outline-none relative overflow-hidden",
+                "flex flex-col items-start justify-center p-6 rounded-[1.25rem] transition-all duration-300 w-full h-full text-left border-2 outline-none relative overflow-hidden",
                 isSelected
                     ? "bg-[#FF2D55] text-white border-[#FF2D55] shadow-[0_10px_30px_rgba(255,45,85,0.4)] scale-[1.02] z-10"
                     : "bg-[#2D2D2D] text-white/90 border-transparent hover:border-[#FF2D55]/30 hover:bg-[#3D3D3D] hover:scale-[1.01]"

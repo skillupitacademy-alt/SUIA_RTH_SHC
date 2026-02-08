@@ -46,14 +46,14 @@ export function DomainCard({
         <button
             onClick={() => onSelect(id)}
             className={cn(
-                "relative bg-white rounded-[1.5rem] p-6 text-left transition-all duration-500 border-2 group outline-none",
+                "relative bg-white rounded-[1.5rem] p-6 text-left transition-all duration-500 border-2 group outline-none h-full flex flex-col",
                 isSelected
                     ? "border-[#FF2D55] shadow-[0_10px_30px_rgba(255,45,85,0.15)] scale-[1.02] z-10"
                     : "border-transparent shadow-[0_4px_20px_rgba(0,0,0,0.05)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] hover:scale-[1.01]"
             )}
         >
             {/* Top Row: Icon and Checkmark */}
-            <div className="flex justify-between items-start mb-4">
+            <div className="flex justify-between items-start mb-4 flex-none">
                 <div className={cn(
                     "p-3 rounded-xl transition-transform duration-500 group-hover:scale-110 group-hover:-rotate-3",
                     colorMap[accentColor] || colorMap.blue
@@ -74,22 +74,24 @@ export function DomainCard({
             </div>
 
             {/* Content */}
-            <h3 className="text-lg font-bold font-inter text-[#1A1A1A] mb-1 leading-tight">{name}</h3>
-            <p className="text-xs text-muted-foreground font-inter mb-6 line-clamp-2 leading-relaxed h-[3em]">
-                {description}
-            </p>
-
-            {/* Bottom Row: Progress Bar */}
-            <div className="space-y-2">
-                <div className="h-1.5 w-full bg-[#E5E7EB]/50 rounded-full overflow-hidden">
-                    <div
-                        className={cn("h-full transition-all duration-1000 ease-out", barColorMap[accentColor] || barColorMap.blue)}
-                        style={{ width: `${coverage}%` }}
-                    />
-                </div>
-                <p className="text-[10px] font-bold font-inter text-muted-foreground uppercase tracking-wider">
-                    {coverage}% coverage
+            <div className="flex-1 flex flex-col">
+                <h3 className="text-lg font-bold font-inter text-[#1A1A1A] mb-1 leading-tight">{name}</h3>
+                <p className="text-xs text-muted-foreground font-inter mb-4 line-clamp-2 leading-relaxed flex-1">
+                    {description}
                 </p>
+
+                {/* Bottom Row: Progress Bar */}
+                <div className="space-y-2 mt-auto">
+                    <div className="h-1.5 w-full bg-[#E5E7EB]/50 rounded-full overflow-hidden">
+                        <div
+                            className={cn("h-full transition-all duration-1000 ease-out", barColorMap[accentColor] || barColorMap.blue)}
+                            style={{ width: `${coverage}%` }}
+                        />
+                    </div>
+                    <p className="text-[10px] font-bold font-inter text-muted-foreground uppercase tracking-wider">
+                        {coverage}% coverage
+                    </p>
+                </div>
             </div>
 
             {/* Active Glow Overlay - Refined for Internal Containment */}
