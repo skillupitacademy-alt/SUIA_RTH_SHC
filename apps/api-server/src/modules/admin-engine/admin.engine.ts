@@ -1323,7 +1323,7 @@ export class AdminEngine {
         .from(subjects)
         .where(whereClause);
 
-    const data = await db.select({
+    const result = await db.select({
         id: subjects.id,
         domainId: subjects.domainId,
         name: subjects.name,
@@ -1332,15 +1332,22 @@ export class AdminEngine {
         status: subjects.status,
         createdAt: subjects.createdAt,
         updatedAt: subjects.updatedAt,
+        domainName: domains.name,
         topicsCount: sql<number>`cast(count(${topics.id}) as integer)`.mapWith(Number)
     })
     .from(subjects)
     .leftJoin(topics, eq(subjects.id, topics.subjectId))
+    .leftJoin(domains, eq(subjects.domainId, domains.id))
     .where(whereClause)
-    .groupBy(subjects.id)
+    .groupBy(subjects.id, domains.name)
     .limit(limit)
     .offset(offset)
     .orderBy(desc(subjects.createdAt));
+
+    const data = result.map(s => ({
+        ...s,
+        domain: s.domainName ? { name: s.domainName } : null
+    }));
 
     return {
         data,
@@ -1369,7 +1376,7 @@ export class AdminEngine {
         .from(topics)
         .where(whereClause);
 
-    const data = await db.select({
+    const result = await db.select({
         id: topics.id,
         subjectId: topics.subjectId,
         name: topics.name,
@@ -1379,17 +1386,29 @@ export class AdminEngine {
         status: topics.status,
         createdAt: topics.createdAt,
         updatedAt: topics.updatedAt,
+        subjectName: subjects.name,
+        domainName: domains.name,
         subtopicsCount: sql<number>`cast(count(distinct ${subtopics.id}) as integer)`.mapWith(Number),
         questionsCount: sql<number>`cast(count(distinct ${questions.id}) as integer)`.mapWith(Number)
     })
     .from(topics)
     .leftJoin(subtopics, eq(topics.id, subtopics.topicId))
     .leftJoin(questions, eq(topics.id, questions.topicId))
+    .leftJoin(subjects, eq(topics.subjectId, subjects.id))
+    .leftJoin(domains, eq(subjects.domainId, domains.id))
     .where(whereClause)
-    .groupBy(topics.id)
+    .groupBy(topics.id, subjects.name, domains.name)
     .limit(limit)
     .offset(offset)
     .orderBy(desc(topics.createdAt));
+
+    const data = result.map(t => ({
+        ...t,
+        subject: t.subjectName ? { 
+            name: t.subjectName,
+            domain: t.domainName ? { name: t.domainName } : null
+        } : null
+    }));
 
     return {
         data,
@@ -1418,22 +1437,39 @@ export class AdminEngine {
         .from(subtopics)
         .where(whereClause);
 
-    const data = await db.select({
+    const result = await db.select({
         id: subtopics.id,
         topicId: subtopics.topicId,
         name: subtopics.name,
         description: subtopics.description,
         depthLevel: subtopics.depthLevel,
         createdAt: subtopics.createdAt,
+        topicName: topics.name,
+        subjectName: subjects.name,
+        domainName: domains.name,
         questionsCount: sql<number>`cast(count(${questions.id}) as integer)`.mapWith(Number)
     })
     .from(subtopics)
     .leftJoin(questions, eq(subtopics.id, questions.subtopicId))
+    .leftJoin(topics, eq(subtopics.topicId, topics.id))
+    .leftJoin(subjects, eq(topics.subjectId, subjects.id))
+    .leftJoin(domains, eq(subjects.domainId, domains.id))
     .where(whereClause)
-    .groupBy(subtopics.id)
+    .groupBy(subtopics.id, topics.name, subjects.name, domains.name)
     .limit(limit)
     .offset(offset)
     .orderBy(desc(subtopics.createdAt));
+
+    const data = result.map(s => ({
+        ...s,
+        topic: s.topicName ? {
+            name: s.topicName,
+            subject: s.subjectName ? {
+                name: s.subjectName,
+                domain: s.domainName ? { name: s.domainName } : null
+            } : null
+        } : null
+    }));
 
     return {
         data,
