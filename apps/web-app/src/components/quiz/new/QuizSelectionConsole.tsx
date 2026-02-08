@@ -108,8 +108,8 @@ function QuizSelectionConsoleContent() {
 
     // Pagination State
     const [page, setPage] = useState(0);
-    // HYBRID CAPACITY: 3x3 on desktops (>800px), 3x2 on laptops (<800px)
-    const currentPageSize = step === 1 ? 6 : (innerHeight > 800 ? 9 : 6);
+    // HYBRID CAPACITY: Locked to 2x3 (6) for Step 1, 3x3 (9) for Steps 2-4
+    const currentPageSize = step === 1 ? 6 : 9;
 
     // UI Meta helper (for icons and accents in Domain Cards)
     const getDomainMeta = (index: number) => {
@@ -509,7 +509,7 @@ function QuizSelectionConsoleContent() {
                                 className={cn(
                                     "p-1.5 rounded-md transition-all",
                                     "bg-[#FF2D551A] border border-[#FF2D5533] text-[#FF2D55] hover:bg-[#FF2D55] hover:text-white",
-                                    "disabled:opacity-50 disabled:grayscale disabled:border-gray-200" // ACCESSIBILITY FIX
+                                    "disabled:bg-[#FF2D550D] disabled:text-[#FF2D554D] disabled:border-[#FF2D551A] disabled:opacity-100" // PKG FIX
                                 )}
                                 title="Previous Page"
                             >
@@ -526,7 +526,7 @@ function QuizSelectionConsoleContent() {
                                 className={cn(
                                     "p-1.5 rounded-md transition-all",
                                     "bg-[#FF2D551A] border border-[#FF2D5533] text-[#FF2D55] hover:bg-[#FF2D55] hover:text-white",
-                                    "disabled:opacity-50 disabled:grayscale disabled:border-gray-200" // ACCESSIBILITY FIX
+                                    "disabled:bg-[#FF2D550D] disabled:text-[#FF2D554D] disabled:border-[#FF2D551A] disabled:opacity-100" // PKG FIX
                                 )}
                                 title="Next Page"
                             >
@@ -537,8 +537,8 @@ function QuizSelectionConsoleContent() {
                 </div>
             </div>
 
-            {/* THE ENGINE (HEART): 60% Slot */}
-            <div className="flex-none basis-[60dvh] px-4 flex gap-6 items-stretch min-h-0 relative">
+            {/* THE ENGINE (HEART): Flex-Budget Slot */}
+            <div className="flex-1 min-h-0 px-4 flex gap-6 items-stretch relative">
 
                 {/* Left/Main Pane */}
                 <div className={cn(
@@ -555,7 +555,7 @@ function QuizSelectionConsoleContent() {
                         )}
 
                         {step === 1 && (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 duration-300 items-stretch overflow-visible">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 grid-rows-[repeat(2,min-content)] gap-6 duration-300 items-start overflow-visible">
                                 {paginatedDomains.map((domain, idx) => (
                                     <DomainCard
                                         key={domain.id}
@@ -570,7 +570,7 @@ function QuizSelectionConsoleContent() {
                         )}
 
                         {(step === 2 || step === 3 || step === 4) && (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 duration-300 items-stretch overflow-visible">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 grid-rows-[repeat(3,min-content)] gap-6 duration-300 items-start overflow-visible">
                                 {(step === 2 ? paginatedSubjects : step === 3 ? paginatedTopics : paginatedSubtopics).map((item) => (
                                     <TopicChip
                                         key={item.id}
@@ -672,7 +672,7 @@ function QuizSelectionConsoleContent() {
                         className={cn(
                             "group flex items-center gap-3 px-8 py-3.5 rounded-xl font-black font-outfit text-xs uppercase tracking-widest transition-all shadow-sm border-2",
                             "bg-[#FF2D551A] border-[#FF2D5533] text-[#FF2D55] hover:bg-[#FF2D55] hover:text-white hover:border-[#FF2D55] hover:shadow-xl hover:shadow-[#FF2D55]/20 hover:scale-[1.02] active:scale-95",
-                            "disabled:opacity-50 disabled:grayscale disabled:border-gray-200 disabled:pointer-events-none" // ACCESSIBILITY FIX
+                            "disabled:bg-[#FF2D550D] disabled:text-[#FF2D554D] disabled:border-[#FF2D551A] disabled:opacity-100 disabled:pointer-events-none" // PKG FIX
                         )}
                     >
                         <ChevronLeft size={16} className="transition-transform group-hover:-translate-x-1" />
@@ -690,7 +690,7 @@ function QuizSelectionConsoleContent() {
                         }
                         className={cn(
                             "group flex items-center gap-4 px-10 py-3.5 rounded-xl font-black font-outfit text-xs uppercase tracking-widest transition-all shadow-lg",
-                            "disabled:bg-gray-100 disabled:text-gray-300 disabled:shadow-none disabled:scale-95 disabled:pointer-events-none grayscale",
+                            "disabled:bg-[#FF2D550D] disabled:text-[#FF2D554D] disabled:border-[#FF2D551A] disabled:opacity-100 disabled:shadow-none disabled:scale-95 disabled:pointer-events-none", // PKG FIX
                             isArmed
                                 ? "bg-black text-white hover:bg-gray-900 shadow-black/20"
                                 : "bg-[#FF2D55] text-white hover:bg-[#E61D44] shadow-[#FF2D55]/30 hover:shadow-xl hover:shadow-[#FF2D55]/40 hover:scale-[1.05] active:scale-95"
@@ -701,6 +701,6 @@ function QuizSelectionConsoleContent() {
                     </button>
                 </div>
             </div>
-        </div>
+        </div >
     );
 }

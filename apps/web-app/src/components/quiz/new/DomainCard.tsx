@@ -46,7 +46,7 @@ export function DomainCard({
         <button
             onClick={() => onSelect(id)}
             className={cn(
-                "relative bg-white rounded-[1.5rem] p-6 text-left transition-all duration-500 border-2 group outline-none h-full flex flex-col",
+                "relative bg-white rounded-[1.5rem] p-6 text-left transition-all duration-500 border-2 group outline-none h-[210px] flex flex-col",
                 isSelected
                     ? "border-[#FF2D55] shadow-[0_10px_30px_rgba(255,45,85,0.15)] scale-[1.02] z-10"
                     : "border-transparent shadow-[0_4px_20px_rgba(0,0,0,0.05)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] hover:scale-[1.01]"

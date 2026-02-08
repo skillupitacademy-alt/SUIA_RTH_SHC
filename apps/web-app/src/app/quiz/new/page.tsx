@@ -7,7 +7,7 @@ import { Loader2 } from "lucide-react";
 export default function NewQuizPage() {
     return (
         <AuthGuard>
-            <div className="h-dvh bg-[#F9FAFB] pt-1 pb-0 px-8 md:px-12 overflow-hidden flex flex-col items-stretch relative">
+            <div className="h-[calc(100dvh-56px)] bg-[#F9FAFB] pt-1 pb-0 px-8 md:px-12 overflow-hidden flex flex-col items-stretch relative">
                 <Suspense fallback={<div className="flex-1 flex items-center justify-center h-full"><Loader2 className="animate-spin text-primary" size={32} /></div>}>
                     <QuizSelectionConsole />
                 </Suspense>
