@@ -98,9 +98,7 @@ function QuizSelectionConsoleContent() {
 
     // Pagination State
     const [page, setPage] = useState(0);
-    const domainPageSize = 4;
-    const subPageSize = 8;
-    const currentPageSize = step === 1 ? domainPageSize : subPageSize;
+    const currentPageSize = 6; // Refactored to 3x2 grid (6 items) for Steps 1-4
 
     // UI Meta helper (for icons and accents in Domain Cards)
     const getDomainMeta = (index: number) => {
@@ -419,42 +417,40 @@ function QuizSelectionConsoleContent() {
     const currentMeta = journeyInfo[step as keyof typeof journeyInfo];
 
     return (
-        <div className="max-w-[1400px] mx-auto relative px-4 sm:px-6 lg:px-8 pt-0 pb-6">
-            {/* Executive Dashboard Header (Stateless Baseline) */}
-            <div className="mb-1 border-b border-gray-300 pb-2">
-                <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-12 pt-2">
+        <div className="w-full flex-1 flex flex-col min-h-0 relative">
+            {/* Executive Dashboard Header (Stateless Baseline) - Compacted */}
+            <div className="flex-none px-4 md:px-6 pt-2 pb-3 border-b border-gray-200">
+                <div className="flex items-start justify-between gap-6">
                     {/* Left: Step Orientation & Heading */}
-                    <div className="flex flex-col items-start text-left flex-none min-w-fit">
-                        <div className="flex items-center gap-6 mb-2 whitespace-nowrap">
-                            {/* Heart Icon Positioned FAR LEFT */}
-                            <div className="w-16 h-16 rounded-2xl bg-[#FF2D55]/10 border-2 border-[#FF2D55]/40 flex items-center justify-center group hover:bg-[#FF2D55]/20 transition-colors">
-                                <Activity className="text-[#FF2D55]" size={32} />
+                    <div className="flex flex-col items-start text-left shrink-0">
+                        <div className="flex items-center gap-4 mb-1.5 whitespace-nowrap">
+                            <div className="w-10 h-10 rounded-xl bg-[#FF2D55]/10 border-2 border-[#FF2D55]/40 flex items-center justify-center group hover:bg-[#FF2D55]/20 transition-colors">
+                                <Activity className="text-[#FF2D55]" size={20} />
                             </div>
                             <div className="flex flex-col">
                                 <JourneyBadge text={currentMeta.badge} />
-                                <h2 className="text-3xl font-black font-outfit tracking-tight text-[#1A1A1A] uppercase mt-1">
+                                <h2 className="text-xl font-black font-outfit tracking-tight text-[#1A1A1A] uppercase leading-none mt-1">
                                     {currentMeta.title} {currentMeta.count > 0 && `(${currentMeta.count})`}
                                 </h2>
                             </div>
                         </div>
-                        <p className="text-sm text-muted-foreground font-inter font-medium opacity-70 max-w-md leading-tight min-h-[40px] mb-4">
+                        <p className="text-[11px] text-muted-foreground font-inter font-medium opacity-70 max-w-sm leading-tight">
                             {currentMeta.desc}
                         </p>
                     </div>
 
                     {/* Right: Branding & Toggle */}
-                    <div className="flex flex-col items-end text-right min-w-fit flex-1">
-                        <div className="space-y-1 mb-4">
-                            <h1 className="text-5xl md:text-6xl font-black tracking-tighter font-outfit text-[#1A1A1A]">
+                    <div className="flex flex-col items-end text-right flex-1">
+                        <div className="mb-2">
+                            <h1 className="text-3xl font-black tracking-tighter font-outfit text-[#1A1A1A] leading-none mb-1">
                                 Launch Evaluation
                             </h1>
-                            <p className="text-xs text-muted-foreground font-inter font-medium opacity-60 uppercase tracking-[0.3em]">
+                            <p className="text-[9px] text-muted-foreground font-inter font-medium opacity-60 uppercase tracking-[0.2em] leading-none">
                                 Strategic Ecosystem Configuration
                             </p>
                         </div>
 
-                        {/* Repositioned Toggle: Directly Below Description (Right-Bottom) */}
-                        <div className="flex bg-gray-100 rounded-lg p-0.5 border border-gray-200 w-fit">
+                        <div className="flex bg-gray-100/80 rounded-lg p-0.5 border border-gray-200 w-fit backdrop-blur-sm">
                             {(['basic', 'advanced'] as const).map((m) => (
                                 <button
                                     key={m}
@@ -463,7 +459,7 @@ function QuizSelectionConsoleContent() {
                                         setMode(m);
                                     }}
                                     className={cn(
-                                        "px-6 py-2 rounded-md text-[13px] font-black font-outfit uppercase tracking-tight transition-all",
+                                        "px-5 py-1.5 rounded-md text-[11px] font-black font-outfit uppercase tracking-tight transition-all",
                                         mode === m
                                             ? "bg-[#FF2D55] text-white shadow-sm"
                                             : "text-gray-500 hover:text-gray-700",
@@ -478,275 +474,189 @@ function QuizSelectionConsoleContent() {
                 </div>
             </div>
 
-            <div className="h-[1px] bg-gray-300 w-full mb-1" />
-
-            <div className="min-h-[32px] mb-4 space-y-4">
-                {/* Task C: Invalid Link Banner */}
+            {/* Error/Notice Bar Section */}
+            <div className="absolute top-24 left-1/2 -translate-x-1/2 w-full max-w-3xl px-8 z-[60] space-y-2">
                 {showInvalidLinkError && (
-                    <div className="flex items-center justify-between p-4 rounded-2xl bg-[#FF2D55]/5 border border-[#FF2D55]/20 animate-in slide-in-from-top-2 duration-300">
-                        <div className="flex items-center gap-3">
-                            <AlertCircle className="text-[#FF2D55]" size={20} />
-                            <p className="text-sm font-bold text-[#FF2D55]">
-                                We couldn’t open that exam session link. Please start a new assessment.
-                            </p>
+                    <div className="flex items-center justify-between p-3 rounded-xl bg-white border border-[#FF2D55]/20 shadow-xl shadow-[#FF2D55]/5 animate-in slide-in-from-top-4 duration-300">
+                        <div className="flex items-center gap-3 text-[#FF2D55]">
+                            <AlertCircle size={18} />
+                            <p className="text-xs font-bold">Invalid link. Please start a new session.</p>
                         </div>
-                        <button
-                            onClick={() => setShowInvalidLinkError(false)}
-                            className="p-1 hover:bg-[#FF2D55]/10 rounded-lg transition-colors text-[#FF2D55]"
-                        >
-                            <X size={18} />
-                        </button>
+                        <button onClick={() => setShowInvalidLinkError(false)} className="p-1 hover:bg-[#FF2D55]/5 rounded-lg text-[#FF2D55]"><X size={16} /></button>
                     </div>
                 )}
-
-                {/* Task A: Launch Error Banner */}
-                {launchError && (
-                    <div className="p-6 rounded-[2.5rem] bg-[#FF2D55] text-white shadow-xl shadow-[#FF2D55]/20 animate-in zoom-in-95 duration-300 relative overflow-hidden">
-                        <div className="absolute top-0 right-0 p-8 opacity-10 rotate-12">
-                            <AlertCircle size={120} />
-                        </div>
-
-                        <div className="relative z-10 flex flex-col gap-6">
-                            <div className="flex items-start justify-between">
-                                <div className="flex flex-col gap-1">
-                                    <h3 className="text-2xl font-black font-outfit uppercase tracking-tighter">
-                                        {launchError.title}
-                                    </h3>
-                                    <p className="text-white/80 text-sm font-medium max-w-xl">
-                                        {launchError.reason}
-                                    </p>
-                                </div>
-                                <button
-                                    onClick={() => setLaunchError(null)}
-                                    className="p-2 hover:bg-white/10 rounded-full transition-all"
-                                >
-                                    <X size={24} />
-                                </button>
-                            </div>
-
-                            <div className="flex flex-col sm:flex-row items-center gap-4">
-                                <button
-                                    onClick={() => {
-                                        setLaunchError(null);
-                                        handleLaunch();
-                                    }}
-                                    className="flex items-center gap-2 px-6 py-3 bg-white text-[#FF2D55] rounded-xl font-black font-outfit text-sm uppercase shadow-lg hover:scale-105 transition-all"
-                                >
-                                    <RefreshCcw size={18} />
-                                    Try Again
-                                </button>
-
-                                <Link
-                                    href="/dashboard/my-exams"
-                                    className="flex items-center gap-2 px-6 py-3 bg-black/20 hover:bg-black/30 text-white border border-white/20 rounded-xl font-bold text-sm transition-all"
-                                >
-                                    <BookOpen size={18} />
-                                    Go to My Exams
-                                </Link>
-
-                                <div className="flex items-center gap-2 text-white/60">
-                                    <div className="w-1.5 h-1.5 rounded-full bg-white/40" />
-                                    <span className="text-[10px] font-black uppercase tracking-widest leading-none">
-                                        Relax filters: reduce topics or switch to Mixed mode
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                )}
-
                 {selectionError && (
-                    <div className="flex items-center gap-2 text-[#FF2D55] animate-in slide-in-from-top-2 duration-300">
+                    <div className="flex items-center gap-2 justify-center py-2 px-4 rounded-full bg-white border border-[#FF2D55]/10 shadow-lg animate-in slide-in-from-top-2 duration-300 w-fit mx-auto">
                         <div className="h-1.5 w-1.5 rounded-full bg-[#FF2D55] animate-pulse" />
-                        <span className="text-[10px] font-black uppercase tracking-widest">{selectionError}</span>
+                        <span className="text-[10px] font-black uppercase tracking-widest text-[#FF2D55]">{selectionError}</span>
                     </div>
                 )}
             </div>
-            <div className="flex flex-col lg:flex-row gap-12 items-stretch">
-                {/* Left Pane (65%) - Locked Height Console (h-530) */}
-                <div className={cn(
-                    "w-full lg:w-[65%] flex flex-col relative h-[530px] transition-all duration-700",
-                    isLocked ? "opacity-10 pointer-events-none" : (isArmed ? "opacity-50 pointer-events-none" : "opacity-100")
-                )}>
-                    {/* Unified Start Line: pt-6 matching Right Pane */}
-                    <div className="flex-1 flex flex-col pt-6">
-                        <div className="flex-1 relative">
+
+            {/* Main Interactive Zone */}
+            <div className="flex-1 flex flex-col min-h-0 relative px-4 md:px-6">
+                {/* Content area: scrolls internally if needed, but constrained to fit viewport */}
+                <div className="flex-1 flex gap-8 items-stretch pt-6 pb-4 min-h-0 max-h-[calc(100vh-120px-96px)]">
+
+                    {/* Left/Main Pane */}
+                    <div className={cn(
+                        "flex flex-col h-full transition-all duration-700 relative",
+                        step === 5 ? "w-[65%]" : "w-full",
+                        isLocked ? "opacity-30 pointer-events-none" : (isArmed ? "opacity-50 pointer-events-none" : "opacity-100")
+                    )}>
+                        <div className="flex-1 overflow-y-auto no-scrollbar pr-2">
                             {loading && (
-                                <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/10 backdrop-blur-[2px] rounded-[1.25rem] animate-in fade-in duration-300">
-                                    <Activity className="animate-spin text-[#FF2D55]" size={48} />
+                                <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/50 backdrop-blur-[1px] rounded-[1.25rem] animate-in fade-in duration-300">
+                                    <Activity className="animate-spin text-[#FF2D55]" size={32} />
                                 </div>
                             )}
 
-                            {/* Matrix Zone (No internal scrollbars allowed) */}
-                            <div className="h-full flex flex-col overflow-visible px-2">
-                                <div className="flex-1">
-                                    {step === 1 && (
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-6 animate-in fade-in duration-500">
-                                            {paginatedDomains.map((domain, idx) => (
-                                                <DomainCard
-                                                    key={domain.id}
-                                                    {...domain}
-                                                    {...getDomainMeta(idx + page * currentPageSize)}
-                                                    isSelected={selectedDomains.includes(domain.id)}
-                                                    onSelect={toggleDomain}
-                                                    accentColor={getDomainMeta(idx + page * currentPageSize).accent}
-                                                />
-                                            ))}
-                                        </div>
-                                    )}
+                            {step === 1 && (
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 animate-in fade-in zoom-in-95 duration-500">
+                                    {paginatedDomains.map((domain, idx) => (
+                                        <DomainCard
+                                            key={domain.id}
+                                            {...domain}
+                                            {...getDomainMeta(idx + page * currentPageSize)}
+                                            isSelected={selectedDomains.includes(domain.id)}
+                                            onSelect={toggleDomain}
+                                            accentColor={getDomainMeta(idx + page * currentPageSize).accent}
+                                        />
+                                    ))}
+                                </div>
+                            )}
 
-                                    {step === 2 && (
-                                        <div className="grid grid-cols-1 sm:grid-cols-4 gap-x-6 gap-y-12 animate-in fade-in duration-500">
-                                            {paginatedSubjects.map((sub) => (
-                                                <TopicChip
-                                                    key={sub.id}
-                                                    {...sub}
-                                                    isSelected={selectedSubjects.includes(sub.id)}
-                                                    onToggle={toggleSubject}
-                                                />
-                                            ))}
-                                        </div>
-                                    )}
+                            {(step === 2 || step === 3 || step === 4) && (
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 animate-in fade-in zoom-in-95 duration-500">
+                                    {(step === 2 ? paginatedSubjects : step === 3 ? paginatedTopics : paginatedSubtopics).map((item) => (
+                                        <TopicChip
+                                            key={item.id}
+                                            {...item}
+                                            isSelected={(step === 2 ? selectedSubjects : step === 3 ? selectedTopics : selectedSubtopics).includes(item.id)}
+                                            onToggle={(step === 2 ? toggleSubject : step === 3 ? toggleTopic : toggleSubtopic)}
+                                        />
+                                    ))}
+                                </div>
+                            )}
 
-                                    {step === 3 && (
-                                        <div className="grid grid-cols-1 sm:grid-cols-4 gap-x-6 gap-y-12 animate-in fade-in duration-500">
-                                            {paginatedTopics.map((topic) => (
-                                                <TopicChip
-                                                    key={topic.id}
-                                                    {...topic}
-                                                    isSelected={selectedTopics.includes(topic.id)}
-                                                    onToggle={toggleTopic}
-                                                />
-                                            ))}
-                                        </div>
-                                    )}
+                            {step === 5 && (
+                                <div className="animate-in fade-in zoom-in-95 duration-500 h-full flex flex-col gap-6">
+                                    <div className="grid grid-cols-3 gap-4">
+                                        {[
+                                            { id: 'mixed', name: 'Mixed', desc: 'Mastery Blend' },
+                                            { id: 'simple', name: 'Simple', desc: 'Core Knowledge' },
+                                            { id: 'expert', name: 'Expert', desc: 'Expert Level' }
+                                        ].map((tier) => (
+                                            <button
+                                                key={tier.id}
+                                                disabled={isLocked || isArmed}
+                                                onClick={() => setDifficulty(normalizeDifficulty(tier.id))}
+                                                className={cn(
+                                                    "p-4 rounded-[1.25rem] border-2 transition-all duration-300 flex flex-col items-center justify-center min-h-[90px]",
+                                                    difficulty === tier.id
+                                                        ? "bg-[#FF2D55] border-[#FF2D55] shadow-lg shadow-[#FF2D55]/20"
+                                                        : "bg-[#2B2B2B] border-transparent hover:bg-[#3D3D3D]"
+                                                )}
+                                            >
+                                                <p className="text-sm font-black font-outfit uppercase tracking-tight text-white">{tier.name}</p>
+                                                <p className="text-[9px] font-bold uppercase tracking-wider opacity-60 text-white">{tier.desc}</p>
+                                            </button>
+                                        ))}
+                                    </div>
 
-                                    {mode === 'advanced' && step === 4 && (
-                                        <div className="grid grid-cols-1 sm:grid-cols-4 gap-x-6 gap-y-12 animate-in fade-in duration-500">
-                                            {paginatedSubtopics.map((subtopic) => (
-                                                <TopicChip
-                                                    key={subtopic.id}
-                                                    {...subtopic}
-                                                    isSelected={selectedSubtopics.includes(subtopic.id)}
-                                                    onToggle={toggleSubtopic}
-                                                />
-                                            ))}
-                                        </div>
-                                    )}
+                                    <div className="grid grid-cols-4 gap-4">
+                                        {(mode === 'basic' ? [10, 15, 20, 25] : [5, 10, 15, 20, 25, 30, 40, 50]).map((v) => (
+                                            <button
+                                                key={v}
+                                                disabled={isLocked || isArmed}
+                                                onClick={() => setQuestionCount(v)}
+                                                className={cn(
+                                                    "p-3 rounded-xl border-2 transition-all duration-300 flex flex-col items-center justify-center min-h-[70px]",
+                                                    questionCount === v
+                                                        ? "bg-[#FF2D55] border-[#FF2D55] shadow-lg shadow-[#FF2D55]/20"
+                                                        : "bg-[#2B2B2B] border-transparent hover:bg-[#3D3D3D]"
+                                                )}
+                                            >
+                                                <div className="text-lg font-black font-outfit text-white leading-none">{v}</div>
+                                                <div className="text-[8px] font-black uppercase tracking-widest text-white/40">Questions</div>
+                                            </button>
+                                        ))}
+                                    </div>
 
-                                    {/* Step 5: Engine Calibration (Normalized Vertical Stack) */}
-                                    {step === 5 && (
-                                        <div className="animate-in fade-in duration-500 h-full flex flex-col">
-                                            <div className="flex-1 flex flex-col gap-8">
-                                                {/* Section 1: Difficulty Tier */}
-                                                <div className="grid grid-cols-4 gap-6">
-                                                    {[
-                                                        { id: 'mixed', name: 'Mixed', desc: 'Mastery Blend' },
-                                                        { id: 'simple', name: 'Simple', desc: 'Core Knowledge' }, // Replaced 'beginner'/'Foundations'
-                                                        { id: 'expert', name: 'Expert', desc: 'Expert Level' }    // Replaced 'expert'/'Elite' (name change)
-                                                    ].map((tier) => (
-                                                        <button
-                                                            key={tier.id}
-                                                            disabled={isLocked || isArmed}
-                                                            onClick={() => {
-                                                                if (isLocked || isArmed) return;
-                                                                setDifficulty(normalizeDifficulty(tier.id));
-                                                            }}
-                                                            className={cn(
-                                                                "p-4 rounded-[1.25rem] border-2 transition-all duration-300 group relative flex flex-col items-center justify-center min-h-[80px]",
-                                                                difficulty === tier.id
-                                                                    ? "bg-[#FF2D55] border-[#FF2D55] shadow-[0_10px_30px_rgba(255,45,85,0.2)]"
-                                                                    : "bg-[#2B2B2B] border-transparent hover:bg-[#3D3D3D]",
-                                                                (isLocked || isArmed) && "opacity-50 pointer-events-none"
-                                                            )}
-                                                        >
-                                                            <p className="text-base font-black font-outfit uppercase tracking-tight text-white">
-                                                                {tier.name}
-                                                            </p>
-                                                            <p className="text-[9px] font-bold uppercase tracking-wider opacity-60 mt-0.5 text-white">
-                                                                {tier.desc}
-                                                            </p>
-                                                        </button>
-                                                    ))}
-                                                    <div className="invisible" /> {/* Spacer for col-4 */}
-                                                </div>
-
-                                                {/* Section 2: Total Density */}
-                                                <div className="grid grid-cols-4 gap-6">
-                                                    {(mode === 'basic' ? [10, 15, 20, 25] : [5, 10, 15, 20, 25, 30, 40, 50]).map((v) => (
-                                                        <button
-                                                            key={v}
-                                                            disabled={isLocked || isArmed}
-                                                            onClick={() => {
-                                                                if (isLocked || isArmed) return;
-                                                                setQuestionCount(v);
-                                                            }}
-                                                            className={cn(
-                                                                "p-4 rounded-[1.25rem] border-2 transition-all duration-300 group relative flex flex-col items-center justify-center min-h-[80px]",
-                                                                questionCount === v
-                                                                    ? "bg-[#FF2D55] border-[#FF2D55] shadow-[0_10px_30px_rgba(255,45,85,0.2)]"
-                                                                    : "bg-[#2B2B2B] border-transparent hover:bg-[#3D3D3D]",
-                                                                (isLocked || isArmed) && "opacity-50 pointer-events-none"
-                                                            )}
-                                                        >
-                                                            <div className="text-xl font-black font-outfit text-white tracking-tighter">{v}</div>
-                                                            <div className="text-[9px] font-black uppercase tracking-widest text-white/40 group-hover:text-white/60 transition-colors">Questions</div>
-                                                        </button>
-                                                    ))}
-                                                </div>
-
-                                                {/* Resulting Logic Display (Bottom Block) */}
-                                                <div className={cn("bg-gray-50/50 p-4 rounded-3xl border border-gray-300 mt-auto transition-all", isLocked && "opacity-50 grayscale")}>
-                                                    <div className="flex justify-between items-center">
-                                                        <div className="space-y-0.5">
-                                                            <p className="text-2xl font-black font-outfit text-[#1A1A1A] tracking-tighter">~{Math.ceil(questionCount * 1.5)} MINS</p>
-                                                            <p className="text-[9px] font-black uppercase tracking-widest text-[#FF2D55]">Calculated Duration</p>
-                                                        </div>
-                                                        <div className="h-8 w-[1px] bg-gray-300" />
-                                                        <div className="text-right">
-                                                            <p className="text-2xl font-black font-outfit text-[#1A1A1A] tracking-tighter">{difficulty.toUpperCase()}</p>
-                                                            <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Mastery Profile</p>
-                                                        </div>
-                                                    </div>
-                                                </div>
+                                    <div className="mt-auto bg-gray-50 p-4 rounded-2xl border border-gray-200">
+                                        <div className="flex justify-between items-center">
+                                            <div className="space-y-0.5">
+                                                <p className="text-xl font-black font-outfit text-[#1A1A1A] tracking-tighter">~{Math.ceil(questionCount * 1.5)} MINS</p>
+                                                <p className="text-[9px] font-black uppercase tracking-widest text-[#FF2D55]">Calculated Duration</p>
+                                            </div>
+                                            <div className="h-8 w-[px] bg-gray-300" />
+                                            <div className="text-right">
+                                                <p className="text-xl font-black font-outfit text-[#1A1A1A] tracking-tighter">{difficulty.toUpperCase()}</p>
+                                                <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Mastery Profile</p>
                                             </div>
                                         </div>
-                                    )}
+                                    </div>
                                 </div>
-
-                                {/* BOTTOM AIR CUSHION (10% ~ 53px) */}
-
-                            </div>
+                            )}
                         </div>
                     </div>
 
-                    {/* Fixed Action Footer (Absolute Anchored) with Hairline */}
-                    <div className="h-[1px] bg-gray-300 w-full mt-auto" />
-                    <div className="py-6 flex items-center justify-between border-gray-100 bg-white/50 backdrop-blur-sm z-20">
+                    {/* Right Pane: Summary (Only Step 5) */}
+                    {step === 5 && (
+                        <div className="w-[35%] flex flex-col animate-in fade-in slide-in-from-right-4 duration-500">
+                            <AssessmentSummary
+                                domainName={currentDomain?.name || 'Not Selected'}
+                                subjectsCount={selectedSubjects.length}
+                                topicsCount={selectedTopics.length}
+                                questionCount={questionCount}
+                                difficulty={difficulty.charAt(0).toUpperCase() + difficulty.slice(1)}
+                                totalPoints={100 + selectedTopics.length * 15 + selectedSubtopics.length * 5}
+                                isReady={isArmed}
+                                onStart={handleLaunch}
+                                isLocked={isLocked}
+                                loading={loading}
+                                selectedSubjects={currentSubjects.map(s => s.name)}
+                                selectedTopics={currentTopics.map(t => t.name)}
+                                selectedSubtopics={currentSubtopics.map(st => st.name)}
+                            />
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            {/* Stable Balanced Footer - No Jumping */}
+            <div className="flex-none h-[88px] border-t border-gray-300 bg-white/50 backdrop-blur-md z-[50]">
+                <div className="h-full w-full flex items-center px-4 md:px-12">
+                    {/* Zone 1: Back (25%) */}
+                    <div className="w-[25%] flex justify-start">
                         <button
                             onClick={handleBack}
-                            disabled={step === 1}
+                            disabled={step === 1 || isLocked || isArmed}
                             className={cn(
-                                "px-12 py-4 rounded-xl font-bold font-outfit text-sm uppercase tracking-widest transition-all bg-[#FF2D55] text-white shadow-[0_10px_30px_rgba(255,45,85,0.2)] hover:shadow-[0_15px_40px_rgba(255,45,85,0.45)] active:scale-95",
-                                (step === 1 || isLocked || isArmed) && "opacity-20 pointer-events-none shadow-none"
+                                "group flex items-center gap-3 px-8 py-3.5 rounded-xl font-bold font-outfit text-xs uppercase tracking-widest transition-all",
+                                "bg-white border-2 border-gray-200 text-gray-400 hover:border-[#FF2D55]/30 hover:text-[#FF2D55] active:scale-95 disabled:opacity-30 disabled:pointer-events-none"
                             )}
                         >
-                            BACK
+                            <ChevronLeft size={16} className="transition-transform group-hover:-translate-x-1" />
+                            <span>BACK</span>
                         </button>
+                    </div>
 
-                        <div className="flex items-center gap-3">
+                    {/* Zone 2: Pagination (30%) */}
+                    <div className="w-[30%] flex justify-center">
+                        <div className={cn(
+                            "flex items-center gap-3 transition-all",
+                            step === 5 ? "opacity-20 pointer-events-none grayscale" : "opacity-100"
+                        )}>
                             <button
                                 onClick={handlePrevPage}
-                                disabled={page === 0 || loading || isLocked || step === 5}
-                                className={cn(
-                                    "p-4 rounded-xl transition-all active:scale-95 bg-[#FF2D55] text-white shadow-[0_10px_30px_rgba(255,45,85,0.2)] hover:shadow-[0_15px_40px_rgba(255,45,85,0.45)]",
-                                    (page === 0 || loading || isLocked || step === 5) && "opacity-20 pointer-events-none shadow-none"
-                                )}
+                                disabled={page === 0 || loading || isLocked}
+                                className="p-3 rounded-lg border-2 border-gray-100 bg-white text-gray-400 hover:border-[#FF2D55]/30 hover:text-[#FF2D55] transition-all disabled:opacity-30"
                             >
-                                <ChevronLeft size={20} />
+                                <ChevronLeft size={18} />
                             </button>
 
-                            <div className={cn("px-6 py-4 rounded-xl border border-gray-100 bg-white/50 backdrop-blur-sm flex items-center justify-center min-w-[120px] transition-opacity", step === 5 && "opacity-10 pointer-events-none")}>
+                            <div className="min-w-[100px] text-center">
                                 <span className="text-[10px] font-black font-outfit text-gray-500 uppercase tracking-[0.2em]">
                                     {String(page + 1).padStart(2, '0')} / {String(Math.max(1, Math.ceil((step === 1 ? domains.length : (step === 3 ? topics.length : (step === 2 ? subjects.length : (step === 4 ? subtopics.length : 0)))) / currentPageSize))).padStart(2, '0')}
                                 </span>
@@ -754,16 +664,16 @@ function QuizSelectionConsoleContent() {
 
                             <button
                                 onClick={handleNextPage}
-                                disabled={page >= Math.ceil((step === 1 ? domains.length : (step === 3 ? topics.length : (step === 2 ? subjects.length : (step === 4 ? subtopics.length : 0)))) / currentPageSize) - 1 || loading || isLocked || step === 5}
-                                className={cn(
-                                    "p-4 rounded-xl transition-all active:scale-95 bg-[#FF2D55] text-white shadow-[0_10px_30px_rgba(255,45,85,0.2)] hover:shadow-[0_15px_40px_rgba(255,45,85,0.45)]",
-                                    (page >= Math.ceil((step === 1 ? domains.length : (step === 3 ? topics.length : (step === 2 ? subjects.length : (step === 4 ? subtopics.length : 0)))) / currentPageSize) - 1 || loading || isLocked || step === 5) && "opacity-20 pointer-events-none shadow-none"
-                                )}
+                                disabled={page >= Math.ceil((step === 1 ? domains.length : (step === 3 ? topics.length : (step === 2 ? subjects.length : (step === 4 ? subtopics.length : 0)))) / currentPageSize) - 1 || loading || isLocked}
+                                className="p-3 rounded-lg border-2 border-gray-100 bg-white text-gray-400 hover:border-[#FF2D55]/30 hover:text-[#FF2D55] transition-all disabled:opacity-30"
                             >
-                                <ChevronRight size={20} />
+                                <ChevronRight size={18} />
                             </button>
                         </div>
+                    </div>
 
+                    {/* Zone 3: CTA (45%) */}
+                    <div className="w-[45%] flex justify-end">
                         <button
                             onClick={handleNext}
                             disabled={
@@ -774,36 +684,17 @@ function QuizSelectionConsoleContent() {
                                 (step === 4 && selectedSubtopics.length === 0)
                             }
                             className={cn(
-                                "px-12 py-4 rounded-xl font-bold font-outfit uppercase tracking-widest transition-all bg-[#FF2D55] text-white shadow-[0_10px_30px_rgba(255,45,85,0.2)] hover:shadow-[0_15px_40px_rgba(255,45,85,0.45)] active:scale-95",
-                                (isLocked || (step < 5 && ((step === 1 && selectedDomains.length === 0) ||
-                                    (step === 2 && selectedSubjects.length === 0) ||
-                                    (step === 3 && selectedTopics.length === 0) ||
-                                    (step === 4 && selectedSubtopics.length === 0)))) && "opacity-20 pointer-events-none shadow-none",
-                                step === 5 && isArmed && "bg-white text-[#FF2D55] border-2 border-[#FF2D55] shadow-none cursor-default active:scale-100 pointer-events-auto"
+                                "flex items-center gap-4 px-12 py-4 rounded-xl font-bold font-outfit text-sm uppercase tracking-widest transition-all",
+                                "bg-[#FF2D55] text-white shadow-lg shadow-[#FF2D55]/20 hover:shadow-xl hover:shadow-[#FF2D55]/30 hover:scale-[1.02] active:scale-95 disabled:opacity-30 disabled:pointer-events-none",
+                                step === 5 && isArmed && "bg-black hover:bg-black/90 scale-100 shadow-none ring-2 ring-offset-2 ring-black"
                             )}
                         >
-                            {step === 5 ? (isArmed ? "MISSION ARMED 🚀" : "INITIATE ASSESSMENT 🚀") : (step === 4 ? "CALIBRATE ENGINE →" : "CONTINUE →")}
+                            <span>
+                                {step === 5 ? (isArmed ? "INITIATE LAUNCH 🚀" : "CONFIRM MISSION 🚀") : (step === 4 ? "CALIBRATE ENGINE" : "CONTINUE JOURNEY")}
+                            </span>
+                            <ChevronRight size={18} />
                         </button>
                     </div>
-                </div>
-
-                {/* Right Pane (35%) - Symmetrical pt-6 Baseline */}
-                <div className="w-full lg:w-[35%] flex flex-col h-[530px] pt-6">
-                    <AssessmentSummary
-                        domainName={currentDomain?.name || 'Not Selected'}
-                        subjectsCount={selectedSubjects.length}
-                        topicsCount={selectedTopics.length}
-                        questionCount={questionCount}
-                        difficulty={difficulty.charAt(0).toUpperCase() + difficulty.slice(1)}
-                        totalPoints={100 + selectedTopics.length * 15 + selectedSubtopics.length * 5}
-                        isReady={isArmed}
-                        onStart={handleLaunch}
-                        isLocked={isLocked}
-                        loading={loading}
-                        selectedSubjects={currentSubjects.map(s => s.name)}
-                        selectedTopics={currentTopics.map(t => t.name)}
-                        selectedSubtopics={currentSubtopics.map(st => st.name)}
-                    />
                 </div>
             </div>
         </div>
