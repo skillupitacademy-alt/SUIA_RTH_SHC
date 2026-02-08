@@ -501,12 +501,18 @@ function QuizSelectionConsoleContent() {
                     </div>
 
                     {/* THE ENGINE (HEART): Left-Side Flex Slot */}
-                    <div className="flex-1 min-h-0 px-4 md:px-12 flex flex-col relative overflow-visible h-full">
+                    <div className={cn(
+                        "flex-1 min-h-0 px-4 md:px-12 flex flex-col relative overflow-visible h-full transition-all duration-500",
+                        loading && "opacity-40 grayscale-[0.5]"
+                    )}>
                         {/* STATIONARY LAYOUT: Flush edges with 12px shadow buffer */}
                         <div className="flex-1 flex flex-col relative overflow-visible py-[12px] px-0 h-full">
                             {loading && (
-                                <div className="absolute inset-x-2 inset-y-2 z-50 flex items-center justify-center bg-white/50 backdrop-blur-[1px] rounded-[1.25rem]">
-                                    <Activity className="animate-spin text-[#FF2D55]" size={32} />
+                                <div className="absolute inset-x-2 inset-y-2 z-50 flex items-center justify-center bg-white/30 backdrop-blur-[2px] rounded-[2.5rem] border border-white/50 shadow-xl">
+                                    <div className="flex flex-col items-center gap-4">
+                                        <Activity className="animate-spin text-[#FF2D55]" size={40} />
+                                        <p className="text-[10px] font-black font-outfit text-[#1A1A1A] uppercase tracking-[0.3em] animate-pulse">Syncing Engine...</p>
+                                    </div>
                                 </div>
                             )}
 
@@ -601,7 +607,7 @@ function QuizSelectionConsoleContent() {
                                 onClick={handleBack}
                                 disabled={step === 1 || isLocked || isArmed}
                                 className={cn(
-                                    "group flex items-center gap-3 px-8 py-3.5 rounded-xl font-black font-outfit text-xs uppercase tracking-widest transition-all shadow-sm border-2",
+                                    "group flex items-center gap-3 px-8 h-[54px] rounded-xl font-black font-outfit text-xs uppercase tracking-widest transition-all shadow-sm border-2",
                                     "bg-[#FF2D551A] border-[#FF2D5533] text-[#FF2D55] hover:bg-[#FF2D55] hover:text-white hover:border-[#FF2D55] hover:shadow-xl hover:shadow-[#FF2D55]/20 hover:scale-[1.02] active:scale-95",
                                     "disabled:bg-[#FF2D550D] disabled:text-[#FF2D554D] disabled:border-[#FF2D551A] disabled:opacity-100 disabled:pointer-events-none" // PKG FIX
                                 )}
@@ -621,7 +627,7 @@ function QuizSelectionConsoleContent() {
                                     (step === 4 && selectedSubtopics.length === 0)
                                 }
                                 className={cn(
-                                    "group flex items-center gap-4 px-10 py-3.5 rounded-xl font-black font-outfit text-xs uppercase tracking-widest transition-all shadow-lg",
+                                    "group flex items-center gap-4 px-10 h-[54px] rounded-xl font-black font-outfit text-xs uppercase tracking-widest transition-all shadow-lg",
                                     "disabled:bg-[#FF2D550D] disabled:text-[#FF2D554D] disabled:border-[#FF2D551A] disabled:opacity-100 disabled:shadow-none disabled:scale-95 disabled:pointer-events-none", // PKG FIX
                                     isArmed && step !== 5
                                         ? "bg-black text-white hover:bg-gray-900 shadow-black/20"
