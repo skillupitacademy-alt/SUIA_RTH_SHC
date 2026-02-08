@@ -44,154 +44,141 @@ export function AssessmentSummary({
                 <div className="absolute -top-24 -right-24 w-56 h-56 bg-[#FF2D55]/10 rounded-full blur-[90px] group-hover:bg-[#FF2D55]/20 transition-all duration-700" />
 
                 <div className="relative z-10 flex-1 flex flex-col h-full">
-                    <h2 className="text-sm font-black font-outfit tracking-tight text-[#1A1A1A] mb-2 uppercase">Assessment Summary</h2>
+                    <h2 className="text-base font-black font-outfit tracking-tighter text-[#1A1A1A] mb-4 uppercase">Assessment Summary</h2>
 
-                    <div className="space-y-1.5 flex-1 flex flex-col">
-                        <div className="flex flex-col gap-0.5">
-                            <div className="flex items-center gap-2 text-muted-foreground">
-                                <Shield size={12} className="text-[#FF2D55]" />
-                                <span className="text-[8px] font-bold font-inter uppercase tracking-widest opacity-60">Domain</span>
+                    <div className="space-y-4 flex-1 flex flex-col">
+                        {/* Zone 1: The Core */}
+                        <div className="space-y-2">
+                            <div className="flex flex-col gap-1">
+                                <div className="flex items-center gap-2 text-muted-foreground">
+                                    <Shield size={14} className="text-[#FF2D55]" />
+                                    <span className="text-[9px] font-black font-inter uppercase tracking-[0.15em] opacity-50">Core Domain</span>
+                                </div>
+                                <span className="text-[13px] font-black font-inter text-[#1A1A1A] pl-0 leading-tight">
+                                    {domainName !== 'Not Selected' ? domainName : (
+                                        <span className="opacity-20 italic">Awaiting Selection...</span>
+                                    )}
+                                </span>
                             </div>
-                            <span className="text-[11px] font-bold font-inter text-[#1A1A1A] pl-5 truncate">
-                                {domainName !== 'Not Selected' ? domainName : (
-                                    <span className="opacity-20 italic">Awaiting Selection...</span>
-                                )}
-                            </span>
-                        </div>
 
-                        <div className="h-[1px] bg-gray-200 w-full ml-5" />
-
-                        <div className="flex flex-col gap-1.5">
-                            <div className="flex items-center gap-2 text-muted-foreground">
-                                <Tag size={12} className="text-[#FF2D55]" />
-                                <span className="text-[8px] font-bold font-inter uppercase tracking-widest opacity-60">Subjects</span>
-                            </div>
-                            <div className="flex flex-wrap gap-1 pl-5 min-h-[1.2rem]">
-                                {selectedSubjects.length > 0 ? (
-                                    <>
-                                        {selectedSubjects.slice(0, 3).map(s => (
-                                            <span key={s} className="px-1.5 py-0.5 bg-gray-100 text-[8px] font-bold text-gray-500 rounded border border-gray-200/50 uppercase tracking-tighter">{s}</span>
-                                        ))}
-                                        {selectedSubjects.length > 3 && (
-                                            <span className="px-1.5 py-0.5 bg-gray-50 text-[8px] font-black text-gray-400 rounded border border-dashed border-gray-200 uppercase tracking-tighter">+{selectedSubjects.length - 3}</span>
-                                        )}
-                                    </>
-                                ) : (
-                                    <span className="text-[8px] font-bold text-gray-300 uppercase tracking-tighter italic opacity-40">None Selected</span>
-                                )}
-                            </div>
-                        </div>
-
-                        <div className="h-[1px] bg-gray-200 w-full ml-5" />
-
-                        <div className="flex flex-col gap-1.5">
-                            <div className="flex items-center gap-2 text-muted-foreground">
-                                <Check size={12} className="text-[#FF2D55]" />
-                                <span className="text-[8px] font-bold font-inter uppercase tracking-widest opacity-60">Knowledge Units</span>
-                            </div>
-                            <div className="flex flex-wrap gap-1 pl-5 min-h-[1.2rem]">
-                                {selectedTopics.length > 0 ? (
-                                    <>
-                                        {selectedTopics.slice(0, 3).map(t => (
-                                            <span key={t} className="px-1.5 py-0.5 bg-[#FF2D55]/5 text-[8px] font-bold text-[#FF2D55] rounded border border-[#FF2D55]/10 uppercase tracking-tighter">{t}</span>
-                                        ))}
-                                        {selectedTopics.length > 3 && (
-                                            <span className="px-1.5 py-0.5 bg-[#FF2D55]/5 text-[8px] font-black text-[#FF2D55]/40 rounded border border-dashed border-[#FF2D55]/10 uppercase tracking-tighter">+{selectedTopics.length - 3}</span>
-                                        )}
-                                    </>
-                                ) : (
-                                    <span className="text-[8px] font-bold text-gray-300 uppercase tracking-tighter italic opacity-40">None Selected</span>
-                                )}
+                            <div className="flex flex-col gap-2">
+                                <div className="flex items-center gap-2 text-muted-foreground">
+                                    <Tag size={12} className="text-[#FF2D55]" />
+                                    <span className="text-[9px] font-black font-inter uppercase tracking-[0.15em] opacity-50">Target Subjects</span>
+                                </div>
+                                <div className="flex flex-wrap gap-1.5 pl-0 min-h-[1.2rem]">
+                                    {selectedSubjects.length > 0 ? (
+                                        <>
+                                            {selectedSubjects.slice(0, 4).map(s => (
+                                                <span key={s} className="px-2 py-0.5 bg-gray-50 text-[9px] font-bold text-gray-600 rounded-md border border-gray-200/60 uppercase tracking-tighter">{s}</span>
+                                            ))}
+                                            {selectedSubjects.length > 4 && (
+                                                <span className="px-2 py-0.5 bg-gray-50 text-[9px] font-black text-gray-400 rounded-md border border-dashed border-gray-200 uppercase tracking-tighter">+{selectedSubjects.length - 4} More</span>
+                                            )}
+                                        </>
+                                    ) : (
+                                        <span className="text-[9px] font-bold text-gray-300 uppercase tracking-tighter italic opacity-40">None Selected</span>
+                                    )}
+                                </div>
                             </div>
                         </div>
 
-                        <div className="h-[1px] bg-gray-200 w-full ml-5" />
-
-                        <div className="flex flex-col gap-1.5">
-                            <div className="flex items-center gap-2 text-muted-foreground">
-                                <Clock size={12} className="text-[#FF2D55]" />
-                                <span className="text-[8px] font-bold font-inter uppercase tracking-widest opacity-60">Precision Skills</span>
+                        {/* Zone 2: The Scope */}
+                        <div className="space-y-2 pt-2 border-t border-gray-100">
+                            <div className="flex flex-col gap-2">
+                                <div className="flex items-center gap-2 text-muted-foreground">
+                                    <Check size={14} className="text-[#FF2D55]" />
+                                    <span className="text-[9px] font-black font-inter uppercase tracking-[0.15em] opacity-50">Knowledge Scope</span>
+                                </div>
+                                <div className="flex flex-wrap gap-1.5 pl-0 min-h-[1.2rem]">
+                                    {selectedTopics.length > 0 ? (
+                                        <>
+                                            {selectedTopics.slice(0, 4).map(t => (
+                                                <span key={t} className="px-2 py-0.5 bg-[#FF2D55]/5 text-[9px] font-black text-[#FF2D55] rounded-md border border-[#FF2D55]/10 uppercase tracking-tighter">{t}</span>
+                                            ))}
+                                            {selectedTopics.length > 4 && (
+                                                <span className="px-2 py-0.5 bg-[#FF2D55]/5 text-[9px] font-black text-[#FF2D55]/40 rounded-md border border-dashed border-[#FF2D55]/10 uppercase tracking-tighter">+{selectedTopics.length - 4}</span>
+                                            )}
+                                        </>
+                                    ) : (
+                                        <span className="text-[9px] font-bold text-gray-300 uppercase tracking-tighter italic opacity-40">None Selected</span>
+                                    )}
+                                </div>
                             </div>
-                            <div className="flex flex-wrap gap-1 pl-5 min-h-[1.2rem]">
-                                {selectedSubtopics.length > 0 ? (
-                                    <>
-                                        {selectedSubtopics.slice(0, 3).map(st => (
-                                            <span key={st} className="px-1.5 py-0.5 bg-[#FF2D55]/10 text-[8px] font-black text-[#FF2D55] rounded border border-[#FF2D55]/20 uppercase tracking-tighter italic">{st}</span>
-                                        ))}
-                                        {selectedSubtopics.length > 3 && (
-                                            <span className="px-1.5 py-0.5 bg-[#FF2D55]/10 text-[8px] font-black text-[#FF2D55]/40 rounded border border-dashed border-[#FF2D55]/20 uppercase tracking-tighter">+{selectedSubtopics.length - 3}</span>
-                                        )}
-                                    </>
-                                ) : (
-                                    <span className="text-[8px] font-bold text-gray-300 uppercase tracking-tighter italic opacity-40">None Selected</span>
-                                )}
+
+                            <div className="flex flex-col gap-2">
+                                <div className="flex items-center gap-2 text-muted-foreground">
+                                    <Activity size={14} className="text-[#FF2D55]" />
+                                    <span className="text-[9px] font-black font-inter uppercase tracking-[0.15em] opacity-50">Precision Focus</span>
+                                </div>
+                                <div className="flex flex-wrap gap-1.5 pl-0 min-h-[1.2rem]">
+                                    {selectedSubtopics.length > 0 ? (
+                                        <>
+                                            {selectedSubtopics.slice(0, 4).map(st => (
+                                                <span key={st} className="px-2 py-0.5 bg-[#FF2D551A] text-[9px] font-black text-[#FF2D55] rounded-md border border-[#FF2D5533] uppercase tracking-tighter italic">{st}</span>
+                                            ))}
+                                            {selectedSubtopics.length > 4 && (
+                                                <span className="px-2 py-0.5 bg-[#FF2D551A] text-[9px] font-black text-[#FF2D55]/40 rounded-md border border-dashed border-[#FF2D5533] uppercase tracking-tighter">+{selectedSubtopics.length - 4}</span>
+                                            )}
+                                        </>
+                                    ) : (
+                                        <span className="text-[9px] font-bold text-gray-300 uppercase tracking-tighter italic opacity-40">Dynamic selection active</span>
+                                    )}
+                                </div>
                             </div>
                         </div>
 
-                        <div className="h-[1px] bg-gray-200 w-full my-0.5" />
+                        {/* Zone 3: Calibration Metrics */}
+                        <div className="mt-auto space-y-4">
+                            <div className="grid grid-cols-2 gap-3 bg-[#1A1A1A] p-4 rounded-[1.25rem] shadow-xl">
+                                <div className="space-y-1">
+                                    <p className="text-[8px] font-black text-white/40 uppercase tracking-[0.2em]">Est. Time</p>
+                                    <p className="text-xl font-black font-outfit text-white leading-none">{Math.ceil(questionCount * 1.5)}<span className="text-[10px] ml-1 opacity-60">MIN</span></p>
+                                </div>
+                                <div className="space-y-1 border-l border-white/10 pl-3">
+                                    <p className="text-[8px] font-black text-white/40 uppercase tracking-[0.2em]">Density</p>
+                                    <p className="text-xl font-black font-outfit text-white leading-none">{questionCount}<span className="text-[10px] ml-1 opacity-60">QUES</span></p>
+                                </div>
+                            </div>
 
-                        <div className="grid grid-cols-2 gap-2 bg-gray-50/50 p-2 rounded-xl border border-gray-200">
-                            <div className="space-y-0.5">
-                                <p className="text-[7px] font-black text-gray-400 uppercase tracking-[0.2em]">Est. Time</p>
-                                <p className="text-[13px] font-black font-outfit text-[#1A1A1A]">{Math.ceil(questionCount * 1.5)} MIN</p>
-                            </div>
-                            <div className="space-y-0.5">
-                                <p className="text-[7px] font-black text-gray-400 uppercase tracking-[0.2em]">Questions</p>
-                                <p className="text-[13px] font-black font-outfit text-[#1A1A1A]">{questionCount}</p>
-                            </div>
-                        </div>
-
-                        <div className="space-y-1 pt-1 opacity-80 scale-95 origin-left">
-                            <div className="flex items-center gap-2 mb-0.5">
-                                <div className="h-1 w-1 rounded-full bg-[#FF2D55]" />
-                                <p className="text-[8px] font-black font-outfit text-[#1A1A1A] uppercase tracking-widest">Engine Calibration</p>
-                            </div>
-                            <div className="flex justify-between items-center bg-white p-1 rounded-lg border border-gray-100 shadow-sm">
-                                <span className="text-[7px] font-bold text-muted-foreground uppercase tracking-widest">Difficulty</span>
-                                <span className="text-[8px] font-black text-[#1A1A1A] uppercase">{difficulty}</span>
-                            </div>
-                            <div className="flex justify-between items-center bg-white p-1 rounded-lg border border-gray-100 shadow-sm">
-                                <span className="text-[7px] font-bold text-muted-foreground uppercase tracking-widest">Potential</span>
-                                <span className="text-[8px] font-black text-[#FF2D55] uppercase tracking-tighter">{totalPoints} PTS</span>
+                            <div className="space-y-2 opacity-90">
+                                <div className="flex justify-between items-center py-1.5 border-b border-gray-100">
+                                    <span className="text-[9px] font-black text-[#1A1A1A] uppercase tracking-[0.1em]">Engine Tier</span>
+                                    <span className="text-[10px] font-black text-[#FF2D55] uppercase">{difficulty}</span>
+                                </div>
+                                <div className="flex justify-between items-center py-1.5">
+                                    <span className="text-[9px] font-black text-[#1A1A1A] uppercase tracking-[0.1em]">Potential Yield</span>
+                                    <span className="text-[10px] font-black text-[#1A1A1A] uppercase">{totalPoints} <span className="text-[8px] opacity-40">PTS</span></span>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    {isReady && !isLocked && (
-                        <div className="mt-auto pt-3 border-t border-gray-200 pointer-events-auto">
-                            <button
-                                onClick={onStart}
-                                disabled={loading}
-                                className={cn(
-                                    "w-full min-h-[48px] rounded-xl bg-gradient-to-br from-[#FF2D55] to-[#D4145A] text-white font-black font-outfit text-xs uppercase tracking-[0.1em] shadow-[0_8px_20px_rgba(255,45,85,0.25)] flex items-center justify-center gap-3 transition-all active:scale-95 disabled:grayscale disabled:opacity-30 group hover:shadow-[0_12px_30px_rgba(255,45,85,0.4)] pointer-events-auto",
-                                    "animate-in fade-in zoom-in duration-500 border-2 border-white/20"
-                                )}
-                            >
-                                {loading ? (
-                                    <div className="flex items-center gap-3">
-                                        <Activity size={18} className="animate-spin" />
-                                        <span>INITIALIZING...</span>
-                                    </div>
-                                ) : (
-                                    <>
-                                        Launch Assessment
-                                        <div className="bg-white/20 p-1.5 rounded-full">
-                                            <Play size={12} fill="currentColor" />
-                                        </div>
-                                    </>
-                                )}
-                            </button>
-                        </div>
-                    )}
-
-                    {isLocked && (
-                        <div className="mt-auto pt-4 border-t border-gray-300">
-                            <div className="w-full min-h-[56px] rounded-xl bg-gray-100 text-gray-400 font-black font-outfit uppercase tracking-[0.1em] flex items-center justify-center gap-3 border-2 border-dashed border-gray-200/50">
-                                <Activity size={18} className="animate-pulse" />
-                                <span>INITIALIZING...</span>
-                            </div>
-                        </div>
-                    )}
+                    {/* HUD FOOTER SYNC: Aligning button to the footer baseline */}
+                    <div className="mt-4 h-[12dvh] min-h-[90px] flex items-center pt-2 border-t border-gray-100 pointer-events-auto">
+                        <button
+                            onClick={onStart}
+                            disabled={!isReady}
+                            className={cn(
+                                "w-full h-[52px] rounded-xl font-black font-outfit text-xs uppercase tracking-[0.15em] flex items-center justify-center gap-3 transition-all active:scale-95 group border-2 relative overflow-hidden",
+                                !isReady
+                                    ? "bg-[#FF2D550D] text-[#FF2D554D] border-[#FF2D551A] cursor-not-allowed opacity-100"
+                                    : "bg-[#FF2D55] text-white border-[#FF2D55] shadow-[0_10px_30px_rgba(255,45,85,0.3)] hover:shadow-[0_15px_40px_rgba(255,45,85,0.5)] hover:scale-[1.02]"
+                            )}
+                        >
+                            {loading ? (
+                                <Activity size={18} className="animate-spin" />
+                            ) : (
+                                <>
+                                    <span>Launch Assessment</span>
+                                    <Play size={14} fill="currentColor" className={cn(
+                                        "transition-transform group-hover:scale-110",
+                                        !isReady ? "opacity-20" : "opacity-100"
+                                    )} />
+                                </>
+                            )}
+                        </button>
+                    </div>
                 </div>
             </div>
         </aside>
