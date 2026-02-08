@@ -503,13 +503,17 @@ function QuizSelectionConsoleContent() {
                     )}>
 
                         {/* Compact Pagination Header (Secondary Control) - Steps 1-4 Only */}
+                        {/* ADDED: SAFE BUFFER WRAPPER AROUND PAGINATION TO PREVENT CLIP */}
                         {step < 5 && (
                             <div className="flex justify-end items-center mb-4 pr-2">
-                                <div className="flex items-center gap-2 bg-gray-50/50 p-1 rounded-lg border border-gray-200 shadow-sm backdrop-blur-sm">
+                                <div className="flex items-center gap-2 bg-white p-1 rounded-lg border border-gray-200 shadow-sm backdrop-blur-sm">
                                     <button
                                         onClick={handlePrevPage}
                                         disabled={page === 0 || loading || isLocked}
-                                        className="p-1.5 rounded-md hover:bg-[#FF2D55]/5 hover:text-[#FF2D55] text-gray-400 transition-all disabled:opacity-20 disabled:grayscale"
+                                        className={cn(
+                                            "p-1.5 rounded-md transition-all disabled:opacity-30 disabled:grayscale",
+                                            "bg-[#FF2D551A] border border-[#FF2D5533] text-[#FF2D55] hover:bg-[#FF2D55] hover:text-white"
+                                        )}
                                         title="Previous Page"
                                     >
                                         <ChevronLeft size={14} />
@@ -522,7 +526,10 @@ function QuizSelectionConsoleContent() {
                                     <button
                                         onClick={handleNextPage}
                                         disabled={page >= Math.ceil((step === 1 ? domains.length : (step === 3 ? topics.length : (step === 2 ? subjects.length : (step === 4 ? subtopics.length : 0)))) / currentPageSize) - 1 || loading || isLocked}
-                                        className="p-1.5 rounded-md hover:bg-[#FF2D55]/5 hover:text-[#FF2D55] text-gray-400 transition-all disabled:opacity-20 disabled:grayscale"
+                                        className={cn(
+                                            "p-1.5 rounded-md transition-all disabled:opacity-30 disabled:grayscale",
+                                            "bg-[#FF2D551A] border border-[#FF2D5533] text-[#FF2D55] hover:bg-[#FF2D55] hover:text-white"
+                                        )}
                                         title="Next Page"
                                     >
                                         <ChevronRight size={14} />
@@ -531,15 +538,16 @@ function QuizSelectionConsoleContent() {
                             </div>
                         )}
 
-                        <div className="flex-1 flex flex-col min-h-0 overflow-hidden pt-2">
+                        {/* REFACTORED: REMOVED overflow-hidden and ADDED p-2 buffer around grid */}
+                        <div className="flex-1 flex flex-col min-h-0 pt-2 relative overflow-visible p-2">
                             {loading && (
-                                <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/50 backdrop-blur-[1px] rounded-[1.25rem] animate-in fade-in duration-300">
+                                <div className="absolute inset-x-2 inset-y-2 z-50 flex items-center justify-center bg-white/50 backdrop-blur-[1px] rounded-[1.25rem] animate-in fade-in duration-300">
                                     <Activity className="animate-spin text-[#FF2D55]" size={32} />
                                 </div>
                             )}
 
                             {step === 1 && (
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 grid-rows-2 gap-4 animate-in fade-in zoom-in-95 duration-500 h-full">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 animate-in fade-in zoom-in-95 duration-500 items-start overflow-visible">
                                     {paginatedDomains.map((domain, idx) => (
                                         <DomainCard
                                             key={domain.id}
@@ -554,7 +562,7 @@ function QuizSelectionConsoleContent() {
                             )}
 
                             {(step === 2 || step === 3 || step === 4) && (
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 grid-rows-2 gap-4 animate-in fade-in zoom-in-95 duration-500 h-full">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 animate-in fade-in zoom-in-95 duration-500 items-start overflow-visible">
                                     {(step === 2 ? paginatedSubjects : step === 3 ? paginatedTopics : paginatedSubtopics).map((item) => (
                                         <TopicChip
                                             key={item.id}
@@ -622,13 +630,14 @@ function QuizSelectionConsoleContent() {
                         </div>
 
                         {/* Scoped Footer (Step 5 logic included here) */}
-                        <div className="flex-none h-[88px] border-t border-gray-200 bg-white/50 backdrop-blur-md z-[50] -mx-4 md:-mx-12 px-4 md:px-12 flex items-center justify-between mt-auto">
+                        {/* STABILIZED: FOOTER IS ANCHORED AT BOTTOM OF LEFT PANE */}
+                        <div className="flex-none h-[88px] border-t border-gray-200 bg-white z-[50] -mx-4 md:-mx-12 px-4 md:px-12 flex items-center justify-between mt-auto">
                             <button
                                 onClick={handleBack}
                                 disabled={step === 1 || isLocked || isArmed}
                                 className={cn(
-                                    "group flex items-center gap-3 px-8 py-3.5 rounded-xl font-black font-outfit text-xs uppercase tracking-widest transition-all",
-                                    "bg-[#FF2D55]/5 border-2 border-[#FF2D55]/10 text-[#FF2D55] hover:bg-[#FF2D55] hover:text-white hover:border-[#FF2D55] hover:shadow-xl hover:shadow-[#FF2D55]/20 hover:scale-[1.02] active:scale-95 disabled:opacity-30 disabled:pointer-events-none shadow-sm"
+                                    "group flex items-center gap-3 px-8 py-3.5 rounded-xl font-black font-outfit text-xs uppercase tracking-widest transition-all shadow-sm border-2",
+                                    "bg-[#FF2D551A] border-[#FF2D5533] text-[#FF2D55] hover:bg-[#FF2D55] hover:text-white hover:border-[#FF2D55] hover:shadow-xl hover:shadow-[#FF2D55]/20 hover:scale-[1.02] active:scale-95 disabled:opacity-30 disabled:pointer-events-none"
                                 )}
                             >
                                 <ChevronLeft size={16} className="transition-transform group-hover:-translate-x-1" />

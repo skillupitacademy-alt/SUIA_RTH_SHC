@@ -46,9 +46,9 @@ export function DomainCard({
         <button
             onClick={() => onSelect(id)}
             className={cn(
-                "relative bg-white rounded-[1.5rem] p-6 text-left transition-all duration-500 border-2 group",
+                "relative bg-white rounded-[1.5rem] p-6 text-left transition-all duration-500 border-2 group outline-none",
                 isSelected
-                    ? "pink-glow-border scale-[1.02] z-10"
+                    ? "border-[#FF2D55] shadow-[0_10px_30px_rgba(255,45,85,0.15)] scale-[1.02] z-10"
                     : "border-transparent shadow-[0_4px_20px_rgba(0,0,0,0.05)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] hover:scale-[1.01]"
             )}
         >
@@ -92,9 +92,9 @@ export function DomainCard({
                 </p>
             </div>
 
-            {/* Active Glow Overlay */}
+            {/* Active Glow Overlay - Refined for Internal Containment */}
             {isSelected && (
-                <div className="absolute inset-0 rounded-[1.5rem] ring-1 ring-[#FF2D55]/50 pointer-events-none" />
+                <div className="absolute inset-0 rounded-[1.5rem] ring-2 ring-[#FF2D55]/50 ring-inset pointer-events-none shadow-[inset_0_0_20px_rgba(255,45,85,0.1)]" />
             )}
         </button>
     );

@@ -1221,3 +1221,10 @@ Reduce documentation fragmentation and improve discoverability by consolidating 
 - **UI Purge**: Removed the duration/mastery summary strip from the calibration pane to reduce visual noise.
 - **Aesthetic Alignment**: Synchronized the "Back" button's design tokens (colors, shadows, hover states) with the "Confirm Mission" primary button family.
 - **Outcome**: Achieved a 100% stable, zero-scroll viewport with professional-grade UI consistency.
+
+### Batch 156: Layout Normalization & Clipping Resolution (Feb 08, 2026)
+- **Viewport Buffering**: Engineered a `p-2` safety margin around selection grids combined with `overflow-visible` to accommodate `scale-[1.02]` card states.
+- **Grid Elasticity**: Decoupled selection grids from rigid `grid-rows-2 h-full` structures, enabling `items-start` alignment for better visual rhythm on low-card pages.
+- **Footer Anchoring**: Stabilized the dashboard footer using solid `bg-white` and deterministic `mt-auto` placement within the `flex-col` shell.
+- **Pink System Migration**: Replaced opaque button styles with the high-fidelity Pink system (`#FF2D551A` bg / `#FF2D5533` border) for Back and Pagination controls.
+- **Shadow Physics**: Refined card selection shadows and rings to use internal containment, preventing edge clipping at the CSS container level.

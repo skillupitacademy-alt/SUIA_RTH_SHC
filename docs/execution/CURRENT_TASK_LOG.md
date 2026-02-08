@@ -131,3 +131,11 @@
 - **Step 5 Cleanup**: Stripped duration/mastery strip; Rebalanced Difficulty/Count layout.
 - **Aesthetic Unification**: Unified "Back" button styling with the pink "Confirm" button family.
 - **Verification**: Verified zero-scroll stability and build integrity (Exit Code 0).
+
+### Batch 156: Layout Normalization & Clipping Resolution (Feb 08, 2026)
+- **Grid Buffers**: Added `p-2` padding to selection containers in `QuizSelectionConsole.tsx`; enabled `overflow-visible`.
+- **Layout Fluidity**: Replaced `grid-rows-2 h-full` with `items-start` to prevent rigid stretching on low-card pages.
+- **Footer Alignment**: Anchored footer to bottom of left pane with deterministic `mt-auto` and fixed `h-88px`.
+- **Pink Button System**: Implemented `#FF2D551A` (10%) background and `#FF2D5533` (20%) border for Back/Pagination buttons.
+- **Card Refinement**: Migrated `DomainCard` and `TopicChip` to internal `ring-inset` selection borders.
+- **Verification**: Build Success & zero-clipping confirmed.

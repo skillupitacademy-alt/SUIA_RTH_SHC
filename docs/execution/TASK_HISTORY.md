@@ -87,3 +87,4 @@
 | 2026-02-08 | Action Console Refinement | COMPLETED | Refactored Question Factory Action Console to 3-row full-width layout. |
 | 2026-02-08 | System Verification | COMPLETED | Final build and type-checks passed for both `@quiz/admin-app` and `@quiz/web-app`. |
 | 2026-02-08 | Final UI Refinements | COMPLETED | Conditional footer, h-screen stability, Step 5 cleanup, and visual unification. |
+| 2026-02-08 | Clipping & Footer Fix | COMPLETED | Resolved card clipping via grid buffers and stabilized footer anchoring. |

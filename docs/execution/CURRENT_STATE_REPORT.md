@@ -674,3 +674,9 @@
 - **Step 5 Precision**: Standardized Advanced Question options and purged legacy duration strips for a cleaner calibration HUD.
 - **Visual Cohesion**: Achieved 1:1 aesthetic parity between navigation controls and primary action buttons.
 - **Verification**: Confirmed 100% build stability and type-safety across the monorepo.
+
+### Phase 46: Layout Normalization & Clipping Resolution (Batch 156)
+- **Containment Fixes**: Implemented `p-2` buffers and `overflow-visible` grids in `QuizSelectionConsole.tsx` to eliminate selected card clipping.
+- **Footer Stability**: Transitioned the action footer to a bottom-anchored, fixed-height architecture for zero-shift navigation.
+- **Button Unification**: Migrated "Back" and Pagination controls to the `#FF2D55` 10/20 opacity pink system.
+- **Visual Hygiene**: Refined `DomainCard` and `TopicChip` selection halos for internal `ring-inset` containment.
