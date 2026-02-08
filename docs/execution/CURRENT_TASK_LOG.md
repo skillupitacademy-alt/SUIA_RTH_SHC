@@ -81,3 +81,14 @@
 - **Route Detection**: Used `usePathname()` hook for clean route detection and added to dependencies.
 - **Redirect Fallback**: Implemented robust 401/403 redirect fallback in `fetch-client.ts` with a "redirect once" guard to prevent infinite loaders.
 - **Verification**: `pnpm build` and `npx tsc --noEmit` verified (Exit Code 0).
+
+### Batch 144: Hierarchy Enrichment & Factory UI Polish
+- **Hierarchy Enrichment**: Restored data integrity in `AdminEngine` by implementing aggregate counts across all hierarchical levels.
+- **Factory UI**: Polished the Question Factory Action Console to strictly match the **Executive White** aesthetic.
+- **Taxonomy Injection**: Fully integrated the system-wide skill taxonomy into the AI prompt generator.
+
+### Batch 145: System-wide Readability & Accessibility
+- **Typography**: Increased base font size from 13px to **15px** for global legibility.
+- **Contrast**: Darkened `muted-foreground` to meet WCAG AA standards.
+- **UI Refinement**: Upgraded login page and sidebar with high-contrast labels and better spacing.
+- **Verification**: Monorepo build and type-check verified (Exit Code 0).

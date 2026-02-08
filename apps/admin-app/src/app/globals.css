@@ -16,13 +16,13 @@
   --foreground: 222 47% 11%;
 
   --muted: 210 40% 96%;
-  --muted-foreground: 215 16% 47%;
+  --muted-foreground: 215 16% 35%; /* Darker for better contrast (was 47%) */
 
   --accent: 337 90% 63%;
   --accent-foreground: 0 0% 100%;
 
-  --border: 214 32% 91%;
-  --input: 214 32% 91%;
+  --border: 214 32% 85%; /* Slightly more defined (was 91%) */
+  --input: 214 32% 85%;
   --ring: 337 90% 63%;
 
   --radius: 0.5rem;
@@ -43,8 +43,8 @@
 }
 
 html {
-  font-size: 13px;
-  /* Ultimate high-density dashboard scaling */
+  font-size: 15px;
+  /* Accessible high-density dashboard scaling */
 }
 
 body {

@@ -118,6 +118,16 @@
 - **Calibration Summary**: Integrated a real-time difficulty breakdown UI (*Total, Simple, Intermediate, Expert*) to ensure high-fidelity exam balancing during commit.
 - **Standardization**: Authored `ORCHESTRATION_STANDARD.md` as the authoritative governing law for blueprint creation.
 
+### Phase 37: Hierarchy Data Integrity & Factory Polish (Batch 144)
+- **Hierarchy Enrichment**: Restored data integrity in `AdminEngine` by implementing aggregate counts across all hierarchical levels.
+- **Factory UI Polish**: Polished the Question Factory Action Console to strictly match the platform's standard **Executive White** aesthetic.
+- **Verification**: All routes verified via `pnpm build` (Exit Code 0).
+
+### Phase 38: Readability & Accessibility Enforcement (Batch 145)
+- **Aesthetic Alignment**: Increased base font size to 15px and darkened secondary text for WCAG AA compliance.
+- **Component Standardisation**: Refined login forms and sidebar navigation for high-contrast legibility.
+- **Verification**: Workspace verified clean and synchronized.
+
 ### Phase 22: Hierarchy Factory 2.0 & ZLoader Standard (Batch 46/48)
 - **Unified Loading**: Standardized a single, high-fidelity loading indicator (`ZLoader`) across the entire platform, eliminating icon fragmentation.
 - **Hierarchical Seeding**: Enhanced the Hierarchy Factory with surgical selection UI for Domains, Subjects, and Topics, ensuring correct parent context during manual and bulk additions.

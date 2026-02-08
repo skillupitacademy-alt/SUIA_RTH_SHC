@@ -134,7 +134,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                             </div>
                         </div>
 
-                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/40 mb-6 px-4">Platform Control</p>
+                        <p className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400 mb-6 px-4">Platform Control</p>
                         <nav className="space-y-2">
                             {ADMIN_NAV.map((item) => {
                                 const isActive = pathname === item.href;
@@ -143,15 +143,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                                         key={item.name}
                                         href={item.href}
                                         className={cn(
-                                            "flex items-center justify-between group px-4 py-2.5 rounded-[1.25rem] transition-all duration-300",
+                                            "flex items-center justify-between group px-4 py-3 rounded-[1.25rem] transition-all duration-300",
                                             isActive
                                                 ? "bg-[#FF4B91] text-white shadow-xl shadow-[#FF4B91]/30 scale-[1.02]"
-                                                : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                                                : "text-slate-600 hover:bg-slate-50 hover:text-[#1A1A1A]"
                                         )}
                                     >
                                         <div className="flex items-center gap-3">
                                             <item.icon size={20} className={cn("transition-colors", isActive ? "text-white" : "text-[#FF4B91]")} />
-                                            <span className="font-bold text-[14px]">{item.name}</span>
+                                            <span className="font-bold text-[15px]">{item.name}</span>
                                         </div>
                                         <ChevronRight
                                             size={16}
@@ -166,17 +166,17 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                         </nav>
                     </div>
 
-                    <div className="mt-auto p-6 border-t bg-muted/5">
-                        <div className="p-3 rounded-2xl bg-primary/5 border border-primary/10 mb-4">
-                            <p className="text-[9px] font-black text-primary uppercase tracking-[0.2em] mb-1">System Health</p>
-                            <div className="flex items-center gap-2">
-                                <div className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
-                                <span className="text-[10px] font-black uppercase tracking-tight">Engines Active</span>
+                    <div className="mt-auto p-6 border-t bg-slate-50/50">
+                        <div className="p-4 rounded-2xl bg-white border border-slate-200 mb-4 shadow-sm">
+                            <p className="text-[10px] font-black text-[#FF4B91] uppercase tracking-[0.2em] mb-1.5">System Health</p>
+                            <div className="flex items-center gap-2.5">
+                                <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+                                <span className="text-[11px] font-black uppercase tracking-tight text-slate-700">Engines Active</span>
                             </div>
                         </div>
                         <button
                             onClick={handleLogout}
-                            className="flex items-center gap-4 w-full px-5 py-3 rounded-[1.25rem] text-red-500 font-bold hover:bg-red-50 transition-colors group"
+                            className="flex items-center gap-4 w-full px-5 py-4 rounded-[1.25rem] text-red-500 font-bold hover:bg-red-50 transition-colors group"
                         >
                             <LogOut size={20} className="group-hover:-translate-x-1 transition-transform" />
                             <span className="text-xs font-black uppercase tracking-widest">Sign Out</span>
@@ -186,25 +186,25 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
                 {/* Main Content */}
                 <div className="flex-1 flex flex-col overflow-hidden ml-64">
-                    <header className="h-16 border-b bg-background flex items-center justify-between px-8 sticky top-0 z-40">
-                        <div className="flex items-center gap-6">
-                            <div className="flex items-center gap-3 pr-6 border-r border-muted-foreground/10">
-                                <div className="h-9 w-9 rounded-2xl bg-[#FF4B91] flex items-center justify-center text-white font-black text-lg shadow-lg shadow-[#FF4B91]/30">A</div>
-                                <span className="font-black text-xl tracking-tighter text-[#1A1A1A]">ADMIN CORE</span>
+                    <header className="h-20 border-b bg-white flex items-center justify-between px-8 sticky top-0 z-40 shadow-sm">
+                        <div className="flex items-center gap-8">
+                            <div className="flex items-center gap-4 pr-8 border-r border-slate-100">
+                                <div className="h-10 w-10 rounded-2xl bg-[#FF4B91] flex items-center justify-center text-white font-black text-xl shadow-lg shadow-[#FF4B91]/30">A</div>
+                                <span className="font-black text-2xl tracking-tighter text-[#1A1A1A]">ADMIN CORE</span>
                             </div>
-                            <div className="flex items-center gap-3">
-                                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Terminal v1.0.4</span>
-                                <span className="px-2 py-0.5 rounded-full bg-green-500/10 text-green-500 text-[9px] font-black uppercase tracking-widest border border-green-500/20">Connected_Secure</span>
+                            <div className="flex items-center gap-4">
+                                <span className="text-[11px] font-black uppercase tracking-widest text-slate-400">Terminal v1.0.4</span>
+                                <span className="px-3 py-1 rounded-full bg-green-50 text-green-600 text-[10px] font-black uppercase tracking-widest border border-green-200">Connected_Secure</span>
                             </div>
                         </div>
 
-                        <div className="flex items-center gap-5">
+                        <div className="flex items-center gap-6">
                             <div className="text-right">
-                                <p className="text-xs font-black italic text-[#1A1A1A]">SUPER ADMIN</p>
-                                <p className="text-[9px] text-muted-foreground font-bold uppercase tracking-widest">id: rh-9012-ad</p>
+                                <p className="text-xs font-black italic text-[#1A1A1A] uppercase tracking-widest">SUPER ADMIN</p>
+                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">id: rh-9012-ad</p>
                             </div>
-                            <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-[#FF4B91] to-[#FF8E9E] p-0.5 shadow-lg shadow-[#FF4B91]/20">
-                                <div className="h-full w-full rounded-[10px] bg-background flex items-center justify-center font-black text-[#FF4B91] text-xs">RH</div>
+                            <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-[#FF4B91] to-[#FF8E9E] p-0.5 shadow-xl shadow-[#FF4B91]/20">
+                                <div className="h-full w-full rounded-[14px] bg-white flex items-center justify-center font-black text-[#FF4B91] text-sm">RH</div>
                             </div>
                         </div>
                     </header>
