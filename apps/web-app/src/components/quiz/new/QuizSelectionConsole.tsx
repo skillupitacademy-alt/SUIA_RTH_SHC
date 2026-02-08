@@ -98,7 +98,7 @@ function QuizSelectionConsoleContent() {
 
     // Pagination State
     const [page, setPage] = useState(0);
-    const currentPageSize = 6; // Refactored to 3x2 grid (6 items) for Steps 1-4
+    const currentPageSize = step === 1 ? 6 : 9; // Step 1: 3x2, Steps 2-4: 3x3
 
     // UI Meta helper (for icons and accents in Domain Cards)
     const getDomainMeta = (index: number) => {
@@ -533,8 +533,8 @@ function QuizSelectionConsoleContent() {
                             </div>
                         )}
 
-                        {/* STATIONARY LAYOUT: Enforced 560px heart for ALL steps */}
-                        <div className="flex-1 flex flex-col relative overflow-visible p-4 h-[560px] min-h-[560px] max-h-[560px]">
+                        {/* STATIONARY LAYOUT: Enforced 525px heart for ALL steps */}
+                        <div className="flex-1 flex flex-col relative overflow-visible p-4 h-[525px] min-h-[525px] max-h-[525px]">
                             {loading && (
                                 <div className="absolute inset-x-2 inset-y-2 z-50 flex items-center justify-center bg-white/50 backdrop-blur-[1px] rounded-[1.25rem]">
                                     <Activity className="animate-spin text-[#FF2D55]" size={32} />
@@ -601,7 +601,7 @@ function QuizSelectionConsoleContent() {
                                     {/* Middle Row: Question Count */}
                                     <div className="space-y-4">
                                         <p className="text-[10px] font-black font-outfit text-gray-400 uppercase tracking-[0.2em] mb-4">Density Calibration</p>
-                                        <div className="grid grid-cols-4 gap-4">
+                                        <div className="grid grid-cols-3 gap-6">
                                             {(mode === 'basic' ? [10, 15, 20, 25] : [10, 20, 30, 40]).map((v) => (
                                                 <button
                                                     key={v}
@@ -664,7 +664,7 @@ function QuizSelectionConsoleContent() {
 
                     {/* Right Pane: Summary (Only Step 5) */}
                     {step === 5 && (
-                        <div className="w-[35%] flex flex-col duration-300 h-[560px] max-h-[560px]">
+                        <div className="w-[35%] flex flex-col duration-300 h-[525px] max-h-[525px]">
                             <AssessmentSummary
                                 domainName={currentDomain?.name || 'Not Selected'}
                                 subjectsCount={selectedSubjects.length}
