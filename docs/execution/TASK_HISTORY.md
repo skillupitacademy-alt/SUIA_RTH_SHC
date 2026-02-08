@@ -83,4 +83,5 @@
 | 2026-02-08 | Launch Evaluation Audit | COMPLETED | Restored Step 5 question options; Resolved build EPERM; Isolated UI fix (Batch 151). |
 | 2026-02-08 | Modal Viewport Isolation | COMPLETED | Migrated 100% of Question Bank (Domain, Subject, Topic, Subtopic, Skill) to `ZPortalModal` with scroll locking. |
 | 2026-02-08 | WCAG Accessibility Sync | COMPLETED | Purged low-contrast text opacity (/40) and standardized base font size to 15px across admin and web apps. |
+| 2026-02-08 | Subtopic Scroll Optimization | COMPLETED | Normalized Subtopic modal scrolling (min-h-0, non-sticky footer, stable gutter). |
 | 2026-02-08 | System Verification | COMPLETED | Final build and type-checks passed for both `@quiz/admin-app` and `@quiz/web-app`. |

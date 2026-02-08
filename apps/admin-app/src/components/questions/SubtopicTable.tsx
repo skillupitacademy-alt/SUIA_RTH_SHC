@@ -216,7 +216,7 @@ export function SubtopicTable() {
 
             {/* Modalized Form */}
             <ZPortalModal isOpen={isFormOpen && !!currentSubtopic} zIndex={100}>
-                <div className="h-full flex flex-col bg-white animate-in slide-in-from-bottom-4 duration-500">
+                <div className="h-full min-h-0 flex flex-col bg-white animate-in slide-in-from-right duration-300">
                     {/* Header Strip */}
                     <div className="px-12 py-6 border-b border-primary/5 flex items-center justify-between bg-white sticky top-0 z-20">
                         <div className="flex items-center gap-4">
@@ -237,7 +237,7 @@ export function SubtopicTable() {
                     </div>
 
                     {/* Content Area */}
-                    <div className="flex-1 bg-slate-50/30 p-12 custom-scrollbar overflow-y-auto">
+                    <div className="flex-1 flex flex-col min-h-0 bg-slate-50/30 p-12 custom-scrollbar overflow-y-auto" style={{ scrollbarGutter: 'stable' }}>
                         <div className="max-w-5xl mx-auto space-y-8 bg-white border border-primary/10 rounded-[2.5rem] p-10 shadow-2xl shadow-primary/5 relative overflow-hidden">
                             {/* Form Header Context */}
                             <div className="grid grid-cols-3 gap-4 p-6 bg-slate-50/50 rounded-2xl border border-dashed border-slate-200">
@@ -368,8 +368,8 @@ export function SubtopicTable() {
                                     </p>
                                 </div>
 
-                                {/* Footer Actions */}
-                                <div className="pt-8 border-t border-slate-100 flex items-center justify-end gap-4 sticky bottom-0 bg-white z-10">
+                                {/* Footer Actions - Non-sticky to match Topic modal */}
+                                <div className="pt-8 border-t border-slate-100 flex items-center justify-end gap-4 bg-white">
                                     <button
                                         type="button"
                                         onClick={handleCloseForm}

@@ -115,3 +115,8 @@
 - **Scroll Locking**: Implemented and verified `useScrollLock` to prevent background scroll drifting during modal interaction.
 - **WCAG Compliance**: Purged remaining low-contrast `/40` opacity text in `HierarchyReports.tsx` and `ContentReadinessBoard.tsx`.
 - **System Health**: Verified 100% monorepo build and `npx tsc --noEmit` success for both admin and web applications (Exit Code 0).
+
+### Batch 153: Subtopic Modal Scroll Optimization (Feb 08, 2026)
+- **Structural Alignment**: Resolved scroll artifacts in `SubtopicTable.tsx` by adding `min-h-0` to flex containers and consolidating to a single clean scroll surface.
+- **UX Refinement**: Removed `sticky bottom-0` from the action row and added `scrollbar-gutter: stable` to eliminate layout jitter.
+- **Verification**: Verified `pnpm build` and `tsc --noEmit` with Exit Code 0.
