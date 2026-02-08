@@ -599,7 +599,7 @@ function QuizSelectionConsoleContent() {
                                     <div className="space-y-4">
                                         <p className="text-[10px] font-black font-outfit text-gray-400 uppercase tracking-[0.2em] mb-4">Density Calibration</p>
                                         <div className="grid grid-cols-4 gap-4">
-                                            {(mode === 'basic' ? [10, 15, 20, 25] : [5, 10, 15, 20, 25, 30, 40, 50]).map((v) => (
+                                            {(mode === 'basic' ? [10, 15, 20, 25] : [10, 20, 30, 40]).map((v) => (
                                                 <button
                                                     key={v}
                                                     disabled={isLocked || isArmed}
@@ -617,26 +617,6 @@ function QuizSelectionConsoleContent() {
                                             ))}
                                         </div>
                                     </div>
-
-                                    {/* Bottom Row: Summary / Duration Strip */}
-                                    <div className="bg-gray-900 rounded-[1.5rem] p-6 shadow-2xl">
-                                        <div className="flex justify-between items-center">
-                                            <div className="flex items-center gap-6">
-                                                <div className="p-3 rounded-2xl bg-white/10 backdrop-blur-md">
-                                                    <Activity className="text-[#FF2D55]" size={24} />
-                                                </div>
-                                                <div className="space-y-0.5">
-                                                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#FF2D55]">Calculated Duration</p>
-                                                    <p className="text-2xl font-black font-outfit text-white tracking-tighter">~{Math.ceil(questionCount * 1.5)} MINS</p>
-                                                </div>
-                                            </div>
-                                            <div className="h-12 w-[1px] bg-white/10 mx-8" />
-                                            <div className="text-right">
-                                                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40">Mastery Profile</p>
-                                                <p className="text-2xl font-black font-outfit text-white tracking-tighter uppercase">{difficulty}</p>
-                                            </div>
-                                        </div>
-                                    </div>
                                 </div>
                             )}
                         </div>
@@ -648,7 +628,7 @@ function QuizSelectionConsoleContent() {
                                 disabled={step === 1 || isLocked || isArmed}
                                 className={cn(
                                     "group flex items-center gap-3 px-8 py-3.5 rounded-xl font-black font-outfit text-xs uppercase tracking-widest transition-all",
-                                    "bg-white border-2 border-gray-200 text-gray-400 hover:border-[#FF2D55]/30 hover:shadow-xl hover:shadow-[#FF2D55]/10 hover:text-[#FF2D55] hover:scale-[1.02] active:scale-95 disabled:opacity-30 disabled:pointer-events-none shadow-sm"
+                                    "bg-[#FF2D55]/5 border-2 border-[#FF2D55]/10 text-[#FF2D55] hover:bg-[#FF2D55] hover:text-white hover:border-[#FF2D55] hover:shadow-xl hover:shadow-[#FF2D55]/20 hover:scale-[1.02] active:scale-95 disabled:opacity-30 disabled:pointer-events-none shadow-sm"
                                 )}
                             >
                                 <ChevronLeft size={16} className="transition-transform group-hover:-translate-x-1" />
@@ -700,7 +680,6 @@ function QuizSelectionConsoleContent() {
                     )}
                 </div>
             </div>
-
         </div>
     );
 }

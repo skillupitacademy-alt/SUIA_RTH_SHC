@@ -2,19 +2,23 @@
 
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
+import { usePathname } from 'next/navigation';
 
 interface AppShellProps {
     children: React.ReactNode;
 }
 
 export function AppShell({ children }: AppShellProps) {
+    const pathname = usePathname();
+    const isHome = pathname === '/';
+
     return (
         <div className="relative flex min-h-screen flex-col">
             <Header />
-            <main className="flex-1">
+            <main className="flex-1 flex flex-col">
                 {children}
             </main>
-            <Footer />
+            {isHome && <Footer />}
         </div>
     );
 }
