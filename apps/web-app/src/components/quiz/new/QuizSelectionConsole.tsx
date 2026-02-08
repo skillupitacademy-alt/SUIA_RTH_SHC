@@ -335,7 +335,7 @@ function QuizSelectionConsoleContent() {
         } catch (err: any) {
             console.error('Launch failed:', err);
             setLaunchError({
-                title: 'Couldn’t start your assessment',
+                title: "Couldn't start your assessment",
                 reason: err.message || "Launch failed. Please try again."
             });
             setIsLocked(false);
@@ -497,7 +497,7 @@ function QuizSelectionConsoleContent() {
 
                     {/* Left/Main Pane */}
                     <div className={cn(
-                        "flex flex-col h-full transition-all duration-700 relative",
+                        "flex flex-col h-full transition-all duration-700 relative pb-[88px]",
                         step === 5 ? "w-[65%]" : "w-full",
                         isLocked ? "opacity-30 pointer-events-none" : (isArmed ? "opacity-50 pointer-events-none" : "opacity-100")
                     )}>
@@ -539,7 +539,7 @@ function QuizSelectionConsoleContent() {
                         )}
 
                         {/* REFACTORED: REMOVED overflow-hidden and ADDED p-2 buffer around grid */}
-                        <div className="flex-1 flex flex-col min-h-0 pt-2 relative overflow-visible p-2">
+                        <div className="flex-1 flex flex-col min-h-0 pt-2 relative overflow-visible px-4 pt-4">
                             {loading && (
                                 <div className="absolute inset-x-2 inset-y-2 z-50 flex items-center justify-center bg-white/50 backdrop-blur-[1px] rounded-[1.25rem] animate-in fade-in duration-300">
                                     <Activity className="animate-spin text-[#FF2D55]" size={32} />
@@ -630,8 +630,8 @@ function QuizSelectionConsoleContent() {
                         </div>
 
                         {/* Scoped Footer (Step 5 logic included here) */}
-                        {/* STABILIZED: FOOTER IS ANCHORED AT BOTTOM OF LEFT PANE */}
-                        <div className="flex-none h-[88px] border-t border-gray-200 bg-white z-[50] -mx-4 md:-mx-12 px-4 md:px-12 flex items-center justify-between mt-auto">
+                        {/* STABILIZED: FOOTER IS ABSOLUTELY ANCHORED AT BOTTOM OF LEFT PANE */}
+                        <div className="absolute bottom-0 left-0 right-0 h-[88px] border-t border-gray-200 bg-white z-[50] px-4 md:px-12 flex items-center justify-between">
                             <button
                                 onClick={handleBack}
                                 disabled={step === 1 || isLocked || isArmed}
@@ -660,7 +660,7 @@ function QuizSelectionConsoleContent() {
                                 )}
                             >
                                 <span>
-                                    {step === 5 ? (isArmed ? "INITIATE LAUNCH 🚀" : "CONFIRM MISSION 🚀") : (step === 4 ? "CALIBRATE ENGINE" : "CONTINUE JOURNEY")}
+                                    {step === 5 ? (isArmed ? "INITIATE LAUNCH" : "CONFIRM MISSION") : (step === 4 ? "CALIBRATE ENGINE" : "CONTINUE JOURNEY")}
                                 </span>
                                 <ChevronRight size={18} />
                             </button>
