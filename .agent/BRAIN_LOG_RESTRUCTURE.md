@@ -1051,6 +1051,15 @@ Reduce documentation fragmentation and improve discoverability by consolidating 
 - **Robustness**: Atomic race-condition handling in `startExam`; concurrent triggers for the same key now resolve to the same session gracefully.
 - **UX Fallback**: Support for domain-only starts via "Virtual Blueprints" (Option 2 choice).
 - **Verification**: Verified `Exit Code 0` on full monorepo build.
+### Batch 157: Professional Viewport HUD Optimization (Feb 08, 2026)
+- **Architecture**: Enforced a "Stationary Heart" (560px fixed height) with top alignment for selection grids in Steps 1-4.
+- **Layout Expansion**: Enabled full-width selection viewing for the first 4 steps by conditionally removing side margins.
+- **Header Compression**: Tightened the Site-to-Console header gap in `page.tsx` and `QuizSelectionConsole.tsx` for an executive dashboard feel.
+- **Milestone Strings**: Replaced dynamic journey paths and emojis with crisp, professional milestones (e.g., "Map Knowledge Units").
+- **Accessibility**: Increased visibility of disabled navigation controls (BACK and Pagination) via subtle borders and increased opacity for better HUD "discoverability".
+- **Viewport Docking**: Pinned the navigation footer to the viewport bottom for all selection steps; enabled natural flow for the final Engine Calibration step.
+- **Verification**: Verified system-wide build (`pnpm build`) and type-checks (`tsc --noEmit`) with **Exit Code 0**.
+- **Outcome**: Achieved a rock-solid, professional HUD cockpit tuned for enterprise-grade performance.
 ### Batch 121: Viewport Recovery & HUD Symmetrization
 - **Objective**: Fix vertical occlusion on small screens and achieve perfect pane symmetry.
 - **HUD Compression**: Compressed global body height from `h-600` to `h-530` to guarantee visibility on standard laptops (~620px total depth).

@@ -405,21 +405,21 @@ function QuizSelectionConsoleContent() {
     const paginatedSubjects = subjects.slice(page * currentPageSize, (page + 1) * currentPageSize);
     const paginatedSubtopics = subtopics.slice(page * currentPageSize, (page + 1) * currentPageSize);
 
-    // Metadata for Journey Orientation
+    // Metadata for Journey Orientation (Brief Professional Strings - No Emoji)
     const journeyInfo = {
-        1: { title: "Select Domain", badge: "Foundation Architecture", desc: "Choose your area of expertise to begin the assessment.", count: domains.length },
-        2: { title: "Refine Subjects", badge: "Curriculum Calibration", desc: mode === 'basic' ? "Select core subjects (Max 2 for Basic mode)." : "Select the core subjects for your assessment pool.", count: subjects.length },
-        3: { title: "Select Topics", badge: "Knowledge Mapping", desc: mode === 'basic' ? "Strategic knowledge units (Max 3 for Basic mode)." : "High-density grid of strategic knowledge units.", count: topics.length },
-        4: { title: "Fine-tune Subtopics", badge: "Expert Precision", desc: "Pinpoint specific skills for deeper evaluation.", count: subtopics.length },
-        5: { title: "Calibrate Engine", badge: "Engine Mastery", desc: mode === 'basic' ? "Finalize your assessment session with simplified presets." : "Finalize your assessment session by tuning the difficulty tier and question volume.", count: 0 }
+        1: { title: "Select Domain", badge: "Foundation Architecture", desc: "Select Primary Domain", count: domains.length },
+        2: { title: "Refine Subjects", badge: "Curriculum Calibration", desc: "Refine Core Subjects", count: subjects.length },
+        3: { title: "Select Topics", badge: "Knowledge Mapping", desc: "Map Knowledge Units", count: topics.length },
+        4: { title: "Fine-tune Subtopics", badge: "Expert Precision", desc: "Pinpoint Expert Skills", count: subtopics.length },
+        5: { title: "Calibrate Engine", badge: "Engine Mastery", desc: "Finalize Engine Tier", count: 0 }
     };
 
     const currentMeta = journeyInfo[step as keyof typeof journeyInfo];
 
     return (
         <div className="w-full flex-1 flex flex-col min-h-0 relative">
-            {/* Refined 3-Part Header Section */}
-            <div className="flex-none px-4 md:px-12 pt-6 pb-4 border-b border-gray-200">
+            {/* Refined 3-Part Header Section (COMPACTED GAP) */}
+            <div className="flex-none px-4 md:px-12 pt-2 pb-3 border-b border-gray-200">
                 <div className="grid grid-cols-3 items-center gap-8">
 
                     {/* Column 1: Step Orientation */}
@@ -427,7 +427,7 @@ function QuizSelectionConsoleContent() {
                         <h2 className="text-[clamp(36px,2.2vw,44px)] font-bold font-outfit tracking-tighter text-[#1A1A1A] leading-[1.1] mb-1">
                             {currentMeta.title} {currentMeta.count > 0 && `(${currentMeta.count})`}
                         </h2>
-                        <p className="text-xs text-muted-foreground font-inter font-medium opacity-70 max-w-sm leading-tight italic">
+                        <p className="text-[10px] text-[#FF2D55] font-black uppercase tracking-[0.15em] opacity-80">
                             {currentMeta.desc}
                         </p>
                     </div>
@@ -444,7 +444,7 @@ function QuizSelectionConsoleContent() {
                     </div>
 
                     {/* Column 3: Launch Branding & Toggle */}
-                    <div className="flex flex-col items-end gap-3 min-w-0">
+                    <div className="flex flex-col items-end gap-1.5 min-w-0">
                         <h1 className="text-[clamp(36px,2.2vw,44px)] font-black tracking-tighter font-outfit text-[#1A1A1A] leading-none">
                             Launch Evaluation
                         </h1>
@@ -491,13 +491,17 @@ function QuizSelectionConsoleContent() {
                 )}
             </div>
 
-            {/* Main Interactive Zone */}
-            <div className="flex-1 flex flex-col min-h-0 relative px-4 md:px-12 overflow-hidden">
-                <div className="flex-1 flex gap-8 items-stretch pt-6 pb-4 min-h-0">
+            {/* Main Interactive Zone (FULL WIDTH FOR STEPS 1-4) */}
+            <div className={cn(
+                "flex-1 flex flex-col min-h-0 relative overflow-hidden transition-all duration-300",
+                step < 5 ? "px-4" : "px-4 md:px-12" // FULL WIDTH FOR STEPS 1-4
+            )}>
+                <div className="flex-1 flex gap-8 items-stretch pt-4 pb-4 min-h-0">
 
                     {/* Left/Main Pane */}
                     <div className={cn(
-                        "flex flex-col h-full transition-all duration-700 relative pb-[88px]",
+                        "flex flex-col h-full transition-all duration-700 relative",
+                        step < 5 ? "pb-[88px]" : "pb-0", // NO VIEWPORT LOCK FOR STEP 5
                         step === 5 ? "w-[65%]" : "w-full",
                         isLocked ? "opacity-30 pointer-events-none" : (isArmed ? "opacity-50 pointer-events-none" : "opacity-100")
                     )}>
@@ -511,8 +515,9 @@ function QuizSelectionConsoleContent() {
                                         onClick={handlePrevPage}
                                         disabled={page === 0 || loading || isLocked}
                                         className={cn(
-                                            "p-1.5 rounded-md transition-all disabled:opacity-30 disabled:grayscale",
-                                            "bg-[#FF2D551A] border border-[#FF2D5533] text-[#FF2D55] hover:bg-[#FF2D55] hover:text-white"
+                                            "p-1.5 rounded-md transition-all",
+                                            "bg-[#FF2D551A] border border-[#FF2D5533] text-[#FF2D55] hover:bg-[#FF2D55] hover:text-white",
+                                            "disabled:opacity-50 disabled:grayscale disabled:border-gray-200" // ACCESSIBILITY FIX
                                         )}
                                         title="Previous Page"
                                     >
@@ -527,8 +532,9 @@ function QuizSelectionConsoleContent() {
                                         onClick={handleNextPage}
                                         disabled={page >= Math.ceil((step === 1 ? domains.length : (step === 3 ? topics.length : (step === 2 ? subjects.length : (step === 4 ? subtopics.length : 0)))) / currentPageSize) - 1 || loading || isLocked}
                                         className={cn(
-                                            "p-1.5 rounded-md transition-all disabled:opacity-30 disabled:grayscale",
-                                            "bg-[#FF2D551A] border border-[#FF2D5533] text-[#FF2D55] hover:bg-[#FF2D55] hover:text-white"
+                                            "p-1.5 rounded-md transition-all",
+                                            "bg-[#FF2D551A] border border-[#FF2D5533] text-[#FF2D55] hover:bg-[#FF2D55] hover:text-white",
+                                            "disabled:opacity-50 disabled:grayscale disabled:border-gray-200" // ACCESSIBILITY FIX
                                         )}
                                         title="Next Page"
                                     >
@@ -538,8 +544,11 @@ function QuizSelectionConsoleContent() {
                             </div>
                         )}
 
-                        {/* REFACTORED: REMOVED overflow-hidden and ADDED p-2 buffer around grid */}
-                        <div className="flex-1 flex flex-col min-h-0 relative overflow-visible px-4 pt-4">
+                        {/* STATIONARY LAYOUT: Enforced 560px heart for Steps 1-4 */}
+                        <div className={cn(
+                            "flex-1 flex flex-col relative overflow-visible px-4 pt-10",
+                            step < 5 && "h-[560px] min-h-[560px] max-h-[560px]" // FIXED HEIGHT LOCK
+                        )}>
                             {loading && (
                                 <div className="absolute inset-x-2 inset-y-2 z-50 flex items-center justify-center bg-white/50 backdrop-blur-[1px] rounded-[1.25rem] animate-in fade-in duration-300">
                                     <Activity className="animate-spin text-[#FF2D55]" size={32} />
@@ -637,7 +646,8 @@ function QuizSelectionConsoleContent() {
                                 disabled={step === 1 || isLocked || isArmed}
                                 className={cn(
                                     "group flex items-center gap-3 px-8 py-3.5 rounded-xl font-black font-outfit text-xs uppercase tracking-widest transition-all shadow-sm border-2",
-                                    "bg-[#FF2D551A] border-[#FF2D5533] text-[#FF2D55] hover:bg-[#FF2D55] hover:text-white hover:border-[#FF2D55] hover:shadow-xl hover:shadow-[#FF2D55]/20 hover:scale-[1.02] active:scale-95 disabled:opacity-30 disabled:pointer-events-none"
+                                    "bg-[#FF2D551A] border-[#FF2D5533] text-[#FF2D55] hover:bg-[#FF2D55] hover:text-white hover:border-[#FF2D55] hover:shadow-xl hover:shadow-[#FF2D55]/20 hover:scale-[1.02] active:scale-95",
+                                    "disabled:opacity-50 disabled:grayscale disabled:border-gray-200 disabled:pointer-events-none" // ACCESSIBILITY FIX
                                 )}
                             >
                                 <ChevronLeft size={16} className="transition-transform group-hover:-translate-x-1" />
@@ -660,7 +670,7 @@ function QuizSelectionConsoleContent() {
                                 )}
                             >
                                 <span>
-                                    {step === 5 ? (isArmed ? "INITIATE LAUNCH 🚀" : "CONFIRM MISSION 🚀") : (step === 4 ? "CALIBRATE ENGINE" : "CONTINUE JOURNEY")}
+                                    {step === 5 ? (isArmed ? "INITIATE LAUNCH" : "CONFIRM MISSION") : (step === 4 ? "CALIBRATE ENGINE" : "CONTINUE JOURNEY")}
                                 </span>
                                 <ChevronRight size={18} />
                             </button>
