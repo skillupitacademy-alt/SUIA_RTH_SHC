@@ -120,3 +120,7 @@
 - **Structural Alignment**: Resolved scroll artifacts in `SubtopicTable.tsx` by adding `min-h-0` to flex containers and consolidating to a single clean scroll surface.
 - **UX Refinement**: Removed `sticky bottom-0` from the action row and added `scrollbar-gutter: stable` to eliminate layout jitter.
 - **Verification**: Verified `pnpm build` and `tsc --noEmit` with Exit Code 0.
+### Batch 154: Question Factory Action Console Refinement (Feb 08, 2026)
+- **Layout Refactor**: Refactored the Action Console in `question-generator/page.tsx` into a full-width, 3-row desktop layout for better visual balance.
+- **Structural Alignment**: Centered Row 1 (Title) and Row 2 (Controls), and anchored Row 3 (Helper Text) to the bottom-right, maintaining muted typography.
+- **Verification**: Verified via `pnpm build` and `tsc --noEmit` with Exit Code 0.
