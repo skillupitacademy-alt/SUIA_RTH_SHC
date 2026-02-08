@@ -1187,3 +1187,29 @@ Reduce documentation fragmentation and improve discoverability by consolidating 
     - **Verification**: Aligned the implementation with the standards used in `TopicTable` and `SubjectTable`.
 - **Certification**: Root `pnpm build` and `tsc --noEmit` PASSED (Exit Code 0).
 - **Outcome**: Subtopic edit forms now correctly pre-populate cascading selects and display the full parent lineage.
+### Batch 150: Subtopic Lineage Persistence (Backend)
+- **Enrichment**: Refined `AdminEngine.ts` to include full hierarchical IDs (`domainId`, `subjectId`, `topicId`) in list and mutation responses.
+- **Consistency**: Unified subtopic enrichment helper to `getEnrichedSubtopicInternal` for architectural consistency with topic/domain paths.
+- **Verification**: Enforced full monorepo build and `pnpm build` verified (Exit Code 0).
+
+### Batch 151: Launch Evaluation Audit & Fixes (Feb 08, 2026)
+- **Logic Restoration**: Restored Step 5 advanced question options to `[5, 10, 15, 20, 25, 30, 40, 50]`.
+- **Build Recovery**: Resolved `EPERM` lock on `.next` by purging cache; verified `pnpm build` (Exit Code 0).
+- **Type Safety**: Verified `npx tsc --noEmit` (Exit Code 0).
+- **Commit Hygiene**: strictly isolated UI fix commit; unstaged `admin.engine.ts` and unrelated scripts.
+
+### Batch 152: Global Modal Portalling & WCAG Sync (Feb 08, 2026)
+- **Viewport Isolation**: Migrated all Question Bank edit forms (Domain, Subject, Topic, Subtopic, Skill) to the `ZPortalModal` portal architecture to prevent parent overflow clipping.
+- **Scroll Locking**: Implemented and verified `useScrollLock` to prevent background scroll drifting during modal interaction.
+- **WCAG Compliance**: Purged remaining low-contrast `/40` opacity text in `HierarchyReports.tsx` and `ContentReadinessBoard.tsx`.
+- **System Health**: Verified 100% monorepo build and `npx tsc --noEmit` success for both admin and web applications (Exit Code 0).
+
+### Batch 153: Subtopic Modal Scroll Optimization (Feb 08, 2026)
+- **Structural Alignment**: Resolved scroll artifacts in `SubtopicTable.tsx` by adding `min-h-0` to flex containers and consolidating to a single clean scroll surface.
+- **UX Refinement**: Removed `sticky bottom-0` from the action row and added `scrollbar-gutter: stable` to eliminate layout jitter.
+- **Verification**: Verified `pnpm build` and `tsc --noEmit` with Exit Code 0.
+
+### Batch 154: Question Factory Action Console Refinement (Feb 08, 2026)
+- **Layout Refactor**: Refactored the Action Console in `question-generator/page.tsx` into a full-width, 3-row desktop layout for better visual balance.
+- **Structural Alignment**: Centered Row 1 (Title) and Row 2 (Controls), and anchored Row 3 (Helper Text) to the bottom-right, maintaining muted typography.
+- **Verification**: Verified via `pnpm build` and `tsc --noEmit` with Exit Code 0.

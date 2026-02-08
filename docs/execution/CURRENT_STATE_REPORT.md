@@ -656,3 +656,14 @@
 - **DOM Stability**: Verified that edit dialogs render at `document.body` level, ensuring they are independent of hierarchical layout constraints.
 - **Accessibility Standard**: Enforced WCAG AA compliance by standardizing font sizes (15px) and contrast ratios globally across the enterprise dashboard and exam interface.
 - **Technical Certification**: Final system integrity verified with root `pnpm build` and `tsc --noEmit` (Exit Code 0).
+
+### Phase 43: Subtopic Modal Scroll Optimization (Batch 153)
+- **Structural Integrity**: Resolved the "double-scroll" conflict in the Subtopic edit modal by consolidating to a single internal scroll container and adding `min-h-0` to flex child elements.
+- **UX Stability**: Implemented `scrollbar-gutter: stable` to eliminate horizontal layout jumps and removed the `sticky bottom-0` footer to match the Topic modal's behavior.
+- **Navigation Consistency**: Standardized the modal entry animation to `slide-in-from-right` (300ms) for high-performance feel across the classification bank.
+
+### Phase 44: Action Console Refinement (Batch 154)
+- **Layout Expansion**: Overhauled the Question Factory Action Console into a full-width, 3-row desktop layout, removing the previous `max-w-3xl` width constraint.
+- **Visual Centering**: Re-engineered the control rail (Strict Mode, Skills, Copy) with a centered grid architecture and a standardized `h-12` vertical rhythm.
+- **Reporting Sync**: Secured the "Intelligence Phase" branding and anchored helper text to the bottom-right, maintaining muted WCAG-compliant contrast ratios.
+- **Verification**: Verified zero logic regressions in the Prompt Generation engine; confirmed 100% build and type-safety (Exit Code 0).
