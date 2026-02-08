@@ -24,7 +24,7 @@ export default function LearningPathPage() {
 
                     <div className="p-8 border-2 border-dashed rounded-[2.5rem] bg-muted/5 flex flex-col items-center justify-center text-center gap-4 py-20">
                         <div className="animate-pulse flex flex-col items-center gap-2">
-                            <Clock size={40} className="text-muted-foreground/40" />
+                            <Clock size={40} className="text-muted-foreground" />
                             <h3 className="text-xl font-bold text-muted-foreground">Coming Soon</h3>
                         </div>
                         <p className="text-sm text-muted-foreground max-w-xs">

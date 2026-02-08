@@ -30,7 +30,7 @@ export function Footer() {
                 <div className="flex items-center gap-6">
                     <a
                         href={apiClient.getAdminUrl()}
-                        className="text-xs font-bold text-muted-foreground/50 hover:text-primary transition-colors flex items-center gap-1.5 uppercase tracking-widest"
+                        className="text-xs font-bold text-muted-foreground hover:text-primary transition-colors flex items-center gap-1.5 uppercase tracking-widest"
                     >
                         Governance
                     </a>

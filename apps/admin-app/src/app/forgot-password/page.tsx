@@ -107,7 +107,7 @@ export default function ForgotPasswordPage() {
             )}
 
             <div className="mt-12 pt-8 border-t text-center">
-                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/30">
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
                     Governance Security Protocol Alpha-9
                 </p>
             </div>

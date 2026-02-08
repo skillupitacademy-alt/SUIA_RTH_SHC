@@ -161,9 +161,9 @@ function QuestionFactoryContent() {
                                 <button
                                     onClick={() => setBlueprint({ strictMode: !blueprint.strictMode })}
                                     className={`
-                                        flex items-center gap-3 px-6 py-4 rounded-2xl border transition-all shadow-sm
+                                        h-12 flex items-center gap-3 px-6 rounded-2xl border transition-all shadow-sm
                                         ${blueprint.strictMode
-                                            ? 'bg-emerald-50 border-emerald-200 text-emerald-600'
+                                            ? 'bg-emerald-50 border-emerald-200 text-emerald-600 shadow-emerald-500/10'
                                             : 'bg-slate-50 border-slate-200 text-slate-400'
                                         }
                                     `}
@@ -175,32 +175,30 @@ function QuestionFactoryContent() {
                                     </span>
                                 </button>
 
-                                <div className="flex flex-col gap-2 flex-1 md:flex-none">
-                                    {/* Global Skills Badge: Emerald/Compact */}
-                                    {globalSkills && globalSkills.length > 0 && (
-                                        <div className="flex items-center justify-center gap-1.5 px-3 py-1.5 bg-emerald-50 border border-emerald-100 rounded-full self-center md:self-end">
-                                            <div className="w-1 h-1 bg-emerald-500 rounded-full animate-pulse" />
-                                            <span className="text-[8px] font-black text-emerald-600 uppercase tracking-tighter">
-                                                {globalSkills.length} GLOBAL SKILLS INJECTED
-                                            </span>
-                                        </div>
-                                    )}
+                                {/* Global Skills Badge: Emerald/Compact - Integrated into Group */}
+                                {globalSkills && globalSkills.length > 0 && (
+                                    <div className="flex items-center gap-2 px-4 h-12 bg-emerald-50/30 border border-emerald-100/50 rounded-2xl">
+                                        <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse shadow-lg shadow-emerald-500/50" />
+                                        <span className="text-[9px] font-black text-emerald-600 uppercase tracking-widest">
+                                            {globalSkills.length} SKILLS
+                                        </span>
+                                    </div>
+                                )}
 
-                                    <button
-                                        onClick={handleCopyPrompt}
-                                        disabled={!blueprint.topicId || !sourceCode}
-                                        className={`
-                                            px-12 py-5 rounded-2xl flex items-center justify-center gap-3 font-black uppercase tracking-widest text-[11px] transition-all
-                                            ${(!blueprint.topicId || !sourceCode)
-                                                ? 'bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200'
-                                                : 'bg-[#FF4B91] hover:bg-[#FF4B91]/90 text-white shadow-xl shadow-[#FF4B91]/20 active:scale-[0.98]'
-                                            }
-                                        `}
-                                    >
-                                        {isCopying ? <Check size={18} /> : <Copy size={18} />}
-                                        {isCopying ? 'Copied' : 'Copy Smart Prompt'}
-                                    </button>
-                                </div>
+                                <button
+                                    onClick={handleCopyPrompt}
+                                    disabled={!blueprint.topicId || !sourceCode}
+                                    className={`
+                                        h-12 px-10 rounded-2xl flex items-center justify-center gap-3 font-black uppercase tracking-widest text-[11px] transition-all
+                                        ${(!blueprint.topicId || !sourceCode)
+                                            ? 'bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200'
+                                            : 'bg-[#FF4B91] hover:bg-[#FF4B91]/90 text-white shadow-xl shadow-[#FF4B91]/30 active:scale-[0.98]'
+                                        }
+                                    `}
+                                >
+                                    {isCopying ? <Check size={18} /> : <Copy size={18} />}
+                                    <span className="whitespace-nowrap">{isCopying ? 'Copied' : 'Copy Smart Prompt'}</span>
+                                </button>
                             </div>
                         </div>
                     </div>

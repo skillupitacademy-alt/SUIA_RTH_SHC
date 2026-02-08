@@ -160,13 +160,13 @@ export const HierarchyReports: React.FC = () => {
 
                 <div className="flex items-center gap-4 w-full md:w-auto">
                     <div className="relative flex-1 md:w-80">
-                        <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-muted-foreground/40" size={18} />
+                        <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
                         <input
                             type="text"
                             placeholder="Filter hierarchy..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full pl-14 pr-6 py-4 bg-white border-2 border-primary/5 rounded-3xl text-sm font-bold tracking-tight focus:ring-4 focus:ring-primary/5 outline-none transition-all placeholder:text-muted-foreground/30 shadow-sm"
+                            className="w-full pl-14 pr-6 py-4 bg-white border-2 border-primary/5 rounded-3xl text-sm font-bold tracking-tight focus:ring-4 focus:ring-primary/5 outline-none transition-all placeholder:text-muted-foreground shadow-sm"
                         />
                     </div>
                     <button
@@ -373,7 +373,7 @@ const SummaryPanel = ({ icon: Icon, label, value, subvalue, color, bg }: any) =>
             <Icon size={24} />
         </div>
         <div>
-            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 mb-0.5">{label}</p>
+            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-0.5">{label}</p>
             <div className="flex items-baseline gap-2">
                 <span className={cn("text-3xl font-black italic tracking-tighter", color)}>{value}</span>
                 <span className="text-[9px] font-black uppercase tracking-widest text-[#1A1A1A]/40">{subvalue}</span>

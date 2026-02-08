@@ -256,7 +256,7 @@ export function ContentReadinessBoard() {
                                                             className="flex items-center justify-between p-3 rounded-xl hover:bg-primary/5 cursor-pointer group"
                                                         >
                                                             <div className="flex items-center gap-3">
-                                                                <Target size={14} className="text-muted-foreground/30" />
+                                                                <Target size={14} className="text-muted-foreground" />
                                                                 <span className="text-[11px] font-bold text-slate-600">{topic.name}</span>
                                                                 <ReadyIndicator isReady={topic.stats.isReady} />
                                                             </div>
@@ -282,7 +282,7 @@ export function ContentReadinessBoard() {
                                                                 {topic.subtopics?.map((sub: any) => (
                                                                     <div key={sub.id} className="flex items-center justify-between p-2 rounded-lg bg-muted/20 text-[10px]">
                                                                         <div className="flex items-center gap-2">
-                                                                            <MapPin size={10} className="text-muted-foreground/40" />
+                                                                            <MapPin size={10} className="text-muted-foreground" />
                                                                             <span className="font-medium text-muted-foreground uppercase tracking-tight">{sub.name}</span>
                                                                             <ReadyIndicator isReady={sub.stats.isReady} minimal />
                                                                         </div>

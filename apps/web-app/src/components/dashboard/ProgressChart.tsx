@@ -51,7 +51,7 @@ export function ProgressChart({ trendData = [] }: { trendData?: Array<{ score: n
 
             <div className="relative flex-1 min-h-[120px] mt-2 flex">
                 {/* Y-Axis Label */}
-                <div className="absolute -left-6 top-1/2 -rotate-90 origin-center text-[10px] font-black uppercase tracking-widest text-muted-foreground/40 whitespace-nowrap">
+                <div className="absolute -left-6 top-1/2 -rotate-90 origin-center text-[10px] font-black uppercase tracking-widest text-muted-foreground whitespace-nowrap">
                     Score (%)
                 </div>
 

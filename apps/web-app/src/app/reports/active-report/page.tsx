@@ -120,7 +120,7 @@ function ReportContent() {
                     {isProcessing ? "\"Calculating your masteries... one second.\"" : "\"Mining your results...\""}
                 </p>
                 {isProcessing && (
-                    <p className="text-sm text-muted-foreground/60 mt-4">Scoring engine is currently processing your submission.</p>
+                    <p className="text-sm text-muted-foreground mt-4">Scoring engine is currently processing your submission.</p>
                 )}
             </div>
         );

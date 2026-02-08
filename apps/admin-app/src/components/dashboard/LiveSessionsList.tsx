@@ -77,8 +77,8 @@ export function LiveSessionsList() {
 
                 <div className="space-y-3 mb-8">
                     {sessions.length === 0 ? (
-                        <div className="text-center py-12 border-2 border-dashed rounded-[2rem] border-muted-foreground/10">
-                            <Users className="mx-auto text-muted-foreground/20 mb-4" size={56} />
+                        <div className="text-center py-12 border-2 border-dashed rounded-[2rem] border-muted-foreground">
+                            <Users className="mx-auto text-muted-foreground mb-4" size={56} />
                             <p className="text-sm font-bold text-muted-foreground uppercase tracking-widest">No Active Sessions Detected</p>
                         </div>
                     ) : (

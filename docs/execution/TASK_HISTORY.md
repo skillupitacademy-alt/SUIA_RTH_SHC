@@ -68,6 +68,8 @@
 | 2026-02-06 | Global Taxonomy Injection | COMPLETED | Overhauled Question Factory to use full global skill taxonomy and resolved context names (Batch 127). |
 | 2026-02-08 | Hierarchy Enrichment | COMPLETED | Restored aggregate child counts across Domain -> Subtopic hierarchy. |
 | 2026-02-08 | Readability Audit | COMPLETED | Increased base font size to 15px and darkened muted text contrast. |
+| 2026-02-08 | Accessibility Sync | COMPLETED | Enforced WCAG AA contrast standards across both apps. |
+| 2026-02-08 | Console Refinement | COMPLETED | Unified Action Bar layout and centering in Question Factory. |
 | 2026-02-06 | JavaScript Diagnosis | COMPLETED | Root caused missing JavaScript questions to Expert difficulty shortfall. |
 | 2026-02-06 | CORS Policy Fix | COMPLETED | Allowed `Idempotency-Key` header in API middleware to unblock exam launch. |
 | 2026-02-07 | Diagnostic Cleanup | COMPLETED | Purged temporary database scripts and verified system-wide build integrity. |

@@ -256,7 +256,7 @@ export function ExamInterface() {
                                 <pre className="p-6 rounded-3xl bg-[#0d1117] text-[#e6edf3] font-mono text-sm overflow-x-auto border-2 border-primary/10 shadow-inner">
                                     <code>{question.code}</code>
                                 </pre>
-                                <div className="absolute top-4 right-4 text-[10px] font-bold text-muted-foreground/40 tracking-widest uppercase">
+                                <div className="absolute top-4 right-4 text-[10px] font-bold text-muted-foreground tracking-widest uppercase">
                                     TypeScript Snippet
                                 </div>
                             </div>

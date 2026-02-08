@@ -8,11 +8,11 @@
   .glass-morphism {
     @apply bg-white/70 backdrop-blur-[16px] border border-white/20;
   }
-  
+
   .pink-glow {
     box-shadow: 0 0 20px rgba(255, 45, 85, 0.2), 0 0 40px rgba(255, 45, 85, 0.1);
   }
-  
+
   .pink-glow-border {
     @apply border-[#FF2D55] ring-4 ring-[#FF2D55]/10;
     box-shadow: 0 0 15px rgba(255, 45, 85, 0.3);
@@ -37,7 +37,8 @@
   --foreground: 222 47% 11%;
 
   --muted: 210 40% 96%;
-  --muted-foreground: 215 16% 47%;
+  --muted-foreground: 215 16% 35%;
+  /* WCAG AA High Contrast Lock */
 
   --accent: 337 90% 63%;
   --accent-foreground: 0 0% 100%;
@@ -79,8 +80,8 @@
 }
 
 html {
-  font-size: 13px;
-  /* Platform-standard high-density scaling */
+  font-size: 15px;
+  /* Platform-standard accessible high-density scaling */
 }
 
 body {

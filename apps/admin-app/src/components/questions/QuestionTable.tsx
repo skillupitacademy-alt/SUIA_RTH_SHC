@@ -197,7 +197,7 @@ export function QuestionTable() {
                     <div className="flex items-center gap-4">
                         {/* Content Search Input */}
                         <div className="relative w-full xl:w-[400px]">
-                            <FileText size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground/40" />
+                            <FileText size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
                             <input
                                 type="text"
                                 placeholder="Search assessment text..."
