@@ -79,16 +79,21 @@ export function SubtopicTable() {
     const handleOpenForm = (subtopic: any = null) => {
         if (subtopic) {
             setCurrentSubtopic(subtopic);
+            
+            // Robust lineage extraction with fallbacks
             const topic = subtopic.topic;
+            const topicId = subtopic.topicId || topic?.id || '';
             const subject = topic?.subject;
+            const subjectId = topic?.subjectId || subject?.id || '';
+            const domainId = subject?.domainId || subject?.domain?.id || '';
 
             setFormData({
                 name: subtopic.name,
-                topicId: subtopic.topicId || '',
+                topicId: topicId,
                 description: subtopic.description || '',
                 status: subtopic.status || 'active',
-                domainId: subject?.domainId || '',
-                subjectId: topic?.subjectId || '',
+                domainId: domainId,
+                subjectId: subjectId,
                 order: subtopic.order || 0,
                 depthLevel: subtopic.depthLevel || 1
             });

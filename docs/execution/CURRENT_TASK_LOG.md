@@ -99,7 +99,11 @@
 - **Full-Width Selection**: Expanded Steps 1-4 to full width; 3x2 grid (6 items per page) for desktop.
 - **Compacted UI**: Reduced header scale and vertical margins by 40%; compacted `AssessmentSummary.tsx` for perfect Step 5 fit.
 - **Stable Footer**: Locked 3-zone action row (25/30/45) at fixed `88px` height with zero jumping.
-### Batch 148: Hierarchy Link Fix (Unlinked/NA)
-- **Hierarchy Mapping**: Implemented nested parent joins in `getSubjects`, `getTopics`, and `getSubtopics` in `AdminEngine.ts`.
+### Batch 148 (Feb 08, 2026)
+    - Action: Hierarchy Link Fix (Unlinked/NA)
+    - Detail: Implemented nested parent joins in `getSubjects`, `getTopics`, and `getSubtopics` in `AdminEngine.ts`.
+### Batch 149 (Feb 08, 2026)
+    - Action: Subtopic Lineage Repair
+    - Detail: Hardened `handleOpenForm` in `SubtopicTable.tsx` with robust lineage extraction to resolve "N/A" display in edit forms.
 - **Relationship Resolution**: API now returns `domain`, `subject.domain`, and `topic.subject.domain` structures for full path resolution in UI cards.
 - **Verification**: `pnpm build` and `npx tsc --noEmit` verified (Exit Code 0).

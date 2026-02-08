@@ -625,6 +625,11 @@
 - **Phase 3 - Finalization**: User selected **Executive Minimal** theme. Set as default, removed ThemeSwitcher component, enhanced confirmation modal to match Executive aesthetic (clean white background, clear hierarchy, professional styling).
 - **Build Integrity**: Verified with `pnpm build` and `npx tsc --noEmit` (Exit Code 0) for all phases.
 - **Status**: **PRODUCTION-READY**. Active Exam HUD now uses Executive Minimal theme exclusively. All UI/UX issues resolved.
+
+### Phase 41: Subtopic Lineage Repair (Batch 149)
+- **Data Integrity**: Hardened the "Edit Subtopic" form in `SubtopicTable.tsx` with robust parent ID extraction logic.
+- **Resolution**: Resolved the issue where Domain, Subject, and Topic names displayed as "N/A" due to missing direct FK references in the local subtopic object.
+- **Verification**: Logic aligned with `TopicTable` and `SubjectTable` standards. Verified via monorepo build sync.
 ### Phase 2 Refinement completion
 | Date | Phase Name | Status | Description |
 |---|---|---|---|

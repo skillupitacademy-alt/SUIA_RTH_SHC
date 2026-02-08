@@ -79,3 +79,4 @@
 | 2026-02-07 | My Exams Page UX | COMPLETED | Fixed layout shifts, added 7-per-page pagination, and applied Executive Minimal styling. |
 | 2026-02-08 | Launch Layout Refactor | COMPLETED | Finalized strict viewport-locked layout with no scrollbars; 3x2 full-width selection grid and stable 88px footer. |
 | 2026-02-08 | Hierarchy Link Fix | COMPLETED | Fixed 'UNLINKED'/'N/A' display by implementing nested parent joins in AdminEngine API. |
+| 2026-02-08 | Subtopic Lineage Repair | COMPLETED | Resolved "N/A" lineage display in subtopic edit form via robust ID extraction. |

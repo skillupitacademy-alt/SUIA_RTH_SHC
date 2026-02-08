@@ -1178,3 +1178,12 @@ Reduce documentation fragmentation and improve discoverability by consolidating 
     - **Redirect Fallback**: Added a fail-safe redirect to `/login` in `fetch-client.ts` for 401/403 errors, protected by a `window.__authRedirecting` guard to prevent double-navigations.
     - **Verification**: `pnpm build` and `npx tsc --noEmit` PASSED (Exit Code 0).
 - **Outcome**: Achieved high-fidelity session reliability for assessment takers. Users are protected from idle timeouts during exams and have a clear recovery path on session expiry.
+
+### Batch 149: Subtopic Lineage Repair
+- **Problem**: The "Edit Subtopic" form displayed Domain, Subject, and Topic names as "N/A" due to missing direct foreign key references in the subtopic object.
+- **Goal**: Restore full structural visibility during subtopic editing.
+- **Action**:
+    - **Logic Hardening**: Updated `handleOpenForm` in `SubtopicTable.tsx` to use robust extraction logic with path fallbacks (e.g., `topic.subject.domain.id`).
+    - **Verification**: Aligned the implementation with the standards used in `TopicTable` and `SubjectTable`.
+- **Certification**: Root `pnpm build` and `tsc --noEmit` PASSED (Exit Code 0).
+- **Outcome**: Subtopic edit forms now correctly pre-populate cascading selects and display the full parent lineage.
