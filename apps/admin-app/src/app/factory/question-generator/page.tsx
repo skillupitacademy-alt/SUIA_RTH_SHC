@@ -148,23 +148,23 @@ function QuestionFactoryContent() {
 
                     {/* Floating Action Console */}
                     <div className="sticky bottom-0 z-30 flex justify-center pt-8 pointer-events-none">
-                        <div className="bg-[#0A1128] border border-slate-800 p-6 rounded-[2.5rem] shadow-2xl flex flex-col md:flex-row items-center gap-6 w-full max-w-3xl px-12 pointer-events-auto mb-4">
+                        <div className="bg-white border border-slate-200 p-6 rounded-[2.5rem] shadow-2xl flex flex-col md:flex-row items-center gap-6 w-full max-w-3xl px-12 pointer-events-auto mb-4">
                             <div className="flex-1 text-center md:text-left">
                                 <h4 className="text-xs font-black uppercase text-[#FF4B91] tracking-widest italic leading-none">Intelligence Phase</h4>
                                 <div className="flex items-center gap-2 mt-2">
-                                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Generate Surgical AI Prompt</p>
+                                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Generate Surgical AI Prompt</p>
                                 </div>
                             </div>
 
                             <div className="flex items-center gap-4 w-full md:w-auto">
-                                {/* Strict Mode Toggle: Dark Navy Aesthetic */}
+                                {/* Strict Mode Toggle: Executive White Aesthetic */}
                                 <button
                                     onClick={() => setBlueprint({ strictMode: !blueprint.strictMode })}
                                     className={`
                                         flex items-center gap-3 px-6 py-4 rounded-2xl border transition-all shadow-sm
                                         ${blueprint.strictMode
-                                            ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-500'
-                                            : 'bg-slate-900 border-slate-800 text-slate-500'
+                                            ? 'bg-emerald-50 border-emerald-200 text-emerald-600'
+                                            : 'bg-slate-50 border-slate-200 text-slate-400'
                                         }
                                     `}
                                     title={blueprint.strictMode ? "Taxonomy Check Enabled" : "Taxonomy Check Disabled"}
@@ -178,9 +178,9 @@ function QuestionFactoryContent() {
                                 <div className="flex flex-col gap-2 flex-1 md:flex-none">
                                     {/* Global Skills Badge: Emerald/Compact */}
                                     {globalSkills && globalSkills.length > 0 && (
-                                        <div className="flex items-center justify-center gap-1.5 px-3 py-1.5 bg-emerald-500/5 border border-emerald-500/20 rounded-full self-center md:self-end">
+                                        <div className="flex items-center justify-center gap-1.5 px-3 py-1.5 bg-emerald-50 border border-emerald-100 rounded-full self-center md:self-end">
                                             <div className="w-1 h-1 bg-emerald-500 rounded-full animate-pulse" />
-                                            <span className="text-[8px] font-black text-emerald-500 uppercase tracking-tighter">
+                                            <span className="text-[8px] font-black text-emerald-600 uppercase tracking-tighter">
                                                 {globalSkills.length} GLOBAL SKILLS INJECTED
                                             </span>
                                         </div>
@@ -192,7 +192,7 @@ function QuestionFactoryContent() {
                                         className={`
                                             px-12 py-5 rounded-2xl flex items-center justify-center gap-3 font-black uppercase tracking-widest text-[11px] transition-all
                                             ${(!blueprint.topicId || !sourceCode)
-                                                ? 'bg-slate-800 text-slate-600 cursor-not-allowed border border-slate-700'
+                                                ? 'bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200'
                                                 : 'bg-[#FF4B91] hover:bg-[#FF4B91]/90 text-white shadow-xl shadow-[#FF4B91]/20 active:scale-[0.98]'
                                             }
                                         `}

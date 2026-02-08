@@ -437,8 +437,8 @@
 ### Phase 24: Executive Aesthetic Refinement (Batch 110)
 - **UI Tone-down**: Removed high-contrast "fancy" elements (dark index circles, rotations) to align with original project aesthetic.
 - **Index Standardization**: Implemented clean, color-coded index badges (`bg-*-50`, `text-*-600`) for all content cards.
-- **Factory UI Polish**: Refined the orchestration IDE with "Inquiry Stage" and "Draft Stage" labels and toned down factory headers.
-- **System Integrity**: Verified monorepo build and type safety (Exit Code 0).
+- **Factory UI Polish**: Polished the Question Factory Action Console to strictly match the platform's standard **Executive White** aesthetic (white background, light slate borders, clean shadows).
+- **Taxonomy Injection**: Fully integrated the system-wide skill taxonomy into the AI prompt generator with a 200-item safety cap, ensuring surgical skill mapping.
 ### Phase 101: Security Hardening & Zero-Vulnerability (P0)
 - **Migrate Lockdown**: Secured `/api/migrate` against unauthorized database resets.
 - **Central RBAC**: Consolidated admin role enforcement into the `middleware.ts` for `/api/admin` and `/api/factory`.
