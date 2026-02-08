@@ -92,3 +92,11 @@
 - **Contrast**: Darkened `muted-foreground` to meet WCAG AA standards.
 - **UI Refinement**: Upgraded login page and sidebar with high-contrast labels and better spacing.
 - **Verification**: Monorepo build and type-check verified (Exit Code 0).
+
+### Batch 147: Launch Evaluation Layout Realignment (Strict No-Scroll)
+- **Viewport Rigidity**: Enforced `h-screen` and `overflow-hidden` at the page level.
+- **Strict No-Scroll**: Completely removed internal `overflow-y-auto` from selection area; fit achieved via compaction and pagination.
+- **Full-Width Selection**: Expanded Steps 1-4 to full width; 3x2 grid (6 items per page) for desktop.
+- **Compacted UI**: Reduced header scale and vertical margins by 40%; compacted `AssessmentSummary.tsx` for perfect Step 5 fit.
+- **Stable Footer**: Locked 3-zone action row (25/30/45) at fixed `88px` height with zero jumping.
+- **Verification**: `pnpm --filter @quiz/web-app build` and `npx tsc --noEmit` verified (Exit Code 0).

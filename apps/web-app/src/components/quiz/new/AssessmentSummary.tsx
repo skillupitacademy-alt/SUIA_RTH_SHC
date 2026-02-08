@@ -128,31 +128,31 @@ export function AssessmentSummary({
                             </div>
                         </div>
 
-                        <div className="h-[1px] bg-gray-300 w-full my-2" />
+                        <div className="h-[1px] bg-gray-300 w-full my-1" />
 
-                        <div className="grid grid-cols-2 gap-4 bg-gray-50/50 p-3 rounded-xl border border-gray-300">
+                        <div className="grid grid-cols-2 gap-3 bg-gray-50/50 p-2.5 rounded-xl border border-gray-300">
                             <div className="space-y-0.5">
-                                <p className="text-[8px] font-black text-gray-400 uppercase tracking-[0.2em]">Est. Time</p>
-                                <p className="text-base font-black font-outfit text-[#1A1A1A]">{Math.ceil(questionCount * 1.5)} MIN</p>
+                                <p className="text-[7px] font-black text-gray-400 uppercase tracking-[0.2em]">Est. Time</p>
+                                <p className="text-sm font-black font-outfit text-[#1A1A1A]">{Math.ceil(questionCount * 1.5)} MIN</p>
                             </div>
                             <div className="space-y-0.5">
-                                <p className="text-[8px] font-black text-gray-400 uppercase tracking-[0.2em]">Questions</p>
-                                <p className="text-base font-black font-outfit text-[#1A1A1A]">{questionCount}</p>
+                                <p className="text-[7px] font-black text-gray-400 uppercase tracking-[0.2em]">Questions</p>
+                                <p className="text-sm font-black font-outfit text-[#1A1A1A]">{questionCount}</p>
                             </div>
                         </div>
 
-                        <div className="space-y-2 pt-2">
-                            <div className="flex items-center gap-2 mb-1">
+                        <div className="space-y-1.5 pt-1.5">
+                            <div className="flex items-center gap-2 mb-0.5">
                                 <div className="h-1 w-1 rounded-full bg-[#FF2D55]" />
-                                <p className="text-[9px] font-black font-outfit text-[#1A1A1A] uppercase tracking-widest">Engine Calibration</p>
+                                <p className="text-[8px] font-black font-outfit text-[#1A1A1A] uppercase tracking-widest">Engine Calibration</p>
                             </div>
-                            <div className="flex justify-between items-center bg-white p-2 rounded-lg border border-gray-200 shadow-sm">
-                                <span className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest">Difficulty</span>
-                                <span className="text-[9px] font-black text-[#1A1A1A] uppercase">{difficulty}</span>
+                            <div className="flex justify-between items-center bg-white p-1.5 rounded-lg border border-gray-200 shadow-sm">
+                                <span className="text-[7px] font-bold text-muted-foreground uppercase tracking-widest">Difficulty</span>
+                                <span className="text-[8px] font-black text-[#1A1A1A] uppercase">{difficulty}</span>
                             </div>
-                            <div className="flex justify-between items-center bg-white p-2 rounded-lg border border-gray-200 shadow-sm">
-                                <span className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest">Potential</span>
-                                <span className="text-[9px] font-black text-[#FF2D55] uppercase tracking-tighter">{totalPoints} PTS</span>
+                            <div className="flex justify-between items-center bg-white p-1.5 rounded-lg border border-gray-200 shadow-sm">
+                                <span className="text-[7px] font-bold text-muted-foreground uppercase tracking-widest">Potential</span>
+                                <span className="text-[8px] font-black text-[#FF2D55] uppercase tracking-tighter">{totalPoints} PTS</span>
                             </div>
                         </div>
                     </div>

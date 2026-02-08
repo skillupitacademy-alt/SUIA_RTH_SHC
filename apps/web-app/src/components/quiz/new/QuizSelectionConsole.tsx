@@ -441,11 +441,11 @@ function QuizSelectionConsoleContent() {
 
                     {/* Right: Branding & Toggle */}
                     <div className="flex flex-col items-end text-right flex-1">
-                        <div className="mb-2">
-                            <h1 className="text-3xl font-black tracking-tighter font-outfit text-[#1A1A1A] leading-none mb-1">
+                        <div className="mb-1.5">
+                            <h1 className="text-2xl font-black tracking-tighter font-outfit text-[#1A1A1A] leading-none mb-1">
                                 Launch Evaluation
                             </h1>
-                            <p className="text-[9px] text-muted-foreground font-inter font-medium opacity-60 uppercase tracking-[0.2em] leading-none">
+                            <p className="text-[8px] text-muted-foreground font-inter font-medium opacity-60 uppercase tracking-[0.2em] leading-none">
                                 Strategic Ecosystem Configuration
                             </p>
                         </div>
@@ -494,9 +494,9 @@ function QuizSelectionConsoleContent() {
             </div>
 
             {/* Main Interactive Zone */}
-            <div className="flex-1 flex flex-col min-h-0 relative px-4 md:px-6">
-                {/* Content area: scrolls internally if needed, but constrained to fit viewport */}
-                <div className="flex-1 flex gap-8 items-stretch pt-6 pb-4 min-h-0 max-h-[calc(100vh-120px-96px)]">
+            <div className="flex-1 flex flex-col min-h-0 relative px-4 md:px-6 overflow-hidden">
+                {/* Content area: deterministic vertical fit, no scrolls */}
+                <div className="flex-1 flex gap-8 items-stretch pt-6 pb-4 min-h-0">
 
                     {/* Left/Main Pane */}
                     <div className={cn(
@@ -504,7 +504,7 @@ function QuizSelectionConsoleContent() {
                         step === 5 ? "w-[65%]" : "w-full",
                         isLocked ? "opacity-30 pointer-events-none" : (isArmed ? "opacity-50 pointer-events-none" : "opacity-100")
                     )}>
-                        <div className="flex-1 overflow-y-auto no-scrollbar pr-2">
+                        <div className="flex-1 overflow-hidden">
                             {loading && (
                                 <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/50 backdrop-blur-[1px] rounded-[1.25rem] animate-in fade-in duration-300">
                                     <Activity className="animate-spin text-[#FF2D55]" size={32} />
@@ -512,7 +512,7 @@ function QuizSelectionConsoleContent() {
                             )}
 
                             {step === 1 && (
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 animate-in fade-in zoom-in-95 duration-500">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 grid-rows-2 gap-4 animate-in fade-in zoom-in-95 duration-500 h-full">
                                     {paginatedDomains.map((domain, idx) => (
                                         <DomainCard
                                             key={domain.id}
@@ -527,7 +527,7 @@ function QuizSelectionConsoleContent() {
                             )}
 
                             {(step === 2 || step === 3 || step === 4) && (
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 animate-in fade-in zoom-in-95 duration-500">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 grid-rows-2 gap-4 animate-in fade-in zoom-in-95 duration-500 h-full">
                                     {(step === 2 ? paginatedSubjects : step === 3 ? paginatedTopics : paginatedSubtopics).map((item) => (
                                         <TopicChip
                                             key={item.id}
@@ -540,7 +540,7 @@ function QuizSelectionConsoleContent() {
                             )}
 
                             {step === 5 && (
-                                <div className="animate-in fade-in zoom-in-95 duration-500 h-full flex flex-col gap-6">
+                                <div className="animate-in fade-in zoom-in-95 duration-500 h-full flex flex-col gap-4 overflow-hidden">
                                     <div className="grid grid-cols-3 gap-4">
                                         {[
                                             { id: 'mixed', name: 'Mixed', desc: 'Mastery Blend' },
@@ -583,16 +583,16 @@ function QuizSelectionConsoleContent() {
                                         ))}
                                     </div>
 
-                                    <div className="mt-auto bg-gray-50 p-4 rounded-2xl border border-gray-200">
+                                    <div className="mt-auto bg-gray-50 p-3 rounded-xl border border-gray-200">
                                         <div className="flex justify-between items-center">
                                             <div className="space-y-0.5">
-                                                <p className="text-xl font-black font-outfit text-[#1A1A1A] tracking-tighter">~{Math.ceil(questionCount * 1.5)} MINS</p>
-                                                <p className="text-[9px] font-black uppercase tracking-widest text-[#FF2D55]">Calculated Duration</p>
+                                                <p className="text-lg font-black font-outfit text-[#1A1A1A] tracking-tighter">~{Math.ceil(questionCount * 1.5)} MINS</p>
+                                                <p className="text-[8px] font-black uppercase tracking-widest text-[#FF2D55]">Calculated Duration</p>
                                             </div>
-                                            <div className="h-8 w-[px] bg-gray-300" />
+                                            <div className="h-6 w-[1px] bg-gray-300" />
                                             <div className="text-right">
-                                                <p className="text-xl font-black font-outfit text-[#1A1A1A] tracking-tighter">{difficulty.toUpperCase()}</p>
-                                                <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Mastery Profile</p>
+                                                <p className="text-lg font-black font-outfit text-[#1A1A1A] tracking-tighter">{difficulty.toUpperCase()}</p>
+                                                <p className="text-[8px] font-black uppercase tracking-widest text-muted-foreground">Mastery Profile</p>
                                             </div>
                                         </div>
                                     </div>
