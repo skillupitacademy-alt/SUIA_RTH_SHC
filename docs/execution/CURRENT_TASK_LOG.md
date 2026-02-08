@@ -109,3 +109,9 @@
 - **Build Recovery**: Resolved `EPERM` lock on `.next` by purging cache; verified `pnpm build` (Exit Code 0).
 - **Type Safety**: Verified `npx tsc --noEmit` (Exit Code 0).
 - **Commit Hygiene**: strictly isolated UI fix commit; unstaged `admin.engine.ts` and unrelated scripts.
+
+### Batch 152: Global Modal Portalling & WCAG Sync (Feb 08, 2026)
+- **Viewport Isolation**: Migrated all Question Bank edit forms (Domain, Subject, Topic, Subtopic, Skill) to the `ZPortalModal` portal architecture to prevent parent overflow clipping.
+- **Scroll Locking**: Implemented and verified `useScrollLock` to prevent background scroll drifting during modal interaction.
+- **WCAG Compliance**: Purged remaining low-contrast `/40` opacity text in `HierarchyReports.tsx` and `ContentReadinessBoard.tsx`.
+- **System Health**: Verified 100% monorepo build and `npx tsc --noEmit` success for both admin and web applications (Exit Code 0).

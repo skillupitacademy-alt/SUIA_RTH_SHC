@@ -234,119 +234,117 @@ export function DomainTable() {
             </div>
 
             {/* Standard Edit Form (Update Mode Only) */}
-            {isFormOpen && (
-                <div className="fixed inset-0 z-[100] bg-white animate-in slide-in-from-right duration-300">
-                    <div className="h-full flex flex-col">
-                        {/* Header */}
-                        <div className="px-8 py-6 border-b border-slate-200 flex items-center justify-between bg-white">
-                            <div className="flex items-center gap-4">
-                                <div className="h-12 w-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
-                                    <Globe size={24} />
-                                </div>
-                                <div>
-                                    <h3 className="text-2xl font-black text-[#1A1A1A] uppercase tracking-tight">
-                                        {currentDomain ? 'Edit Domain' : 'New Domain'}
-                                    </h3>
-                                    <p className="text-xs font-medium text-slate-500 uppercase tracking-widest mt-0.5">
-                                        {currentDomain ? 'Modify Domain Details' : 'Create New Hierarchy Root'}
-                                    </p>
-                                </div>
+            <ZPortalModal isOpen={isFormOpen} zIndex={100}>
+                <div className="h-full flex flex-col">
+                    {/* Header */}
+                    <div className="px-8 py-6 border-b border-slate-200 flex items-center justify-between bg-white">
+                        <div className="flex items-center gap-4">
+                            <div className="h-12 w-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+                                <Globe size={24} />
                             </div>
-                            <button
-                                onClick={handleCloseForm}
-                                className="p-2 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors"
-                            >
-                                <X size={24} />
-                            </button>
+                            <div>
+                                <h3 className="text-2xl font-black text-[#1A1A1A] uppercase tracking-tight">
+                                    {currentDomain ? 'Edit Domain' : 'New Domain'}
+                                </h3>
+                                <p className="text-xs font-medium text-slate-500 uppercase tracking-widest mt-0.5">
+                                    {currentDomain ? 'Modify Domain Details' : 'Create New Hierarchy Root'}
+                                </p>
+                            </div>
                         </div>
+                        <button
+                            onClick={handleCloseForm}
+                            className="p-2 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors"
+                        >
+                            <X size={24} />
+                        </button>
+                    </div>
 
-                        {/* Content - Landscape Grid */}
-                        <div className="flex-1 overflow-y-auto">
-                            <div className="max-w-5xl mx-auto px-8 py-8">
-                                <form onSubmit={handleSubmit} className="space-y-6">
-                                    <div className="grid grid-cols-2 gap-6">
-                                        {/* Domain Name */}
-                                        <div className="space-y-2">
-                                            <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 pl-1">Domain Name</label>
-                                            <input
-                                                required
-                                                type="text"
-                                                placeholder="Enter domain name..."
-                                                value={formData.name}
-                                                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                                className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-slate-300"
-                                            />
-                                        </div>
-
-                                        {/* Category */}
-                                        <div className="space-y-2">
-                                            <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 pl-1">Category (Reporting Dimension)</label>
-                                            <input
-                                                type="text"
-                                                placeholder="e.g., DevOps, Security, Frontend..."
-                                                value={formData.category || ''}
-                                                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                                                className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-slate-300"
-                                            />
-                                        </div>
-                                    </div>
-
-                                    {/* Description */}
+                    {/* Content - Landscape Grid */}
+                    <div className="flex-1 overflow-y-auto">
+                        <div className="max-w-5xl mx-auto px-8 py-8">
+                            <form onSubmit={handleSubmit} className="space-y-6">
+                                <div className="grid grid-cols-2 gap-6">
+                                    {/* Domain Name */}
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 pl-1">Description</label>
-                                        <textarea
-                                            rows={4}
-                                            placeholder="Brief summary of this domain..."
-                                            value={formData.description}
-                                            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                                            className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-slate-300 resize-none"
+                                        <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 pl-1">Domain Name</label>
+                                        <input
+                                            required
+                                            type="text"
+                                            placeholder="Enter domain name..."
+                                            value={formData.name}
+                                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                            className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-slate-300"
                                         />
                                     </div>
 
-                                    {/* Status */}
+                                    {/* Category */}
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 pl-1">Status</label>
-                                        <div className="flex bg-white p-1.5 rounded-xl border border-slate-200">
-                                            {['active', 'inactive'].map((status) => (
-                                                <button
-                                                    key={status}
-                                                    type="button"
-                                                    onClick={() => setFormData({ ...formData, status: status as any })}
-                                                    className={`flex-1 py-2.5 px-4 rounded-lg text-xs font-black uppercase tracking-wider transition-all ${formData.status === status
-                                                        ? 'bg-[#1A1A1A] text-white shadow-sm'
-                                                        : 'text-slate-400 hover:text-slate-600'
-                                                        }`}
-                                                >
-                                                    {status}
-                                                </button>
-                                            ))}
-                                        </div>
+                                        <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 pl-1">Category (Reporting Dimension)</label>
+                                        <input
+                                            type="text"
+                                            placeholder="e.g., DevOps, Security, Frontend..."
+                                            value={formData.category || ''}
+                                            onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                                            className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-slate-300"
+                                        />
                                     </div>
+                                </div>
 
-                                    {/* Footer Actions */}
-                                    <div className="pt-8 flex items-center justify-end gap-4">
-                                        <button
-                                            type="button"
-                                            onClick={handleCloseForm}
-                                            className="px-8 py-3 rounded-xl text-slate-600 font-bold uppercase tracking-widest text-xs hover:bg-slate-100 transition-all"
-                                        >
-                                            Cancel
-                                        </button>
-                                        <button
-                                            type="submit"
-                                            disabled={isSubmitting}
-                                            className="px-10 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-black uppercase tracking-widest text-xs shadow-lg shadow-blue-500/20 transition-all flex items-center gap-2 disabled:opacity-50"
-                                        >
-                                            {isSubmitting ? <ZLoader size="xs" className="text-white" center={false} /> : <Check size={16} />}
-                                            {isSubmitting ? 'Saving...' : 'Save Changes'}
-                                        </button>
+                                {/* Description */}
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 pl-1">Description</label>
+                                    <textarea
+                                        rows={4}
+                                        placeholder="Brief summary of this domain..."
+                                        value={formData.description}
+                                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                        className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-slate-300 resize-none"
+                                    />
+                                </div>
+
+                                {/* Status */}
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 pl-1">Status</label>
+                                    <div className="flex bg-white p-1.5 rounded-xl border border-slate-200">
+                                        {['active', 'inactive'].map((status) => (
+                                            <button
+                                                key={status}
+                                                type="button"
+                                                onClick={() => setFormData({ ...formData, status: status as any })}
+                                                className={`flex-1 py-2.5 px-4 rounded-lg text-xs font-black uppercase tracking-wider transition-all ${formData.status === status
+                                                    ? 'bg-[#1A1A1A] text-white shadow-sm'
+                                                    : 'text-slate-400 hover:text-slate-600'
+                                                    }`}
+                                            >
+                                                {status}
+                                            </button>
+                                        ))}
                                     </div>
-                                </form>
-                            </div>
+                                </div>
+
+                                {/* Footer Actions */}
+                                <div className="pt-8 flex items-center justify-end gap-4">
+                                    <button
+                                        type="button"
+                                        onClick={handleCloseForm}
+                                        className="px-8 py-3 rounded-xl text-slate-600 font-bold uppercase tracking-widest text-xs hover:bg-slate-100 transition-all"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        disabled={isSubmitting}
+                                        className="px-10 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-black uppercase tracking-widest text-xs shadow-lg shadow-blue-500/20 transition-all flex items-center gap-2 disabled:opacity-50"
+                                    >
+                                        {isSubmitting ? <ZLoader size="xs" className="text-white" center={false} /> : <Check size={16} />}
+                                        {isSubmitting ? 'Saving...' : 'Save Changes'}
+                                    </button>
+                                </div>
+                            </form>
                         </div>
                     </div>
                 </div>
-            )}
+            </ZPortalModal>
 
             {/* Factory Wizard Integration */}
             <HierarchyFactoryWizard
