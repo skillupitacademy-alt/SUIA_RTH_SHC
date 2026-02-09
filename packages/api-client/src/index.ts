@@ -3,6 +3,7 @@ import { AuthClient } from './modules/auth-client';
 import { QuizClient } from './modules/quiz-client';
 import { AdminClient } from './modules/admin-client';
 import { DashboardClient } from './modules/dashboard-client';
+import { SearchClient } from './modules/search-client';
 import { ReportClient } from './modules/report-client';
 
 /**
@@ -79,6 +80,7 @@ export * from './modules/quiz-client';
 export * from './modules/admin-client';
 export * from './modules/dashboard-client';
 export * from './modules/report-client';
+export * from './modules/search-client';
 
 export const apiClient = {
   auth: new AuthClient(baseClient),
@@ -86,6 +88,7 @@ export const apiClient = {
   admin: new AdminClient(baseClient),
   dashboard: new DashboardClient(baseClient),
   reports: new ReportClient(baseClient),
+  search: new SearchClient(baseClient),
   client: baseClient, // Export the base client for advanced usage
   getAdminUrl: () => ADMIN_URL,
 };

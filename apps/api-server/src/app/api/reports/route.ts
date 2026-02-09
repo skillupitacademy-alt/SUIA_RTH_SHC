@@ -52,6 +52,7 @@ export async function GET(req: NextRequest) {
        return NextResponse.json(report);
     }
 
+
     const report = await ReportEngine.getUserPerformance(payload.userId);
     return NextResponse.json(report);
   } catch (error: any) {
