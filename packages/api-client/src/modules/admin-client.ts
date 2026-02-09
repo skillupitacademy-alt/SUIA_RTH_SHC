@@ -342,4 +342,24 @@ export class AdminClient {
   async getSystemUsage() {
     return this.client.get<any>('/admin/system/usage');
   }
+
+  async getTrendSummary(params: { range?: string } = {}) {
+    const query = new URLSearchParams();
+    if (params.range) query.append('range', params.range);
+    return this.client.get<any>(`/admin/trends/summary?${query.toString()}`);
+  }
+
+  async getScoreTrends(params: { userId?: string; range?: string } = {}) {
+    const query = new URLSearchParams();
+    if (params.userId) query.append('userId', params.userId);
+    if (params.range) query.append('range', params.range);
+    return this.client.get<{ scores: any[] }>(`/admin/trends/scores?${query.toString()}`);
+  }
+
+  async getSkillTrends(params: { userId?: string; range?: string } = {}) {
+    const query = new URLSearchParams();
+    if (params.userId) query.append('userId', params.userId);
+    if (params.range) query.append('range', params.range);
+    return this.client.get<{ skills: any[] }>(`/admin/trends/skills?${query.toString()}`);
+  }
 }
