@@ -18,6 +18,8 @@ import {
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { EXAM_THEMES } from '@/lib/exam-themes';
+import { useExitGuard } from '@/hooks/useExitGuard';
+import { ExitConfirmationDialog } from '@/components/ui/ExitConfirmationDialog';
 
 
 // Detailed Question Status
@@ -99,29 +101,28 @@ export default function ActiveExamPage() {
         return () => clearInterval(interval);
     }, [timeLeft]);
 
-    // 3. Navigation Guardrail (Anti-Oops)
+    // 3. Navigation Guardrail (Anti-Oops) - Using custom exit guard hook
+    const isExamActive = state?.status === 'started';
+    const { showDialog: showExitDialog, confirmExit, cancelExit } = useExitGuard({
+        enabled: isExamActive && !isSubmitting,
+        message: 'Your exam session is active. Leaving may result in data loss.'
+    });
+
+    // Telemetry for attempted exits (separate from blocking)
     useEffect(() => {
-        const isStarted = state?.status === 'started';
+        if (!isExamActive) return;
 
-        if (!isStarted) return;
-
-        const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-            // Log telemetry before the browser blocks the reload
-            // Note: This is an optimistic call, it might not finish if the user confirms exit immediately.
+        const handleBeforeUnload = () => {
             apiClient.telemetry.logEvent('attempted_exit_reload', {
                 examId,
                 currentIndex: state?.currentIndex,
                 answeredCount: Object.keys(state?.localAnswers || {}).length
             });
-
-            e.preventDefault();
-            e.returnValue = ''; // Standard way to trigger browser confirmation
-            return '';
         };
 
         window.addEventListener('beforeunload', handleBeforeUnload);
         return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-    }, [state?.status, state?.currentIndex, state?.localAnswers, examId]);
+    }, [isExamActive, state?.currentIndex, state?.localAnswers, examId]);
 
     // 3. Handlers
     const handleSelectOption = async (questionId: string, optionId: string) => {
@@ -548,6 +549,15 @@ export default function ActiveExamPage() {
                     </div>
                 </div>
             )}
+
+            {/* Exit Confirmation Dialog */}
+            <ExitConfirmationDialog
+                isOpen={showExitDialog}
+                onConfirm={confirmExit}
+                onCancel={cancelExit}
+                title="Leave Active Exam?"
+                message="Your exam session is in progress. Leaving may result in data loss."
+            />
         </div>
     );
 }

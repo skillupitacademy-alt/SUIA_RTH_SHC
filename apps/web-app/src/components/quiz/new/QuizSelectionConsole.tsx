@@ -8,6 +8,8 @@ import { DomainCard } from './DomainCard';
 import { TopicChip } from './TopicChip';
 import { Code, Shield, Cloud, Database, Loader2, Activity, ChevronLeft, ChevronRight, AlertCircle, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useExitGuard } from '@/hooks/useExitGuard';
+import { ExitConfirmationDialog } from '@/components/ui/ExitConfirmationDialog';
 
 export function QuizSelectionConsole() {
     return (
@@ -62,18 +64,12 @@ function QuizSelectionConsoleContent() {
     const [isArmed, setIsArmed] = useState(false);
     const [isLocked, setIsLocked] = useState(false);
 
-    // Exit Guard logic (Logic-only, no UI changes)
-    useEffect(() => {
-        const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-            const hasSelections = selectedDomains.length > 0 || selectedTopics.length > 0;
-            if (hasSelections && !isLocked) {
-                e.preventDefault();
-                e.returnValue = '';
-            }
-        };
-        window.addEventListener('beforeunload', handleBeforeUnload);
-        return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-    }, [selectedDomains, selectedTopics, isLocked]);
+    // Exit Guard logic with custom dialog
+    const hasUnsavedProgress = (selectedDomains.length > 0 || selectedTopics.length > 0) && !isLocked;
+    const { showDialog: showExitDialog, confirmExit, cancelExit } = useExitGuard({
+        enabled: hasUnsavedProgress,
+        message: 'You have unsaved assessment selections. Are you sure you want to leave?'
+    });
 
     // Pagination State
     const [page, setPage] = useState(0);
@@ -675,6 +671,15 @@ function QuizSelectionConsoleContent() {
                     </div>
                 )}
             </div>
+
+            {/* Exit Confirmation Dialog */}
+            <ExitConfirmationDialog
+                isOpen={showExitDialog}
+                onConfirm={confirmExit}
+                onCancel={cancelExit}
+                title="Leave Assessment Setup?"
+                message="You have unsaved selections. Are you sure you want to leave?"
+            />
         </div >
     );
 }
