@@ -62,6 +62,19 @@ function QuizSelectionConsoleContent() {
     const [isArmed, setIsArmed] = useState(false);
     const [isLocked, setIsLocked] = useState(false);
 
+    // Exit Guard logic (Logic-only, no UI changes)
+    useEffect(() => {
+        const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+            const hasSelections = selectedDomains.length > 0 || selectedTopics.length > 0;
+            if (hasSelections && !isLocked) {
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        };
+        window.addEventListener('beforeunload', handleBeforeUnload);
+        return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+    }, [selectedDomains, selectedTopics, isLocked]);
+
     // Pagination State
     const [page, setPage] = useState(0);
     // HYBRID CAPACITY: Locked to 2x3 (6) for Step 1, 3x3 (9) for Steps 2-4

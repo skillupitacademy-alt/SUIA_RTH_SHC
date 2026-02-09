@@ -162,3 +162,14 @@
 - **API Safety**: Enforced strict parameter clamping (max 50) and range validation (`7d`, `30d`).
 - **Refinement**: Cleaned up migrations (`0002` authoritative) and added `X-RateLimit-Remaining` headers.
 - **Verification**: Validated full system integrity via `pnpm build` and `tsc --noEmit` (Exit Code 0).
+
+### Batch 166: Global Search & Selection Recovery (Feb 09, 2026)
+- **Recovery**: Restored Global Search (`SearchClient`, `GlobalSearchDialog`) and Selection Engine optimization (`O(log n)`) to the clean HUD baseline.
+- **Baseline Hardening**: Purged Performance Analytics (intentional) and optimized dashboard activity limits to 3 items.
+- **Visual Sync**: Restored "Project Pink" (`#FF2D55`) branding to all primary CTAs in the Launch journey.
+- **Verification**: Verified via `pnpm build` and `tsc --noEmit` (Exit Code 0).
+
+### Batch 167: Exit Guard Logic Hardening (Feb 09, 2026)
+- **Logic-Only Hardening**: Implemented `beforeunload` browser guards in `QuizSelectionConsole.tsx` (Launch) and `ExamInterface.tsx` (Exam) to prevent session loss.
+- **Zero-Character Constraint**: Verified exactly 0 characters of JSX/UI were altered in the locked journey files.
+- **Verification**: Verified via `pnpm build` and `tsc --noEmit` (Exit Code 0).

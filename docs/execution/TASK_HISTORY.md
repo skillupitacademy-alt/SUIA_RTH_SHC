@@ -91,3 +91,6 @@
 | 2026-02-08 | Clipping & Footer Fix | COMPLETED | Resolved card clipping via grid buffers and stabilized footer anchoring. |
 | 2026-02-08 | Professional HUD Optimization | COMPLETED | Enforced viewport-locked HUD with full-width selection, stationary heart, and accessibility fixes. |
 | 2026-02-09 | Dashboard Optimization | COMPLETED | Implemented server-side pagination (limit=6) and hardened API with rate-limiting & caching. |
+| 2026-02-09 | Recovery & Re-walk | COMPLETED | Restored Global Search, Command Palette, and Selection Engine; Hardened clean baseline after intentional Analytics reversion. |
+| 2026-02-09 | Exit Guard Logic | COMPLETED | Implemented logic-only browser guards in Launch and Exam journeys to prevent session loss (0 UI impact). |
+| 2026-02-09 | System Verification | COMPLETED | Verified system integrity with root pnpm build and tsc check (Post-Recovery). |
