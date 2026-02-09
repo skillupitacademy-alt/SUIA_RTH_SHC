@@ -1,4 +1,73 @@
-'use client';
+def write_clean(path, content):
+    with open(path, 'w', encoding='utf-8', newline='\n') as f:
+        f.write(content)
+
+telemetry_route = """import { NextRequest, NextResponse } from 'next/server';
+import { AuditService } from '@/modules/auth/audit.service';
+import { TokenService } from '@/modules/auth/token.service';
+
+export const dynamic = 'force-dynamic';
+
+export async function POST(req: NextRequest) {
+  try {
+    let userId: string | undefined;
+    try {
+        const token = TokenService.getAccessToken(req, { scope: 'user' }) || TokenService.getAccessToken(req, { scope: 'admin' });
+        if (token) {
+            const payload = await TokenService.verifyAccessToken(token, token.includes('admin')).catch(() => null);
+            userId = payload?.userId;
+        }
+    } catch (e) {
+        // Auth failed but we continue for telemetry
+    }
+    
+    const { action, metadata } = await req.json();
+
+    if (!action) {
+      return NextResponse.json({ error: 'Action is required' }, { status: 400 });
+    }
+
+    await AuditService.log({
+      userId,
+      action: `telemetry_${action}`,
+      ip: req.headers.get('x-forwarded-for') || '0.0.0.0',
+      metadata: {
+        ...metadata,
+        userAgent: req.headers.get('user-agent'),
+        timestamp: new Date().toISOString()
+      },
+    });
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('[TelemetryRoute] Critical failure:', error);
+    return NextResponse.json({ success: false }, { status: 200 }); 
+  }
+}
+"""
+
+telemetry_client = """import { FetchClient } from '../core/fetch-client';
+
+export class TelemetryClient {
+  private client: FetchClient;
+
+  constructor(client: FetchClient) {
+    this.client = client;
+  }
+
+  async logEvent(action: string, metadata?: any) {
+    try {
+      return await this.client.post('/telemetry', { action, metadata });
+    } catch (error) {
+      console.warn('[TelemetryClient] Logic fail-safe triggered. Event suppressed:', action, error);
+      return null;
+    }
+  }
+}
+"""
+
+# Note: Using standard strings and avoiding any non-ASCII characters here to be safe
+exam_page = r"""'use client';
 
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useRouter, useParams, useSearchParams } from 'next/navigation';
@@ -551,3 +620,86 @@ export default function ActiveExamPage() {
         </div>
     );
 }
+"""
+
+api_client_index = """import { FetchClient } from './core/fetch-client';
+import { AuthClient } from './modules/auth-client';
+import { QuizClient } from './modules/quiz-client';
+import { AdminClient } from './modules/admin-client';
+import { DashboardClient } from './modules/dashboard-client';
+import { SearchClient } from './modules/search-client';
+import { ReportClient } from './modules/report-client';
+import { TelemetryClient } from './modules/telemetry-client';
+
+function getApiUrl(): string {
+  if (process.env.NEXT_PUBLIC_API_URL) {
+    return process.env.NEXT_PUBLIC_API_URL.replace(/\/$/, '');
+  }
+  if (typeof window !== 'undefined') {
+    const hostname = window.location.hostname;
+    if (hostname.includes('vercel.app')) {
+      const apiHostname = hostname
+        .replace('web-app.', 'api-server.')
+        .replace('admin-app.', 'api-server.')
+        .replace('web.', 'api.')
+        .replace('admin.', 'api.');
+      return `https://${apiHostname}/api`;
+    }
+    if (hostname.includes('realtutorialhub.com')) {
+      return `https://api.realtutorialhub.com/api`;
+    }
+  }
+  return '/api'; 
+}
+
+function getAdminUrl(): string {
+  if (process.env.NEXT_PUBLIC_ADMIN_URL) {
+    return process.env.NEXT_PUBLIC_ADMIN_URL.replace(/\/$/, '');
+  }
+  if (typeof window !== 'undefined') {
+    const hostname = window.location.hostname;
+    if (hostname.includes('vercel.app')) {
+      const adminHostname = hostname
+        .replace('web-app.', 'admin-app.')
+        .replace('web.', 'admin.');
+      return `https://${adminHostname}`;
+    }
+    if (hostname.includes('realtutorialhub.com')) {
+      return `https://admin.realtutorialhub.com`;
+    }
+  }
+  return '#'; 
+}
+
+const API_URL = getApiUrl();
+const ADMIN_URL = getAdminUrl();
+
+const baseClient = new FetchClient(API_URL);
+
+export * from './modules/auth-client';
+export * from './modules/quiz-client';
+export * from './modules/admin-client';
+export * from './modules/dashboard-client';
+export * from './modules/report-client';
+export * from './modules/search-client';
+export * from './modules/telemetry-client';
+
+export const apiClient = {
+  auth: new AuthClient(baseClient),
+  quiz: new QuizClient(baseClient),
+  admin: new AdminClient(baseClient),
+  dashboard: new DashboardClient(baseClient),
+  reports: new ReportClient(baseClient),
+  search: new SearchClient(baseClient),
+  telemetry: new TelemetryClient(baseClient),
+  client: baseClient,
+  getAdminUrl: () => ADMIN_URL,
+};
+"""
+
+write_clean(r'd:\onlinewebsites\quiz-platform\apps\api-server\src\app\api\telemetry\route.ts', telemetry_route)
+write_clean(r'd:\onlinewebsites\quiz-platform\packages\api-client\src\modules\telemetry-client.ts', telemetry_client)
+write_clean(r'd:\onlinewebsites\quiz-platform\apps\web-app\src\app\exam\[examId]\page.tsx', exam_page)
+write_clean(r'd:\onlinewebsites\quiz-platform\packages\api-client\src\index.ts', api_client_index)
+
+print("Files written successfully as BOM-less UTF-8.")
