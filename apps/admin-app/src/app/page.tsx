@@ -1,5 +1,6 @@
 import { LiveSessionsList } from "@/components/dashboard/LiveSessionsList";
 import { SecurityHealthPanel } from "@/components/dashboard/SecurityHealthPanel";
+import { ServiceHealth } from "@/components/dashboard/ServiceHealth";
 import { ContentReadinessBoard } from "@/components/dashboard/ContentReadinessBoard";
 import { UserAnalyticsPanel } from "@/components/dashboard/UserAnalyticsPanel";
 import { PerformanceAnalyticsBoard } from "@/components/dashboard/PerformanceAnalyticsBoard";
@@ -35,6 +36,9 @@ export default function AdminDashboard() {
                 <ExamActivityBoard />
                 <RBACGovernancePanel />
             </div>
+
+            {/* System Health Section */}
+            <ServiceHealth />
 
             {/* Security & Audit Tier */}
             <div className="flex flex-col gap-8">
