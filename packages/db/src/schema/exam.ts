@@ -1,5 +1,5 @@
 import { pgTable, text, timestamp, uuid, integer, jsonb, pgEnum, boolean, index, uniqueIndex } from "drizzle-orm/pg-core";
-import { relations } from "drizzle-orm";
+import { relations, desc } from "drizzle-orm";
 import { users } from "./auth";
 import { domains, subjects, topics } from "./domain";
 import { questions } from "./question";
@@ -39,7 +39,7 @@ export const exams = pgTable("exams", {
   completedAt: timestamp("completed_at"),
 }, (t) => ({
   idx_exams_user_id_status: index("idx_exams_user_id_status").on(t.userId, t.status),
-  idx_exams_dashboard_opt: index("idx_exams_dashboard_opt").on(t.userId, t.status, t.completedAt),
+  idx_exams_dashboard_opt: index("idx_exams_dashboard_opt").on(t.userId, t.status, desc(t.completedAt)),
 }));
 
 export const examQuestions = pgTable("exam_questions", {
