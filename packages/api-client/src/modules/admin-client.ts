@@ -338,4 +338,8 @@ export class AdminClient {
   async checkDuplicates(data: { questions: { questionText: string }[], topicId: string }) {
     return this.client.post<{ details: any[], foundCount: number }>('/factory/check-duplicates', data);
   }
+
+  async getSystemUsage() {
+    return this.client.get<any>('/admin/system/usage');
+  }
 }
