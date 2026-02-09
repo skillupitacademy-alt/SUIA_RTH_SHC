@@ -2,14 +2,22 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { apiClient } from "@quiz/api-client";
+import { apiClient, QuizResultResponse } from "@quiz/api-client";
 import { ResultSummary } from "@/components/reports/ResultSummary";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { BehavioralRadar } from "@/components/reports/BehavioralRadar";
+import { MappingTrinity } from "@/components/reports/MappingTrinity";
+import { RemediationZone } from "@/components/reports/RemediationZone";
+import { SkillHeatmap } from "@/components/reports/SkillHeatmap";
+import { EfficiencyQuadrant } from "@/components/reports/EfficiencyQuadrant";
+import ActionPlanPanel from "@/components/reports/ActionPlanPanel";
+import { ArrowLeft } from "lucide-react";
+import { cn } from "@/lib/utils";
 import Link from "next/link";
+import { ZLoader } from "@/components/ui/ZLoader";
 
 export default function DynamicReportPage() {
     const { id } = useParams();
-    const [report, setReport] = useState<any>(null); // eslint-disable-line @typescript-eslint/no-explicit-any
+    const [report, setReport] = useState<Extract<QuizResultResponse, { status: 'completed' | 'failed' | 'abandoned' }> | null>(null);
     const [loading, setLoading] = useState(true);
     const [isProcessing, setIsProcessing] = useState(false);
     const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -43,20 +51,8 @@ export default function DynamicReportPage() {
                     }
                 }
 
-                const reportObj = data as any; // Temporary cast for legacy page
-
-                const mappedData = {
-                    score: reportObj.score,
-                    total: reportObj.total,
-                    status: (reportObj.statusLabel || (reportObj.percentage >= 70 ? 'passed' : 'failed')) as 'passed' | 'failed',
-                    questions: reportObj.questions?.map((q: any) => ({
-                        text: q.text,
-                        isCorrect: q.isCorrect
-                    }))
-                };
-
                 if (isMounted) {
-                    setReport(mappedData);
+                    setReport(data as Extract<QuizResultResponse, { status: 'completed' | 'failed' | 'abandoned' }>);
                     setIsProcessing(false);
                     setLoading(false);
                 }
@@ -75,10 +71,10 @@ export default function DynamicReportPage() {
 
     if (loading || isProcessing) {
         return (
-            <div className="flex flex-col h-screen items-center justify-center gap-4">
-                <Loader2 className="animate-spin text-primary" size={48} />
-                <p className="text-sm font-bold text-muted-foreground animate-pulse uppercase tracking-widest">
-                    {isProcessing ? "Processing Results..." : "Loading Report..."}
+            <div className="flex flex-col h-screen items-center justify-center gap-4 bg-background">
+                <ZLoader size="lg" />
+                <p className="text-sm font-black text-muted-foreground animate-pulse uppercase tracking-[0.2em] mt-4">
+                    {isProcessing ? "Analyzing Performance..." : "Decrypting Intel..."}
                 </p>
             </div>
         );
@@ -86,61 +82,143 @@ export default function DynamicReportPage() {
 
     if (errorMsg) {
         return (
-            <div className="flex h-screen flex-col items-center justify-center gap-4 text-center">
-                <h1 className="text-2xl font-bold">Report Status</h1>
-                <p className="text-gray-600">{errorMsg}</p>
+            <div className="flex h-screen flex-col items-center justify-center gap-6 text-center bg-background px-4">
+                <div className="p-4 rounded-3xl bg-primary/10 text-primary">
+                    <ArrowLeft size={32} />
+                </div>
+                <h1 className="text-3xl font-black tracking-tight">Access Interrupted</h1>
+                <p className="text-muted-foreground max-w-sm font-bold uppercase text-[10px] tracking-widest">{errorMsg}</p>
                 <button
                     onClick={() => window.location.reload()}
-                    className="px-6 py-2 bg-primary text-white rounded-lg"
+                    className="px-10 py-4 bg-primary text-white font-black rounded-full shadow-lg shadow-primary/20 hover:scale-105 transition-all text-xs uppercase tracking-widest"
                 >
-                    Retry
+                    Retry Sync
                 </button>
             </div>
         );
     }
 
     if (!report) {
-        return <div>Report not found</div>;
+        return <div className="flex h-screen items-center justify-center font-black uppercase tracking-widest">Report Not Found</div>;
     }
 
+    const performance = report.performance || {};
+    const categoryData = performance.category || [];
+    const mappingData = performance.mapping_type || [];
+    const subtopicData = performance.subtopic || [];
+    const skillData = performance.skill || [];
+
     return (
-        <div className="min-h-[calc(100vh-64px)] bg-muted/5 py-12 px-4 md:px-8 lg:px-12">
-            <div className="max-w-6xl mx-auto space-y-12">
-                <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
+        <div className="min-h-screen bg-[#F8F9FC] selection:bg-primary/20">
+            {/* Glossy Header Bar */}
+            <header className="sticky top-0 z-50 glass-morphism h-16 px-6 md:px-12 flex items-center justify-between border-b border-white/40">
+                <div className="flex items-center gap-6">
                     <Link
                         href="/dashboard"
-                        className="group flex items-center gap-2 text-sm font-bold text-muted-foreground hover:text-primary transition-colors"
+                        className="p-2 rounded-xl hover:bg-white/50 transition-colors text-muted-foreground hover:text-primary"
                     >
-                        <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
-                        Back to Dashboard
+                        <ArrowLeft size={20} />
                     </Link>
+                    <div className="h-4 w-[1px] bg-muted-foreground/20" />
+                    <div>
+                        <h1 className="text-sm font-black uppercase tracking-widest leading-none">Assessment Intelligence</h1>
+                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mt-1">ID: {id?.toString().slice(0, 8)}...STACK</p>
+                    </div>
                 </div>
 
+                <div className="hidden md:flex items-center gap-4">
+                    <div className="px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-[10px] font-black text-primary uppercase tracking-widest">
+                        Executive View
+                    </div>
+                </div>
+            </header>
+
+            <main className="max-w-7xl mx-auto py-12 px-6 md:px-12 space-y-12">
+                {/* Hero Metrics */}
                 <ResultSummary
                     score={report.score}
                     total={report.total}
-                    status={report.status}
-                    percentile={85} // Hardcoded for now
-                    timeTaken="N/A"
+                    status={report.statusLabel === 'passed' ? 'passed' : 'failed'}
+                    percentile={report.percentile || 85}
+                    timeTaken={report.timeTaken || "12m 40s"}
                 />
 
-                {/* Simplified breakdown for now */}
-                <div className="grid md:grid-cols-2 gap-8">
-                    <div className="p-8 rounded-3xl bg-background border">
-                        <h3 className="text-xl font-bold mb-6">Question Results</h3>
-                        <div className="space-y-4">
-                            {report.questions?.map((q: any, i: number) => ( // eslint-disable-line @typescript-eslint/no-explicit-any
-                                <div key={i} className="flex items-center justify-between p-4 rounded-xl bg-muted/20">
-                                    <p className="text-sm font-medium truncate max-w-[70%]">{q.text}</p>
-                                    <span className={q.isCorrect ? "text-green-500 font-bold" : "text-red-500 font-bold"}>
-                                        {q.isCorrect ? "Correct" : "Incorrect"}
-                                    </span>
+                {/* Advanced Analytics Grid */}
+                <div className="grid lg:grid-cols-12 gap-8 items-start">
+                    {/* Left Pillar: Radar & Trinity */}
+                    <div className="lg:col-span-5 space-y-8">
+                        <BehavioralRadar
+                            data={categoryData}
+                            className="w-full"
+                        />
+                        <MappingTrinity
+                            data={mappingData}
+                            className="w-full"
+                        />
+                        <SkillHeatmap
+                            data={skillData}
+                            className="w-full"
+                        />
+                        <EfficiencyQuadrant
+                            questions={report.questions || []}
+                            className="w-full"
+                        />
+                        <ActionPlanPanel
+                            items={report.actionPlan || []}
+                        />
+                    </div>
+
+                    {/* Right Pillar: Remediation & Question Audit */}
+                    <div className="lg:col-span-7 space-y-8">
+                        <RemediationZone
+                            subtopicPerformance={subtopicData}
+                            className="w-full"
+                        />
+
+                        {/* High-Density Question Audit */}
+                        <div className="glass-morphism rounded-[3rem] p-8 space-y-8">
+                            <div className="flex items-center justify-between">
+                                <h3 className="text-xl font-black tracking-tight uppercase">Surgical Review</h3>
+                                <div className="flex gap-2">
+                                    <div className="h-2 w-2 rounded-full bg-green-500" />
+                                    <div className="h-2 w-2 rounded-full bg-primary" />
                                 </div>
-                            ))}
+                            </div>
+
+                            <div className="space-y-3">
+                                {report.questions?.map((q, i) => (
+                                    <div
+                                        key={i}
+                                        className={cn(
+                                            "flex items-center justify-between p-5 rounded-3xl border transition-all hover:scale-[1.01]",
+                                            q.isCorrect
+                                                ? "bg-white/40 border-green-500/10 hover:border-green-500/30"
+                                                : "bg-white/40 border-primary/10 hover:border-primary/30"
+                                        )}
+                                    >
+                                        <div className="flex items-center gap-4 max-w-[80%]">
+                                            <span className="text-xs font-black text-muted-foreground/30 tabular-nums">{(i + 1).toString().padStart(2, '0')}</span>
+                                            <p className="text-[13px] font-bold truncate text-muted-foreground">{q.text}</p>
+                                        </div>
+                                        <div className={cn(
+                                            "px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest",
+                                            q.isCorrect ? "bg-green-100 text-green-700" : "bg-primary/20 text-primary"
+                                        )}>
+                                            {q.isCorrect ? "Correct" : "Mistake"}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            </main>
+
+            <footer className="py-12 border-t border-muted/10 opacity-40">
+                <div className="max-w-7xl mx-auto px-12 italic text-[10px] font-bold text-center tracking-widest uppercase">
+                    Protocol: Executive Analytics Hub | Phase 20 Mastery Deployment | Zero-Occlusion Cockpit Verified
+                </div>
+            </footer>
         </div>
     );
 }

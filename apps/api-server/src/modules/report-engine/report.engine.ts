@@ -1,6 +1,52 @@
 import { db, exams, resultsByDimension } from '@quiz/db';
 import { eq, desc } from 'drizzle-orm';
 
+export interface ActionPlanItem {
+  id: string;
+  priority: 'critical' | 'growth' | 'stable';
+  label: string;
+  recommendation: string;
+  skills: string[];
+  accuracy: number;
+}
+
+class ActionPlanBuilder {
+  static build(results: any[]): ActionPlanItem[] {
+    const skillResults = results.filter(r => r.dimensionType === 'skill');
+
+    return skillResults
+      .map(r => {
+        let priority: ActionPlanItem['priority'] = 'stable';
+        let label = 'Verified Mastery';
+        let recommendation = 'Proficiency achieved. Continue periodic maintenance.';
+
+        if (r.accuracy < 50) {
+          priority = 'critical';
+          label = 'Immediate Review';
+          recommendation = 'Foundational gaps detected. Priority re-study required.';
+        } else if (r.accuracy < 75) {
+          priority = 'growth';
+          label = 'Reinforced Practice';
+          recommendation = 'High-growth potential. Focus on complex edge cases.';
+        }
+
+        return {
+          id: r.dimensionId || r.name,
+          priority,
+          label,
+          recommendation,
+          skills: [r.name],
+          accuracy: r.accuracy
+        };
+      })
+      .sort((a, b) => {
+        const priorityOrder = { critical: 0, growth: 1, stable: 2 };
+        return priorityOrder[a.priority] - priorityOrder[b.priority] || a.accuracy - b.accuracy;
+      })
+      .slice(0, 3);
+  }
+}
+
 export class ReportEngine {
   static async getUserPerformance(userId: string) {
     const userExams = await db.query.exams.findMany({
@@ -42,23 +88,24 @@ export class ReportEngine {
     const scorePercentage = totalQuestions > 0 ? (correctAnswers / totalQuestions) * 100 : 0;
 
     const includeCorrect = options.includeCorrectAnswers === true;
+    const actionPlan = ActionPlanBuilder.build(results);
 
     return {
       id: exam.id,
       userId: exam.userId,
-      status: exam.status, // Required for status gating
+      status: exam.status,
       score: correctAnswers,
       total: totalQuestions,
       percentage: scorePercentage,
       statusLabel: scorePercentage >= 70 ? 'passed' : 'failed',
       completedAt: exam.completedAt,
       blueprint: exam.blueprint,
+      actionPlan,
       performance: results.reduce((acc: any, r) => {
         if (!acc[r.dimensionType]) acc[r.dimensionType] = [];
-        // Map engine result to report format
         acc[r.dimensionType].push({
           id: r.dimensionId,
-          name: r.name, // Fallback if name is joined (removed r.dimension?.name as relation is not joined)
+          name: r.name,
           score: r.score,
           accuracy: r.accuracy
         });
@@ -70,8 +117,8 @@ export class ReportEngine {
         correctAnswer: includeCorrect ? eq.question.correctAnswer : undefined,
         explanation: includeCorrect ? eq.question.explanation : undefined,
         isCorrect: eq.isCorrect,
+        timeSpent: (eq.responseMetadata as any)?.timeSpentSeconds || 0,
       }))
     };
   }
-
 }

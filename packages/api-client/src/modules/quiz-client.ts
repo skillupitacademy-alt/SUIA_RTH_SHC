@@ -22,6 +22,15 @@ export interface QuizState {
   }>;
 }
 
+export interface ActionPlanItem {
+  id: string;
+  priority: 'critical' | 'growth' | 'stable';
+  label: string;
+  recommendation: string;
+  skills: string[];
+  accuracy: number;
+}
+
 export type QuizResultResponse = 
   | { status: 'processing'; message: string }
   | { 
@@ -32,9 +41,15 @@ export type QuizResultResponse =
       percentage: number;
       statusLabel: 'passed' | 'failed';
       timeTaken?: string;
+      percentile?: number;
+      actionPlan?: ActionPlanItem[];
       performance: {
         topic?: Array<{ id: string; name: string; score: number; accuracy: number }>;
         difficulty?: Array<{ id: string; name: string; score: number; accuracy: number }>;
+        category?: Array<{ id: string; name: string; score: number; accuracy: number }>;
+        mapping_type?: Array<{ id: string; name: string; score: number; accuracy: number }>;
+        subtopic?: Array<{ id: string; name: string; score: number; accuracy: number }>;
+        skill?: Array<{ id: string; name: string; score: number; accuracy: number }>;
       };
       questions: Array<{
         text: string;
@@ -42,6 +57,7 @@ export type QuizResultResponse =
         correctAnswer?: string;
         explanation?: string;
         isCorrect: boolean;
+        timeSpent: number;
       }>;
     };
 
