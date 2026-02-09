@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
     const range = searchParams.get('range') || '90d';
 
     const skills = await TrendsService.getSkillTrends({ userId, range });
-    return NextResponse.json(skills);
+    return NextResponse.json({ skills });
   } catch (error: any) {
     console.error('[Trends Skills API] Error:', error);
     return NextResponse.json(

@@ -28,8 +28,8 @@ export default function TrendsPage() {
             ]);
 
             setSummary(summaryRes);
-            setScores(scoresRes || []);
-            setSkills(skillsRes || []);
+            setScores(scoresRes?.scores || []);
+            setSkills(skillsRes?.skills || []);
         } catch (err: any) {
             console.error('[TrendsPage] Fetch error:', err);
             setError(err.message || 'Failed to load trends data');

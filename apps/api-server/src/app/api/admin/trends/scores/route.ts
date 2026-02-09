@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
     const range = searchParams.get('range') || '30d';
 
     const scores = await TrendsService.getScoreTrends({ userId, range });
-    return NextResponse.json(scores);
+    return NextResponse.json({ scores });
   } catch (error: any) {
     console.error('[Trends Scores API] Error:', error);
     return NextResponse.json(
