@@ -62,7 +62,7 @@ export class ExamEngine {
         }
 
         // 2. Selection Phase
-        const { questions, blueprint } = await SelectionEngine.composeExam(userId, blueprintOrDomainId, config);
+        const { questions, blueprint } = await SelectionEngine.composeExam(userId, blueprintOrDomainId, idempotencyKey || 'no-key', config);
 
         // 3. Persistence Phase
         const [exam] = await tx.insert(exams).values({
@@ -202,12 +202,32 @@ export class ExamEngine {
       answer
     );
 
+    // Calculate time spent: now - (lastAnsweredAt || startedAt)
+    const now = new Date();
+    const lastTime = exam.lastAnsweredAt ? new Date(exam.lastAnsweredAt).getTime() : new Date(exam.startedAt).getTime();
+    
+    // Safeguard: Only record timeSpentSeconds on the first-touch to prevent quadrant drift
+    const existingMetadata = (eqRecord.responseMetadata as any) || {};
+    const timeSpentSeconds = existingMetadata.timeSpentSeconds !== undefined
+      ? existingMetadata.timeSpentSeconds 
+      : Math.max(0, Math.floor((now.getTime() - lastTime) / 1000));
+
     await db.update(examQuestions)
       .set({ 
         userAnswer: answer,
         isCorrect,
+        responseMetadata: { 
+          ...existingMetadata,
+          timeSpentSeconds,
+          firstAnsweredAt: existingMetadata.firstAnsweredAt || now.toISOString()
+        }
       })
       .where(eq(examQuestions.id, eqRecord.id));
+
+    // Update lastAnsweredAt on EVERY call (operational heartbeat)
+    await db.update(exams)
+      .set({ lastAnsweredAt: now })
+      .where(eq(exams.id, examId));
 
     return;
   }

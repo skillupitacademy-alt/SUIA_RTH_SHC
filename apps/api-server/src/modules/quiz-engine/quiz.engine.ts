@@ -19,7 +19,7 @@ export class QuizEngine {
       difficulty?: string 
     }
   ) {
-    const exam = await SelectionEngine.composeExam(userId, blueprintId, config);
+    const exam = await SelectionEngine.composeExam(userId, blueprintId, 'legacy-sync', config);
     if (!exam) throw new Error('Failed to compose quiz');
     return exam;
   }

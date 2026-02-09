@@ -36,6 +36,7 @@ export const exams = pgTable("exams", {
   totalScore: integer("total_score"),
   durationSeconds: integer("duration_seconds"), // Snapshotted from blueprint or provided at start
   startedAt: timestamp("started_at").notNull().defaultNow(),
+  lastAnsweredAt: timestamp("last_answered_at"),
   completedAt: timestamp("completed_at"),
 }, (t) => ({
   idx_exams_user_id_status: index("idx_exams_user_id_status").on(t.userId, t.status),

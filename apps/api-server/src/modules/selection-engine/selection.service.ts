@@ -1,18 +1,36 @@
 import { db, questions, examBlueprints, exams, examQuestions, topics, subtopics, subjects as subjectsTable } from '@quiz/db';
-import { eq, inArray, sql, and, or, notInArray } from 'drizzle-orm';
+import { eq, inArray, sql, and, or, notInArray, gte, asc } from 'drizzle-orm';
 import { cacheService } from '../core/cache.service';
+import crypto from 'crypto';
+import { performance } from 'perf_hooks';
 
 
 export class SelectionEngine {
   /**
-   * Selection logic: 30% Simple, 30% Intermediate, 40% Expert
-   * Strictly enforces question counts per tier as a MAXIMUM (Graceful Degradation).
-   * 
-   * @returns { questions: any[], blueprint: any }
+   * Generates a set of deterministic UUID anchors based on a seed.
+   * These anchors are used as starting points for keyset pagination.
+   */
+  private static generateDeterministicUUIDs(seed: string, count: number): string[] {
+    const anchors: string[] = [];
+    let currentSeed = seed;
+    for (let i = 0; i < count; i++) {
+        const hash = crypto.createHash('sha256').update(currentSeed + i).digest('hex');
+        // Construct a valid-looking UUID string from the hash
+        const uuid = `${hash.slice(0, 8)}-${hash.slice(8, 12)}-4${hash.slice(12, 15)}-a${hash.slice(15, 18)}-${hash.slice(18, 30)}`;
+        anchors.push(uuid);
+        currentSeed = hash; // Chain for progression
+    }
+    return anchors;
+  }
+
+  /**
+   * Selection logic: Scalable, deterministic keyset sampling.
+   * Replaces memory-heavy shuffling with O(log N) indexed jumps.
    */
   static async composeExam(
     userId: string, 
     blueprintOrDomainId: string, 
+    idempotencyKey: string,
     config?: { 
       subjectId?: string, 
       subjectIds?: string[], 
@@ -23,6 +41,8 @@ export class SelectionEngine {
       difficulty?: string 
     }
   ) {
+    const totalSelectionStart = performance.now();
+
     // 1. Resolve Blueprint
     const blueprintCacheKey = `blueprint:${blueprintOrDomainId}`;
     let blueprint: any = null;
@@ -54,18 +74,16 @@ export class SelectionEngine {
     }
 
     if (!blueprint) {
-      // Decision 2: Option 2 - Virtual Blueprint Fallback
       blueprint = {
-        id: null, // Virtual
+        id: null,
         name: 'Quick Assessment',
         totalQuestions: config?.questionCount || 10,
-        timeLimit: 30, // Default 30 mins
+        timeLimit: 30,
         difficultyDistribution: { simple: 30, intermediate: 30, expert: 40 },
         subjects: config?.subjectIds || [],
         topics: config?.topicIds || [],
         subtopics: config?.subtopicIds || []
       };
-      console.log(`[Selection] Initialized Virtual Blueprint for: ${blueprintOrDomainId}`);
     }
 
     // 1.5 STATIC OVERRIDE: If blueprint has fixed questionIds, bypass dynamic selection
@@ -125,8 +143,15 @@ export class SelectionEngine {
     const actualSubjectIds = finalSubjectIds.filter((id: string) => !selectedSubjectParents.includes(id));
 
     const selectedQuestions: any[] = [];
+    const selectedIds = new Set<string>();
     
-    const fetchFromPool = async (diffs: string[], count: number, excludeIds: string[]) => {
+    /**
+     * Optimized fetchFromPool: USES Jump-and-Sample (O(log N) lookups).
+     * No more full ID materialization.
+     */
+    const fetchFromPool = async (diffs: string[], count: number) => {
+      const poolCountStart = performance.now();
+      
       const subtopicCond = finalSubtopicIds.length > 0 ? inArray(questions.subtopicId, finalSubtopicIds) : null;
       const topicCond = actualTopicIds.length > 0 ? inArray(questions.topicId, actualTopicIds) : null;
       
@@ -143,35 +168,70 @@ export class SelectionEngine {
           domainCond = inArray(questions.topicId, topicsSubQuery);
       }
 
-      const hierarchyCond = or(
+      const baseFilters = and(
+        or(
           subtopicCond || undefined, 
           topicCond || undefined, 
           subjectTopicCond || undefined, 
           domainCond || undefined
+        ),
+        inArray(questions.difficulty, diffs as any),
+        eq(questions.status, 'active')
       );
 
-      const allIds = await db.select({ id: questions.id })
+      // 1. Indexed Count for sizing
+      const [{ count: totalInPool }] = await db.select({ count: sql<number>`count(*)` })
         .from(questions)
-        .where(and(
-          hierarchyCond,
-          inArray(questions.difficulty, diffs as any),
-          excludeIds.length > 0 ? notInArray(questions.id, excludeIds) : undefined,
-          eq(questions.status, 'active')
-        ));
+        .where(baseFilters);
 
-      if (allIds.length === 0) return [];
+      const pool_count_ms = performance.now() - poolCountStart;
 
-      const shuffledIds = allIds.map(row => row.id);
-      for (let i = shuffledIds.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [shuffledIds[i], shuffledIds[j]] = [shuffledIds[j], shuffledIds[i]];
+      if (totalInPool === 0) return [];
+
+      // 2. Deterministic Seeding (Full Config + Idempotency)
+      const seedSource = JSON.stringify({
+        userId,
+        idempotencyKey,
+        filters: { diffs, domainId, actualSubjectIds, actualTopicIds, finalSubtopicIds },
+        requestedCount: count
+      });
+      const masterSeed = crypto.createHash('sha256').update(seedSource).digest('hex');
+
+      // 3. Jump-and-Sample Loop
+      const sampleFetchStart = performance.now();
+      const anchors = this.generateDeterministicUUIDs(masterSeed, count * 2); // Generate extra for deduplication
+      const candidates: any[] = [];
+
+      for (const anchor of anchors) {
+        if (candidates.length >= count) break;
+
+        // Surgical Keyset Jump: O(log N)
+        const [candidate] = await db.select()
+          .from(questions)
+          .where(and(baseFilters, gte(questions.id, anchor), notInArray(questions.id, Array.from(selectedIds))))
+          .orderBy(asc(questions.id))
+          .limit(1);
+
+        if (candidate) {
+          candidates.push(candidate);
+          selectedIds.add(candidate.id);
+        } else {
+          // Wrap-around fallback (if anchor is past the end of the pool)
+          const [fallback] = await db.select()
+            .from(questions)
+            .where(and(baseFilters, notInArray(questions.id, Array.from(selectedIds))))
+            .orderBy(asc(questions.id))
+            .limit(1);
+          
+          if (fallback) {
+            candidates.push(fallback);
+            selectedIds.add(fallback.id);
+          }
+        }
       }
 
-      const subsetIds = shuffledIds.slice(0, count);
-
-      return await db.query.questions.findMany({
-        where: inArray(questions.id, subsetIds)
-      });
+      console.log(`[Selection] Pool: ${diffs[0]} | Count: ${totalInPool} | pool_count_ms: ${pool_count_ms.toFixed(2)} | sample_fetch_ms: ${(performance.now() - sampleFetchStart).toFixed(2)}`);
+      return candidates;
     };
 
     if (difficultyPref === 'mixed') {
@@ -183,17 +243,19 @@ export class SelectionEngine {
 
       for (const tier of tiers) {
         if (tier.target <= 0) continue;
-        const pooled = await fetchFromPool([tier.key], tier.target, selectedQuestions.map(q => q.id));
+        const pooled = await fetchFromPool([tier.key], tier.target);
         selectedQuestions.push(...pooled);
       }
     } else {
-      const pooled = await fetchFromPool([difficultyPref], requestedTotal, []);
+      const pooled = await fetchFromPool([difficultyPref], requestedTotal);
       selectedQuestions.push(...pooled);
     }
 
     if (selectedQuestions.length === 0) {
       throw new Error(`No questions found for the selected configuration. Please ensure the selected area has active questions.`);
     }
+
+    console.log(`[Selection] Total selection time: ${(performance.now() - totalSelectionStart).toFixed(2)}ms | Questions: ${selectedQuestions.length}`);
 
     return { questions: selectedQuestions, blueprint };
   }
