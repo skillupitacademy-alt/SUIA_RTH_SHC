@@ -155,3 +155,10 @@
 - **Design**: Replaced black metrics with glass-morphic pink typography cards.
 - **Ambience**: Implemented "Syncing Engine..." transition loader and h-54px baseline sync.
 - **Verification**: Verified via `pnpm build` and `tsc --noEmit` with Exit Code 0.
+
+### Batch 165: Dashboard Optimization & Hardening (Feb 09, 2026)
+- **Pagination**: Implemented server-side pagination for `MyExams` (limit=6) and light-weight Dashboard fetch (limit=3).
+- **Hardening**: Added `idx_exams_dashboard_opt` composite index, `CacheManager` (LRU), and Fixed-Window Rate Limiting (60 req/min).
+- **API Safety**: Enforced strict parameter clamping (max 50) and range validation (`7d`, `30d`).
+- **Refinement**: Cleaned up migrations (`0002` authoritative) and added `X-RateLimit-Remaining` headers.
+- **Verification**: Validated full system integrity via `pnpm build` and `tsc --noEmit` (Exit Code 0).

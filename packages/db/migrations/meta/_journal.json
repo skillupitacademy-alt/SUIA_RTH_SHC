@@ -15,6 +15,13 @@
       "when": 1770324698029,
       "tag": "0001_late_bug",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1770638000000,
+      "tag": "0002_add_dashboard_index",
+      "breakpoints": true
     }
   ]
 }

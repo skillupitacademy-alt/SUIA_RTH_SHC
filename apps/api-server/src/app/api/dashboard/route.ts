@@ -18,7 +18,10 @@ export async function GET(req: NextRequest) {
     if (!allowed) {
         return NextResponse.json({ error: 'Too many requests' }, { 
             status: 429, 
-            headers: { 'Retry-After': '60' } 
+            headers: { 
+                'Retry-After': '60',
+                'X-RateLimit-Remaining': remaining.toString()
+            } 
         });
     }
 
