@@ -94,3 +94,4 @@
 | 2026-02-09 | Recovery & Re-walk | COMPLETED | Restored Global Search, Command Palette, and Selection Engine; Hardened clean baseline after intentional Analytics reversion. |
 | 2026-02-09 | Exit Guard Logic | COMPLETED | Implemented logic-only browser guards in Launch and Exam journeys to prevent session loss (0 UI impact). |
 | 2026-02-09 | System Verification | COMPLETED | Verified system integrity with root pnpm build and tsc check (Post-Recovery). |
+| 2026-02-09 | Admin Style Refinement | COMPLETED | Restored subtopic modal density refinements from SHA 728c639 for zero-scroll desktop visibility. |

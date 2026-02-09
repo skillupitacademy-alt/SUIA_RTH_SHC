@@ -237,8 +237,8 @@ export function SubtopicTable() {
                     </div>
 
                     {/* Content Area */}
-                    <div className="flex-1 flex flex-col min-h-0 bg-slate-50/30 p-12 custom-scrollbar overflow-y-auto" style={{ scrollbarGutter: 'stable' }}>
-                        <div className="max-w-5xl mx-auto space-y-8 bg-white border border-primary/10 rounded-[2.5rem] p-10 shadow-2xl shadow-primary/5 relative overflow-hidden">
+                    <div className="flex-1 flex flex-col min-h-0 bg-slate-50/30 p-8 custom-scrollbar overflow-y-auto" style={{ scrollbarGutter: 'stable' }}>
+                        <div className="max-w-5xl mx-auto space-y-6 bg-white border border-primary/10 rounded-[2.5rem] p-8 shadow-2xl shadow-primary/5 relative overflow-hidden">
                             {/* Form Header Context */}
                             <div className="grid grid-cols-3 gap-4 p-6 bg-slate-50/50 rounded-2xl border border-dashed border-slate-200">
                                 <div className="space-y-1 text-center">
@@ -256,8 +256,8 @@ export function SubtopicTable() {
                             </div>
 
                             {/* Inputs Section */}
-                            <form onSubmit={handleSubmit} className="space-y-8">
-                                <div className="grid grid-cols-2 gap-8">
+                            <form onSubmit={handleSubmit} className="space-y-6">
+                                <div className="grid grid-cols-2 gap-6">
                                     {/* Col 1: Name */}
                                     <div className="space-y-3">
                                         <label className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">Subtopic Nomenclature</label>
@@ -266,7 +266,7 @@ export function SubtopicTable() {
                                             required
                                             value={formData.name}
                                             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                            className="w-full px-6 py-4 bg-slate-50 border border-slate-300 rounded-xl text-lg font-black text-[#1A1A1A] focus:outline-none focus:ring-4 focus:ring-teal-500/5 focus:bg-white focus:border-teal-500/20 transition-all placeholder:text-slate-300"
+                                            className="w-full px-6 py-3.5 bg-slate-50 border border-slate-300 rounded-xl text-lg font-black text-[#1A1A1A] focus:outline-none focus:ring-4 focus:ring-teal-500/5 focus:bg-white focus:border-teal-500/20 transition-all placeholder:text-slate-300"
                                             placeholder="Enter subtopic name..."
                                         />
                                     </div>
@@ -283,7 +283,7 @@ export function SubtopicTable() {
                                                     max="10"
                                                     value={formData.depthLevel || 1}
                                                     onChange={(e) => setFormData({ ...formData, depthLevel: parseInt(e.target.value) })}
-                                                    className="w-full pl-12 pr-6 py-4 bg-slate-50 border border-slate-300 rounded-xl text-sm font-bold text-[#1A1A1A] focus:outline-none focus:ring-4 focus:ring-teal-500/5 focus:bg-white focus:border-teal-500/20 transition-all"
+                                                    className="w-full pl-12 pr-6 py-3.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-bold text-[#1A1A1A] focus:outline-none focus:ring-4 focus:ring-teal-500/5 focus:bg-white focus:border-teal-500/20 transition-all"
                                                 />
                                             </div>
                                         </div>
@@ -316,13 +316,13 @@ export function SubtopicTable() {
                                         value={formData.description}
                                         onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                                         rows={5}
-                                        className="w-full px-6 py-4 bg-slate-50 border border-slate-300 rounded-xl text-[13px] font-medium text-slate-600 focus:outline-none focus:ring-4 focus:ring-teal-500/5 focus:bg-white focus:border-teal-500/20 transition-all placeholder:text-slate-300 resize-none leading-relaxed"
+                                        className="w-full px-6 py-3.5 bg-slate-50 border border-slate-300 rounded-xl text-[13px] font-medium text-slate-600 focus:outline-none focus:ring-4 focus:ring-teal-500/5 focus:bg-white focus:border-teal-500/20 transition-all placeholder:text-slate-300 resize-none leading-relaxed"
                                         placeholder="Provide technical definition for this subtopic..."
                                     />
                                 </div>
 
                                 {/* Hierarchy Re-assignment (Cautious) */}
-                                <div className="pt-8 border-t border-slate-100 p-8 bg-amber-50/20 rounded-3xl border border-amber-100/30">
+                                <div className="pt-4 border-t border-slate-100 p-6 bg-amber-50/20 rounded-3xl border border-amber-100/30">
                                     <div className="flex items-center gap-3 mb-6">
                                         <div className="p-2 bg-amber-50 text-amber-600 rounded-lg">
                                             <AlertTriangle size={16} />
@@ -369,7 +369,7 @@ export function SubtopicTable() {
                                 </div>
 
                                 {/* Footer Actions - Non-sticky to match Topic modal */}
-                                <div className="pt-8 border-t border-slate-100 flex items-center justify-end gap-4 bg-white">
+                                <div className="pt-4 border-t border-slate-100 flex items-center justify-end gap-4 bg-white">
                                     <button
                                         type="button"
                                         onClick={handleCloseForm}
