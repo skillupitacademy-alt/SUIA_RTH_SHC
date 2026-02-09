@@ -16,9 +16,9 @@ export class DashboardEngine {
   }
 
   /**
-   * Aggregates dashboard data for a user.
+   * Aggregates dashboard data for a user with pagination support.
    */
-  static async getUserDashboard(userId: string, range: string = '7d', from?: string, to?: string) {
+  static async getUserDashboard(userId: string, range: string = '7d', from?: string, to?: string, page: number = 1, limit: number = 6) {
     let days = range === '30d' ? 30 : 7;
     const now = new Date();
     const relativeStartDate = new Date();
@@ -36,13 +36,23 @@ export class DashboardEngine {
     startOfWeek.setHours(0, 0, 0, 0);
     startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay()); // Sunday as start of week
 
+    // 1. Get Total Count for Pagination
+    const totalCountResult = await db
+        .select({ count: sql<number>`count(*)`.mapWith(Number) })
+        .from(exams)
+        .where(baseFilter);
+    const totalCount = totalCountResult[0]?.count || 0;
+
+    // 2. Fetch Paginated Exams
+    const offset = (page - 1) * limit;
     const recentCompletedExams = await db.query.exams.findMany({
       where: baseFilter,
       orderBy: [desc(exams.completedAt)],
-      limit: 100, // Fetch more for history
+      limit: limit,
+      offset: offset,
       with: {
         blueprint: true,
-        dimensions: true, // Fetch dimensions in the same query to avoid N+1
+        dimensions: true, 
       }
     });
 
@@ -53,7 +63,7 @@ export class DashboardEngine {
       })
       .from(exams)
       .where(trendFilter)
-      .orderBy(exams.completedAt); // Chronological ascending for chart
+      .orderBy(exams.completedAt); 
 
     const statsResult = await db
       .select({
@@ -87,7 +97,7 @@ export class DashboardEngine {
         totalExams: statsResult[0]?.totalExams || 0,
         masteryPoints: masteryResult[0]?.totalPoints || 0,
         weeklyExamsCount: weeklyExamsResult[0]?.count || 0,
-        globalRank: null, // Placeholder for Global Rank
+        globalRank: null, 
       },
       performanceTrend: performanceTrendResult.map(t => ({
         score: t.score || 0,
@@ -114,6 +124,12 @@ export class DashboardEngine {
           status: e.status,
         };
       }),
+      pagination: {
+          page,
+          limit,
+          total: totalCount,
+          totalPages: Math.ceil(totalCount / limit)
+      }
     };
   }
 }

@@ -18,7 +18,7 @@ export default function DashboardPage() {
     const { data, fetchDashboard } = useDashboardStore();
 
     useEffect(() => {
-        fetchDashboard();
+        fetchDashboard('7d', 1, 3);
     }, [fetchDashboard]);
 
     return (

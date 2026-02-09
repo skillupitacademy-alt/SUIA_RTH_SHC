@@ -9,33 +9,35 @@ import Link from "next/link";
 import { MobileNav } from "@/components/dashboard/MobileNav";
 import { ZLoader } from "@/components/ui/ZLoader";
 
-const ITEMS_PER_PAGE = 7;
+const ITEMS_PER_PAGE = 6;
 
 export default function MyExamsPage() {
     const { data, fetchDashboard, loading } = useDashboardStore();
     const [currentPage, setCurrentPage] = useState(1);
 
     useEffect(() => {
-        // Fetch 30 days of history
-        fetchDashboard('30d');
-    }, [fetchDashboard]);
+        // Fetch 30 days of history with server-side pagination
+        fetchDashboard('30d', currentPage, ITEMS_PER_PAGE);
+    }, [fetchDashboard, currentPage]);
 
-    // Sorting: Maintained server-side order (completedAt DESC)
-    const activities = useMemo(() => data?.recentActivity || [], [data]);
-
-    // Pagination logic
-    const totalPages = Math.ceil(activities.length / ITEMS_PER_PAGE);
-    const paginatedActivities = useMemo(() => {
-        const start = (currentPage - 1) * ITEMS_PER_PAGE;
-        return activities.slice(start, start + ITEMS_PER_PAGE);
-    }, [activities, currentPage]);
+    // Direct access to activities (already paginated by server)
+    const activities = data?.recentActivity || [];
+    const totalCount = data?.pagination?.total || 0;
+    const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE);
 
     const handleNext = () => {
-        if (currentPage < totalPages) setCurrentPage(prev => prev + 1);
+        if (currentPage < totalPages) {
+            setCurrentPage(prev => prev + 1);
+            // Scroll to top on page change
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
     };
 
     const handlePrev = () => {
-        if (currentPage > 1) setCurrentPage(prev => prev - 1);
+        if (currentPage > 1) {
+            setCurrentPage(prev => prev - 1);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
     };
 
     return (
@@ -80,7 +82,7 @@ export default function MyExamsPage() {
                             <div className="space-y-4">
                                 {/* Activity Grid - Restored Executive White Styling */}
                                 <div className="grid gap-4">
-                                    {paginatedActivities.map((activity) => (
+                                    {activities.map((activity) => (
                                         <Link
                                             key={activity.id}
                                             href={`/reports/active-report?examId=${activity.id}`}

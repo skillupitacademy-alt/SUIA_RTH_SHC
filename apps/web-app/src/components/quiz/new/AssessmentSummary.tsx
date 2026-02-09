@@ -164,7 +164,7 @@ export function AssessmentSummary({
                                 "w-full h-[54px] rounded-xl font-black font-outfit text-xs uppercase tracking-[0.2em] flex items-center justify-center gap-3 transition-all active:scale-95 group border-2 relative overflow-hidden",
                                 !isReady
                                     ? "bg-[#FF2D550D] text-[#FF2D554D] border-[#FF2D551A] cursor-not-allowed opacity-100"
-                                    : "bg-[#1A1A1A] text-white border-[#1A1A1A] shadow-[0_10px_30px_rgba(0,0,0,0.15)] hover:shadow-[0_15px_40px_rgba(255,45,85,0.3)] hover:bg-[#FF2D55] hover:border-[#FF2D55] hover:scale-[1.02]"
+                                    : "bg-[#FF2D55] text-white border-[#FF2D55] shadow-[0_10px_30px_rgba(255,45,85,0.2)] hover:shadow-[0_15px_40px_rgba(255,45,85,0.4)] hover:bg-[#FF2D55] hover:border-[#FF2D55] hover:scale-[1.02]"
                             )}
                         >
                             {loading ? (
