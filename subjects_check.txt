@@ -1,7 +1,0 @@
-
-🎯 TARGET: Database Systems (ID: 30000000-0000-0000-0000-000000000008)
-Subjects Count: 4
-  - SQL & Relational Databases (ID: 40000000-0000-0000-0000-000000000029)
-  - NoSQL Databases (ID: 40000000-0000-0000-0000-000000000030)
-  - Database Design & Modeling (ID: 40000000-0000-0000-0000-000000000031)
-  - Database Administration & Performance (ID: 40000000-0000-0000-0000-000000000032)
