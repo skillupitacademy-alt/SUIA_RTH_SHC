@@ -173,3 +173,14 @@
 - **Logic-Only Hardening**: Implemented `beforeunload` browser guards in `QuizSelectionConsole.tsx` (Launch) and `ExamInterface.tsx` (Exam) to prevent session loss.
 - **Zero-Character Constraint**: Verified exactly 0 characters of JSX/UI were altered in the locked journey files.
 - **Verification**: Verified via `pnpm build` and `tsc --noEmit` (Exit Code 0).
+
+**Task**: Milestone 7 Restoration & Recovery
+**Status**: COMPLETED
+**Date**: 2026-02-10
+
+## Recent Actions
+- **Dashboard Restoration**: Re-integrated `<ServiceHealth />` into the main Admin Dashboard (`page.tsx`).
+- **Logic Repair**: Implemented `getUsage()` in `CacheService.ts` to restore Upstash Redis telemetry.
+- **Verification**: Confirmed fix for `UsageService` (removed `@ts-ignore`) and verified healthy API response for `/api/admin/system/usage`.
+- **System Integrity**: Verified monorepo build and type safety (Exit Code 0).
+

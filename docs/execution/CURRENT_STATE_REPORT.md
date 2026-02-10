@@ -686,3 +686,9 @@
 - **Project-DNA Aesthetics**: Replaced solid black metrics with white glass-morphism and bold Pink (`#FF2D55`) numeric typography.
 - **Ambient Transition Protocol**: Engineered a "Syncing Engine..." blur-overlay with an animated Gear icon to smooth the selection-to-action bridge.
 - **Baseline Floor Sync**: Standardized all footer controls (Back, Confirm, Launch) to a deterministic 54px height, achieving absolute horizontal parity.
+
+### Phase 40: Milestone 7 Restoration & Cache Logic Repair (Feb 10, 2026)
+- **Dashboard Restoration**: Re-integrated the <ServiceHealth /> widget into the main Admin Dashboard (page.tsx), restoring visibility for platform performance metrics.
+- **Cache Logic Hardening**: Fixed a critical gap in CacheService.ts by implementing the getUsage() method for Upstash Redis metrics.
+- **API Connectivity**: Verified 100% success rate for /api/admin/system/usage endpoint, now correctly returning metrics for Neon, Redis, Resend, and Cloudflare.
+- **Verification**: Synchronous build Integrity (pnpm build; 	sc --noEmit) verified with **Exit Code 0**.

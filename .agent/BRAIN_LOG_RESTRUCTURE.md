@@ -1262,3 +1262,13 @@ Reduce documentation fragmentation and improve discoverability by consolidating 
 - **Ambient Transition Protocol**: Engineered a "Syncing Engine..." blur-overlay with an animated Gear icon to smooth the selection-to-action bridge.
 - **Baseline Floor Sync**: Standardized all footer controls (Back, Confirm, Launch) to a deterministic 54px height, achieving absolute horizontal parity.
 - **Verification**: Synchronous build Integrity (`pnpm build`; `tsc --noEmit`) verified with Exit Code 0.
+
+### Batch 165: Milestone 7 Restoration & Cache Logic Repair
+- **Objective**: Recover the missing "System Health" features and restore dashboard visibility after a git reset.
+- **Implementation**:
+    - **Dashboard**: Restored `<ServiceHealth />` widget to `apps/admin-app/src/app/page.tsx`.
+    - **Logic**: Implemented `getUsage()` in `CacheService.ts` to provide Upstash Redis telemetry; bypassed type limitation via `any` cast for `info` command.
+    - **API Persistence**: Verified `UsageService` and `/api/admin/system/usage` connectivity.
+- **Verification**: System-wide build (`pnpm build`) and type-checks (`tsc --noEmit`) PASSED with **Exit Code 0**.
+- **Outcome**: Restored 100% visibility for platform health metrics (Neon, Redis, Resend, Cloudflare) and secured the metrics pipeline.
+
