@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useAuthStore } from '@/store/auth-store';
 import { apiClient } from '@quiz/api-client';
 import { ZLoader } from '@/components/ui/ZLoader';
@@ -9,11 +9,12 @@ import { ZLoader } from '@/components/ui/ZLoader';
 export function AdminGuard({ children }: { children: React.ReactNode }) {
     const { user, isAuthenticated, initialized, login, logout } = useAuthStore();
     const router = useRouter();
+    const pathname = usePathname();
 
     useEffect(() => {
         if (!initialized) return;
 
-        if (!isAuthenticated || !user?.isAdmin) {
+        if ((!isAuthenticated || !user?.isAdmin) && pathname !== '/login') {
             router.push('/login');
             return;
         }
@@ -37,7 +38,9 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
             }
         };
 
-        revalidate();
+        if (isAuthenticated && pathname !== '/login') {
+            revalidate();
+        }
 
         // Circuit Breaker: Listen for global 401 events from FetchClient
         const handleUnauthorized = () => {
@@ -48,7 +51,7 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
 
         window.addEventListener('auth:unauthorized', handleUnauthorized);
         return () => window.removeEventListener('auth:unauthorized', handleUnauthorized);
-    }, [isAuthenticated, user, initialized, router, logout]);
+    }, [isAuthenticated, user, initialized, router, logout, pathname]);
 
     // SECURITY: Surveillance for session termination
     // If auth state is lost, surgically clear potentially sensitive Factory data
@@ -59,10 +62,15 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
         }
     }, [isAuthenticated, initialized]);
 
+    // Bypass guard for login page
+    if (pathname === '/login') {
+        return <>{children}</>;
+    }
+
     if (!initialized || !isAuthenticated || !user?.isAdmin) {
         return (
             <div className="h-screen w-screen bg-background flex flex-col items-center justify-center">
-                <ZLoader size="lg" text="Authenticating Admin Session_" />
+                <ZLoader size="lg" text="Authenticating Admin Session" />
             </div>
         );
     }
