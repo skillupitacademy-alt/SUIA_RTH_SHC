@@ -8,7 +8,7 @@ import { SkillDeltaList } from '@/components/trends/SkillDeltaList';
 import { TrendsRangeSelector } from '@/components/trends/TrendsRangeSelector';
 
 export default function TrendsPage() {
-    const [range, setRange] = useState('90d');
+    const [range, setRange] = useState('28d');
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 

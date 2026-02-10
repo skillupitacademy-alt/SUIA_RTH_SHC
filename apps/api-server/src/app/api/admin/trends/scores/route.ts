@@ -7,7 +7,11 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get('userId') || undefined;
-    const range = searchParams.get('range') || '30d';
+    const range = searchParams.get('range') || '7d';
+
+    if (!['7d', '14d', '28d', '90d'].includes(range)) {
+      return NextResponse.json({ error: 'Invalid range' }, { status: 400 });
+    }
 
     const scores = await TrendsService.getScoreTrends({ userId, range });
     return NextResponse.json({ scores });

@@ -25,7 +25,7 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    const data = await DashboardEngine.getDrilldownAnalytics(payload.userId, range);
+    const data = await DashboardEngine.getPerformanceBreakdown(payload.userId, range);
     
     CacheManager.setBreakdown(payload.userId, range, data);
 

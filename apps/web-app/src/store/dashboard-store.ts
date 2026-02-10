@@ -37,8 +37,8 @@ interface DashboardState {
     error: string | null;
     fetchDashboard: (range?: string, page?: number, limit?: number) => Promise<void>;
     fetchPerformanceTrend: (range?: string) => Promise<void>;
-    fetchDrilldownMetadata: () => Promise<void>;
-    fetchDrilldownAnalytics: (range?: string) => Promise<void>;
+    fetchPerformanceBreakdownMetadata: () => Promise<void>;
+    fetchPerformanceBreakdown: (range?: string) => Promise<void>;
 }
 
 export const useDashboardStore = create<DashboardState>((set) => ({
@@ -68,10 +68,10 @@ export const useDashboardStore = create<DashboardState>((set) => ({
             console.error("Failed to fetch performance trend:", err);
         }
     },
-    fetchDrilldownMetadata: async () => {
+    fetchPerformanceBreakdownMetadata: async () => {
         try {
             // @ts-ignore
-            const metadata = await apiClient.dashboard.getMetadata() as DashboardData['drilldownMetadata'];
+            const metadata = await apiClient.dashboard.getPerformanceBreakdownMetadata() as DashboardData['drilldownMetadata'];
             set((state) => ({
                 data: state.data ? {
                     ...state.data,
@@ -82,10 +82,10 @@ export const useDashboardStore = create<DashboardState>((set) => ({
             console.error("Failed to fetch drilldown metadata:", err);
         }
     },
-    fetchDrilldownAnalytics: async (range = '28d') => {
+    fetchPerformanceBreakdown: async (range = '28d') => {
         try {
             // @ts-ignore
-            const breakdownData = await apiClient.dashboard.getBreakdown(range) as { breakdown: DashboardData['drilldownBreakdown'] };
+            const breakdownData = await apiClient.dashboard.getPerformanceBreakdown(range) as { breakdown: DashboardData['drilldownBreakdown'] };
             set((state) => ({
                 data: state.data ? {
                     ...state.data,

@@ -6,7 +6,11 @@ export const dynamic = 'force-dynamic';
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const range = searchParams.get('range') || '90d';
+    const range = searchParams.get('range') || '7d';
+
+    if (!['7d', '14d', '28d', '90d'].includes(range)) {
+      return NextResponse.json({ error: 'Invalid range' }, { status: 400 });
+    }
 
     const summary = await TrendsService.getTrendSummary({ range });
     return NextResponse.json(summary);

@@ -1285,3 +1285,9 @@ Reduce documentation fragmentation and improve discoverability by consolidating 
     - **Drilldown**: Developed "Exam Intelligence" view with synchronised Trend Lines, Stacked Bar Breakdowns, and dynamic dimension filters.
 - **Integrity**: Achieved 100% build success (`Exit Code 0`) and zero-error type safety audit.
 - **Outcome**: Delivered a top-tier, performance-optimized dashboard that provides high-fidelity educational insights with a premium "Executive" feel.
+### Batch 110: Admin & Dashboard Analytics Finalization
+- **Goal**: Harden analytical contracts across Admin and User portals to enforce strict range validity (7d/14d/28d).
+- **Admin Hardening**: Updated `TrendsService` and Admin Routes to reject `30d` and strictly parse valid ranges (defaulting to `7d` or respecting explicit valid inputs).
+- **Dashboard Refinement**: Renamed `DashboardEngine` methods to `getPerformanceBreakdown` for semantic clarity; aligned `MyExamsPage` to use dynamic filters and decoupled range logic.
+- **Global Consistency**: Purged legacy `30d` metrics (`new30d` -> `new28d`) from `AdminEngine` and `TrendsRangeSelector`.
+- **Integrity**: Achieved 100% build success after massive refactor of analytical pipelines.

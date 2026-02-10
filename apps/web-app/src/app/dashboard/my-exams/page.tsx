@@ -16,7 +16,7 @@ import { Filter, BarChart2, List, TrendingUp, Info } from 'lucide-react';
 const ITEMS_PER_PAGE = 6;
 
 export default function MyExamsPage() {
-    const { data, fetchDashboard, fetchPerformanceTrend, fetchDrilldownMetadata, fetchDrilldownAnalytics, loading } = useDashboardStore();
+    const { data, fetchDashboard, fetchPerformanceTrend, fetchPerformanceBreakdownMetadata, fetchPerformanceBreakdown, loading } = useDashboardStore();
     const [currentPage, setCurrentPage] = useState(1);
     const [range, setRange] = useState('28d');
     const [view, setView] = useState<'table' | 'trends' | 'breakdowns'>('table');
@@ -29,15 +29,15 @@ export default function MyExamsPage() {
     useEffect(() => {
         // Initial fetch: 28 days history + metadata
         fetchDashboard(range, currentPage, ITEMS_PER_PAGE);
-        fetchDrilldownMetadata();
-        fetchDrilldownAnalytics(range);
-    }, [fetchDashboard, fetchDrilldownMetadata, fetchDrilldownAnalytics, currentPage, range]);
+        fetchPerformanceBreakdownMetadata();
+        fetchPerformanceBreakdown(range);
+    }, [fetchDashboard, fetchPerformanceBreakdownMetadata, fetchPerformanceBreakdown, currentPage, range]);
 
     const handleRangeChange = (newRange: string) => {
-        if (newRange === '90d') return; // Strictly enforced contract
+        if (newRange === '90d' || newRange === '30d') return; // Strictly enforced contract
         setRange(newRange);
         fetchPerformanceTrend(newRange);
-        fetchDrilldownAnalytics(newRange);
+        fetchPerformanceBreakdown(newRange);
     };
 
     // Direct access to activities (already paginated by server)

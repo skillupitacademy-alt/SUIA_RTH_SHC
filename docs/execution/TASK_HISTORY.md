@@ -111,3 +111,6 @@
 | 2026-02-10 | Dashboard Analytics Polish | COMPLETED | Implemented 7d/14d/28d range contract, Redis-backed trend/breakdown caching, and 'Exam Intelligence' drilldown with dynamic filters. |
 | 2026-02-10 | Weekly Goal Over-Achievement | COMPLETED | Refined Sidebar logic to display progress beyond 100% (e.g., 'Goal met: 5 of 4') with precision tooltips. |
 | 2026-02-10 | System Verification | COMPLETED | Verified global system integrity with passing root 'pnpm build' and 'tsc --noEmit' (Exit Code 0). |
+| 2026-02-10 | Admin Analytics Hardening | COMPLETED | Enforced strict 7d/14d/28d range contract in Admin APIs; purged '30d' defaults. |
+| 2026-02-10 | Dashboard Breakdown Polish | COMPLETED | Renamed breakdown methods for alignment and implemented specialized caching (60s TTL). |
+| 2026-02-10 | Final System Verification | COMPLETED | Verified global system integrity with passing root 'pnpm build' and 'tsc' (Exit Code 0). |

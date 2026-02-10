@@ -394,13 +394,13 @@ export class AdminEngine {
     const now = new Date();
     const todayStart = new Date(now.setHours(0, 0, 0, 0));
     const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    const twentyEightDaysAgo = new Date(now.getTime() - 28 * 24 * 60 * 60 * 1000);
 
     const [total] = await db.select({ count: sql`count(*)` }).from(users);
     const [verified] = await db.select({ count: sql`count(*)` }).from(users).where(eq(users.emailVerified, true));
     const [newToday] = await db.select({ count: sql`count(*)` }).from(users).where(gt(users.createdAt, todayStart));
     const [new7d] = await db.select({ count: sql`count(*)` }).from(users).where(gt(users.createdAt, sevenDaysAgo));
-    const [new30d] = await db.select({ count: sql`count(*)` }).from(users).where(gt(users.createdAt, thirtyDaysAgo));
+    const [new28d] = await db.select({ count: sql`count(*)` }).from(users).where(gt(users.createdAt, twentyEightDaysAgo));
     
     // Check locked accounts from loginAttempts
     const [lockedResult] = await db.select({ count: sql`count(*)` })
@@ -412,7 +412,7 @@ export class AdminEngine {
       unverified: Number(total?.count || 0) - Number(verified?.count || 0),
       newToday: Number(newToday?.count || 0),
       new7d: Number(new7d?.count || 0),
-      new30d: Number(new30d?.count || 0),
+      new28d: Number(new28d?.count || 0),
       lockedCount: Number(lockedResult?.count || 0)
     };
   }

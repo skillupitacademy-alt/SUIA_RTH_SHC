@@ -173,7 +173,7 @@ export class DashboardEngine {
   /**
    * Fetches unique domains, subjects and topics attempted by the user for filter populating.
    */
-  static async getDrilldownMetadata(userId: string) {
+  static async getPerformanceBreakdownMetadata(userId: string) {
     const dimensions = await db
       .selectDistinct({
         dimensionId: resultsByDimension.dimensionId,
@@ -198,7 +198,7 @@ export class DashboardEngine {
   /**
    * Aggregates attempt volume/scores by dimension for stacked breakdowns.
    */
-  static async getDrilldownAnalytics(userId: string, range: string = '28d') {
+  static async getPerformanceBreakdown(userId: string, range: string = '28d') {
     let days = 28;
     if (range === '7d') days = 7;
     else if (range === '14d') days = 14;

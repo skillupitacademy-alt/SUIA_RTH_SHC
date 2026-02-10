@@ -37,7 +37,7 @@ export class TrendsService {
    * Get score progression over time
    */
   static async getScoreTrends(params: { userId?: string; range?: string }): Promise<ScoreTrend[]> {
-    const { userId, range = '30d' } = params;
+    const { userId, range = '7d' } = params;
     const daysAgo = this.parseDaysFromRange(range);
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - daysAgo);
@@ -77,7 +77,7 @@ export class TrendsService {
    * Get skill improvement deltas
    */
   static async getSkillTrends(params: { userId?: string; range?: string }): Promise<SkillTrend[]> {
-    const { userId, range = '90d' } = params;
+    const { userId, range = '7d' } = params;
     const daysAgo = this.parseDaysFromRange(range);
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - daysAgo);
@@ -171,7 +171,7 @@ export class TrendsService {
    * Get aggregate summary stats
    */
   static async getTrendSummary(params: { range?: string }): Promise<TrendSummary> {
-    const { range = '90d' } = params;
+    const { range = '7d' } = params;
     const daysAgo = this.parseDaysFromRange(range);
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - daysAgo);
@@ -237,7 +237,10 @@ export class TrendsService {
    */
   private static parseDaysFromRange(range: string): number {
     const match = range.match(/^(\d+)d$/);
-    if (!match) return 30; // Default to 30 days
-    return parseInt(match[1], 10);
+    if (!match) return 7; 
+    const days = parseInt(match[1], 10);
+    const validDays = [7, 14, 28, 90];
+    if (!validDays.includes(days)) return 7;
+    return days;
   }
 }

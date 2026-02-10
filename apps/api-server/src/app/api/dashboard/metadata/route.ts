@@ -9,7 +9,7 @@ export async function GET(req: NextRequest) {
     if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const payload = await TokenService.verifyAccessToken(token, false);
-    const data = await DashboardEngine.getDrilldownMetadata(payload.userId);
+    const data = await DashboardEngine.getPerformanceBreakdownMetadata(payload.userId);
     
     return NextResponse.json(data);
   } catch (error: any) {
