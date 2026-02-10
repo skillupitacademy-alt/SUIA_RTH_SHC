@@ -294,7 +294,7 @@ export const HEALTH_DATA = {
         { layer: 'Frontend', status: '95%', notes: 'Admin high-fidelity governance live.' },
     ],
     risks: [
-        { risk: 'Data Density', mitigation: 'Label thinning on 30D charts.' },
+        { risk: 'Data Density', mitigation: 'Label thinning on 28D charts.' },
         { risk: 'Mobile Areas', mitigation: 'Margin management for bottom nav.' },
         { risk: 'Git Policy', mitigation: 'Local-commit-only mandate enforced.' },
     ]

@@ -34,7 +34,7 @@ export default function MyExamsPage() {
     }, [fetchDashboard, fetchPerformanceBreakdownMetadata, fetchPerformanceBreakdown, currentPage, range]);
 
     const handleRangeChange = (newRange: string) => {
-        if (newRange === '90d' || newRange === '30d') return; // Strictly enforced contract
+        if (newRange === '90d') return; // Strictly enforced contract
         setRange(newRange);
         fetchPerformanceTrend(newRange);
         fetchPerformanceBreakdown(newRange);
