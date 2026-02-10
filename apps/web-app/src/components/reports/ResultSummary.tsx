@@ -42,22 +42,22 @@ export function ResultSummary({ score, total, timeTaken, percentile, status }: R
                         </p>
                     </div>
 
-                    <div className="relative h-48 w-48 flex items-center justify-center">
-                        <svg className="h-full w-full rotate-[-90deg]">
+                    <div className="relative h-48 w-48 flex items-center justify-center shrink-0">
+                        <svg className="h-full w-full rotate-[-90deg]" viewBox="0 0 192 192">
                             <circle
-                                cx="96" cy="96" r="88"
+                                cx="96" cy="96" r="84"
                                 fill="transparent"
                                 stroke="currentColor"
                                 strokeWidth="12"
                                 className="text-muted/10"
                             />
                             <circle
-                                cx="96" cy="96" r="88"
+                                cx="96" cy="96" r="84"
                                 fill="transparent"
                                 stroke="currentColor"
                                 strokeWidth="12"
-                                strokeDasharray={552.92}
-                                strokeDashoffset={552.92 * (1 - percentage / 100)}
+                                strokeDasharray={527.79} // 2 * pi * 84
+                                strokeDashoffset={527.79 * (1 - percentage / 100)}
                                 strokeLinecap="round"
                                 className="text-primary transition-all duration-1000 ease-out"
                             />

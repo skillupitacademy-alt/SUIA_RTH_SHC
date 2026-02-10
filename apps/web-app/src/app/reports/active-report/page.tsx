@@ -73,7 +73,7 @@ function ReportContent() {
                     total: report.total,
                     totalPercent: Math.round(report.percentage),
                     timeTaken: report.timeTaken || "00:00",
-                    percentile: 85, // Meta/External calc
+                    percentile: report.percentile || 0,
                     status: (report.statusLabel || (report.percentage >= 70 ? 'passed' : 'failed')) as 'passed' | 'failed',
                     topics: (report.performance?.topic || []).map((t: any) => ({
                         name: t.name || 'Unknown',
@@ -151,7 +151,7 @@ function ReportContent() {
     return (
         <AuthGuard>
             <div className="min-h-[calc(100vh-64px)] bg-muted/5 py-12 px-4 md:px-8 lg:px-12">
-                <div className="max-w-6xl mx-auto space-y-12">
+                <div className="w-full max-w-[95%] mx-auto space-y-12">
                     {/* Actions Header */}
                     <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
                         <Link
@@ -173,8 +173,8 @@ function ReportContent() {
 
                     {/* Real Data Components */}
                     <ResultSummary
-                        score={reportData.totalPercent}
-                        total={100}
+                        score={reportData.score}
+                        total={reportData.total}
                         timeTaken={reportData.timeTaken}
                         percentile={reportData.percentile}
                         status={reportData.status}
