@@ -5,10 +5,11 @@ import { ChevronLeft } from 'lucide-react';
 
 interface DashboardPageHeaderProps {
     title: string;
-    subtitle?: string;
+    description?: string;
+    icon?: React.ReactNode;
 }
 
-export function DashboardPageHeader({ title, subtitle }: DashboardPageHeaderProps) {
+export function DashboardPageHeader({ title, description, icon }: DashboardPageHeaderProps) {
     const router = useRouter();
 
     return (
@@ -25,17 +26,24 @@ export function DashboardPageHeader({ title, subtitle }: DashboardPageHeaderProp
                 </span>
             </button>
 
-            <div>
-                <h1 className="text-4xl font-outfit font-black tracking-tighter italic uppercase text-[#1A1A1A] mb-2">
-                    {title}
-                </h1>
-                {subtitle && (
-                    <p className="text-sm font-bold text-muted-foreground uppercase tracking-widest max-w-2xl">
-                        {subtitle}
-                    </p>
+            <div className="flex items-center gap-4">
+                {icon && (
+                    <div className="p-3 rounded-2xl bg-white border border-slate-200 shadow-sm">
+                        {icon}
+                    </div>
                 )}
+                <div>
+                    <h1 className="text-4xl font-outfit font-black tracking-tighter italic uppercase text-[#1A1A1A]">
+                        {title}
+                    </h1>
+                    {description && (
+                        <p className="text-sm font-bold text-muted-foreground uppercase tracking-widest max-w-2xl mt-1">
+                            {description}
+                        </p>
+                    )}
+                </div>
             </div>
-            
+
             <div className="h-px w-full bg-slate-200/60" />
         </div>
     );
