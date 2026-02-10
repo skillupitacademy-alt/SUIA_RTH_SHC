@@ -60,9 +60,9 @@ export function ExitConfirmationDialog({
                 ref={dialogRef}
                 className={cn(
                     "relative z-10 w-full max-w-md mx-4",
-                    "bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl",
+                    "bg-white/95 backdrop-blur-xl",
                     "rounded-[2rem] shadow-2xl shadow-primary/20",
-                    "border border-white/20 dark:border-white/10",
+                    "border border-white/20",
                     "p-8 space-y-6",
                     "animate-in fade-in zoom-in-95 duration-200"
                 )}
@@ -78,8 +78,8 @@ export function ExitConfirmationDialog({
 
                 {/* Icon */}
                 <div className="flex justify-center">
-                    <div className="h-16 w-16 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
-                        <AlertTriangle className="h-8 w-8 text-amber-600 dark:text-amber-400" />
+                    <div className="h-16 w-16 rounded-full bg-amber-100 flex items-center justify-center">
+                        <AlertTriangle className="h-8 w-8 text-amber-600" />
                     </div>
                 </div>
 

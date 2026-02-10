@@ -47,17 +47,17 @@ export function ConfirmationDialog({
 
     const getIcon = () => {
         switch (variant) {
-            case 'danger': return <AlertCircle className="h-8 w-8 text-rose-600 dark:text-rose-400" />;
-            case 'warning': return <AlertTriangle className="h-8 w-8 text-amber-600 dark:text-amber-400" />;
-            default: return <Info className="h-8 w-8 text-blue-600 dark:text-blue-400" />;
+            case 'danger': return <AlertCircle className="h-8 w-8 text-rose-600" />;
+            case 'warning': return <AlertTriangle className="h-8 w-8 text-amber-600" />;
+            default: return <Info className="h-8 w-8 text-blue-600" />;
         }
     };
 
     const getIconBg = () => {
         switch (variant) {
-            case 'danger': return "bg-rose-100 dark:bg-rose-900/30";
-            case 'warning': return "bg-amber-100 dark:bg-amber-900/30";
-            default: return "bg-blue-100 dark:bg-blue-900/30";
+            case 'danger': return "bg-rose-100";
+            case 'warning': return "bg-amber-100";
+            default: return "bg-blue-100";
         }
     };
 
@@ -76,7 +76,7 @@ export function ConfirmationDialog({
                 ref={dialogRef}
                 className={cn(
                     "relative z-10 w-full max-w-md",
-                    "bg-white dark:bg-zinc-900",
+                    "bg-white",
                     "rounded-[2.5rem] shadow-2xl p-10 space-y-8",
                     "border border-white/20 animate-in zoom-in-95 duration-300"
                 )}

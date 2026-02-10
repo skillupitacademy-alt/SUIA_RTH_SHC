@@ -71,3 +71,20 @@
 
   --radius: 0.5rem;
 }
+
+.theme-a {
+  --primary: 337 90% 63%;
+  --secondary: 223 74% 29%;
+  --accent: 337 90% 63%;
+  --ring: 337 90% 63%;
+}
+
+.theme-b {
+  --primary: 198 84% 15%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 16 88% 53%;
+  --secondary-foreground: 0 0% 100%;
+  --accent: 16 88% 53%;
+  --accent-foreground: 0 0% 100%;
+  --ring: 198 84% 15%;
+}
