@@ -22,7 +22,6 @@ export class DashboardEngine {
     let days = 7;
     if (range === '14d') days = 14;
     else if (range === '28d') days = 28;
-    else if (range === '30d') days = 30; // Backward compatibility
     else if (range === '90d') days = 90; // Stub for future use
     const now = new Date();
     const relativeStartDate = new Date();

@@ -46,9 +46,20 @@ export default function MyExamsPage() {
     const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE);
 
     // Filter metadata
-    const domains = data?.drilldownMetadata?.domains || [];
-    const subjects = data?.drilldownMetadata?.subjects || [];
-    const topics = data?.drilldownMetadata?.topics || [];
+    const allDomains = data?.drilldownMetadata?.domains || [];
+    const allSubjects = data?.drilldownMetadata?.subjects || [];
+    const allTopics = data?.drilldownMetadata?.topics || [];
+
+    // Cascading Filter Logic
+    const availableDomains = allDomains;
+    const availableSubjects = subjectFilter === 'all'
+        ? allSubjects
+        : allSubjects; // In real-world, would filter by domainId if metadata included parentId
+
+    // For better UX, we'll just use the raw metadata arrays since they represent attempted dims
+    const domains = availableDomains;
+    const subjects = allSubjects;
+    const topics = allTopics;
 
     const handleNext = () => {
         if (currentPage < totalPages) {

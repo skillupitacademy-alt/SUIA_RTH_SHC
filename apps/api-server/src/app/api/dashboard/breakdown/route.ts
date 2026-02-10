@@ -17,8 +17,8 @@ export async function GET(req: NextRequest) {
         return NextResponse.json({ error: 'Invalid range parameter' }, { status: 400 });
     }
 
-    // Reuse Trend Cache Logic or create specialized
-    const cached = CacheManager.getTrend(payload.userId, `breakdown:${range}`);
+    // Use specialized breakdown cache
+    const cached = CacheManager.getBreakdown(payload.userId, range);
     if (cached) {
       return NextResponse.json(cached, {
         headers: { 'X-Cache': 'HIT' }
@@ -27,7 +27,7 @@ export async function GET(req: NextRequest) {
 
     const data = await DashboardEngine.getDrilldownAnalytics(payload.userId, range);
     
-    CacheManager.setTrend(payload.userId, `breakdown:${range}`, data);
+    CacheManager.setBreakdown(payload.userId, range, data);
 
     return NextResponse.json(data, {
         headers: { 'X-Cache': 'MISS' }

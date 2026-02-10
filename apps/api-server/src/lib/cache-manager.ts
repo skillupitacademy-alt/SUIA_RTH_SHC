@@ -38,6 +38,16 @@ export const CacheManager = {
     dashboardCache.set(key, data);
   },
 
+  getBreakdown: (userId: string, range: string) => {
+    const key = `breakdown:${userId}:${range}`;
+    return dashboardCache.get(key);
+  },
+
+  setBreakdown: (userId: string, range: string, data: any) => {
+    const key = `breakdown:${userId}:${range}`;
+    dashboardCache.set(key, data);
+  },
+
   // Rate Limiting (Fixed Window)
   checkRateLimit: (identifier: string, limit: number = 60): { allowed: boolean; remaining: number } => {
     const window = Math.floor(Date.now() / 60000); // 1-minute window

@@ -78,7 +78,7 @@ export function Sidebar() {
                     </div>
                     <p className="text-[10px] mt-2 text-gray-600 font-bold uppercase tracking-tight">
                         {weeklyExams >= weeklyGoal ? 'Goal met: ' : ''}
-                        {weeklyExams} of {weeklyGoal} exams ({Math.round((weeklyExams / weeklyGoal) * 100)}%)
+                        {weeklyExams} of {weeklyGoal} ({Math.round((weeklyExams / weeklyGoal) * 100)}%)
                     </p>
                 </div>
             </div>
