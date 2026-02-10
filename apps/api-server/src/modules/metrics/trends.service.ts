@@ -235,7 +235,7 @@ export class TrendsService {
   /**
    * Calculate period-over-period delta (Time Machine)
    */
-  static async getPeriodDelta(userId: string | undefined, range: string = '7d'): Promise<{ currentAvg: number; previousAvg: number; deltaPct: number | null }> {
+  static async getPeriodDelta(userId: string | undefined, range: string = '7d'): Promise<{ currentAvg: number | null; previousAvg: number | null; deltaPct: number | null } | null> {
     const days = this.parseDaysFromRange(range);
     
     // Define windows
@@ -253,23 +253,22 @@ export class TrendsService {
       if (userId) conditions.push(eq(exams.userId, userId));
 
       const scores = await db.select({ score: exams.totalScore }).from(exams).where(and(...conditions));
-      if (scores.length < 3) return null; // Need minimum data for statistical relevance
+      if (scores.length === 0) return { avg: null, count: 0 };
 
       const total = scores.reduce((acc, curr) => acc + (curr.score || 0), 0);
-      return Math.round(total / scores.length);
+      return { avg: Math.round(total / scores.length), count: scores.length };
     };
 
-    const currentAvg = await getWindowAvg(currentStart, now);
-    const previousAvg = await getWindowAvg(previousStart, currentStart);
+    const current = await getWindowAvg(currentStart, now);
+    const previous = await getWindowAvg(previousStart, currentStart);
 
-    if (currentAvg === null || previousAvg === null) {
-      return { currentAvg: currentAvg || 0, previousAvg: previousAvg || 0, deltaPct: null };
-    }
+    const totalSamples = (current?.count || 0) + (previous?.count || 0);
+    if (!current || !previous || totalSamples < 3) return null; // Not enough data
 
     return {
-      currentAvg,
-      previousAvg,
-      deltaPct: currentAvg - previousAvg
+      currentAvg: current.avg,
+      previousAvg: previous.avg,
+      deltaPct: current.avg !== null && previous.avg !== null ? current.avg - previous.avg : null
     };
   }
 
@@ -281,9 +280,9 @@ export class TrendsService {
     
     // Green: High performance OR improving
     if (currentAvg >= 70 && safeDelta >= 0) return 'green';
-    
+
     // Yellow: Mid performance OR slight dip
-    if ((currentAvg >= 50 && currentAvg < 69) || (safeDelta >= -5 && safeDelta < 0)) return 'yellow';
+    if ((currentAvg >= 50 && currentAvg <= 69) || (safeDelta >= -5 && safeDelta < 0)) return 'yellow';
     
     // Red: Low performance OR major drop
     return 'red';

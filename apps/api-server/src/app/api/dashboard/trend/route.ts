@@ -33,11 +33,13 @@ export async function GET(req: NextRequest) {
     ]);
 
     // Compute Health
-    const healthStatus = TrendsService.getExecHealth(trendData.averageScore, deltaData.deltaPct);
+    const healthStatus = TrendsService.getExecHealth(trendData.averageScore, deltaData?.deltaPct ?? null);
 
     const mergedData = {
         ...trendData,
-        ...deltaData,
+        currentAvg: deltaData?.currentAvg ?? null,
+        previousAvg: deltaData?.previousAvg ?? null,
+        deltaPct: deltaData?.deltaPct ?? null,
         healthStatus
     };
     

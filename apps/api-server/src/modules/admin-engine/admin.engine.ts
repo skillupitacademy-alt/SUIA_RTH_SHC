@@ -377,7 +377,7 @@ export class AdminEngine {
     ]);
 
     // Compute System Health based on aggregate aggregate avg
-    const healthStatus = TrendsService.getExecHealth(trendSummary.avgScore, deltaData.deltaPct);
+    const healthStatus = TrendsService.getExecHealth(trendSummary.avgScore, deltaData?.deltaPct ?? null);
 
     return {
       domains: domainScores.map(d => ({
@@ -398,7 +398,7 @@ export class AdminEngine {
       efficiency,
       summary: {
           ...trendSummary,
-          deltaPct: deltaData.deltaPct,
+          deltaPct: deltaData?.deltaPct ?? null,
           healthStatus
       }
     };
