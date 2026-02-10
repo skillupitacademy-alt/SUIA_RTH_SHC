@@ -20,15 +20,15 @@ export function PerformanceBreakdown({ topics, difficulty, growthZones }: Perfor
                     {topics.map((topic) => {
                         const percentage = Math.round((topic.score / topic.total) * 100);
                         return (
-                            <div key={topic.name} className="space-y-2">
+                            <div key={topic.name} className="space-y-3">
                                 <div className="flex justify-between items-end">
-                                    <span className="font-bold text-sm">{topic.name}</span>
-                                    <span className="text-xs font-bold text-muted-foreground">{percentage}%</span>
+                                    <span className="font-black text-sm text-slate-900 uppercase tracking-tight">{topic.name}</span>
+                                    <span className="text-xs font-black text-slate-600">{percentage}%</span>
                                 </div>
-                                <div className="h-3 w-full bg-muted rounded-full overflow-hidden">
+                                <div className="h-4 w-full bg-slate-100 rounded-full overflow-hidden p-0.5 border border-slate-200 shadow-inner">
                                     <div
                                         className={cn(
-                                            "h-full transition-all duration-1000",
+                                            "h-full transition-all duration-1000 rounded-full",
                                             percentage > 70 ? "bg-green-500" : percentage > 40 ? "bg-secondary" : "bg-primary"
                                         )}
                                         style={{ width: `${percentage}%` }}
@@ -44,13 +44,13 @@ export function PerformanceBreakdown({ topics, difficulty, growthZones }: Perfor
             <div className="space-y-8">
                 {/* Difficulty Breakdown */}
                 <div className="p-8 rounded-[3rem] border bg-background shadow-sm">
-                    <h3 className="text-xl font-black tracking-tight mb-8">Difficulty Breakdown</h3>
+                    <h3 className="text-xl font-black tracking-tight mb-8 text-slate-900">Difficulty Breakdown</h3>
                     <div className="grid grid-cols-3 gap-4">
                         {difficulty.map((d) => (
-                            <div key={d.level} className="text-center p-4 rounded-2xl bg-muted/20 border border-primary/5">
-                                <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest mb-2">{d.level}</p>
-                                <p className="text-2xl font-black text-primary">{d.accuracy}%</p>
-                                <div className="mt-2 text-[10px] font-bold py-1 px-2 rounded-full bg-white/50 inline-block">
+                            <div key={d.level} className="text-center p-6 rounded-[2rem] bg-white border border-slate-100 shadow-sm">
+                                <p className="text-[10px] font-black uppercase text-slate-500 tracking-[0.2em] mb-2">{d.level}</p>
+                                <p className="text-3xl font-black text-primary drop-shadow-sm">{d.accuracy}%</p>
+                                <div className="mt-3 text-[10px] font-black py-1.5 px-3 rounded-full bg-slate-50 border border-slate-100 uppercase tracking-widest text-slate-600">
                                     Accuracy
                                 </div>
                             </div>

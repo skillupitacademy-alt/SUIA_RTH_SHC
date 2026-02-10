@@ -63,11 +63,11 @@ export function BehavioralRadar({ data, className }: BehavioralRadarProps) {
 
     return (
         <div className={cn("glass-morphism rounded-[3rem] p-8 flex flex-col items-center gap-6", className)}>
-            <div className="flex items-center gap-2 w-full mb-2">
-                <div className="p-2 rounded-xl bg-primary/10 text-primary">
-                    <Activity size={18} />
+            <div className="flex items-center gap-3 w-full mb-2">
+                <div className="p-2.5 rounded-xl bg-primary/10 text-primary shadow-inner">
+                    <Activity size={22} />
                 </div>
-                <h3 className="text-lg font-black tracking-tight uppercase">Behavioral Radar</h3>
+                <h3 className="text-2xl font-black tracking-tight uppercase text-slate-900">Behavioral Radar</h3>
             </div>
 
             <div className="relative w-full aspect-square max-w-[300px]">
@@ -119,7 +119,7 @@ export function BehavioralRadar({ data, className }: BehavioralRadarProps) {
                             x={line.labelX}
                             y={line.labelY}
                             textAnchor="middle"
-                            className="text-[10px] font-black uppercase tracking-widest fill-muted-foreground"
+                            className="text-[11px] font-black uppercase tracking-widest fill-slate-700"
                         >
                             {line.name}
                         </text>
@@ -130,11 +130,11 @@ export function BehavioralRadar({ data, className }: BehavioralRadarProps) {
                 </svg>
             </div>
 
-            <div className="grid grid-cols-3 gap-2 w-full">
+            <div className="grid grid-cols-3 gap-3 w-full">
                 {categories.map((cat, i) => (
-                    <div key={cat} className="text-center px-2 py-3 rounded-2xl bg-white/40 border border-white/20">
-                        <p className="text-[9px] font-bold text-muted-foreground uppercase mb-1">{displayNames[cat]}</p>
-                        <p className="text-sm font-black text-primary">{values[i]}%</p>
+                    <div key={cat} className="text-center px-2 py-4 rounded-[1.5rem] bg-white border border-slate-100 shadow-sm">
+                        <p className="text-[10px] font-black text-slate-500 uppercase mb-1 tracking-tighter">{displayNames[cat]}</p>
+                        <p className="text-base font-black text-primary">{values[i]}%</p>
                     </div>
                 ))}
             </div>

@@ -48,8 +48,8 @@ export function EfficiencyQuadrant({ questions, className }: EfficiencyQuadrantP
         <div className={cn("glass-morphism rounded-[3rem] p-8 space-y-6", className)}>
             <div className="flex items-center justify-between">
                 <div>
-                    <h3 className="text-xl font-black tracking-tight uppercase">Efficiency Quadrant</h3>
-                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] leading-none mt-1"> Precision vs. Speed Analysis</p>
+                    <h3 className="text-2xl font-black tracking-tight uppercase text-slate-900">Efficiency Quadrant</h3>
+                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] leading-none mt-1"> Precision vs. Speed Analysis</p>
                 </div>
                 <span title="X-Axis: Speed (Fast <= 60s), Y-Axis: Precision (Correct/Wrong)" className="cursor-help">
                     <HelpCircle size={14} className="text-muted-foreground/40" />
@@ -58,67 +58,67 @@ export function EfficiencyQuadrant({ questions, className }: EfficiencyQuadrantP
 
             <div className="grid grid-cols-2 gap-4 aspect-square md:aspect-auto md:h-[400px]">
                 {/* Quadrant 1: Mastery (Top Left) */}
-                <div className="relative rounded-3xl bg-[#10B981]/10 border border-[#10B981]/20 p-6 flex flex-col overflow-hidden group">
+                <div className="relative rounded-3xl bg-[#10B981]/10 border border-[#10B981]/30 p-8 flex flex-col overflow-hidden group shadow-sm">
                     <Zap className="absolute -right-4 -top-4 font-black h-24 w-24 text-[#10B981]/5 rotate-12 transition-transform group-hover:scale-110" />
-                    <div className="flex items-center gap-2 text-[#10B981]">
-                        <Zap size={16} />
-                        <span className="text-[10px] font-black uppercase tracking-widest">Mastery</span>
+                    <div className="flex items-center gap-2 text-[#059669]">
+                        <Zap size={18} fill="currentColor" />
+                        <span className="text-xs font-black uppercase tracking-widest">Mastery</span>
                     </div>
-                    <p className="text-[8px] font-bold text-muted-foreground uppercase mt-1">Fast & Correct</p>
-                    <div className="mt-4 flex flex-wrap gap-1.5 overflow-y-auto pr-2 custom-scrollbar">
+                    <p className="text-[10px] font-black text-slate-600 uppercase mt-1">Fast & Correct</p>
+                    <div className="mt-6 flex flex-wrap gap-2 overflow-y-auto pr-2 custom-scrollbar">
                         {quadrants.mastery.map((_, i) => (
-                            <div key={i} className="h-2 w-2 rounded-full bg-[#10B981] shadow-[0_0_8px_rgba(16,185,129,0.4)]" />
+                            <div key={i} className="h-2.5 w-2.5 rounded-full bg-[#10B981] shadow-[0_0_8px_rgba(16,185,129,0.4)] border border-white/20" />
                         ))}
                     </div>
-                    <span className="mt-auto text-2xl font-black text-[#10B981]">{quadrants.mastery.length}</span>
+                    <span className="mt-auto text-4xl font-black text-[#059669]">{quadrants.mastery.length}</span>
                 </div>
 
                 {/* Quadrant 2: Depth / Persistence (Top Right) */}
-                <div className="relative rounded-3xl bg-[#34D399]/10 border border-[#34D399]/20 p-6 flex flex-col overflow-hidden group">
+                <div className="relative rounded-3xl bg-[#34D399]/10 border border-[#34D399]/30 p-8 flex flex-col overflow-hidden group shadow-sm">
                     <Clock className="absolute -right-4 -top-4 h-24 w-24 text-[#34D399]/5 rotate-12 transition-transform group-hover:scale-110" />
-                    <div className="flex items-center gap-2 text-[#34D399]">
-                        <Clock size={16} />
-                        <span className="text-[10px] font-black uppercase tracking-widest">Persistence</span>
+                    <div className="flex items-center gap-2 text-[#059669]">
+                        <Clock size={18} />
+                        <span className="text-xs font-black uppercase tracking-widest">Persistence</span>
                     </div>
-                    <p className="text-[8px] font-bold text-muted-foreground uppercase mt-1">Slow & Correct</p>
-                    <div className="mt-4 flex flex-wrap gap-1.5 overflow-y-auto pr-2 custom-scrollbar">
+                    <p className="text-[10px] font-black text-slate-600 uppercase mt-1">Slow & Correct</p>
+                    <div className="mt-6 flex flex-wrap gap-2 overflow-y-auto pr-2 custom-scrollbar">
                         {quadrants.depth.map((_, i) => (
-                            <div key={i} className="h-2 w-2 rounded-full bg-[#34D399] shadow-[0_0_8px_rgba(52,211,153,0.4)]" />
+                            <div key={i} className="h-2.5 w-2.5 rounded-full bg-[#34D399] shadow-[0_0_8px_rgba(52,211,153,0.4)] border border-white/20" />
                         ))}
                     </div>
-                    <span className="mt-auto text-2xl font-black text-[#34D399]">{quadrants.depth.length}</span>
+                    <span className="mt-auto text-4xl font-black text-[#059669]">{quadrants.depth.length}</span>
                 </div>
 
                 {/* Quadrant 3: Rash (Bottom Left) */}
-                <div className="relative rounded-3xl bg-[#F59E0B]/10 border border-[#F59E0B]/20 p-6 flex flex-col overflow-hidden group">
+                <div className="relative rounded-3xl bg-[#F59E0B]/10 border border-[#F59E0B]/30 p-8 flex flex-col overflow-hidden group shadow-sm">
                     <AlertTriangle className="absolute -right-4 -top-4 h-24 w-24 text-[#F59E0B]/5 rotate-12 transition-transform group-hover:scale-110" />
-                    <div className="flex items-center gap-2 text-[#F59E0B]">
-                        <Zap size={16} />
-                        <span className="text-[10px] font-black uppercase tracking-widest">Rash</span>
+                    <div className="flex items-center gap-2 text-[#D97706]">
+                        <Zap size={18} />
+                        <span className="text-xs font-black uppercase tracking-widest">Rash</span>
                     </div>
-                    <p className="text-[8px] font-bold text-muted-foreground uppercase mt-1">Fast & Wrong</p>
-                    <div className="mt-4 flex flex-wrap gap-1.5 overflow-y-auto pr-2 custom-scrollbar">
+                    <p className="text-[10px] font-black text-slate-600 uppercase mt-1">Fast & Wrong</p>
+                    <div className="mt-6 flex flex-wrap gap-2 overflow-y-auto pr-2 custom-scrollbar">
                         {quadrants.rash.map((_, i) => (
-                            <div key={i} className="h-2 w-2 rounded-full bg-[#F59E0B] shadow-[0_0_8px_rgba(245,158,11,0.4)]" />
+                            <div key={i} className="h-2.5 w-2.5 rounded-full bg-[#F59E0B] shadow-[0_0_8px_rgba(245,158,11,0.4)] border border-white/20" />
                         ))}
                     </div>
-                    <span className="mt-auto text-2xl font-black text-[#F59E0B]">{quadrants.rash.length}</span>
+                    <span className="mt-auto text-4xl font-black text-[#D97706]">{quadrants.rash.length}</span>
                 </div>
 
                 {/* Quadrant 4: Struggle (Bottom Right) */}
-                <div className="relative rounded-3xl bg-[#FF2D55]/10 border border-[#FF2D55]/20 p-6 flex flex-col overflow-hidden group">
+                <div className="relative rounded-3xl bg-[#FF2D55]/10 border border-[#FF2D55]/30 p-8 flex flex-col overflow-hidden group shadow-sm">
                     <Target className="absolute -right-4 -top-4 h-24 w-24 text-[#FF2D55]/5 rotate-12 transition-transform group-hover:scale-110" />
-                    <div className="flex items-center gap-2 text-[#FF2D55]">
-                        <Target size={16} />
-                        <span className="text-[10px] font-black uppercase tracking-widest">Struggle</span>
+                    <div className="flex items-center gap-2 text-[#E11D48]">
+                        <Target size={18} />
+                        <span className="text-xs font-black uppercase tracking-widest">Struggle</span>
                     </div>
-                    <p className="text-[8px] font-bold text-muted-foreground uppercase mt-1">Slow & Wrong</p>
-                    <div className="mt-4 flex flex-wrap gap-1.5 overflow-y-auto pr-2 custom-scrollbar">
+                    <p className="text-[10px] font-black text-slate-600 uppercase mt-1">Slow & Wrong</p>
+                    <div className="mt-6 flex flex-wrap gap-2 overflow-y-auto pr-2 custom-scrollbar">
                         {quadrants.struggle.map((_, i) => (
-                            <div key={i} className="h-2 w-2 rounded-full bg-[#FF2D55] shadow-[0_0_8px_rgba(255,45,85,0.4)]" />
+                            <div key={i} className="h-2.5 w-2.5 rounded-full bg-[#FF2D55] shadow-[0_0_8px_rgba(255,45,85,0.4)] border border-white/20" />
                         ))}
                     </div>
-                    <span className="mt-auto text-2xl font-black text-[#FF2D55]">{quadrants.struggle.length}</span>
+                    <span className="mt-auto text-4xl font-black text-[#E11D48]">{quadrants.struggle.length}</span>
                 </div>
             </div>
 

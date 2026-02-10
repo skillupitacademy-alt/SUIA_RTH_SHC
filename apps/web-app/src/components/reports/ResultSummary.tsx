@@ -32,10 +32,10 @@ export function ResultSummary({ score, total, timeTaken, percentile, status }: R
                             {status === 'passed' ? <CheckCircle2 size={16} /> : <XCircle size={16} />}
                             Assessment {status}
                         </div>
-                        <h1 className="text-4xl md:text-6xl font-black tracking-tight">
+                        <h1 className="text-4xl md:text-6xl font-black tracking-tight text-slate-900">
                             You scored <span className="text-primary">{percentage}%</span>
                         </h1>
-                        <p className="text-lg text-muted-foreground max-w-md">
+                        <p className="text-lg text-slate-700 font-medium max-w-md leading-relaxed">
                             {status === 'passed'
                                 ? "Excellent work! You've demonstrated strong mastery of the selected domains."
                                 : "A good effort, but there's room for improvement in some key areas."}
@@ -63,8 +63,8 @@ export function ResultSummary({ score, total, timeTaken, percentile, status }: R
                             />
                         </svg>
                         <div className="absolute inset-0 flex flex-col items-center justify-center">
-                            <span className="text-4xl font-black">{score}/{total}</span>
-                            <span className="text-xs font-bold text-muted-foreground uppercase">Correct</span>
+                            <span className="text-4xl font-black text-slate-900">{score}/{total}</span>
+                            <span className="text-xs font-black text-slate-500 uppercase tracking-widest">Correct</span>
                         </div>
                     </div>
                 </div>

@@ -25,11 +25,11 @@ export function MappingTrinity({ data, className }: MappingTrinityProps) {
 
     return (
         <div className={cn("glass-morphism rounded-[3rem] p-8 flex flex-col gap-8", className)}>
-            <div className="flex items-center gap-2 w-full">
-                <div className="p-2 rounded-xl bg-primary/10 text-primary">
-                    <Target size={18} />
+            <div className="flex items-center gap-3 w-full">
+                <div className="p-2.5 rounded-xl bg-primary/10 text-primary shadow-inner">
+                    <Target size={22} />
                 </div>
-                <h3 className="text-lg font-black tracking-tight uppercase">Mapping Trinity</h3>
+                <h3 className="text-2xl font-black tracking-tight uppercase text-slate-900">Knowledge Trinity</h3>
             </div>
 
             <div className="space-y-6">
@@ -37,11 +37,11 @@ export function MappingTrinity({ data, className }: MappingTrinityProps) {
                     <div key={stat.key} className="space-y-3">
                         <div className="flex justify-between items-end">
                             <div className="flex flex-col">
-                                <span className="text-sm font-black tracking-tight">{stat.label}</span>
-                                <span className="text-[10px] font-bold text-muted-foreground uppercase leading-none">Knowledge Type</span>
+                                <span className="text-sm font-black tracking-tight text-slate-900">{stat.label}</span>
+                                <span className="text-[10px] font-black text-slate-600 uppercase leading-none tracking-widest">Knowledge Type</span>
                             </div>
                             <div className="text-right">
-                                <span className="text-xl font-black text-primary">{stat.accuracy}%</span>
+                                <span className="text-xl font-black text-slate-950">{stat.accuracy}%</span>
                             </div>
                         </div>
 
@@ -62,8 +62,8 @@ export function MappingTrinity({ data, className }: MappingTrinityProps) {
                 ))}
             </div>
 
-            <div className="mt-auto pt-4 border-t border-white/20">
-                <p className="text-[10px] font-bold text-muted-foreground italic leading-relaxed">
+            <div className="mt-auto pt-4 border-t border-slate-200">
+                <p className="text-[10px] font-black text-slate-700 italic leading-relaxed">
                     * Based on multi-dimensional analysis of problem-solving approach and theoretical accuracy.
                 </p>
             </div>

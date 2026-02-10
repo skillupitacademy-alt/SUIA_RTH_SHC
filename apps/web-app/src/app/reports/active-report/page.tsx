@@ -202,11 +202,11 @@ function ReportContent() {
 
                     {/* 3. Skill Matrix Matrix */}
                     {reportData.skillMatrix.length > 0 && (
-                        <SkillHeatmap data={reportData.skillMatrix} className="mt-8" />
+                        <SkillHeatmap data={reportData.skillMatrix} className="mt-12" />
                     )}
 
                     {/* 4. Behavioral & Knowledge Grids */}
-                    <div className="grid gap-8 lg:grid-cols-2">
+                    <div className="grid gap-8 lg:grid-cols-2 mt-12">
                         {reportData.knowledgeTrinity.length > 0 && (
                             <MappingTrinity data={reportData.knowledgeTrinity} />
                         )}
@@ -217,26 +217,32 @@ function ReportContent() {
 
                     {/* 5. Efficiency Analysis */}
                     {reportData.questions?.some((q: any) => q.timeSpent > 0) && (
-                        <EfficiencyQuadrant questions={reportData.questions} />
+                        <div className="mt-12">
+                            <EfficiencyQuadrant questions={reportData.questions} />
+                        </div>
                     )}
 
                     {/* 6. Remediation Engine */}
                     {reportData.subtopics.length > 0 && (
-                        <RemediationZone subtopicPerformance={reportData.subtopics} />
+                        <div className="mt-12">
+                            <RemediationZone subtopicPerformance={reportData.subtopics} />
+                        </div>
                     )}
 
                     {/* 7. Action Plan (Execution Plane) */}
                     {reportData.actionPlan.length > 0 && (
-                        <ActionPlanPanel items={reportData.actionPlan} />
+                        <div className="mt-12">
+                            <ActionPlanPanel items={reportData.actionPlan} />
+                        </div>
                     )}
 
                     {/* Question Audit Section */}
-                    <section className="space-y-8 pt-8 border-t border-muted/20">
-                        <div className="flex items-center justify-between">
-                            <h3 className="text-2xl font-black tracking-tight">Question Audit</h3>
-                            <div className="flex gap-4 text-xs font-bold uppercase tracking-widest text-muted-foreground">
-                                <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-full bg-green-500" /> Correct</div>
-                                <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-full bg-primary" /> Incorrect</div>
+                    <section className="space-y-8 pt-12 mt-12 border-t border-slate-200">
+                        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                            <h3 className="text-3xl font-black tracking-tight text-slate-900 uppercase">Question Audit</h3>
+                            <div className="flex gap-6 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 bg-slate-50 px-5 py-2 rounded-full border border-slate-200">
+                                <div className="flex items-center gap-2"><div className="w-2.5 h-2.5 rounded-full bg-green-500 shadow-sm" /> Correct</div>
+                                <div className="flex items-center gap-2"><div className="w-2.5 h-2.5 rounded-full bg-primary shadow-sm" /> Incorrect</div>
                             </div>
                         </div>
 

@@ -55,36 +55,36 @@ export function SkillHeatmap({ data, className }: SkillHeatmapProps) {
 
     return (
         <div className={cn("glass-morphism rounded-[3rem] p-8 space-y-6", className)}>
-            <div className="flex items-center justify-between">
+            <div className="flex items-baseline justify-between">
                 <div>
-                    <h3 className="text-xl font-black tracking-tight uppercase">Skill Matrix</h3>
-                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] leading-none mt-1">
+                    <h3 className="text-2xl font-black tracking-tight uppercase text-slate-900">Skill Matrix</h3>
+                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] leading-none mt-1">
                         Phase 21 Granular Mastery Heatmap
                     </p>
                 </div>
-                <div className="flex gap-1">
-                    <AlertCircle size={14} className="text-muted-foreground/40" />
+                <div className="flex gap-2">
+                    <Info size={16} className="text-slate-400" />
                 </div>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                 {displayedSkills.map((skill) => (
                     <div
                         key={skill.id}
                         className={cn(
-                            "group relative p-4 rounded-2xl transition-all hover:scale-[1.05] hover:z-10 cursor-default border border-white/20 shadow-sm",
+                            "group relative p-5 rounded-[1.5rem] transition-all hover:scale-[1.05] hover:z-10 cursor-default border shadow-sm",
                             getIntensityColor(skill.accuracy)
                         )}
                         title={`${skill.name}: ${skill.accuracy}% (${getStatusLabel(skill.accuracy)})`}
                         aria-label={`${skill.name}: ${skill.accuracy}% accuracy, ${getStatusLabel(skill.accuracy)} status`}
                     >
-                        <div className="space-y-1">
-                            <p className="text-[9px] font-black uppercase tracking-widest opacity-80 truncate">{skill.name}</p>
+                        <div className="space-y-2">
+                            <p className="text-[10px] font-black uppercase tracking-widest opacity-90 truncate leading-tight">{skill.name}</p>
                             <div className="flex items-baseline justify-between">
-                                <span className="text-lg font-black tracking-tighter">{skill.accuracy}%</span>
-                                <div className="h-1.5 w-1.5 rounded-full bg-white/40" />
+                                <span className="text-2xl font-black tracking-tighter drop-shadow-sm">{skill.accuracy}%</span>
+                                <div className="h-2 w-2 rounded-full bg-white/60 shadow-inner" />
                             </div>
-                            <p className="text-[7px] font-black uppercase tracking-tighter opacity-60">
+                            <p className="text-[8px] font-black uppercase tracking-tighter opacity-80">
                                 {getStatusLabel(skill.accuracy)}
                             </p>
                         </div>
