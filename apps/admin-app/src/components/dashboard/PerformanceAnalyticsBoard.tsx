@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { apiClient } from '@quiz/api-client';
 import { BarChart3, Target } from 'lucide-react';
+import { EfficiencyQuadrant } from './EfficiencyQuadrant';
 
 export function PerformanceAnalyticsBoard() {
     const [perf, setPerf] = useState<any>(null);
@@ -91,6 +92,8 @@ export function PerformanceAnalyticsBoard() {
                     </div>
                 </div>
             </div>
+
+            <EfficiencyQuadrant data={perf.efficiency} loading={isLoading} />
 
             {/* Section 10: Growth Zones */}
             {growth.length > 0 && (

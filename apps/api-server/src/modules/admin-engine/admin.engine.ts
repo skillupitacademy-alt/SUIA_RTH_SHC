@@ -1,4 +1,4 @@
-import { db, questions, questionSkills, domains, subjects, topics, subtopics, topicSkills, skills, refreshTokens, users, userRoles, roles, userProfiles, auditLogs, exams, resultsByDimension, examBlueprints } from '@quiz/db';
+import { db, questions, questionSkills, domains, subjects, topics, subtopics, topicSkills, skills, refreshTokens, users, userRoles, roles, userProfiles, auditLogs, exams, examQuestions, resultsByDimension, examBlueprints } from '@quiz/db';
 import { eq, and, sql, desc, gt, inArray, isNull, isNotNull } from 'drizzle-orm';
 import { AuditService } from '../auth/audit.service';
 import { PasswordService } from '../auth/password.service';
@@ -277,6 +277,52 @@ export class AdminEngine {
   /**
    * Section 9: Scoring & Performance Analytics (Aggregated)
    */
+  static async getEfficiencyAnalytics() {
+    const TIME_THRESHOLD = 60;
+    
+    // Safety Logic: Extract numeric latency or NULL to prevent runtime crashes on bad metadata
+    const safeLatency = sql`
+      case 
+        when (${examQuestions.responseMetadata}->>'timeSpentSeconds') ~ '^[0-9]+$' 
+        then cast(${examQuestions.responseMetadata}->>'timeSpentSeconds' as integer)
+        else null
+      end
+    `;
+
+    const counts = await db.select({
+      quadrant: sql<string>`
+        case 
+          when ${examQuestions.isCorrect} = true and ${safeLatency} <= ${TIME_THRESHOLD} then 'mastery'
+          when ${examQuestions.isCorrect} = true and ${safeLatency} > ${TIME_THRESHOLD} then 'persistence'
+          when ${examQuestions.isCorrect} = false and ${safeLatency} <= ${TIME_THRESHOLD} then 'rash'
+          when ${examQuestions.isCorrect} = false and ${safeLatency} > ${TIME_THRESHOLD} then 'struggle'
+          else 'no_data'
+        end
+      `,
+      count: sql<number>`count(*)`.mapWith(Number)
+    })
+    .from(examQuestions)
+    .where(isNotNull(examQuestions.isCorrect)) // We count every answered question
+    .groupBy(sql`
+        case 
+          when ${examQuestions.isCorrect} = true and ${safeLatency} <= ${TIME_THRESHOLD} then 'mastery'
+          when ${examQuestions.isCorrect} = true and ${safeLatency} > ${TIME_THRESHOLD} then 'persistence'
+          when ${examQuestions.isCorrect} = false and ${safeLatency} <= ${TIME_THRESHOLD} then 'rash'
+          when ${examQuestions.isCorrect} = false and ${safeLatency} > ${TIME_THRESHOLD} then 'struggle'
+          else 'no_data'
+        end
+    `);
+
+    return {
+      mastery: counts.find(c => c.quadrant === 'mastery')?.count || 0,
+      persistence: counts.find(c => c.quadrant === 'persistence')?.count || 0,
+      rash: counts.find(c => c.quadrant === 'rash')?.count || 0,
+      struggle: counts.find(c => c.quadrant === 'struggle')?.count || 0,
+      noData: counts.find(c => c.quadrant === 'no_data')?.count || 0,
+      total: counts.reduce((acc, current) => acc + current.count, 0)
+    };
+  }
+
   static async getPerformanceAnalytics() {
     const domainScores = await db.select({
       dimensionId: resultsByDimension.dimensionId,
@@ -304,6 +350,8 @@ export class AdminEngine {
     .where(eq(resultsByDimension.dimensionType, 'domain')) // Use domain scores to determine pass/fail per exam/domain
     .groupBy(sql`case when ${resultsByDimension.accuracy} >= 70 then true else false end`);
 
+    const efficiency = await this.getEfficiencyAnalytics();
+
     return {
       domains: domainScores.map(d => ({
         id: d.dimensionId,
@@ -318,7 +366,8 @@ export class AdminEngine {
       passFailTrends: {
         pass: Number(passFail.find(p => p.isPass === true)?.count || 0),
         fail: Number(passFail.find(p => p.isPass === false)?.count || 0),
-      }
+      },
+      efficiency
     };
   }
 
