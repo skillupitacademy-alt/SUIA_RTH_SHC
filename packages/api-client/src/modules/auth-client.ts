@@ -32,7 +32,7 @@ export class AuthClient {
   }
 
   async updateProfile(profileData: any) {
-    return this.client.put('/auth/profile', profileData);
+    return this.client.patch('/auth/profile', profileData);
   }
 
   async forgotPassword(email: string) {

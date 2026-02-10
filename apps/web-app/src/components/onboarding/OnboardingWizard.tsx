@@ -54,7 +54,14 @@ export function OnboardingWizard() {
     const handleComplete = async () => {
         setLoading(true);
         try {
-            await apiClient.auth.updateProfile(data);
+            const payload = {
+                professionalStatus: data.role || undefined,
+                educationLevel: data.educationLevel || undefined,
+                domainInterest: data.domain ? [data.domain] : undefined,
+                experienceYears: data.experience ? Number(data.experience) : undefined,
+            };
+
+            await apiClient.auth.updateProfile(payload);
             completeOnboarding();
             router.push('/dashboard');
         } catch (err) {
