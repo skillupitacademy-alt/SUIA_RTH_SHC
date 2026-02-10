@@ -2,76 +2,12 @@
 
 import { ChevronDown, Plus, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { ZLoader } from '@/components/ui/ZLoader';
+import { ZLoader, SelectField as SharedSelectField, SelectFieldProps as SharedSelectFieldProps } from '@quiz/ui';
 
-export interface SelectFieldProps {
-    label: string;
-    value: string | null;
-    options: any[];
-    loading: boolean;
-    disabled?: boolean;
-    onChange: (id: string) => void;
-    onCreate?: () => void;
-    placeholder: string;
-    active?: boolean;
-    hideCreate?: boolean;
-    icon?: React.ReactNode;
-}
+export interface SelectFieldProps extends SharedSelectFieldProps { }
 
-export function SelectField({ label, value, options, loading, disabled, onChange, onCreate, placeholder, active, hideCreate, icon }: SelectFieldProps) {
-    return (
-        <div className={cn("flex flex-col gap-2 transition-opacity duration-300", disabled && "opacity-50 grayscale")}>
-            <label className={cn(
-                "text-[10px] font-black uppercase tracking-[0.2em] transition-colors flex items-center gap-2",
-                active ? "text-[#FF4B91]" : "text-slate-500"
-            )}>
-                {icon && icon}
-                {label}
-            </label>
-            <div className="flex gap-2">
-                <div className="relative flex-1 group/input">
-                    <select
-                        value={value || ''}
-                        onChange={(e) => onChange(e.target.value)}
-                        className={cn(
-                            "w-full h-11 pl-3 pr-8 bg-white/50 border rounded-xl text-[#1A1A1A] font-bold text-[13px] focus:outline-none transition-all appearance-none cursor-pointer backdrop-blur-md shadow-sm",
-                            "hover:bg-white/80",
-                            active
-                                ? "border-[#FF4B91]/40 focus:border-[#FF4B91] focus:ring-2 focus:ring-[#FF4B91]/10 shadow-lg shadow-[#FF4B91]/5"
-                                : "border-slate-300"
-                        )}
-                        disabled={disabled}
-                    >
-                        <option value="" disabled className="text-slate-400">{placeholder}</option>
-                        {options.map((opt) => (
-                            <option key={opt.id} value={opt.id} className="bg-white text-slate-800 font-medium">
-                                {opt.name}
-                            </option>
-                        ))}
-                    </select>
-                    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 transition-colors group-hover/input:text-[#FF4B91]">
-                        {loading ? <ZLoader size="xs" center={false} /> : <ChevronDown className="w-4 h-4" />}
-                    </div>
-                </div>
-                {!hideCreate && onCreate && (
-                    <button
-                        type="button"
-                        onClick={onCreate}
-                        disabled={disabled}
-                        className={cn(
-                            "flex-shrink-0 w-11 h-11 flex items-center justify-center rounded-xl transition-all border shadow-sm",
-                            active
-                                ? "bg-[#FF4B91]/5 hover:bg-[#FF4B91]/10 text-[#FF4B91] border-[#FF4B91]/30"
-                                : "bg-white/40 text-slate-500 border-slate-300 cursor-not-allowed"
-                        )}
-                        title={`Add new ${label}`}
-                    >
-                        <Plus className="w-4 h-4" />
-                    </button>
-                )}
-            </div>
-        </div>
-    );
+export function SelectField(props: SelectFieldProps) {
+    return <SharedSelectField {...props} />;
 }
 
 export interface MultiSelectFieldProps {

@@ -7,16 +7,16 @@ import { useEffect, useState, useMemo } from "react";
 import { BookOpen, Calendar, ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { MobileNav } from "@/components/dashboard/MobileNav";
-import { ZLoader } from "@/components/ui/ZLoader";
 import { ProgressChart } from "@/components/dashboard/ProgressChart";
 import { StackedBarBreakdown } from "@/components/dashboard/StackedBarBreakdown";
 import { cn } from "@/lib/utils";
-import { Filter, BarChart2, List, TrendingUp, Info } from 'lucide-react';
+import { Filter, BarChart2, List, TrendingUp, Info, Hash, Layers, BookOpen as BookIcon, Calendar as CalendarIcon, Clock } from 'lucide-react';
+import { SelectField, ZLoader } from '@quiz/ui';
 
 const ITEMS_PER_PAGE = 6;
 
 export default function MyExamsPage() {
-    const { data, fetchDashboard, fetchPerformanceTrend, fetchPerformanceBreakdownMetadata, fetchPerformanceBreakdown, loading } = useDashboardStore();
+    const { data, fetchDashboard, fetchPerformanceTrend, fetchPerformanceBreakdownMetadata, fetchPerformanceBreakdown, loading, metadataLoading } = useDashboardStore();
     const [currentPage, setCurrentPage] = useState(1);
     const [range, setRange] = useState('28d');
     const [view, setView] = useState<'table' | 'trends' | 'breakdowns'>('table');
@@ -93,75 +93,91 @@ export default function MyExamsPage() {
                     </div>
 
                     <div className="space-y-8">
-                        {/* Filter Bar */}
-                        <div className="flex flex-wrap items-center gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-100">
-                            <div className="flex items-center gap-2 text-slate-500 mr-2">
-                                <Filter size={18} />
-                                <span className="text-xs font-black uppercase tracking-widest">Filters</span>
-                            </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:flex xl:items-end gap-6 p-8 rounded-[2rem] bg-slate-50 border border-slate-100 shadow-sm relative overflow-hidden group">
+                            {/* Ambient Glow */}
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-[#FF2D55]/5 rounded-full blur-3xl -z-10 group-hover:bg-[#FF2D55]/10 transition-all duration-700" />
 
-                            <select
+                            <SelectField
+                                label="Time Range"
                                 value={range}
-                                onChange={(e) => handleRangeChange(e.target.value)}
-                                className="px-4 py-2 rounded-xl border bg-white text-xs font-bold focus:outline-none focus:ring-2 focus:ring-[#FF2D55]/20"
-                            >
-                                <option value="7d">Last 7 Days</option>
-                                <option value="14d">Last 14 Days</option>
-                                <option value="28d">Last 28 Days</option>
-                                <option value="90d" disabled>Last 90 Days (Coming Soon)</option>
-                            </select>
+                                options={[
+                                    { id: '7d', name: 'Last 7 Days' },
+                                    { id: '14d', name: 'Last 14 Days' },
+                                    { id: '28d', name: 'Last 28 Days' },
+                                    { id: '90d', name: 'Last 90 Days (Coming Soon)' }
+                                ]}
+                                loading={loading}
+                                onChange={handleRangeChange}
+                                placeholder="Select Range"
+                                active={true}
+                                hideCreate={true}
+                                accentColor="#FF2D55"
+                                icon={<Clock className="w-3.5 h-3.5" />}
+                            />
 
-                            <select
-                                value={domainFilter}
-                                onChange={(e) => setDomainFilter(e.target.value)}
-                                className="px-4 py-2 rounded-xl border bg-white text-xs font-bold focus:outline-none focus:ring-2 focus:ring-[#FF2D55]/20"
-                            >
-                                <option value="all">All Domains</option>
-                                {domains.map(d => (
-                                    <option key={d.dimensionId} value={d.dimensionId}>{d.name}</option>
-                                ))}
-                            </select>
+                            <SelectField
+                                label="Domain"
+                                value={domainFilter === 'all' ? null : domainFilter}
+                                options={[{ dimensionId: 'all', name: 'All Domains' }, ...domains]}
+                                loading={metadataLoading}
+                                onChange={(id: string) => setDomainFilter(id || 'all')}
+                                placeholder="All Domains"
+                                active={true}
+                                hideCreate={true}
+                                accentColor="#FF2D55"
+                                icon={<Layers className="w-3.5 h-3.5" />}
+                            />
 
-                            <select
-                                value={subjectFilter}
-                                onChange={(e) => setSubjectFilter(e.target.value)}
-                                className="px-4 py-2 rounded-xl border bg-white text-xs font-bold focus:outline-none focus:ring-2 focus:ring-[#FF2D55]/20"
-                            >
-                                <option value="all">All Subjects</option>
-                                {subjects.map(s => (
-                                    <option key={s.dimensionId} value={s.dimensionId}>{s.name}</option>
-                                ))}
-                            </select>
+                            <SelectField
+                                label="Subject"
+                                value={subjectFilter === 'all' ? null : subjectFilter}
+                                options={[{ dimensionId: 'all', name: 'All Subjects' }, ...subjects]}
+                                loading={metadataLoading}
+                                onChange={(id: string) => setSubjectFilter(id || 'all')}
+                                placeholder="All Subjects"
+                                active={true}
+                                hideCreate={true}
+                                accentColor="#FF2D55"
+                                icon={<BookIcon className="w-3.5 h-3.5" />}
+                            />
 
-                            <select
-                                value={topicFilter}
-                                onChange={(e) => setTopicFilter(e.target.value)}
-                                className="px-4 py-2 rounded-xl border bg-white text-xs font-bold focus:outline-none focus:ring-2 focus:ring-[#FF2D55]/20"
-                            >
-                                <option value="all">All Topics</option>
-                                {topics.map(t => (
-                                    <option key={t.dimensionId} value={t.dimensionId}>{t.name}</option>
-                                ))}
-                            </select>
+                            <SelectField
+                                label="Topic"
+                                value={topicFilter === 'all' ? null : topicFilter}
+                                options={[{ dimensionId: 'all', name: 'All Topics' }, ...topics]}
+                                loading={metadataLoading}
+                                onChange={(id: string) => setTopicFilter(id || 'all')}
+                                placeholder="All Topics"
+                                active={true}
+                                hideCreate={true}
+                                accentColor="#FF2D55"
+                                icon={<Hash className="w-3.5 h-3.5" />}
+                            />
 
-                            <div className="ml-auto flex items-center bg-white p-1 rounded-xl border shadow-sm">
+                            <div className="xl:ml-auto flex items-center bg-white p-1.5 rounded-2xl border shadow-sm self-end h-11">
                                 <button
                                     onClick={() => setView('table')}
-                                    className={cn("p-2 rounded-lg transition-all", view === 'table' ? "bg-[#FF2D55] text-white" : "text-slate-400 hover:text-slate-600")}
+                                    className={cn("p-2 px-3 rounded-xl transition-all flex items-center gap-2 text-[10px] font-black uppercase tracking-wider",
+                                        view === 'table' ? "bg-[#FF2D55] text-white shadow-lg shadow-[#FF2D55]/20" : "text-slate-400 hover:text-slate-600")}
                                 >
-                                    <List size={18} />
+                                    <List size={14} />
+                                    <span className={view === 'table' ? "block" : "hidden md:block"}>List</span>
                                 </button>
                                 <button
                                     onClick={() => setView('trends')}
-                                    className={cn("p-2 rounded-lg transition-all", view === 'trends' ? "bg-[#FF2D55] text-white" : "text-slate-400 hover:text-slate-600")}
+                                    className={cn("p-2 px-3 rounded-xl transition-all flex items-center gap-2 text-[10px] font-black uppercase tracking-wider",
+                                        view === 'trends' ? "bg-[#FF2D55] text-white shadow-lg shadow-[#FF2D55]/20" : "text-slate-400 hover:text-slate-600")}
                                 >
-                                    <TrendingUp size={18} />
+                                    <TrendingUp size={14} />
+                                    <span className={view === 'trends' ? "block" : "hidden md:block"}>Trends</span>
                                 </button>
                                 <button
                                     onClick={() => setView('breakdowns')}
-                                    className={cn("p-2 rounded-lg transition-all", view === 'breakdowns' ? "bg-[#FF2D55] text-white" : "text-slate-400 hover:text-slate-600")}
+                                    className={cn("p-2 px-3 rounded-xl transition-all flex items-center gap-2 text-[10px] font-black uppercase tracking-wider",
+                                        view === 'breakdowns' ? "bg-[#FF2D55] text-white shadow-lg shadow-[#FF2D55]/20" : "text-slate-400 hover:text-slate-600")}
                                 >
-                                    <BarChart2 size={18} />
+                                    <BarChart2 size={14} />
+                                    <span className={view === 'breakdowns' ? "block" : "hidden md:block"}>Breakdown</span>
                                 </button>
                             </div>
                         </div>

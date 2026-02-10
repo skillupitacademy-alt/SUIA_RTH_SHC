@@ -38,6 +38,7 @@ interface DashboardData {
 interface DashboardState {
     data: DashboardData | null;
     loading: boolean;
+    metadataLoading: boolean;
     error: string | null;
     fetchDashboard: (range?: string, page?: number, limit?: number) => Promise<void>;
     fetchPerformanceTrend: (range?: string) => Promise<void>;
@@ -48,6 +49,7 @@ interface DashboardState {
 export const useDashboardStore = create<DashboardState>((set) => ({
     data: null,
     loading: false,
+    metadataLoading: false,
     error: null,
     fetchDashboard: async (range = '7d', page = 1, limit = 6) => {
         set({ loading: true, error: null });
@@ -83,10 +85,12 @@ export const useDashboardStore = create<DashboardState>((set) => ({
         }
     },
     fetchPerformanceBreakdownMetadata: async () => {
+        set({ metadataLoading: true });
         try {
             // @ts-ignore
             const metadata = await apiClient.dashboard.getPerformanceBreakdownMetadata() as DashboardData['drilldownMetadata'];
             set((state) => ({
+                metadataLoading: false,
                 data: state.data ? {
                     ...state.data,
                     drilldownMetadata: metadata
@@ -94,6 +98,7 @@ export const useDashboardStore = create<DashboardState>((set) => ({
             }));
         } catch (err: any) {
             console.error("Failed to fetch drilldown metadata:", err);
+            set({ metadataLoading: false });
         }
     },
     fetchPerformanceBreakdown: async (range = '28d') => {
