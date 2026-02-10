@@ -129,10 +129,10 @@ export function ExamPreflightDialog({ isOpen, onSuccess, onClose }: ExamPrefligh
                 </div>
 
                 {overallStatus === 'error' && (
-                    <div className="bg-red-50 text-red-900 p-4 rounded-xl text-sm mb-6 flex items-start gap-2">
-                        <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" />
+                    <div className={`${errorMsg?.includes('Session') ? 'bg-amber-50 text-amber-900 border-amber-200' : 'bg-red-50 text-red-900 border-red-200'} p-4 rounded-xl text-sm mb-6 flex items-start gap-2 border`}>
+                        <AlertTriangle className={`w-4 h-4 mt-0.5 shrink-0 ${errorMsg?.includes('Session') ? 'text-amber-600' : 'text-red-600'}`} />
                         <div>
-                            <p className="font-bold">Check Failed</p>
+                            <p className="font-bold">{errorMsg?.includes('Session') ? 'Identity Expired' : 'Check Failed'}</p>
                             <p>{errorMsg}</p>
                         </div>
                     </div>
@@ -143,21 +143,21 @@ export function ExamPreflightDialog({ isOpen, onSuccess, onClose }: ExamPrefligh
                         <>
                             <button
                                 onClick={onClose}
-                                className="flex-1 px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+                                className="flex-1 px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg transition-colors border border-slate-200"
                             >
                                 Cancel
                             </button>
                             <button
                                 onClick={() => {
-                                    if (errorMsg?.includes('session')) {
-                                        router.push('/login?reason=preflight_failed');
+                                    if (errorMsg?.includes('Session') || errorMsg?.includes('log in')) {
+                                        router.push(`/login?redirect=${encodeURIComponent(window.location.pathname)}&reason=session_expired`);
                                     } else {
                                         runChecks();
                                     }
                                 }}
                                 className="flex-1 px-4 py-2 text-sm font-bold text-white bg-slate-900 hover:bg-slate-800 rounded-lg shadow-sm transition-all active:scale-95 flex items-center justify-center gap-2"
                             >
-                                {errorMsg?.includes('session') ? 'Log In' : 'Retry Check'} <RotateCw className="w-4 h-4" />
+                                {errorMsg?.includes('Session') || errorMsg?.includes('log in') ? 'Sign In' : 'Retry Check'} <RotateCw className="w-4 h-4" />
                             </button>
                         </>
                     ) : overallStatus === 'success' ? (

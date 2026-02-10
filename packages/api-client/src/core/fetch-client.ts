@@ -1,3 +1,6 @@
+// Module-level lock for deduplicating refresh calls across parallel requests
+let globalRefreshPromise: Promise<any> | null = null;
+
 export class FetchClient {
   private baseUrl: string;
 
@@ -13,15 +16,13 @@ export class FetchClient {
     return null;
   }
 
-  public async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+  public async request<T>(endpoint: string, options: RequestInit & { _isRetry?: boolean } = {}): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`;
     
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
       ...options.headers as Record<string, string>,
     };
-
-    // Access token is now handled via httpOnly cookies automatically
 
     // Add CSRF token for mutation requests
     const isMutation = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(options.method || 'GET');
@@ -35,13 +36,34 @@ export class FetchClient {
     const response = await fetch(url, {
       ...options,
       headers,
-      credentials: 'include', // Important for cookies (refresh token)
+      credentials: 'include',
     });
 
     if (!response.ok) {
+      // PATIENT CLIENT: Handle 401/403 with Auto-Refresh & Single-Flight Retry
+      if ((response.status === 401 || response.status === 403) && !options._isRetry && endpoint !== '/auth/refresh') {
+        try {
+          // 1. DEDUPLICATION: If a refresh is already in flight, wait for it
+          if (!globalRefreshPromise) {
+            globalRefreshPromise = this.request('/auth/refresh', { method: 'POST', _isRetry: true });
+          }
+          
+          await globalRefreshPromise;
+          globalRefreshPromise = null; // Clear lock after success
+
+          // 2. RETRY: Fire the original request again
+          console.log(`[API] Retrying ${endpoint} after successful refresh...`);
+          return this.request<T>(endpoint, { ...options, _isRetry: true });
+
+        } catch (refreshErr) {
+          globalRefreshPromise = null; // Clear lock on failure
+          console.error('[API] Auto-refresh failed. Redirecting to login...');
+          // Fall through to existing error/redirect logic below
+        }
+      }
+
       if (response.status === 401 || response.status === 403) {
         if (typeof window !== 'undefined') {
-          // 1. Dispatch event for any listeners (cleanup, etc.)
           window.dispatchEvent(new CustomEvent('auth:unauthorized'));
 
           // 2. Redirect Fallback with "Redirect Once" guard

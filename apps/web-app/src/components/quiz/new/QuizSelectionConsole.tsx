@@ -98,6 +98,31 @@ function QuizSelectionConsoleContent() {
         };
     };
 
+    // Selection Heartbeat (Phase 8 Resilience)
+    useEffect(() => {
+        let isActive = true;
+        let timeoutId: NodeJS.Timeout;
+
+        const runHeartbeat = async () => {
+            if (!isActive) return;
+            try {
+                await apiClient.auth.heartbeat();
+            } catch (err) {
+                console.warn('[Heartbeat] Silence failed - likely background refresh will catch it');
+            }
+            // Jittered interval (120s - 180s) to prevent "Thundering Herd" server spikes
+            const jitter = Math.floor(Math.random() * 60000); // 0-60s
+            timeoutId = setTimeout(runHeartbeat, 120000 + jitter);
+        };
+
+        runHeartbeat();
+
+        return () => {
+            isActive = false;
+            clearTimeout(timeoutId);
+        };
+    }, []);
+
     // Initial Domains Fetch
     useEffect(() => {
         const fetchDomains = async () => {
