@@ -193,4 +193,5 @@
 ## 🚑 Hotfix: Admin 500 Error
 - **Issue**: User reported 500 on `/api/admin/metrics/performance`.
 - **Resolution**: Wrapped `TrendsService` calls in `Promise.allSettled` within `AdminEngine` to prevent cascading failures. Added detailed error logging.
-- **Verification**: `pnpm build` passes.
+- **Root Cause Fix**: Patched `TrendsService.ts` to explicitly use `.toISOString()` for date parameters in SQL template tags, resolving a `drizzle-orm` serialization issue with the `neon-http` driver.
+- **Verification**: `pnpm build` passes. Detailed debug scripts confirmed query execution flow.

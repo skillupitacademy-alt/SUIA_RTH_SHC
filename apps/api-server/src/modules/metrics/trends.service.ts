@@ -179,7 +179,7 @@ export class TrendsService {
     const userExams = await db.query.exams.findMany({
       where: and(
         eq(exams.status, 'completed'),
-        gte(exams.completedAt, cutoffDate)
+        gte(exams.completedAt, (cutoffDate instanceof Date ? cutoffDate : new Date(cutoffDate))),
       ),
       orderBy: [desc(exams.completedAt)],
       limit: this.MAX_EXAMS
@@ -248,7 +248,7 @@ export class TrendsService {
       const conditions = [
         eq(exams.status, 'completed'),
         gte(exams.completedAt, start),
-        sql`${exams.completedAt} < ${end}`
+        sql`${exams.completedAt} < ${end.toISOString()}`
       ];
       if (userId) conditions.push(eq(exams.userId, userId));
 
@@ -310,7 +310,7 @@ export class TrendsService {
             eq(resultsByDimension.dimensionType, 'domain'),
             eq(exams.status, 'completed'),
             gte(exams.completedAt, start),
-            sql`${exams.completedAt} < ${end}`
+            sql`${exams.completedAt} < ${end.toISOString()}`
         ))
         .groupBy(resultsByDimension.dimensionId, resultsByDimension.name);
         
