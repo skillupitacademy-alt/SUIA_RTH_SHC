@@ -71,3 +71,23 @@ export function getActiveExamId(): string | null {
     if (typeof window === 'undefined') return null;
     return localStorage.getItem('active_exam_id');
 }
+
+/**
+ * Reconciles local backup with server-issued state.
+ * Returns only answers for questionIds that actually belong to this exam on the server.
+ */
+export function getFilteredBackup(serverExamId: string, serverQuestionIds: string[]): Record<string, string> {
+    const backup = getExamBackup(serverExamId);
+    if (!backup) return {};
+
+    const filtered: Record<string, string> = {};
+    const validQuestionIds = new Set(serverQuestionIds);
+
+    Object.entries(backup.answers).forEach(([qId, answer]) => {
+        if (validQuestionIds.has(qId)) {
+            filtered[qId] = answer;
+        }
+    });
+
+    return filtered;
+}

@@ -21,7 +21,7 @@ import { EXAM_THEMES } from '@/lib/exam-themes';
 import { useExitGuard } from '@/hooks/useExitGuard';
 import { ExitConfirmationDialog } from '@/components/ui/ExitConfirmationDialog';
 import { useSessionManager } from '@/hooks/useSessionManager';
-import { useExamBackup } from '@/hooks/useExamBackup';
+import { useExamBackup, getFilteredBackup } from '@/hooks/useExamBackup';
 
 
 // Detailed Question Status
@@ -71,16 +71,29 @@ export default function ActiveExamPage() {
                     return;
                 }
 
-                // Initialize local state
+                // Reconcile with Local Backup for UI Prefill (Phase 4 Security)
+                const localBackup = getFilteredBackup(data.id, data.questions.map(q => q.questionId));
+                const finalLocalAnswers = {
+                    ...data.questions.reduce((acc, q) => {
+                        if (q.userAnswer) acc[q.questionId] = q.userAnswer;
+                        return acc;
+                    }, {} as Record<string, string>)
+                };
+
+                // Only prefill from local if server answer is null
+                Object.entries(localBackup).forEach(([qId, localAnswer]) => {
+                    if (!finalLocalAnswers[qId]) {
+                        finalLocalAnswers[qId] = localAnswer;
+                    }
+                });
+
                 const firstUnanswered = data.questions.findIndex(q => q.userAnswer === null);
+
                 setState({
                     ...data,
                     currentIndex: firstUnanswered !== -1 ? firstUnanswered : 0,
                     flags: {}, // We'll track flags locally for now as backend doesn't persist them yet
-                    localAnswers: data.questions.reduce((acc, q) => {
-                        if (q.userAnswer) acc[q.questionId] = q.userAnswer;
-                        return acc;
-                    }, {} as Record<string, string>)
+                    localAnswers: finalLocalAnswers
                 });
 
                 setTimeLeft(data.remainingTimeSeconds || 0);

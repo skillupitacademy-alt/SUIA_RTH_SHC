@@ -14,7 +14,7 @@ import { cn } from '@/lib/utils';
 import { useQuizStore } from '@/store/quiz-store';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useSessionManager } from '@/hooks/useSessionManager';
-import { useExamBackup } from '@/hooks/useExamBackup';
+import { useExamBackup, getFilteredBackup } from '@/hooks/useExamBackup';
 
 export function ExamInterface() {
     useSessionManager();
@@ -142,6 +142,22 @@ export function ExamInterface() {
                 // Calculate connection-safe starting index (first unanswered or 0)
                 const firstUnanswered = state.questions.findIndex((q: any) => q.userAnswer === null); // eslint-disable-line @typescript-eslint/no-explicit-any
                 setCurrentIndex(firstUnanswered !== -1 ? firstUnanswered : 0);
+
+                // Reconcile with Local Backup for UI Prefill (Phase 4 Security)
+                const localBackup = getFilteredBackup(state.id, state.questions.map(q => q.questionId));
+                Object.entries(localBackup).forEach(([qId, localAnswer]) => {
+                    const storeState = useQuizStore.getState();
+                    const questionInStore = storeState.questions.find(q => q.id === qId);
+
+                    // Only prefill if server-side answer is missing
+                    const serverQuestion = state.questions.find((q: any) => q.questionId === qId); // eslint-disable-line @typescript-eslint/no-explicit-any
+                    if (serverQuestion && serverQuestion.userAnswer === null && questionInStore) {
+                        const optionIdx = questionInStore.options.indexOf(localAnswer);
+                        if (optionIdx !== -1) {
+                            storeState.setAnswer(qId, optionIdx);
+                        }
+                    }
+                });
 
             } catch (err) {
                 console.error("Failed to load exam session", err);
