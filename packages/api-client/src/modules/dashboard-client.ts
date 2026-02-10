@@ -16,4 +16,13 @@ export class DashboardClient {
         const query = new URLSearchParams({ range });
         return this.client.get(`/dashboard/trend?${query.toString()}`);
     }
+
+    async getMetadata() {
+        return this.client.get('/dashboard/metadata');
+    }
+
+    async getBreakdown(range: string = '28d') {
+        const query = new URLSearchParams({ range });
+        return this.client.get(`/dashboard/breakdown?${query.toString()}`);
+    }
 }

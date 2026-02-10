@@ -28,6 +28,16 @@ export const CacheManager = {
     dashboardCache.set(key, data);
   },
 
+  getTrend: (userId: string, range: string) => {
+    const key = `trend:${userId}:${range}`;
+    return dashboardCache.get(key);
+  },
+
+  setTrend: (userId: string, range: string, data: any) => {
+    const key = `trend:${userId}:${range}`;
+    dashboardCache.set(key, data);
+  },
+
   // Rate Limiting (Fixed Window)
   checkRateLimit: (identifier: string, limit: number = 60): { allowed: boolean; remaining: number } => {
     const window = Math.floor(Date.now() / 60000); // 1-minute window

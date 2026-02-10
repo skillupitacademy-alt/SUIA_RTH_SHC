@@ -170,4 +170,75 @@ export class DashboardEngine {
       }))
     };
   }
+
+  /**
+   * Fetches unique domains, subjects and topics attempted by the user for filter populating.
+   */
+  static async getDrilldownMetadata(userId: string) {
+    const dimensions = await db
+      .selectDistinct({
+        dimensionId: resultsByDimension.dimensionId,
+        dimensionType: resultsByDimension.dimensionType,
+        name: resultsByDimension.name,
+      })
+      .from(resultsByDimension)
+      .innerJoin(exams, eq(resultsByDimension.examId, exams.id))
+      .where(and(
+        eq(exams.userId, userId),
+        eq(exams.status, 'completed'),
+        sql`${resultsByDimension.dimensionType} IN ('domain', 'subject', 'topic')`
+      ));
+
+    return {
+      domains: dimensions.filter(d => d.dimensionType === 'domain'),
+      subjects: dimensions.filter(d => d.dimensionType === 'subject'),
+      topics: dimensions.filter(d => d.dimensionType === 'topic'),
+    };
+  }
+
+  /**
+   * Aggregates attempt volume/scores by dimension for stacked breakdowns.
+   */
+  static async getDrilldownAnalytics(userId: string, range: string = '28d') {
+    let days = 28;
+    if (range === '7d') days = 7;
+    else if (range === '14d') days = 14;
+    else if (range === '90d') days = 90;
+
+    const relativeStartDate = new Date();
+    relativeStartDate.setDate(relativeStartDate.getDate() - days);
+
+    const results = await db
+      .select({
+        dimensionName: resultsByDimension.name,
+        dimensionType: resultsByDimension.dimensionType,
+        completedAt: exams.completedAt,
+        score: resultsByDimension.score,
+      })
+      .from(resultsByDimension)
+      .innerJoin(exams, eq(resultsByDimension.examId, exams.id))
+      .where(and(
+        eq(exams.userId, userId),
+        eq(exams.status, 'completed'),
+        sql`${exams.completedAt} >= ${relativeStartDate}`,
+        sql`${resultsByDimension.dimensionType} IN ('domain', 'subject')`
+      ));
+
+    // Simple grouping by dimension for stacked bars
+    const breakdown: Record<string, { count: number; totalScore: number }> = {};
+    results.forEach(r => {
+      const key = r.dimensionName || 'Unknown';
+      if (!breakdown[key]) breakdown[key] = { count: 0, totalScore: 0 };
+      breakdown[key].count++;
+      breakdown[key].totalScore += r.score;
+    });
+
+    return {
+        breakdown: Object.entries(breakdown).map(([name, stats]) => ({
+            name,
+            count: stats.count,
+            avgScore: Math.round(stats.totalScore / stats.count)
+        }))
+    };
+  }
 }

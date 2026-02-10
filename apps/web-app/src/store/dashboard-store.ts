@@ -23,6 +23,12 @@ interface DashboardData {
         totalPages: number;
     };
     performanceTrend: Array<{ score: number; date: string }>;
+    drilldownMetadata?: {
+        domains: Array<{ dimensionId: string; name: string }>;
+        subjects: Array<{ dimensionId: string; name: string }>;
+        topics: Array<{ dimensionId: string; name: string }>;
+    };
+    drilldownBreakdown?: Array<{ name: string; count: number; avgScore: number }>;
 }
 
 interface DashboardState {
@@ -31,6 +37,8 @@ interface DashboardState {
     error: string | null;
     fetchDashboard: (range?: string, page?: number, limit?: number) => Promise<void>;
     fetchPerformanceTrend: (range?: string) => Promise<void>;
+    fetchDrilldownMetadata: () => Promise<void>;
+    fetchDrilldownAnalytics: (range?: string) => Promise<void>;
 }
 
 export const useDashboardStore = create<DashboardState>((set) => ({
@@ -47,9 +55,8 @@ export const useDashboardStore = create<DashboardState>((set) => ({
         }
     },
     fetchPerformanceTrend: async (range = '7d') => {
-        // Targeted fetch that ONLY updates graph data (decoupling)
         try {
-            // @ts-ignore - getTrend might be missing from type def if not built yet
+            // @ts-ignore
             const trendData = await apiClient.dashboard.getTrend(range) as { performanceTrend: any };
             set((state) => ({
                 data: state.data ? {
@@ -59,6 +66,34 @@ export const useDashboardStore = create<DashboardState>((set) => ({
             }));
         } catch (err: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
             console.error("Failed to fetch performance trend:", err);
+        }
+    },
+    fetchDrilldownMetadata: async () => {
+        try {
+            // @ts-ignore
+            const metadata = await apiClient.dashboard.getMetadata() as DashboardData['drilldownMetadata'];
+            set((state) => ({
+                data: state.data ? {
+                    ...state.data,
+                    drilldownMetadata: metadata
+                } : null
+            }));
+        } catch (err: any) {
+            console.error("Failed to fetch drilldown metadata:", err);
+        }
+    },
+    fetchDrilldownAnalytics: async (range = '28d') => {
+        try {
+            // @ts-ignore
+            const breakdownData = await apiClient.dashboard.getBreakdown(range) as { breakdown: DashboardData['drilldownBreakdown'] };
+            set((state) => ({
+                data: state.data ? {
+                    ...state.data,
+                    drilldownBreakdown: breakdownData.breakdown
+                } : null
+            }));
+        } catch (err: any) {
+            console.error("Failed to fetch drilldown analytics:", err);
         }
     }
 }));

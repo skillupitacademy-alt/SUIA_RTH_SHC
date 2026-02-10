@@ -9,13 +9,14 @@ import Link from "next/link";
 import { MobileNav } from "@/components/dashboard/MobileNav";
 import { ZLoader } from "@/components/ui/ZLoader";
 import { ProgressChart } from "@/components/dashboard/ProgressChart";
+import { StackedBarBreakdown } from "@/components/dashboard/StackedBarBreakdown";
 import { cn } from "@/lib/utils";
 import { Filter, BarChart2, List, TrendingUp, Info } from 'lucide-react';
 
 const ITEMS_PER_PAGE = 6;
 
 export default function MyExamsPage() {
-    const { data, fetchDashboard, fetchPerformanceTrend, loading } = useDashboardStore();
+    const { data, fetchDashboard, fetchPerformanceTrend, fetchDrilldownMetadata, fetchDrilldownAnalytics, loading } = useDashboardStore();
     const [currentPage, setCurrentPage] = useState(1);
     const [range, setRange] = useState('28d');
     const [view, setView] = useState<'table' | 'trends' | 'breakdowns'>('table');
@@ -26,19 +27,28 @@ export default function MyExamsPage() {
     const [topicFilter, setTopicFilter] = useState('all');
 
     useEffect(() => {
-        // Initial fetch: 28 days history
+        // Initial fetch: 28 days history + metadata
         fetchDashboard(range, currentPage, ITEMS_PER_PAGE);
-    }, [fetchDashboard, currentPage, range]);
+        fetchDrilldownMetadata();
+        fetchDrilldownAnalytics(range);
+    }, [fetchDashboard, fetchDrilldownMetadata, fetchDrilldownAnalytics, currentPage, range]);
 
     const handleRangeChange = (newRange: string) => {
+        if (newRange === '90d') return; // Strictly enforced contract
         setRange(newRange);
         fetchPerformanceTrend(newRange);
+        fetchDrilldownAnalytics(newRange);
     };
 
     // Direct access to activities (already paginated by server)
     const activities = data?.recentActivity || [];
     const totalCount = data?.pagination?.total || 0;
     const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE);
+
+    // Filter metadata
+    const domains = data?.drilldownMetadata?.domains || [];
+    const subjects = data?.drilldownMetadata?.subjects || [];
+    const topics = data?.drilldownMetadata?.topics || [];
 
     const handleNext = () => {
         if (currentPage < totalPages) {
@@ -90,8 +100,37 @@ export default function MyExamsPage() {
                                 <option value="90d" disabled>Last 90 Days (Coming Soon)</option>
                             </select>
 
-                            <select className="px-4 py-2 rounded-xl border bg-white text-xs font-bold focus:outline-none focus:ring-2 focus:ring-[#FF2D55]/20">
+                            <select
+                                value={domainFilter}
+                                onChange={(e) => setDomainFilter(e.target.value)}
+                                className="px-4 py-2 rounded-xl border bg-white text-xs font-bold focus:outline-none focus:ring-2 focus:ring-[#FF2D55]/20"
+                            >
                                 <option value="all">All Domains</option>
+                                {domains.map(d => (
+                                    <option key={d.dimensionId} value={d.dimensionId}>{d.name}</option>
+                                ))}
+                            </select>
+
+                            <select
+                                value={subjectFilter}
+                                onChange={(e) => setSubjectFilter(e.target.value)}
+                                className="px-4 py-2 rounded-xl border bg-white text-xs font-bold focus:outline-none focus:ring-2 focus:ring-[#FF2D55]/20"
+                            >
+                                <option value="all">All Subjects</option>
+                                {subjects.map(s => (
+                                    <option key={s.dimensionId} value={s.dimensionId}>{s.name}</option>
+                                ))}
+                            </select>
+
+                            <select
+                                value={topicFilter}
+                                onChange={(e) => setTopicFilter(e.target.value)}
+                                className="px-4 py-2 rounded-xl border bg-white text-xs font-bold focus:outline-none focus:ring-2 focus:ring-[#FF2D55]/20"
+                            >
+                                <option value="all">All Topics</option>
+                                {topics.map(t => (
+                                    <option key={t.dimensionId} value={t.dimensionId}>{t.name}</option>
+                                ))}
                             </select>
 
                             <div className="ml-auto flex items-center bg-white p-1 rounded-xl border shadow-sm">
@@ -203,11 +242,8 @@ export default function MyExamsPage() {
                                 )}
 
                                 {view === 'breakdowns' && (
-                                    <div className="p-12 text-center border-2 border-dashed border-slate-100 rounded-[2.5rem] bg-slate-50/30">
-                                        <div className="mx-auto w-16 h-16 rounded-2xl bg-white shadow-sm flex items-center justify-center mb-6 text-slate-400">
-                                            <Info size={32} />
-                                        </div>
-                                        <p className="text-slate-500 font-bold uppercase tracking-widest text-sm">Dimension Breakdown requires more data</p>
+                                    <div className="h-[450px]">
+                                        <StackedBarBreakdown data={data?.drilldownBreakdown} />
                                     </div>
                                 )}
                             </div>

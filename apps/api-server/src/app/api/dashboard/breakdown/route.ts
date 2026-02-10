@@ -11,24 +11,23 @@ export async function GET(req: NextRequest) {
 
     const payload = await TokenService.verifyAccessToken(token, false);
     
-    const range = req.nextUrl.searchParams.get('range') || '7d';
+    const range = req.nextUrl.searchParams.get('range') || '28d';
     const validRanges = ['7d', '14d', '28d', '90d'];
     if (!validRanges.includes(range)) {
         return NextResponse.json({ error: 'Invalid range parameter' }, { status: 400 });
     }
 
-    // Check Cache
-    const cached = CacheManager.getTrend(payload.userId, range);
+    // Reuse Trend Cache Logic or create specialized
+    const cached = CacheManager.getTrend(payload.userId, `breakdown:${range}`);
     if (cached) {
       return NextResponse.json(cached, {
         headers: { 'X-Cache': 'HIT' }
       });
     }
 
-    const data = await DashboardEngine.getPerformanceTrend(payload.userId, range);
+    const data = await DashboardEngine.getDrilldownAnalytics(payload.userId, range);
     
-    // Set Cache
-    CacheManager.setTrend(payload.userId, range, data);
+    CacheManager.setTrend(payload.userId, `breakdown:${range}`, data);
 
     return NextResponse.json(data, {
         headers: { 'X-Cache': 'MISS' }
