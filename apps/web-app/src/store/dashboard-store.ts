@@ -24,6 +24,8 @@ interface DashboardData {
     };
     performanceTrend: Array<{ score: number; date: string }>;
     deltaPct?: number | null;
+    currentAvg?: number;
+    previousAvg?: number;
     healthStatus?: 'green' | 'yellow' | 'red';
     drilldownMetadata?: {
         domains: Array<{ dimensionId: string; name: string }>;
@@ -62,6 +64,8 @@ export const useDashboardStore = create<DashboardState>((set) => ({
             const trendData = await apiClient.dashboard.getTrend(range) as { 
                 performanceTrend: any;
                 deltaPct?: number | null;
+                currentAvg?: number;
+                previousAvg?: number;
                 healthStatus?: 'green' | 'yellow' | 'red'; 
             };
             set((state) => ({
@@ -69,6 +73,8 @@ export const useDashboardStore = create<DashboardState>((set) => ({
                     ...state.data,
                     performanceTrend: trendData.performanceTrend,
                     deltaPct: trendData.deltaPct,
+                    currentAvg: trendData.currentAvg,
+                    previousAvg: trendData.previousAvg,
                     healthStatus: trendData.healthStatus
                 } : null
             }));
