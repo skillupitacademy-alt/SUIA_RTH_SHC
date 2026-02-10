@@ -21,12 +21,14 @@ export function useExitGuard({ enabled, message }: UseExitGuardOptions): UseExit
     const [showDialog, setShowDialog] = useState(false);
     const pendingNavigationRef = useRef<(() => void) | null>(null);
     const historyPushedRef = useRef(false);
+    const isExitingRef = useRef(false);
 
     // Handle beforeunload (browser close/refresh)
     useEffect(() => {
         if (!enabled) return;
 
         const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+            if (isExitingRef.current) return;
             e.preventDefault();
             e.returnValue = message || '';
             return message || '';
@@ -40,6 +42,7 @@ export function useExitGuard({ enabled, message }: UseExitGuardOptions): UseExit
     useEffect(() => {
         if (!enabled) {
             historyPushedRef.current = false;
+            isExitingRef.current = false;
             return;
         }
 
@@ -51,12 +54,13 @@ export function useExitGuard({ enabled, message }: UseExitGuardOptions): UseExit
 
         const handlePopState = (e: PopStateEvent) => {
             // User pressed back button
-            if (enabled) {
+            if (enabled && !isExitingRef.current) {
                 // Re-push state to stay on page
                 window.history.pushState({ exitGuard: true }, '', window.location.href);
                 
                 // Store the pending navigation action
                 pendingNavigationRef.current = () => {
+                    isExitingRef.current = true;
                     window.history.go(-2); // Go back past our dummy state
                 };
                 
