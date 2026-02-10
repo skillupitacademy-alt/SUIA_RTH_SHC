@@ -19,9 +19,9 @@ export default function Home() {
             <div className="content-wrapper">
                 {/* Header Section */}
                 <div className="header-flex">
-                    <div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
-                            <span className="badge">v0.1.1</span>
+                    <div style={{ flex: 1 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+                            <span className="badge">v0.1.2</span>
                             <div className="status-indicator">
                                 <div className="status-pulse" />
                                 <span className="status-text">System Online</span>
@@ -32,11 +32,12 @@ export default function Home() {
                         </h1>
                         <p className="description">
                             High-performance backend infrastructure powering the modern quiz experience.
+                            Designed for reliability and enterprise scale.
                         </p>
                     </div>
 
-                    <div className="glass-morphism stats-card">
-                        <span className="stats-label">Latency</span>
+                    <div className="stats-card">
+                        <span className="stats-label">System Latency</span>
                         <span className="stats-value">12<span className="stats-unit">ms</span></span>
                     </div>
                 </div>
@@ -44,7 +45,7 @@ export default function Home() {
                 {/* Modules Grid */}
                 <div className="module-grid">
                     {modules.map((module) => (
-                        <div key={module.name} className="glass-morphism module-card">
+                        <div key={module.name} className="module-card">
                             <div className="module-status-row">
                                 <span className="module-status-text">{module.status}</span>
                                 <div className="module-dot" />
@@ -71,6 +72,7 @@ export default function Home() {
                     <div className="footer-stats-list">
                         <p>ENGINE: <span className="footer-value">NODE.JS 20.x</span></p>
                         <p>REGION: <span className="footer-value">US-EAST-1</span></p>
+                        <p>SPEC: <span className="footer-value">ALPHA_PARITY 100%</span></p>
                     </div>
                     <p className="footer-stats-list" style={{ marginTop: 0 }}>
                         LAST DEPLOYED: <span className="footer-value">{buildDate}</span>
