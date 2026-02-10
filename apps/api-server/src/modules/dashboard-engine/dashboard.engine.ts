@@ -162,11 +162,15 @@ export class DashboardEngine {
       ))
       .orderBy(exams.completedAt);
 
+    const totalScore = trendResult.reduce((acc, curr) => acc + (curr.score || 0), 0);
+    const averageScore = trendResult.length > 0 ? Math.round(totalScore / trendResult.length) : 0;
+
     return {
       performanceTrend: trendResult.map(t => ({
         score: t.score || 0,
         date: t.completedAt ? t.completedAt.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }) : 'Unknown'
-      }))
+      })),
+      averageScore
     };
   }
 

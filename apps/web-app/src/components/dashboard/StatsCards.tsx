@@ -48,11 +48,21 @@ export function StatCard({ title, value, icon: Icon, trend, color, tooltip }: St
     );
 }
 
-export function StatsGrid({ overview }: { overview?: any }) {
+export function StatsGrid({ overview, deltaPct }: { overview?: any; deltaPct?: number | null }) {
     const globalRankValue = overview?.globalRank ?? "Pending";
     const globalRankTrend = overview?.globalRank
         ? { value: "Top 10%", positive: true }
         : undefined;
+
+    // Time Machine Delta Logic
+    const getScoreTrend = () => {
+        if (deltaPct === undefined || deltaPct === null) return undefined;
+        const isPos = deltaPct >= 0;
+        return {
+            value: `${isPos ? '+' : ''}${deltaPct} pp`,
+            positive: isPos
+        };
+    };
 
     return (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -67,9 +77,9 @@ export function StatsGrid({ overview }: { overview?: any }) {
                 title="Avg Score"
                 value={`${Math.round(overview?.avgScore || 0)}%`}
                 icon={TrendingUp}
-                trend={{ value: "+0%", positive: true }}
+                trend={getScoreTrend()}
                 color="secondary"
-                tooltip="Average accuracy across all completed exams to date."
+                tooltip={deltaPct !== undefined ? "vs previous 7 days" : "Average accuracy across all completed exams to date."}
             />
             <StatCard
                 title="Mastery Points"

@@ -1,5 +1,14 @@
 import { FetchClient } from '../core/fetch-client';
 
+export interface TrendResponse {
+    performanceTrend: { score: number; date: string }[];
+    averageScore: number;
+    currentAvg?: number;
+    previousAvg?: number;
+    deltaPct?: number | null;
+    healthStatus?: 'green' | 'yellow' | 'red';
+}
+
 export class DashboardClient {
   private client: FetchClient;
 
@@ -14,7 +23,7 @@ export class DashboardClient {
 
     async getTrend(range: string = '7d') {
         const query = new URLSearchParams({ range });
-        return this.client.get(`/dashboard/trend?${query.toString()}`);
+        return this.client.get<TrendResponse>(`/dashboard/trend?${query.toString()}`);
     }
 
     async getPerformanceBreakdownMetadata() {

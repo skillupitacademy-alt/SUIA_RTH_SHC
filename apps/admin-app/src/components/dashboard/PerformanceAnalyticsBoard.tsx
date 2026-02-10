@@ -51,12 +51,19 @@ export function PerformanceAnalyticsBoard() {
                                 <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{domain.name}</span>
                                 <Target size={16} className="text-blue-500 opacity-40" />
                             </div>
-                            <p className="text-3xl font-black tracking-tighter text-[#1A1A1A]">{domain.avgAccuracy}%</p>
+                            <div className="flex items-end gap-3">
+                                <p className="text-3xl font-black tracking-tighter text-[#1A1A1A]">{domain.avgAccuracy}%</p>
+                                {domain.delta !== undefined && domain.delta !== 0 && (
+                                    <span className={`text-xs font-bold mb-1.5 px-2 py-0.5 rounded-full ${domain.delta > 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                                        {domain.delta > 0 ? '+' : ''}{domain.delta}%
+                                    </span>
+                                )}
+                            </div>
                             <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest mt-1.5">{domain.sampleSize} Exams Analyzed</p>
 
                             <div className="mt-6 h-1.5 w-full bg-muted rounded-full overflow-hidden">
                                 <div
-                                    className="h-full bg-blue-500"
+                                    className={`h-full ${domain.avgAccuracy >= 70 ? 'bg-green-500' : domain.avgAccuracy >= 50 ? 'bg-yellow-500' : 'bg-red-500'}`}
                                     style={{ width: `${domain.avgAccuracy}%` }}
                                 />
                             </div>

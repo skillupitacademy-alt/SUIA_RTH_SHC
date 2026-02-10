@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 export const dynamic = 'force-dynamic';
 import { DashboardEngine } from '@/modules/dashboard-engine/dashboard.engine';
+import { TrendsService } from '@/modules/metrics/trends.service';
 import { TokenService } from '@/modules/auth/token.service';
 import { CacheManager } from '@/lib/cache-manager';
 
@@ -18,19 +19,32 @@ export async function GET(req: NextRequest) {
     }
 
     // Check Cache
-    const cached = CacheManager.getTrend(payload.userId, range);
+    const cached = await CacheManager.getTrend(payload.userId, range); // Ensure async
     if (cached) {
       return NextResponse.json(cached, {
         headers: { 'X-Cache': 'HIT' }
       });
     }
 
-    const data = await DashboardEngine.getPerformanceTrend(payload.userId, range);
-    
-    // Set Cache
-    CacheManager.setTrend(payload.userId, range, data);
+    // Parallel Fetch: Core Trend + Time Machine Delta
+    const [trendData, deltaData] = await Promise.all([
+        DashboardEngine.getPerformanceTrend(payload.userId, range),
+        TrendsService.getPeriodDelta(payload.userId, range)
+    ]);
 
-    return NextResponse.json(data, {
+    // Compute Health
+    const healthStatus = TrendsService.getExecHealth(trendData.averageScore, deltaData.deltaPct);
+
+    const mergedData = {
+        ...trendData,
+        ...deltaData,
+        healthStatus
+    };
+    
+    // Set Cache (TTL 60s)
+    await CacheManager.setTrend(payload.userId, range, mergedData);
+
+    return NextResponse.json(mergedData, {
         headers: { 'X-Cache': 'MISS' }
     });
   } catch (error: any) {

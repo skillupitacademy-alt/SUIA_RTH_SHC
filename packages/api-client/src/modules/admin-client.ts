@@ -1,5 +1,17 @@
 import { FetchClient } from '../core/fetch-client';
 
+
+export interface AdminTrendSummary {
+    avgScore: number;
+    passRate: number;
+    totalExams: number;
+    bestSkill: { name: string; delta: number } | null;
+    worstSkill: { name: string; delta: number } | null;
+    currentStreak: number;
+    deltaPct?: number | null;
+    healthStatus?: 'green' | 'yellow' | 'red';
+}
+
 export class AdminClient {
   private client: FetchClient;
 
@@ -233,7 +245,7 @@ export class AdminClient {
   }
 
   async getPerformanceAnalytics() {
-    return this.client.get<any[]>('/admin/metrics/performance');
+    return this.client.get<any>('/admin/metrics/performance');
   }
 
   async getExamActivity() {
@@ -346,7 +358,7 @@ export class AdminClient {
   async getTrendSummary(params: { range?: string } = {}) {
     const query = new URLSearchParams();
     if (params.range) query.append('range', params.range);
-    return this.client.get<any>(`/admin/trends/summary?${query.toString()}`);
+    return this.client.get<AdminTrendSummary>(`/admin/trends/summary?${query.toString()}`);
   }
 
   async getScoreTrends(params: { userId?: string; range?: string } = {}) {

@@ -23,6 +23,8 @@ interface DashboardData {
         totalPages: number;
     };
     performanceTrend: Array<{ score: number; date: string }>;
+    deltaPct?: number | null;
+    healthStatus?: 'green' | 'yellow' | 'red';
     drilldownMetadata?: {
         domains: Array<{ dimensionId: string; name: string }>;
         subjects: Array<{ dimensionId: string; name: string }>;
@@ -57,11 +59,17 @@ export const useDashboardStore = create<DashboardState>((set) => ({
     fetchPerformanceTrend: async (range = '7d') => {
         try {
             // @ts-ignore
-            const trendData = await apiClient.dashboard.getTrend(range) as { performanceTrend: any };
+            const trendData = await apiClient.dashboard.getTrend(range) as { 
+                performanceTrend: any;
+                deltaPct?: number | null;
+                healthStatus?: 'green' | 'yellow' | 'red'; 
+            };
             set((state) => ({
                 data: state.data ? {
                     ...state.data,
-                    performanceTrend: trendData.performanceTrend
+                    performanceTrend: trendData.performanceTrend,
+                    deltaPct: trendData.deltaPct,
+                    healthStatus: trendData.healthStatus
                 } : null
             }));
         } catch (err: any) { // eslint-disable-line @typescript-eslint/no-explicit-any

@@ -5,6 +5,7 @@ import { PasswordService } from '../auth/password.service';
 import { QuestionService } from '../question/question.service';
 import { DomainService, SubjectService, TopicService } from '../domain/domain.service';
 import { SkillService } from '../domain/skill.service';
+import { TrendsService } from '@/modules/metrics/trends.service';
 import { HierarchyFactory, AtomicHierarchyPayload } from '../domain/hierarchy.factory';
 import { cacheService } from '../core/cache.service';
 
@@ -367,13 +368,24 @@ export class AdminEngine {
     .groupBy(sql`case when ${resultsByDimension.accuracy} >= 70 then true else false end`);
 
     const efficiency = await this.getEfficiencyAnalytics();
+    
+    // Add Trend Summary & Time Machine Delta
+    const [trendSummary, deltaData, domainDeltas] = await Promise.all([
+        TrendsService.getTrendSummary({ range: '7d' }),
+        TrendsService.getPeriodDelta(undefined, '7d'), // undefined userId = system-wide? specific user? Admin shows system-wide usually.
+        TrendsService.getDomainDeltas('7d')
+    ]);
+
+    // Compute System Health based on aggregate aggregate avg
+    const healthStatus = TrendsService.getExecHealth(trendSummary.avgScore, deltaData.deltaPct);
 
     return {
       domains: domainScores.map(d => ({
         id: d.dimensionId,
         name: d.name,
         avgAccuracy: Math.round(Number(d.avgAccuracy || 0)),
-        sampleSize: Number(d.count || 0)
+        sampleSize: Number(d.count || 0),
+        delta: (d.dimensionId && domainDeltas[d.dimensionId]) ? domainDeltas[d.dimensionId].delta : 0
       })),
       difficulty: difficultyScores.map(d => ({
         level: d.difficulty,
@@ -381,9 +393,14 @@ export class AdminEngine {
       })),
       passFailTrends: {
         pass: Number(passFail.find(p => p.isPass === true)?.count || 0),
-        fail: Number(passFail.find(p => p.isPass === false)?.count || 0),
+        fail: Number(passFail.find(p => p.isPass === false)?.count || 0)
       },
-      efficiency
+      efficiency,
+      summary: {
+          ...trendSummary,
+          deltaPct: deltaData.deltaPct,
+          healthStatus
+      }
     };
   }
 

@@ -233,6 +233,125 @@ export class TrendsService {
   }
 
   /**
+   * Calculate period-over-period delta (Time Machine)
+   */
+  static async getPeriodDelta(userId: string | undefined, range: string = '7d'): Promise<{ currentAvg: number; previousAvg: number; deltaPct: number | null }> {
+    const days = this.parseDaysFromRange(range);
+    
+    // Define windows
+    const now = new Date();
+    const currentStart = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
+    const previousStart = new Date(currentStart.getTime() - days * 24 * 60 * 60 * 1000); // The period before that
+
+    // Helper to get average score for a window
+    const getWindowAvg = async (start: Date, end: Date) => {
+      const conditions = [
+        eq(exams.status, 'completed'),
+        gte(exams.completedAt, start),
+        sql`${exams.completedAt} < ${end}`
+      ];
+      if (userId) conditions.push(eq(exams.userId, userId));
+
+      const scores = await db.select({ score: exams.totalScore }).from(exams).where(and(...conditions));
+      if (scores.length < 3) return null; // Need minimum data for statistical relevance
+
+      const total = scores.reduce((acc, curr) => acc + (curr.score || 0), 0);
+      return Math.round(total / scores.length);
+    };
+
+    const currentAvg = await getWindowAvg(currentStart, now);
+    const previousAvg = await getWindowAvg(previousStart, currentStart);
+
+    if (currentAvg === null || previousAvg === null) {
+      return { currentAvg: currentAvg || 0, previousAvg: previousAvg || 0, deltaPct: null };
+    }
+
+    return {
+      currentAvg,
+      previousAvg,
+      deltaPct: currentAvg - previousAvg
+    };
+  }
+
+  /**
+   * Compute Executive Health Status
+   */
+  static getExecHealth(currentAvg: number, deltaPct: number | null): 'green' | 'yellow' | 'red' {
+    const safeDelta = deltaPct || 0;
+    
+    // Green: High performance OR improving
+    if (currentAvg >= 70 && safeDelta >= 0) return 'green';
+    
+    // Yellow: Mid performance OR slight dip
+    if ((currentAvg >= 50 && currentAvg < 69) || (safeDelta >= -5 && safeDelta < 0)) return 'yellow';
+    
+    // Red: Low performance OR major drop
+    return 'red';
+  }
+
+  /**
+   * Get deltas for domains (Period-over-Period)
+   */
+  static async getDomainDeltas(range: string = '7d'): Promise<Record<string, { current: number; previous: number; delta: number }>> {
+    const days = this.parseDaysFromRange(range);
+    const now = new Date();
+    const currentStart = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
+    const previousStart = new Date(currentStart.getTime() - days * 24 * 60 * 60 * 1000);
+
+    const getPeriodStats = async (start: Date, end: Date) => {
+        const stats = await db.select({
+            id: resultsByDimension.dimensionId,
+            name: resultsByDimension.name,
+            score: sql`avg(${resultsByDimension.accuracy})`.mapWith(Number),
+            count: sql`count(*)`.mapWith(Number)
+        })
+        .from(resultsByDimension)
+        .innerJoin(exams, eq(resultsByDimension.examId, exams.id))
+        .where(and(
+            eq(resultsByDimension.dimensionType, 'domain'),
+            eq(exams.status, 'completed'),
+            gte(exams.completedAt, start),
+            sql`${exams.completedAt} < ${end}`
+        ))
+        .groupBy(resultsByDimension.dimensionId, resultsByDimension.name);
+        
+        return stats;
+    };
+
+    const [currentStats, previousStats] = await Promise.all([
+        getPeriodStats(currentStart, now),
+        getPeriodStats(previousStart, currentStart)
+    ]);
+
+    const result: Record<string, { current: number; previous: number; delta: number }> = {};
+
+    // Map current stats
+    currentStats.forEach(stat => {
+        if (!stat.id) return;
+        result[stat.id] = {
+            current: Math.round(stat.score),
+            previous: 0,
+            delta: 0
+        };
+    });
+
+    // Merge previous stats
+    previousStats.forEach(stat => {
+        if (!stat.id) return;
+        if (result[stat.id]) {
+            result[stat.id].previous = Math.round(stat.score);
+            result[stat.id].delta = result[stat.id].current - result[stat.id].previous;
+        } else {
+             // If only in previous period, we can't really show a useful delta for "now", but let's track it
+             // result[stat.id] = { current: 0, previous: Math.round(stat.score), delta: -Math.round(stat.score) };
+             // Actually, usually we only care about domains present now.
+        }
+    });
+
+    return result;
+  }
+
+  /**
    * Parse range string to days
    */
   private static parseDaysFromRange(range: string): number {
