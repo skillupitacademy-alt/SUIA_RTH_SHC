@@ -6,12 +6,12 @@
 ---
 
 ### 📝 Latest Activity
-- **Task**: Admin Dashboard Polish & Metrics Hardening
-- **Outcome**: Enhanced UI contrast/readability and resolved backend 500 errors.
+- **Task**: Admin Control Center Implementation
+- **Outcome**: Delivered high-level metrics deck, range selection logic, and layout re-ordering.
 - **Details**:
-    - UI: Darkened `slate-400` text to `slate-500` and increased font sizes in all Admin Tables.
-    - Backend: Applied `.toISOString()` fix to `TrendsService` to resolve SQL date serialization issues.
-    - Verification: `pnpm build` and `tsc --noEmit` passed (Exit Code 0).
+    - UI: Created `ControlCenterDeck` and updated `PerformanceAnalyticsBoard` with 7d/14d/28d toggle.
+    - Layout: Re-prioritized dashboard hierarchy (Control Center > Performance > Health).
+    - Verification: `pnpm build` and `npx tsc --noEmit` passed (Exit Code 0).
 
 ---
 

@@ -122,3 +122,4 @@
 | 2026-02-10 | Accessibility & UI Contrast | COMPLETED | Darkened slate-400 text to slate-500/600 and increased font sizes across all Admin tables and review cards. |
 | 2026-02-10 | Quiz Result UI Discrepancy | COMPLETED | Fixed missing timeTaken/percentile, circle clipping, and layout width. |
 | 2026-02-10 | Exam UI Stability & Timer Logic | COMPLETED | Fixed "Save & Next" jitter with sticky footer; Aligned backend exam timer with frontend estimate (1.5m rule). |
+| 2026-02-10 | Admin Control Center | COMPLETED | Implemented high-level "Control Center" deck with key metrics (Average Score, Pass Rate, Total Exams), momentum badges, and traffic-light status. Added 7d/14d/28d time-machine range selection for performance analytics. verified with Exit Code 0. |

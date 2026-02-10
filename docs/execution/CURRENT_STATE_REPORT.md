@@ -707,3 +707,9 @@
 - **Metrics Hardening**: Resolved 500 errors in Admin Analytics by enforcing `.toISOString()` serialization for date parameters in SQL queries.
 - **Strict Verification**: Confirmed system integrity with a strict `tsc --noEmit` check (Exit Code 0).
 - **Status**: **POLISHED & HARDENED**.
+
+### Phase 50: Admin Control Center & range selection logic (Batch 171)
+- **Control Center Deck**: Implemented a new high-level dashboard view featuring "Top 3" metrics (Average Score, Pass Rate, Total Exams) with trend indicators.
+- **Time Machine Logic**: Added internal and API-level support for 7d/14d/28d filtering across performance analytics.
+- **UI Consistency**: Refactored `PerformanceAnalyticsBoard` and `ExamActivityBoard` with improved contrast, standard typography, and integrated tooltips.
+- **Verification**: Verified system-wide build and type-check stability with a successful root `pnpm build` and `tsc` cycle (Exit Code 0).
