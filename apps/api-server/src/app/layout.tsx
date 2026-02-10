@@ -2,9 +2,11 @@ import './index.css';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'API Node | Quiz Platform',
-  description: 'High-performance backend infrastructure for the modern quiz experience.',
+    title: 'API Node | Quiz Platform',
+    description: 'High-performance backend infrastructure for the modern quiz experience.',
 };
+
+import { AppAuthWrapper } from "@/components/auth/AppAuthWrapper";
 
 export default function RootLayout({
     children,
@@ -12,10 +14,12 @@ export default function RootLayout({
     children: React.ReactNode;
 }>) {
     return (
-        <html lang="en">
+        <html lang="en" suppressHydrationWarning>
             <body>
-                <div className="grid-bg" />
-                {children}
+                <AppAuthWrapper>
+                    <div className="grid-bg" />
+                    {children}
+                </AppAuthWrapper>
             </body>
         </html>
     );

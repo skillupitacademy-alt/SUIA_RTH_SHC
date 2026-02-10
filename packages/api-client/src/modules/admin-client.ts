@@ -307,7 +307,7 @@ export class AdminClient {
   }
 
   async login(email: string, password: string) {
-    return this.client.post<{ user: any; accessToken: string }>('/admin/auth/login', { email, password });
+    return this.client.post<{ user: any; accessToken: string; expiresAt: string | null }>('/admin/auth/login', { email, password });
   }
 
   async getBlueprints(page: number = 1, limit: number = 20, search?: string) {
