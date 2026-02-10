@@ -12,6 +12,7 @@ export function useSessionManager() {
   const lastActivityRef = useRef<number>(Date.now());
   const heartbeatRef = useRef<NodeJS.Timeout | null>(null);
   const checkIdleRef = useRef<NodeJS.Timeout | null>(null);
+  const isInFlightRef = useRef<boolean>(false);
 
   useEffect(() => {
     // 1. Define Activity Handler
@@ -27,7 +28,10 @@ export function useSessionManager() {
 
     // 3. Heartbeat Loop (Tell server we are alive)
     const sendHeartbeat = async () => {
+      if (isInFlightRef.current) return;
+      
       try {
+        isInFlightRef.current = true;
         const now = Date.now();
         const isActiveExam = pathname?.startsWith('/exam/') || pathname?.startsWith('/quiz/active-session');
         
@@ -40,6 +44,8 @@ export function useSessionManager() {
         }
       } catch (e) {
         console.error('[Session] Heartbeat failed', e);
+      } finally {
+        isInFlightRef.current = false;
       }
     };
     

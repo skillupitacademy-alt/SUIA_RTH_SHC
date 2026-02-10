@@ -20,6 +20,8 @@ import Link from 'next/link';
 import { EXAM_THEMES } from '@/lib/exam-themes';
 import { useExitGuard } from '@/hooks/useExitGuard';
 import { ExitConfirmationDialog } from '@/components/ui/ExitConfirmationDialog';
+import { useSessionManager } from '@/hooks/useSessionManager';
+import { useExamBackup } from '@/hooks/useExamBackup';
 
 
 // Detailed Question Status
@@ -32,10 +34,13 @@ interface HUDState extends QuizState {
 }
 
 export default function ActiveExamPage() {
-    const router = useRouter();
-    const searchParams = useSearchParams();
+    useSessionManager();
     const { examId } = useParams<{ examId: string }>();
     const [state, setState] = useState<HUDState | null>(null);
+    const { clearBackup } = useExamBackup(examId, state?.localAnswers || {});
+
+    const router = useRouter();
+    const searchParams = useSearchParams();
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -165,6 +170,7 @@ export default function ActiveExamPage() {
             setState(prev => prev ? { ...prev, status: 'completed' } : null);
 
             await apiClient.quiz.submitExam(examId);
+            clearBackup(examId);
             router.replace(`/reports/active-report?examId=${examId}`);
         } catch (err) {
             console.error('Failed to submit exam', err);

@@ -156,80 +156,105 @@ export class ExamEngine {
   /**
    * Handles individual question submission within an exam.
    */
-  static async submitAnswer(examId: string, questionId: string, answer: string, userId: string) {
-    const exam = await db.query.exams.findFirst({
-      where: eq(exams.id, examId),
-      with: { blueprint: true }
-    });
+  static async submitAnswer(examId: string, questionId: string, answer: string, userId: string, idempotencyKey?: string) {
+    return await db.transaction(async (tx) => {
+        // 1. Idempotency Check (Phase 3 Requirement)
+        if (idempotencyKey) {
+            const existingKey = await tx.query.idempotencyKeys.findFirst({
+                where: and(
+                    eq(idempotencyKeys.userId, userId),
+                    eq(idempotencyKeys.key, `answer:${idempotencyKey}`)
+                ),
+            });
 
-    if (!exam || exam.status !== 'started') {
-      throw new Error('Exam is not active');
-    }
-
-    if (exam.userId !== userId) {
-      throw new Error('Unauthorized: You do not own this exam session');
-    }
-
-    // Task D: Timer Logic: Check if exam time has expired
-    const startTime = new Date(exam.startedAt).getTime();
-    const timeElapsedSeconds = Math.floor((Date.now() - startTime) / 1000);
-    
-    // Priority: snapshot durationSeconds > blueprint timeLimit > default 3600
-    const durationSeconds = exam.durationSeconds || (exam.blueprint?.timeLimit ? exam.blueprint.timeLimit * 60 : 3600);
-
-    if (timeElapsedSeconds > durationSeconds) {
-        await db.update(exams)
-            .set({ status: 'abandoned' })
-            .where(eq(exams.id, examId));
-        throw new Error('Exam time limit exceeded. Session abandoned.');
-    }
-
-    const eqRecord = await db.query.examQuestions.findFirst({
-      where: and(
-        eq(examQuestions.questionId, questionId),
-        eq(examQuestions.examId, examId)
-      ),
-      with: {
-        question: true,
-      },
-    });
-
-    if (!eqRecord) throw new Error('Question not found in this exam');
-
-    const isCorrect = AnswerEvaluationEngine.evaluate(
-      eqRecord.question.type as any,
-      eqRecord.question.correctAnswer,
-      answer
-    );
-
-    // Calculate time spent: now - (lastAnsweredAt || startedAt)
-    const now = new Date();
-    const lastTime = exam.lastAnsweredAt ? new Date(exam.lastAnsweredAt).getTime() : new Date(exam.startedAt).getTime();
-    
-    // Safeguard: Only record timeSpentSeconds on the first-touch to prevent quadrant drift
-    const existingMetadata = (eqRecord.responseMetadata as any) || {};
-    const timeSpentSeconds = existingMetadata.timeSpentSeconds !== undefined
-      ? existingMetadata.timeSpentSeconds 
-      : Math.max(0, Math.floor((now.getTime() - lastTime) / 1000));
-
-    await db.update(examQuestions)
-      .set({ 
-        userAnswer: answer,
-        isCorrect,
-        responseMetadata: { 
-          ...existingMetadata,
-          timeSpentSeconds,
-          firstAnsweredAt: existingMetadata.firstAnsweredAt || now.toISOString()
+            if (existingKey) {
+                console.log(`[ExamEngine] Idempotency hit for answer: ${idempotencyKey}`);
+                return; // Already recorded
+            }
         }
-      })
-      .where(eq(examQuestions.id, eqRecord.id));
 
-    // Update lastAnsweredAt on EVERY call (operational heartbeat)
-    await db.update(exams)
-      .set({ lastAnsweredAt: now })
-      .where(eq(exams.id, examId));
+        const exam = await tx.query.exams.findFirst({
+            where: eq(exams.id, examId),
+            with: { blueprint: true }
+        });
 
-    return;
+        if (!exam || exam.status !== 'started') {
+            throw new Error('Exam is not active');
+        }
+
+        if (exam.userId !== userId) {
+            throw new Error('Unauthorized: You do not own this exam session');
+        }
+
+        // Task D: Timer Logic: Check if exam time has expired
+        const startTime = new Date(exam.startedAt).getTime();
+        const timeElapsedSeconds = Math.floor((Date.now() - startTime) / 1000);
+        
+        // Priority: snapshot durationSeconds > blueprint timeLimit > default 3600
+        const durationSeconds = exam.durationSeconds || (exam.blueprint?.timeLimit ? exam.blueprint.timeLimit * 60 : 3600);
+
+        if (timeElapsedSeconds > durationSeconds) {
+            await tx.update(exams)
+                .set({ status: 'abandoned' })
+                .where(eq(exams.id, examId));
+            throw new Error('Exam time limit exceeded. Session abandoned.');
+        }
+
+        const eqRecord = await tx.query.examQuestions.findFirst({
+            where: and(
+                eq(examQuestions.questionId, questionId),
+                eq(examQuestions.examId, examId)
+            ),
+            with: {
+                question: true,
+            },
+        });
+
+        if (!eqRecord) throw new Error('Question not found in this exam');
+
+        const isCorrect = AnswerEvaluationEngine.evaluate(
+            eqRecord.question.type as any,
+            eqRecord.question.correctAnswer,
+            answer
+        );
+
+        // Calculate time spent: now - (lastAnsweredAt || startedAt)
+        const now = new Date();
+        const lastTime = exam.lastAnsweredAt ? new Date(exam.lastAnsweredAt).getTime() : new Date(exam.startedAt).getTime();
+        
+        // Safeguard: Only record timeSpentSeconds on the first-touch to prevent quadrant drift
+        const existingMetadata = (eqRecord.responseMetadata as any) || {};
+        const timeSpentSeconds = existingMetadata.timeSpentSeconds !== undefined
+            ? existingMetadata.timeSpentSeconds 
+            : Math.max(0, Math.floor((now.getTime() - lastTime) / 1000));
+
+        // Update Answer
+        await tx.update(examQuestions)
+            .set({ 
+                userAnswer: answer,
+                isCorrect,
+                responseMetadata: { 
+                    ...existingMetadata,
+                    timeSpentSeconds,
+                    firstAnsweredAt: existingMetadata.firstAnsweredAt || now.toISOString()
+                }
+            })
+            .where(eq(examQuestions.id, eqRecord.id));
+
+        // Update lastAnsweredAt on EVERY call (operational heartbeat)
+        await tx.update(exams)
+            .set({ lastAnsweredAt: now })
+            .where(eq(exams.id, examId));
+
+        // 2. Record Idempotency Key (inside same transaction)
+        if (idempotencyKey) {
+            await tx.insert(idempotencyKeys).values({
+                userId,
+                key: `answer:${idempotencyKey}`,
+                examId: examId,
+            });
+        }
+    });
   }
 
   /**

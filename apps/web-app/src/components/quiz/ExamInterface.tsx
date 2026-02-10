@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { apiClient } from '@quiz/api-client';
 import {
     Clock,
@@ -13,8 +13,11 @@ import {
 import { cn } from '@/lib/utils';
 import { useQuizStore } from '@/store/quiz-store';
 import { useSearchParams, useRouter } from 'next/navigation';
+import { useSessionManager } from '@/hooks/useSessionManager';
+import { useExamBackup } from '@/hooks/useExamBackup';
 
 export function ExamInterface() {
+    useSessionManager();
     const router = useRouter();
     const searchParams = useSearchParams();
     const examIdParam = searchParams.get('examId');
@@ -36,9 +39,34 @@ export function ExamInterface() {
         updateTimeLeft,
     } = useQuizStore();
 
+    // Mapping numeric indexes to option strings for consistent backup
+    const normalizedAnswers = useMemo(() => {
+        const result: Record<string, string> = {};
+        Object.entries(answers).forEach(([qId, optIdx]) => {
+            const q = questions.find(question => question.id === qId);
+            if (q && q.options[optIdx]) {
+                result[qId] = q.options[optIdx];
+            }
+        });
+        return result;
+    }, [answers, questions]);
+
+    const { clearBackup } = useExamBackup(examId || undefined, normalizedAnswers);
+
     const [isLoading, setIsLoading] = useState(true);
     // isSaving removed as it was unused
     const [error, setError] = useState<string | null>(null);
+
+    // Helper for auto-retry logic (Phase 3 Requirement)
+    const withRetry = async <T,>(fn: () => Promise<T>, retries = 3, delay = 1000): Promise<T> => {
+        try {
+            return await fn();
+        } catch (err) {
+            if (retries <= 0) throw err;
+            await new Promise(resolve => setTimeout(resolve, delay));
+            return withRetry(fn, retries - 1, delay * 2);
+        }
+    };
 
     const question = questions[currentQuestionIndex];
 
@@ -53,12 +81,18 @@ export function ExamInterface() {
         // Real persistence
         if (examId) {
             try {
-                // Backend expects questionId (uuid) and option text
-                await apiClient.quiz.submitAnswer(examId, questionId, option);
-            } catch {
-                // Ignore silent save errors
-            } finally {
-                // Noop
+                // Idempotency Key for specific answer choice
+                // Format: examId:questionId:optionIndex
+                const idempotencyKey = `${examId}:${questionId}:${optionIndex}`;
+
+                await withRetry(() =>
+                    apiClient.quiz.submitAnswer(examId, questionId, option, {
+                        idempotencyKey
+                    })
+                );
+            } catch (err) {
+                console.error("Failed to save answer after retries", err);
+                // We keep optimistic UI, but maybe show a subtle indicator
             }
         }
     };
@@ -160,12 +194,23 @@ export function ExamInterface() {
 
         try {
             setIsSubmitting(true);
-            await apiClient.quiz.submitExam(examId);
+            setError(null);
+
+            // Final Submission Idempotency (Phase 3)
+            const submissionKey = crypto.randomUUID();
+
+            await withRetry(() =>
+                apiClient.quiz.submitExam(examId, {
+                    idempotencyKey: submissionKey
+                })
+            );
+
+            clearBackup(examId);
             finishQuiz();
             router.push(`/reports/active-report?examId=${examId}`);
         } catch (err) {
             console.error("Failed to submit exam", err);
-            setError("Failed to submit exam. Please try again or check your connection.");
+            setError("Submission failed after multiple attempts. Check your connection.");
         } finally {
             setIsSubmitting(false);
         }

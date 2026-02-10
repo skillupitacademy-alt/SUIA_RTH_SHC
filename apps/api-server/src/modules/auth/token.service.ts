@@ -52,12 +52,14 @@ export class TokenService {
     return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
   }
 
-  static async generateAccessToken(payload: TokenPayload): Promise<string> {
+  static async generateAccessToken(payload: TokenPayload, customExpiration?: string | number): Promise<string> {
     const secret = payload.isAdmin ? this.ADMIN_SECRET : this.ACCESS_SECRET;
+    const expiration = customExpiration || ACCESS_TOKEN_EXPIRE;
+    
     return await new jose.SignJWT({ ...payload })
       .setProtectedHeader({ alg: 'HS256' })
       .setIssuedAt()
-      .setExpirationTime(ACCESS_TOKEN_EXPIRE)
+      .setExpirationTime(expiration)
       .sign(secret);
   }
 

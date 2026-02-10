@@ -12,11 +12,14 @@ export async function POST(req: NextRequest) {
     const payload = await TokenService.verifyAccessToken(token, false);
     const body = await req.json();
     
+    const idempotencyKey = req.headers.get('idempotency-key') || req.headers.get('Idempotency-Key');
+
     const result = await ExamEngine.submitAnswer(
       body.examId,
       body.questionId,
       body.answer,
-      payload.userId
+      payload.userId,
+      idempotencyKey || undefined
     );
     
     // Step 1 Hardening: Sanitize response. Do NOT return isCorrect/correctAnswer.

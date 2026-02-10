@@ -27,8 +27,8 @@ export class AuthClient {
     return this.client.post('/auth/logout', {});
   }
 
-  async refresh() {
-    return this.client.post<{ accessToken: string; expiresAt: string | null }>('/auth/refresh', {});
+  async refresh(examId?: string) {
+    return this.client.post<{ accessToken: string; expiresAt: string | null }>('/auth/refresh', { examId });
   }
 
   async updateProfile(profileData: any) {

@@ -11,6 +11,7 @@ import { cn } from '@/lib/utils';
 import { useExitGuard } from '@/hooks/useExitGuard';
 import { ExitConfirmationDialog } from '@/components/ui/ExitConfirmationDialog';
 import { ExamPreflightDialog } from '@/components/quiz/ExamPreflightDialog';
+import { getActiveExamId } from '@/hooks/useExamBackup';
 
 export function QuizSelectionConsole() {
     return (
@@ -43,6 +44,16 @@ function QuizSelectionConsoleContent() {
 
     const searchParams = useSearchParams();
     const [showInvalidLinkError, setShowInvalidLinkError] = useState(false);
+
+    // State for Active Exam Resume (Phase 3)
+    const [activeExamId, setActiveExamId] = useState<string | null>(null);
+
+    useEffect(() => {
+        const id = getActiveExamId();
+        if (id) {
+            setActiveExamId(id);
+        }
+    }, []);
 
     useEffect(() => {
         if (searchParams.get('error') === 'invalid_exam') {
@@ -396,6 +407,30 @@ function QuizSelectionConsoleContent() {
 
     return (
         <div className="w-full h-full flex flex-col min-h-0 relative overflow-hidden">
+            {/* Resume Banner (Phase 3 Requirement) */}
+            {activeExamId && (
+                <div className="absolute top-4 left-1/2 -translate-x-1/2 w-full max-w-4xl z-[100] px-8 animate-in fade-in slide-in-from-top-4 duration-500">
+                    <div className="bg-white border-2 border-[#FF2D55]/20 rounded-3xl p-4 flex items-center justify-between gap-6 shadow-2xl">
+                        <div className="flex items-center gap-4">
+                            <div className="bg-[#FF2D55]/10 p-2 rounded-xl text-[#FF2D55]">
+                                <Activity size={24} className="animate-pulse" />
+                            </div>
+                            <div>
+                                <h3 className="text-sm font-black italic tracking-tight text-[#FF2D55] uppercase leading-none mb-1">Active Session Detected</h3>
+                                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest leading-none">Recover your ongoing assessment session</p>
+                            </div>
+                        </div>
+                        <button
+                            onClick={() => router.push(`/exam/${activeExamId}`)}
+                            className="px-6 py-2 rounded-xl bg-[#FF2D55] text-white text-[10px] font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-lg shadow-[#FF2D55]/20 flex items-center gap-2 group"
+                        >
+                            Resume Now
+                            <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />
+                        </button>
+                    </div>
+                </div>
+            )}
+
             {/* HUD HEADER: 12% Slot */}
             <div className="flex-none basis-[12dvh] px-4 md:px-12 flex flex-col justify-center border-b border-gray-200 bg-white">
                 <div className="grid grid-cols-3 items-center gap-8 px-0">
@@ -696,6 +731,6 @@ function QuizSelectionConsoleContent() {
                 onSuccess={executeLaunch}
                 onClose={() => setShowPreflight(false)}
             />
-        </div >
+        </div>
     );
 }

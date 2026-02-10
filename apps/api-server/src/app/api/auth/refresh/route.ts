@@ -16,10 +16,28 @@ export async function POST(req: NextRequest) {
 
     const ip = (req.headers.get('x-forwarded-for') || '').split(',')[0] || '';
     
-    const { accessToken, refreshToken: newRefreshToken } = await AuthService.refresh(tokenToUse!, ip);
+    // Phase 3: Extract examId for grace window extension
+    let examId: string | undefined;
+    try {
+      const body = await req.json();
+      examId = body?.examId;
+    } catch {
+      // Body might be empty, ignore
+    }
+
+    const { accessToken, refreshToken: newRefreshToken } = await AuthService.refresh(tokenToUse!, ip, examId);
     const expiresAt = TokenService.getExpiration(accessToken);
 
-    const response = NextResponse.json({ success: true, expiresAt }); // No accessToken in body
+    // Calculate dynamic maxAge for cookie based on token expiration
+    let maxAge = 15 * 60; // 15m default
+    if (expiresAt) {
+        const expTime = new Date(expiresAt).getTime();
+        const now = Date.now();
+        maxAge = Math.ceil((expTime - now) / 1000);
+        if (maxAge < 0) maxAge = 15 * 60; // Fallback
+    }
+
+    const response = NextResponse.json({ success: true, expiresAt });
 
     const cookieDomain = process.env.COOKIE_DOMAIN || '.realtutorialhub.com';
     const isProd = process.env.NODE_ENV === 'production';
@@ -30,7 +48,7 @@ export async function POST(req: NextRequest) {
       httpOnly: true,
       secure: true,
       sameSite: 'none',
-      maxAge: 15 * 60,
+      maxAge: maxAge, // Dynamic MaxAge
       path: '/',
       domain: cookieDomain,
     });

@@ -127,7 +127,7 @@ export class QuizClient {
     });
   }
 
-  async submitAnswer(examId: string, questionId: string, answer: string) {
+  async submitAnswer(examId: string, questionId: string, answer: string, opts?: { idempotencyKey?: string }) {
     return this.client.post<{ 
       success: boolean; 
       data: { 
@@ -135,14 +135,18 @@ export class QuizClient {
         questionId: string; 
         status: 'recorded' 
       } 
-    }>('/quiz/answer', { examId, questionId, answer });
+    }>('/quiz/answer', { examId, questionId, answer }, {
+        headers: opts?.idempotencyKey ? { 'Idempotency-Key': opts.idempotencyKey } : undefined
+    });
   }
 
-  async submitExam(examId: string) {
+  async submitExam(examId: string, opts?: { idempotencyKey?: string }) {
     return this.client.post<{ 
       examId: string; 
       status: 'processing' | 'completed' | 'failed' | 'abandoned'; 
-    }>('/quiz/submit', { examId });
+    }>('/quiz/submit', { examId }, {
+        headers: opts?.idempotencyKey ? { 'Idempotency-Key': opts.idempotencyKey } : undefined
+    });
   }
 
   async getResult(examId: string) {

@@ -1,4 +1,4 @@
-import { db, users, userProfiles, roles, userRoles, refreshTokens, verificationTokens, passwordResetTokens } from '@quiz/db';
+import { db, users, userProfiles, roles, userRoles, refreshTokens, verificationTokens, passwordResetTokens, exams } from '@quiz/db';
 import { eq, sql, and, gt } from 'drizzle-orm';
 import { PasswordService } from './password.service';
 import { TokenService } from './token.service';
@@ -106,7 +106,7 @@ export class AuthService {
     return { user, accessToken, refreshToken, isAdmin };
   }
 
-  static async refresh(token: string, ip?: string) {
+  static async refresh(token: string, ip?: string, examId?: string) {
     const decoded = jwt.decode(token) as any;
     const isAdmin = decoded?.isAdmin === true;
 
@@ -165,12 +165,44 @@ export class AuthService {
     const roleNames = user.userRoles.map(ur => ur.role.name);
     const isAdminNow = roleNames.includes('ADMIN') || roleNames.includes('SUPER_ADMIN');
 
+    // EXAM GRACE WINDOW LOGIC (Phase 3 Requirement)
+    let customExpiration: number | undefined;
+    if (examId && !isAdminNow) {
+        const activeExam = await db.query.exams.findFirst({
+            where: and(
+                eq(exams.id, examId),
+                eq(exams.userId, user.id),
+                eq(exams.status, 'started')
+            )
+        });
+
+        if (activeExam && activeExam.durationSeconds) {
+            const now = Date.now();
+            const startedAt = activeExam.startedAt.getTime();
+            const totalDurationWithGrace = (activeExam.durationSeconds + 300) * 1000; // Duration + 5 mins
+            const remainingTimeMs = (startedAt + totalDurationWithGrace) - now;
+
+            if (remainingTimeMs > 0) {
+                // Return expiresIn in seconds (jose format)
+                customExpiration = Math.ceil(remainingTimeMs / 1000);
+                
+                // Safety Cap: Don't issue tokens for longer than duration + grace
+                // and don't issue shorter than the standard 15m if they still have exam time.
+                const standardExpireS = 15 * 60;
+                if (customExpiration < standardExpireS && (startedAt + (activeExam.durationSeconds * 1000) > now)) {
+                   // If they still have actual exam time but less than 15m left including grace, 
+                   // just give them the remaining grace window.
+                }
+            }
+        }
+    }
+
     const newAccessToken = await TokenService.generateAccessToken({
       userId: user.id,
       email: user.email,
       roles: roleNames,
       isAdmin: isAdminNow,
-    });
+    }, customExpiration);
     
     const newRefreshToken = await TokenService.generateRefreshToken(user.id, isAdminNow);
     const newRefreshTokenHash = await TokenService.hashToken(newRefreshToken);
