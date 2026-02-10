@@ -138,3 +138,10 @@
 | 2026-02-10 | Theme Refinement (Phase 2) | COMPLETED | Finalized platform-wide "Executive White" aesthetic: Defined functional theme overrides in Admin App and performed a comprehensive purge of remaining `dark:` classes in the Web App. |
 | 2026-02-10 | Graceful Session Toast | COMPLETED | Implemented high-contrast session timeout banner with redirect delay across Web, Admin, and API apps. |
 | 2026-02-10 | Navigation Guard Optimization | COMPLETED | Optimized Student Web App to prevent double-prompt on exit; Retained strict browser prompt for tab closing (Safety First). |
+| 2026-02-10 | Admin Auth Remediation | COMPLETED | Fixed redirect loop on `/login` and removed regression underscore from admin loader; Verified with manual test. |
+| 2026-02-10 | API Server Login Standardization | COMPLETED | Applied "Executive White" aesthetic to API Server login, matching Admin App; wired up `AuthStore` for token management. |
+| 2026-02-10 | Dashboard Filter Persistence | COMPLETED | Refactored `dashboard-store` to persist filters (Domain/Subject/Topic) and decoupled metadata fetching to prevent race conditions. |
+| 2026-02-10 | My Quizzes Layout Fix | COMPLETED | Solved layout shift in "My Quizzes" by implementing a stable 4-column Grid for filter dropdowns. |
+| 2026-02-10 | Exam Interface Stabilization | COMPLETED | Fixed "Save & Next" jumping and scroll overflow by applying `flex-1 min-h-0` architecture to `ExamInterface.tsx`. |
+| 2026-02-10 | Exam Route Standardization | COMPLETED | Refactored `/exam/[examId]` to use the fixed-footer, independent-scroll layout, ensuring 100% stability. |
+| 2026-02-10 | System Verification | COMPLETED | Verified global system integrity with passing root 'pnpm build' and 'tsc --noEmit' (Exit Code 0). |

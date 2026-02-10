@@ -238,7 +238,7 @@ export function ExamInterface() {
 
             {/* Question Content */}
             <main className="flex-1 overflow-hidden w-full max-w-5xl mx-auto p-4 md:p-6 lg:p-8 flex flex-col">
-                <div className="bg-background border rounded-[2rem] shadow-sm flex flex-col h-full overflow-hidden">
+                <div className="bg-background border rounded-[2rem] shadow-sm flex flex-col flex-1 min-h-0 overflow-hidden">
                     {/* Card Header (Fixed) */}
                     <div className="shrink-0 flex items-center justify-between p-6 md:p-8 border-b">
                         <div className="flex items-center gap-3">
@@ -260,7 +260,7 @@ export function ExamInterface() {
                     </div>
 
                     {/* Scrollable Content Area */}
-                    <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-8 scrollbar-thin scrollbar-thumb-primary/20 scrollbar-track-transparent hover:scrollbar-thumb-primary/40">
+                    <div className="flex-1 min-h-0 overflow-y-auto p-6 md:p-8 space-y-8 scrollbar-thin scrollbar-thumb-primary/20 scrollbar-track-transparent hover:scrollbar-thumb-primary/40">
                         <h1 className="text-2xl md:text-3xl font-extrabold leading-tight text-foreground/90">
                             {question.text}
                         </h1>

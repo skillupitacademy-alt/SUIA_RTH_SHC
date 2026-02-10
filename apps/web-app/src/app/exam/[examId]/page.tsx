@@ -222,10 +222,10 @@ export default function ActiveExamPage() {
     if (!state || !currentQuestion) return null;
 
     return (
-        <div className={cn("min-h-screen text-gray-900 font-inter selection:bg-pink-500/30", theme.colors.pageBackground)}>
+        <div className={cn("h-[calc(100vh-64px)] flex flex-col overflow-hidden text-gray-900 font-inter selection:bg-pink-500/30", theme.colors.pageBackground)}>
             {/* TOP NAVIGATION HUD */}
             <header className={cn(
-                "sticky top-0 z-50 border-b px-6 flex items-center justify-between backdrop-blur-xl",
+                "shrink-0 z-50 border-b px-6 flex items-center justify-between backdrop-blur-xl",
                 theme.spacing.headerHeight,
                 "bg-white/90 border-gray-200"
             )}>
@@ -261,9 +261,9 @@ export default function ActiveExamPage() {
                 </div>
             </header>
 
-            <main className="max-w-[1400px] mx-auto p-6 grid grid-cols-1 lg:grid-cols-12 gap-8 mt-4">
+            <main className="flex-1 overflow-hidden max-w-[1400px] mx-auto w-full p-6 grid grid-cols-1 lg:grid-cols-12 gap-8">
                 {/* LEFT: TACTICAL SIDEBAR */}
-                <aside className="lg:col-span-3 space-y-6 order-2 lg:order-1">
+                <aside className="lg:col-span-3 space-y-6 order-2 lg:order-1 overflow-y-auto pr-2 scrollbar-hide h-full">
                     <div className={cn(
                         "rounded-3xl p-6 border",
                         theme.colors.questionCard,
@@ -356,16 +356,16 @@ export default function ActiveExamPage() {
                 </aside>
 
                 {/* RIGHT: QUESTION ENGINE */}
-                <div className="lg:col-span-9 space-y-6 order-1 lg:order-2">
+                <div className="lg:col-span-9 space-y-6 order-1 lg:order-2 h-full overflow-hidden flex flex-col">
                     <div className={cn(
-                        "border flex flex-col min-h-[520px]",
+                        "border flex flex-col flex-1 h-full overflow-hidden",
                         theme.colors.questionCard,
                         theme.colors.questionCardBorder,
                         theme.spacing.questionCardPadding,
                         theme.effects.questionCardRadius
                     )}>
                         {/* Header Area */}
-                        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-10 pb-8 border-b border-gray-200">
+                        <div className="shrink-0 flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6 pb-6 border-b border-gray-200">
                             <div>
                                 <span className="inline-block px-3 py-1 rounded-full bg-[#FF2D55]/10 border border-[#FF2D55]/20 text-[#FF2D55] text-[10px] font-black uppercase tracking-tighter mb-3">
                                     Strategic Analysis :: SEC-{(state.currentIndex + 1).toString().padStart(3, '0')}
@@ -389,8 +389,8 @@ export default function ActiveExamPage() {
                             </button>
                         </div>
 
-                        {/* Content Area */}
-                        <div className="flex-grow space-y-10">
+                        {/* Content Area - SCROLLABLE */}
+                        <div className="flex-1 overflow-y-auto px-1 min-h-0 space-y-10 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent">
                             {currentQuestion.codeSnippet && (
                                 <div className="rounded-2xl border-2 border-gray-200 bg-gray-50 p-6 font-mono text-sm leading-relaxed relative group">
                                     <div className="absolute top-0 right-8 px-4 py-1.5 bg-gray-100 rounded-b-xl border-x-2 border-b-2 border-gray-200 text-[10px] font-black text-gray-600 uppercase tracking-widest">
@@ -403,7 +403,7 @@ export default function ActiveExamPage() {
                             )}
 
                             {/* Options Grid */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-4">
                                 {currentQuestion.options.map((option: any, oIdx: number) => {
                                     // Handle both string and object options
                                     const optionText = typeof option === 'string' ? option : (option.text || option.label || 'Unknown Option');
@@ -452,8 +452,8 @@ export default function ActiveExamPage() {
                             </div>
                         </div>
 
-                        {/* Footer Controls */}
-                        <div className="mt-16 pt-8 border-t border-gray-200 flex items-center justify-between">
+                        {/* Footer Controls - FIXED */}
+                        <div className="shrink-0 pt-6 mt-4 border-t border-gray-200 flex items-center justify-between bg-white z-10">
                             <button
                                 onClick={() => goToQuestion(state.currentIndex - 1)}
                                 disabled={state.currentIndex === 0}
