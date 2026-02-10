@@ -1,5 +1,5 @@
 import { db, exams, resultsByDimension } from '@quiz/db';
-import { eq, desc } from 'drizzle-orm';
+import { eq, desc, and } from 'drizzle-orm';
 
 export interface ActionPlanItem {
   id: string;
@@ -64,6 +64,47 @@ export class ReportEngine {
     };
   }
 
+  private static async calculatePercentile(examId: string, blueprintId: string | null, score: number): Promise<number> {
+    try {
+        let whereClause = eq(exams.status, 'completed');
+        
+        if (blueprintId) {
+            whereClause = and(eq(exams.status, 'completed'), eq(exams.blueprintId, blueprintId))!;
+        }
+
+        const allExams = await db.query.exams.findMany({
+            where: whereClause,
+            columns: {
+                totalScore: true,
+                id: true
+            }
+        });
+
+        if (allExams.length <= 1) return 99; // Only this exam exists
+
+        // Calculate score percentage for current exam (assuming 'score' passed in is raw count)
+        // Wait, 'score' passed in is correctAnswers count. We need percentage to compare with totalScore in DB.
+        // But we don't know totalQuestions here easily without querying blueprint/questions again.
+        // Actually, the caller calculates 'scorePercentage'. Let's trust the caller to pass percentage?
+        // NO, the caller passes 'correctAnswers' as 'score'.
+        // Let's rely on the FACT that the current exam is also in 'allExams' (if it is completed/updated).
+        // If the current exam is not yet 'completed' in DB when this runs? 
+        // getExamReport runs typically after submission.
+        
+        // Let's assume the current exam IS in the list.
+        const currentExamWithType = allExams.find(e => e.id === examId);
+        const myScore = currentExamWithType?.totalScore || 0;
+
+        const lowerScores = allExams.filter(e => (e.totalScore || 0) < myScore).length;
+        const percentile = Math.round((lowerScores / allExams.length) * 100);
+
+        return Math.max(1, percentile); // Minimum 1st percentile
+    } catch (e) {
+        console.error("Percentile calc failed", e);
+        return 50; 
+    }
+  }
+
   static async getExamReport(examId: string, options: { includeCorrectAnswers?: boolean } = {}) {
     const exam = await db.query.exams.findFirst({
       where: eq(exams.id, examId),
@@ -87,6 +128,18 @@ export class ReportEngine {
     const correctAnswers = exam.examQuestions.filter(eq => eq.isCorrect).length;
     const scorePercentage = totalQuestions > 0 ? (correctAnswers / totalQuestions) * 100 : 0;
 
+    // Calculate Time Taken
+    let timeTaken = "00m 00s";
+    if (exam.completedAt && exam.startedAt) {
+        const diffMs = exam.completedAt.getTime() - exam.startedAt.getTime();
+        const diffMins = Math.floor(diffMs / 60000);
+        const diffSecs = Math.floor((diffMs % 60000) / 1000);
+        timeTaken = `${diffMins}m ${diffSecs}s`;
+    }
+
+    // Calculate Percentile
+    const percentile = await ReportEngine.calculatePercentile(exam.id, exam.blueprintId, correctAnswers);
+
     const includeCorrect = options.includeCorrectAnswers === true;
     const actionPlan = ActionPlanBuilder.build(results);
 
@@ -99,6 +152,8 @@ export class ReportEngine {
       percentage: scorePercentage,
       statusLabel: scorePercentage >= 70 ? 'passed' : 'failed',
       completedAt: exam.completedAt,
+      timeTaken,
+      percentile,
       blueprint: exam.blueprint,
       actionPlan,
       performance: results.reduce((acc: any, r) => {

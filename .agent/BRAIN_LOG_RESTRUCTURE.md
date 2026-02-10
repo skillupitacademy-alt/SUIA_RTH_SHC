@@ -1291,3 +1291,9 @@ Reduce documentation fragmentation and improve discoverability by consolidating 
 - **Dashboard Refinement**: Renamed `DashboardEngine` methods to `getPerformanceBreakdown` for semantic clarity; aligned `MyExamsPage` to use dynamic filters and decoupled range logic.
 - **Global Consistency**: Purged legacy `30d` metrics (`new30d` -> `new28d`) from `AdminEngine` and `TrendsRangeSelector`.
 - **Integrity**: Achieved 100% build success after massive refactor of analytical pipelines.
+
+### Batch 111: Quiz Result Metrics & Visual Polish
+- **Metrics**: Implemented `timeTaken` and `percentile` calculation in `ReportEngine` to replace hardcoded values.
+- **Visuals**: Fixed progress circle clipping in `ResultSummary` by adjusting SVG viewbox and radius.
+- **Layout**: Expanded active report view to use full page width (`max-w-[95%]`) per user request.
+- **Integrity**: Verified `pnpm build` and `tsc --noEmit` (Exit Code 0).

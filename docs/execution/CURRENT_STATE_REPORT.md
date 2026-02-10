@@ -692,3 +692,18 @@
 - **Cache Logic Hardening**: Fixed a critical gap in CacheService.ts by implementing the getUsage() method for Upstash Redis metrics.
 - **API Connectivity**: Verified 100% success rate for /api/admin/system/usage endpoint, now correctly returning metrics for Neon, Redis, Resend, and Cloudflare.
 - **Verification**: Synchronous build Integrity (pnpm build; 	sc --noEmit) verified with **Exit Code 0**.
+
+### Phase 48: Admin Analytics Stability (Hotfix)
+- **Objective**: Resolve persistent 500 Internal Server Error on Admin Dashboard caused by date serialization in SQL queries.
+- **Implementation**:
+    - **Serialization Fix**: Enforced `.toISOString()` on all date parameters passed to Drizzle/Neon SQL template tags in `TrendsService`.
+    - **Resilience**: Upgraded `AdminEngine.getPerformanceAnalytics` to use `Promise.allSettled`, preventing entire dashboard failure if a single metric service fails.
+    - **Logging**: Added granular error logging for individual service failures (Trend Summary, Period Delta, Domain Deltas).
+- **Verification**: Verified fix with `pnpm build` and `tsc --noEmit` (Exit Code 0).
+
+
+### Phase 49: Admin Dashboard Polish & Metrics Hardening (Batch 170)
+- **UI Contrast**: increased legibility by darkening `text-slate-400` to `text-slate-500/600` and increasing font sizes (`text-xs` -> `text-sm`) across all Admin Management Tables and Review Cards.
+- **Metrics Hardening**: Resolved 500 errors in Admin Analytics by enforcing `.toISOString()` serialization for date parameters in SQL queries.
+- **Strict Verification**: Confirmed system integrity with a strict `tsc --noEmit` check (Exit Code 0).
+- **Status**: **POLISHED & HARDENED**.
