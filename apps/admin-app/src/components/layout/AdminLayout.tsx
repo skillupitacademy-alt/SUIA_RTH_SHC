@@ -136,7 +136,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 </div>
             )}
 
-            <div className="flex min-h-screen bg-muted/10 overflow-hidden font-sans">
+            <div className="h-screen bg-muted/10 overflow-hidden font-sans relative">
                 {/* Sidebar */}
                 <aside className="w-64 border-r bg-background flex flex-col shadow-xl shadow-muted/5 fixed inset-y-0 left-0 z-50">
                     <div className="p-6">
@@ -198,7 +198,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 </aside>
 
                 {/* Main Content */}
-                <div className="flex-1 flex flex-col overflow-hidden ml-64">
+                <div className="flex flex-col h-full ml-64 overflow-hidden">
                     <header className="h-20 border-b bg-white flex items-center justify-between px-8 sticky top-0 z-40 shadow-sm">
                         <div className="flex items-center gap-8">
                             <div className="flex items-center gap-4 pr-8 border-r border-slate-100">
