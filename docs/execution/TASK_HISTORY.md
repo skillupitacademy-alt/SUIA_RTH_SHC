@@ -147,3 +147,4 @@
 | 2026-02-10 | System Verification | COMPLETED | Verified global system integrity with passing root 'pnpm build' and 'tsc --noEmit' (Exit Code 0). |
 | 2026-02-10 | API Server UI Regression Fix | COMPLETED | Installed missing Tailwind/PostCSS dependencies and configuration in `@quiz/api-server` to enable "Executive White" styling. |
 | 2026-02-11 | CSRF Self-Healing Mechanism | COMPLETED | Implemented `setCsrfToken` on 403 Forbidden responses in `csrf.middleware.ts` to allow automatic client recovery from missing/expired tokens. |
+| 2026-02-11 | Exam Pre-flight Checklist | COMPLETED | Created `ExamPreflightDialog` and integrated it into `QuizSelectionConsole` to ensure session, CSRF, and network readiness before launch. |

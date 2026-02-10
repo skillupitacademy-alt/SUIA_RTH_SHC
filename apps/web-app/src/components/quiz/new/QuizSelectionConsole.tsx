@@ -10,6 +10,7 @@ import { Code, Shield, Cloud, Database, Loader2, Activity, ChevronLeft, ChevronR
 import { cn } from '@/lib/utils';
 import { useExitGuard } from '@/hooks/useExitGuard';
 import { ExitConfirmationDialog } from '@/components/ui/ExitConfirmationDialog';
+import { ExamPreflightDialog } from '@/components/quiz/ExamPreflightDialog';
 
 export function QuizSelectionConsole() {
     return (
@@ -273,8 +274,17 @@ function QuizSelectionConsoleContent() {
     };
 
 
-    // Transactional Launch Logic
-    const handleLaunch = async () => {
+    // Preflight State
+    const [showPreflight, setShowPreflight] = useState(false);
+
+    const handleLaunch = () => {
+        if (isLocked) return;
+        setShowPreflight(true);
+    };
+
+    // Transactional Launch Logic (Executed AFTER Preflight Success)
+    const executeLaunch = async () => {
+        setShowPreflight(false); // Close dialog
         if (isLocked) return;
         setIsLocked(true); // Lock UI immediately
         setLoading(true);  // Show loader overlay on LEFT pane (via loading state)
@@ -679,6 +689,12 @@ function QuizSelectionConsoleContent() {
                 onCancel={cancelExit}
                 title="Leave Assessment Setup?"
                 message="You have unsaved selections. Are you sure you want to leave?"
+            />
+
+            <ExamPreflightDialog
+                isOpen={showPreflight}
+                onSuccess={executeLaunch}
+                onClose={() => setShowPreflight(false)}
             />
         </div >
     );
