@@ -39,3 +39,8 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: error.message }, { status: 400 });
   }
 }
+
+// Support POST as an alias for PATCH for environments that block PATCH
+export async function POST(req: NextRequest) {
+  return PATCH(req);
+}
