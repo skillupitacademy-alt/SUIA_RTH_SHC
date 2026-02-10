@@ -242,15 +242,15 @@ export function SubtopicTable() {
                             {/* Form Header Context */}
                             <div className="grid grid-cols-3 gap-4 p-6 bg-slate-50/50 rounded-2xl border border-dashed border-slate-200">
                                 <div className="space-y-1 text-center">
-                                    <label className="text-[9px] font-black uppercase tracking-widest text-slate-400">Domain</label>
+                                    <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Domain</label>
                                     <div className="font-bold text-slate-600 text-xs truncate">{domains.find(d => d.id === formData.domainId)?.name || 'N/A'}</div>
                                 </div>
                                 <div className="space-y-1 text-center border-x border-slate-200">
-                                    <label className="text-[9px] font-black uppercase tracking-widest text-slate-400">Subject</label>
+                                    <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Subject</label>
                                     <div className="font-bold text-slate-600 text-xs truncate">{subjects.find(s => s.id === formData.subjectId)?.name || 'N/A'}</div>
                                 </div>
                                 <div className="space-y-1 text-center">
-                                    <label className="text-[9px] font-black uppercase tracking-widest text-slate-400">Topic</label>
+                                    <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Topic</label>
                                     <div className="font-bold text-teal-600 text-xs truncate">{topics.find(t => t.id === formData.topicId)?.name || 'N/A'}</div>
                                 </div>
                             </div>
@@ -260,13 +260,13 @@ export function SubtopicTable() {
                                 <div className="grid grid-cols-2 gap-6">
                                     {/* Col 1: Name */}
                                     <div className="space-y-3">
-                                        <label className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">Subtopic Nomenclature</label>
+                                        <label className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-600 ml-1">Subtopic Nomenclature</label>
                                         <input
                                             type="text"
                                             required
                                             value={formData.name}
                                             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                            className="w-full px-6 py-3.5 bg-slate-50 border border-slate-300 rounded-xl text-lg font-black text-[#1A1A1A] focus:outline-none focus:ring-4 focus:ring-teal-500/5 focus:bg-white focus:border-teal-500/20 transition-all placeholder:text-slate-300"
+                                            className="w-full px-6 py-3.5 bg-slate-50 border border-slate-300 rounded-xl text-lg font-black text-[#1A1A1A] focus:outline-none focus:ring-4 focus:ring-teal-500/5 focus:bg-white focus:border-teal-500/20 transition-all placeholder:text-slate-400"
                                             placeholder="Enter subtopic name..."
                                         />
                                     </div>
@@ -274,9 +274,9 @@ export function SubtopicTable() {
                                     {/* Col 2: Depth & Status */}
                                     <div className="grid grid-cols-2 gap-6">
                                         <div className="space-y-3">
-                                            <label className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">Depth Level</label>
+                                            <label className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-600 ml-1">Depth Level</label>
                                             <div className="relative">
-                                                <Layers className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
+                                                <Layers className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-500" size={14} />
                                                 <input
                                                     type="number"
                                                     min="1"
@@ -289,7 +289,7 @@ export function SubtopicTable() {
                                         </div>
 
                                         <div className="space-y-3">
-                                            <label className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">Publication State</label>
+                                            <label className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-600 ml-1">Publication State</label>
                                             <div className="flex bg-slate-50 p-2 rounded-xl border border-slate-300">
                                                 {['active', 'inactive'].map((status) => (
                                                     <button
@@ -298,7 +298,7 @@ export function SubtopicTable() {
                                                         onClick={() => setFormData({ ...formData, status: status as any })}
                                                         className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${formData.status === status
                                                             ? 'bg-white text-[#1A1A1A] shadow-sm border border-slate-100 transform scale-[1.02]'
-                                                            : 'text-slate-400 hover:text-slate-600'
+                                                            : 'text-slate-500 hover:text-slate-600'
                                                             }`}
                                                     >
                                                         {status}
@@ -311,12 +311,12 @@ export function SubtopicTable() {
 
                                 {/* Description */}
                                 <div className="space-y-3">
-                                    <label className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">Structural Definition</label>
+                                    <label className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-600 ml-1">Structural Definition</label>
                                     <textarea
                                         value={formData.description}
                                         onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                                         rows={5}
-                                        className="w-full px-6 py-3.5 bg-slate-50 border border-slate-300 rounded-xl text-[13px] font-medium text-slate-600 focus:outline-none focus:ring-4 focus:ring-teal-500/5 focus:bg-white focus:border-teal-500/20 transition-all placeholder:text-slate-300 resize-none leading-relaxed"
+                                        className="w-full px-6 py-3.5 bg-slate-50 border border-slate-300 rounded-xl text-[13px] font-medium text-slate-600 focus:outline-none focus:ring-4 focus:ring-teal-500/5 focus:bg-white focus:border-teal-500/20 transition-all placeholder:text-slate-400 resize-none leading-relaxed"
                                         placeholder="Provide technical definition for this subtopic..."
                                     />
                                 </div>
@@ -373,7 +373,7 @@ export function SubtopicTable() {
                                     <button
                                         type="button"
                                         onClick={handleCloseForm}
-                                        className="px-8 py-4 rounded-2xl text-slate-400 hover:text-slate-600 text-[10px] font-black uppercase tracking-widest transition-all"
+                                        className="px-8 py-4 rounded-2xl text-slate-500 hover:text-slate-600 text-[10px] font-black uppercase tracking-widest transition-all"
                                     >
                                         Discard Changes
                                     </button>
@@ -469,7 +469,7 @@ export function SubtopicTable() {
                             placeholder="Search Subtopics..."
                             value={searchQuery}
                             onChange={(e) => { setSearchQuery(e.target.value); setPage(1); }}
-                            className="w-full bg-slate-50 border-none rounded-2xl px-5 py-3 text-[11px] font-black tracking-widest text-[#1A1A1A] placeholder:text-slate-300 focus:ring-2 focus:ring-teal-500/10 transition-all outline-none border border-transparent shadow-inner"
+                            className="w-full bg-slate-50 border-none rounded-2xl px-5 py-3 text-[11px] font-black tracking-widest text-[#1A1A1A] placeholder:text-slate-400 focus:ring-2 focus:ring-teal-500/10 transition-all outline-none border border-transparent shadow-inner"
                         />
                         <div className="absolute right-4 top-1/2 -translate-y-1/2 opacity-20 group-hover:opacity-100 transition-opacity">
                             <div className="w-1.5 h-1.5 bg-teal-500 rounded-full animate-pulse" />
@@ -512,11 +512,11 @@ export function SubtopicTable() {
                 <div className="space-y-6">
                     {data.length === 0 && !isLoading ? (
                         <div className="bg-white border border-dashed border-slate-200 rounded-[2.5rem] p-20 flex flex-col items-center justify-center text-center">
-                            <div className="w-20 h-20 rounded-full bg-slate-50 flex items-center justify-center text-slate-300 mb-6">
+                            <div className="w-20 h-20 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 mb-6">
                                 <LayoutGrid size={40} />
                             </div>
                             <h3 className="text-xl font-black text-slate-800 uppercase italic">No Subtopics Found</h3>
-                            <p className="text-sm text-slate-400 mt-2 max-w-xs">Try adjusting your search or use the Factory to seed new hierarchy nodes.</p>
+                            <p className="text-sm text-slate-500 mt-2 max-w-xs">Try adjusting your search or use the Factory to seed new hierarchy nodes.</p>
                         </div>
                     ) : (
                         data.map((item, idx) => (
@@ -542,7 +542,7 @@ export function SubtopicTable() {
                                 <button
                                     key={i}
                                     onClick={() => setPage(i + 1)}
-                                    className={`w-10 h-10 rounded-xl text-[10px] font-black transition-all ${page === i + 1 ? 'bg-slate-900 text-white shadow-lg scale-110' : 'text-slate-400 hover:text-slate-900 hover:bg-slate-50'}`}
+                                    className={`w-10 h-10 rounded-xl text-[10px] font-black transition-all ${page === i + 1 ? 'bg-slate-900 text-white shadow-lg scale-110' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'}`}
                                 >
                                     {i + 1}
                                 </button>
@@ -562,7 +562,7 @@ export function SubtopicTable() {
                                 </div>
                                 <div>
                                     <p className="text-[10px] font-black uppercase tracking-[0.2em] text-teal-500">Nodes Selected</p>
-                                    <p className="text-[11px] font-bold text-slate-400">Hierarchy Batch Control</p>
+                                    <p className="text-[11px] font-bold text-slate-500">Hierarchy Batch Control</p>
                                 </div>
                             </div>
 
@@ -584,7 +584,7 @@ export function SubtopicTable() {
 
                                 <button
                                     onClick={() => setSelectedIds(new Set())}
-                                    className="px-6 py-3 rounded-2xl bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white transition-all text-[10px] font-black uppercase tracking-widest"
+                                    className="px-6 py-3 rounded-2xl bg-white/5 hover:bg-white/10 text-slate-500 hover:text-white transition-all text-[10px] font-black uppercase tracking-widest"
                                 >
                                     Cancel
                                 </button>

@@ -25,7 +25,7 @@ export function DomainReviewCard({
 }: DomainReviewCardProps) {
     const statusColors: Record<string, string> = {
         active: 'bg-emerald-50 text-emerald-600 border-emerald-100',
-        inactive: 'bg-slate-50 text-slate-400 border-slate-100'
+        inactive: 'bg-slate-50 text-slate-500 border-slate-100'
     };
 
     return (
@@ -59,11 +59,11 @@ export function DomainReviewCard({
                     </div>
 
                     <div className="flex flex-col">
-                        <div className="flex items-center gap-2 text-[10px] uppercase font-black tracking-widest text-slate-400">
-                            <Layers size={10} className="text-slate-300" />
+                        <div className="flex items-center gap-2 text-[10px] uppercase font-black tracking-widest text-slate-500">
+                            <Layers size={10} className="text-slate-500" />
                             <span>Root Domain</span>
                         </div>
-                        <p className="text-[10px] font-bold text-slate-300 mt-0.5">DID: {domain.id}</p>
+                        <p className="text-[10px] font-bold text-slate-500 mt-0.5">DID: {domain.id}</p>
                     </div>
                 </div>
 
@@ -72,7 +72,7 @@ export function DomainReviewCard({
                         "px-3 py-1 rounded-full border text-[9px] font-black uppercase tracking-widest flex items-center gap-1.5",
                         statusColors[domain.status] || statusColors.active
                     )}>
-                        <div className={cn("w-1 h-1 rounded-full", domain.status === 'active' ? "bg-emerald-500 animate-pulse" : "bg-slate-400")} />
+                        <div className={cn("w-1 h-1 rounded-full", domain.status === 'active' ? "bg-emerald-500 animate-pulse" : "bg-slate-500")} />
                         {domain.status}
                     </div>
 
@@ -80,14 +80,14 @@ export function DomainReviewCard({
 
                     <button
                         onClick={() => onEditRequest(domain)}
-                        className="p-2.5 rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-blue-500 hover:border-blue-500/20 transition-all active:scale-95 shadow-sm"
+                        className="p-2.5 rounded-xl bg-white border border-slate-200 text-slate-500 hover:text-blue-500 hover:border-blue-500/20 transition-all active:scale-95 shadow-sm"
                         title="Edit Domain"
                     >
                         <Edit2 size={14} />
                     </button>
                     <button
                         onClick={() => onDeleteRequest(domain)}
-                        className="p-2.5 rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-rose-500 hover:border-rose-100 transition-all active:scale-95 shadow-sm"
+                        className="p-2.5 rounded-xl bg-white border border-slate-200 text-slate-500 hover:text-rose-500 hover:border-rose-100 transition-all active:scale-95 shadow-sm"
                         title="Delete Domain"
                     >
                         <Trash2 size={14} />
@@ -101,7 +101,7 @@ export function DomainReviewCard({
                 <div className="w-64 flex-shrink-0 space-y-4">
                     <div className="p-5 rounded-3xl bg-slate-50 border border-slate-200 flex flex-col gap-4">
                         <div className="flex flex-col gap-1">
-                            <h4 className="text-[9px] font-black uppercase tracking-widest text-slate-400">Classification</h4>
+                            <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-500">Classification</h4>
                             <div className="flex items-center gap-2 text-blue-600">
                                 <Globe size={14} />
                                 <span className="text-sm font-black uppercase tracking-tight">{domain.category || 'General'}</span>
@@ -109,7 +109,7 @@ export function DomainReviewCard({
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-2 px-4 py-3 rounded-2xl bg-slate-50/50 border border-slate-100 text-[10px] font-bold text-slate-400">
+                    <div className="flex items-center gap-2 px-4 py-3 rounded-2xl bg-slate-50/50 border border-slate-100 text-[10px] font-bold text-slate-500">
                         <Clock size={12} />
                         <span>Created {formatTimeAgo(domain.createdAt)}</span>
                     </div>
@@ -126,7 +126,7 @@ export function DomainReviewCard({
                                 <h3 className="text-xl font-black text-slate-800 tracking-tight leading-none mb-2">
                                     {domain.name}
                                 </h3>
-                                <p className="text-sm text-slate-500 font-medium leading-relaxed max-w-2xl italic">
+                                <p className="text-sm text-slate-600 font-medium leading-relaxed max-w-2xl italic">
                                     {domain.description || 'No formal definition provided.'}
                                 </p>
                             </div>
@@ -136,8 +136,8 @@ export function DomainReviewCard({
                     {/* Quick Stats / Breadcrumbs */}
                     <div className="flex flex-wrap gap-3 pl-12">
                         <div className="px-4 py-2 rounded-xl bg-slate-50 border border-slate-100 flex items-center gap-2">
-                            <BookOpen size={12} className="text-slate-400" />
-                            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Subjects:</span>
+                            <BookOpen size={12} className="text-slate-500" />
+                            <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Subjects:</span>
                             <span className="text-xs font-bold text-slate-700">{domain.subjectsCount || domain.subjects?.length || 0}</span>
                         </div>
                     </div>

@@ -27,7 +27,7 @@ export function SubtopicReviewCard({
 }: SubtopicReviewCardProps) {
     const statusColors: Record<string, string> = {
         active: 'bg-emerald-50 text-emerald-600 border-emerald-100',
-        inactive: 'bg-slate-50 text-slate-400 border-slate-100'
+        inactive: 'bg-slate-50 text-slate-500 border-slate-100'
     };
 
     return (
@@ -61,17 +61,17 @@ export function SubtopicReviewCard({
                     </div>
 
                     <div className="flex flex-col">
-                        <div className="flex items-center gap-2 text-[10px] uppercase font-black tracking-widest text-slate-400">
-                            <Layers size={10} className="text-slate-300" />
+                        <div className="flex items-center gap-2 text-[10px] uppercase font-black tracking-widest text-slate-500">
+                            <Layers size={10} className="text-slate-500" />
                             <span>{subtopic.topic?.subject?.domain?.name || 'N/A'}</span>
                             <span className="opacity-30">/</span>
-                            <BookOpen size={10} className="text-slate-300" />
+                            <BookOpen size={10} className="text-slate-500" />
                             <span>{subtopic.topic?.subject?.name || 'N/A'}</span>
                             <span className="opacity-30">/</span>
                             <Hash size={10} className="text-teal-500" />
                             <span className="text-teal-600 font-black">{subtopic.topic?.name || 'N/A'}</span>
                         </div>
-                        <p className="text-[10px] font-bold text-slate-300 mt-0.5">SID: {subtopic.id}</p>
+                        <p className="text-[10px] font-bold text-slate-500 mt-0.5">SID: {subtopic.id}</p>
                     </div>
                 </div>
 
@@ -80,7 +80,7 @@ export function SubtopicReviewCard({
                         "px-3 py-1 rounded-full border text-[9px] font-black uppercase tracking-widest flex items-center gap-1.5",
                         statusColors[subtopic.status] || statusColors.active
                     )}>
-                        <div className={cn("w-1 h-1 rounded-full", subtopic.status === 'active' ? "bg-emerald-500 animate-pulse" : "bg-slate-400")} />
+                        <div className={cn("w-1 h-1 rounded-full", subtopic.status === 'active' ? "bg-emerald-500 animate-pulse" : "bg-slate-500")} />
                         {subtopic.status}
                     </div>
 
@@ -88,14 +88,14 @@ export function SubtopicReviewCard({
 
                     <button
                         onClick={() => onEditRequest(subtopic)}
-                        className="p-2.5 rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-teal-500 hover:border-teal-500/20 transition-all active:scale-95 shadow-sm"
+                        className="p-2.5 rounded-xl bg-white border border-slate-200 text-slate-500 hover:text-teal-500 hover:border-teal-500/20 transition-all active:scale-95 shadow-sm"
                         title="Edit Subtopic"
                     >
                         <Edit3 size={14} />
                     </button>
                     <button
                         onClick={() => onDeleteRequest(subtopic)}
-                        className="p-2.5 rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-rose-500 hover:border-rose-100 transition-all active:scale-95 shadow-sm"
+                        className="p-2.5 rounded-xl bg-white border border-slate-200 text-slate-500 hover:text-rose-500 hover:border-rose-100 transition-all active:scale-95 shadow-sm"
                         title="Delete Subtopic"
                     >
                         <Trash2 size={14} />
@@ -116,22 +116,22 @@ export function SubtopicReviewCard({
                 <div className="w-64 flex-shrink-0 space-y-4">
                     <div className="p-5 rounded-3xl bg-slate-50 border border-slate-200 flex flex-col gap-4">
                         <div className="flex flex-col gap-1">
-                            <h4 className="text-[9px] font-black uppercase tracking-widest text-slate-400">Execution Depth</h4>
+                            <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-500">Execution Depth</h4>
                             <div className="flex items-center gap-2">
                                 <Target size={14} className="text-teal-500" />
                                 <span className="text-sm font-black text-slate-700">D-Lvl: {subtopic.depthLevel || 1}</span>
                             </div>
                         </div>
                         <div className="flex flex-col gap-1 border-t border-slate-200 pt-4">
-                            <h4 className="text-[9px] font-black uppercase tracking-widest text-slate-400">Sort Sequence</h4>
+                            <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-500">Sort Sequence</h4>
                             <div className="flex items-center gap-2">
-                                <ArrowRight size={14} className="text-slate-500" />
+                                <ArrowRight size={14} className="text-slate-600" />
                                 <span className="text-sm font-black text-slate-700">Order: {subtopic.order || 0}</span>
                             </div>
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-2 px-4 py-3 rounded-2xl bg-slate-50/50 border border-slate-100 text-[10px] font-bold text-slate-400">
+                    <div className="flex items-center gap-2 px-4 py-3 rounded-2xl bg-slate-50/50 border border-slate-100 text-[10px] font-bold text-slate-500">
                         <Clock size={12} />
                         <span>Created {formatTimeAgo(subtopic.createdAt)}</span>
                     </div>
@@ -148,7 +148,7 @@ export function SubtopicReviewCard({
                                 <h3 className="text-xl font-black text-slate-800 tracking-tight leading-none mb-2">
                                     {subtopic.name}
                                 </h3>
-                                <p className="text-sm text-slate-500 font-medium leading-relaxed max-w-2xl italic">
+                                <p className="text-sm text-slate-600 font-medium leading-relaxed max-w-2xl italic">
                                     {subtopic.description || 'No structural definition provided for this leaf node.'}
                                 </p>
                             </div>
@@ -158,7 +158,7 @@ export function SubtopicReviewCard({
                     {/* Quick Stats */}
                     <div className="flex flex-wrap gap-3 pl-12">
                         <div className="px-4 py-2 rounded-xl bg-slate-50 border border-slate-100 flex items-center gap-2">
-                            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Questions:</span>
+                            <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Questions:</span>
                             <span className="text-xs font-bold text-slate-700">{subtopic.questionsCount || 0}</span>
                         </div>
                     </div>

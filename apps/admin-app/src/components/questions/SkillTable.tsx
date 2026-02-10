@@ -215,8 +215,8 @@ export function SkillTable() {
             )}>
                 <div className="flex items-center gap-4 border-r border-white/10 pr-6">
                     <div className="flex flex-col">
-                        <span className="text-xs font-bold text-white/40 uppercase tracking-widest">Selection</span>
-                        <span className="text-xl font-black">{selectedIds.size} <span className="text-sm font-bold text-white/40">skills</span></span>
+                        <span className="text-xs font-bold text-white/60 uppercase tracking-widest">Selection</span>
+                        <span className="text-xl font-black">{selectedIds.size} <span className="text-sm font-bold text-white/60">skills</span></span>
                     </div>
                 </div>
                 <div className="flex items-center gap-3">
@@ -254,7 +254,7 @@ export function SkillTable() {
                             </div>
                         </div>
                         <button onClick={handleCloseForm} className="p-2 hover:bg-slate-100 rounded-full transition-colors">
-                            <X size={20} className="text-slate-400" />
+                            <X size={20} className="text-slate-500" />
                         </button>
                     </div>
 
@@ -265,7 +265,7 @@ export function SkillTable() {
                                 <div className="grid grid-cols-2 gap-6">
                                     {/* Skill Name */}
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Skill Name</label>
+                                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-2">Skill Name</label>
                                         <input
                                             required
                                             type="text"
@@ -278,7 +278,7 @@ export function SkillTable() {
 
                                     {/* Weight */}
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Weight (1-10)</label>
+                                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-2">Weight (1-10)</label>
                                         <div className="flex items-center gap-4 px-4 py-3 bg-slate-50 rounded-2xl">
                                             <Zap size={16} className="text-amber-500" />
                                             <input
@@ -410,7 +410,7 @@ export function SkillTable() {
                             placeholder="Search Skills..."
                             value={searchQuery}
                             onChange={(e) => { setSearchQuery(e.target.value); setPage(1); }}
-                            className="w-full bg-slate-50 border-none rounded-2xl px-5 py-3 text-[11px] font-black tracking-widest text-[#1A1A1A] placeholder:text-slate-300 focus:ring-2 focus:ring-cyan-500/10 transition-all outline-none border border-transparent shadow-inner"
+                            className="w-full bg-slate-50 border-none rounded-2xl px-5 py-3 text-[11px] font-black tracking-widest text-[#1A1A1A] placeholder:text-slate-400 focus:ring-2 focus:ring-cyan-500/10 transition-all outline-none border border-transparent shadow-inner"
                         />
                         {/* SELECT ALL CHECKBOX */}
                         <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white border border-slate-100 cursor-pointer hover:border-cyan-200 transition-all">
@@ -420,7 +420,7 @@ export function SkillTable() {
                                 onChange={(e) => handleSelectAll(e.target.checked)}
                                 className="w-4 h-4 rounded border-slate-300 text-cyan-600 focus:ring-offset-0 focus:ring-0 cursor-pointer"
                             />
-                            <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400">Select All</span>
+                            <span className="text-[9px] font-bold uppercase tracking-wider text-slate-500">Select All</span>
                         </div>
                     </div>
                 </div>
@@ -462,7 +462,7 @@ export function SkillTable() {
                     ))}
                     {data.length === 0 && (
                         <div className="text-center py-20 opacity-50">
-                            <Shield className="w-16 h-16 mx-auto mb-4 text-slate-300" />
+                            <Shield className="w-16 h-16 mx-auto mb-4 text-slate-400" />
                             <h3 className="text-lg font-bold text-slate-500">No skills found</h3>
                         </div>
                     )}
@@ -478,7 +478,7 @@ export function SkillTable() {
                             <button
                                 key={i}
                                 onClick={() => setPage(i + 1)}
-                                className={`w-8 h-8 rounded-lg text-[10px] font-black transition-all ${page === i + 1 ? 'bg-[#1A1A1A] text-white shadow-lg' : 'text-slate-400 hover:text-[#1A1A1A]'}`}
+                                className={`w-8 h-8 rounded-lg text-[10px] font-black transition-all ${page === i + 1 ? 'bg-[#1A1A1A] text-white shadow-lg' : 'text-slate-500 hover:text-[#1A1A1A]'}`}
                             >
                                 {i + 1}
                             </button>

@@ -268,7 +268,7 @@ export function QuestionTable() {
                                 </div>
                                 <div>
                                     <p className="text-[10px] font-black uppercase text-white tracking-widest">Assessments Selected</p>
-                                    <p className="text-[9px] font-bold text-slate-400">Database Batch Operations Ready</p>
+                                    <p className="text-[9px] font-bold text-slate-500">Database Batch Operations Ready</p>
                                 </div>
                             </div>
 
@@ -298,7 +298,7 @@ export function QuestionTable() {
 
                             <button
                                 onClick={() => setSelectedIds(new Set())}
-                                className="ml-auto p-2 text-slate-400 hover:text-white transition-colors"
+                                className="ml-auto p-2 text-slate-500 hover:text-white transition-colors"
                             >
                                 <X size={20} />
                             </button>
@@ -360,7 +360,7 @@ export function QuestionTable() {
                                 </button>
                                 <button
                                     onClick={handleCloseDelete}
-                                    className="w-full py-4 text-xs font-black uppercase tracking-[0.2em] text-slate-400 hover:text-slate-600 transition-colors"
+                                    className="w-full py-4 text-xs font-black uppercase tracking-[0.2em] text-slate-500 hover:text-slate-600 transition-colors"
                                 >
                                     Cancel
                                 </button>

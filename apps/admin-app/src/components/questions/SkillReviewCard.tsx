@@ -71,16 +71,16 @@ export function SkillReviewCard({
                     </div>
 
                     <div className="flex flex-col">
-                        <div className="flex items-center gap-2 text-[10px] uppercase font-black tracking-widest text-slate-400">
-                            <Hash size={10} className="text-slate-300" />
+                        <div className="flex items-center gap-2 text-[10px] uppercase font-black tracking-widest text-slate-500">
+                            <Hash size={10} className="text-slate-500" />
                             <span>{SKILL_CATEGORIES[skill.category] || skill.category || 'Technical'}</span>
                         </div>
-                        <p className="text-[10px] font-bold text-slate-300 mt-0.5">KID: {skill.id.split('-')[0]}...</p>
+                        <p className="text-[10px] font-bold text-slate-500 mt-0.5">KID: {skill.id.split('-')[0]}...</p>
                     </div>
                 </div>
 
                 <div className="flex items-center gap-2">
-                    <div className="px-3 py-1 rounded-full border border-slate-200 bg-slate-50 text-slate-400 text-[9px] font-black uppercase tracking-widest flex items-center gap-1.5">
+                    <div className="px-3 py-1 rounded-full border border-slate-200 bg-slate-50 text-slate-500 text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5">
                         <Cpu size={10} />
                         {skill.mappingType || 'conceptual'}
                     </div>
@@ -89,14 +89,14 @@ export function SkillReviewCard({
 
                     <button
                         onClick={() => onEditRequest(skill)}
-                        className="p-2.5 rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-cyan-500 hover:border-cyan-500/20 transition-all active:scale-95 shadow-sm"
+                        className="p-2.5 rounded-xl bg-white border border-slate-200 text-slate-500 hover:text-cyan-500 hover:border-cyan-500/20 transition-all active:scale-95 shadow-sm"
                         title="Edit Skill"
                     >
                         <Edit2 size={14} />
                     </button>
                     <button
                         onClick={() => onDeleteRequest(skill)}
-                        className="p-2.5 rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-rose-500 hover:border-rose-100 transition-all active:scale-95 shadow-sm"
+                        className="p-2.5 rounded-xl bg-white border border-slate-200 text-slate-500 hover:text-rose-500 hover:border-rose-100 transition-all active:scale-95 shadow-sm"
                         title="Delete Skill"
                     >
                         <Trash2 size={14} />
@@ -110,21 +110,21 @@ export function SkillReviewCard({
                 <div className="w-64 flex-shrink-0 space-y-4">
                     <div className="p-5 rounded-3xl bg-slate-50 border border-slate-200 flex flex-col gap-4">
                         <div className="flex flex-col gap-1">
-                            <h4 className="text-[9px] font-black uppercase tracking-widest text-slate-400">Classification</h4>
+                            <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-500">Classification</h4>
                             <div className="flex items-center gap-2 text-cyan-600">
                                 <Hash size={14} />
                                 <span className="text-sm font-black uppercase tracking-tight">{SKILL_CATEGORIES[skill.category] || skill.category || 'General'}</span>
                             </div>
                         </div>
                         <div className="flex flex-col gap-1 border-t border-slate-200 pt-4">
-                            <h4 className="text-[9px] font-black uppercase tracking-widest text-slate-400">Application</h4>
-                            <div className="flex items-center gap-2 text-slate-500">
+                            <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-500">Application</h4>
+                            <div className="flex items-center gap-2 text-slate-600">
                                 <Cpu size={14} />
                                 <span className="text-sm font-black uppercase tracking-tight">{skill.mappingType || 'conceptual'}</span>
                             </div>
                         </div>
                         <div className="flex flex-col gap-1 border-t border-slate-200 pt-4">
-                            <h4 className="text-[9px] font-black uppercase tracking-widest text-slate-400">Global Weight</h4>
+                            <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-500">Global Weight</h4>
                             <div className="flex items-center gap-2 text-amber-600">
                                 <Zap size={14} className="text-amber-500" />
                                 <span className="text-sm font-black uppercase tracking-tight">Impact: {skill.weight || 1}</span>

@@ -255,7 +255,7 @@ export function TopicTable() {
                                 {/* Row 1: Hierarchy Context (Read-Only) */}
                                 <div className="grid grid-cols-2 gap-6">
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 flex items-center gap-1.5">
+                                        <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 flex items-center gap-1.5">
                                             <Layers size={12} />
                                             Parent Domain
                                         </label>
@@ -264,7 +264,7 @@ export function TopicTable() {
                                         </div>
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 flex items-center gap-1.5">
+                                        <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 flex items-center gap-1.5">
                                             <BookOpen size={12} />
                                             Parent Subject
                                         </label>
@@ -278,20 +278,20 @@ export function TopicTable() {
                                 <div className="grid grid-cols-2 gap-6">
                                     {/* Topic Name */}
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 pl-1">Topic Name</label>
+                                        <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 pl-1">Topic Name</label>
                                         <input
                                             type="text"
                                             required
                                             value={formData.name}
                                             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                            className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all placeholder:text-slate-300"
+                                            className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all placeholder:text-slate-400"
                                             placeholder="e.g., React Hooks"
                                         />
                                     </div>
 
                                     {/* Status */}
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 pl-1">Status</label>
+                                        <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 pl-1">Status</label>
                                         <div className="flex bg-white p-1.5 rounded-xl border border-slate-200">
                                             {['active', 'inactive'].map((status) => (
                                                 <button
@@ -300,7 +300,7 @@ export function TopicTable() {
                                                     onClick={() => setFormData({ ...formData, status: status as any })}
                                                     className={`flex-1 py-2.5 rounded-lg text-xs font-black uppercase tracking-wider transition-all ${formData.status === status
                                                         ? 'bg-[#1A1A1A] text-white shadow-sm'
-                                                        : 'text-slate-400 hover:text-slate-600'
+                                                        : 'text-slate-500 hover:text-slate-600'
                                                         }`}
                                                 >
                                                     {status}
@@ -314,7 +314,7 @@ export function TopicTable() {
                                 <div className="grid grid-cols-2 gap-6 bg-slate-50 p-4 rounded-xl border border-slate-200">
                                     <div className="space-y-3">
                                         <div className="flex items-center justify-between">
-                                            <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Weight (Impact)</label>
+                                            <label className="text-[10px] font-bold uppercase tracking-widest text-slate-600">Weight (Impact)</label>
                                             <span className="text-xs font-black text-orange-600 bg-orange-50 px-2 py-0.5 rounded-md">{formData.weight || 1}</span>
                                         </div>
                                         <input
@@ -326,11 +326,11 @@ export function TopicTable() {
                                             onChange={(e) => setFormData({ ...formData, weight: parseInt(e.target.value) })}
                                             className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-orange-500"
                                         />
-                                        <p className="text-[9px] text-slate-400 font-medium italic">Higher weight = greater impact on subject mastery.</p>
+                                        <p className="text-[9px] text-slate-500 font-medium italic">Higher weight = greater impact on subject mastery.</p>
                                     </div>
                                     <div className="space-y-3">
                                         <div className="flex items-center justify-between">
-                                            <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Complexity</label>
+                                            <label className="text-[10px] font-bold uppercase tracking-widest text-slate-600">Complexity</label>
                                             <span className="text-xs font-black text-slate-600 bg-white border border-slate-200 px-2 py-0.5 rounded-md">{formData.complexityLevel || 1}</span>
                                         </div>
                                         <input
@@ -342,18 +342,18 @@ export function TopicTable() {
                                             onChange={(e) => setFormData({ ...formData, complexityLevel: parseInt(e.target.value) })}
                                             className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-slate-500"
                                         />
-                                        <p className="text-[9px] text-slate-400 font-medium italic">1 = Introductory, 10 = Advanced Research.</p>
+                                        <p className="text-[9px] text-slate-500 font-medium italic">1 = Introductory, 10 = Advanced Research.</p>
                                     </div>
                                 </div>
 
                                 {/* Description */}
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 pl-1">Description</label>
+                                    <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 pl-1">Description</label>
                                     <textarea
                                         value={formData.description}
                                         onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                                         rows={4}
-                                        className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-600 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all placeholder:text-slate-300 resize-none"
+                                        className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-600 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all placeholder:text-slate-400 resize-none"
                                         placeholder="Brief summary of this topic..."
                                     />
                                 </div>
@@ -468,7 +468,7 @@ export function TopicTable() {
                             placeholder="Search Topics..."
                             value={searchQuery}
                             onChange={(e) => { setSearchQuery(e.target.value); setPage(1); }}
-                            className="w-full bg-slate-50 border-none rounded-2xl px-5 py-3 text-[11px] font-black tracking-widest text-[#1A1A1A] placeholder:text-slate-300 focus:ring-2 focus:ring-orange-500/10 transition-all outline-none border border-transparent shadow-inner"
+                            className="w-full bg-slate-50 border-none rounded-2xl px-5 py-3 text-[11px] font-black tracking-widest text-[#1A1A1A] placeholder:text-slate-400 focus:ring-2 focus:ring-orange-500/10 transition-all outline-none border border-transparent shadow-inner"
                         />
                         <div className="absolute right-4 top-1/2 -translate-y-1/2 opacity-20 group-hover:opacity-100 transition-opacity">
                             <div className="w-1.5 h-1.5 bg-orange-500 rounded-full animate-pulse" />
@@ -511,11 +511,11 @@ export function TopicTable() {
                 <div className="space-y-6">
                     {data.length === 0 && !isLoading ? (
                         <div className="bg-white border border-dashed border-slate-200 rounded-[2.5rem] p-20 flex flex-col items-center justify-center text-center">
-                            <div className="w-20 h-20 rounded-full bg-slate-50 flex items-center justify-center text-slate-300 mb-6">
+                            <div className="w-20 h-20 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 mb-6">
                                 <LayoutGrid size={40} />
                             </div>
                             <h3 className="text-xl font-black text-slate-800 uppercase italic">No Topics Found</h3>
-                            <p className="text-sm text-slate-400 mt-2 max-w-xs">Try adjusting your search or use the Factory to seed new hierarchy nodes.</p>
+                            <p className="text-sm text-slate-500 mt-2 max-w-xs">Try adjusting your search or use the Factory to seed new hierarchy nodes.</p>
                         </div>
                     ) : (
                         data.map((item, idx) => (
@@ -541,7 +541,7 @@ export function TopicTable() {
                                 <button
                                     key={i}
                                     onClick={() => setPage(i + 1)}
-                                    className={`w-10 h-10 rounded-xl text-[10px] font-black transition-all ${page === i + 1 ? 'bg-slate-900 text-white shadow-lg scale-110' : 'text-slate-400 hover:text-slate-900 hover:bg-slate-50'}`}
+                                    className={`w-10 h-10 rounded-xl text-[10px] font-black transition-all ${page === i + 1 ? 'bg-slate-900 text-white shadow-lg scale-110' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'}`}
                                 >
                                     {i + 1}
                                 </button>
@@ -561,7 +561,7 @@ export function TopicTable() {
                                 </div>
                                 <div>
                                     <p className="text-[10px] font-black uppercase tracking-[0.2em] text-orange-500">Nodes Selected</p>
-                                    <p className="text-[11px] font-bold text-slate-400">Hierarchy Batch Control</p>
+                                    <p className="text-[11px] font-bold text-slate-500">Hierarchy Batch Control</p>
                                 </div>
                             </div>
 
@@ -583,7 +583,7 @@ export function TopicTable() {
 
                                 <button
                                     onClick={() => setSelectedIds(new Set())}
-                                    className="px-6 py-3 rounded-2xl bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white transition-all text-[10px] font-black uppercase tracking-widest"
+                                    className="px-6 py-3 rounded-2xl bg-white/5 hover:bg-white/10 text-slate-500 hover:text-white transition-all text-[10px] font-black uppercase tracking-widest"
                                 >
                                     Cancel
                                 </button>

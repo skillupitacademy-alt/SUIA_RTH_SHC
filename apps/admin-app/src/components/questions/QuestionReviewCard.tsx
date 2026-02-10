@@ -37,7 +37,7 @@ export function QuestionReviewCard({
 
     const statusColors: Record<string, string> = {
         active: 'bg-emerald-50 text-emerald-600 border-emerald-100',
-        inactive: 'bg-slate-50 text-slate-400 border-slate-100',
+        inactive: 'bg-slate-50 text-slate-500 border-slate-100',
         draft: 'bg-amber-50 text-amber-600 border-amber-100'
     };
 
@@ -78,14 +78,14 @@ export function QuestionReviewCard({
                     </div>
 
                     <div className="flex flex-col">
-                        <div className="flex items-center gap-2 text-[10px] uppercase font-black tracking-widest text-slate-400">
+                        <div className="flex items-center gap-2 text-[10px] uppercase font-black tracking-widest text-slate-500">
                             <span>{question.topic?.subject?.domain?.name || 'N/A'}</span>
                             <span className="opacity-30">/</span>
                             <span>{question.topic?.subject?.name || 'N/A'}</span>
                             <span className="opacity-30">/</span>
                             <span className="text-[#FF4B91]">{question.topic?.name || 'N/A'}</span>
                         </div>
-                        <p className="text-[10px] font-bold text-slate-300 mt-0.5">QID: {question.id}</p>
+                        <p className="text-[10px] font-bold text-slate-500 mt-0.5">QID: {question.id}</p>
                     </div>
                 </div>
 
@@ -94,7 +94,7 @@ export function QuestionReviewCard({
                         "px-3 py-1 rounded-full border text-[9px] font-black uppercase tracking-widest flex items-center gap-1.5",
                         statusColors[question.status] || statusColors.active
                     )}>
-                        <div className={cn("w-1 h-1 rounded-full", question.status === 'active' ? "bg-emerald-500 animate-pulse" : "bg-slate-400")} />
+                        <div className={cn("w-1 h-1 rounded-full", question.status === 'active' ? "bg-emerald-500 animate-pulse" : "bg-slate-500")} />
                         {question.status}
                     </div>
 
@@ -102,14 +102,14 @@ export function QuestionReviewCard({
 
                     <Link
                         href={`/questions/${question.id}/edit`}
-                        className="p-2.5 rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-[#FF4B91] hover:border-[#FF4B91]/20 transition-all active:scale-95 shadow-sm"
+                        className="p-2.5 rounded-xl bg-white border border-slate-200 text-slate-500 hover:text-[#FF4B91] hover:border-[#FF4B91]/20 transition-all active:scale-95 shadow-sm"
                         title="Edit Question"
                     >
                         <Edit3 size={14} />
                     </Link>
                     <button
                         onClick={() => onDeleteRequest(question.id)}
-                        className="p-2.5 rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-rose-500 hover:border-rose-100 transition-all active:scale-95 shadow-sm"
+                        className="p-2.5 rounded-xl bg-white border border-slate-200 text-slate-500 hover:text-rose-500 hover:border-rose-100 transition-all active:scale-95 shadow-sm"
                         title="Delete Question"
                     >
                         <Trash2 size={14} />
@@ -150,7 +150,7 @@ export function QuestionReviewCard({
                     </div>
 
                     <div className="p-4 rounded-2xl bg-slate-50/50 border border-slate-100 flex flex-col gap-3">
-                        <h4 className="text-[9px] font-black uppercase tracking-widest text-slate-400">Targeted Dimensions</h4>
+                        <h4 className="text-[9px] font-black uppercase tracking-widest text-slate-500">Targeted Dimensions</h4>
                         <div className="flex flex-wrap gap-1.5">
                             {question.questionSkills?.length ? (
                                 [...new Set(question.questionSkills.map((qs: any) => qs.skill.category))].map((cat: any) => (
@@ -164,12 +164,12 @@ export function QuestionReviewCard({
                                     </span>
                                 ))
                             ) : (
-                                <span className="text-[9px] font-bold text-slate-300 italic">No Dimension</span>
+                                <span className="text-[9px] font-bold text-slate-400 italic">No Dimension</span>
                             )}
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-2 px-4 py-3 rounded-2xl bg-slate-50/50 border border-slate-100 text-[10px] font-bold text-slate-400">
+                    <div className="flex items-center gap-2 px-4 py-3 rounded-2xl bg-slate-50/50 border border-slate-100 text-[10px] font-bold text-slate-500">
                         <Clock size={12} />
                         <span>Created {formatTimeAgo(question.createdAt)}</span>
                     </div>
@@ -179,7 +179,7 @@ export function QuestionReviewCard({
                 <div className="flex-1 space-y-6">
                     <div className="space-y-3">
                         <div className="flex items-start gap-4">
-                            <div className="mt-1 flex items-center justify-center w-6 h-6 rounded-lg bg-slate-100 text-slate-400">
+                            <div className="mt-1 flex items-center justify-center w-6 h-6 rounded-lg bg-slate-100 text-slate-500">
                                 <AlertCircle size={14} />
                             </div>
                             <div className="flex-1">
@@ -205,7 +205,7 @@ export function QuestionReviewCard({
                                 )}>
                                     <div className={cn(
                                         "w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-black",
-                                        isCorrect ? "bg-emerald-500 text-white" : "bg-slate-100 text-slate-400"
+                                        isCorrect ? "bg-emerald-500 text-white" : "bg-slate-100 text-slate-500"
                                     )}>
                                         {String.fromCharCode(65 + oIdx)}
                                     </div>
@@ -226,12 +226,12 @@ export function QuestionReviewCard({
                     className="w-full px-8 py-4 flex items-center justify-between group/rat hover:bg-white transition-colors"
                 >
                     <div className="flex items-center gap-3">
-                        <div className="p-2 bg-slate-200 rounded-lg text-slate-400 group-hover/rat:text-[#FF4B91] group-hover/rat:bg-[#FF4B91]/5 transition-colors">
+                        <div className="p-2 bg-slate-200 rounded-lg text-slate-500 group-hover/rat:text-[#FF4B91] group-hover/rat:bg-[#FF4B91]/5 transition-colors">
                             <Info size={12} />
                         </div>
-                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Assessment Rationale & Mapping</span>
+                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Assessment Rationale & Mapping</span>
                     </div>
-                    {isRationaleOpen ? <ChevronUp size={14} className="text-slate-400" /> : <ChevronDown size={14} className="text-slate-400" />}
+                    {isRationaleOpen ? <ChevronUp size={14} className="text-slate-500" /> : <ChevronDown size={14} className="text-slate-500" />}
                 </button>
 
                 {isRationaleOpen && (
@@ -243,15 +243,15 @@ export function QuestionReviewCard({
                             </p>
 
                             <div className="mt-8">
-                                <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-4">Skill Taxonomy Mapping</h4>
+                                <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mb-4">Skill Taxonomy Mapping</h4>
                                 <div className="flex flex-wrap gap-2">
                                     {question.questionSkills?.map((qs: any) => (
                                         <div key={qs.id || qs.skill.id} className="px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-[#FF4B91] text-[10px] font-bold flex items-center gap-2">
-                                            <Tag size={10} className="text-slate-300" />
+                                            <Tag size={10} className="text-slate-400" />
                                             {qs.skill.name}
                                         </div>
                                     ))}
-                                    {!question.questionSkills?.length && <span className="text-[10px] font-bold text-slate-300 italic">No skills mapped.</span>}
+                                    {!question.questionSkills?.length && <span className="text-[10px] font-bold text-slate-400 italic">No skills mapped.</span>}
                                 </div>
                             </div>
                         </div>

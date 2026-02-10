@@ -226,8 +226,8 @@ export function SubjectTable() {
             )}>
                 <div className="flex items-center gap-4 border-r border-white/10 pr-6">
                     <div className="flex flex-col">
-                        <span className="text-xs font-bold text-white/40 uppercase tracking-widest">Selection</span>
-                        <span className="text-xl font-black">{selectedIds.size} <span className="text-sm font-bold text-white/40">subjects</span></span>
+                        <span className="text-xs font-bold text-white/60 uppercase tracking-widest">Selection</span>
+                        <span className="text-xl font-black">{selectedIds.size} <span className="text-sm font-bold text-white/60">subjects</span></span>
                     </div>
                 </div>
                 <div className="flex items-center gap-3">
@@ -266,7 +266,7 @@ export function SubjectTable() {
                         </div>
                         <button
                             onClick={handleCloseForm}
-                            className="p-2 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors"
+                            className="p-2 rounded-lg hover:bg-slate-100 text-slate-500 hover:text-slate-600 transition-colors"
                         >
                             <X size={24} />
                         </button>
@@ -291,13 +291,13 @@ export function SubjectTable() {
 
                                     {/* Subject Name */}
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 pl-1">Subject Name</label>
+                                        <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 pl-1">Subject Name</label>
                                         <input
                                             type="text"
                                             required
                                             value={formData.name}
                                             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                            className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all placeholder:text-slate-300"
+                                            className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all placeholder:text-slate-400"
                                             placeholder="e.g., Frontend Development"
                                         />
                                     </div>
@@ -305,19 +305,19 @@ export function SubjectTable() {
 
                                 {/* Description */}
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 pl-1">Description</label>
+                                    <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 pl-1">Description</label>
                                     <textarea
                                         value={formData.description}
                                         onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                                         rows={4}
-                                        className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-600 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all placeholder:text-slate-300 resize-none"
+                                        className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-600 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all placeholder:text-slate-400 resize-none"
                                         placeholder="Brief summary..."
                                     />
                                 </div>
 
                                 {/* Status */}
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 pl-1">Status</label>
+                                    <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 pl-1">Status</label>
                                     <div className="flex bg-white p-1.5 rounded-xl border border-slate-200">
                                         {['active', 'inactive'].map((status) => (
                                             <button
@@ -326,7 +326,7 @@ export function SubjectTable() {
                                                 onClick={() => setFormData({ ...formData, status: status as any })}
                                                 className={`flex-1 py-2.5 px-4 rounded-lg text-xs font-black uppercase tracking-wider transition-all ${formData.status === status
                                                     ? 'bg-[#1A1A1A] text-white shadow-sm'
-                                                    : 'text-slate-400 hover:text-slate-600'
+                                                    : 'text-slate-500 hover:text-slate-600'
                                                     }`}
                                             >
                                                 {status}
@@ -340,7 +340,7 @@ export function SubjectTable() {
                                     <button
                                         type="button"
                                         onClick={handleCloseForm}
-                                        className="px-8 py-3 rounded-xl text-slate-600 font-bold uppercase tracking-widest text-xs hover:bg-slate-100 transition-all"
+                                        className="px-8 py-3 rounded-xl text-slate-500 font-bold uppercase tracking-widest text-xs hover:bg-slate-100 transition-all"
                                     >
                                         Cancel
                                     </button>
@@ -422,7 +422,7 @@ export function SubjectTable() {
                             placeholder="Search Subjects..."
                             value={searchQuery}
                             onChange={(e) => { setSearchQuery(e.target.value); setPage(1); }}
-                            className="w-full bg-slate-50 border-none rounded-2xl px-5 py-3 text-[11px] font-black tracking-widest text-[#1A1A1A] placeholder:text-slate-300 focus:ring-2 focus:ring-purple-500/10 transition-all outline-none border border-transparent shadow-inner"
+                            className="w-full bg-slate-50 border-none rounded-2xl px-5 py-3 text-[11px] font-black tracking-widest text-[#1A1A1A] placeholder:text-slate-400 focus:ring-2 focus:ring-purple-500/10 transition-all outline-none border border-transparent shadow-inner"
                         />
                         {/* SELECT ALL CHECKBOX */}
                         <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white border border-slate-100 cursor-pointer hover:border-purple-200 transition-all">
@@ -432,7 +432,7 @@ export function SubjectTable() {
                                 onChange={(e) => handleSelectAll(e.target.checked)}
                                 className="w-4 h-4 rounded border-slate-300 text-purple-600 focus:ring-offset-0 focus:ring-0 cursor-pointer"
                             />
-                            <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400">Select All</span>
+                            <span className="text-[9px] font-bold uppercase tracking-wider text-slate-500">Select All</span>
                         </div>
                     </div>
                 </div>
@@ -490,7 +490,7 @@ export function SubjectTable() {
                             <button
                                 key={i}
                                 onClick={() => setPage(i + 1)}
-                                className={`w-8 h-8 rounded-lg text-[10px] font-black transition-all ${page === i + 1 ? 'bg-[#1A1A1A] text-white shadow-lg' : 'text-slate-400 hover:text-[#1A1A1A]'}`}
+                                className={`w-8 h-8 rounded-lg text-[10px] font-black transition-all ${page === i + 1 ? 'bg-[#1A1A1A] text-white shadow-lg' : 'text-slate-500 hover:text-[#1A1A1A]'}`}
                             >
                                 {i + 1}
                             </button>
