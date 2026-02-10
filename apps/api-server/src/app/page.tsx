@@ -7,8 +7,13 @@ export default function Home() {
         { name: 'Reporting', path: '/api/reports', status: 'Active' },
     ];
 
-    // Stabilize date representation for consistency
-    const buildDate = 'Feb 10, 2026';
+    // Using a build-time execution for the deployment date. 
+    // In a static build, this will reflect the time of the build.
+    const buildDate = new Date().toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric'
+    });
 
     return (
         <main className="main-container">
@@ -61,7 +66,8 @@ export default function Home() {
                         className="action-card"
                     >
                         <div className="action-icon">
-                            →
+                            {/* Using Unicode escape to prevent encoding corruption */}
+                            {"\u2192"}
                         </div>
                         <span className="action-text">Full System Check</span>
                     </a>
