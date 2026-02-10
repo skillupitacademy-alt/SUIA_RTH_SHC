@@ -45,8 +45,8 @@ export default function AdminLoginPage() {
     return (
         <div className="w-full">
             <div className="mb-8">
-                <h2 className="text-3xl font-black tracking-tight mb-2 text-[#1A1A1A]">Welcome Back</h2>
-                <p className="text-sm font-medium text-slate-600">Authenticate to access the governance terminal.</p>
+                <h2 className="text-3xl font-bold tracking-tight mb-2 text-[#1A1A1A]">Welcome Back</h2>
+                <p className="text-sm text-muted-foreground">Authenticate to access the governance terminal.</p>
             </div>
 
             {error && (
@@ -58,7 +58,7 @@ export default function AdminLoginPage() {
 
             <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="space-y-2">
-                    <label className="text-[11px] font-black uppercase tracking-[0.15em] text-slate-500">Email Address</label>
+                    <label className="text-sm font-medium leading-none text-slate-500">Email Address</label>
                     <div className="relative">
                         <Mail className="absolute left-4 top-4 text-slate-400 h-5 w-5" />
                         <input
@@ -74,10 +74,10 @@ export default function AdminLoginPage() {
 
                 <div className="space-y-2">
                     <div className="flex items-center justify-between">
-                        <label className="text-[11px] font-black uppercase tracking-[0.15em] text-slate-500">Password</label>
+                        <label className="text-sm font-medium leading-none text-slate-500">Password</label>
                         <Link
                             href="/forgot-password"
-                            className="text-[11px] font-black uppercase tracking-widest text-[#FF4B91] hover:underline"
+                            className="text-sm font-medium text-[#FF4B91] hover:underline"
                         >
                             Forgot Password?
                         </Link>
@@ -98,7 +98,7 @@ export default function AdminLoginPage() {
                 <button
                     type="submit"
                     disabled={isLoading}
-                    className="w-full py-5 rounded-xl bg-[#FF4B91] text-white font-black tracking-widest uppercase text-xs shadow-lg shadow-[#FF4B91]/25 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-3"
+                    className="w-full py-5 rounded-xl bg-[#FF4B91] text-white font-bold tracking-normal text-sm shadow-lg shadow-[#FF4B91]/25 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-3"
                 >
                     {isLoading ? (
                         <>
@@ -112,8 +112,8 @@ export default function AdminLoginPage() {
             </form>
 
             <div className="mt-8 pt-8 border-t text-center">
-                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Restricted Access System v1.0.4</p>
-                <p className="mt-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Unauthorized access attempts are logged and reported.</p>
+                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">Restricted Access System v1.0.4</p>
+                <p className="mt-2 text-[10px] font-medium text-slate-400 uppercase tracking-widest">Unauthorized access attempts are logged and reported.</p>
             </div>
         </div>
     );

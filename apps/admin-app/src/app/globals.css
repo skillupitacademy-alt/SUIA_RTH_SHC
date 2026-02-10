@@ -6,19 +6,22 @@
 
 @layer base {
   html {
-    font-size: 15px; /* Executive White Base Scaling */
+    font-size: 15px; /* Platform-standard accessible high-density scaling */
   }
 
   body {
-    @apply font-inter text-foreground bg-background antialiased;
+    @apply text-foreground bg-background antialiased;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
   }
 
   h1, .h1 {
-    @apply font-outfit font-black tracking-tight italic uppercase;
+    @apply tracking-tight;
+    font-family: 'Outfit', sans-serif;
   }
 
   h2, .h2 {
-    @apply font-outfit font-bold tracking-tight;
+    @apply tracking-tight;
+    font-family: 'Outfit', sans-serif;
   }
 }
 

@@ -69,16 +69,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=2070')] bg-cover opacity-20" />
                     <div className="relative z-10">
                         <div className="flex items-center gap-3 mb-8">
-                            <div className="h-10 w-10 rounded-xl bg-[#FF4B91] flex items-center justify-center font-outfit font-black text-xl shadow-lg shadow-[#FF4B91]/30">Q</div>
-                            <span className="text-2xl font-outfit font-black tracking-tighter text-white">QUIZADMIN</span>
+                            <div className="h-10 w-10 rounded-xl bg-[#FF4B91] flex items-center justify-center font-bold text-xl shadow-lg shadow-[#FF4B91]/30">Q</div>
+                            <span className="text-2xl font-bold tracking-tighter text-white">QUIZADMIN</span>
                         </div>
                     </div>
                     <div className="relative z-10 space-y-6">
-                        <h1 className="text-5xl font-outfit font-black leading-tight tracking-tighter italic uppercase text-white">
+                        <h1 className="text-5xl font-extrabold leading-tight tracking-tight text-white font-outfit">
                             Secure <br />
                             <span className="text-premium-gradient">Governance</span>
                         </h1>
-                        <p className="text-lg text-gray-400 max-w-md font-inter font-medium">
+                        <p className="text-xl text-gray-400 max-w-md leading-relaxed">
                             Authorized personnel only. Secure access to the governance terminal is strictly audited.
                         </p>
                     </div>

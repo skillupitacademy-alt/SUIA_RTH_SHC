@@ -124,7 +124,8 @@ h4 {
 
 .heading-title {
   font-size: clamp(2.5rem, 4.5vw, 4rem);
-  font-weight: 900;
+  font-weight: 800;
+  /* Outfit Extrabold */
   letter-spacing: -0.05em;
   line-height: 1;
   margin: 0 0 16px;
@@ -150,7 +151,8 @@ h4 {
   padding: 4px 12px;
   border-radius: 9999px;
   font-size: 0.7rem;
-  font-weight: 800;
+  font-weight: 700;
+  /* Outfit Bold */
   text-transform: uppercase;
   letter-spacing: 0.1em;
   background: hsla(337, 90%, 63%, 0.1);
@@ -170,7 +172,8 @@ h4 {
 
 .status-text {
   font-size: 0.7rem;
-  font-weight: 800;
+  font-weight: 700;
+  /* Outfit Bold */
   letter-spacing: 0.1em;
   color: #10b981;
   text-transform: uppercase;
@@ -226,7 +229,8 @@ h4 {
 .stats-value {
   color: #1A1A1A;
   font-size: 3rem;
-  font-weight: 900;
+  font-weight: 700;
+  /* Outfit Bold */
   line-height: 1;
 }
 
@@ -284,7 +288,8 @@ h4 {
 .module-title {
   color: #1A1A1A;
   font-size: 1.4rem;
-  font-weight: 800;
+  font-weight: 700;
+  /* Outfit Bold */
   margin: 0 0 10px;
   transition: color 0.3s ease;
 }
@@ -338,7 +343,8 @@ h4 {
 }
 
 .action-text {
-  font-weight: 800;
+  font-weight: 700;
+  /* Inter Bold */
   color: #1A1A1A;
   font-size: 1.1rem;
 }
