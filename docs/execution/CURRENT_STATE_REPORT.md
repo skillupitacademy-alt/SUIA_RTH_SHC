@@ -748,3 +748,8 @@
 - **Density**: Applied 15px base scaling to web-app, admin-app, and api-server for platform-wide density parity.
 - **Executive Polish**: Softened admin and api-server weights to 700/800; refactored terminal-style labels to standard readable typography.
 - **Verification**: Verified zero regressions with root pnpm build and tsc check (Exit Code 0).
+
+### Phase 42: Onboarding Layout Expansion (Batch 174)
+- **Immersive Journey**: Reconfigured the Onboarding Wizard to occupy the full screen width, removing legacy 4xl (centered) container constraints.
+- **Responsive Grid**: Standardized all selection steps to use `w-full` with adaptive padding, ensuring zero-clipping on wide displays.
+- **Aesthetic DNA**: Maintained "Executive White" styling while maximizing screen real-estate for selection cards.

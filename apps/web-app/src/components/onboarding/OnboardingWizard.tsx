@@ -66,9 +66,9 @@ export function OnboardingWizard() {
     };
 
     return (
-        <div className="w-full max-w-4xl mx-auto p-6">
+        <div className="w-full px-6 md:px-12">
             {/* Progress Bar */}
-            <div className="mb-12">
+            <div className="mb-12 w-full">
                 <div className="flex justify-between mb-2 px-2">
                     {['Identity', 'Education', 'Path', 'Setup'].map((label, i) => (
                         <span key={label} className={cn(
@@ -97,7 +97,7 @@ export function OnboardingWizard() {
                 )
             }
 
-            <div className="bg-background/80 backdrop-blur-xl border rounded-[2rem] p-8 md:p-12 shadow-2xl shadow-primary/5 min-h-[550px] flex flex-col transition-all duration-500">
+            <div className="bg-background/80 backdrop-blur-xl border rounded-[2rem] p-8 md:p-12 shadow-2xl shadow-primary/5 min-h-[550px] flex flex-col transition-all duration-500 w-full mx-auto">
                 {step === 1 && (
                     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-6 duration-700">
                         <div className="text-center">
@@ -139,7 +139,7 @@ export function OnboardingWizard() {
                             <h2 className="text-4xl font-black mb-3">Education Level</h2>
                             <p className="text-muted-foreground text-lg">Define your academic background</p>
                         </div>
-                        <div className="flex flex-wrap justify-center gap-4 max-w-2xl mx-auto">
+                        <div className="flex flex-wrap justify-center gap-4 w-full">
                             {['High School', 'Undergraduate', 'Postgraduate', 'Doctorate', 'PhD', 'Self-Taught'].map((level) => (
                                 <button
                                     key={level}
@@ -167,7 +167,7 @@ export function OnboardingWizard() {
                             <h2 className="text-4xl font-black mb-3">Mastery Goal</h2>
                             <p className="text-muted-foreground text-lg">Choose the domain you want to dominate</p>
                         </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-3xl mx-auto">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
                             {DOMAINS.map((domain) => (
                                 <button
                                     key={domain.id}

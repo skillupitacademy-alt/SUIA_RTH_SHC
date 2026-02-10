@@ -1376,3 +1376,9 @@ Reduce documentation fragmentation and improve discoverability by consolidating 
 - **API Server**: Pivoted from Brutalist weights to Executive White aesthetics; synchronized dynamic build date and arrow encoding.
 - **Outcome**: Delivered a unified, premium visual experience across entire monorepo.
 - **Verification**: Global system integrity verified with root pnpm build and tsc --noEmit (Exit Code 0).
+
+### Batch 174: Onboarding Layout Expansion
+- **Goal**: Allow the onboarding flow to occupy the full viewport width for a more immersive "Console" experience.
+- **Action**: Removed `max-w-4xl`, `max-w-2xl`, and `max-w-3xl` constraints from `OnboardingWizard.tsx` and `OnboardingPage.tsx`. Standardized on `w-full` for all containers.
+- **Outcome**: Achieved 100% horizontal viewport usage for the initial user journey.
+- **Verification**: Verified via manual inspection and code audit.
