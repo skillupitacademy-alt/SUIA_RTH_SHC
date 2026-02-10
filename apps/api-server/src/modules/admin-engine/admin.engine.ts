@@ -370,13 +370,30 @@ export class AdminEngine {
     const efficiency = await this.getEfficiencyAnalytics();
     
     // Add Trend Summary & Time Machine Delta
-    const [trendSummary, deltaData, domainDeltas] = await Promise.all([
+    const [trendSummaryResult, deltaDataResult, domainDeltasResult] = await Promise.allSettled([
         TrendsService.getTrendSummary({ range: '7d' }),
         TrendsService.getPeriodDelta(undefined, '7d'), // undefined userId = system-wide? specific user? Admin shows system-wide usually.
         TrendsService.getDomainDeltas('7d')
     ]);
 
-    // Compute System Health based on aggregate aggregate avg
+    const trendSummary = trendSummaryResult.status === 'fulfilled' ? trendSummaryResult.value : {
+        avgScore: 0, passRate: 0, totalExams: 0, bestSkill: null, worstSkill: null, currentStreak: 0
+    };
+    if (trendSummaryResult.status === 'rejected') {
+        console.error('[AdminEngine] TrendsService.getTrendSummary failed:', trendSummaryResult.reason);
+    }
+
+    const deltaData = deltaDataResult.status === 'fulfilled' ? deltaDataResult.value : null;
+    if (deltaDataResult.status === 'rejected') {
+        console.error('[AdminEngine] TrendsService.getPeriodDelta failed:', deltaDataResult.reason);
+    }
+
+    const domainDeltas = domainDeltasResult.status === 'fulfilled' ? domainDeltasResult.value : {};
+    if (domainDeltasResult.status === 'rejected') {
+        console.error('[AdminEngine] TrendsService.getDomainDeltas failed:', domainDeltasResult.reason);
+    }
+
+    // Compute System Health based on aggregate avg
     const healthStatus = TrendsService.getExecHealth(trendSummary.avgScore, deltaData?.deltaPct ?? null);
 
     return {

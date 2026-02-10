@@ -189,3 +189,8 @@
 - **Task**: Time Machine & Exec Health Analytics (Strict Protocol)
 - **Date**: 2026-02-10
 - **Outcome**: Implemented period deltas (7d/14d/28d), Exec Health status, and enforced strict null safety. Verified with build & tsc (Exit Code 0).
+
+## 🚑 Hotfix: Admin 500 Error
+- **Issue**: User reported 500 on `/api/admin/metrics/performance`.
+- **Resolution**: Wrapped `TrendsService` calls in `Promise.allSettled` within `AdminEngine` to prevent cascading failures. Added detailed error logging.
+- **Verification**: `pnpm build` passes.
