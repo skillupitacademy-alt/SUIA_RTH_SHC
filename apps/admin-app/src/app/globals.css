@@ -6,7 +6,8 @@
 
 @layer base {
   html {
-    font-size: 15px; /* Platform-standard accessible high-density scaling */
+    font-size: 15px;
+    /* Platform-standard accessible high-density scaling */
   }
 
   body {
@@ -14,12 +15,14 @@
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
   }
 
-  h1, .h1 {
+  h1,
+  .h1 {
     @apply tracking-tight;
     font-family: 'Outfit', sans-serif;
   }
 
-  h2, .h2 {
+  h2,
+  .h2 {
     @apply tracking-tight;
     font-family: 'Outfit', sans-serif;
   }
@@ -29,7 +32,7 @@
   .font-outfit {
     font-family: 'Outfit', sans-serif;
   }
-  
+
   .font-inter {
     font-family: 'Inter', sans-serif;
   }
@@ -57,7 +60,7 @@
   --foreground: 222 47% 11%;
 
   --muted: 210 40% 96%;
-  --muted-foreground: 215 16% 35%; 
+  --muted-foreground: 215 16% 35%;
 
   --accent: 337 90% 63%;
   --accent-foreground: 0 0% 100%;
@@ -67,18 +70,4 @@
   --ring: 337 90% 63%;
 
   --radius: 0.5rem;
-}
-
-.dark {
-  --background: 222 47% 11%;
-  --foreground: 210 40% 98%;
-
-  --muted: 217 33% 17%;
-  --muted-foreground: 215 20% 65%;
-
-  --accent: 217 33% 17%;
-  --accent-foreground: 210 40% 98%;
-
-  --border: 217 33% 17%;
-  --input: 217 33% 17%;
 }

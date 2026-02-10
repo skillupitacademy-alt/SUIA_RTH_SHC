@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { LayoutDashboard, LogIn, UserPlus, LogOut, User } from 'lucide-react';
 import { useAuth } from '@/context/auth-context';
 import { useRouter, usePathname } from 'next/navigation';
@@ -40,7 +39,6 @@ export function Header() {
                     </nav>
                 </div>
                 <div className="flex items-center gap-4">
-                    <ThemeToggle />
                     <nav className="flex items-center gap-2">
                         {loading ? (
                             <div className="flex items-center gap-4">

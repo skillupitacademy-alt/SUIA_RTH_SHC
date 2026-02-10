@@ -23,6 +23,7 @@ import { AdminGuard } from '@/components/auth/AdminGuard';
 import { SessionWatcher } from '@/components/auth/SessionWatcher';
 import { useAuthStore } from '@/store/auth-store';
 import { apiClient } from '@quiz/api-client';
+import { ThemeToggle } from '@quiz/ui';
 import { useEffect } from 'react';
 import { useStrictNavigation } from '@/hooks/useStrictNavigation';
 import { usePresenceHeartbeat } from '@/hooks/usePresenceHeartbeat';
@@ -208,6 +209,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                             <div className="flex items-center gap-4">
                                 <span className="alpha-terminal !tracking-widest text-slate-400">Terminal v1.0.4</span>
                                 <span className="px-3 py-1 rounded-full bg-green-50 text-green-600 alpha-terminal !tracking-widest border border-green-200">Connected_Secure</span>
+                                <div className="h-6 w-[1px] bg-slate-200 mx-2" />
+                                <ThemeToggle />
                             </div>
                         </div>
 
