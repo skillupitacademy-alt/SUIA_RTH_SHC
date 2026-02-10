@@ -42,14 +42,21 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     usePresenceHeartbeat();
     const router = useRouter();
     const pathname = usePathname();
-    const { logout } = useAuthStore();
+    const { logout, expiresAt, user, login } = useAuthStore();
     const { showWarning, confirmLogout, cancelNavigation } = useStrictNavigation();
-
-    // Access token is now handled via httpOnly cookies automatically
 
     const handleLogout = () => {
         logout();
-        window.location.href = '/login';
+        window.location.href = '/login?reason=session_expired';
+    };
+
+    const handleRefresh = async () => {
+        const response = await apiClient.auth.refresh();
+        if (response && response.expiresAt && user) {
+            login(user, response.expiresAt);
+        } else {
+            throw new Error("Refresh failed");
+        }
     };
 
     const isGuestPath = ['/login', '/forgot-password', '/reset-password'].includes(pathname);
@@ -92,7 +99,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
     return (
         <AdminGuard>
-            <SessionWatcher />
+            <SessionWatcher
+                expiresAt={expiresAt}
+                onRefresh={handleRefresh}
+                onLogout={handleLogout}
+            />
             {showWarning && (
                 <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
                     <div className="bg-background border rounded-[2.5rem] p-8 max-w-md w-full shadow-2xl relative overflow-hidden">

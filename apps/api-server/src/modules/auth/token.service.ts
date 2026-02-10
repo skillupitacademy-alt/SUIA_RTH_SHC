@@ -107,11 +107,15 @@ export class TokenService {
     try {
       const decoded = jose.decodeJwt(token);
       if (decoded.exp) {
-        return new Date(decoded.exp * 1000).toISOString();
+        return this.getExpiryISO(decoded);
       }
       return null;
     } catch {
       return null;
     }
+  }
+
+  static getExpiryISO(payload: any): string {
+    return new Date(payload.exp * 1000).toISOString();
   }
 }

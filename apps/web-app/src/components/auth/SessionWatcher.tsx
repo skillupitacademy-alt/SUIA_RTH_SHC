@@ -1,81 +1,71 @@
 "use client";
 
 import { useEffect, useState, useCallback, useRef } from 'react';
-import { useAuthStore } from '@/store/auth-store';
-import { apiClient } from '@quiz/api-client';
 import { ConfirmationDialog } from '@/components/ui/ConfirmationDialog';
 
-const WARNING_THRESHOLD = 3 * 60 * 1000; // 3 minutes before expiration
+const WARNING_THRESHOLD = 180; // 180 seconds (3 minutes)
 
-export function SessionWatcher() {
-    const { expiresAt, isAuthenticated, logout, login, user } = useAuthStore();
+interface SessionWatcherProps {
+    expiresAt: string | null;
+    onRefresh: () => Promise<void>;
+    onLogout: () => void;
+}
+
+export function SessionWatcher({ expiresAt, onRefresh, onLogout }: SessionWatcherProps) {
     const [showWarning, setShowWarning] = useState(false);
     const [isRefreshing, setIsRefreshing] = useState(false);
-    const lastCheckRef = useRef<number>(0);
-
-    const handleLogout = useCallback(async () => {
-        setShowWarning(false);
-        try {
-            await apiClient.auth.logout();
-        } catch { }
-        logout();
-        window.location.href = '/login?reason=session_expired';
-    }, [logout]);
+    const [remainingSeconds, setRemainingSeconds] = useState<number | null>(null);
 
     const handleStayLoggedIn = async () => {
         setIsRefreshing(true);
         try {
-            const response = await apiClient.auth.refresh();
-            if (response && response.expiresAt && user) {
-                login(user, response.expiresAt);
-                setShowWarning(false);
-            } else {
-                handleLogout();
-            }
+            await onRefresh();
+            setShowWarning(false);
         } catch (error) {
-            handleLogout();
+            onLogout();
         } finally {
             setIsRefreshing(false);
         }
     };
 
     useEffect(() => {
-        if (!isAuthenticated || !expiresAt) {
+        if (!expiresAt) {
             setShowWarning(false);
+            setRemainingSeconds(null);
             return;
         }
 
         const checkSession = () => {
             const now = Date.now();
-            // Throttle checks
-            if (now - lastCheckRef.current < 5000) return;
-            lastCheckRef.current = now;
-
             const expiryTime = new Date(expiresAt).getTime();
-            const timeLeft = expiryTime - now;
+            const timeLeftSeconds = Math.floor((expiryTime - now) / 1000);
 
-            if (timeLeft <= 0) {
-                handleLogout();
-            } else if (timeLeft <= WARNING_THRESHOLD && !showWarning) {
+            setRemainingSeconds(timeLeftSeconds);
+
+            if (timeLeftSeconds <= 0) {
+                onLogout();
+            } else if (timeLeftSeconds <= WARNING_THRESHOLD) {
                 setShowWarning(true);
+            } else {
+                setShowWarning(false);
             }
         };
 
-        const interval = setInterval(checkSession, 5000);
+        const interval = setInterval(checkSession, 30000);
         checkSession();
 
         return () => clearInterval(interval);
-    }, [expiresAt, isAuthenticated, showWarning, handleLogout]);
+    }, [expiresAt, onLogout]);
 
     return (
         <ConfirmationDialog
             isOpen={showWarning}
             title="Session Expiring"
-            message="Your session is about to expire. For security reasons, you will be logged out automatically. Would you like to stay logged in?"
+            message={`Your session will expire in ${remainingSeconds ? Math.ceil(remainingSeconds / 60) : 3} minutes. Would you like to stay logged in?`}
             confirmText={isRefreshing ? "Renewing..." : "Stay Logged In"}
             cancelText="Sign Out"
             onConfirm={handleStayLoggedIn}
-            onCancel={handleLogout}
+            onCancel={onLogout}
             variant="warning"
         />
     );

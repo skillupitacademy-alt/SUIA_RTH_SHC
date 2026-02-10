@@ -716,9 +716,8 @@
 
 ### Phase 51: Session Expiration & Security Hardening (Batch 172)
 - **Session Expiry Metadata**: Backend `/auth/me` and `/auth/refresh` now return `expiresAt` timestamps.
-- **Real-time Monitoring**: Implemented `SessionWatcher` in both apps to check session health every 5s.
-- **UI Prompts**: Added consistent 3-minute warnings before automatic logout.
-- **Clean Logout**: Enforced server-side logout and client-side store purge on session termination.
+- **Real-time Monitoring**: Implemented `SessionWatcher` in both apps to check session health every 5s (Initial) -> 30s (Senior Refined).
+- **Senior Spec Alignment**: Refactored to prop-based architecture and 3-minute warning triggers.
 - **Verification**: Verified system-wide build and type-check stability (Exit Code 0).
 
 ### Phase 52: Multi-Dimensional Report Dashboard Integration (Batch 113)
