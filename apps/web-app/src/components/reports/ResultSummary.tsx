@@ -20,8 +20,8 @@ export function ResultSummary({ score, total, timeTaken, percentile, status }: R
             <div className={cn(
                 "relative overflow-hidden p-8 md:p-12 rounded-[3rem] border-2 transition-all",
                 status === 'passed'
-                    ? "border-green-500/20 bg-green-500/5"
-                    : "border-primary/20 bg-primary/5"
+                    ? "border-green-500/50 bg-green-500/5"
+                    : "border-primary/50 bg-primary/5"
             )}>
                 <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
                     <div className="text-center md:text-left space-y-4">
@@ -72,7 +72,7 @@ export function ResultSummary({ score, total, timeTaken, percentile, status }: R
 
             {/* Quick Stats Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                <div className="p-6 rounded-3xl border bg-background flex items-center gap-4">
+                <div className="p-6 rounded-3xl border-2 border-slate-200 bg-background flex items-center gap-4">
                     <div className="p-3 rounded-2xl bg-secondary/10 text-secondary">
                         <Clock size={24} />
                     </div>
@@ -81,7 +81,7 @@ export function ResultSummary({ score, total, timeTaken, percentile, status }: R
                         <p className="text-xl font-black">{timeTaken}</p>
                     </div>
                 </div>
-                <div className="p-6 rounded-3xl border bg-background flex items-center gap-4">
+                <div className="p-6 rounded-3xl border-2 border-slate-200 bg-background flex items-center gap-4">
                     <div className="p-3 rounded-2xl bg-primary/10 text-primary">
                         <Trophy size={24} />
                     </div>
@@ -90,7 +90,7 @@ export function ResultSummary({ score, total, timeTaken, percentile, status }: R
                         <p className="text-xl font-black">{percentile}th</p>
                     </div>
                 </div>
-                <div className="p-6 rounded-3xl border bg-background flex items-center gap-4">
+                <div className="p-6 rounded-3xl border-2 border-slate-200 bg-background flex items-center gap-4">
                     <div className="p-3 rounded-2xl bg-accent/10 text-accent">
                         <Target size={24} />
                     </div>

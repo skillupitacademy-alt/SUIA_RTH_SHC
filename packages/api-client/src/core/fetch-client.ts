@@ -64,15 +64,18 @@ export class FetchClient {
 
       if (response.status === 401 || response.status === 403) {
         if (typeof window !== 'undefined') {
-          window.dispatchEvent(new CustomEvent('auth:unauthorized'));
+          // Dispatch cancelable event to allow Apps to show Modal instead of hard redirect
+          const event = new CustomEvent('auth:unauthorized', { cancelable: true });
+          const shouldRedirect = window.dispatchEvent(event);
 
           // 2. Redirect Fallback with "Redirect Once" guard
+          // Only redirect if the event wasn't prevented (i.e., no Modal handling it)
           const currentPath = window.location.pathname;
           const search = window.location.search;
           const isLoginPage = currentPath === '/login';
           const isAlreadyRedirecting = (window as any).__authRedirecting;
 
-          if (!isLoginPage && !isAlreadyRedirecting) {
+          if (shouldRedirect && !isLoginPage && !isAlreadyRedirecting) {
             (window as any).__authRedirecting = true;
             console.warn(`[API] ${response.status} detected. Redirecting to login...`);
             

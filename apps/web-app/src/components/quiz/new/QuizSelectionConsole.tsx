@@ -12,6 +12,7 @@ import { useExitGuard } from '@/hooks/useExitGuard';
 import { ExitConfirmationDialog } from '@/components/ui/ExitConfirmationDialog';
 import { ExamPreflightDialog } from '@/components/quiz/ExamPreflightDialog';
 import { getActiveExamId } from '@/hooks/useExamBackup';
+import { ZLoader } from '@quiz/ui';
 
 export function QuizSelectionConsole() {
     return (
@@ -535,6 +536,16 @@ function QuizSelectionConsoleContent() {
                     step === 5 ? "w-[65%]" : "w-full",
                     isLocked ? "opacity-30 pointer-events-none" : (isArmed ? "opacity-50 pointer-events-none" : "opacity-100")
                 )}>
+                    {/* Control Overlay for Loading - Moved to Grandparent */}
+                    {loading && (
+                        <div className="absolute inset-0 z-[100] flex items-center justify-center bg-white/60 backdrop-blur-md">
+                            <div className="flex flex-col items-center gap-6 p-8 rounded-[3rem] bg-white/80 border border-white/60 shadow-2xl">
+                                <ZLoader size="lg" className="text-[#FF2D55]" center={false} />
+                                <p className="text-xs font-black font-outfit text-[#1A1A1A] uppercase tracking-[0.3em] animate-pulse">Syncing Engine...</p>
+                            </div>
+                        </div>
+                    )}
+
                     {/* CONTROL ROW: 8% Slot */}
                     <div className="flex-none basis-[8dvh] flex flex-col justify-center px-4 md:px-12">
                         <div className="flex justify-between items-center pr-0">
@@ -586,14 +597,7 @@ function QuizSelectionConsoleContent() {
                     )}>
                         {/* STATIONARY LAYOUT: Flush edges with 12px shadow buffer */}
                         <div className="flex-1 flex flex-col relative overflow-visible py-[12px] px-0 h-full">
-                            {loading && (
-                                <div className="absolute inset-x-2 inset-y-2 z-50 flex items-center justify-center bg-white/30 backdrop-blur-[2px] rounded-[2.5rem] border border-white/50 shadow-xl">
-                                    <div className="flex flex-col items-center gap-4">
-                                        <Activity className="animate-spin text-[#FF2D55]" size={40} />
-                                        <p className="text-[10px] font-black font-outfit text-[#1A1A1A] uppercase tracking-[0.3em] animate-pulse">Syncing Engine...</p>
-                                    </div>
-                                </div>
-                            )}
+                            {/* Loading Overlay Removed from here - moved up */}
 
                             {step === 1 && (
                                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 grid-rows-[repeat(2,min-content)] gap-6 duration-300 items-start overflow-visible">

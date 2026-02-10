@@ -144,7 +144,7 @@ export default function AdminDashboard() {
                             Administrative Core · v3.0
                         </span>
                     </div>
-                    <h1 className="text-5xl font-outfit font-black tracking-tighter italic uppercase text-[#1A1A1A]">
+                    <h1 className="text-5xl font-outfit font-black tracking-tighter uppercase text-[#1A1A1A]">
                         Executive <span className="text-[#FF4B91]">Command</span> Hub
                     </h1>
                     <p className="mt-2 text-sm font-bold text-muted-foreground uppercase tracking-widest">
@@ -162,8 +162,8 @@ export default function AdminDashboard() {
                 </div>
             </div>
 
-            {/* Hub Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {/* Hub Grid - 3 Column Layout */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
                 {dashboardCards.map((card, idx) => (
                     <Link
                         key={idx}
@@ -185,7 +185,7 @@ export default function AdminDashboard() {
 
                         <div className="space-y-4">
                             <div>
-                                <h3 className="text-xl font-outfit font-black uppercase italic tracking-tight text-[#1A1A1A]">
+                                <h3 className="text-xl font-outfit font-black uppercase tracking-tight text-[#1A1A1A]">
                                     {card.title}
                                 </h3>
                                 <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mt-1">

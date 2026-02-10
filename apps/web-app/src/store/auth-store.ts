@@ -14,11 +14,13 @@ interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
   initialized: boolean;
+  isSessionExpired: boolean;
   expiresAt: string | null;
   login: (user: User, expiresAt?: string | null) => void;
   logout: () => void;
   completeOnboarding: () => void;
   setInitialized: (val: boolean) => void;
+  setSessionExpired: (val: boolean) => void;
 }
 
 import { apiClient } from '@quiz/api-client';
@@ -29,6 +31,7 @@ export const useAuthStore = create<AuthState>()(
       user: null,
       isAuthenticated: false,
       initialized: false,
+      isSessionExpired: false,
       expiresAt: null,
       login: (user, expiresAt = null) => {
         set({ user, isAuthenticated: true, expiresAt });
@@ -41,6 +44,7 @@ export const useAuthStore = create<AuthState>()(
           user: state.user ? { ...state.user, onboarded: true } : null
         })),
       setInitialized: (val: boolean) => set({ initialized: val }),
+      setSessionExpired: (val: boolean) => set({ isSessionExpired: val }),
     }),
     {
       name: 'quiz-platform-auth',

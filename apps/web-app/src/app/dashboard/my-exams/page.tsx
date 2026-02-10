@@ -101,80 +101,103 @@ export default function MyExamsPage() {
 
                     <div className="space-y-8">
                         {/* Filter Console - FIXED GRID LAYOUT */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 p-8 rounded-[2rem] bg-slate-50 border border-slate-100 shadow-sm relative overflow-hidden group items-end">
+                        <div className="flex flex-col gap-6 p-8 rounded-[2rem] bg-slate-50 border border-slate-100 shadow-sm relative overflow-hidden group">
                             {/* Ambient Glow */}
                             <div className="absolute top-0 right-0 w-32 h-32 bg-[#FF2D55]/5 rounded-full blur-3xl -z-10 group-hover:bg-[#FF2D55]/10 transition-all duration-700" />
 
-                            <SelectField
-                                label="Time Range"
-                                value={range}
-                                options={[
-                                    { id: '7d', name: 'Last 7 Days' },
-                                    { id: '14d', name: 'Last 14 Days' },
-                                    { id: '28d', name: 'Last 28 Days' },
-                                    { id: '90d', name: 'Last 90 Days (Coming Soon)' }
-                                ]}
-                                loading={loading}
-                                onChange={handleRangeChange}
-                                placeholder="Select Range"
-                                active={true}
-                                hideCreate={true}
-                                accentColor="#FF2D55"
-                                icon={<Clock className="w-3.5 h-3.5" />}
-                            />
+                            {/* View Switcher - Header Position */}
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                    <div className="p-2 rounded-xl bg-[#FF2D55]/10 text-[#FF2D55]">
+                                        <Filter size={18} />
+                                    </div>
+                                    <span className="text-xs font-black uppercase tracking-widest text-slate-400">Filter Console</span>
+                                </div>
+                                <div className="flex items-center bg-white p-1 rounded-xl border shadow-sm">
+                                    <button
+                                        onClick={() => setView('table')}
+                                        className={cn("px-4 py-2 rounded-lg transition-all flex items-center gap-2 text-[10px] font-black uppercase tracking-wider",
+                                            view === 'table' ? "bg-[#FF2D55] text-white shadow-md shadow-[#FF2D55]/20" : "text-slate-400 hover:text-slate-600")}
+                                    >
+                                        <List size={14} />
+                                        List
+                                    </button>
+                                    <button
+                                        onClick={() => setView('trends')}
+                                        className={cn("px-4 py-2 rounded-lg transition-all flex items-center gap-2 text-[10px] font-black uppercase tracking-wider",
+                                            view === 'trends' ? "bg-[#FF2D55] text-white shadow-md shadow-[#FF2D55]/20" : "text-slate-400 hover:text-slate-600")}
+                                    >
+                                        <TrendingUp size={14} />
+                                        Trends
+                                    </button>
+                                    <button
+                                        onClick={() => setView('breakdowns')}
+                                        className={cn("px-4 py-2 rounded-lg transition-all flex items-center gap-2 text-[10px] font-black uppercase tracking-wider",
+                                            view === 'breakdowns' ? "bg-[#FF2D55] text-white shadow-md shadow-[#FF2D55]/20" : "text-slate-400 hover:text-slate-600")}
+                                    >
+                                        <BarChart2 size={14} />
+                                        Stats
+                                    </button>
+                                </div>
+                            </div>
 
-                            <SelectField
-                                label="Domain"
-                                value={filters.domain === 'all' ? null : filters.domain}
-                                options={[{ dimensionId: 'all', name: 'All Domains' }, ...domains]}
-                                loading={metadataLoading}
-                                onChange={(id: string) => setFilter('domain', id || 'all')}
-                                placeholder="All Domains"
-                                active={true}
-                                hideCreate={true}
-                                accentColor="#FF2D55"
-                                icon={<Layers className="w-3.5 h-3.5" />}
-                            />
+                            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+                                <SelectField
+                                    label="Time Range"
+                                    value={range}
+                                    options={[
+                                        { id: '7d', name: 'Last 7 Days' },
+                                        { id: '14d', name: 'Last 14 Days' },
+                                        { id: '28d', name: 'Last 28 Days' },
+                                        { id: '90d', name: 'Last 90 Days (Coming Soon)' }
+                                    ]}
+                                    loading={loading}
+                                    onChange={handleRangeChange}
+                                    placeholder="Select Range"
+                                    active={true}
+                                    hideCreate={true}
+                                    accentColor="#FF2D55"
+                                    icon={<Clock className="w-3.5 h-3.5" />}
+                                />
 
-                            <SelectField
-                                label="Subject"
-                                value={filters.subject === 'all' ? null : filters.subject}
-                                options={[{ dimensionId: 'all', name: 'All Subjects' }, ...subjects]}
-                                loading={metadataLoading}
-                                onChange={(id: string) => setFilter('subject', id || 'all')}
-                                placeholder="All Subjects"
-                                active={true}
-                                hideCreate={true}
-                                accentColor="#FF2D55"
-                                icon={<BookIcon className="w-3.5 h-3.5" />}
-                            />
+                                <SelectField
+                                    label="Domain"
+                                    value={filters.domain === 'all' ? null : filters.domain}
+                                    options={[{ dimensionId: 'all', name: 'All Domains' }, ...domains]}
+                                    loading={metadataLoading}
+                                    onChange={(id: string) => setFilter('domain', id || 'all')}
+                                    placeholder="All Domains"
+                                    active={true}
+                                    hideCreate={true}
+                                    accentColor="#FF2D55"
+                                    icon={<Layers className="w-3.5 h-3.5" />}
+                                />
 
-                            {/* View Switcher - Aligned in Grid */}
-                            <div className="flex items-center bg-white p-1.5 rounded-2xl border shadow-sm h-11 w-full xl:w-auto">
-                                <button
-                                    onClick={() => setView('table')}
-                                    className={cn("flex-1 xl:flex-none p-2 px-3 rounded-xl transition-all flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-wider",
-                                        view === 'table' ? "bg-[#FF2D55] text-white shadow-lg shadow-[#FF2D55]/20" : "text-slate-400 hover:text-slate-600")}
-                                >
-                                    <List size={14} />
-                                    <span className={view === 'table' ? "block" : "hidden md:block"}>List</span>
-                                </button>
-                                <button
-                                    onClick={() => setView('trends')}
-                                    className={cn("flex-1 xl:flex-none p-2 px-3 rounded-xl transition-all flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-wider",
-                                        view === 'trends' ? "bg-[#FF2D55] text-white shadow-lg shadow-[#FF2D55]/20" : "text-slate-400 hover:text-slate-600")}
-                                >
-                                    <TrendingUp size={14} />
-                                    <span className={view === 'trends' ? "block" : "hidden md:block"}>Trends</span>
-                                </button>
-                                <button
-                                    onClick={() => setView('breakdowns')}
-                                    className={cn("flex-1 xl:flex-none p-2 px-3 rounded-xl transition-all flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-wider",
-                                        view === 'breakdowns' ? "bg-[#FF2D55] text-white shadow-lg shadow-[#FF2D55]/20" : "text-slate-400 hover:text-slate-600")}
-                                >
-                                    <BarChart2 size={14} />
-                                    <span className={view === 'breakdowns' ? "block" : "hidden md:block"}>Stats</span>
-                                </button>
+                                <SelectField
+                                    label="Subject"
+                                    value={filters.subject === 'all' ? null : filters.subject}
+                                    options={[{ dimensionId: 'all', name: 'All Subjects' }, ...subjects]}
+                                    loading={metadataLoading}
+                                    onChange={(id: string) => setFilter('subject', id || 'all')}
+                                    placeholder="All Subjects"
+                                    active={true}
+                                    hideCreate={true}
+                                    accentColor="#FF2D55"
+                                    icon={<BookIcon className="w-3.5 h-3.5" />}
+                                />
+
+                                <SelectField
+                                    label="Topic"
+                                    value={filters.topic === 'all' ? null : filters.topic}
+                                    options={[{ dimensionId: 'all', name: 'All Topics' }, ...topics]}
+                                    loading={metadataLoading}
+                                    onChange={(id: string) => setFilter('topic', id || 'all')}
+                                    placeholder="All Topics"
+                                    active={true}
+                                    hideCreate={true}
+                                    accentColor="#FF2D55"
+                                    icon={<Hash className="w-3.5 h-3.5" />}
+                                />
                             </div>
                         </div>
 
