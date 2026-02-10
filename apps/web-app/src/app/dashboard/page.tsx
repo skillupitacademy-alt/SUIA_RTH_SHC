@@ -30,7 +30,7 @@ export default function DashboardPage() {
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                         <div>
                             <h1 className="text-3xl font-extrabold tracking-tight">Dashboard Overview</h1>
-                            <p className="text-muted-foreground">Welcome back, {user?.name || 'User'}! Let&apos;s see your progress.</p>
+                            <p className="text-muted-foreground">Welcome back, <span className="text-pink-600 font-black">{user?.name || 'User'}</span>! Let&apos;s see your progress.</p>
                         </div>
                         <Link
                             href="/quiz/new"

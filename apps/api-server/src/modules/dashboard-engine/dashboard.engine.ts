@@ -19,7 +19,11 @@ export class DashboardEngine {
    * Aggregates dashboard data for a user with pagination support.
    */
   static async getUserDashboard(userId: string, range: string = '7d', from?: string, to?: string, page: number = 1, limit: number = 6) {
-    let days = range === '30d' ? 30 : 7;
+    let days = 7;
+    if (range === '14d') days = 14;
+    else if (range === '28d') days = 28;
+    else if (range === '30d') days = 30; // Backward compatibility
+    else if (range === '90d') days = 90; // Stub for future use
     const now = new Date();
     const relativeStartDate = new Date();
     relativeStartDate.setDate(now.getDate() - days);
@@ -130,6 +134,40 @@ export class DashboardEngine {
           total: totalCount,
           totalPages: Math.ceil(totalCount / limit)
       }
+    };
+  }
+
+  /**
+   * Focused trend fetching for decoupled graph updates.
+   */
+  static async getPerformanceTrend(userId: string, range: string = '7d') {
+    let days = 7;
+    if (range === '14d') days = 14;
+    else if (range === '28d') days = 28;
+    else if (range === '90d') days = 90;
+
+    const relativeStartDate = new Date();
+    relativeStartDate.setDate(relativeStartDate.getDate() - days);
+    relativeStartDate.setHours(0, 0, 0, 0);
+
+    const trendResult = await db
+      .select({
+        score: exams.totalScore,
+        completedAt: exams.completedAt,
+      })
+      .from(exams)
+      .where(and(
+        eq(exams.userId, userId),
+        eq(exams.status, 'completed'),
+        sql`${exams.completedAt} >= ${relativeStartDate}`
+      ))
+      .orderBy(exams.completedAt);
+
+    return {
+      performanceTrend: trendResult.map(t => ({
+        score: t.score || 0,
+        date: t.completedAt ? t.completedAt.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }) : 'Unknown'
+      }))
     };
   }
 }

@@ -68,12 +68,18 @@ export function Sidebar() {
             </div>
 
             <div className="mt-auto p-6">
-                <div className="p-4 rounded-xl bg-pink-50 border-2 border-pink-200">
+                <div
+                    className="p-4 rounded-xl bg-pink-50 border-2 border-pink-200 cursor-help"
+                    title="Target: 4 exams this week; progress can exceed 100%"
+                >
                     <p className="text-sm font-bold text-gray-900 mb-1">Weekly Goal</p>
                     <div className="h-2 w-full bg-gray-200 rounded-full mt-2 overflow-hidden">
                         <div className="h-full bg-pink-500 transition-all duration-500" style={{ width: `${progress}%` }} />
                     </div>
-                    <p className="text-[10px] mt-2 text-gray-600">{progress}% complete ({weeklyExams}/{weeklyGoal} exams)</p>
+                    <p className="text-[10px] mt-2 text-gray-600 font-bold uppercase tracking-tight">
+                        {weeklyExams >= weeklyGoal ? 'Goal met: ' : ''}
+                        {weeklyExams} of {weeklyGoal} exams ({Math.round((weeklyExams / weeklyGoal) * 100)}%)
+                    </p>
                 </div>
             </div>
         </aside>

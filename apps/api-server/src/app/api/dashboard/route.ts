@@ -27,7 +27,7 @@ export async function GET(req: NextRequest) {
 
     const range = req.nextUrl.searchParams.get('range') || '7d';
     // 2. Range Validation (Hardening)
-    const validRanges = ['7d', '30d'];
+    const validRanges = ['7d', '14d', '28d', '30d', '90d'];
     if (!validRanges.includes(range)) {
         return NextResponse.json({ error: 'Invalid range parameter' }, { status: 400 });
     }

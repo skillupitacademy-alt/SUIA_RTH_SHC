@@ -1,4 +1,4 @@
-import { LucideIcon, TrendingUp, TrendingDown } from 'lucide-react';
+import { LucideIcon, TrendingUp, TrendingDown, Info } from 'lucide-react';
 
 interface StatCardProps {
     title: string;
@@ -9,9 +9,10 @@ interface StatCardProps {
         positive: boolean;
     };
     color: 'primary' | 'secondary' | 'accent';
+    tooltip?: string;
 }
 
-export function StatCard({ title, value, icon: Icon, trend, color }: StatCardProps) {
+export function StatCard({ title, value, icon: Icon, trend, color, tooltip }: StatCardProps) {
     // Executive Minimal: Clean, high-contrast icon backgrounds
     const colorClasses = {
         primary: "text-pink-500 bg-pink-50",
@@ -33,7 +34,14 @@ export function StatCard({ title, value, icon: Icon, trend, color }: StatCardPro
                 )}
             </div>
             <div>
-                <h3 className="text-sm font-medium text-gray-600 uppercase tracking-wider">{title}</h3>
+                <div className="flex items-center gap-2 group">
+                    <h3 className="text-sm font-medium text-gray-600 uppercase tracking-wider">{title}</h3>
+                    {tooltip && (
+                        <div title={tooltip} className="cursor-help opacity-40 group-hover:opacity-100 transition-opacity">
+                            <Info size={14} />
+                        </div>
+                    )}
+                </div>
                 <p className="text-3xl font-extrabold mt-1 text-gray-900">{value}</p>
             </div>
         </div>
@@ -61,12 +69,14 @@ export function StatsGrid({ overview }: { overview?: any }) {
                 icon={TrendingUp}
                 trend={{ value: "+0%", positive: true }}
                 color="secondary"
+                tooltip="Average accuracy across all completed exams to date."
             />
             <StatCard
                 title="Mastery Points"
                 value={overview?.masteryPoints || 0}
                 icon={TrendingUp}
                 color="accent"
+                tooltip="Cumulative points earned across all domains and subjects."
             />
             <StatCard
                 title="Global Rank"

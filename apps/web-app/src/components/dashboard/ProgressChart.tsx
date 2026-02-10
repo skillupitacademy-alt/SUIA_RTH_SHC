@@ -3,12 +3,12 @@ import { useState } from 'react';
 import { cn } from '@/lib/utils';
 
 export function ProgressChart({ trendData = [] }: { trendData?: Array<{ score: number; date: string }> }) {
-    const { fetchDashboard } = useDashboardStore();
+    const { fetchPerformanceTrend } = useDashboardStore();
     const [range, setRange] = useState('7d');
 
     const handleRangeChange = (newRange: string) => {
         setRange(newRange);
-        fetchDashboard(newRange);
+        fetchPerformanceTrend(newRange);
     };
 
     // If no data, show a flat base line
@@ -38,13 +38,22 @@ export function ProgressChart({ trendData = [] }: { trendData?: Array<{ score: n
                         7D
                     </button>
                     <button
-                        onClick={() => handleRangeChange('30d')}
+                        onClick={() => handleRangeChange('14d')}
                         className={cn(
                             "px-4 py-1.5 rounded-lg text-xs font-bold transition-all",
-                            range === '30d' ? "bg-white shadow-sm text-pink-500" : "text-gray-600 hover:text-gray-900"
+                            range === '14d' ? "bg-white shadow-sm text-pink-500" : "text-gray-600 hover:text-gray-900"
                         )}
                     >
-                        30D
+                        14D
+                    </button>
+                    <button
+                        onClick={() => handleRangeChange('28d')}
+                        className={cn(
+                            "px-4 py-1.5 rounded-lg text-xs font-bold transition-all",
+                            range === '28d' ? "bg-white shadow-sm text-pink-500" : "text-gray-600 hover:text-gray-900"
+                        )}
+                    >
+                        28D
                     </button>
                 </div>
             </div>

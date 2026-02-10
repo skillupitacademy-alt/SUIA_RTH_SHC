@@ -11,4 +11,9 @@ export class DashboardClient {
         const query = new URLSearchParams({ range, page: page.toString(), limit: limit.toString() });
         return this.client.get(`/dashboard?${query.toString()}`);
     }
+
+    async getTrend(range: string = '7d') {
+        const query = new URLSearchParams({ range });
+        return this.client.get(`/dashboard/trend?${query.toString()}`);
+    }
 }
