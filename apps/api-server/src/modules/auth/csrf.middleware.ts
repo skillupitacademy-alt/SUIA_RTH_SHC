@@ -36,6 +36,16 @@ export async function csrfProtection(request: NextRequest) {
       return null; 
     }
 
+    // SELF-HEALING: If session is valid, issue a new token so the client can retry immediately
+    // We only provide this helper if the user is actually logged in (has an access token)
+    const hasSession = request.cookies.has('accessToken') || request.cookies.has('admin_accessToken');
+    
+    if (hasSession) {
+      const response = NextResponse.json({ error: 'CSRF token validation failed' }, { status: 403 });
+      setCsrfToken(response);
+      return response;
+    }
+
     return NextResponse.json({ error: 'CSRF token validation failed' }, { status: 403 });
   }
 
