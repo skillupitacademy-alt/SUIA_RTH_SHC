@@ -64,13 +64,13 @@ export function TrendSummaryCards({ summary }: TrendSummaryCardsProps) {
                     key={idx}
                     className="bg-white border border-slate-200 rounded-lg p-6 shadow-sm flex flex-col justify-between"
                 >
-                    <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
+                    <div className="text-sm font-bold text-slate-600 uppercase tracking-wide mb-2">
                         {card.label}
                     </div>
-                    <div className={`text-3xl font-bold ${card.color} mb-1`}>
+                    <div className={`text-3xl font-black ${card.color} mb-1`}>
                         {card.value}
                     </div>
-                    <div className={`text-sm ${card.subtextColor}`}>
+                    <div className={`text-sm font-medium ${card.subtextColor}`}>
                         {card.subtext}
                     </div>
                 </div>

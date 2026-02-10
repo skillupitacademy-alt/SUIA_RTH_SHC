@@ -8,7 +8,7 @@ interface StatCardProps {
         value: string;
         positive: boolean;
     };
-    color: 'primary' | 'secondary' | 'accent';
+    color: 'primary' | 'secondary' | 'accent' | 'success' | 'warning' | 'danger';
     tooltip?: string;
 }
 
@@ -18,6 +18,9 @@ export function StatCard({ title, value, icon: Icon, trend, color, tooltip }: St
         primary: "text-pink-500 bg-pink-50",
         secondary: "text-blue-600 bg-blue-50",
         accent: "text-purple-600 bg-purple-50",
+        success: "text-green-600 bg-green-50",
+        warning: "text-yellow-600 bg-yellow-50",
+        danger: "text-red-600 bg-red-50",
     };
 
     return (
@@ -48,7 +51,7 @@ export function StatCard({ title, value, icon: Icon, trend, color, tooltip }: St
     );
 }
 
-export function StatsGrid({ overview, deltaPct }: { overview?: any; deltaPct?: number | null }) {
+export function StatsGrid({ overview, deltaPct, healthStatus }: { overview?: any; deltaPct?: number | null; healthStatus?: 'green' | 'yellow' | 'red' }) {
     const globalRankValue = overview?.globalRank ?? "Pending";
     const globalRankTrend = overview?.globalRank
         ? { value: "Top 10%", positive: true }
@@ -62,6 +65,15 @@ export function StatsGrid({ overview, deltaPct }: { overview?: any; deltaPct?: n
             value: `${isPos ? '+' : ''}${deltaPct} pp`,
             positive: isPos
         };
+    };
+
+    const getHealthColor = () => {
+        switch (healthStatus) {
+            case 'green': return 'success';
+            case 'yellow': return 'warning';
+            case 'red': return 'danger';
+            default: return 'secondary';
+        }
     };
 
     return (
@@ -78,7 +90,7 @@ export function StatsGrid({ overview, deltaPct }: { overview?: any; deltaPct?: n
                 value={`${Math.round(overview?.avgScore || 0)}%`}
                 icon={TrendingUp}
                 trend={getScoreTrend()}
-                color="secondary"
+                color={getHealthColor()}
                 tooltip={deltaPct !== undefined ? "vs previous 7 days" : "Average accuracy across all completed exams to date."}
             />
             <StatCard

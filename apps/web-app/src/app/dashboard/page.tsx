@@ -42,7 +42,7 @@ export default function DashboardPage() {
                     </div>
 
                     {/* Stats Section */}
-                    <StatsGrid overview={data?.overview} />
+                    <StatsGrid overview={data?.overview} deltaPct={data?.deltaPct} healthStatus={data?.healthStatus} />
 
                     <div className="grid lg:grid-cols-3 gap-8 mt-10">
                         <div className="lg:col-span-2">
