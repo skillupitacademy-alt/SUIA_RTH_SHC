@@ -280,35 +280,51 @@ export class AdminEngine {
   static async getEfficiencyAnalytics() {
     const TIME_THRESHOLD = 60;
     
-    // Safety Logic: Extract numeric latency or NULL to prevent runtime crashes on bad metadata
-    const safeLatency = sql`
-      case 
-        when (${examQuestions.responseMetadata}->>'timeSpentSeconds') ~ '^[0-9]+$' 
-        then cast(${examQuestions.responseMetadata}->>'timeSpentSeconds' as integer)
-        else null
-      end
-    `;
-
+    // Safety Logic: Only cast if the value is purely numeric to prevent runtime crashes.
     const counts = await db.select({
       quadrant: sql<string>`
         case 
-          when ${examQuestions.isCorrect} = true and ${safeLatency} <= ${TIME_THRESHOLD} then 'mastery'
-          when ${examQuestions.isCorrect} = true and ${safeLatency} > ${TIME_THRESHOLD} then 'persistence'
-          when ${examQuestions.isCorrect} = false and ${safeLatency} <= ${TIME_THRESHOLD} then 'rash'
-          when ${examQuestions.isCorrect} = false and ${safeLatency} > ${TIME_THRESHOLD} then 'struggle'
+          when ${examQuestions.isCorrect} = true 
+               and (${examQuestions.responseMetadata}->>'timeSpentSeconds') ~ '^[0-9]+$' 
+               and cast(${examQuestions.responseMetadata}->>'timeSpentSeconds' as integer) <= ${TIME_THRESHOLD} 
+               then 'mastery'
+          when ${examQuestions.isCorrect} = true 
+               and (${examQuestions.responseMetadata}->>'timeSpentSeconds') ~ '^[0-9]+$' 
+               and cast(${examQuestions.responseMetadata}->>'timeSpentSeconds' as integer) > ${TIME_THRESHOLD} 
+               then 'persistence'
+          when ${examQuestions.isCorrect} = false 
+               and (${examQuestions.responseMetadata}->>'timeSpentSeconds') ~ '^[0-9]+$' 
+               and cast(${examQuestions.responseMetadata}->>'timeSpentSeconds' as integer) <= ${TIME_THRESHOLD} 
+               then 'rash'
+          when ${examQuestions.isCorrect} = false 
+               and (${examQuestions.responseMetadata}->>'timeSpentSeconds') ~ '^[0-9]+$' 
+               and cast(${examQuestions.responseMetadata}->>'timeSpentSeconds' as integer) > ${TIME_THRESHOLD} 
+               then 'struggle'
           else 'no_data'
         end
       `,
       count: sql<number>`count(*)`.mapWith(Number)
     })
     .from(examQuestions)
-    .where(isNotNull(examQuestions.isCorrect)) // We count every answered question
+    .where(isNotNull(examQuestions.isCorrect)) // We process 100% of candidate responses
     .groupBy(sql`
         case 
-          when ${examQuestions.isCorrect} = true and ${safeLatency} <= ${TIME_THRESHOLD} then 'mastery'
-          when ${examQuestions.isCorrect} = true and ${safeLatency} > ${TIME_THRESHOLD} then 'persistence'
-          when ${examQuestions.isCorrect} = false and ${safeLatency} <= ${TIME_THRESHOLD} then 'rash'
-          when ${examQuestions.isCorrect} = false and ${safeLatency} > ${TIME_THRESHOLD} then 'struggle'
+          when ${examQuestions.isCorrect} = true 
+               and (${examQuestions.responseMetadata}->>'timeSpentSeconds') ~ '^[0-9]+$' 
+               and cast(${examQuestions.responseMetadata}->>'timeSpentSeconds' as integer) <= ${TIME_THRESHOLD} 
+               then 'mastery'
+          when ${examQuestions.isCorrect} = true 
+               and (${examQuestions.responseMetadata}->>'timeSpentSeconds') ~ '^[0-9]+$' 
+               and cast(${examQuestions.responseMetadata}->>'timeSpentSeconds' as integer) > ${TIME_THRESHOLD} 
+               then 'persistence'
+          when ${examQuestions.isCorrect} = false 
+               and (${examQuestions.responseMetadata}->>'timeSpentSeconds') ~ '^[0-9]+$' 
+               and cast(${examQuestions.responseMetadata}->>'timeSpentSeconds' as integer) <= ${TIME_THRESHOLD} 
+               then 'rash'
+          when ${examQuestions.isCorrect} = false 
+               and (${examQuestions.responseMetadata}->>'timeSpentSeconds') ~ '^[0-9]+$' 
+               and cast(${examQuestions.responseMetadata}->>'timeSpentSeconds' as integer) > ${TIME_THRESHOLD} 
+               then 'struggle'
           else 'no_data'
         end
     `);
@@ -319,7 +335,7 @@ export class AdminEngine {
       rash: counts.find(c => c.quadrant === 'rash')?.count || 0,
       struggle: counts.find(c => c.quadrant === 'struggle')?.count || 0,
       noData: counts.find(c => c.quadrant === 'no_data')?.count || 0,
-      total: counts.reduce((acc, current) => acc + current.count, 0)
+      total: counts.reduce((acc, curr) => acc + curr.count, 0)
     };
   }
 
