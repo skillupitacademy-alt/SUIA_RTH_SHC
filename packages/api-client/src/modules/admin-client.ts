@@ -244,8 +244,8 @@ export class AdminClient {
     return this.client.get<any[]>('/admin/metrics/content');
   }
 
-  async getPerformanceAnalytics() {
-    return this.client.get<any>('/admin/metrics/performance');
+  async getPerformanceAnalytics(range: string = '7d') {
+    return this.client.get<any>(`/admin/metrics/performance?range=${range}`);
   }
 
   async getExamActivity() {

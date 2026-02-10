@@ -9,6 +9,7 @@ import { BlueprintAuditBoard } from "@/components/dashboard/BlueprintAuditBoard"
 import { SystemAuditTerminal } from "@/components/dashboard/SystemAuditTerminal";
 import { ExamActivityBoard } from "@/components/dashboard/ExamActivityBoard";
 import { QuestionFactoryAIPanel } from "@/components/dashboard/QuestionFactoryAIPanel";
+import { ControlCenterDeck } from "@/components/dashboard/ControlCenterDeck";
 import { Activity } from "lucide-react";
 
 export default function AdminDashboard() {
@@ -30,36 +31,37 @@ export default function AdminDashboard() {
                 </div>
             </div>
 
-            {/* Account & Performance Tier */}
-            <div className="flex flex-col gap-8">
-                <UserAnalyticsPanel />
-                <ExamActivityBoard />
-                <RBACGovernancePanel />
-            </div>
+            {/* 1. Control Center (Top Cards) */}
+            <ControlCenterDeck />
 
-            {/* System Health Section */}
+            {/* 2. Performance & Efficiency Tier */}
+            <PerformanceAnalyticsBoard />
+
+            {/* 3. System Health Section */}
             <ServiceHealth />
 
-            {/* Security & Audit Tier */}
-            <div className="flex flex-col gap-8">
-                <SecurityHealthPanel />
-                <SystemAuditTerminal />
+            {/* 4. Security & User Activity Tier */}
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+                <div className="space-y-8">
+                    <SecurityHealthPanel />
+                    <UserAnalyticsPanel />
+                    <SystemAuditTerminal />
+                </div>
+                <div className="space-y-8">
+                    <ExamActivityBoard />
+                    <RBACGovernancePanel />
+                    <LiveSessionsList />
+                </div>
             </div>
 
-            {/* Content & Blueprint Tier */}
-            <div className="flex flex-col gap-8">
+            {/* 5. Content & Blueprint Tier */}
+            <div className="flex flex-col gap-8 pt-8 border-t border-muted/20">
                 <QuestionFactoryAIPanel />
                 <div className="w-full">
                     <ContentReadinessBoard />
                 </div>
                 <BlueprintAuditBoard />
             </div>
-
-            {/* Performance & Analytics Section */}
-            <PerformanceAnalyticsBoard />
-
-            {/* Live Operations Section */}
-            <LiveSessionsList />
         </div>
     );
 }
