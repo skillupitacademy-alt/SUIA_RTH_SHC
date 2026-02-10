@@ -1310,11 +1310,11 @@ Reduce documentation fragmentation and improve discoverability by consolidating 
 - **Verification**: System integrity verified with root `pnpm build` and `tsc --noEmit` (Exit Code 0).
 - **Outcome**: Unified executive-level metrics and performance analytics into a single, high-fidelity command view.
 
-### Batch 172: Session Security & Expiry Monitoring
-- **Goal**: Implement session expiration warnings and clean logout.
-- **Action**: Updated Backend to return expiry metadata, created `SessionWatcher` components, and integrated them into both app layouts.
+### Batch 172: Session Security & Senior Spec Alignment
+- **Goal**: Implement and refine session expiration warnings and clean logout according to Senior Engineer specs.
+- **Action**: Updated Backend with `getExpiryISO`, refactored `SessionWatcher` to prop-based architecture with 30s polling, and integrated into layouts with explicit refresh/logout handlers.
 - **Verification**: System integrity verified with root `pnpm build` and `tsc --noEmit` (Exit Code 0).
-- **Outcome**: Enhanced security layer that prevents stale session hijacking and improves UX with proactive warnings.
+- **Outcome**: Delivered a production-grade security layer matching strict FAANG/Senior architectural standards.
 
 ### Batch 113: Multi-Dimensional Report Dashboard Integration
 **Status**: `PROMOTED` | **Primary Area**: `[UI/UX] [REPORTS]`
