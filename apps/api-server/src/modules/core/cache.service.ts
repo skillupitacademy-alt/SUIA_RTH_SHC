@@ -213,24 +213,39 @@ export class CacheService {
 
     try {
       // Use the INFO command to get memory stats
-      const info = await this.withTimeout((this.redis as any).info('memory'), '');
+      // Upstash Redis info() returns a string, but we cast to any to be safe with different versions/types
+      const infoResponse = await this.withTimeout((this.redis as any).info('memory'), null);
       
       // Try to get key count (DB0 is default)
       const dbsize = await this.withTimeout(this.redis.dbsize(), 0);
 
-      // Parse memory from info string
-      const memMatch = info.match(/used_memory_human:([^\r\n]+)/);
-      const memBytesMatch = info.match(/used_memory:(\d+)/);
+      let memory = 'Unknown';
+      let memoryBytes = 0;
+
+      if (typeof infoResponse === 'string') {
+        const infoStr = infoResponse as string;
+        const memMatch = infoStr.match(/used_memory_human:([^\r\n]+)/);
+        const memBytesMatch = infoStr.match(/used_memory:(\d+)/);
+        
+        if (memMatch) memory = memMatch[1];
+        if (memBytesMatch) memoryBytes = parseInt(memBytesMatch[1], 10);
+      } else if (infoResponse && typeof infoResponse === 'object') {
+        // Handle case where info() might return a parsed object
+        const infoObj = infoResponse as any;
+        memory = infoObj.used_memory_human || infoObj.memory?.used_memory_human || 'Unknown';
+        memoryBytes = parseInt(infoObj.used_memory || infoObj.memory?.used_memory || '0', 10);
+      }
 
       return {
         configured: true,
         keys: dbsize,
-        memory: memMatch ? memMatch[1] : 'Unknown',
-        memoryBytes: memBytesMatch ? parseInt(memBytesMatch[1], 10) : 0,
+        memory,
+        memoryBytes,
       };
     } catch (error) {
       console.error('[Cache] Error getting Redis usage:', error);
-      return { configured: true, keys: 0, memory: 'Error', memoryBytes: 0 };
+      // Return a safer fallback that doesn't just say "Error" if we can help it
+      return { configured: true, keys: 0, memory: 'Unavailable', memoryBytes: 0 };
     }
   }
 }

@@ -1272,3 +1272,6 @@ Reduce documentation fragmentation and improve discoverability by consolidating 
 - **Verification**: System-wide build (`pnpm build`) and type-checks (`tsc --noEmit`) PASSED with **Exit Code 0**.
 - **Outcome**: Restored 100% visibility for platform health metrics (Neon, Redis, Resend, Cloudflare) and secured the metrics pipeline.
 
+### Batch 166: Redis Metrics Resilience
+- **Logic**: Refactored `CacheService.getUsage()` to handle string/object variety from Upstash Redis.
+- **Verification**: Zero build-time regressions and 1:1 parity with existing telemetry pipeline.
