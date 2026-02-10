@@ -39,8 +39,8 @@ export function PerformanceAnalyticsBoard() {
             <div className="p-8 rounded-[2rem] border border-primary/10 bg-muted/5 backdrop-blur-md shadow-sm">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
                     <div>
-                        <h3 className="text-2xl font-black uppercase tracking-tighter italic text-[#1A1A1A]">Performance by Domain</h3>
-                        <p className="text-sm font-bold text-slate-600 mt-1">Accuracy & Skill Mastery Breakdown</p>
+                        <h3 className="text-2xl font-outfit font-black tracking-tighter italic uppercase text-premium-gradient">Performance by Domain</h3>
+                        <p className="text-sm font-inter font-bold text-slate-600 mt-1">Accuracy & Skill Mastery Breakdown</p>
                     </div>
 
                     <div className="flex items-center gap-3">
@@ -50,8 +50,8 @@ export function PerformanceAnalyticsBoard() {
                                     key={r}
                                     onClick={() => setRange(r)}
                                     className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${range === r
-                                            ? 'bg-[#1A1A1A] text-white shadow-sm'
-                                            : 'text-slate-500 hover:text-slate-900'
+                                        ? 'bg-[#1A1A1A] text-white shadow-sm'
+                                        : 'text-slate-500 hover:text-slate-900'
                                         }`}
                                 >
                                     {r.toUpperCase()}
@@ -60,7 +60,7 @@ export function PerformanceAnalyticsBoard() {
                         </div>
                         <div className="hidden md:flex px-4 py-2 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-500 items-center gap-2.5">
                             <BarChart2 size={16} />
-                            <span className="text-xs font-bold uppercase tracking-wide">Live Accuracy</span>
+                            <span className="alpha-terminal tracking-wide text-blue-500">Live Accuracy</span>
                         </div>
                     </div>
                 </div>
@@ -69,18 +69,18 @@ export function PerformanceAnalyticsBoard() {
                     {perf.domains.map((domain: any) => (
                         <div key={domain.id} className="p-6 rounded-[1.5rem] bg-white border border-slate-200 hover:border-blue-500/30 transition-all group shadow-sm">
                             <div className="flex items-center justify-between mb-3">
-                                <span className="text-xs font-bold uppercase tracking-wide text-slate-600">{domain.name}</span>
+                                <span className="alpha-terminal text-slate-600">{domain.name}</span>
                                 <Target size={16} className="text-blue-500 opacity-40" />
                             </div>
                             <div className="flex items-end gap-3">
-                                <p className="text-4xl font-black tracking-tighter text-[#1A1A1A]">{domain.avgAccuracy}%</p>
+                                <p className="text-4xl font-outfit font-black tracking-tighter text-[#1A1A1A]">{domain.avgAccuracy}%</p>
                                 {domain.delta !== undefined && domain.delta !== 0 && (
                                     <span className={`text-xs font-bold mb-1.5 px-2 py-0.5 rounded-full ${domain.delta > 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>
                                         {domain.delta > 0 ? '+' : ''}{domain.delta}%
                                     </span>
                                 )}
                             </div>
-                            <p className="text-xs font-bold text-slate-500 mt-2 uppercase tracking-wide">{domain.sampleSize} Exams</p>
+                            <p className="text-xs font-inter font-bold text-slate-500 mt-2 uppercase tracking-wide">{domain.sampleSize} Exams</p>
 
                             <div className="mt-6 h-2 w-full bg-slate-100 rounded-full overflow-hidden">
                                 <div
@@ -95,26 +95,26 @@ export function PerformanceAnalyticsBoard() {
                 {/* Section 9: Difficulty & Trends */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-12 pt-12 border-t border-slate-200/60">
                     <div>
-                        <h4 className="text-xs font-black uppercase tracking-wide text-slate-500 mb-6">Accuracy by Difficulty</h4>
+                        <h4 className="alpha-terminal text-slate-500 mb-6 !tracking-wide">Accuracy by Difficulty</h4>
                         <div className="grid grid-cols-3 gap-4">
                             {perf.difficulty.map((d: any) => (
                                 <div key={d.level} className="p-5 rounded-3xl bg-white border border-slate-200 text-center">
-                                    <p className="text-xs font-bold text-slate-600 uppercase tracking-wide mb-1">{d.level}</p>
-                                    <p className="text-2xl font-black text-[#1A1A1A]">{d.avgAccuracy}%</p>
+                                    <p className="alpha-terminal text-slate-600 mb-1 !tracking-wide">{d.level}</p>
+                                    <p className="text-2xl font-outfit font-black text-[#1A1A1A]">{d.avgAccuracy}%</p>
                                 </div>
                             ))}
                         </div>
                     </div>
                     <div>
-                        <h4 className="text-xs font-black uppercase tracking-wide text-slate-500 mb-6">Outcome Distribution</h4>
+                        <h4 className="alpha-terminal text-slate-500 mb-6 !tracking-wide">Outcome Distribution</h4>
                         <div className="flex items-center gap-4">
                             <div className="flex-1 p-5 rounded-3xl bg-emerald-500/5 border border-emerald-500/10 flex items-center justify-between">
-                                <span className="text-xs font-bold text-emerald-700 uppercase tracking-wide">Passed</span>
-                                <span className="text-2xl font-black text-emerald-700">{perf.passFailTrends.pass}</span>
+                                <span className="alpha-terminal text-emerald-700 !tracking-wide">Passed</span>
+                                <span className="text-2xl font-outfit font-black text-emerald-700">{perf.passFailTrends.pass}</span>
                             </div>
                             <div className="flex-1 p-5 rounded-3xl bg-rose-500/5 border border-rose-500/10 flex items-center justify-between">
-                                <span className="text-xs font-bold text-rose-700 uppercase tracking-wide">Failed</span>
-                                <span className="text-2xl font-black text-rose-700">{perf.passFailTrends.fail}</span>
+                                <span className="alpha-terminal text-rose-700 !tracking-wide">Failed</span>
+                                <span className="text-2xl font-outfit font-black text-rose-700">{perf.passFailTrends.fail}</span>
                             </div>
                         </div>
                     </div>
@@ -128,16 +128,16 @@ export function PerformanceAnalyticsBoard() {
                 <div className="p-8 rounded-[2rem] border border-amber-500/10 bg-amber-500/5 backdrop-blur-md shadow-sm">
                     <div className="flex items-center justify-between mb-8">
                         <div>
-                            <h3 className="text-2xl font-black uppercase tracking-tighter italic text-[#1A1A1A]">Growth Zones</h3>
-                            <p className="text-sm font-bold text-slate-600 mt-1">Derived Systemic Skill Gaps (Lowest Accuracy Topics)</p>
+                            <h3 className="text-2xl font-outfit font-black tracking-tighter italic uppercase text-amber-700">Growth Zones</h3>
+                            <p className="text-sm font-inter font-bold text-slate-600 mt-1">Derived Systemic Skill Gaps (Lowest Accuracy Topics)</p>
                         </div>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
                         {growth.map((t) => (
                             <div key={t.id} className="p-6 rounded-[2rem] bg-white border border-amber-500/20 shadow-sm text-center">
-                                <p className="text-xs font-bold uppercase tracking-wide text-slate-600 mb-1 truncate">{t.name}</p>
-                                <p className="text-2xl font-black text-rose-600">{t.accuracy}% Accuracy</p>
-                                <p className="text-xs font-bold text-slate-400 mt-2 uppercase tracking-wide">{t.sampleSize} Results</p>
+                                <p className="alpha-terminal text-slate-600 mb-1 truncate !tracking-wide">{t.name}</p>
+                                <p className="text-2xl font-outfit font-black text-rose-600">{t.accuracy}% Accuracy</p>
+                                <p className="text-xs font-inter font-bold text-slate-400 mt-2 uppercase tracking-wide">{t.sampleSize} Results</p>
                             </div>
                         ))}
                     </div>

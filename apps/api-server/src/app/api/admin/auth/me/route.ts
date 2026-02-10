@@ -39,7 +39,8 @@ export async function GET(req: NextRequest) {
         name: user.profile?.name || 'Admin',
         role,
         isAdmin
-      } 
+      },
+      expiresAt: TokenService.getExpiration(token)
     });
   } catch (error) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

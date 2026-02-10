@@ -26,10 +26,12 @@ export async function GET(req: NextRequest) {
     if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 });
 
     return NextResponse.json({
-      id: user.id,
-      email: user.email,
-      name: user.profile?.name,
-      roles: user.userRoles.map((ur) => ur.role.name),
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.profile?.name,
+        roles: user.userRoles.map((ur) => ur.role.name),
+      },
       expiresAt: TokenService.getExpiration(token),
     });
   } catch (error: any) {

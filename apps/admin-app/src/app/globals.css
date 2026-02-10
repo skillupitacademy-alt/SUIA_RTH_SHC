@@ -1,6 +1,44 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=Inter:wght@400;500;600;700;800;900&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  html {
+    font-size: 15px; /* Executive White Base Scaling */
+  }
+
+  body {
+    @apply font-inter text-foreground bg-background antialiased;
+  }
+
+  h1, .h1 {
+    @apply font-outfit font-black tracking-tight italic uppercase;
+  }
+
+  h2, .h2 {
+    @apply font-outfit font-bold tracking-tight;
+  }
+}
+
+@layer utilities {
+  .font-outfit {
+    font-family: 'Outfit', sans-serif;
+  }
+  
+  .font-inter {
+    font-family: 'Inter', sans-serif;
+  }
+
+  .text-premium-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-[#F54A8D] to-[#133382];
+  }
+
+  .alpha-terminal {
+    @apply font-black uppercase tracking-[0.3em] text-[11px];
+  }
+}
 
 :root {
   /* Default Theme A */
@@ -16,12 +54,12 @@
   --foreground: 222 47% 11%;
 
   --muted: 210 40% 96%;
-  --muted-foreground: 215 16% 35%; /* Darker for better contrast (was 47%) */
+  --muted-foreground: 215 16% 35%; 
 
   --accent: 337 90% 63%;
   --accent-foreground: 0 0% 100%;
 
-  --border: 214 32% 85%; /* Slightly more defined (was 91%) */
+  --border: 214 32% 85%;
   --input: 214 32% 85%;
   --ring: 337 90% 63%;
 
@@ -40,17 +78,4 @@
 
   --border: 217 33% 17%;
   --input: 217 33% 17%;
-}
-
-html {
-  font-size: 15px;
-  /* Accessible high-density dashboard scaling */
-}
-
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
 }

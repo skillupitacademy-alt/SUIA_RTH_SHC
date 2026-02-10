@@ -106,13 +106,13 @@ export function ControlCenterDeck() {
 
                     <div>
                         <ZTooltip content={card.tooltip} side="top">
-                            <p className="text-xs font-black uppercase tracking-widest opacity-70 mb-1 cursor-help flex items-center gap-2 w-fit">
+                            <p className="alpha-terminal opacity-70 mb-1 cursor-help flex items-center gap-2 w-fit">
                                 {card.label}
                             </p>
                         </ZTooltip>
 
-                        <p className="text-4xl font-black tracking-tighter mb-1">{card.value}</p>
-                        <p className="text-xs font-bold opacity-60 uppercase tracking-wide">{card.subtext}</p>
+                        <p className="text-4xl font-outfit font-black tracking-tighter mb-1">{card.value}</p>
+                        <p className="text-xs font-inter font-bold opacity-60 uppercase tracking-wide">{card.subtext}</p>
                     </div>
 
                     {/* Status Indicator Bar */}
