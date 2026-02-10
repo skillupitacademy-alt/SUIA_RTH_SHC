@@ -202,6 +202,37 @@ export class CacheService {
       return { count: 1, ttlRem: 60 };
     }
   }
+
+  /**
+   * Get Redis usage statistics
+   */
+  public async getUsage(): Promise<{ configured: boolean; keys?: number; memory?: string; memoryBytes?: number }> {
+    if (!this.redis) {
+      return { configured: false };
+    }
+
+    try {
+      // Use the INFO command to get memory stats
+      const info = await this.withTimeout((this.redis as any).info('memory'), '');
+      
+      // Try to get key count (DB0 is default)
+      const dbsize = await this.withTimeout(this.redis.dbsize(), 0);
+
+      // Parse memory from info string
+      const memMatch = info.match(/used_memory_human:([^\r\n]+)/);
+      const memBytesMatch = info.match(/used_memory:(\d+)/);
+
+      return {
+        configured: true,
+        keys: dbsize,
+        memory: memMatch ? memMatch[1] : 'Unknown',
+        memoryBytes: memBytesMatch ? parseInt(memBytesMatch[1], 10) : 0,
+      };
+    } catch (error) {
+      console.error('[Cache] Error getting Redis usage:', error);
+      return { configured: true, keys: 0, memory: 'Error', memoryBytes: 0 };
+    }
+  }
 }
 
 export const cacheService = CacheService.getInstance();

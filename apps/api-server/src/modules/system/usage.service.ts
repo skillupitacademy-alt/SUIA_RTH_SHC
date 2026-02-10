@@ -106,7 +106,6 @@ export class UsageService {
 
   private static async getRedisUsage(): Promise<ServiceStatus> {
     try {
-      // @ts-ignore - getUsage was added to CacheService but TS might not know if not rebuilt
       const usage = await cacheService.getUsage();
       
       if (!usage.configured) {
