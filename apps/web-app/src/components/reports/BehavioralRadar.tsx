@@ -119,7 +119,7 @@ export function BehavioralRadar({ data, className }: BehavioralRadarProps) {
                             x={line.labelX}
                             y={line.labelY}
                             textAnchor="middle"
-                            className="text-[11px] font-black uppercase tracking-widest fill-slate-700"
+                            className="text-[11px] font-black uppercase tracking-widest fill-black"
                         >
                             {line.name}
                         </text>
@@ -133,8 +133,8 @@ export function BehavioralRadar({ data, className }: BehavioralRadarProps) {
             <div className="grid grid-cols-3 gap-3 w-full">
                 {categories.map((cat, i) => (
                     <div key={cat} className="text-center px-2 py-4 rounded-[1.5rem] bg-white border border-slate-100 shadow-sm">
-                        <p className="text-[10px] font-black text-slate-500 uppercase mb-1 tracking-tighter">{displayNames[cat]}</p>
-                        <p className="text-base font-black text-primary">{values[i]}%</p>
+                        <p className="text-[10px] font-black text-slate-700 uppercase mb-1 tracking-tighter">{displayNames[cat]}</p>
+                        <p className="text-base font-black text-primary drop-shadow-sm">{values[i]}%</p>
                     </div>
                 ))}
             </div>
