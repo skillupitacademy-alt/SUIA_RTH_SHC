@@ -24,7 +24,7 @@ import { SessionWatcher } from '@/components/auth/SessionWatcher';
 import { useAuthStore } from '@/store/auth-store';
 import { apiClient } from '@quiz/api-client';
 import { ThemeToggle } from '@quiz/ui';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useStrictNavigation } from '@/hooks/useStrictNavigation';
 import { usePresenceHeartbeat } from '@/hooks/usePresenceHeartbeat';
 
@@ -44,11 +44,19 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     const router = useRouter();
     const pathname = usePathname();
     const { logout, expiresAt, user, login } = useAuthStore();
+    const [isRedirecting, setIsRedirecting] = useState(false);
     const { showWarning, confirmLogout, cancelNavigation } = useStrictNavigation();
 
     const handleLogout = () => {
-        logout();
-        window.location.href = '/login?reason=session_expired';
+        if (isRedirecting) return;
+        setIsRedirecting(true);
+
+        // Brief delay for toast visibility
+        setTimeout(() => {
+            logout();
+            window.location.href = '/login?reason=session_expired';
+            setIsRedirecting(false);
+        }, 3000);
     };
 
     const handleRefresh = async () => {
@@ -104,6 +112,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 expiresAt={expiresAt}
                 onRefresh={handleRefresh}
                 onLogout={handleLogout}
+                isRedirecting={isRedirecting}
             />
             {showWarning && (
                 <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">

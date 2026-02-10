@@ -749,7 +749,12 @@
 - **Executive Polish**: Softened admin and api-server weights to 700/800; refactored terminal-style labels to standard readable typography.
 - **Verification**: Verified zero regressions with root pnpm build and tsc check (Exit Code 0).
 
-### Phase 42: Onboarding Layout Expansion (Batch 174)
-- **Immersive Journey**: Reconfigured the Onboarding Wizard to occupy the full screen width, removing legacy 4xl (centered) container constraints.
-- **Responsive Grid**: Standardized all selection steps to use `w-full` with adaptive padding, ensuring zero-clipping on wide displays.
-- **Aesthetic DNA**: Maintained "Executive White" styling while maximizing screen real-estate for selection cards.
+### Phase 56: API Server Auth Integration (Batch 176)
+- **Governance Authentication**: Replicated Admin App's authentication and authorization flow for the API Server terminal.
+- **Security Boundary**: Implemented `AdminGuard` and a dedicated `/login` page to protect the primary API dashboard.
+- **Session Parity**: Integrated `SessionWatcher` and `AuthStore` to handle token refresh and automatic logout, maintaining parity with Admin security standards.
+
+### Phase 57: Theme Refinement & Dark Mode Purge (Batch 177)
+- **Functional Toggling**: Defined `.theme-a` and `.theme-b` blocks in Admin App `globals.css` to enable palette switching via the header toggle.
+- **Comprehensive Purge**: Systematically removed all remaining `dark:` Tailwind classes across the Web App (e.g., `ExitConfirmationDialog.tsx`, `ConfirmationDialog.tsx`) to enforce a pure light-mode standard.
+- **System Integrity**: Verified the "Executive White" aesthetic across all 7 workspace projects with a successful root build.

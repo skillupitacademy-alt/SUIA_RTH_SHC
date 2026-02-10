@@ -9,9 +9,10 @@ interface SessionWatcherProps {
     expiresAt: string | null;
     onRefresh: () => Promise<void>;
     onLogout: () => void;
+    isRedirecting?: boolean;
 }
 
-export function SessionWatcher({ expiresAt, onRefresh, onLogout }: SessionWatcherProps) {
+export function SessionWatcher({ expiresAt, onRefresh, onLogout, isRedirecting }: SessionWatcherProps) {
     const [showWarning, setShowWarning] = useState(false);
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [remainingSeconds, setRemainingSeconds] = useState<number | null>(null);
@@ -58,15 +59,29 @@ export function SessionWatcher({ expiresAt, onRefresh, onLogout }: SessionWatche
     }, [expiresAt, onLogout]);
 
     return (
-        <ZConfirmationDialog
-            isOpen={showWarning}
-            title="API Terminal Session Expiring"
-            description={`Your secure governance session will expire in ${remainingSeconds ? Math.ceil(remainingSeconds / 60) : 3} minutes. Renew connection?`}
-            confirmText={isRefreshing ? "Renewing..." : "Maintain Connection"}
-            cancelText="Terminate Now"
-            onConfirm={handleStayLoggedIn}
-            onClose={onLogout}
-            variant="warning"
-        />
+        <>
+            {isRedirecting && (
+                <div className="fixed top-6 right-6 z-[10000] animate-in fade-in slide-in-from-right duration-500">
+                    <div className="bg-white border-l-4 border-[#FF4B91] px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-4 min-w-[300px]">
+                        <div className="h-2 w-2 rounded-full bg-[#FF4B91] animate-pulse" />
+                        <div className="flex flex-col">
+                            <span className="alpha-terminal text-[10px] text-[#FF4B91] !tracking-[0.2em]">Node Terminal Isolation</span>
+                            <span className="text-sm font-bold text-slate-800">Connection expired. Redirecting...</span>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            <ZConfirmationDialog
+                isOpen={showWarning && !isRedirecting}
+                title="API Terminal Session Expiring"
+                description={`Your secure governance session will expire in ${remainingSeconds ? Math.ceil(remainingSeconds / 60) : 3} minutes. Renew connection?`}
+                confirmText={isRefreshing ? "Renewing..." : "Maintain Connection"}
+                cancelText="Terminate Now"
+                onConfirm={handleStayLoggedIn}
+                onClose={onLogout}
+                variant="warning"
+            />
+        </>
     );
 }

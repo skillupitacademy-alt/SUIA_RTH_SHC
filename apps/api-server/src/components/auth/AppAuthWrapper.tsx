@@ -1,12 +1,15 @@
-'use client';
+"use client";
 
-import { useEffect } from 'react';
+import { useState } from 'react';
 import { useAuthStore } from '@/store/auth-store';
 import { SessionWatcher } from '@/components/auth/SessionWatcher';
 import { apiClient } from '@quiz/api-client';
+import { useRouter } from 'next/navigation';
 
 export function AppAuthWrapper({ children }: { children: React.ReactNode }) {
     const { expiresAt, login, logout, initialized } = useAuthStore();
+    const [isRedirecting, setIsRedirecting] = useState(false);
+    const router = useRouter();
 
     const handleRefresh = async () => {
         try {
@@ -14,9 +17,20 @@ export function AppAuthWrapper({ children }: { children: React.ReactNode }) {
             const { user } = await apiClient.auth.getAdminSession();
             login(user, newExpiry);
         } catch (error) {
-            logout();
+            handleLogout();
             throw error;
         }
+    };
+
+    const handleLogout = () => {
+        if (isRedirecting) return;
+        setIsRedirecting(true);
+
+        setTimeout(() => {
+            logout();
+            window.location.href = '/login?reason=session_expired';
+            setIsRedirecting(false);
+        }, 3000);
     };
 
     if (!initialized) {
@@ -29,7 +43,8 @@ export function AppAuthWrapper({ children }: { children: React.ReactNode }) {
             <SessionWatcher
                 expiresAt={expiresAt}
                 onRefresh={handleRefresh}
-                onLogout={logout}
+                onLogout={handleLogout}
+                isRedirecting={isRedirecting}
             />
         </>
     );

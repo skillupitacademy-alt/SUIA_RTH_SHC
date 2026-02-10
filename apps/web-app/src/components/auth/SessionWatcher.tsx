@@ -9,9 +9,10 @@ interface SessionWatcherProps {
     expiresAt: string | null;
     onRefresh: () => Promise<void>;
     onLogout: () => void;
+    isRedirecting?: boolean;
 }
 
-export function SessionWatcher({ expiresAt, onRefresh, onLogout }: SessionWatcherProps) {
+export function SessionWatcher({ expiresAt, onRefresh, onLogout, isRedirecting }: SessionWatcherProps) {
     const [showWarning, setShowWarning] = useState(false);
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [remainingSeconds, setRemainingSeconds] = useState<number | null>(null);
@@ -58,15 +59,28 @@ export function SessionWatcher({ expiresAt, onRefresh, onLogout }: SessionWatche
     }, [expiresAt, onLogout]);
 
     return (
-        <ConfirmationDialog
-            isOpen={showWarning}
-            title="Session Expiring"
-            message={`Your session will expire in ${remainingSeconds ? Math.ceil(remainingSeconds / 60) : 3} minutes. Would you like to stay logged in?`}
-            confirmText={isRefreshing ? "Renewing..." : "Stay Logged In"}
-            cancelText="Sign Out"
-            onConfirm={handleStayLoggedIn}
-            onCancel={onLogout}
-            variant="warning"
-        />
+        <>
+            {isRedirecting && (
+                <div className="fixed top-8 left-1/2 -translate-x-1/2 z-[10000] animate-in slide-in-from-top duration-300">
+                    <div className="bg-white/95 backdrop-blur-md border-b-2 border-primary px-8 py-4 rounded-2xl shadow-2xl flex items-center gap-4 min-w-[320px]">
+                        <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
+                        <span className="text-sm font-bold uppercase tracking-widest text-foreground">
+                            Session expired. Redirecting to login...
+                        </span>
+                    </div>
+                </div>
+            )}
+
+            <ConfirmationDialog
+                isOpen={showWarning && !isRedirecting}
+                title="Session Expiring"
+                message={`Your session will expire in ${remainingSeconds ? Math.ceil(remainingSeconds / 60) : 3} minutes. Would you like to stay logged in?`}
+                confirmText={isRefreshing ? "Renewing..." : "Stay Logged In"}
+                cancelText="Sign Out"
+                onConfirm={handleStayLoggedIn}
+                onCancel={onLogout}
+                variant="warning"
+            />
+        </>
     );
 }
