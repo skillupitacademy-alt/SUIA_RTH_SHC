@@ -16,15 +16,22 @@ import { SelectField, ZLoader } from '@quiz/ui';
 const ITEMS_PER_PAGE = 6;
 
 export default function MyExamsPage() {
-    const { data, fetchDashboard, fetchPerformanceTrend, fetchPerformanceBreakdownMetadata, fetchPerformanceBreakdown, loading, metadataLoading } = useDashboardStore();
+    const {
+        data,
+        drilldownMetadata,
+        filters,
+        setFilter,
+        fetchDashboard,
+        fetchPerformanceTrend,
+        fetchPerformanceBreakdownMetadata,
+        fetchPerformanceBreakdown,
+        loading,
+        metadataLoading
+    } = useDashboardStore();
+
     const [currentPage, setCurrentPage] = useState(1);
     const [range, setRange] = useState('28d');
     const [view, setView] = useState<'table' | 'trends' | 'breakdowns'>('table');
-
-    // Dimension Filters
-    const [domainFilter, setDomainFilter] = useState('all');
-    const [subjectFilter, setSubjectFilter] = useState('all');
-    const [topicFilter, setTopicFilter] = useState('all');
 
     useEffect(() => {
         // Initial fetch: 28 days history + metadata
@@ -45,21 +52,21 @@ export default function MyExamsPage() {
     const totalCount = data?.pagination?.total || 0;
     const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE);
 
-    // Filter metadata
-    const allDomains = data?.drilldownMetadata?.domains || [];
-    const allSubjects = data?.drilldownMetadata?.subjects || [];
-    const allTopics = data?.drilldownMetadata?.topics || [];
+    // Filter metadata - Source from decoupled store state
+    const allDomains = drilldownMetadata?.domains || [];
+    const allSubjects = drilldownMetadata?.subjects || [];
+    const allTopics = drilldownMetadata?.topics || [];
 
     // Cascading Filter Logic
     const availableDomains = allDomains;
-    const availableSubjects = subjectFilter === 'all'
-        ? allSubjects
-        : allSubjects; // In real-world, would filter by domainId if metadata included parentId
+    // In real-world, would filter by domainId if metadata included parentId
+    const availableSubjects = allSubjects;
+    const availableTopics = allTopics;
 
     // For better UX, we'll just use the raw metadata arrays since they represent attempted dims
     const domains = availableDomains;
-    const subjects = allSubjects;
-    const topics = allTopics;
+    const subjects = availableSubjects;
+    const topics = availableTopics;
 
     const handleNext = () => {
         if (currentPage < totalPages) {
@@ -93,7 +100,8 @@ export default function MyExamsPage() {
                     </div>
 
                     <div className="space-y-8">
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:flex xl:items-end gap-6 p-8 rounded-[2rem] bg-slate-50 border border-slate-100 shadow-sm relative overflow-hidden group">
+                        {/* Filter Console - FIXED GRID LAYOUT */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 p-8 rounded-[2rem] bg-slate-50 border border-slate-100 shadow-sm relative overflow-hidden group items-end">
                             {/* Ambient Glow */}
                             <div className="absolute top-0 right-0 w-32 h-32 bg-[#FF2D55]/5 rounded-full blur-3xl -z-10 group-hover:bg-[#FF2D55]/10 transition-all duration-700" />
 
@@ -117,10 +125,10 @@ export default function MyExamsPage() {
 
                             <SelectField
                                 label="Domain"
-                                value={domainFilter === 'all' ? null : domainFilter}
+                                value={filters.domain === 'all' ? null : filters.domain}
                                 options={[{ dimensionId: 'all', name: 'All Domains' }, ...domains]}
                                 loading={metadataLoading}
-                                onChange={(id: string) => setDomainFilter(id || 'all')}
+                                onChange={(id: string) => setFilter('domain', id || 'all')}
                                 placeholder="All Domains"
                                 active={true}
                                 hideCreate={true}
@@ -130,10 +138,10 @@ export default function MyExamsPage() {
 
                             <SelectField
                                 label="Subject"
-                                value={subjectFilter === 'all' ? null : subjectFilter}
+                                value={filters.subject === 'all' ? null : filters.subject}
                                 options={[{ dimensionId: 'all', name: 'All Subjects' }, ...subjects]}
                                 loading={metadataLoading}
-                                onChange={(id: string) => setSubjectFilter(id || 'all')}
+                                onChange={(id: string) => setFilter('subject', id || 'all')}
                                 placeholder="All Subjects"
                                 active={true}
                                 hideCreate={true}
@@ -141,23 +149,11 @@ export default function MyExamsPage() {
                                 icon={<BookIcon className="w-3.5 h-3.5" />}
                             />
 
-                            <SelectField
-                                label="Topic"
-                                value={topicFilter === 'all' ? null : topicFilter}
-                                options={[{ dimensionId: 'all', name: 'All Topics' }, ...topics]}
-                                loading={metadataLoading}
-                                onChange={(id: string) => setTopicFilter(id || 'all')}
-                                placeholder="All Topics"
-                                active={true}
-                                hideCreate={true}
-                                accentColor="#FF2D55"
-                                icon={<Hash className="w-3.5 h-3.5" />}
-                            />
-
-                            <div className="xl:ml-auto flex items-center bg-white p-1.5 rounded-2xl border shadow-sm self-end h-11">
+                            {/* View Switcher - Aligned in Grid */}
+                            <div className="flex items-center bg-white p-1.5 rounded-2xl border shadow-sm h-11 w-full xl:w-auto">
                                 <button
                                     onClick={() => setView('table')}
-                                    className={cn("p-2 px-3 rounded-xl transition-all flex items-center gap-2 text-[10px] font-black uppercase tracking-wider",
+                                    className={cn("flex-1 xl:flex-none p-2 px-3 rounded-xl transition-all flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-wider",
                                         view === 'table' ? "bg-[#FF2D55] text-white shadow-lg shadow-[#FF2D55]/20" : "text-slate-400 hover:text-slate-600")}
                                 >
                                     <List size={14} />
@@ -165,7 +161,7 @@ export default function MyExamsPage() {
                                 </button>
                                 <button
                                     onClick={() => setView('trends')}
-                                    className={cn("p-2 px-3 rounded-xl transition-all flex items-center gap-2 text-[10px] font-black uppercase tracking-wider",
+                                    className={cn("flex-1 xl:flex-none p-2 px-3 rounded-xl transition-all flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-wider",
                                         view === 'trends' ? "bg-[#FF2D55] text-white shadow-lg shadow-[#FF2D55]/20" : "text-slate-400 hover:text-slate-600")}
                                 >
                                     <TrendingUp size={14} />
@@ -173,11 +169,11 @@ export default function MyExamsPage() {
                                 </button>
                                 <button
                                     onClick={() => setView('breakdowns')}
-                                    className={cn("p-2 px-3 rounded-xl transition-all flex items-center gap-2 text-[10px] font-black uppercase tracking-wider",
+                                    className={cn("flex-1 xl:flex-none p-2 px-3 rounded-xl transition-all flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-wider",
                                         view === 'breakdowns' ? "bg-[#FF2D55] text-white shadow-lg shadow-[#FF2D55]/20" : "text-slate-400 hover:text-slate-600")}
                                 >
                                     <BarChart2 size={14} />
-                                    <span className={view === 'breakdowns' ? "block" : "hidden md:block"}>Breakdown</span>
+                                    <span className={view === 'breakdowns' ? "block" : "hidden md:block"}>Stats</span>
                                 </button>
                             </div>
                         </div>
