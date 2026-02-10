@@ -78,7 +78,7 @@ export class SelectionEngine {
         id: null,
         name: 'Quick Assessment',
         totalQuestions: config?.questionCount || 10,
-        timeLimit: 30,
+        timeLimit: Math.ceil((config?.questionCount || 10) * 1.5), // 1.5 mins per question
         difficultyDistribution: { simple: 30, intermediate: 30, expert: 40 },
         subjects: config?.subjectIds || [],
         topics: config?.topicIds || [],

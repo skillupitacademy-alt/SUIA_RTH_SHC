@@ -1297,3 +1297,9 @@ Reduce documentation fragmentation and improve discoverability by consolidating 
 - **Visuals**: Fixed progress circle clipping in `ResultSummary` by adjusting SVG viewbox and radius.
 - **Layout**: Expanded active report view to use full page width (`max-w-[95%]`) per user request.
 - **Integrity**: Verified `pnpm build` and `tsc --noEmit` (Exit Code 0).
+
+### Batch 112: Exam UI Stability & Timer Logic
+- **UI Stability**: Implemented fixed-height viewport in `ExamInterface.tsx` with sticky footer to eliminate "Save & Next" button jitter.
+- **Aesthetics**: Added custom blue scrollbar to question content area as requested.
+- **Logic Alignment**: Updated `SelectionEngine` to calculate exam `timeLimit` dynamically (`questionCount * 1.5`) to match frontend estimates (15m vs 30m discrepancy resolved).
+- **Verification**: Validated layout stability and timer logic.

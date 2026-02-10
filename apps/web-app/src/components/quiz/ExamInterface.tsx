@@ -182,9 +182,9 @@ export function ExamInterface() {
     if (!question) return null;
 
     return (
-        <div className="flex flex-col min-h-[calc(100vh-64px)] bg-muted/5">
+        <div className="flex flex-col h-[calc(100vh-64px)] w-full overflow-hidden bg-muted/5">
             {/* Exam Header */}
-            <header className="sticky top-0 z-40 bg-background border-b px-6 py-4 flex items-center justify-between shadow-sm">
+            <header className="shrink-0 z-40 bg-background border-b px-6 py-4 flex items-center justify-between shadow-sm">
                 {error && (
                     <div className="absolute top-20 left-1/2 -translate-x-1/2 z-50 bg-red-600 text-white px-6 py-3 rounded-full font-bold shadow-2xl animate-in slide-in-from-top-4 flex items-center gap-3">
                         <span className="h-2 w-2 rounded-full bg-white animate-pulse" />
@@ -237,9 +237,10 @@ export function ExamInterface() {
             </header>
 
             {/* Question Content */}
-            <main className="flex-1 overflow-y-auto w-full max-w-5xl mx-auto p-6 md:p-12">
-                <div className="bg-background border rounded-[3rem] p-8 md:p-12 shadow-sm min-h-[500px] flex flex-col">
-                    <div className="flex items-center justify-between mb-8 pb-6 border-b">
+            <main className="flex-1 overflow-hidden w-full max-w-5xl mx-auto p-4 md:p-6 lg:p-8 flex flex-col">
+                <div className="bg-background border rounded-[2rem] shadow-sm flex flex-col h-full overflow-hidden">
+                    {/* Card Header (Fixed) */}
+                    <div className="shrink-0 flex items-center justify-between p-6 md:p-8 border-b">
                         <div className="flex items-center gap-3">
                             <span className="text-sm font-bold bg-muted px-4 py-1.5 rounded-full text-muted-foreground">
                                 Question {currentQuestionIndex + 1} of {questions.length}
@@ -258,7 +259,8 @@ export function ExamInterface() {
                         )}
                     </div>
 
-                    <div className="flex-1 space-y-8">
+                    {/* Scrollable Content Area */}
+                    <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-8 scrollbar-thin scrollbar-thumb-primary/20 scrollbar-track-transparent hover:scrollbar-thumb-primary/40">
                         <h1 className="text-2xl md:text-3xl font-extrabold leading-tight text-foreground/90">
                             {question.text}
                         </h1>
@@ -303,8 +305,8 @@ export function ExamInterface() {
                         </div>
                     </div>
 
-                    {/* Controls */}
-                    <div className="mt-12 pt-8 border-t flex items-center justify-between gap-4">
+                    {/* Controls Footer (Fixed) */}
+                    <div className="shrink-0 p-6 md:p-8 border-t flex items-center justify-between gap-4 bg-background">
                         <div className="flex items-center gap-3">
                             <button
                                 disabled={currentQuestionIndex === 0}
@@ -349,7 +351,7 @@ export function ExamInterface() {
                 </div>
 
                 {/* Legend */}
-                <div className="mt-8 flex flex-wrap justify-center gap-6 text-xs font-bold text-muted-foreground uppercase tracking-widest">
+                <div className="mt-4 flex shrink-0 flex-wrap justify-center gap-6 text-xs font-bold text-muted-foreground uppercase tracking-widest">
                     <div className="flex items-center gap-2"><div className="w-3 h-3 rounded bg-primary" /> Active</div>
                     <div className="flex items-center gap-2"><div className="w-3 h-3 rounded bg-green-500" /> Answered</div>
                     <div className="flex items-center gap-2"><div className="w-3 h-3 rounded bg-orange-500" /> Review</div>
