@@ -280,9 +280,9 @@ export function SubjectTable() {
                                     <SelectField
                                         label="Parent Domain"
                                         value={formData.domainId}
-                                        options={domains.map(d => ({ id: d.id, name: d.name }))}
+                                        options={domains.map((d: any) => ({ id: d.id, name: d.name }))}
                                         loading={domainsHook.loading}
-                                        onChange={(val) => setFormData({ ...formData, domainId: val })}
+                                        onChange={(val: string) => setFormData({ ...formData, domainId: val })}
                                         placeholder="Select Domain"
                                         active={true}
                                         icon={<BookOpen size={12} />}

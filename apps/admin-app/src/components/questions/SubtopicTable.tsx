@@ -243,15 +243,15 @@ export function SubtopicTable() {
                             <div className="grid grid-cols-3 gap-4 p-6 bg-slate-50/50 rounded-2xl border border-dashed border-slate-200">
                                 <div className="space-y-1 text-center">
                                     <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Domain</label>
-                                    <div className="font-bold text-slate-600 text-xs truncate">{domains.find(d => d.id === formData.domainId)?.name || 'N/A'}</div>
+                                    <div className="font-bold text-slate-600 text-xs truncate">{domains.find((d: any) => d.id === formData.domainId)?.name || 'N/A'}</div>
                                 </div>
                                 <div className="space-y-1 text-center border-x border-slate-200">
                                     <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Subject</label>
-                                    <div className="font-bold text-slate-600 text-xs truncate">{subjects.find(s => s.id === formData.subjectId)?.name || 'N/A'}</div>
+                                    <div className="font-bold text-slate-600 text-xs truncate">{subjects.find((s: any) => s.id === formData.subjectId)?.name || 'N/A'}</div>
                                 </div>
                                 <div className="space-y-1 text-center">
                                     <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Topic</label>
-                                    <div className="font-bold text-teal-600 text-xs truncate">{topics.find(t => t.id === formData.topicId)?.name || 'N/A'}</div>
+                                    <div className="font-bold text-teal-600 text-xs truncate">{topics.find((t: any) => t.id === formData.topicId)?.name || 'N/A'}</div>
                                 </div>
                             </div>
 
@@ -519,7 +519,7 @@ export function SubtopicTable() {
                             <p className="text-sm text-slate-500 mt-2 max-w-xs">Try adjusting your search or use the Factory to seed new hierarchy nodes.</p>
                         </div>
                     ) : (
-                        data.map((item, idx) => (
+                        data.map((item, idx: number) => (
                             <SubtopicReviewCard
                                 key={item.id}
                                 subtopic={item}

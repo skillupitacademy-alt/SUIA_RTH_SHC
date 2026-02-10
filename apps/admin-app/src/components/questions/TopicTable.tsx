@@ -220,7 +220,7 @@ export function TopicTable() {
                             target: 'topic',
                             domainId: formData.domainId,
                             subjectId: formData.subjectId,
-                            subjectName: subjects.find(s => s.id === formData.subjectId)?.name || ''
+                            subjectName: subjects.find((s: any) => s.id === formData.subjectId)?.name || ''
                         }
                         : { target: 'topic' }
                 }
@@ -369,7 +369,7 @@ export function TopicTable() {
                                         <SelectField
                                             label="Domain"
                                             value={formData.domainId}
-                                            options={domains.map(d => ({ id: d.id, name: d.name }))}
+                                            options={domains.map((d: any) => ({ id: d.id, name: d.name }))}
                                             loading={domainsHook.loading}
                                             onChange={handleDomainChange}
                                             placeholder="Change Domain"
@@ -379,7 +379,7 @@ export function TopicTable() {
                                         <SelectField
                                             label="Subject"
                                             value={formData.subjectId}
-                                            options={subjects.map(s => ({ id: s.id, name: s.name }))}
+                                            options={subjects.map((s: any) => ({ id: s.id, name: s.name }))}
                                             loading={subjectsHook.loading}
                                             disabled={!formData.domainId}
                                             onChange={(id) => setFormData({ ...formData, subjectId: id })}
