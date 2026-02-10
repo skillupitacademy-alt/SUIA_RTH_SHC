@@ -16,11 +16,11 @@ export class AuthClient {
   }
 
   async getSession() {
-    return this.client.get<{ user: any }>('/auth/me');
+    return this.client.get<{ user: any; expiresAt: string | null }>('/auth/me');
   }
 
   async getAdminSession() {
-    return this.client.get<{ user: any }>('/admin/auth/me');
+    return this.client.get<{ user: any; expiresAt: string | null }>('/admin/auth/me');
   }
 
   async logout() {
@@ -28,7 +28,7 @@ export class AuthClient {
   }
 
   async refresh() {
-    return this.client.post<{ accessToken: string }>('/auth/refresh', {});
+    return this.client.post<{ accessToken: string; expiresAt: string | null }>('/auth/refresh', {});
   }
 
   async updateProfile(profileData: any) {

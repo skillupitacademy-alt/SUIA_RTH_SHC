@@ -30,6 +30,7 @@ export async function GET(req: NextRequest) {
       email: user.email,
       name: user.profile?.name,
       roles: user.userRoles.map((ur) => ur.role.name),
+      expiresAt: TokenService.getExpiration(token),
     });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 401 });

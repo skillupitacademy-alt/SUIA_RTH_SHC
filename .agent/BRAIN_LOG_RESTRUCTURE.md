@@ -1309,3 +1309,9 @@ Reduce documentation fragmentation and improve discoverability by consolidating 
 - **Action**: Created `ControlCenterDeck.tsx`, implemented range selection filters (7d/14d/28d), and re-ordered dashboard layout for hierarchical clarity.
 - **Verification**: System integrity verified with root `pnpm build` and `tsc --noEmit` (Exit Code 0).
 - **Outcome**: Unified executive-level metrics and performance analytics into a single, high-fidelity command view.
+
+### Batch 172: Session Security & Expiry Monitoring
+- **Goal**: Implement session expiration warnings and clean logout.
+- **Action**: Updated Backend to return expiry metadata, created `SessionWatcher` components, and integrated them into both app layouts.
+- **Verification**: System integrity verified with root `pnpm build` and `tsc --noEmit` (Exit Code 0).
+- **Outcome**: Enhanced security layer that prevents stale session hijacking and improves UX with proactive warnings.

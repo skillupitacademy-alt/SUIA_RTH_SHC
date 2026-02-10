@@ -6,11 +6,11 @@
 ---
 
 ### 📝 Latest Activity
-- **Task**: Admin Control Center Implementation
-- **Outcome**: Delivered high-level metrics deck, range selection logic, and layout re-ordering.
+- **Task**: Session Expiration Warning & Clean Logout
+- **Outcome**: Delivered global session monitoring and protective UI prompts.
 - **Details**:
-    - UI: Created `ControlCenterDeck` and updated `PerformanceAnalyticsBoard` with 7d/14d/28d toggle.
-    - Layout: Re-prioritized dashboard hierarchy (Control Center > Performance > Health).
+    - Backend: Added `expiresAt` metadata to Token Service and Auth routes.
+    - Frontend: Created `SessionWatcher` and `ConfirmationDialog` for both web/admin apps.
     - Verification: `pnpm build` and `npx tsc --noEmit` passed (Exit Code 0).
 
 ---

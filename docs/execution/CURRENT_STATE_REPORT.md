@@ -713,3 +713,10 @@
 - **Time Machine Logic**: Added internal and API-level support for 7d/14d/28d filtering across performance analytics.
 - **UI Consistency**: Refactored `PerformanceAnalyticsBoard` and `ExamActivityBoard` with improved contrast, standard typography, and integrated tooltips.
 - **Verification**: Verified system-wide build and type-check stability with a successful root `pnpm build` and `tsc` cycle (Exit Code 0).
+
+### Phase 51: Session Expiration & Security Hardening (Batch 172)
+- **Session Expiry Metadata**: Backend `/auth/me` and `/auth/refresh` now return `expiresAt` timestamps.
+- **Real-time Monitoring**: Implemented `SessionWatcher` in both apps to check session health every 5s.
+- **UI Prompts**: Added consistent 3-minute warnings before automatic logout.
+- **Clean Logout**: Enforced server-side logout and client-side store purge on session termination.
+- **Verification**: Verified system-wide build and type-check stability (Exit Code 0).

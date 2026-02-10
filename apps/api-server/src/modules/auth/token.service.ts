@@ -98,4 +98,20 @@ export class TokenService {
     const { payload } = await jose.jwtVerify(token, secret);
     return payload as unknown as { userId: string; isAdmin: boolean };
   }
+
+  /**
+   * Extract expiration timestamp from a token without verifying signature.
+   * Useful for informing the client about session duration.
+   */
+  static getExpiration(token: string): string | null {
+    try {
+      const decoded = jose.decodeJwt(token);
+      if (decoded.exp) {
+        return new Date(decoded.exp * 1000).toISOString();
+      }
+      return null;
+    } catch {
+      return null;
+    }
+  }
 }

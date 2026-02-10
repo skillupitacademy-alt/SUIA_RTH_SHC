@@ -19,7 +19,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 // Re-validate session on mount using the httpOnly cookie
                 const session = await apiClient.auth.getSession();
                 if (session && session.user) {
-                    login(session.user);
+                    login(session.user, session.expiresAt);
                 } else {
                     // If session returns successfully but without a user, we are logged out
                     logout();
@@ -27,10 +27,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             } catch (error) {
                 // If session is invalid, try refresh logic
                 try {
-                    await apiClient.auth.refresh();
+                    const refreshResponse = await apiClient.auth.refresh();
                     const session = await apiClient.auth.getSession();
                     if (session && session.user) {
-                        login(session.user);
+                        login(session.user, session.expiresAt || refreshResponse.expiresAt);
                     } else {
                         logout();
                     }

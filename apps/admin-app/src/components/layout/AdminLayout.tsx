@@ -20,6 +20,7 @@ import {
 
 import { cn } from '@/lib/utils';
 import { AdminGuard } from '@/components/auth/AdminGuard';
+import { SessionWatcher } from '@/components/auth/SessionWatcher';
 import { useAuthStore } from '@/store/auth-store';
 import { apiClient } from '@quiz/api-client';
 import { useEffect } from 'react';
@@ -91,6 +92,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
     return (
         <AdminGuard>
+            <SessionWatcher />
             {showWarning && (
                 <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
                     <div className="bg-background border rounded-[2.5rem] p-8 max-w-md w-full shadow-2xl relative overflow-hidden">

@@ -1,8 +1,14 @@
 'use client';
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { ResultSummary } from "@/components/reports/ResultSummary";
 import { PerformanceBreakdown } from "@/components/reports/PerformanceBreakdown";
+import { SkillHeatmap } from "@/components/reports/SkillHeatmap";
+import { MappingTrinity } from "@/components/reports/MappingTrinity";
+import { BehavioralRadar } from "@/components/reports/BehavioralRadar";
+import { EfficiencyQuadrant } from "@/components/reports/EfficiencyQuadrant";
+import { RemediationZone } from "@/components/reports/RemediationZone";
+import ActionPlanPanel from "@/components/reports/ActionPlanPanel";
 import { ArrowLeft, Download, Share2, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
@@ -10,8 +16,6 @@ import { apiClient } from "@quiz/api-client";
 import { cn } from "@/lib/utils";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 import { useAuthStore } from "@/store/auth-store";
-
-import { Suspense } from 'react';
 
 function ReportContent() {
     const searchParams = useSearchParams();
@@ -85,12 +89,21 @@ function ReportContent() {
                         accuracy: Math.round(d.accuracy)
                     })),
                     growthZones: report.growthZones || [],
+
+                    // Multi-Dimensional Mapping
+                    skillMatrix: report.performance?.skill || [],
+                    behaviorRadar: report.performance?.category || [], // API use 'category' for Technical/Cognitive/Process
+                    knowledgeTrinity: report.performance?.mapping_type || [], // API use 'mapping_type' for Conceptual/Technical/Practical
+                    subtopics: report.performance?.subtopic || [],
+                    actionPlan: report.actionPlan || [],
+
                     questions: report.questions?.map((q: any, idx: number) => ({
                         id: q.id || `q-${idx}`,
                         questionText: q.text,
                         userAnswer: q.userAnswer,
                         correctAnswer: q.correctAnswer, // Sanitized by backend
-                        isCorrect: q.isCorrect
+                        isCorrect: q.isCorrect,
+                        timeSpent: q.timeSpent || 0
                     }))
                 };
 
@@ -171,7 +184,7 @@ function ReportContent() {
                         </div>
                     </div>
 
-                    {/* Real Data Components */}
+                    {/* 1. Result Summary */}
                     <ResultSummary
                         score={reportData.score}
                         total={reportData.total}
@@ -180,14 +193,45 @@ function ReportContent() {
                         status={reportData.status}
                     />
 
+                    {/* 2. Performance Breakdown (Main Gauges) */}
                     <PerformanceBreakdown
                         topics={reportData.topics}
                         difficulty={reportData.difficulty}
                         growthZones={reportData.growthZones}
                     />
 
+                    {/* 3. Skill Matrix Matrix */}
+                    {reportData.skillMatrix.length > 0 && (
+                        <SkillHeatmap data={reportData.skillMatrix} className="mt-8" />
+                    )}
+
+                    {/* 4. Behavioral & Knowledge Grids */}
+                    <div className="grid gap-8 lg:grid-cols-2">
+                        {reportData.knowledgeTrinity.length > 0 && (
+                            <MappingTrinity data={reportData.knowledgeTrinity} />
+                        )}
+                        {reportData.behaviorRadar.length > 0 && (
+                            <BehavioralRadar data={reportData.behaviorRadar} />
+                        )}
+                    </div>
+
+                    {/* 5. Efficiency Analysis */}
+                    {reportData.questions?.some((q: any) => q.timeSpent > 0) && (
+                        <EfficiencyQuadrant questions={reportData.questions} />
+                    )}
+
+                    {/* 6. Remediation Engine */}
+                    {reportData.subtopics.length > 0 && (
+                        <RemediationZone subtopicPerformance={reportData.subtopics} />
+                    )}
+
+                    {/* 7. Action Plan (Execution Plane) */}
+                    {reportData.actionPlan.length > 0 && (
+                        <ActionPlanPanel items={reportData.actionPlan} />
+                    )}
+
                     {/* Question Audit Section */}
-                    <section className="space-y-8">
+                    <section className="space-y-8 pt-8 border-t border-muted/20">
                         <div className="flex items-center justify-between">
                             <h3 className="text-2xl font-black tracking-tight">Question Audit</h3>
                             <div className="flex gap-4 text-xs font-bold uppercase tracking-widest text-muted-foreground">

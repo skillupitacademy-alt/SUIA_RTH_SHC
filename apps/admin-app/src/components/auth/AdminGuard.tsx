@@ -7,9 +7,8 @@ import { apiClient } from '@quiz/api-client';
 import { ZLoader } from '@/components/ui/ZLoader';
 
 export function AdminGuard({ children }: { children: React.ReactNode }) {
-    const { user, isAuthenticated, initialized } = useAuthStore();
+    const { user, isAuthenticated, initialized, login, logout } = useAuthStore();
     const router = useRouter();
-    const { logout } = useAuthStore();
 
     useEffect(() => {
         if (!initialized) return;
@@ -24,8 +23,9 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
             try {
                 // Access token is now handled via httpOnly cookies automatically
                 // Strictly use Admin Session endpoint
-                const { user: validatedUser } = await apiClient.auth.getAdminSession();
+                const { user: validatedUser, expiresAt } = await apiClient.auth.getAdminSession();
                 if (!validatedUser.isAdmin) throw new Error("Revoked");
+                login(validatedUser, expiresAt);
             } catch (err: any) {
                 console.error("Session revalidation failed:", err);
                 // Auto-heal on invalid token signature

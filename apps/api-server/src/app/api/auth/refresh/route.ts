@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 export const dynamic = 'force-dynamic';
 import { AuthService } from '@/modules/auth/auth.service';
+import { TokenService } from '@/modules/auth/token.service';
 
 export async function POST(req: NextRequest) {
   try {
@@ -16,8 +17,9 @@ export async function POST(req: NextRequest) {
     const ip = (req.headers.get('x-forwarded-for') || '').split(',')[0] || '';
     
     const { accessToken, refreshToken: newRefreshToken } = await AuthService.refresh(tokenToUse!, ip);
+    const expiresAt = TokenService.getExpiration(accessToken);
 
-    const response = NextResponse.json({ success: true }); // No accessToken in body
+    const response = NextResponse.json({ success: true, expiresAt }); // No accessToken in body
 
     const cookieDomain = process.env.COOKIE_DOMAIN || '.realtutorialhub.com';
     const isProd = process.env.NODE_ENV === 'production';

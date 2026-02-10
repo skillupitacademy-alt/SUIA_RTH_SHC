@@ -123,3 +123,4 @@
 | 2026-02-10 | Quiz Result UI Discrepancy | COMPLETED | Fixed missing timeTaken/percentile, circle clipping, and layout width. |
 | 2026-02-10 | Exam UI Stability & Timer Logic | COMPLETED | Fixed "Save & Next" jitter with sticky footer; Aligned backend exam timer with frontend estimate (1.5m rule). |
 | 2026-02-10 | Admin Control Center | COMPLETED | Implemented high-level "Control Center" deck with key metrics (Average Score, Pass Rate, Total Exams), momentum badges, and traffic-light status. Added 7d/14d/28d time-machine range selection for performance analytics. verified with Exit Code 0. |
+| 2026-02-10 | Session Expiration Warning | COMPLETED | Implemented real-time session monitoring in both Admin and Web apps. Added `expiresAt` metadata to backend auth, created `SessionWatcher` components with 3-minute warnings, and enforced automatic logout. Verified with root build (Exit Code 0). |
