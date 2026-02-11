@@ -1,18 +1,18 @@
 # 🧠 Current Task Log
 
-**Status**: 🟢 IDLE
-**Mode**: Awaiting Instructions
+**Status**: 🟢 COMPLETED
+**Mode**: Documentation & Visual Stabilization
 
 ---
 
 ### 📝 Latest Activity
-- **Task**: API Server UI Regression Fix
-- **Outcome**: Restored "Executive White" styling to API Server login page.
+- **Task**: Documentation Regressions & Visual Stabilization
+- **Outcome**: Restored full functionality to documentation viewers and achieved global italic font removal.
 - **Details**:
-    - **Infrastructure**: Installed missing `tailwindcss`, `postcss`, and `autoprefixer` dependencies in `@quiz/api-server`.
-    - **Configuration**: Created `tailwind.config.ts` and `postcss.config.js` mirroring the Admin App.
-    - **Styling**: Updated `src/app/index.css` with standard Tailwind directives and theme variables.
-    - **Verification**: Confirmed successful build (`pnpm build`) and type check (`npx tsc --noEmit`) with Exit Code 0.
+    - **Visual**: Global purge of all `italic` and `not-italic` classes for professional typography DNA.
+    - **Regressions**: Fixed syntax errors in `BrainLogViewer.tsx` and property mapping in `GovernanceInventory.tsx` / `ConstitutionViewer.tsx`.
+    - **Build**: Resolved `item.layer` regression in `ArchitectureViewer.tsx`; verified `admin-app` and `web-app` build stability.
+    - **Verification**: Confirmed `admin-app` and `web-app` production builds pass with Exit Code 0.
 
 ---
 
