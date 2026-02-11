@@ -39,11 +39,12 @@ export async function POST(req: NextRequest) {
 
     // Set HttpOnly cookies for Refresh Token
     const refreshCookieName = isAdmin ? 'admin_refreshToken' : 'refreshToken';
+    const refreshMaxAge = isAdmin ? 24 * 60 * 60 : 7 * 24 * 60 * 60; // 24h for admin, 7d for user
     response.cookies.set(refreshCookieName, refreshToken, {
       httpOnly: true,
       secure: true,
       sameSite: 'none',
-      maxAge: 7 * 24 * 60 * 60, // 7 days
+      maxAge: refreshMaxAge, 
       path: '/',
       domain: cookieDomain,
     });

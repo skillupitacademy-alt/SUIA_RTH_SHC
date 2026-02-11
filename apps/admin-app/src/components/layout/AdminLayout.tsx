@@ -47,9 +47,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     const [isRedirecting, setIsRedirecting] = useState(false);
     const { showWarning, confirmLogout, cancelNavigation } = useStrictNavigation();
 
-    const handleLogout = () => {
+    const handleLogout = async () => {
         if (isRedirecting) return;
         setIsRedirecting(true);
+
+        // Terminate session on server immediately
+        try {
+            await apiClient.auth.logout();
+        } catch (err) {
+            console.error("Admin logout server call failed:", err);
+        }
 
         // Brief delay for toast visibility
         setTimeout(() => {

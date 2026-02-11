@@ -10,8 +10,18 @@ import { apiClient } from '@quiz/api-client';
 const AuthContext = createContext<any>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-    const { user, isAuthenticated, login, logout } = useAuthStore();
+    const { user, isAuthenticated, login, logout: storeLogout } = useAuthStore();
     const [loading, setLoading] = useState(true);
+
+    const handleLogout = async () => {
+        try {
+            await apiClient.auth.logout();
+        } catch (err) {
+            console.error("Server-side logout failed:", err);
+        } finally {
+            storeLogout();
+        }
+    };
 
     useEffect(() => {
         const initAuth = async () => {
@@ -22,7 +32,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                     login(session.user, session.expiresAt);
                 } else {
                     // If session returns successfully but without a user, we are logged out
-                    logout();
+                    handleLogout();
                 }
             } catch (error) {
                 // If session is invalid, try refresh logic
@@ -32,10 +42,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                     if (session && session.user) {
                         login(session.user, session.expiresAt || refreshResponse.expiresAt);
                     } else {
-                        logout();
+                        handleLogout();
                     }
                 } catch (refreshError) {
-                    logout();
+                    handleLogout();
                 }
             } finally {
                 setLoading(false);
@@ -43,7 +53,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         };
 
         const handleUnauthorized = () => {
-            logout();
+            handleLogout();
         };
 
         window.addEventListener('auth:unauthorized', handleUnauthorized);
@@ -52,10 +62,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return () => {
             window.removeEventListener('auth:unauthorized', handleUnauthorized);
         };
-    }, [login, logout]);
+    }, [login, storeLogout]);
 
     return (
-        <AuthContext.Provider value={{ user, loading, login, logout, isAuthenticated }}>
+        <AuthContext.Provider value={{ user, loading, login, logout: handleLogout, isAuthenticated }}>
             {children}
         </AuthContext.Provider>
     );

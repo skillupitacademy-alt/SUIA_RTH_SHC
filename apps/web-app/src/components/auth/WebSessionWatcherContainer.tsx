@@ -20,9 +20,16 @@ export function WebSessionWatcherContainer() {
         }
     };
 
-    const handleLogout = () => {
+    const handleLogout = async () => {
         if (isRedirecting) return;
         setIsRedirecting(true);
+
+        // Terminate session on server
+        try {
+            await apiClient.auth.logout();
+        } catch (err) {
+            console.error("Auto-logout server call failed:", err);
+        }
 
         // Brief delay to allow the user to see the toast
         setTimeout(() => {

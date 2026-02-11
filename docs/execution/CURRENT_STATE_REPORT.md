@@ -805,9 +805,9 @@
 - **Outcome**: Delivered a unified, premium visual identity across all 3 platform landing pages.
 
 
-### Phase 66: Admin Root Redirection & Instant Login (Batch 178)
-- **Goal**: Eliminate visual "loading flash" and dashboard flicker for unauthenticated users at the root URL.
-- **Action**: Implemented and **hardened** Next.js Server-Side Middleware with `Cache-Control: no-store` and strict cookie value validation.
-- **Cloudflare**: Orchestrated a **Bypass Cache** Page Rule for `admin.realtutorialhub.com/*` to ensure middleware execution behind the CDN.
-- **Verification**: Confirmed 100% root build stability and type-safety across the monorepo (Exit Code 0).
-- **Outcome**: Delivered a professional, instant login experience that survives CDN caching and stale browser sessions.
+### Phase 67: Session Cleanup & Hardening (Batch 179)
+- **Goal**: Ensure 100% reliable session termination and harden admin security governance.
+- **Action**: Shortened `admin_refreshToken` to 24 hours and synchronized all logout paths (manual, timer, and 401 events) to call `apiClient.auth.logout()`.
+- **Implementation**: Updated `AuthProvider`, `AdminLayout`, `AdminGuard`, and the API login route.
+- **Verification**: Verified via manual cookie auditing and monorepo build (Exit Code 0).
+- **Outcome**: Eliminated "stale session" survival and reduced the attack surface for admin accounts.

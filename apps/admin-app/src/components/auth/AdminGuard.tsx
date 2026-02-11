@@ -43,10 +43,16 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
         }
 
         // Circuit Breaker: Listen for global 401 events from FetchClient
-        const handleUnauthorized = () => {
+        const handleUnauthorized = async () => {
             console.warn("Circuit Breaker: Global 401 detected. Logging out.");
-            logout();
-            router.push('/login');
+            try {
+                await apiClient.auth.logout();
+            } catch (err) {
+                console.error("Server-side logout failed during unauthorized event:", err);
+            } finally {
+                logout();
+                router.push('/login');
+            }
         };
 
         window.addEventListener('auth:unauthorized', handleUnauthorized);
