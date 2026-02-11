@@ -49,6 +49,10 @@
     @apply w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse;
   }
 
+  .status-text {
+    @apply text-xs font-black uppercase tracking-widest text-[#1A1A1A] font-inter;
+  }
+
   .stats-card {
     @apply p-8 rounded-[2rem] bg-slate-50 border border-slate-100 flex flex-col items-center md:items-end gap-2 shadow-sm;
   }
@@ -157,6 +161,12 @@
 
   .alpha-terminal {
     @apply font-black uppercase tracking-[0.3em] text-[11px];
+  }
+
+  .grid-bg {
+    @apply fixed inset-0 -z-20 pointer-events-none;
+    background-image: linear-gradient(to right, #80808008 1px, transparent 1px), linear-gradient(to bottom, #80808008 1px, transparent 1px);
+    background-size: 24px 24px;
   }
 }
 
