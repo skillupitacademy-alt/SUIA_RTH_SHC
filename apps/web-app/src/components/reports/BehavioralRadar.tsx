@@ -62,7 +62,7 @@ export function BehavioralRadar({ data, className }: BehavioralRadarProps) {
     });
 
     return (
-        <div className={cn("glass-morphism rounded-[3rem] p-8 flex flex-col items-center gap-6", className)}>
+        <div className={cn("glass-morphism rounded-[3rem] p-8 flex flex-col items-center gap-6 border border-slate-200/50", className)}>
             <div className="flex items-center gap-3 w-full mb-2">
                 <div className="p-2.5 rounded-xl bg-primary/10 text-primary shadow-inner">
                     <Activity size={22} />
@@ -132,7 +132,7 @@ export function BehavioralRadar({ data, className }: BehavioralRadarProps) {
 
             <div className="grid grid-cols-3 gap-3 w-full">
                 {categories.map((cat, i) => (
-                    <div key={cat} className="text-center px-2 py-4 rounded-[1.5rem] bg-white border border-slate-100 shadow-sm">
+                    <div key={cat} className="text-center px-2 py-4 rounded-[1.5rem] bg-white border border-slate-200 shadow-sm">
                         <p className="text-[10px] font-black text-slate-700 uppercase mb-1 tracking-tighter">{displayNames[cat]}</p>
                         <p className="text-base font-black text-primary drop-shadow-sm">{values[i]}%</p>
                     </div>

@@ -29,7 +29,8 @@ export function SessionExpiryModal() {
         router.push(`/login?redirect=${redirectUrl}&reason=session_expired`);
     };
 
-    if (!isSessionExpired) return null;
+    // Don't show modal if already on login page
+    if (!isSessionExpired || pathname === '/login') return null;
 
     return (
         <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">

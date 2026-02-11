@@ -24,7 +24,7 @@ export function MappingTrinity({ data, className }: MappingTrinityProps) {
     });
 
     return (
-        <div className={cn("glass-morphism rounded-[3rem] p-8 flex flex-col gap-8", className)}>
+        <div className={cn("glass-morphism rounded-[3rem] p-8 flex flex-col gap-8 border border-slate-200/50", className)}>
             <div className="flex items-center gap-3 w-full">
                 <div className="p-2.5 rounded-xl bg-primary/10 text-primary shadow-inner">
                     <Target size={22} />
@@ -45,7 +45,7 @@ export function MappingTrinity({ data, className }: MappingTrinityProps) {
                             </div>
                         </div>
 
-                        <div className="h-4 w-full bg-white/40 border border-white/20 rounded-full overflow-hidden p-0.5">
+                        <div className="h-4 w-full bg-slate-100 border border-slate-200 rounded-full overflow-hidden p-0.5">
                             <div
                                 className={cn(
                                     "h-full transition-all duration-1000 ease-out rounded-full relative overflow-hidden",

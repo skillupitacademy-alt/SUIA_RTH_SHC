@@ -30,7 +30,8 @@ export function RemediationZone({ subtopicPerformance, className }: RemediationZ
 
             <div className="grid md:grid-cols-2 gap-8">
                 {/* Growth Zones */}
-                <div className="glass-morphism rounded-[3rem] p-10 border-primary/30 space-y-8 shadow-sm">
+                <div className="glass-morphism rounded-[3rem] p-10 border border-slate-200/50 space-y-8 shadow-sm relative overflow-hidden">
+                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary/50 to-transparent opacity-50" />
                     <div className="flex items-center justify-between">
                         <h3 className="text-2xl font-black tracking-tight text-primary">Priority Growth</h3>
                         <AlertTriangle className="text-primary" size={24} />
@@ -39,7 +40,7 @@ export function RemediationZone({ subtopicPerformance, className }: RemediationZ
                     <div className="space-y-6">
                         {growthZones.length > 0 ? (
                             growthZones.slice(0, 3).map((zone) => (
-                                <div key={zone.id} className="flex gap-5 p-6 rounded-[2rem] bg-white/80 border border-white shadow-sm group hover:border-primary/40 transition-all">
+                                <div key={zone.id} className="flex gap-5 p-6 rounded-[2rem] bg-white/80 border border-slate-200 shadow-sm group hover:border-primary/40 transition-all">
                                     <div className="h-14 w-14 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform shadow-inner">
                                         <TrendingUp size={28} />
                                     </div>
@@ -65,12 +66,12 @@ export function RemediationZone({ subtopicPerformance, className }: RemediationZ
                 </div>
 
                 {/* Mastered Dimensions */}
-                <div className="glass-morphism rounded-[3rem] p-10 space-y-8 shadow-sm">
+                <div className="glass-morphism rounded-[3rem] p-10 space-y-8 shadow-sm border border-slate-200/50">
                     <h3 className="text-2xl font-black tracking-tight text-secondary">Verified Mastery</h3>
 
                     <div className="space-y-4">
                         {masteredZones.slice(0, 3).map((zone) => (
-                            <div key={zone.id} className="flex items-center justify-between p-6 rounded-[2rem] bg-white/60 border border-white shadow-sm">
+                            <div key={zone.id} className="flex items-center justify-between p-6 rounded-[2rem] bg-white/60 border border-slate-200 shadow-sm">
                                 <div className="flex items-center gap-4">
                                     <div className="h-12 w-12 rounded-2xl bg-secondary/10 text-secondary flex items-center justify-center shrink-0 shadow-inner">
                                         <CheckCircle2 size={24} />
