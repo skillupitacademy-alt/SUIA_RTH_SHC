@@ -340,77 +340,87 @@ export class AdminEngine {
     };
   }
 
-  static async getPerformanceAnalytics() {
-    const domainScores = await db.select({
-      dimensionId: resultsByDimension.dimensionId,
-      name: resultsByDimension.name,
-      avgAccuracy: sql`avg(${resultsByDimension.accuracy})`,
-      count: sql`count(*)`,
-    })
-    .from(resultsByDimension)
-    .where(eq(resultsByDimension.dimensionType, 'domain'))
-    .groupBy(resultsByDimension.dimensionId, resultsByDimension.name);
+  static async getPerformanceAnalytics(range: string = '7d') {
+    const [
+        domainScores,
+        difficultyScores,
+        passFail,
+        efficiencyResult,
+        trendSummaryResult,
+        deltaDataResult,
+        domainDeltasResult
+    ] = await Promise.allSettled([
+        db.select({
+            dimensionId: resultsByDimension.dimensionId,
+            name: resultsByDimension.name,
+            avgAccuracy: sql`avg(${resultsByDimension.accuracy})`,
+            count: sql`count(*)`,
+        })
+        .from(resultsByDimension)
+        .where(eq(resultsByDimension.dimensionType, 'domain'))
+        .groupBy(resultsByDimension.dimensionId, resultsByDimension.name),
 
-    const difficultyScores = await db.select({
-      difficulty: resultsByDimension.name,
-      avgAccuracy: sql`avg(${resultsByDimension.accuracy})`,
-    })
-    .from(resultsByDimension)
-    .where(eq(resultsByDimension.dimensionType, 'difficulty'))
-    .groupBy(resultsByDimension.name);
+        db.select({
+            difficulty: resultsByDimension.name,
+            avgAccuracy: sql`avg(${resultsByDimension.accuracy})`,
+        })
+        .from(resultsByDimension)
+        .where(eq(resultsByDimension.dimensionType, 'difficulty'))
+        .groupBy(resultsByDimension.name),
 
-    const passFail = await db.select({
-      isPass: sql`case when ${resultsByDimension.accuracy} >= 70 then true else false end`,
-      count: sql`count(*)`,
-    })
-    .from(resultsByDimension)
-    .where(eq(resultsByDimension.dimensionType, 'domain')) // Use domain scores to determine pass/fail per exam/domain
-    .groupBy(sql`case when ${resultsByDimension.accuracy} >= 70 then true else false end`);
+        db.select({
+            isPass: sql`case when ${resultsByDimension.accuracy} >= 70 then true else false end`.mapWith(Boolean),
+            count: sql`count(*)`.mapWith(Number),
+        })
+        .from(resultsByDimension)
+        .where(eq(resultsByDimension.dimensionType, 'domain'))
+        .groupBy(sql`case when ${resultsByDimension.accuracy} >= 70 then true else false end`),
 
-    const efficiency = await this.getEfficiencyAnalytics();
-    
-    // Add Trend Summary & Time Machine Delta
-    const [trendSummaryResult, deltaDataResult, domainDeltasResult] = await Promise.allSettled([
-        TrendsService.getTrendSummary({ range: '7d' }),
-        TrendsService.getPeriodDelta(undefined, '7d'), // undefined userId = system-wide? specific user? Admin shows system-wide usually.
-        TrendsService.getDomainDeltas('7d')
+        this.getEfficiencyAnalytics(), // Now async parallel
+
+        TrendsService.getTrendSummary({ range }),
+        TrendsService.getPeriodDelta(undefined, range),
+        TrendsService.getDomainDeltas(range)
     ]);
 
+    // Unpack Results safely
+    const domains = domainScores.status === 'fulfilled' ? domainScores.value : [];
+    const difficulties = difficultyScores.status === 'fulfilled' ? difficultyScores.value : [];
+    const passFailData: any[] = passFail.status === 'fulfilled' ? (passFail.value as any[]) : [];
+    
+    // Efficiency Handling
+    const efficiency = efficiencyResult.status === 'fulfilled' ? efficiencyResult.value : {
+        mastery: 0, persistence: 0, rash: 0, struggle: 0, noData: 0, total: 0
+    };
+    if (efficiencyResult.status === 'rejected') console.error('[AdminEngine] getEfficiencyAnalytics failed:', efficiencyResult.reason);
+
+    // Trends Handling
     const trendSummary = trendSummaryResult.status === 'fulfilled' ? trendSummaryResult.value : {
         avgScore: 0, passRate: 0, totalExams: 0, bestSkill: null, worstSkill: null, currentStreak: 0
     };
-    if (trendSummaryResult.status === 'rejected') {
-        console.error('[AdminEngine] TrendsService.getTrendSummary failed:', trendSummaryResult.reason);
-    }
+    if (trendSummaryResult.status === 'rejected') console.error('[AdminEngine] getTrendSummary failed:', trendSummaryResult.reason);
 
     const deltaData = deltaDataResult.status === 'fulfilled' ? deltaDataResult.value : null;
-    if (deltaDataResult.status === 'rejected') {
-        console.error('[AdminEngine] TrendsService.getPeriodDelta failed:', deltaDataResult.reason);
-    }
 
     const domainDeltas = domainDeltasResult.status === 'fulfilled' ? domainDeltasResult.value : {};
-    if (domainDeltasResult.status === 'rejected') {
-        console.error('[AdminEngine] TrendsService.getDomainDeltas failed:', domainDeltasResult.reason);
-    }
 
-    // Compute System Health based on aggregate avg
     const healthStatus = TrendsService.getExecHealth(trendSummary.avgScore, deltaData?.deltaPct ?? null);
 
     return {
-      domains: domainScores.map(d => ({
+      domains: domains.map(d => ({
         id: d.dimensionId,
         name: d.name,
         avgAccuracy: Math.round(Number(d.avgAccuracy || 0)),
         sampleSize: Number(d.count || 0),
         delta: (d.dimensionId && domainDeltas[d.dimensionId]) ? domainDeltas[d.dimensionId].delta : 0
       })),
-      difficulty: difficultyScores.map(d => ({
+      difficulty: difficulties.map(d => ({
         level: d.difficulty,
         avgAccuracy: Math.round(Number(d.avgAccuracy || 0))
       })),
       passFailTrends: {
-        pass: Number(passFail.find(p => p.isPass === true)?.count || 0),
-        fail: Number(passFail.find(p => p.isPass === false)?.count || 0)
+        pass: Number(passFailData.find((p: any) => p.isPass === true)?.count || 0),
+        fail: Number(passFailData.find((p: any) => p.isPass === false)?.count || 0)
       },
       efficiency,
       summary: {

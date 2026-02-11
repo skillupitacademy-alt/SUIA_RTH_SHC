@@ -1,5 +1,26 @@
 import { db, exams, resultsByDimension } from '@quiz/db';
-import { eq, desc, gte, and, sql } from 'drizzle-orm';
+import { eq, desc, gte, lt, and, sql } from 'drizzle-orm';
+// ... (skip down)
+
+        const getPeriodStats = async (start: Date, end: Date) => {
+        const stats = await db.select({
+            id: resultsByDimension.dimensionId,
+            name: resultsByDimension.name,
+            score: sql`avg(${resultsByDimension.accuracy})`.mapWith(Number),
+            count: sql`count(*)`.mapWith(Number)
+        })
+        .from(resultsByDimension)
+        .innerJoin(exams, eq(resultsByDimension.examId, exams.id))
+        .where(and(
+            eq(resultsByDimension.dimensionType, 'domain'),
+            eq(exams.status, 'completed'),
+            gte(exams.completedAt, start),
+            lt(exams.completedAt, end)
+        ))
+        .groupBy(resultsByDimension.dimensionId, resultsByDimension.name);
+        
+        return stats;
+    };
 
 export interface ScoreTrend {
   examId: string;
@@ -248,7 +269,7 @@ export class TrendsService {
       const conditions = [
         eq(exams.status, 'completed'),
         gte(exams.completedAt, start),
-        sql`${exams.completedAt} < ${end.toISOString()}`
+        lt(exams.completedAt, end)
       ];
       if (userId) conditions.push(eq(exams.userId, userId));
 

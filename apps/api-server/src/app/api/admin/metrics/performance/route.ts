@@ -22,11 +22,14 @@ export async function GET(req: NextRequest) {
     const auth = await verifyAdmin(req);
     if (auth.error) return NextResponse.json({ error: auth.error, scope: auth.scope }, { status: auth.status });
 
+    const searchParams = req.nextUrl.searchParams;
+    const range = searchParams.get('range') || '7d';
+
     try {
-        const data = await AdminEngine.getPerformanceAnalytics();
+        const data = await AdminEngine.getPerformanceAnalytics(range);
         return NextResponse.json(data);
     } catch (error: any) {
-        console.error('[ADMIN_METRICS_PERFORMANCE] Error:', error.message);
-        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+        console.error('[ADMIN_METRICS_PERFORMANCE] Error:', error);
+        return NextResponse.json({ error: 'Internal Server Error', details: error.message }, { status: 500 });
     }
 }

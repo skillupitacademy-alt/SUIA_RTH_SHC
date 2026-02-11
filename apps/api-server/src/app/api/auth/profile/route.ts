@@ -34,7 +34,18 @@ export async function PATCH(req: NextRequest) {
       .where(eq(userProfiles.userId, payload.userId))
       .returning();
 
-    return NextResponse.json(updated);
+    if (updated) {
+        return NextResponse.json(updated);
+    }
+
+    // Fallback: Create profile if it doesn't exist
+    const [inserted] = await db.insert(userProfiles).values({
+        userId: payload.userId,
+        name: 'User', // Default name, client typically sends name updates separately or we assume one exists
+        ...body
+    }).returning();
+
+    return NextResponse.json(inserted);
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 400 });
   }

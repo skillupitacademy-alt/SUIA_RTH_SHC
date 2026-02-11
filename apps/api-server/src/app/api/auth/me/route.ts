@@ -30,6 +30,7 @@ export async function GET(req: NextRequest) {
         id: user.id,
         email: user.email,
         name: user.profile?.name,
+        onboarded: !!(user.profile?.professionalStatus && user.profile?.educationLevel),
         roles: user.userRoles.map((ur) => ur.role.name),
       },
       expiresAt: TokenService.getExpiration(token),
