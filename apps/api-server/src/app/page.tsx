@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useAuthStore } from "@/store/auth-store";
 import { ZLoader } from "@quiz/ui";
+import { ChevronRight } from "lucide-react";
 
 export default function Home() {
     const router = useRouter();
@@ -91,7 +92,7 @@ export default function Home() {
                             className="action-card"
                         >
                             <div className="action-icon">
-                                {"\u2192"}
+                                <ChevronRight size={32} />
                             </div>
                             <span className="action-text">Full System Check</span>
                         </a>

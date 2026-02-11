@@ -145,12 +145,12 @@
 
   .action-card {
     @apply p-8 text-white flex flex-col items-center justify-center gap-4 transition-all duration-300 shadow-lg no-underline;
-    background-color: #1A1A1A;
+    background-color: #FF2D55;
     border-radius: 2rem;
   }
 
   .action-card:hover {
-    background-color: #333333;
+    background-color: #E61E44;
   }
 
   .action-icon {
