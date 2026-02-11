@@ -52,7 +52,7 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
             } finally {
                 logout();
                 localStorage.removeItem('quiz-platform-admin-auth');
-                router.push('/login');
+                router.push('/login?reason=session_expired');
             }
         };
 

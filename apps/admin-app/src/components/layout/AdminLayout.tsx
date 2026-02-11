@@ -47,7 +47,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     const [isRedirecting, setIsRedirecting] = useState(false);
     const { showWarning, confirmLogout, cancelNavigation } = useStrictNavigation();
 
-    const handleLogout = async () => {
+    const handleLogout = async (reason?: 'session_expired') => {
         if (isRedirecting) return;
         setIsRedirecting(true);
 
@@ -62,10 +62,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         setTimeout(() => {
             logout();
             localStorage.removeItem('quiz-platform-admin-auth');
-            window.location.href = '/login?reason=session_expired';
+            const targetUrl = reason ? `/login?reason=${reason}` : '/login';
+            window.location.href = targetUrl;
             setIsRedirecting(false);
         }, 3000);
     };
+
+    const onManualLogout = () => handleLogout();
+    const onExpiryLogout = () => handleLogout('session_expired');
 
     const handleRefresh = async () => {
         const response = await apiClient.auth.refresh();
@@ -119,7 +123,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <SessionWatcher
                 expiresAt={expiresAt}
                 onRefresh={handleRefresh}
-                onLogout={handleLogout}
+                onLogout={onExpiryLogout}
                 isRedirecting={isRedirecting}
             />
             {showWarning && (
@@ -143,7 +147,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                                     Cancel
                                 </button>
                                 <button
-                                    onClick={confirmLogout}
+                                    onClick={onManualLogout}
                                     className="px-6 py-4 rounded-2xl bg-red-600 text-white font-black uppercase tracking-widest text-xs hover:bg-red-700 transition-all shadow-lg shadow-red-600/20"
                                 >
                                     Log Out
@@ -206,7 +210,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                             </div>
                         </div>
                         <button
-                            onClick={handleLogout}
+                            onClick={onManualLogout}
                             className="flex items-center gap-4 w-full px-5 py-4 rounded-[1.25rem] text-red-500 font-inter font-bold hover:bg-red-50 transition-colors group"
                         >
                             <LogOut size={20} className="group-hover:-translate-x-1 transition-transform" />
