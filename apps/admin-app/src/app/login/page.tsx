@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/auth-store';
 import { apiClient } from '@quiz/api-client';
 import { ShieldCheck, Lock, Mail } from 'lucide-react';
-import { ZLoader } from '@/components/ui/ZLoader';
+import { ZLoader } from '@quiz/ui';
 import Link from 'next/link';
 
 export default function AdminLoginPage() {

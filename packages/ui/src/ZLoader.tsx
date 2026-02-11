@@ -1,6 +1,7 @@
 'use client';
 
 import { Activity } from 'lucide-react';
+import { cn } from "@/lib/utils";
 
 interface ZLoaderProps {
     className?: string;
@@ -24,11 +25,18 @@ const sizes = {
  */
 export function ZLoader({ className, size = "md", text, center = true, color }: ZLoaderProps) {
     return (
-        <div className={`flex flex-col items-center justify-center gap-3 ${center ? "mx-auto" : ""} ${className || ""}`}>
+        <div className={cn(
+            "flex flex-col items-center justify-center gap-3",
+            center && "mx-auto",
+            className
+        )}>
             <div className="relative">
                 <Activity
-                    className={`animate-spin ${sizes[size]}`}
-                    style={color ? { color } : undefined}
+                    className={cn(
+                        "animate-spin",
+                        sizes[size]
+                    )}
+                    style={{ color: color || '#FF2D55' }}
                 />
             </div>
             {text && (

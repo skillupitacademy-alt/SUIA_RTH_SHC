@@ -5,7 +5,7 @@ import { GitBranch, Plus, Edit2, Trash2, X, AlertTriangle, BookOpen, Layers, Has
 import { formatDistanceToNow } from 'date-fns';
 import { formatTimeAgo, cn } from '@/lib/utils';
 import { ErrorBanner } from '@/components/layout/ErrorBanner';
-import { ZLoader } from '@/components/ui/ZLoader';
+import { ZLoader } from '@quiz/ui';
 import { useDomains, useSubjects, useTopics } from '@/hooks/useAdminHierarchy';
 import { HierarchyFactoryWizard } from '@/components/content/HierarchyFactoryWizard';
 import { SelectField } from '@/components/entry/SelectionFields';

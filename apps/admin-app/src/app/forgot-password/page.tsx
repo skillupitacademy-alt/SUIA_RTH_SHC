@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { apiClient } from '@quiz/api-client';
 import { Mail, ArrowLeft, Send, CheckCircle2 } from 'lucide-react';
-import { ZLoader } from '@/components/ui/ZLoader';
+import { ZLoader } from '@quiz/ui';
 import Link from 'next/link';
 
 export default function ForgotPasswordPage() {

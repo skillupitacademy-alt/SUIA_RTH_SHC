@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { apiClient } from '@quiz/api-client';
 import { Shield, Plus, Zap, Hash, Cpu, Trash2, Check } from 'lucide-react';
 import { ErrorBanner } from '@/components/layout/ErrorBanner';
-import { ZLoader } from '@/components/ui/ZLoader';
+import { ZLoader } from '@quiz/ui';
 import { SelectField } from '@/components/entry/SelectionFields';
 import { HierarchyFactoryWizard } from '@/components/content/HierarchyFactoryWizard';
 import { SkillReviewCard } from './SkillReviewCard';

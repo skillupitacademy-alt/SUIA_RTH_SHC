@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuthStore } from '@/store/auth-store';
 import { apiClient } from '@quiz/api-client';
-import { ZLoader } from '@/components/ui/ZLoader';
+import { ZLoader } from '@quiz/ui';
 
 export function AdminGuard({ children }: { children: React.ReactNode }) {
     const { user, isAuthenticated, initialized, login, logout } = useAuthStore();

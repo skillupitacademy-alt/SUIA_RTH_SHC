@@ -36,7 +36,8 @@
             "@/*": [
                 "./apps/web-app/src/*",
                 "./apps/admin-app/src/*",
-                "./apps/api-server/src/*"
+                "./apps/api-server/src/*",
+                "./packages/ui/src/*"
             ]
         },
         "noEmit": true

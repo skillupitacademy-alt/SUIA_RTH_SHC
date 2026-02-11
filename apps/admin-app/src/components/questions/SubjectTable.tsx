@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { apiClient } from '@quiz/api-client';
 import { BookOpen, Plus, AlertTriangle, Check, Trash2 } from 'lucide-react';
 import { ErrorBanner } from '@/components/layout/ErrorBanner';
-import { ZLoader } from '@/components/ui/ZLoader';
+import { ZLoader } from '@quiz/ui';
 import { HierarchyFactoryWizard } from '@/components/content/HierarchyFactoryWizard';
 import { SubjectReviewCard } from './SubjectReviewCard';
 import { cn } from '@/lib/utils';

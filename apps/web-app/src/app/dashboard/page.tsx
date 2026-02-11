@@ -13,13 +13,23 @@ import { useAuthStore } from "@/store/auth-store";
 import { useDashboardStore } from "@/store/dashboard-store";
 import { useEffect } from "react";
 
+import { ZLoader } from "@quiz/ui";
+
 export default function DashboardPage() {
     const { user } = useAuthStore();
-    const { data, fetchDashboard } = useDashboardStore();
+    const { data, fetchDashboard, loading } = useDashboardStore();
 
     useEffect(() => {
         fetchDashboard('7d', 1, 3);
     }, [fetchDashboard]);
+
+    if (!data && loading) {
+        return (
+            <div className="flex h-[calc(100vh-64px)] items-center justify-center bg-muted/5">
+                <ZLoader size="xl" text="Loading Dashboard..." />
+            </div>
+        );
+    }
 
     return (
         <AuthGuard>

@@ -17,7 +17,7 @@ import {
     BarChart3
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { ZLoader } from '@/components/ui/ZLoader';
+import { ZLoader } from '@quiz/ui';
 
 interface HierarchyItem {
     id: string;

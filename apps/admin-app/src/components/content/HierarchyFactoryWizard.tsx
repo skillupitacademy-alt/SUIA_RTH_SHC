@@ -27,7 +27,7 @@ import {
     ArrowLeft
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { ZLoader } from '@/components/ui/ZLoader';
+import { ZLoader } from '@quiz/ui';
 import { ZTooltip } from '@/components/ui/ZTooltip';
 import { SelectField } from '@/components/entry/SelectionFields';
 import { BlueprintFactoryWizard } from '@/components/content/BlueprintFactoryWizard';

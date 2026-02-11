@@ -13,7 +13,7 @@ import ActionPlanPanel from "@/components/reports/ActionPlanPanel";
 import { ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
-import { ZLoader } from "@/components/ui/ZLoader";
+import { ZLoader } from '@quiz/ui';
 
 export default function DynamicReportPage() {
     const { id } = useParams();

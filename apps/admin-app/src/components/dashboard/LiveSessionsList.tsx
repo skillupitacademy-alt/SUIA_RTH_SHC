@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { apiClient } from '@quiz/api-client';
 import { Users, Clock, Globe, ShieldCheck } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
-import { ZLoader } from '@/components/ui/ZLoader';
+import { ZLoader } from '@quiz/ui';
 
 export function LiveSessionsList() {
     const [sessions, setSessions] = useState<any[]>([]);

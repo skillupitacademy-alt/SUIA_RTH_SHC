@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Upload, FileJson, X, Check, AlertCircle, Trash2, Copy, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { ZLoader } from '@/components/ui/ZLoader';
+import { ZLoader } from '@quiz/ui';
 import { apiClient } from '@quiz/api-client';
 
 interface BulkUploadPanelProps {

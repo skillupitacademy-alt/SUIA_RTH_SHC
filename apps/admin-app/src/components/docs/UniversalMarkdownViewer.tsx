@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Shield, ChevronRight, AlertOctagon, Info, Terminal } from 'lucide-react';
-import { ZLoader } from '@/components/ui/ZLoader';
+import { ZLoader } from '@quiz/ui';
 import { cn } from '@/lib/utils';
 
 interface UniversalMarkdownViewerProps {

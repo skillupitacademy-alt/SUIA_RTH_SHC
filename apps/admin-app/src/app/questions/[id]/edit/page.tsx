@@ -8,7 +8,7 @@ import { CascadingSelect, Selection } from '@/components/entry/CascadingSelect';
 import { Database, ArrowLeft, CheckCircle2, AlertCircle, X, Edit3 } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
-import { ZLoader } from '@/components/ui/ZLoader';
+import { ZLoader } from '@quiz/ui';
 
 export default function EditQuestionPage() {
     const params = useParams();

@@ -7,7 +7,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { cn, formatTimeAgo } from '@/lib/utils';
 import { CascadingSelect, Selection } from '@/components/entry/CascadingSelect';
 import { MultiSelectField } from '@/components/entry/SelectionFields';
-import { ZLoader } from '@/components/ui/ZLoader';
+import { ZLoader } from '@quiz/ui';
 import { useAllSkills } from '@/hooks/useAdminHierarchy';
 import Link from 'next/link';
 import { QuestionReviewCard } from './QuestionReviewCard';

@@ -17,7 +17,7 @@ import {
     Zap
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { ZLoader } from '@/components/ui/ZLoader';
+import { ZLoader } from '@quiz/ui';
 import { HierarchyFactoryWizard } from '@/components/content/HierarchyFactoryWizard';
 import { BlueprintFactoryWizard } from '@/components/content/BlueprintFactoryWizard';
 
