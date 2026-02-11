@@ -40,11 +40,11 @@ function QuestionReviewContent() {
 
                     {stagedQuestions.length === 0 ? (
                         <div className="bg-white rounded-[2.5rem] p-24 border border-slate-200 shadow-sm flex flex-col items-center justify-center text-center">
-                            <div className="w-16 h-16 rounded-3xl bg-slate-50 text-slate-300 flex items-center justify-center mb-6 font-black italic">
+                            <div className="w-16 h-16 rounded-3xl bg-slate-50 text-slate-300 flex items-center justify-center mb-6 font-black">
                                 EMPTY
                             </div>
                             <h3 className="text-sm font-black uppercase tracking-widest text-[#1A1A1A]">No Questions Staged</h3>
-                            <p className="text-xs text-slate-400 max-w-sm mt-3 font-medium italic">
+                            <p className="text-xs text-slate-400 max-w-sm mt-3 font-medium">
                                 Go back and ingest a JSON payload to populate this console.
                             </p>
                         </div>

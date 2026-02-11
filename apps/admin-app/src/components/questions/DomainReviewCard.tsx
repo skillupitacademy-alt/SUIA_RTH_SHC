@@ -126,7 +126,7 @@ export function DomainReviewCard({
                                 <h3 className="text-xl font-black text-slate-800 tracking-tight leading-none mb-2">
                                     {domain.name}
                                 </h3>
-                                <p className="text-sm text-slate-600 font-medium leading-relaxed max-w-2xl italic">
+                                <p className="text-sm text-slate-600 font-medium leading-relaxed max-w-2xl">
                                     {domain.description || 'No formal definition provided.'}
                                 </p>
                             </div>

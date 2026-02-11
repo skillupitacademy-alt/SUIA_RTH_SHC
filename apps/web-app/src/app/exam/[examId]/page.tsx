@@ -249,7 +249,7 @@ export default function ActiveExamPage() {
                 "bg-white/90 border-gray-200"
             )}>
                 <div className="flex items-center gap-4">
-                    <div className="w-8 h-8 rounded-lg bg-pink-500 flex items-center justify-center font-black italic text-white">!G</div>
+                    <div className="w-8 h-8 rounded-lg bg-pink-500 flex items-center justify-center font-black text-white">!G</div>
                     <div className="h-4 w-[1px] bg-gray-200 mx-2" />
                     <div>
                         <h2 className="text-xs font-black font-outfit uppercase tracking-widest text-gray-500">Active Campaign</h2>

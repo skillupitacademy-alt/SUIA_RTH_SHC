@@ -76,7 +76,7 @@ export function QuestionCard({
                     </div>
 
                     <div className={cn(
-                        "w-10 h-10 rounded-2xl flex items-center justify-center font-black italic shadow-lg transition-all duration-500",
+                        "w-10 h-10 rounded-2xl flex items-center justify-center font-black shadow-lg transition-all duration-500",
                         isSelected ? "bg-[#FF4B91] text-white rotate-3 scale-110" : "bg-slate-900 text-[#FF4B91]"
                     )}>
                         #{index + 1}
@@ -133,7 +133,7 @@ export function QuestionCard({
             <div className="p-10 space-y-8 flex-1">
                 {/* Question Text */}
                 <div className="space-y-3">
-                    <label className="text-[10px] font-black uppercase text-[#FF4B91] tracking-widest italic flex items-center gap-2">
+                    <label className="text-[10px] font-black uppercase text-[#FF4B91] tracking-widest flex items-center gap-2">
                         <AlertCircle size={12} /> Question Statement
                     </label>
                     {isEditing ? (
@@ -267,7 +267,7 @@ export function QuestionCard({
                                 className="w-full min-h-[100px] p-6 rounded-2xl bg-white border border-slate-200 text-slate-600 text-xs font-medium focus:ring-2 focus:ring-[#FF4B91]/10 outline-none transition-all leading-relaxed"
                             />
                         ) : (
-                            <p className="text-xs text-slate-600 font-medium italic leading-relaxed border-l-2 border-[#FF4B91]/20 pl-6">
+                            <p className="text-xs text-slate-600 font-medium leading-relaxed border-l-2 border-[#FF4B91]/20 pl-6">
                                 {question.explanation}
                             </p>
                         )}

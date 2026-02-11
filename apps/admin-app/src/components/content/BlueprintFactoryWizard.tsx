@@ -127,7 +127,7 @@ export function BlueprintFactoryWizard({ isOpen, onClose, domainId, domainName, 
                             <ClipboardList size={24} />
                         </div>
                         <div>
-                            <h2 className="text-xl font-black uppercase tracking-tight italic text-[#1A1A1A]">Blueprint Designer_</h2>
+                            <h2 className="text-xl font-black uppercase tracking-tight text-[#1A1A1A]">Blueprint Designer_</h2>
                             <p className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em] mt-0.5">
                                 {formData.blueprintMode === 'static'
                                     ? `Static Orchestration Mode (${formData.questionIds.length} Locked)`
@@ -138,7 +138,7 @@ export function BlueprintFactoryWizard({ isOpen, onClose, domainId, domainName, 
                     <button
                         onClick={onClose}
                         title="Close the Designer and return to the management console. Warning: Unsaved configuration changes will be lost."
-                        className="p-3 hover:bg-red-50 text-muted-foreground hover:text-red-500 rounded-2xl transition-all border border-transparent hover:border-red-100 italic font-black uppercase text-[10px] flex items-center gap-2"
+                        className="p-3 hover:bg-red-50 text-muted-foreground hover:text-red-500 rounded-2xl transition-all border border-transparent hover:border-red-100 font-black uppercase text-[10px] flex items-center gap-2"
                     >
                         <X size={20} /> Close Designer
                     </button>
@@ -152,7 +152,7 @@ export function BlueprintFactoryWizard({ isOpen, onClose, domainId, domainName, 
                                 <CheckCircle2 size={40} />
                             </div>
                             <div className="text-center">
-                                <h3 className="text-2xl font-black uppercase tracking-tight italic text-[#1A1A1A]">Design Committed</h3>
+                                <h3 className="text-2xl font-black uppercase tracking-tight text-[#1A1A1A]">Design Committed</h3>
                                 <p className="text-sm font-bold text-muted-foreground uppercase tracking-widest mt-2">{formData.name} is now active.</p>
                             </div>
                             <button
@@ -209,7 +209,7 @@ export function BlueprintFactoryWizard({ isOpen, onClose, domainId, domainName, 
                                         <StatBox label="Inter" val={questionStats.intermediate} color="bg-orange-500/10 text-orange-600" />
                                         <StatBox label="Expert" val={questionStats.expert} color="bg-purple-500/10 text-purple-600" />
                                     </div>
-                                    <p className="text-[9px] font-bold text-muted-foreground uppercase text-center tracking-widest pt-2 italic">
+                                    <p className="text-[9px] font-bold text-muted-foreground uppercase text-center tracking-widest pt-2">
                                         Metrics confirmed by Factory Emission Engine.
                                     </p>
                                 </div>
@@ -231,7 +231,7 @@ export function BlueprintFactoryWizard({ isOpen, onClose, domainId, domainName, 
                                     <div className="space-y-2">
                                         <label className="text-[10px] font-black uppercase tracking-widest text-[#1A1A1A]">Target Domain_</label>
                                         <div
-                                            className="w-full bg-slate-100 border border-primary/5 rounded-2xl p-4 font-black italic text-xs text-primary/60"
+                                            className="w-full bg-slate-100 border border-primary/5 rounded-2xl p-4 font-black text-xs text-primary/60"
                                             title="The specific hierarchical Domain this blueprint is anchored to. Calibrations performed here will only affect this domain."
                                         >
                                             {domainName}
@@ -370,7 +370,7 @@ function StatBox({ label, val, color }: { label: string, val: number, color: str
     return (
         <div className={cn("p-4 rounded-3xl flex flex-col items-center justify-center gap-1 border border-primary/5", color)}>
             <span className="text-sm font-black tracking-tighter">{val}</span>
-            <span className="text-[8px] font-black uppercase tracking-[0.2em] opacity-60 italic">{label}</span>
+            <span className="text-[8px] font-black uppercase tracking-[0.2em] opacity-60">{label}</span>
         </div>
     );
 }

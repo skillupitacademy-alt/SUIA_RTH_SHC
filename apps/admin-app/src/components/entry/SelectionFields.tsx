@@ -51,8 +51,8 @@ export function MultiSelectField({ label, values, options, loading, onChange, pl
                             : "border-slate-300"
                     )}
                 >
-                    {loading && <option disabled className="p-2 italic opacity-50"></option>}
-                    {!loading && options.length === 0 && <option disabled className="p-2 italic opacity-50">No skills available for this topic</option>}
+                    {loading && <option disabled className="p-2 opacity-50"></option>}
+                    {!loading && options.length === 0 && <option disabled className="p-2 opacity-50">No skills available for this topic</option>}
 
                     {/* Grouped Options Logic */}
                     {!loading && options.length > 0 && (() => {
@@ -105,7 +105,7 @@ export function MultiSelectField({ label, values, options, loading, onChange, pl
                     </div>
                 )}
             </div>
-            <p className="text-[11px] text-slate-500 font-bold italic tracking-tight opacity-90">
+            <p className="text-[11px] text-slate-500 font-bold tracking-tight opacity-90">
                 Hold Ctrl/Cmd to select multiple mappings.
             </p>
         </div>

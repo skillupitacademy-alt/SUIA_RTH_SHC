@@ -86,8 +86,8 @@ export function ConfirmationDialog({
                         {getIcon()}
                     </div>
                     <div className="space-y-2">
-                        <h2 className="text-2xl font-black tracking-tight uppercase italic">{title}</h2>
-                        <p className="text-sm text-muted-foreground font-medium leading-relaxed italic">{message}</p>
+                        <h2 className="text-2xl font-black text-[#1A1A1A] tracking-tighter uppercase text-center">{title}</h2>
+                        <p className="text-sm text-muted-foreground font-medium leading-relaxed">{message}</p>
                     </div>
                 </div>
 

@@ -56,7 +56,7 @@ export function AssessmentSummary({
                                 </div>
                                 <span className="text-[14px] font-black font-inter text-[#1A1A1A] leading-tight">
                                     {domainName !== 'Not Selected' ? domainName : (
-                                        <span className="opacity-20 italic">Awaiting Selection...</span>
+                                        <span className="opacity-20">Awaiting Selection...</span>
                                     )}
                                 </span>
                             </div>
@@ -77,7 +77,7 @@ export function AssessmentSummary({
                                             )}
                                         </>
                                     ) : (
-                                        <span className="text-[10px] font-bold text-gray-300 uppercase tracking-tighter italic opacity-30">Selection Pending</span>
+                                        <span className="text-[10px] font-bold text-gray-300 uppercase tracking-tighter opacity-30">Selection Pending</span>
                                     )}
                                 </div>
                             </div>
@@ -101,7 +101,7 @@ export function AssessmentSummary({
                                             )}
                                         </>
                                     ) : (
-                                        <span className="text-[10px] font-bold text-gray-300 uppercase tracking-tighter italic opacity-30">Awaiting Topics</span>
+                                        <span className="text-[10px] font-bold text-gray-300 uppercase tracking-tighter opacity-30">Awaiting Topics</span>
                                     )}
                                 </div>
                             </div>
@@ -115,14 +115,14 @@ export function AssessmentSummary({
                                     {selectedSubtopics.length > 0 ? (
                                         <>
                                             {selectedSubtopics.slice(0, 4).map(st => (
-                                                <span key={st} className="px-2.5 py-1 bg-[#FF2D551A] text-[9px] font-black text-[#FF2D55] rounded-lg border border-[#FF2D5533] uppercase tracking-tighter italic hover:scale-110 transition-transform cursor-default">{st}</span>
+                                                <span key={st} className="px-2.5 py-1 bg-[#FF2D551A] text-[9px] font-black text-[#FF2D55] rounded-lg border border-[#FF2D5533] uppercase tracking-tighter hover:scale-110 transition-transform cursor-default">{st}</span>
                                             ))}
                                             {selectedSubtopics.length > 4 && (
                                                 <span className="px-2.5 py-1 bg-[#FF2D551A] text-[9px] font-black text-[#FF2D55]/40 rounded-lg border border-dashed border-[#FF2D5533] uppercase tracking-tighter">+{selectedSubtopics.length - 4}</span>
                                             )}
                                         </>
                                     ) : (
-                                        <span className="text-[10px] font-bold text-gray-300 uppercase tracking-tighter italic opacity-30">Sub-skills inactive</span>
+                                        <span className="text-[10px] font-bold text-gray-300 uppercase tracking-tighter opacity-30">Sub-skills inactive</span>
                                     )}
                                 </div>
                             </div>

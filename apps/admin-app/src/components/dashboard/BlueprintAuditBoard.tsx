@@ -25,7 +25,7 @@ export function BlueprintAuditBoard() {
         <div className="p-8 rounded-[2rem] border border-primary/10 bg-muted/5 backdrop-blur-md shadow-sm h-full">
             <div className="flex items-center justify-between mb-8">
                 <div>
-                    <h3 className="text-2xl font-black uppercase tracking-tighter italic text-[#1A1A1A]">Blueprint Audit</h3>
+                    <h3 className="text-2xl font-black uppercase tracking-tighter text-[#1A1A1A]">Blueprint Audit</h3>
                     <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-0.5">Enterprise Configuration & Compliance</p>
                 </div>
                 <div className="p-2.5 rounded-xl bg-green-500/10 text-green-500">
@@ -58,13 +58,13 @@ export function BlueprintAuditBoard() {
                             <FileText size={20} className="text-primary" />
                         </div>
                         <div>
-                            <p className="text-sm font-black italic tracking-tight">{stats.standardDistribution} Distribution</p>
+                            <p className="text-sm font-black tracking-tight">{stats.standardDistribution} Distribution</p>
                             <p className="text-[10px] font-bold opacity-40 uppercase tracking-widest">Simple / Inter / Expert</p>
                         </div>
                     </div>
                     <div className="h-10 w-px bg-white/10" />
                     <div>
-                        <p className="text-sm font-black italic tracking-tight">{stats.avgQuestions} Qs</p>
+                        <p className="text-sm font-black tracking-tight">{stats.avgQuestions} Qs</p>
                         <p className="text-[10px] font-bold opacity-40 uppercase tracking-widest">Avg per Blueprint</p>
                     </div>
                 </div>

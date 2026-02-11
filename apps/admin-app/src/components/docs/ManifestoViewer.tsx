@@ -8,8 +8,8 @@ export function ManifestoViewer() {
             <section>
                 <div className="flex items-center gap-4 mb-8">
                     <div className="w-1.5 h-8 bg-[#FF4B91] rounded-full" />
-                    <h2 className="text-3xl font-black text-[#1A1A1A] tracking-tighter uppercase italic">
-                        Doc Governance <span className="text-[#FF4B91] font-medium not-italic text-sm tracking-[0.2em] ml-4">(The Global Rulebook)</span>
+                    <h2 className="text-3xl font-black text-[#1A1A1A] tracking-tighter uppercase">
+                        Doc Governance <span className="text-[#FF4B91] font-medium text-sm tracking-[0.2em] ml-4">(The Global Rulebook)</span>
                     </h2>
                 </div>
                 <div className="bg-white border border-slate-200 rounded-[2.5rem] overflow-hidden shadow-2xl shadow-primary/5 w-full">
@@ -23,7 +23,7 @@ export function ManifestoViewer() {
                         <tbody className="divide-y divide-slate-100">
                             {MANIFESTO_DATA.docGovernance.map((item, idx) => (
                                 <tr key={idx} className="group hover:bg-slate-50 transition-colors">
-                                    <td className="px-10 py-6 font-black text-slate-700 text-sm italic">{item.rule}</td>
+                                    <td className="px-10 py-6 font-black text-slate-700 text-sm">{item.rule}</td>
                                     <td className="px-10 py-6 font-bold text-slate-500">{item.details}</td>
                                 </tr>
                             ))}
@@ -36,8 +36,8 @@ export function ManifestoViewer() {
             <section>
                 <div className="flex items-center gap-4 mb-8">
                     <div className="w-1.5 h-8 bg-[#FF4B91] rounded-full" />
-                    <h2 className="text-3xl font-black text-[#1A1A1A] tracking-tighter uppercase italic">
-                        Folder Intent Guide <span className="text-[#FF4B91] font-medium not-italic text-sm tracking-[0.2em] ml-4">(Semantic Map)</span>
+                    <h2 className="text-3xl font-black text-[#1A1A1A] tracking-tighter uppercase">
+                        Folder Intent Guide <span className="text-[#FF4B91] font-medium text-sm tracking-[0.2em] ml-4">(Semantic Map)</span>
                     </h2>
                 </div>
                 <div className="bg-white border border-slate-200 rounded-[2.5rem] overflow-hidden shadow-2xl shadow-primary/5 w-full">
@@ -57,7 +57,7 @@ export function ManifestoViewer() {
                                             {item.folder}
                                         </code>
                                     </td>
-                                    <td className="px-10 py-6 font-black text-slate-700 text-sm italic">{item.intent}</td>
+                                    <td className="px-10 py-6 font-black text-slate-700 text-sm">{item.intent}</td>
                                     <td className="px-10 py-6 text-[10px] font-black text-slate-400 uppercase tracking-tight">{item.keyFiles}</td>
                                 </tr>
                             ))}
@@ -71,7 +71,7 @@ export function ManifestoViewer() {
                 <section>
                     <div className="flex items-center gap-4 mb-8">
                         <div className="w-1.5 h-8 bg-[#FF4B91] rounded-full" />
-                        <h2 className="text-xl font-black text-[#1A1A1A] tracking-tighter uppercase italic">
+                        <h2 className="text-xl font-black text-[#1A1A1A] tracking-tighter uppercase">
                             Absolute Authority
                         </h2>
                     </div>
@@ -90,7 +90,7 @@ export function ManifestoViewer() {
                 <section>
                     <div className="flex items-center gap-4 mb-8">
                         <div className="w-1.5 h-8 bg-[#FF4B91] rounded-full" />
-                        <h2 className="text-xl font-black text-[#1A1A1A] tracking-tighter uppercase italic">
+                        <h2 className="text-xl font-black text-[#1A1A1A] tracking-tighter uppercase">
                             Workflow Mandate
                         </h2>
                     </div>
@@ -100,8 +100,8 @@ export function ManifestoViewer() {
                                 <div key={idx} className="px-10 py-6 hover:bg-slate-50 transition-colors flex gap-6 items-start">
                                     <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-sm font-black text-slate-400 shrink-0">{item.step}</div>
                                     <div>
-                                        <div className="text-sm font-black text-slate-700 uppercase italic tracking-tight">{item.action}</div>
-                                        <div className="text-[11px] font-bold text-slate-400 italic">{item.detail}</div>
+                                        <div className="text-sm font-black text-slate-700 uppercase tracking-tight">{item.action}</div>
+                                        <div className="text-[11px] font-bold text-slate-400">{item.detail}</div>
                                     </div>
                                 </div>
                             ))}
@@ -114,8 +114,8 @@ export function ManifestoViewer() {
             <section>
                 <div className="flex items-center gap-4 mb-8">
                     <div className="w-1.5 h-8 bg-[#FF4B91] rounded-full" />
-                    <h2 className="text-3xl font-black text-[#1A1A1A] tracking-tighter uppercase italic">
-                        Git Push Policy <span className="text-[#FF4B91] font-medium not-italic text-sm tracking-[0.2em] ml-4">(Vercel Operational Safety)</span>
+                    <h2 className="text-3xl font-black text-[#1A1A1A] tracking-tighter uppercase">
+                        Git Push Policy <span className="text-[#FF4B91] font-medium text-sm tracking-[0.2em] ml-4">(Vercel Operational Safety)</span>
                     </h2>
                 </div>
                 <div className="bg-white border border-slate-200 rounded-[2.5rem] overflow-hidden shadow-2xl shadow-primary/5 w-full">
@@ -129,7 +129,7 @@ export function ManifestoViewer() {
                         <tbody className="divide-y divide-slate-100">
                             {MANIFESTO_DATA.gitPushPolicy.map((item, idx) => (
                                 <tr key={idx} className="group hover:bg-slate-50 transition-colors">
-                                    <td className="px-10 py-6 font-black text-slate-700 text-sm italic">{item.policy}</td>
+                                    <td className="px-10 py-6 font-black text-slate-700 text-sm">{item.policy}</td>
                                     <td className="px-10 py-6 font-bold text-slate-500">{item.details}</td>
                                 </tr>
                             ))}

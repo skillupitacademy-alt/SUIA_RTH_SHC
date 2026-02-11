@@ -122,7 +122,7 @@ export const HierarchyReports: React.FC = () => {
         return (
             <div className="min-h-[60vh] flex flex-col items-center justify-center gap-6">
                 <ZLoader size="lg" text="Initializing Diagnostic Matrix_" />
-                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground mt-1 animate-pulse italic">Syncing Pulse Diagnostic (Unified Activity)</p>
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground mt-1 animate-pulse">Syncing Pulse Diagnostic (Unified Activity)</p>
             </div>
         );
     }
@@ -142,11 +142,11 @@ export const HierarchyReports: React.FC = () => {
                             </button>
                         )}
                         <div>
-                            <h1 className="text-5xl font-black text-[#1A1A1A] tracking-tighter uppercase italic leading-none">
+                            <h1 className="text-5xl font-black text-[#1A1A1A] tracking-tighter uppercase leading-none">
                                 {currentView.level.charAt(0).toUpperCase() + currentView.level.slice(1)} Intelligence_
                             </h1>
                             <div className="flex items-center gap-3 mt-4">
-                                <div className="px-3 py-1 bg-[#1A1A1A] text-[#FF4B91] rounded-lg text-[10px] font-black uppercase tracking-widest italic shadow-xl">
+                                <div className="px-3 py-1 bg-[#1A1A1A] text-[#FF4B91] rounded-lg text-[10px] font-black uppercase tracking-widest shadow-xl">
                                     {currentView.title}
                                 </div>
                                 <span className="h-1 w-1 rounded-full bg-slate-300" />
@@ -233,7 +233,7 @@ export const HierarchyReports: React.FC = () => {
                                                     <Database size={24} />
                                                 </div>
                                                 <div>
-                                                    <p className="text-lg font-black text-[#1A1A1A] tracking-tighter italic uppercase group-hover:text-[#FF4B91] transition-colors">
+                                                    <p className="text-lg font-black text-[#1A1A1A] tracking-tighter uppercase group-hover:text-[#FF4B91] transition-colors">
                                                         {item.name}
                                                     </p>
                                                     <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-1">
@@ -248,7 +248,7 @@ export const HierarchyReports: React.FC = () => {
                                             <div className="flex flex-col gap-1">
                                                 <div className="flex items-center gap-2">
                                                     <Zap size={14} className="text-[#FF4B91]" />
-                                                    <span className="text-xl font-black italic tracking-tighter text-[#1A1A1A]">
+                                                    <span className="text-xl font-black tracking-tighter text-[#1A1A1A]">
                                                         {item.stats.total}
                                                     </span>
                                                 </div>
@@ -290,7 +290,7 @@ export const HierarchyReports: React.FC = () => {
                                 ))}
                                 {filteredData.length > 0 && currentView.level === 'subtopic' && (
                                     <tr className="bg-slate-50/50">
-                                        <td colSpan={5} className="p-4 text-center text-[9px] font-black uppercase tracking-[0.4em] text-slate-300 italic">
+                                        <td colSpan={5} className="p-4 text-center text-[9px] font-black uppercase tracking-[0.4em] text-slate-300">
                                             End of Hierarchical Matrix
                                         </td>
                                     </tr>
@@ -304,7 +304,7 @@ export const HierarchyReports: React.FC = () => {
                     <div className="p-8 bg-slate-50 rounded-full mb-8 shadow-inner ring-1 ring-slate-100">
                         <Filter className="text-slate-300 w-12 h-12" />
                     </div>
-                    <h3 className="text-2xl font-black text-[#1A1A1A] italic uppercase tracking-tighter">Negative Intelligence_</h3>
+                    <h3 className="text-2xl font-black text-[#1A1A1A] uppercase tracking-tighter">Negative Intelligence_</h3>
                     <p className="text-muted-foreground font-medium mt-2 max-w-sm">
                         No containers found matching your filter criteria in this hierarchical branch.
                     </p>
@@ -324,7 +324,7 @@ export const HierarchyReports: React.FC = () => {
                 <div className="fixed inset-0 z-[300] bg-black/10 backdrop-blur-[2px] flex items-center justify-center animate-in fade-in duration-300">
                     <div className="bg-white p-12 rounded-[3.5rem] shadow-[0_32px_128px_rgba(0,0,0,0.15)] border-2 border-[#FF4B91]/10 flex flex-col items-center gap-6">
                         <ZLoader size="lg" text="Standardizing Metrics..." />
-                        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground mt-4 italic">Loader: ZLoader (Premium)</p>
+                        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground mt-4">Loader: ZLoader (Premium)</p>
                     </div>
                 </div>
             )}
@@ -375,7 +375,7 @@ const SummaryPanel = ({ icon: Icon, label, value, subvalue, color, bg }: any) =>
         <div>
             <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-0.5">{label}</p>
             <div className="flex items-baseline gap-2">
-                <span className={cn("text-3xl font-black italic tracking-tighter", color)}>{value}</span>
+                <span className={cn("text-3xl font-black tracking-tighter", color)}>{value}</span>
                 <span className="text-[9px] font-black uppercase tracking-widest text-[#1A1A1A]">{subvalue}</span>
             </div>
         </div>

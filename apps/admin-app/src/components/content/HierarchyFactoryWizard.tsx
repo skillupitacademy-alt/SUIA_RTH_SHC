@@ -539,7 +539,7 @@ Please provide a valid JSON object matching this schema:
                 <ZTooltip content="Terminate current factory session and return to management dashboard." side="bottom">
                     <button
                         onClick={onClose}
-                        className="p-3 hover:bg-red-50 text-muted-foreground hover:text-red-500 rounded-2xl transition-all border border-transparent hover:border-red-100 italic font-black uppercase text-[10px] flex items-center gap-2"
+                        className="p-3 hover:bg-red-50 text-muted-foreground hover:text-red-500 rounded-2xl transition-all border border-transparent hover:border-red-100 font-black uppercase text-[10px] flex items-center gap-2"
                     >
                         <X size={20} /> Close Terminal
                     </button>
@@ -556,7 +556,7 @@ Please provide a valid JSON object matching this schema:
                     {mode === 'manual' ? (
                         <div className="max-w-5xl w-full mx-auto space-y-12 animate-in slide-in-from-bottom-4 duration-500">
                             <div className="space-y-4">
-                                <h3 className="text-4xl font-black italic uppercase tracking-tighter text-[#1A1A1A]">
+                                <h3 className="text-4xl font-black uppercase tracking-tighter text-[#1A1A1A]">
                                     {initialData?.target ? `Single ${initialData.target.charAt(0).toUpperCase() + initialData.target.slice(1)} Registry` : "Single Domain Registry"}
                                 </h3>
                                 <p className="text-sm font-medium text-muted-foreground leading-relaxed">
@@ -650,7 +650,7 @@ Please provide a valid JSON object matching this schema:
                         <div className="flex-1 flex flex-col gap-8 animate-in slide-in-from-right-4 overflow-hidden">
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-4">
-                                    <h3 className="text-3xl font-black italic uppercase tracking-tighter text-[#1A1A1A]">
+                                    <h3 className="text-3xl font-black uppercase tracking-tighter text-[#1A1A1A]">
                                         {initialData?.target ? `Bulk ${initialData.target} Factory` : "Bulk Hierarchy Engine"}
                                     </h3>
                                     <div className="flex items-center gap-2">
@@ -689,7 +689,7 @@ Please provide a valid JSON object matching this schema:
                                                             <Brain size={20} />
                                                         </div>
                                                         <div className="flex flex-col">
-                                                            <h4 className="text-lg font-black uppercase tracking-widest text-slate-800 italic">Surgical AI Prompt</h4>
+                                                            <h4 className="text-lg font-black uppercase tracking-widest text-slate-800">Surgical AI Prompt</h4>
                                                             <div className="flex items-center gap-1.5 text-[9px] font-bold text-slate-400 mt-0.5">
                                                                 <span className={cn("uppercase tracking-wider", selections.domainId ? "text-[#FF4B91]" : "text-slate-300")}>
                                                                     {hierarchicalChoices.domains.find(d => d.domainId === selections.domainId)?.domainName || "Domain"}
@@ -750,7 +750,7 @@ Please provide a valid JSON object matching this schema:
                                             <div className="p-2.5 bg-[#FF4B91]/10 rounded-xl text-[#FF4B91]">
                                                 <Code2 size={20} />
                                             </div>
-                                            <h4 className="text-lg font-black uppercase tracking-widest text-slate-800 italic">JSON Manifest Editor</h4>
+                                            <h4 className="text-lg font-black uppercase tracking-widest text-slate-800">JSON Manifest Editor</h4>
                                         </div>
                                         <div className="flex items-center gap-3">
                                             <ZTooltip content="Return to Intelligence Scope (Prompt View)." side="left">
@@ -813,7 +813,7 @@ Please provide a valid JSON object matching this schema:
                 {mode === 'bulk' && (
                     <div className="w-full lg:w-[480px] bg-slate-50/50 flex flex-col p-12 gap-10 overflow-hidden border-l border-slate-200/50 animate-in slide-in-from-right-4 duration-500">
                         <div className="h-[40px] flex items-center shrink-0">
-                            <h3 className="text-3xl font-black italic uppercase tracking-tighter text-[#1A1A1A]">
+                            <h3 className="text-3xl font-black uppercase tracking-tighter text-[#1A1A1A]">
                                 Factory Monitor
                             </h3>
                         </div>
@@ -849,7 +849,7 @@ Please provide a valid JSON object matching this schema:
                                         <CheckCircle2 size={32} />
                                     </div>
                                     <div>
-                                        <h4 className="text-xl font-black uppercase tracking-tighter text-green-800 italic">Emission Successful</h4>
+                                        <h4 className="text-xl font-black uppercase tracking-tighter text-green-800">Emission Successful</h4>
                                         <p className="text-[10px] font-bold text-green-700 uppercase tracking-widest mt-1">Domain ID: {success.domainId}</p>
                                     </div>
 
@@ -979,7 +979,7 @@ function ExecutionItem({ label, status }: { label: string, status: 'pending' | '
                         <div className="w-3.5 h-3.5 rounded-full border-2 border-primary/10" />}
                 <span className={cn(
                     "text-[10px] font-black uppercase tracking-widest",
-                    status === 'active' ? "text-primary italic" :
+                    status === 'active' ? "text-primary" :
                         status === 'done' ? "text-green-600" : "text-muted-foreground"
                 )}>
                     {label}

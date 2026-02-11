@@ -15,7 +15,7 @@ export function SourceEditor({ value, onChange }: SourceEditorProps) {
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                     <div className="h-6 w-1 bg-[#FF4B91] rounded-full" />
-                    <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400 italic">
+                    <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">
                         3. Source of Truth (Technical Context)
                     </h3>
                 </div>
@@ -31,7 +31,7 @@ export function SourceEditor({ value, onChange }: SourceEditorProps) {
                         <div className="p-2.5 bg-[#FF4B91]/10 rounded-xl text-[#FF4B91]">
                             <Code2 size={20} />
                         </div>
-                        <h4 className="text-lg font-black uppercase tracking-widest text-[#1A1A1A] italic">Surgical Source Editor</h4>
+                        <h4 className="text-lg font-black uppercase tracking-widest text-[#1A1A1A]">Surgical Source Editor</h4>
                     </div>
                     <div className="flex items-center gap-2 text-[10px] font-black text-slate-300 uppercase tracking-widest">
                         Markdown / Plain Text Supported

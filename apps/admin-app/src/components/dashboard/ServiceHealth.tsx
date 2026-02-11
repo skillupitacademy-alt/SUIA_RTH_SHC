@@ -184,7 +184,7 @@ function HealthCard({ title, icon: Icon, data, loading, type }: { title: string,
                 {/* REDIS WITHOUT LIMIT (Raw) */}
                 {type === 'redis' && !metrics.limitMb && isConfigured && (
                     <div className="pt-2 space-y-1">
-                        <p className="text-2xl font-black italic">{metrics.memory || '0B'}</p>
+                        <p className="text-2xl font-black">{metrics.memory || '0B'}</p>
                         <div className="flex justify-between text-[10px] text-muted-foreground uppercase tracking-wider">
                             <span>Keys: {metrics.keys}</span>
                             <span>{metrics.snapshot}</span>
@@ -210,7 +210,7 @@ function HealthCard({ title, icon: Icon, data, loading, type }: { title: string,
                     <div className="pt-2">
                         <div className="flex justify-between items-end">
                             <div>
-                                <p className="text-2xl font-black italic">{metrics.requests24h?.toLocaleString()}</p>
+                                <p className="text-2xl font-black">{metrics.requests24h?.toLocaleString()}</p>
                                 <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Requests (24h)</p>
                             </div>
                             <div className="text-right">

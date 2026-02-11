@@ -128,7 +128,7 @@ export function CascadingSelect({ onChange, value, hideSkills }: CascadingSelect
             <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
                     <div className="h-7 w-1.5 bg-[#FF4B91] rounded-full shadow-[0_0_20px_rgba(255,75,145,0.6)]" />
-                    <h3 className="text-xl font-black text-[#1A1A1A] tracking-tight uppercase italic">Target Hierarchy</h3>
+                    <h3 className="text-xl font-black text-[#1A1A1A] tracking-tight uppercase">Target Hierarchy</h3>
                 </div>
                 {/* Visual state indicator for debugging */}
                 {value && (
@@ -279,7 +279,7 @@ function QuickCreateModal({ type, onClose, onSuccess, parentId, hooks }: any) {
                 <div className="flex justify-between items-center mb-8">
                     <div>
                         <span className="text-[11px] font-black uppercase tracking-[0.2em] text-[#FF4B91]">Quick Registry Entry</span>
-                        <h2 className="text-3xl font-black text-[#1A1A1A] capitalize mt-1 italic tracking-tighter">New {type}</h2>
+                        <h2 className="text-3xl font-black text-[#1A1A1A] capitalize mt-1 tracking-tighter">New {type}</h2>
                     </div>
                     <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 transition-colors">
                         <X className="w-4 h-4" />

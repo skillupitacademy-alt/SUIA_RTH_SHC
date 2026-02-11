@@ -23,7 +23,7 @@ export function MetricCard({ label, value, icon: Icon, subValue, variant = 'defa
                 </div>
                 <div>
                     <p className="text-sm font-bold text-slate-600 uppercase tracking-wide mb-1">{label}</p>
-                    <p className="text-4xl font-black italic">{value}</p>
+                    <p className="text-4xl font-black">{value}</p>
                     {subValue && (
                         <p className="text-xs font-bold text-muted-foreground mt-2 uppercase tracking-wide">{subValue}</p>
                     )}

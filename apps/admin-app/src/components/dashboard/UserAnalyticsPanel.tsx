@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { apiClient } from '@quiz/api-client';
 import { Users, UserCheck, UserPlus, TrendingUp } from 'lucide-react';
+import { ZLoader } from '@quiz/ui';
 
 export function UserAnalyticsPanel() {
     const [stats, setStats] = useState<any>(null);
@@ -19,13 +20,19 @@ export function UserAnalyticsPanel() {
         fetch();
     }, []);
 
-    if (!stats) return null;
+    if (!stats) {
+        return (
+            <div className="p-12 flex items-center justify-center bg-muted/5 border border-primary/10 rounded-[2rem]">
+                <ZLoader text="Accessing User Matrix..." />
+            </div>
+        );
+    }
 
     return (
         <div className="p-8 rounded-[2rem] border border-primary/10 bg-muted/5 backdrop-blur-md shadow-sm h-full">
             <div className="flex items-center justify-between mb-8">
                 <div>
-                    <h3 className="text-2xl font-black uppercase tracking-tighter italic text-[#1A1A1A]">User Insights</h3>
+                    <h3 className="text-2xl font-black uppercase tracking-tighter text-[#1A1A1A]">User Insights</h3>
                     <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-0.5">Growth & Account Verification</p>
                 </div>
                 <div className="px-5 py-2.5 rounded-full bg-[#FF4B91]/10 border border-[#FF4B91]/20 text-[#FF4B91] flex items-center gap-3">

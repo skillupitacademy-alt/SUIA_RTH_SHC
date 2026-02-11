@@ -13,8 +13,8 @@ export function LogViewer({ type }: LogViewerProps) {
                 <section>
                     <div className="flex items-center gap-4 mb-8">
                         <div className="w-1.5 h-8 bg-[#FF4B91] rounded-full" />
-                        <h2 className="text-3xl font-black text-[#1A1A1A] tracking-tighter uppercase italic">
-                            Current_Task_Log <span className="text-[#FF4B91] font-medium not-italic text-sm tracking-[0.2em] ml-4">(Real-time Session)</span>
+                        <h2 className="text-3xl font-black text-[#1A1A1A] tracking-tighter uppercase">
+                            Current_Task_Log <span className="text-[#FF4B91] font-medium text-sm tracking-[0.2em] ml-4">(Real-time Session)</span>
                         </h2>
                     </div>
 
@@ -27,7 +27,7 @@ export function LogViewer({ type }: LogViewerProps) {
                                     <Activity size={32} />
                                 </div>
                                 <div>
-                                    <h3 className="text-xl font-black text-[#1A1A1A] italic uppercase tracking-tighter">System_Status</h3>
+                                    <h3 className="text-xl font-black text-[#1A1A1A] uppercase tracking-tighter">System_Status</h3>
                                     <div className="mt-4 px-6 py-2 rounded-full bg-slate-50 border border-slate-100 text-[#FF4B91] text-xs font-black uppercase tracking-[0.3em]">
                                         {CURRENT_TASK_DATA.status}
                                     </div>
@@ -66,8 +66,8 @@ export function LogViewer({ type }: LogViewerProps) {
             <section>
                 <div className="flex items-center gap-4 mb-8">
                     <div className="w-1.5 h-8 bg-[#FF4B91] rounded-full" />
-                    <h2 className="text-3xl font-black text-[#1A1A1A] tracking-tighter uppercase italic">
-                        Task_History_Log <span className="text-[#FF4B91] font-medium not-italic text-sm tracking-[0.2em] ml-4">(Audit Trail)</span>
+                    <h2 className="text-3xl font-black text-[#1A1A1A] tracking-tighter uppercase">
+                        Task_History_Log <span className="text-[#FF4B91] font-medium text-sm tracking-[0.2em] ml-4">(Audit Trail)</span>
                     </h2>
                 </div>
 
@@ -101,7 +101,7 @@ export function LogViewer({ type }: LogViewerProps) {
                                         </span>
                                     </td>
                                     <td className="px-10 py-8 p-max-w-md">
-                                        <p className="text-xs font-bold text-slate-500 italic max-w-sm leading-relaxed">
+                                        <p className="text-xs font-bold text-slate-500 max-w-sm leading-relaxed">
                                             "{item.summary}"
                                         </p>
                                     </td>

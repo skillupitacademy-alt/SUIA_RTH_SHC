@@ -215,7 +215,7 @@ export default function DynamicReportPage() {
             </main>
 
             <footer className="py-12 border-t border-muted/10 opacity-40">
-                <div className="max-w-7xl mx-auto px-12 italic text-[10px] font-bold text-center tracking-widest uppercase">
+                <div className="max-w-7xl mx-auto px-12 text-[10px] font-bold text-center tracking-widest uppercase">
                     Protocol: Executive Analytics Hub | Phase 20 Mastery Deployment | Zero-Occlusion Cockpit Verified
                 </div>
             </footer>

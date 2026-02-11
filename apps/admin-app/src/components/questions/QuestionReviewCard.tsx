@@ -164,7 +164,7 @@ export function QuestionReviewCard({
                                     </span>
                                 ))
                             ) : (
-                                <span className="text-[9px] font-bold text-slate-400 italic">No Dimension</span>
+                                <span className="text-[9px] font-bold text-slate-400">No Dimension</span>
                             )}
                         </div>
                     </div>
@@ -238,7 +238,7 @@ export function QuestionReviewCard({
                     <div className="px-10 pb-10 animate-in slide-in-from-top-2 duration-300">
                         <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
                             <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-[#FF4B91] mb-4">Official Explanation</h4>
-                            <p className="text-xs text-slate-600 font-medium italic leading-relaxed">
+                            <p className="text-xs text-slate-600 font-medium leading-relaxed">
                                 {question.explanation || 'No rationale document provided for this assessment.'}
                             </p>
 
@@ -251,7 +251,7 @@ export function QuestionReviewCard({
                                             {qs.skill.name}
                                         </div>
                                     ))}
-                                    {!question.questionSkills?.length && <span className="text-[10px] font-bold text-slate-400 italic">No skills mapped.</span>}
+                                    {!question.questionSkills?.length && <span className="text-[10px] font-bold text-slate-400">No skills mapped.</span>}
                                 </div>
                             </div>
                         </div>

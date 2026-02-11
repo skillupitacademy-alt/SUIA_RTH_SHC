@@ -22,7 +22,7 @@ export default function QuestionsPage() {
                         <Database size={20} className="text-[#FF4B91]" />
                         <span className="text-xs font-black uppercase tracking-[0.3em] text-[#FF4B91]">Governance_Matrix</span>
                     </div>
-                    <h1 className="text-5xl font-black tracking-tighter italic uppercase text-[#1A1A1A]">Question Bank</h1>
+                    <h1 className="text-5xl font-black tracking-tighter uppercase text-[#1A1A1A]">Question Bank</h1>
                     <p className="text-sm font-bold text-muted-foreground uppercase tracking-widest mt-2">Hierarchy • Difficulty • Compliance</p>
                 </div>
                 <div className="flex flex-col items-end gap-3 text-right">

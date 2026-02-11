@@ -110,7 +110,7 @@ export function DocsTabs({ structure, onFileSelect, activePath }: DocsTabsProps)
                 ))}
 
                 {structure[activeTab].length === 0 && (
-                    <p className="text-slate-400 italic text-[11px] font-bold py-4 px-6 uppercase tracking-widest">
+                    <p className="text-slate-400 text-[11px] font-bold py-4 px-6 uppercase tracking-widest">
                         No Indices Detected_
                     </p>
                 )}

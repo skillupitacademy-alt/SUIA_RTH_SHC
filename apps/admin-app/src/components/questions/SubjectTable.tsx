@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { apiClient } from '@quiz/api-client';
 import { BookOpen, Plus, AlertTriangle, Check, Trash2 } from 'lucide-react';
 import { ErrorBanner } from '@/components/layout/ErrorBanner';
-import { ZLoader } from '@quiz/ui';
+import { ZLoader, ZPagination } from '@quiz/ui';
 import { HierarchyFactoryWizard } from '@/components/content/HierarchyFactoryWizard';
 import { SubjectReviewCard } from './SubjectReviewCard';
 import { cn } from '@/lib/utils';
@@ -27,7 +27,9 @@ export function SubjectTable() {
     const [data, setData] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [page, setPage] = useState(1);
+    const [pageSize, setPageSize] = useState(20);
     const [totalPages, setTotalPages] = useState(1);
+    const [totalCount, setTotalCount] = useState(0);
     const [searchQuery, setSearchQuery] = useState('');
     const [debouncedSearch, setDebouncedSearch] = useState('');
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -64,9 +66,10 @@ export function SubjectTable() {
     const fetchSubjects = async () => {
         setIsLoading(true);
         try {
-            const response = await apiClient.admin.getSubjects(page, 20, undefined, debouncedSearch || undefined);
+            const response = await apiClient.admin.getSubjects(page, pageSize, debouncedSearch || undefined);
             setData(response.data);
             setTotalPages(response.totalPages);
+            setTotalCount(response.total || response.data.length);
             setSelectedIds(new Set());
         } catch (error) {
             console.error('Failed to fetch subjects:', error);
@@ -78,7 +81,7 @@ export function SubjectTable() {
 
     useEffect(() => {
         fetchSubjects();
-    }, [page, debouncedSearch]);
+    }, [page, pageSize, debouncedSearch]);
 
     // --- SELECTION LOGIC ---
     const handleSelect = (id: string, selected: boolean) => {
@@ -214,291 +217,285 @@ export function SubjectTable() {
     };
 
     return (
-        <div className="space-y-6 relative min-h-[600px]">
-            {errorMessage && (
-                <ErrorBanner message={errorMessage} onClose={() => setErrorMessage(null)} />
-            )}
+        <div className="space-y-6 flex flex-col min-h-[800px]">
+            <div className="flex-1 space-y-6">
+                {errorMessage && (
+                    <ErrorBanner message={errorMessage} onClose={() => setErrorMessage(null)} />
+                )}
 
-            {/* FLOATING COMMAND BAR */}
-            <div className={cn(
-                "fixed bottom-8 left-1/2 -translate-x-1/2 z-50 bg-[#1A1A1A] text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-6 transition-all duration-300 border border-white/10",
-                selectedIds.size > 0 ? "translate-y-0 opacity-100" : "translate-y-24 opacity-0 pointer-events-none"
-            )}>
-                <div className="flex items-center gap-4 border-r border-white/10 pr-6">
-                    <div className="flex flex-col">
-                        <span className="text-xs font-bold text-white/60 uppercase tracking-widest">Selection</span>
-                        <span className="text-xl font-black">{selectedIds.size} <span className="text-sm font-bold text-white/60">subjects</span></span>
-                    </div>
-                </div>
-                <div className="flex items-center gap-3">
-                    <button
-                        onClick={() => setSelectedIds(new Set())}
-                        className="px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-widest hover:bg-white/10 transition-colors"
-                    >
-                        Clear
-                    </button>
-                    <button
-                        onClick={() => setIsDeleteOpen(true)}
-                        className="px-6 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-black uppercase tracking-widest shadow-lg shadow-red-600/20 transition-all active:scale-95 flex items-center gap-2"
-                    >
-                        <Trash2 size={14} />
-                        Delete Selection
-                    </button>
-                </div>
-            </div>
-
-            {/* Standard Edit Form */}
-            <ZPortalModal isOpen={isFormOpen} zIndex={100}>
-                <div className="h-full flex flex-col bg-white animate-in slide-in-from-right duration-300">
-                    <div className="px-8 py-6 border-b border-slate-200 flex items-center justify-between bg-white">
-                        <div className="flex items-center gap-4">
-                            <div className="h-12 w-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center">
-                                <BookOpen size={24} />
-                            </div>
-                            <div>
-                                <h3 className="text-2xl font-black text-[#1A1A1A] uppercase tracking-tight">
-                                    {currentSubject ? 'Edit Subject' : 'New Subject'}
-                                </h3>
-                                <p className="text-xs font-medium text-slate-500 uppercase tracking-widest mt-0.5">
-                                    {currentSubject ? 'Modify Subject Details' : 'Create New Subject'}
-                                </p>
-                            </div>
+                {/* FLOATING COMMAND BAR */}
+                <div className={cn(
+                    "fixed bottom-8 left-1/2 -translate-x-1/2 z-50 bg-[#1A1A1A] text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-6 transition-all duration-300 border border-white/10",
+                    selectedIds.size > 0 ? "translate-y-0 opacity-100" : "translate-y-24 opacity-0 pointer-events-none"
+                )}>
+                    <div className="flex items-center gap-4 border-r border-white/10 pr-6">
+                        <div className="flex flex-col">
+                            <span className="text-xs font-bold text-white/60 uppercase tracking-widest">Selection</span>
+                            <span className="text-xl font-black">{selectedIds.size} <span className="text-sm font-bold text-white/60">subjects</span></span>
                         </div>
+                    </div>
+                    <div className="flex items-center gap-3">
                         <button
-                            onClick={handleCloseForm}
-                            className="p-2 rounded-lg hover:bg-slate-100 text-slate-500 hover:text-slate-600 transition-colors"
+                            onClick={() => setSelectedIds(new Set())}
+                            className="px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-widest hover:bg-white/10 transition-colors"
                         >
-                            <X size={24} />
+                            Clear
+                        </button>
+                        <button
+                            onClick={() => setIsDeleteOpen(true)}
+                            className="px-6 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-black uppercase tracking-widest shadow-lg shadow-red-600/20 transition-all active:scale-95 flex items-center gap-2"
+                        >
+                            <Trash2 size={14} />
+                            Delete Selection
                         </button>
                     </div>
+                </div>
 
-                    <div className="flex-1 overflow-y-auto">
-                        <div className="max-w-5xl mx-auto px-8 py-8">
-                            <form onSubmit={handleSubmit} className="space-y-6">
-                                <div className="grid grid-cols-2 gap-6">
-                                    {/* Parent Domain */}
-                                    <SelectField
-                                        label="Parent Domain"
-                                        value={formData.domainId}
-                                        options={domains.map((d: any) => ({ id: d.id, name: d.name }))}
-                                        loading={domainsHook.loading}
-                                        onChange={(val: string) => setFormData({ ...formData, domainId: val })}
-                                        placeholder="Select Domain"
-                                        active={true}
-                                        icon={<BookOpen size={12} />}
-                                        hideCreate={true}
-                                    />
+                {/* Standard Edit Form */}
+                <ZPortalModal isOpen={isFormOpen} zIndex={100}>
+                    <div className="h-full flex flex-col bg-white animate-in slide-in-from-right duration-300">
+                        <div className="px-8 py-6 border-b border-slate-200 flex items-center justify-between bg-white">
+                            <div className="flex items-center gap-4">
+                                <div className="h-12 w-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center">
+                                    <BookOpen size={24} />
+                                </div>
+                                <div>
+                                    <h3 className="text-2xl font-black text-[#1A1A1A] uppercase tracking-tight">
+                                        {currentSubject ? 'Edit Subject' : 'New Subject'}
+                                    </h3>
+                                    <p className="text-xs font-medium text-slate-500 uppercase tracking-widest mt-0.5">
+                                        {currentSubject ? 'Modify Subject Details' : 'Create New Subject'}
+                                    </p>
+                                </div>
+                            </div>
+                            <button
+                                onClick={handleCloseForm}
+                                className="p-2 rounded-lg hover:bg-slate-100 text-slate-500 hover:text-slate-600 transition-colors"
+                            >
+                                <X size={24} />
+                            </button>
+                        </div>
 
-                                    {/* Subject Name */}
+                        <div className="flex-1 overflow-y-auto">
+                            <div className="max-w-5xl mx-auto px-8 py-8">
+                                <form onSubmit={handleSubmit} className="space-y-6">
+                                    <div className="grid grid-cols-2 gap-6">
+                                        {/* Parent Domain */}
+                                        <SelectField
+                                            label="Parent Domain"
+                                            value={formData.domainId}
+                                            options={domains.map((d: any) => ({ id: d.id, name: d.name }))}
+                                            loading={domainsHook.loading}
+                                            onChange={(val: string) => setFormData({ ...formData, domainId: val })}
+                                            placeholder="Select Domain"
+                                            active={true}
+                                            icon={<BookOpen size={12} />}
+                                            hideCreate={true}
+                                        />
+
+                                        {/* Subject Name */}
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 pl-1">Subject Name</label>
+                                            <input
+                                                type="text"
+                                                required
+                                                value={formData.name}
+                                                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                                className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all placeholder:text-slate-400"
+                                                placeholder="e.g., Frontend Development"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* Description */}
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 pl-1">Subject Name</label>
-                                        <input
-                                            type="text"
-                                            required
-                                            value={formData.name}
-                                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                            className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all placeholder:text-slate-400"
-                                            placeholder="e.g., Frontend Development"
+                                        <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 pl-1">Description</label>
+                                        <textarea
+                                            value={formData.description}
+                                            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                            rows={4}
+                                            className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-600 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all placeholder:text-slate-400 resize-none"
+                                            placeholder="Brief summary..."
                                         />
                                     </div>
-                                </div>
 
-                                {/* Description */}
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 pl-1">Description</label>
-                                    <textarea
-                                        value={formData.description}
-                                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                                        rows={4}
-                                        className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-600 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all placeholder:text-slate-400 resize-none"
-                                        placeholder="Brief summary..."
-                                    />
-                                </div>
-
-                                {/* Status */}
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 pl-1">Status</label>
-                                    <div className="flex bg-white p-1.5 rounded-xl border border-slate-200">
-                                        {['active', 'inactive'].map((status) => (
-                                            <button
-                                                key={status}
-                                                type="button"
-                                                onClick={() => setFormData({ ...formData, status: status as any })}
-                                                className={`flex-1 py-2.5 px-4 rounded-lg text-xs font-black uppercase tracking-wider transition-all ${formData.status === status
-                                                    ? 'bg-[#1A1A1A] text-white shadow-sm'
-                                                    : 'text-slate-500 hover:text-slate-600'
-                                                    }`}
-                                            >
-                                                {status}
-                                            </button>
-                                        ))}
+                                    {/* Status */}
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 pl-1">Status</label>
+                                        <div className="flex bg-white p-1.5 rounded-xl border border-slate-200">
+                                            {['active', 'inactive'].map((status) => (
+                                                <button
+                                                    key={status}
+                                                    type="button"
+                                                    onClick={() => setFormData({ ...formData, status: status as any })}
+                                                    className={`flex-1 py-2.5 px-4 rounded-lg text-xs font-black uppercase tracking-wider transition-all ${formData.status === status
+                                                        ? 'bg-[#1A1A1A] text-white shadow-sm'
+                                                        : 'text-slate-500 hover:text-slate-600'
+                                                        }`}
+                                                >
+                                                    {status}
+                                                </button>
+                                            ))}
+                                        </div>
                                     </div>
-                                </div>
 
-                                {/* Footer Actions */}
-                                <div className="pt-8 flex items-center justify-end gap-4">
-                                    <button
-                                        type="button"
-                                        onClick={handleCloseForm}
-                                        className="px-8 py-3 rounded-xl text-slate-500 font-bold uppercase tracking-widest text-xs hover:bg-slate-100 transition-all"
-                                    >
-                                        Cancel
-                                    </button>
-                                    <button
-                                        type="submit"
-                                        disabled={isSubmitting}
-                                        className="px-10 py-3 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-black uppercase tracking-widest text-xs shadow-lg shadow-purple-500/20 transition-all flex items-center gap-2 disabled:opacity-50"
-                                    >
-                                        {isSubmitting ? <ZLoader size="xs" className="text-white" center={false} /> : <Check size={16} />}
-                                        {isSubmitting ? 'Saving...' : 'Save Changes'}
-                                    </button>
-                                </div>
-                            </form>
+                                    {/* Footer Actions */}
+                                    <div className="pt-8 flex items-center justify-end gap-4">
+                                        <button
+                                            type="button"
+                                            onClick={handleCloseForm}
+                                            className="px-8 py-3 rounded-xl text-slate-500 font-bold uppercase tracking-widest text-xs hover:bg-slate-100 transition-all"
+                                        >
+                                            Cancel
+                                        </button>
+                                        <button
+                                            type="submit"
+                                            disabled={isSubmitting}
+                                            className="px-10 py-3 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-black uppercase tracking-widest text-xs shadow-lg shadow-purple-500/20 transition-all flex items-center gap-2 disabled:opacity-50"
+                                        >
+                                            {isSubmitting ? <ZLoader size="xs" className="text-white" center={false} /> : <Check size={16} />}
+                                            {isSubmitting ? 'Saving...' : 'Save Changes'}
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </ZPortalModal>
+                </ZPortalModal>
 
-            <HierarchyFactoryWizard
-                isOpen={isFactoryOpen}
-                onClose={() => setIsFactoryOpen(false)}
-                onSuccess={() => {
-                    setIsFactoryOpen(false);
-                    fetchSubjects();
-                }}
-                initialData={
-                    formData.domainId
-                        ? { target: 'subject', domainId: formData.domainId, domainName: domains.find(d => d.id === formData.domainId)?.name || '' }
-                        : { target: 'subject' }
-                }
-            />
+                <HierarchyFactoryWizard
+                    isOpen={isFactoryOpen}
+                    onClose={() => setIsFactoryOpen(false)}
+                    onSuccess={() => {
+                        setIsFactoryOpen(false);
+                        fetchSubjects();
+                    }}
+                    initialData={
+                        formData.domainId
+                            ? { target: 'subject', domainId: formData.domainId, domainName: domains.find(d => d.id === formData.domainId)?.name || '' }
+                            : { target: 'subject' }
+                    }
+                />
 
-            {/* Delete Confirmation Modal */}
-            <AlertDialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
-                <AlertDialogContent className="bg-white rounded-[2rem] border border-slate-100 p-0 overflow-hidden max-w-md">
-                    <div className="absolute top-0 left-0 w-full h-1.5 bg-red-500" />
-                    <div className="p-8 flex flex-col items-center text-center gap-6">
-                        <div className="h-16 w-16 rounded-full bg-red-50 text-red-500 flex items-center justify-center mb-2">
-                            <Trash2 size={32} />
+                {/* Delete Confirmation Modal */}
+                <AlertDialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
+                    <AlertDialogContent className="bg-white rounded-[2rem] border border-slate-100 p-0 overflow-hidden max-w-md">
+                        <div className="absolute top-0 left-0 w-full h-1.5 bg-red-500" />
+                        <div className="p-8 flex flex-col items-center text-center gap-6">
+                            <div className="h-16 w-16 rounded-full bg-red-50 text-red-500 flex items-center justify-center mb-2">
+                                <Trash2 size={32} />
+                            </div>
+
+                            <div className="space-y-2">
+                                <AlertDialogTitle className="text-2xl font-black text-slate-800 uppercase tracking-tight">
+                                    Confirm Deletion
+                                </AlertDialogTitle>
+                                <AlertDialogDescription className="text-slate-500 font-medium leading-relaxed">
+                                    {selectedIds.size > 1
+                                        ? `You are about to permanently delete ${selectedIds.size} subjects. This action cannot be undone.`
+                                        : `You are about to delete "${currentSubject?.name}". This action cannot be undone.`
+                                    }
+                                </AlertDialogDescription>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4 w-full pt-4">
+                                <AlertDialogCancel className="rounded-xl border-2 border-slate-100 py-6 font-bold uppercase tracking-wider text-xs hover:bg-slate-50 hover:text-slate-800">
+                                    Cancel
+                                </AlertDialogCancel>
+                                <AlertDialogAction
+                                    onClick={handleDelete}
+                                    className="rounded-xl bg-red-600 py-6 font-black uppercase tracking-wider text-xs hover:bg-red-700 shadow-xl shadow-red-500/20 text-white"
+                                    disabled={isSubmitting}
+                                >
+                                    {isSubmitting ? 'Deleting...' : 'Delete Forever'}
+                                </AlertDialogAction>
+                            </div>
                         </div>
+                    </AlertDialogContent>
+                </AlertDialog>
 
-                        <div className="space-y-2">
-                            <AlertDialogTitle className="text-2xl font-black text-slate-800 uppercase tracking-tight">
-                                Confirm Deletion
-                            </AlertDialogTitle>
-                            <AlertDialogDescription className="text-slate-500 font-medium leading-relaxed">
-                                {selectedIds.size > 1
-                                    ? `You are about to permanently delete ${selectedIds.size} subjects. This action cannot be undone.`
-                                    : `You are about to delete "${currentSubject?.name}". This action cannot be undone.`
-                                }
-                            </AlertDialogDescription>
+                {/* HEADER & SEARCH */}
+                <div className="bg-white/50 backdrop-blur-xl border border-primary/10 p-6 rounded-[2rem] shadow-xl relative overflow-hidden flex items-center justify-between z-10">
+                    <div className="flex items-center gap-4 flex-1">
+                        <div className="p-2 rounded-xl bg-purple-50 text-purple-500 shadow-sm border border-purple-100">
+                            <BookOpen className="w-5 h-5" />
                         </div>
-
-                        <div className="grid grid-cols-2 gap-4 w-full pt-4">
-                            <AlertDialogCancel className="rounded-xl border-2 border-slate-100 py-6 font-bold uppercase tracking-wider text-xs hover:bg-slate-50 hover:text-slate-800">
-                                Cancel
-                            </AlertDialogCancel>
-                            <AlertDialogAction
-                                onClick={handleDelete}
-                                className="rounded-xl bg-red-600 py-6 font-black uppercase tracking-wider text-xs hover:bg-red-700 shadow-xl shadow-red-500/20 text-white"
-                                disabled={isSubmitting}
-                            >
-                                {isSubmitting ? 'Deleting...' : 'Delete Forever'}
-                            </AlertDialogAction>
-                        </div>
-                    </div>
-                </AlertDialogContent>
-            </AlertDialog>
-
-            {/* HEADER & SEARCH */}
-            <div className="bg-white/50 backdrop-blur-xl border border-primary/10 p-6 rounded-[2rem] shadow-xl relative overflow-hidden flex items-center justify-between z-10">
-                <div className="flex items-center gap-4 flex-1">
-                    <div className="p-2 rounded-xl bg-purple-50 text-purple-500 shadow-sm border border-purple-100">
-                        <BookOpen className="w-5 h-5" />
-                    </div>
-                    <div className="relative flex-1 max-w-md group">
-                        <input
-                            type="text"
-                            placeholder="Search Subjects..."
-                            value={searchQuery}
-                            onChange={(e) => { setSearchQuery(e.target.value); setPage(1); }}
-                            className="w-full bg-slate-50 border-none rounded-2xl px-5 py-3 text-[11px] font-black tracking-widest text-[#1A1A1A] placeholder:text-slate-400 focus:ring-2 focus:ring-purple-500/10 transition-all outline-none border border-transparent shadow-inner"
-                        />
-                        {/* SELECT ALL CHECKBOX */}
-                        <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white border border-slate-100 cursor-pointer hover:border-purple-200 transition-all">
+                        <div className="relative flex-1 max-w-md group">
                             <input
-                                type="checkbox"
-                                checked={data.length > 0 && selectedIds.size === data.length}
-                                onChange={(e) => handleSelectAll(e.target.checked)}
-                                className="w-4 h-4 rounded border-slate-300 text-purple-600 focus:ring-offset-0 focus:ring-0 cursor-pointer"
+                                type="text"
+                                placeholder="Search Subjects..."
+                                value={searchQuery}
+                                onChange={(e) => { setSearchQuery(e.target.value); setPage(1); }}
+                                className="w-full bg-slate-50 border-none rounded-2xl px-5 py-3 text-[11px] font-black tracking-widest text-[#1A1A1A] placeholder:text-slate-400 focus:ring-2 focus:ring-purple-500/10 transition-all outline-none border border-transparent shadow-inner"
                             />
-                            <span className="text-[9px] font-bold uppercase tracking-wider text-slate-500">Select All</span>
+                            {/* SELECT ALL CHECKBOX */}
+                            <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white border border-slate-100 cursor-pointer hover:border-purple-200 transition-all">
+                                <input
+                                    type="checkbox"
+                                    checked={data.length > 0 && selectedIds.size === data.length}
+                                    onChange={(e) => handleSelectAll(e.target.checked)}
+                                    className="w-4 h-4 rounded border-slate-300 text-purple-600 focus:ring-offset-0 focus:ring-0 cursor-pointer"
+                                />
+                                <span className="text-[9px] font-bold uppercase tracking-wider text-slate-500">Select All</span>
+                            </div>
                         </div>
                     </div>
+                    <div className="flex items-center gap-3">
+                        <button
+                            onClick={() => setIsFactoryOpen(true)}
+                            className="px-6 py-3 rounded-2xl bg-slate-900 text-white text-[10px] font-bold uppercase tracking-wider shadow-lg hover:bg-slate-800 transition-all flex items-center gap-2"
+                        >
+                            <Plus size={14} className="text-[#FF4B91]" />
+                            Bulk Factory
+                        </button>
+                        <button
+                            onClick={() => handleOpenForm()} // Open for Create
+                            className="px-6 py-3 rounded-2xl bg-[#FF4B91] hover:bg-[#ff3382] text-white text-[10px] font-bold uppercase tracking-wider shadow-lg shadow-[#FF4B91]/20 transition-all flex items-center gap-3 active:scale-95"
+                        >
+                            <Plus size={16} />
+                            Add Subject
+                        </button>
+                    </div>
                 </div>
-                <div className="flex items-center gap-3">
-                    <button
-                        onClick={() => setIsFactoryOpen(true)}
-                        className="px-6 py-3 rounded-2xl bg-slate-900 text-white text-[10px] font-bold uppercase tracking-wider shadow-lg hover:bg-slate-800 transition-all flex items-center gap-2"
-                    >
-                        <Plus size={14} className="text-[#FF4B91]" />
-                        Bulk Factory
-                    </button>
-                    <button
-                        onClick={() => handleOpenForm()} // Open for Create
-                        className="px-6 py-3 rounded-2xl bg-[#FF4B91] hover:bg-[#ff3382] text-white text-[10px] font-bold uppercase tracking-wider shadow-lg shadow-[#FF4B91]/20 transition-all flex items-center gap-3 active:scale-95"
-                    >
-                        <Plus size={16} />
-                        Add Subject
-                    </button>
-                </div>
-            </div>
 
-            {/* SUBJECT CARD STACK */}
-            {isLoading ? (
-                <div className="min-h-[400px] flex items-center justify-center">
-                    <ZLoader text="Loading Subjects..." />
-                </div>
-            ) : (
-                <div className="grid grid-cols-1 gap-4">
-                    {data.map((subject, index) => (
-                        <SubjectReviewCard
-                            key={subject.id}
-                            subject={subject}
-                            index={index + (page - 1) * 20}
-                            isSelected={selectedIds.has(subject.id)}
-                            onSelect={handleSelect}
-                            onDeleteRequest={(d) => { setCurrentSubject(d); setIsDeleteOpen(true); }}
-                            onEditRequest={(d) => handleOpenForm(d)}
-                        />
-                    ))}
-                    {data.length === 0 && (
-                        <div className="text-center py-20 opacity-50">
-                            <BookOpen className="w-16 h-16 mx-auto mb-4 text-slate-300" />
-                            <h3 className="text-lg font-bold text-slate-500">No subjects found</h3>
-                        </div>
-                    )}
-                </div>
-            )}
-
-            {/* Pagination */}
-            {totalPages > 1 && (
-                <div className="p-6 flex items-center justify-between bg-slate-50/50 rounded-3xl mt-8">
-                    <button disabled={page === 1} onClick={() => setPage(p => p - 1)} className="px-4 py-2 text-xs font-black uppercase tracking-widest disabled:opacity-50 hover:text-[#FF4B91] transition-colors">Previous</button>
-                    <div className="flex items-center gap-2">
-                        {Array.from({ length: totalPages }).map((_, i) => (
-                            <button
-                                key={i}
-                                onClick={() => setPage(i + 1)}
-                                className={`w-8 h-8 rounded-lg text-[10px] font-black transition-all ${page === i + 1 ? 'bg-[#1A1A1A] text-white shadow-lg' : 'text-slate-500 hover:text-[#1A1A1A]'}`}
-                            >
-                                {i + 1}
-                            </button>
+                {/* SUBJECT CARD STACK */}
+                {isLoading ? (
+                    <div className="min-h-[400px] flex items-center justify-center">
+                        <ZLoader text="Loading Subjects..." />
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 gap-4">
+                        {data.map((subject, index) => (
+                            <SubjectReviewCard
+                                key={subject.id}
+                                subject={subject}
+                                index={index + (page - 1) * 20}
+                                isSelected={selectedIds.has(subject.id)}
+                                onSelect={handleSelect}
+                                onDeleteRequest={(d) => { setCurrentSubject(d); setIsDeleteOpen(true); }}
+                                onEditRequest={(d) => handleOpenForm(d)}
+                            />
                         ))}
+                        {data.length === 0 && (
+                            <div className="text-center py-20 opacity-50">
+                                <BookOpen className="w-16 h-16 mx-auto mb-4 text-slate-400" />
+                                <h3 className="text-lg font-bold text-slate-500">No subjects found</h3>
+                            </div>
+                        )}
                     </div>
-                    <button disabled={page === totalPages} onClick={() => setPage(p => p + 1)} className="px-4 py-2 text-xs font-black uppercase tracking-widest disabled:opacity-50 hover:text-[#FF4B91] transition-colors">Next</button>
-                </div>
-            )}
+                )}
+            </div>
+            <ZPagination
+                currentPage={page}
+                totalPages={totalPages}
+                totalCount={totalCount}
+                pageSize={pageSize}
+                onPageChange={setPage}
+                onPageSizeChange={(size) => {
+                    setPageSize(size);
+                    setPage(1);
+                }}
+            />
         </div>
     );
 }

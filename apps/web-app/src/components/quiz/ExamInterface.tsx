@@ -257,7 +257,7 @@ export function ExamInterface() {
                 )}
                 <div className="flex items-center gap-6">
                     <div>
-                        <h2 className="text-xl font-black tracking-tight uppercase italic text-primary">Enterprise Exam</h2>
+                        <h2 className="text-xl font-black tracking-tight uppercase text-primary">Enterprise Exam</h2>
                         <p className="text-xs font-bold text-muted-foreground">Domain: Technical Assessment</p>
                     </div>
                     <div className="hidden md:flex gap-1.5">

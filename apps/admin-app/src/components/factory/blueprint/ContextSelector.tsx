@@ -26,7 +26,7 @@ export function ContextSelector({ selections, onChange }: ContextSelectorProps) 
         <div className="space-y-6">
             <div className="flex items-center gap-3 mb-2">
                 <div className="h-6 w-1 bg-[#FF4B91] rounded-full" />
-                <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400 italic">
+                <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">
                     1. Target Context (Surgical Scope)
                 </h3>
             </div>

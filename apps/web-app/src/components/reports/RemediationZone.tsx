@@ -84,7 +84,7 @@ export function RemediationZone({ subtopicPerformance, className }: RemediationZ
 
                         {masteredZones.length === 0 && (
                             <div className="text-center py-8">
-                                <p className="text-sm font-bold text-muted-foreground italic">
+                                <p className="text-sm font-bold text-muted-foreground">
                                     Continue practicing to reach 90%+ mastery in specific subtopics.
                                 </p>
                             </div>

@@ -60,7 +60,7 @@ export function JsonIngestBox() {
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                     <div className="h-6 w-1 bg-[#FF4B91] rounded-full" />
-                    <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400 italic">
+                    <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">
                         4. Surgical Ingestion (Auto-Healing)
                     </h3>
                 </div>
@@ -88,7 +88,7 @@ export function JsonIngestBox() {
                         <div className="p-2.5 bg-slate-900 rounded-xl text-[#FF4B91]">
                             <FileJson size={20} />
                         </div>
-                        <h4 className="text-sm font-black uppercase tracking-widest text-[#1A1A1A] italic">Payload Editor</h4>
+                        <h4 className="text-sm font-black uppercase tracking-widest text-[#1A1A1A]">Payload Editor</h4>
                     </div>
                     <div className="flex items-center gap-3">
                         {isContextMissing && (
@@ -170,7 +170,7 @@ export function JsonIngestBox() {
                         <p className="text-[10px] text-slate-800 font-black uppercase tracking-widest">
                             Surgical Extraction & Repair
                         </p>
-                        <p className="text-[9px] text-slate-400 font-medium italic">
+                        <p className="text-[9px] text-slate-400 font-medium">
                             Full-height IDE mode. Auto-healing fixes structural and content errors on the fly.
                         </p>
                     </div>

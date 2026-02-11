@@ -29,7 +29,7 @@ export function SecurityHealthPanel() {
         <div className="p-8 rounded-[2rem] border border-primary/10 bg-muted/5 backdrop-blur-md shadow-sm h-full">
             <div className="flex items-center justify-between mb-8">
                 <div>
-                    <h3 className="text-2xl font-black uppercase tracking-tighter italic text-[#1A1A1A]">Security Signals</h3>
+                    <h3 className="text-2xl font-black uppercase tracking-tighter text-[#1A1A1A]">Security Signals</h3>
                     <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-0.5">Authentication Health Monitor</p>
                 </div>
                 <div className={`px-4 py-2 rounded-full border flex items-center gap-2.5 ${isHighThreat

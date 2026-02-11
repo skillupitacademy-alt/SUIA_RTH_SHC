@@ -11,9 +11,9 @@ import { ProgressChart } from "@/components/dashboard/ProgressChart";
 import { StackedBarBreakdown } from "@/components/dashboard/StackedBarBreakdown";
 import { cn } from "@/lib/utils";
 import { Filter, BarChart2, List, TrendingUp, Info, Hash, Layers, BookOpen as BookIcon, Calendar as CalendarIcon, Clock } from 'lucide-react';
-import { SelectField, ZLoader } from '@quiz/ui';
+import { SelectField, ZLoader, ZPagination } from '@quiz/ui';
 
-const ITEMS_PER_PAGE = 6;
+// Standardized pagination state
 
 export default function MyExamsPage() {
     const {
@@ -30,15 +30,16 @@ export default function MyExamsPage() {
     } = useDashboardStore();
 
     const [currentPage, setCurrentPage] = useState(1);
+    const [limit, setLimit] = useState(10); // Standardize to 10
     const [range, setRange] = useState('28d');
     const [view, setView] = useState<'table' | 'trends' | 'breakdowns'>('table');
 
     useEffect(() => {
         // Initial fetch: 28 days history + metadata
-        fetchDashboard(range, currentPage, ITEMS_PER_PAGE);
+        fetchDashboard(range, currentPage, limit);
         fetchPerformanceBreakdownMetadata();
         fetchPerformanceBreakdown(range);
-    }, [fetchDashboard, fetchPerformanceBreakdownMetadata, fetchPerformanceBreakdown, currentPage, range]);
+    }, [fetchDashboard, fetchPerformanceBreakdownMetadata, fetchPerformanceBreakdown, currentPage, range, limit]);
 
     const handleRangeChange = (newRange: string) => {
         if (newRange === '90d') return; // Strictly enforced contract
@@ -50,7 +51,7 @@ export default function MyExamsPage() {
     // Direct access to activities (already paginated by server)
     const activities = data?.recentActivity || [];
     const totalCount = data?.pagination?.total || 0;
-    const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE);
+    const totalPages = data?.pagination?.totalPages || 0;
 
     // Filter metadata - Source from decoupled store state
     const allDomains = drilldownMetadata?.domains || [];
@@ -254,30 +255,19 @@ export default function MyExamsPage() {
                                             ))}
                                         </div>
 
-                                        {/* Pagination Controls */}
-                                        {totalPages > 1 && (
-                                            <div className="flex items-center justify-between pt-6 px-2">
-                                                <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">
-                                                    Page {currentPage} of {totalPages}
-                                                </p>
-                                                <div className="flex items-center gap-3">
-                                                    <button
-                                                        onClick={handlePrev}
-                                                        disabled={currentPage === 1}
-                                                        className="p-4 rounded-2xl border bg-white disabled:opacity-30 disabled:grayscale hover:bg-slate-50 transition-all active:scale-95"
-                                                    >
-                                                        <ChevronLeft size={20} />
-                                                    </button>
-                                                    <button
-                                                        onClick={handleNext}
-                                                        disabled={currentPage === totalPages}
-                                                        className="p-4 rounded-2xl border bg-white disabled:opacity-30 disabled:grayscale hover:bg-slate-50 transition-all active:scale-95"
-                                                    >
-                                                        <ChevronRight size={20} />
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        )}
+                                        {/* Pagination Standard */}
+                                        <ZPagination
+                                            currentPage={currentPage}
+                                            totalPages={totalPages}
+                                            totalCount={totalCount}
+                                            pageSize={limit}
+                                            onPageChange={setCurrentPage}
+                                            onPageSizeChange={(size) => {
+                                                setLimit(size);
+                                                setCurrentPage(1);
+                                            }}
+                                            pageSizeOptions={[10, 25, 50]}
+                                        />
                                     </div>
                                 )}
 

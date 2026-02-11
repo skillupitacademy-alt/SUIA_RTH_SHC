@@ -4,12 +4,13 @@ import { useEffect, useState } from 'react';
 import { apiClient } from '@quiz/api-client';
 import { Users, Clock, Globe, ShieldCheck } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
-import { ZLoader } from '@quiz/ui';
+import { ZLoader, ZPagination } from '@quiz/ui';
 
 export function LiveSessionsList() {
     const [sessions, setSessions] = useState<any[]>([]);
     const [meta, setMeta] = useState<any>({ page: 1, totalPages: 1, total: 0 });
     const [page, setPage] = useState(1);
+    const [pageSize, setPageSize] = useState(10);
     const [isLoading, setIsLoading] = useState(true);
 
     const [searchQuery, setSearchQuery] = useState('');
@@ -22,7 +23,7 @@ export function LiveSessionsList() {
 
     const fetchSessions = async (p: number) => {
         try {
-            const data = await apiClient.admin.getLiveSessions(p, 10, debouncedSearch || undefined);
+            const data = await apiClient.admin.getLiveSessions(p, pageSize, debouncedSearch || undefined);
             setSessions(data.sessions);
             setMeta({
                 page: data.page,
@@ -40,7 +41,7 @@ export function LiveSessionsList() {
         fetchSessions(page);
         const interval = setInterval(() => fetchSessions(page), 30000); // Poll every 30s
         return () => clearInterval(interval);
-    }, [page, debouncedSearch]);
+    }, [page, pageSize, debouncedSearch]);
 
     if (isLoading && sessions.length === 0) {
         return (
@@ -55,7 +56,7 @@ export function LiveSessionsList() {
             <div className="p-8 rounded-[2rem] border border-primary/10 bg-muted/5 backdrop-blur-md shadow-sm">
                 <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6 mb-8">
                     <div>
-                        <h3 className="text-2xl font-black uppercase tracking-tighter italic text-[#1A1A1A]">Governance Terminal</h3>
+                        <h3 className="text-2xl font-black uppercase tracking-tighter text-[#1A1A1A]">Governance Terminal</h3>
                         <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-0.5">Currently Authenticated Users</p>
                     </div>
                     <div className="flex items-center gap-4">
@@ -135,30 +136,17 @@ export function LiveSessionsList() {
                     )}
                 </div>
 
-                {/* Pagination Controls */}
-                {meta.totalPages > 1 && (
-                    <div className="flex items-center justify-between pt-6 border-t border-muted-foreground/5">
-                        <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">
-                            Page {page} of {meta.totalPages} <span className="mx-2">•</span> {meta.total} Total Sessions
-                        </p>
-                        <div className="flex items-center gap-2">
-                            <button
-                                onClick={() => setPage(p => Math.max(1, p - 1))}
-                                disabled={page === 1}
-                                className="px-6 py-2 rounded-xl bg-background border font-black text-[10px] uppercase tracking-widest hover:bg-muted disabled:opacity-30 disabled:pointer-events-none transition-all"
-                            >
-                                Previous
-                            </button>
-                            <button
-                                onClick={() => setPage(p => Math.min(meta.totalPages, p + 1))}
-                                disabled={page === meta.totalPages}
-                                className="px-6 py-2 rounded-xl bg-[#1A1A1A] text-white font-black text-[10px] uppercase tracking-widest hover:opacity-90 disabled:opacity-30 disabled:pointer-events-none transition-all"
-                            >
-                                Next
-                            </button>
-                        </div>
-                    </div>
-                )}
+                <ZPagination
+                    currentPage={page}
+                    totalPages={meta.totalPages}
+                    totalCount={meta.total}
+                    pageSize={pageSize}
+                    onPageChange={setPage}
+                    onPageSizeChange={(size) => {
+                        setPageSize(size);
+                        setPage(1);
+                    }}
+                />
             </div>
         </div>
     );

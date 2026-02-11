@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { apiClient } from '@quiz/api-client';
 import { Target, BarChart2, CalendarDays } from 'lucide-react';
 import { EfficiencyQuadrant } from './EfficiencyQuadrant';
+import { ZLoader } from '@quiz/ui';
 
 type TimeRange = '7d' | '14d' | '28d';
 
@@ -32,14 +33,20 @@ export function PerformanceAnalyticsBoard() {
         fetch();
     }, [range]);
 
-    if (isLoading || !perf) return null;
+    if (isLoading || !perf) {
+        return (
+            <div className="p-20 flex items-center justify-center">
+                <ZLoader text="Analyzing Performance Data..." />
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-8">
             <div className="p-8 rounded-[2rem] border border-primary/10 bg-muted/5 backdrop-blur-md shadow-sm">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
                     <div>
-                        <h3 className="text-2xl font-outfit font-black tracking-tighter italic uppercase text-premium-gradient">Performance by Domain</h3>
+                        <h3 className="text-2xl font-outfit font-black tracking-tighter uppercase text-premium-gradient">Performance by Domain</h3>
                         <p className="text-sm font-inter font-bold text-slate-600 mt-1">Accuracy & Skill Mastery Breakdown</p>
                     </div>
 
@@ -128,7 +135,7 @@ export function PerformanceAnalyticsBoard() {
                 <div className="p-8 rounded-[2rem] border border-amber-500/10 bg-amber-500/5 backdrop-blur-md shadow-sm">
                     <div className="flex items-center justify-between mb-8">
                         <div>
-                            <h3 className="text-2xl font-outfit font-black tracking-tighter italic uppercase text-amber-700">Growth Zones</h3>
+                            <h3 className="text-2xl font-outfit font-black tracking-tighter uppercase text-amber-700">Growth Zones</h3>
                             <p className="text-sm font-inter font-bold text-slate-600 mt-1">Derived Systemic Skill Gaps (Lowest Accuracy Topics)</p>
                         </div>
                     </div>

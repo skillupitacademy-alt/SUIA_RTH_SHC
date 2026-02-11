@@ -48,7 +48,7 @@ export function UniversalMarkdownViewer({ path }: UniversalMarkdownViewerProps) 
                 components={{
                     h1: ({ children }) => (
                         <div className="relative mb-12">
-                            <h1 className="text-4xl lg:text-5xl font-black text-[#1A1A1A] tracking-tighter italic uppercase border-b-8 border-[#FF4B91]/10 pb-4">
+                            <h1 className="text-4xl lg:text-5xl font-black text-[#1A1A1A] tracking-tighter uppercase border-b-8 border-[#FF4B91]/10 pb-4">
                                 {children}
                             </h1>
                             <div className="absolute -bottom-2 left-0 w-24 h-2 bg-[#FF4B91] rounded-full" />
@@ -90,7 +90,7 @@ export function UniversalMarkdownViewer({ path }: UniversalMarkdownViewerProps) 
                                 <AlertOctagon className="text-[#FF4B91] shrink-0" size={24} />
                                 <div>
                                     <p className="text-[11px] font-black text-[#FF4B91] uppercase tracking-[0.3em] mb-3">Critical Conflict Protocol</p>
-                                    <div className="text-slate-700 font-bold italic text-sm leading-relaxed">{children}</div>
+                                    <div className="text-slate-700 font-bold text-sm leading-relaxed">{children}</div>
                                 </div>
                             </div>
                         </div>

@@ -129,7 +129,7 @@ function ReportContent() {
         return (
             <div className="flex flex-col min-h-[calc(100vh-64px)] items-center justify-center bg-muted/5">
                 <Loader2 className="animate-spin text-primary mb-4" size={48} />
-                <p className="text-xl font-bold text-muted-foreground italic animate-pulse">
+                <p className="text-xl font-bold text-muted-foreground animate-pulse">
                     {isProcessing ? "\"Calculating your masteries... one second.\"" : "\"Mining your results...\""}
                 </p>
                 {isProcessing && (
@@ -143,7 +143,7 @@ function ReportContent() {
         return (
             <div className="flex flex-col min-h-[calc(100vh-64px)] items-center justify-center bg-muted/5 p-6 text-center">
                 <div className="bg-background p-12 rounded-[3rem] border-2 border-primary/20 shadow-2xl space-y-6 max-w-md">
-                    <h2 className="text-2xl font-black italic uppercase">Assessment Update</h2>
+                    <h2 className="text-2xl font-black uppercase">Assessment Update</h2>
                     <p className="text-muted-foreground font-medium leading-relaxed">{errorMsg}</p>
                     <button
                         onClick={() => window.location.reload()}
@@ -288,7 +288,7 @@ function ReportContent() {
 
                     {/* Footer Advice */}
                     <div className="text-center pt-12 pb-24">
-                        <p className="text-muted-foreground font-bold italic mb-6">
+                        <p className="text-muted-foreground font-bold mb-6">
                             &quot;Your path to mastery is a marathon, not a sprint. Every identified weakness is a target for tomorrow&apos;s success.&quot;
                         </p>
                         <div className="flex justify-center gap-4">
@@ -311,7 +311,7 @@ export default function ReportPage() {
         <Suspense fallback={
             <div className="flex flex-col min-h-[calc(100vh-64px)] items-center justify-center bg-muted/5">
                 <Loader2 className="animate-spin text-primary mb-4" size={48} />
-                <p className="text-xl font-bold text-muted-foreground italic animate-pulse">
+                <p className="text-xl font-bold text-muted-foreground animate-pulse">
                     &quot;Loading report...&quot;
                 </p>
             </div>

@@ -317,11 +317,11 @@ export function ReviewConsole() {
             {/* EMPTY STATE RE-GUARD */}
             {stagedQuestions.length === 0 && (
                 <div className="bg-white rounded-[2.5rem] p-24 border border-slate-200 shadow-sm flex flex-col items-center justify-center text-center">
-                    <div className="w-16 h-16 rounded-3xl bg-slate-50 text-slate-300 flex items-center justify-center mb-6 font-black italic">
+                    <div className="w-16 h-16 rounded-3xl bg-slate-50 text-slate-300 flex items-center justify-center mb-6 font-black">
                         CLEARED
                     </div>
                     <h3 className="text-sm font-black uppercase tracking-widest text-[#1A1A1A]">Batch Empty</h3>
-                    <p className="text-xs text-slate-400 max-w-sm mt-3 font-medium italic">
+                    <p className="text-xs text-slate-400 max-w-sm mt-3 font-medium">
                         The staging area is empty. Please return to the Blueprint area to generate or ingest new questions.
                     </p>
                     <button

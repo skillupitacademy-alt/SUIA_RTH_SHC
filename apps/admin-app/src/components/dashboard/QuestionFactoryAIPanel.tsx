@@ -21,7 +21,7 @@ export function QuestionFactoryAIPanel() {
                     </div>
 
                     <div>
-                        <h2 className="text-3xl font-black tracking-tighter italic uppercase text-[#1A1A1A] mb-2">Question Factory</h2>
+                        <h2 className="text-3xl font-black tracking-tighter uppercase text-[#1A1A1A] mb-2">Question Factory</h2>
                         <p className="text-sm font-medium text-muted-foreground leading-relaxed">
                             Transform documentation and source code into high-fidelity exam batches using the Context-Aware AI Engine.
                             Define your blueprint and generate strict-schema content in seconds.

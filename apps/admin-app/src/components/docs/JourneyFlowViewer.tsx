@@ -49,7 +49,7 @@ export function JourneyFlowViewer({ path }: JourneyFlowViewerProps) {
                                 <Map size={18} className="text-[#FF4B91]" />
                                 <span className="text-[10px] font-black text-[#FF4B91] uppercase tracking-[0.4em]">Operational Journey Contract</span>
                             </div>
-                            <h1 className="text-4xl lg:text-5xl font-black text-[#1A1A1A] tracking-tighter italic uppercase">
+                            <h1 className="text-4xl lg:text-5xl font-black text-[#1A1A1A] tracking-tighter uppercase">
                                 {children}
                             </h1>
                             <div className="absolute -bottom-4 left-0 w-24 h-2 bg-[#FF4B91] rounded-full" />
@@ -57,7 +57,7 @@ export function JourneyFlowViewer({ path }: JourneyFlowViewerProps) {
                     ),
                     h2: ({ children }) => (
                         <div className="flex items-center gap-4 mt-20 mb-10 group">
-                            <div className="h-10 w-10 rounded-2xl bg-[#1A1A1A] text-white flex items-center justify-center text-lg font-black italic shadow-xl group-hover:scale-110 transition-transform">
+                            <div className="h-10 w-10 rounded-2xl bg-[#1A1A1A] text-white flex items-center justify-center text-lg font-black shadow-xl group-hover:scale-110 transition-transform">
                                 {children?.toString().match(/^\d+/)?.[0] || '—'}
                             </div>
                             <h2 className="text-2xl font-black text-[#1A1A1A] tracking-tight uppercase m-0 border-b-2 border-slate-100 pb-2 flex-1">

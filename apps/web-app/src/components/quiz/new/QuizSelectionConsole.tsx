@@ -442,7 +442,7 @@ function QuizSelectionConsoleContent() {
                                 <Activity size={24} className="animate-pulse" />
                             </div>
                             <div>
-                                <h3 className="text-sm font-black italic tracking-tight text-[#FF2D55] uppercase leading-none mb-1">Active Session Detected</h3>
+                                <h3 className="text-sm font-black tracking-tight text-[#FF2D55] uppercase leading-none mb-1">Active Session Detected</h3>
                                 <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest leading-none">Recover your ongoing assessment session</p>
                             </div>
                         </div>

@@ -136,11 +136,11 @@ function QuestionFactoryContent() {
                     {/* Phase 3: Review Console (Teaser for now) */}
                     {stagedQuestions.length > 0 && (
                         <div className="bg-white rounded-[2.5rem] p-12 border border-slate-200 shadow-xl flex flex-col items-center justify-center text-center animate-in zoom-in-95 duration-500">
-                            <div className="w-16 h-16 rounded-3xl bg-emerald-50 text-emerald-500 shadow-sm flex items-center justify-center mb-6 font-black italic">
+                            <div className="w-16 h-16 rounded-3xl bg-emerald-50 text-emerald-500 shadow-sm flex items-center justify-center mb-6 font-black">
                                 PH3
                             </div>
                             <h3 className="text-sm font-black uppercase tracking-widest text-[#1A1A1A]">Phase 3: Review Console</h3>
-                            <p className="text-xs text-slate-400 max-w-sm mt-3 font-medium italic">
+                            <p className="text-xs text-slate-400 max-w-sm mt-3 font-medium">
                                 Your questions have been parsed. Next, we will build the interactive review cards here.
                             </p>
                         </div>
@@ -151,7 +151,7 @@ function QuestionFactoryContent() {
                         <div className="bg-white border border-slate-200 p-6 rounded-[2.5rem] shadow-2xl flex flex-col items-center gap-4 w-full px-12 pointer-events-auto mb-4">
                             {/* Row 1: Centered Title */}
                             <div className="w-full flex justify-center">
-                                <h4 className="text-xs font-black uppercase text-[#FF4B91] tracking-widest italic leading-none">Intelligence Phase</h4>
+                                <h4 className="text-xs font-black uppercase text-[#FF4B91] tracking-widest leading-none">Intelligence Phase</h4>
                             </div>
 
                             {/* Row 2: Full-width Centered Rail */}

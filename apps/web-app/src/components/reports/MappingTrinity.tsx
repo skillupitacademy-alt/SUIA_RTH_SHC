@@ -63,7 +63,7 @@ export function MappingTrinity({ data, className }: MappingTrinityProps) {
             </div>
 
             <div className="mt-auto pt-4 border-t border-slate-200">
-                <p className="text-[10px] font-black text-slate-700 italic leading-relaxed">
+                <p className="text-[10px] font-black text-slate-700 leading-relaxed">
                     * Based on multi-dimensional analysis of problem-solving approach and theoretical accuracy.
                 </p>
             </div>

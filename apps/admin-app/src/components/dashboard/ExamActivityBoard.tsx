@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { apiClient } from '@quiz/api-client';
 import { Activity, Clock, CheckCircle2, XCircle, Globe, TrendingUp } from 'lucide-react';
 import { ZTooltip } from '@/components/ui/ZTooltip';
+import { ZLoader } from '@quiz/ui';
 
 export function ExamActivityBoard() {
     const [stats, setStats] = useState<any>(null);
@@ -20,13 +21,19 @@ export function ExamActivityBoard() {
         fetch();
     }, []);
 
-    if (!stats) return null;
+    if (!stats) {
+        return (
+            <div className="p-12 flex items-center justify-center bg-white border border-primary/10 rounded-[2rem]">
+                <ZLoader text="Fetching activity stream..." />
+            </div>
+        );
+    }
 
     return (
         <div className="p-8 rounded-[2rem] border border-primary/10 bg-white backdrop-blur-md shadow-sm h-full">
             <div className="flex items-center justify-between mb-8">
                 <div>
-                    <h3 className="text-2xl font-black uppercase tracking-tighter italic text-[#1A1A1A]">Exam Activity</h3>
+                    <h3 className="text-2xl font-black uppercase tracking-tighter text-[#1A1A1A]">Exam Activity</h3>
                     <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mt-1">Engagement & Outcome Metrics</p>
                 </div>
                 <div className="p-2.5 rounded-xl bg-orange-500/10 text-orange-600">
@@ -90,13 +97,13 @@ export function ExamActivityBoard() {
                                 <span className="text-xs font-bold uppercase tracking-wider text-slate-700">{d.name}</span>
                             </div>
                             <div className="flex items-center gap-2">
-                                <span className="text-sm font-black italic text-[#1A1A1A]">{d.count}</span>
+                                <span className="text-sm font-black text-[#1A1A1A]">{d.count}</span>
                                 <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Exams</span>
                             </div>
                         </div>
                     ))}
                     {(!stats.byDomain || stats.byDomain.length === 0) && (
-                        <p className="text-xs font-bold text-slate-400 italic">No domain activity recorded yet.</p>
+                        <p className="text-xs font-bold text-slate-400">No domain activity recorded yet.</p>
                     )}
                 </div>
             </div>

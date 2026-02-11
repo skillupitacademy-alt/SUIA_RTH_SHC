@@ -211,7 +211,7 @@ export function OnboardingWizard() {
                             <h2 className="text-5xl font-black mb-4">You&apos;re an Expert!</h2>
                             <p className="text-muted-foreground text-xl max-w-md mx-auto leading-relaxed">
                                 We&apos;re finalizing your workspace for
-                                <span className="text-primary font-bold italic block text-2xl mt-2">
+                                <span className="text-primary font-bold block text-2xl mt-2">
                                     {DOMAINS.find(d => d.id === data.domain)?.title} Mastery
                                 </span>
                             </p>
@@ -257,6 +257,6 @@ export function OnboardingWizard() {
                     </button>
                 </div>
             </div>
-        </div>
+        </div >
     );
 }

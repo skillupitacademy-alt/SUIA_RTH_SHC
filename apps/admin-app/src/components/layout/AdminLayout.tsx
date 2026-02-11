@@ -225,7 +225,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
                         <div className="flex items-center gap-6">
                             <div className="text-right">
-                                <p className="alpha-terminal !tracking-widest italic text-[#1A1A1A]">SUPER ADMIN</p>
+                                <p className="alpha-terminal !tracking-widest text-[#1A1A1A]">SUPER ADMIN</p>
                                 <p className="alpha-terminal !tracking-widest text-slate-400 mt-0.5">id: rh-9012-ad</p>
                             </div>
                             <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-[#FF4B91] to-[#FF8E9E] p-0.5 shadow-xl shadow-[#FF4B91]/20">

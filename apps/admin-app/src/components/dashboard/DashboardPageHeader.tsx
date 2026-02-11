@@ -33,7 +33,7 @@ export function DashboardPageHeader({ title, description, icon }: DashboardPageH
                     </div>
                 )}
                 <div>
-                    <h1 className="text-4xl font-outfit font-black tracking-tighter italic uppercase text-[#1A1A1A]">
+                    <h1 className="text-4xl font-outfit font-black tracking-tighter uppercase text-[#1A1A1A]">
                         {title}
                     </h1>
                     {description && (

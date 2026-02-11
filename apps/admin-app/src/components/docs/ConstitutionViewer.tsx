@@ -8,8 +8,8 @@ export function ConstitutionViewer() {
             <section>
                 <div className="flex items-center gap-4 mb-8">
                     <div className="w-1.5 h-8 bg-[#FF4B91] rounded-full" />
-                    <h2 className="text-3xl font-black text-[#1A1A1A] tracking-tighter uppercase italic">
-                        Constitution Overview <span className="text-[#FF4B91] font-medium not-italic text-sm tracking-[0.2em] ml-4">(The Foundation)</span>
+                    <h2 className="text-3xl font-black text-[#1A1A1A] tracking-tighter uppercase">
+                        Constitution Overview <span className="text-[#FF4B91] font-medium text-sm tracking-[0.2em] ml-4">(The Foundation)</span>
                     </h2>
                 </div>
                 <div className="bg-white border border-slate-200 rounded-[2.5rem] overflow-hidden shadow-2xl shadow-primary/5 w-full">
@@ -23,7 +23,7 @@ export function ConstitutionViewer() {
                         <tbody className="divide-y divide-slate-100">
                             {GOVERNANCE_DATA.overview.map((item, idx) => (
                                 <tr key={idx} className="group hover:bg-slate-50 transition-colors">
-                                    <td className="px-10 py-6 font-black text-slate-700 text-sm italic">{item.attribute}</td>
+                                    <td className="px-10 py-6 font-black text-slate-700 text-sm">{item.attribute}</td>
                                     <td className="px-10 py-6 font-bold text-slate-500">{item.details}</td>
                                 </tr>
                             ))}
@@ -36,8 +36,8 @@ export function ConstitutionViewer() {
             <section>
                 <div className="flex items-center gap-4 mb-8">
                     <div className="w-1.5 h-8 bg-[#FF4B91] rounded-full" />
-                    <h2 className="text-3xl font-black text-[#1A1A1A] tracking-tighter uppercase italic">
-                        Source-of-Truth Hierarchy <span className="text-[#FF4B91] font-medium not-italic text-sm tracking-[0.2em] ml-4">(The Absolute Law)</span>
+                    <h2 className="text-3xl font-black text-[#1A1A1A] tracking-tighter uppercase">
+                        Source-of-Truth Hierarchy <span className="text-[#FF4B91] font-medium text-sm tracking-[0.2em] ml-4">(The Absolute Law)</span>
                     </h2>
                 </div>
                 <div className="bg-white border border-slate-200 rounded-[2.5rem] overflow-hidden shadow-2xl shadow-primary/5 w-full">
@@ -58,13 +58,13 @@ export function ConstitutionViewer() {
                                             {item.source}
                                         </code>
                                     </td>
-                                    <td className="px-10 py-6 text-sm font-bold text-slate-500 italic">{item.description}</td>
+                                    <td className="px-10 py-6 text-sm font-bold text-slate-500">{item.description}</td>
                                 </tr>
                             ))}
                         </tbody>
                     </table>
                     <div className="px-10 py-4 bg-slate-50 border-t border-slate-100">
-                        <p className="text-[11px] font-bold text-slate-400 italic">
+                        <p className="text-[11px] font-bold text-slate-400">
                             {GOVERNANCE_DATA.hierarchyNote}
                         </p>
                     </div>
@@ -75,8 +75,8 @@ export function ConstitutionViewer() {
             <section>
                 <div className="flex items-center gap-4 mb-8">
                     <div className="w-1.5 h-8 bg-[#FF4B91] rounded-full" />
-                    <h2 className="text-3xl font-black text-[#1A1A1A] tracking-tighter uppercase italic">
-                        Permission Matrix <span className="text-[#FF4B91] font-medium not-italic text-sm tracking-[0.2em] ml-4">(Read vs Write)</span>
+                    <h2 className="text-3xl font-black text-[#1A1A1A] tracking-tighter uppercase">
+                        Vercel Push Guard <span className="text-[#FF4B91] font-medium text-sm tracking-[0.2em] ml-4">(Deployment Filter)</span>
                     </h2>
                 </div>
                 <div className="bg-white border border-slate-200 rounded-[2.5rem] overflow-hidden shadow-2xl shadow-primary/5 w-full">
@@ -99,7 +99,7 @@ export function ConstitutionViewer() {
                                     </td>
                                     <td className="px-10 py-6 text-lg">{item.read}</td>
                                     <td className="px-10 py-6 text-lg">{item.write}</td>
-                                    <td className="px-10 py-6 text-sm font-bold text-slate-500 italic">{item.notes}</td>
+                                    <td className="px-10 py-6 text-sm font-bold text-slate-500">{item.notes}</td>
                                 </tr>
                             ))}
                         </tbody>
@@ -111,8 +111,8 @@ export function ConstitutionViewer() {
             <section>
                 <div className="flex items-center gap-4 mb-8">
                     <div className="w-1.5 h-8 bg-[#FF4B91] rounded-full" />
-                    <h2 className="text-3xl font-black text-[#1A1A1A] tracking-tighter uppercase italic">
-                        Documentation Architecture <span className="text-[#FF4B91] font-medium not-italic text-sm tracking-[0.2em] ml-4">(Folder Intent Map)</span>
+                    <h2 className="text-3xl font-black text-[#1A1A1A] tracking-tighter uppercase">
+                        Documentation Architecture <span className="text-[#FF4B91] font-medium text-sm tracking-[0.2em] ml-4">(Folder Intent Map)</span>
                     </h2>
                 </div>
                 <div className="bg-white border border-slate-200 rounded-[2.5rem] overflow-hidden shadow-2xl shadow-primary/5 w-full">
@@ -153,8 +153,8 @@ export function ConstitutionViewer() {
             <section>
                 <div className="flex items-center gap-4 mb-8">
                     <div className="w-1.5 h-8 bg-[#FF4B91] rounded-full" />
-                    <h2 className="text-3xl font-black text-[#1A1A1A] tracking-tighter uppercase italic">
-                        STOP Conditions <span className="text-[#FF4B91] font-medium not-italic text-sm tracking-[0.2em] ml-4">(Safety Protocol)</span>
+                    <h2 className="text-3xl font-black text-[#1A1A1A] tracking-tighter uppercase">
+                        Project Constitution <span className="text-[#FF4B91] font-medium text-sm tracking-[0.2em] ml-4">(Operational Laws)</span>
                     </h2>
                 </div>
                 <div className="bg-white border border-slate-200 rounded-[2.5rem] overflow-hidden shadow-2xl shadow-primary/5 w-full p-10">
@@ -162,7 +162,7 @@ export function ConstitutionViewer() {
                         {GOVERNANCE_DATA.stopConditions.map((condition, idx) => (
                             <li key={idx} className="flex items-start gap-4 animate-in fade-in slide-in-from-left-4 duration-500" style={{ animationDelay: `${idx * 100}ms` }}>
                                 <div className="w-2 h-2 bg-[#FF4B91] rounded-full mt-2 shrink-0" />
-                                <span className="text-sm font-bold text-slate-500 italic leading-relaxed">
+                                <span className="text-sm font-bold text-slate-500 leading-relaxed">
                                     {condition}
                                 </span>
                             </li>
@@ -175,8 +175,8 @@ export function ConstitutionViewer() {
             <section>
                 <div className="flex items-center gap-4 mb-8">
                     <div className="w-1.5 h-8 bg-[#FF4B91] rounded-full" />
-                    <h2 className="text-3xl font-black text-[#1A1A1A] tracking-tighter uppercase italic">
-                        Engineering Standards <span className="text-[#FF4B91] font-medium not-italic text-sm tracking-[0.2em] ml-4">(SDE-3 Mandate)</span>
+                    <h2 className="text-3xl font-black text-[#1A1A1A] tracking-tighter uppercase">
+                        Engineering Standards <span className="text-[#FF4B91] font-medium text-sm tracking-[0.2em] ml-4">(SDE-3 Mandate)</span>
                     </h2>
                 </div>
                 <div className="bg-white border border-slate-200 rounded-[2.5rem] overflow-hidden shadow-2xl shadow-primary/5 w-full">
@@ -195,7 +195,7 @@ export function ConstitutionViewer() {
                                             {item.principle}
                                         </span>
                                     </td>
-                                    <td className="px-10 py-6 text-sm font-bold text-slate-500 italic">{item.description}</td>
+                                    <td className="px-10 py-6 text-sm font-bold text-slate-500">{item.description}</td>
                                 </tr>
                             ))}
                         </tbody>
@@ -207,14 +207,14 @@ export function ConstitutionViewer() {
             <section>
                 <div className="flex items-center gap-4 mb-8">
                     <div className="w-1.5 h-8 bg-[#FF4B91] rounded-full" />
-                    <h2 className="text-3xl font-black text-[#1A1A1A] tracking-tighter uppercase italic">
-                        Change Policy <span className="text-[#FF4B91] font-medium not-italic text-sm tracking-[0.2em] ml-4">(Maintenance Rules)</span>
+                    <h2 className="text-3xl font-black text-[#1A1A1A] tracking-tighter uppercase">
+                        Change Policy <span className="text-[#FF4B91] font-medium text-sm tracking-[0.2em] ml-4">(Maintenance Rules)</span>
                     </h2>
                 </div>
                 <div className="bg-white border border-slate-200 rounded-[2.5rem] overflow-hidden shadow-2xl shadow-primary/5 w-full p-10">
                     <ol className="space-y-4 list-decimal list-inside">
                         {GOVERNANCE_DATA.changePolicy.map((item, idx) => (
-                            <li key={idx} className="text-sm font-bold text-slate-500 italic leading-relaxed pl-2">
+                            <li key={idx} className="text-sm font-bold text-slate-500 leading-relaxed pl-2">
                                 <span className="text-slate-700 font-black mr-2">{idx + 1}.</span>
                                 {item}
                             </li>
@@ -227,8 +227,8 @@ export function ConstitutionViewer() {
             <section>
                 <div className="flex items-center gap-4 mb-8">
                     <div className="w-1.5 h-8 bg-[#FF4B91] rounded-full" />
-                    <h2 className="text-3xl font-black text-[#1A1A1A] tracking-tighter uppercase italic">
-                        The Cycle of Truth <span className="text-[#FF4B91] font-medium not-italic text-sm tracking-[0.2em] ml-4">(Governance Loop)</span>
+                    <h2 className="text-3xl font-black text-[#1A1A1A] tracking-tighter uppercase">
+                        The Cycle of Truth <span className="text-[#FF4B91] font-medium text-sm tracking-[0.2em] ml-4">(Governance Loop)</span>
                     </h2>
                 </div>
                 <div className="bg-white border border-slate-200 rounded-[2.5rem] overflow-hidden shadow-2xl shadow-primary/5 w-full">
@@ -244,7 +244,7 @@ export function ConstitutionViewer() {
                             {GOVERNANCE_DATA.cycleOfTruth.map((item, idx) => (
                                 <tr key={idx} className="group hover:bg-slate-50 transition-colors">
                                     <td className="px-10 py-6 font-black text-slate-700 text-lg">{item.step}</td>
-                                    <td className="px-10 py-6 font-bold text-slate-500 italic">{item.governs}</td>
+                                    <td className="px-10 py-6 font-bold text-slate-500">{item.governs}</td>
                                     <td className="px-10 py-6">
                                         <div className="flex flex-wrap gap-2">
                                             {item.logs.split(',').map((log, lIdx) => (

@@ -5,7 +5,7 @@ import { apiClient } from '@quiz/api-client';
 import { User, Mail, Calendar, Info, Shield, CheckCircle, XCircle, Trash2, AlertTriangle, Lock } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { ErrorBanner } from '@/components/layout/ErrorBanner';
-import { ZLoader } from '@quiz/ui';
+import { ZLoader, ZPagination } from '@quiz/ui';
 
 interface UserData {
     id: string;
@@ -32,7 +32,9 @@ export function UserTable() {
     const [deletedUsers, setDeletedUsers] = useState<UserData[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [page, setPage] = useState(1);
+    const [pageSize, setPageSize] = useState(10);
     const [totalPages, setTotalPages] = useState(1);
+    const [totalCount, setTotalCount] = useState(0);
     const [selectedUser, setSelectedUser] = useState<UserData | null>(null);
     const [editingUser, setEditingUser] = useState<UserData | null>(null);
     const [isSaving, setIsSaving] = useState(false);
@@ -65,12 +67,13 @@ export function UserTable() {
             if (filterVerified === 'UNVERIFIED') serverFilters.isVerified = false;
 
             const [activeData, deletedData] = await Promise.all([
-                apiClient.admin.getUsers(page, 10, 'active', serverFilters),
+                apiClient.admin.getUsers(page, pageSize, 'active', serverFilters),
                 apiClient.admin.getUsers(1, 10, 'deleted')
             ]);
 
             setUsers(activeData.users);
             setTotalPages(activeData.totalPages);
+            setTotalCount(activeData.total || activeData.users.length);
             setDeletedUsers(deletedData.users);
         } catch (error) {
             console.error('Failed to fetch users:', error);
@@ -82,7 +85,7 @@ export function UserTable() {
 
     useEffect(() => {
         fetchUsers();
-    }, [page, filterRole, filterBlocked, filterVerified]);
+    }, [page, pageSize, filterRole, filterBlocked, filterVerified]);
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -167,221 +170,207 @@ export function UserTable() {
     }
 
     return (
-        <div className="space-y-6">
-            {errorMessage && (
-                <ErrorBanner
-                    message={errorMessage}
-                    onClose={() => setErrorMessage(null)}
-                />
-            )}
-
-            {/* Filter Bar: Discovery Orchestrator */}
-            <div className="grid grid-cols-1 xl:grid-cols-4 gap-4 p-6 bg-white border border-primary/10 rounded-[2.5rem] shadow-sm">
-                <div className="relative">
-                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground group">
-                        <User size={16} className="group-hover:text-[#FF4B91] transition-colors" />
-                    </div>
-                    <input
-                        type="text"
-                        placeholder="Search Identity (Name/Email)..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full pl-12 pr-4 py-3 bg-slate-50 border-none rounded-2xl text-sm font-bold placeholder:text-slate-300 focus:ring-2 focus:ring-[#FF4B91]/20 transition-all"
+        <div className="space-y-6 flex flex-col min-h-[850px]">
+            <div className="flex-1">
+                {errorMessage && (
+                    <ErrorBanner
+                        message={errorMessage}
+                        onClose={() => setErrorMessage(null)}
                     />
+                )}
+
+                {/* Filter Bar: Discovery Orchestrator */}
+                <div className="grid grid-cols-1 xl:grid-cols-4 gap-4 p-6 bg-white border border-primary/10 rounded-[2.5rem] shadow-sm">
+                    <div className="relative">
+                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground group">
+                            <User size={16} className="group-hover:text-[#FF4B91] transition-colors" />
+                        </div>
+                        <input
+                            type="text"
+                            placeholder="Search Identity (Name/Email)..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="w-full pl-12 pr-4 py-3 bg-slate-50 border-none rounded-2xl text-sm font-bold placeholder:text-slate-300 focus:ring-2 focus:ring-[#FF4B91]/20 transition-all"
+                        />
+                    </div>
+
+                    <div className="relative">
+                        <select
+                            value={filterRole}
+                            onChange={(e) => setFilterRole(e.target.value)}
+                            className="w-full px-4 py-3 bg-slate-50 border-none rounded-2xl text-xs font-black uppercase tracking-widest text-slate-600 focus:ring-2 focus:ring-[#FF4B91]/20 appearance-none cursor-pointer"
+                        >
+                            <option value="ALL">All Access Levels</option>
+                            <option value="ADMIN">Administrator</option>
+                            <option value="USER">Standard User</option>
+                        </select>
+                    </div>
+
+                    <div className="relative">
+                        <select
+                            value={filterBlocked}
+                            onChange={(e) => setFilterBlocked(e.target.value)}
+                            className="w-full px-4 py-3 bg-slate-50 border-none rounded-2xl text-xs font-black uppercase tracking-widest text-slate-600 focus:ring-2 focus:ring-[#FF4B91]/20 appearance-none cursor-pointer"
+                        >
+                            <option value="ALL">All Statuses</option>
+                            <option value="ONLINE">Online Status</option>
+                            <option value="IDLE">Idle Status</option>
+                            <option value="OFFLINE">Offline Status</option>
+                            <option value="ACTIVE">System Active</option>
+                            <option value="BLOCKED">System Blocked</option>
+                        </select>
+                    </div>
+
+                    <div className="relative">
+                        <select
+                            value={filterVerified}
+                            onChange={(e) => setFilterVerified(e.target.value)}
+                            className="w-full px-4 py-3 bg-slate-50 border-none rounded-2xl text-xs font-black uppercase tracking-widest text-slate-600 focus:ring-2 focus:ring-[#FF4B91]/20 appearance-none cursor-pointer"
+                        >
+                            <option value="ALL">All Verification</option>
+                            <option value="VERIFIED">Verified Users</option>
+                            <option value="UNVERIFIED">Pending Verification</option>
+                        </select>
+                    </div>
                 </div>
 
-                <div className="relative">
-                    <select
-                        value={filterRole}
-                        onChange={(e) => setFilterRole(e.target.value)}
-                        className="w-full px-4 py-3 bg-slate-50 border-none rounded-2xl text-xs font-black uppercase tracking-widest text-slate-600 focus:ring-2 focus:ring-[#FF4B91]/20 appearance-none cursor-pointer"
-                    >
-                        <option value="ALL">All Access Levels</option>
-                        <option value="ADMIN">Administrator</option>
-                        <option value="USER">Standard User</option>
-                    </select>
-                </div>
-
-                <div className="relative">
-                    <select
-                        value={filterBlocked}
-                        onChange={(e) => setFilterBlocked(e.target.value)}
-                        className="w-full px-4 py-3 bg-slate-50 border-none rounded-2xl text-xs font-black uppercase tracking-widest text-slate-600 focus:ring-2 focus:ring-[#FF4B91]/20 appearance-none cursor-pointer"
-                    >
-                        <option value="ALL">All Statuses</option>
-                        <option value="ONLINE">Online Status</option>
-                        <option value="IDLE">Idle Status</option>
-                        <option value="OFFLINE">Offline Status</option>
-                        <option value="ACTIVE">System Active</option>
-                        <option value="BLOCKED">System Blocked</option>
-                    </select>
-                </div>
-
-                <div className="relative">
-                    <select
-                        value={filterVerified}
-                        onChange={(e) => setFilterVerified(e.target.value)}
-                        className="w-full px-4 py-3 bg-slate-50 border-none rounded-2xl text-xs font-black uppercase tracking-widest text-slate-600 focus:ring-2 focus:ring-[#FF4B91]/20 appearance-none cursor-pointer"
-                    >
-                        <option value="ALL">All Verification</option>
-                        <option value="VERIFIED">Verified Users</option>
-                        <option value="UNVERIFIED">Pending Verification</option>
-                    </select>
-                </div>
-            </div>
-
-            <div className="rounded-[2.5rem] border border-primary/10 bg-white/50 backdrop-blur-xl overflow-hidden shadow-xl">
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left">
-                        <thead>
-                            <tr className="border-b border-primary/5 bg-primary/5">
-                                <th className="p-6 text-[11px] font-black uppercase tracking-widest text-muted-foreground">Identity</th>
-                                <th className="p-6 text-[11px] font-black uppercase tracking-widest text-muted-foreground">Access Level</th>
-                                <th className="p-6 text-[11px] font-black uppercase tracking-widest text-muted-foreground">Status</th>
-                                <th className="p-6 text-[11px] font-black uppercase tracking-widest text-muted-foreground">Joined</th>
-                                <th className="p-6 text-[11px] font-black uppercase tracking-widest text-muted-foreground text-right">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-primary/5">
-                            {users.map((user) => (
-                                <tr key={user.id} className={`group transition-colors ${user.isBlocked ? 'bg-red-50/50 hover:bg-red-50' : 'hover:bg-primary/5'}`}>
-                                    <td className="p-6">
-                                        <div className="flex items-center gap-4">
-                                            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center border border-white shadow-sm">
-                                                {user.profile?.avatarUrl ? (
-                                                    <img src={user.profile.avatarUrl} alt="" className="h-full w-full rounded-xl object-cover" />
-                                                ) : (
-                                                    <User size={18} className="text-gray-400" />
-                                                )}
-                                            </div>
-                                            <div>
-                                                <div className="flex items-center gap-2">
-                                                    <p className="font-bold text-[#1A1A1A]">{user.profile?.name || 'Unknown Agent'}</p>
-                                                    {user.emailVerified && (
-                                                        <div className="p-0.5 rounded-full bg-green-500 text-white" title="Identity Verified">
-                                                            <CheckCircle size={10} />
-                                                        </div>
+                <div className="mt-6 rounded-[2.5rem] border border-primary/10 bg-white/50 backdrop-blur-xl overflow-hidden shadow-xl">
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left">
+                            <thead>
+                                <tr className="border-b border-primary/5 bg-primary/5">
+                                    <th className="p-6 text-[11px] font-black uppercase tracking-widest text-muted-foreground">Identity</th>
+                                    <th className="p-6 text-[11px] font-black uppercase tracking-widest text-muted-foreground">Access Level</th>
+                                    <th className="p-6 text-[11px] font-black uppercase tracking-widest text-muted-foreground">Status</th>
+                                    <th className="p-6 text-[11px] font-black uppercase tracking-widest text-muted-foreground">Joined</th>
+                                    <th className="p-6 text-[11px] font-black uppercase tracking-widest text-muted-foreground text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-primary/5">
+                                {users.map((user) => (
+                                    <tr key={user.id} className={`group transition-colors ${user.isBlocked ? 'bg-red-50/50 hover:bg-red-50' : 'hover:bg-primary/5'}`}>
+                                        <td className="p-6">
+                                            <div className="flex items-center gap-4">
+                                                <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center border border-white shadow-sm">
+                                                    {user.profile?.avatarUrl ? (
+                                                        <img src={user.profile.avatarUrl} alt="" className="h-full w-full rounded-xl object-cover" />
+                                                    ) : (
+                                                        <User size={18} className="text-gray-400" />
                                                     )}
                                                 </div>
-                                                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                                                    <Mail size={10} />
-                                                    {user.email}
+                                                <div>
+                                                    <div className="flex items-center gap-2">
+                                                        <p className="font-bold text-[#1A1A1A]">{user.profile?.name || 'Unknown Agent'}</p>
+                                                        {user.emailVerified && (
+                                                            <div className="p-0.5 rounded-full bg-green-500 text-white" title="Identity Verified">
+                                                                <CheckCircle size={10} />
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                                                        <Mail size={10} />
+                                                        {user.email}
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    </td>
-                                    <td className="p-6">
-                                        <div className="flex flex-wrap gap-2">
-                                            {user.userRoles.map((r, i) => (
-                                                <span key={i} className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider border ${r.role.name === 'admin' ? 'bg-[#FF4B91]/10 text-[#FF4B91] border-[#FF4B91]/20' : 'bg-gray-100 text-gray-600 border-gray-200'}`}>
-                                                    {r.role.name}
-                                                </span>
-                                            ))}
-                                        </div>
-                                    </td>
-                                    <td className="p-6">
-                                        <div className="flex items-center gap-2">
-                                            {user.status === 'online' && (
-                                                <>
-                                                    <span className="relative flex h-3 w-3">
-                                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                                                        <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+                                        </td>
+                                        <td className="p-6">
+                                            <div className="flex flex-wrap gap-2">
+                                                {user.userRoles.map((r, i) => (
+                                                    <span key={i} className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider border ${r.role.name === 'admin' ? 'bg-[#FF4B91]/10 text-[#FF4B91] border-[#FF4B91]/20' : 'bg-gray-100 text-gray-600 border-gray-200'}`}>
+                                                        {r.role.name}
                                                     </span>
-                                                    <span className="text-xs font-bold uppercase tracking-wide text-green-600">Online</span>
-                                                </>
-                                            )}
-                                            {user.status === 'idle' && (
-                                                <>
-                                                    <div className="h-2.5 w-2.5 rounded-full bg-yellow-400"></div>
-                                                    <span className="text-xs font-bold uppercase tracking-wide text-yellow-600">Idle</span>
-                                                </>
-                                            )}
-                                            {(user.status === 'offline' || !user.status) && !user.isBlocked && (
-                                                <>
-                                                    <div className="h-2.5 w-2.5 rounded-full bg-gray-300"></div>
-                                                    <span className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Offline</span>
-                                                </>
-                                            )}
-                                            {user.isBlocked && (
-                                                <>
-                                                    <Shield size={14} className="fill-current text-red-600" />
-                                                    <span className="text-xs font-bold uppercase tracking-wide text-red-600">Blocked</span>
-                                                </>
-                                            )}
-                                        </div>
-                                    </td>
-                                    <td className="p-6">
-                                        <div className="flex items-center gap-2 text-muted-foreground">
-                                            <Calendar size={14} />
-                                            <span className="text-xs font-medium">{formatDistanceToNow(new Date(user.createdAt), { addSuffix: true })}</span>
-                                        </div>
-                                    </td>
-                                    <td className="p-6 text-right">
-                                        <div className="flex items-center justify-end gap-2">
-                                            <button
-                                                onClick={async () => {
-                                                    setIsActionLoading(true);
-                                                    await new Promise(r => setTimeout(r, 1000));
-                                                    setIsActionLoading(false);
-                                                    setEditingUser(user);
-                                                }}
-                                                className="px-3 py-1.5 rounded-lg border border-gray-200 text-[#1A1A1A] text-[10px] font-black uppercase tracking-widest hover:bg-black hover:text-white transition-all shadow-sm"
-                                            >
-                                                Manage
-                                            </button>
-                                            <button
-                                                onClick={async () => {
-                                                    setIsActionLoading(true);
-                                                    await new Promise(r => setTimeout(r, 1000));
-                                                    setIsActionLoading(false);
-                                                    setSelectedUser(user);
-                                                }}
-                                                className="px-3 py-1.5 rounded-lg bg-white border border-gray-200 text-[10px] font-black uppercase tracking-widest hover:bg-gray-50 hover:border-[#FF4B91]/30 hover:text-[#FF4B91] transition-all shadow-sm"
-                                            >
-                                                Profile
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-
-                <div className="p-6 border-t border-primary/5 flex items-center justify-between">
-                    <button
-                        disabled={page === 1}
-                        onClick={async () => {
-                            setIsPageLoading(true);
-                            await new Promise(r => setTimeout(r, 800));
-                            setIsPageLoading(false);
-                            setPage(p => p - 1);
-                        }}
-                        className="px-4 py-2 text-xs font-black uppercase tracking-widest disabled:opacity-50 hover:text-[#FF4B91] transition-colors"
-                    >
-                        Previous
-                    </button>
-                    <span className="text-xs font-bold text-muted-foreground">Page {page} of {totalPages}</span>
-                    <button
-                        disabled={page === totalPages}
-                        onClick={async () => {
-                            setIsPageLoading(true);
-                            await new Promise(r => setTimeout(r, 800));
-                            setIsPageLoading(false);
-                            setPage(p => p + 1);
-                        }}
-                        className="px-4 py-2 text-xs font-black uppercase tracking-widest disabled:opacity-50 hover:text-[#FF4B91] transition-colors"
-                    >
-                        Next
-                    </button>
+                                                ))}
+                                            </div>
+                                        </td>
+                                        <td className="p-6">
+                                            <div className="flex items-center gap-2">
+                                                {user.status === 'online' && (
+                                                    <>
+                                                        <span className="relative flex h-3 w-3">
+                                                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                                                            <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+                                                        </span>
+                                                        <span className="text-xs font-bold uppercase tracking-wide text-green-600">Online</span>
+                                                    </>
+                                                )}
+                                                {user.status === 'idle' && (
+                                                    <>
+                                                        <div className="h-2.5 w-2.5 rounded-full bg-yellow-400"></div>
+                                                        <span className="text-xs font-bold uppercase tracking-wide text-yellow-600">Idle</span>
+                                                    </>
+                                                )}
+                                                {(user.status === 'offline' || !user.status) && !user.isBlocked && (
+                                                    <>
+                                                        <div className="h-2.5 w-2.5 rounded-full bg-gray-300"></div>
+                                                        <span className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Offline</span>
+                                                    </>
+                                                )}
+                                                {user.isBlocked && (
+                                                    <>
+                                                        <Shield size={14} className="fill-current text-red-600" />
+                                                        <span className="text-xs font-bold uppercase tracking-wide text-red-600">Blocked</span>
+                                                    </>
+                                                )}
+                                            </div>
+                                        </td>
+                                        <td className="p-6">
+                                            <div className="flex items-center gap-2 text-muted-foreground">
+                                                <Calendar size={14} />
+                                                <span className="text-xs font-medium">{formatDistanceToNow(new Date(user.createdAt), { addSuffix: true })}</span>
+                                            </div>
+                                        </td>
+                                        <td className="p-6 text-right">
+                                            <div className="flex items-center justify-end gap-2">
+                                                <button
+                                                    onClick={async () => {
+                                                        setIsActionLoading(true);
+                                                        await new Promise(r => setTimeout(r, 1000));
+                                                        setIsActionLoading(false);
+                                                        setEditingUser(user);
+                                                    }}
+                                                    className="px-3 py-1.5 rounded-lg border border-gray-200 text-[#1A1A1A] text-[10px] font-black uppercase tracking-widest hover:bg-black hover:text-white transition-all shadow-sm"
+                                                >
+                                                    Manage
+                                                </button>
+                                                <button
+                                                    onClick={async () => {
+                                                        setIsActionLoading(true);
+                                                        await new Promise(r => setTimeout(r, 1000));
+                                                        setIsActionLoading(false);
+                                                        setSelectedUser(user);
+                                                    }}
+                                                    className="px-3 py-1.5 rounded-lg bg-white border border-gray-200 text-[10px] font-black uppercase tracking-widest hover:bg-gray-50 hover:border-[#FF4B91]/30 hover:text-[#FF4B91] transition-all shadow-sm"
+                                                >
+                                                    Profile
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
+
+            <ZPagination
+                currentPage={page}
+                totalPages={totalPages}
+                totalCount={totalCount}
+                pageSize={pageSize}
+                onPageChange={setPage}
+                onPageSizeChange={(size) => {
+                    setPageSize(size);
+                    setPage(1);
+                }}
+            />
 
             {editingUser && (
                 <div className="fixed inset-0 z-[200] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
                     <div className="bg-background rounded-[2rem] max-w-md w-full overflow-hidden shadow-2xl animate-in zoom-in-95 duration-300">
                         <div className="h-24 bg-gradient-to-r from-gray-900 to-gray-800 p-8 flex items-end">
-                            <h2 className="text-2xl font-black text-white tracking-tighter italic uppercase">Manage Access</h2>
+                            <h2 className="text-2xl font-black text-white tracking-tighter uppercase">Manage Access</h2>
                         </div>
                         <form onSubmit={handleSaveUser} className="p-8 space-y-6">
                             <div className="space-y-4">
@@ -457,52 +446,59 @@ export function UserTable() {
                         </form>
                     </div>
                 </div>
-            )}
+            )
+            }
 
-            {selectedUser && (
-                <div className="fixed inset-0 z-[200] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
-                    <div className="bg-background rounded-[2rem] max-w-lg w-full overflow-hidden shadow-2xl animate-in zoom-in-95 duration-300">
-                        <div className="h-32 bg-gradient-to-r from-[#FF4B91] to-[#FF8E9E] p-8 flex items-end">
-                            <h2 className="text-3xl font-black text-white tracking-tighter italic uppercase">{selectedUser.profile?.name || 'Agent Profile'}</h2>
-                        </div>
-                        <div className="p-8 space-y-8">
-                            <div className="grid grid-cols-2 gap-6">
-                                <div className="space-y-1">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Professional Status</label>
-                                    <p className="font-bold text-lg text-[#1A1A1A]">{selectedUser.profile?.professionalStatus || 'N/A'}</p>
-                                </div>
-                                <div className="space-y-1">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Education</label>
-                                    <p className="font-bold text-lg text-[#1A1A1A]">{selectedUser.profile?.educationLevel || 'N/A'}</p>
-                                </div>
+            {
+                selectedUser && (
+                    <div className="fixed inset-0 z-[200] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
+                        <div className="bg-background rounded-[2rem] max-w-lg w-full overflow-hidden shadow-2xl animate-in zoom-in-95 duration-300">
+                            <div className="h-32 bg-gradient-to-r from-[#FF4B91] to-[#FF8E9E] p-8 flex items-end">
+                                <h2 className="text-3xl font-black text-white tracking-tighter uppercase">{selectedUser.profile?.name || 'Agent Profile'}</h2>
                             </div>
+                            <div className="p-8 space-y-8">
+                                <div className="grid grid-cols-2 gap-6">
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Professional Status</label>
+                                        <p className="font-bold text-lg text-[#1A1A1A]">{selectedUser.profile?.professionalStatus || 'N/A'}</p>
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Education</label>
+                                        <p className="font-bold text-lg text-[#1A1A1A]">{selectedUser.profile?.educationLevel || 'N/A'}</p>
+                                    </div>
+                                </div>
 
-                            <div className="pt-6 border-t border-gray-100 flex justify-end">
-                                <button
-                                    onClick={handleCloseProfile}
-                                    className="px-8 py-3 rounded-xl bg-[#1A1A1A] text-white font-black uppercase tracking-widest text-xs hover:bg-black transition-colors"
-                                >
-                                    Close
-                                </button>
+                                <div className="pt-6 border-t border-gray-100 flex justify-end">
+                                    <button
+                                        onClick={handleCloseProfile}
+                                        className="px-8 py-3 rounded-xl bg-[#1A1A1A] text-white font-black uppercase tracking-widest text-xs hover:bg-black transition-colors"
+                                    >
+                                        Close
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            )}
+                )
+            }
 
-            {isActionLoading && (
-                <div className="fixed inset-0 z-[300] bg-white/20 backdrop-blur-[2px] flex items-center justify-center animate-in fade-in duration-200">
-                    <div className="bg-white p-8 rounded-3xl shadow-2xl border border-primary/10 flex flex-col items-center gap-4">
-                        <ZLoader size="md" text="Accessing Identity..." />
+            {
+                isActionLoading && (
+                    <div className="fixed inset-0 z-[300] bg-white/20 backdrop-blur-[2px] flex items-center justify-center animate-in fade-in duration-200">
+                        <div className="bg-white p-8 rounded-3xl shadow-2xl border border-primary/10 flex flex-col items-center gap-4">
+                            <ZLoader size="md" text="Accessing Identity..." />
+                        </div>
                     </div>
-                </div>
-            )}
+                )
+            }
 
-            {isPageLoading && (
-                <div className="fixed inset-0 z-[300] bg-black/5 backdrop-blur-[1px] flex items-center justify-center animate-in fade-in duration-200">
-                    <ZLoader text="Syncing Matrix..." />
-                </div>
-            )}
-        </div>
+            {
+                isPageLoading && (
+                    <div className="fixed inset-0 z-[300] bg-black/5 backdrop-blur-[1px] flex items-center justify-center animate-in fade-in duration-200">
+                        <ZLoader text="Syncing Matrix..." />
+                    </div>
+                )
+            }
+        </div >
     );
 }

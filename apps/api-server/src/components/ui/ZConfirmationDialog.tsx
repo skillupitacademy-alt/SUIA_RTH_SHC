@@ -65,7 +65,7 @@ export function ZConfirmationDialog({
                     <AlertDialogTitle className="text-xl font-black text-slate-900 uppercase tracking-tight">
                         {title}
                     </AlertDialogTitle>
-                    <AlertDialogDescription className="text-sm text-slate-400 font-medium italic leading-relaxed">
+                    <AlertDialogDescription className="text-sm text-slate-400 font-medium leading-relaxed">
                         {description}
                     </AlertDialogDescription>
                 </AlertDialogHeader>

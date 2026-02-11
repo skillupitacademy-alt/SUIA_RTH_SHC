@@ -157,3 +157,4 @@
 | 2026-02-11 | Onboarding Loop Fix | COMPLETED | Resolved persistent redirects via UPSERT logic in profile updates and `onboarded` flag restoration. |
 | 2026-02-11 | System Integrity Final | COMPLETED | Verified 100% build stability (pnpm build + tsc) after documentation consolidation. |
 
+| 2026-02-11 | Italic Removal & Doc Fixes | COMPLETED | Removed all `italic` classes project-wide and fixed syntax/mapping regressions in documentation viewers. |

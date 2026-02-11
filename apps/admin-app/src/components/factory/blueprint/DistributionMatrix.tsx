@@ -84,7 +84,7 @@ export function DistributionMatrix({ counts, onChange }: DistributionMatrixProps
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                     <div className="h-6 w-1 bg-[#FF4B91] rounded-full" />
-                    <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400 italic">
+                    <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">
                         2. Quantum Distribution
                     </h3>
                 </div>

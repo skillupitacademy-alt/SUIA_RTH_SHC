@@ -148,7 +148,7 @@ export function SubtopicReviewCard({
                                 <h3 className="text-xl font-black text-slate-800 tracking-tight leading-none mb-2">
                                     {subtopic.name}
                                 </h3>
-                                <p className="text-sm text-slate-600 font-medium leading-relaxed max-w-2xl italic">
+                                <p className="text-sm text-slate-600 font-medium leading-relaxed max-w-2xl">
                                     {subtopic.description || 'No structural definition provided for this leaf node.'}
                                 </p>
                             </div>

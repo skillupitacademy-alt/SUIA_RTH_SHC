@@ -49,17 +49,17 @@ export function ArchiveViewer({ path }: ArchiveViewerProps) {
                     <Lock size={14} className="text-slate-400" />
                     <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em]">Historical Record System</span>
                 </div>
-                <h1 className="text-4xl font-black text-[#1A1A1A] tracking-tighter uppercase italic mb-4">
+                <h1 className="text-4xl font-black text-[#1A1A1A] tracking-tighter uppercase mb-4">
                     Intelligence Archive
                 </h1>
-                <div className="flex items-center gap-4 text-xs font-bold text-slate-400 italic">
+                <div className="flex items-center gap-4 text-xs font-bold text-slate-400">
                     <History size={14} />
                     <span>Reference Only // Read-Only Status // Immutable Audit Trail</span>
                 </div>
             </div>
 
             {/* Markdown Content with "Aged" aesthetic */}
-            <div className="prose prose-slate max-w-none prose-headings:text-[#1A1A1A] prose-headings:font-black prose-headings:tracking-tighter prose-p:text-slate-500 prose-p:font-bold prose-p:italic prose-p:leading-relaxed px-4">
+            <div className="prose prose-slate max-w-none prose-headings:text-[#1A1A1A] prose-headings:font-black prose-headings:tracking-tighter prose-p:text-slate-500 prose-p:font-bold prose-p:leading-relaxed px-4">
                 <ReactMarkdown
                     remarkPlugins={[remarkGfm]}
                     components={{
@@ -89,7 +89,7 @@ export function ArchiveViewer({ path }: ArchiveViewerProps) {
                             </li>
                         ),
                         blockquote: ({ children }) => (
-                            <div className="my-10 p-8 bg-slate-100 border-l-4 border-slate-300 rounded-r-[2rem] text-slate-600 font-bold italic text-sm leading-relaxed">
+                            <div className="my-10 p-8 bg-slate-100 border-l-4 border-slate-300 rounded-r-[2rem] text-slate-600 font-bold text-sm leading-relaxed">
                                 {children}
                             </div>
                         ),

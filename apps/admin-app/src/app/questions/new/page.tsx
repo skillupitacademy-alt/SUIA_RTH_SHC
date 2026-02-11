@@ -114,7 +114,7 @@ export default function QuestionEntryPage() {
                     </Link>
                     <div className="flex items-end justify-between gap-8 pb-8 border-b border-gray-200">
                         <div className="relative">
-                            <h1 className="text-5xl font-black text-[#1A1A1A] tracking-tighter uppercase italic">Question Entry</h1>
+                            <h1 className="text-5xl font-black text-[#1A1A1A] tracking-tighter uppercase">Question Entry</h1>
                             <div className="h-1.5 w-32 bg-[#FF4B91] mt-3 rounded-full shadow-[0_0_20px_rgba(255,75,145,0.4)]" />
                         </div>
 

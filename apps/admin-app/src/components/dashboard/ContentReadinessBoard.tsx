@@ -111,7 +111,7 @@ export function ContentReadinessBoard() {
         <div className="p-8 rounded-[2rem] border border-primary/10 bg-muted/5 backdrop-blur-md shadow-sm">
             <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6 mb-8">
                 <div>
-                    <h3 className="text-2xl font-black uppercase tracking-tighter italic text-[#1A1A1A]">Enterprise Governance</h3>
+                    <h3 className="text-2xl font-black uppercase tracking-tighter text-[#1A1A1A]">Enterprise Governance</h3>
                     <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-0.5">Hierarchical Readiness Audit • Domain to Subtopic</p>
                 </div>
                 <div className="flex flex-wrap items-center gap-4">
@@ -161,9 +161,9 @@ export function ContentReadinessBoard() {
                                     <h4 className="text-lg font-black tracking-tight text-[#1A1A1A] flex items-center gap-2">
                                         {domain.domainName}
                                         {domain.isReady ? (
-                                            <span className="text-[9px] bg-green-500/10 text-green-600 px-2 py-0.5 rounded-full uppercase italic">Ready</span>
+                                            <span className="text-[9px] bg-green-500/10 text-green-600 px-2 py-0.5 rounded-full uppercase">Ready</span>
                                         ) : (
-                                            <span className="text-[9px] bg-red-500/10 text-red-600 px-2 py-0.5 rounded-full uppercase italic">Action Required</span>
+                                            <span className="text-[9px] bg-red-500/10 text-red-600 px-2 py-0.5 rounded-full uppercase">Action Required</span>
                                         )}
                                     </h4>
                                     <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest leading-none mt-1">

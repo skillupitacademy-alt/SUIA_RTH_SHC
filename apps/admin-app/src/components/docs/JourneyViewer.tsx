@@ -8,8 +8,8 @@ export function JourneyViewer() {
             <section>
                 <div className="flex items-center gap-4 mb-8">
                     <div className="w-1.5 h-8 bg-[#FF4B91] rounded-full" />
-                    <h2 className="text-3xl font-black text-[#1A1A1A] tracking-tighter uppercase italic">
-                        Journey Index <span className="text-[#FF4B91] font-medium not-italic text-sm tracking-[0.2em] ml-4">(Page Contracts)</span>
+                    <h2 className="text-3xl font-black text-[#1A1A1A] tracking-tighter uppercase">
+                        Journey Index <span className="text-[#FF4B91] font-medium text-sm tracking-[0.2em] ml-4">(Page Contracts)</span>
                     </h2>
                 </div>
                 <div className="bg-white border border-slate-200 rounded-[2.5rem] overflow-hidden shadow-2xl shadow-primary/5 w-full">
@@ -30,7 +30,7 @@ export function JourneyViewer() {
                                             {item.path}
                                         </code>
                                     </td>
-                                    <td className="px-10 py-6 font-bold text-slate-500 text-sm italic">{item.content}</td>
+                                    <td className="px-10 py-6 font-bold text-slate-500 text-sm">{item.content}</td>
                                 </tr>
                             ))}
                         </tbody>
@@ -39,7 +39,7 @@ export function JourneyViewer() {
             </section>
 
             <div className="p-10 border-2 border-dashed border-slate-100 rounded-[2.5rem] text-center">
-                <p className="text-slate-400 text-sm font-bold italic">
+                <p className="text-slate-400 text-sm font-bold">
                     "Documentation defines truth. All page journeys must strictly comply with the UX Baseline."
                 </p>
             </div>

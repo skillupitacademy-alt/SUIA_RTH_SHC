@@ -202,9 +202,9 @@ export function QuizSelection() {
             {/* Step 1: Domain Selection */}
             <section className="space-y-12">
                 <div className="flex items-center gap-6">
-                    <div className="h-14 w-14 rounded-2xl bg-[#FF4B91]/10 text-[#FF4B91] flex items-center justify-center font-black text-2xl shadow-lg border border-[#FF4B91]/10 italic">1</div>
+                    <div className="h-14 w-14 rounded-2xl bg-[#FF4B91]/10 text-[#FF4B91] flex items-center justify-center font-black text-2xl shadow-lg border border-[#FF4B91]/10">1</div>
                     <div>
-                        <h2 className="text-4xl font-black tracking-tighter uppercase italic text-[#1A1A1A]">Select Domain_</h2>
+                        <h2 className="text-4xl font-black tracking-tighter uppercase text-[#1A1A1A]">Select Domain_</h2>
                         <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em] mt-1 opacity-60">Strategic Assessment Vector</p>
                     </div>
                 </div>
@@ -238,7 +238,7 @@ export function QuizSelection() {
                                     )}>
                                         <Icon size={36} />
                                     </div>
-                                    <h3 className="text-3xl font-black mb-3 text-[#1A1A1A] tracking-tighter uppercase italic">{item.name}</h3>
+                                    <h3 className="text-3xl font-black mb-3 text-[#1A1A1A] tracking-tighter uppercase">{item.name}</h3>
                                     <p className="text-xs text-muted-foreground font-black uppercase tracking-wider leading-relaxed opacity-40">
                                         {item.description || `Master industry-standard practices and tools in ${item.name}.`}
                                     </p>
@@ -273,14 +273,14 @@ export function QuizSelection() {
             {selectedDomain && (
                 <section className="space-y-12 animate-in slide-in-from-bottom-[100px] duration-700">
                     <div className="flex items-center gap-6">
-                        <div className="h-14 w-14 rounded-2xl bg-[#FF4B91]/10 text-[#FF4B91] flex items-center justify-center font-black text-2xl shadow-lg border border-[#FF4B91]/10 italic">2</div>
+                        <div className="h-14 w-14 rounded-2xl bg-[#FF4B91]/10 text-[#FF4B91] flex items-center justify-center font-black text-2xl shadow-lg border border-[#FF4B91]/10">2</div>
                         <div>
-                            <h2 className="text-4xl font-black tracking-tighter uppercase italic text-[#1A1A1A]">Refine Subjects_</h2>
+                            <h2 className="text-4xl font-black tracking-tighter uppercase text-[#1A1A1A]">Refine Subjects_</h2>
                             <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em] mt-1 opacity-60">Specialized Focus Areas</p>
                         </div>
                     </div>
                     {fetchingHierarchy ? (
-                        <div className="flex items-center gap-4 py-8 px-10 rounded-[2.5rem] bg-white border border-muted-foreground/5 shadow-sm text-muted-foreground font-black italic text-sm uppercase tracking-widest">
+                        <div className="flex items-center gap-4 py-8 px-10 rounded-[2.5rem] bg-white border border-muted-foreground/5 shadow-sm text-muted-foreground font-black text-sm uppercase tracking-widest">
                             <Loader2 className="h-5 w-5 animate-spin text-[#FF4B91]" /> Resolving Strategic Catalog...
                         </div>
                     ) : (
@@ -321,7 +321,7 @@ export function QuizSelection() {
                     {availableCounts && (
                         <div className="mt-8 flex items-center gap-4 px-8 py-4 bg-white/40 backdrop-blur-md rounded-[2rem] w-fit border border-[#FF4B91]/10 animate-in fade-in zoom-in duration-300">
                             <Activity size={16} className="text-[#FF4B91] animate-pulse" />
-                            <span className="text-[11px] font-black uppercase tracking-[0.2em] text-[#1A1A1A]">Sub-Vector Capacity: <span className="text-[#FF4B91] text-lg ml-2 font-black italic">{availableCounts.total}</span></span>
+                            <span className="text-[11px] font-black uppercase tracking-[0.2em] text-[#1A1A1A]">Sub-Vector Capacity: <span className="text-[#FF4B91] text-lg ml-2 font-black">{availableCounts.total}</span></span>
                         </div>
                     )}
                 </section>
@@ -331,9 +331,9 @@ export function QuizSelection() {
             {selectedDomain && topics.length > 0 && (
                 <section className="space-y-12 animate-in slide-in-from-bottom-[100px] duration-800">
                     <div className="flex items-center gap-6">
-                        <div className="h-14 w-14 rounded-2xl bg-[#FF4B91]/10 text-[#FF4B91] flex items-center justify-center font-black text-2xl shadow-lg border border-[#FF4B91]/10 italic">3</div>
+                        <div className="h-14 w-14 rounded-2xl bg-[#FF4B91]/10 text-[#FF4B91] flex items-center justify-center font-black text-2xl shadow-lg border border-[#FF4B91]/10">3</div>
                         <div>
-                            <h2 className="text-4xl font-black tracking-tighter uppercase italic text-[#1A1A1A]">Select Topics_</h2>
+                            <h2 className="text-4xl font-black tracking-tighter uppercase text-[#1A1A1A]">Select Topics_</h2>
                             <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em] mt-1 opacity-60">Detailed Knowledge Units</p>
                         </div>
                     </div>
@@ -367,7 +367,7 @@ export function QuizSelection() {
                     {availableCounts && (
                         <div className="mt-8 flex items-center gap-4 px-8 py-4 bg-white/40 backdrop-blur-md rounded-[2rem] w-fit border border-[#FF4B91]/10 animate-in fade-in zoom-in duration-300">
                             <Activity size={16} className="text-[#FF4B91] animate-pulse" />
-                            <span className="text-[11px] font-black uppercase tracking-[0.2em] text-[#1A1A1A]">Unit Specificity: <span className="text-[#FF4B91] text-lg ml-2 font-black italic">{availableCounts.total}</span></span>
+                            <span className="text-[11px] font-black uppercase tracking-[0.2em] text-[#1A1A1A]">Unit Specificity: <span className="text-[#FF4B91] text-lg ml-2 font-black">{availableCounts.total}</span></span>
                         </div>
                     )}
                 </section>
@@ -377,9 +377,9 @@ export function QuizSelection() {
             {selectedDomain && subtopics.length > 0 && (
                 <section className="space-y-12 animate-in slide-in-from-bottom-[100px] duration-1000">
                     <div className="flex items-center gap-6">
-                        <div className="h-14 w-14 rounded-2xl bg-[#FF4B91]/10 text-[#FF4B91] flex items-center justify-center font-black text-2xl shadow-lg border border-[#FF4B91]/10 italic">4</div>
+                        <div className="h-14 w-14 rounded-2xl bg-[#FF4B91]/10 text-[#FF4B91] flex items-center justify-center font-black text-2xl shadow-lg border border-[#FF4B91]/10">4</div>
                         <div>
-                            <h2 className="text-4xl font-black tracking-tighter uppercase italic text-[#1A1A1A]">Subtopic (Component)_</h2>
+                            <h2 className="text-4xl font-black tracking-tighter uppercase text-[#1A1A1A]">Subtopic (Component)_</h2>
                             <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em] mt-1 opacity-60">Targeted Skill Verification</p>
                         </div>
                     </div>
@@ -413,7 +413,7 @@ export function QuizSelection() {
                     {availableCounts && (
                         <div className="mt-8 flex items-center gap-4 px-8 py-4 bg-white/40 backdrop-blur-md rounded-[2rem] w-fit border border-[#FF4B91]/10 animate-in fade-in zoom-in duration-300">
                             <Activity size={16} className="text-[#FF4B91] animate-pulse" />
-                            <span className="text-[11px] font-black uppercase tracking-[0.2em] text-[#1A1A1A]">Precision Targeting: <span className="text-[#FF4B91] text-lg ml-2 font-black italic">{availableCounts.total}</span></span>
+                            <span className="text-[11px] font-black uppercase tracking-[0.2em] text-[#1A1A1A]">Precision Targeting: <span className="text-[#FF4B91] text-lg ml-2 font-black">{availableCounts.total}</span></span>
                         </div>
                     )}
                 </section>
@@ -423,9 +423,9 @@ export function QuizSelection() {
             {selectedDomain && (
                 <section className="space-y-16 animate-in slide-in-from-bottom-[100px] duration-1000 pb-32">
                     <div className="flex items-center gap-6">
-                        <div className="h-14 w-14 rounded-2xl bg-[#FF4B91]/10 text-[#FF4B91] flex items-center justify-center font-black text-2xl shadow-lg border border-[#FF4B91]/10 italic">5</div>
+                        <div className="h-14 w-14 rounded-2xl bg-[#FF4B91]/10 text-[#FF4B91] flex items-center justify-center font-black text-2xl shadow-lg border border-[#FF4B91]/10">5</div>
                         <div>
-                            <h2 className="text-4xl font-black tracking-tighter uppercase italic text-[#1A1A1A]">Exam Configuration_</h2>
+                            <h2 className="text-4xl font-black tracking-tighter uppercase text-[#1A1A1A]">Exam Configuration_</h2>
                             <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em] mt-1 opacity-60">Runtime Parameters</p>
                         </div>
                     </div>
@@ -497,7 +497,7 @@ export function QuizSelection() {
                                         </button>
                                     ))}
                                 </div>
-                                <p className="mt-8 text-[11px] text-muted-foreground font-black italic tracking-widest opacity-40 uppercase">
+                                <p className="mt-8 text-[11px] text-muted-foreground font-black tracking-widest opacity-40 uppercase">
                                     * Mixed uses 30/30/40 engine rule. Expert is limited to expert-tier pooled questions.
                                 </p>
                             </div>
@@ -512,14 +512,14 @@ export function QuizSelection() {
                                             <Clock size={16} className="text-[#FF4B91]" />
                                             <span className="text-[10px] font-black uppercase tracking-widest opacity-60 text-[#1A1A1A]">Duration</span>
                                         </div>
-                                        <span className="text-sm font-black italic">{Math.ceil(questionCount * 1.5)} MINS</span>
+                                        <span className="text-sm font-black">{Math.ceil(questionCount * 1.5)} MINS</span>
                                     </div>
                                     <div className="flex items-center justify-between px-8 py-5 bg-white rounded-[2rem] shadow-sm">
                                         <div className="flex items-center gap-3">
                                             <Layers size={16} className="text-[#FF4B91]" />
                                             <span className="text-[10px] font-black uppercase tracking-widest opacity-60 text-[#1A1A1A]">Payload</span>
                                         </div>
-                                        <span className="text-sm font-black italic">{questionCount} Qs</span>
+                                        <span className="text-sm font-black">{questionCount} Qs</span>
                                     </div>
                                 </div>
                             </div>

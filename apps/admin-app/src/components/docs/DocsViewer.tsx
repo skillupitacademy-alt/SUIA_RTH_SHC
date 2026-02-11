@@ -41,7 +41,7 @@ export function DocsViewer({ structure }: DocsViewerProps) {
                             <span className="text-[#FF4B91] font-black text-[11px] uppercase tracking-[0.4em]">Governance_Target</span>
                             <span className="text-[#1A1A1A] font-bold text-sm tracking-tight">{activePath}</span>
                         </div>
-                        <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest italic">
+                        <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
                             Authorized_Intel // Revision_v2.0 // AI_Flow_Active
                         </h4>
                     </div>
