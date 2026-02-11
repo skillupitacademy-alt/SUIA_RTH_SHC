@@ -807,7 +807,7 @@
 
 ### Phase 66: Admin Root Redirection & Instant Login (Batch 178)
 - **Goal**: Eliminate visual "loading flash" and dashboard flicker for unauthenticated users at the root URL.
-- **Action**: Implemented Next.js Server-Side Middleware in `apps/admin-app/src/middleware.ts` to detect `admin_accessToken` or `admin_refreshToken` cookies.
-- **Redirection**: Configured instantaneous server-side redirect to `/login` for all protected routes, including the root `/`.
+- **Action**: Implemented and **hardened** Next.js Server-Side Middleware with `Cache-Control: no-store` and strict cookie value validation.
+- **Cloudflare**: Orchestrated a **Bypass Cache** Page Rule for `admin.realtutorialhub.com/*` to ensure middleware execution behind the CDN.
 - **Verification**: Confirmed 100% root build stability and type-safety across the monorepo (Exit Code 0).
-- **Outcome**: Delivered a professional, instant login experience that strictly adheres to enterprise-grade routing standards.
+- **Outcome**: Delivered a professional, instant login experience that survives CDN caching and stale browser sessions.
