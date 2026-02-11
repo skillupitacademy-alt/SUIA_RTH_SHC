@@ -758,3 +758,28 @@
 - **Functional Toggling**: Defined `.theme-a` and `.theme-b` blocks in Admin App `globals.css` to enable palette switching via the header toggle.
 - **Comprehensive Purge**: Systematically removed all remaining `dark:` Tailwind classes across the Web App (e.g., `ExitConfirmationDialog.tsx`, `ConfirmationDialog.tsx`) to enforce a pure light-mode standard.
 - **System Integrity**: Verified the "Executive White" aesthetic across all 7 workspace projects with a successful root build.
+
+### Phase 58: Global Login Unification & Aesthetic Alignment
+- **Theme Standardization**: Unified the authentication experience across Web and Admin applications to a professional **Executive White** aesthetic.
+- **Consistency**: Refactored `login/page.tsx` and `AdminLayout.tsx` guest views to share the same Slate-50/White color palette and typography DNA.
+
+### Phase 59: Multi-App Loader Consolidaton (ZLoader)
+- **Shared Package**: Established `@quiz/ui` as the authoritative source for the `ZLoader` component.
+- **System-Wide Sync**: Purged local loader implementations in `@quiz/web-app`, `@quiz/admin-app`, and `@quiz/api-server`.
+- **API Dashboard**: Implemented standard `loading.tsx` routes for the API server Command Center.
+
+### Phase 60: UI Polish & Component Hardening
+- **Interaction Logic**: Resolved modal overlap by suppressing `SessionExpiryModal` on the login route.
+- **Visual Contrast**: Darkened borders and increased font-weights in critical report components (`MappingTrinity`, `BehavioralRadar`) to ensure WCAG legibility.
+- **Dropdown Stability**: Corrected the "double arrow" CSS artifact in `SelectField` and restored stable padding for high-density interfaces.
+
+### Phase 61: API Resilience & Analytics Hotfix
+- **Service Stability**: Wrapped recursive analytics queries in `Promise.allSettled` to prevent dashboard crashes on partial database failure.
+- **Logic Repair**: Fixed variable mapping mismatch and SQL date comparison operators in the `TrendsService`.
+- **Serialization**: Enforced strict ISO date serialization for the Neon/Drizzle template engine.
+
+### Phase 62: Onboarding Persistence & UPSERT Strategy
+- **Session Recovery**: Updated `/api/auth/me` to compute and return the `onboarded` flag from live profile data.
+- **Infrastructure Safety**: Converted profile updates to an atomic **UPSERT** strategy, automatically creating missing user rows and resolving the "Onboarding Loop" regression.
+- **Deployment Status**: Verified 100% build stability with root `pnpm build` and `tsc` (Exit Code 0).
+

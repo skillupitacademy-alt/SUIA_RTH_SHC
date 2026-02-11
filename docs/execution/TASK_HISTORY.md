@@ -149,3 +149,11 @@
 | 2026-02-11 | Admin Dashboard Redesign (Ph 4) | COMPLETED | Final transformation of main dashboard into a 12-card Executive Command Hub; Linked all spoke pages; Achieved full platform stability with `pnpm build` (Exit Code 0). |
 | 2026-02-11 | Exam Integrity & Resilience | COMPLETED | Implemented 4-Phase Hardening: CSRF Self-Healing, Pre-flight Diagnostics, Heartbeats, Grace Windows, Local Backup/Resume, and Idempotency. Resolved Vercel build failures by moving Tailwind, @types, and TypeScript to production dependencies monorepo-wide. Verified with root build (Exit Code 0). |
 | 2026-02-11 | Enterprise Resilience Hardening | COMPLETED | Implemented "Patient Client" with Single-Flight Refresh lock and auto-retry to eliminate unexpected logouts. Added jittered selection heartbeats and soft-landing UX for session failures. Verified with root build (Exit Code 0). |
+| 2026-02-11 | Global Login Unification | COMPLETED | Unified Web and Admin login pages to Light Theme (White/Slate-50); Ensured branding consistency. |
+| 2026-02-11 | Loader Standardization | COMPLETED | Consolidated `ZLoader` into `@quiz/ui`; Implemented shared loading states across all apps and API server. |
+| 2026-02-11 | Visual Polish & Fixes | COMPLETED | Fixed SessionExpiryModal on login page; Enhanced Report component contrast and borders. |
+| 2026-02-11 | Dropdown Polish | COMPLETED | Resolved double-arrow glitch and padding inconsistencies in `SelectField`. |
+| 2026-02-11 | API 500 Hotfix | COMPLETED | Implemented `Promise.allSettled` resilience for analytics; Fixed date serialization and mapping bugs. |
+| 2026-02-11 | Onboarding Loop Fix | COMPLETED | Resolved persistent redirects via UPSERT logic in profile updates and `onboarded` flag restoration. |
+| 2026-02-11 | System Integrity Final | COMPLETED | Verified 100% build stability (pnpm build + tsc) after documentation consolidation. |
+
