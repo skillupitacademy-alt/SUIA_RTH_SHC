@@ -49,8 +49,8 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
 
     if (!initialized || !isAuthenticated || !user?.isAdmin) {
         return (
-            <div className="h-screen w-screen bg-white flex flex-col items-center justify-center">
-                <ZLoader size="lg" text="Authenticating API Terminal_" />
+            <div className="h-screen w-screen bg-[#050505] flex flex-col items-center justify-center">
+                <ZLoader size="lg" text="Authenticating API Terminal_" color="#FF2D55" />
             </div>
         );
     }

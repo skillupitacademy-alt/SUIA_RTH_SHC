@@ -1,6 +1,19 @@
 import { AdminGuard } from "@/components/auth/AdminGuard";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useAuthStore } from "@/store/auth-store";
+import { ZLoader } from "@quiz/ui";
 
 export default function Home() {
+    const router = useRouter();
+    const { user, initialized } = useAuthStore();
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        if (initialized) {
+            setIsLoading(false);
+        }
+    }, [initialized]);
     // ... modules and buildDate logic ...
     const modules = [
         { name: 'Authentication', path: '/api/auth', status: 'Active' },
@@ -15,6 +28,14 @@ export default function Home() {
         day: 'numeric',
         year: 'numeric'
     });
+
+    if (!initialized || isLoading) {
+        return (
+            <div className="flex h-screen w-full items-center justify-center bg-[#050505]">
+                <ZLoader size="xl" text="Loading Control Panel..." color="#FF2D55" />
+            </div>
+        );
+    }
 
     return (
         <AdminGuard>
