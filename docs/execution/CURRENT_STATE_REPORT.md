@@ -803,3 +803,11 @@
 - **Action**: Transitioned the primary interaction button to **Action Pink (#FF2D55)** and replaced legacy Unicode symbols with **Lucide icons**. Purged remaining emoji artifacts ("mojoemoji").
 - **Verification**: Verified with global `pnpm build` and type-checking (Exit Code 0).
 - **Outcome**: Delivered a unified, premium visual identity across all 3 platform landing pages.
+
+
+### Phase 66: Admin Root Redirection & Instant Login (Batch 178)
+- **Goal**: Eliminate visual "loading flash" and dashboard flicker for unauthenticated users at the root URL.
+- **Action**: Implemented Next.js Server-Side Middleware in `apps/admin-app/src/middleware.ts` to detect `admin_accessToken` or `admin_refreshToken` cookies.
+- **Redirection**: Configured instantaneous server-side redirect to `/login` for all protected routes, including the root `/`.
+- **Verification**: Confirmed 100% root build stability and type-safety across the monorepo (Exit Code 0).
+- **Outcome**: Delivered a professional, instant login experience that strictly adheres to enterprise-grade routing standards.

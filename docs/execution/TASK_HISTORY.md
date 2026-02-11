@@ -159,3 +159,6 @@
 
 | 2026-02-11 | Italic Removal & Doc Fixes | COMPLETED | Removed all `italic` classes project-wide and fixed syntax/mapping regressions in documentation viewers. |
 | 2026-02-11 | API Server Tailwind Unification | COMPLETED | Achieved 100% methodology consistency; Resolved Turbopack conflicts; Refined UI with Action Pink. |
+
+| 2026-02-11 | Root Redirection & Instant Login | COMPLETED | Implemented Next.js Server-Side Middleware for the Admin App to detect authentication cookies and redirect unauthenticated users to `/login` instantly from the root URL. Verified with root build (Exit Code 0). |
+

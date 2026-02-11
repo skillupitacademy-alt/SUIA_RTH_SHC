@@ -22,6 +22,20 @@
     - **UI/UX**: Standardized primary button to **Action Pink (#FF2D55)** and replaced legacy icons with Lucide icons.
     - **Verification**: Confirmed root building (`pnpm build`) and type-checks (`tsc --noEmit`) pass with Exit Code 0.
 
+- **Task**: Root Redirection & Instant Login
+- **Outcome**: Delivered an instant server-side redirect for unauthenticated admin users.
+- **Details**:
+    - **Implementation**: Created `apps/admin-app/src/middleware.ts` with cookie-aware redirection logic.
+    - **Coverage**: Protected root `/` and all administrative modules (`/dashboard`, `/questions`, etc.).
+    - **Verification**: Verified 100% system-wide build stability (Exit Code 0).
+
+- **Task**: Root Redirection & Instant Login
+- **Outcome**: Delivered an instant server-side redirect for unauthenticated admin users.
+- **Details**:
+    - **Implementation**: Created `apps/admin-app/src/middleware.ts` with cookie-aware redirection logic.
+    - **Coverage**: Protected root `/` and all administrative modules (`/dashboard`, `/questions`, etc.).
+    - **Verification**: Verified 100% system-wide build stability (Exit Code 0).
+
 ---
 
 ### 🚀 Next Steps
