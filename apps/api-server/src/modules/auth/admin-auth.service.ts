@@ -68,7 +68,7 @@ export class AdminAuthService {
     await db.insert(refreshTokens).values({
       userId: user.id,
       token: refreshTokenHash,
-      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
     });
 
     return { user: { id: user.id, email: user.email, profile: user.profile }, accessToken, refreshToken };

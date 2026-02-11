@@ -34,6 +34,7 @@ export function WebSessionWatcherContainer() {
         // Brief delay to allow the user to see the toast
         setTimeout(() => {
             logout();
+            localStorage.removeItem('quiz-platform-auth');
             router.push('/login?reason=session_expired');
             setIsRedirecting(false);
         }, 3000);

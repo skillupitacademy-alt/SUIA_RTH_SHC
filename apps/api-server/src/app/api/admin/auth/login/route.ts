@@ -47,7 +47,7 @@ export async function POST(req: Request) {
         sameSite: 'lax',
         path: '/',
         domain: cookieDomain,
-        maxAge: 7 * 24 * 60 * 60
+        maxAge: 24 * 60 * 60 // 24 hours
     });
 
     return response;

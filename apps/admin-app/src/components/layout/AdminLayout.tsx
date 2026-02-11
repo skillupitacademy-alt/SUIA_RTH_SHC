@@ -61,6 +61,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         // Brief delay for toast visibility
         setTimeout(() => {
             logout();
+            localStorage.removeItem('quiz-platform-admin-auth');
             window.location.href = '/login?reason=session_expired';
             setIsRedirecting(false);
         }, 3000);

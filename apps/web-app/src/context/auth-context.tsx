@@ -20,6 +20,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             console.error("Server-side logout failed:", err);
         } finally {
             storeLogout();
+            localStorage.removeItem('quiz-platform-auth');
         }
     };
 

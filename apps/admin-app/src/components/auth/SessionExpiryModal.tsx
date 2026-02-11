@@ -5,6 +5,7 @@ import { useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuthStore } from '@/store/auth-store';
 import { LogOut, ShieldAlert } from 'lucide-react';
+import { apiClient } from '@quiz/api-client';
 
 export function SessionExpiryModal() {
     const router = useRouter();
@@ -22,11 +23,18 @@ export function SessionExpiryModal() {
         return () => window.removeEventListener('auth:unauthorized', handleUnauthorized);
     }, [setSessionExpired]);
 
-    const handleLogin = () => {
+    const handleLogin = async () => {
         setSessionExpired(false);
-        logout(); // Clear local state
-        const redirectUrl = encodeURIComponent(pathname);
-        router.push(`/login?redirect=${redirectUrl}&reason=session_expired`);
+        try {
+            await apiClient.auth.logout();
+        } catch (err) {
+            console.error("Session expiry server-logout failed:", err);
+        } finally {
+            logout(); // Clear Zustand state
+            localStorage.removeItem('quiz-platform-admin-auth'); // Force hard purge
+            const redirectUrl = encodeURIComponent(pathname);
+            router.push(`/login?redirect=${redirectUrl}&reason=session_expired`);
+        }
     };
 
     // Don't show modal if already on login page
