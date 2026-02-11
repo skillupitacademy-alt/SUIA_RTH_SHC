@@ -50,11 +50,13 @@ export function SelectField({
                     <select
                         value={value || ''}
                         onChange={(e) => onChange(e.target.value)}
-                        className={`w-full h-11 pl-3 pr-8 bg-white/50 border rounded-xl text-[#1A1A1A] font-bold text-[13px] focus:outline-none transition-all appearance-none cursor-pointer backdrop-blur-md shadow-sm hover:bg-white/80 ${active ? "ring-2" : "border-slate-300"
+                        className={`w-full h-11 pl-4 pr-10 bg-white/50 border rounded-xl text-[#1A1A1A] font-bold text-[13px] focus:outline-none transition-all appearance-none cursor-pointer backdrop-blur-md shadow-sm hover:bg-white/80 ${active ? "ring-2" : "border-slate-300"
                             }`}
                         style={{
                             ...activeStyles,
-                            ...(active ? { ringColor: `${accentColor}1A` } : {})
+                            ...(active ? { ringColor: `${accentColor}1A` } : {}),
+                            WebkitAppearance: 'none',
+                            MozAppearance: 'none'
                         }}
                         disabled={disabled}
                     >
@@ -65,7 +67,7 @@ export function SelectField({
                             </option>
                         ))}
                     </select>
-                    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 transition-colors group-hover/input:text-[#FF4B91]">
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 transition-colors group-hover/input:text-[#FF4B91] bg-transparent">
                         {loading ? <ZLoader size="xs" center={false} color={accentColor} /> : <ChevronDown className="w-4 h-4" />}
                     </div>
                 </div>
@@ -75,8 +77,8 @@ export function SelectField({
                         onClick={onCreate}
                         disabled={disabled}
                         className={`flex-shrink-0 w-11 h-11 flex items-center justify-center rounded-xl transition-all border shadow-sm ${active
-                                ? "hover:bg-opacity-10 border-opacity-30"
-                                : "bg-white/40 text-slate-500 border-slate-300 cursor-not-allowed"
+                            ? "hover:bg-opacity-10 border-opacity-30"
+                            : "bg-white/40 text-slate-500 border-slate-300 cursor-not-allowed"
                             }`}
                         style={active ? {
                             backgroundColor: `${accentColor}0D`,
