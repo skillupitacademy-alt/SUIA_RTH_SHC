@@ -33,7 +33,7 @@ export default function Home() {
 
     if (!initialized || isLoading) {
         return (
-            <div className="flex h-screen w-full items-center justify-center bg-white">
+            <div className="loading-screen">
                 <ZLoader size="xl" text="Loading Control Panel..." color="#FF2D55" />
             </div>
         );
