@@ -16,7 +16,7 @@ export class AdminAuthService {
     }
 
     // 2. Find User with Roles
-    const _user = await db.query.users.findFirst({
+    const user = await db.query.users.findFirst({
       where: eq(users.email, cleanEmail),
       with: {
         profile: true,
@@ -26,13 +26,13 @@ export class AdminAuthService {
       }
     });
     
-    if (_user === undefined) {
+    if (user === undefined) {
       await SecurityService.trackLoginAttempt(ip, cleanEmail, false);
       throw new Error('Access Denied');
     }
 
     // 3. Validate Credentials
-    const isPasswordMatch = await PasswordService.compare(password, _user.passwordHash);
+    const isPasswordMatch = await PasswordService.compare(password, user.passwordHash);
 
     if (isPasswordMatch === false) {
       await SecurityService.trackLoginAttempt(ip, cleanEmail, false);
@@ -41,36 +41,36 @@ export class AdminAuthService {
     }
 
     // 4. Validate Admin Role (Governance Check)
-    const roleNames = _user.userRoles.map(ur => ur.role.name);
+    const roleNames = user.userRoles.map(ur => ur.role.name);
     const isAdmin = roleNames.includes('ADMIN') || roleNames.includes('SUPER_ADMIN');
 
     if (isAdmin === false) {
       await SecurityService.trackLoginAttempt(ip, cleanEmail, false);
-      await AuditService.log({ userId: _user.id, action: 'admin_access_violation', metadata: { email: cleanEmail, role: roleNames }, ip });
+      await AuditService.log({ userId: user.id, action: 'admin_access_violation', metadata: { email: cleanEmail, role: roleNames }, ip });
       throw new Error('Unauthorized: Governance Privileges Required');
     }
 
     // 5. Success
     await SecurityService.trackLoginAttempt(ip, cleanEmail, true);
-    await AuditService.log({ userId: _user.id, action: 'admin_login_success', ip });
+    await AuditService.log({ userId: user.id, action: 'admin_login_success', ip });
 
     // 6. Generate Admin-Scoped Tokens
     const accessToken = await TokenService.generateAccessToken({
-      userId: _user.id,
-      email: _user.email,
+      userId: user.id,
+      email: user.email,
       roles: roleNames,
       isAdmin: true,
     });
 
-    const refreshToken = await TokenService.generateRefreshToken(_user.id, true);
+    const refreshToken = await TokenService.generateRefreshToken(user.id, true);
     const refreshTokenHash = await TokenService.hashToken(refreshToken);
 
     await db.insert(refreshTokens).values({
-      userId: _user.id,
+      userId: user.id,
       token: refreshTokenHash,
       expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
     });
 
-    return { _user: { id: _user.id, email: _user.email, profile: _user.profile }, accessToken, refreshToken };
+    return { user: { id: user.id, email: user.email, profile: user.profile }, accessToken, refreshToken };
   }
 }

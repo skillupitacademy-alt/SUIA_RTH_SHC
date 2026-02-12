@@ -15,11 +15,11 @@ const nextConfig = {
                         key: 'Content-Security-Policy-Report-Only',
                         value: [
                             "default-src 'self'",
-                            "script-src 'self'",
+                            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://static.cloudflareinsights.com",
                             "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
                             "img-src 'self' data: blob: https://images.unsplash.com https://realtutorialhub.com",
                             "font-src 'self' https://fonts.gstatic.com",
-                            "connect-src 'self' https://api.realtutorialhub.com https://admin.realtutorialhub.com https://quiz.realtutorialhub.com",
+                            "connect-src 'self' https://api.realtutorialhub.com https://admin.realtutorialhub.com https://quiz.realtutorialhub.com https://cloudflareinsights.com",
                             "frame-ancestors 'none'",
                             "base-uri 'self'",
                             "form-action 'self'",

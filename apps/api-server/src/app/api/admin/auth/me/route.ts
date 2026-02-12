@@ -33,9 +33,9 @@ export async function GET(_req: NextRequest) {
         return NextResponse.json({ _error: 'Forbidden: Admin access only' }, { status: 403 });
     }
 
-    return NextResponse.json({ 
-      _user: { 
-        id: _user.id, 
+    return NextResponse.json({
+      user: {
+        id: _user.id,
         email: _user.email,
         name: _user.profile?.name || 'Admin',
         role,

@@ -22,14 +22,17 @@ export async function POST(_req: Request) {
     const cookieDomain = process.env.COOKIE_DOMAIN ?? '.realtutorialhub.com';
     const isProd = true; // always secure cookies in prod and previews
 
+    const user = {
+        id: result.user.id,
+        email: result.user.email,
+        name: result.user.profile?.name ?? 'Admin',
+        isAdmin: true,
+    };
+
     const response = NextResponse.json({
-        _user: {
-            id: result._user.id,
-            email: result._user.email,
-            name: result._user.profile?.name,
-            isAdmin: true
-        }
-        // accessToken removed from body
+        user,
+        expiresAt: null, // client relies on cookie lifetime; keep shape consistent with apiClient expectations
+        // accessToken intentionally omitted from body (HttpOnly cookie)
     });
 
     response.cookies.set('admin_accessToken', result.accessToken, {
