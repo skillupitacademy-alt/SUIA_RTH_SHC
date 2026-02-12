@@ -1,0 +1,59 @@
+﻿
+> @quiz/web-app@0.1.0 build D:\onlinewebsites\quiz-platform\apps\web-app
+> next build
+
+Γû▓ Next.js 16.1.6 (Turbopack)
+
+node.exe : ΓÜá The "middleware" file convention is 
+deprecated. Please use "proxy" instead. Learn 
+more: https://nextjs.org/docs/messages/middleware-t
+o-proxy
+At C:\Users\RealTutorialHub\AppData\Roaming\npm\pnp
+m.ps1:24 char:5
++     & "node$exe"  
+"$basedir/node_modules/pnpm/bin/pnpm.cjs" $args
++     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (ΓÜá T 
+   he "middle...leware-to-proxy:String) [], Remot  
+  eException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  Creating an optimized production build ...
+Γ£ô Compiled successfully in 2.9s
+  Running TypeScript ...
+  Collecting page data using 23 workers ...
+  Generating static pages using 23 workers (0/18) ...
+  Generating static pages using 23 workers (4/18) 
+  Generating static pages using 23 workers (8/18) 
+  Generating static pages using 23 workers (13/18) 
+Γ£ô Generating static pages using 23 workers (18/18) in 1450.4ms
+  Finalizing page optimization ...
+
+Route (app)
+Γöî Γùï /
+Γö£ Γùï /_not-found
+Γö£ Γùï /dashboard
+Γö£ Γùï /dashboard/certs
+Γö£ Γùï /dashboard/my-exams
+Γö£ Γùï /dashboard/path
+Γö£ Γùï /dashboard/reports
+Γö£ Γùï /dashboard/settings
+Γö£ ╞Æ /exam/[examId]
+Γö£ Γùï /forgot-password
+Γö£ Γùï /icon.png
+Γö£ Γùï /login
+Γö£ Γùï /onboarding
+Γö£ Γùï /quiz/active-session
+Γö£ Γùï /quiz/new
+Γö£ ╞Æ /reports/[id]
+Γö£ Γùï /reports/active-report
+Γö£ Γùï /reset-password
+Γöö Γùï /signup
+
+
+╞Æ Proxy (Middleware)
+
+Γùï  (Static)   prerendered as static content
+╞Æ  (Dynamic)  server-rendered on demand
+

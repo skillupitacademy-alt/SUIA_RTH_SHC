@@ -91,7 +91,6 @@ export const useDashboardStore = create<DashboardState>()(
 
             fetchPerformanceTrend: async (range = '7d') => {
                 try {
-                    // @ts-expect-error legacy API typing gap
                     const trendData = await apiClient.dashboard.getTrend(range) as { 
                         performanceTrend: any;
                         deltaPct?: number | null;

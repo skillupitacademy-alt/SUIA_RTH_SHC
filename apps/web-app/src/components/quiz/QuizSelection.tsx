@@ -110,7 +110,6 @@ export function QuizSelection() {
                 setAvailableCounts(null);
                 return;
             }
-            setFetchingCounts(true);
             try {
                 const counts = await apiClient.quiz.getQuestionCount({
                     domainId: selectedDomain,
@@ -122,7 +121,6 @@ export function QuizSelection() {
             } catch (err) {
                 console.error("Failed to fetch counts", err);
             } finally {
-                setFetchingCounts(false);
             }
         };
         fetchCounts();
