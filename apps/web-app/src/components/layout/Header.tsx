@@ -6,7 +6,11 @@ import { useAuth } from '@/context/auth-context';
 import { useRouter, usePathname } from 'next/navigation';
 
 export function Header() {
-    const { isAuthenticated, user, logout, loading } = useAuth();
+    const auth = useAuth();
+    const isAuthenticated = auth?.isAuthenticated ?? false;
+    const user = auth?.user;
+    const logout = auth?.logout ?? (() => {});
+    const loading = auth?.loading ?? false;
     const router = useRouter();
     const pathname = usePathname();
 

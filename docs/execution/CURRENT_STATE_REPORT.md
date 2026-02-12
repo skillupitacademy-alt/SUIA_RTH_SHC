@@ -811,3 +811,10 @@
 - **Cleanup**: Implemented explicit `localStorage` removal for all auth stores to ensure a "hard wipe" of persisted state.
 - **Verification**: Verified via manual cookie/storage auditing and full monorepo build (Exit Code 0).
 - **Outcome**: Delivered a watertight security protocol that prevents stale session survival and strictly governs admin access.
+
+### Phase 68: Layout Partitioning & Auth Scoping (Batch 180)
+- **Goal**: Optimize landing page performance and eliminate false-positive session modals.
+- **Action**: Refactored `apps/web-app` and `apps/admin-app` to use `(public)` and `(authenticated)` route groups. Scoped `AuthProvider`, `SessionWatcher`, and `ExpiryModal` to the authenticated shell.
+- **Guest UX**: Implemented `GuestAdminLayout` for admin public routes, allowing a branded experience without authentication side-effects.
+- **Resilience**: Updated `useAuth` hook and shared `Header` to handle unmapped context gracefully, ensuring stability across both apps.
+- **Outcome**: Achieved 100% modal-free public landing pages while maintaining strict security for protected routes.

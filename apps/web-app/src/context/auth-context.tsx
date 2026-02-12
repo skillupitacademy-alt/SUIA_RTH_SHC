@@ -73,9 +73,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 }
 
 export const useAuth = () => {
-    const context = useContext(AuthContext);
-    if (context === undefined) {
-        throw new Error('useAuth must be used within AuthProvider');
-    }
-    return context;
+    // If the provider isn't mounted (e.g., on public pages), return null so callers can render fallbacks.
+    return useContext(AuthContext) ?? null;
 };

@@ -1,7 +1,5 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import AdminLayout from "@/components/layout/AdminLayout";
-import { SessionExpiryModal } from "@/components/auth/SessionExpiryModal";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 
 export const metadata: Metadata = {
@@ -18,10 +16,7 @@ export default function RootLayout({
         <html lang="en" suppressHydrationWarning>
             <body>
                 <ThemeProvider>
-                    <AdminLayout>
-                        <SessionExpiryModal />
-                        {children}
-                    </AdminLayout>
+                    {children}
                 </ThemeProvider>
             </body>
         </html>

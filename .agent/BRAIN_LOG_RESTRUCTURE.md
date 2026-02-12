@@ -1382,3 +1382,10 @@ Reduce documentation fragmentation and improve discoverability by consolidating 
 - **Action**: Removed `max-w-4xl`, `max-w-2xl`, and `max-w-3xl` constraints from `OnboardingWizard.tsx` and `OnboardingPage.tsx`. Standardized on `w-full` for all containers.
 - **Outcome**: Achieved 100% horizontal viewport usage for the initial user journey.
 - **Verification**: Verified via manual inspection and code audit.
+### Batch 180: Session Hardening & Auth Scoping 
+- **Goal**: Professionalize session termination and isolate authentication side-effects.
+- **Security Hardening**: Enforced 24h `refreshToken` TTL for Admin (DB + Cookie); Synchronized all logout triggers with server-side `/auth/logout`.
+- **Architecture**: Implemented Layout Partitioning via `(public)` and `(authenticated)` groups across both monorepo applications.
+- **Context Safety**: Refactored `useAuth` hook and `@quiz/ui` components to handle null-context fallbacks, enabling reliable header rendering on public routes.
+- **UI/UX**: Eliminated "Session Expired" false-positives on landing pages; Fixed "session expired" message appearing after manual sign-out in Admin app.
+- **Verification**: Verified system-wide integrity with `pnpm build` and `tsc` (Exit Code 0).

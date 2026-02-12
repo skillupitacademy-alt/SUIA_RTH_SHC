@@ -161,4 +161,7 @@
 | 2026-02-11 | API Server Tailwind Unification | COMPLETED | Achieved 100% methodology consistency; Resolved Turbopack conflicts; Refined UI with Action Pink. |
 
 | 2026-02-11 | Root Redirection & Instant Login | COMPLETED | Implemented Next.js Server-Side Middleware for the Admin App to detect authentication cookies and redirect unauthenticated users to `/login` instantly from the root URL. Verified with root build (Exit Code 0). |
+| 2026-02-12 | Session Hardening (Ph 67) | COMPLETED | Shortened Admin refresh token to 24h; Synchronized client/server logout for all paths (including 401s and expiry modals); Implemented `localStorage` hard-purge. |
+| 2026-02-12 | Auth Scoping (Web & Admin) | COMPLETED | Refactored layouts to (public)/(authenticated) groups; Scoped `AuthProvider` to protected shell; Eliminated false-positive "Session Expired" modals on landing pages. |
+| 2026-02-12 | Final Project Verification | COMPLETED | Verified system-wide build stability (`pnpm build`) and type-safety (`tsc`) with Exit Code 0; Updated executive documentation. |
 

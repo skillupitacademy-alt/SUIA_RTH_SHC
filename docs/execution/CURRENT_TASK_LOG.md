@@ -29,14 +29,24 @@
     - **Coverage**: Protected root `/` and all administrative modules (`/dashboard`, `/questions`, etc.).
     - **Verification**: Verified 100% system-wide build stability (Exit Code 0).
 
-- **Task**: Root Redirection & Instant Login
-- **Outcome**: Delivered an instant server-side redirect for unauthenticated admin users.
+- **Task**: Session Hardening & Admin TTL Fixes
+- **Outcome**: Secured Admin sessions with shorter TTL and synchronized global logout logic.
 - **Details**:
-    - **Implementation**: Created `apps/admin-app/src/middleware.ts` with cookie-aware redirection logic.
-    - **Coverage**: Protected root `/` and all administrative modules (`/dashboard`, `/questions`, etc.).
-    - **Verification**: Verified 100% system-wide build stability (Exit Code 0).
+    - **Security**: Shortened `admin_refreshToken` duration to 24 hours.
+    - **Logout**: Aligned manual, timer-based, and modal-driven logouts with server-side cookie purge.
+    - **Purge**: Implemented `localStorage.removeItem()` for all auth keys on termination.
+    - **Verification**: Confirmed root building (`pnpm build`) passes with Exit Code 0.
+
+- **Task**: Auth Scoping & Layout Refactoring (Web & Admin)
+- **Outcome**: Eliminated false-positive session modals and optimized public route performance.
+- **Details**:
+    - **Architecture**: Partitioned routes into `(public)` and `(authenticated)` groups.
+    - **Scoping**: Moved `AuthProvider` and `SessionWatcher` into the protected shell.
+    - **Safety**: Updated `useAuth` hook and `Header` to handle un-provided context gracefully.
+    - **Parity**: Applied identical "Secure Shell" pattern to both Admin and Student apps.
+    - **Verification**: Verified zero-error build and runtime stability.
 
 ---
 
 ### 🚀 Next Steps
-- Implement Landing Page "Master Template" unification (Move Admin/API to centered hero layout).
+- Finalize documentation sync and commit project state.
