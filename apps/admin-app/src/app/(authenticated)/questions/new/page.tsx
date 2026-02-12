@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { CascadingSelect, Selection } from '@/components/entry/CascadingSelect';
-import { QuestionEditor } from '@/components/entry/QuestionEditor';
+import { QuestionEditor, QuestionFormData } from '@/components/entry/QuestionEditor';
 import { BulkUploadPanel } from '@/components/entry/BulkUploadPanel';
 import { apiClient } from '@quiz/api-client';
 import { CheckCircle2, AlertTriangle, ArrowLeft, X, Edit3, Layers } from 'lucide-react';
@@ -27,7 +27,7 @@ export default function QuestionEntryPage() {
         if (status?.type === 'error') setStatus(null);
     };
 
-    const handleCreateQuestion = async (formData: Record<string, unknown>) => {
+    const handleCreateQuestion = async (formData: QuestionFormData) => {
         if (!selection.topicId) {
             setStatus({ type: 'error', message: 'Please select at least a Topic in the hierarchy.' });
             return;

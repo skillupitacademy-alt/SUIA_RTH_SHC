@@ -13,8 +13,8 @@ async function main() {
             domainId: "30000000-0000-0000-0000-000000000008" // Database Systems ID from previous check
         });
         console.log("Success!");
-        console.log("Total:", result.total);
-        console.log("First Subject:", result.data[0]?.name);
+        console.log("Total:", (result as any).total);
+        console.log("First Subject:", (result as any).data[0]?.name);
     } catch (e: any) {
         console.error("FAIL:", e);
         console.error("Message:", e.message);

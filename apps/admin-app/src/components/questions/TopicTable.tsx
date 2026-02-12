@@ -7,6 +7,7 @@ import { ErrorBanner } from '@/components/layout/ErrorBanner';
 import { ZLoader, ZPagination } from '@quiz/ui';
 import { useDomains, useSubjects } from '@/hooks/useAdminHierarchy';
 import { apiClient } from '@quiz/api-client';
+import { cn } from '@/lib/utils';
 
 export function TopicTable() {
     const [data, setData] = useState<any[]>([]);
@@ -22,7 +23,7 @@ export function TopicTable() {
 
     // Modal states
     const [isFormOpen, setIsFormOpen] = useState(false);
-    const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+    const [isDeleteOpen, setIsDeleteOpen] = useState(false); const [isFactoryOpen, setIsFactoryOpen] = useState(false);
     const [currentTopic, setCurrentTopic] = useState<any>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
 

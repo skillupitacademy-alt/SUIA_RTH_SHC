@@ -2,12 +2,12 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuthStore } from '@/store/auth-store';
+import { useAuthStore, type AuthState } from '@/store/auth-store';
 import { apiClient } from '@quiz/api-client';
 import { ZLoader } from '@quiz/ui';
 
 export function AdminGuard({ children }: { children: React.ReactNode }) {
-    const { _user, isAuthenticated, initialized, login, logout } = useAuthStore();
+    const { _user, isAuthenticated, initialized, login, logout } = useAuthStore() as AuthState;
     const _router = useRouter();
 
     useEffect(() => {

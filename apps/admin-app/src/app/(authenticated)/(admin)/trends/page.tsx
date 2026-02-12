@@ -7,15 +7,43 @@ import { ScoreProgressionChart } from '@/components/trends/ScoreProgressionChart
 import { SkillDeltaList } from '@/components/trends/SkillDeltaList';
 import { TrendsRangeSelector } from '@/components/trends/TrendsRangeSelector';
 
+interface SummaryData {
+    avgScore: number;
+    passRate: number;
+    totalExams: number;
+    bestSkill: { name: string; delta: number } | null;
+    worstSkill: { name: string; delta: number } | null;
+    currentStreak: number;
+    deltaPct?: number | null;
+    healthStatus?: 'green' | 'yellow' | 'red';
+}
+
+interface ScoreData {
+    examId: string;
+    date: string;
+    score: number;
+    passed: boolean;
+    blueprintName: string | null;
+}
+
+interface SkillData {
+    skillId: string;
+    skillName: string;
+    currentScore: number;
+    previousScore: number | null;
+    delta: number;
+    trend: 'improving' | 'declining' | 'stable';
+    sparkline: number[];
+}
+
 export default function TrendsPage() {
     const [range, setRange] = useState('28d');
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    type TrendSummary = { totalExams: number } & Record<string, unknown>;
-    const [summary, setSummary] = useState<TrendSummary | null>(null);
-    const [scores, setScores] = useState<unknown[]>([]);
-    const [skills, setSkills] = useState<unknown[]>([]);
+    const [summary, setSummary] = useState<SummaryData | null>(null);
+    const [scores, setScores] = useState<ScoreData[]>([]);
+    const [skills, setSkills] = useState<SkillData[]>([]);
 
     const fetchData = async (selectedRange: string) => {
         setLoading(true);
@@ -28,9 +56,9 @@ export default function TrendsPage() {
                 apiClient.admin.getSkillTrends({ range: selectedRange })
             ]);
 
-            setSummary(summaryRes);
-            setScores(scoresRes?.scores || []);
-            setSkills(skillsRes?.skills || []);
+            setSummary(summaryRes as SummaryData);
+            setScores((scoresRes?.scores || []) as ScoreData[]);
+            setSkills((skillsRes?.skills || []) as SkillData[]);
         } catch (err: unknown) {
             console.error('[TrendsPage] Fetch error:', err);
             const message = err instanceof Error ? err.message : 'Failed to load trends data';
@@ -101,7 +129,6 @@ export default function TrendsPage() {
 
                         {/* Two-Column Grid */}
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                            {/* Score Progression Chart */}
                             <ScoreProgressionChart scores={scores} passThreshold={70} />
 
                             {/* Skill Delta List */}

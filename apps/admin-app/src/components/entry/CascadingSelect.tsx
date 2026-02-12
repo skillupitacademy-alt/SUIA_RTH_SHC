@@ -69,8 +69,7 @@ export function CascadingSelect({ onChange, value, hideSkills }: CascadingSelect
 
     const handleChange = (level: keyof Selection, val: any) => {
         const next = { ...selection };
-        // @ts-expect-error fallback for legacy select value typing
-        next[level] = val;
+        (next as any)[level] = val;
 
         // Lookup Name Logic
         if (level === 'domainId') {

@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { Plus, Trash2, Check, Clock, List, FileText } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-interface QuestionFormData {
+export interface QuestionFormData {
     text: string;
     type: 'single' | 'multiple';
     options: Array<{ id: string; text: string; isCorrect: boolean }>;

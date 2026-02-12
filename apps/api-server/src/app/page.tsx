@@ -3,13 +3,13 @@
 import { AdminGuard } from "@/components/auth/AdminGuard";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { useAuthStore } from "@/store/auth-store";
+import { useAuthStore, type AuthState } from "@/store/auth-store";
 import { ZLoader } from "@quiz/ui";
 import { ChevronRight } from "lucide-react";
 
 export default function Home() {
     const _router = useRouter();
-    const { _user, initialized } = useAuthStore();
+    const { _user, initialized } = useAuthStore() as AuthState;
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {

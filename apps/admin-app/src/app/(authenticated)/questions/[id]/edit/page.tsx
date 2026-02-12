@@ -3,8 +3,29 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { apiClient } from '@quiz/api-client';
-import { QuestionEditor } from '@/components/entry/QuestionEditor';
+import { QuestionEditor, QuestionFormData } from '@/components/entry/QuestionEditor';
 import { CascadingSelect, Selection } from '@/components/entry/CascadingSelect';
+
+interface Question {
+    id: string;
+    questionText?: string;
+    question_text?: string;
+    type?: string;
+    options?: Array<{
+        id: string;
+        text?: string;
+        optionText?: string;
+        option_text?: string;
+        isCorrect?: boolean;
+        is_correct?: boolean;
+    }>;
+    explanation?: string;
+    difficulty?: string;
+    metadata?: {
+        estimatedTime?: number;
+        estimated_time?: number;
+    };
+}
 import { ArrowLeft, CheckCircle2, AlertCircle, X, Edit3 } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
@@ -14,7 +35,7 @@ export default function EditQuestionPage() {
     const params = useParams();
     const router = useRouter();
 
-    const [question, setQuestion] = useState<Record<string, unknown> | null>(null);
+    const [question, setQuestion] = useState<Question | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const [status, setStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
@@ -62,7 +83,7 @@ export default function EditQuestionPage() {
         fetchQuestion();
     }, [params.id]);
 
-    const handleSubmit = async (formData: Record<string, unknown>) => {
+    const handleSubmit = async (formData: QuestionFormData) => {
         if (!selection.topicId) {
             setStatus({ type: 'error', message: 'Please select at least a Topic in the hierarchy.' });
             return;
@@ -173,17 +194,16 @@ export default function EditQuestionPage() {
                                 loading={isSaving}
                                 onSubmit={handleSubmit}
                                 initialData={{
-                                    text: question.questionText || question.question_text,
-                                    type: question.type === 'mcq' || question.type === 'single' ? 'single' : 'multiple',
-                                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                    options: question.options?.map((o: any) => ({
+                                    text: question?.questionText || question?.question_text || '',
+                                    type: question?.type === 'mcq' || question?.type === 'single' ? 'single' : 'multiple',
+                                    options: question?.options?.map((o) => ({
                                         id: o.id,
                                         text: o.text || o.optionText || o.option_text || '',
                                         isCorrect: o.isCorrect || o.is_correct || false
-                                    })),
-                                    explanation: question.explanation,
-                                    difficulty: question.difficulty,
-                                    estimatedTime: question.metadata?.estimatedTime || question.metadata?.estimated_time || 60,
+                                    })) || [],
+                                    explanation: question?.explanation || '',
+                                    difficulty: (question?.difficulty as 'simple' | 'intermediate' | 'expert') || 'simple',
+                                    estimatedTime: question?.metadata?.estimatedTime || question?.metadata?.estimated_time || 60,
                                 }}
                             />
                         </div>

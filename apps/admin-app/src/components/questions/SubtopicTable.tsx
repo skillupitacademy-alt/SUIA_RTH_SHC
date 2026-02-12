@@ -8,6 +8,7 @@ import { ZPagination } from '@quiz/ui';
 import { ZPortalModal } from '@/components/ui/ZPortalModal';
 import { useDomains, useSubjects, useTopics } from '@/hooks/useAdminHierarchy';
 import { apiClient } from '@quiz/api-client';
+import { cn } from '@/lib/utils';
 
 export function SubtopicTable() {
     const [data, setData] = useState<any[]>([]);
@@ -24,6 +25,7 @@ export function SubtopicTable() {
     // Modal states
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+    const [isFactoryOpen, setIsFactoryOpen] = useState(false);
     const [currentSubtopic, setCurrentSubtopic] = useState<any>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
