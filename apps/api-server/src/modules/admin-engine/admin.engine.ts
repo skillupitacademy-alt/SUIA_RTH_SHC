@@ -187,7 +187,7 @@ export class AdminEngine {
   }
   static async bulkCreateQuestionsWithContext(questions: CreateQuestionInput[], context?: Record<string, unknown>, adminId?: string) { 
     const res = await AdminQuestionEngine.bulkCreateQuestionsWithContext(questions, context, adminId);
-    if (adminId) {
+    if (adminId !== undefined && adminId !== null && adminId !== '') {
         await AuditService.log({ userId: adminId, action: 'admin_bulk_create_questions', metadata: { count: res.length } });
     }
     return res;

@@ -19,29 +19,12 @@ export class AdminUserEngine {
     }
 
     if (filters?.search !== undefined && filters.search !== null && filters.search.trim() !== '') {
-        const searchPattern = `%${filters.search.toLowerCase()}%`;
-        const profileMatch = await db.select({ id: userProfiles.userId })
-            .from(userProfiles)
-            .where(sql`lower(${userProfiles.name}) ilike ${searchPattern}`);
-        
-        const profileIds = profileMatch.map(m => m.id);
-        if (profileIds.length > 0) {
-            conditions.push(or(sql`${users.email} ilike ${searchPattern}`, inArray(users.id, profileIds)) as SQL);
-        } else {
-            conditions.push(sql`${users.email} ilike ${searchPattern}`);
-        }
+        await this.applyUserSearchFilter(filters.search, conditions);
     }
 
     if (filters?.role !== undefined && filters.role !== null && filters.role.trim() !== '') {
-        const roleMatch = await db.select({ id: userRoles.userId })
-            .from(userRoles)
-            .innerJoin(roles, eq(userRoles.roleId, roles.id))
-            .where(eq(roles.name, filters.role.toUpperCase()));
-            
-        const roleUserIds = roleMatch.map(m => m.id);
-        if (roleUserIds.length > 0) {
-            conditions.push(inArray(users.id, roleUserIds));
-        } else {
+        const hasResults = await this.applyUserRoleFilter(filters.role, conditions);
+        if (!hasResults) {
             return { users: [], total: 0, page, limit, totalPages: 0 };
         }
     }
@@ -55,20 +38,7 @@ export class AdminUserEngine {
     }
 
     if (filters?.status !== undefined && filters.status !== null && filters.status.trim() !== '' && filters.isBlocked === undefined) {
-        const now = new Date();
-        const twoMinsAgo = new Date(now.getTime() - 2 * 60 * 1000);
-        const fiveMinsAgo = new Date(now.getTime() - 5 * 60 * 1000);
-
-        if (filters.status === 'online') {
-            conditions.push(gt(users.lastActiveAt, twoMinsAgo) as SQL);
-        } else if (filters.status === 'idle') {
-            const five = gt(users.lastActiveAt, fiveMinsAgo);
-            const two = sql`${users.lastActiveAt} <= ${twoMinsAgo}`;
-            const combined = and(five, two);
-            if (combined) conditions.push(combined);
-        } else if (filters.status === 'offline') {
-            conditions.push(sql`(${users.lastActiveAt} is null or ${users.lastActiveAt} < ${fiveMinsAgo})`);
-        }
+        this.applyUserStatusFilter(filters.status, conditions);
     }
 
     const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
@@ -129,5 +99,50 @@ export class AdminUserEngine {
 
   static async toggleBlockStatus(userId: string, isBlocked: boolean) {
     return await db.update(users).set({ isBlocked }).where(eq(users.id, userId)).returning();
+  }
+
+  private static async applyUserSearchFilter(search: string, conditions: SQL[]) {
+    const searchPattern = `%${search.toLowerCase()}%`;
+    const profileMatch = await db.select({ id: userProfiles.userId })
+        .from(userProfiles)
+        .where(sql`lower(${userProfiles.name}) ilike ${searchPattern}`);
+    
+    const profileIds = profileMatch.map(m => m.id);
+    if (profileIds.length > 0) {
+        conditions.push(or(sql`${users.email} ilike ${searchPattern}`, inArray(users.id, profileIds)) as SQL);
+    } else {
+        conditions.push(sql`${users.email} ilike ${searchPattern}`);
+    }
+  }
+
+  private static async applyUserRoleFilter(role: string, conditions: SQL[]) {
+    const roleMatch = await db.select({ id: userRoles.userId })
+        .from(userRoles)
+        .innerJoin(roles, eq(userRoles.roleId, roles.id))
+        .where(eq(roles.name, role.toUpperCase()));
+        
+    const roleUserIds = roleMatch.map(m => m.id);
+    if (roleUserIds.length > 0) {
+        conditions.push(inArray(users.id, roleUserIds));
+        return true;
+    }
+    return false;
+  }
+
+  private static applyUserStatusFilter(status: string, conditions: SQL[]) {
+    const now = new Date();
+    const twoMinsAgo = new Date(now.getTime() - 2 * 60 * 1000);
+    const fiveMinsAgo = new Date(now.getTime() - 5 * 60 * 1000);
+
+    if (status === 'online') {
+        conditions.push(gt(users.lastActiveAt, twoMinsAgo) as SQL);
+    } else if (status === 'idle') {
+        const five = gt(users.lastActiveAt, fiveMinsAgo);
+        const two = sql`${users.lastActiveAt} <= ${twoMinsAgo}`;
+        const combined = and(five, two);
+        if (combined) conditions.push(combined);
+    } else if (status === 'offline') {
+        conditions.push(sql`(${users.lastActiveAt} is null or ${users.lastActiveAt} < ${fiveMinsAgo})`);
+    }
   }
 }
