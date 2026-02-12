@@ -16,7 +16,15 @@ export class AdminHierarchyEngine {
       orderBy: [desc(domains.createdAt)]
     });
 
-    return data;
+    const [{ count }] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(domains)
+      .where(whereClause ?? sql`true`);
+
+    const total = Number(count ?? 0);
+    const totalPages = Math.max(1, Math.ceil(total / limit));
+
+    return { data, total, page, limit, totalPages };
   }
 
   static async createDomain(data: typeof domains.$inferInsert) {

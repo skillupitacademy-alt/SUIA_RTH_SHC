@@ -34,7 +34,7 @@ export async function GET(_req: NextRequest) {
                       _user.profile.educationLevel !== '';
 
     return NextResponse.json({
-      _user: {
+      user: {
         id: _user.id,
         email: _user.email,
         name: _user.profile?.name,

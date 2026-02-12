@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { test, expect } from '@playwright/test';
+import { test, expect, type Cookie } from '@playwright/test';
 
 const API_BASE = 'https://api.realtutorialhub.com';
 
@@ -36,19 +36,30 @@ for (const role of Object.keys(cfg) as Role[]) {
       expect(res.ok()).toBeTruthy();
 
       const setCookies =
-        (res.headersArray?.() || []).filter((h: any) => h.name.toLowerCase() === 'set-cookie').map((h: any) => h.value) ||
+        res
+          .headersArray()
+          .filter((h) => h.name.toLowerCase() === 'set-cookie')
+          .map((h) => h.value) ||
         (res.headers()['set-cookie'] ? [res.headers()['set-cookie'] as string] : []);
 
       // Minimal cookie parser for Set-Cookie lines
-      const parsed = setCookies.map((line) => {
+      const parsed: Cookie[] = setCookies.map((line) => {
         const parts = line.split(';').map((p) => p.trim());
         const [name, value] = parts[0].split('=');
-        const domain = parts.find((p) => p.toLowerCase().startsWith('domain='))?.split('=')[1] || '.realtutorialhub.com';
-        const path = parts.find((p) => p.toLowerCase().startsWith('path='))?.split('=')[1] || '/';
+        const domain = parts.find((p) => p.toLowerCase().startsWith('domain='))?.split('=')[1] ?? '.realtutorialhub.com';
+        const path = parts.find((p) => p.toLowerCase().startsWith('path='))?.split('=')[1] ?? '/';
         const secure = parts.some((p) => p.toLowerCase() === 'secure');
         const sameSitePart = parts.find((p) => p.toLowerCase().startsWith('samesite='))?.split('=')[1]?.toLowerCase();
-        const sameSite = sameSitePart === 'none' ? 'None' : sameSitePart === 'lax' ? 'Lax' : 'Strict';
-        return { name, value, domain, path, secure, sameSite, httpOnly: parts.some((p) => p.toLowerCase() === 'httponly') };
+        const sameSite: Cookie['sameSite'] =
+          sameSitePart === 'none' ? 'None' : sameSitePart === 'lax' ? 'Lax' : 'Strict';
+        const httpOnly = parts.some((p) => p.toLowerCase() === 'httponly');
+        // If no Expires provided, give it a short lifetime so Playwright accepts the cookie shape
+        const expiresPart = parts.find((p) => p.toLowerCase().startsWith('expires='));
+        const expires = expiresPart
+          ? Math.floor(new Date(expiresPart.split('=')[1]).getTime() / 1000)
+          : Math.floor(Date.now() / 1000) + 3600; // 1 hour default
+
+        return { name, value, domain, path, secure, sameSite, httpOnly, expires };
       });
 
       await context.addCookies(parsed);

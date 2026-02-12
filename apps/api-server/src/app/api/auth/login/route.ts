@@ -25,15 +25,18 @@ export async function POST(_req: NextRequest) {
       (_user.profile?.educationLevel !== undefined && _user.profile?.educationLevel !== null && _user.profile?.educationLevel !== '')
     );
 
+    const user = { 
+      id: _user.id, 
+      email: _user.email,
+      name: _user.profile?.name ?? 'User',
+      onboarded,
+      role: isAdmin === true ? 'admin' : '_user',
+      isAdmin
+    };
+
     const response = NextResponse.json({
-      _user: { 
-        id: _user.id, 
-        email: _user.email,
-        name: _user.profile?.name ?? 'User',
-        onboarded,
-        role: isAdmin === true ? 'admin' : '_user',
-        isAdmin
-      },
+      user,
+      expiresAt: null, // client uses cookie lifetime; keeps shape consistent with AuthClient expectations
       // accessToken removed from body
     });
 
