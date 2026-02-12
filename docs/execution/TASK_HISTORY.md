@@ -164,4 +164,5 @@
 | 2026-02-12 | Session Hardening (Ph 67) | COMPLETED | Shortened Admin refresh token to 24h; Synchronized client/server logout for all paths (including 401s and expiry modals); Implemented `localStorage` hard-purge. |
 | 2026-02-12 | Auth Scoping (Web & Admin) | COMPLETED | Refactored layouts to (public)/(authenticated) groups; Scoped `AuthProvider` to protected shell; Eliminated false-positive "Session Expired" modals on landing pages. |
 | 2026-02-12 | Final Project Verification | COMPLETED | Verified system-wide build stability (`pnpm build`) and type-safety (`tsc`) with Exit Code 0; Updated executive documentation. |
+| 2026-02-12 | Security Baseline Hardening | COMPLETED | User-implemented `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`, `X-Frame-Options`, and `CSP-Report-Only` headers monorepo-wide. |
 
