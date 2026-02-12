@@ -105,4 +105,15 @@ Each app also has scoped commands if you’re working on one package:
 - [ ] No new `any`, no unchecked nullish logic, no console.
 - [ ] Large functions/files refactored or justified.
 
+## Protected Route Checklist (server & client)
+- Server handlers:
+  - Read tokens from cookies via `NextRequest.cookies` (`admin_accessToken`/`accessToken`).
+  - Verify with the appropriate secret (admin vs user). Return 401 on failure.
+  - Send `Cache-Control: no-store` on auth endpoints (`/api/auth/*`) to avoid cached auth state.
+  - When setting/clearing cookies: `Domain=.realtutorialhub.com`, `Path=/`, `SameSite=None`, `Secure`, `HttpOnly`, and expire in the past to delete.
+- Client guards:
+  - On first render, call the `/auth/me` endpoint; if 401, redirect to login; if 200, hydrate user state.
+  - Avoid relying on inline scripts; use fetch with `credentials: 'include'` so cookies are sent.
+  - Handle loading states without flashing protected UI when unauthenticated.
+
 Following this checklist keeps contributions aligned with the strict lint/type/build gates already enforced in CI and Vercel.

@@ -20,7 +20,7 @@ export async function POST(_req: Request) {
 
     // Set Cookies
     const cookieDomain = process.env.COOKIE_DOMAIN ?? '.realtutorialhub.com';
-    const isProd = process.env.NODE_ENV === 'production';
+    const isProd = true; // always secure cookies in prod and previews
 
     const response = NextResponse.json({
         _user: {
@@ -35,7 +35,7 @@ export async function POST(_req: Request) {
     response.cookies.set('admin_accessToken', result.accessToken, {
         httpOnly: true,
         secure: isProd,
-        sameSite: 'lax',
+        sameSite: 'none',
         path: '/',
         domain: cookieDomain,
         maxAge: 15 * 60
@@ -44,7 +44,7 @@ export async function POST(_req: Request) {
     response.cookies.set('admin_refreshToken', result.refreshToken, {
         httpOnly: true,
         secure: isProd,
-        sameSite: 'lax',
+        sameSite: 'none',
         path: '/',
         domain: cookieDomain,
         maxAge: 24 * 60 * 60 // 24 hours

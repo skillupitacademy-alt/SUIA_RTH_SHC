@@ -26,7 +26,7 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
                 // Access token is now handled via httpOnly cookies automatically
                 // Strictly use Admin Session endpoint
                 const { user: validatedUser, expiresAt } = await apiClient.auth.getAdminSession();
-                if (!validatedUser.isAdmin) throw new Error("Revoked");
+                if (!validatedUser || !validatedUser.isAdmin) throw new Error("Revoked");
                 login(validatedUser, expiresAt);
             } catch (err: unknown) {
                 console.error("Session revalidation failed:", err);

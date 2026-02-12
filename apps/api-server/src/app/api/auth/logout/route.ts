@@ -18,13 +18,24 @@ export async function POST(_req: NextRequest) {
   }
 
   const response = NextResponse.json({ message: 'Logged out' });
-  const cookieDomain = process.env.COOKIE_DOMAIN ?? undefined;
+  const cookieDomain = process.env.COOKIE_DOMAIN ?? '.realtutorialhub.com';
   
-  const options = { path: '/', domain: cookieDomain };
-  response.cookies.delete({ name: 'accessToken', ...options });
-  response.cookies.delete({ name: 'refreshToken', ...options });
-  response.cookies.delete({ name: 'admin_accessToken', ...options });
-  response.cookies.delete({ name: 'admin_refreshToken', ...options });
+  const clear = (name: string) => {
+    response.cookies.set(name, '', {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'none',
+      path: '/',
+      domain: cookieDomain,
+      expires: new Date(0),
+    });
+  };
+
+  clear('accessToken');
+  clear('refreshToken');
+  clear('admin_accessToken');
+  clear('admin_refreshToken');
+  clear('csrfToken');
   
   return response;
 }

@@ -37,14 +37,14 @@ export async function POST(_req: NextRequest) {
       // accessToken removed from body
     });
 
-    const cookieDomain = process.env.COOKIE_DOMAIN ?? undefined;
+    const cookieDomain = process.env.COOKIE_DOMAIN ?? '.realtutorialhub.com';
 
     // Set HttpOnly cookies for Access Token
     const accessTokenCookieName = isAdmin === true ? 'admin_accessToken' : 'accessToken';
     response.cookies.set(accessTokenCookieName, accessToken, {
       httpOnly: true,
       secure: true, // Always true for cross-domain stability
-      sameSite: 'none', // Needed for api. subdomain to quiz. subdomain
+      sameSite: 'none', // Needed for cross-subdomain (api.<->quiz/admin)
       maxAge: 15 * 60, // 15 minutes
       path: '/',
       domain: cookieDomain,
