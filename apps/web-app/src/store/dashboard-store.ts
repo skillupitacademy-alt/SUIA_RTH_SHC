@@ -119,7 +119,6 @@ export const useDashboardStore = create<DashboardState>()(
 
                 set({ metadataLoading: true });
                 try {
-                    // @ts-ignore
                     const metadata = await apiClient.dashboard.getPerformanceBreakdownMetadata() as DrilldownMetadata;
                     set({ 
                         drilldownMetadata: metadata,
@@ -133,7 +132,6 @@ export const useDashboardStore = create<DashboardState>()(
 
             fetchPerformanceBreakdown: async (range = '28d') => {
                 try {
-                    // @ts-ignore
                     const breakdownData = await apiClient.dashboard.getPerformanceBreakdown(range) as { breakdown: DashboardData['drilldownBreakdown'] };
                     set((state) => ({
                         data: state.data ? {
