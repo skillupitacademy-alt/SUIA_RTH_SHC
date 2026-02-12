@@ -1389,3 +1389,10 @@ Reduce documentation fragmentation and improve discoverability by consolidating 
 - **Context Safety**: Refactored `useAuth` hook and `@quiz/ui` components to handle null-context fallbacks, enabling reliable header rendering on public routes.
 - **UI/UX**: Eliminated "Session Expired" false-positives on landing pages; Fixed "session expired" message appearing after manual sign-out in Admin app.
 - **Verification**: Verified system-wide integrity with `pnpm build` and `tsc` (Exit Code 0).
+
+### Batch 181: Security Baseline Hardening 
+- **Goal**: Establish a baseline security posture across the monorepo to prevent common web vulnerabilities.
+- **Action**: Standardized `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`, and `X-Frame-Options` globally in `next.config.js`.
+- **CSP Rollout**: Launched `Content-Security-Policy-Report-Only` (Stage 1) for origin identification.
+- **Audit**: Conducted automated forensic audit for `dangerouslySetInnerHTML`, `eval()`, and `new Function()`; confirmed 0 occurrences.
+- **Verification**: Verified system-wide integrity with `pnpm build` and `tsc` (Exit Code 0).
