@@ -2,6 +2,7 @@
 
 import { Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 interface DomainCardProps {
     id: string;

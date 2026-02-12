@@ -1,8 +1,9 @@
 'use client';
+/* eslint-disable @typescript-eslint/no-explicit-any, react-hooks/exhaustive-deps */
 
 import { useEffect, useState } from 'react';
 import { apiClient } from '@quiz/api-client';
-import { Users, Clock, Globe, ShieldCheck } from 'lucide-react';
+import { Users, Clock, Globe } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { ZLoader, ZPagination } from '@quiz/ui';
 

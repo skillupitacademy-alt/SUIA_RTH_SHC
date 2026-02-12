@@ -1,72 +1,65 @@
-import { db, exams, examQuestions, questions } from '@quiz/db';
-import { eq, and, sql } from 'drizzle-orm';
-import { SelectionEngine } from '../selection-engine/selection.service';
-import { SessionService } from '../exam-engine/session.service';
+import { db, exams } from '@quiz/db';
+import { eq } from 'drizzle-orm';
+import { SelectionService } from '../selection-engine/selection.service';
+import crypto from 'crypto';
 
-
+/**
+ * QuizEngine handles self-paced, flexible quiz flows.
+ * It's lighter than ExamEngine and doesn't require pre-defined blueprints.
+ */
 export class QuizEngine {
-  /**
-   * Starts a new quiz session by creating an exam from a blueprint.
-   */
-  static async startQuiz(
-    userId: string, 
-    blueprintId: string, 
-    config?: { 
-      subjectIds?: string[],
-      topicIds?: string[], 
-      subtopicIds?: string[],
-      questionCount?: number, 
-      difficulty?: string 
-    }
-  ) {
-    const exam = await SelectionEngine.composeExam(userId, blueprintId, 'legacy-sync', config);
-    if (!exam) throw new Error('Failed to compose quiz');
-    return exam;
+  static async startQuiz(userId: string, options: { 
+    topicId?: string; 
+    domainId?: string;
+    count?: number; 
+    difficulty?: 'simple' | 'intermediate' | 'expert' 
+  }) {
+    // Generate a stable idempotency key for the quiz session
+    const syncId = crypto.randomUUID();
+    
+    // 1. Leverage SelectionService to pick questions
+    const examData = await SelectionService.composeExam(
+        userId, 
+        options.domainId ?? options.topicId ?? 'self-paced', 
+        `quiz-${syncId}`,
+        {
+            topicIds: (options.topicId !== undefined && options.topicId !== null && options.topicId !== '') ? [options.topicId] : undefined,
+            questionCount: options.count ?? 10,
+            difficulty: options.difficulty ?? 'simple'
+        }
+    );
+
+    return examData;
   }
 
-  /**
-   * Retrieves the current state of a quiz session.
-   */
   static async getQuizState(examId: string, userId: string) {
-    // benefit from cache + ownership validation
-    const header = await SessionService.syncSession(examId, userId);
-
-    if (header.userId !== userId) {
-      throw new Error('Unauthorized: You do not own this quiz session');
-    }
-
-
-    // Secondary fetch with relations if authorized
-    const fullExam = await db.query.exams.findFirst({
-      where: eq(exams.id, examId),
-      with: {
-        examQuestions: {
-          with: {
-            question: true,
-          },
-          orderBy: (eq, { asc }) => [asc(eq.order)],
-        },
-      },
+    const exam = await db.query.exams.findFirst({
+        where: eq(exams.id, examId),
+        with: {
+            examQuestions: {
+                with: {
+                    question: true
+                }
+            }
+        }
     });
-    
-    if (!fullExam) throw new Error('Quiz not found');
+
+    if (exam === undefined || exam === null) throw new Error('Quiz not found');
+    if (exam.userId !== userId) throw new Error('Unauthorized access');
 
     return {
-      id: fullExam.id,
-      status: fullExam.status,
-      startedAt: fullExam.startedAt,
-      completedAt: fullExam.completedAt,
-      totalScore: fullExam.totalScore,
-      questions: fullExam.examQuestions.map((eq) => ({
-        id: eq.id,
-        questionId: eq.questionId,
-        questionText: eq.question.questionText,
-        options: eq.question.options,
-        type: eq.question.type,
-        userAnswer: eq.userAnswer,
-        isAnswered: eq.userAnswer !== null,
-        order: eq.order,
-      })),
+        id: exam.id,
+        status: exam.status,
+        startedAt: exam.startedAt,
+        questions: exam.examQuestions.map(eq => ({
+            id: eq.question.id,
+            text: eq.question.questionText,
+            options: eq.question.options,
+            type: eq.question.type,
+            userAnswer: (eq.userAnswer !== null && eq.userAnswer !== undefined) ? eq.userAnswer : null,
+            isCorrect: eq.isCorrect,
+            metadata: eq.responseMetadata
+        }))
     };
   }
 }

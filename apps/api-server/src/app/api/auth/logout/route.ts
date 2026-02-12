@@ -1,21 +1,24 @@
-import { NextRequest, NextResponse } from 'next/server';
-export const dynamic = 'force-dynamic';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { AuthService } from '@/modules/auth/auth.service';
+import { TokenService } from '@/modules/auth/token.service';
 
-export async function POST(req: NextRequest) {
-  const token = req.cookies.get('refreshToken')?.value;
-  const adminToken = req.cookies.get('admin_refreshToken')?.value;
-  const ip = req.headers.get('x-forwarded-for')?.split(',')[0] || '';
+export const dynamic = 'force-dynamic';
 
-  if (token) {
-    await AuthService.logout(token, undefined, ip);
+export async function POST(_req: NextRequest) {
+  const ip = _req.headers.get('x-forwarded-for') ?? '0.0.0.0';
+  const _token = TokenService.getAccessToken(_req);
+  const adminToken = _req.cookies.get('admin_accessToken')?.value;
+
+  if (typeof _token === 'string' && _token.trim() !== '') {
+    await AuthService.logout(_token, undefined, ip);
   }
-  if (adminToken) {
+  if (typeof adminToken === 'string' && adminToken.trim() !== '') {
     await AuthService.logout(adminToken, undefined, ip);
   }
 
   const response = NextResponse.json({ message: 'Logged out' });
-  const cookieDomain = process.env.COOKIE_DOMAIN || '.realtutorialhub.com';
+  const cookieDomain = process.env.COOKIE_DOMAIN ?? undefined;
   
   const options = { path: '/', domain: cookieDomain };
   response.cookies.delete({ name: 'accessToken', ...options });

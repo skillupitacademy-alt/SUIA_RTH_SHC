@@ -7,7 +7,6 @@ import { FileText, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { useDashboardStore } from "@/store/dashboard-store";
 import { useEffect } from "react";
-import { cn } from "@/lib/utils";
 
 export default function ReportsPage() {
     const { data, fetchDashboard } = useDashboardStore();

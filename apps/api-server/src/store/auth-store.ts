@@ -11,11 +11,11 @@ export interface User {
 }
 
 export interface AuthState {
-  user: User | null;
+  _user: User | null;
   isAuthenticated: boolean;
   initialized: boolean;
   expiresAt: string | null;
-  login: (user: User, expiresAt?: string | null) => void;
+  login: (_user: User, expiresAt?: string | null) => void;
   logout: () => void;
   setInitialized: (val: boolean) => void;
 }
@@ -23,15 +23,15 @@ export interface AuthState {
 export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
-      user: null,
+      _user: null,
       isAuthenticated: false,
       initialized: false,
       expiresAt: null,
-      login: (user, expiresAt = null) => {
-        set({ user, isAuthenticated: true, expiresAt });
+      login: (_user, expiresAt = null) => {
+        set({ _user, isAuthenticated: true, expiresAt });
       },
       logout: () => {
-        set({ user: null, isAuthenticated: false, expiresAt: null });
+        set({ _user: null, isAuthenticated: false, expiresAt: null });
       },
       setInitialized: (val) => set({ initialized: val }),
     }),

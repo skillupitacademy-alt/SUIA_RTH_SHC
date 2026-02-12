@@ -5,23 +5,23 @@ const MAX_ATTEMPTS = 5;
 
 export class SecurityService {
   static async trackLoginAttempt(ip: string, email: string, success: boolean) {
-    const user = await db.query.users.findFirst({
+    const _user = await db.query.users.findFirst({
       where: eq(users.email, email),
     });
 
-    if (!user) return;
+    if (_user === undefined) return;
 
-    if (success) {
+    if (success === true) {
       await db.delete(loginAttempts)
-        .where(and(eq(loginAttempts.userId, user.id), eq(loginAttempts.ip, ip)));
+        .where(and(eq(loginAttempts.userId, _user.id), eq(loginAttempts.ip, ip)));
       return;
     }
 
     const existing = await db.query.loginAttempts.findFirst({
-      where: and(eq(loginAttempts.userId, user.id), eq(loginAttempts.ip, ip)),
+      where: and(eq(loginAttempts.userId, _user.id), eq(loginAttempts.ip, ip)),
     });
 
-    if (existing) {
+    if (existing !== undefined) {
       const newAttempts = existing.attempts + 1;
       let lockoutMinutes = 0;
 
@@ -43,7 +43,7 @@ export class SecurityService {
         .where(eq(loginAttempts.id, existing.id));
     } else {
       await db.insert(loginAttempts).values({
-        userId: user.id,
+        userId: _user.id,
         ip,
         attempts: 1,
       });
@@ -51,20 +51,20 @@ export class SecurityService {
   }
 
   static async isAccountLocked(email: string, ip: string): Promise<boolean> {
-    const user = await db.query.users.findFirst({
+    const _user = await db.query.users.findFirst({
       where: eq(users.email, email),
     });
 
-    if (!user) return false;
+    if (_user === undefined) return false;
 
     const attempt = await db.query.loginAttempts.findFirst({
       where: and(
-        eq(loginAttempts.userId, user.id),
+        eq(loginAttempts.userId, _user.id),
         eq(loginAttempts.ip, ip)
       ),
     });
 
-    if (!attempt || !attempt.lockedUntil) return false;
+    if (attempt === undefined || attempt.lockedUntil === null) return false;
 
     if (attempt.lockedUntil < new Date()) {
       // Lock expired

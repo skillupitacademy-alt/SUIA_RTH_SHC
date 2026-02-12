@@ -1,7 +1,8 @@
 'use client';
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import React from 'react';
-import { Signal, BarChart3, Binary, BrainCircuit, Plus, Minus, Calculator } from 'lucide-react';
+import { BarChart3, Binary, BrainCircuit, Plus, Minus, Calculator } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface DistributionMatrixProps {

@@ -1,6 +1,6 @@
-import { NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from 'next/server';
 import { db, questions } from "@quiz/db";
-import { eq, and, inArray } from "drizzle-orm";
+import { eq, and } from 'drizzle-orm';
 import { TokenService } from "@/modules/auth/token.service";
 
 interface DuplicateCheckPayload {
@@ -8,20 +8,20 @@ interface DuplicateCheckPayload {
   topicId: string;
 }
 
-export async function POST(req: Request) {
+export async function POST(_req: NextRequest) {
   try {
     // 1. Defense-in-Depth Admin Check (P0-SEC-002)
-    const token = TokenService.getAccessToken(req, { scope: 'admin' });
-    if (!token) {
-      return NextResponse.json({ error: "Authentication required", scope: 'admin' }, { status: 401 });
+    const _token = TokenService.getAccessToken(_req, { scope: 'admin' });
+    if (_token === undefined || _token === null || _token === '') {
+      return NextResponse.json({ _error: "Authentication required", scope: 'admin' }, { status: 401 });
     }
 
-    const payload = await TokenService.verifyAccessToken(token, true);
+    const _payload = await TokenService.verifyAccessToken(_token, true);
 
-    const { questions: checkQuestions, topicId } = (await req.json()) as DuplicateCheckPayload;
+    const { questions: checkQuestions, topicId } = (await _req.json()) as DuplicateCheckPayload;
 
-    if (!checkQuestions?.length || !topicId) {
-      return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
+    if (checkQuestions === undefined || checkQuestions === null || checkQuestions.length === 0 || topicId === undefined || topicId === null || topicId === '') {
+      return NextResponse.json({ _error: "Invalid _payload" }, { status: 400 });
     }
 
     // 1. Fetch all existing question texts for this topic
@@ -60,10 +60,10 @@ export async function POST(req: Request) {
       foundCount: duplicates.length
     });
 
-  } catch (error) {
-    console.error("Duplicate Check Error:", error);
+  } catch (_error) {
+    console.error("Duplicate Check Error:", _error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Access denied" },
+      { _error: _error instanceof Error ? _error.message : "Access denied" },
       { status: 403 }
     );
   }

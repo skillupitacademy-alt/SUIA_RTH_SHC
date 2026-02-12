@@ -1,10 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest, NextResponse } from 'next/server';
 import { config } from '@/config';
 
-export function corsMiddleware(request: NextRequest, response: NextResponse) {
-  const origin = request.headers.get('origin');
+export function corsMiddleware(_request: NextRequest, response: NextResponse) {
+  const origin = _request.headers.get('origin');
   
-  if (origin && config.cors.allowedOrigins.includes(origin)) {
+  if ((origin !== null && origin !== '') && config.cors.allowedOrigins.includes(origin)) {
     response.headers.set('Access-Control-Allow-Origin', origin);
   }
 

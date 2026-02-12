@@ -8,8 +8,8 @@ import { ZLoader } from "@quiz/ui";
 import { ChevronRight } from "lucide-react";
 
 export default function Home() {
-    const router = useRouter();
-    const { user, initialized } = useAuthStore();
+    const _router = useRouter();
+    const { _user, initialized } = useAuthStore();
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {

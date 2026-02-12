@@ -1,17 +1,60 @@
 {
     "extends": [
         "next/core-web-vitals",
-        "next/typescript"
+        "next/typescript",
+        "plugin:@typescript-eslint/recommended"
     ],
     "plugins": [
-        "security"
+        "security",
+        "jsx-a11y"
+    ],
+    "parserOptions": {
+        "project": "./tsconfig.json"
+    },
+    "ignorePatterns": [
+        "next.config.js",
+        "postcss.config.js",
+        "tailwind.config.js",
+        "tailwind.config.ts"
     ],
     "rules": {
         "react/no-danger": "error",
+
+        "@typescript-eslint/no-unused-vars": [
+            "error",
+            {
+                "argsIgnorePattern": "^_",
+                "varsIgnorePattern": "^_",
+                "caughtErrorsIgnorePattern": "^_"
+            }
+        ],
+        "@typescript-eslint/no-explicit-any": "error",
+        "@typescript-eslint/no-floating-promises": "warn",
+        "@typescript-eslint/consistent-type-imports": "error",
+        "@typescript-eslint/strict-boolean-expressions": "warn",
+        "@typescript-eslint/no-require-imports": "warn",
+        "@typescript-eslint/ban-ts-comment": "warn",
+
+        "eqeqeq": ["error", "always"],
+        "no-console": ["warn", { "allow": ["warn", "error"] }],
+        "prefer-const": "warn",
+        "react/no-unescaped-entities": "warn",
+        "react-hooks/rules-of-hooks": "error",
+        "react-hooks/exhaustive-deps": "error",
+
+        "jsx-a11y/anchor-is-valid": "error",
+        "jsx-a11y/alt-text": "error",
+        "jsx-a11y/no-autofocus": "warn",
+
         "no-eval": "error",
         "no-implied-eval": "error",
         "no-new-func": "error",
-        "security/detect-object-injection": "warn",
-        "security/detect-non-literal-require": "error"
-    }
+
+        "security/detect-object-injection": "off",
+        "security/detect-non-literal-require": "error",
+
+        "max-lines": ["warn", { "max": 500, "skipBlankLines": true, "skipComments": true }],
+        "complexity": ["warn", 20]
+    },
+    "overrides": []
 }

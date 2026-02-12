@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { ZConfirmationDialog } from '@/components/ui/ZConfirmationDialog';
 
 const WARNING_THRESHOLD = 180; // 180 seconds (3 minutes)
@@ -22,7 +22,7 @@ export function SessionWatcher({ expiresAt, onRefresh, onLogout, isRedirecting }
         try {
             await onRefresh();
             setShowWarning(false);
-        } catch (error) {
+        } catch {
             onLogout();
         } finally {
             setIsRefreshing(false);

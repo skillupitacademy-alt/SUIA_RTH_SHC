@@ -8,7 +8,7 @@ import { Server, Shield, Terminal, ArrowRight, Activity, Database, Lock } from '
 import { ZLoader } from '@quiz/ui';
 
 export default function LoginPage() {
-    const router = useRouter();
+    const _router = useRouter();
     const login = useAuthStore((state) => state.login);
 
     // Hardcoded credentials for API Server visualization
@@ -23,7 +23,7 @@ export default function LoginPage() {
         await new Promise(resolve => setTimeout(resolve, 1000));
 
         login({ id: 'sys-admin', name: 'System Admin', email, isAdmin: true, role: 'admin', onboarded: true });
-        router.push('/');
+        _router.push('/');
     };
 
     return (
@@ -44,7 +44,7 @@ export default function LoginPage() {
                             Core<br />Infrastructure
                         </h1>
                         <p className="text-lg text-slate-500 leading-relaxed max-w-md">
-                            Direct access to the Quiz Platform's central nervous system. Monitor telemetry, manage schemas, and control global configuration.
+                            Direct access to the Quiz Platform&apos;s central nervous system. Monitor telemetry, manage schemas, and control global configuration.
                         </p>
                     </div>
 

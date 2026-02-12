@@ -1,6 +1,7 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { useFactory } from '@/context/FactoryContext';
-import { Terminal, Import, AlertTriangle, CheckCircle2, Trash2, Zap, FileJson } from 'lucide-react';
+import { Import, AlertTriangle, CheckCircle2, Trash2, Zap, FileJson } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
 

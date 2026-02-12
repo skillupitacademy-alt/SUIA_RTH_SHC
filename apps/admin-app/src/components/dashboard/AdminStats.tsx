@@ -1,6 +1,7 @@
 'use client';
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { LucideIcon, Users, FileCheck, ShieldAlert, Cpu, Zap } from 'lucide-react';
+import { LucideIcon, Users, FileCheck, ShieldAlert, Zap } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { apiClient } from '@quiz/api-client';
 

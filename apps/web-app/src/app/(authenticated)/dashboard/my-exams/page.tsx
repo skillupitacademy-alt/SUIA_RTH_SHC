@@ -3,14 +3,14 @@
 import { Sidebar } from "@/components/dashboard/Sidebar";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 import { useDashboardStore } from "@/store/dashboard-store";
-import { useEffect, useState, useMemo } from "react";
-import { BookOpen, Calendar, ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
+import { useEffect, useState } from "react";
+import { BookOpen, Calendar, ArrowRight, ChevronLeft } from "lucide-react";
 import Link from "next/link";
 import { MobileNav } from "@/components/dashboard/MobileNav";
 import { ProgressChart } from "@/components/dashboard/ProgressChart";
 import { StackedBarBreakdown } from "@/components/dashboard/StackedBarBreakdown";
 import { cn } from "@/lib/utils";
-import { Filter, BarChart2, List, TrendingUp, Info, Hash, Layers, BookOpen as BookIcon, Calendar as CalendarIcon, Clock } from 'lucide-react';
+import { Filter, BarChart2, List, TrendingUp, Hash, Layers, BookOpen as BookIcon, Clock } from 'lucide-react';
 import { SelectField, ZLoader, ZPagination } from '@quiz/ui';
 
 // Standardized pagination state
@@ -68,21 +68,6 @@ export default function MyExamsPage() {
     const domains = availableDomains;
     const subjects = availableSubjects;
     const topics = availableTopics;
-
-    const handleNext = () => {
-        if (currentPage < totalPages) {
-            setCurrentPage(prev => prev + 1);
-            // Scroll to top on page change
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-    };
-
-    const handlePrev = () => {
-        if (currentPage > 1) {
-            setCurrentPage(prev => prev - 1);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-    };
 
     return (
         <AuthGuard>

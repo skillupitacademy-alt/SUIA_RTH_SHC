@@ -1,7 +1,7 @@
 import { LRUCache } from 'lru-cache';
 import { Redis } from '@upstash/redis';
 
-interface CacheOptions {
+interface _CacheOptions {
   ttl?: number;
   maxSize?: number;
 }
@@ -11,6 +11,7 @@ const REDIS_COOLDOWN_MS = 30000; // 30s cooldown on failure
 
 export class CacheService {
   private static instance: CacheService;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private cache: LRUCache<string, any>;
   private redis: Redis | null = null;
   private isDebug: boolean;
@@ -29,13 +30,13 @@ export class CacheService {
     const redisUrl = process.env.UPSTASH_REDIS_REST_URL;
     const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN;
 
-    if (redisUrl && redisToken) {
+    if (redisUrl !== undefined && redisToken !== undefined) {
       try {
         this.redis = new Redis({
           url: redisUrl,
           token: redisToken,
         });
-        console.log('[Cache] Edge-compatible Redis provider initialized (Upstash)');
+        // console.log('[Cache] Edge-compatible Redis provider initialized (Upstash)');
       } catch (e) {
         console.error('[Cache] Failed to initialize Redis provider:', e);
       }
@@ -43,7 +44,7 @@ export class CacheService {
   }
 
   public static getInstance(): CacheService {
-    if (!CacheService.instance) {
+    if (CacheService.instance === undefined) {
       CacheService.instance = new CacheService();
     }
     return CacheService.instance;
@@ -53,11 +54,11 @@ export class CacheService {
    * Helper to wrap Redis calls with a timeout and cooldown
    */
   private async withTimeout<T>(promise: Promise<T>, fallback: T): Promise<T> {
-    if (!this.redis) return fallback;
+    if (this.redis === null) return fallback;
 
     // Circuit Breaker: Skip if in cooldown
     if (Date.now() < this.redisDeadUntil) {
-      if (this.isDebug) console.log('[Cache] Redis in cooldown, skipping...');
+      if (this.isDebug) { /* console.log('[Cache] Redis in cooldown, skipping...'); */ }
       return fallback;
     }
 
@@ -67,33 +68,49 @@ export class CacheService {
 
     try {
       return await Promise.race([promise, timeout]);
-    } catch (e: any) {
-      console.error(`[Cache] Redis operation failed or timed out. Entering ${REDIS_COOLDOWN_MS / 1000}s cooldown:`, e?.message || e);
+    } catch (e: unknown) {
+      const errorMessage = e instanceof Error ? e.message : String(e);
+      console.error(`[Cache] Redis operation failed or timed out. Entering ${REDIS_COOLDOWN_MS / 1000}s cooldown:`, errorMessage);
       this.redisDeadUntil = Date.now() + REDIS_COOLDOWN_MS;
       return fallback;
+    }
+  }
+
+  private debug(op: string, key: string, data?: unknown) {
+    if (this.isDebug) {
+      // eslint-disable-next-line no-console
+      console.log(`[Cache] [${op}]: ${key}`, data !== undefined ? data : '');
     }
   }
 
   /**
    * Generates a stable hash for objects (sorted keys)
    */
-  public generateKey(prefix: string, data: any): string {
-    const stableString = JSON.stringify(data, Object.keys(data).sort());
+  public generateKey(prefix: string, data: unknown): string {
+    const stableString = this.hash(data);
     return `${prefix}:${stableString}`;
+  }
+
+  /**
+   * Helper to generate a stable hash for objects (sorted keys)
+   */
+  private hash(data: unknown): string {
+    const dataObj = typeof data === 'object' && data !== null ? data : {};
+    return JSON.stringify(dataObj, Object.keys(dataObj as Record<string, unknown>).sort());
   }
 
   public async get<T>(key: string): Promise<T | null> {
     try {
       const value = this.cache.get(key) as T | undefined;
       
-      if (this.isDebug) {
-        console.log(`[Cache] ${value ? '[HIT]' : '[MISS]'}: ${key}`);
+      if (this.isDebug === true) {
+        // console.log(`[Cache] ${value !== undefined ? '[HIT]' : '[MISS]'}: ${key}`);
       }
       
       if (value !== undefined) return value;
 
       // Primary: Redis Fallback
-      if (this.redis) {
+      if (this.redis !== null) {
         const redisValue = await this.withTimeout(this.redis.get<T>(key), null);
         if (redisValue !== null) {
           this.cache.set(key, redisValue); // Backfill local
@@ -102,42 +119,42 @@ export class CacheService {
       }
 
       return null;
-    } catch (error) {
-      console.error(`[Cache] Error retrieving key ${key}:`, error);
+    } catch (_error) {
+      console.error(`[Cache] Error retrieving key ${key}:`, _error);
       return null;
     }
   }
 
-  public async set(key: string, value: any, ttl?: number): Promise<void> {
+  public async set(key: string, value: unknown, ttl?: number): Promise<void> {
     try {
       this.cache.set(key, value, { ttl });
-      if (this.isDebug) {
-        console.log(`[Cache] [SET]: ${key} (TTL: ${ttl ?? 'default'})`);
+      if (this.isDebug === true) {
+        // console.log(`[Cache] [SET]: ${key} (TTL: ${ttl ?? 'default'})`);
       }
 
-      if (this.redis) {
-        const setPromise = ttl 
+      if (this.redis !== null) {
+        const setPromise = ttl !== undefined 
           ? this.redis.set(key, value, { px: ttl }) 
           : this.redis.set(key, value);
         await this.withTimeout(setPromise, null);
       }
-    } catch (error) {
-      console.error(`[Cache] Error setting key ${key}:`, error);
+    } catch (_error) {
+      console.error(`[Cache] Error setting key ${key}:`, _error);
     }
   }
 
   public async del(key: string): Promise<void> {
     try {
       this.cache.delete(key);
-      if (this.isDebug) {
-        console.log(`[Cache] [DEL]: ${key}`);
+      if (this.isDebug === true) {
+        // console.log(`[Cache] [DEL]: ${key}`);
       }
       
-      if (this.redis) {
+      if (this.redis !== null) {
         await this.withTimeout(this.redis.del(key), null);
       }
-    } catch (error) {
-      console.error(`[Cache] Error deleting key ${key}:`, error);
+    } catch (_error) {
+      console.error(`[Cache] Error deleting key ${key}:`, _error);
     }
   }
 
@@ -151,8 +168,8 @@ export class CacheService {
           this.cache.delete(key);
         }
       }
-    } catch (error) {
-      console.error(`[Cache] Error deleting prefix ${prefix}:`, error);
+    } catch (_error) {
+      console.error(`[Cache] Error deleting prefix ${prefix}:`, _error);
     }
   }
 
@@ -163,7 +180,7 @@ export class CacheService {
   public async increment(key: string, windowMs: number): Promise<{ count: number; ttlRem: number }> {
     try {
       // 1. Try Redis with aggressive timeout & cooldown
-      if (this.redis) {
+      if (this.redis !== null) {
         const result = await this.withTimeout((async () => {
           const count = await this.redis!.incr(key);
           if (count === 1) {
@@ -173,7 +190,7 @@ export class CacheService {
           return { count, ttlRem: Math.max(1, Math.ceil(ttl / 1000)) };
         })(), null);
 
-        if (result) return result;
+        if (result !== null) return result;
       }
 
       // 2. Local Fallback
@@ -192,13 +209,13 @@ export class CacheService {
         this.cache.set(key, count, { ttl: remainingMs > 0 ? remainingMs : windowMs });
       }
 
-      if (this.isDebug) {
-        console.log(`[Cache] [INCR]: ${key} -> ${count} (TTL REM: ${ttlRemSeconds}s)`);
+      if (this.isDebug === true) {
+        // console.log(`[Cache] [INCR]: ${key} -> ${count} (TTL REM: ${ttlRemSeconds}s)`);
       }
 
       return { count, ttlRem: ttlRemSeconds };
-    } catch (error) {
-      console.error(`[Cache] Error incrementing key ${key}:`, error);
+    } catch (_error) {
+      console.error(`[Cache] Error incrementing key ${key}:`, _error);
       return { count: 1, ttlRem: 60 };
     }
   }
@@ -214,7 +231,7 @@ export class CacheService {
     try {
       // Use the INFO command to get memory stats
       // Upstash Redis info() returns a string, but we cast to any to be safe with different versions/types
-      const infoResponse = await this.withTimeout((this.redis as any).info('memory'), null);
+      const infoResponse = await this.withTimeout((this.redis as unknown as Record<string, (arg: string) => Promise<unknown>>).info('memory'), null);
       
       // Try to get key count (DB0 is default)
       const dbsize = await this.withTimeout(this.redis.dbsize(), 0);
@@ -229,11 +246,11 @@ export class CacheService {
         
         if (memMatch) memory = memMatch[1];
         if (memBytesMatch) memoryBytes = parseInt(memBytesMatch[1], 10);
-      } else if (infoResponse && typeof infoResponse === 'object') {
+      } else if (infoResponse !== null && infoResponse !== undefined && typeof infoResponse === 'object') {
         // Handle case where info() might return a parsed object
-        const infoObj = infoResponse as any;
-        memory = infoObj.used_memory_human || infoObj.memory?.used_memory_human || 'Unknown';
-        memoryBytes = parseInt(infoObj.used_memory || infoObj.memory?.used_memory || '0', 10);
+        const infoObj = infoResponse as Record<string, unknown>;
+        memory = (infoObj.used_memory_human as string) || ((infoObj.memory as Record<string, unknown>)?.used_memory_human as string) || 'Unknown';
+        memoryBytes = parseInt((infoObj.used_memory as string) || ((infoObj.memory as Record<string, unknown>)?.used_memory as string) || '0', 10);
       }
 
       return {
@@ -242,8 +259,8 @@ export class CacheService {
         memory,
         memoryBytes,
       };
-    } catch (error) {
-      console.error('[Cache] Error getting Redis usage:', error);
+    } catch (_error) {
+      console.error('[Cache] Error getting Redis usage:', _error);
       // Return a safer fallback that doesn't just say "Error" if we can help it
       return { configured: true, keys: 0, memory: 'Unavailable', memoryBytes: 0 };
     }

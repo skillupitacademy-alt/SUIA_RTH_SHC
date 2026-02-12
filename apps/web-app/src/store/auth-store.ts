@@ -23,8 +23,6 @@ interface AuthState {
   setSessionExpired: (val: boolean) => void;
 }
 
-import { apiClient } from '@quiz/api-client';
-
 export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({

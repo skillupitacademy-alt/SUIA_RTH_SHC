@@ -1,20 +1,19 @@
-import { EmailProvider } from './EmailProvider';
+import type { IEmailProvider } from './types';
 import { MockEmailProvider } from './providers/MockEmailProvider';
 import { ResendEmailProvider } from './providers/ResendEmailProvider';
 
 export class EmailService {
-  private static instance: EmailProvider;
+  private static instance: IEmailProvider | null = null;
 
-  static getInstance(): EmailProvider {
-    if (!this.instance) {
-      const provider = process.env.EMAIL_PROVIDER || 'mock';
+  static getInstance(): IEmailProvider {
+    if (this.instance === null) {
+      const provider = process.env.EMAIL_PROVIDER ?? 'mock';
       
       if (provider === 'resend') {
         const apiKey = process.env.RESEND_API_KEY;
-        const from = process.env.EMAIL_FROM || 'QuizPlatform <onboarding@resend.dev>';
-        
+        const from = process.env.EMAIL_FROM ?? 'QuizPlatform <onboarding@resend.dev>';
 
-        if (!apiKey) {
+        if (apiKey === undefined || apiKey.trim() === '') {
           this.instance = new MockEmailProvider();
         } else {
           this.instance = new ResendEmailProvider(apiKey, from);
@@ -26,7 +25,7 @@ export class EmailService {
     return this.instance;
   }
 
-  static async sendPasswordResetEmail(email: string, resetUrl: string) {
-    return this.getInstance().sendPasswordResetEmail(email, resetUrl);
+  static async sendPasswordResetEmail(email: string, resetUrl: string): Promise<void> {
+    await this.getInstance().sendPasswordReset(email, resetUrl);
   }
 }

@@ -1,18 +1,13 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import {
     LayoutDashboard,
     Database,
-    FileText,
-    ShieldAlert,
-    Settings,
     LogOut,
     ChevronRight,
-    Bell,
     AlertTriangle,
-    Search,
     Users,
     ShieldCheck,
     BarChart3
@@ -24,7 +19,7 @@ import { SessionWatcher } from '@/components/auth/SessionWatcher';
 import { useAuthStore } from '@/store/auth-store';
 import { apiClient } from '@quiz/api-client';
 import { ThemeToggle } from '@quiz/ui';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useStrictNavigation } from '@/hooks/useStrictNavigation';
 import { usePresenceHeartbeat } from '@/hooks/usePresenceHeartbeat';
 
@@ -41,11 +36,10 @@ const ADMIN_NAV = [
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
     useStrictNavigation();
     usePresenceHeartbeat();
-    const router = useRouter();
     const pathname = usePathname();
     const { logout, expiresAt, user, login } = useAuthStore();
     const [isRedirecting, setIsRedirecting] = useState(false);
-    const { showWarning, confirmLogout, cancelNavigation } = useStrictNavigation();
+    const { showWarning, cancelNavigation } = useStrictNavigation();
 
     const handleLogout = async (reason?: 'session_expired') => {
         if (isRedirecting) return;

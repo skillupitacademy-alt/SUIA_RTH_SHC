@@ -107,9 +107,7 @@ export function JourneyFlowViewer({ path }: JourneyFlowViewerProps) {
                             {children}
                         </div>
                     ),
-                    li: ({ children, ...props }) => {
-                        const isCheckbox = Array.isArray(children) && children.some(c => typeof c === 'string' && (c.includes('[ ]') || c.includes('[x]')));
-
+                    li: ({ children }) => {
                         return (
                             <div className="flex items-start gap-3 p-4 bg-slate-50/50 border border-slate-100 rounded-2xl hover:bg-white transition-colors">
                                 <div className="mt-1">
@@ -120,7 +118,7 @@ export function JourneyFlowViewer({ path }: JourneyFlowViewerProps) {
                         );
                     },
                     code(props) {
-                        const { children, className, node, ...rest } = props;
+                        const { children, className, ...rest } = props;
                         const match = /language-(\w+)/.exec(className || '');
 
                         if (!match) {

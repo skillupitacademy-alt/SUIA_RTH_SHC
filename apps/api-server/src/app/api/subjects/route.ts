@@ -1,19 +1,20 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
 export const dynamic = 'force-dynamic';
-import { DomainService, SubjectService } from '@/modules/domain/domain.service';
+import { SubjectService } from '@/modules/domain/domain.service';
 
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest) {
   try {
-    const { searchParams } = new URL(req.url);
+    const { searchParams } = new URL(_req.url);
     const domainId = searchParams.get('domainId');
 
-    if (!domainId) {
-      return NextResponse.json({ error: 'domainId is required' }, { status: 400 });
+    if (domainId === null || domainId === '') {
+      return NextResponse.json({ _error: 'domainId is required' }, { status: 400 });
     }
 
     const subjects = await SubjectService.getSubjectsByDomain(domainId);
     return NextResponse.json(subjects);
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (_error: unknown) {
+    const errorMessage = _error instanceof Error ? _error.message : 'Failed to fetch subjects';
+    return NextResponse.json({ _error: errorMessage }, { status: 500 });
   }
 }

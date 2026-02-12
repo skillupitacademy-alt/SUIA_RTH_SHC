@@ -3,11 +3,6 @@ import { useRouter } from "next/navigation";
 import { Command } from "cmdk";
 import {
     Calculator,
-    Calendar,
-    CreditCard,
-    Settings,
-    Smile,
-    User,
     Search,
     LayoutDashboard,
     Home,
@@ -17,7 +12,6 @@ import {
     Laptop
 } from "lucide-react";
 import { useTheme } from "next-themes";
-import { cn } from "@/lib/utils";
 import { SearchResult } from "@quiz/api-client";
 
 export function GlobalSearchDialog() {
@@ -70,6 +64,7 @@ export function GlobalSearchDialog() {
         };
         document.addEventListener("keydown", down);
         return () => document.removeEventListener("keydown", down);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [open, results, router]);
 
     const runCommand = React.useCallback((command: () => unknown) => {

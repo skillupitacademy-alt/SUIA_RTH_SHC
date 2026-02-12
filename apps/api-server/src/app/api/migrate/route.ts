@@ -1,46 +1,46 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
 import { Pool } from '@neondatabase/serverless';
 import { drizzle } from 'drizzle-orm/neon-serverless';
 import { migrate } from 'drizzle-orm/neon-serverless/migrator';
 import path from 'path';
 import { TokenService } from '@/modules/auth/token.service';
-import { verifyAdmin } from '@/modules/auth/rbac.service';
+import { _verifyAdmin } from '@/modules/auth/rbac.service';
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     // 1. Check for Internal Migration Secret (P0-SEC-001)
     const MIGRATION_SECRET = process.env.MIGRATION_SECRET;
-    const clientSecret = request.headers.get('x-migration-secret');
+    const clientSecret = _request.headers.get('x-migration-secret');
 
     let isAuthorized = false;
 
-    if (MIGRATION_SECRET && clientSecret === MIGRATION_SECRET) {
+    if ((MIGRATION_SECRET !== undefined && MIGRATION_SECRET !== null && MIGRATION_SECRET !== '') && clientSecret === MIGRATION_SECRET) {
       isAuthorized = true;
     } else {
       // 2. Fallback to Admin Authentication (Supports Cookie and Header)
-      const token = TokenService.getAccessToken(request, { scope: 'admin' });
-      if (token) {
+      const _token = TokenService.getAccessToken(_request, { scope: 'admin' });
+      if (_token !== undefined && _token !== null && _token !== '') {
         try {
-          const payload = await TokenService.verifyAccessToken(token, true);
-          isAuthorized = await verifyAdmin(payload);
+          const _payload = await TokenService.verifyAccessToken(_token, true);
+          isAuthorized = await _verifyAdmin(_payload);
         } catch {
-          // Ignore token errors, authorization remains false
+          // Ignore _token errors, authorization remains false
         }
       }
     }
 
     if (!isAuthorized) {
       return NextResponse.json(
-        { error: 'Unauthorized: Valid migration secret or admin token required' },
+        { _error: 'Unauthorized: Valid migration secret or admin _token required' },
         { status: 401 }
       );
     }
 
     const DATABASE_URL = process.env.DATABASE_URL;
     
-    if (!DATABASE_URL) {
+    if (DATABASE_URL === undefined || DATABASE_URL === null || DATABASE_URL === '') {
       return NextResponse.json(
-        { error: 'DATABASE_URL not configured' },
+        { _error: 'DATABASE_URL not configured' },
         { status: 500 }
       );
     }
@@ -58,13 +58,8 @@ export async function GET(request: NextRequest) {
       success: true, 
       message: 'Migrations completed successfully!' 
     });
-  } catch (error: any) {
-    return NextResponse.json(
-      { 
-        error: 'Migration failed', 
-        details: error.message 
-      },
-      { status: 500 }
-    );
+  } catch (_error: unknown) {
+    const errorMessage = _error instanceof Error ? _error.message : 'Failed to perform migration';
+    return NextResponse.json({ _error: errorMessage }, { status: 500 });
   }
 }

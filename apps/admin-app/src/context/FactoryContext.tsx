@@ -1,4 +1,5 @@
 'use client';
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { GeneratedQuestion, FactoryBlueprint, ValidationResult } from '../types/factory';

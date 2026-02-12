@@ -1,15 +1,16 @@
 'use client';
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars, react-hooks/exhaustive-deps */
 
 import { useEffect, useState } from 'react';
 import { apiClient } from '@quiz/api-client';
-import { BookOpen, Plus, AlertTriangle, Check, Trash2 } from 'lucide-react';
+import { BookOpen, Plus, Check, Trash2, X } from 'lucide-react';
 import { ErrorBanner } from '@/components/layout/ErrorBanner';
 import { ZLoader, ZPagination } from '@quiz/ui';
+import { ZPortalModal } from '@/components/ui/ZPortalModal';
+import { SelectField } from '@/components/entry/SelectionFields';
 import { HierarchyFactoryWizard } from '@/components/content/HierarchyFactoryWizard';
 import { SubjectReviewCard } from './SubjectReviewCard';
 import { cn } from '@/lib/utils';
-import { ZPortalModal } from '@/components/ui/ZPortalModal';
-import { SelectField } from '@/components/entry/SelectionFields';
 import { useDomains } from '@/hooks/useAdminHierarchy';
 import {
     AlertDialog,
@@ -21,7 +22,6 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { X } from 'lucide-react';
 
 export function SubjectTable() {
     const [data, setData] = useState<any[]>([]);

@@ -1,31 +1,44 @@
-import { NextRequest, NextResponse } from 'next/server';
-export const dynamic = 'force-dynamic';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { AuthService } from '@/modules/auth/auth.service';
 import { setCsrfToken } from '@/modules/auth/csrf.middleware';
 
-export async function POST(req: NextRequest) {
-  try {
-    const { email, password, name } = await req.json();
+export const dynamic = 'force-dynamic';
 
-    if (!email || !password || !name) {
-      return NextResponse.json({ error: 'Missing fields' }, { status: 400 });
+interface SignupRequest {
+  email?: string;
+  password?: string;
+  name?: string;
+}
+
+export async function POST(_req: NextRequest) {
+  try {
+    const { email, password, name } = (await _req.json()) as SignupRequest;
+
+    if (
+      email === undefined || email === null || email === '' || email.trim() === '' || 
+      password === undefined || password === null || password === '' || password.trim() === '' || 
+      name === undefined || name === null || name === '' || name.trim() === ''
+    ) {
+      return NextResponse.json({ _error: 'Missing fields' }, { status: 400 });
     }
 
-    const user = await AuthService.signup(email, password, name);
+    const _user = await AuthService.signup(email, password, name);
 
     // Auto-login after signup
     const { accessToken, refreshToken } = await AuthService.login(email, password);
 
     const response = NextResponse.json({ 
       message: 'User created', 
-      user: { id: user.id, email: user.email, name, onboarded: false },
+      _user: { id: _user.id, email: _user.email, name, onboarded: false },
       accessToken
     });
 
-    // Set HttpOnly cookies for refresh token
+    // Set HttpOnly cookies for refresh _token
     response.cookies.set('refreshToken', refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
+      domain: process.env.COOKIE_DOMAIN ?? undefined,
       sameSite: 'strict',
       maxAge: 7 * 24 * 60 * 60, // 7 days
       path: '/',
@@ -34,8 +47,9 @@ export async function POST(req: NextRequest) {
     setCsrfToken(response);
 
     return response;
-  } catch (error: any) {
-    console.error('[SIGNUP ERROR]', error);
-    return NextResponse.json({ error: error.message }, { status: 400 });
+  } catch (_error: unknown) {
+    console.error('Signup.Error:', _error);
+    const message = _error instanceof Error ? _error.message : 'Unknown error';
+    return NextResponse.json({ _error: message }, { status: 400 });
   }
 }

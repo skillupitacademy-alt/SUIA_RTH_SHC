@@ -1,5 +1,6 @@
-import { db, exams, examQuestions } from '@quiz/db';
-import { eq, and, sql, lt } from 'drizzle-orm';
+import { db, exams } from '@quiz/db';
+import type { examBlueprints } from '@quiz/db';
+import { eq, and } from 'drizzle-orm';
 import { cacheService } from '../core/cache.service';
 import { ScoringEngine } from '../scoring-engine/scoring.engine';
 
@@ -10,21 +11,21 @@ export class SessionService {
    */
   static async syncSession(examId: string, userId: string) {
     const cacheKey = `exam-header:${userId}:${examId}`;
-    let exam: any = null;
+    let exam: (Awaited<ReturnType<typeof db.query.exams.findFirst>> & { blueprint?: typeof examBlueprints.$inferSelect | null }) | null = null;
 
     try {
-      exam = await cacheService.get(cacheKey);
+      exam = await cacheService.get(cacheKey) as typeof exam;
     } catch (e) {
       console.warn('[Session] Cache lookup failed', e);
     }
 
-    if (!exam) {
+    if (exam === null || exam === undefined) {
       exam = await db.query.exams.findFirst({
         where: eq(exams.id, examId),
         with: {
           blueprint: true,
         },
-      });
+      }) ?? null;
 
       if (exam) {
         try {
@@ -48,16 +49,16 @@ export class SessionService {
     const timeElapsedSeconds = Math.floor((Date.now() - startTime) / 1000);
     
     // Task D: Prioritize durationSeconds
-    const durationSeconds = exam.durationSeconds || (exam.blueprint?.timeLimit ? exam.blueprint.timeLimit * 60 : 3600);
+    const durationSeconds = (exam.durationSeconds !== null && exam.durationSeconds !== undefined) ? exam.durationSeconds : ((exam.blueprint?.timeLimit !== undefined && exam.blueprint?.timeLimit !== null) ? (exam.blueprint.timeLimit * 60) : 3600);
 
     if (timeElapsedSeconds > durationSeconds) {
       // Auto-submit: Mark as processing and trigger scoring (non-blocking)
       await db.update(exams)
-        .set({ status: 'processing' as any })
+        .set({ status: 'processing' as 'started' | 'processing' | 'completed' | 'abandoned' | 'failed' })
         .where(eq(exams.id, examId));
 
-      ScoringEngine.calculateExamResults(examId).catch(err => {
-        console.error(`[SessionService] Async auto-submit scoring failed for ${examId}:`, err);
+      ScoringEngine.calculateExamResults(examId).catch(_err => {
+        console.error(`[SessionService] Async auto-submit scoring failed for ${examId}:`, _err);
       });
 
       // Return the updated status immediately
@@ -69,7 +70,7 @@ export class SessionService {
 
   /**
    * Resumes a session from the last unanswered question.
-   * Task A: Returns a sanitized "student-safe" payload.
+   * Task A: Returns a sanitized "student-safe" _payload.
    */
   static async resumePayload(examId: string, userId: string) {
     const exam = await this.syncSession(examId, userId);
@@ -95,7 +96,7 @@ export class SessionService {
 
     const startTime = new Date(fullExam.startedAt).getTime();
     const timeElapsedSeconds = Math.floor((Date.now() - startTime) / 1000);
-    const durationSeconds = fullExam.durationSeconds || (exam.blueprint?.timeLimit ? exam.blueprint.timeLimit * 60 : 3600);
+    const durationSeconds = (fullExam.durationSeconds !== null && fullExam.durationSeconds !== undefined) ? fullExam.durationSeconds : ((exam.blueprint?.timeLimit !== undefined && exam.blueprint?.timeLimit !== null) ? (exam.blueprint.timeLimit * 60) : 3600);
 
     return {
       examId: fullExam.id,
@@ -121,7 +122,7 @@ export class SessionService {
         userAnswer: eq.userAnswer,
         order: eq.order
       })),
-      currentQuestion: currentEq ? {
+      currentQuestion: (currentEq !== undefined && currentEq !== null) ? {
         id: currentEq.question.id,
         questionText: currentEq.question.questionText,
         options: currentEq.question.options,

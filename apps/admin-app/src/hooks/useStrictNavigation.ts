@@ -15,7 +15,7 @@ export function useStrictNavigation() {
         // Push a state to trap "Back" button
         window.history.pushState(null, '', window.location.href);
 
-        const handlePopState = (event: PopStateEvent) => {
+        const handlePopState = () => {
             // Prevent actual backward navigation immediately by pushing state again
             window.history.pushState(null, '', window.location.href);
             setShowWarning(true);

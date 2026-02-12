@@ -13,7 +13,7 @@ export function formatTimeAgo(dateInput: string | Date | null | undefined): stri
         const date = typeof dateInput === 'string' ? parseISO(dateInput) : dateInput;
         if (!isValid(date)) return 'Recently';
         return formatDistanceToNow(date, { addSuffix: true });
-    } catch (error) {
+    } catch {
         return 'Recently';
     }
 }

@@ -5,11 +5,11 @@ import { Resend } from 'resend';
 import { LRUCache } from 'lru-cache';
 
 interface ServiceStatus {
-  status: 'ok' | 'warning' | 'error' | 'not_configured';
+  status: 'ok' | 'warning' | '_error' | 'not_configured';
   configured: boolean;
   checkedAt: string;
-  metrics?: any;
-  error?: { code?: string; message: string };
+  metrics?: Record<string, unknown>;
+  _error?: { code?: string; message: string };
 }
 
 interface UsageResponse {
@@ -19,8 +19,8 @@ interface UsageResponse {
   cloudflare: ServiceStatus;
 }
 
-const CACHE_TTL_MS = (parseInt(process.env.SERVICE_USAGE_CACHE_TTL_SEC || '60', 10)) * 1000;
-const TIMEOUT_MS = parseInt(process.env.SERVICE_USAGE_TIMEOUT_MS || '4000', 10);
+const CACHE_TTL_MS = (parseInt(process.env.SERVICE_USAGE_CACHE_TTL_SEC ?? '60', 10)) * 1000;
+const TIMEOUT_MS = parseInt(process.env.SERVICE_USAGE_TIMEOUT_MS ?? '4000', 10);
 
 export class UsageService {
   private static cache = new LRUCache<string, UsageResponse>({
@@ -37,7 +37,7 @@ export class UsageService {
 
   static async getAllUsage(): Promise<UsageResponse> {
     const cached = this.cache.get('usage');
-    if (cached) return cached;
+    if (cached !== undefined) return cached;
 
     const [neon, redis, resend, cloudflare] = await Promise.allSettled([
       this.getNeonUsage(),
@@ -57,31 +57,32 @@ export class UsageService {
     return response;
   }
 
-  private static getErrorState(error: any): ServiceStatus {
+  private static getErrorState(_error: unknown): ServiceStatus {
+    const message = _error instanceof Error ? _error.message : 'Unknown _error';
     return {
-      status: 'error',
+      status: '_error',
       configured: true,
       checkedAt: new Date().toISOString(),
-      error: { message: error.message || 'Unknown error' }
+      _error: { message }
     };
   }
 
   private static async getNeonUsage(): Promise<ServiceStatus> {
     try {
-      const limitMb = parseInt(process.env.NEON_DB_LIMIT_MB || '500', 10);
+      const limitMb = parseInt(process.env.NEON_DB_LIMIT_MB ?? '500', 10);
       
       const result = await this.withTimeout(
         db.execute(sql`SELECT pg_database_size(current_database()) as raw_size`),
         'Neon DB Query Timeout'
       ) as unknown as { rows: { raw_size: string | number }[] };
       
-      const rawSize = Number(result.rows[0]?.raw_size || 0);
+      const rawSize = Number(result.rows[0]?.raw_size ?? 0);
       const sizeMb = Math.round(rawSize / 1024 / 1024);
       const usagePercent = Math.min(100, Math.round((sizeMb / limitMb) * 100));
 
       let status: ServiceStatus['status'] = 'ok';
       if (usagePercent >= 80) status = 'warning';
-      if (usagePercent >= 95) status = 'error';
+      if (usagePercent >= 95) status = '_error';
 
       return {
         status,
@@ -94,12 +95,13 @@ export class UsageService {
           usagePercent,
         }
       };
-    } catch (error: any) {
+    } catch (_error: unknown) {
+      const message = _error instanceof Error ? _error.message : 'Unknown Neon _error';
       return {
-        status: 'error',
+        status: '_error',
         configured: true,
         checkedAt: new Date().toISOString(),
-        error: { message: error.message }
+        _error: { message }
       };
     }
   }
@@ -108,19 +110,19 @@ export class UsageService {
     try {
       const usage = await cacheService.getUsage();
       
-      if (!usage.configured) {
+      if (usage.configured === false) {
         return { status: 'not_configured', configured: false, checkedAt: new Date().toISOString() };
       }
 
-      const limitMb = process.env.REDIS_MEMORY_LIMIT_MB ? parseInt(process.env.REDIS_MEMORY_LIMIT_MB, 10) : 0;
+      const limitMb = process.env.REDIS_MEMORY_LIMIT_MB !== undefined ? parseInt(process.env.REDIS_MEMORY_LIMIT_MB, 10) : 0;
       let usagePercent = 0;
       let status: ServiceStatus['status'] = 'ok';
 
-      if (limitMb > 0 && usage.memoryBytes) {
+      if (limitMb > 0 && usage.memoryBytes !== undefined && usage.memoryBytes !== null) {
         const usedMb = usage.memoryBytes / 1024 / 1024;
         usagePercent = Math.round((usedMb / limitMb) * 100);
         if (usagePercent >= 80) status = 'warning';
-        if (usagePercent >= 95) status = 'error';
+        if (usagePercent >= 95) status = '_error';
       }
 
       return {
@@ -136,25 +138,25 @@ export class UsageService {
           snapshot: 'Runtime snapshot'
         }
       };
-    } catch (error: any) {
+    } catch (_error: unknown) {
+       const message = _error instanceof Error ? _error.message : 'Unknown Redis _error';
        return {
-        status: 'error',
+        status: '_error',
         configured: true,
         checkedAt: new Date().toISOString(),
-        error: { message: error.message }
+        _error: { message }
       };
     }
   }
 
   private static async getResendStatus(): Promise<ServiceStatus> {
     const apiKey = process.env.RESEND_API_KEY;
-    if (!apiKey) {
+    if (apiKey === undefined || apiKey.trim() === '') {
       return { status: 'not_configured', configured: false, checkedAt: new Date().toISOString() };
     }
 
     try {
       const resend = new Resend(apiKey);
-      // Retrieve API Keys list as a lightweight auth check
       await this.withTimeout(resend.apiKeys.list(), 'Resend API Timeout');
       
       return {
@@ -166,22 +168,39 @@ export class UsageService {
           connected: true
         }
       };
-    } catch (error: any) {
+    } catch (_error: unknown) {
+      const message = _error instanceof Error ? _error.message : 'Unknown Resend _error';
       return {
-        status: 'error',
+        status: '_error',
         configured: true,
         checkedAt: new Date().toISOString(),
-        error: { message: error.message }
+        _error: { message }
       };
     }
   }
 
   private static async getCloudflareStats(): Promise<ServiceStatus> {
-    const token = process.env.CLOUDFLARE_API_TOKEN;
+    const _token = process.env.CLOUDFLARE_API_TOKEN;
     const zoneId = process.env.CLOUDFLARE_ZONE_ID;
 
-    if (!token || !zoneId) {
+    if (_token === undefined || _token.trim() === '' || zoneId === undefined || zoneId.trim() === '') {
       return { status: 'not_configured', configured: false, checkedAt: new Date().toISOString() };
+    }
+
+    interface CloudflareResponse {
+      errors?: { message: string }[];
+      data?: {
+        viewer?: {
+          zones?: {
+            httpRequests1dGroups?: {
+              sum?: {
+                requests: number;
+                bytes: number;
+              };
+            }[];
+          }[];
+        };
+      };
     }
 
     try {
@@ -204,7 +223,7 @@ export class UsageService {
         fetch('https://api.cloudflare.com/client/v4/graphql', {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${token}`,
+            'Authorization': `Bearer ${_token}`,
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({ query }),
@@ -212,12 +231,12 @@ export class UsageService {
         'Cloudflare API Timeout'
       );
 
-      if (!response.ok) {
+      if (response.ok === false) {
         throw new Error(`Cloudflare API Error: ${response.statusText}`);
       }
 
-      const data = await response.json();
-      if (data.errors && data.errors.length > 0) {
+      const data = await response.json() as CloudflareResponse;
+      if (data.errors !== undefined && data.errors !== null && data.errors.length > 0) {
         throw new Error(data.errors[0].message);
       }
 
@@ -234,12 +253,13 @@ export class UsageService {
         }
       };
 
-    } catch (error: any) {
+    } catch (_error: unknown) {
+      const message = _error instanceof Error ? _error.message : 'Unknown Cloudflare _error';
       return {
-        status: 'error',
+        status: '_error',
         configured: true,
         checkedAt: new Date().toISOString(),
-        error: { message: error.message }
+        _error: { message }
       };
     }
   }

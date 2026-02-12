@@ -1,0 +1,2 @@
+﻿src/modules/admin-engine/admin.user.engine.ts(67,29): error TS2345: Argument of type 'SQL<unknown> | undefined' is not assignable to parameter of type 'SQL<unknown>'.
+  Type 'undefined' is not assignable to type 'SQL<unknown>'.

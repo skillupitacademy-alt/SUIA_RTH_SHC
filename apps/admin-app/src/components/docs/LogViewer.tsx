@@ -102,7 +102,7 @@ export function LogViewer({ type }: LogViewerProps) {
                                     </td>
                                     <td className="px-10 py-8 p-max-w-md">
                                         <p className="text-xs font-bold text-slate-500 max-w-sm leading-relaxed">
-                                            "{item.summary}"
+                                            &quot;{item.summary}&quot;
                                         </p>
                                     </td>
                                 </tr>

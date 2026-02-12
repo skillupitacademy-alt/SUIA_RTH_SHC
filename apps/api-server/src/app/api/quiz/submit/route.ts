@@ -1,36 +1,45 @@
-import { NextRequest, NextResponse } from 'next/server';
-export const dynamic = 'force-dynamic';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { ExamEngine } from '@/modules/exam-engine/exam.engine';
 import { TokenService } from '@/modules/auth/token.service';
+
+export const dynamic = 'force-dynamic';
+
+interface SubmitRequestBody {
+  examId: string;
+}
 
 /**
  * SUBMIT/COMPLETE EXAM
  * POST /api/quiz/submit
  */
-export async function POST(req: NextRequest) {
+export async function POST(_req: NextRequest) {
   try {
-    const token = TokenService.getAccessToken(req, { scope: 'user' });
-    if (!token) return NextResponse.json({ error: 'Unauthorized', scope: 'user' }, { status: 401 });
+    const _token = TokenService.getAccessToken(_req, { scope: '_user' });
+    if (typeof _token !== 'string' || _token.trim() === '') {
+      return NextResponse.json({ _error: 'Unauthorized', scope: '_user' }, { status: 401 });
+    }
 
-    const payload = await TokenService.verifyAccessToken(token, false);
-    const { examId } = await req.json();
-    const idempotencyKey = req.headers.get('idempotency-key') || undefined;
+    const _payload = await TokenService.verifyAccessToken(_token, false);
+    const { examId } = (await _req.json()) as SubmitRequestBody;
+    const idempotencyKey = _req.headers.get('idempotency-key') ?? undefined;
     
     // Step 5 Hardening: Pass idempotency key for safe retries
-    const result = await ExamEngine.completeExam(examId, payload.userId, idempotencyKey);
+    const result = await ExamEngine.completeExam(examId, _payload.userId, idempotencyKey);
     
     if (result.status === 'processing') {
         return NextResponse.json(result, { status: 202 });
     }
 
     return NextResponse.json(result);
-  } catch (error: any) {
-    if (error.message.includes('Unauthorized') || error.message.includes('do not own')) {
-        return NextResponse.json({ error: error.message }, { status: 403 });
+  } catch (_error: unknown) {
+    const message = _error instanceof Error ? _error.message : 'Bad request';
+    if (message.includes('Unauthorized') || message.includes('do not own')) {
+        return NextResponse.json({ _error: message }, { status: 403 });
     }
-    if (error.message.includes('Exam not found')) {
-        return NextResponse.json({ error: error.message }, { status: 404 });
+    if (message.includes('Exam not found')) {
+        return NextResponse.json({ _error: message }, { status: 404 });
     }
-    return NextResponse.json({ error: error.message }, { status: 400 });
+    return NextResponse.json({ _error: message }, { status: 400 });
   }
 }

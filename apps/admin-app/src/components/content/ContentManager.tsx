@@ -1,4 +1,5 @@
 'use client';
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { FileText, MoreHorizontal, ExternalLink } from 'lucide-react';
 import { useEffect, useState } from 'react';

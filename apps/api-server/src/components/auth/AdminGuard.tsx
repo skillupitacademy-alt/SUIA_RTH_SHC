@@ -7,47 +7,48 @@ import { apiClient } from '@quiz/api-client';
 import { ZLoader } from '@quiz/ui';
 
 export function AdminGuard({ children }: { children: React.ReactNode }) {
-    const { user, isAuthenticated, initialized, login, logout } = useAuthStore();
-    const router = useRouter();
+    const { _user, isAuthenticated, initialized, login, logout } = useAuthStore();
+    const _router = useRouter();
 
     useEffect(() => {
         if (!initialized) return;
 
-        if (!isAuthenticated || !user?.isAdmin) {
-            router.push('/login');
+        if (isAuthenticated === false || _user?.isAdmin !== true) {
+            _router.push('/login');
             return;
         }
 
         // Hardening: Revalidate session state with server
         const revalidate = async () => {
             try {
-                // Access token is handled via httpOnly cookies
+                // Access _token is handled via httpOnly cookies
                 // Using getAdminSession parity
                 const { user: validatedUser, expiresAt } = await apiClient.auth.getAdminSession();
-                if (!validatedUser.isAdmin) throw new Error("Revoked");
+                const isAdmin = (validatedUser as { isAdmin?: boolean }).isAdmin === true;
+                if (!isAdmin) throw new Error("Revoked");
                 login(validatedUser, expiresAt);
-            } catch (err: any) {
-                console.error("Session revalidation failed:", err);
-                if (err.message.includes('Invalid token') || err.message.includes('signature') || err.message.includes('jwt')) {
+            } catch (_err: unknown) {
+                console.error("Session revalidation failed:", _err);
+                if (_err instanceof Error && (_err.message.includes('Invalid _token') || _err.message.includes('signature') || _err.message.includes('jwt'))) {
                     logout();
-                    router.push('/login');
+                    _router.push('/login');
                 }
             }
         };
 
-        revalidate();
+        void revalidate();
 
         const handleUnauthorized = () => {
             console.warn("Circuit Breaker: Global 401 detected. Logging out.");
             logout();
-            router.push('/login');
+            _router.push('/login');
         };
 
         window.addEventListener('auth:unauthorized', handleUnauthorized);
         return () => window.removeEventListener('auth:unauthorized', handleUnauthorized);
-    }, [isAuthenticated, user, initialized, router, logout, login]);
+    }, [isAuthenticated, _user, initialized, _router, logout, login]);
 
-    if (!initialized || !isAuthenticated || !user?.isAdmin) {
+    if (initialized === false || isAuthenticated === false || _user?.isAdmin !== true) {
         return (
             <div className="h-screen w-screen bg-white flex flex-col items-center justify-center">
                 <ZLoader size="lg" text="Authenticating API Terminal_" color="#FF2D55" />

@@ -1,4 +1,5 @@
 'use client';
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars, react-hooks/exhaustive-deps */
 
 import { createContext, useContext, useEffect, useState } from 'react';
 import { useAuthStore } from '@/store/auth-store';

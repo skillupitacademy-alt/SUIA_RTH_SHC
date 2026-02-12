@@ -26,7 +26,7 @@ export class AnswerEvaluationEngine {
   /**
    * Placeholder for Partial Scoring logic.
    */
-  static calculatePartialScore(type: string, options: any, selection: any): number {
+  static calculatePartialScore(_type: string, _options: unknown, _selection: unknown): number {
     // Future implementation for Multi-Select MCQs
     return 0;
   }

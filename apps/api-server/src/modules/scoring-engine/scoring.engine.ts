@@ -1,5 +1,5 @@
-import { db, examQuestions, resultsByDimension, exams, questions } from '@quiz/db';
-import { eq, and } from 'drizzle-orm';
+import { db, resultsByDimension, exams } from '@quiz/db';
+import { eq } from 'drizzle-orm';
 export const dynamic = 'force-dynamic';
 
 export class ScoringEngine {
@@ -24,7 +24,7 @@ export class ScoringEngine {
         }
       });
 
-      if (!exam) throw new Error('Exam not found');
+      if (exam === undefined) throw new Error('Exam not found');
 
       const dimensions: Record<string, { total: number; correct: number; name?: string }> = {};
 
@@ -53,19 +53,32 @@ export class ScoringEngine {
       for (const eqRecord of exam.examQuestions) {
         const q = eqRecord.question;
         const t = topicMap.get(q.topicId);
-        if (!t) continue;
+        if (t === undefined) continue;
 
-        // Extract weights and dimensions
-        const skillsFromQuestion = (eqRecord.question as any).questionSkills?.map((qs: any) => qs.skill) || [];
-        const skillsFromTopic = t.topicSkills.map(ts => ts.skill);
+        interface SkillInfo {
+          id: string;
+          name: string;
+          weight: number | null;
+          category: string | null;
+          mappingType: string | null;
+        }
+
+        const qWithSkills = eqRecord.question as typeof eqRecord.question & { 
+          questionSkills: { skill: SkillInfo }[] 
+        };
+        
+        const skillsFromQuestion = (qWithSkills.questionSkills !== undefined && qWithSkills.questionSkills !== null) 
+          ? qWithSkills.questionSkills.map((qs: { skill: SkillInfo }) => qs.skill) 
+          : [];
+        const skillsFromTopic = t.topicSkills.map(ts => ts.skill as SkillInfo);
         
         // Deduplicate skills by ID
-        const skillMap = new Map();
+        const skillMap = new Map<string, SkillInfo>();
         [...skillsFromTopic, ...skillsFromQuestion].forEach(s => skillMap.set(s.id, s));
         const questionSkillsList = Array.from(skillMap.values());
 
         const avgWeight = questionSkillsList.length > 0 
-          ? Math.round(questionSkillsList.reduce((sum, s) => sum + (s.weight || 1), 0) / questionSkillsList.length)
+          ? Math.round(questionSkillsList.reduce((sum, s) => sum + (s.weight !== null ? s.weight : 1), 0) / questionSkillsList.length)
           : 1;
 
         const baseDims = [
@@ -76,32 +89,32 @@ export class ScoringEngine {
         ];
 
         // Add Subtopic if present
-        if (q.subtopicId) {
+        if (q.subtopicId !== null && q.subtopicId !== '') {
             const st = t.subtopics.find(s => s.id === q.subtopicId);
-            if (st) {
+            if (st !== undefined) {
               baseDims.push({ type: 'subtopic', id: st.id, name: st.name, w: avgWeight });
             }
         }
 
         // Add Skills, Categories, and Mapping Types
         questionSkillsList.forEach(skill => {
-          const w = skill.weight || 1;
+          const w = (skill.weight !== null && skill.weight !== undefined) ? skill.weight : 1;
           baseDims.push({ type: 'skill', id: skill.id, name: skill.name, w });
           
-          if (skill.category) {
+          if (skill.category !== null && skill.category !== '') {
             baseDims.push({ type: 'category', id: skill.category, name: skill.category.toUpperCase(), w });
           }
           
-          if (skill.mappingType) {
+          if (skill.mappingType !== null && skill.mappingType !== '') {
             baseDims.push({ type: 'mapping_type', id: skill.mappingType, name: skill.mappingType.toUpperCase(), w });
           }
         });
 
         for (const d of baseDims) {
           const key = `${d.type}:${d.id}`;
-          if (!dimensions[key]) dimensions[key] = { total: 0, correct: 0, name: d.name };
+          if (dimensions[key] === undefined) dimensions[key] = { total: 0, correct: 0, name: d.name };
           dimensions[key].total += d.w;
-          if (eqRecord.isCorrect) dimensions[key].correct += d.w;
+          if (eqRecord.isCorrect === true) dimensions[key].correct += d.w;
         }
       }
 
@@ -127,7 +140,7 @@ export class ScoringEngine {
       await db.delete(resultsByDimension).where(eq(resultsByDimension.examId, examId));
 
       if (resultsData.length > 0) {
-        await db.insert(resultsByDimension).values(resultsData as any);
+        await db.insert(resultsByDimension).values(resultsData);
       }
 
       // 4. Update total score and finalize exam
@@ -135,7 +148,7 @@ export class ScoringEngine {
       let finalScore = 0;
       
       if (totalQuestions > 0) {
-        const totalCorrect = exam.examQuestions.filter(q => q.isCorrect).length;
+        const totalCorrect = exam.examQuestions.filter(q => q.isCorrect === true).length;
         finalScore = Math.round((totalCorrect / totalQuestions) * 100);
       }
 
@@ -148,13 +161,13 @@ export class ScoringEngine {
         .where(eq(exams.id, examId));
 
       return finalScore;
-    } catch (error) {
-      console.error(`[ScoringEngine] Failed to calculate results for exam ${examId}:`, error);
+    } catch (_error) {
+      console.error(`[ScoringEngine] Failed to calculate results for exam ${examId}:`, _error);
       await db.update(exams)
         .set({ status: 'failed' })
         .where(eq(exams.id, examId))
         .catch(console.error);
-      throw error;
+      throw _error;
     }
   }
 }

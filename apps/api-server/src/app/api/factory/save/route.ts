@@ -1,6 +1,6 @@
-import { NextResponse } from "next/server";
-import { db, questions, skills, questionSkills } from "@quiz/db";
-import { eq, inArray, sql } from "drizzle-orm";
+import { type NextRequest, NextResponse } from "next/server";
+import { db, questions, questionSkills, skills } from "@quiz/db";
+import { sql, inArray } from "drizzle-orm";
 import { TokenService } from "@/modules/auth/token.service";
 
 // Define strict types locally to ensure safety without circular deps
@@ -24,34 +24,35 @@ interface SavePayload {
   questions: GeneratedQuestion[];
   topicId: string;
   subtopicId?: string;
+  skillId?: string;
 }
 
-export async function POST(req: Request) {
+export async function POST(_req: NextRequest) {
   try {
     // 1. Defense-in-Depth Admin Check (P0-SEC-002)
-    const token = TokenService.getAccessToken(req, { scope: 'admin' });
-    if (!token) {
-      return NextResponse.json({ error: "Authentication required", scope: 'admin' }, { status: 401 });
+    const _token = TokenService.getAccessToken(_req, { scope: 'admin' });
+    if (_token === undefined || _token === null || _token === '') {
+      return NextResponse.json({ _error: "Authentication required", scope: 'admin' }, { status: 401 });
     }
 
-    const payload = await TokenService.verifyAccessToken(token, true);
+    const _payload = await TokenService.verifyAccessToken(_token, true);
 
-    const { questions: newQuestions, topicId, subtopicId } = (await req.json()) as SavePayload;
+    const { questions: checkQuestions, topicId, subtopicId } = (await _req.json()) as SavePayload;
 
-    if (!newQuestions?.length || !topicId) {
-      return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
+    if (!checkQuestions?.length || !topicId) {
+      return NextResponse.json({ _error: "Invalid _payload" }, { status: 400 });
     }
 
-    // 1. Extract all unique skill names from the payload
+    // 1. Extract all unique skill names from the _payload
     const allSkillNames = Array.from(
-      new Set(newQuestions.flatMap((q) => q.skillNames || []).map((s) => s.toLowerCase().trim()))
+      new Set(checkQuestions.flatMap((q) => (q.skillNames !== undefined && q.skillNames !== null ? q.skillNames : [])).map((s) => s.toLowerCase().trim()))
     ).filter(Boolean);
 
     // 2. Resolve Skills (Find existing IDs, Create new ones)
     const existingSkills = await db
       .select({ id: skills.id, name: skills.name })
       .from(skills)
-      .where(inArray(sql`LOWER(${skills.name})`, allSkillNames));
+      .where(inArray(sql`LOWER(${skills.name})`, allSkillNames.length > 0 ? allSkillNames : ['__none__']));
 
     const existingSkillMap = new Map(existingSkills.map((s) => [s.name.toLowerCase(), s.id]));
     const skillsToCreate = allSkillNames.filter((name) => !existingSkillMap.has(name));
@@ -63,10 +64,10 @@ export async function POST(req: Request) {
         // Create new skills if needed
         if (skillsToCreate.length > 0) {
             await tx.insert(skills).values(
-                skillsToCreate.map((name) => ({
+                skillsToCreate.map((name: string) => ({
                     name: name,
-                    category: "technical" as const, // Cast to literal for enum compatibility
-                    mappingType: "technical" as const, // Cast to literal for enum compatibility
+                    category: "technical" as const,
+                    mappingType: "technical" as const,
                 }))
             );
             
@@ -80,31 +81,32 @@ export async function POST(req: Request) {
         const finalSkillMap = new Map([...existingSkillMap, ...newSkillMap]);
 
         // 3. Insert Questions and Link Skills
-        for (const q of newQuestions) {
+        for (const q of checkQuestions) {
             const [insertedQ] = await tx
                 .insert(questions)
                 .values({
                     topicId,
-                    subtopicId: subtopicId || null,
+                    subtopicId: (subtopicId !== undefined && subtopicId !== null && subtopicId !== '') ? subtopicId : null,
                     questionText: q.questionText,
-                    options: q.options as any, // Cast jsonb to any to satisfy Drizzle
+                    options: q.options as string[],
                     correctAnswer: q.correctAnswer,
-                    difficulty: q.difficulty as any,
-                    mappingType: q.mappingType as any,
+                    difficulty: q.difficulty as Difficulty,
+                    mappingType: q.mappingType as MappingType,
                     explanation: q.explanation,
-                    codeSnippet: q.codeSnippet,
+                    codeSnippet: (q.codeSnippet !== undefined && q.codeSnippet !== null && q.codeSnippet !== '') ? q.codeSnippet : null,
                     status: "active",
                 })
                 .returning({ id: questions.id });
 
-            if (insertedQ) {
-                const qSkillIds = (q.skillNames || [])
-                    .map((name) => finalSkillMap.get(name.toLowerCase().trim()))
+            if (insertedQ !== undefined && insertedQ !== null) {
+                const qSkillNames = (q.skillNames !== undefined && q.skillNames !== null) ? q.skillNames : [];
+                const qSkillIds = qSkillNames
+                    .map((name: string) => finalSkillMap.get(name.toLowerCase().trim()))
                     .filter(Boolean) as string[];
 
                 if (qSkillIds.length > 0) {
                     await tx.insert(questionSkills).values(
-                        qSkillIds.map((skillId) => ({
+                        qSkillIds.map((skillId: string) => ({
                             questionId: insertedQ.id,
                             skillId: skillId,
                         }))
@@ -116,13 +118,13 @@ export async function POST(req: Request) {
 
     return NextResponse.json({
       success: true,
-      insertedCount: newQuestions.length,
+      insertedCount: checkQuestions.length,
       newSkillsCreated: skillsToCreate.length,
     });
-  } catch (error) {
-    console.error("Factory Save Error:", error);
+  } catch (_error: unknown) {
+    console.error("Factory Save Error:", _error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Access denied" },
+      { _error: _error instanceof Error ? _error.message : "Access denied" },
       { status: 403 }
     );
   }

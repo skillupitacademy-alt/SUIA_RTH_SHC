@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { QuizResultResponse } from '@quiz/api-client';
-import { ChevronDown, ChevronUp, Info, AlertCircle } from 'lucide-react';
+import { ChevronDown, ChevronUp, Info } from 'lucide-react';
 
 type ResultData = Exclude<QuizResultResponse, { status: 'processing' }>;
 type SkillData = NonNullable<ResultData['performance']['skill']>;

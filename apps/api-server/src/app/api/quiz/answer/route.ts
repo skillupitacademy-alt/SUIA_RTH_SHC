@@ -1,25 +1,34 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { ExamEngine } from '@/modules/exam-engine/exam.engine';
 import { TokenService } from '@/modules/auth/token.service';
 
 export const dynamic = 'force-dynamic';
 
-export async function POST(req: NextRequest) {
+interface AnswerRequestBody {
+  examId: string;
+  questionId: string;
+  answer: string;
+}
+
+export async function POST(_req: NextRequest) {
   try {
-    const token = TokenService.getAccessToken(req, { scope: 'user' });
-    if (!token) return NextResponse.json({ error: 'Unauthorized', scope: 'user' }, { status: 401 });
+    const _token = TokenService.getAccessToken(_req, { scope: '_user' });
+    if (typeof _token !== 'string' || _token.trim() === '') {
+      return NextResponse.json({ _error: 'Unauthorized', scope: '_user' }, { status: 401 });
+    }
 
-    const payload = await TokenService.verifyAccessToken(token, false);
-    const body = await req.json();
+    const _payload = await TokenService.verifyAccessToken(_token, false);
+    const body = (await _req.json()) as AnswerRequestBody;
     
-    const idempotencyKey = req.headers.get('idempotency-key') || req.headers.get('Idempotency-Key');
+    const idempotencyKey = _req.headers.get('idempotency-key') ?? _req.headers.get('Idempotency-Key');
 
-    const result = await ExamEngine.submitAnswer(
+    await ExamEngine.submitAnswer(
       body.examId,
       body.questionId,
       body.answer,
-      payload.userId,
-      idempotencyKey || undefined
+      _payload.userId,
+      idempotencyKey ?? undefined
     );
     
     // Step 1 Hardening: Sanitize response. Do NOT return isCorrect/correctAnswer.
@@ -31,7 +40,8 @@ export async function POST(req: NextRequest) {
         status: 'recorded'
       }
     });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 400 });
+  } catch (_error: unknown) {
+    const message = _error instanceof Error ? _error.message : 'Bad request';
+    return NextResponse.json({ _error: message }, { status: 400 });
   }
 }

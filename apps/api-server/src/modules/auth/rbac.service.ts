@@ -1,24 +1,24 @@
 import { db, userRoles, roles, users } from '@quiz/db';
 import { eq, and, sql } from 'drizzle-orm';
-import { TokenPayload } from './token.service';
+import type { TokenPayload } from './token.service';
 
-export async function verifyAdmin(payload: TokenPayload): Promise<boolean> {
-    // 0. Security: Check if user is blocked (Always hit DB for Admin actions)
-    const user = await db.query.users.findFirst({
-        where: eq(users.id, payload.userId),
+export async function _verifyAdmin(_payload: TokenPayload): Promise<boolean> {
+    // 0. Security: Check if _user is blocked (Always hit DB for Admin actions)
+    const _user = await db.query.users.findFirst({
+        where: eq(users.id, _payload.userId),
         columns: { isBlocked: true }
     });
 
-    if (user?.isBlocked) {
+    if (_user?.isBlocked === true) {
         return false;
     }
 
     // 1. JWT Payload Check (Fast Payout)
-    const isAdminInToken = payload.isAdmin || payload.roles?.some(r => 
+    const isAdminInToken = _payload.isAdmin === true || (_payload.roles !== undefined && _payload.roles.some(r => 
         ['admin', 'ADMIN', 'super_admin', 'SUPER_ADMIN'].includes(r)
-    );
+    ));
 
-    if (isAdminInToken) {
+    if (isAdminInToken === true) {
         return true;
     }
 
@@ -27,7 +27,7 @@ export async function verifyAdmin(payload: TokenPayload): Promise<boolean> {
         .from(userRoles)
         .innerJoin(roles, eq(userRoles.roleId, roles.id))
         .where(and(
-            eq(userRoles.userId, payload.userId),
+            eq(userRoles.userId, _payload.userId),
             // Use case-insensitive check for robustness
             sql`lower(${roles.name}) IN ('admin', 'super_admin')`
         ))

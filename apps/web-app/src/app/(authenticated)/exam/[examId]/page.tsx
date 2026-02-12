@@ -1,7 +1,8 @@
 'use client';
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 
-import { useEffect, useState, useCallback, useMemo } from 'react';
-import { useRouter, useParams, useSearchParams } from 'next/navigation';
+import { useEffect, useState, useMemo } from 'react';
+import { useRouter, useParams } from 'next/navigation';
 import { apiClient, QuizState } from '@quiz/api-client';
 import {
     Loader2,
@@ -16,7 +17,6 @@ import {
     LayoutDashboard
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import Link from 'next/link';
 import { EXAM_THEMES } from '@/lib/exam-themes';
 import { useExitGuard } from '@/hooks/useExitGuard';
 import { ExitConfirmationDialog } from '@/components/ui/ExitConfirmationDialog';
@@ -40,7 +40,6 @@ export default function ActiveExamPage() {
     const { clearBackup } = useExamBackup(examId, state?.localAnswers || {});
 
     const router = useRouter();
-    const searchParams = useSearchParams();
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);

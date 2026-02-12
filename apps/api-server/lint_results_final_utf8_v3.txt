@@ -1,0 +1,14 @@
+﻿
+> @quiz/api-server@0.1.1 lint
+> cross-env ESLINT_USE_FLAT_CONFIG=false eslint --ext .ts,.tsx,.js,.jsx .
+
+
+D:\onlinewebsites\quiz-platform\apps\api-server\src\modules\core\cache.service.ts
+  81:7  warning  Unexpected console statement  no-console
+
+D:\onlinewebsites\quiz-platform\apps\api-server\subject-count-check.ts
+  21:9   warning  Unexpected console statement  no-console
+  23:13  warning  Unexpected console statement  no-console
+
+Γ£û 3 problems (0 errors, 3 warnings)
+

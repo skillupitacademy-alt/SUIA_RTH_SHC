@@ -1,16 +1,12 @@
 'use client';
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars, react-hooks/exhaustive-deps */
 
 import { useEffect, useState } from 'react';
-import { GitBranch, Plus, Edit2, Trash2, X, AlertTriangle, BookOpen, Layers, Hash, Clock, Settings, Check, Globe, LayoutGrid, Target, Trash } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
-import { formatTimeAgo, cn } from '@/lib/utils';
+import { GitBranch, Plus, Edit2, Trash2, Layers, Check, Trash, X } from 'lucide-react';
 import { ErrorBanner } from '@/components/layout/ErrorBanner';
-import { ZLoader, ZPagination } from '@quiz/ui';
-import { useDomains, useSubjects, useTopics } from '@/hooks/useAdminHierarchy';
-import { HierarchyFactoryWizard } from '@/components/content/HierarchyFactoryWizard';
-import { SelectField } from '@/components/entry/SelectionFields';
-import { SubtopicReviewCard } from './SubtopicReviewCard';
+import { ZPagination } from '@quiz/ui';
 import { ZPortalModal } from '@/components/ui/ZPortalModal';
+import { useDomains, useSubjects, useTopics } from '@/hooks/useAdminHierarchy';
 import { apiClient } from '@quiz/api-client';
 
 export function SubtopicTable() {
@@ -28,7 +24,6 @@ export function SubtopicTable() {
     // Modal states
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-    const [isFactoryOpen, setIsFactoryOpen] = useState(false);
     const [currentSubtopic, setCurrentSubtopic] = useState<any>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
 

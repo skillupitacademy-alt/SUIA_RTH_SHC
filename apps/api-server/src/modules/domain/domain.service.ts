@@ -1,5 +1,5 @@
 import { db, domains, subjects, topics, subtopics } from '@quiz/db';
-import { eq, sql, and, inArray } from 'drizzle-orm';
+import { eq, and, inArray } from "drizzle-orm";
 
 export class DomainService {
   static async getAllDomains() {
@@ -15,7 +15,7 @@ export class DomainService {
   }
 
   static async getDomainHierarchy(domainId: string) {
-    return await db.query.domains.findFirst({
+    const result = await db.query.domains.findFirst({
       where: eq(domains.id, domainId),
       with: {
         subjects: {
@@ -33,13 +33,14 @@ export class DomainService {
         }
       }
     });
+    return result ?? null;
   }
 
-  static async createDomain(data: { name: string; description?: string; category?: string }) {
+  static async createDomain(data: typeof domains.$inferInsert) {
     return await db.insert(domains).values(data).returning();
   }
 
-  static async updateDomain(id: string, data: any) {
+  static async updateDomain(id: string, data: Partial<typeof domains.$inferInsert>) {
     return await db.update(domains).set(data).where(eq(domains.id, id)).returning();
   }
 
@@ -60,11 +61,11 @@ export class SubjectService {
     });
   }
 
-  static async createSubject(data: any) {
+  static async createSubject(data: typeof subjects.$inferInsert) {
     return await db.insert(subjects).values(data).returning();
   }
 
-  static async updateSubject(id: string, data: any) {
+  static async updateSubject(id: string, data: Partial<typeof subjects.$inferInsert>) {
     return await db.update(subjects).set(data).where(eq(subjects.id, id)).returning();
   }
 
@@ -93,7 +94,7 @@ export class TopicService {
 
     return results.map(topic => ({
       ...topic,
-      skillName: topic.topicSkills?.[0]?.skill?.name
+      skillName: (topic.topicSkills !== undefined && topic.topicSkills !== null && topic.topicSkills.length > 0) ? topic.topicSkills[0]?.skill?.name : null
     }));
   }
 
@@ -103,11 +104,11 @@ export class TopicService {
     });
   }
 
-  static async createSubtopic(data: any) {
+  static async createSubtopic(data: typeof subtopics.$inferInsert) {
     return await db.insert(subtopics).values(data).returning();
   }
 
-  static async updateSubtopic(id: string, data: any) {
+  static async updateSubtopic(id: string, data: Partial<typeof subtopics.$inferInsert>) {
     return await db.update(subtopics).set(data).where(eq(subtopics.id, id)).returning();
   }
 
@@ -119,11 +120,11 @@ export class TopicService {
     return await db.delete(subtopics).where(inArray(subtopics.id, ids)).returning();
   }
 
-  static async createTopic(data: any) {
+  static async createTopic(data: typeof topics.$inferInsert) {
     return await db.insert(topics).values(data).returning();
   }
 
-  static async updateTopic(id: string, data: any) {
+  static async updateTopic(id: string, data: Partial<typeof topics.$inferInsert>) {
     return await db.update(topics).set(data).where(eq(topics.id, id)).returning();
   }
 

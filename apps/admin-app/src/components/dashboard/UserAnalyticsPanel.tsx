@@ -1,8 +1,9 @@
 'use client';
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { useEffect, useState } from 'react';
 import { apiClient } from '@quiz/api-client';
-import { Users, UserCheck, UserPlus, TrendingUp } from 'lucide-react';
+import { Users, UserCheck, TrendingUp } from 'lucide-react';
 import { ZLoader } from '@quiz/ui';
 
 export function UserAnalyticsPanel() {

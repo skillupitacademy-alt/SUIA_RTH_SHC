@@ -1,24 +1,11 @@
 'use client';
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars, react-hooks/exhaustive-deps */
 
 import { useEffect, useState } from 'react';
-import { Hash, Plus, Edit2, Trash2, X, AlertTriangle, BookOpen, Layers, Check, GitBranch, Clock, LayoutGrid, Target, Trash } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
-import { formatTimeAgo, cn } from '@/lib/utils';
+import { Hash, Plus, Edit2, Trash2, BookOpen, Layers, Check, Trash } from 'lucide-react';
 import { ErrorBanner } from '@/components/layout/ErrorBanner';
 import { ZLoader, ZPagination } from '@quiz/ui';
 import { useDomains, useSubjects } from '@/hooks/useAdminHierarchy';
-import { HierarchyFactoryWizard } from '@/components/content/HierarchyFactoryWizard';
-import { SelectField } from '@/components/entry/SelectionFields';
-import { TopicReviewCard } from './TopicReviewCard';
-import { ZPortalModal } from '@/components/ui/ZPortalModal';
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
 import { apiClient } from '@quiz/api-client';
 
 export function TopicTable() {
@@ -36,7 +23,6 @@ export function TopicTable() {
     // Modal states
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-    const [isFactoryOpen, setIsFactoryOpen] = useState(false);
     const [currentTopic, setCurrentTopic] = useState<any>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
 

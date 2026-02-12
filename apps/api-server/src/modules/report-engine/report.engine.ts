@@ -10,12 +10,22 @@ export interface ActionPlanItem {
   accuracy: number;
 }
 
+interface DimensionResult {
+  dimensionType: string;
+  dimensionId: string | null;
+  name: string | null;
+  score: number;
+  accuracy: number;
+  skills?: string[];
+  id?: string;
+}
+
 class ActionPlanBuilder {
-  static build(results: any[]): ActionPlanItem[] {
+  static build(results: DimensionResult[]): ActionPlanItem[] {
     const skillResults = results.filter(r => r.dimensionType === 'skill');
 
     return skillResults
-      .map(r => {
+      .map((r: DimensionResult) => {
         let priority: ActionPlanItem['priority'] = 'stable';
         let label = 'Verified Mastery';
         let recommendation = 'Proficiency achieved. Continue periodic maintenance.';
@@ -31,11 +41,11 @@ class ActionPlanBuilder {
         }
 
         return {
-          id: r.dimensionId || r.name,
+          id: (r.dimensionId !== null && r.dimensionId !== '') ? r.dimensionId : (r.name !== null && r.name !== '') ? r.name : 'unknown',
           priority,
           label,
-          recommendation,
-          skills: [r.name],
+          recommendation: recommendation,
+          skills: [(r.name !== null && r.name !== '') ? r.name : 'Unknown'],
           accuracy: r.accuracy
         };
       })
@@ -59,16 +69,16 @@ export class ReportEngine {
 
     return {
       examsCompleted: userExams.length,
-      averageScore: userExams.length > 0 ? userExams.reduce((acc, curr) => acc + (curr.totalScore || 0), 0) / userExams.length : 0,
+      averageScore: userExams.length > 0 ? userExams.reduce((acc, curr) => acc + (curr.totalScore !== null ? curr.totalScore : 0), 0) / userExams.length : 0,
       dimensions: userExams.flatMap(e => e.dimensions),
     };
   }
 
-  private static async calculatePercentile(examId: string, blueprintId: string | null, score: number): Promise<number> {
+  private static async calculatePercentile(examId: string, blueprintId: string | null, _score: number): Promise<number> {
     try {
         let whereClause = eq(exams.status, 'completed');
         
-        if (blueprintId) {
+        if (blueprintId !== undefined && blueprintId !== null) {
             whereClause = and(eq(exams.status, 'completed'), eq(exams.blueprintId, blueprintId))!;
         }
 
@@ -93,9 +103,9 @@ export class ReportEngine {
         
         // Let's assume the current exam IS in the list.
         const currentExamWithType = allExams.find(e => e.id === examId);
-        const myScore = currentExamWithType?.totalScore || 0;
+        const myScore = (currentExamWithType !== undefined && currentExamWithType !== null && currentExamWithType.totalScore !== null) ? currentExamWithType.totalScore : 0;
 
-        const lowerScores = allExams.filter(e => (e.totalScore || 0) < myScore).length;
+        const lowerScores = allExams.filter(e => (e.totalScore !== null ? e.totalScore : 0) < myScore).length;
         const percentile = Math.round((lowerScores / allExams.length) * 100);
 
         return Math.max(1, percentile); // Minimum 1st percentile
@@ -118,19 +128,19 @@ export class ReportEngine {
       }
     });
 
-    if (!exam) throw new Error('Exam not found');
+    if (exam === undefined || exam === null) throw new Error('Exam not found');
 
     const results = await db.query.resultsByDimension.findMany({
       where: eq(resultsByDimension.examId, examId),
     });
 
     const totalQuestions = exam.examQuestions.length;
-    const correctAnswers = exam.examQuestions.filter(eq => eq.isCorrect).length;
+    const correctAnswers = exam.examQuestions.filter(eq => eq.isCorrect === true).length;
     const scorePercentage = totalQuestions > 0 ? (correctAnswers / totalQuestions) * 100 : 0;
 
     // Calculate Time Taken
     let timeTaken = "00m 00s";
-    if (exam.completedAt && exam.startedAt) {
+    if ((exam.completedAt !== null && exam.completedAt !== undefined) && (exam.startedAt !== null && exam.startedAt !== undefined)) {
         const diffMs = exam.completedAt.getTime() - exam.startedAt.getTime();
         const diffMins = Math.floor(diffMs / 60000);
         const diffSecs = Math.floor((diffMs % 60000) / 1000);
@@ -156,23 +166,23 @@ export class ReportEngine {
       percentile,
       blueprint: exam.blueprint,
       actionPlan,
-      performance: results.reduce((acc: any, r) => {
-        if (!acc[r.dimensionType]) acc[r.dimensionType] = [];
+      performance: (results as unknown as DimensionResult[]).reduce((acc: Record<string, DimensionResult[]>, r: DimensionResult) => {
+        if (acc[r.dimensionType] === undefined) acc[r.dimensionType] = [];
         acc[r.dimensionType].push({
-          id: r.dimensionId,
+          dimensionId: r.dimensionId,
           name: r.name,
           score: r.score,
           accuracy: r.accuracy
-        });
+        } as DimensionResult);
         return acc;
-      }, {}),
+      }, {} as Record<string, DimensionResult[]>),
       questions: exam.examQuestions.map(eq => ({
         text: eq.question.questionText,
         userAnswer: eq.userAnswer,
         correctAnswer: includeCorrect ? eq.question.correctAnswer : undefined,
         explanation: includeCorrect ? eq.question.explanation : undefined,
         isCorrect: eq.isCorrect,
-        timeSpent: (eq.responseMetadata as any)?.timeSpentSeconds || 0,
+        timeSpent: (eq.responseMetadata as Record<string, unknown>)?.timeSpentSeconds as number || 0,
       }))
     };
   }

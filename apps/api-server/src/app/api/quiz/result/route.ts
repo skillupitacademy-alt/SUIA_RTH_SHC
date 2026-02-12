@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { db, exams } from '@quiz/db';
 import { eq } from 'drizzle-orm';
 import { ReportEngine } from '@/modules/report-engine/report.engine';
@@ -6,16 +7,20 @@ import { TokenService } from '@/modules/auth/token.service';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest) {
   try {
-    const token = TokenService.getAccessToken(req, { scope: 'user' });
-    if (!token) return NextResponse.json({ error: 'Unauthorized', scope: 'user' }, { status: 401 });
+    const _token = TokenService.getAccessToken(_req, { scope: '_user' });
+    if (typeof _token !== 'string' || _token.trim() === '') {
+      return NextResponse.json({ _error: 'Unauthorized', scope: '_user' }, { status: 401 });
+    }
 
-    const payload = await TokenService.verifyAccessToken(token, false);
-    const searchParams = req.nextUrl.searchParams;
+    const _payload = await TokenService.verifyAccessToken(_token, false);
+    const searchParams = _req.nextUrl.searchParams;
     const examId = searchParams.get('examId');
 
-    if (!examId) return NextResponse.json({ error: 'Missing examId' }, { status: 400 });
+    if (typeof examId !== 'string' || examId.trim() === '') {
+      return NextResponse.json({ _error: 'Missing examId' }, { status: 400 });
+    }
 
     // Step 3 Hardening: Query-First Security Check
     const examCheck = await db.query.exams.findFirst({
@@ -27,17 +32,17 @@ export async function GET(req: NextRequest) {
     });
 
     if (!examCheck) {
-        return NextResponse.json({ error: 'Exam session not found' }, { status: 404 });
+        return NextResponse.json({ _error: 'Exam session not found' }, { status: 404 });
     }
 
     // 1. Strict Ownership Check
-    if (examCheck.userId !== payload.userId) {
-      return NextResponse.json({ error: 'Forbidden: You do not own this exam session' }, { status: 403 });
+    if (examCheck.userId !== _payload.userId) {
+      return NextResponse.json({ _error: 'Forbidden: You do not own this exam session' }, { status: 403 });
     }
 
     // 2. Status Gating
     if (examCheck.status === 'started') {
-        return NextResponse.json({ error: 'Exam is still in progress' }, { status: 409 });
+        return NextResponse.json({ _error: 'Exam is still in progress' }, { status: 409 });
     }
     if (examCheck.status === 'processing') {
         return NextResponse.json({ 
@@ -50,11 +55,12 @@ export async function GET(req: NextRequest) {
     const result = await ReportEngine.getExamReport(examId, { includeCorrectAnswers: false });
     
     return NextResponse.json(result);
-  } catch (error: any) {
+  } catch (_error: unknown) {
+    const message = _error instanceof Error ? _error.message : 'Unknown error';
     // 4. Token Errors specifically
-    if (error.message?.includes('token') || error.message?.includes('signature')) {
-        return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
+    if (message.includes('_token') || message.includes('signature')) {
+        return NextResponse.json({ _error: 'Invalid _token' }, { status: 401 });
     }
-    return NextResponse.json({ error: error.message }, { status: 400 });
+    return NextResponse.json({ _error: message }, { status: 400 });
   }
 }

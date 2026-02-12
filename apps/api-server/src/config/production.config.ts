@@ -22,7 +22,7 @@ export const config = {
       httpOnly: false,
       secure: true,
       sameSite: 'lax' as const,
-      domain: process.env.COOKIE_DOMAIN || '.realtutorialhub.com',
+      domain: (process.env.COOKIE_DOMAIN !== undefined && process.env.COOKIE_DOMAIN !== null && process.env.COOKIE_DOMAIN !== '') ? process.env.COOKIE_DOMAIN : '.realtutorialhub.com',
     },
   },
 

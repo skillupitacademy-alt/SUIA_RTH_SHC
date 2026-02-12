@@ -27,6 +27,16 @@ export function ZPortalModal({
     // Apply scroll lock when open
     useScrollLock(isOpen);
 
+    // Allow parent to close modal via Escape key when handler provided
+    useEffect(() => {
+        if (!isOpen || !onClose) return;
+        const onKeyDown = (event: KeyboardEvent) => {
+            if (event.key === 'Escape') onClose();
+        };
+        window.addEventListener('keydown', onKeyDown);
+        return () => window.removeEventListener('keydown', onKeyDown);
+    }, [isOpen, onClose]);
+
     useEffect(() => {
         setMounted(true);
         return () => setMounted(false);

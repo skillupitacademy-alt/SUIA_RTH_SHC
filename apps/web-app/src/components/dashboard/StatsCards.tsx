@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { LucideIcon, TrendingUp, TrendingDown, Info } from 'lucide-react';
 
 interface StatCardProps {

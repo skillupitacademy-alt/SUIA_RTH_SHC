@@ -1,4 +1,4 @@
-﻿import { NextRequest, NextResponse } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
 export const dynamic = 'force-dynamic';
 import { db, exams } from '@quiz/db';
 import { eq } from 'drizzle-orm';
@@ -9,17 +9,17 @@ import { TokenService } from '@/modules/auth/token.service';
  * GET USER REPORTS
  * GET /api/reports
  */
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest) {
   try {
-    const { searchParams } = new URL(req.url);
+    const { searchParams } = new URL(_req.url);
     const id = searchParams.get('id');
 
-    const token = TokenService.getAccessToken(req, { scope: 'user' });
-    if (!token) return NextResponse.json({ error: 'Unauthorized', scope: 'user' }, { status: 401 });
+    const _token = TokenService.getAccessToken(_req, { scope: '_user' });
+    if (_token === undefined || _token === null || _token === '') return NextResponse.json({ _error: 'Unauthorized', scope: '_user' }, { status: 401 });
 
-    const payload = await TokenService.verifyAccessToken(token, false);
+    const _payload = await TokenService.verifyAccessToken(_token, false);
 
-    if (id) {
+    if (id !== null && id !== '') {
        // Step 2 Hardening: Pre-check Ownership & Status
        const examCheck = await db.query.exams.findFirst({
          where: eq(exams.id, id),
@@ -30,17 +30,17 @@ export async function GET(req: NextRequest) {
        });
 
        if (!examCheck) {
-         return NextResponse.json({ error: 'Report not found' }, { status: 404 });
+         return NextResponse.json({ _error: 'Report not found' }, { status: 404 });
        }
 
        // 1. Strict Ownership
-       if (examCheck.userId !== payload.userId) {
-         return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+       if (examCheck.userId !== _payload.userId) {
+         return NextResponse.json({ _error: 'Unauthorized' }, { status: 403 });
        }
 
        // 2. Status Gating
        if (examCheck.status === 'started') {
-         return NextResponse.json({ error: 'Exam in progress' }, { status: 409 });
+         return NextResponse.json({ _error: 'Exam in progress' }, { status: 409 });
        }
        if (examCheck.status === 'processing') {
          // Retry-After header could be added here
@@ -53,10 +53,11 @@ export async function GET(req: NextRequest) {
     }
 
 
-    const report = await ReportEngine.getUserPerformance(payload.userId);
+    const report = await ReportEngine.getUserPerformance(_payload.userId);
     return NextResponse.json(report);
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (_error: unknown) {
+    const errorMessage = _error instanceof Error ? _error.message : 'Failed to generate report';
+    return NextResponse.json({ _error: errorMessage }, { status: 500 });
   }
 }
 

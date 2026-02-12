@@ -1,18 +1,21 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { db, users } from '@quiz/db';
 import { eq } from 'drizzle-orm';
 import { TokenService } from '@/modules/auth/token.service';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest) {
   try {
-    const token = TokenService.getAccessToken(req, { scope: 'user' });
-    if (!token) return NextResponse.json({ error: 'Unauthorized', scope: 'user' }, { status: 401 });
+    const _token = TokenService.getAccessToken(_req);
+    if (typeof _token !== 'string' || _token.trim() === '') {
+      return NextResponse.json({ _error: 'Unauthorized', scope: '_user' }, { status: 401 });
+    }
 
-    const payload = await TokenService.verifyAccessToken(token, false);
-    const user = await db.query.users.findFirst({
-      where: eq(users.id, payload.userId),
+    const _payload = await TokenService.verifyAccessToken(_token, false);
+    const _user = await db.query.users.findFirst({
+      where: eq(users.id, _payload.userId),
       with: {
         profile: true,
         userRoles: {
@@ -23,19 +26,27 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    if (!_user) return NextResponse.json({ _error: 'User not found' }, { status: 404 });
+
+    const onboarded = typeof _user.profile?.professionalStatus === 'string' && 
+                      _user.profile.professionalStatus !== '' && 
+                      typeof _user.profile?.educationLevel === 'string' && 
+                      _user.profile.educationLevel !== '';
 
     return NextResponse.json({
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.profile?.name,
-        onboarded: !!(user.profile?.professionalStatus && user.profile?.educationLevel),
-        roles: user.userRoles.map((ur) => ur.role.name),
+      _user: {
+        id: _user.id,
+        email: _user.email,
+        name: _user.profile?.name,
+        onboarded,
+        professionalStatus: _user.profile?.professionalStatus ?? null,
+        educationLevel: _user.profile?.educationLevel ?? null,
+        roles: _user.userRoles.map((ur) => ur.role.name),
       },
-      expiresAt: TokenService.getExpiration(token),
+      expiresAt: TokenService.getExpiration(_token),
     });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 401 });
+  } catch (_error: unknown) {
+    const message = _error instanceof Error ? _error.message : 'Unauthorized';
+    return NextResponse.json({ _error: message }, { status: 401 });
   }
 }

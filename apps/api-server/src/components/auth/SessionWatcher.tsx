@@ -22,7 +22,7 @@ export function SessionWatcher({ expiresAt, onRefresh, onLogout, isRedirecting }
         try {
             await onRefresh();
             setShowWarning(false);
-        } catch (error) {
+        } catch (_error) {
             onLogout();
         } finally {
             setIsRefreshing(false);
@@ -30,7 +30,7 @@ export function SessionWatcher({ expiresAt, onRefresh, onLogout, isRedirecting }
     };
 
     useEffect(() => {
-        if (!expiresAt) {
+        if (expiresAt === null || expiresAt === undefined || expiresAt === '') {
             setShowWarning(false);
             setRemainingSeconds(null);
             return;
@@ -60,7 +60,7 @@ export function SessionWatcher({ expiresAt, onRefresh, onLogout, isRedirecting }
 
     return (
         <>
-            {isRedirecting && (
+            {(isRedirecting === true) && (
                 <div className="fixed top-6 right-6 z-[10000] animate-in fade-in slide-in-from-right duration-500">
                     <div className="bg-white border-l-4 border-[#FF4B91] px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-4 min-w-[300px]">
                         <div className="h-2 w-2 rounded-full bg-[#FF4B91] animate-pulse" />
@@ -73,9 +73,9 @@ export function SessionWatcher({ expiresAt, onRefresh, onLogout, isRedirecting }
             )}
 
             <ZConfirmationDialog
-                isOpen={showWarning && !isRedirecting}
+                isOpen={showWarning === true && isRedirecting !== true}
                 title="API Terminal Session Expiring"
-                description={`Your secure governance session will expire in ${remainingSeconds ? Math.ceil(remainingSeconds / 60) : 3} minutes. Renew connection?`}
+                description={`Your secure governance session will expire in ${(remainingSeconds !== null && remainingSeconds !== undefined) ? Math.ceil(remainingSeconds / 60) : 3} minutes. Renew connection?`}
                 confirmText={isRefreshing ? "Renewing..." : "Maintain Connection"}
                 cancelText="Terminate Now"
                 onConfirm={handleStayLoggedIn}

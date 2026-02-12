@@ -5,7 +5,6 @@ import { useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuthStore } from '@/store/auth-store';
 import { LogOut, ShieldAlert } from 'lucide-react';
-import { ZLoader } from '@quiz/ui';
 import { apiClient } from '@quiz/api-client';
 
 export function SessionExpiryModal() {

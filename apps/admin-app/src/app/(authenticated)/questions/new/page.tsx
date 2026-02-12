@@ -27,7 +27,7 @@ export default function QuestionEntryPage() {
         if (status?.type === 'error') setStatus(null);
     };
 
-    const handleCreateQuestion = async (formData: any) => {
+    const handleCreateQuestion = async (formData: Record<string, unknown>) => {
         if (!selection.topicId) {
             setStatus({ type: 'error', message: 'Please select at least a Topic in the hierarchy.' });
             return;
@@ -55,8 +55,9 @@ export default function QuestionEntryPage() {
                 setStatus(prev => prev?.type === 'success' ? null : prev);
             }, 6000);
 
-        } catch (err: any) {
-            setStatus({ type: 'error', message: err.message || 'Failed to create question.' });
+        } catch (err: unknown) {
+            const message = err instanceof Error ? err.message : 'Failed to create question.';
+            setStatus({ type: 'error', message });
             const mainContent = document.querySelector('main');
             if (mainContent) mainContent.scrollTo({ top: 0, behavior: 'smooth' });
             else window.scrollTo({ top: 0, behavior: 'smooth' });

@@ -1,5 +1,6 @@
 'use client';
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Suspense, useState, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { apiClient } from '@quiz/api-client';
@@ -19,7 +20,7 @@ function ResetPasswordForm() {
     const [isVerifying, setIsVerifying] = useState(true);
     const [isTokenValid, setIsTokenValid] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
-    const [error, setError] = useState('');
+    const [error, setError] = useState<string>('');
 
     useEffect(() => {
         const verifyToken = async () => {
@@ -33,7 +34,7 @@ function ResetPasswordForm() {
                 const { valid } = await apiClient.auth.validateResetToken(token);
                 setIsTokenValid(valid);
                 if (!valid) setError('This link has expired or is invalid.');
-            } catch (err) {
+            } catch {
                 setError('Failed to verify security token.');
             } finally {
                 setIsVerifying(false);

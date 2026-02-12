@@ -1,20 +1,21 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 export const dynamic = 'force-dynamic';
 import { TokenService } from '@/modules/auth/token.service';
 import { db, users } from '@quiz/db';
 import { eq } from 'drizzle-orm';
 
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest) {
   try {
     // Strictly use Admin Scope
-    const token = TokenService.getAccessToken(req, { scope: 'admin' });
-    if (!token) {
-        return NextResponse.json({ error: 'Unauthorized', scope: 'admin' }, { status: 401 });
+    const _token = TokenService.getAccessToken(_req, { scope: 'admin' });
+    if (_token === null || _token === undefined || _token.trim() === '') {
+        return NextResponse.json({ _error: 'Unauthorized', scope: 'admin' }, { status: 401 });
     }
 
-    const payload = await TokenService.verifyAccessToken(token, true);
-    const user = await db.query.users.findFirst({
-      where: eq(users.id, payload.userId),
+    const _payload = await TokenService.verifyAccessToken(_token, true);
+    const _user = await db.query.users.findFirst({
+      where: eq(users.id, _payload.userId),
       with: {
         profile: true,
         userRoles: {
@@ -23,26 +24,27 @@ export async function GET(req: NextRequest) {
       }
     });
 
-    if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    if (_user === null || _user === undefined) return NextResponse.json({ _error: 'User not found' }, { status: 404 });
 
-    const role = user.userRoles[0]?.role?.name?.toLowerCase() || 'user';
+    const role = _user.userRoles[0]?.role?.name?.toLowerCase() || '_user';
     const isAdmin = role === 'admin' || role === 'super_admin';
 
     if (!isAdmin) {
-        return NextResponse.json({ error: 'Forbidden: Admin access only' }, { status: 403 });
+        return NextResponse.json({ _error: 'Forbidden: Admin access only' }, { status: 403 });
     }
 
     return NextResponse.json({ 
-      user: { 
-        id: user.id, 
-        email: user.email,
-        name: user.profile?.name || 'Admin',
+      _user: { 
+        id: _user.id, 
+        email: _user.email,
+        name: _user.profile?.name || 'Admin',
         role,
         isAdmin
       },
-      expiresAt: TokenService.getExpiration(token)
+      expiresAt: TokenService.getExpiration(_token)
     });
-  } catch (error) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  } catch (_error: unknown) {
+    const message = _error instanceof Error ? _error.message : 'Unauthorized';
+    return NextResponse.json({ _error: message }, { status: 401 });
   }
 }

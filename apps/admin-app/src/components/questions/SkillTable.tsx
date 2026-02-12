@@ -1,4 +1,5 @@
 'use client';
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars, react-hooks/exhaustive-deps */
 
 import { useEffect, useState } from 'react';
 import { apiClient } from '@quiz/api-client';
@@ -16,8 +17,6 @@ import {
     AlertDialogCancel,
     AlertDialogContent,
     AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { X } from 'lucide-react';

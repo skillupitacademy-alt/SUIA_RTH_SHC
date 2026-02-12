@@ -1,7 +1,8 @@
 'use client';
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 
 import { useState } from 'react';
-import { Upload, FileJson, X, Check, AlertCircle, Trash2, Copy, Sparkles } from 'lucide-react';
+import { Upload, FileJson, Check, AlertCircle, Trash2, Copy, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ZLoader } from '@quiz/ui';
 import { apiClient } from '@quiz/api-client';

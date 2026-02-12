@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
 import { TokenService } from './token.service';
 import { cacheService } from '../core/cache.service';
 
@@ -6,28 +6,28 @@ const WINDOW_MS = 15 * 60 * 1000;
 const MAX_IP_REQUESTS = 1000;
 const MAX_USER_REQUESTS = 2000;
 
-export async function rateLimit(request: NextRequest) {
-  const ip = request.headers.get('x-forwarded-for')?.split(',')[0] || 'unknown';
+export async function rateLimit(_request: NextRequest) {
+  const ip = _request.headers.get('x-forwarded-for')?.split(',')[0] ?? 'unknown';
   
   // 1. Resolve Scope & Auth (Absolute Isolation)
-  const path = request.nextUrl.pathname;
-  let scope: 'admin' | 'user' | undefined;
+  const path = _request.nextUrl.pathname;
+  let scope: 'admin' | '_user' | undefined;
 
   if (path.startsWith('/api/admin') || path.startsWith('/api/factory') || path === '/api/migrate') {
     scope = 'admin';
   } else if (path.startsWith('/api/quiz') || path.startsWith('/api/auth') || path.startsWith('/api/reports') || path.startsWith('/api/dashboard')) {
-    scope = 'user';
+    scope = '_user';
   }
 
-  const token = scope ? TokenService.getAccessToken(request, { scope }) : undefined;
+  const _token = scope ? TokenService.getAccessToken(_request, { scope }) : undefined;
   let userId: string | null = null;
   
-  if (token && scope) {
+  if (_token !== undefined && _token !== null && scope !== undefined) {
     try {
-      const payload = await TokenService.verifyAccessToken(token, scope === 'admin');
-      userId = payload.userId;
+      const _payload = await TokenService.verifyAccessToken(_token, scope === 'admin');
+      userId = _payload.userId;
     } catch {
-      // Invalid token, ignore user-based limit
+      // Invalid _token, ignore _user-based limit
     }
   }
 
@@ -39,7 +39,7 @@ export async function rateLimit(request: NextRequest) {
 
     if (ipCount > MAX_IP_REQUESTS) {
       return NextResponse.json(
-        { error: 'Too many requests' }, 
+        { _error: 'Too many requests' }, 
         { 
           status: 429,
           headers: { 'Retry-After': ipTtl.toString() }
@@ -47,13 +47,13 @@ export async function rateLimit(request: NextRequest) {
       );
     }
 
-    if (userId) {
-      const userKey = `ratelimit:user:${userId}`;
+    if (userId !== null) {
+      const userKey = `ratelimit:_user:${userId}`;
       const { count: userCount, ttlRem: userTtl } = await cacheService.increment(userKey, WINDOW_MS);
 
       if (userCount > MAX_USER_REQUESTS) {
         return NextResponse.json(
-          { error: 'User rate limit exceeded' }, 
+          { _error: 'User rate limit exceeded' }, 
           { 
             status: 429,
             headers: { 'Retry-After': userTtl.toString() }
@@ -61,9 +61,9 @@ export async function rateLimit(request: NextRequest) {
         );
       }
     }
-  } catch (error) {
-    console.error('[RateLimit] Error processing limits:', error);
-    // Graceful fallback: Allow request if limiter fails
+  } catch (_error) {
+    console.error('[RateLimit] Error processing limits:', _error);
+    // Graceful fallback: Allow _request if limiter fails
   }
 
   return null;

@@ -1,54 +1,58 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { AdminEngine } from '@/modules/admin-engine/admin.engine';
+import type { DomainInsert } from '@/modules/admin-engine/admin.engine';
 import { TokenService } from '@/modules/auth/token.service';
-import { verifyAdmin } from '@/modules/auth/rbac.service';
+import { _verifyAdmin } from '@/modules/auth/rbac.service';
 
 export async function PATCH(
-  req: NextRequest,
+  _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params;
-    const token = TokenService.getAccessToken(req, { scope: 'admin' });
-    if (!token) {
-      return NextResponse.json({ error: 'Unauthorized', scope: 'admin' }, { status: 401 });
+    const _token = TokenService.getAccessToken(_req, { scope: 'admin' });
+    if (_token === null || _token === undefined || _token.trim() === '') {
+      return NextResponse.json({ _error: 'Unauthorized', scope: 'admin' }, { status: 401 });
     }
-    const payload = await TokenService.verifyAccessToken(token, true);
+    const _payload = await TokenService.verifyAccessToken(_token, true);
 
-    if (!(await verifyAdmin(payload))) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    if (!(await _verifyAdmin(_payload))) {
+      return NextResponse.json({ _error: 'Forbidden' }, { status: 403 });
     }
 
-    const body = await req.json();
-    const result = await AdminEngine.updateDomain(id, body, payload.userId);
+    const body = await _req.json() as Partial<DomainInsert>;
+    const result = await AdminEngine.updateDomain(id, body, _payload.userId);
     
     return NextResponse.json(result);
-  } catch (error: any) {
-    console.error('[ADMIN_DOMAIN_PATCH] Error:', error.message);
-    return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
+  } catch (_error: unknown) {
+    const message = _error instanceof Error ? _error.message : 'Internal Server Error';
+    console.error('[ADMIN_DOMAIN_PATCH] Error:', message);
+    return NextResponse.json({ _error: message }, { status: 500 });
   }
 }
 
 export async function DELETE(
-  req: NextRequest,
+  _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params;
-    const token = TokenService.getAccessToken(req, { scope: 'admin' });
-    if (!token) {
-      return NextResponse.json({ error: 'Unauthorized', scope: 'admin' }, { status: 401 });
+    const _token = TokenService.getAccessToken(_req, { scope: 'admin' });
+    if (_token === null || _token === undefined || _token.trim() === '') {
+      return NextResponse.json({ _error: 'Unauthorized', scope: 'admin' }, { status: 401 });
     }
-    const payload = await TokenService.verifyAccessToken(token, true);
+    const _payload = await TokenService.verifyAccessToken(_token, true);
 
-    if (!(await verifyAdmin(payload))) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    if (!(await _verifyAdmin(_payload))) {
+      return NextResponse.json({ _error: 'Forbidden' }, { status: 403 });
     }
 
-    const result = await AdminEngine.deleteDomain(id, payload.userId);
+    const result = await AdminEngine.deleteDomain(id, _payload.userId);
     return NextResponse.json(result);
-  } catch (error: any) {
-    console.error('[ADMIN_DOMAIN_DELETE] Error:', error.message);
-    return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
+  } catch (_error: unknown) {
+    const message = _error instanceof Error ? _error.message : 'Internal Server Error';
+    console.error('[ADMIN_DOMAIN_DELETE] Error:', message);
+    return NextResponse.json({ _error: message }, { status: 500 });
   }
 }

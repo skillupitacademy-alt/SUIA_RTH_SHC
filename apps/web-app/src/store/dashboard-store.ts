@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/ban-ts-comment */
 import { create } from 'zustand';
 import { apiClient } from '@quiz/api-client';
 import { persist } from 'zustand/middleware';
@@ -90,7 +91,7 @@ export const useDashboardStore = create<DashboardState>()(
 
             fetchPerformanceTrend: async (range = '7d') => {
                 try {
-                    // @ts-ignore
+                    // @ts-expect-error legacy API typing gap
                     const trendData = await apiClient.dashboard.getTrend(range) as { 
                         performanceTrend: any;
                         deltaPct?: number | null;

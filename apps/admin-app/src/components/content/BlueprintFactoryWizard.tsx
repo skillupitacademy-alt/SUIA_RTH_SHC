@@ -1,4 +1,5 @@
 'use client';
+/* eslint-disable @typescript-eslint/no-explicit-any, react-hooks/exhaustive-deps */
 
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
@@ -103,8 +104,9 @@ export function BlueprintFactoryWizard({ isOpen, onClose, domainId, domainName, 
             await apiClient.admin.createBlueprint(payload);
             setSuccess(true);
             if (onSuccess) onSuccess();
-        } catch (err: any) {
-            setError(err.message || "Failed to create blueprint. Please verify your configuration.");
+        } catch (err: unknown) {
+            const message = err instanceof Error ? err.message : "Failed to create blueprint. Please verify your configuration.";
+            setError(message);
         } finally {
             setIsProcessing(false);
         }

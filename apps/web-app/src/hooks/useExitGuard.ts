@@ -52,7 +52,7 @@ export function useExitGuard({ enabled, message }: UseExitGuardOptions): UseExit
             historyPushedRef.current = true;
         }
 
-        const handlePopState = (e: PopStateEvent) => {
+        const handlePopState = () => {
             // User pressed back button
             if (enabled && !isExitingRef.current) {
                 // Re-push state to stay on page

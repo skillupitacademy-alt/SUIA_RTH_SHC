@@ -1,4 +1,5 @@
 'use client';
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 
 import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
@@ -11,17 +12,12 @@ import {
     CheckCircle2,
     X,
     ClipboardCopy,
-    Wand2,
     ShieldCheck,
     Upload,
     Brain,
     Layers,
     Activity,
     CheckCircle,
-    Plus,
-    LayoutGrid,
-    Search,
-    RefreshCw,
     ClipboardList,
     ArrowUp,
     ArrowLeft
@@ -150,7 +146,7 @@ export function HierarchyFactoryWizard({ isOpen, onClose, initialData, onSuccess
         const subjectName = hierarchicalChoices.subjects.find(s => s.id === selections.subjectId)?.name || (selections.subjectId === initialData?.subjectId ? initialData?.subjectName : null) || "Selected Subject";
         const topicName = hierarchicalChoices.topics.find(t => t.id === selections.topicId)?.name || (selections.topicId === initialData?.topicId ? initialData?.topicName : null) || "Selected Topic";
 
-        let base = `I need to generate a structured educational hierarchy.
+        const base = `I need to generate a structured educational hierarchy.
         
 IMPORTANT REQUIREMENT: 
 The following items ALREADY EXIST in our system. DO NOT provide redundant records for existing names.

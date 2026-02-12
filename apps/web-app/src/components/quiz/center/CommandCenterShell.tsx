@@ -1,9 +1,7 @@
 'use client';
 
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { X, Command } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { X } from 'lucide-react';
 // import { GlobalSearchDialog } from '@/components/common/GlobalSearchDialog'; // Removed as per instruction
 
 interface CommandCenterShellProps {

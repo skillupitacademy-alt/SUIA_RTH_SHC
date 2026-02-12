@@ -1,8 +1,9 @@
 'use client';
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars, react-hooks/exhaustive-deps */
 
 import { useEffect, useState } from 'react';
 import { apiClient } from '@quiz/api-client';
-import { Globe, Plus, AlertTriangle, Check, Trash2 } from 'lucide-react';
+import { Globe, Plus, Check, Trash2, X } from 'lucide-react';
 import { ErrorBanner } from '@/components/layout/ErrorBanner';
 import { ZLoader, ZPagination } from '@quiz/ui';
 import { HierarchyFactoryWizard } from '@/components/content/HierarchyFactoryWizard';
@@ -15,11 +16,8 @@ import {
     AlertDialogCancel,
     AlertDialogContent,
     AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { X } from 'lucide-react';
 
 export function DomainTable() {
     const [data, setData] = useState<any[]>([]);

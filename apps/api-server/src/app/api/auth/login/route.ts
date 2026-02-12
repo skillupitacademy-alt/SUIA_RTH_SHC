@@ -1,33 +1,46 @@
-import { NextRequest, NextResponse } from 'next/server';
-export const dynamic = 'force-dynamic';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { AuthService } from '@/modules/auth/auth.service';
 import { setCsrfToken } from '@/modules/auth/csrf.middleware';
 
-export async function POST(req: NextRequest) {
+export const dynamic = 'force-dynamic';
+
+interface LoginRequest {
+  email?: string;
+  password?: string;
+}
+
+export async function POST(_req: NextRequest) {
   try {
-    const { email, password } = await req.json();
+    const { email, password } = (await _req.json()) as LoginRequest;
 
-    const { user, accessToken, refreshToken, isAdmin } = await AuthService.login(email, password);
+    if (email === undefined || email === null || email === '' || password === undefined || password === null || password === '') {
+      return NextResponse.json({ _error: 'Credentials required' }, { status: 400 });
+    }
 
-    const onboarded = !!(user.profile?.professionalStatus && user.profile?.educationLevel);
+    const { _user, accessToken, refreshToken, isAdmin } = await AuthService.login(email, password);
+
+    const onboarded = Boolean(
+      (_user.profile?.professionalStatus !== undefined && _user.profile?.professionalStatus !== null && _user.profile?.professionalStatus !== '') && 
+      (_user.profile?.educationLevel !== undefined && _user.profile?.educationLevel !== null && _user.profile?.educationLevel !== '')
+    );
 
     const response = NextResponse.json({
-      user: { 
-        id: user.id, 
-        email: user.email,
-        name: user.profile?.name || 'User',
+      _user: { 
+        id: _user.id, 
+        email: _user.email,
+        name: _user.profile?.name ?? 'User',
         onboarded,
-        role: isAdmin ? 'admin' : 'user',
+        role: isAdmin === true ? 'admin' : '_user',
         isAdmin
       },
       // accessToken removed from body
     });
 
-    const cookieDomain = process.env.COOKIE_DOMAIN || '.realtutorialhub.com';
-    const isProd = process.env.NODE_ENV === 'production';
+    const cookieDomain = process.env.COOKIE_DOMAIN ?? undefined;
 
     // Set HttpOnly cookies for Access Token
-    const accessTokenCookieName = isAdmin ? 'admin_accessToken' : 'accessToken';
+    const accessTokenCookieName = isAdmin === true ? 'admin_accessToken' : 'accessToken';
     response.cookies.set(accessTokenCookieName, accessToken, {
       httpOnly: true,
       secure: true, // Always true for cross-domain stability
@@ -38,8 +51,8 @@ export async function POST(req: NextRequest) {
     });
 
     // Set HttpOnly cookies for Refresh Token
-    const refreshCookieName = isAdmin ? 'admin_refreshToken' : 'refreshToken';
-    const refreshMaxAge = isAdmin ? 24 * 60 * 60 : 7 * 24 * 60 * 60; // 24h for admin, 7d for user
+    const refreshCookieName = isAdmin === true ? 'admin_refreshToken' : 'refreshToken';
+    const refreshMaxAge = isAdmin === true ? 24 * 60 * 60 : 7 * 24 * 60 * 60; // 24h for admin, 7d for _user
     response.cookies.set(refreshCookieName, refreshToken, {
       httpOnly: true,
       secure: true,
@@ -52,7 +65,7 @@ export async function POST(req: NextRequest) {
     setCsrfToken(response);
 
     return response;
-  } catch (error: any) {
-    return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
+  } catch (_error: unknown) {
+    return NextResponse.json({ _error: 'Invalid credentials' }, { status: 401 });
   }
 }

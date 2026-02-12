@@ -1,4 +1,5 @@
 'use client';
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { useEffect, useState, Suspense } from "react";
 import { ResultSummary } from "@/components/reports/ResultSummary";

@@ -1,33 +1,43 @@
-﻿import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { AdminEngine } from '@/modules/admin-engine/admin.engine';
+import type { CreateQuestionInput } from '@/modules/admin-engine/admin.engine';
 import { TokenService } from '@/modules/auth/token.service';
-import { verifyAdmin } from '@/modules/auth/rbac.service';
+import { _verifyAdmin } from '@/modules/auth/rbac.service';
 
 export const dynamic = 'force-dynamic';
 
-export async function POST(req: NextRequest) {
+type BulkQuestionBody = {
+  topicId: string;
+  subtopicId?: string;
+  skillId?: string;
+  skillIds?: string[];
+  questions: CreateQuestionInput[];
+};
+
+export async function POST(_req: NextRequest) {
   try {
-    const token = TokenService.getAccessToken(req, { scope: 'admin' });
-    if (!token) {
-      return NextResponse.json({ error: 'Unauthorized', scope: 'admin' }, { status: 401 });
+    const _token = TokenService.getAccessToken(_req, { scope: 'admin' });
+    if (_token === null || _token === undefined || _token.trim() === '') {
+      return NextResponse.json({ _error: 'Unauthorized', scope: 'admin' }, { status: 401 });
     }
 
-    const payload = await TokenService.verifyAccessToken(token, true);
+    const _payload = await TokenService.verifyAccessToken(_token, true);
 
-    if (!(await verifyAdmin(payload))) {
-        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    if (!(await _verifyAdmin(_payload))) {
+        return NextResponse.json({ _error: 'Forbidden' }, { status: 403 });
     }
 
-    const { topicId, subtopicId, skillId, skillIds, questions } = await req.json();
+    const { topicId, subtopicId, skillId, skillIds, questions } = await _req.json() as BulkQuestionBody;
 
-    if (!topicId || !Array.isArray(questions)) {
-        return NextResponse.json({ error: 'Missing required fields: topicId and questions array' }, { status: 400 });
+    if (topicId === null || topicId === undefined || topicId.trim() === '' || !Array.isArray(questions)) {
+        return NextResponse.json({ _error: 'Missing required fields: topicId and questions array' }, { status: 400 });
     }
 
     const result = await AdminEngine.bulkCreateQuestionsWithContext(
         questions, 
         { topicId, subtopicId, skillId, skillIds }, 
-        payload.userId
+        _payload.userId
     );
     
     return NextResponse.json({ 
@@ -35,9 +45,10 @@ export async function POST(req: NextRequest) {
         count: result.length,
         message: `Successfully uploaded ${result.length} questions` 
     });
-  } catch (error: any) {
-    console.error('[ADMIN_QUESTIONS_BULK] Error:', error.message);
-    return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
+  } catch (_error: unknown) {
+    const message = _error instanceof Error ? _error.message : 'Internal Server Error';
+    console.error('[ADMIN_QUESTIONS_BULK] Error:', message);
+    return NextResponse.json({ _error: message }, { status: 500 });
   }
 }
 

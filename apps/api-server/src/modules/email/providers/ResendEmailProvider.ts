@@ -1,7 +1,7 @@
 import { Resend } from 'resend';
-import { EmailProvider, SendEmailOptions } from '../EmailProvider';
+import type { IEmailProvider, EmailOptions } from '../types';
 
-export class ResendEmailProvider implements EmailProvider {
+export class ResendEmailProvider implements IEmailProvider {
   private resend: Resend;
   private from: string;
 
@@ -10,7 +10,7 @@ export class ResendEmailProvider implements EmailProvider {
     this.from = from;
   }
 
-  async sendEmail(options: SendEmailOptions): Promise<void> {
+  async sendEmail(options: EmailOptions): Promise<void> {
     try {
       await this.resend.emails.send({
         from: this.from,
@@ -18,17 +18,17 @@ export class ResendEmailProvider implements EmailProvider {
         subject: options.subject,
         html: options.html,
       });
-    } catch (error: any) {
-      // We do not throw as per contract "Never throw user-visible errors due to email failure"
+    } catch (_error: unknown) {
+      // We do not throw as per contract "Never throw _user-visible errors due to email failure"
     }
   }
 
-  async sendPasswordResetEmail(email: string, resetUrl: string): Promise<void> {
+  async sendPasswordReset(email: string, resetUrl: string): Promise<void> {
     const html = `
       <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; rounded: 12px;">
         <h2 style="color: #0f172a; font-size: 24px; font-weight: 800; margin-bottom: 24px;">Reset your password</h2>
         <p style="color: #475569; line-height: 1.6; margin-bottom: 24px;">
-          We received a request to reset the password for your account. If you didn't make this request, you can safely ignore this email.
+          We received a _request to reset the password for your account. If you didn't make this _request, you can safely ignore this email.
         </p>
         <a href="${resetUrl}" style="display: inline-block; background-color: #2563eb; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: 700; margin-bottom: 24px;">
           Reset password

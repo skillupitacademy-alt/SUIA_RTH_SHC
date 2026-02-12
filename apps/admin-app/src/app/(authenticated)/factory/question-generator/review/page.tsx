@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { FactoryLayout } from '@/components/layout/FactoryLayout';
-import { FactoryProvider, useFactory } from '@/context/FactoryContext';
+import { useFactory } from '@/context/FactoryContext';
 import { ChevronLeft, Info } from 'lucide-react';
 import Link from 'next/link';
 import { ReviewConsole } from '@/components/factory/review/ReviewConsole';

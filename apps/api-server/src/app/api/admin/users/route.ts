@@ -1,37 +1,39 @@
-﻿import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { AdminEngine } from '@/modules/admin-engine/admin.engine';
 import { TokenService } from '@/modules/auth/token.service';
-import { verifyAdmin } from '@/modules/auth/rbac.service';
+import { _verifyAdmin } from '@/modules/auth/rbac.service';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest) {
   try {
-    const token = TokenService.getAccessToken(req, { scope: 'admin' });
-    if (!token) {
-      return NextResponse.json({ error: 'Unauthorized', scope: 'admin' }, { status: 401 });
+    const _token = TokenService.getAccessToken(_req, { scope: 'admin' });
+    if (_token === null || _token === undefined || _token.trim() === '') {
+      return NextResponse.json({ _error: 'Unauthorized', scope: 'admin' }, { status: 401 });
     }
-    const payload = await TokenService.verifyAccessToken(token, true);
+    const _payload = await TokenService.verifyAccessToken(_token, true);
     
-    const searchParams = req.nextUrl.searchParams;
-    const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '20');
-    const status = searchParams.get('status') as 'active' | 'deleted' || 'active';
+    const searchParams = _req.nextUrl.searchParams;
+    const page = parseInt(searchParams.get('page') ?? '1');
+    const limit = parseInt(searchParams.get('limit') ?? '20');
+    const status = (searchParams.get('status') as 'active' | 'deleted') ?? 'active';
     
     // New Filters
-    const search = searchParams.get('search') || undefined;
-    const role = searchParams.get('role') || undefined;
+    const search = searchParams.get('search') ?? undefined;
+    const role = searchParams.get('role') ?? undefined;
     const isBlockedParam = searchParams.get('isBlocked');
     const isBlocked = isBlockedParam === 'true' ? true : isBlockedParam === 'false' ? false : undefined;
     const isVerifiedParam = searchParams.get('isVerified');
     const isVerified = isVerifiedParam === 'true' ? true : isVerifiedParam === 'false' ? false : undefined;
-    const xStatus = searchParams.get('xStatus') || undefined;
+    const xStatus = searchParams.get('xStatus') ?? undefined;
 
     const data = await AdminEngine.getUsers(page, limit, status, { search, role, isBlocked, isVerified, status: xStatus });
     return NextResponse.json(data);
-  } catch (error: any) {
-    console.error('[ADMIN_USERS] Error:', error.message);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+  } catch (_error: unknown) {
+    const message = _error instanceof Error ? _error.message : 'Internal Server Error';
+    console.error('[ADMIN_USERS] Error:', message);
+    return NextResponse.json({ _error: 'Internal Server Error' }, { status: 500 });
   }
 }
 

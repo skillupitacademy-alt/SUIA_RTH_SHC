@@ -1,5 +1,5 @@
 import { db, questions, questionSkills } from '@quiz/db';
-import { eq, and, inArray, sql, desc } from 'drizzle-orm';
+import { eq, inArray, sql, desc } from 'drizzle-orm';
 
 export class QuestionService {
   static async getAllQuestions() {
@@ -8,7 +8,19 @@ export class QuestionService {
     });
   }
 
-  static async createQuestion(data: any, skillIds: string[] = []) {
+  static async createQuestion(data: {
+    topicId: string;
+    subtopicId?: string;
+    difficulty: "simple" | "intermediate" | "expert";
+    type: "mcq" | "code_mcq";
+    questionText: string;
+    options: unknown;
+    correctAnswer: string;
+    explanation?: string;
+    codeSnippet?: string;
+    metadata?: unknown;
+    status?: "active" | "inactive" | "draft";
+  }, skillIds: string[] = []) {
     // 1. Insert Question
     const [insertedQuestion] = await db.insert(questions).values(data).returning();
 
@@ -31,16 +43,28 @@ export class QuestionService {
     });
   }
 
-  static async bulkCreateQuestions(questionsList: any[], mappings: { questionIndex: number, skillIds: string[] }[]) {
+  static async bulkCreateQuestions(questionsList: {
+    topicId: string;
+    subtopicId?: string;
+    difficulty: "simple" | "intermediate" | "expert";
+    type: "mcq" | "code_mcq";
+    questionText: string;
+    options: unknown;
+    correctAnswer: string;
+    explanation?: string;
+    codeSnippet?: string;
+    metadata?: unknown;
+    status?: "active" | "inactive" | "draft";
+  }[], mappings: { questionIndex: number, skillIds: string[] }[]) {
     // 1. Insert All Questions
     const insertedQuestions = await db.insert(questions).values(questionsList).returning();
     
     // 2. Map inserted IDs back to skills based on index order
-    const skillInserts: any[] = [];
+    const skillInserts: { questionId: string; skillId: string }[] = [];
     
     mappings.forEach(m => {
         const questionId = insertedQuestions[m.questionIndex]?.id;
-        if (questionId && m.skillIds.length > 0) {
+        if (questionId !== undefined && m.skillIds.length > 0) {
             m.skillIds.forEach(skillId => {
                 skillInserts.push({ questionId, skillId });
             });
@@ -64,28 +88,40 @@ export class QuestionService {
       .where(eq(questions.topicId, topicId))
       .groupBy(questions.difficulty);
 
-    const simple = counts.find(c => c.difficulty === 'simple')?.count || 0;
-    const intermediate = counts.find(c => c.difficulty === 'intermediate')?.count || 0;
-    const expert = counts.find(c => c.difficulty === 'expert')?.count || 0;
+    const simpleCount = (counts.find(c => c.difficulty === 'simple')?.count !== undefined) ? counts.find(c => c.difficulty === 'simple')!.count : 0;
+    const intermediateCount = (counts.find(c => c.difficulty === 'intermediate')?.count !== undefined) ? counts.find(c => c.difficulty === 'intermediate')!.count : 0;
+    const expertCount = (counts.find(c => c.difficulty === 'expert')?.count !== undefined) ? counts.find(c => c.difficulty === 'expert')!.count : 0;
 
-    const total = simple + intermediate + expert;
-    const isReady = total >= 13 && simple >= 4 && intermediate >= 4 && expert >= 5;
+    const total = simpleCount + intermediateCount + expertCount;
+    const isReady = total >= 13 && simpleCount >= 4 && intermediateCount >= 4 && expertCount >= 5;
 
     return {
       topicId,
       total,
-      distribution: { simple, intermediate, expert },
+      distribution: { simple: simpleCount, intermediate: intermediateCount, expert: expertCount },
       isReady,
       missing: {
-        simple: Math.max(0, 4 - simple),
-        intermediate: Math.max(0, 4 - intermediate),
-        expert: Math.max(0, 5 - expert),
+        simple: Math.max(0, 4 - simpleCount),
+        intermediate: Math.max(0, 4 - intermediateCount),
+        expert: Math.max(0, 5 - expertCount),
         total: Math.max(0, 13 - total)
       }
     };
   }
 
-  static async updateQuestion(id: string, data: any, skillIds?: string[]) {
+  static async updateQuestion(id: string, data: Partial<{
+    topicId: string;
+    subtopicId?: string;
+    difficulty: "simple" | "intermediate" | "expert";
+    type: "mcq" | "code_mcq";
+    questionText: string;
+    options: unknown;
+    correctAnswer: string;
+    explanation?: string;
+    codeSnippet?: string;
+    metadata?: unknown;
+    status?: "active" | "inactive" | "draft";
+  }>, skillIds?: string[]) {
     // 1. Update Question
     const [updatedQuestion] = await db.update(questions)
       .set(data)

@@ -1,10 +1,10 @@
 'use client';
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { ChevronDown, Plus, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ZLoader, SelectField as SharedSelectField, SelectFieldProps as SharedSelectFieldProps } from '@quiz/ui';
 
-export interface SelectFieldProps extends SharedSelectFieldProps { }
+export type SelectFieldProps = SharedSelectFieldProps;
 
 export function SelectField(props: SelectFieldProps) {
     return <SharedSelectField {...props} />;

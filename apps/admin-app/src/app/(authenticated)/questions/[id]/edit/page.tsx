@@ -1,11 +1,11 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { apiClient } from '@quiz/api-client';
 import { QuestionEditor } from '@/components/entry/QuestionEditor';
 import { CascadingSelect, Selection } from '@/components/entry/CascadingSelect';
-import { Database, ArrowLeft, CheckCircle2, AlertCircle, X, Edit3 } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, AlertCircle, X, Edit3 } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { ZLoader } from '@quiz/ui';
@@ -14,7 +14,7 @@ export default function EditQuestionPage() {
     const params = useParams();
     const router = useRouter();
 
-    const [question, setQuestion] = useState<any>(null);
+    const [question, setQuestion] = useState<Record<string, unknown> | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const [status, setStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
@@ -43,7 +43,7 @@ export default function EditQuestionPage() {
                     const subtopicId = data.subtopicId || data.subtopic_id || null;
 
                     // Extract Skill IDs from the junction table relation
-                    const skillIds = data.questionSkills?.map((qs: any) => qs.skillId || qs.skill_id) || [];
+                    const skillIds = data.questionSkills?.map((qs: { skillId?: string; skill_id?: string }) => qs.skillId || qs.skill_id) || [];
 
                     setSelection({
                         domainId,
@@ -53,7 +53,7 @@ export default function EditQuestionPage() {
                         skillIds: Array.isArray(skillIds) ? skillIds : []
                     });
                 }
-            } catch (error: any) {
+            } catch {
                 setStatus({ type: 'error', message: 'Failed to load assessment data.' });
             } finally {
                 setIsLoading(false);
@@ -62,11 +62,7 @@ export default function EditQuestionPage() {
         fetchQuestion();
     }, [params.id]);
 
-    const handleSelectionChange = useCallback((newSelection: Selection) => {
-        setSelection(newSelection);
-    }, []);
-
-    const handleSubmit = async (formData: any) => {
+    const handleSubmit = async (formData: Record<string, unknown>) => {
         if (!selection.topicId) {
             setStatus({ type: 'error', message: 'Please select at least a Topic in the hierarchy.' });
             return;
@@ -89,8 +85,9 @@ export default function EditQuestionPage() {
             setTimeout(() => {
                 router.push('/questions');
             }, 2000);
-        } catch (error: any) {
-            setStatus({ type: 'error', message: error.message || 'Failed to update assessment.' });
+        } catch (error: unknown) {
+            const message = error instanceof Error ? error.message : 'Failed to update assessment.';
+            setStatus({ type: 'error', message });
             setIsSaving(false);
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
@@ -178,6 +175,7 @@ export default function EditQuestionPage() {
                                 initialData={{
                                     text: question.questionText || question.question_text,
                                     type: question.type === 'mcq' || question.type === 'single' ? 'single' : 'multiple',
+                                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                     options: question.options?.map((o: any) => ({
                                         id: o.id,
                                         text: o.text || o.optionText || o.option_text || '',

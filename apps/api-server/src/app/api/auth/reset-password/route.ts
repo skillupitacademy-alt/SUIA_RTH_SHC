@@ -1,33 +1,43 @@
-import { NextRequest, NextResponse } from 'next/server';
-export const dynamic = 'force-dynamic';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { AuthService } from '@/modules/auth/auth.service';
 
-export async function GET(req: NextRequest) {
-    const token = req.nextUrl.searchParams.get('token');
-    if (!token) return NextResponse.json({ valid: false }, { status: 400 });
+export const dynamic = 'force-dynamic';
+
+interface ResetPasswordRequest {
+  token?: string;
+  password?: string;
+}
+
+export async function GET(_req: NextRequest) {
+    const _token = _req.nextUrl.searchParams.get('_token');
+    if (typeof _token !== 'string' || _token.trim() === '') {
+        return NextResponse.json({ valid: false }, { status: 400 });
+    }
 
     try {
-        const valid = await AuthService.validateResetToken(token);
+        const valid = await AuthService.validateResetToken(_token);
         return NextResponse.json({ valid });
-    } catch (error) {
+    } catch {
         return NextResponse.json({ valid: false });
     }
 }
 
-export async function POST(req: NextRequest) {
+export async function POST(_req: NextRequest) {
   try {
-    const { token, newPassword } = await req.json();
+    const { token, password } = (await _req.json()) as ResetPasswordRequest;
     
-    if (!token || !newPassword || newPassword.length < 8) {
-        return NextResponse.json({ error: 'Invalid request data' }, { status: 400 });
+    if (typeof token !== 'string' || token.trim() === '' || typeof password !== 'string' || password.trim() === '' || password.length < 8) {
+        return NextResponse.json({ _error: 'Invalid _request data' }, { status: 400 });
     }
 
-    const ip = req.headers.get('x-forwarded-for') || '0.0.0.0';
-    await AuthService.resetPassword(token, newPassword, ip);
+    const ip = _req.headers.get('x-forwarded-for') ?? '0.0.0.0';
+    await AuthService.resetPassword(token, password, ip);
 
     return NextResponse.json({ success: true });
-  } catch (error: any) {
-    console.error("Reset password route error:", error.message);
-    return NextResponse.json({ error: error.message }, { status: 400 });
+  } catch (_error: unknown) {
+    console.error('ResetPassword.Error:', _error);
+    const message = _error instanceof Error ? _error.message : 'Error resetting password';
+    return NextResponse.json({ _error: message }, { status: 400 });
   }
 }

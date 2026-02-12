@@ -1,9 +1,9 @@
 'use client';
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { useEffect, useState } from 'react';
 import { apiClient } from '@quiz/api-client';
-import { Database, Server, Mail, Cloud, AlertCircle, CheckCircle2, XCircle, RefreshCw } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { Database, Server, Mail, Cloud, AlertCircle, CheckCircle2, RefreshCw } from 'lucide-react';
 
 interface ServiceMetric {
     status: 'ok' | 'warning' | 'error' | 'not_configured';
@@ -128,8 +128,6 @@ function HealthCard({ title, icon: Icon, data, loading, type }: { title: string,
         if (s === 'error') return 'text-destructive';
         return 'text-muted-foreground';
     };
-
-    const StatusIcon = status === 'ok' ? CheckCircle2 : status === 'not_configured' ? AlertCircle : XCircle;
 
     return (
         <div className="p-6 rounded-[1.5rem] border bg-muted/5 backdrop-blur-sm relative overflow-hidden group hover:border-primary/20 transition-all">

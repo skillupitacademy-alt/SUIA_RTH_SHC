@@ -12,9 +12,10 @@ export default function TrendsPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    const [summary, setSummary] = useState<any>(null);
-    const [scores, setScores] = useState<any[]>([]);
-    const [skills, setSkills] = useState<any[]>([]);
+    type TrendSummary = { totalExams: number } & Record<string, unknown>;
+    const [summary, setSummary] = useState<TrendSummary | null>(null);
+    const [scores, setScores] = useState<unknown[]>([]);
+    const [skills, setSkills] = useState<unknown[]>([]);
 
     const fetchData = async (selectedRange: string) => {
         setLoading(true);
@@ -30,9 +31,10 @@ export default function TrendsPage() {
             setSummary(summaryRes);
             setScores(scoresRes?.scores || []);
             setSkills(skillsRes?.skills || []);
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error('[TrendsPage] Fetch error:', err);
-            setError(err.message || 'Failed to load trends data');
+            const message = err instanceof Error ? err.message : 'Failed to load trends data';
+            setError(message);
         } finally {
             setLoading(false);
         }

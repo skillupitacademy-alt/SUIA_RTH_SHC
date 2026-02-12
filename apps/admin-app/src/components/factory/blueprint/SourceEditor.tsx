@@ -2,7 +2,6 @@
 
 import React from 'react';
 import { Code2, ArrowUp, FileText } from 'lucide-react';
-import { cn } from '@/lib/utils';
 
 interface SourceEditorProps {
     value: string;

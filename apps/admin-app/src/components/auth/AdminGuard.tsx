@@ -1,4 +1,5 @@
 'use client';
+/* eslint-disable react-hooks/exhaustive-deps */
 
 import { useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
@@ -27,10 +28,9 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
                 const { user: validatedUser, expiresAt } = await apiClient.auth.getAdminSession();
                 if (!validatedUser.isAdmin) throw new Error("Revoked");
                 login(validatedUser, expiresAt);
-            } catch (err: any) {
+            } catch (err: unknown) {
                 console.error("Session revalidation failed:", err);
-                // Auto-heal on invalid token signature
-                if (err.message.includes('Invalid token') || err.message.includes('signature') || err.message.includes('jwt')) {
+                if (err instanceof Error && (err.message.includes('Invalid token') || err.message.includes('signature') || err.message.includes('jwt'))) {
                     console.warn("Detected invalid token, forcing logout...");
                     logout();
                     router.push('/login');

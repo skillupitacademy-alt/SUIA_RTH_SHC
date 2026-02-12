@@ -1,0 +1,42 @@
+﻿
+> @quiz/api-server@0.1.1 lint
+> cross-env ESLINT_USE_FLAT_CONFIG=false eslint --ext .ts,.tsx,.js,.jsx .
+
+
+D:\onlinewebsites\quiz-platform\apps\api-server\src\modules\core\cache.service.ts
+  81:7  warning  Unexpected console statement  no-console
+
+D:\onlinewebsites\quiz-platform\apps\api-server\src\modules\exam-engine\exam.engine.ts
+  246:148  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\onlinewebsites\quiz-platform\apps\api-server\subject-count-check.ts
+  21:9   warning  Unexpected console statement  no-console
+  23:13  warning  Unexpected console statement  no-console
+
+Γ£û 4 problems (1 error, 3 warnings)
+
+npm : npm error Lifecycle script `lint` 
+failed with error:
+At line:1 char:1
++ npm run lint > 
+lint_results_final_v2.txt 2>&1; 
+Get-Content lint_resul ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~
+    + CategoryInfo          : NotSpecifie 
+   d: (npm error Lifec...led with error:  
+  :String) [], RemoteException
+    + FullyQualifiedErrorId : NativeComma 
+   ndError
+ 
+npm error code 1
+npm error path D:\onlinewebsites\quiz-plat
+form\apps\api-server
+npm error workspace @quiz/api-server@0.1.1
+npm error location D:\onlinewebsites\quiz-
+platform\apps\api-server
+npm error command failed
+npm error command 
+C:\windows\system32\cmd.exe /d /s /c 
+cross-env ESLINT_USE_FLAT_CONFIG=false 
+eslint --ext .ts,.tsx,.js,.jsx .

@@ -40,7 +40,7 @@ export function JourneyViewer() {
 
             <div className="p-10 border-2 border-dashed border-slate-100 rounded-[2.5rem] text-center">
                 <p className="text-slate-400 text-sm font-bold">
-                    "Documentation defines truth. All page journeys must strictly comply with the UX Baseline."
+                    &quot;Documentation defines truth. All page journeys must strictly comply with the UX Baseline.&quot;
                 </p>
             </div>
         </div>

@@ -16,7 +16,7 @@ export class DashboardEngine {
   }
 
   /**
-   * Aggregates dashboard data for a user with pagination support.
+   * Aggregates dashboard data for a _user with pagination support.
    */
   static async getUserDashboard(userId: string, range: string = '7d', from?: string, to?: string, page: number = 1, limit: number = 6) {
     let days = 7;
@@ -28,10 +28,10 @@ export class DashboardEngine {
     relativeStartDate.setDate(now.getDate() - days);
     relativeStartDate.setHours(0, 0, 0, 0);
 
-    let baseFilter = and(eq(exams.userId, userId), eq(exams.status, 'completed'));
+    const baseFilter = and(eq(exams.userId, userId), eq(exams.status, 'completed'));
     let trendFilter = and(baseFilter, sql`${exams.completedAt} >= ${relativeStartDate}`);
 
-    if (from && to) {
+    if (from !== undefined && to !== undefined) {
         trendFilter = and(baseFilter, sql`${exams.completedAt} BETWEEN ${new Date(from)} AND ${new Date(to)}`);
     }
 
@@ -44,7 +44,7 @@ export class DashboardEngine {
         .select({ count: sql<number>`count(*)`.mapWith(Number) })
         .from(exams)
         .where(baseFilter);
-    const totalCount = totalCountResult[0]?.count || 0;
+    const totalCount = totalCountResult[0]?.count ?? 0;
 
     // 2. Fetch Paginated Exams
     const offset = (page - 1) * limit;
@@ -96,27 +96,27 @@ export class DashboardEngine {
 
     return {
       overview: {
-        avgScore: statsResult[0]?.avgScore || 0,
-        totalExams: statsResult[0]?.totalExams || 0,
-        masteryPoints: masteryResult[0]?.totalPoints || 0,
-        weeklyExamsCount: weeklyExamsResult[0]?.count || 0,
+        avgScore: statsResult[0]?.avgScore ?? 0,
+        totalExams: statsResult[0]?.totalExams ?? 0,
+        masteryPoints: masteryResult[0]?.totalPoints ?? 0,
+        weeklyExamsCount: weeklyExamsResult[0]?.count ?? 0,
         globalRank: null, 
       },
       performanceTrend: performanceTrendResult.map(t => ({
-        score: t.score || 0,
-        date: t.completedAt ? t.completedAt.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }) : 'Unknown'
+        score: t.score ?? 0,
+        date: (t.completedAt !== null && t.completedAt !== undefined) ? t.completedAt.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }) : 'Unknown'
       })),
       recentActivity: recentCompletedExams.map(e => {
         // Derive title: Blueprint Name > Dimensions (Topic > Subject > Domain)
         let derivedTitle: string | null | undefined = e.blueprint?.name;
         
-        if (!derivedTitle && e.dimensions && e.dimensions.length > 0) {
+        if ((derivedTitle === undefined || derivedTitle === null) && e.dimensions !== undefined && e.dimensions !== null && e.dimensions.length > 0) {
             const topic = e.dimensions.find(d => d.dimensionType === 'topic');
             const subject = e.dimensions.find(d => d.dimensionType === 'subject');
             const domain = e.dimensions.find(d => d.dimensionType === 'domain');
             
             // Prefer Topic, then Subject, then Domain name if available
-            derivedTitle = topic?.name || subject?.name || domain?.name;
+            derivedTitle = topic?.name ?? subject?.name ?? domain?.name;
         }
 
         return {
@@ -162,20 +162,20 @@ export class DashboardEngine {
       ))
       .orderBy(exams.completedAt);
 
-    const totalScore = trendResult.reduce((acc, curr) => acc + (curr.score || 0), 0);
+    const totalScore = trendResult.reduce((acc, curr) => acc + (curr.score ?? 0), 0);
     const averageScore = trendResult.length > 0 ? Math.round(totalScore / trendResult.length) : 0;
 
     return {
       performanceTrend: trendResult.map(t => ({
-        score: t.score || 0,
-        date: t.completedAt ? t.completedAt.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }) : 'Unknown'
+        score: t.score ?? 0,
+        date: (t.completedAt !== null && t.completedAt !== undefined) ? t.completedAt.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }) : 'Unknown'
       })),
       averageScore
     };
   }
 
   /**
-   * Fetches unique domains, subjects and topics attempted by the user for filter populating.
+   * Fetches unique domains, subjects and topics attempted by the _user for filter populating.
    */
   static async getPerformanceBreakdownMetadata(userId: string) {
     const dimensions = await db
@@ -230,8 +230,8 @@ export class DashboardEngine {
     // Simple grouping by dimension for stacked bars
     const breakdown: Record<string, { count: number; totalScore: number }> = {};
     results.forEach(r => {
-      const key = r.dimensionName || 'Unknown';
-      if (!breakdown[key]) breakdown[key] = { count: 0, totalScore: 0 };
+      const key = r.dimensionName ?? 'Unknown';
+      if (breakdown[key] === undefined) breakdown[key] = { count: 0, totalScore: 0 };
       breakdown[key].count++;
       breakdown[key].totalScore += r.score;
     });

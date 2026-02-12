@@ -20,6 +20,8 @@
         "@types/bcrypt": "^5.0.2",
         "@types/jsonwebtoken": "^9.0.8",
         "@types/node": "^25.0.10",
+        "cross-env": "^10.1.0",
+        "eslint-plugin-react-hooks": "4.6.2",
         "eslint-plugin-security": "^3.0.1",
         "turbo": "^2.3.3"
     },

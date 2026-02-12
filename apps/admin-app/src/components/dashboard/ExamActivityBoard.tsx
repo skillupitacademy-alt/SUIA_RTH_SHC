@@ -1,8 +1,9 @@
 'use client';
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { useEffect, useState } from 'react';
 import { apiClient } from '@quiz/api-client';
-import { Activity, Clock, CheckCircle2, XCircle, Globe, TrendingUp } from 'lucide-react';
+import { Activity, Clock, CheckCircle2, XCircle, Globe } from 'lucide-react';
 import { ZTooltip } from '@/components/ui/ZTooltip';
 import { ZLoader } from '@quiz/ui';
 

@@ -1,26 +1,5 @@
 import { db, exams, resultsByDimension } from '@quiz/db';
 import { eq, desc, gte, lt, and, sql } from 'drizzle-orm';
-// ... (skip down)
-
-        const getPeriodStats = async (start: Date, end: Date) => {
-        const stats = await db.select({
-            id: resultsByDimension.dimensionId,
-            name: resultsByDimension.name,
-            score: sql`avg(${resultsByDimension.accuracy})`.mapWith(Number),
-            count: sql`count(*)`.mapWith(Number)
-        })
-        .from(resultsByDimension)
-        .innerJoin(exams, eq(resultsByDimension.examId, exams.id))
-        .where(and(
-            eq(resultsByDimension.dimensionType, 'domain'),
-            eq(exams.status, 'completed'),
-            gte(exams.completedAt, start),
-            lt(exams.completedAt, end)
-        ))
-        .groupBy(resultsByDimension.dimensionId, resultsByDimension.name);
-        
-        return stats;
-    };
 
 export interface ScoreTrend {
   examId: string;
@@ -50,7 +29,7 @@ export interface TrendSummary {
 }
 
 export class TrendsService {
-  private static PASS_THRESHOLD = parseInt(process.env.PASS_THRESHOLD || '70', 10);
+  private static PASS_THRESHOLD = parseInt(process.env.PASS_THRESHOLD ?? '70', 10);
   private static MAX_EXAMS = 200;
   private static MAX_SKILLS = 20;
 
@@ -68,7 +47,7 @@ export class TrendsService {
       gte(exams.completedAt, cutoffDate)
     ];
 
-    if (userId) {
+    if (userId !== undefined) {
       conditions.push(eq(exams.userId, userId));
     }
 
@@ -87,10 +66,10 @@ export class TrendsService {
 
     return userExams.map(exam => ({
       examId: exam.id,
-      date: exam.completedAt!,
-      score: exam.totalScore || 0,
-      passed: (exam.totalScore || 0) >= this.PASS_THRESHOLD,
-      blueprintName: exam.blueprint?.name || null
+      date: exam.completedAt ?? new Date(),
+      score: exam.totalScore ?? 0,
+      passed: (exam.totalScore ?? 0) >= this.PASS_THRESHOLD,
+      blueprintName: exam.blueprint?.name ?? null
     })).reverse(); // Oldest first for chart display
   }
 
@@ -109,7 +88,7 @@ export class TrendsService {
       gte(exams.completedAt, cutoffDate)
     ];
 
-    if (userId) {
+    if (userId !== undefined) {
       conditions.push(eq(exams.userId, userId));
     }
 
@@ -140,18 +119,18 @@ export class TrendsService {
     const skillMap = new Map<string, { name: string; scores: number[]; examDates: Date[] }>();
 
     for (const result of skillResults) {
-      const skillId = result.dimensionId || result.name;
-      if (!skillId) continue; // Skip if no valid ID
+      const skillId = result.dimensionId ?? result.name;
+      if (skillId === undefined || skillId === null) continue; // Skip if no valid ID
       
       if (!skillMap.has(skillId)) {
         skillMap.set(skillId, {
-          name: result.name || 'Unknown Skill',
+          name: result.name ?? 'Unknown Skill',
           scores: [],
           examDates: []
         });
       }
       const examDate = userExams.find(e => e.id === result.examId)?.completedAt;
-      if (examDate) {
+      if (examDate !== undefined && examDate !== null) {
         skillMap.get(skillId)!.scores.push(result.accuracy);
         skillMap.get(skillId)!.examDates.push(examDate);
       }
@@ -200,7 +179,7 @@ export class TrendsService {
     const userExams = await db.query.exams.findMany({
       where: and(
         eq(exams.status, 'completed'),
-        gte(exams.completedAt, (cutoffDate instanceof Date ? cutoffDate : new Date(cutoffDate))),
+        gte(exams.completedAt, cutoffDate),
       ),
       orderBy: [desc(exams.completedAt)],
       limit: this.MAX_EXAMS
@@ -218,15 +197,15 @@ export class TrendsService {
     }
 
     // Calculate avg score and pass rate
-    const totalScore = userExams.reduce((sum, exam) => sum + (exam.totalScore || 0), 0);
+    const totalScore = userExams.reduce((sum, exam) => sum + (exam.totalScore ?? 0), 0);
     const avgScore = Math.round(totalScore / userExams.length);
-    const passedCount = userExams.filter(exam => (exam.totalScore || 0) >= this.PASS_THRESHOLD).length;
+    const passedCount = userExams.filter(exam => (exam.totalScore ?? 0) >= this.PASS_THRESHOLD).length;
     const passRate = passedCount / userExams.length;
 
     // Calculate current streak (consecutive passes from most recent)
     let currentStreak = 0;
     for (const exam of userExams) {
-      if ((exam.totalScore || 0) >= this.PASS_THRESHOLD) {
+      if ((exam.totalScore ?? 0) >= this.PASS_THRESHOLD) {
         currentStreak++;
       } else {
         break;
@@ -235,12 +214,13 @@ export class TrendsService {
 
     // Get skill trends for best/worst
     const skillTrends = await this.getSkillTrends({ range });
-    const bestSkill = skillTrends.length > 0 && skillTrends[0].delta > 0
+    const bestSkill = (skillTrends.length > 0 && skillTrends[0].delta > 0)
       ? { name: skillTrends[0].skillName, delta: skillTrends[0].delta }
       : null;
     
-    const worstSkill = skillTrends.find(s => s.delta < 0)
-      ? { name: skillTrends.find(s => s.delta < 0)!.skillName, delta: skillTrends.find(s => s.delta < 0)!.delta }
+    const worstSkillTrend = skillTrends.find(s => s.delta < 0);
+    const worstSkill = worstSkillTrend !== undefined
+      ? { name: worstSkillTrend.skillName, delta: worstSkillTrend.delta }
       : null;
 
     return {
@@ -271,25 +251,25 @@ export class TrendsService {
         gte(exams.completedAt, start),
         lt(exams.completedAt, end)
       ];
-      if (userId) conditions.push(eq(exams.userId, userId));
+      if (userId !== undefined) conditions.push(eq(exams.userId, userId));
 
       const scores = await db.select({ score: exams.totalScore }).from(exams).where(and(...conditions));
       if (scores.length === 0) return { avg: null, count: 0 };
 
-      const total = scores.reduce((acc, curr) => acc + (curr.score || 0), 0);
+      const total = scores.reduce((acc, curr) => acc + (curr.score ?? 0), 0);
       return { avg: Math.round(total / scores.length), count: scores.length };
     };
 
     const current = await getWindowAvg(currentStart, now);
     const previous = await getWindowAvg(previousStart, currentStart);
 
-    const totalSamples = (current?.count || 0) + (previous?.count || 0);
-    if (!current || !previous || totalSamples < 3) return null; // Not enough data
+    const totalSamples = (current.count) + (previous.count);
+    if (totalSamples < 3) return null; // Not enough data
 
     return {
       currentAvg: current.avg,
       previousAvg: previous.avg,
-      deltaPct: current.avg !== null && previous.avg !== null ? current.avg - previous.avg : null
+      deltaPct: (current.avg !== null && previous.avg !== null) ? current.avg - previous.avg : null
     };
   }
 
@@ -297,7 +277,7 @@ export class TrendsService {
    * Compute Executive Health Status
    */
   static getExecHealth(currentAvg: number, deltaPct: number | null): 'green' | 'yellow' | 'red' {
-    const safeDelta = deltaPct || 0;
+    const safeDelta = deltaPct ?? 0;
     
     // Green: High performance OR improving
     if (currentAvg >= 70 && safeDelta >= 0) return 'green';
@@ -331,7 +311,7 @@ export class TrendsService {
             eq(resultsByDimension.dimensionType, 'domain'),
             eq(exams.status, 'completed'),
             gte(exams.completedAt, start),
-            sql`${exams.completedAt} < ${end.toISOString()}`
+            lt(exams.completedAt, end)
         ))
         .groupBy(resultsByDimension.dimensionId, resultsByDimension.name);
         
@@ -347,7 +327,7 @@ export class TrendsService {
 
     // Map current stats
     currentStats.forEach(stat => {
-        if (!stat.id) return;
+        if (stat.id === undefined || stat.id === null) return;
         result[stat.id] = {
             current: Math.round(stat.score),
             previous: 0,
@@ -357,14 +337,11 @@ export class TrendsService {
 
     // Merge previous stats
     previousStats.forEach(stat => {
-        if (!stat.id) return;
-        if (result[stat.id]) {
-            result[stat.id].previous = Math.round(stat.score);
-            result[stat.id].delta = result[stat.id].current - result[stat.id].previous;
-        } else {
-             // If only in previous period, we can't really show a useful delta for "now", but let's track it
-             // result[stat.id] = { current: 0, previous: Math.round(stat.score), delta: -Math.round(stat.score) };
-             // Actually, usually we only care about domains present now.
+        const sid = stat.id;
+        if (sid === undefined || sid === null) return;
+        if (result[sid] !== undefined) {
+            result[sid].previous = Math.round(stat.score);
+            result[sid].delta = result[sid].current - result[sid].previous;
         }
     });
 
@@ -376,7 +353,7 @@ export class TrendsService {
    */
   private static parseDaysFromRange(range: string): number {
     const match = range.match(/^(\d+)d$/);
-    if (!match) return 7; 
+    if (match === null) return 7; 
     const days = parseInt(match[1], 10);
     const validDays = [7, 14, 28, 90];
     if (!validDays.includes(days)) return 7;

@@ -6,7 +6,7 @@ import { SecurityService } from './security.service';
 import { AuditService } from './audit.service';
 import { EmailService } from '../email/EmailService';
 import crypto from 'crypto';
-import jwt from 'jsonwebtoken';
+import { decodeJwt } from 'jose';
 
 export class AuthService {
   static async signup(email: string, password: string, name: string, ip?: string) {
@@ -16,7 +16,7 @@ export class AuthService {
       where: eq(users.email, email),
     });
 
-    if (existingUser) {
+    if (existingUser !== undefined) {
       await AuditService.log({ action: 'signup_failed', metadata: { reason: 'user_exists', email }, ip });
       throw new Error('User already exists');
     }
@@ -24,13 +24,13 @@ export class AuthService {
     const passwordHash = await PasswordService.hash(password);
 
     // Neon HTTP driver doesn't support transactions, so we do sequential inserts
-    const [user] = await db.insert(users).values({
+    const [_user] = await db.insert(users).values({
       email,
       passwordHash,
     }).returning();
 
     await db.insert(userProfiles).values({
-      userId: user.id,
+      userId: _user.id,
       name,
     });
 
@@ -38,14 +38,14 @@ export class AuthService {
       where: sql`${roles.name} = 'USER'`,
     });
 
-    if (userRole) {
+    if (userRole !== undefined) {
       await db.insert(userRoles).values({
-        userId: user.id,
+        userId: _user.id,
         roleId: userRole.id,
       });
     }
 
-    const newUser = user;
+    const newUser = _user;
 
     await AuditService.log({ userId: newUser.id, action: 'signup_success', ip });
     return newUser;
@@ -57,7 +57,7 @@ export class AuthService {
       throw new Error('Account temporarily locked. Try again later.');
     }
 
-    const user = await db.query.users.findFirst({
+    const _user = await db.query.users.findFirst({
       where: eq(users.email, email),
       with: {
         profile: true,
@@ -67,58 +67,58 @@ export class AuthService {
       }
     });
 
-    if (!user || !(await PasswordService.compare(password, user.passwordHash))) {
+    if (_user === undefined || (await PasswordService.compare(password, _user.passwordHash)) === false) {
       await SecurityService.trackLoginAttempt(ip, email, false);
       await AuditService.log({ action: 'login_failed', metadata: { email }, ip });
       throw new Error('Invalid credentials');
     }
 
-    if (user.isBlocked) {
+    if (_user.isBlocked === true) {
         await AuditService.log({ action: 'login_blocked_user', metadata: { email }, ip });
         throw new Error('Account has been blocked. Contact administrator.');
     }
 
     // Update Last Active
-    await db.update(users).set({ lastActiveAt: new Date() }).where(eq(users.id, user.id));
+    await db.update(users).set({ lastActiveAt: new Date() }).where(eq(users.id, _user.id));
 
     await SecurityService.trackLoginAttempt(ip, email, true);
-    await AuditService.log({ userId: user.id, action: 'login_success', ip });
+    await AuditService.log({ userId: _user.id, action: 'login_success', ip });
 
-    const roleNames = user.userRoles.map(ur => ur.role.name);
+    const roleNames = _user.userRoles.map(ur => ur.role.name);
     const isAdmin = roleNames.includes('ADMIN') || roleNames.includes('SUPER_ADMIN');
 
     const accessToken = await TokenService.generateAccessToken({
-      userId: user.id,
-      email: user.email,
+      userId: _user.id,
+      email: _user.email,
       roles: roleNames,
       isAdmin,
     });
 
-    const refreshToken = await TokenService.generateRefreshToken(user.id, isAdmin);
+    const refreshToken = await TokenService.generateRefreshToken(_user.id, isAdmin);
     const refreshTokenHash = await TokenService.hashToken(refreshToken);
 
     await db.insert(refreshTokens).values({
-      userId: user.id,
+      userId: _user.id,
       token: refreshTokenHash,
       expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
     });
 
-    return { user, accessToken, refreshToken, isAdmin };
+    return { _user, accessToken, refreshToken, isAdmin };
   }
 
-  static async refresh(token: string, ip?: string, examId?: string) {
-    const decoded = jwt.decode(token) as any;
-    const isAdmin = decoded?.isAdmin === true;
+  static async refresh(_token: string, ip?: string, examId?: string) {
+    const decoded = decodeJwt(_token) as { isAdmin?: boolean; [key: string]: unknown };
+    const isAdmin = decoded.isAdmin === true;
 
-    let payload;
+    let _payload;
     try {
-      payload = await TokenService.verifyRefreshToken(token, isAdmin);
+      _payload = await TokenService.verifyRefreshToken(_token, isAdmin);
     } catch {
       await AuditService.log({ action: 'refresh_failed', metadata: { reason: 'invalid_token' }, ip });
-      throw new Error('Invalid refresh token');
+      throw new Error('Invalid refresh _token');
     }
 
-    const tokenHash = await TokenService.hashToken(token);
+    const tokenHash = await TokenService.hashToken(_token);
 
     const storedToken = await db.query.refreshTokens.findFirst({
       where: and(
@@ -127,13 +127,13 @@ export class AuthService {
       ),
     });
 
-    if (!storedToken) {
+    if (storedToken === undefined) {
       await db.update(refreshTokens)
         .set({ revoked: true })
-        .where(eq(refreshTokens.userId, payload.userId));
+        .where(eq(refreshTokens.userId, _payload.userId));
       
       await AuditService.log({ 
-        userId: payload.userId, 
+        userId: _payload.userId, 
         action: 'security_alert_token_reuse', 
         metadata: { ip, severity: 'critical' } 
       });
@@ -141,11 +141,11 @@ export class AuthService {
     }
 
     if (storedToken.expiresAt < new Date()) {
-      throw new Error('Refresh token expired');
+      throw new Error('Refresh _token expired');
     }
 
-    const user = await db.query.users.findFirst({
-      where: eq(users.id, payload.userId),
+    const _user = await db.query.users.findFirst({
+      where: eq(users.id, _payload.userId),
       with: {
         userRoles: {
           with: { role: true }
@@ -153,30 +153,30 @@ export class AuthService {
       }
     });
 
-    if (!user) throw new Error('User not found');
+    if (_user === undefined) throw new Error('User not found');
     
-    if (user.isBlocked) {
+    if (_user.isBlocked === true) {
         throw new Error('access_denied:user_blocked');
     }
 
     // Update Last Active on Refresh
-    await db.update(users).set({ lastActiveAt: new Date() }).where(eq(users.id, user.id));
+    await db.update(users).set({ lastActiveAt: new Date() }).where(eq(users.id, _user.id));
 
-    const roleNames = user.userRoles.map(ur => ur.role.name);
+    const roleNames = _user.userRoles.map(ur => ur.role.name);
     const isAdminNow = roleNames.includes('ADMIN') || roleNames.includes('SUPER_ADMIN');
 
     // EXAM GRACE WINDOW LOGIC (Phase 3 Requirement)
     let customExpiration: number | undefined;
-    if (examId && !isAdminNow) {
+    if ((examId !== undefined && examId !== null && examId !== '') && isAdminNow === false) {
         const activeExam = await db.query.exams.findFirst({
             where: and(
                 eq(exams.id, examId),
-                eq(exams.userId, user.id),
+                eq(exams.userId, _user.id),
                 eq(exams.status, 'started')
             )
         });
 
-        if (activeExam && activeExam.durationSeconds) {
+        if (activeExam !== undefined && activeExam.durationSeconds !== null && activeExam.durationSeconds > 0) {
             const now = Date.now();
             const startedAt = activeExam.startedAt.getTime();
             const totalDurationWithGrace = (activeExam.durationSeconds + 300) * 1000; // Duration + 5 mins
@@ -198,13 +198,13 @@ export class AuthService {
     }
 
     const newAccessToken = await TokenService.generateAccessToken({
-      userId: user.id,
-      email: user.email,
+      userId: _user.id,
+      email: _user.email,
       roles: roleNames,
       isAdmin: isAdminNow,
     }, customExpiration);
     
-    const newRefreshToken = await TokenService.generateRefreshToken(user.id, isAdminNow);
+    const newRefreshToken = await TokenService.generateRefreshToken(_user.id, isAdminNow);
     const newRefreshTokenHash = await TokenService.hashToken(newRefreshToken);
 
     await db.update(refreshTokens)
@@ -212,25 +212,25 @@ export class AuthService {
       .where(eq(refreshTokens.id, storedToken.id));
 
     await db.insert(refreshTokens).values({
-      userId: user.id,
+      userId: _user.id,
       token: newRefreshTokenHash,
       expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
     });
 
-    await AuditService.log({ userId: user.id, action: 'refresh_success', ip });
+    await AuditService.log({ userId: _user.id, action: 'refresh_success', ip });
 
     return { accessToken: newAccessToken, refreshToken: newRefreshToken };
   }
 
-  static async logout(token: string, userId?: string, ip?: string) {
-    const tokenHash = await TokenService.hashToken(token);
+  static async logout(_token: string, userId?: string, ip?: string) {
+    const tokenHash = await TokenService.hashToken(_token);
     
     await db.update(refreshTokens)
       .set({ revoked: true })
       .where(eq(refreshTokens.token, tokenHash));
 
     // Force Offline status by setting lastActiveAt to null or old date
-    if (userId) {
+    if (userId !== undefined) {
         // Set to 1 hour ago to ensure they appear offline immediately
         const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000); 
         await db.update(users).set({ lastActiveAt: oneHourAgo }).where(eq(users.id, userId));
@@ -244,33 +244,33 @@ export class AuthService {
     return true;
   }
 
-  static async touchSession(token: string) {
-    // We don't want to hash the token here if we are passing the raw token from middleware.
+  static async touchSession(_token: string) {
+    // We don't want to hash the _token here if we are passing the raw _token from middleware.
     // The middleware extracts the Access Token, but we track sessions via Refresh Tokens usually.
     // However, the rate-limit middleware has the Access Token.
-    // We need to find the session associated with the user.
+    // We need to find the session associated with the _user.
     // OPTIMIZATION: If we only have Access Token, we might assume the User is online.
     // But `refreshTokens` table stores the session.
-    // We should ideally update ALL valid refresh tokens for this user?
+    // We should ideally update ALL valid refresh tokens for this _user?
     // OR, we can just update the `users` table `lastActiveAt` if we added it there.
     // But the plan said `refreshTokens` table.
     
     // Changing strategy: Update usage based on User ID.
     // But we need to update the specific session if possible.
-    // Since we don't have the refresh token in every request, 
-    // we will update ALL active refresh tokens for this user to `now()`.
+    // Since we don't have the refresh _token in every _request, 
+    // we will update ALL active refresh tokens for this _user to `now()`.
     // this keeps them "alive".
     
     // Wait, the plan said "Add lastActiveAt to refreshTokens schema".
     // If I only have the Access Token, I know the User ID.
-    // So I will update all non-revoked refresh tokens for this user.
+    // So I will update all non-revoked refresh tokens for this _user.
     
-    // NOTE: This might be heavy if a user has many sessions.
+    // NOTE: This might be heavy if a _user has many sessions.
     // But typically they have 1-3.
     
     // For now, let's assume we pass the UserId derived from the Access Token.
     // So method signature should probably be `touchSession(userId: string)`.
-    // But the plan said `touchSession(token)`.
+    // But the plan said `touchSession(_token)`.
     // I'll stick to `touchSession(userId: string)` as it's more practical from middleware.
   }
 
@@ -284,14 +284,14 @@ export class AuthService {
       ));
   }
 
-  static async verifyEmail(token: string, ip?: string) {
+  static async verifyEmail(_token: string, ip?: string) {
     const verifiedToken = await db.query.verificationTokens.findFirst({
-      where: eq(verificationTokens.token, token),
+      where: eq(verificationTokens.token, _token),
     });
 
-    if (!verifiedToken || verifiedToken.expiresAt < new Date()) {
+    if (verifiedToken === undefined || verifiedToken.expiresAt < new Date()) {
       await AuditService.log({ action: 'email_verification_failed', metadata: { reason: 'invalid_or_expired' }, ip });
-      throw new Error('Invalid or expired verification token');
+      throw new Error('Invalid or expired verification _token');
     }
 
     await db.update(users)
@@ -306,19 +306,19 @@ export class AuthService {
   }
 
   static async resendVerification(userId: string, ip?: string) {
-    const user = await db.query.users.findFirst({
+    const _user = await db.query.users.findFirst({
       where: eq(users.id, userId),
     });
 
-    if (!user) throw new Error('User not found');
-    if (user.emailVerified) throw new Error('Email already verified');
+    if (_user === undefined) throw new Error('User not found');
+    if (_user.emailVerified === true) throw new Error('Email already verified');
 
-    const token = crypto.randomBytes(32).toString('hex');
+    const _token = crypto.randomBytes(32).toString('hex');
     const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
 
     await db.insert(verificationTokens).values({
       userId,
-      token,
+      token: _token,
       expiresAt,
     });
 
@@ -330,8 +330,8 @@ export class AuthService {
   static async forgotPassword(email: string, ip?: string) {
     await AuditService.log({ action: 'auth_forgot_password_requested', metadata: { email_redacted: '***' }, ip });
 
-    // 1. Check if user exists (with roles)
-    const user = await db.query.users.findFirst({
+    // 1. Check if _user exists (with roles)
+    const _user = await db.query.users.findFirst({
       where: eq(users.email, email.toLowerCase().trim()),
       with: {
         userRoles: {
@@ -341,56 +341,56 @@ export class AuthService {
     });
 
     // 2. Regardless of existence, return success (prevents enumeration)
-    if (!user) {
+    if (_user === undefined) {
       return true; 
     }
 
-    // 3. User exists: Generate secure reset token
-    const token = crypto.randomBytes(32).toString('hex');
+    // 3. User exists: Generate secure reset _token
+    const _token = crypto.randomBytes(32).toString('hex');
     const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 60 minutes
 
-    // 4. Store token
+    // 4. Store _token
     await db.insert(passwordResetTokens).values({
-      userId: user.id,
-      token,
+      userId: _user.id,
+      token: _token,
       expiresAt,
     });
 
     // 5. Determine correct UI URL (Governance vs Web)
-    const roleNames = user.userRoles.map(ur => ur.role.name);
+    const roleNames = _user.userRoles.map(ur => ur.role.name);
     const isAdmin = roleNames.includes('ADMIN') || roleNames.includes('SUPER_ADMIN');
     
     const baseUrl = isAdmin 
-      ? (process.env.ADMIN_URL || process.env.NEXT_PUBLIC_ADMIN_URL || 'https://admin.realtutorialhub.com')
-      : (process.env.APP_BASE_URL || 'https://quiz.realtutorialhub.com');
+      ? ((process.env.ADMIN_URL !== undefined && process.env.ADMIN_URL !== null && process.env.ADMIN_URL !== '') ? process.env.ADMIN_URL : (process.env.NEXT_PUBLIC_ADMIN_URL !== undefined && process.env.NEXT_PUBLIC_ADMIN_URL !== null && process.env.NEXT_PUBLIC_ADMIN_URL !== '') ? process.env.NEXT_PUBLIC_ADMIN_URL : 'https://admin.realtutorialhub.com')
+      : ((process.env.APP_BASE_URL !== undefined && process.env.APP_BASE_URL !== null && process.env.APP_BASE_URL !== '') ? process.env.APP_BASE_URL : 'https://quiz.realtutorialhub.com');
 
-    const resetUrl = `${baseUrl.replace(/\/$/, '')}/reset-password?token=${token}`;
+    const resetUrl = `${baseUrl.replace(/\/$/, '')}/reset-password?_token=${_token}`;
     
-    await EmailService.sendPasswordResetEmail(user.email, resetUrl);
+    await EmailService.sendPasswordResetEmail(_user.email, resetUrl);
 
     return true;
   }
 
-  static async validateResetToken(token: string) {
+  static async validateResetToken(_token: string) {
     const validToken = await db.query.passwordResetTokens.findFirst({
       where: and(
-        eq(passwordResetTokens.token, token),
+        eq(passwordResetTokens.token, _token),
         gt(passwordResetTokens.expiresAt, new Date())
       ),
     });
 
-    return !!validToken;
+    return validToken !== undefined;
   }
 
-  static async resetPassword(token: string, newPassword: string, ip?: string) {
+  static async resetPassword(_token: string, newPassword: string, ip?: string) {
     const validToken = await db.query.passwordResetTokens.findFirst({
       where: and(
-        eq(passwordResetTokens.token, token),
+        eq(passwordResetTokens.token, _token),
         gt(passwordResetTokens.expiresAt, new Date())
       ),
     });
 
-    if (!validToken) {
+    if (validToken === undefined) {
       await AuditService.log({ action: 'password_reset_failed', metadata: { reason: 'invalid_or_expired_token' }, ip });
       throw new Error('Invalid or expired password reset link');
     }
@@ -401,7 +401,7 @@ export class AuthService {
       .set({ passwordHash })
       .where(eq(users.id, validToken.userId));
 
-    // Invalidate token
+    // Invalidate _token
     await db.delete(passwordResetTokens)
       .where(eq(passwordResetTokens.id, validToken.id));
 

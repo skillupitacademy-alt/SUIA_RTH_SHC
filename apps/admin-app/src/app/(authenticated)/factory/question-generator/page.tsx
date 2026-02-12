@@ -6,12 +6,11 @@ import { ContextSelector } from '@/components/factory/blueprint/ContextSelector'
 import { SourceEditor } from '@/components/factory/blueprint/SourceEditor';
 import { DistributionMatrix } from '@/components/factory/blueprint/DistributionMatrix';
 import { PromptService } from '@/lib/factory/prompt-service';
-import { Copy, Check, Loader2, Play } from 'lucide-react';
 import { toast } from 'sonner';
 
-import { FactoryProvider, useFactory } from '@/context/FactoryContext';
+import { useFactory } from '@/context/FactoryContext';
 import { JsonIngestBox } from '@/components/factory/ingest/JsonIngestBox';
-import { RefreshCcw, ShieldCheck } from 'lucide-react';
+import { RefreshCcw, ShieldCheck, Check, Copy } from 'lucide-react';
 import { useDomains, useSubjects, useTopics, useSubtopics, useAllSkills } from '@/hooks/useAdminHierarchy';
 import { ZConfirmationDialog } from '@/components/ui/ZConfirmationDialog';
 
@@ -33,7 +32,7 @@ function QuestionFactoryContent() {
     const { data: subtopics } = useSubtopics(blueprint.topicId);
 
     // Taxonomy Governance: Fetch ALL skills for global selection
-    const { data: globalSkills, loading: loadingSkills } = useAllSkills();
+    const { data: globalSkills } = useAllSkills();
 
     const handleCopyPrompt = async () => {
         if (!blueprint.topicId) {
@@ -48,18 +47,19 @@ function QuestionFactoryContent() {
         setIsCopying(true);
         try {
             // Resolve Names from IDs
-            const domainName = domains?.find((d: any) => d.id === blueprint.domainId)?.name || "Target Domain";
-            const subjectName = subjects?.find((s: any) => s.id === blueprint.subjectId)?.name || "Target Subject";
-            const topicName = topics?.find((t: any) => t.id === blueprint.topicId)?.name || "Target Topic";
-            const subtopicName = subtopics?.find((st: any) => st.id === blueprint.subtopicId)?.name;
+            const domainName = domains?.find((d) => d.id === blueprint.domainId)?.name || "Target Domain";
+            const subjectName = subjects?.find((s) => s.id === blueprint.subjectId)?.name || "Target Subject";
+            const topicName = topics?.find((t) => t.id === blueprint.topicId)?.name || "Target Topic";
+            const subtopicName = subtopics?.find((st) => st.id === blueprint.subtopicId)?.name;
 
             // TAXONOMY INJECTION: Cap at 200 for extreme safety
-            const safeSkills = globalSkills?.slice(0, 200) || [];
+            const safeSkills = (globalSkills ?? []).slice(0, 200);
 
             const prompt = PromptService.generateTechnicalPrompt({
                 sourceCode,
                 counts: blueprint.counts,
-                knownSkills: safeSkills.map((s: any) => s.name),
+            // Global skills already typed; fall back gracefully
+                knownSkills: safeSkills.map((s) => s.name ?? ''),
                 strictMode: blueprint.strictMode,
                 context: {
                     domainName,
@@ -71,7 +71,7 @@ function QuestionFactoryContent() {
 
             await navigator.clipboard.writeText(prompt);
             toast.success("Prompt Copied with Global Taxonomy!");
-        } catch (err) {
+        } catch {
             toast.error("Failed to copy prompt.");
         } finally {
             setTimeout(() => setIsCopying(false), 1000);

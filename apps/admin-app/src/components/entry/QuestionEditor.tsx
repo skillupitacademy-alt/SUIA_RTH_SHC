@@ -1,7 +1,8 @@
 'use client';
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { useState } from 'react';
-import { Plus, Trash2, Check, Clock, AlertCircle, Type, List, FileText, Sparkles } from 'lucide-react';
+import { Plus, Trash2, Check, Clock, List, FileText } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface QuestionFormData {

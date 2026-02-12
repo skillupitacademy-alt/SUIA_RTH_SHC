@@ -34,9 +34,10 @@ export default function AdminLoginPage() {
 
             login(user);
             router.push('/');
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error(err);
-            setError(err.message || 'Authentication failed');
+            const message = err instanceof Error ? err.message : 'Authentication failed';
+            setError(message);
         } finally {
             setIsLoading(false);
         }

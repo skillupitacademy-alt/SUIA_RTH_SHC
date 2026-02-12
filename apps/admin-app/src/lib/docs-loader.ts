@@ -1,4 +1,3 @@
-import fs from 'fs/promises';
 import path from 'path';
 
 export type DocCategory = 'THE LAW' | 'THE LOGIC' | 'THE UI' | 'THE STATUS' | 'THE RULES' | 'THE PAST';

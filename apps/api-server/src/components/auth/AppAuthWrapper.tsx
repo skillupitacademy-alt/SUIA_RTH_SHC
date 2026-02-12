@@ -9,16 +9,16 @@ import { useRouter } from 'next/navigation';
 export function AppAuthWrapper({ children }: { children: React.ReactNode }) {
     const { expiresAt, login, logout, initialized } = useAuthStore();
     const [isRedirecting, setIsRedirecting] = useState(false);
-    const router = useRouter();
+    const _router = useRouter();
 
     const handleRefresh = async () => {
         try {
             const { expiresAt: newExpiry } = await apiClient.auth.refresh();
-            const { user } = await apiClient.auth.getAdminSession();
-            login(user, newExpiry);
-        } catch (error) {
+            const { user: validatedUser } = await apiClient.auth.getAdminSession();
+            login(validatedUser, newExpiry);
+        } catch (_error) {
             handleLogout();
-            throw error;
+            throw _error;
         }
     };
 

@@ -1,11 +1,12 @@
-import { EmailProvider, SendEmailOptions } from "../EmailProvider";
+import type { IEmailProvider, EmailOptions } from '../types';
 
-export class MockEmailProvider implements EmailProvider {
-  async sendEmail(options: SendEmailOptions): Promise<void> {
-    // Mock send email
+export class MockEmailProvider implements IEmailProvider {
+  async sendEmail(_options: EmailOptions): Promise<void> {
+    // console.log(`[MockEmail] Sending email to ${_options.to}`);
+    return Promise.resolve();
   }
 
-  async sendPasswordResetEmail(email: string, resetUrl: string): Promise<void> {
-    // Mock send reset email
+  async sendPasswordReset(_email: string, _resetUrl: string): Promise<void> {
+    // console.log(`[MockEmail] Password reset for ${_email}: ${_resetUrl}`);
   }
 }

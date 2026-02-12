@@ -1,0 +1,21 @@
+﻿
+> @quiz/api-server@0.1.1 lint
+> cross-env ESLINT_USE_FLAT_CONFIG=false eslint --ext .ts,.tsx,.js,.jsx .
+
+
+D:\onlinewebsites\quiz-platform\apps\api-server\src\components\auth\AdminGuard.tsx
+  27:22  warning  Unexpected any value in conditional. An explicit comparison or type conversion is required  @typescript-eslint/strict-boolean-expressions
+
+D:\onlinewebsites\quiz-platform\apps\api-server\src\modules\core\cache.service.ts
+  81:7  warning  Unexpected console statement  no-console
+
+D:\onlinewebsites\quiz-platform\apps\api-server\src\modules\exam-engine\exam.engine.ts
+  192:43  warning  Static async method 'executeSubmitAnswer' has a complexity of 23. Maximum allowed is 20               complexity
+  217:54  warning  Unexpected nullable number value in conditional. Please handle the nullish/zero/NaN cases explicitly  @typescript-eslint/strict-boolean-expressions
+
+D:\onlinewebsites\quiz-platform\apps\api-server\subject-count-check.ts
+  21:9   warning  Unexpected console statement  no-console
+  23:13  warning  Unexpected console statement  no-console
+
+Γ£û 6 problems (0 errors, 6 warnings)
+

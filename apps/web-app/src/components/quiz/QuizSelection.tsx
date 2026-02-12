@@ -1,4 +1,5 @@
 'use client';
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -13,8 +14,6 @@ import {
     Layers,
     Loader2,
     Activity,
-    ChevronDown,
-    Check,
     Sparkles,
     FileWarning
 } from 'lucide-react';
@@ -65,8 +64,7 @@ export function QuizSelection() {
         total: number;
         isReady: boolean;
     } | null>(null);
-    const [fetchingCounts, setFetchingCounts] = useState(false);
-    const [showExtendedCount, setShowExtendedCount] = useState(false);
+    // counts fetched inline; no separate fetching state required
 
     // Initial load of active domains
     useEffect(() => {

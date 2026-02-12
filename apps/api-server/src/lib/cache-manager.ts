@@ -3,6 +3,7 @@ import { LRUCache } from 'lru-cache';
 // Dashboard Data Cache
 // TTL: 60 seconds (short-lived)
 // Max Items: 5000 items
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const dashboardCache = new LRUCache<string, any>({
   max: 5000,
   ttl: 60 * 1000, 
@@ -23,7 +24,7 @@ export const CacheManager = {
     return dashboardCache.get(key);
   },
 
-  setDashboard: (userId: string, range: string, page: number, limit: number, data: any) => {
+  setDashboard: (userId: string, range: string, page: number, limit: number, data: unknown) => {
     const key = `dashboard:${userId}:${range}:${page}:${limit}`;
     dashboardCache.set(key, data);
   },
@@ -33,7 +34,7 @@ export const CacheManager = {
     return dashboardCache.get(key);
   },
 
-  setTrend: (userId: string, range: string, data: any) => {
+  setTrend: (userId: string, range: string, data: unknown) => {
     const key = `trend:${userId}:${range}`;
     dashboardCache.set(key, data);
   },
@@ -43,7 +44,7 @@ export const CacheManager = {
     return dashboardCache.get(key);
   },
 
-  setBreakdown: (userId: string, range: string, data: any) => {
+  setBreakdown: (userId: string, range: string, data: unknown) => {
     const key = `breakdown:${userId}:${range}`;
     dashboardCache.set(key, data);
   },

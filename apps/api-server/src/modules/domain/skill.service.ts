@@ -1,13 +1,14 @@
 import { db, skills, topicSkills } from '@quiz/db';
-import { eq, and, inArray } from 'drizzle-orm';
+import { eq, inArray } from "drizzle-orm";
 
 export class SkillService {
   static async getAllSkills() {
     return await db.query.skills.findMany();
   }
 
-  static async createSkill(data: any) {
-    return await db.insert(skills).values(data).returning();
+  static async createSkill(data: typeof skills.$inferInsert) {
+    const [skill] = await db.insert(skills).values(data).returning();
+    return skill;
   }
 
   static async deleteSkill(id: string) {

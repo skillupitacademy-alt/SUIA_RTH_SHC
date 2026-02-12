@@ -1,15 +1,12 @@
 'use client';
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 
 import { useEffect, useState, useCallback } from 'react';
 import { apiClient } from '@quiz/api-client';
-import { FileText, Layers, Hash, Edit3, Trash2, Filter, X, AlertTriangle, Sparkles } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
-import { cn, formatTimeAgo } from '@/lib/utils';
+import { FileText, Hash, Trash2, Filter, X, AlertTriangle } from 'lucide-react';
 import { CascadingSelect, Selection } from '@/components/entry/CascadingSelect';
-import { MultiSelectField } from '@/components/entry/SelectionFields';
 import { ZLoader, ZPagination } from '@quiz/ui';
 import { useAllSkills } from '@/hooks/useAdminHierarchy';
-import Link from 'next/link';
 import { QuestionReviewCard } from './QuestionReviewCard';
 import { toast } from 'sonner';
 

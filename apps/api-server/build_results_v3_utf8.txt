@@ -1,0 +1,68 @@
+﻿
+> @quiz/api-server@0.1.1 build D:\onlinewebsites\quiz-platform\apps\api-server
+> next build
+
+Γû▓ Next.js 16.1.6 (Turbopack)
+- Environments: .env.local, .env
+
+node.exe : ΓÜá The "middleware" file 
+convention is deprecated. Please use 
+"proxy" instead. Learn more: https://n
+extjs.org/docs/messages/middleware-to-
+proxy
+At C:\Users\RealTutorialHub\AppData\Ro
+aming\npm\pnpm.ps1:24 char:5
++     & "node$exe"  "$basedir/node_mod
+ules/pnpm/bin/pnpm.cjs" $args
++     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpec 
+   ified: (ΓÜá The "middle...leware-  
+  to-proxy:String) [], RemoteExcept   
+ ion
+    + FullyQualifiedErrorId : NativeC 
+   ommandError
+ 
+  Creating an optimized production build ...
+Γ£ô Compiled successfully in 5.9s
+  Running TypeScript ...
+Failed to compile.
+
+./src/modules/admin-engine/admin.user.
+engine.ts:67:29
+Type error: Argument of type 
+'SQL<unknown> | undefined' is not 
+assignable to parameter of type 
+'SQL<unknown>'.
+  Type 'undefined' is not assignable 
+to type 'SQL<unknown>'.
+
+[0m [90m 65 |[39m             
+[36mconst[39m five [33m=[39m gt(us
+ers[33m.[39mlastActiveAt[33m,[39m 
+fiveMinsAgo)[33m;[39m
+ [90m 66 |[39m             
+[36mconst[39m two [33m=[39m 
+sql[32m`${users.lastActiveAt} <= 
+${twoMinsAgo}`[39m[33m;[39m
+[31m[1m>[22m[39m[90m 67 |[39m   
+          
+conditions[33m.[39mpush(and(five 
+[36mas[39m [33mSQL[39m[33m,[39m 
+two [36mas[39m 
+[33mSQL[39m))[33m;[39m
+ [90m    |[39m                      
+       [31m[1m^[22m[39m
+ [90m 68 |[39m         } 
+[36melse[39m [36mif[39m 
+(filters[33m.[39mstatus 
+[33m===[39m [32m'offline'[39m) {
+ [90m 69 |[39m             condition
+s[33m.[39mpush(sql[32m`(${users.las
+tActiveAt} is null or 
+${users.lastActiveAt} < 
+${fiveMinsAgo})`[39m)[33m;[39m
+ [90m 70 |[39m         }[0m
+Next.js build worker exited with 
+code: 1 and signal: null
+ΓÇëELIFECYCLEΓÇë Command failed with exit code 1.

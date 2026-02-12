@@ -1,0 +1,122 @@
+﻿
+> @quiz/api-server@0.1.1 build D:\onlinewebsites\quiz-platform\apps\api-server
+> next build
+
+Γû▓ Next.js 16.1.6 (Turbopack)
+- Environments: .env.local, .env
+
+node.exe : ΓÜá The "middleware" file 
+convention is deprecated. Please use 
+"proxy" instead. Learn more: https://n
+extjs.org/docs/messages/middleware-to-
+proxy
+At C:\Users\RealTutorialHub\AppData\Ro
+aming\npm\pnpm.ps1:24 char:5
++     & "node$exe"  "$basedir/node_mod
+ules/pnpm/bin/pnpm.cjs" $args
++     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpec 
+   ified: (ΓÜá The "middle...leware-  
+  to-proxy:String) [], RemoteExcept   
+ ion
+    + FullyQualifiedErrorId : NativeC 
+   ommandError
+ 
+  Creating an optimized production build ...
+Γ£ô Compiled successfully in 14.9s
+  Running TypeScript ...
+  Collecting page data using 23 workers ...
+  Generating static pages using 23 workers (0/9) ...
+  Generating static pages using 23 workers (2/9) 
+  Generating static pages using 23 workers (4/9) 
+  Generating static pages using 23 workers (6/9) 
+Γ£ô Generating static pages using 23 workers (9/9) in 922.7ms
+  Finalizing page optimization ...
+
+Route (app)
+Γöî Γùï /
+Γö£ Γùï /_not-found
+Γö£ ╞Æ /api/admin/approve
+Γö£ ╞Æ /api/admin/auth/heartbeat
+Γö£ ╞Æ /api/admin/auth/login
+Γö£ ╞Æ /api/admin/auth/me
+Γö£ ╞Æ /api/admin/blueprints
+Γö£ ╞Æ /api/admin/blueprints/[id]
+Γö£ ╞Æ /api/admin/domains
+Γö£ ╞Æ /api/admin/domains/[id]
+Γö£ ╞Æ /api/admin/domains/batch-delete
+Γö£ ╞Æ /api/admin/hierarchy/atomic
+Γö£ ╞Æ /api/admin/logs
+Γö£ ╞Æ /api/admin/metrics
+Γö£ ╞Æ /api/admin/metrics/blueprints
+Γö£ ╞Æ /api/admin/metrics/content
+Γö£ ╞Æ /api/admin/metrics/exams
+Γö£ ╞Æ /api/admin/metrics/growth
+Γö£ ╞Æ /api/admin/metrics/performance
+Γö£ ╞Æ /api/admin/metrics/rbac
+Γö£ ╞Æ /api/admin/metrics/security
+Γö£ ╞Æ /api/admin/metrics/users
+Γö£ ╞Æ /api/admin/publish
+Γö£ ╞Æ /api/admin/questions
+Γö£ ╞Æ /api/admin/questions/[id]
+Γö£ ╞Æ /api/admin/questions/batch-delete
+Γö£ ╞Æ /api/admin/questions/bulk
+Γö£ ╞Æ /api/admin/sessions/live
+Γö£ ╞Æ /api/admin/skills
+Γö£ ╞Æ /api/admin/skills/[id]
+Γö£ ╞Æ /api/admin/skills/batch-delete
+Γö£ ╞Æ /api/admin/subjects
+Γö£ ╞Æ /api/admin/subjects/[id]
+Γö£ ╞Æ /api/admin/subjects/batch-delete
+Γö£ ╞Æ /api/admin/subtopics
+Γö£ ╞Æ /api/admin/subtopics/[id]
+Γö£ ╞Æ /api/admin/subtopics/batch-delete
+Γö£ ╞Æ /api/admin/system/usage
+Γö£ ╞Æ /api/admin/topics
+Γö£ ╞Æ /api/admin/topics/[id]
+Γö£ ╞Æ /api/admin/topics/[id]/skills
+Γö£ ╞Æ /api/admin/topics/batch-delete
+Γö£ ╞Æ /api/admin/trends/scores
+Γö£ ╞Æ /api/admin/trends/skills
+Γö£ ╞Æ /api/admin/trends/summary
+Γö£ ╞Æ /api/admin/users
+Γö£ ╞Æ /api/admin/users/[id]
+Γö£ ╞Æ /api/admin/validate
+Γö£ ╞Æ /api/auth/forgot-password
+Γö£ ╞Æ /api/auth/heartbeat
+Γö£ ╞Æ /api/auth/login
+Γö£ ╞Æ /api/auth/logout
+Γö£ ╞Æ /api/auth/me
+Γö£ ╞Æ /api/auth/profile
+Γö£ ╞Æ /api/auth/refresh
+Γö£ ╞Æ /api/auth/reset-password
+Γö£ ╞Æ /api/auth/signup
+Γö£ ╞Æ /api/dashboard
+Γö£ ╞Æ /api/dashboard/breakdown
+Γö£ ╞Æ /api/dashboard/metadata
+Γö£ ╞Æ /api/dashboard/trend
+Γö£ ╞Æ /api/domains
+Γö£ ╞Æ /api/factory/check-duplicates
+Γö£ ╞Æ /api/factory/save
+Γö£ ╞Æ /api/migrate
+Γö£ ╞Æ /api/quiz/answer
+Γö£ ╞Æ /api/quiz/count
+Γö£ ╞Æ /api/quiz/result
+Γö£ ╞Æ /api/quiz/start
+Γö£ ╞Æ /api/quiz/state
+Γö£ ╞Æ /api/quiz/submit
+Γö£ ╞Æ /api/reports
+Γö£ ╞Æ /api/status
+Γö£ ╞Æ /api/subjects
+Γö£ ╞Æ /api/subtopics
+Γö£ ╞Æ /api/telemetry
+Γö£ ╞Æ /api/topics
+Γöö Γùï /login
+
+
+╞Æ Proxy (Middleware)
+
+Γùï  (Static)   prerendered as static content
+╞Æ  (Dynamic)  server-rendered on demand
+

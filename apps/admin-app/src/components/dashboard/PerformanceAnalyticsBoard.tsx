@@ -1,8 +1,9 @@
 'use client';
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { useEffect, useState } from 'react';
 import { apiClient } from '@quiz/api-client';
-import { Target, BarChart2, CalendarDays } from 'lucide-react';
+import { Target, BarChart2 } from 'lucide-react';
 import { EfficiencyQuadrant } from './EfficiencyQuadrant';
 import { ZLoader } from '@quiz/ui';
 

@@ -1,6 +1,7 @@
 'use client';
 
-import { Clock, Layers, Shield, Tag, Play, Check, Activity } from 'lucide-react';
+import { Shield, Tag, Play, Activity, Check } from 'lucide-react';
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { cn } from '@/lib/utils';
 
 interface AssessmentSummaryProps {

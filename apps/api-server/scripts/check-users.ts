@@ -5,10 +5,13 @@ import { desc } from 'drizzle-orm';
 
 async function main() {
   try {
-    const recentUsers = await db.select().from(users).orderBy(desc(users.createdAt)).limit(5);
-  } catch (err) {
+    await db.select().from(users).orderBy(desc(users.createdAt)).limit(5);
+  } catch {
   }
   process.exit(0);
 }
 
-main();
+void main().catch((e) => {
+  console.error(e);
+  process.exit(1);
+});

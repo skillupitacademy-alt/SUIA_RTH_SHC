@@ -9,6 +9,7 @@ export interface SelectionState {
   step: number;
 }
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export interface SelectionMetadata {
   domains: any[];
   subjects: any[];

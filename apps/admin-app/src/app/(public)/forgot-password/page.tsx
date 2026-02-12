@@ -9,7 +9,7 @@ import Link from 'next/link';
 export default function ForgotPasswordPage() {
     const [email, setEmail] = useState('');
     const [isLoading, setIsLoading] = useState(false);
-    const [message, setMessage] = useState('');
+    const [, setMessage] = useState('');
     const [error, setError] = useState('');
     const [isSuccess, setIsSuccess] = useState(false);
 
@@ -23,9 +23,10 @@ export default function ForgotPasswordPage() {
             await apiClient.auth.forgotPassword(email);
             setIsSuccess(true);
             setMessage('Recovery link sent! Check your inbox (including spam).');
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error(err);
-            setError(err.message || 'Failed to send recovery link. Please verify your email.');
+            const message = err instanceof Error ? err.message : 'Failed to send recovery link. Please verify your email.';
+            setError(message);
         } finally {
             setIsLoading(false);
         }

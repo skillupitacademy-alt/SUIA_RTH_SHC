@@ -1,0 +1,101 @@
+﻿
+> @quiz/api-server@0.1.1 lint
+> cross-env ESLINT_USE_FLAT_CONFIG=false eslint --ext .ts,.tsx,.js,.jsx .
+
+
+D:\onlinewebsites\quiz-platform\apps\api-server\src\app\api\quiz\start\route.ts
+  22:8  warning  Async function 'POST' has a complexity of 22. Maximum allowed is 20  complexity
+
+D:\onlinewebsites\quiz-platform\apps\api-server\src\components\auth\AdminGuard.tsx
+  27:22  warning  Unexpected any value in conditional. An explicit comparison or type conversion is required  @typescript-eslint/strict-boolean-expressions
+
+D:\onlinewebsites\quiz-platform\apps\api-server\src\modules\admin-engine\admin.analytics.engine.ts
+  2:14  error  'and' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  2:37  error  'avg' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  2:42  error  'sum' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+D:\onlinewebsites\quiz-platform\apps\api-server\src\modules\admin-engine\admin.blueprint.engine.ts
+  2:14  error  'and' is defined but never used. Allowed unused vars must match /^_/u      @typescript-eslint/no-unused-vars
+  2:30  error  'inArray' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+D:\onlinewebsites\quiz-platform\apps\api-server\src\modules\admin-engine\admin.engine.ts
+    1:1    error  Imports "domains", "subjects", "topics" and "examBlueprints" are only used as type  @typescript-eslint/consistent-type-imports
+    1:10   error  'db' is defined but never used. Allowed unused vars must match /^_/u                @typescript-eslint/no-unused-vars
+    1:41   error  'subtopics' is defined but never used. Allowed unused vars must match /^_/u         @typescript-eslint/no-unused-vars
+    1:52   error  'skills' is defined but never used. Allowed unused vars must match /^_/u            @typescript-eslint/no-unused-vars
+    3:1    error  Imports "CreateQuestionInput" are only used as type                                 @typescript-eslint/consistent-type-imports
+    5:1    error  Imports "UpdateUserInput" are only used as type                                     @typescript-eslint/consistent-type-imports
+  101:77   error  Unexpected any. Specify a different type                                            @typescript-eslint/no-explicit-any
+  136:114  error  Unexpected any. Specify a different type                                            @typescript-eslint/no-explicit-any
+
+D:\onlinewebsites\quiz-platform\apps\api-server\src\modules\admin-engine\admin.hierarchy.engine.ts
+  1:41  error  'subtopics' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  2:24  error  'or' is defined but never used. Allowed unused vars must match /^_/u         @typescript-eslint/no-unused-vars
+
+D:\onlinewebsites\quiz-platform\apps\api-server\src\modules\admin-engine\admin.question.engine.ts
+    1:41  error  'skills' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+    2:24  error  'or' is defined but never used. Allowed unused vars must match /^_/u      @typescript-eslint/no-unused-vars
+   49:64  error  Unexpected any. Specify a different type                                  @typescript-eslint/no-explicit-any
+   71:44  error  Unexpected any. Specify a different type                                  @typescript-eslint/no-explicit-any
+   75:32  error  Unexpected any. Specify a different type                                  @typescript-eslint/no-explicit-any
+   78:36  error  Unexpected any. Specify a different type                                  @typescript-eslint/no-explicit-any
+   97:44  error  Unexpected any. Specify a different type                                  @typescript-eslint/no-explicit-any
+  101:32  error  Unexpected any. Specify a different type                                  @typescript-eslint/no-explicit-any
+  104:36  error  Unexpected any. Specify a different type                                  @typescript-eslint/no-explicit-any
+
+D:\onlinewebsites\quiz-platform\apps\api-server\src\modules\admin-engine\admin.user.engine.ts
+    1:53  error  'auditLogs' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+    2:30  error  'count' is defined but never used. Allowed unused vars must match /^_/u      @typescript-eslint/no-unused-vars
+    2:37  error  'or' is defined but never used. Allowed unused vars must match /^_/u         @typescript-eslint/no-unused-vars
+  117:23  error  Unexpected any. Specify a different type                                     @typescript-eslint/no-explicit-any
+
+D:\onlinewebsites\quiz-platform\apps\api-server\src\modules\core\cache.service.ts
+  81:7  warning  Unexpected console statement  no-console
+
+D:\onlinewebsites\quiz-platform\apps\api-server\src\modules\domain\hierarchy.factory.ts
+  46:33  warning  Async arrow function has a complexity of 26. Maximum allowed is 20  complexity
+  85:29  error    Unexpected any. Specify a different type                            @typescript-eslint/no-explicit-any
+
+D:\onlinewebsites\quiz-platform\apps\api-server\src\modules\exam-engine\exam.engine.ts
+  118:46  error    Unexpected any. Specify a different type                                                           @typescript-eslint/no-explicit-any
+  126:26  error    Unexpected any. Specify a different type                                                           @typescript-eslint/no-explicit-any
+  126:40  error    Unexpected any. Specify a different type                                                           @typescript-eslint/no-explicit-any
+  198:33  warning  Async arrow function has a complexity of 29. Maximum allowed is 20                                 complexity
+  290:35  warning  Unexpected object value in conditional. The condition is always true                               @typescript-eslint/strict-boolean-expressions
+  337:9   warning  Unexpected nullable string value in conditional. Please handle the nullish/empty cases explicitly  @typescript-eslint/strict-boolean-expressions
+
+D:\onlinewebsites\quiz-platform\apps\api-server\src\modules\scoring-engine\scoring.engine.ts
+  63:165  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\onlinewebsites\quiz-platform\apps\api-server\subject-count-check.ts
+  21:9   warning  Unexpected console statement  no-console
+  23:13  warning  Unexpected console statement  no-console
+
+Γ£û 42 problems (33 errors, 9 warnings)
+  3 errors and 0 warnings potentially fixable with the `--fix` option.
+
+npm : npm error Lifecycle script 
+`lint` failed with error:
+At line:1 char:1
++ npm run lint > lint_results.txt 2>&1
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpec 
+   ified: (npm error Lifec...led wit  
+  h error::String) [], RemoteExcept   
+ ion
+    + FullyQualifiedErrorId : NativeC 
+   ommandError
+ 
+npm error code 1
+npm error path D:\onlinewebsites\quiz-
+platform\apps\api-server
+npm error workspace 
+@quiz/api-server@0.1.1
+npm error location D:\onlinewebsites\q
+uiz-platform\apps\api-server
+npm error command failed
+npm error command 
+C:\windows\system32\cmd.exe /d /s /c 
+cross-env 
+ESLINT_USE_FLAT_CONFIG=false eslint 
+--ext .ts,.tsx,.js,.jsx .
