@@ -14,7 +14,16 @@ export default defineConfig({
   use: {
     actionTimeout: 0,
     baseURL: 'https://quiz.realtutorialhub.com',
-    trace: 'on-first-retry',
+    trace: 'retain-on-failure', // rely on built-in trace handling to avoid double-start conflicts
+    screenshot: 'only-on-failure',
+    video: 'retain-on-failure',
+    contextOptions: {
+      recordHar: {
+        path: path.join(__dirname, 'artifacts', 'network.har'),
+        mode: 'full',
+        content: 'embed',
+      },
+    },
   },
   projects: [
     {

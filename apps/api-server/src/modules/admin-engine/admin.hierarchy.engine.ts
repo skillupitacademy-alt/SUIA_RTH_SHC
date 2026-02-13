@@ -71,12 +71,22 @@ export class AdminHierarchyEngine {
 
     const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
 
-    return await db.query.subjects.findMany({
+    const data = await db.query.subjects.findMany({
       where: whereClause,
       limit,
       offset,
       orderBy: [desc(subjects.createdAt)]
     });
+
+    const [{ count }] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(subjects)
+      .where(whereClause ?? sql`true`);
+
+    const total = Number(count ?? 0);
+    const totalPages = Math.max(1, Math.ceil(total / limit));
+
+    return { data, total, page, limit, totalPages };
   }
 
   static async createSubject(data: typeof subjects.$inferInsert) {
@@ -109,12 +119,22 @@ export class AdminHierarchyEngine {
 
     const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
 
-    return await db.query.topics.findMany({
+    const data = await db.query.topics.findMany({
       where: whereClause,
       limit,
       offset,
       orderBy: [desc(topics.createdAt)]
     });
+
+    const [{ count }] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(topics)
+      .where(whereClause ?? sql`true`);
+
+    const total = Number(count ?? 0);
+    const totalPages = Math.max(1, Math.ceil(total / limit));
+
+    return { data, total, page, limit, totalPages };
   }
 
   static async createTopic(data: typeof topics.$inferInsert) {
@@ -147,12 +167,22 @@ export class AdminHierarchyEngine {
 
     const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
 
-    return await db.query.subtopics.findMany({
+    const data = await db.query.subtopics.findMany({
       where: whereClause,
       limit,
       offset,
       orderBy: [desc(subtopics.createdAt)]
     });
+
+    const [{ count }] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(subtopics)
+      .where(whereClause ?? sql`true`);
+
+    const total = Number(count ?? 0);
+    const totalPages = Math.max(1, Math.ceil(total / limit));
+
+    return { data, total, page, limit, totalPages };
   }
 
   static async createSubtopic(data: typeof subtopics.$inferInsert) {
@@ -181,12 +211,22 @@ export class AdminHierarchyEngine {
         whereClause = sql`${skills.name} ILIKE ${'%' + filters.search + '%'}`;
     }
 
-    return await db.query.skills.findMany({
+    const data = await db.query.skills.findMany({
       where: whereClause,
       limit,
       offset,
       orderBy: [asc(skills.name)]
     });
+
+    const [{ count }] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(skills)
+      .where(whereClause ?? sql`true`);
+
+    const total = Number(count ?? 0);
+    const totalPages = Math.max(1, Math.ceil(total / limit));
+
+    return { data, total, page, limit, totalPages };
   }
 
   static async createSkill(data: typeof skills.$inferInsert) {

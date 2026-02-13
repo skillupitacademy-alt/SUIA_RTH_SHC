@@ -4,6 +4,12 @@ const nextConfig = {
     async headers() {
         return [
             {
+                source: '/api/(.*)',
+                headers: [
+                    { key: 'Cache-Control', value: 'no-store, no-cache, must-revalidate' },
+                ],
+            },
+            {
                 source: '/(.*)',
                 headers: [
                     { key: 'X-Content-Type-Options', value: 'nosniff' },

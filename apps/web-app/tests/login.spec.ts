@@ -27,6 +27,11 @@ for (const role of Object.keys(cfg) as Role[]) {
     const creds = cfg[role];
     test.skip(!creds.email || !creds.password, `${role} creds not set`);
 
+    // Listen to browser console logs to surface client-side errors in test output
+    page.on('console', (msg) => {
+      console.log(`[BROWSER:${role}]`, msg.type(), msg.text());
+    });
+
     if (role === 'admin') {
       // Use direct API login to avoid UI differences
       const res = await request.post(`${API_BASE}/api/admin/auth/login`, {
@@ -107,5 +112,8 @@ for (const role of Object.keys(cfg) as Role[]) {
     // 7) /auth/me should now be 401
     const meAfter = await request.get(`${API_BASE}/api/auth/me`, { headers: { origin: creds.base } });
     expect(meAfter.status()).toBe(401);
+
+    // Persist storage (cookies/localStorage/sessionStorage) for inspection
+    await context.storageState({ path: `apps/web-app/tests/artifacts/${role}-state.json` });
   });
 }
