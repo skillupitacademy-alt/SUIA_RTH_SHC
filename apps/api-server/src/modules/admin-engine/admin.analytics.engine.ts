@@ -1,4 +1,4 @@
-import { db, exams, domains, auditLogs, users, resultsByDimension, examQuestions } from '@quiz/db';
+import { db, exams, domains, subjects, topics, subtopics, questions, auditLogs, users, resultsByDimension, examQuestions } from '@quiz/db';
 import { eq, sql, desc, count, isNotNull } from 'drizzle-orm';
 import { TrendsService } from '@/modules/metrics/trends.service';
 
@@ -215,7 +215,69 @@ export class AdminAnalyticsEngine {
   }
 
   static async getBlueprintMetrics() { return { total: 0, active: 0, popular: [] }; }
-  static async getContentHealthReport() { return { score: 100, issues: [] }; }
+  static async getContentHealthReport() {
+    const allDomains = await db.query.domains.findMany({
+      with: {
+        subjects: {
+          with: {
+            topics: {
+              with: {
+                subtopics: true,
+                questions: {
+                   where: eq(questions.status, 'active')
+                },
+              }
+            }
+          }
+        }
+      }
+    });
+
+    const calculateStats = (qs: any[]) => {
+      const stats = {
+        total: qs.length,
+        simple: qs.filter(q => q.difficulty === 'simple').length,
+        intermediate: qs.filter(q => q.difficulty === 'intermediate').length,
+        expert: qs.filter(q => q.difficulty === 'expert').length,
+        isReady: qs.length >= 10 // Threshold for readiness
+      };
+      return stats;
+    };
+
+    return allDomains.map(domain => {
+      const domainQuestions: any[] = [];
+      const subjects = domain.subjects.map(subject => {
+        const subjectQuestions: any[] = [];
+        const topics = subject.topics.map(topic => {
+          subjectQuestions.push(...topic.questions);
+          return {
+            id: topic.id,
+            name: topic.name,
+            stats: calculateStats(topic.questions),
+            subtopics: topic.subtopics.map(st => ({
+              id: st.id,
+              name: st.name,
+              stats: calculateStats(topic.questions.filter(q => q.subtopicId === st.id))
+            }))
+          };
+        });
+        domainQuestions.push(...subjectQuestions);
+        return {
+          id: subject.id,
+          name: subject.name,
+          stats: calculateStats(subjectQuestions),
+          topics
+        };
+      });
+
+      return {
+        domainId: domain.id,
+        domainName: domain.name,
+        stats: calculateStats(domainQuestions),
+        subjects
+      };
+    });
+  }
   static async getGrowthZones() { return { areas: [] }; }
   static async getRBACMetrics() { return { roles: [], permissions: [] }; }
   static async getSecuritySignals() { return { threats: [], status: 'nominal' }; }
