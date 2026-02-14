@@ -16,12 +16,12 @@ async function loginUser(
     throw new Error('TEST_USER_EMAIL/TEST_USER_PASSWORD env vars are required for user login');
   }
 
-  // UI login to mirror real flow
-  await page.goto(`${UI_URL}/login`, { waitUntil: 'networkidle' });
-  await page.getByLabel('Email address', { exact: false }).fill(email);
-  await page.getByLabel('Password', { exact: false }).fill(password);
-  await page.getByRole('button', { name: /login|sign in|continue/i }).click();
-  await page.waitForURL(`${UI_URL}/**`, { waitUntil: 'networkidle' });
+  // UI login to mirror real flow (no networkidle to avoid production pings)
+  await page.goto(`${UI_URL}/login`, { waitUntil: 'domcontentloaded' });
+  await page.getByLabel(/email/i, { exact: false }).fill(email);
+  await page.getByLabel(/password/i, { exact: false }).fill(password);
+  await page.getByRole('button', { name: /login|sign in|authenticate|continue/i }).click();
+  await page.waitForURL('**/dashboard*', { timeout: 30000 });
 
   // Optional: clear admin cookies to prevent cross-role collisions
   const cookies = await page.context().cookies();

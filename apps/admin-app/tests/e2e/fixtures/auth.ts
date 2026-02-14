@@ -30,8 +30,9 @@ async function loginAdmin(
   // Button text is "AUTHENTICATE" on the admin login page.
   await page.getByRole('button', { name: /authenticate/i }).click();
 
-  // Wait for navigation to any authenticated page
-  await page.waitForURL('**/', { waitUntil: 'networkidle', timeout: 30000 });
+  // Wait for the dashboard shell to appear (no networkidle on prod due to background pings).
+  await page.waitForURL('**/', { timeout: 30000 });
+  await page.getByText(/Sign Out|Logout/i).first().waitFor({ state: 'visible', timeout: 30000 });
 }
 
 async function clearState(page: Page) {
@@ -65,11 +66,31 @@ async function forceRefreshFail(page: Page) {
 }
 
 async function shortenSession(page: Page) {
-  const soon = new Date(Date.now() + 2 * 60 * 1000).toISOString();
+  const soon = new Date(Date.now() + 90 * 1000).toISOString();
   await page.route('**/api/admin/auth/me', (route) => {
     route.fulfill({
       status: 200,
       body: JSON.stringify({ user: { isAdmin: true }, expiresAt: soon }),
+      headers: { 'Content-Type': 'application/json' },
+    });
+  });
+}
+
+async function mockRenewSession(page: Page) {
+  const later = new Date(Date.now() + 60 * 60 * 1000).toISOString();
+  // Mock the refresh call that happens when "Stay Logged In" is clicked
+  await page.route('**/api/admin/auth/refresh', (route) => {
+    route.fulfill({
+      status: 200,
+      body: JSON.stringify({ success: true, user: { isAdmin: true }, expiresAt: later }),
+      headers: { 'Content-Type': 'application/json' },
+    });
+  });
+  // Update the 'me' mock to also reflect the extension
+  await page.route('**/api/admin/auth/me', (route) => {
+    route.fulfill({
+      status: 200,
+      body: JSON.stringify({ user: { isAdmin: true }, expiresAt: later }),
       headers: { 'Content-Type': 'application/json' },
     });
   });
@@ -83,4 +104,5 @@ export const adminAuthFixtures = {
   hasAuth,
   forceRefreshFail,
   shortenSession,
+  mockRenewSession,
 };

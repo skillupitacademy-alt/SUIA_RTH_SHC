@@ -64,13 +64,19 @@ export class AdminAuthService {
 
     const refreshToken = await TokenService.generateRefreshToken(user.id, true);
     const refreshTokenHash = await TokenService.hashToken(refreshToken);
+    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours absolute limit
 
     await db.insert(refreshTokens).values({
       userId: user.id,
       token: refreshTokenHash,
-      expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
+      expiresAt,
     });
 
-    return { user: { id: user.id, email: user.email, profile: user.profile }, accessToken, refreshToken };
+    return { 
+      user: { id: user.id, email: user.email, profile: user.profile, name: user.profile?.name }, 
+      accessToken, 
+      refreshToken,
+      expiresAt: expiresAt.toISOString()
+    };
   }
 }

@@ -9,7 +9,8 @@ export default defineConfig({
   },
   reporter: [['list'], ['html', { outputFolder: 'playwright-report', open: 'never' }]],
   outputDir: 'playwright-artifacts',
-  workers: 2,
+  /* Opt out of parallel tests on local for live-site stability. */
+  workers: 1,
   use: {
     // Always capture full traces so the HTML report shows step-by-step state.
     trace: 'on',

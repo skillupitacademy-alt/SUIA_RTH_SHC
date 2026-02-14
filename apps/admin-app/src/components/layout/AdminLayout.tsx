@@ -16,6 +16,7 @@ import {
 import { cn } from '@/lib/utils';
 import { AdminGuard } from '@/components/auth/AdminGuard';
 import { SessionWatcher } from '@/components/auth/SessionWatcher';
+import { AdminLockScreen } from '@/components/auth/AdminLockScreen';
 import { useAuthStore } from '@/store/auth-store';
 import { apiClient } from '@quiz/api-client';
 import { ThemeToggle } from '@quiz/ui';
@@ -26,7 +27,7 @@ import { usePresenceHeartbeat } from '@/hooks/usePresenceHeartbeat';
 const ADMIN_NAV = [
     { name: 'Dashboard', href: '/', icon: LayoutDashboard },
     { name: 'Question Bank', href: '/questions', icon: Database },
-    { name: 'Question Factory', href: '/factory/question-generator', icon: BarChart3 }, // Using BarChart3 as placeholder or BrainCircuit if I import it
+    { name: 'Question Factory', href: '/factory/question-generator', icon: BarChart3 },
     { name: 'Reports', href: '/reports', icon: BarChart3 },
     { name: 'Users', href: '/users', icon: Users },
     { name: 'Governance', href: '/governance', icon: ShieldCheck },
@@ -85,6 +86,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 isRedirecting={isRedirecting}
                 redirectMessage={redirectMessage}
             />
+            <AdminLockScreen />
             {showWarning && (
                 <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
                     <div className="bg-background border rounded-[2.5rem] p-8 max-w-md w-full shadow-2xl relative overflow-hidden">
