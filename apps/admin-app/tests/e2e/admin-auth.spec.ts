@@ -15,7 +15,30 @@ test.describe('Admin Auth E2E', () => {
     await adminAuthFixtures.loginAdmin(page);
     await page.goto(`${ADMIN_UI_URL}/`);
     await expect(page).not.toHaveURL(/login/);
-    await page.getByRole('button', { name: /Sign Out|Logout/i }).click();
+    const logoutBtn = page.getByText(/Sign Out|Logout/i).first();
+    await logoutBtn.click({ timeout: 20000 });
+    await expect(page).toHaveURL(/login/);
+    expect(await adminAuthFixtures.hasAuth(page)).toBeFalsy();
+  });
+
+  test('Sign Out shows redirect banner and no session-warning modal', async ({ page }) => {
+    await page.goto(`${ADMIN_UI_URL}/login`);
+    await adminAuthFixtures.loginAdmin(page);
+    await page.goto(`${ADMIN_UI_URL}/`);
+
+    // Trigger manual sign out
+    const logoutBtn = page.getByText(/Sign Out|Logout/i).first();
+    await logoutBtn.click({ timeout: 20000 });
+
+    // While redirecting, a toast/banner should appear
+    const redirectBanner = page.getByText('Redirecting...', { exact: false });
+    await expect(redirectBanner).toBeVisible({ timeout: 3000 });
+
+    // The session-expiring modal should NOT appear during manual logout
+    const warningModal = page.getByText('Session Expiring', { exact: false });
+    await expect(warningModal).toBeHidden({ timeout: 1000 });
+
+    // Final state: back at login and auth cleared
     await expect(page).toHaveURL(/login/);
     expect(await adminAuthFixtures.hasAuth(page)).toBeFalsy();
   });

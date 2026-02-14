@@ -1,39 +1,10 @@
-import { Page, Response, APIResponse } from '@playwright/test';
+import { Page } from '@playwright/test';
 
 const ADMIN_UI_URL = process.env.ADMIN_UI_URL || 'https://admin.realtutorialhub.com';
 const API_URL = process.env.API_URL || 'https://api.realtutorialhub.com';
 
 const defaultAdminEmail = process.env.TEST_ADMIN_EMAIL;
 const defaultAdminPassword = process.env.TEST_ADMIN_PASSWORD;
-
-async function setCookiesFromResponse(page: Page, resp: Response | APIResponse) {
-  const rawSetCookie = resp.headers()['set-cookie'];
-  if (!rawSetCookie) return;
-  const cookies = rawSetCookie.split(',').map((c: string) => c.trim());
-  await page.context().addCookies(
-    cookies
-      .map((cookieStr: string) => {
-        const [nameValue, ...attrs] = cookieStr.split(';').map((p) => p.trim());
-        const [name, value] = nameValue.split('=');
-        const domainAttr = attrs.find((a) => a.toLowerCase().startsWith('domain='));
-        const pathAttr = attrs.find((a) => a.toLowerCase().startsWith('path='));
-        return {
-          name,
-          value,
-          domain: domainAttr ? domainAttr.split('=')[1] : new URL(ADMIN_UI_URL).hostname,
-          path: pathAttr ? pathAttr.split('=')[1] : '/',
-          httpOnly: attrs.some((a) => a.toLowerCase() === 'httponly'),
-          secure: attrs.some((a) => a.toLowerCase() === 'secure'),
-          sameSite: (attrs.some((a) => a.toLowerCase() === 'samesite=none') ? 'None' : 'Lax') as
-            | 'None'
-            | 'Lax'
-            | 'Strict'
-            | undefined,
-        };
-      })
-      .filter(Boolean)
-  );
-}
 
 async function loginAdmin(
   page: Page,
@@ -45,19 +16,31 @@ async function loginAdmin(
     throw new Error('TEST_ADMIN_EMAIL/TEST_ADMIN_PASSWORD env vars are required for admin login');
   }
 
-  const resp = await page.request.post(`${API_URL}/api/admin/auth/login`, {
-    data: { email, password },
-  });
-  if (!resp.ok()) {
-    throw new Error(`Admin login failed: ${resp.status()} ${await resp.text()}`);
-  }
-  await setCookiesFromResponse(page, resp);
+  // Use the real UI flow to avoid domain/cookie parsing issues and mirror production.
+  await page.goto(`${ADMIN_UI_URL}/login`, { waitUntil: 'domcontentloaded' });
+
+  const emailInput = page.locator('input[type="email"]');
+  await emailInput.waitFor({ state: 'visible', timeout: 30000 });
+  await emailInput.fill(email);
+
+  const passwordInput = page.locator('input[type="password"]');
+  await passwordInput.waitFor({ state: 'visible', timeout: 30000 });
+  await passwordInput.fill(password);
+
+  // Button text is "AUTHENTICATE" on the admin login page.
+  await page.getByRole('button', { name: /authenticate/i }).click();
+
+  // Wait for navigation to any authenticated page
+  await page.waitForURL('**/', { waitUntil: 'networkidle', timeout: 30000 });
 }
 
 async function clearState(page: Page) {
+  // Move to a same-origin page so localStorage is accessible before clearing.
+  await page.goto(`${ADMIN_UI_URL}/login`, { waitUntil: 'domcontentloaded' });
   await page.context().clearCookies();
   await page.evaluate(() => {
     localStorage.removeItem('quiz-platform-admin-auth');
+    sessionStorage.clear();
   });
 }
 

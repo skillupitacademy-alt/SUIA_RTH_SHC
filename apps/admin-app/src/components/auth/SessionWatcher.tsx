@@ -10,9 +10,10 @@ interface SessionWatcherProps {
     onRefresh: () => Promise<void>;
     onLogout: () => void;
     isRedirecting?: boolean;
+    redirectMessage?: string;
 }
 
-export function SessionWatcher({ expiresAt, onRefresh, onLogout, isRedirecting }: SessionWatcherProps) {
+export function SessionWatcher({ expiresAt, onRefresh, onLogout, isRedirecting, redirectMessage }: SessionWatcherProps) {
     const [showWarning, setShowWarning] = useState(false);
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [remainingSeconds, setRemainingSeconds] = useState<number | null>(null);
@@ -59,6 +60,13 @@ export function SessionWatcher({ expiresAt, onRefresh, onLogout, isRedirecting }
         return () => clearInterval(interval);
     }, [expiresAt, onLogout]);
 
+    // If a redirect is already underway, suppress the warning modal to avoid flicker.
+    useEffect(() => {
+        if (isRedirecting) {
+            setShowWarning(false);
+        }
+    }, [isRedirecting]);
+
     return (
         <>
             {isRedirecting && (
@@ -67,7 +75,7 @@ export function SessionWatcher({ expiresAt, onRefresh, onLogout, isRedirecting }
                         <div className="h-2 w-2 rounded-full bg-[#FF4B91] animate-pulse" />
                         <div className="flex flex-col">
                             <span className="alpha-terminal text-[10px] text-[#FF4B91] !tracking-[0.2em]">Security Protocol</span>
-                            <span className="text-sm font-bold text-slate-800">Session expired. Redirecting...</span>
+                            <span className="text-sm font-bold text-slate-800">{redirectMessage ?? 'Redirecting...'}</span>
                         </div>
                     </div>
                 </div>

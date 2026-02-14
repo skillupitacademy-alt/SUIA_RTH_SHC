@@ -39,11 +39,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     const pathname = usePathname();
     const { logout, expiresAt, user, login } = useAuthStore();
     const [isRedirecting, setIsRedirecting] = useState(false);
+    const [redirectMessage, setRedirectMessage] = useState<string | undefined>(undefined);
     const { showWarning, cancelNavigation } = useStrictNavigation();
 
     const handleLogout = async (reason?: 'session_expired') => {
         if (isRedirecting) return;
         setIsRedirecting(true);
+        setRedirectMessage(reason === 'session_expired' ? 'Session expired. Redirecting...' : 'Logging out. Redirecting...');
 
         // Terminate session on server immediately
         try {
@@ -81,6 +83,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 onRefresh={handleRefresh}
                 onLogout={onExpiryLogout}
                 isRedirecting={isRedirecting}
+                redirectMessage={redirectMessage}
             />
             {showWarning && (
                 <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">

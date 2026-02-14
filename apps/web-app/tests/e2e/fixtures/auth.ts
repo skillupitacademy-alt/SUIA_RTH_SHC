@@ -1,39 +1,10 @@
-import { Page, Response, APIResponse } from '@playwright/test';
+import { Page } from '@playwright/test';
 
 export const UI_URL = process.env.USER_UI_URL || 'https://quiz.realtutorialhub.com';
 export const API_URL = process.env.API_URL || 'https://api.realtutorialhub.com';
 
 const defaultEmail = process.env.TEST_USER_EMAIL;
 const defaultPassword = process.env.TEST_USER_PASSWORD;
-
-async function setCookiesFromResponse(page: Page, resp: Response | APIResponse) {
-  const setCookieHeader = resp.headers()['set-cookie'];
-  if (!setCookieHeader) return;
-  const cookies = setCookieHeader.split(',').map((c: string) => c.trim());
-  await page.context().addCookies(
-    cookies
-      .map((cookieStr: string) => {
-        const [nameValue, ...attrs] = cookieStr.split(';').map((p) => p.trim());
-        const [name, value] = nameValue.split('=');
-        const domainAttr = attrs.find((a) => a.toLowerCase().startsWith('domain='));
-        const pathAttr = attrs.find((a) => a.toLowerCase().startsWith('path='));
-        return {
-          name,
-          value,
-          domain: domainAttr ? domainAttr.split('=')[1] : new URL(UI_URL).hostname,
-          path: pathAttr ? pathAttr.split('=')[1] : '/',
-          httpOnly: attrs.some((a) => a.toLowerCase() === 'httponly'),
-          secure: attrs.some((a) => a.toLowerCase() === 'secure'),
-          sameSite: (attrs.some((a) => a.toLowerCase() === 'samesite=none') ? 'None' : 'Lax') as
-            | 'None'
-            | 'Lax'
-            | 'Strict'
-            | undefined,
-        };
-      })
-      .filter(Boolean)
-  );
-}
 
 async function loginUser(
   page: Page,
@@ -45,19 +16,29 @@ async function loginUser(
     throw new Error('TEST_USER_EMAIL/TEST_USER_PASSWORD env vars are required for user login');
   }
 
-  const resp = await page.request.post(`${API_URL}/api/auth/login`, {
-    data: { email, password },
-  });
-  if (!resp.ok()) {
-    throw new Error(`User login failed: ${resp.status()} ${await resp.text()}`);
-  }
-  await setCookiesFromResponse(page, resp);
+  // UI login to mirror real flow
+  await page.goto(`${UI_URL}/login`, { waitUntil: 'networkidle' });
+  await page.getByLabel('Email address', { exact: false }).fill(email);
+  await page.getByLabel('Password', { exact: false }).fill(password);
+  await page.getByRole('button', { name: /login|sign in|continue/i }).click();
+  await page.waitForURL(`${UI_URL}/**`, { waitUntil: 'networkidle' });
+
+  // Optional: clear admin cookies to prevent cross-role collisions
+  const cookies = await page.context().cookies();
+  const filtered = cookies.filter(
+    (c) => c.name !== 'admin_accessToken' && c.name !== 'admin_refreshToken'
+  );
+  await page.context().clearCookies();
+  if (filtered.length) await page.context().addCookies(filtered);
 }
 
 async function clearState(page: Page) {
+  // Move to a same-origin page so localStorage is accessible before clearing.
+  await page.goto(`${UI_URL}/login`, { waitUntil: 'domcontentloaded' });
   await page.context().clearCookies();
   await page.evaluate(() => {
     localStorage.removeItem('quiz-platform-auth');
+    sessionStorage.clear();
   });
 }
 

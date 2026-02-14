@@ -1,8 +1,9 @@
+import 'dotenv/config';
 import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
   testDir: '.',
-  timeout: 60_000,
+  timeout: 90_000,
   expect: {
     timeout: 10_000,
   },
@@ -10,9 +11,18 @@ export default defineConfig({
   outputDir: 'playwright-artifacts',
   workers: 2,
   use: {
-    trace: 'retain-on-failure',
-    video: 'off',
-    screenshot: 'only-on-failure',
+    // Always capture full traces so the HTML report shows step-by-step state.
+    trace: 'on',
+    // Also capture a full-page screenshot at the end of every test (pass/fail).
+    screenshot: 'on',
+    // Keep video only when failing to control artifact size.
+    video: 'retain-on-failure',
+    // Slow actions slightly so the UI can settle between steps (helps with clean snapshots).
+    launchOptions: {
+      slowMo: 100,
+    },
+    navigationTimeout: 45_000,
+    actionTimeout: 20_000,
   },
   projects: [
     {

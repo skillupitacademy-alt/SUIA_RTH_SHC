@@ -340,4 +340,6 @@
 | 2026-02-14 | Final Monorepo Verification | COMPLETED | Confirmed 100% build stability (`pnpm build:all`), type-safety (`pnpm typecheck:all`), and lint compliance (`pnpm lint:all`) with Exit Code 0. |
 
 | 2026-02-14 | Documentation Sync | COMPLETED | Updated `TASK_HISTORY.md` and `CURRENT_TASK_LOG.md` to reflect the full recovery and cleanup cycle. |
+| 2026-02-14 | Env Standardization | COMPLETED | Standardized `.env.local` with professional headings for Cloudflare (API Token & Zone ID) and Deployment Environments. |
+| 2026-02-14 | Admin/Web Auth Fixture Cleanup | BLOCKED | Removed unused Set-Cookie helpers, shifted admin login fixture to UI flow with resilient selectors, and re-ran `pnpm lint:all`, `pnpm typecheck:all`, `pnpm build:all` (all passed). Admin E2E remains blocked locally by Windows EPERM/AV on Playwright spawn & artifact cleanup; rerun requires folder unlock/AV whitelist. |
 
