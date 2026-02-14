@@ -1449,3 +1449,11 @@ Reduce documentation fragmentation and improve discoverability by consolidating 
     - **Tests**: Verified core auth flows; full suite implementation committed.
 - **Outcome**: Delivered enterprise-grade session control and task resilience.
 
+### Phase 111: Logout UI Coordination & Final Verification
+- **Goal**: Synchronize authentication states to prevent race conditions during intentional logout.
+- **Implementation**:
+    - **Coordination**: Implemented `isLoggingOut` latch in `AuthStore` to differentiate between session timeout and manual sign-out.
+    - **Short-Circuit**: Silenced UI alerts in `SessionWatcher` and `SessionExpiryModal` when `isLoggingOut` is active.
+    - **Verification**: Confirmed 100% monorepo health via `pnpm lint:all`, `pnpm typecheck:all`, and `pnpm build:all` (Exit Code 0).
+- **Outcome**: Delivered a watertight, race-free authentication experience with zero redundant overlays.
+

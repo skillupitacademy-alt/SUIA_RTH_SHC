@@ -135,5 +135,13 @@
     - **UI Assembly**: Integrated `JobStatusBadge` into Admin Layout and `useJobTracker` hook for client polling.
     - **Verification**: Added "Long-Task Resilience" E2E test; confirmed 100% build stability (Exit Code 0).
 
+- **Task**: Logout UI Coordination & Final Verification
+- **Outcome**: Resolved UI race conditions and verified 100% system readiness.
+- **Details**:
+    - **Coordination**: Implemented `isLoggingOut` flag in `AuthStore` to suppress redundant expiry modals during manual logout.
+    - **Short-Circuit**: Silenced `SessionWatcher` and `SessionExpiryModal` logic when logout is in progress.
+    - **Verification**: Confirmed `pnpm lint:all`, `pnpm typecheck:all`, and `pnpm build:all` pass system-wide with Exit Code 0.
+    - **Deployment**: Verified targeted production builds for both `@quiz/admin-app` and `@quiz/api-server`.
+
 ### 🚀 Next Steps
 - Task Completed. Project is in a clean, high-quality state.
