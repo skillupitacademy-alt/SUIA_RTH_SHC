@@ -1,9 +1,11 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { ConfirmationDialog } from '@/components/ui/ConfirmationDialog';
 
-const WARNING_THRESHOLD = 180; // 180 seconds (3 minutes)
+const WARNING_THRESHOLD = 180; // 3 minutes
+const FORCED_IDLE_WARNING_MS = 55 * 60 * 1000;
+const FORCED_IDLE_LOGOUT_MS = 60 * 60 * 1000;
 
 interface SessionWatcherProps {
     expiresAt: string | null;
@@ -17,11 +19,21 @@ export function SessionWatcher({ expiresAt, onRefresh, onLogout, isRedirecting }
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [remainingSeconds, setRemainingSeconds] = useState<number | null>(null);
 
+    // Idle State
+    const [lastActivityAt, setLastActivityAt] = useState(Date.now());
+    const [isForcedLogoutWarning, setIsForcedLogoutWarning] = useState(false);
+
     const handleStayLoggedIn = async () => {
         setIsRefreshing(true);
         try {
-            await onRefresh();
-            setShowWarning(false);
+            if (isForcedLogoutWarning) {
+                setLastActivityAt(Date.now());
+                setIsForcedLogoutWarning(false);
+                setShowWarning(false);
+            } else {
+                await onRefresh();
+                setShowWarning(false);
+            }
         } catch {
             onLogout();
         } finally {
@@ -29,34 +41,65 @@ export function SessionWatcher({ expiresAt, onRefresh, onLogout, isRedirecting }
         }
     };
 
-    useEffect(() => {
-        if (!expiresAt) {
-            setShowWarning(false);
-            setRemainingSeconds(null);
-            return;
+    // Track Activity
+    const resetIdleTimer = useCallback(() => {
+        if (!isForcedLogoutWarning) {
+            setLastActivityAt(Date.now());
         }
+    }, [isForcedLogoutWarning]);
 
-        const checkSession = () => {
+    useEffect(() => {
+        const events = ['mousedown', 'keydown', 'scroll', 'mousemove'];
+        events.forEach(e => window.addEventListener(e, resetIdleTimer));
+        return () => events.forEach(e => window.removeEventListener(e, resetIdleTimer));
+    }, [resetIdleTimer]);
+
+    useEffect(() => {
+        const checkStatus = () => {
             const now = Date.now();
-            const expiryTime = new Date(expiresAt).getTime();
-            const timeLeftSeconds = Math.floor((expiryTime - now) / 1000);
+            const idleTime = now - lastActivityAt;
 
-            setRemainingSeconds(timeLeftSeconds);
-
-            if (timeLeftSeconds <= 0) {
+            // 1. Forced Logout Check
+            if (idleTime >= FORCED_IDLE_LOGOUT_MS) {
                 onLogout();
-            } else if (timeLeftSeconds <= WARNING_THRESHOLD) {
+                return;
+            }
+
+            // 2. Session Expiry Check
+            if (expiresAt) {
+                const expiryTime = new Date(expiresAt).getTime();
+                const timeLeftSeconds = Math.floor((expiryTime - now) / 1000);
+                setRemainingSeconds(timeLeftSeconds);
+
+                if (timeLeftSeconds <= 0) {
+                    onLogout();
+                    return;
+                } else if (timeLeftSeconds <= WARNING_THRESHOLD) {
+                    setIsForcedLogoutWarning(false);
+                    setShowWarning(true);
+                    return;
+                }
+            }
+
+            // 3. Forced Warning Check
+            if (idleTime >= FORCED_IDLE_WARNING_MS) {
+                setIsForcedLogoutWarning(true);
                 setShowWarning(true);
-            } else {
-                setShowWarning(false);
             }
         };
 
-        const interval = setInterval(checkSession, 30000);
-        checkSession();
-
+        const interval = setInterval(checkStatus, 1000);
+        checkStatus();
         return () => clearInterval(interval);
-    }, [expiresAt, onLogout]);
+    }, [expiresAt, onLogout, lastActivityAt]);
+
+    let title = "Session Expiring";
+    let message = `Your session will expire in ${remainingSeconds ? Math.ceil(remainingSeconds / 60) : 3} minutes. Would you like to stay logged in?`;
+
+    if (isForcedLogoutWarning) {
+        title = "Security Cutoff Imminent";
+        message = "You have been idle for 55 minutes. For security, you will be signed out in 5 minutes.";
+    }
 
     return (
         <>
@@ -73,13 +116,13 @@ export function SessionWatcher({ expiresAt, onRefresh, onLogout, isRedirecting }
 
             <ConfirmationDialog
                 isOpen={showWarning && !isRedirecting}
-                title="Session Expiring"
-                message={`Your session will expire in ${remainingSeconds ? Math.ceil(remainingSeconds / 60) : 3} minutes. Would you like to stay logged in?`}
-                confirmText={isRefreshing ? "Renewing..." : "Stay Logged In"}
+                title={title}
+                message={message}
+                confirmText={isRefreshing ? "Renewing..." : (isForcedLogoutWarning ? "Stay Active" : "Stay Logged In")}
                 cancelText="Sign Out"
                 onConfirm={handleStayLoggedIn}
                 onCancel={onLogout}
-                variant="warning"
+                variant={isForcedLogoutWarning ? "danger" : "warning"}
             />
         </>
     );

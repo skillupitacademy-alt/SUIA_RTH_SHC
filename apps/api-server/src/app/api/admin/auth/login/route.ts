@@ -31,7 +31,7 @@ export async function POST(_req: Request) {
 
     const response = NextResponse.json({
         user,
-        expiresAt: null, // client relies on cookie lifetime; keep shape consistent with apiClient expectations
+        expiresAt: result.expiresAt, // Return exact expiry for SessionWatcher
         // accessToken intentionally omitted from body (HttpOnly cookie)
     });
 
