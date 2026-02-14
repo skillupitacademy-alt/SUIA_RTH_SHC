@@ -29,9 +29,11 @@ const nextConfig = {
                             "default-src 'self'",
                             "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://static.cloudflareinsights.com",
                             "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-                            "img-src 'self' data: blob: https://images.unsplash.com https://realtutorialhub.com",
+                            "img-src 'self' data: blob: https://images.unsplash.com " + (process.env.NEXT_PUBLIC_WEB_APP_URL || ""),
                             "font-src 'self' https://fonts.gstatic.com",
-                            "connect-src 'self' https://api.realtutorialhub.com https://admin.realtutorialhub.com https://quiz.realtutorialhub.com https://cloudflareinsights.com",
+                            "connect-src 'self' " +
+                            [process.env.NEXT_PUBLIC_API_URL, process.env.NEXT_PUBLIC_ADMIN_URL, process.env.NEXT_PUBLIC_WEB_APP_URL, "https://cloudflareinsights.com"]
+                                .filter(Boolean).join(" "),
                             "frame-ancestors 'none'",
                             "base-uri 'self'",
                             "form-action 'self'",

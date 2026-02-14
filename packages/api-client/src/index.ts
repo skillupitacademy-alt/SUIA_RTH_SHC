@@ -11,38 +11,12 @@ function getApiUrl(): string {
   if (process.env.NEXT_PUBLIC_API_URL) {
     return process.env.NEXT_PUBLIC_API_URL.replace(/\/$/, '');
   }
-  if (typeof window !== 'undefined') {
-    const hostname = window.location.hostname;
-    if (hostname.includes('vercel.app')) {
-      const apiHostname = hostname
-        .replace('web-app.', 'api-server.')
-        .replace('admin-app.', 'api-server.')
-        .replace('web.', 'api.')
-        .replace('admin.', 'api.');
-      return `https://${apiHostname}/api`;
-    }
-    if (hostname.includes('realtutorialhub.com')) {
-      return `https://api.realtutorialhub.com/api`;
-    }
-  }
   return '/api'; 
 }
 
 function getAdminUrl(): string {
   if (process.env.NEXT_PUBLIC_ADMIN_URL) {
     return process.env.NEXT_PUBLIC_ADMIN_URL.replace(/\/$/, '');
-  }
-  if (typeof window !== 'undefined') {
-    const hostname = window.location.hostname;
-    if (hostname.includes('vercel.app')) {
-      const adminHostname = hostname
-        .replace('web-app.', 'admin-app.')
-        .replace('web.', 'admin.');
-      return `https://${adminHostname}`;
-    }
-    if (hostname.includes('realtutorialhub.com')) {
-      return `https://admin.realtutorialhub.com`;
-    }
   }
   return '#'; 
 }

@@ -23,9 +23,11 @@ const nextConfig = {
                             "default-src 'self'",
                             "script-src 'self'",
                             "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-                            "img-src 'self' data: blob: https://images.unsplash.com https://realtutorialhub.com",
+                            "img-src 'self' data: blob: https://images.unsplash.com " + (process.env.NEXT_PUBLIC_WEB_APP_URL || ""),
                             "font-src 'self' https://fonts.gstatic.com",
-                            "connect-src 'self' https://api.realtutorialhub.com https://admin.realtutorialhub.com https://quiz.realtutorialhub.com",
+                            "connect-src 'self' " +
+                            [process.env.NEXT_PUBLIC_API_URL, process.env.NEXT_PUBLIC_ADMIN_URL, process.env.NEXT_PUBLIC_WEB_APP_URL]
+                                .filter(Boolean).join(" "),
                             "frame-ancestors 'none'",
                             "base-uri 'self'",
                             "form-action 'self'",

@@ -1,26 +1,30 @@
 import 'dotenv/config';
 import { test, expect, type Cookie } from '@playwright/test';
 
-const API_BASE = 'https://api.realtutorialhub.com';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL;
 
 type Role = 'admin' | 'user';
 
 const cfg: Record<Role, { base: string; email?: string; password?: string; access: string; refresh: string }> = {
   admin: {
-    base: 'https://admin.realtutorialhub.com',
+    base: process.env.NEXT_PUBLIC_ADMIN_URL!,
     email: process.env.TEST_ADMIN_EMAIL,
     password: process.env.TEST_ADMIN_PASSWORD,
     access: 'admin_accessToken',
     refresh: 'admin_refreshToken',
   },
   user: {
-    base: 'https://quiz.realtutorialhub.com',
+    base: process.env.NEXT_PUBLIC_WEB_APP_URL!,
     email: process.env.TEST_USER_EMAIL,
     password: process.env.TEST_USER_PASSWORD,
     access: 'accessToken',
     refresh: 'refreshToken',
   },
 };
+
+if (!cfg.admin.base || !cfg.user.base || !API_BASE) {
+  throw new Error('NEXT_PUBLIC_ADMIN_URL, NEXT_PUBLIC_WEB_APP_URL, and NEXT_PUBLIC_API_URL are required for login.spec.ts');
+}
 
 for (const role of Object.keys(cfg) as Role[]) {
   test(`${role} login -> dashboard -> logout roundtrip`, async ({ page, request, context }) => {

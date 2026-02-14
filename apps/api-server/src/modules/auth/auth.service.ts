@@ -361,8 +361,12 @@ export class AuthService {
     const isAdmin = roleNames.includes('ADMIN') || roleNames.includes('SUPER_ADMIN');
     
     const baseUrl = isAdmin 
-      ? ((process.env.ADMIN_URL !== undefined && process.env.ADMIN_URL !== null && process.env.ADMIN_URL !== '') ? process.env.ADMIN_URL : (process.env.NEXT_PUBLIC_ADMIN_URL !== undefined && process.env.NEXT_PUBLIC_ADMIN_URL !== null && process.env.NEXT_PUBLIC_ADMIN_URL !== '') ? process.env.NEXT_PUBLIC_ADMIN_URL : 'https://admin.realtutorialhub.com')
-      : ((process.env.APP_BASE_URL !== undefined && process.env.APP_BASE_URL !== null && process.env.APP_BASE_URL !== '') ? process.env.APP_BASE_URL : 'https://quiz.realtutorialhub.com');
+      ? process.env.NEXT_PUBLIC_ADMIN_URL
+      : process.env.NEXT_PUBLIC_WEB_APP_URL;
+
+    if (!baseUrl) {
+        throw new Error(`Environment variable ${isAdmin ? 'NEXT_PUBLIC_ADMIN_URL' : 'NEXT_PUBLIC_WEB_APP_URL'} is required for password reset`);
+    }
 
     const resetUrl = `${baseUrl.replace(/\/$/, '')}/reset-password?_token=${_token}`;
     

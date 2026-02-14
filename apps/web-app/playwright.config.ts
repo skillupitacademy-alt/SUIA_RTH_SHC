@@ -13,7 +13,7 @@ export default defineConfig({
   reporter: [['list']],
   use: {
     actionTimeout: 0,
-    baseURL: 'https://quiz.realtutorialhub.com',
+    baseURL: process.env.NEXT_PUBLIC_WEB_APP_URL,
     trace: 'retain-on-failure', // rely on built-in trace handling to avoid double-start conflicts
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',

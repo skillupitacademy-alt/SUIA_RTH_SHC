@@ -7,17 +7,17 @@ export const config = {
   // CORS Configuration
   cors: {
     allowedOrigins: process.env.ALLOWED_ORIGINS?.split(',') || [
-      'https://quiz.realtutorialhub.com',
-      'https://admin.realtutorialhub.com',
-    ],
+      process.env.NEXT_PUBLIC_WEB_APP_URL,
+      process.env.NEXT_PUBLIC_ADMIN_URL,
+    ].filter(Boolean) as string[],
   },
 
   // CSRF Configuration
   csrf: {
     allowedOrigins: process.env.ALLOWED_ORIGINS?.split(',') || [
-      'https://quiz.realtutorialhub.com',
-      'https://admin.realtutorialhub.com',
-    ],
+      process.env.NEXT_PUBLIC_WEB_APP_URL,
+      process.env.NEXT_PUBLIC_ADMIN_URL,
+    ].filter(Boolean) as string[],
     cookieSettings: {
       httpOnly: false,
       secure: true,

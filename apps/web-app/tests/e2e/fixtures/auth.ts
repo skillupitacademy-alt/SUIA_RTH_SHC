@@ -1,7 +1,7 @@
 import { Page } from '@playwright/test';
 
-export const UI_URL = process.env.USER_UI_URL || 'https://quiz.realtutorialhub.com';
-export const API_URL = process.env.API_URL || 'https://api.realtutorialhub.com';
+export const UI_URL = process.env.NEXT_PUBLIC_WEB_APP_URL;
+export const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const defaultEmail = process.env.TEST_USER_EMAIL;
 const defaultPassword = process.env.TEST_USER_PASSWORD;
