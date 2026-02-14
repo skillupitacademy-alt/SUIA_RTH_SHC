@@ -83,7 +83,7 @@ export default function ForgotPasswordPage() {
                                 type="email"
                                 required
                                 className="w-full pl-12 pr-4 py-3 rounded-xl border bg-muted/30 text-foreground focus:bg-background focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all font-medium"
-                                placeholder="governance@realtutorialhub.com"
+                                placeholder="admin@example.com"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                             />

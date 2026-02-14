@@ -18,7 +18,7 @@ export async function POST(_req: NextRequest) {
   }
 
   const response = NextResponse.json({ message: 'Logged out' });
-  const cookieDomain = process.env.COOKIE_DOMAIN ?? '.realtutorialhub.com';
+  const cookieDomain = process.env.COOKIE_DOMAIN;
   
   const clear = (name: string) => {
     response.cookies.set(name, '', {

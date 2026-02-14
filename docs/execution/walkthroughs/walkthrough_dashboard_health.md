@@ -10,7 +10,7 @@ I have addressed the dashboard 404 errors and authentication instability by crea
 - **Link Normalization**: Updated the Dashboard and Sidebar to point all assessment links to the correct Premium HUD route (`/exam/[id]`) instead of legacy routes.
 
 ### Authentication Hardening
-- **Cross-Subdomain Stability**: Updated `login` and `refresh` routes to use `SameSite: 'none'` and `Secure: true`. This ensures that authentication cookies are reliably transmitted between `api.realtutorialhub.com` and the web application subdomains.
+- **Cross-Subdomain Stability**: Updated `login` and `refresh` routes to use `SameSite: 'none'` and `Secure: true`. This ensures that authentication cookies are reliably transmitted between the API and the web application subdomains.
 - **Persistence**: Verified that the `accessToken` and `refreshToken` correctly propagate across subdomain boundaries, resolving the periodic `401 Unauthorized` errors.
 
 ## Verification Results

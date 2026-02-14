@@ -51,7 +51,7 @@ export async function POST(_req: NextRequest) {
 
     const response = NextResponse.json({ success: true, expiresAt });
 
-    const cookieDomain = process.env.COOKIE_DOMAIN ?? '.realtutorialhub.com';
+    const cookieDomain = process.env.COOKIE_DOMAIN;
 
     // Re-issue Access Token Cookie
     const accessTokenCookieName = isAdmin ? 'admin_accessToken' : 'accessToken';

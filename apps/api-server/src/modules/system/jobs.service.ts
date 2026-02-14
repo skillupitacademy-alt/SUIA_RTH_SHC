@@ -50,7 +50,14 @@ export class JobsService {
     status: 'pending' | 'processing' | 'completed' | 'failed',
     data?: { result?: Record<string, unknown>; error?: string }
   ) {
-    const updateData: any = {
+    const updateData: {
+      status: 'pending' | 'processing' | 'completed' | 'failed';
+      updatedAt: Date;
+      startedAt?: Date;
+      completedAt?: Date;
+      result?: Record<string, unknown>;
+      error?: string;
+    } = {
       status,
       updatedAt: new Date(),
     };
@@ -59,8 +66,8 @@ export class JobsService {
       updateData.startedAt = new Date();
     } else if (status === 'completed' || status === 'failed') {
       updateData.completedAt = new Date();
-      if (data?.result) updateData.result = data.result;
-      if (data?.error) updateData.error = data.error;
+      if (data?.result !== undefined) updateData.result = data.result;
+      if (data?.error !== undefined) updateData.error = data.error;
     }
 
     const [job] = await db
@@ -75,7 +82,7 @@ export class JobsService {
   /**
    * DEV ONLY: Simulate job transitions for testing resilience.
    */
-  static async simulateJob(jobId: string, userId: string) {
+  static async simulateJob(jobId: string, _userId: string) {
     if (process.env.NODE_ENV === 'production') return;
 
     try {

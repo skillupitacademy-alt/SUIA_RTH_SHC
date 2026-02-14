@@ -11,7 +11,7 @@
 #### Automatic Detection (Vercel)
 The app **automatically detects** environments:
 - **Vercel Preview**: Auto-links via `*.vercel.app` subdomains.
-- **Production**: Uses `api.realtutorialhub.com`.
+- **Production**: Uses `NEXT_PUBLIC_API_URL` (Production API).
 
 #### Environment Variables (.env)
 | File | Scope | Status |
@@ -43,9 +43,9 @@ The app **automatically detects** environments:
 
 #### Architecture
 The platform is deployed as **3 separate Vercel projects**:
-1. **Web App**: `quiz.realtutorialhub.com` (`apps/web-app`)
-2. **API Server**: `api.realtutorialhub.com` (`apps/api-server`)
-3. **Admin App**: `admin.realtutorialhub.com` (`apps/admin-app`)
+1. **Web App**: `NEXT_PUBLIC_WEB_APP_URL`
+2. **API Server**: `NEXT_PUBLIC_API_URL`
+3. **Admin App**: `NEXT_PUBLIC_ADMIN_URL`
 
 #### Deployment Checklist
 1. **Project Name**: Matches folder (e.g., `quiz-platform-api-server`).
@@ -63,5 +63,5 @@ The platform is deployed as **3 separate Vercel projects**:
 
 #### CORS Errors
 - **Cause**: Request from unauthorized origin.
-- **Fix**: Check `rules/cors.ts`. `realtutorialhub.com` is whitelisted. Localhost is deprecated for auth flows in prod, use Vercel Preview.
+- **Fix**: Check CORS configuration. All origins in `ALLOWED_ORIGINS` are whitelisted.
 

@@ -40,7 +40,7 @@ export async function POST(_req: NextRequest) {
       // accessToken removed from body
     });
 
-    const cookieDomain = process.env.COOKIE_DOMAIN ?? '.realtutorialhub.com';
+    const cookieDomain = process.env.COOKIE_DOMAIN;
 
     // Set HttpOnly cookies for Access Token
     const accessTokenCookieName = isAdmin === true ? 'admin_accessToken' : 'accessToken';

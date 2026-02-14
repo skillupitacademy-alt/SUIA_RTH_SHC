@@ -256,7 +256,7 @@ export const UX_SPEC_DATA = {
 export const INFRA_DATA = {
     envConfig: [
         { Detection: 'Vercel Preview', Link: '*.vercel.app' },
-        { Detection: 'Production', Link: 'api.realtutorialhub.com' },
+        { Detection: 'Production', Link: 'Production API' },
         { Detection: 'Secrets (.env)', Status: 'Gitignored / Vercel Dashboard' },
     ],
     configInventory: [

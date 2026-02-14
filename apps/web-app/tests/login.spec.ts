@@ -55,7 +55,7 @@ for (const role of Object.keys(cfg) as Role[]) {
       const parsed: Cookie[] = setCookies.map((line) => {
         const parts = line.split(';').map((p) => p.trim());
         const [name, value] = parts[0].split('=');
-        const domain = parts.find((p) => p.toLowerCase().startsWith('domain='))?.split('=')[1] ?? '.realtutorialhub.com';
+        const domain = parts.find((p) => p.toLowerCase().startsWith('domain='))?.split('=')[1] ?? (process.env.COOKIE_DOMAIN || '');
         const path = parts.find((p) => p.toLowerCase().startsWith('path='))?.split('=')[1] ?? '/';
         const secure = parts.some((p) => p.toLowerCase() === 'secure');
         const sameSitePart = parts.find((p) => p.toLowerCase().startsWith('samesite='))?.split('=')[1]?.toLowerCase();

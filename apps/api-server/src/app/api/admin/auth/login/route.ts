@@ -19,7 +19,7 @@ export async function POST(_req: Request) {
     const result = await AdminAuthService.login(email, password, ip);
 
     // Set Cookies
-    const cookieDomain = process.env.COOKIE_DOMAIN ?? '.realtutorialhub.com';
+    const cookieDomain = process.env.COOKIE_DOMAIN;
     const isProd = true; // always secure cookies in prod and previews
 
     const user = {
