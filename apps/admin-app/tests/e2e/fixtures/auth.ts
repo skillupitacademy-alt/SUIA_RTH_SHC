@@ -1,7 +1,7 @@
 import { Page } from '@playwright/test';
 
-const ADMIN_UI_URL = process.env.ADMIN_UI_URL || 'https://admin.realtutorialhub.com';
-const API_URL = process.env.API_URL || 'https://api.realtutorialhub.com';
+const ADMIN_UI_URL = process.env.NEXT_PUBLIC_ADMIN_URL || process.env.ADMIN_UI_URL || 'https://admin.realtutorialhub.com';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || process.env.API_URL || 'https://api.realtutorialhub.com';
 
 const defaultAdminEmail = process.env.TEST_ADMIN_EMAIL;
 const defaultAdminPassword = process.env.TEST_ADMIN_PASSWORD;

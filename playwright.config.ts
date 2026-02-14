@@ -1,5 +1,9 @@
-import 'dotenv/config';
+import path from 'path';
+import dotenv from 'dotenv';
 import { defineConfig, devices } from '@playwright/test';
+
+// Load .env from the root directory relative to this config file
+dotenv.config({ path: path.resolve(__dirname, '.env') });
 
 export default defineConfig({
   testDir: '.',
