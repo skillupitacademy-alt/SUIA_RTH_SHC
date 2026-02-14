@@ -23,6 +23,7 @@ import { ThemeToggle } from '@quiz/ui';
 import { useState } from 'react';
 import { useStrictNavigation } from '@/hooks/useStrictNavigation';
 import { usePresenceHeartbeat } from '@/hooks/usePresenceHeartbeat';
+import { JobStatusBadge } from '@/components/jobs/JobStatusBadge';
 
 const ADMIN_NAV = [
     { name: 'Dashboard', href: '/', icon: LayoutDashboard },
@@ -191,6 +192,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                             <div className="flex items-center gap-4">
                                 <span className="alpha-terminal !tracking-widest text-slate-400">Terminal v1.0.4</span>
                                 <span className="px-3 py-1 rounded-full bg-green-50 text-green-600 alpha-terminal !tracking-widest border border-green-200">Connected_Secure</span>
+                                <div className="h-6 w-[1px] bg-slate-200 mx-2" />
+                                <JobStatusBadge />
                                 <div className="h-6 w-[1px] bg-slate-200 mx-2" />
                                 <ThemeToggle />
                             </div>

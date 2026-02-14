@@ -43,18 +43,35 @@ export function useJobTracker() {
 
         try {
             const results = await Promise.all(
-                jobIds.map(id => apiClient.admin.getJobById(id).catch(() => null))
+                jobIds.map(async (id) => {
+                    try {
+                        return await apiClient.admin.getJobById(id);
+                    } catch (err: any) {
+                        // If job not found (404) or unauthorized (401), mark for removal
+                        if (err.status === 404 || err.status === 401) {
+                            return { _removeId: id };
+                        }
+                        return null;
+                    }
+                })
             );
 
             const fetchedJobs = results
-                .filter((res): res is { job: BackgroundJob } => res !== null)
+                .filter((res): res is { job: BackgroundJob } => res !== null && !('_removeId' in res))
                 .map(res => res.job);
 
-            setJobs(fetchedJobs);
+            const idsToRemove = results
+                .filter((res): res is { _removeId: string } => res !== null && '_removeId' in res)
+                .map(res => res._removeId);
 
-            // Clean up completed/failed jobs from persistence after a while?
-            // For now, keep them until the user clears them or we decide otherwise.
-            // But only poll if at least one is NOT finished.
+            if (idsToRemove.length > 0) {
+                const updatedIds = jobIds.filter(id => !idsToRemove.includes(id));
+                saveStoredJobIds(updatedIds);
+            }
+
+            setJobs(fetchedJobs);
+            
+            // Only poll if at least one is NOT finished.
             const hasActiveJobs = fetchedJobs.some(j => j.status === 'pending' || j.status === 'processing');
             
             if (!hasActiveJobs && pollTimerRef.current) {

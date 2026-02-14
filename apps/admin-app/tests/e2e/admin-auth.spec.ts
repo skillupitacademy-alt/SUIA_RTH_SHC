@@ -98,45 +98,28 @@ test.describe('Admin Auth & Security Suite', () => {
     await expect(page).toHaveURL(/\/login/);
   });
 
-  // 8. Long-Task Resilience
-  test('Long-Task Resilience', async ({ page, context }) => {
+  // 8. Long-Task Resilience (E2E Integration)
+  test('Long-Task Resilience', async ({ page }) => {
     await adminAuthFixtures.loginAdmin(page);
 
-    // a) Create job via API
-    await page.request.post(`${API_URL}/admin/jobs`, {
-        data: { type: 'TEST_JOB', payload: { duration: 5000 } },
-        headers: { 'Cookie': (await context.cookies()).map(c => `${c.name}=${c.value}`).join(';') }
-    });
-    
-    // b) Store jobId in localStorage to simulate frontend tracking
-    const jobId = 'test-job-resilience-123';
-    await page.evaluate((id) => {
-        const authData = localStorage.getItem('quiz-platform-admin-auth');
-        if (authData) {
-            const userId = JSON.parse(authData).state?.user?.id;
-            if (userId) {
-                localStorage.setItem(`admin-active-jobs-${userId}`, JSON.stringify([id]));
-            }
-        }
-    }, jobId);
+    // a) Navigate to Factory and Trigger Mock Job
+    await page.goto(`${ADMIN_UI_URL}/factory/question-generator`);
+    await page.getByRole('button', { name: 'Mock Job' }).click();
 
-    // c) Trigger Logout
+    // b) Verify Badge appears in header (Polling started)
+    await expect(page.locator('header')).toContainText('Processing');
+
+    // c) Trigger Logout (While job is active)
     await logoutAdmin(page);
 
     // d) Re-login
     await adminAuthFixtures.loginAdmin(page);
 
-    // e) Check for persistence
-    const persisted = await page.evaluate((id) => {
-        const authData = localStorage.getItem('quiz-platform-admin-auth');
-        if (!authData) return false;
-        const userId = JSON.parse(authData).state?.user?.id;
-        if (!userId) return false;
-        const jobs = JSON.parse(localStorage.getItem(`admin-active-jobs-${userId}`) || '[]');
-        return jobs.includes(id);
-    }, jobId);
+    // e) Verify polling resumed automatically (Badge should come back)
+    await expect(page.locator('header')).toContainText(/Tasks Complete|Processing/);
 
-    expect(persisted).toBeTruthy();
+    // f) Wait for completion (Simulation takes ~13s)
+    await expect(page.locator('header')).toContainText('Tasks Complete', { timeout: 20000 });
   });
 
 });

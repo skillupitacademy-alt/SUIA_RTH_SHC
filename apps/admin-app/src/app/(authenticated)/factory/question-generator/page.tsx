@@ -12,6 +12,7 @@ import { useFactory } from '@/context/FactoryContext';
 import { JsonIngestBox } from '@/components/factory/ingest/JsonIngestBox';
 import { RefreshCcw, ShieldCheck, Check, Copy } from 'lucide-react';
 import { useDomains, useSubjects, useTopics, useSubtopics, useAllSkills } from '@/hooks/useAdminHierarchy';
+import { useJobTracker } from '@/hooks/useJobTracker';
 import { ZConfirmationDialog } from '@/components/ui/ZConfirmationDialog';
 
 export default function QuestionFactoryPage() {
@@ -24,6 +25,7 @@ function QuestionFactoryContent() {
     const { stagedQuestions, blueprint, setBlueprint, sourceCode, setSourceCode, resetFactory } = useFactory();
     const [isCopying, setIsCopying] = useState(false);
     const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
+    const { startJob } = useJobTracker();
 
     // Context resolution hooks for human-readable names
     const { data: domains } = useDomains();
@@ -58,7 +60,7 @@ function QuestionFactoryContent() {
             const prompt = PromptService.generateTechnicalPrompt({
                 sourceCode,
                 counts: blueprint.counts,
-            // Global skills already typed; fall back gracefully
+                // Global skills already typed; fall back gracefully
                 knownSkills: safeSkills.map((s) => s.name ?? ''),
                 strictMode: blueprint.strictMode,
                 context: {
@@ -184,6 +186,17 @@ function QuestionFactoryContent() {
                                                 {globalSkills.length} SKILLS
                                             </span>
                                         </div>
+                                    )}
+
+                                    {/* MOCK JOB TRIGGER: Resilience Test */}
+                                    {process.env.NODE_ENV !== 'production' && (
+                                        <button
+                                            onClick={() => startJob('MOCK_JOB', { test: true })}
+                                            className="h-12 px-6 rounded-2xl bg-slate-50 border border-slate-200 text-slate-500 font-black uppercase tracking-widest text-[10px] hover:bg-slate-100 transition-all shadow-sm"
+                                            title="Trigger Mock Background Job"
+                                        >
+                                            Mock Job
+                                        </button>
                                     )}
 
                                     <button

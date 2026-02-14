@@ -1,5 +1,5 @@
 import { db, backgroundJobs } from '@quiz/db';
-import { eq, and } from 'drizzle-orm';
+import { eq, and, inArray } from 'drizzle-orm';
 
 export interface CreateJobDTO {
   userId: string;
@@ -31,12 +31,26 @@ export class JobsService {
     });
   }
 
+  static async getActiveJobCount(userId: string) {
+    const activeStatuses: ('pending' | 'processing')[] = ['pending', 'processing'];
+    const results = await db
+      .select()
+      .from(backgroundJobs)
+      .where(
+        and(
+          eq(backgroundJobs.userId, userId),
+          inArray(backgroundJobs.status, activeStatuses)
+        )
+      );
+    return results.length;
+  }
+
   static async updateJobStatus(
     jobId: string, 
     status: 'pending' | 'processing' | 'completed' | 'failed',
     data?: { result?: Record<string, unknown>; error?: string }
   ) {
-    const updateData: Partial<typeof backgroundJobs.$inferInsert> = {
+    const updateData: any = {
       status,
       updatedAt: new Date(),
     };
@@ -56,5 +70,31 @@ export class JobsService {
       .returning();
     
     return job;
+  }
+
+  /**
+   * DEV ONLY: Simulate job transitions for testing resilience.
+   */
+  static async simulateJob(jobId: string, userId: string) {
+    if (process.env.NODE_ENV === 'production') return;
+
+    try {
+      // 1. Move to processing after 3s
+      await new Promise(resolve => setTimeout(resolve, 3000));
+      await this.updateJobStatus(jobId, 'processing');
+
+      // 2. Move to completed after another 10s
+      await new Promise(resolve => setTimeout(resolve, 10000));
+      await this.updateJobStatus(jobId, 'completed', { 
+        result: { 
+          message: 'Simulation completed successfully',
+          timestamp: new Date().toISOString()
+        } 
+      });
+    } catch (err) {
+      await this.updateJobStatus(jobId, 'failed', { 
+        error: err instanceof Error ? err.message : 'Simulation failed' 
+      });
+    }
   }
 }

@@ -15,8 +15,16 @@ export async function POST(_req: NextRequest) {
     const _payload = await TokenService.verifyAccessToken(_token, true);
     const _body = await _req.json() as { type: string; payload?: Record<string, unknown> };
 
-    if (_body.type === null || _body.type === undefined || _body.type.trim() === '') {
+    if (!_body.type || typeof _body.type !== 'string' || _body.type.trim() === '') {
         return NextResponse.json({ _error: 'Job type is required' }, { status: 400 });
+    }
+
+    // Rate Limit Check (Max 5 active jobs per user)
+    const activeCount = await JobsService.getActiveJobCount(_payload.userId);
+    if (activeCount >= 5) {
+        return NextResponse.json({ 
+            _error: 'Rate limit exceeded: You have 5 active jobs. Please wait for them to complete.' 
+        }, { status: 429 });
     }
 
     const _job = await JobsService.createJob({
@@ -24,6 +32,11 @@ export async function POST(_req: NextRequest) {
       type: _body.type,
       payload: _body.payload,
     });
+
+    // Fire and forget simulation if it's a mock job
+    if (_body.type === 'MOCK_JOB' && process.env.NODE_ENV !== 'production') {
+      JobsService.simulateJob(_job.id, _payload.userId);
+    }
 
     return NextResponse.json({ job: _job });
   } catch (_error: unknown) {
