@@ -46,9 +46,9 @@ export function useJobTracker() {
                 jobIds.map(async (id) => {
                     try {
                         return await apiClient.admin.getJobById(id);
-                    } catch (err: any) {
+                    } catch (err: unknown) {
                         // If job not found (404) or unauthorized (401), mark for removal
-                        if (err.status === 404 || err.status === 401) {
+                        if (err && typeof err === 'object' && 'status' in err && (err.status === 404 || err.status === 401)) {
                             return { _removeId: id };
                         }
                         return null;
@@ -81,7 +81,7 @@ export function useJobTracker() {
         } catch {
             // Silently fail polling
         }
-    }, [isAuthenticated, user?.id, getStoredJobIds]);
+    }, [isAuthenticated, user?.id, getStoredJobIds, saveStoredJobIds]);
 
     // 3. Start polling
     useEffect(() => {

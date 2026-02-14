@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useJobTracker } from '@/hooks/useJobTracker';
-import { Loader2, CheckCircle2, AlertCircle, X, ChevronRight } from 'lucide-react';
+import { Loader2, CheckCircle2, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export function JobStatusBadge() {
@@ -10,7 +10,6 @@ export function JobStatusBadge() {
     const [isOpen, setIsOpen] = React.useState(false);
 
     const activeJobs = jobs.filter(j => j.status === 'pending' || j.status === 'processing');
-    const completedJobs = jobs.filter(j => j.status === 'completed' || j.status === 'failed');
 
     if (jobs.length === 0) return null;
 

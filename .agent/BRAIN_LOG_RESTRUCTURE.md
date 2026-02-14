@@ -798,6 +798,16 @@ Reduce documentation fragmentation and improve discoverability by consolidating 
 - **Outcome**: Restored seamless "Back" navigation from the Factory to the Enterprise Dashboard.
 
 ### Batch 101: Context Validation Gate (Batch 97.4)
+- **Goal**: Prevent empty context selection in the Question Factory.
+- **Outcome**: Enabled mandatory validation for Domain/Subject/Topic fields.
+
+### Batch 184: Environmental Unification & Absolute Zero
+- **Objective**: Standardize monorepo environment variable architecture and achieve a zero-warning codebase.
+- **Standardization**: Unified all disparate environment URLs behind `NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_ADMIN_URL`, and `NEXT_PUBLIC_WEB_APP_URL`.
+- **Hardening**: Configured dynamic CSP whitelisting in `next.config.js` and removed all hardcoded production strings.
+- **Linting Cleanup**: Achieved "Absolute Zero" warnings in `@quiz/admin-app` by resolving all `exhaustive-deps`, `no-explicit-any`, and `no-unused-vars`.
+- **E2E Resync**: Updated Playwright fixtures and test suites to align with the unified environment keys, ensuring absolute production parity.
+- **Verification**: Confirmed system-wide stability with `pnpm lint:all`, `pnpm typecheck:all`, and `pnpm build:all` (Exit Code 0).
 - **Problem**: User error (pasting JSON before context selection) led to "Missing Blueprint" errors in the Review Console.
 - **Action**: Implemented a strict **Validation Gate** in `JsonIngestBox.tsx`.
 - **Logic**: Disabled the "Process & Review" action and locked the editor until a Target Topic is selected.
