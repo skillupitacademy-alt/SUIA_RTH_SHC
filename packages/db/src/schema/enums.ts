@@ -17,3 +17,10 @@ export const mappingTypeEnum = pgEnum("mapping_type", [
   "technical",
   "practical"
 ]);
+
+export const jobStatusEnum = pgEnum("job_status", [
+  "pending",
+  "processing",
+  "completed",
+  "failed"
+]);

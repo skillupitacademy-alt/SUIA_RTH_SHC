@@ -12,6 +12,20 @@ export interface AdminTrendSummary {
     healthStatus?: 'green' | 'yellow' | 'red';
 }
 
+export interface BackgroundJob {
+    id: string;
+    userId: string;
+    type: string;
+    status: 'pending' | 'processing' | 'completed' | 'failed';
+    payload?: Record<string, unknown> | null;
+    result?: Record<string, unknown> | null;
+    error?: string | null;
+    startedAt?: string | null;
+    completedAt?: string | null;
+    createdAt: string;
+    updatedAt: string;
+}
+
 export class AdminClient {
   private client: FetchClient;
 
@@ -373,5 +387,13 @@ export class AdminClient {
     if (params.userId) query.append('userId', params.userId);
     if (params.range) query.append('range', params.range);
     return this.client.get<{ skills: any[] }>(`/admin/trends/skills?${query.toString()}`);
+  }
+
+  async createJob(type: string, payload?: Record<string, unknown>) {
+    return this.client.post<{ job: BackgroundJob }>('/admin/jobs', { type, payload });
+  }
+
+  async getJobById(id: string) {
+    return this.client.get<{ job: BackgroundJob }>(`/admin/jobs/${id}`);
   }
 }

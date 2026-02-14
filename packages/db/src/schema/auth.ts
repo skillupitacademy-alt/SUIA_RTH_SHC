@@ -1,4 +1,5 @@
 import { pgTable, text, timestamp, uuid, boolean, primaryKey, integer, index } from "drizzle-orm/pg-core";
+import { backgroundJobs } from "./jobs";
 
 // --- CORE IDENTITY ---
 
@@ -138,6 +139,7 @@ export const usersRelations = relations(users, ({ one, many }) => ({
   userRoles: many(userRoles),
   auditLogs: many(auditLogs),
   loginAttempts: many(loginAttempts),
+  backgroundJobs: many(backgroundJobs),
 }));
 
 export const auditLogsRelations = relations(auditLogs, ({ one }) => ({
