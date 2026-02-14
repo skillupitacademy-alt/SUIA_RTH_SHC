@@ -1,8 +1,7 @@
 import { test, expect, Page } from '@playwright/test';
 import { adminAuthFixtures } from './fixtures/auth';
 
-const ADMIN_UI_URL = 'http://localhost:3002';
-const API_URL = 'http://localhost:3001/api';
+const ADMIN_UI_URL = process.env.NEXT_PUBLIC_ADMIN_URL ?? 'http://localhost:3002';
 
 // Helper for logout since it's not in the fixture
 async function logoutAdmin(page: Page) {
