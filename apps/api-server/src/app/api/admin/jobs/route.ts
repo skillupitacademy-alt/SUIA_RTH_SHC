@@ -14,9 +14,16 @@ export async function POST(_req: NextRequest) {
 
     const _payload = await TokenService.verifyAccessToken(_token, true);
     const _body = await _req.json() as { type: string; payload?: Record<string, unknown> };
+    const _type = _body.type?.trim();
 
-    if (!_body.type || typeof _body.type !== 'string' || _body.type.trim() === '') {
+    if (!_type) {
         return NextResponse.json({ _error: 'Job type is required' }, { status: 400 });
+    }
+
+    // Payload size guard: ~100 KB
+    const rawBodySize = JSON.stringify(_body).length;
+    if (rawBodySize > 100_000) {
+        return NextResponse.json({ _error: 'Payload too large (max 100KB)' }, { status: 413 });
     }
 
     // Rate Limit Check (Max 5 active jobs per user)
@@ -29,7 +36,7 @@ export async function POST(_req: NextRequest) {
 
     const _job = await JobsService.createJob({
       userId: _payload.userId,
-      type: _body.type,
+      type: _type,
       payload: _body.payload,
     });
 
