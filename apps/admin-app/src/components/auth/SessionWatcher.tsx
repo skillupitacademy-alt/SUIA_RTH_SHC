@@ -31,7 +31,7 @@ interface SessionWatcherProps {
 }
 
 export function SessionWatcher({ expiresAt, onRefresh, onLogout, isRedirecting, redirectMessage }: SessionWatcherProps) {
-    const { lock, isLocked } = useAuthStore();
+    const { lock, isLocked, isLoggingOut } = useAuthStore();
     const [showWarning, setShowWarning] = useState(false);
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [remainingSeconds, setRemainingSeconds] = useState<number | null>(null);
@@ -93,6 +93,7 @@ export function SessionWatcher({ expiresAt, onRefresh, onLogout, isRedirecting, 
     // 2. Poll for Session Expiry & Inactivity
     useEffect(() => {
         const checkStatus = () => {
+            if (isLoggingOut) return;
             const now = Date.now();
             const idleTime = now - lastActivityAt;
 
@@ -184,7 +185,7 @@ export function SessionWatcher({ expiresAt, onRefresh, onLogout, isRedirecting, 
             )}
 
             <ZConfirmationDialog
-                isOpen={showWarning && !isRedirecting && (!isLocked || isForcedLogoutWarning)}
+                isOpen={showWarning && !isRedirecting && !isLoggingOut && (!isLocked || isForcedLogoutWarning)}
                 title={warningTitle}
                 description={warningDesc}
                 confirmText={isRefreshing ? "Renewing..." : ((isIdleWarning || isForcedLogoutWarning) ? "Stay Active" : "Stay Logged In")}

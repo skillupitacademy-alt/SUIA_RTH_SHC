@@ -39,13 +39,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     useStrictNavigation();
     usePresenceHeartbeat();
     const pathname = usePathname();
-    const { logout, expiresAt, user, login } = useAuthStore();
+    const { logout, expiresAt, user, login, setLoggingOut } = useAuthStore();
     const [isRedirecting, setIsRedirecting] = useState(false);
     const [redirectMessage, setRedirectMessage] = useState<string | undefined>(undefined);
     const { showWarning, cancelNavigation } = useStrictNavigation();
 
     const handleLogout = async (reason?: 'session_expired') => {
         if (isRedirecting) return;
+        setLoggingOut(true);
         setIsRedirecting(true);
         setRedirectMessage(reason === 'session_expired' ? 'Session expired. Redirecting...' : 'Logging out. Redirecting...');
 

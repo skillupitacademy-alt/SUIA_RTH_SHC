@@ -10,10 +10,11 @@ import { apiClient } from '@quiz/api-client';
 export function SessionExpiryModal() {
     const router = useRouter();
     const pathname = usePathname();
-    const { isSessionExpired, setSessionExpired, logout } = useAuthStore();
+    const { isSessionExpired, setSessionExpired, logout, isLoggingOut } = useAuthStore();
 
     useEffect(() => {
         const handleUnauthorized = (event: Event) => {
+            if (isLoggingOut) return;
             // Prevent auto-redirect logic in FetchClient
             event.preventDefault();
             setSessionExpired(true);
@@ -37,8 +38,8 @@ export function SessionExpiryModal() {
         }
     };
 
-    // Don't show modal if already on login page
-    if (!isSessionExpired || pathname === '/login') return null;
+    // Don't show modal if already on login page or logging out
+    if (!isSessionExpired || pathname === '/login' || isLoggingOut) return null;
 
     return (
         <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">

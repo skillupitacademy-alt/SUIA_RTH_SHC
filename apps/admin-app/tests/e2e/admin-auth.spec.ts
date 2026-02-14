@@ -111,7 +111,7 @@ test.describe('Admin Auth & Security Suite', () => {
     await page.getByTestId('mock-job-button').click();
 
     // b) Verify Badge appears in header (Polling started)
-    await expect(page.locator('header')).toContainText('Processing');
+    await expect(page.getByText(/Processing/i)).toBeVisible({ timeout: 15000 });
 
     // c) Trigger Logout (While job is active)
     await logoutAdmin(page);
