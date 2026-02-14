@@ -33,7 +33,7 @@ function QuestionFactoryContent() {
             setAllowMockJobs(true);
             return;
         }
-        if (typeof window !== 'undefined' && (window as any).__E2E_TEST_MODE__ === true) {
+        if (typeof window !== 'undefined' && (window as unknown as { __E2E_TEST_MODE__?: boolean }).__E2E_TEST_MODE__ === true) {
             setAllowMockJobs(true);
         }
     }, []);

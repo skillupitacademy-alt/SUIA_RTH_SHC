@@ -22,7 +22,7 @@ export function SessionExpiryModal() {
 
         window.addEventListener('auth:unauthorized', handleUnauthorized);
         return () => window.removeEventListener('auth:unauthorized', handleUnauthorized);
-    }, [setSessionExpired]);
+    }, [setSessionExpired, isLoggingOut]);
 
     const handleLogin = async () => {
         setSessionExpired(false);

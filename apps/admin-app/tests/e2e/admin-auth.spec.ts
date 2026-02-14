@@ -101,7 +101,7 @@ test.describe('Admin Auth & Security Suite', () => {
   test('Long-Task Resilience', async ({ page }) => {
     await page.context().addInitScript(() => {
       // expose mock controls only during E2E
-      (window as any).__E2E_TEST_MODE__ = true;
+      (window as unknown as { __E2E_TEST_MODE__?: boolean }).__E2E_TEST_MODE__ = true;
     });
 
     await adminAuthFixtures.loginAdmin(page);

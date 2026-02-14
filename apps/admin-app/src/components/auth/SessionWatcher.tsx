@@ -149,7 +149,7 @@ export function SessionWatcher({ expiresAt, onRefresh, onLogout, isRedirecting, 
         checkStatus();
 
         return () => clearInterval(interval);
-    }, [expiresAt, onLogout, lastActivityAt, isLocked, lock]);
+    }, [expiresAt, onLogout, lastActivityAt, isLocked, lock, isLoggingOut]);
 
     // If a redirect is already underway or locked, suppress the warning modal, 
     // unless it's the high-priority forced logout warning.

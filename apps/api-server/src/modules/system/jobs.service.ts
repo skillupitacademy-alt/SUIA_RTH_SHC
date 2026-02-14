@@ -83,7 +83,8 @@ export class JobsService {
    * DEV ONLY: Simulate job transitions for testing resilience.
    */
   static async simulateJob(jobId: string, _userId: string) {
-    if (process.env.NODE_ENV === 'production') return;
+    const allowMock = process.env.ALLOW_MOCK_JOBS === 'true' || process.env.NODE_ENV !== 'production';
+    if (!allowMock) return;
 
     try {
       // 1. Move to processing after 3s
