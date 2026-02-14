@@ -41,7 +41,8 @@ export async function POST(_req: NextRequest) {
     });
 
     // Fire and forget simulation if it's a mock job
-    if (_body.type === 'MOCK_JOB' && process.env.NODE_ENV !== 'production') {
+    const allowMock = process.env.ALLOW_MOCK_JOBS === 'true' || process.env.NODE_ENV !== 'production';
+    if (_body.type === 'MOCK_JOB' && allowMock) {
       JobsService.simulateJob(_job.id, _payload.userId);
     }
 

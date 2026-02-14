@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { FactoryLayout } from '@/components/layout/FactoryLayout';
 import { ContextSelector } from '@/components/factory/blueprint/ContextSelector';
 import { SourceEditor } from '@/components/factory/blueprint/SourceEditor';
@@ -26,6 +26,17 @@ function QuestionFactoryContent() {
     const [isCopying, setIsCopying] = useState(false);
     const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
     const { startJob } = useJobTracker();
+    const [allowMockJobs, setAllowMockJobs] = useState(process.env.NODE_ENV !== 'production');
+
+    useEffect(() => {
+        if (process.env.NODE_ENV !== 'production') {
+            setAllowMockJobs(true);
+            return;
+        }
+        if (typeof window !== 'undefined' && (window as any).__E2E_TEST_MODE__ === true) {
+            setAllowMockJobs(true);
+        }
+    }, []);
 
     // Context resolution hooks for human-readable names
     const { data: domains } = useDomains();
@@ -189,8 +200,9 @@ function QuestionFactoryContent() {
                                     )}
 
                                     {/* MOCK JOB TRIGGER: Resilience Test */}
-                                    {process.env.NODE_ENV !== 'production' && (
+                                    {allowMockJobs && (
                                         <button
+                                            data-testid="mock-job-button"
                                             onClick={() => startJob('MOCK_JOB', { test: true })}
                                             className="h-12 px-6 rounded-2xl bg-slate-50 border border-slate-200 text-slate-500 font-black uppercase tracking-widest text-[10px] hover:bg-slate-100 transition-all shadow-sm"
                                             title="Trigger Mock Background Job"

@@ -99,11 +99,16 @@ test.describe('Admin Auth & Security Suite', () => {
 
   // 8. Long-Task Resilience (E2E Integration)
   test('Long-Task Resilience', async ({ page }) => {
+    await page.context().addInitScript(() => {
+      // expose mock controls only during E2E
+      (window as any).__E2E_TEST_MODE__ = true;
+    });
+
     await adminAuthFixtures.loginAdmin(page);
 
     // a) Navigate to Factory and Trigger Mock Job
     await page.goto(`${ADMIN_UI_URL}/factory/question-generator`);
-    await page.getByRole('button', { name: 'Mock Job' }).click();
+    await page.getByTestId('mock-job-button').click();
 
     // b) Verify Badge appears in header (Polling started)
     await expect(page.locator('header')).toContainText('Processing');
