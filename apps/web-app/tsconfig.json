@@ -11,6 +11,9 @@
       "@/*": [
         "./src/*"
       ],
+      "@admin-tests/*": [
+        "../admin-app/tests/e2e/*"
+      ],
       "@quiz/ui": [
         "../../packages/ui/src/index.ts"
       ],
