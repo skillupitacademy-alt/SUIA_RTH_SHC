@@ -17,7 +17,7 @@ export function RBACGovernancePanel() {
                 console.error("Failed to fetch RBAC metrics", err);
             }
         };
-        fetch();
+        void fetch();
     }, []);
 
     if (roles.length === 0) return null;

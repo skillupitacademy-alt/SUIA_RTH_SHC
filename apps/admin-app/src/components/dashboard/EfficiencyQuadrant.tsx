@@ -1,6 +1,6 @@
 'use client';
 
-import { AlertTriangle, Clock, HelpCircle,Target, Zap } from 'lucide-react';
+import { AlertTriangle, Clock, HelpCircle, Target, Zap } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 
@@ -20,7 +20,7 @@ interface EfficiencyQuadrantProps {
 }
 
 export function EfficiencyQuadrant({ data, className, loading }: EfficiencyQuadrantProps) {
-    if (loading) {
+    if (loading === true) {
         return (
             <div className={cn("rounded-[3rem] p-12 bg-muted/5 border animate-pulse flex flex-col items-center justify-center h-[500px]", className)}>
                 <div className="h-16 w-16 rounded-full bg-muted/10 mb-4" />
@@ -29,7 +29,7 @@ export function EfficiencyQuadrant({ data, className, loading }: EfficiencyQuadr
         );
     }
 
-    if (!data || data.total === 0) {
+    if (data === null || data.total === 0) {
         return (
             <div className={cn("rounded-[3rem] p-12 flex flex-col items-center justify-center text-center space-y-4 border border-dashed border-muted-foreground/20 bg-muted/5", className)}>
                 <div className="h-16 w-16 rounded-full bg-muted/10 flex items-center justify-center text-muted-foreground/40">

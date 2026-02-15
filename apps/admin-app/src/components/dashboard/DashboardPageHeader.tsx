@@ -27,16 +27,16 @@ export function DashboardPageHeader({ title, description, icon }: DashboardPageH
             </button>
 
             <div className="flex items-center gap-4">
-                {icon ? <div className="p-3 rounded-2xl bg-white border border-slate-200 shadow-sm">
-                        {icon}
-                    </div> : null}
+                {icon !== undefined && icon !== null ? <div className="p-3 rounded-2xl bg-white border border-slate-200 shadow-sm">
+                    {icon}
+                </div> : null}
                 <div>
                     <h1 className="text-4xl font-outfit font-black tracking-tighter uppercase text-[#1A1A1A]">
                         {title}
                     </h1>
-                    {description ? <p className="text-sm font-bold text-muted-foreground uppercase tracking-widest max-w-2xl mt-1">
-                            {description}
-                        </p> : null}
+                    {description !== undefined && description !== null && description !== '' ? <p className="text-sm font-bold text-muted-foreground uppercase tracking-widest max-w-2xl mt-1">
+                        {description}
+                    </p> : null}
                 </div>
             </div>
 

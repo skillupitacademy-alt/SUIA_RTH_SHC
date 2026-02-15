@@ -3,7 +3,7 @@
 
 import { apiClient } from '@quiz/api-client';
 import { ZLoader } from '@quiz/ui';
-import { TrendingUp,UserCheck, Users } from 'lucide-react';
+import { TrendingUp, UserCheck, Users } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 export function UserAnalyticsPanel() {
@@ -18,10 +18,10 @@ export function UserAnalyticsPanel() {
                 console.error("Failed to fetch user metrics", err);
             }
         };
-        fetch();
+        void fetch();
     }, []);
 
-    if (!stats) {
+    if (stats === null) {
         return (
             <div className="p-12 flex items-center justify-center bg-muted/5 border border-primary/10 rounded-[2rem]">
                 <ZLoader text="Accessing User Matrix..." />

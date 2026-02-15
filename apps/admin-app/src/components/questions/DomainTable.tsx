@@ -126,7 +126,7 @@ export function DomainTable() {
 
     // --- FORM LOGIC ---
     const handleOpenForm = (domain: any = null) => {
-        if (domain) {
+        if (domain !== null) {
             setCurrentDomain(domain);
             setFormData({
                 name: domain.name,
@@ -162,7 +162,7 @@ export function DomainTable() {
         e.preventDefault();
         setIsSubmitting(true);
         try {
-            if (currentDomain) {
+            if (currentDomain !== null) {
                 await apiClient.admin.updateDomain(currentDomain.id, formData);
             } else {
                 await apiClient.admin.createDomain(formData);
@@ -264,7 +264,7 @@ export function DomainTable() {
                         {/* Content - Landscape Grid */}
                         <div className="flex-1 overflow-y-auto">
                             <div className="max-w-5xl mx-auto px-8 py-8">
-                                <form onSubmit={handleSubmit} className="space-y-6">
+                                <form onSubmit={(e) => { void handleSubmit(e); }} className="space-y-6">
                                     <div className="grid grid-cols-2 gap-6">
                                         {/* Domain Name */}
                                         <div className="space-y-2">
@@ -353,7 +353,7 @@ export function DomainTable() {
                     isOpen={isFactoryOpen}
                     onClose={() => setIsFactoryOpen(false)}
                     initialData={{ target: 'domain' }}
-                    onSuccess={fetchDomains}
+                    onSuccess={() => { void fetchDomains(); }}
                 />
 
                 {/* Delete Confirmation Modal */}
@@ -382,7 +382,7 @@ export function DomainTable() {
                                     Cancel
                                 </AlertDialogCancel>
                                 <AlertDialogAction
-                                    onClick={handleDelete}
+                                    onClick={() => { void handleDelete(); }}
                                     className="rounded-xl bg-red-600 py-6 font-black uppercase tracking-wider text-xs hover:bg-red-700 shadow-xl shadow-red-500/20 text-white"
                                     disabled={isSubmitting}
                                 >

@@ -9,6 +9,16 @@ import { useEffect, useState } from 'react';
 import { ErrorBanner } from '@/components/layout/ErrorBanner';
 import { useDomains, useSubjects } from '@/hooks/useAdminHierarchy';
 import { cn } from '@/lib/utils';
+import { ZPortalModal } from '@/components/ui/ZPortalModal';
+import { SelectField } from '@/components/entry/SelectionFields';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export function TopicTable() {
     const [data, setData] = useState<any[]>([]);
@@ -125,19 +135,19 @@ export function TopicTable() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!formData.subjectId) {
+        if (formData.subjectId === '') {
             setErrorMessage('Constraint violation: Parent subject selection required.');
             return;
         }
         setIsSubmitting(true);
         try {
-            if (currentTopic) {
+            if (currentTopic !== null) {
                 await apiClient.admin.updateTopic(currentTopic.id, formData);
             } else {
                 await apiClient.admin.createTopic(formData);
             }
             handleCloseForm();
-            fetchTopics();
+            void fetchTopics();
         } catch (error) {
             console.error('Failed to save topic:', error);
             setErrorMessage('Saving Failed: Please ensure all fields (including parent subject) are correct.');
@@ -147,13 +157,17 @@ export function TopicTable() {
     };
 
     const handleDelete = async () => {
+        if (selectedIds.size > 0 && (currentTopic === null || selectedIds.size > 1)) {
+            await handleBatchDelete();
+            return;
+        }
         if (currentTopic === null) return;
         setIsSubmitting(true);
         try {
             await apiClient.admin.deleteTopic(currentTopic.id);
             setIsDeleteOpen(false);
             setCurrentTopic(null);
-            fetchTopics();
+            void fetchTopics();
         } catch (error) {
             console.error('Failed to delete topic:', error);
             setErrorMessage('Deletion Blocked: This topic is linked to subtopics or questions and cannot be removed.');
@@ -357,6 +371,157 @@ export function TopicTable() {
             )}
 
             {/* Modals remain below */}
+            {/* Modals */}
+            <ZPortalModal isOpen={isFormOpen} zIndex={100}>
+                <div className="h-full flex flex-col bg-white animate-in slide-in-from-right duration-300">
+                    <div className="px-8 py-6 border-b border-slate-200 flex items-center justify-between bg-white">
+                        <div className="flex items-center gap-4">
+                            <div className="h-12 w-12 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center">
+                                <Hash size={24} />
+                            </div>
+                            <div>
+                                <h3 className="text-2xl font-black text-[#1A1A1A] uppercase tracking-tight">
+                                    {currentTopic !== null ? 'Edit Topic' : 'New Topic'}
+                                </h3>
+                                <p className="text-xs font-medium text-slate-500 uppercase tracking-widest mt-0.5">
+                                    {currentTopic !== null ? 'Modify Topic Details' : 'Create New Topic'}
+                                </p>
+                            </div>
+                        </div>
+                        <button onClick={handleCloseForm} className="p-2 rounded-lg hover:bg-slate-100 text-slate-500 hover:text-slate-600 transition-colors">
+                            <Plus size={24} className="rotate-45" />
+                        </button>
+                    </div>
+
+                    <div className="flex-1 overflow-y-auto">
+                        <div className="max-w-5xl mx-auto px-8 py-8">
+                            <form onSubmit={(e) => { void handleSubmit(e); }} className="space-y-6">
+                                <div className="grid grid-cols-2 gap-6">
+                                    <SelectField
+                                        label="Parent Domain"
+                                        value={formData.domainId}
+                                        options={domains.map((d: any) => ({ id: d.id, name: d.name }))}
+                                        onChange={handleDomainChange}
+                                        placeholder="Select Domain"
+                                        loading={domainsHook.loading}
+                                        active={true}
+                                        icon={<BookOpen size={12} />}
+                                    />
+                                    <SelectField
+                                        label="Parent Subject"
+                                        value={formData.subjectId}
+                                        options={subjects.map((s: any) => ({ id: s.id, name: s.name }))}
+                                        onChange={(val: string) => setFormData({ ...formData, subjectId: val })}
+                                        placeholder="Select Subject"
+                                        loading={subjectsHook.loading}
+                                        active={formData.domainId !== ''}
+                                        icon={<BookOpen size={12} />}
+                                    />
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 pl-1">Topic Name</label>
+                                    <input
+                                        type="text"
+                                        required
+                                        value={formData.name}
+                                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                        className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
+                                        placeholder="e.g., React Hooks"
+                                    />
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-6">
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 pl-1">Weight Multiplier</label>
+                                        <input
+                                            type="number"
+                                            min="0"
+                                            step="0.1"
+                                            value={formData.weight}
+                                            onChange={(e) => setFormData({ ...formData, weight: parseFloat(e.target.value) })}
+                                            className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all bg-slate-50/50"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 pl-1">Complexity Level</label>
+                                        <input
+                                            type="number"
+                                            min="1"
+                                            max="10"
+                                            value={formData.complexityLevel}
+                                            onChange={(e) => setFormData({ ...formData, complexityLevel: parseInt(e.target.value) })}
+                                            className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all bg-slate-50/50"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 pl-1">Description</label>
+                                    <textarea
+                                        value={formData.description}
+                                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                        rows={4}
+                                        className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-600 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all resize-none"
+                                        placeholder="Brief summary..."
+                                    />
+                                </div>
+
+                                <div className="pt-8 flex items-center justify-end gap-4">
+                                    <button
+                                        type="button"
+                                        onClick={handleCloseForm}
+                                        className="px-8 py-3 rounded-xl text-slate-500 font-bold uppercase tracking-widest text-xs hover:bg-slate-100 transition-all"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        disabled={isSubmitting === true}
+                                        className="px-10 py-3 rounded-xl bg-orange-600 hover:bg-orange-700 text-white font-black uppercase tracking-widest text-xs shadow-lg shadow-orange-500/20 transition-all flex items-center gap-2 disabled:opacity-50"
+                                    >
+                                        {isSubmitting === true ? <ZLoader size="xs" className="text-white" center={false} /> : <Check size={16} />}
+                                        {isSubmitting === true ? 'Saving...' : 'Save Changes'}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </ZPortalModal>
+
+            <AlertDialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
+                <AlertDialogContent className="bg-white rounded-[2rem] border border-slate-100 p-0 overflow-hidden max-w-md">
+                    <div className="absolute top-0 left-0 w-full h-1.5 bg-red-500" />
+                    <div className="p-8 flex flex-col items-center text-center gap-6">
+                        <div className="h-16 w-16 rounded-full bg-red-50 text-red-500 flex items-center justify-center mb-2">
+                            <Trash2 size={32} />
+                        </div>
+                        <div className="space-y-2">
+                            <AlertDialogTitle className="text-2xl font-black text-slate-800 uppercase tracking-tight">Confirm Deletion</AlertDialogTitle>
+                            <AlertDialogDescription className="text-slate-500 font-medium leading-relaxed">
+                                {selectedIds.size > 1
+                                    ? `You are about to permanently delete ${selectedIds.size} topics. This action cannot be undone.`
+                                    : `You are about to delete "${currentTopic?.name ?? ''}". This action cannot be undone.`
+                                }
+                            </AlertDialogDescription>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4 w-full pt-4">
+                            <AlertDialogCancel className="rounded-xl border-2 border-slate-100 py-6 font-bold uppercase tracking-wider text-xs hover:bg-slate-50 hover:text-slate-800">
+                                Cancel
+                            </AlertDialogCancel>
+                            <AlertDialogAction
+                                onClick={() => { void handleDelete(); }}
+                                className="rounded-xl bg-red-600 py-6 font-black uppercase tracking-wider text-xs hover:bg-red-700 shadow-xl shadow-red-500/20 text-white"
+                                disabled={isSubmitting}
+                            >
+                                {isSubmitting ? 'Deleting...' : 'Delete Forever'}
+                            </AlertDialogAction>
+                        </div>
+                    </div>
+                </AlertDialogContent>
+            </AlertDialog>
+
             {isLoading === true ? <div className="fixed inset-0 z-[200] bg-white/50 backdrop-blur-sm flex items-center justify-center">
                 <ZLoader text="Syncing Nodes..." />
             </div> : null}

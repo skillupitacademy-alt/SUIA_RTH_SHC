@@ -26,7 +26,7 @@ export function useDomains() {
         return res;
     };
 
-    useEffect(() => { fetch(); }, []);
+    useEffect(() => { void fetch(); }, []);
 
     return { data, loading, fetch, create };
 }
@@ -36,7 +36,7 @@ export function useSubjects(domainId?: string) {
     const [loading, setLoading] = useState(false);
 
     const fetch = async () => {
-        if (!domainId) {
+        if (domainId === undefined || domainId === null || domainId === '') {
             setData([]);
             return;
         }
@@ -57,7 +57,7 @@ export function useSubjects(domainId?: string) {
         return res;
     };
 
-    useEffect(() => { fetch(); }, [domainId]);
+    useEffect(() => { void fetch(); }, [domainId]);
 
     return { data, loading, fetch, create };
 }
@@ -67,7 +67,7 @@ export function useTopics(subjectId?: string) {
     const [loading, setLoading] = useState(false);
 
     const fetch = async () => {
-        if (!subjectId) {
+        if (subjectId === undefined || subjectId === null || subjectId === '') {
             setData([]);
             return;
         }
@@ -88,7 +88,7 @@ export function useTopics(subjectId?: string) {
         return res;
     };
 
-    useEffect(() => { fetch(); }, [subjectId]);
+    useEffect(() => { void fetch(); }, [subjectId]);
 
     return { data, loading, fetch, create };
 }
@@ -98,7 +98,7 @@ export function useSubtopics(topicId?: string) {
     const [loading, setLoading] = useState(false);
 
     const fetch = async () => {
-        if (!topicId) {
+        if (topicId === undefined || topicId === null || topicId === '') {
             setData([]);
             return;
         }
@@ -119,7 +119,7 @@ export function useSubtopics(topicId?: string) {
         return res;
     };
 
-    useEffect(() => { fetch(); }, [topicId]);
+    useEffect(() => { void fetch(); }, [topicId]);
 
     return { data, loading, fetch, create };
 }
@@ -140,7 +140,7 @@ export function useAllSkills() {
         }
     };
 
-    useEffect(() => { fetch(); }, []);
+    useEffect(() => { void fetch(); }, []);
 
     return { data, loading, fetch };
 }
@@ -150,7 +150,7 @@ export function useTopicSkills(topicId?: string) {
     const [loading, setLoading] = useState(false);
 
     const fetch = async () => {
-        if (!topicId) {
+        if (topicId === undefined || topicId === null || topicId === '') {
             setData([]);
             return;
         }
@@ -165,7 +165,7 @@ export function useTopicSkills(topicId?: string) {
         }
     };
 
-    useEffect(() => { fetch(); }, [topicId]);
+    useEffect(() => { void fetch(); }, [topicId]);
 
     return { data, loading, fetch };
 }

@@ -17,9 +17,9 @@ export function useJobTracker() {
 
     // 1. Load active job IDs from localStorage for the current user
     const getStoredJobIds = useCallback((): string[] => {
-        if (typeof window === 'undefined' || !user?.id) return [];
+        if (typeof window === 'undefined' || user?.id === undefined || user.id === null || user.id === '') return [];
         const stored = localStorage.getItem(`${LOCAL_STORAGE_KEY}-${user.id}`);
-        if (!stored) return [];
+        if (stored === null || stored === '') return [];
         try {
             return JSON.parse(stored) as string[];
         } catch {
@@ -28,13 +28,13 @@ export function useJobTracker() {
     }, [user?.id]);
 
     const saveStoredJobIds = useCallback((ids: string[]) => {
-        if (typeof window === 'undefined' || !user?.id) return;
+        if (typeof window === 'undefined' || user?.id === undefined || user.id === null || user.id === '') return;
         localStorage.setItem(`${LOCAL_STORAGE_KEY}-${user.id}`, JSON.stringify(ids));
     }, [user?.id]);
 
     // 2. Poll status for all tracked jobs
     const checkJobsStatus = useCallback(async () => {
-        if (!isAuthenticated || !user?.id) return;
+        if (isAuthenticated === false || user?.id === undefined || user.id === null || user.id === '') return;
 
         const jobIds = getStoredJobIds();
         if (jobIds.length === 0) {
@@ -49,7 +49,7 @@ export function useJobTracker() {
                         return await apiClient.admin.getJobById(id);
                     } catch (err: unknown) {
                         // If job not found (404) or unauthorized (401), mark for removal
-                        if (err && typeof err === 'object' && 'status' in err && (err.status === 404 || err.status === 401)) {
+                        if (err !== null && typeof err === 'object' && 'status' in err && (err.status === 404 || err.status === 401)) {
                             return { _removeId: id };
                         }
                         return null;
@@ -86,12 +86,12 @@ export function useJobTracker() {
 
     // 3. Start polling
     useEffect(() => {
-        if (!initialized || !isAuthenticated || !user?.id) return;
+        if (initialized === false || isAuthenticated === false || user?.id === undefined || user.id === null || user.id === '') return;
 
         const jobIds = getStoredJobIds();
         if (jobIds.length > 0) {
-            checkJobsStatus();
-            pollTimerRef.current = setInterval(checkJobsStatus, POLL_INTERVAL);
+            void checkJobsStatus();
+            pollTimerRef.current = setInterval(() => { void checkJobsStatus(); }, POLL_INTERVAL);
         }
 
         return () => {
@@ -115,8 +115,8 @@ export function useJobTracker() {
             
             setJobs(prev => [...prev.filter(j => j.id !== job.id), job]);
             
-            if (!pollTimerRef.current) {
-                pollTimerRef.current = setInterval(checkJobsStatus, POLL_INTERVAL);
+            if (pollTimerRef.current === null) {
+                pollTimerRef.current = setInterval(() => { void checkJobsStatus(); }, POLL_INTERVAL);
             }
             
             return job;
@@ -143,6 +143,6 @@ export function useJobTracker() {
         startJob,
         clearJob,
         clearAll,
-        isPolling: !!pollTimerRef.current
+        isPolling: pollTimerRef.current !== null
     };
 }

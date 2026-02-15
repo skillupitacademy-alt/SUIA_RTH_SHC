@@ -125,7 +125,7 @@ export function SubjectTable() {
 
     // --- FORM LOGIC ---
     const handleOpenForm = (subject: any = null) => {
-        if (subject) {
+        if (subject !== null) {
             setCurrentSubject(subject);
             setFormData({
                 name: subject.name,
@@ -174,13 +174,13 @@ export function SubjectTable() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!formData.domainId) {
+        if (formData.domainId === '') {
             setErrorMessage('Constraint violation: Parent domain selection required.');
             return;
         }
         setIsSubmitting(true);
         try {
-            if (currentSubject) {
+            if (currentSubject !== null) {
                 await apiClient.admin.updateSubject(currentSubject.id, formData);
             } else {
                 await apiClient.admin.createSubject(formData);
@@ -261,10 +261,10 @@ export function SubjectTable() {
                                 </div>
                                 <div>
                                     <h3 className="text-2xl font-black text-[#1A1A1A] uppercase tracking-tight">
-                                        {currentSubject ? 'Edit Subject' : 'New Subject'}
+                                        {currentSubject !== null ? 'Edit Subject' : 'New Subject'}
                                     </h3>
                                     <p className="text-xs font-medium text-slate-500 uppercase tracking-widest mt-0.5">
-                                        {currentSubject ? 'Modify Subject Details' : 'Create New Subject'}
+                                        {currentSubject !== null ? 'Modify Subject Details' : 'Create New Subject'}
                                     </p>
                                 </div>
                             </div>
@@ -278,7 +278,7 @@ export function SubjectTable() {
 
                         <div className="flex-1 overflow-y-auto">
                             <div className="max-w-5xl mx-auto px-8 py-8">
-                                <form onSubmit={handleSubmit} className="space-y-6">
+                                <form onSubmit={(e) => { void handleSubmit(e); }} className="space-y-6">
                                     <div className="grid grid-cols-2 gap-6">
                                         {/* Parent Domain */}
                                         <SelectField
@@ -368,7 +368,7 @@ export function SubjectTable() {
                     onClose={() => setIsFactoryOpen(false)}
                     onSuccess={() => {
                         setIsFactoryOpen(false);
-                        fetchSubjects();
+                        void fetchSubjects();
                     }}
                     initialData={
                         formData.domainId
@@ -393,7 +393,7 @@ export function SubjectTable() {
                                 <AlertDialogDescription className="text-slate-500 font-medium leading-relaxed">
                                     {selectedIds.size > 1
                                         ? `You are about to permanently delete ${selectedIds.size} subjects. This action cannot be undone.`
-                                        : `You are about to delete "${currentSubject?.name}". This action cannot be undone.`
+                                        : `You are about to delete "${currentSubject?.name ?? ''}". This action cannot be undone.`
                                     }
                                 </AlertDialogDescription>
                             </div>
@@ -403,7 +403,7 @@ export function SubjectTable() {
                                     Cancel
                                 </AlertDialogCancel>
                                 <AlertDialogAction
-                                    onClick={handleDelete}
+                                    onClick={() => { void handleDelete(); }}
                                     className="rounded-xl bg-red-600 py-6 font-black uppercase tracking-wider text-xs hover:bg-red-700 shadow-xl shadow-red-500/20 text-white"
                                     disabled={isSubmitting}
                                 >

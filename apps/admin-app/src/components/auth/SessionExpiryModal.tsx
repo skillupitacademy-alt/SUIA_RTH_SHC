@@ -60,7 +60,7 @@ export function SessionExpiryModal() {
                     </div>
 
                     <button
-                        onClick={handleLogin}
+                        onClick={() => { void handleLogin(); }}
                         className="w-full py-4 rounded-xl bg-[#1A1A1A] text-white font-bold tracking-widest text-xs uppercase shadow-lg shadow-black/10 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2"
                     >
                         <LogOut size={16} />

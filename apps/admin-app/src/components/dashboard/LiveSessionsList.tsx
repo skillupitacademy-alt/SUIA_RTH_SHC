@@ -4,7 +4,7 @@
 import { apiClient } from '@quiz/api-client';
 import { ZLoader, ZPagination } from '@quiz/ui';
 import { formatDistanceToNow } from 'date-fns';
-import { Clock, Globe,Users } from 'lucide-react';
+import { Clock, Globe, Users } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 export function LiveSessionsList() {
@@ -39,8 +39,8 @@ export function LiveSessionsList() {
     };
 
     useEffect(() => {
-        fetchSessions(page);
-        const interval = setInterval(() => fetchSessions(page), 30000); // Poll every 30s
+        void fetchSessions(page);
+        const interval = setInterval(() => { void fetchSessions(page); }, 30000); // Poll every 30s
         return () => clearInterval(interval);
     }, [page, pageSize, debouncedSearch]);
 
@@ -88,12 +88,12 @@ export function LiveSessionsList() {
                             <div key={session.id} className="p-5 rounded-[1.75rem] bg-background border border-muted/50 hover:border-[#FF4B91]/30 transition-all group flex items-center justify-between shadow-sm">
                                 <div className="flex items-center gap-5">
                                     <div className="w-12 h-12 rounded-xl bg-[#FF4B91]/5 flex items-center justify-center text-[#FF4B91] font-black text-xl border border-[#FF4B91]/10">
-                                        {session.user.profile?.name?.[0] || 'U'}
+                                        {((session.user.profile?.name?.[0] as string | undefined | null) !== undefined && (session.user.profile?.name?.[0] as string | undefined | null) !== null && (session.user.profile?.name?.[0] as string) !== '') ? (session.user.profile?.name?.[0] as string) : 'U'}
                                     </div>
                                     <div>
                                         <div className="flex items-center gap-3">
-                                            <h4 className="text-lg font-black tracking-tight text-[#1A1A1A]">{session.user.profile?.name || 'Unknown User'}</h4>
-                                            {session.isAdmin ? <span className="px-2 py-0.5 rounded-md bg-[#FF4B91]/10 text-[#FF4B91] text-[9px] font-black uppercase tracking-widest">Master</span> : null}
+                                            <h4 className="text-lg font-black tracking-tight text-[#1A1A1A]">{((session.user.profile?.name as string | undefined | null) !== undefined && (session.user.profile?.name as string | undefined | null) !== null && (session.user.profile?.name as string) !== '') ? (session.user.profile?.name as string) : 'Unknown User'}</h4>
+                                            {session.isAdmin === true ? <span className="px-2 py-0.5 rounded-md bg-[#FF4B91]/10 text-[#FF4B91] text-[9px] font-black uppercase tracking-widest">Master</span> : null}
                                         </div>
                                         <p className="text-sm font-bold text-muted-foreground">{session.user.email}</p>
                                     </div>

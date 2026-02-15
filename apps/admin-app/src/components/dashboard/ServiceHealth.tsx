@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { apiClient } from '@quiz/api-client';
-import { AlertCircle, CheckCircle2, Cloud, Database, Mail, RefreshCw,Server } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Cloud, Database, Mail, RefreshCw, Server } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 interface ServiceMetric {
@@ -40,18 +40,18 @@ export function ServiceHealth() {
     };
 
     useEffect(() => {
-        fetchData();
+        void fetchData();
         // Refresh every 60s to match cache TTL
-        const interval = setInterval(fetchData, 60000);
+        const interval = setInterval(() => { void fetchData(); }, 60000);
         return () => clearInterval(interval);
     }, []);
 
-    if (error && !data) {
+    if (error !== null && data === null) {
         return (
             <div className="p-6 rounded-2xl border bg-destructive/5 border-destructive/20 text-destructive flex items-center gap-3">
                 <AlertCircle size={20} />
                 <span>{error}</span>
-                <button onClick={fetchData} className="ml-auto hover:bg-destructive/10 p-2 rounded-full">
+                <button onClick={() => { void fetchData(); }} className="ml-auto hover:bg-destructive/10 p-2 rounded-full">
                     <RefreshCw size={16} />
                 </button>
             </div>
@@ -112,7 +112,7 @@ function HealthCard({ title, icon: Icon, data, loading, type }: { title: string,
     if (!data) return null;
 
     const isConfigured = data.configured;
-    const metrics = data.metrics || {};
+    const metrics = (data.metrics as Record<string, any> | undefined) ?? {};
     const status = data.status;
 
     // Usage Colors
@@ -144,45 +144,45 @@ function HealthCard({ title, icon: Icon, data, loading, type }: { title: string,
                 <h4 className="text-sm font-bold text-muted-foreground uppercase tracking-wide">{title}</h4>
 
                 {/* NEON METRICS */}
-                {type === 'neon' && metrics.limitMb ? <div className="pt-2">
-                        <div className="flex justify-between text-xs mb-1.5 font-mono">
-                            <span>{metrics.sizeMb} MB / {metrics.limitMb} MB</span>
-                            <span className={status === 'error' ? 'text-destructive' : ''}>{metrics.usagePercent}%</span>
-                        </div>
-                        <div className="h-2 w-full bg-muted/20 rounded-full overflow-hidden">
-                            <div
-                                className={`h-full rounded-full transition-all duration-500 ${getProgressColor(metrics.usagePercent)}`}
-                                style={{ width: `${Math.min(100, metrics.usagePercent)}%` }}
-                            />
-                        </div>
-                    </div> : null}
+                {type === 'neon' && (metrics.limitMb as number | undefined) !== undefined ? <div className="pt-2">
+                    <div className="flex justify-between text-xs mb-1.5 font-mono">
+                        <span>{metrics.sizeMb} MB / {metrics.limitMb} MB</span>
+                        <span className={status === 'error' ? 'text-destructive' : ''}>{metrics.usagePercent}%</span>
+                    </div>
+                    <div className="h-2 w-full bg-muted/20 rounded-full overflow-hidden">
+                        <div
+                            className={`h-full rounded-full transition-all duration-500 ${getProgressColor(metrics.usagePercent)}`}
+                            style={{ width: `${Math.min(100, metrics.usagePercent)}%` }}
+                        />
+                    </div>
+                </div> : null}
 
                 {/* REDIS METRICS */}
-                {type === 'redis' && metrics.limitMb ? <div className="pt-2">
-                        <div className="flex justify-between text-xs mb-1.5 font-mono">
-                            <span>{metrics.memory} / {metrics.limitMb} MB</span>
-                            <span className={status === 'error' ? 'text-destructive' : ''}>{metrics.usagePercent}%</span>
-                        </div>
-                        <div className="h-2 w-full bg-muted/20 rounded-full overflow-hidden">
-                            <div
-                                className={`h-full rounded-full transition-all duration-500 ${getProgressColor(metrics.usagePercent)}`}
-                                style={{ width: `${Math.min(100, metrics.usagePercent)}%` }}
-                            />
-                        </div>
-                        <div className="flex justify-between mt-2 text-[10px] text-muted-foreground/60 uppercase tracking-wider">
-                            <span>Keys: {metrics.keys}</span>
-                            <span>{metrics.snapshot}</span>
-                        </div>
-                    </div> : null}
+                {type === 'redis' && (metrics.limitMb as number | undefined) !== undefined ? <div className="pt-2">
+                    <div className="flex justify-between text-xs mb-1.5 font-mono">
+                        <span>{metrics.memory} / {metrics.limitMb} MB</span>
+                        <span className={status === 'error' ? 'text-destructive' : ''}>{metrics.usagePercent}%</span>
+                    </div>
+                    <div className="h-2 w-full bg-muted/20 rounded-full overflow-hidden">
+                        <div
+                            className={`h-full rounded-full transition-all duration-500 ${getProgressColor(metrics.usagePercent)}`}
+                            style={{ width: `${Math.min(100, metrics.usagePercent)}%` }}
+                        />
+                    </div>
+                    <div className="flex justify-between mt-2 text-[10px] text-muted-foreground/60 uppercase tracking-wider">
+                        <span>Keys: {metrics.keys}</span>
+                        <span>{metrics.snapshot}</span>
+                    </div>
+                </div> : null}
 
                 {/* REDIS WITHOUT LIMIT (Raw) */}
-                {type === 'redis' && !metrics.limitMb && isConfigured ? <div className="pt-2 space-y-1">
-                        <p className="text-2xl font-black">{metrics.memory || '0B'}</p>
-                        <div className="flex justify-between text-[10px] text-muted-foreground uppercase tracking-wider">
-                            <span>Keys: {metrics.keys}</span>
-                            <span>{metrics.snapshot}</span>
-                        </div>
-                    </div> : null}
+                {type === 'redis' && (metrics.limitMb as number | undefined) === undefined && isConfigured === true ? <div className="pt-2 space-y-1">
+                    <p className="text-2xl font-black">{((metrics.memory as string | undefined | null) !== undefined && (metrics.memory as string | undefined | null) !== null && (metrics.memory as string) !== '') ? (metrics.memory as string) : '0B'}</p>
+                    <div className="flex justify-between text-[10px] text-muted-foreground uppercase tracking-wider">
+                        <span>Keys: {metrics.keys}</span>
+                        <span>{metrics.snapshot}</span>
+                    </div>
+                </div> : null}
 
                 {/* RESEND METRICS */}
                 {type === 'resend' && (
@@ -198,18 +198,18 @@ function HealthCard({ title, icon: Icon, data, loading, type }: { title: string,
                 )}
 
                 {/* CLOUDFLARE METRICS */}
-                {type === 'cloudflare' && isConfigured ? <div className="pt-2">
-                        <div className="flex justify-between items-end">
-                            <div>
-                                <p className="text-2xl font-black">{metrics.requests24h?.toLocaleString()}</p>
-                                <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Requests (24h)</p>
-                            </div>
-                            <div className="text-right">
-                                <p className="text-xs font-mono font-bold">{metrics.formattedBytes}</p>
-                                <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Bandwidth</p>
-                            </div>
+                {type === 'cloudflare' && isConfigured === true ? <div className="pt-2">
+                    <div className="flex justify-between items-end">
+                        <div>
+                            <p className="text-2xl font-black">{metrics.requests24h?.toLocaleString()}</p>
+                            <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Requests (24h)</p>
                         </div>
-                    </div> : null}
+                        <div className="text-right">
+                            <p className="text-xs font-mono font-bold">{metrics.formattedBytes}</p>
+                            <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Bandwidth</p>
+                        </div>
+                    </div>
+                </div> : null}
 
                 {/* NOT CONFIGURED / ERROR STATES */}
                 {!isConfigured && status === 'not_configured' && (
@@ -218,9 +218,9 @@ function HealthCard({ title, icon: Icon, data, loading, type }: { title: string,
                     </p>
                 )}
 
-                {data.error ? <p className="text-[10px] text-destructive pt-2 font-mono">
-                        Error: {data.error.message}
-                    </p> : null}
+                {(data.error as { message: string } | undefined) !== undefined ? <p className="text-[10px] text-destructive pt-2 font-mono">
+                    Error: {(data.error as { message: string }).message}
+                </p> : null}
 
             </div>
         </div>

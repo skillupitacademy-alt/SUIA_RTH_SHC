@@ -44,17 +44,19 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
         }
 
         // Circuit Breaker: Listen for global 401 events from FetchClient
-        const handleUnauthorized = async () => {
-            console.warn("Circuit Breaker: Global 401 detected. Logging out.");
-            try {
-                await apiClient.auth.logout();
-            } catch (err) {
-                console.error("Server-side logout failed during unauthorized event:", err);
-            } finally {
-                logout();
-                localStorage.removeItem('quiz-platform-admin-auth');
-                router.push('/login?reason=session_expired');
-            }
+        const handleUnauthorized = () => {
+            void (async () => {
+                console.warn("Circuit Breaker: Global 401 detected. Logging out.");
+                try {
+                    await apiClient.auth.logout();
+                } catch (err) {
+                    console.error("Server-side logout failed during unauthorized event:", err);
+                } finally {
+                    logout();
+                    localStorage.removeItem('quiz-platform-admin-auth');
+                    router.push('/login?reason=session_expired');
+                }
+            })();
         };
 
         window.addEventListener('auth:unauthorized', handleUnauthorized);

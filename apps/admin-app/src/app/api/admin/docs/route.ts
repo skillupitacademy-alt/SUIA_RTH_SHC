@@ -6,7 +6,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const docPath = searchParams.get('path');
 
-    if (!docPath) {
+    if (docPath === null || docPath === '') {
         return NextResponse.json({ error: 'Path required' }, { status: 400 });
     }
 

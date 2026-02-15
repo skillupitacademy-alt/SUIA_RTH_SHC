@@ -2,9 +2,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 
 import {
-CheckCheck,
+    CheckCheck,
     RefreshCcw, Save, Sparkles,
-    Trash2} from 'lucide-react';
+    Trash2
+} from 'lucide-react';
 import React from 'react';
 import { toast } from 'sonner';
 
@@ -112,7 +113,7 @@ export function ReviewConsole() {
                 console.error("Failed to fetch existing skills context", err);
             }
         };
-        fetchSkills();
+        void fetchSkills();
     }, [blueprint?.topicId]);
 
     // Check for duplicates when staged questions change
@@ -143,7 +144,7 @@ export function ReviewConsole() {
         };
 
         // Debounce slightly to avoid rapid firing if questions are updated frequently
-        const timer = setTimeout(checkDuplicates, 500);
+        const timer = setTimeout(() => { void checkDuplicates(); }, 500);
         return () => clearTimeout(timer);
     }, [stagedQuestions, blueprint?.topicId]);
 
@@ -183,7 +184,7 @@ export function ReviewConsole() {
                 title: "Duplicates Detected",
                 description: `Warning: ${duplicateMap.size} duplicate questions detected. Do you want to proceed and potentially create duplicates?`,
                 variant: 'warning',
-                onConfirm: performCommit
+                onConfirm: () => { void performCommit(); }
             });
             return;
         }
@@ -259,7 +260,7 @@ export function ReviewConsole() {
                     <div className="flex items-center gap-2 pr-2">
                         <button
                             className="px-6 py-3 rounded-2xl bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest flex items-center gap-2 hover:bg-[#FF4B91] transition-all active:scale-95 shadow-xl shadow-slate-900/10 disabled:opacity-50 disabled:cursor-not-allowed"
-                            onClick={handleSave}
+                            onClick={() => { void handleSave(); }}
                             disabled={isSaving || readyCount === 0}
                         >
                             {isSaving ? (

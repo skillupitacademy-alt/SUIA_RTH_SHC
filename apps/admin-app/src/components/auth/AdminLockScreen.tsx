@@ -14,11 +14,11 @@ export function AdminLockScreen() {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    if (!isLocked || !user) return null;
+    if (isLocked === false || user === null || user === undefined) return null;
 
     const handleUnlock = async (e?: React.FormEvent) => {
         e?.preventDefault();
-        if (!password) return;
+        if (password === '') return;
 
         setIsLoading(true);
         setError(null);
@@ -94,14 +94,14 @@ export function AdminLockScreen() {
                             autoFocus
                             className="w-full bg-white/5 border border-white/10 p-5 rounded-2xl text-white text-center font-bold tracking-[0.2em] focus:outline-none focus:border-[#FF4B91] focus:ring-1 focus:ring-[#FF4B91] transition-all placeholder:text-slate-600 placeholder:tracking-normal placeholder:font-medium placeholder:text-xs"
                         />
-                        {error ? <p className="absolute -bottom-6 left-0 right-0 text-center text-[10px] font-bold text-red-400 uppercase tracking-wider">
-                                {error}
-                            </p> : null}
+                        {(error as string | null) !== null ? <p className="absolute -bottom-6 left-0 right-0 text-center text-[10px] font-bold text-red-400 uppercase tracking-wider">
+                            {error}
+                        </p> : null}
                     </div>
 
                     <button
                         type="submit"
-                        disabled={isLoading || !password}
+                        disabled={isLoading === true || password === ''}
                         className="w-full h-14 rounded-2xl bg-[#FF4B91] text-white font-black uppercase tracking-widest text-xs flex items-center justify-center gap-3 shadow-xl shadow-pink-500/20 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 disabled:grayscale disabled:hover:scale-100"
                     >
                         {isLoading ? (

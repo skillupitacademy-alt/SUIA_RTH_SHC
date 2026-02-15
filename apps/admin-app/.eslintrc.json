@@ -48,5 +48,20 @@
         "simple-import-sort/imports": "error",
         "simple-import-sort/exports": "error",
         "import/order": "off"
-    }
+    },
+    "overrides": [
+        {
+            "files": [
+                "*.js"
+            ],
+            "parserOptions": {
+                "project": null
+            },
+            "rules": {
+                "@typescript-eslint/strict-boolean-expressions": "off",
+                "@typescript-eslint/no-floating-promises": "off",
+                "@typescript-eslint/no-misused-promises": "off"
+            }
+        }
+    ]
 }

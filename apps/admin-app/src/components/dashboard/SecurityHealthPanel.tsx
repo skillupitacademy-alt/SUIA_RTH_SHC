@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { apiClient } from '@quiz/api-client';
-import { Activity, Lock,ShieldAlert, ShieldCheck } from 'lucide-react';
+import { Activity, Lock, ShieldAlert, ShieldCheck } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 export function SecurityHealthPanel() {
@@ -17,12 +17,12 @@ export function SecurityHealthPanel() {
                 console.error("Failed to fetch security metrics", err);
             }
         };
-        fetch();
-        const interval = setInterval(fetch, 60000); // Poll every minute
+        void fetch();
+        const interval = setInterval(() => { void fetch(); }, 60000); // Poll every minute
         return () => clearInterval(interval);
     }, []);
 
-    if (!stats) return null;
+    if (stats === null) return null;
 
     const isHighThreat = stats.threatLevel === 'HIGH';
 

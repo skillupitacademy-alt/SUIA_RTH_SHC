@@ -1,7 +1,7 @@
 'use client';
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 
-import React, { createContext, ReactNode,useContext, useState } from 'react';
+import React, { createContext, ReactNode, useContext, useState } from 'react';
 import { toast } from 'sonner';
 
 import { JsonValidator } from '../lib/factory/json-validator';
@@ -52,16 +52,16 @@ export function FactoryProvider({ children }: { children: ReactNode }) {
     React.useEffect(() => {
         try {
             const saved = localStorage.getItem(STORAGE_KEY);
-            if (saved) {
+            if (saved !== null && saved !== '') {
                 const parsed = JSON.parse(saved);
-                if (parsed.blueprint) {
-                    setBlueprintState(parsed.blueprint);
+                if ((parsed.blueprint as FactoryBlueprint | undefined) !== undefined) {
+                    setBlueprintState(parsed.blueprint as FactoryBlueprint);
                 }
-                if (parsed.stagedQuestions) {
-                    setStagedQuestions(parsed.stagedQuestions);
+                if ((parsed.stagedQuestions as GeneratedQuestion[] | undefined) !== undefined) {
+                    setStagedQuestions(parsed.stagedQuestions as GeneratedQuestion[]);
                 }
-                if (parsed.sourceCode) {
-                    setSourceCode(parsed.sourceCode);
+                if ((parsed.sourceCode as string | undefined) !== undefined) {
+                    setSourceCode(parsed.sourceCode as string);
                 }
             }
         } catch (e) {
@@ -107,7 +107,7 @@ export function FactoryProvider({ children }: { children: ReactNode }) {
 
         try {
             const result: ValidationResult = JsonValidator.validateBatch(json);
-            setLastHealingReport(result.healingReport || null);
+            setLastHealingReport((result.healingReport as any | undefined) ?? null);
 
             if (result.isValid) {
                 setStagedQuestions(result.questions);

@@ -58,8 +58,8 @@ export default function TrendsPage() {
             ]);
 
             setSummary(summaryRes as SummaryData);
-            setScores((scoresRes?.scores || []) as ScoreData[]);
-            setSkills((skillsRes?.skills || []) as SkillData[]);
+            setScores((scoresRes.scores || []) as ScoreData[]);
+            setSkills((skillsRes.skills || []) as SkillData[]);
         } catch (err: unknown) {
             console.error('[TrendsPage] Fetch error:', err);
             const message = err instanceof Error ? err.message : 'Failed to load trends data';

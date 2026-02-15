@@ -10,7 +10,8 @@ import {
     LayoutDashboard,
     LogOut,
     ShieldCheck,
-    Users} from 'lucide-react';
+    Users
+} from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
@@ -66,12 +67,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         }, 3000);
     };
 
-    const onManualLogout = () => handleLogout();
-    const onExpiryLogout = () => handleLogout('session_expired');
+    const onManualLogout = () => { void handleLogout(); };
+    const onExpiryLogout = () => { void handleLogout('session_expired'); };
 
     const handleRefresh = async () => {
         const response = await apiClient.auth.refresh();
-        if (response && response.expiresAt && user) {
+        if (response !== null && response !== undefined && (response.expiresAt as string | undefined) !== undefined && user !== null && user !== undefined) {
             login(user, response.expiresAt);
         } else {
             throw new Error("Refresh failed");
@@ -88,35 +89,35 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 redirectMessage={redirectMessage}
             />
             <AdminLockScreen />
-            {showWarning ? <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
-                    <div className="bg-background border rounded-[2.5rem] p-8 max-w-md w-full shadow-2xl relative overflow-hidden">
-                        <div className="absolute top-0 left-0 w-full h-2 bg-[#FF4B91] z-10" />
-                        <div className="flex flex-col items-center text-center gap-4">
-                            <div className="h-16 w-16 rounded-full bg-red-100 flex items-center justify-center text-red-600 mb-2">
-                                <AlertTriangle size={32} />
-                            </div>
-                            <h3 className="text-2xl font-outfit font-black text-[#1A1A1A]">Security Warning</h3>
-                            <p className="text-muted-foreground font-inter font-medium">
-                                Navigation attempt detected. For security reasons, using the browser <strong>Back</strong> button will terminate your session.
-                            </p>
+            {showWarning === true ? <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
+                <div className="bg-background border rounded-[2.5rem] p-8 max-w-md w-full shadow-2xl relative overflow-hidden">
+                    <div className="absolute top-0 left-0 w-full h-2 bg-[#FF4B91] z-10" />
+                    <div className="flex flex-col items-center text-center gap-4">
+                        <div className="h-16 w-16 rounded-full bg-red-100 flex items-center justify-center text-red-600 mb-2">
+                            <AlertTriangle size={32} />
+                        </div>
+                        <h3 className="text-2xl font-outfit font-black text-[#1A1A1A]">Security Warning</h3>
+                        <p className="text-muted-foreground font-inter font-medium">
+                            Navigation attempt detected. For security reasons, using the browser <strong>Back</strong> button will terminate your session.
+                        </p>
 
-                            <div className="grid grid-cols-2 gap-4 w-full mt-6">
-                                <button
-                                    onClick={cancelNavigation}
-                                    className="px-6 py-4 rounded-2xl border-2 font-black uppercase tracking-widest text-xs hover:bg-muted transition-all"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    onClick={onManualLogout}
-                                    className="px-6 py-4 rounded-2xl bg-red-600 text-white font-black uppercase tracking-widest text-xs hover:bg-red-700 transition-all shadow-lg shadow-red-600/20"
-                                >
-                                    Log Out
-                                </button>
-                            </div>
+                        <div className="grid grid-cols-2 gap-4 w-full mt-6">
+                            <button
+                                onClick={cancelNavigation}
+                                className="px-6 py-4 rounded-2xl border-2 font-black uppercase tracking-widest text-xs hover:bg-muted transition-all"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={onManualLogout}
+                                className="px-6 py-4 rounded-2xl bg-red-600 text-white font-black uppercase tracking-widest text-xs hover:bg-red-700 transition-all shadow-lg shadow-red-600/20"
+                            >
+                                Log Out
+                            </button>
                         </div>
                     </div>
-                </div> : null}
+                </div>
+            </div> : null}
 
             <div className="h-screen bg-muted/10 overflow-hidden font-sans relative">
                 {/* Sidebar */}

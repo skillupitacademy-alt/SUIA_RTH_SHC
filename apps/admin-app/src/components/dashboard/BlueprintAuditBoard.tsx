@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { apiClient } from '@quiz/api-client';
-import { CheckCircle2,ClipboardCheck, FileText } from 'lucide-react';
+import { CheckCircle2, ClipboardCheck, FileText } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 export function BlueprintAuditBoard() {
@@ -17,10 +17,10 @@ export function BlueprintAuditBoard() {
                 console.error("Failed to fetch blueprint metrics", err);
             }
         };
-        fetch();
+        void fetch();
     }, []);
 
-    if (!stats) return null;
+    if (stats === null) return null;
 
     return (
         <div className="p-8 rounded-[2rem] border border-primary/10 bg-muted/5 backdrop-blur-md shadow-sm h-full">

@@ -7,7 +7,7 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function formatTimeAgo(dateInput: string | Date | null | undefined): string {
-    if (!dateInput) return 'Recently';
+    if (dateInput === null || dateInput === undefined || dateInput === '') return 'Recently';
     
     try {
         const date = typeof dateInput === 'string' ? parseISO(dateInput) : dateInput;

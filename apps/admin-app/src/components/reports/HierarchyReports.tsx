@@ -15,8 +15,9 @@ import {
     RefreshCw,
     Search,
     ShieldCheck,
-    Zap} from 'lucide-react';
-import React, { useEffect,useState } from 'react';
+    Zap
+} from 'lucide-react';
+import React, { useEffect, useState } from 'react';
 
 import { cn } from '@/lib/utils';
 
@@ -46,7 +47,7 @@ export const HierarchyReports: React.FC = () => {
     const currentView = viewStack[viewStack.length - 1];
 
     useEffect(() => {
-        fetchReport();
+        void fetchReport();
     }, []);
 
     const fetchReport = async () => {
@@ -171,7 +172,7 @@ export const HierarchyReports: React.FC = () => {
                         />
                     </div>
                     <button
-                        onClick={fetchReport}
+                        onClick={() => { void fetchReport(); }}
                         className="p-4 bg-white border-2 border-primary/5 rounded-2xl text-primary hover:bg-slate-50 transition-all shadow-sm active:scale-95"
                         title="Refresh Registry"
                     >
@@ -278,10 +279,12 @@ export const HierarchyReports: React.FC = () => {
                                         </td>
                                         <td className="p-8 text-right">
                                             <button
-                                                onClick={() => handleDrillDown(item,
-                                                    currentView.level === 'domain' ? 'subject' :
-                                                        currentView.level === 'subject' ? 'topic' : 'subtopic'
-                                                )}
+                                                onClick={() => {
+                                                    void handleDrillDown(item,
+                                                        currentView.level === 'domain' ? 'subject' :
+                                                            currentView.level === 'subject' ? 'topic' : 'subtopic'
+                                                    );
+                                                }}
                                                 className="px-6 py-3 bg-white border-2 border-primary/5 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl hover:bg-[#1A1A1A] hover:text-white hover:scale-105 transition-all active:scale-95"
                                             >
                                                 Enter Container
@@ -314,17 +317,17 @@ export const HierarchyReports: React.FC = () => {
 
             {/* Diagnostic Overlays */}
             {isActionLoading ? <div className="fixed inset-0 z-[300] bg-white/40 backdrop-blur-[4px] flex items-center justify-center animate-in fade-in duration-300">
-                    <div className="bg-white p-12 rounded-[3.5rem] shadow-[0_32px_128px_rgba(0,0,0,0.1)] border-2 border-primary/5 flex flex-col items-center gap-4 scale-100">
-                        <ZLoader size="lg" text="Accessing Branch_" />
-                    </div>
-                </div> : null}
+                <div className="bg-white p-12 rounded-[3.5rem] shadow-[0_32px_128px_rgba(0,0,0,0.1)] border-2 border-primary/5 flex flex-col items-center gap-4 scale-100">
+                    <ZLoader size="lg" text="Accessing Branch_" />
+                </div>
+            </div> : null}
 
             {isPageLoading ? <div className="fixed inset-0 z-[300] bg-black/10 backdrop-blur-[2px] flex items-center justify-center animate-in fade-in duration-300">
-                    <div className="bg-white p-12 rounded-[3.5rem] shadow-[0_32px_128px_rgba(0,0,0,0.15)] border-2 border-[#FF4B91]/10 flex flex-col items-center gap-6">
-                        <ZLoader size="lg" text="Standardizing Metrics..." />
-                        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground mt-4">Loader: ZLoader (Premium)</p>
-                    </div>
-                </div> : null}
+                <div className="bg-white p-12 rounded-[3.5rem] shadow-[0_32px_128px_rgba(0,0,0,0.15)] border-2 border-[#FF4B91]/10 flex flex-col items-center gap-6">
+                    <ZLoader size="lg" text="Standardizing Metrics..." />
+                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground mt-4">Loader: ZLoader (Premium)</p>
+                </div>
+            </div> : null}
 
             {/* Footer Stats Summary */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">

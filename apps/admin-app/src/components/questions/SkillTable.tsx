@@ -121,7 +121,7 @@ export function SkillTable() {
         try {
             await apiClient.admin.batchDeleteSkills(Array.from(selectedIds));
             setSelectedIds(new Set());
-            fetchSkills();
+            void fetchSkills();
             setIsDeleteOpen(false);
             setCurrentSkill(null);
         } catch (error) {
@@ -134,7 +134,7 @@ export function SkillTable() {
 
     // --- FORM LOGIC ---
     const handleOpenForm = (skill: any = null) => {
-        if (skill) {
+        if (skill !== null) {
             setCurrentSkill(skill);
             setFormData({
                 name: skill.name,
@@ -170,13 +170,13 @@ export function SkillTable() {
         e.preventDefault();
         setIsSubmitting(true);
         try {
-            if (currentSkill) {
+            if (currentSkill !== null) {
                 await apiClient.admin.updateSkill(currentSkill.id, formData);
             } else {
                 await apiClient.admin.createSkill(formData);
             }
             handleCloseForm();
-            fetchSkills();
+            void fetchSkills();
         } catch (error) {
             console.error('Failed to save skill:', error);
             setErrorMessage('Saving Failed: Please ensure the skill name is unique and try again.');
@@ -197,7 +197,7 @@ export function SkillTable() {
             await apiClient.admin.deleteSkill(currentSkill.id);
             setIsDeleteOpen(false);
             setCurrentSkill(null);
-            fetchSkills();
+            void fetchSkills();
         } catch (error) {
             console.error('Failed to delete skill:', error);
             setErrorMessage('Deletion Blocked: This skill is currently assigned to questions and cannot be removed.');
@@ -263,7 +263,7 @@ export function SkillTable() {
 
                         <div className="flex-1 overflow-y-auto">
                             <div className="max-w-4xl mx-auto px-8 py-8">
-                                <form onSubmit={handleSubmit} className="space-y-6">
+                                <form onSubmit={(e) => { void handleSubmit(e); }} className="space-y-6">
                                     {/* Row 1: Name and Weight */}
                                     <div className="grid grid-cols-2 gap-6">
                                         {/* Skill Name */}
@@ -360,7 +360,7 @@ export function SkillTable() {
                     isOpen={isFactoryOpen}
                     onClose={() => setIsFactoryOpen(false)}
                     initialData={{ target: 'skill' }}
-                    onSuccess={fetchSkills}
+                    onSuccess={() => { void fetchSkills(); }}
                 />
 
                 {/* Delete Confirmation Modal */}
@@ -389,7 +389,7 @@ export function SkillTable() {
                                     Cancel
                                 </AlertDialogCancel>
                                 <AlertDialogAction
-                                    onClick={handleDelete}
+                                    onClick={() => { void handleDelete(); }}
                                     className="rounded-xl bg-red-600 py-6 font-black uppercase tracking-wider text-xs hover:bg-red-700 shadow-xl shadow-red-500/20 text-white"
                                     disabled={isSubmitting}
                                 >

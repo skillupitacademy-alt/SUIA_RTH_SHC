@@ -3,8 +3,8 @@
 
 import { apiClient } from '@quiz/api-client';
 import { ZLoader, ZPagination } from '@quiz/ui';
-import { AlertTriangle,FileText, Filter, Hash, Trash2, X } from 'lucide-react';
-import { useCallback,useEffect, useState } from 'react';
+import { AlertTriangle, FileText, Filter, Hash, Trash2, X } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 import { CascadingSelect, Selection } from '@/components/entry/CascadingSelect';
@@ -119,11 +119,11 @@ export function QuestionTable() {
                 setIsLoading(false);
             }
         };
-        fetchQuestions();
+        void fetchQuestions();
     }, [page, pageSize, filters, debouncedSearch]);
 
     const handleDelete = async () => {
-        if (!deleteModal.questionId) return;
+        if (deleteModal.questionId === null) return;
 
         setDeleteModal(prev => ({ ...prev, isDeleting: true }));
         try {
@@ -209,17 +209,17 @@ export function QuestionTable() {
                                     className="w-full bg-slate-50 border-none rounded-2xl pl-12 pr-6 py-3.5 text-[11px] font-black tracking-widest text-[#1A1A1A] placeholder:text-slate-300 focus:ring-2 focus:ring-[#FF4B91]/10 transition-all outline-none border border-transparent shadow-inner"
                                 />
                             </div>
-
+                            {/* eslint-disable-next-line @typescript-eslint/strict-boolean-expressions */}
                             {(filters.domainId || filters.subjectId || filters.topicId || filters.subtopicId || filters.skillIds.length > 0 || searchQuery) ? <button
-                                    onClick={() => {
-                                        setFilters({ domainId: '', subjectId: '', topicId: '', subtopicId: '', skillIds: [] });
-                                        setSearchQuery('');
-                                        setPage(1);
-                                    }}
-                                    className="flex-shrink-0 flex items-center gap-2 px-4 py-3.5 rounded-2xl bg-red-50 text-red-600 text-[10px] font-black uppercase tracking-widest hover:bg-red-100 transition-all border border-red-100 h-full"
-                                >
-                                    <X className="w-3 h-3" /> Clear
-                                </button> : null}
+                                onClick={() => {
+                                    setFilters({ domainId: '', subjectId: '', topicId: '', subtopicId: '', skillIds: [] });
+                                    setSearchQuery('');
+                                    setPage(1);
+                                }}
+                                className="flex-shrink-0 flex items-center gap-2 px-4 py-3.5 rounded-2xl bg-red-50 text-red-600 text-[10px] font-black uppercase tracking-widest hover:bg-red-100 transition-all border border-red-100 h-full"
+                            >
+                                <X className="w-3 h-3" /> Clear
+                            </button> : null}
                         </div>
                     </div>
 
@@ -234,8 +234,8 @@ export function QuestionTable() {
                 {/* Question Stack Area */}
                 <div className="relative min-h-[400px]">
                     {isLoading ? <div className="absolute inset-0 z-40 bg-white/60 backdrop-blur-sm flex items-center justify-center animate-in fade-in duration-300 rounded-[1.75rem]">
-                            <ZLoader text="Synchronizing Matrix_" />
-                        </div> : null}
+                        <ZLoader text="Synchronizing Matrix_" />
+                    </div> : null}
 
                     {/* Question List */}
                     <div className="space-y-6">
@@ -280,7 +280,7 @@ export function QuestionTable() {
                                     </button>
 
                                     <button
-                                        onClick={handleBatchDelete}
+                                        onClick={() => { void handleBatchDelete(); }}
                                         disabled={isBatchDeleting}
                                         className="px-6 py-2.5 rounded-xl bg-red-500 text-white text-[10px] font-black uppercase tracking-widest hover:bg-red-600 transition-all shadow-lg shadow-red-500/20 flex items-center gap-2 group disabled:opacity-50"
                                     >
@@ -321,44 +321,44 @@ export function QuestionTable() {
             />
 
             {/* Delete Confirmation Modal */}
-            {deleteModal.isOpen ? <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-                    <div className="w-full max-w-md bg-white border border-white/20 rounded-[2.5rem] shadow-2xl p-8 relative overflow-hidden">
-                        {/* Glows */}
-                        <div className="absolute top-0 right-0 w-[150px] h-[150px] bg-red-500/5 rounded-full blur-[60px] -z-10" />
+            {deleteModal.isOpen === true ? <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+                <div className="w-full max-w-md bg-white border border-white/20 rounded-[2.5rem] shadow-2xl p-8 relative overflow-hidden">
+                    {/* Glows */}
+                    <div className="absolute top-0 right-0 w-[150px] h-[150px] bg-red-500/5 rounded-full blur-[60px] -z-10" />
 
-                        <div className="flex flex-col items-center text-center gap-6">
-                            <div className="h-16 w-16 rounded-full bg-red-50 flex items-center justify-center text-red-600 shadow-lg shadow-red-200">
-                                <AlertTriangle size={32} />
-                            </div>
+                    <div className="flex flex-col items-center text-center gap-6">
+                        <div className="h-16 w-16 rounded-full bg-red-50 flex items-center justify-center text-red-600 shadow-lg shadow-red-200">
+                            <AlertTriangle size={32} />
+                        </div>
 
-                            <div>
-                                <h2 className="text-2xl font-black text-[#1A1A1A] mb-2 text-center uppercase tracking-tight">Confirm Deletion</h2>
-                                <p className="text-sm font-bold text-muted-foreground">
-                                    Are you sure you want to decommission this assessment record? It will be marked as <span className="text-red-500 underline">inactive</span> and removed from active rotations.
-                                </p>
-                            </div>
+                        <div>
+                            <h2 className="text-2xl font-black text-[#1A1A1A] mb-2 text-center uppercase tracking-tight">Confirm Deletion</h2>
+                            <p className="text-sm font-bold text-muted-foreground">
+                                Are you sure you want to decommission this assessment record? It will be marked as <span className="text-red-500 underline">inactive</span> and removed from active rotations.
+                            </p>
+                        </div>
 
-                            <div className="flex flex-col gap-3 w-full pt-4">
-                                {deleteModal.error ? <div className="mb-4 p-4 bg-red-50 border border-red-100 rounded-2xl text-red-600 text-xs font-bold animate-in slide-in-from-top-2 duration-300">
-                                        {deleteModal.error}
-                                    </div> : null}
-                                <button
-                                    onClick={handleDelete}
-                                    disabled={deleteModal.isDeleting}
-                                    className="flex items-center justify-center gap-2 w-full py-4 bg-red-600 hover:bg-red-700 text-white text-xs font-black uppercase tracking-[0.2em] rounded-2xl shadow-lg shadow-red-200 active:scale-95 transition-all disabled:opacity-50"
-                                >
-                                    {deleteModal.isDeleting ? <ZLoader size="xs" className="text-white" center={false} /> : 'Delete Question'}
-                                </button>
-                                <button
-                                    onClick={handleCloseDelete}
-                                    className="w-full py-4 text-xs font-black uppercase tracking-[0.2em] text-slate-500 hover:text-slate-600 transition-colors"
-                                >
-                                    Cancel
-                                </button>
-                            </div>
+                        <div className="flex flex-col gap-3 w-full pt-4">
+                            {deleteModal.error !== null ? <div className="mb-4 p-4 bg-red-50 border border-red-100 rounded-2xl text-red-600 text-xs font-bold animate-in slide-in-from-top-2 duration-300">
+                                {deleteModal.error}
+                            </div> : null}
+                            <button
+                                onClick={() => { void handleDelete(); }}
+                                disabled={deleteModal.isDeleting}
+                                className="flex items-center justify-center gap-2 w-full py-4 bg-red-600 hover:bg-red-700 text-white text-xs font-black uppercase tracking-[0.2em] rounded-2xl shadow-lg shadow-red-200 active:scale-95 transition-all disabled:opacity-50"
+                            >
+                                {deleteModal.isDeleting ? <ZLoader size="xs" className="text-white" center={false} /> : 'Delete Question'}
+                            </button>
+                            <button
+                                onClick={handleCloseDelete}
+                                className="w-full py-4 text-xs font-black uppercase tracking-[0.2em] text-slate-500 hover:text-slate-600 transition-colors"
+                            >
+                                Cancel
+                            </button>
                         </div>
                     </div>
-                </div> : null}
+                </div>
+            </div> : null}
         </div>
     );
 }

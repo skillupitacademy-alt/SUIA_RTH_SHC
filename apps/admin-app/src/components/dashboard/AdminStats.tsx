@@ -25,7 +25,7 @@ export function MetricCard({ label, value, icon: Icon, subValue, variant = 'defa
                 <div>
                     <p className="text-sm font-bold text-slate-600 uppercase tracking-wide mb-1">{label}</p>
                     <p className="text-4xl font-black">{value}</p>
-                    {subValue ? <p className="text-xs font-bold text-muted-foreground mt-2 uppercase tracking-wide">{subValue}</p> : null}
+                    {subValue !== undefined && subValue !== null && subValue !== '' ? <p className="text-xs font-bold text-muted-foreground mt-2 uppercase tracking-wide">{subValue}</p> : null}
                 </div>
             </div>
         </div>
@@ -44,7 +44,7 @@ export function AdminMetricsGrid() {
                 console.error("Failed to fetch admin metrics", err);
             }
         };
-        fetchMetrics();
+        void fetchMetrics();
     }, []);
 
     const stats = [

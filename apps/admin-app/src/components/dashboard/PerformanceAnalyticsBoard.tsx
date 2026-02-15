@@ -3,7 +3,7 @@
 
 import { apiClient } from '@quiz/api-client';
 import { ZLoader } from '@quiz/ui';
-import { BarChart2,Target } from 'lucide-react';
+import { BarChart2, Target } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import { EfficiencyQuadrant } from './EfficiencyQuadrant';
@@ -32,10 +32,10 @@ export function PerformanceAnalyticsBoard() {
                 setIsLoading(false);
             }
         };
-        fetch();
+        void fetch();
     }, [range]);
 
-    if (isLoading || !perf) {
+    if (isLoading === true || perf === null) {
         return (
             <div className="p-20 flex items-center justify-center">
                 <ZLoader text="Analyzing Performance Data..." />

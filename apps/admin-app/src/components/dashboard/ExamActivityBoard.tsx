@@ -3,7 +3,7 @@
 
 import { apiClient } from '@quiz/api-client';
 import { ZLoader } from '@quiz/ui';
-import { Activity, CheckCircle2, Clock, Globe,XCircle } from 'lucide-react';
+import { Activity, CheckCircle2, Clock, Globe, XCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import { ZTooltip } from '@/components/ui/ZTooltip';
@@ -20,10 +20,10 @@ export function ExamActivityBoard() {
                 console.error("Failed to fetch exam activity", err);
             }
         };
-        fetch();
+        void fetch();
     }, []);
 
-    if (!stats) {
+    if (stats === null) {
         return (
             <div className="p-12 flex items-center justify-center bg-white border border-primary/10 rounded-[2rem]">
                 <ZLoader text="Fetching activity stream..." />
@@ -104,7 +104,7 @@ export function ExamActivityBoard() {
                             </div>
                         </div>
                     ))}
-                    {(!stats.byDomain || stats.byDomain.length === 0) && (
+                    {((stats.byDomain as any[]) === null || (stats.byDomain as any[]).length === 0) && (
                         <p className="text-xs font-bold text-slate-400">No domain activity recorded yet.</p>
                     )}
                 </div>

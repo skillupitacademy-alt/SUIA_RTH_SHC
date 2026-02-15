@@ -1,7 +1,7 @@
 'use client';
 
 import { apiClient } from '@quiz/api-client';
-import { CheckCircle2, FileBarChart2,Target, TrendingDown, TrendingUp } from 'lucide-react';
+import { CheckCircle2, FileBarChart2, Target, TrendingDown, TrendingUp } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import { ZTooltip } from '@/components/ui/ZTooltip';
@@ -30,10 +30,10 @@ export function ControlCenterDeck() {
                 setLoading(false);
             }
         };
-        fetch();
+        void fetch();
     }, []);
 
-    if (loading || !stats) return null;
+    if (loading === true || stats === null) return null;
 
     const cards = [
         {

@@ -208,7 +208,7 @@ function QuestionFactoryContent() {
                                     </button> : null}
 
                                     <button
-                                        onClick={handleCopyPrompt}
+                                        onClick={() => { void handleCopyPrompt(); }}
                                         disabled={blueprint.topicId === null || blueprint.topicId === '' || sourceCode === ''}
                                         className={`
                                             h-12 px-10 rounded-2xl flex items-center justify-center gap-3 font-black uppercase tracking-widest text-[11px] transition-all

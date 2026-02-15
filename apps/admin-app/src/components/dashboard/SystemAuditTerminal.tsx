@@ -3,7 +3,7 @@
 
 import { apiClient } from '@quiz/api-client';
 import { formatDistanceToNow } from 'date-fns';
-import { Clock, HardDrive,Terminal, User } from 'lucide-react';
+import { Clock, HardDrive, Terminal, User } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 export function SystemAuditTerminal() {
@@ -21,8 +21,8 @@ export function SystemAuditTerminal() {
                 setIsLoading(false);
             }
         };
-        fetch();
-        const interval = setInterval(fetch, 30000);
+        void fetch();
+        const interval = setInterval(() => { void fetch(); }, 30000);
         return () => clearInterval(interval);
     }, []);
 
@@ -59,16 +59,16 @@ export function SystemAuditTerminal() {
                             </div>
                             <div className="flex items-center gap-3 text-slate-600">
                                 <User size={12} className="opacity-40" />
-                                <span className="font-bold">{log.user?.profile?.name || 'SYSTEM'}</span>
-                                <span className="px-2 py-0.5 rounded bg-slate-200 text-[10px] text-slate-500">ID: {log.user?.id?.slice(0, 8) || 'ROOT'}</span>
+                                <span className="font-bold">{((log.user?.profile?.name as string | undefined | null) !== undefined && (log.user?.profile?.name as string | undefined | null) !== null && (log.user?.profile?.name as string) !== '') ? (log.user?.profile?.name as string) : 'SYSTEM'}</span>
+                                <span className="px-2 py-0.5 rounded bg-slate-200 text-[10px] text-slate-500">ID: {((log.user?.id as string | undefined | null) !== undefined && (log.user?.id as string | undefined | null) !== null && (log.user?.id as string) !== '') ? (log.user?.id as string).slice(0, 8) : 'ROOT'}</span>
                             </div>
-                            {log.ip ? <div className="flex items-center gap-3 text-slate-400">
-                                    <HardDrive size={12} />
-                                    <span>IP: {log.ip}</span>
-                                </div> : null}
-                            {log.metadata ? <div className="mt-2 p-3 rounded-xl bg-slate-900/5 text-[11px] text-[#FF4B91]/80 break-all">
-                                    {log.metadata}
-                                </div> : null}
+                            {(log.ip as string | undefined) !== undefined && (log.ip as string) !== '' ? <div className="flex items-center gap-3 text-slate-400">
+                                <HardDrive size={12} />
+                                <span>IP: {log.ip}</span>
+                            </div> : null}
+                            {(log.metadata as string | undefined) !== undefined && (log.metadata as string) !== '' ? <div className="mt-2 p-3 rounded-xl bg-slate-900/5 text-[11px] text-[#FF4B91]/80 break-all">
+                                {log.metadata}
+                            </div> : null}
                         </div>
                     </div>
                 ))}

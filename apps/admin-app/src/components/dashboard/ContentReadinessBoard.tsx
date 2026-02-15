@@ -45,7 +45,7 @@ export function ContentReadinessBoard() {
     };
 
     useEffect(() => {
-        fetch();
+        void fetch();
     }, []);
 
     const openHealWizard = (nodeType: string, node: any, domainId: string, domainName?: string) => {
@@ -78,7 +78,7 @@ export function ContentReadinessBoard() {
                 domainName: domainName,
                 subjects: [{
                     id: node.subjectId,
-                    name: node.subjectName || "PARENT_SUBJECT",
+                    name: ((node.subjectName as string | undefined | null) !== undefined && (node.subjectName as string | undefined | null) !== null && (node.subjectName as string) !== '') ? (node.subjectName as string) : "PARENT_SUBJECT",
                     topics: [{
                         id: node.id,
                         name: node.name,
@@ -101,12 +101,12 @@ export function ContentReadinessBoard() {
         </div>
     );
 
-    const filteredDomains = domains.filter(d =>
-        d.domainName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        d.subjects?.some((s: any) => s.name.toLowerCase().includes(searchQuery.toLowerCase()))
+    const filteredDomains = domains.filter((d: any) =>
+        (d.domainName as string).toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (d.subjects as any[])?.some((s: any) => (s.name as string).toLowerCase().includes(searchQuery.toLowerCase()))
     );
 
-    const readyDomainsCount = domains.filter(d => d.isReady).length;
+    const readyDomainsCount = domains.filter((d: any) => d.isReady === true).length;
 
     return (
         <div className="p-8 rounded-[2rem] border border-primary/10 bg-muted/5 backdrop-blur-md shadow-sm">
@@ -148,27 +148,27 @@ export function ContentReadinessBoard() {
                             onClick={() => toggleNode(domain.domainId)}
                             className={cn(
                                 "p-5 rounded-3xl border transition-all cursor-pointer group flex items-center justify-between shadow-sm",
-                                domain.isReady ? "bg-white border-primary/10 hover:border-primary/30" : "bg-red-500/[0.02] border-red-500/20 hover:border-red-500/40"
+                                domain.isReady === true ? "bg-white border-primary/10 hover:border-primary/30" : "bg-red-500/[0.02] border-red-500/20 hover:border-red-500/40"
                             )}
                         >
                             <div className="flex items-center gap-4">
                                 <div className={cn(
                                     "p-2 rounded-xl border",
-                                    domain.isReady ? "bg-primary/5 text-primary border-primary/10" : "bg-red-500/10 text-red-500 border-red-500/20"
+                                    domain.isReady === true ? "bg-primary/5 text-primary border-primary/10" : "bg-red-500/10 text-red-500 border-red-500/20"
                                 )}>
-                                    {domain.isReady ? <Layers size={20} /> : <FileWarning size={20} />}
+                                    {domain.isReady === true ? <Layers size={20} /> : <FileWarning size={20} />}
                                 </div>
                                 <div>
                                     <h4 className="text-lg font-black tracking-tight text-[#1A1A1A] flex items-center gap-2">
                                         {domain.domainName}
-                                        {domain.isReady ? (
+                                        {domain.isReady === true ? (
                                             <span className="text-[9px] bg-green-500/10 text-green-600 px-2 py-0.5 rounded-full uppercase">Ready</span>
                                         ) : (
                                             <span className="text-[9px] bg-red-500/10 text-red-600 px-2 py-0.5 rounded-full uppercase">Action Required</span>
                                         )}
                                     </h4>
                                     <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest leading-none mt-1">
-                                        {domain.subjects?.length || 0} Subjects • {domain.hasBlueprint ? "Blueprint Active" : "Blueprint Missing"}
+                                        {(domain.subjects as any[])?.length || 0} Subjects • {domain.hasBlueprint === true ? "Blueprint Active" : "Blueprint Missing"}
                                     </p>
                                 </div>
                             </div>
@@ -180,7 +180,7 @@ export function ContentReadinessBoard() {
                                     <StatsBadge label="E" val={domain.stats.expert} target={5} />
                                 </div>
                                 <div className="flex items-center gap-2 w-[140px] justify-end">
-                                    {!domain.hasBlueprint ? (
+                                    {domain.hasBlueprint === false || domain.hasBlueprint === undefined || domain.hasBlueprint === null ? (
                                         <button
                                             onClick={(e) => { e.stopPropagation(); setBlueprintModal({ isOpen: true, domainId: domain.domainId, domainName: domain.domainName }); }}
                                             className="px-4 py-2 bg-primary text-white rounded-xl text-[9px] font-black uppercase tracking-widest hover:scale-105 transition-all shadow-lg shadow-primary/10 flex items-center gap-2"
@@ -196,7 +196,7 @@ export function ContentReadinessBoard() {
                                             <Activity size={16} />
                                         </button>
                                     )}
-                                    {!domain.isReady && (domain.subjects?.length === 0) && (
+                                    {domain.isReady === false && ((domain.subjects as any[])?.length === 0) && (
                                         <button
                                             onClick={(e) => { e.stopPropagation(); openHealWizard('domain', domain, domain.domainId); }}
                                             className="p-2.5 rounded-xl bg-red-500/10 text-red-600 hover:bg-red-500/20 transition-all border border-red-500/10"
@@ -214,90 +214,90 @@ export function ContentReadinessBoard() {
 
                         {/* Subjects Drill-down */}
                         {expandedNodes[domain.domainId] ? <div className="ml-8 space-y-2 border-l-2 border-primary/5 pl-4 animate-in slide-in-from-top-2 duration-300">
-                                {domain.subjects?.map((subject: any) => (
-                                    <div key={subject.id} className="space-y-2">
-                                        <div
-                                            onClick={(e) => { e.stopPropagation(); toggleNode(subject.id); }}
-                                            className={cn(
-                                                "p-4 rounded-2xl border bg-white/50 flex items-center justify-between hover:bg-white cursor-pointer transition-all",
-                                                subject.stats.isReady ? "border-primary/5" : "border-red-500/10 bg-red-500/[0.01]"
-                                            )}
-                                        >
-                                            <div className="flex items-center gap-3">
-                                                <BookOpen size={16} className={subject.stats.isReady ? "text-primary/40" : "text-red-500/40"} />
-                                                <span className="text-xs font-black text-[#1A1A1A] uppercase tracking-wider">{subject.name}</span>
-                                                <ReadyIndicator isReady={subject.stats.isReady} />
-                                            </div>
-                                            <div className="flex items-center gap-4">
-                                                <div className="grid grid-cols-3 gap-1.5 transform scale-90">
-                                                    <StatsBadge label="S" val={subject.stats.simple} target={4} />
-                                                    <StatsBadge label="I" val={subject.stats.intermediate} target={4} />
-                                                    <StatsBadge label="E" val={subject.stats.expert} target={5} />
-                                                </div>
-                                                {!subject.stats.isReady && (subject.topics?.length === 0) && (
-                                                    <button
-                                                        onClick={(e) => { e.stopPropagation(); openHealWizard('subject', subject, domain.domainId, domain.domainName); }}
-                                                        className="p-1.5 rounded-lg bg-red-500/5 text-red-500 hover:bg-red-500/10 border border-red-500/5"
-                                                    >
-                                                        <Zap size={12} />
-                                                    </button>
-                                                )}
-                                                {expandedNodes[subject.id] ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-                                            </div>
+                            {domain.subjects?.map((subject: any) => (
+                                <div key={subject.id} className="space-y-2">
+                                    <div
+                                        onClick={(e) => { e.stopPropagation(); toggleNode(subject.id); }}
+                                        className={cn(
+                                            "p-4 rounded-2xl border bg-white/50 flex items-center justify-between hover:bg-white cursor-pointer transition-all",
+                                            subject.stats.isReady === true ? "border-primary/5" : "border-red-500/10 bg-red-500/[0.01]"
+                                        )}
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <BookOpen size={16} className={subject.stats.isReady === true ? "text-primary/40" : "text-red-500/40"} />
+                                            <span className="text-xs font-black text-[#1A1A1A] uppercase tracking-wider">{subject.name}</span>
+                                            <ReadyIndicator isReady={subject.stats.isReady === true} />
                                         </div>
+                                        <div className="flex items-center gap-4">
+                                            <div className="grid grid-cols-3 gap-1.5 transform scale-90">
+                                                <StatsBadge label="S" val={subject.stats.simple} target={4} />
+                                                <StatsBadge label="I" val={subject.stats.intermediate} target={4} />
+                                                <StatsBadge label="E" val={subject.stats.expert} target={5} />
+                                            </div>
+                                            {subject.stats.isReady === false && ((subject.topics as any[])?.length === 0) && (
+                                                <button
+                                                    onClick={(e) => { e.stopPropagation(); openHealWizard('subject', subject, domain.domainId, domain.domainName); }}
+                                                    className="p-1.5 rounded-lg bg-red-500/5 text-red-500 hover:bg-red-500/10 border border-red-500/5"
+                                                >
+                                                    <Zap size={12} />
+                                                </button>
+                                            )}
+                                            {expandedNodes[subject.id] ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                                        </div>
+                                    </div>
 
-                                        {/* Topics Drill-down */}
-                                        {expandedNodes[subject.id] ? <div className="ml-6 space-y-1.5 border-l border-primary/10 pl-4 animate-in slide-in-from-top-1">
-                                                {subject.topics?.map((topic: any) => (
-                                                    <div key={topic.id} className="space-y-1.5">
-                                                        <div
-                                                            onClick={(e) => { e.stopPropagation(); toggleNode(topic.id); }}
-                                                            className="flex items-center justify-between p-3 rounded-xl hover:bg-primary/5 cursor-pointer group"
-                                                        >
-                                                            <div className="flex items-center gap-3">
-                                                                <Target size={14} className="text-muted-foreground" />
-                                                                <span className="text-[11px] font-bold text-slate-600">{topic.name}</span>
-                                                                <ReadyIndicator isReady={topic.stats.isReady} />
+                                    {/* Topics Drill-down */}
+                                    {expandedNodes[subject.id] ? <div className="ml-6 space-y-1.5 border-l border-primary/10 pl-4 animate-in slide-in-from-top-1">
+                                        {subject.topics?.map((topic: any) => (
+                                            <div key={topic.id} className="space-y-1.5">
+                                                <div
+                                                    onClick={(e) => { e.stopPropagation(); toggleNode(topic.id); }}
+                                                    className="flex items-center justify-between p-3 rounded-xl hover:bg-primary/5 cursor-pointer group"
+                                                >
+                                                    <div className="flex items-center gap-3">
+                                                        <Target size={14} className="text-muted-foreground" />
+                                                        <span className="text-[11px] font-bold text-slate-600">{topic.name}</span>
+                                                        <ReadyIndicator isReady={topic.stats.isReady === true} />
+                                                    </div>
+                                                    <div className="flex items-center gap-3 scale-75 origin-right">
+                                                        <StatsBadge label="S" val={topic.stats.simple} target={4} />
+                                                        <StatsBadge label="I" val={topic.stats.intermediate} target={4} />
+                                                        <StatsBadge label="E" val={topic.stats.expert} target={5} />
+                                                        {topic.stats.isReady === false && (
+                                                            <button
+                                                                onClick={(e) => { e.stopPropagation(); openHealWizard('topic', { ...topic, subjectName: subject.name }, domain.domainId, domain.domainName); }}
+                                                                className="p-1 rounded bg-red-500/10 text-red-500 hover:bg-red-500/20"
+                                                            >
+                                                                <Zap size={10} />
+                                                            </button>
+                                                        )}
+                                                        {expandedNodes[topic.id] ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+                                                    </div>
+                                                </div>
+
+                                                {/* Subtopics Drill-down */}
+                                                {expandedNodes[topic.id] ? <div className="ml-6 space-y-1 pl-4">
+                                                    {topic.subtopics?.map((sub: any) => (
+                                                        <div key={sub.id} className="flex items-center justify-between p-2 rounded-lg bg-muted/20 text-[10px]">
+                                                            <div className="flex items-center gap-2">
+                                                                <MapPin size={10} className="text-muted-foreground" />
+                                                                <span className="font-medium text-muted-foreground uppercase tracking-tight">{sub.name}</span>
+                                                                <ReadyIndicator isReady={sub.stats.isReady} minimal />
                                                             </div>
-                                                            <div className="flex items-center gap-3 scale-75 origin-right">
-                                                                <StatsBadge label="S" val={topic.stats.simple} target={4} />
-                                                                <StatsBadge label="I" val={topic.stats.intermediate} target={4} />
-                                                                <StatsBadge label="E" val={topic.stats.expert} target={5} />
-                                                                {!topic.stats.isReady && (
-                                                                    <button
-                                                                        onClick={(e) => { e.stopPropagation(); openHealWizard('topic', { ...topic, subjectName: subject.name }, domain.domainId, domain.domainName); }}
-                                                                        className="p-1 rounded bg-red-500/10 text-red-500 hover:bg-red-500/20"
-                                                                    >
-                                                                        <Zap size={10} />
-                                                                    </button>
-                                                                )}
-                                                                {expandedNodes[topic.id] ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+                                                            <div className="flex items-center gap-2 scale-75 origin-right">
+                                                                <span className={cn(sub.stats.simple < 4 ? "text-red-500" : "text-green-600")}>S:{sub.stats.simple}</span>
+                                                                <span className={cn(sub.stats.intermediate < 4 ? "text-red-500" : "text-green-600")}>I:{sub.stats.intermediate}</span>
+                                                                <span className={cn(sub.stats.expert < 5 ? "text-red-500" : "text-green-600")}>E:{sub.stats.expert}</span>
                                                             </div>
                                                         </div>
-
-                                                        {/* Subtopics Drill-down */}
-                                                        {expandedNodes[topic.id] ? <div className="ml-6 space-y-1 pl-4">
-                                                                {topic.subtopics?.map((sub: any) => (
-                                                                    <div key={sub.id} className="flex items-center justify-between p-2 rounded-lg bg-muted/20 text-[10px]">
-                                                                        <div className="flex items-center gap-2">
-                                                                            <MapPin size={10} className="text-muted-foreground" />
-                                                                            <span className="font-medium text-muted-foreground uppercase tracking-tight">{sub.name}</span>
-                                                                            <ReadyIndicator isReady={sub.stats.isReady} minimal />
-                                                                        </div>
-                                                                        <div className="flex items-center gap-2 scale-75 origin-right">
-                                                                            <span className={cn(sub.stats.simple < 4 ? "text-red-500" : "text-green-600")}>S:{sub.stats.simple}</span>
-                                                                            <span className={cn(sub.stats.intermediate < 4 ? "text-red-500" : "text-green-600")}>I:{sub.stats.intermediate}</span>
-                                                                            <span className={cn(sub.stats.expert < 5 ? "text-red-500" : "text-green-600")}>E:{sub.stats.expert}</span>
-                                                                        </div>
-                                                                    </div>
-                                                                ))}
-                                                            </div> : null}
-                                                    </div>
-                                                ))}
-                                            </div> : null}
-                                    </div>
-                                ))}
-                            </div> : null}
+                                                    ))}
+                                                </div> : null}
+                                            </div>
+                                        ))}
+                                    </div> : null}
+                                </div>
+                            ))}
+                        </div> : null}
                     </div>
                 ))}
             </div>
@@ -306,7 +306,7 @@ export function ContentReadinessBoard() {
                 isOpen={factoryModal.isOpen}
                 initialData={factoryModal.initialData}
                 onClose={() => setFactoryModal({ isOpen: false, initialData: null })}
-                onSuccess={fetch}
+                onSuccess={() => { void fetch(); }}
             />
 
             <BlueprintFactoryWizard
@@ -314,7 +314,7 @@ export function ContentReadinessBoard() {
                 domainId={blueprintModal.domainId}
                 domainName={blueprintModal.domainName}
                 onClose={() => setBlueprintModal({ ...blueprintModal, isOpen: false })}
-                onSuccess={fetch}
+                onSuccess={() => { void fetch(); }}
             />
         </div>
     );

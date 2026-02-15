@@ -143,19 +143,19 @@ export function SubtopicTable() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!formData.topicId) {
+        if (formData.topicId === '') {
             setErrorMessage('Constraint violation: Parent topic selection required.');
             return;
         }
         setIsSubmitting(true);
         try {
-            if (currentSubtopic) {
+            if (currentSubtopic !== null) {
                 await apiClient.admin.updateSubtopic(currentSubtopic.id, formData);
             } else {
                 await apiClient.admin.createSubtopic(formData);
             }
             handleCloseForm();
-            fetchSubtopics();
+            void fetchSubtopics();
         } catch (error) {
             console.error('Failed to save subtopic:', error);
             setErrorMessage('Saving Failed: Please ensure all parent hierarchy fields are selected.');
@@ -171,7 +171,7 @@ export function SubtopicTable() {
             await apiClient.admin.deleteSubtopic(currentSubtopic.id);
             setIsDeleteOpen(false);
             setCurrentSubtopic(null);
-            fetchSubtopics();
+            void fetchSubtopics();
         } catch (error) {
             console.error('Failed to delete subtopic:', error);
             setErrorMessage('Deletion Blocked: This subtopic is currently in use and cannot be removed.');
@@ -202,7 +202,7 @@ export function SubtopicTable() {
             await apiClient.admin.batchDeleteSubtopics(Array.from(selectedIds));
             setSelectedIds(new Set());
             setIsDeleteOpen(false);
-            fetchSubtopics();
+            void fetchSubtopics();
         } catch (error: any) {
             setErrorMessage(`Batch Deletion Failed: ${error.message}`);
         } finally {
@@ -257,7 +257,7 @@ export function SubtopicTable() {
                                 </div>
 
                                 {/* Inputs Section */}
-                                <form onSubmit={handleSubmit} className="space-y-6">
+                                <form onSubmit={(e) => { void handleSubmit(e); }} className="space-y-6">
                                     <div className="grid grid-cols-2 gap-6">
                                         {/* The rest of the form inputs would go here */}
                                     </div>
