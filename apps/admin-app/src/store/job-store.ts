@@ -1,5 +1,5 @@
-import { create } from 'zustand';
 import type { BackgroundJob } from '@quiz/api-client';
+import { create } from 'zustand';
 
 interface JobState {
   jobs: BackgroundJob[];
