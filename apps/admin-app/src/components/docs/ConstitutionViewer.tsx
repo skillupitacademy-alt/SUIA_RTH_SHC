@@ -1,4 +1,5 @@
 import React from 'react';
+
 import { GOVERNANCE_DATA } from '@/lib/governance-inventory';
 
 export function ConstitutionViewer() {

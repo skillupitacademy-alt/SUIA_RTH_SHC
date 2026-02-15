@@ -1,4 +1,4 @@
-import { db, sessions, refreshTokens } from '@quiz/db';
+import { db, refreshTokens,sessions } from '@quiz/db';
 import { eq, lt } from 'drizzle-orm';
 
 export class SessionService {

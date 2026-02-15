@@ -1,10 +1,11 @@
 'use client';
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import React from 'react';
 import {
-    Edit2, Trash2, Shield, Zap, Hash, Cpu
-} from 'lucide-react';
+Cpu,
+    Edit2, Hash, Shield, Trash2, Zap} from 'lucide-react';
+import React from 'react';
+
 import { cn } from '@/lib/utils';
 
 interface SkillReviewCardProps {

@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from 'next/server';
-import { TokenService } from './token.service';
+
 import { cacheService } from '../core/cache.service';
+import { TokenService } from './token.service';
 
 const WINDOW_MS = 15 * 60 * 1000;
 const MAX_IP_REQUESTS = 1000;

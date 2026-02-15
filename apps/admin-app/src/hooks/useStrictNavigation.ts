@@ -1,5 +1,6 @@
+import { usePathname,useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
+
 import { useAuthStore } from '@/store/auth-store';
 
 export function useStrictNavigation() {

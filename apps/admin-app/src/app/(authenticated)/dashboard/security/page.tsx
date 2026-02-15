@@ -1,8 +1,9 @@
 'use client';
 
+import { ShieldAlert } from 'lucide-react';
+
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
 import { SecurityHealthPanel } from '@/components/dashboard/SecurityHealthPanel';
-import { ShieldAlert } from 'lucide-react';
 
 export default function SecurityPage() {
     return (

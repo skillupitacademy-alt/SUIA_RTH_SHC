@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from 'react';
-import { useAuthStore } from '@/store/auth-store';
-import { SessionWatcher } from '@/components/auth/SessionWatcher';
 import { apiClient } from '@quiz/api-client';
 import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+
+import { SessionWatcher } from '@/components/auth/SessionWatcher';
+import { useAuthStore } from '@/store/auth-store';
 
 export function AppAuthWrapper({ children }: { children: React.ReactNode }) {
     const { expiresAt, login, logout, initialized } = useAuthStore();

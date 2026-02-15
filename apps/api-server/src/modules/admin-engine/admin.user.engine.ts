@@ -1,5 +1,5 @@
-import { db, users, userProfiles, userRoles, roles } from '@quiz/db';
-import { eq, and, sql, desc, or, inArray, isNull, isNotNull, gt, type SQL } from 'drizzle-orm';
+import { db, roles,userProfiles, userRoles, users } from '@quiz/db';
+import { and, desc, eq, gt, inArray, isNotNull, isNull, or, type SQL,sql } from 'drizzle-orm';
 
 export interface UpdateUserInput {
   roles?: string[];

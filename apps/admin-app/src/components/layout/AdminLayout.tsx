@@ -1,29 +1,28 @@
 'use client';
 
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import {
-    LayoutDashboard,
-    Database,
-    LogOut,
-    ChevronRight,
-    AlertTriangle,
-    Users,
-    ShieldCheck,
-    BarChart3
-} from 'lucide-react';
-
-import { cn } from '@/lib/utils';
-import { AdminGuard } from '@/components/auth/AdminGuard';
-import { SessionWatcher } from '@/components/auth/SessionWatcher';
-import { AdminLockScreen } from '@/components/auth/AdminLockScreen';
-import { useAuthStore } from '@/store/auth-store';
 import { apiClient } from '@quiz/api-client';
 import { ThemeToggle } from '@quiz/ui';
+import {
+    AlertTriangle,
+    BarChart3,
+    ChevronRight,
+    Database,
+    LayoutDashboard,
+    LogOut,
+    ShieldCheck,
+    Users} from 'lucide-react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useState } from 'react';
-import { useStrictNavigation } from '@/hooks/useStrictNavigation';
-import { usePresenceHeartbeat } from '@/hooks/usePresenceHeartbeat';
+
+import { AdminGuard } from '@/components/auth/AdminGuard';
+import { AdminLockScreen } from '@/components/auth/AdminLockScreen';
+import { SessionWatcher } from '@/components/auth/SessionWatcher';
 import { JobStatusBadge } from '@/components/jobs/JobStatusBadge';
+import { usePresenceHeartbeat } from '@/hooks/usePresenceHeartbeat';
+import { useStrictNavigation } from '@/hooks/useStrictNavigation';
+import { cn } from '@/lib/utils';
+import { useAuthStore } from '@/store/auth-store';
 
 const ADMIN_NAV = [
     { name: 'Dashboard', href: '/', icon: LayoutDashboard },

@@ -1,5 +1,5 @@
 import { db, questions, questionSkills } from '@quiz/db';
-import { eq, inArray, sql, desc } from 'drizzle-orm';
+import { desc,eq, inArray, sql } from 'drizzle-orm';
 
 export class QuestionService {
   static async getAllQuestions() {

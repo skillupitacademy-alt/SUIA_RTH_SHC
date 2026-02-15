@@ -1,6 +1,6 @@
 'use client';
 
-import { AreaChart, Area, ResponsiveContainer } from 'recharts';
+import { Area, AreaChart, ResponsiveContainer } from 'recharts';
 
 interface SkillDeltaListProps {
     skills: Array<{

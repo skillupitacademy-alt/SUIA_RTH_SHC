@@ -1,9 +1,9 @@
 'use client';
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { useEffect, useState } from 'react';
 import { apiClient } from '@quiz/api-client';
-import { Database, Server, Mail, Cloud, AlertCircle, CheckCircle2, RefreshCw } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Cloud, Database, Mail, RefreshCw,Server } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 interface ServiceMetric {
     status: 'ok' | 'warning' | 'error' | 'not_configured';

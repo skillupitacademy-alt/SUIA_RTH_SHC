@@ -1,7 +1,7 @@
 'use client';
 
+import { ArrowUp, Code2, FileText } from 'lucide-react';
 import React from 'react';
-import { Code2, ArrowUp, FileText } from 'lucide-react';
 
 interface SourceEditorProps {
     value: string;

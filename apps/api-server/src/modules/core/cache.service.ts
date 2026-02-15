@@ -1,5 +1,5 @@
-import { LRUCache } from 'lru-cache';
 import { Redis } from '@upstash/redis';
+import { LRUCache } from 'lru-cache';
 
 interface _CacheOptions {
   ttl?: number;

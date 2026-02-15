@@ -1,12 +1,12 @@
 'use client';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Suspense, useState, useEffect } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
 import { apiClient } from '@quiz/api-client';
-import { Lock, ShieldCheck, CheckCircle2, AlertTriangle, Eye, EyeOff } from 'lucide-react';
 import { ZLoader } from '@quiz/ui';
+import { AlertTriangle, CheckCircle2, Eye, EyeOff,Lock, ShieldCheck } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter,useSearchParams } from 'next/navigation';
+import { Suspense, useEffect,useState } from 'react';
 
 function ResetPasswordForm() {
     const searchParams = useSearchParams();

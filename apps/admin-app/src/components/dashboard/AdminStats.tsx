@@ -1,9 +1,9 @@
 'use client';
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { LucideIcon, Users, FileCheck, ShieldAlert, Zap } from 'lucide-react';
-import { useEffect, useState } from 'react';
 import { apiClient } from '@quiz/api-client';
+import { FileCheck, LucideIcon, ShieldAlert, Users, Zap } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 interface MetricCardProps {
     label: string;

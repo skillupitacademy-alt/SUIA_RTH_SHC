@@ -1,8 +1,8 @@
+import { ZLoader } from '@quiz/ui';
+import { Activity, CheckCircle2, ChevronRight, ListChecks,Map, Shield, Terminal } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { ChevronRight, Terminal, CheckCircle2, Map, Shield, Activity, ListChecks } from 'lucide-react';
-import { ZLoader } from '@quiz/ui';
 
 interface JourneyFlowViewerProps {
     path: string;

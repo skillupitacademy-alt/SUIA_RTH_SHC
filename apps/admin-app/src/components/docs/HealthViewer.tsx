@@ -1,4 +1,5 @@
 import React from 'react';
+
 import { HEALTH_DATA } from '@/lib/governance-inventory';
 
 export function HealthViewer() {

@@ -6,7 +6,8 @@
     ],
     "plugins": [
         "security",
-        "jsx-a11y"
+        "jsx-a11y",
+        "simple-import-sort"
     ],
     "parserOptions": {
         "project": "./tsconfig.json"
@@ -19,7 +20,6 @@
     ],
     "rules": {
         "react/no-danger": "error",
-
         "@typescript-eslint/no-unused-vars": [
             "error",
             {
@@ -34,27 +34,47 @@
         "@typescript-eslint/strict-boolean-expressions": "error",
         "@typescript-eslint/no-require-imports": "warn",
         "@typescript-eslint/ban-ts-comment": "warn",
-
-        "eqeqeq": ["error", "always"],
-        "no-console": ["warn", { "allow": ["warn", "error"] }],
+        "eqeqeq": [
+            "error",
+            "always"
+        ],
+        "no-console": [
+            "warn",
+            {
+                "allow": [
+                    "warn",
+                    "error"
+                ]
+            }
+        ],
         "prefer-const": "warn",
         "react/no-unescaped-entities": "warn",
+        "react/self-closing-comp": "error",
         "react-hooks/rules-of-hooks": "error",
         "react-hooks/exhaustive-deps": "error",
-
         "jsx-a11y/anchor-is-valid": "error",
         "jsx-a11y/alt-text": "error",
         "jsx-a11y/no-autofocus": "warn",
-
         "no-eval": "error",
         "no-implied-eval": "error",
         "no-new-func": "error",
-
         "security/detect-object-injection": "off",
         "security/detect-non-literal-require": "error",
-
-        "max-lines": ["warn", { "max": 500, "skipBlankLines": true, "skipComments": true }],
-        "complexity": ["error", 20]
+        "simple-import-sort/imports": "error",
+        "simple-import-sort/exports": "error",
+        "import/order": "off",
+        "max-lines": [
+            "warn",
+            {
+                "max": 500,
+                "skipBlankLines": true,
+                "skipComments": true
+            }
+        ],
+        "complexity": [
+            "error",
+            20
+        ]
     },
     "overrides": []
 }

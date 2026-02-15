@@ -1,4 +1,4 @@
-import { db, auditLogs } from '@quiz/db';
+import { auditLogs,db } from '@quiz/db';
 
 export interface AuditLogEntry {
   userId?: string;

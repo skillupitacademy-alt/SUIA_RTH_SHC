@@ -1,8 +1,9 @@
 'use client';
 
-import { PerformanceAnalyticsBoard } from "@/components/dashboard/PerformanceAnalyticsBoard";
-import { DashboardPageHeader } from "@/components/dashboard/DashboardPageHeader";
 import { BarChart3 } from "lucide-react";
+
+import { DashboardPageHeader } from "@/components/dashboard/DashboardPageHeader";
+import { PerformanceAnalyticsBoard } from "@/components/dashboard/PerformanceAnalyticsBoard";
 
 export default function PerformancePage() {
     return (

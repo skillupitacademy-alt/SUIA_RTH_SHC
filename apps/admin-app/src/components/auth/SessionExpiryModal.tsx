@@ -1,11 +1,12 @@
 
 'use client';
 
-import { useEffect } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
-import { useAuthStore } from '@/store/auth-store';
-import { LogOut, ShieldAlert } from 'lucide-react';
 import { apiClient } from '@quiz/api-client';
+import { LogOut, ShieldAlert } from 'lucide-react';
+import { usePathname,useRouter } from 'next/navigation';
+import { useEffect } from 'react';
+
+import { useAuthStore } from '@/store/auth-store';
 
 export function SessionExpiryModal() {
     const router = useRouter();

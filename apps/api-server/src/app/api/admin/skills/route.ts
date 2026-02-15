@@ -1,7 +1,8 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-import { AdminEngine } from '@/modules/admin-engine/admin.engine';
+
 import type { SkillInsert } from '@/modules/admin-engine/admin.engine';
+import { AdminEngine } from '@/modules/admin-engine/admin.engine';
 import { TokenService } from '@/modules/auth/token.service';
 
 export const dynamic = 'force-dynamic';

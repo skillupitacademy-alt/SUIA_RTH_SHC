@@ -1,12 +1,13 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuthStore } from '@/store/auth-store';
 import { apiClient } from '@quiz/api-client';
-import { ShieldCheck, Lock, Mail } from 'lucide-react';
 import { ZLoader } from '@quiz/ui';
+import { Lock, Mail,ShieldCheck } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+
+import { useAuthStore } from '@/store/auth-store';
 
 export default function AdminLoginPage() {
     const router = useRouter();

@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from 'next/server';
+
 import { setCsrfToken } from '@/modules/auth/csrf.middleware';
 
 export async function GET(_req: NextRequest) {

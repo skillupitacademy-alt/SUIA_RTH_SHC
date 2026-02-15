@@ -1,10 +1,11 @@
 import type { examBlueprints } from '@quiz/db';
 import { db, examQuestions, exams, idempotencyKeys } from '@quiz/db';
-import { eq, and } from 'drizzle-orm';
 import type { InferSelectModel } from 'drizzle-orm';
-import { ScoringEngine } from '../scoring-engine/scoring.engine';
+import { and,eq } from 'drizzle-orm';
+
 import { AnswerEvaluationEngine } from '../answer-engine/answer.engine';
 import { cacheService } from '../core/cache.service';
+import { ScoringEngine } from '../scoring-engine/scoring.engine';
 import { SelectionService } from '../selection-engine/selection.service';
 
 export interface StartExamConfig {

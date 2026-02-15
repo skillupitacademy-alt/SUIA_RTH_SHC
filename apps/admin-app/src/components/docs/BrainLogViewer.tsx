@@ -1,4 +1,5 @@
 import React from 'react';
+
 import { BRAIN_LOG_DATA } from '@/lib/governance-inventory';
 
 export function BrainLogViewer() {

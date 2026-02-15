@@ -1,8 +1,9 @@
 'use client';
 
+import { GraduationCap } from "lucide-react";
+
 import { ContentReadinessBoard } from "@/components/dashboard/ContentReadinessBoard";
 import { DashboardPageHeader } from "@/components/dashboard/DashboardPageHeader";
-import { GraduationCap } from "lucide-react";
 
 export default function ContentReadinessPage() {
     return (

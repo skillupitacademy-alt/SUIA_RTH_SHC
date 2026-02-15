@@ -1,6 +1,6 @@
-import type { IEmailProvider } from './types';
 import { MockEmailProvider } from './providers/MockEmailProvider';
 import { ResendEmailProvider } from './providers/ResendEmailProvider';
+import type { IEmailProvider } from './types';
 
 export class EmailService {
   private static instance: IEmailProvider | null = null;

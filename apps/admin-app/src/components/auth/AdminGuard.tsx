@@ -1,11 +1,12 @@
 'use client';
 /* eslint-disable react-hooks/exhaustive-deps */
 
-import { useEffect } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
-import { useAuthStore } from '@/store/auth-store';
 import { apiClient } from '@quiz/api-client';
 import { ZLoader } from '@quiz/ui';
+import { usePathname,useRouter } from 'next/navigation';
+import { useEffect } from 'react';
+
+import { useAuthStore } from '@/store/auth-store';
 
 export function AdminGuard({ children }: { children: React.ReactNode }) {
     const { user, isAuthenticated, initialized, login, logout } = useAuthStore();

@@ -1,13 +1,14 @@
 'use client';
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars, react-hooks/exhaustive-deps */
 
-import { useEffect, useState } from 'react';
-import { GitBranch, Plus, Edit2, Trash2, Layers, Check, Trash, X } from 'lucide-react';
-import { ErrorBanner } from '@/components/layout/ErrorBanner';
+import { apiClient } from '@quiz/api-client';
 import { ZPagination } from '@quiz/ui';
+import { Check, Edit2, GitBranch, Layers, Plus, Trash, Trash2, X } from 'lucide-react';
+import { useEffect, useState } from 'react';
+
+import { ErrorBanner } from '@/components/layout/ErrorBanner';
 import { ZPortalModal } from '@/components/ui/ZPortalModal';
 import { useDomains, useSubjects, useTopics } from '@/hooks/useAdminHierarchy';
-import { apiClient } from '@quiz/api-client';
 import { cn } from '@/lib/utils';
 
 export function SubtopicTable() {

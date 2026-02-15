@@ -1,4 +1,4 @@
-import type { IEmailProvider, EmailOptions } from '../types';
+import type { EmailOptions,IEmailProvider } from '../types';
 
 export class MockEmailProvider implements IEmailProvider {
   async sendEmail(_options: EmailOptions): Promise<void> {

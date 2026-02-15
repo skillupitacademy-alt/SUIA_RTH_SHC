@@ -1,9 +1,10 @@
 'use client';
 
+import { Search,Terminal } from 'lucide-react';
 import React, { useState } from 'react';
+
 import { DocCategory, DocFile } from '@/lib/docs-loader';
 import { cn } from '@/lib/utils';
-import { Terminal, Search } from 'lucide-react';
 
 interface DocsTabsProps {
     structure: Record<DocCategory, DocFile[]>;

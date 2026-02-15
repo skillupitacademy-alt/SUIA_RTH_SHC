@@ -1,11 +1,12 @@
 import React from 'react';
-import { INVENTORY_GROUPS, FOLDER_BREAKDOWN, MASTER_FOLDER_MAP, COMPONENT_INVENTORY } from '@/lib/governance-inventory';
+
 import {
-    ADMIN_AUTH_INVENTORY, ADMIN_DASHBOARD_INVENTORY, ADMIN_CONTENT_INVENTORY, ADMIN_GOVERNANCE_INVENTORY,
-    WEB_CORE_INVENTORY, WEB_STUDENT_INVENTORY, WEB_EXAM_INVENTORY, WEB_REPORTS_INVENTORY,
+    ADMIN_AUTH_INVENTORY, ADMIN_CONTENT_INVENTORY, ADMIN_DASHBOARD_INVENTORY, ADMIN_GOVERNANCE_INVENTORY,
     API_ADMIN_INVENTORY, API_AUTH_INVENTORY, API_QUIZ_INVENTORY, API_SERVICES_INVENTORY,
-    CodeInventoryItem
-} from '@/lib/codebase-inventory-data';
+    CodeInventoryItem,
+    WEB_CORE_INVENTORY, WEB_EXAM_INVENTORY, WEB_REPORTS_INVENTORY,
+WEB_STUDENT_INVENTORY} from '@/lib/codebase-inventory-data';
+import { COMPONENT_INVENTORY,FOLDER_BREAKDOWN, INVENTORY_GROUPS, MASTER_FOLDER_MAP } from '@/lib/governance-inventory';
 
 function InventoryTable({ title, subtitle, items }: { title: string, subtitle: string, items: CodeInventoryItem[] }) {
     return (
@@ -313,7 +314,7 @@ export function GovernanceInventory() {
                             <tr className="bg-[#FF4B91]/5">
                                 <td className="px-10 py-6 font-black uppercase text-[11px] tracking-[0.4em] text-[#FF4B91]">Total_Assets</td>
                                 <td className="px-10 py-6 font-black text-2xl text-[#FF4B91]">21</td>
-                                <td className="px-10 py-6"></td>
+                                <td className="px-10 py-6" />
                             </tr>
                         </tbody>
                     </table>

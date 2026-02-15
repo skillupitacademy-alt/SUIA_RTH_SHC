@@ -1,5 +1,5 @@
 import { db, exams, resultsByDimension } from '@quiz/db';
-import { eq, desc, gte, lt, and, sql } from 'drizzle-orm';
+import { and, desc, eq, gte, lt, sql } from 'drizzle-orm';
 
 export interface ScoreTrend {
   examId: string;

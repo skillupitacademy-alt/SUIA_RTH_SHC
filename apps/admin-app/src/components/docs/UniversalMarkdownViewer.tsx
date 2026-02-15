@@ -1,11 +1,11 @@
 'use client';
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
+import { ZLoader } from '@quiz/ui';
+import { AlertOctagon, ChevronRight, Terminal } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { ChevronRight, AlertOctagon, Terminal } from 'lucide-react';
-import { ZLoader } from '@quiz/ui';
 
 interface UniversalMarkdownViewerProps {
     path: string;

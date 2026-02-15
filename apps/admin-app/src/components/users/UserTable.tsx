@@ -1,13 +1,14 @@
 'use client';
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars, react-hooks/exhaustive-deps */
 
-import { useEffect, useState } from 'react';
 import { apiClient } from '@quiz/api-client';
-import { User, Mail, Calendar, Shield, CheckCircle, Lock } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
-import { ErrorBanner } from '@/components/layout/ErrorBanner';
 import { ZLoader, ZPagination } from '@quiz/ui';
+import { formatDistanceToNow } from 'date-fns';
+import { Calendar, CheckCircle, Lock,Mail, Shield, User } from 'lucide-react';
 import Image from 'next/image';
+import { useEffect, useState } from 'react';
+
+import { ErrorBanner } from '@/components/layout/ErrorBanner';
 
 interface UserData {
     id: string;
@@ -295,21 +296,21 @@ export function UserTable() {
                                                 {user.status === 'online' && (
                                                     <>
                                                         <span className="relative flex h-3 w-3">
-                                                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                                                            <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+                                                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
+                                                            <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500" />
                                                         </span>
                                                         <span className="text-xs font-bold uppercase tracking-wide text-green-600">Online</span>
                                                     </>
                                                 )}
                                                 {user.status === 'idle' && (
                                                     <>
-                                                        <div className="h-2.5 w-2.5 rounded-full bg-yellow-400"></div>
+                                                        <div className="h-2.5 w-2.5 rounded-full bg-yellow-400" />
                                                         <span className="text-xs font-bold uppercase tracking-wide text-yellow-600">Idle</span>
                                                     </>
                                                 )}
                                                 {(user.status === 'offline' || !user.status) && !user.isBlocked && (
                                                     <>
-                                                        <div className="h-2.5 w-2.5 rounded-full bg-gray-300"></div>
+                                                        <div className="h-2.5 w-2.5 rounded-full bg-gray-300" />
                                                         <span className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Offline</span>
                                                     </>
                                                 )}

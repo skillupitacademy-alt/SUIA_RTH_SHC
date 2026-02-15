@@ -1,8 +1,9 @@
 'use client';
 
+import { Cpu } from 'lucide-react';
+
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
 import { QuestionFactoryAIPanel } from '@/components/dashboard/QuestionFactoryAIPanel';
-import { Cpu } from 'lucide-react';
 
 export default function QuestionFactoryAuditPage() {
     return (

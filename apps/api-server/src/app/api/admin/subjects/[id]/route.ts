@@ -1,9 +1,10 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-import { AdminEngine } from '@/modules/admin-engine/admin.engine';
+
 import type { SubjectInsert } from '@/modules/admin-engine/admin.engine';
-import { TokenService } from '@/modules/auth/token.service';
+import { AdminEngine } from '@/modules/admin-engine/admin.engine';
 import { _verifyAdmin } from '@/modules/auth/rbac.service';
+import { TokenService } from '@/modules/auth/token.service';
 
 export async function PATCH(
   _req: NextRequest,

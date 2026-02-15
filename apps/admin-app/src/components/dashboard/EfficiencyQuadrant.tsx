@@ -1,7 +1,8 @@
 'use client';
 
+import { AlertTriangle, Clock, HelpCircle,Target, Zap } from 'lucide-react';
+
 import { cn } from '@/lib/utils';
-import { Target, Zap, Clock, AlertTriangle, HelpCircle } from 'lucide-react';
 
 interface EfficiencyData {
     mastery: number;

@@ -1,11 +1,12 @@
 
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuthStore } from '@/store/auth-store';
-import { Server, Shield, Terminal, ArrowRight, Activity, Database, Lock } from 'lucide-react';
 import { ZLoader } from '@quiz/ui';
+import { Activity, ArrowRight, Database, Lock,Server, Shield, Terminal } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+
+import { useAuthStore } from '@/store/auth-store';
 
 export default function LoginPage() {
     const _router = useRouter();

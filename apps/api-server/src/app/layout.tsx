@@ -1,4 +1,5 @@
 import './index.css';
+
 import type { Metadata } from 'next';
 import { Inter, Outfit } from 'next/font/google';
 

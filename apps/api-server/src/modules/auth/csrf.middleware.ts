@@ -1,5 +1,6 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+
  // Keep for compatibility per _user _request
 import { config } from '@/config';
 

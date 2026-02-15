@@ -1,11 +1,12 @@
 'use client';
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars, react-hooks/exhaustive-deps */
 
-import { useState, useMemo } from 'react';
-import { useDomains, useSubjects, useTopics, useSubtopics, useAllSkills, useTopicSkills } from '@/hooks/useAdminHierarchy';
-import { X, Sparkles, Binary } from 'lucide-react';
 import { ZLoader } from '@quiz/ui';
-import { SelectField, MultiSelectField } from '@/components/entry/SelectionFields';
+import { Binary,Sparkles, X } from 'lucide-react';
+import { useMemo,useState } from 'react';
+
+import { MultiSelectField,SelectField } from '@/components/entry/SelectionFields';
+import { useAllSkills, useDomains, useSubjects, useSubtopics, useTopics, useTopicSkills } from '@/hooks/useAdminHierarchy';
 
 export interface Selection {
     domainId: string | null;

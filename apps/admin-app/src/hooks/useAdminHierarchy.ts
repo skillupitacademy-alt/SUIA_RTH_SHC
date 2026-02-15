@@ -1,8 +1,8 @@
 'use client';
 /* eslint-disable @typescript-eslint/no-explicit-any, react-hooks/exhaustive-deps */
 
-import { useState, useEffect } from 'react';
 import { apiClient } from '@quiz/api-client';
+import { useEffect,useState } from 'react';
 
 export function useDomains() {
     const [data, setData] = useState<any[]>([]);

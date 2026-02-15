@@ -1,6 +1,7 @@
-import { type NextRequest, NextResponse } from 'next/server';
 import { db, questions } from "@quiz/db";
-import { eq, and } from 'drizzle-orm';
+import { and,eq } from 'drizzle-orm';
+import { type NextRequest, NextResponse } from 'next/server';
+
 import { TokenService } from "@/modules/auth/token.service";
 
 interface DuplicateCheckPayload {

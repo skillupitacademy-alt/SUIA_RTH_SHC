@@ -1,8 +1,9 @@
 'use client';
 
+import { ShieldCheck } from 'lucide-react';
+
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
 import { RBACGovernancePanel } from '@/components/dashboard/RBACGovernancePanel';
-import { ShieldCheck } from 'lucide-react';
 
 export default function RBACPage() {
     return (

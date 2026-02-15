@@ -1,10 +1,11 @@
-import { type NextRequest, NextResponse } from 'next/server';
 import { Pool } from '@neondatabase/serverless';
 import { drizzle } from 'drizzle-orm/neon-serverless';
 import { migrate } from 'drizzle-orm/neon-serverless/migrator';
+import { type NextRequest, NextResponse } from 'next/server';
 import path from 'path';
-import { TokenService } from '@/modules/auth/token.service';
+
 import { _verifyAdmin } from '@/modules/auth/rbac.service';
+import { TokenService } from '@/modules/auth/token.service';
 
 export async function GET(_request: NextRequest) {
   try {

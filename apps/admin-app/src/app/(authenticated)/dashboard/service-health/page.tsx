@@ -1,8 +1,9 @@
 'use client';
 
-import { ServiceHealth } from "@/components/dashboard/ServiceHealth";
-import { DashboardPageHeader } from "@/components/dashboard/DashboardPageHeader";
 import { Activity } from "lucide-react";
+
+import { DashboardPageHeader } from "@/components/dashboard/DashboardPageHeader";
+import { ServiceHealth } from "@/components/dashboard/ServiceHealth";
 
 export default function ServiceHealthPage() {
     return (

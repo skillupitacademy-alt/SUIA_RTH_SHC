@@ -1,7 +1,7 @@
 'use client';
 
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, type TooltipProps } from 'recharts';
 import { format } from 'date-fns';
+import { CartesianGrid, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, type TooltipProps,XAxis, YAxis } from 'recharts';
 
 interface ScoreProgressionChartProps {
     scores: Array<{

@@ -1,8 +1,9 @@
 'use client';
 
+import { FileText } from 'lucide-react';
+
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
 import { ExamActivityBoard } from '@/components/dashboard/ExamActivityBoard';
-import { FileText } from 'lucide-react';
 
 export default function ExamActivityPage() {
     return (

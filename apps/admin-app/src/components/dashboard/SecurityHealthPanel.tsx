@@ -1,9 +1,9 @@
 'use client';
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { useEffect, useState } from 'react';
 import { apiClient } from '@quiz/api-client';
-import { ShieldAlert, ShieldCheck, Activity, Lock } from 'lucide-react';
+import { Activity, Lock,ShieldAlert, ShieldCheck } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 export function SecurityHealthPanel() {
     const [stats, setStats] = useState<any>(null);

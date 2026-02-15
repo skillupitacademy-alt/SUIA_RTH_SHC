@@ -1,5 +1,5 @@
 import { db, loginAttempts, users } from '@quiz/db';
-import { eq, and } from 'drizzle-orm';
+import { and,eq } from 'drizzle-orm';
 
 const MAX_ATTEMPTS = 5;
 

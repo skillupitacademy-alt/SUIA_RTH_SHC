@@ -1,5 +1,6 @@
-import { UserTable } from '@/components/users/UserTable';
 import { Users } from 'lucide-react';
+
+import { UserTable } from '@/components/users/UserTable';
 
 export default function UsersPage() {
     return (

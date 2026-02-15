@@ -1,8 +1,9 @@
 import { db } from '@quiz/db';
 import { sql } from 'drizzle-orm';
-import { cacheService } from '../core/cache.service';
-import { Resend } from 'resend';
 import { LRUCache } from 'lru-cache';
+import { Resend } from 'resend';
+
+import { cacheService } from '../core/cache.service';
 
 interface ServiceStatus {
   status: 'ok' | 'warning' | '_error' | 'not_configured';

@@ -1,11 +1,12 @@
 
 'use client';
 
-import { useState } from 'react';
-import { useAuthStore } from '@/store/auth-store';
-import { ShieldCheck, Lock, ChevronRight, LogOut, User as UserIcon } from 'lucide-react';
 import { apiClient } from '@quiz/api-client';
 import { ZLoader } from '@quiz/ui';
+import { ChevronRight, Lock, LogOut, ShieldCheck, User as UserIcon } from 'lucide-react';
+import { useState } from 'react';
+
+import { useAuthStore } from '@/store/auth-store';
 
 export function AdminLockScreen() {
     const { user, unlock, logout, isLocked } = useAuthStore();

@@ -1,17 +1,14 @@
 'use client';
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars, react-hooks/exhaustive-deps */
 
-import { useEffect, useState } from 'react';
 import { apiClient } from '@quiz/api-client';
-import { BookOpen, Plus, Check, Trash2, X } from 'lucide-react';
-import { ErrorBanner } from '@/components/layout/ErrorBanner';
 import { ZLoader, ZPagination } from '@quiz/ui';
-import { ZPortalModal } from '@/components/ui/ZPortalModal';
-import { SelectField } from '@/components/entry/SelectionFields';
+import { BookOpen, Check, Plus, Trash2, X } from 'lucide-react';
+import { useEffect, useState } from 'react';
+
 import { HierarchyFactoryWizard } from '@/components/content/HierarchyFactoryWizard';
-import { SubjectReviewCard } from './SubjectReviewCard';
-import { cn } from '@/lib/utils';
-import { useDomains } from '@/hooks/useAdminHierarchy';
+import { SelectField } from '@/components/entry/SelectionFields';
+import { ErrorBanner } from '@/components/layout/ErrorBanner';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -22,6 +19,11 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { ZPortalModal } from '@/components/ui/ZPortalModal';
+import { useDomains } from '@/hooks/useAdminHierarchy';
+import { cn } from '@/lib/utils';
+
+import { SubjectReviewCard } from './SubjectReviewCard';
 
 export function SubjectTable() {
     const [data, setData] = useState<any[]>([]);

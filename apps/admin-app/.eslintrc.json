@@ -4,7 +4,8 @@
         "next/typescript"
     ],
     "plugins": [
-        "security"
+        "security",
+        "simple-import-sort"
     ],
     "rules": {
         "react/no-danger": "error",
@@ -15,10 +16,14 @@
         "react-hooks/exhaustive-deps": "warn",
         "prefer-const": "warn",
         "react/no-unescaped-entities": "warn",
+        "react/self-closing-comp": "error",
         "no-eval": "error",
         "no-implied-eval": "error",
         "no-new-func": "error",
         "security/detect-object-injection": "off",
-        "security/detect-non-literal-require": "error"
+        "security/detect-non-literal-require": "error",
+        "simple-import-sort/imports": "error",
+        "simple-import-sort/exports": "error",
+        "import/order": "off"
     }
 }

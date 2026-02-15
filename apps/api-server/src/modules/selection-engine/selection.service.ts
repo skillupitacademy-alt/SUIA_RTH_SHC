@@ -1,9 +1,10 @@
-import { db, questions, examBlueprints, topics, subtopics, subjects as subjectsTable } from '@quiz/db';
-import { eq, inArray, sql, and, or, notInArray, gte, asc } from 'drizzle-orm';
-import type { InferSelectModel } from 'drizzle-orm';
-import { cacheService } from '../core/cache.service';
+import { db, examBlueprints, questions, subjects as subjectsTable,subtopics, topics } from '@quiz/db';
 import crypto from 'crypto';
+import type { InferSelectModel } from 'drizzle-orm';
+import { and, asc,eq, gte, inArray, notInArray, or, sql } from 'drizzle-orm';
 import { performance } from 'perf_hooks';
+
+import { cacheService } from '../core/cache.service';
 
 type Blueprint = InferSelectModel<typeof examBlueprints>;
 type Question = InferSelectModel<typeof questions>;

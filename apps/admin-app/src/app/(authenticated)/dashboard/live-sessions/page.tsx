@@ -1,8 +1,9 @@
 'use client';
 
+import { Radio } from 'lucide-react';
+
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
 import { LiveSessionsList } from '@/components/dashboard/LiveSessionsList';
-import { Radio } from 'lucide-react';
 
 export default function LiveSessionsPage() {
     return (

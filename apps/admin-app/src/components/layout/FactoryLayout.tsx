@@ -1,6 +1,6 @@
-import React from 'react';
-import Link from 'next/link';
 import { ArrowLeft, Box } from 'lucide-react';
+import Link from 'next/link';
+import React from 'react';
 
 interface FactoryLayoutProps {
     children: React.ReactNode;

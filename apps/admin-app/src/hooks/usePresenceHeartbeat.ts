@@ -1,6 +1,7 @@
-import { useEffect } from 'react';
-import { useAuthStore } from '@/store/auth-store';
 import { apiClient } from '@quiz/api-client';
+import { useEffect } from 'react';
+
+import { useAuthStore } from '@/store/auth-store';
 
 export function usePresenceHeartbeat() {
     const { isAuthenticated, initialized } = useAuthStore();

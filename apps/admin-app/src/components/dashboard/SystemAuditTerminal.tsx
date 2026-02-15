@@ -1,10 +1,10 @@
 'use client';
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { useEffect, useState } from 'react';
 import { apiClient } from '@quiz/api-client';
-import { Terminal, Clock, User, HardDrive } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
+import { Clock, HardDrive,Terminal, User } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 export function SystemAuditTerminal() {
     const [logs, setLogs] = useState<any[]>([]);

@@ -1,4 +1,5 @@
 import React from 'react';
+
 import { MANIFESTO_DATA } from '@/lib/governance-inventory';
 
 export function ManifestoViewer() {

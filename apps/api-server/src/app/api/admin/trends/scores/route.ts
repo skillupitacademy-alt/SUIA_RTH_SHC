@@ -1,5 +1,6 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+
 import { TrendsService } from '@/modules/metrics/trends.service';
 
 export const dynamic = 'force-dynamic';

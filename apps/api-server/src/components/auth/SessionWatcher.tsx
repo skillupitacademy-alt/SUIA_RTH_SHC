@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
+
 import { ZConfirmationDialog } from '@/components/ui/ZConfirmationDialog';
 
 const WARNING_THRESHOLD = 180; // 180 seconds (3 minutes)

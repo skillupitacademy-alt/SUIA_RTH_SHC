@@ -1,5 +1,5 @@
 import { db, questions, questionSkills } from '@quiz/db';
-import { eq, and, sql, desc, inArray } from 'drizzle-orm';
+import { and, desc, eq, inArray,sql } from 'drizzle-orm';
 
 export interface QuestionOption {
   id: string;

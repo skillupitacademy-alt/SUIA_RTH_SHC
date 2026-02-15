@@ -1,8 +1,9 @@
 'use client';
 
+import { CheckCircle2, Loader2, X } from 'lucide-react';
 import React from 'react';
+
 import { useJobTracker } from '@/hooks/useJobTracker';
-import { Loader2, CheckCircle2, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export function JobStatusBadge() {

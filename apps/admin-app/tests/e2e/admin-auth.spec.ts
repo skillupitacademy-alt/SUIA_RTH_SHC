@@ -1,4 +1,5 @@
-import { test, expect, Page } from '@playwright/test';
+import { expect, Page,test } from '@playwright/test';
+
 import { adminAuthFixtures } from './fixtures/auth';
 
 const ADMIN_UI_URL = adminAuthFixtures.ADMIN_UI_URL;

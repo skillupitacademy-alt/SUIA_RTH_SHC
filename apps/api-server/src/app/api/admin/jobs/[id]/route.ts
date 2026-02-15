@@ -1,5 +1,6 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+
 import { TokenService } from '@/modules/auth/token.service';
 import { JobsService } from '@/modules/system/jobs.service';
 

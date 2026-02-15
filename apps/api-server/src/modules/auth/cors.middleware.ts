@@ -1,4 +1,5 @@
 import type { NextRequest, NextResponse } from 'next/server';
+
 import { config } from '@/config';
 
 export function corsMiddleware(_request: NextRequest, response: NextResponse) {

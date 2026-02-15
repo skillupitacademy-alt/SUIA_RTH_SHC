@@ -1,5 +1,5 @@
-import { db, backgroundJobs } from '@quiz/db';
-import { eq, and, inArray } from 'drizzle-orm';
+import { backgroundJobs,db } from '@quiz/db';
+import { and, eq, inArray } from 'drizzle-orm';
 
 export interface CreateJobDTO {
   userId: string;

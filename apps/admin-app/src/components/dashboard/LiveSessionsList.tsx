@@ -1,11 +1,11 @@
 'use client';
 /* eslint-disable @typescript-eslint/no-explicit-any, react-hooks/exhaustive-deps */
 
-import { useEffect, useState } from 'react';
 import { apiClient } from '@quiz/api-client';
-import { Users, Clock, Globe } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
 import { ZLoader, ZPagination } from '@quiz/ui';
+import { formatDistanceToNow } from 'date-fns';
+import { Clock, Globe,Users } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 export function LiveSessionsList() {
     const [sessions, setSessions] = useState<any[]>([]);

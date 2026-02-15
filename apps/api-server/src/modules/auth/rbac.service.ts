@@ -1,5 +1,6 @@
-import { db, userRoles, roles, users } from '@quiz/db';
-import { eq, and, sql } from 'drizzle-orm';
+import { db, roles, userRoles, users } from '@quiz/db';
+import { and, eq, sql } from 'drizzle-orm';
+
 import type { TokenPayload } from './token.service';
 
 export async function _verifyAdmin(_payload: TokenPayload): Promise<boolean> {

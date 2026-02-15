@@ -1,12 +1,13 @@
 'use client';
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars, react-hooks/exhaustive-deps */
 
-import { useEffect, useState } from 'react';
-import { Hash, Plus, Edit2, Trash2, BookOpen, Layers, Check, Trash } from 'lucide-react';
-import { ErrorBanner } from '@/components/layout/ErrorBanner';
-import { ZLoader, ZPagination } from '@quiz/ui';
-import { useDomains, useSubjects } from '@/hooks/useAdminHierarchy';
 import { apiClient } from '@quiz/api-client';
+import { ZLoader, ZPagination } from '@quiz/ui';
+import { BookOpen, Check, Edit2, Hash, Layers, Plus, Trash,Trash2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
+
+import { ErrorBanner } from '@/components/layout/ErrorBanner';
+import { useDomains, useSubjects } from '@/hooks/useAdminHierarchy';
 import { cn } from '@/lib/utils';
 
 export function TopicTable() {

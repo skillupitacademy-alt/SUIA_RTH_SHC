@@ -1,4 +1,4 @@
-import { db, resultsByDimension, exams } from '@quiz/db';
+import { db, exams,resultsByDimension } from '@quiz/db';
 import { eq } from 'drizzle-orm';
 export const dynamic = 'force-dynamic';
 

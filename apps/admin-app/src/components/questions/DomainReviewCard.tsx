@@ -1,10 +1,11 @@
 'use client';
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import React from 'react';
 import {
-    Edit2, Trash2, Globe, Clock, Layers, BookOpen
-} from 'lucide-react';
+BookOpen,
+Clock,     Edit2, Globe, Layers, Trash2} from 'lucide-react';
+import React from 'react';
+
 import { cn, formatTimeAgo } from '@/lib/utils';
 
 interface DomainReviewCardProps {

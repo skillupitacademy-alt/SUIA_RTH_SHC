@@ -1,5 +1,5 @@
-import { getDocsStructure } from '@/lib/docs-loader';
 import { DocsViewer } from '@/components/docs/DocsViewer';
+import { getDocsStructure } from '@/lib/docs-loader';
 
 
 export default async function GovernancePage() {

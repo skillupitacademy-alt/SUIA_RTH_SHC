@@ -1,10 +1,10 @@
 'use client';
 
-import { useState } from 'react';
 import { apiClient } from '@quiz/api-client';
-import { Mail, ArrowLeft, Send, CheckCircle2 } from 'lucide-react';
 import { ZLoader } from '@quiz/ui';
+import { ArrowLeft, CheckCircle2,Mail, Send } from 'lucide-react';
 import Link from 'next/link';
+import { useState } from 'react';
 
 export default function ForgotPasswordPage() {
     const [email, setEmail] = useState('');

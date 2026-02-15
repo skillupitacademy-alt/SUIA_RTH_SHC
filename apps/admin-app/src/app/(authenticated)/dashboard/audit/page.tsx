@@ -1,8 +1,9 @@
 'use client';
 
+import { Activity } from 'lucide-react';
+
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
 import { SystemAuditTerminal } from '@/components/dashboard/SystemAuditTerminal';
-import { Activity } from 'lucide-react';
 
 export default function AuditPage() {
     return (

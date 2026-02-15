@@ -1,10 +1,11 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { apiClient } from '@quiz/api-client';
-import { TrendingUp, TrendingDown, Target, CheckCircle2, FileBarChart2 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { CheckCircle2, FileBarChart2,Target, TrendingDown, TrendingUp } from 'lucide-react';
+import { useEffect, useState } from 'react';
+
 import { ZTooltip } from '@/components/ui/ZTooltip';
+import { cn } from '@/lib/utils';
 
 interface SummaryData {
     avgScore: number;

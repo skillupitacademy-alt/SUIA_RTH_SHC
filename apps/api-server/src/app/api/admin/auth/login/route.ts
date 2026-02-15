@@ -1,8 +1,9 @@
 export const runtime = 'nodejs';
 
 import { NextResponse } from 'next/server';
-import { AdminAuthService } from '@/modules/auth/admin-auth.service';
 import { z } from 'zod';
+
+import { AdminAuthService } from '@/modules/auth/admin-auth.service';
 
 const loginSchema = z.object({
   email: z.string().email(),

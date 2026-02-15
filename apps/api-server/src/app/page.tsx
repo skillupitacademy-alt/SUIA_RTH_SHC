@@ -1,11 +1,12 @@
 "use client";
 
-import { AdminGuard } from "@/components/auth/AdminGuard";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import { useAuthStore, type AuthState } from "@/store/auth-store";
 import { ZLoader } from "@quiz/ui";
 import { ChevronRight } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+
+import { AdminGuard } from "@/components/auth/AdminGuard";
+import { type AuthState,useAuthStore } from "@/store/auth-store";
 
 export default function Home() {
     const _router = useRouter();

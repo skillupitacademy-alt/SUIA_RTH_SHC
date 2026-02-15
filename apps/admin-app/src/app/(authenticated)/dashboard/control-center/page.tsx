@@ -1,8 +1,9 @@
 'use client';
 
+import { LayoutDashboard } from "lucide-react";
+
 import { ControlCenterDeck } from "@/components/dashboard/ControlCenterDeck";
 import { DashboardPageHeader } from "@/components/dashboard/DashboardPageHeader";
-import { LayoutDashboard } from "lucide-react";
 
 export default function ControlCenterPage() {
     return (

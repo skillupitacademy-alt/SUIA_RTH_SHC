@@ -1,5 +1,5 @@
 import { db, questions } from '@quiz/db';
-import { eq, and, sql } from 'drizzle-orm';
+import { and, eq, sql } from 'drizzle-orm';
 
 export class QuestionDeliveryEngine {
   /**

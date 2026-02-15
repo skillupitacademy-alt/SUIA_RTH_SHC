@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { apiClient } from '@quiz/api-client';
-import { TrendSummaryCards } from '@/components/trends/TrendSummaryCards';
+import { useEffect,useState } from 'react';
+
 import { ScoreProgressionChart } from '@/components/trends/ScoreProgressionChart';
 import { SkillDeltaList } from '@/components/trends/SkillDeltaList';
 import { TrendsRangeSelector } from '@/components/trends/TrendsRangeSelector';
+import { TrendSummaryCards } from '@/components/trends/TrendSummaryCards';
 
 interface SummaryData {
     avgScore: number;
@@ -95,7 +96,7 @@ export default function TrendsPage() {
                 {/* Loading State */}
                 {loading && (
                     <div className="flex items-center justify-center py-20">
-                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
                     </div>
                 )}
 

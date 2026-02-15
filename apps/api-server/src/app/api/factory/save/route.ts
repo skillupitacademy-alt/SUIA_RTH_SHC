@@ -1,6 +1,7 @@
-import { type NextRequest, NextResponse } from "next/server";
 import { db, questions, questionSkills, skills } from "@quiz/db";
-import { sql, inArray } from "drizzle-orm";
+import { inArray,sql } from "drizzle-orm";
+import { type NextRequest, NextResponse } from "next/server";
+
 import { TokenService } from "@/modules/auth/token.service";
 
 // Define strict types locally to ensure safety without circular deps

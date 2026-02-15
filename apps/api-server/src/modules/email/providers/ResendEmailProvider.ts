@@ -1,5 +1,6 @@
 import { Resend } from 'resend';
-import type { IEmailProvider, EmailOptions } from '../types';
+
+import type { EmailOptions,IEmailProvider } from '../types';
 
 export class ResendEmailProvider implements IEmailProvider {
   private resend: Resend;

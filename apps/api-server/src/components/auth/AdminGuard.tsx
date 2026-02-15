@@ -1,10 +1,11 @@
 'use client';
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuthStore, type AuthState } from '@/store/auth-store';
 import { apiClient } from '@quiz/api-client';
 import { ZLoader } from '@quiz/ui';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
+
+import { type AuthState,useAuthStore } from '@/store/auth-store';
 
 export function AdminGuard({ children }: { children: React.ReactNode }) {
     const { _user, isAuthenticated, initialized, login, logout } = useAuthStore() as AuthState;

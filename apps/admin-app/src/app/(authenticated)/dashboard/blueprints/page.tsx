@@ -1,8 +1,9 @@
 'use client';
 
-import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
-import { BlueprintAuditBoard } from '@/components/dashboard/BlueprintAuditBoard';
 import { GitBranch } from 'lucide-react';
+
+import { BlueprintAuditBoard } from '@/components/dashboard/BlueprintAuditBoard';
+import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
 
 export default function BlueprintAuditPage() {
     return (

@@ -1,9 +1,10 @@
 /* eslint-disable no-console */
-import { db, domains, subjects } from '../../packages/db/src/index';
-import { sql } from 'drizzle-orm';
 import dotenv from 'dotenv';
-import path from 'path';
+import { sql } from 'drizzle-orm';
 import { writeFileSync } from 'fs';
+import path from 'path';
+
+import { db, domains, subjects } from '../../packages/db/src/index';
 
 dotenv.config({ path: path.join(__dirname, '../../packages/db/.env') });
 

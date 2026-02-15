@@ -1,25 +1,26 @@
 'use client';
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { useEffect, useState } from 'react';
 import { apiClient } from '@quiz/api-client';
+import { ZLoader } from '@quiz/ui';
 import {
-    FileWarning,
-    CheckCircle2,
-    ChevronRight,
-    ChevronDown,
-    Layers,
     Activity,
     BookOpen,
-    Target,
+    CheckCircle2,
+    ChevronDown,
+    ChevronRight,
+    FileWarning,
+    Layers,
     MapPin,
+    Target,
     Wand2,
     Zap
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { ZLoader } from '@quiz/ui';
-import { HierarchyFactoryWizard } from '@/components/content/HierarchyFactoryWizard';
+import { useEffect, useState } from 'react';
+
 import { BlueprintFactoryWizard } from '@/components/content/BlueprintFactoryWizard';
+import { HierarchyFactoryWizard } from '@/components/content/HierarchyFactoryWizard';
+import { cn } from '@/lib/utils';
 
 export function ContentReadinessBoard() {
     const [domains, setDomains] = useState<any[]>([]);

@@ -1,7 +1,8 @@
-import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
 import { db, users } from '@quiz/db';
 import { eq } from 'drizzle-orm';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
+
 import { TokenService } from '@/modules/auth/token.service';
 
 export const dynamic = 'force-dynamic';

@@ -1,6 +1,7 @@
+import { Activity, CheckCircle2, Clock, History, Terminal } from 'lucide-react';
 import React from 'react';
-import { TASK_HISTORY_DATA, CURRENT_TASK_DATA } from '@/lib/governance-inventory';
-import { History, Activity, CheckCircle2, Clock, Terminal } from 'lucide-react';
+
+import { CURRENT_TASK_DATA,TASK_HISTORY_DATA } from '@/lib/governance-inventory';
 
 interface LogViewerProps {
     type: 'history' | 'current';

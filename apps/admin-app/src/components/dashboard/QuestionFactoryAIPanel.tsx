@@ -1,8 +1,8 @@
 'use client';
 
-import React from 'react';
-import { BrainCircuit, Sparkles, ArrowRight, Wand2 } from 'lucide-react';
+import { ArrowRight, BrainCircuit, Sparkles, Wand2 } from 'lucide-react';
 import Link from 'next/link';
+import React from 'react';
 
 export function QuestionFactoryAIPanel() {
     return (

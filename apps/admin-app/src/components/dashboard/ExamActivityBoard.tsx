@@ -1,11 +1,12 @@
 'use client';
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { useEffect, useState } from 'react';
 import { apiClient } from '@quiz/api-client';
-import { Activity, Clock, CheckCircle2, XCircle, Globe } from 'lucide-react';
-import { ZTooltip } from '@/components/ui/ZTooltip';
 import { ZLoader } from '@quiz/ui';
+import { Activity, CheckCircle2, Clock, Globe,XCircle } from 'lucide-react';
+import { useEffect, useState } from 'react';
+
+import { ZTooltip } from '@/components/ui/ZTooltip';
 
 export function ExamActivityBoard() {
     const [stats, setStats] = useState<any>(null);

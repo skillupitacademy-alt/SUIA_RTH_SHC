@@ -1,11 +1,12 @@
 'use client';
 
-import React from 'react';
-import { FactoryLayout } from '@/components/layout/FactoryLayout';
-import { useFactory } from '@/context/FactoryContext';
 import { ChevronLeft, Info } from 'lucide-react';
 import Link from 'next/link';
+import React from 'react';
+
 import { ReviewConsole } from '@/components/factory/review/ReviewConsole';
+import { FactoryLayout } from '@/components/layout/FactoryLayout';
+import { useFactory } from '@/context/FactoryContext';
 
 export default function QuestionReviewPage() {
     return (

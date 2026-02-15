@@ -1,8 +1,9 @@
 'use client';
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
+import { SelectField as SharedSelectField, SelectFieldProps as SharedSelectFieldProps,ZLoader } from '@quiz/ui';
+
 import { cn } from '@/lib/utils';
-import { ZLoader, SelectField as SharedSelectField, SelectFieldProps as SharedSelectFieldProps } from '@quiz/ui';
 
 export type SelectFieldProps = SharedSelectFieldProps;
 
@@ -51,7 +52,7 @@ export function MultiSelectField({ label, values, options, loading, onChange, pl
                             : "border-slate-300"
                     )}
                 >
-                    {loading && <option disabled className="p-2 opacity-50"></option>}
+                    {loading && <option disabled className="p-2 opacity-50" />}
                     {!loading && options.length === 0 && <option disabled className="p-2 opacity-50">No skills available for this topic</option>}
 
                     {/* Grouped Options Logic */}

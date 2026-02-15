@@ -1,10 +1,11 @@
-import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { rateLimit } from './modules/auth/rate-limit.middleware';
-import { csrfProtection, setCsrfToken } from './modules/auth/csrf.middleware';
+import { NextResponse } from 'next/server';
+
 import { corsMiddleware } from './modules/auth/cors.middleware';
-import { TokenService } from './modules/auth/token.service';
+import { csrfProtection, setCsrfToken } from './modules/auth/csrf.middleware';
+import { rateLimit } from './modules/auth/rate-limit.middleware';
 import { _verifyAdmin } from './modules/auth/rbac.service';
+import { TokenService } from './modules/auth/token.service';
 
 export async function middleware(_request: NextRequest) {
   

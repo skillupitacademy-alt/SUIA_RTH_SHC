@@ -1,8 +1,9 @@
 'use client';
 
+import { Users } from 'lucide-react';
+
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
 import { UserAnalyticsPanel } from '@/components/dashboard/UserAnalyticsPanel';
-import { Users } from 'lucide-react';
 
 export default function UserAnalyticsPage() {
     return (
