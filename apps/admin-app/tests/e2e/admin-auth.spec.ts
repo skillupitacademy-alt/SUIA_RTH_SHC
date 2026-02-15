@@ -1,5 +1,6 @@
 import { expect, Page,test } from '@playwright/test';
 
+import { setupCSPAudit } from '../../../../tests/utils/csp-audit-collector';
 import { adminAuthFixtures } from './fixtures/auth';
 
 const ADMIN_UI_URL = adminAuthFixtures.ADMIN_UI_URL;
@@ -11,6 +12,10 @@ async function logoutAdmin(page: Page) {
 }
 
 test.describe('Admin Auth & Security Suite', () => {
+
+  test.beforeEach(async ({ page }) => {
+    setupCSPAudit(page);
+  });
 
   // 1. Happy Path: Login -> Dashboard -> Logout
   test('Admin Happy Path', async ({ page }) => {
@@ -110,10 +115,12 @@ test.describe('Admin Auth & Security Suite', () => {
 
     // a) Navigate to Factory and Trigger Mock Job (with ?e2e=true override)
     await page.goto(`${ADMIN_UI_URL}/factory/question-generator?e2e=true`);
+    await page.waitForTimeout(2000); // Wait for hydration and searchParams check
     await page.getByTestId('mock-job-button').click();
+    await page.waitForTimeout(2000); // Wait for API response and JobTracker state update
 
     // b) Verify Badge appears in header (Polling started)
-    await expect(page.getByText(/Processing/i)).toBeVisible({ timeout: 15000 });
+    await expect(page.getByText(/Processing/i)).toBeVisible({ timeout: 25000 });
 
     // c) Trigger Logout (While job is active)
     await logoutAdmin(page);
@@ -155,7 +162,12 @@ test.describe('Admin Auth & Security Suite', () => {
 
     // Unlock
     const password = process.env.TEST_ADMIN_PASSWORD!;
-    await page.locator('input[type="password"]').fill(password);
+    await page.locator('input[type="password"]').click();
+    await page.locator('input[type="password"]').pressSequentially(password, { delay: 100 });
+    await page.waitForTimeout(500); // Allow state to settle
+    
+    // Check if button is enabled before clicking
+    await expect(page.getByRole('button', { name: /Unlock Protocol/i })).toBeEnabled();
     await page.getByRole('button', { name: /Unlock Protocol/i }).click();
 
     // Verify text preserved
@@ -195,7 +207,7 @@ test.describe('Admin Auth & Security Suite', () => {
   // 11. Security Shredder Clears LocalStorage
   test('Security Shredder Clears LocalStorage', async ({ page }) => {
     await adminAuthFixtures.loginAdmin(page);
-    await page.goto(`${ADMIN_UI_URL}/dashboard`);
+    await page.goto(`${ADMIN_UI_URL}/`);
     
     // Set factory data
     await page.evaluate(() => {

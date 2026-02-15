@@ -1,8 +1,10 @@
 import { test, expect } from '@playwright/test';
 import { authFixtures, UI_URL } from './fixtures/auth';
+import { setupCSPAudit } from '../../../../tests/utils/csp-audit-collector';
 
 test.describe('Web App Auth E2E', () => {
   test.beforeEach(async ({ page }) => {
+    setupCSPAudit(page);
     await authFixtures.clearState(page);
   });
 

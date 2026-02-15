@@ -1477,3 +1477,13 @@ Reduce documentation fragmentation and improve discoverability by consolidating 
     - **Heartbeat Pausing**: Updated `usePresenceHeartbeat` to pause background pings when the terminal is locked, reducing server-side session noise.
 - **Outcome**: Achieved a 17/22 passing rate on the Chaos stability suite and delivered a bulletproof, state-preserving lock screen for the Admin app.
 - **Verification**: Verified via `pnpm lint:all`, `typecheck:all`, and `build:all` (Exit Code 0).
+
+### Batch 211: CSP Auditing & Reporting Implementation
+- **Objective**: Implement a phased CSP auditing strategy to prepare for strict policy enforcement.
+- **Status**: COMPLETED
+- **Implementation**:
+    - **Phase A (Local Collector)**: Created `csp-audit-collector.ts` Playwright utility. It intercepts `console.warn` and `console.error` messages during E2E tests, identifies CSP violations, deduplicates them by blocked-URI and violated-directive, and persists them to `docs/security/audit/csp-violations.json`.
+    - **Phase B (Reporting Sink)**: Developed a Next.js API route at `apps/api-server/src/app/api/security/report/route.ts`. This endpoint handles `application/csp-report` JSON payloads from browsers and logs them to `logs/security/csp-audit.log` for production auditing.
+    - **Security Muzzle**: Implemented a `SecurityMuzzle.tsx` React component to filter CSP-related console noise. This prevents "console spam" in local development and production while auditing is active.
+    - **verification**: Confirmed 100% build stability and zero lint/type errors across the monorepo (`pnpm lint:all`, `pnpm typecheck:all`, `pnpm build:all`).
+- **Outcome**: Delivered a full-stack security auditing pipeline that captures real-world violation data without impacting user experience or developer productivity.

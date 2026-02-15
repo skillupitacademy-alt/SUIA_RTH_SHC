@@ -2,6 +2,7 @@ import "./globals.css";
 
 import type { Metadata } from "next";
 
+import { SecurityMuzzle } from "@/components/auth/SecurityMuzzle";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 
 export const metadata: Metadata = {
@@ -18,6 +19,7 @@ export default function RootLayout({
         <html lang="en" suppressHydrationWarning>
             <body>
                 <ThemeProvider>
+                    <SecurityMuzzle />
                     {children}
                 </ThemeProvider>
             </body>

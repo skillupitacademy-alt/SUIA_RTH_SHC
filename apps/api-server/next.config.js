@@ -34,6 +34,7 @@ const nextConfig = {
                             "object-src 'none'",
                             "manifest-src 'self'",
                             "upgrade-insecure-requests",
+                            `report-uri ${process.env.NEXT_PUBLIC_API_URL || "https://api.realtutorialhub.com"}/api/security/report`,
                         ].join('; '),
                     },
                 ],

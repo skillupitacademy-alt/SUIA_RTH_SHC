@@ -1,5 +1,5 @@
-import 'dotenv/config';
 import { test, expect, type Cookie } from '@playwright/test';
+import { setupCSPAudit } from '../../../tests/utils/csp-audit-collector';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL;
 
@@ -31,10 +31,7 @@ for (const role of Object.keys(cfg) as Role[]) {
     const creds = cfg[role];
     test.skip(!creds.email || !creds.password, `${role} creds not set`);
 
-    // Listen to browser console logs to surface client-side errors in test output
-    page.on('console', (msg) => {
-      console.log(`[BROWSER:${role}]`, msg.type(), msg.text());
-    });
+    setupCSPAudit(page);
 
     if (role === 'admin') {
       // Use direct API login to avoid UI differences

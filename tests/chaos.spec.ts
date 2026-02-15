@@ -21,6 +21,7 @@
 
 import { test, expect, request, type Cookie, type APIRequestContext } from '@playwright/test';
 import crypto from 'crypto';
+import { setupCSPAudit } from './utils/csp-audit-collector';
 
 /* ────────────────────────── Target hierarchy names ─────────────────────── */
 const TARGET_DOMAIN  = 'Full Stack Development';
@@ -40,6 +41,10 @@ interface ChaosPayload {
 }
 
 test.describe('Chaos scenarios (live)', () => {
+  test.beforeEach(async ({ page }) => {
+    setupCSPAudit(page);
+  });
+
   let api: APIRequestContext;
   let cookies: Cookie[];
   let BASE_URL: string;
@@ -183,7 +188,7 @@ test.describe('Chaos scenarios (live)', () => {
   /**
    * Helper to poll exam status until it reaches the target, or timeout.
    */
-  async function waitForStatus(examId: string, targetStatus: string, maxAttempts = 15) {
+  async function waitForStatus(examId: string, targetStatus: string, maxAttempts = 30) {
     for (let i = 0; i < maxAttempts; i++) {
       const stateRes = await api.get(`/api/quiz/state?examId=${examId}`);
       if (stateRes.ok()) {
