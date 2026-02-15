@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { authFixtures, API_URL, UI_URL } from './fixtures/auth';
+import { authFixtures, UI_URL } from './fixtures/auth';
 
 test.describe('Web App Auth E2E', () => {
   test.beforeEach(async ({ page }) => {
@@ -110,7 +110,7 @@ test.describe('Web App Auth E2E', () => {
     await page.context().clearCookies();
     
     // Check auth state detail for better debugging
-    const authDetail = await (authFixtures as any).getAuthDetail(page);
+    const authDetail = await authFixtures.getAuthDetail(page);
     expect(authDetail.isAuthenticated, `Expected auth state to be cleared after auto-logout. Reason: ${authDetail.reason}`).toBeFalsy();
   });
 
@@ -134,7 +134,7 @@ test.describe('Web App Auth E2E', () => {
     // Clear cookies manually to simulate server clearing them on logout in this mocked scenario
     await page.context().clearCookies();
     
-    const authDetail = await (authFixtures as any).getAuthDetail(page);
+    const authDetail = await authFixtures.getAuthDetail(page);
     expect(authDetail.isAuthenticated, `Expected auth state to be cleared after refresh failure. Reason: ${authDetail.reason}`).toBeFalsy();
   });
 

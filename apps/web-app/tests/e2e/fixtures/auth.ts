@@ -61,7 +61,7 @@ export interface AuthCheckResult {
 async function getAuthDetail(page: Page): Promise<AuthCheckResult> {
   // 1. Try global diagnostic if available on current window
   const globalResult = await page.evaluate(() => {
-    const diagnostic = (window as any).__E2E_IS_AUTHENTICATED__;
+    const diagnostic = (window as { __E2E_IS_AUTHENTICATED__?: () => boolean }).__E2E_IS_AUTHENTICATED__;
     if (typeof diagnostic === 'function') {
       const result = diagnostic();
       console.log(`[E2E Debug] Global Diagnostic: ${result}`);

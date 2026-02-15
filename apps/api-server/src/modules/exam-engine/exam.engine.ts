@@ -50,7 +50,7 @@ export class ExamEngine {
         // 3. Persistence Phase
         const [exam] = await tx.insert(exams).values({
           userId,
-          blueprintId: blueprint.id,
+          blueprintId: blueprint.id === 'transient' ? null : blueprint.id,
           status: 'started',
           durationSeconds: (blueprint.timeLimit !== undefined && blueprint.timeLimit !== null) ? blueprint.timeLimit * 60 : null,
           totalScore: 0,
