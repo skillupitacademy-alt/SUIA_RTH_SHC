@@ -28,7 +28,7 @@ interface Question {
     };
 }
 import { ZLoader } from '@quiz/ui';
-import { AlertCircle, ArrowLeft, CheckCircle2, Edit3,X } from 'lucide-react';
+import { AlertCircle, ArrowLeft, CheckCircle2, Edit3, X } from 'lucide-react';
 import Link from 'next/link';
 
 import { cn } from '@/lib/utils';
@@ -55,7 +55,7 @@ export default function EditQuestionPage() {
             try {
                 const data = await apiClient.admin.getQuestionById(params.id as string);
 
-                if (data) {
+                if (data !== null && data !== undefined) {
 
                     setQuestion(data);
 
@@ -82,7 +82,7 @@ export default function EditQuestionPage() {
                 setIsLoading(false);
             }
         };
-        fetchQuestion();
+        void fetchQuestion();
     }, [params.id]);
 
     const handleSubmit = async (formData: QuestionFormData) => {
@@ -116,7 +116,7 @@ export default function EditQuestionPage() {
         }
     };
 
-    const isUnlocked = !!selection.topicId; // Unlocked at Topic level for edit flexibility, but guided
+    const isUnlocked = selection.topicId !== null && selection.topicId !== ''; // Unlocked at Topic level for edit flexibility, but guided
 
     if (isLoading) {
         return (
@@ -126,7 +126,7 @@ export default function EditQuestionPage() {
         );
     }
 
-    if (!question && !isLoading) {
+    if (question === null && isLoading === false) {
         return (
             <div className="text-center py-20">
                 <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
@@ -139,25 +139,25 @@ export default function EditQuestionPage() {
     return (
         <div className="w-full relative">
             {/* Status Banner */}
-            {status ? <div className={cn(
-                    "fixed top-8 right-8 z-[9999] max-w-md w-full p-6 rounded-2xl border shadow-2xl backdrop-blur-xl animate-in slide-in-from-right-10 fade-in duration-300",
-                    status.type === 'success'
-                        ? 'bg-green-500/10 border-green-500/20 text-green-900 shadow-[0_20px_50px_rgba(34,197,94,0.2)]'
-                        : 'bg-red-500/10 border-red-500/20 text-red-900 shadow-[0_20px_50px_rgba(239,68,68,0.2)]'
-                )}>
-                    <div className="flex items-start gap-4">
-                        <div className={`p-2 rounded-full ${status.type === 'success' ? 'bg-green-500 text-white shadow-lg shadow-green-500/40' : 'bg-red-500 text-white shadow-lg shadow-red-500/40'}`}>
-                            {status.type === 'success' ? <CheckCircle2 className="w-6 h-6" /> : <AlertCircle className="w-6 h-6" />}
-                        </div>
-                        <div className="flex-1">
-                            <h4 className="font-bold text-lg">{status.type === 'success' ? 'Success!' : 'Error Occurred'}</h4>
-                            <p className="text-sm opacity-90 mt-1 font-semibold">{status.message}</p>
-                        </div>
-                        <button onClick={() => setStatus(null)} className="text-slate-400 hover:text-slate-600 transition-colors">
-                            <X className="w-6 h-6" />
-                        </button>
+            {status !== null ? <div className={cn(
+                "fixed top-8 right-8 z-[9999] max-w-md w-full p-6 rounded-2xl border shadow-2xl backdrop-blur-xl animate-in slide-in-from-right-10 fade-in duration-300",
+                status.type === 'success'
+                    ? 'bg-green-500/10 border-green-500/20 text-green-900 shadow-[0_20px_50px_rgba(34,197,94,0.2)]'
+                    : 'bg-red-500/10 border-red-500/20 text-red-900 shadow-[0_20px_50px_rgba(239,68,68,0.2)]'
+            )}>
+                <div className="flex items-start gap-4">
+                    <div className={`p-2 rounded-full ${status.type === 'success' ? 'bg-green-500 text-white shadow-lg shadow-green-500/40' : 'bg-red-500 text-white shadow-lg shadow-red-500/40'}`}>
+                        {status.type === 'success' ? <CheckCircle2 className="w-6 h-6" /> : <AlertCircle className="w-6 h-6" />}
                     </div>
-                </div> : null}
+                    <div className="flex-1">
+                        <h4 className="font-bold text-lg">{status.type === 'success' ? 'Success!' : 'Error Occurred'}</h4>
+                        <p className="text-sm opacity-90 mt-1 font-semibold">{status.message}</p>
+                    </div>
+                    <button onClick={() => setStatus(null)} className="text-slate-400 hover:text-slate-600 transition-colors">
+                        <X className="w-6 h-6" />
+                    </button>
+                </div>
+            </div> : null}
 
             <div className="w-full max-w-[1400px] mx-auto space-y-12 pb-24">
                 {/* Header */}
@@ -186,9 +186,9 @@ export default function EditQuestionPage() {
                 {/* Editor Section with Lock Logic */}
                 <div className="relative pt-8">
                     {/* Visual Connector */}
-                    <div className={`absolute left-1/2 -top-4 w-0.5 h-12 bg-gradient-to-b from-slate-200 to-slate-50 -translate-x-1/2 transition-opacity duration-500 ${isUnlocked ? 'opacity-100' : 'opacity-0'}`} />
+                    <div className={`absolute left-1/2 -top-4 w-0.5 h-12 bg-gradient-to-b from-slate-200 to-slate-50 -translate-x-1/2 transition-opacity duration-500 ${isUnlocked === true ? 'opacity-100' : 'opacity-0'}`} />
 
-                    {isUnlocked ? (
+                    {isUnlocked === true ? (
                         <div className="animate-in fade-in slide-in-from-bottom-8 duration-700 delay-100">
                             <QuestionEditor
                                 loading={isSaving}

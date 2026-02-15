@@ -8,6 +8,9 @@
         "jsx-a11y",
         "simple-import-sort"
     ],
+    "parserOptions": {
+        "project": "./tsconfig.json"
+    },
     "ignorePatterns": [
         "next.config.js",
         "postcss.config.js",
@@ -25,6 +28,9 @@
             }
         ],
         "@typescript-eslint/no-explicit-any": "error",
+        "@typescript-eslint/strict-boolean-expressions": "error",
+        "@typescript-eslint/no-floating-promises": "error",
+        "@typescript-eslint/no-misused-promises": "error",
         "react-hooks/exhaustive-deps": "error",
         "react/jsx-no-leaked-render": [
             "error",

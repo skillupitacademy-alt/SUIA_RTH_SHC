@@ -12,7 +12,7 @@ export default function Home() {
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        if (initialized) {
+        if (initialized === true) {
             setIsLoading(false);
         }
     }, [initialized]);
@@ -31,7 +31,7 @@ export default function Home() {
         year: 'numeric'
     });
 
-    if (!initialized || isLoading) {
+    if (initialized === false || isLoading === true) {
         return (
             <div className="loading-screen">
                 <ZLoader size="xl" text="Loading Control Panel..." color="#FF2D55" />

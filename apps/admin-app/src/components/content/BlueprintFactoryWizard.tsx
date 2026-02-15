@@ -14,8 +14,9 @@ import {
     ShieldCheck,
     Target,
     X,
-    Zap} from 'lucide-react';
-import { useEffect,useState } from 'react';
+    Zap
+} from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 
 import { cn } from '@/lib/utils';
@@ -60,7 +61,7 @@ export function BlueprintFactoryWizard({ isOpen, onClose, domainId, domainName, 
     }, []);
 
     useEffect(() => {
-        if (isOpen) {
+        if (isOpen === true) {
             document.body.style.overflow = 'hidden';
             setFormData(prev => ({
                 ...prev,
@@ -112,7 +113,7 @@ export function BlueprintFactoryWizard({ isOpen, onClose, domainId, domainName, 
         }
     };
 
-    if (!isOpen || !isMounted) return null;
+    if (isOpen === false || isMounted === false) return null;
 
     const totalDist = formData.distribution.simple + formData.distribution.intermediate + formData.distribution.expert;
 
@@ -148,7 +149,7 @@ export function BlueprintFactoryWizard({ isOpen, onClose, domainId, domainName, 
 
                 {/* Form Area */}
                 <div className="flex-1 overflow-y-auto p-10 space-y-10 custom-scrollbar">
-                    {success ? (
+                    {success === true ? (
                         <div className="h-full flex flex-col items-center justify-center space-y-8 animate-in slide-in-from-bottom-6">
                             <div className="w-20 h-20 bg-green-500 text-white rounded-full flex items-center justify-center shadow-xl shadow-green-500/20">
                                 <CheckCircle2 size={40} />
@@ -200,20 +201,20 @@ export function BlueprintFactoryWizard({ isOpen, onClose, domainId, domainName, 
                             </div>
 
                             {/* Calibration Summary */}
-                            {formData.blueprintMode === 'static' && questionStats ? <div className="p-8 bg-primary/5 rounded-[2.5rem] border border-primary/10 space-y-4 animate-in zoom-in-95 duration-500">
-                                    <h4 className="text-[10px] font-black text-primary uppercase tracking-[0.3em] flex items-center gap-2">
-                                        <Activity size={14} /> Calibration Summary_
-                                    </h4>
-                                    <div className="grid grid-cols-4 gap-4">
-                                        <StatBox label="Total" val={questionStats.total} color="bg-[#1A1A1A] text-white" />
-                                        <StatBox label="Simple" val={questionStats.simple} color="bg-blue-500/10 text-blue-600" />
-                                        <StatBox label="Inter" val={questionStats.intermediate} color="bg-orange-500/10 text-orange-600" />
-                                        <StatBox label="Expert" val={questionStats.expert} color="bg-purple-500/10 text-purple-600" />
-                                    </div>
-                                    <p className="text-[9px] font-bold text-muted-foreground uppercase text-center tracking-widest pt-2">
-                                        Metrics confirmed by Factory Emission Engine.
-                                    </p>
-                                </div> : null}
+                            {(formData.blueprintMode === 'static' && (questionStats !== null && questionStats !== undefined)) ? <div className="p-8 bg-primary/5 rounded-[2.5rem] border border-primary/10 space-y-4 animate-in zoom-in-95 duration-500">
+                                <h4 className="text-[10px] font-black text-primary uppercase tracking-[0.3em] flex items-center gap-2">
+                                    <Activity size={14} /> Calibration Summary_
+                                </h4>
+                                <div className="grid grid-cols-4 gap-4">
+                                    <StatBox label="Total" val={questionStats.total} color="bg-[#1A1A1A] text-white" />
+                                    <StatBox label="Simple" val={questionStats.simple} color="bg-blue-500/10 text-blue-600" />
+                                    <StatBox label="Inter" val={questionStats.intermediate} color="bg-orange-500/10 text-orange-600" />
+                                    <StatBox label="Expert" val={questionStats.expert} color="bg-purple-500/10 text-purple-600" />
+                                </div>
+                                <p className="text-[9px] font-bold text-muted-foreground uppercase text-center tracking-widest pt-2">
+                                    Metrics confirmed by Factory Emission Engine.
+                                </p>
+                            </div> : null}
 
                             {/* General Settings */}
                             <div className="space-y-6">
@@ -326,9 +327,9 @@ export function BlueprintFactoryWizard({ isOpen, onClose, domainId, domainName, 
                 </div>
 
                 {/* Footer */}
-                {!success && (
+                {success === false && (
                     <div className="p-8 border-t border-primary/5 bg-slate-50 flex items-center justify-between">
-                        {error ? (
+                        {(error !== null && error !== undefined && error !== '') ? (
                             <div className="flex items-center gap-3 text-red-500 text-[10px] font-black uppercase">
                                 <AlertTriangle size={16} />
                                 {error}

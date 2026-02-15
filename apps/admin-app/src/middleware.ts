@@ -9,7 +9,7 @@ export function middleware(request: NextRequest) {
   // Check if cookies exist and have a non-empty value
   const accessToken = request.cookies.get('admin_accessToken')?.value;
   const refreshToken = request.cookies.get('admin_refreshToken')?.value;
-  const hasAuth = (accessToken && accessToken.length > 0) || (refreshToken && refreshToken.length > 0);
+  const hasAuth = (accessToken !== undefined && accessToken.length > 0) || (refreshToken !== undefined && refreshToken.length > 0);
 
   const isProtectedRoute = 
     pathname === '/' ||
@@ -20,7 +20,7 @@ export function middleware(request: NextRequest) {
     pathname.startsWith('/governance') ||
     pathname.startsWith('/reports');
 
-  if (!hasAuth && isProtectedRoute) {
+  if (hasAuth === false && isProtectedRoute === true) {
     const loginUrl = new URL('/login', request.url);
     
     if (pathname !== '/') {
@@ -41,7 +41,7 @@ export function middleware(request: NextRequest) {
   const response = NextResponse.next();
 
   // Protect sensitive views from being cached by browsers/CDNs when logged in
-  if (isProtectedRoute) {
+  if (isProtectedRoute === true) {
     response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
   }
 

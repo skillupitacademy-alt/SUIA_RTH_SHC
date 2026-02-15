@@ -3,7 +3,7 @@
 
 import { apiClient } from '@quiz/api-client';
 import { LogOut, ShieldAlert } from 'lucide-react';
-import { usePathname,useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 
 import { useAuthStore } from '@/store/auth-store';
@@ -15,7 +15,7 @@ export function SessionExpiryModal() {
 
     useEffect(() => {
         const handleUnauthorized = (event: Event) => {
-            if (isLoggingOut) return;
+            if (isLoggingOut === true) return;
             // Prevent auto-redirect logic in FetchClient
             event.preventDefault();
             setSessionExpired(true);
@@ -40,7 +40,7 @@ export function SessionExpiryModal() {
     };
 
     // Don't show modal if already on login page or logging out
-    if (!isSessionExpired || pathname === '/login' || isLoggingOut) return null;
+    if (isSessionExpired === false || pathname === '/login' || isLoggingOut === true) return null;
 
     return (
         <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">

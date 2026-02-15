@@ -76,7 +76,7 @@ export function SubtopicTable() {
     };
 
     useEffect(() => {
-        fetchSubtopics();
+        void fetchSubtopics();
     }, [page, pageSize, debouncedSearch]);
 
     const handleOpenForm = (subtopic: any = null) => {
@@ -165,7 +165,7 @@ export function SubtopicTable() {
     };
 
     const handleDelete = async () => {
-        if (!currentSubtopic) return;
+        if (currentSubtopic === null) return;
         setIsSubmitting(true);
         try {
             await apiClient.admin.deleteSubtopic(currentSubtopic.id);
@@ -213,10 +213,10 @@ export function SubtopicTable() {
     return (
         <div className="space-y-6 flex flex-col min-h-[800px]">
             <div className="flex-1 space-y-6">
-                {errorMessage ? <ErrorBanner message={errorMessage} onClose={() => setErrorMessage(null)} /> : null}
+                {errorMessage !== null ? <ErrorBanner message={errorMessage} onClose={() => setErrorMessage(null)} /> : null}
 
                 {/* Modalized Form */}
-                <ZPortalModal isOpen={!!(isFormOpen && currentSubtopic)} zIndex={100}>
+                <ZPortalModal isOpen={isFormOpen === true && currentSubtopic !== null} zIndex={100}>
                     <div className="h-full min-h-0 flex flex-col bg-white animate-in slide-in-from-right duration-300">
                         {/* Header Strip */}
                         <div className="px-12 py-6 border-b border-primary/5 flex items-center justify-between bg-white sticky top-0 z-20">
@@ -405,13 +405,13 @@ export function SubtopicTable() {
                                 disabled={isBatchDeleting}
                                 className="flex items-center gap-3 px-6 py-3 rounded-2xl bg-rose-500/10 hover:bg-rose-500 text-rose-500 hover:text-white transition-all group disabled:opacity-50"
                             >
-                                {isBatchDeleting ? (
+                                {isBatchDeleting === true ? (
                                     <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
                                 ) : (
                                     <Trash size={16} className="transition-transform group-hover:scale-110" />
                                 )}
                                 <span className="text-[10px] font-black uppercase tracking-widest">
-                                    {isBatchDeleting ? 'Executing...' : 'Perm-Delete Batch'}
+                                    {isBatchDeleting === true ? 'Executing...' : 'Perm-Delete Batch'}
                                 </span>
                             </button>
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { Check, Copy,RefreshCcw, ShieldCheck } from 'lucide-react';
+import { Check, Copy, RefreshCcw, ShieldCheck } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -11,7 +11,7 @@ import { JsonIngestBox } from '@/components/factory/ingest/JsonIngestBox';
 import { FactoryLayout } from '@/components/layout/FactoryLayout';
 import { ZConfirmationDialog } from '@/components/ui/ZConfirmationDialog';
 import { useFactory } from '@/context/FactoryContext';
-import { useAllSkills,useDomains, useSubjects, useSubtopics, useTopics } from '@/hooks/useAdminHierarchy';
+import { useAllSkills, useDomains, useSubjects, useSubtopics, useTopics } from '@/hooks/useAdminHierarchy';
 import { useJobTracker } from '@/hooks/useJobTracker';
 import { PromptService } from '@/lib/factory/prompt-service';
 
@@ -48,11 +48,11 @@ function QuestionFactoryContent() {
     const { data: globalSkills } = useAllSkills();
 
     const handleCopyPrompt = async () => {
-        if (!blueprint.topicId) {
+        if (blueprint.topicId === null || blueprint.topicId === '') {
             toast.error("Please select a Topic first.");
             return;
         }
-        if (!sourceCode.trim()) {
+        if (sourceCode.trim() === '') {
             toast.error("Please provide Source Code/Material.");
             return;
         }
@@ -191,28 +191,28 @@ function QuestionFactoryContent() {
 
                                     {/* Global Skills Badge: Emerald/Compact - Integrated into Group */}
                                     {globalSkills && globalSkills.length > 0 ? <div className="flex items-center gap-2 px-4 h-12 bg-emerald-50/30 border border-emerald-100/50 rounded-2xl">
-                                            <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse shadow-lg shadow-emerald-500/50" />
-                                            <span className="text-[9px] font-black text-emerald-600 uppercase tracking-widest">
-                                                {globalSkills.length} SKILLS
-                                            </span>
-                                        </div> : null}
+                                        <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse shadow-lg shadow-emerald-500/50" />
+                                        <span className="text-[9px] font-black text-emerald-600 uppercase tracking-widest">
+                                            {globalSkills.length} SKILLS
+                                        </span>
+                                    </div> : null}
 
                                     {/* MOCK JOB TRIGGER: Resilience Test */}
-                                    {allowMockJobs ? <button
-                                            data-testid="mock-job-button"
-                                            onClick={() => startJob('MOCK_JOB', { test: true })}
-                                            className="h-12 px-6 rounded-2xl bg-slate-50 border border-slate-200 text-slate-500 font-black uppercase tracking-widest text-[10px] hover:bg-slate-100 transition-all shadow-sm"
-                                            title="Trigger Mock Background Job"
-                                        >
-                                            Mock Job
-                                        </button> : null}
+                                    {allowMockJobs === true ? <button
+                                        data-testid="mock-job-button"
+                                        onClick={() => { void startJob('MOCK_JOB', { test: true }); }}
+                                        className="h-12 px-6 rounded-2xl bg-slate-50 border border-slate-200 text-slate-500 font-black uppercase tracking-widest text-[10px] hover:bg-slate-100 transition-all shadow-sm"
+                                        title="Trigger Mock Background Job"
+                                    >
+                                        Mock Job
+                                    </button> : null}
 
                                     <button
                                         onClick={handleCopyPrompt}
-                                        disabled={!blueprint.topicId || !sourceCode}
+                                        disabled={blueprint.topicId === null || blueprint.topicId === '' || sourceCode === ''}
                                         className={`
                                             h-12 px-10 rounded-2xl flex items-center justify-center gap-3 font-black uppercase tracking-widest text-[11px] transition-all
-                                            ${(!blueprint.topicId || !sourceCode)
+                                            ${(blueprint.topicId === null || blueprint.topicId === '' || sourceCode === '')
                                                 ? 'bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200'
                                                 : 'bg-[#FF4B91] hover:bg-[#FF4B91]/90 text-white shadow-xl shadow-[#FF4B91]/30 active:scale-[0.98]'
                                             }

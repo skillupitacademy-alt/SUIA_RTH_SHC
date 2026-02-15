@@ -17,7 +17,7 @@ export async function POST(_req: NextRequest) {
     const _body = await _req.json() as { type: string; payload?: Record<string, unknown> };
     const _type = _body.type?.trim();
 
-    if (!_type) {
+    if (_type === undefined || _type === null || _type === '') {
         return NextResponse.json({ _error: 'Job type is required' }, { status: 400 });
     }
 
@@ -44,7 +44,7 @@ export async function POST(_req: NextRequest) {
     // Fire and forget simulation if it's a mock job
     const allowMock = process.env.ALLOW_MOCK_JOBS === 'true' || process.env.NODE_ENV !== 'production';
     if (_body.type === 'MOCK_JOB' && allowMock) {
-      JobsService.simulateJob(_job.id, _payload.userId);
+      void JobsService.simulateJob(_job.id, _payload.userId);
     }
 
     return NextResponse.json({ job: _job });

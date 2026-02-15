@@ -1,7 +1,7 @@
 'use client';
 
 import { apiClient } from '@quiz/api-client';
-import { useEffect,useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { ScoreProgressionChart } from '@/components/trends/ScoreProgressionChart';
 import { SkillDeltaList } from '@/components/trends/SkillDeltaList';
@@ -70,7 +70,7 @@ export default function TrendsPage() {
     };
 
     useEffect(() => {
-        fetchData(range);
+        void fetchData(range);
     }, [range]);
 
     const handleRangeChange = (newRange: string) => {
@@ -78,7 +78,7 @@ export default function TrendsPage() {
     };
 
     const handleRetry = () => {
-        fetchData(range);
+        void fetchData(range);
     };
 
     return (
@@ -94,41 +94,41 @@ export default function TrendsPage() {
                 </div>
 
                 {/* Loading State */}
-                {loading ? <div className="flex items-center justify-center py-20">
-                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
-                    </div> : null}
+                {loading === true ? <div className="flex items-center justify-center py-20">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
+                </div> : null}
 
                 {/* Error State */}
-                {error && !loading ? <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
-                        <p className="text-red-800 font-medium mb-2">Error loading trends</p>
-                        <p className="text-red-600 text-sm mb-4">{error}</p>
-                        <button
-                            onClick={handleRetry}
-                            className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-                        >
-                            Retry
-                        </button>
-                    </div> : null}
+                {(error !== null && loading === false) ? <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
+                    <p className="text-red-800 font-medium mb-2">Error loading trends</p>
+                    <p className="text-red-600 text-sm mb-4">{error}</p>
+                    <button
+                        onClick={handleRetry}
+                        className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                    >
+                        Retry
+                    </button>
+                </div> : null}
 
                 {/* Empty State */}
-                {!loading && !error && summary && summary.totalExams === 0 ? <div className="bg-white border border-slate-200 rounded-lg p-12 text-center">
-                        <p className="text-slate-500 text-lg">No exam data yet for this range</p>
-                        <p className="text-slate-400 text-sm mt-2">Try selecting a longer time period</p>
-                    </div> : null}
+                {(loading === false && error === null && summary !== null && summary.totalExams === 0) ? <div className="bg-white border border-slate-200 rounded-lg p-12 text-center">
+                    <p className="text-slate-500 text-lg">No exam data yet for this range</p>
+                    <p className="text-slate-400 text-sm mt-2">Try selecting a longer time period</p>
+                </div> : null}
 
                 {/* Data Display */}
-                {!loading && !error && summary && summary.totalExams > 0 ? <div className="space-y-6">
-                        {/* Summary Cards */}
-                        <TrendSummaryCards summary={summary} />
+                {(loading === false && error === null && summary !== null && summary.totalExams > 0) ? <div className="space-y-6">
+                    {/* Summary Cards */}
+                    <TrendSummaryCards summary={summary} />
 
-                        {/* Two-Column Grid */}
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                            <ScoreProgressionChart scores={scores} passThreshold={70} />
+                    {/* Two-Column Grid */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <ScoreProgressionChart scores={scores} passThreshold={70} />
 
-                            {/* Skill Delta List */}
-                            <SkillDeltaList skills={skills} />
-                        </div>
-                    </div> : null}
+                        {/* Skill Delta List */}
+                        <SkillDeltaList skills={skills} />
+                    </div>
+                </div> : null}
             </div>
         </div>
     );

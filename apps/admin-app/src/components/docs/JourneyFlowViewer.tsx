@@ -1,5 +1,5 @@
 import { ZLoader } from '@quiz/ui';
-import { Activity, CheckCircle2, ChevronRight, ListChecks,Map, Shield, Terminal } from 'lucide-react';
+import { Activity, CheckCircle2, ChevronRight, ListChecks, Map, Shield, Terminal } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -27,10 +27,10 @@ export function JourneyFlowViewer({ path }: JourneyFlowViewerProps) {
             }
         };
 
-        fetchContent();
+        void fetchContent();
     }, [path]);
 
-    if (isLoading) {
+    if (isLoading === true) {
         return (
             <div className="flex flex-col items-center justify-center py-40 gap-6">
                 <ZLoader size="lg" text="Optimizing Journey Map..." />

@@ -5,14 +5,14 @@ import { ZLoader } from '@quiz/ui';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 
-import { type AuthState,useAuthStore } from '@/store/auth-store';
+import { type AuthState, useAuthStore } from '@/store/auth-store';
 
 export function AdminGuard({ children }: { children: React.ReactNode }) {
     const { _user, isAuthenticated, initialized, login, logout } = useAuthStore() as AuthState;
     const _router = useRouter();
 
     useEffect(() => {
-        if (!initialized) return;
+        if (initialized === false) return;
 
         if (isAuthenticated === false || _user?.isAdmin !== true) {
             _router.push('/login');

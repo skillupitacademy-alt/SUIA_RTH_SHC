@@ -27,7 +27,7 @@ export const JsonValidator = {
 
                 if (content.includes('"')) {
                     const unescapedMatches = content.match(/(?<!\\)"/g);
-                    if (unescapedMatches) {
+                    if (unescapedMatches !== null) {
                         stats.unescapedQuotes += unescapedMatches.length;
                         const escapedContent = content.replace(/(?<!\\)"/g, '\\"');
                         return `${prefix}${escapedContent}${suffix}`;
@@ -67,7 +67,7 @@ export const JsonValidator = {
 
         // 3. Fix unquoted keys
         const keyMatch = healed.match(/([{,]\s*)([a-zA-Z0-9_]+)(\s*:)/g);
-        if (keyMatch) {
+        if (keyMatch !== null) {
             stats.unquotedKeys += keyMatch.length;
             healed = healed.replace(/([{,]\s*)([a-zA-Z0-9_]+)(\s*:)/g, '$1"$2"$3');
         }
@@ -157,10 +157,10 @@ export const JsonValidator = {
                 const errors: string[] = [];
                 const idx = index + 1;
 
-                if (!item.questionText) errors.push(`Q${idx}: Missing questionText`);
+                if (item.questionText === undefined || item.questionText === null || item.questionText === '') errors.push(`Q${idx}: Missing questionText`);
                 if (!Array.isArray(item.options) || item.options.length < 2) errors.push(`Q${idx}: Options must be an array of at least 2 items`);
-                if (!item.correctAnswer) errors.push(`Q${idx}: Missing correctAnswer`);
-                if (item.correctAnswer && !item.options?.includes(item.correctAnswer)) {
+                if (item.correctAnswer === undefined || item.correctAnswer === null || item.correctAnswer === '') errors.push(`Q${idx}: Missing correctAnswer`);
+                if ((item.correctAnswer !== undefined && item.correctAnswer !== null && item.correctAnswer !== '') && item.options?.includes(item.correctAnswer) === false) {
                     errors.push(`Q${idx}: Correct answer "${item.correctAnswer}" not found in options`);
                 }
 

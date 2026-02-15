@@ -79,7 +79,7 @@ export function SessionWatcher({ expiresAt, onRefresh, onLogout, isRedirecting }
                 description={`Your secure governance session will expire in ${(remainingSeconds !== null && remainingSeconds !== undefined) ? Math.ceil(remainingSeconds / 60) : 3} minutes. Renew connection?`}
                 confirmText={isRefreshing ? "Renewing..." : "Maintain Connection"}
                 cancelText="Terminate Now"
-                onConfirm={handleStayLoggedIn}
+                onConfirm={() => { void handleStayLoggedIn(); }}
                 onClose={onLogout}
                 variant="warning"
             />

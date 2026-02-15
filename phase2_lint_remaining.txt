@@ -1,4 +1,0 @@
-﻿
-> @quiz/admin-app@0.1.0 lint D:\onlinewebsites\quiz-platform\apps\admin-app
-> cross-env ESLINT_USE_FLAT_CONFIG=false eslint --max-warnings=0 --ext .ts,.tsx,.js,.jsx .
-

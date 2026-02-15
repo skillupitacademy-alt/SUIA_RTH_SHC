@@ -2,7 +2,7 @@
 'use client';
 
 import { ZLoader } from '@quiz/ui';
-import { Activity, ArrowRight, Database, Lock,Server, Shield, Terminal } from 'lucide-react';
+import { Activity, ArrowRight, Database, Lock, Server, Shield, Terminal } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
@@ -75,7 +75,7 @@ export default function LoginPage() {
                         <p className="text-slate-500">Authenticate to establish secure connection.</p>
                     </div>
 
-                    <form onSubmit={handleLogin} className="space-y-6">
+                    <form onSubmit={(e) => { void handleLogin(e); }} className="space-y-6">
                         <div className="space-y-4">
                             <div className="space-y-2">
                                 <label className="text-xs font-black uppercase tracking-widest text-slate-400 ml-1">Identity</label>

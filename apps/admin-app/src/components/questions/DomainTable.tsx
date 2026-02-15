@@ -73,7 +73,7 @@ export function DomainTable() {
     };
 
     useEffect(() => {
-        fetchDomains();
+        void fetchDomains();
     }, [page, pageSize, debouncedSearch]);
 
     // --- SELECTION LOGIC ---
@@ -178,16 +178,16 @@ export function DomainTable() {
     };
 
     const handleDelete = async () => {
-        if (!currentDomain && selectedIds.size === 0) return;
+        if (currentDomain === null && selectedIds.size === 0) return;
 
         setIsSubmitting(true);
         try {
-            if (selectedIds.size > 0 && !currentDomain) {
+            if (selectedIds.size > 0 && currentDomain === null) {
                 // Should be handled by batch delete specific modal if we want one, 
                 // but for now we reuse logic or just divert to batch function
                 await apiClient.admin.batchDeleteDomains(Array.from(selectedIds));
                 setSelectedIds(new Set());
-            } else if (currentDomain) {
+            } else if (currentDomain !== null) {
                 await apiClient.admin.deleteDomain(currentDomain.id);
             }
 
@@ -205,7 +205,7 @@ export function DomainTable() {
     return (
         <div className="space-y-6 relative min-h-[750px] flex flex-col">
             <div className="flex-1">
-                {errorMessage ? <ErrorBanner message={errorMessage} onClose={() => setErrorMessage(null)} /> : null}
+                {errorMessage !== null ? <ErrorBanner message={errorMessage} onClose={() => setErrorMessage(null)} /> : null}
 
                 {/* FLOATING COMMAND BAR */}
                 <div className={cn(
@@ -246,10 +246,10 @@ export function DomainTable() {
                                 </div>
                                 <div>
                                     <h3 className="text-2xl font-black text-[#1A1A1A] uppercase tracking-tight">
-                                        {currentDomain ? 'Edit Domain' : 'New Domain'}
+                                        {currentDomain !== null ? 'Edit Domain' : 'New Domain'}
                                     </h3>
                                     <p className="text-xs font-medium text-slate-500 uppercase tracking-widest mt-0.5">
-                                        {currentDomain ? 'Modify Domain Details' : 'Create New Hierarchy Root'}
+                                        {currentDomain !== null ? 'Modify Domain Details' : 'Create New Hierarchy Root'}
                                     </p>
                                 </div>
                             </div>
@@ -372,7 +372,7 @@ export function DomainTable() {
                                 <AlertDialogDescription className="text-slate-500 font-medium leading-relaxed">
                                     {selectedIds.size > 1
                                         ? `You are about to permanently delete ${selectedIds.size} domains. This action cannot be undone.`
-                                        : `You are about to delete "${currentDomain?.name}". This action cannot be undone.`
+                                        : `You are about to delete "${currentDomain?.name ?? 'selected domain'}". This action cannot be undone.`
                                     }
                                 </AlertDialogDescription>
                             </div>
@@ -438,7 +438,7 @@ export function DomainTable() {
                 </div>
 
                 {/* DOMAIN CARD STACK */}
-                {isLoading ? (
+                {isLoading === true ? (
                     <div className="min-h-[400px] flex items-center justify-center">
                         <ZLoader text="Loading Domains..." />
                     </div>

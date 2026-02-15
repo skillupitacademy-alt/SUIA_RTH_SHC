@@ -67,7 +67,7 @@ export function SessionWatcher({ expiresAt, onRefresh, onLogout, isRedirecting, 
 
     // 1. Monitor User Activity
     const resetIdleTimer = useCallback(() => {
-        if (!isLocked && !isForcedLogoutWarning) {
+        if (isLocked === false && isForcedLogoutWarning === false) {
             setLastActivityAt(Date.now());
         }
     }, [isLocked, isForcedLogoutWarning]);
@@ -94,7 +94,7 @@ export function SessionWatcher({ expiresAt, onRefresh, onLogout, isRedirecting, 
     // 2. Poll for Session Expiry & Inactivity
     useEffect(() => {
         const checkStatus = () => {
-            if (isLoggingOut) return;
+            if (isLoggingOut === true) return;
             const now = Date.now();
             const idleTime = now - lastActivityAt;
 
@@ -113,7 +113,7 @@ export function SessionWatcher({ expiresAt, onRefresh, onLogout, isRedirecting, 
             }
 
             // B. Check absolute token session expiry
-            if (expiresAt) {
+            if (expiresAt !== null && expiresAt !== undefined && expiresAt !== '') {
                 const expiryTime = new Date(expiresAt).getTime();
                 const timeLeftSeconds = Math.floor((expiryTime - now) / 1000);
                 setRemainingSeconds(timeLeftSeconds);
@@ -134,7 +134,7 @@ export function SessionWatcher({ expiresAt, onRefresh, onLogout, isRedirecting, 
                 setIsForcedLogoutWarning(true);
                 setIsIdleWarning(false);
                 setShowWarning(true);
-            } else if (!isLocked) {
+            } else if (isLocked === false) {
                 if (idleTime >= config.IDLE_LOCK_MS) {
                     setIsIdleWarning(false);
                     setShowWarning(false);
@@ -155,7 +155,7 @@ export function SessionWatcher({ expiresAt, onRefresh, onLogout, isRedirecting, 
     // If a redirect is already underway or locked, suppress the warning modal, 
     // unless it's the high-priority forced logout warning.
     useEffect(() => {
-        if ((isRedirecting || isLocked) && !isForcedLogoutWarning) {
+        if ((isRedirecting === true || isLocked === true) && isForcedLogoutWarning === false) {
             setShowWarning(false);
         }
     }, [isRedirecting, isLocked, isForcedLogoutWarning]);
@@ -184,12 +184,12 @@ export function SessionWatcher({ expiresAt, onRefresh, onLogout, isRedirecting, 
             </div> : null}
 
             <ZConfirmationDialog
-                isOpen={!!(showWarning && !isRedirecting && !isLoggingOut && (!isLocked || isForcedLogoutWarning))}
+                isOpen={showWarning === true && isRedirecting !== true && isLoggingOut !== true && (isLocked !== true || isForcedLogoutWarning === true)}
                 title={warningTitle}
                 description={warningDesc}
                 confirmText={isRefreshing ? "Renewing..." : ((isIdleWarning || isForcedLogoutWarning) ? "Stay Active" : "Stay Logged In")}
                 cancelText={(isIdleWarning || isForcedLogoutWarning) ? (isForcedLogoutWarning ? "Sign Out Now" : "Lock Now") : "Sign Out Now"}
-                onConfirm={handleStayLoggedIn}
+                onConfirm={() => { void handleStayLoggedIn(); }}
                 onClose={isForcedLogoutWarning ? onLogout : (isIdleWarning ? () => lock() : onLogout)}
                 variant={isForcedLogoutWarning ? "danger" : "warning"}
             />

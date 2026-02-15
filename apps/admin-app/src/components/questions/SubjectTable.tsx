@@ -82,7 +82,7 @@ export function SubjectTable() {
     };
 
     useEffect(() => {
-        fetchSubjects();
+        void fetchSubjects();
     }, [page, pageSize, debouncedSearch]);
 
     // --- SELECTION LOGIC ---
@@ -197,12 +197,12 @@ export function SubjectTable() {
 
     const handleDelete = async () => {
         // If batch delete mode (multiple selected)
-        if (selectedIds.size > 0 && (!currentSubject || selectedIds.size > 1)) {
+        if (selectedIds.size > 0 && (currentSubject === null || selectedIds.size > 1)) {
             await handleBatchDelete();
             return;
         }
 
-        if (!currentSubject) return;
+        if (currentSubject === null) return;
 
         setIsSubmitting(true);
         try {
@@ -221,7 +221,7 @@ export function SubjectTable() {
     return (
         <div className="space-y-6 flex flex-col min-h-[800px]">
             <div className="flex-1 space-y-6">
-                {errorMessage ? <ErrorBanner message={errorMessage} onClose={() => setErrorMessage(null)} /> : null}
+                {errorMessage !== null ? <ErrorBanner message={errorMessage} onClose={() => setErrorMessage(null)} /> : null}
 
                 {/* FLOATING COMMAND BAR */}
                 <div className={cn(
@@ -350,11 +350,11 @@ export function SubjectTable() {
                                         </button>
                                         <button
                                             type="submit"
-                                            disabled={isSubmitting}
+                                            disabled={isSubmitting === true}
                                             className="px-10 py-3 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-black uppercase tracking-widest text-xs shadow-lg shadow-purple-500/20 transition-all flex items-center gap-2 disabled:opacity-50"
                                         >
-                                            {isSubmitting ? <ZLoader size="xs" className="text-white" center={false} /> : <Check size={16} />}
-                                            {isSubmitting ? 'Saving...' : 'Save Changes'}
+                                            {isSubmitting === true ? <ZLoader size="xs" className="text-white" center={false} /> : <Check size={16} />}
+                                            {isSubmitting === true ? 'Saving...' : 'Save Changes'}
                                         </button>
                                     </div>
                                 </form>
@@ -459,7 +459,7 @@ export function SubjectTable() {
                 </div>
 
                 {/* SUBJECT CARD STACK */}
-                {isLoading ? (
+                {isLoading === true ? (
                     <div className="min-h-[400px] flex items-center justify-center">
                         <ZLoader text="Loading Subjects..." />
                     </div>

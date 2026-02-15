@@ -3,7 +3,7 @@
 
 import { apiClient } from '@quiz/api-client';
 import { ZLoader, ZPagination } from '@quiz/ui';
-import { Check,Cpu, Hash, Plus, Shield, Trash2, Zap } from 'lucide-react';
+import { Check, Cpu, Hash, Plus, Shield, Trash2, Zap } from 'lucide-react';
 import { X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
@@ -91,7 +91,7 @@ export function SkillTable() {
     };
 
     useEffect(() => {
-        fetchSkills();
+        void fetchSkills();
     }, [page, pageSize, debouncedSearch]);
 
     // --- SELECTION LOGIC ---
@@ -186,12 +186,12 @@ export function SkillTable() {
     };
 
     const handleDelete = async () => {
-        if (selectedIds.size > 0 && (!currentSkill || selectedIds.size > 1)) {
+        if (selectedIds.size > 0 && (currentSkill === null || selectedIds.size > 1)) {
             await handleBatchDelete();
             return;
         }
 
-        if (!currentSkill) return;
+        if (currentSkill === null) return;
         setIsSubmitting(true);
         try {
             await apiClient.admin.deleteSkill(currentSkill.id);
@@ -209,7 +209,7 @@ export function SkillTable() {
     return (
         <div className="space-y-6 flex flex-col min-h-[800px]">
             <div className="flex-1 space-y-6">
-                {errorMessage ? <ErrorBanner message={errorMessage} onClose={() => setErrorMessage(null)} /> : null}
+                {errorMessage !== null ? <ErrorBanner message={errorMessage} onClose={() => setErrorMessage(null)} /> : null}
 
                 {/* FLOATING COMMAND BAR */}
                 <div className={cn(
@@ -249,10 +249,10 @@ export function SkillTable() {
                                 </div>
                                 <div>
                                     <h3 className="text-2xl font-black text-[#1A1A1A] uppercase tracking-tight">
-                                        {currentSkill ? 'Edit Skill' : 'New Skill'}
+                                        {currentSkill !== null ? 'Edit Skill' : 'New Skill'}
                                     </h3>
                                     <p className="text-xs font-medium text-slate-500 uppercase tracking-widest mt-0.5">
-                                        {currentSkill ? 'Update Skill Definition' : 'Define New Skill Node'}
+                                        {currentSkill !== null ? 'Update Skill Definition' : 'Define New Skill Node'}
                                     </p>
                                 </div>
                             </div>
@@ -379,7 +379,7 @@ export function SkillTable() {
                                 <AlertDialogDescription className="text-slate-500 font-medium leading-relaxed">
                                     {selectedIds.size > 1
                                         ? `You are about to permanently delete ${selectedIds.size} skills. This action cannot be undone.`
-                                        : `You are about to delete "${currentSkill?.name}". This action cannot be undone.`
+                                        : `You are about to delete "${currentSkill?.name ?? 'selected skill'}". This action cannot be undone.`
                                     }
                                 </AlertDialogDescription>
                             </div>
@@ -446,7 +446,7 @@ export function SkillTable() {
                 </div>
 
                 {/* SKILL CARD STACK */}
-                {isLoading ? (
+                {isLoading === true ? (
                     <div className="min-h-[400px] flex items-center justify-center">
                         <ZLoader text="Loading Skills..." />
                     </div>

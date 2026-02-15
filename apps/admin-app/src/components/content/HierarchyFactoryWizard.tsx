@@ -19,8 +19,9 @@ import {
     ShieldCheck,
     Upload,
     X,
-    Zap} from 'lucide-react';
-import { useEffect, useRef,useState } from 'react';
+    Zap
+} from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
 import { BlueprintFactoryWizard } from '@/components/content/BlueprintFactoryWizard';
@@ -75,7 +76,7 @@ export function HierarchyFactoryWizard({ isOpen, onClose, initialData, onSuccess
 
     useEffect(() => {
         setIsMounted(true);
-        if (isOpen) {
+        if (isOpen === true) {
             fetchExistingDomains();
         }
     }, [isOpen]);
@@ -95,7 +96,7 @@ export function HierarchyFactoryWizard({ isOpen, onClose, initialData, onSuccess
 
     useEffect(() => {
         const fetchSubjects = async () => {
-            if (selections.domainId) {
+            if (selections.domainId !== undefined && selections.domainId !== null && selections.domainId !== '') {
                 setLoadingChoices(prev => ({ ...prev, subjects: true }));
                 try {
                     const data = await apiClient.admin.getSubjectsByDomain(selections.domainId);
@@ -106,12 +107,12 @@ export function HierarchyFactoryWizard({ isOpen, onClose, initialData, onSuccess
                 setHierarchicalChoices(prev => ({ ...prev, subjects: [] }));
             }
         };
-        fetchSubjects();
+        void fetchSubjects();
     }, [selections.domainId]);
 
     useEffect(() => {
         const fetchTopics = async () => {
-            if (selections.subjectId) {
+            if (selections.subjectId !== undefined && selections.subjectId !== null && selections.subjectId !== '') {
                 setLoadingChoices(prev => ({ ...prev, topics: true }));
                 try {
                     const data = await apiClient.admin.getTopicsBySubject(selections.subjectId);
@@ -122,11 +123,11 @@ export function HierarchyFactoryWizard({ isOpen, onClose, initialData, onSuccess
                 setHierarchicalChoices(prev => ({ ...prev, topics: [] }));
             }
         };
-        fetchTopics();
+        void fetchTopics();
     }, [selections.subjectId]);
 
     useEffect(() => {
-        if (isOpen) {
+        if (isOpen === true) {
             document.body.style.overflow = 'hidden';
         } else {
             document.body.style.overflow = 'unset';
@@ -454,7 +455,7 @@ Please provide a valid JSON object matching this schema:
         reader.readAsText(file);
     };
 
-    if (!isOpen || !isMounted) return null;
+    if (isOpen === false || isMounted === false) return null;
 
     return createPortal(
         <div className="fixed inset-0 z-[1000] flex flex-col bg-white animate-in fade-in zoom-in-95 duration-300">
@@ -600,9 +601,9 @@ Please provide a valid JSON object matching this schema:
                                                     loading={loadingChoices.subjects}
                                                     onChange={(id) => setSelections({ ...selections, subjectId: id, topicId: '' })}
                                                     placeholder="Select Subject"
-                                                    active={!!selections.domainId}
+                                                    active={selections.domainId !== undefined && selections.domainId !== null && selections.domainId !== ''}
                                                     hideCreate={true}
-                                                    disabled={!selections.domainId}
+                                                    disabled={selections.domainId === undefined || selections.domainId === null || selections.domainId === ''}
                                                 />
                                             </div>
                                         )}
@@ -616,9 +617,9 @@ Please provide a valid JSON object matching this schema:
                                                     loading={loadingChoices.topics}
                                                     onChange={(id) => setSelections({ ...selections, topicId: id })}
                                                     placeholder="Select Topic"
-                                                    active={!!selections.subjectId}
+                                                    active={selections.subjectId !== undefined && selections.subjectId !== null && selections.subjectId !== ''}
                                                     hideCreate={true}
-                                                    disabled={!selections.subjectId}
+                                                    disabled={selections.subjectId === undefined || selections.subjectId === null || selections.subjectId === ''}
                                                 />
                                             </div>
                                         )}
@@ -651,7 +652,7 @@ Please provide a valid JSON object matching this schema:
                                     </h3>
                                     <div className="flex items-center gap-2">
                                         <span className="px-3 py-1 bg-primary/10 text-primary text-[9px] font-bold uppercase rounded-lg">JSON STRICT</span>
-                                        {!showEditor ? (
+                                        {showEditor === false ? (
                                             <span className="px-3 py-1 bg-slate-100 text-slate-500 text-[9px] font-bold uppercase rounded-lg">Inquiry Stage</span>
                                         ) : (
                                             <span className="px-3 py-1 bg-green-500/10 text-green-600 text-[9px] font-bold uppercase rounded-lg">Draft Stage</span>
@@ -663,7 +664,7 @@ Please provide a valid JSON object matching this schema:
                             {!showEditor ? (
                                 <div className="flex-1 flex flex-col gap-6 animate-in zoom-in-95 duration-500 overflow-hidden">
                                     <div className="flex-1 rounded-[2.5rem] bg-white border-2 border-dashed border-slate-200 shadow-sm relative overflow-hidden flex flex-col group hover:border-primary/20 transition-all duration-500">
-                                        {!selections.domainId && !initialData?.domainName ? (
+                                        {(selections.domainId === undefined || selections.domainId === null || selections.domainId === '') && (initialData?.domainName === undefined || initialData?.domainName === null || initialData?.domainName === '') ? (
                                             <div className="flex-1 flex flex-col items-center justify-center p-12 text-center space-y-6 animate-in fade-in zoom-in-95">
                                                 <div className="w-20 h-20 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-300 shadow-sm">
                                                     <ArrowUp size={32} />
@@ -770,7 +771,7 @@ Please provide a valid JSON object matching this schema:
 
                                     {/* Editor Content */}
                                     <div className="relative flex-1 bg-slate-50/30">
-                                        {!payload && (
+                                        {(payload === undefined || payload === null || payload === '') && (
                                             <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0 p-12 opacity-60">
                                                 <div className="w-full h-full border-2 border-dashed border-slate-200 rounded-[2rem] flex flex-col items-center justify-center gap-6">
                                                     <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center text-slate-300">
@@ -831,61 +832,61 @@ Please provide a valid JSON object matching this schema:
                             </div>
 
                             {error ? <div className="p-6 rounded-2xl bg-red-50 border border-red-200 text-red-600 animate-in shake-1 space-y-2">
-                                    <div className="flex items-center gap-2 font-black uppercase text-xs">
-                                        <AlertTriangle size={16} /> Factory Halted
-                                    </div>
-                                    <p className="text-[11px] font-bold">{error}</p>
-                                </div> : null}
+                                <div className="flex items-center gap-2 font-black uppercase text-xs">
+                                    <AlertTriangle size={16} /> Factory Halted
+                                </div>
+                                <p className="text-[11px] font-bold">{error}</p>
+                            </div> : null}
 
                             {success ? <div className="p-8 rounded-[2rem] bg-green-50 border border-green-200 animate-in slide-in-from-bottom-4 shadow-2xl shadow-green-500/10 space-y-6 text-center">
-                                    <div className="mx-auto w-16 h-16 rounded-full bg-green-500 text-white flex items-center justify-center shadow-lg shadow-green-500/30">
-                                        <CheckCircle2 size={32} />
-                                    </div>
-                                    <div>
-                                        <h4 className="text-xl font-black uppercase tracking-tighter text-green-800">Emission Successful</h4>
-                                        <p className="text-[10px] font-bold text-green-700 uppercase tracking-widest mt-1">Domain ID: {success.domainId}</p>
-                                    </div>
+                                <div className="mx-auto w-16 h-16 rounded-full bg-green-500 text-white flex items-center justify-center shadow-lg shadow-green-500/30">
+                                    <CheckCircle2 size={32} />
+                                </div>
+                                <div>
+                                    <h4 className="text-xl font-black uppercase tracking-tighter text-green-800">Emission Successful</h4>
+                                    <p className="text-[10px] font-bold text-green-700 uppercase tracking-widest mt-1">Domain ID: {success.domainId}</p>
+                                </div>
 
-                                    {success.stats ? <div className="p-4 rounded-3xl bg-white/50 border border-green-200/50 space-y-3">
-                                            <h5 className="text-[9px] font-black uppercase tracking-widest text-green-800/60 text-left px-2">Registry Summary</h5>
-                                            <div className="grid grid-cols-2 gap-2">
-                                                {Object.entries(success.stats).map(([k, v]: [string, any]) => (
-                                                    (v.added > 0 || v.skipped > 0) && (
-                                                        <div key={k} className="p-3 bg-white rounded-2xl border border-green-100 flex items-center justify-between">
-                                                            <span className="text-[9px] font-black uppercase tracking-widest text-slate-500">{k}</span>
-                                                            <div className="flex gap-2">
-                                                                {v.added > 0 && <span className="text-[9px] font-black px-1.5 py-0.5 bg-green-100 text-green-700 rounded-md">+{v.added}</span>}
-                                                                {v.skipped > 0 && <span className="text-[9px] font-black px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded-md text-nowrap">Skipped: {v.skipped}</span>}
-                                                            </div>
-                                                        </div>
-                                                    )
-                                                ))}
-                                            </div>
-                                        </div> : null}
-                                    <div className="grid grid-cols-1 gap-3">
-                                        <button
-                                            onClick={() => setBlueprintModal({
-                                                isOpen: true,
-                                                domainId: success.domainId,
-                                                domainName: manualEntry.name || (mode === 'bulk' && payload ? JSON.parse(payload).domainName : "Assessment"),
-                                                questionIds: success.questionIds || [],
-                                                questionStats: success.questionStats
-                                            })}
-                                            title="Open the static configuration panel to lock specific questions and calibrate the assessment blueprint for this domain."
-                                            className="w-full py-4 bg-[#1A1A1A] text-white rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] hover:scale-[1.02] transition-all flex items-center justify-center gap-3 px-6 shadow-xl"
-                                        >
-                                            <ClipboardList size={16} />
-                                            Configure Blueprint
-                                        </button>
-                                        <button
-                                            onClick={onClose}
-                                            title="Close the factory engine and return to the domain overview. All hierarchical records have been safely committed."
-                                            className="w-full py-4 bg-white border border-green-200 text-green-700 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] hover:bg-green-100 transition-all flex items-center justify-center gap-3 px-6"
-                                        >
-                                            Close Engine
-                                        </button>
+                                {success.stats ? <div className="p-4 rounded-3xl bg-white/50 border border-green-200/50 space-y-3">
+                                    <h5 className="text-[9px] font-black uppercase tracking-widest text-green-800/60 text-left px-2">Registry Summary</h5>
+                                    <div className="grid grid-cols-2 gap-2">
+                                        {Object.entries(success.stats).map(([k, v]: [string, any]) => (
+                                            (v.added > 0 || v.skipped > 0) && (
+                                                <div key={k} className="p-3 bg-white rounded-2xl border border-green-100 flex items-center justify-between">
+                                                    <span className="text-[9px] font-black uppercase tracking-widest text-slate-500">{k}</span>
+                                                    <div className="flex gap-2">
+                                                        {v.added > 0 && <span className="text-[9px] font-black px-1.5 py-0.5 bg-green-100 text-green-700 rounded-md">+{v.added}</span>}
+                                                        {v.skipped > 0 && <span className="text-[9px] font-black px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded-md text-nowrap">Skipped: {v.skipped}</span>}
+                                                    </div>
+                                                </div>
+                                            )
+                                        ))}
                                     </div>
                                 </div> : null}
+                                <div className="grid grid-cols-1 gap-3">
+                                    <button
+                                        onClick={() => setBlueprintModal({
+                                            isOpen: true,
+                                            domainId: success.domainId,
+                                            domainName: manualEntry.name || (mode === 'bulk' && payload ? JSON.parse(payload).domainName : "Assessment"),
+                                            questionIds: success.questionIds || [],
+                                            questionStats: success.questionStats
+                                        })}
+                                        title="Open the static configuration panel to lock specific questions and calibrate the assessment blueprint for this domain."
+                                        className="w-full py-4 bg-[#1A1A1A] text-white rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] hover:scale-[1.02] transition-all flex items-center justify-center gap-3 px-6 shadow-xl"
+                                    >
+                                        <ClipboardList size={16} />
+                                        Configure Blueprint
+                                    </button>
+                                    <button
+                                        onClick={onClose}
+                                        title="Close the factory engine and return to the domain overview. All hierarchical records have been safely committed."
+                                        className="w-full py-4 bg-white border border-green-200 text-green-700 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] hover:bg-green-100 transition-all flex items-center justify-center gap-3 px-6"
+                                    >
+                                        Close Engine
+                                    </button>
+                                </div>
+                            </div> : null}
                         </div>
 
                         {/* Utility Clustering at Bottom */}

@@ -3,7 +3,7 @@
 
 import { apiClient } from '@quiz/api-client';
 import { ZLoader, ZPagination } from '@quiz/ui';
-import { BookOpen, Check, Edit2, Hash, Layers, Plus, Trash,Trash2 } from 'lucide-react';
+import { BookOpen, Check, Edit2, Hash, Layers, Plus, Trash, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import { ErrorBanner } from '@/components/layout/ErrorBanner';
@@ -71,7 +71,7 @@ export function TopicTable() {
     };
 
     useEffect(() => {
-        fetchTopics();
+        void fetchTopics();
     }, [page, pageSize, debouncedSearch]);
 
     const handleOpenForm = (topic: any = null) => {
@@ -147,7 +147,7 @@ export function TopicTable() {
     };
 
     const handleDelete = async () => {
-        if (!currentTopic) return;
+        if (currentTopic === null) return;
         setIsSubmitting(true);
         try {
             await apiClient.admin.deleteTopic(currentTopic.id);
@@ -195,7 +195,7 @@ export function TopicTable() {
     return (
         <div className="space-y-6 flex flex-col min-h-[850px]">
             <div className="flex-1">
-                {errorMessage ? <ErrorBanner message={errorMessage} onClose={() => setErrorMessage(null)} /> : null}
+                {errorMessage !== null ? <ErrorBanner message={errorMessage} onClose={() => setErrorMessage(null)} /> : null}
 
                 <div className="flex items-center justify-between gap-4 p-6 bg-white border border-primary/10 rounded-[2.5rem] shadow-sm overflow-hidden relative">
                     <div className="flex items-center gap-6 flex-1">
@@ -332,16 +332,16 @@ export function TopicTable() {
                         <div className="flex items-center gap-3">
                             <button
                                 onClick={() => { setCurrentTopic(null); setIsDeleteOpen(true); }}
-                                disabled={isBatchDeleting}
+                                disabled={isBatchDeleting === true}
                                 className="flex items-center gap-3 px-6 py-3 rounded-2xl bg-rose-500/10 hover:bg-rose-500 text-rose-500 hover:text-white transition-all group disabled:opacity-50"
                             >
-                                {isBatchDeleting ? (
+                                {isBatchDeleting === true ? (
                                     <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
                                 ) : (
                                     <Trash size={16} className="transition-transform group-hover:scale-110" />
                                 )}
                                 <span className="text-[10px] font-black uppercase tracking-widest">
-                                    {isBatchDeleting ? 'Executing...' : 'Perm-Delete Batch'}
+                                    {isBatchDeleting === true ? 'Executing...' : 'Perm-Delete Batch'}
                                 </span>
                             </button>
 
@@ -357,9 +357,9 @@ export function TopicTable() {
             )}
 
             {/* Modals remain below */}
-            {isLoading ? <div className="fixed inset-0 z-[200] bg-white/50 backdrop-blur-sm flex items-center justify-center">
-                    <ZLoader text="Syncing Nodes..." />
-                </div> : null}
+            {isLoading === true ? <div className="fixed inset-0 z-[200] bg-white/50 backdrop-blur-sm flex items-center justify-center">
+                <ZLoader text="Syncing Nodes..." />
+            </div> : null}
         </div >
     );
 }

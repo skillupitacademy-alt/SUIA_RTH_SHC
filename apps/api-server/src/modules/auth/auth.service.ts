@@ -168,7 +168,7 @@ export class AuthService {
 
     // EXAM GRACE WINDOW LOGIC (Phase 3 Requirement)
     let customExpiration: number | undefined;
-    if ((examId !== undefined && examId !== null && examId !== '') && isAdminNow === false) {
+    if (examId !== undefined && examId !== null && examId !== '' && isAdminNow === false) {
         const activeExam = await db.query.exams.findFirst({
             where: and(
                 eq(exams.id, examId),
@@ -365,8 +365,8 @@ export class AuthService {
       ? process.env.NEXT_PUBLIC_ADMIN_URL
       : process.env.NEXT_PUBLIC_WEB_APP_URL;
 
-    if (!baseUrl) {
-        throw new Error(`Environment variable ${isAdmin ? 'NEXT_PUBLIC_ADMIN_URL' : 'NEXT_PUBLIC_WEB_APP_URL'} is required for password reset`);
+    if (baseUrl === undefined || baseUrl === null || baseUrl === '') {
+        throw new Error(`Environment variable ${isAdmin === true ? 'NEXT_PUBLIC_ADMIN_URL' : 'NEXT_PUBLIC_WEB_APP_URL'} is required for password reset`);
     }
 
     const resetUrl = `${baseUrl.replace(/\/$/, '')}/reset-password?_token=${_token}`;

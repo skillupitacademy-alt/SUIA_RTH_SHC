@@ -3,7 +3,7 @@
 
 import { apiClient } from '@quiz/api-client';
 import { ZLoader } from '@quiz/ui';
-import { usePathname,useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 
 import { useAuthStore } from '@/store/auth-store';
@@ -14,9 +14,9 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
 
     useEffect(() => {
-        if (!initialized) return;
+        if (initialized === false) return;
 
-        if ((!isAuthenticated || !user?.isAdmin) && pathname !== '/login') {
+        if ((isAuthenticated === false || user?.isAdmin !== true) && pathname !== '/login') {
             router.push('/login');
             return;
         }
@@ -27,7 +27,7 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
                 // Access token is now handled via httpOnly cookies automatically
                 // Strictly use Admin Session endpoint
                 const { user: validatedUser, expiresAt } = await apiClient.auth.getAdminSession();
-                if (!validatedUser || !validatedUser.isAdmin) throw new Error("Revoked");
+                if (validatedUser === null || validatedUser === undefined || (validatedUser as { isAdmin?: boolean }).isAdmin !== true) throw new Error("Revoked");
                 login(validatedUser, expiresAt);
             } catch (err: unknown) {
                 console.error("Session revalidation failed:", err);
@@ -39,8 +39,8 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
             }
         };
 
-        if (isAuthenticated && pathname !== '/login') {
-            revalidate();
+        if (isAuthenticated === true && pathname !== '/login') {
+            void revalidate();
         }
 
         // Circuit Breaker: Listen for global 401 events from FetchClient
@@ -64,7 +64,7 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
     // SECURITY: Surveillance for session termination
     // If auth state is lost, surgically clear potentially sensitive Factory data
     useEffect(() => {
-        if (initialized && !isAuthenticated) {
+        if (initialized === true && isAuthenticated === false) {
             console.warn("Security: Session terminated. Purging Question Factory storage.");
             localStorage.removeItem('quiz-factory-storage-v1');
         }
@@ -75,7 +75,7 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
         return <>{children}</>;
     }
 
-    if (!initialized || !isAuthenticated || !user?.isAdmin) {
+    if (initialized === false || isAuthenticated === false || user?.isAdmin !== true) {
         return (
             <div className="h-screen w-screen bg-background flex flex-col items-center justify-center">
                 <ZLoader size="lg" text="Authenticating Admin Session" />
