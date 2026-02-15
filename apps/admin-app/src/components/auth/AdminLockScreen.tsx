@@ -9,7 +9,7 @@ import { useState } from 'react';
 import { useAuthStore } from '@/store/auth-store';
 
 export function AdminLockScreen() {
-    const { user, unlock, logout, isLocked } = useAuthStore();
+    const { user, unlock, logout, isLocked, login } = useAuthStore();
     const [password, setPassword] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -24,8 +24,13 @@ export function AdminLockScreen() {
         setError(null);
 
         try {
-            // Verify password using existing login endpoint
+            // 1. Verify password & establish fresh cookies
             await apiClient.auth.login(user.email, password);
+
+            // 2. Hardening: Sync local state with server session to get fresh expiresAt
+            const { user: refreshedUser, expiresAt } = await apiClient.auth.getAdminSession();
+            login(refreshedUser, expiresAt);
+
             setPassword('');
             unlock();
         } catch (err: unknown) {

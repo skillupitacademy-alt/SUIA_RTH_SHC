@@ -180,6 +180,24 @@ test.describe('Chaos scenarios (live)', () => {
     console.log('[Chaos] ✓ Setup complete — payload:', JSON.stringify(chaosPayload));
   });
 
+  /**
+   * Helper to poll exam status until it reaches the target, or timeout.
+   */
+  async function waitForStatus(examId: string, targetStatus: string, maxAttempts = 15) {
+    for (let i = 0; i < maxAttempts; i++) {
+      const stateRes = await api.get(`/api/quiz/state?examId=${examId}`);
+      if (stateRes.ok()) {
+        const body = await stateRes.json();
+        if (body.status === targetStatus) return body;
+        if (['failed', 'abandoned', 'completed'].includes(body.status) && body.status !== targetStatus) {
+           throw new Error(`Exam reached final state but wrong status: ${body.status}`);
+        }
+      }
+      await new Promise(r => setTimeout(r, 2000));
+    }
+    throw new Error(`Timed out waiting for status ${targetStatus} after ${maxAttempts} polls`);
+  }
+
   /* ═══════════════════════ TEST 1 ═════════════════════════════════════ */
   test('1) Network flop on submit is idempotent', async () => {
     // Start a fresh exam
@@ -197,7 +215,6 @@ test.describe('Chaos scenarios (live)', () => {
     console.log(`[Test 1] Exam started: ${examId}`);
 
     // Simulate network drop: fire submit but race against a short timeout
-    // This mimics the client losing connection AFTER the request was sent
     const submitKey = crypto.randomUUID();
     const submitPromise = api.post('/api/quiz/submit', {
       data: { examId },
@@ -210,16 +227,11 @@ test.describe('Chaos scenarios (live)', () => {
         new Promise((_, reject) => setTimeout(() => reject(new Error('simulated disconnect')), 50)),
       ]);
     } catch {
-      // Expected: simulated timeout fires before response arrives
+      // Expected
     }
 
-    // Give server time to finish processing the submit
-    await new Promise(r => setTimeout(r, 2000));
-
-    // Reconnect: verify the server completed the exam regardless of client disconnect
-    const stateRes = await api.get(`/api/quiz/state?examId=${examId}`);
-    expect(stateRes.ok(), `GET /api/quiz/state → ${stateRes.status()}`).toBeTruthy();
-    const state = await stateRes.json();
+    // Reconnect & Poll for completion
+    const state = await waitForStatus(examId, 'completed');
     expect(state.status).toBe('completed');
     console.log('[Test 1] ✓ Exam completed after simulated disconnect');
   });
@@ -251,8 +263,8 @@ test.describe('Chaos scenarios (live)', () => {
     expect(r1.status() < 500 && r2.status() < 500,
       `Double-submit responses: ${r1.status()}, ${r2.status()}`).toBeTruthy();
 
-    const stateRes = await api.get(`/api/quiz/state?examId=${examId}`);
-    const state = await stateRes.json();
+    // Poll for completion
+    const state = await waitForStatus(examId, 'completed');
     expect(state.status).toBe('completed');
     console.log(`[Test 2] ✓ Double-click deduped (${r1.status()}, ${r2.status()})`);
   });

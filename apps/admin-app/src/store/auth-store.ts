@@ -39,6 +39,10 @@ export const useAuthStore = create<AuthState>()(
         set({ user, isAuthenticated: true, expiresAt, isLocked: false, isLoggingOut: false });
       },
       logout: () => {
+        // SECURITY SHREDDER: Immediately purge sensitive draft data on logout
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('quiz-factory-storage-v1');
+        }
         set({ user: null, isAuthenticated: false, expiresAt: null, isLocked: false, isLoggingOut: false });
       },
       lock: () => set({ isLocked: true }),

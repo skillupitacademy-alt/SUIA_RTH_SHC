@@ -4,10 +4,10 @@ import { useEffect } from 'react';
 import { useAuthStore } from '@/store/auth-store';
 
 export function usePresenceHeartbeat() {
-    const { isAuthenticated, initialized } = useAuthStore();
+    const { isAuthenticated, initialized, isLocked } = useAuthStore();
 
     useEffect(() => {
-        if (!initialized || !isAuthenticated) return;
+        if (!initialized || !isAuthenticated || isLocked) return;
 
         // Initial heartbeat
         apiClient.auth.adminHeartbeat().catch(() => {});
@@ -18,5 +18,5 @@ export function usePresenceHeartbeat() {
         }, 60000);
 
         return () => clearInterval(interval);
-    }, [isAuthenticated, initialized]);
+    }, [isAuthenticated, initialized, isLocked]);
 }

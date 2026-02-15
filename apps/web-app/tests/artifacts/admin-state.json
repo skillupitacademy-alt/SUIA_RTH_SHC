@@ -1,0 +1,35 @@
+{
+  "cookies": [
+    {
+      "name": "csrfToken",
+      "value": "a3f397b7ed4044235f66d0438dd3d48e3d1d128a5e469781ce39f55cbc74cfd4",
+      "domain": ".realtutorialhub.com",
+      "path": "/",
+      "expires": 1771157061,
+      "httpOnly": false,
+      "secure": true,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "admin_accessToken",
+      "value": "eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOiI1NTU1NTU1NS01NTU1LTU1NTUtNTU1NS01NTU1NTU1NTU1NTUiLCJlbWFpbCI6InN1cGVyYWRtaW5AdGVzdC5jb20iLCJyb2xlcyI6WyJTVVBFUl9BRE1JTiJdLCJpc0FkbWluIjp0cnVlLCJpYXQiOjE3NzExNTM0NjIsImV4cCI6MTc3MTE1NDM2Mn0.gi2zPsrohGhNRVQVnfjHUzPihOZOSa6KEXGYZiOD9HQ",
+      "domain": ".realtutorialhub.com",
+      "path": "/",
+      "expires": 1771154362,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "None"
+    },
+    {
+      "name": "admin_refreshToken",
+      "value": "eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOiI1NTU1NTU1NS01NTU1LTU1NTUtNTU1NS01NTU1NTU1NTU1NTUiLCJpc0FkbWluIjp0cnVlLCJpYXQiOjE3NzExNTM0NjIsImV4cCI6MTc3MTc1ODI2Mn0.J17DpB5eW3fbZjULs62xdJhso4awx_sfdODSM6VzO4o",
+      "domain": ".realtutorialhub.com",
+      "path": "/",
+      "expires": 1771239862,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "None"
+    }
+  ],
+  "origins": []
+}

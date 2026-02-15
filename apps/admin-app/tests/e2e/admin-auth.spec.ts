@@ -128,4 +128,90 @@ test.describe('Admin Auth & Security Suite', () => {
     await expect(page.locator('header')).toContainText('Tasks Complete', { timeout: 20000 });
   });
 
+  // 9. Locked Terminal Protects State
+  test('Locked Terminal Protects State', async ({ page, context }) => {
+    await context.addInitScript(() => {
+        window.__idleTestConfig = {
+            IDLE_WARNING_MS: 1000,
+            IDLE_LOCK_MS: 3000,
+            FORCED_IDLE_WARNING_MS: 60000,
+            FORCED_IDLE_LOGOUT_MS: 120000
+        };
+    });
+
+    await adminAuthFixtures.loginAdmin(page);
+    // Use factory page which has inputs
+    await page.goto(`${ADMIN_UI_URL}/factory/question-generator?e2e=true`);
+    
+    // Type something
+    const testValue = 'SENSITIVE DRAFT DATA';
+    // Using a more generic selector if textarea isn't found immediately
+    const input = page.locator('textarea, input[type="text"]').first();
+    await input.fill(testValue);
+
+    // Wait for lock
+    await page.waitForTimeout(4000);
+    await expect(page.getByText('Terminal Locked')).toBeVisible();
+
+    // Unlock
+    const password = process.env.TEST_ADMIN_PASSWORD!;
+    await page.locator('input[type="password"]').fill(password);
+    await page.getByRole('button', { name: /Unlock Protocol/i }).click();
+
+    // Verify text preserved
+    await expect(page.getByText('Terminal Locked')).toBeHidden();
+    const currentVal = await input.inputValue();
+    expect(currentVal).toBe(testValue);
+  });
+
+  // 10. 401 While Locked Does Not Redirect (Patience Protocol)
+  test('401 While Locked Does Not Redirect', async ({ page, context }) => {
+     await context.addInitScript(() => {
+        window.__idleTestConfig = {
+            IDLE_WARNING_MS: 1000,
+            IDLE_LOCK_MS: 2000,
+            FORCED_IDLE_WARNING_MS: 60000,
+            FORCED_IDLE_LOGOUT_MS: 120000
+        };
+    });
+
+    await adminAuthFixtures.loginAdmin(page);
+    
+    // Wait for lock
+    await page.waitForTimeout(3000);
+    await expect(page.getByText('Terminal Locked')).toBeVisible();
+
+    // Simulate background 401
+    await page.evaluate(() => {
+        window.dispatchEvent(new CustomEvent('auth:unauthorized', { cancelable: true }));
+    });
+
+    // Verify NO redirect
+    await page.waitForTimeout(2000);
+    expect(page.url()).not.toContain('/login');
+    await expect(page.getByText('Terminal Locked')).toBeVisible();
+  });
+
+  // 11. Security Shredder Clears LocalStorage
+  test('Security Shredder Clears LocalStorage', async ({ page }) => {
+    await adminAuthFixtures.loginAdmin(page);
+    await page.goto(`${ADMIN_UI_URL}/dashboard`);
+    
+    // Set factory data
+    await page.evaluate(() => {
+        localStorage.setItem('quiz-factory-storage-v1', JSON.stringify({ draft: 'SECRET' }));
+    });
+
+    // Verify exists
+    const before = await page.evaluate(() => localStorage.getItem('quiz-factory-storage-v1'));
+    expect(before).not.toBeNull();
+
+    // Perform Hard Logout
+    await logoutAdmin(page);
+
+    // Verify shredded
+    const after = await page.evaluate(() => localStorage.getItem('quiz-factory-storage-v1'));
+    expect(after).toBeNull();
+  });
+
 });

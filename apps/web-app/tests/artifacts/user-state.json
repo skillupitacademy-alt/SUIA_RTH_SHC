@@ -1,0 +1,61 @@
+{
+  "cookies": [
+    {
+      "name": "cf_clearance",
+      "value": "..E23af9WotO8YMlyrBbZ1a__06upeXIMu0az6eCDxo-1771153468-1.2.1.1-KNH9w1WomNluz6Kd78Xyvv7uOT2Ibve.4OO3iR6Bflq0NQjeetdBBJAN9AVBU8EHT0AxXBDlRZFXLEaBVGAx5gDJB7tZLdbYL0wME.75hCms_ZEnPkgG8PHhuhvV6D5sozTwaF6bdzBUd_vTxSmVmTe2sI6bhy6rgCiyTx90UynSps9AgkQQXbJPFMPz8xBYccC9mM2GQyRsnVcqyHHNsxnsATbLvOtGnj79c357QrU",
+      "domain": ".realtutorialhub.com",
+      "path": "/",
+      "expires": 1802689467.886324,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "None",
+      "partitionKey": "https://realtutorialhub.com",
+      "_crHasCrossSiteAncestor": false
+    },
+    {
+      "name": "accessToken",
+      "value": "eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOiI1NDcyNmEyZS1mY2E1LTRkOTMtYWJjNi1lN2NlZTk3YTg2ZjgiLCJlbWFpbCI6ImFqYXlzaGFoQGdtYWlsLmNvbSIsInJvbGVzIjpbIlVTRVIiXSwiaXNBZG1pbiI6ZmFsc2UsImlhdCI6MTc3MTE1MzQ3MSwiZXhwIjoxNzcxMTU0MzcxfQ.biUk3dfxEBzSdnMZ2yI8ViD-qrrpQRt5ZKMq7j64K10",
+      "domain": ".realtutorialhub.com",
+      "path": "/",
+      "expires": 1771154371.287718,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "None"
+    },
+    {
+      "name": "refreshToken",
+      "value": "eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOiI1NDcyNmEyZS1mY2E1LTRkOTMtYWJjNi1lN2NlZTk3YTg2ZjgiLCJpc0FkbWluIjpmYWxzZSwiaWF0IjoxNzcxMTUzNDcxLCJleHAiOjE3NzE3NTgyNzF9.NgD6d9PEbR0bpss4-iVCMJXizXX0POODRMho3w3Rueg",
+      "domain": ".realtutorialhub.com",
+      "path": "/",
+      "expires": 1771758271.287756,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "None"
+    },
+    {
+      "name": "csrfToken",
+      "value": "d8582147cff7a39c9e9c579474b4edb2cc16603d10be48fde1c3bad7da9d19e5",
+      "domain": ".realtutorialhub.com",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": false,
+      "secure": true,
+      "sameSite": "Lax"
+    }
+  ],
+  "origins": [
+    {
+      "origin": "https://quiz.realtutorialhub.com",
+      "localStorage": [
+        {
+          "name": "quiz-platform-auth",
+          "value": "{\"state\":{\"user\":{\"id\":\"54726a2e-fca5-4d93-abc6-e7cee97a86f8\",\"email\":\"ajayshah@gmail.com\",\"name\":\"Ajay Shah\",\"onboarded\":true,\"professionalStatus\":\"pro\",\"educationLevel\":\"High School\",\"roles\":[\"USER\"]},\"isAuthenticated\":true,\"initialized\":true,\"isSessionExpired\":false,\"expiresAt\":\"2026-02-15T11:19:31.000Z\"},\"version\":0}"
+        },
+        {
+          "name": "quiz-dashboard-storage",
+          "value": "{\"state\":{\"filters\":{\"domain\":\"all\",\"subject\":\"all\",\"topic\":\"all\"}},\"version\":0}"
+        }
+      ]
+    }
+  ]
+}

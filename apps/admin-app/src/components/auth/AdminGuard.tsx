@@ -9,7 +9,7 @@ import { useEffect } from 'react';
 import { useAuthStore } from '@/store/auth-store';
 
 export function AdminGuard({ children }: { children: React.ReactNode }) {
-    const { user, isAuthenticated, initialized, login, logout, expiresAt } = useAuthStore();
+    const { user, isAuthenticated, initialized, login, logout, expiresAt, isLocked } = useAuthStore();
     const router = useRouter();
     const pathname = usePathname();
 
@@ -42,11 +42,23 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
         };
 
         if (isAuthenticated === true && pathname !== '/login') {
-            void revalidate();
+            // Optimization: Don't revalidate while locked to avoid background 401 race conditions
+            if (isLocked === false) {
+                void revalidate();
+            }
         }
 
         // Circuit Breaker: Listen for global 401 events from FetchClient
-        const handleUnauthorized = () => {
+        const handleUnauthorized = (e: Event) => {
+            // PATIENCE PROTOCOL: If the terminal is locked, the user is still at their desk (or pause-mode)
+            // We should NOT trigger a hard logout/redirect in the background.
+            // The AdminLockScreen will handle re-authentication when the user attempts to unlock.
+            if (isLocked === true) {
+                console.warn("Circuit Breaker: 401 detected while LOCKED. Deferring to Lock Protocol.");
+                e.preventDefault(); // Tells FetchClient NOT to perform hard window.location redirect
+                return;
+            }
+
             void (async () => {
                 console.warn("Circuit Breaker: Global 401 detected. Logging out.");
                 try {
@@ -63,16 +75,8 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
 
         window.addEventListener('auth:unauthorized', handleUnauthorized);
         return () => window.removeEventListener('auth:unauthorized', handleUnauthorized);
-    }, [isAuthenticated, user, initialized, router, logout, pathname]);
+    }, [isAuthenticated, user, initialized, router, logout, pathname, isLocked]);
 
-    // SECURITY: Surveillance for session termination
-    // If auth state is lost, surgically clear potentially sensitive Factory data
-    useEffect(() => {
-        if (initialized === true && isAuthenticated === false) {
-            console.warn("Security: Session terminated. Purging Question Factory storage.");
-            localStorage.removeItem('quiz-factory-storage-v1');
-        }
-    }, [isAuthenticated, initialized]);
 
     // Bypass guard for login page
     if (pathname === '/login') {
