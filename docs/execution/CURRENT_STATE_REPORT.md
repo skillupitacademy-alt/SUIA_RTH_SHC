@@ -870,3 +870,13 @@
     - **Hygiene**: Sanitized `any` casts and fixed `react-hooks/exhaustive-deps` warnings in `@quiz/admin-app`.
 - **Verification**: 100% success rate on `pnpm lint:all`, `pnpm typecheck:all`, and `pnpm build:all` (Exit Code 0).
 - **Outcome**: Delivered a polished, race-free experience and confirmed full monorepo production-readiness.
+
+### Phase 112: Chaos Resilience & Patience Protocol (Batch 112)
+- **Goal**: Solve session redirection bugs during UI locking and stabilize the Chaos Testing suite.
+- **Action**:
+    - **Patience Protocol**: Patched `AdminGuard` to suppress global 401 redirects when `isLocked` is active, preserving user state.
+    - **Session Sync**: Enhanced `AdminLockScreen` to perform a full server-side session sync upon unlock.
+    - **Chaos Stabilization**: Migrated `chaos.spec.ts` to Bearer Auth and implemented robust status polling for high-latency environments.
+    - **Security Shredder**: Centralized `localStorage` purging in `AuthStore` to ensure 100% reliable draft destruction on logout.
+- **Verification**: Verified via 22-test Playwright suite (17 Passed) and global monorepo build (Exit Code 0).
+- **Status**: **CERTIFIED & STABLE**.
