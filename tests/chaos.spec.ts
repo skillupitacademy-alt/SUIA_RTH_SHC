@@ -1,18 +1,26 @@
 import { test, expect, request } from '@playwright/test';
 import crypto from 'crypto';
 
-const { BASE_URL, API_URL, TEST_EMAIL, TEST_PASSWORD } = process.env;
-
 test.describe('Chaos scenarios (live)', () => {
   let api: any;
   let cookies: any[];
+  let BASE_URL: string;
+  let API_URL: string;
+  let TEST_EMAIL: string;
+  let TEST_PASSWORD: string;
 
   test.beforeAll(async ({ browser }) => {
+    BASE_URL = process.env.NEXT_PUBLIC_WEB_APP_URL!;
+    API_URL = process.env.NEXT_PUBLIC_API_URL!;
+    TEST_EMAIL = process.env.TEST_USER_EMAIL!;
+    TEST_PASSWORD = process.env.TEST_USER_PASSWORD!;
+
+    if (!BASE_URL) throw new Error('NEXT_PUBLIC_WEB_APP_URL is not defined');
     const page = await browser.newPage();
     await page.goto(`${BASE_URL}/login`);
-    await page.fill('input[type="email"]', TEST_EMAIL!);
-    await page.fill('input[type="password"]', TEST_PASSWORD!);
-    await page.click('button:has-text("Login")');
+    await page.getByLabel(/email/i, { exact: false }).fill(TEST_EMAIL!);
+    await page.getByLabel(/password/i, { exact: false }).fill(TEST_PASSWORD!);
+    await page.getByRole('button', { name: /login|sign in|authenticate|continue/i }).click();
     await page.waitForURL(/dashboard|quiz/);
     cookies = await page.context().cookies();
     await page.close();
@@ -28,7 +36,7 @@ test.describe('Chaos scenarios (live)', () => {
     // Start exam
     const startKey = crypto.randomUUID();
     const startRes = await api.post('/api/quiz/start', {
-      data: { blueprintId: 'TEST_BLUEPRINT' },
+      data: { blueprintId: '80000000-0000-0000-0000-000000000001' },
       headers: { 'idempotency-key': startKey },
     });
     expect(startRes.ok()).toBeTruthy();
@@ -70,7 +78,7 @@ test.describe('Chaos scenarios (live)', () => {
   test('2) Frantic double-click on submit is deduped', async () => {
     const startKey = crypto.randomUUID();
     const start = await api.post('/api/quiz/start', {
-      data: { blueprintId: 'TEST_BLUEPRINT' },
+      data: { blueprintId: '80000000-0000-0000-0000-000000000001' },
       headers: { 'idempotency-key': startKey },
     });
     const { examId } = await start.json();
@@ -90,7 +98,7 @@ test.describe('Chaos scenarios (live)', () => {
   test('3) Stale refresh at answer time auto-recovers', async () => {
     const startKey = crypto.randomUUID();
     const start = await api.post('/api/quiz/start', {
-      data: { blueprintId: 'TEST_BLUEPRINT' },
+      data: { blueprintId: '80000000-0000-0000-0000-000000000001' },
       headers: { 'idempotency-key': startKey },
     });
     const { examId } = await start.json();

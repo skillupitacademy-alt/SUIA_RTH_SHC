@@ -70,10 +70,11 @@ test.describe('Admin Auth & Security Suite', () => {
   });
 
   // 6. Session Auto-Logout (Expiry) - Placeholder for existing logic retention
-  test('Session Auto-Logout', async () => {
-      // Logic for token expiry logout (omitted for brevity as we rely on idle tests mainly)
-      // This matches "keep as-is" placeholder status.
-      test.skip();
+  test('Session Auto-Logout', async ({ page }) => {
+    // Logic for token expiry logout (simulated idle behavior)
+    await adminAuthFixtures.shortenSession(page);
+    await page.goto(`${ADMIN_UI_URL}/`);
+    await page.waitForURL(/\/login/, { timeout: 35000 });
   });
 
   // 7. Idle Final Warning + Hard Logout

@@ -2,16 +2,17 @@
 
 import type { BackgroundJob } from '@quiz/api-client';
 import { apiClient } from '@quiz/api-client';
-import { useCallback, useEffect, useRef,useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useAuthStore } from '@/store/auth-store';
+import { useJobStore } from '@/store/job-store';
 
 const POLL_INTERVAL = 5000; // 5 seconds
 const LOCAL_STORAGE_KEY = 'admin-active-jobs';
 
 export function useJobTracker() {
     const { user, isAuthenticated, initialized } = useAuthStore();
-    const [jobs, setJobs] = useState<BackgroundJob[]>([]);
+    const { jobs, setJobs, updateJob, removeJob, setPolling, isPolling } = useJobStore();
     const [isLoading, setIsLoading] = useState(false);
     const pollTimerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -48,7 +49,6 @@ export function useJobTracker() {
                     try {
                         return await apiClient.admin.getJobById(id);
                     } catch (err: unknown) {
-                        // If job not found (404) or unauthorized (401), mark for removal
                         if (err !== null && typeof err === 'object' && 'status' in err && (err.status === 404 || err.status === 401)) {
                             return { _removeId: id };
                         }
@@ -72,17 +72,17 @@ export function useJobTracker() {
 
             setJobs(fetchedJobs);
             
-            // Only poll if at least one is NOT finished.
             const hasActiveJobs = fetchedJobs.some(j => j.status === 'pending' || j.status === 'processing');
             
             if (!hasActiveJobs && pollTimerRef.current) {
                 clearInterval(pollTimerRef.current);
                 pollTimerRef.current = null;
+                setPolling(false);
             }
         } catch {
             // Silently fail polling
         }
-    }, [isAuthenticated, user?.id, getStoredJobIds, saveStoredJobIds]);
+    }, [isAuthenticated, user?.id, getStoredJobIds, saveStoredJobIds, setJobs, setPolling]);
 
     // 3. Start polling
     useEffect(() => {
@@ -91,16 +91,20 @@ export function useJobTracker() {
         const jobIds = getStoredJobIds();
         if (jobIds.length > 0) {
             void checkJobsStatus();
-            pollTimerRef.current = setInterval(() => { void checkJobsStatus(); }, POLL_INTERVAL);
+            setPolling(true);
+            if (pollTimerRef.current === null) {
+                pollTimerRef.current = setInterval(() => { void checkJobsStatus(); }, POLL_INTERVAL);
+            }
         }
 
         return () => {
             if (pollTimerRef.current) {
                 clearInterval(pollTimerRef.current);
                 pollTimerRef.current = null;
+                setPolling(false);
             }
         };
-    }, [initialized, isAuthenticated, user?.id, getStoredJobIds, checkJobsStatus]);
+    }, [initialized, isAuthenticated, user?.id, getStoredJobIds, checkJobsStatus, setPolling]);
 
     // 4. Methods for components to use
     const startJob = async (type: string, payload?: Record<string, unknown>) => {
@@ -113,9 +117,10 @@ export function useJobTracker() {
             const newIds = [...new Set([...currentIds, job.id])];
             saveStoredJobIds(newIds);
             
-            setJobs(prev => [...prev.filter(j => j.id !== job.id), job]);
+            updateJob(job);
             
             if (pollTimerRef.current === null) {
+                setPolling(true);
                 pollTimerRef.current = setInterval(() => { void checkJobsStatus(); }, POLL_INTERVAL);
             }
             
@@ -129,12 +134,13 @@ export function useJobTracker() {
         const currentIds = getStoredJobIds();
         const newIds = currentIds.filter(id => id !== jobId);
         saveStoredJobIds(newIds);
-        setJobs(prev => prev.filter(j => j.id !== jobId));
+        removeJob(jobId);
     };
 
     const clearAll = () => {
         saveStoredJobIds([]);
         setJobs([]);
+        setPolling(false);
     };
 
     return {
@@ -143,6 +149,6 @@ export function useJobTracker() {
         startJob,
         clearJob,
         clearAll,
-        isPolling: pollTimerRef.current !== null
+        isPolling
     };
 }

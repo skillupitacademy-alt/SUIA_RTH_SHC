@@ -7,7 +7,7 @@ import { SessionWatcher } from './SessionWatcher';
 import { useRouter } from 'next/navigation';
 
 export function WebSessionWatcherContainer() {
-    const { expiresAt, login, logout, user, isAuthenticated } = useAuthStore();
+    const { expiresAt, login, logout, user, isAuthenticated, setSessionExpired } = useAuthStore();
     const [isRedirecting, setIsRedirecting] = useState(false);
     const router = useRouter();
 
@@ -31,13 +31,16 @@ export function WebSessionWatcherContainer() {
             console.error("Auto-logout server call failed:", err);
         }
 
-        // Brief delay to allow the user to see the toast
+        // 1. Clear state IMMEDIATELY so E2E and UI react
+        setSessionExpired(true);
+        logout();
+        localStorage.removeItem('quiz-platform-auth');
+
+        // 2. Brief delay to allow the user to see the notice/toast before redirection
         setTimeout(() => {
-            logout();
-            localStorage.removeItem('quiz-platform-auth');
             router.push('/login?reason=session_expired');
             setIsRedirecting(false);
-        }, 3000);
+        }, 2000);
     };
 
     if (!isAuthenticated) return null;

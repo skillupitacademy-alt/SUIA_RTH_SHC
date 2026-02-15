@@ -7,6 +7,11 @@ import { apiClient } from '@quiz/api-client';
 
 // We keep the Context API for backward compatibility/wrapping, 
 // but it delegates to the store.
+declare global {
+    interface Window {
+        __E2E_IS_AUTHENTICATED__?: () => boolean;
+    }
+}
 
 const AuthContext = createContext<any>(undefined);
 
@@ -58,11 +63,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             handleLogout();
         };
 
+        if (process.env.NODE_ENV !== 'production') {
+            window.__E2E_IS_AUTHENTICATED__ = () => {
+                return useAuthStore.getState().getIsAuthenticated();
+            };
+        }
+
         window.addEventListener('auth:unauthorized', handleUnauthorized);
         initAuth();
 
         return () => {
             window.removeEventListener('auth:unauthorized', handleUnauthorized);
+            if (process.env.NODE_ENV !== 'production') {
+                delete (window as any).__E2E_IS_AUTHENTICATED__;
+            }
         };
     }, [login, storeLogout]);
 

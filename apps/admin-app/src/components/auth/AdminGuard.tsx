@@ -9,7 +9,7 @@ import { useEffect } from 'react';
 import { useAuthStore } from '@/store/auth-store';
 
 export function AdminGuard({ children }: { children: React.ReactNode }) {
-    const { user, isAuthenticated, initialized, login, logout } = useAuthStore();
+    const { user, isAuthenticated, initialized, login, logout, expiresAt } = useAuthStore();
     const router = useRouter();
     const pathname = usePathname();
 
@@ -24,11 +24,13 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
         // Hardening: Revalidate session state with server
         const revalidate = async () => {
             try {
-                // Access token is now handled via httpOnly cookies automatically
-                // Strictly use Admin Session endpoint
-                const { user: validatedUser, expiresAt } = await apiClient.auth.getAdminSession();
+                const { user: validatedUser, expiresAt: validatedExpiresAt } = await apiClient.auth.getAdminSession();
                 if (validatedUser === null || validatedUser === undefined || (validatedUser as { isAdmin?: boolean }).isAdmin !== true) throw new Error("Revoked");
-                login(validatedUser, expiresAt);
+
+                // Only update if something actually changed to avoid unnecessary re-renders/loop
+                if (JSON.stringify(validatedUser) !== JSON.stringify(user) || validatedExpiresAt !== expiresAt) {
+                    login(validatedUser, validatedExpiresAt);
+                }
             } catch (err: unknown) {
                 console.error("Session revalidation failed:", err);
                 if (err instanceof Error && (err.message.includes('Invalid token') || err.message.includes('signature') || err.message.includes('jwt'))) {

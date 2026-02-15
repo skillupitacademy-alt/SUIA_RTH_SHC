@@ -21,18 +21,19 @@ interface AuthState {
   completeOnboarding: () => void;
   setInitialized: (val: boolean) => void;
   setSessionExpired: (val: boolean) => void;
+  getIsAuthenticated: () => boolean;
 }
 
 export const useAuthStore = create<AuthState>()(
   persist(
-    (set) => ({
-      user: null,
+    (set, get) => ({
+      user: null as User | null,
       isAuthenticated: false,
       initialized: false,
       isSessionExpired: false,
-      expiresAt: null,
-      login: (user, expiresAt = null) => {
-        set({ user, isAuthenticated: true, expiresAt });
+      expiresAt: null as string | null,
+      login: (user: User, expiresAt: string | null = null) => {
+        set({ user, isAuthenticated: true, expiresAt, isSessionExpired: false });
       },
       logout: () => {
         set({ user: null, isAuthenticated: false, expiresAt: null });
@@ -43,11 +44,18 @@ export const useAuthStore = create<AuthState>()(
         })),
       setInitialized: (val: boolean) => set({ initialized: val }),
       setSessionExpired: (val: boolean) => set({ isSessionExpired: val }),
+      getIsAuthenticated: () => get().isAuthenticated,
     }),
     {
       name: 'quiz-platform-auth',
       onRehydrateStorage: () => (state) => {
-        state?.setInitialized(true);
+        if (state) {
+            state.setInitialized(true);
+            // Ensure isAuthenticated is synced with user existence after rehydration
+            if (state.user && !state.isAuthenticated) {
+                state.login(state.user, state.expiresAt);
+            }
+        }
       }
     }
   )
