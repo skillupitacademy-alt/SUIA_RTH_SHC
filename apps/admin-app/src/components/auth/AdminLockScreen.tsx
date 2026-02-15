@@ -25,10 +25,9 @@ export function AdminLockScreen() {
 
         try {
             // 1. Verify password & establish fresh cookies
-            await apiClient.auth.login(user.email, password);
+            const { user: refreshedUser, expiresAt } = await apiClient.admin.login(user.email, password);
 
-            // 2. Hardening: Sync local state with server session to get fresh expiresAt
-            const { user: refreshedUser, expiresAt } = await apiClient.auth.getAdminSession();
+            // 2. Update local state
             login(refreshedUser, expiresAt);
 
             setPassword('');
