@@ -1,0 +1,176 @@
+[
+  {
+    "timestamp": "2026-02-15T12:17:18.411Z",
+    "url": "https://admin.realtutorialhub.com/dashboard",
+    "message": "The Content Security Policy directive 'upgrade-insecure-requests' is ignored when delivered in a report-only policy.",
+    "type": "error"
+  },
+  {
+    "timestamp": "2026-02-15T12:17:26.304Z",
+    "url": "https://quiz.realtutorialhub.com/login",
+    "message": "The Content Security Policy directive 'upgrade-insecure-requests' is ignored when delivered in a report-only policy.",
+    "type": "error"
+  },
+  {
+    "timestamp": "2026-02-15T12:17:30.063Z",
+    "url": "https://quiz.realtutorialhub.com/login",
+    "message": "Connecting to 'https://api.realtutorialhub.com/api/auth/login' violates the following Content Security Policy directive: \"connect-src 'self' https://api.realtutorialhub.com/api https://cloudflareinsights.com\". The policy is report-only, so the violation has been logged but no further action has been taken.",
+    "type": "info"
+  },
+  {
+    "timestamp": "2026-02-15T12:17:36.904Z",
+    "url": "https://quiz.realtutorialhub.com/dashboard",
+    "message": "Connecting to 'https://api.realtutorialhub.com/api/dashboard?range=7d&page=1&limit=3' violates the following Content Security Policy directive: \"connect-src 'self' https://api.realtutorialhub.com/api https://cloudflareinsights.com\". The policy is report-only, so the violation has been logged but no further action has been taken.",
+    "type": "info"
+  },
+  {
+    "timestamp": "2026-02-15T12:17:36.907Z",
+    "url": "https://quiz.realtutorialhub.com/dashboard",
+    "message": "Connecting to 'https://api.realtutorialhub.com/api/auth/me' violates the following Content Security Policy directive: \"connect-src 'self' https://api.realtutorialhub.com/api https://cloudflareinsights.com\". The policy is report-only, so the violation has been logged but no further action has been taken.",
+    "type": "info"
+  },
+  {
+    "timestamp": "2026-02-15T12:17:38.732Z",
+    "url": "https://quiz.realtutorialhub.com/dashboard",
+    "message": "The Content Security Policy directive 'upgrade-insecure-requests' is ignored when delivered in a report-only policy.",
+    "type": "error"
+  },
+  {
+    "timestamp": "2026-02-15T12:19:08.228Z",
+    "url": "https://admin.realtutorialhub.com/login",
+    "message": "The Content Security Policy directive 'upgrade-insecure-requests' is ignored when delivered in a report-only policy.",
+    "type": "error"
+  },
+  {
+    "timestamp": "2026-02-15T12:19:09.193Z",
+    "url": "https://admin.realtutorialhub.com/login",
+    "message": "Connecting to 'https://api.realtutorialhub.com/api/admin/auth/login' violates the following Content Security Policy directive: \"connect-src 'self' https://api.realtutorialhub.com/api https://admin.realtutorialhub.com https://cloudflareinsights.com\". The policy is report-only, so the violation has been logged but no further action has been taken.",
+    "type": "info"
+  },
+  {
+    "timestamp": "2026-02-15T12:19:13.521Z",
+    "url": "https://admin.realtutorialhub.com/",
+    "message": "Connecting to 'https://api.realtutorialhub.com/api/admin/auth/me' violates the following Content Security Policy directive: \"connect-src 'self' https://api.realtutorialhub.com/api https://admin.realtutorialhub.com https://cloudflareinsights.com\". The policy is report-only, so the violation has been logged but no further action has been taken.",
+    "type": "info"
+  },
+  {
+    "timestamp": "2026-02-15T12:19:13.531Z",
+    "url": "https://admin.realtutorialhub.com/",
+    "message": "Connecting to 'https://api.realtutorialhub.com/api/admin/auth/heartbeat' violates the following Content Security Policy directive: \"connect-src 'self' https://api.realtutorialhub.com/api https://admin.realtutorialhub.com https://cloudflareinsights.com\". The policy is report-only, so the violation has been logged but no further action has been taken.",
+    "type": "info"
+  },
+  {
+    "timestamp": "2026-02-15T12:19:13.656Z",
+    "url": "https://admin.realtutorialhub.com/",
+    "message": "Connecting to 'https://api.realtutorialhub.com/api/auth/logout' violates the following Content Security Policy directive: \"connect-src 'self' https://api.realtutorialhub.com/api https://admin.realtutorialhub.com https://cloudflareinsights.com\". The policy is report-only, so the violation has been logged but no further action has been taken.",
+    "type": "info"
+  },
+  {
+    "timestamp": "2026-02-15T12:19:15.802Z",
+    "url": "https://admin.realtutorialhub.com/",
+    "message": "Connecting to 'https://api.realtutorialhub.com/api/auth/refresh' violates the following Content Security Policy directive: \"connect-src 'self' https://api.realtutorialhub.com/api https://admin.realtutorialhub.com https://cloudflareinsights.com\". The policy is report-only, so the violation has been logged but no further action has been taken.",
+    "type": "info"
+  },
+  {
+    "timestamp": "2026-02-15T12:19:31.058Z",
+    "url": "https://admin.realtutorialhub.com/login?redirect=%2Fquestions",
+    "message": "The Content Security Policy directive 'upgrade-insecure-requests' is ignored when delivered in a report-only policy.",
+    "type": "error"
+  },
+  {
+    "timestamp": "2026-02-15T12:20:02.921Z",
+    "url": "https://admin.realtutorialhub.com/login?reason=session_expired",
+    "message": "The Content Security Policy directive 'upgrade-insecure-requests' is ignored when delivered in a report-only policy.",
+    "type": "error"
+  },
+  {
+    "timestamp": "2026-02-15T12:20:10.605Z",
+    "url": "https://admin.realtutorialhub.com/factory/question-generator?e2e=true",
+    "message": "The Content Security Policy directive 'upgrade-insecure-requests' is ignored when delivered in a report-only policy.",
+    "type": "error"
+  },
+  {
+    "timestamp": "2026-02-15T12:20:10.736Z",
+    "url": "https://admin.realtutorialhub.com/factory/question-generator?e2e=true",
+    "message": "Connecting to 'https://api.realtutorialhub.com/api/admin/domains?page=1&limit=100' violates the following Content Security Policy directive: \"connect-src 'self' https://api.realtutorialhub.com/api https://admin.realtutorialhub.com https://cloudflareinsights.com\". The policy is report-only, so the violation has been logged but no further action has been taken.",
+    "type": "info"
+  },
+  {
+    "timestamp": "2026-02-15T12:20:10.741Z",
+    "url": "https://admin.realtutorialhub.com/factory/question-generator?e2e=true",
+    "message": "Connecting to 'https://api.realtutorialhub.com/api/admin/skills?page=1&limit=2000' violates the following Content Security Policy directive: \"connect-src 'self' https://api.realtutorialhub.com/api https://admin.realtutorialhub.com https://cloudflareinsights.com\". The policy is report-only, so the violation has been logged but no further action has been taken.",
+    "type": "info"
+  },
+  {
+    "timestamp": "2026-02-15T12:20:10.743Z",
+    "url": "https://admin.realtutorialhub.com/factory/question-generator?e2e=true",
+    "message": "Connecting to 'https://api.realtutorialhub.com/api/admin/auth/me' violates the following Content Security Policy directive: \"connect-src 'self' https://api.realtutorialhub.com/api https://admin.realtutorialhub.com https://cloudflareinsights.com\". The policy is report-only, so the violation has been logged but no further action has been taken.",
+    "type": "info"
+  },
+  {
+    "timestamp": "2026-02-15T12:20:10.746Z",
+    "url": "https://admin.realtutorialhub.com/factory/question-generator?e2e=true",
+    "message": "Connecting to 'https://api.realtutorialhub.com/api/admin/auth/heartbeat' violates the following Content Security Policy directive: \"connect-src 'self' https://api.realtutorialhub.com/api https://admin.realtutorialhub.com https://cloudflareinsights.com\". The policy is report-only, so the violation has been logged but no further action has been taken.",
+    "type": "info"
+  },
+  {
+    "timestamp": "2026-02-15T12:20:12.976Z",
+    "url": "https://admin.realtutorialhub.com/factory/question-generator?e2e=true",
+    "message": "Connecting to 'https://api.realtutorialhub.com/api/admin/jobs' violates the following Content Security Policy directive: \"connect-src 'self' https://api.realtutorialhub.com/api https://admin.realtutorialhub.com https://cloudflareinsights.com\". The policy is report-only, so the violation has been logged but no further action has been taken.",
+    "type": "info"
+  },
+  {
+    "timestamp": "2026-02-15T12:20:55.694Z",
+    "url": "https://admin.realtutorialhub.com/factory/question-generator?e2e=true",
+    "message": "Connecting to 'https://api.realtutorialhub.com/api/auth/login' violates the following Content Security Policy directive: \"connect-src 'self' https://api.realtutorialhub.com/api https://admin.realtutorialhub.com https://cloudflareinsights.com\". The policy is report-only, so the violation has been logged but no further action has been taken.",
+    "type": "info"
+  },
+  {
+    "timestamp": "2026-02-15T12:21:28.825Z",
+    "url": "https://admin.realtutorialhub.com/",
+    "message": "The Content Security Policy directive 'upgrade-insecure-requests' is ignored when delivered in a report-only policy.",
+    "type": "error"
+  },
+  {
+    "timestamp": "2026-02-15T12:21:43.955Z",
+    "url": "https://quiz.realtutorialhub.com/dashboard",
+    "message": "Connecting to 'https://api.realtutorialhub.com/api/auth/logout' violates the following Content Security Policy directive: \"connect-src 'self' https://api.realtutorialhub.com/api https://cloudflareinsights.com\". The policy is report-only, so the violation has been logged but no further action has been taken.",
+    "type": "info"
+  },
+  {
+    "timestamp": "2026-02-15T12:21:57.396Z",
+    "url": "https://quiz.realtutorialhub.com/dashboard",
+    "message": "Connecting to 'https://api.realtutorialhub.com/api/auth/refresh' violates the following Content Security Policy directive: \"connect-src 'self' https://api.realtutorialhub.com/api https://cloudflareinsights.com\". The policy is report-only, so the violation has been logged but no further action has been taken.",
+    "type": "info"
+  },
+  {
+    "timestamp": "2026-02-15T12:22:29.778Z",
+    "url": "https://quiz.realtutorialhub.com/login?redirect=%2Fdashboard",
+    "message": "Connecting to 'https://api.realtutorialhub.com/api/auth/refresh' violates the following Content Security Policy directive: \"connect-src 'self' https://api.realtutorialhub.com/api https://cloudflareinsights.com\". The policy is report-only, so the violation has been logged but no further action has been taken.",
+    "type": "info"
+  },
+  {
+    "timestamp": "2026-02-15T12:42:24.753Z",
+    "url": "https://admin.realtutorialhub.com/factory/question-generator?e2e=true",
+    "message": "Connecting to 'https://api.realtutorialhub.com/api/auth/logout' violates the following Content Security Policy directive: \"connect-src 'self' https://api.realtutorialhub.com/api https://admin.realtutorialhub.com https://cloudflareinsights.com\". The policy is report-only, so the violation has been logged but no further action has been taken.",
+    "type": "info"
+  },
+  {
+    "timestamp": "2026-02-15T12:42:29.340Z",
+    "url": "https://admin.realtutorialhub.com/factory/question-generator?e2e=true",
+    "message": "Connecting to 'https://api.realtutorialhub.com/api/admin/jobs/5f958bab-be60-4a3b-af63-d0cf1ff0f231' violates the following Content Security Policy directive: \"connect-src 'self' https://api.realtutorialhub.com/api https://admin.realtutorialhub.com https://cloudflareinsights.com\". The policy is report-only, so the violation has been logged but no further action has been taken.",
+    "type": "info"
+  },
+  {
+    "timestamp": "2026-02-15T12:42:33.860Z",
+    "url": "https://admin.realtutorialhub.com/",
+    "message": "Connecting to 'https://api.realtutorialhub.com/api/admin/jobs/5f958bab-be60-4a3b-af63-d0cf1ff0f231' violates the following Content Security Policy directive: \"connect-src 'self' https://api.realtutorialhub.com/api https://admin.realtutorialhub.com https://cloudflareinsights.com\". The policy is report-only, so the violation has been logged but no further action has been taken.",
+    "type": "info"
+  },
+  {
+    "timestamp": "2026-02-15T12:45:20.271Z",
+    "url": "https://admin.realtutorialhub.com/",
+    "message": "Connecting to 'https://api.realtutorialhub.com/api/admin/jobs/aa788853-b94d-4ec7-a488-7416612ceac3' violates the following Content Security Policy directive: \"connect-src 'self' https://api.realtutorialhub.com/api https://admin.realtutorialhub.com https://cloudflareinsights.com\". The policy is report-only, so the violation has been logged but no further action has been taken.",
+    "type": "info"
+  }
+]
