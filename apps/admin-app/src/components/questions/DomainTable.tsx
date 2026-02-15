@@ -104,7 +104,7 @@ export function DomainTable() {
         if (selectedIds.size === 1) {
             const id = Array.from(selectedIds)[0];
             const item = data.find(d => d.id === id);
-            if (item) {
+            if (item != null) {
                 setCurrentDomain(item);
                 setIsDeleteOpen(true);
                 return;
@@ -115,7 +115,7 @@ export function DomainTable() {
         try {
             await apiClient.admin.batchDeleteDomains(Array.from(selectedIds));
             setSelectedIds(new Set());
-            fetchDomains();
+            void fetchDomains();
         } catch (error) {
             console.error('Batch delete failed:', error);
             setErrorMessage('Batch Deletion Failed: Some domains could not be removed (they may have dependencies).');
@@ -125,14 +125,14 @@ export function DomainTable() {
     };
 
     // --- FORM LOGIC ---
-    const handleOpenForm = (domain: any = null) => {
-        if (domain !== null) {
-            setCurrentDomain(domain);
+    const handleOpenForm = (domain: { name: string; category?: string; description?: string; status?: string } | null = null) => {
+        if (domain != null) {
+            setCurrentDomain(domain as any);
             setFormData({
                 name: domain.name,
-                category: domain.category || '',
-                description: domain.description || '',
-                status: domain.status || 'active'
+                category: domain.category ?? '',
+                description: domain.description ?? '',
+                status: (domain.status as 'active' | 'inactive') ?? 'active'
             });
         } else {
             setCurrentDomain(null);
@@ -168,7 +168,7 @@ export function DomainTable() {
                 await apiClient.admin.createDomain(formData);
             }
             handleCloseForm();
-            fetchDomains();
+            void fetchDomains();
         } catch (error) {
             console.error('Failed to save domain:', error);
             setErrorMessage('Saving Failed: Please ensure all fields are correct and try again.');
@@ -193,7 +193,7 @@ export function DomainTable() {
 
             setIsDeleteOpen(false);
             setCurrentDomain(null);
-            fetchDomains();
+            void fetchDomains();
         } catch (error) {
             console.error('Failed to delete domain:', error);
             setErrorMessage('Deletion Blocked: This domain is currently linked to active subjects or topics and cannot be removed.');

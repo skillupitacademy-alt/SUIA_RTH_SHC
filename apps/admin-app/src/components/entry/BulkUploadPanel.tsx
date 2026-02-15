@@ -1,31 +1,38 @@
 'use client';
-/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 
 import { apiClient } from '@quiz/api-client';
 import { ZLoader } from '@quiz/ui';
-import { AlertCircle, Check, Copy, FileJson, Sparkles,Trash2, Upload } from 'lucide-react';
+import { AlertCircle, Check, Copy, FileJson, Sparkles, Trash2, Upload } from 'lucide-react';
 import { useState } from 'react';
 
 import { cn } from '@/lib/utils';
 
 interface BulkUploadPanelProps {
     topicId: string;
-    topicName?: string;
     subtopicId: string | null;
     skillIds: string[];
     onSuccess: (count: number) => void;
     onError: (message: string) => void;
 }
 
-export function BulkUploadPanel({ topicId, topicName, subtopicId, skillIds, onSuccess, onError }: BulkUploadPanelProps) {
+interface BulkQuestion {
+    text: string;
+    questionText?: string;
+    options: Array<{ id: string; text: string; isCorrect: boolean }>;
+    difficulty?: string;
+    mappingType?: string;
+    type?: string;
+    explanation?: string;
+}
+
+export function BulkUploadPanel({ topicId, subtopicId, skillIds, onSuccess, onError }: BulkUploadPanelProps) {
     const [file, setFile] = useState<File | null>(null);
-    const [questions, setQuestions] = useState<any[]>([]);
-    const [isParsing, setIsParsing] = useState(false);
+    const [questions, setQuestions] = useState<BulkQuestion[]>([]);
     const [isUploading, setIsUploading] = useState(false);
 
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const selectedFile = e.target.files?.[0];
-        if (!selectedFile) return;
+        if (selectedFile == null) return;
 
         if (selectedFile.type !== 'application/json' && !selectedFile.name.endsWith('.json')) {
             onError('Please upload a valid JSON file.');
@@ -33,13 +40,12 @@ export function BulkUploadPanel({ topicId, topicName, subtopicId, skillIds, onSu
         }
 
         setFile(selectedFile);
-        setIsParsing(true);
 
         try {
             const reader = new FileReader();
             reader.onload = (event) => {
                 try {
-                    const content = event.target?.result as string;
+                    const content = (event.target?.result as string) ?? '';
                     const parsed = JSON.parse(content);
 
                     if (!Array.isArray(parsed)) {
@@ -47,44 +53,50 @@ export function BulkUploadPanel({ topicId, topicName, subtopicId, skillIds, onSu
                     }
 
                     // Basic validation
-                    const validated = parsed.map((q, idx) => {
-                        if (!q.text && !q.questionText) throw new Error(`Question at index ${idx} is missing text.`);
+                    const validated = parsed.map((q: { text?: string; questionText?: string; options: Array<{ id?: string; text: string; isCorrect: boolean }> }, idx: number) => {
+                        // Strict check for text presence
+                        const textVal = (q.text != null && q.text !== '') ? q.text : (q.questionText ?? '');
+                        if (textVal === '') {
+                            throw new Error(`Question at index ${idx} is missing text.`);
+                        }
                         if (!Array.isArray(q.options) || q.options.length < 2) throw new Error(`Question at index ${idx} must have at least 2 options.`);
 
                         // Ensure options have IDs for UI stability
-                        q.options = q.options.map((o: any) => ({
+                        const sanitizedOptions = q.options.map((o) => ({
                             ...o,
-                            id: o.id || crypto.randomUUID()
+                            id: (o.id != null && o.id !== '') ? o.id : crypto.randomUUID()
                         }));
 
-                        return q;
+                        return {
+                            ...q,
+                            text: textVal,
+                            options: sanitizedOptions
+                        };
                     });
 
                     setQuestions(validated);
-                } catch (err: any) {
-                    onError(`Parsing Error: ${err.message}`);
+                } catch (err: unknown) {
+                    const msg = err instanceof Error ? err.message : 'Unknown parsing error';
+                    onError(`Parsing Error: ${msg}`);
                     setFile(null);
-                } finally {
-                    setIsParsing(false);
                 }
             };
             reader.readAsText(selectedFile);
-        } catch (err: any) {
+        } catch {
             onError('Failed to read file.');
-            setIsParsing(false);
         }
     };
 
     const handleUpload = async () => {
-        if (!file || questions.length === 0) return;
-        if (!topicId) return;
+        if (file == null || questions.length === 0) return;
+        if (topicId == null || topicId === '') return;
 
         setIsUploading(true);
 
         try {
             await apiClient.admin.bulkCreateQuestions({
                 topicId,
-                subtopicId: subtopicId || undefined,
+                subtopicId: (subtopicId != null && subtopicId !== '') ? subtopicId : undefined,
                 skillIds: skillIds.length > 0 ? skillIds : undefined,
                 questions
             });
@@ -92,8 +104,9 @@ export function BulkUploadPanel({ topicId, topicName, subtopicId, skillIds, onSu
             onSuccess(questions.length);
             setQuestions([]);
             setFile(null);
-        } catch (err: any) {
-            onError(err.message || 'Bulk upload failed.');
+        } catch (err: unknown) {
+            const msg = err instanceof Error ? err.message : 'Bulk upload failed.';
+            onError(msg);
         } finally {
             setIsUploading(false);
         }
@@ -122,8 +135,8 @@ export function BulkUploadPanel({ topicId, topicName, subtopicId, skillIds, onSu
 ]`;
 
     const aiPrompt = `You are an expert exam content generator.
-Generate 5 high-quality multiple-choice questions for the topic: ${topicName || "[INSERT TOPIC HERE]"}
-Output strictly in the following JSON format:
+Generate 5 high-quality multiple-choice questions for the topic: {(topicName != null && topicName !== '') ? topicName : "[INSERT TOPIC HERE]"}
+Generate strictly in the following JSON format:
 
 [
   {
@@ -141,7 +154,7 @@ Output strictly in the following JSON format:
 `;
 
     const copyToClipboard = (text: string, isSchema: boolean) => {
-        navigator.clipboard.writeText(text);
+        void navigator.clipboard.writeText(text);
         if (isSchema) {
             setCopiedSchema(true);
             setTimeout(() => setCopiedSchema(false), 2000);
@@ -153,12 +166,12 @@ Output strictly in the following JSON format:
 
     return (
         <div className="space-y-8">
-            {!file ? (
+            {file == null ? (
                 <div className="relative">
                     <input
                         type="file"
                         accept=".json"
-                        onChange={handleFileChange}
+                        onChange={(e) => { void handleFileChange(e); }}
                         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                     />
                     <div className="border-2 border-dashed border-slate-200 rounded-[2rem] p-16 text-center bg-white/40 backdrop-blur-sm hover:border-[#FF4B91]/50 hover:bg-[#FF4B91]/5 transition-all group">
@@ -212,18 +225,18 @@ Output strictly in the following JSON format:
                                     {idx + 1}
                                 </span>
                                 <div className="space-y-2 flex-1">
-                                    <p className="text-base font-bold text-slate-800 line-clamp-2 leading-relaxed">{q.text || q.questionText}</p>
+                                    <p className="text-base font-bold text-slate-800 line-clamp-2 leading-relaxed">{(q.text != null && q.text !== '') ? (q.text as string) : (q.questionText as string)}</p>
                                     <div className="flex flex-wrap items-center gap-3">
                                         <span className={cn(
                                             "text-[10px] font-black uppercase px-2 py-1 rounded-lg border",
                                             q.difficulty === 'simple' ? "bg-green-50 text-green-600 border-green-100" :
                                                 q.difficulty === 'intermediate' ? "bg-amber-50 text-amber-600 border-amber-100" :
                                                     "bg-red-50 text-red-600 border-red-100"
-                                        )}>{q.difficulty || 'intermediate'}</span>
+                                        )}>{String(q.difficulty != null ? q.difficulty : 'intermediate')}</span>
 
-                                        {q.mappingType ? <span className="text-[10px] font-black uppercase px-2 py-1 rounded-lg bg-blue-50 text-blue-600 border border-blue-100">
-                                                {q.mappingType}
-                                            </span> : null}
+                                        {(q.mappingType != null && q.mappingType !== '') ? <span className="text-[10px] font-black uppercase px-2 py-1 rounded-lg bg-blue-50 text-blue-600 border border-blue-100">
+                                            {String(q.mappingType)}
+                                        </span> : null}
 
                                         <span className="text-[10px] font-bold text-slate-400 flex items-center gap-1">
                                             <Check className="w-3 h-3" /> {q.options.length} Options
@@ -232,11 +245,11 @@ Output strictly in the following JSON format:
                                 </div>
                             </div>
                         ))}
-                        {questions.length > 10 && (
+                        {questions.length > 10 ? (
                             <div className="text-center py-6 text-sm font-bold text-slate-400 uppercase tracking-widest bg-slate-50 rounded-2xl border border-dashed border-slate-200">
                                 + {questions.length - 10} more questions ready
                             </div>
-                        )}
+                        ) : null}
                     </div>
 
                     <div className="p-8 bg-white border-t border-gray-100 flex justify-between items-center">
@@ -244,11 +257,11 @@ Output strictly in the following JSON format:
                             Targeting: <span className="font-bold text-slate-800">Current Topic</span>
                         </div>
                         <button
-                            onClick={handleUpload}
-                            disabled={isUploading || questions.length === 0}
+                            onClick={() => { void handleUpload(); }}
+                            disabled={isUploading === true || questions.length === 0}
                             className="flex items-center gap-3 px-10 py-5 bg-[#FF4B91] hover:bg-[#ff3382] text-white font-black uppercase tracking-widest text-sm rounded-2xl shadow-xl shadow-[#FF4B91]/20 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:-translate-y-1"
                         >
-                            {isUploading ? (
+                            {isUploading === true ? (
                                 <>
                                     <ZLoader size="xs" className="text-white" center={false} /> Processing...
                                 </>

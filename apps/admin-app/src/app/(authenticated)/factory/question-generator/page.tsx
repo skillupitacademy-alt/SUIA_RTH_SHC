@@ -1,4 +1,5 @@
 'use client';
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { Check, Copy, RefreshCcw, ShieldCheck } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
@@ -40,9 +41,9 @@ function QuestionFactoryContent() {
 
     // Context resolution hooks for human-readable names
     const { data: domains } = useDomains();
-    const { data: subjects } = useSubjects(blueprint.domainId);
-    const { data: topics } = useTopics(blueprint.subjectId);
-    const { data: subtopics } = useSubtopics(blueprint.topicId);
+    const { data: subjects } = useSubjects((blueprint.domainId != null && blueprint.domainId !== '') ? blueprint.domainId : undefined);
+    const { data: topics } = useTopics((blueprint.subjectId != null && blueprint.subjectId !== '') ? blueprint.subjectId : undefined);
+    const { data: subtopics } = useSubtopics((blueprint.topicId != null && blueprint.topicId !== '') ? blueprint.topicId : undefined);
 
     // Taxonomy Governance: Fetch ALL skills for global selection
     const { data: globalSkills } = useAllSkills();
@@ -60,10 +61,10 @@ function QuestionFactoryContent() {
         setIsCopying(true);
         try {
             // Resolve Names from IDs
-            const domainName = domains?.find((d) => d.id === blueprint.domainId)?.name || "Target Domain";
-            const subjectName = subjects?.find((s) => s.id === blueprint.subjectId)?.name || "Target Subject";
-            const topicName = topics?.find((t) => t.id === blueprint.topicId)?.name || "Target Topic";
-            const subtopicName = subtopics?.find((st) => st.id === blueprint.subtopicId)?.name;
+            const domainName = (domains != null) ? (domains.find((d) => d.id === blueprint.domainId)?.name ?? "Target Domain") : "Target Domain";
+            const subjectName = (subjects != null) ? (subjects.find((s) => s.id === blueprint.subjectId)?.name ?? "Target Subject") : "Target Subject";
+            const topicName = (topics != null) ? (topics.find((t) => t.id === blueprint.topicId)?.name ?? "Target Topic") : "Target Topic";
+            const subtopicName = (subtopics != null) ? subtopics.find((st) => st.id === blueprint.subtopicId)?.name : undefined;
 
             // TAXONOMY INJECTION: Cap at 200 for extreme safety
             const safeSkills = (globalSkills ?? []).slice(0, 200);
@@ -173,24 +174,24 @@ function QuestionFactoryContent() {
                                 <div className="flex items-center gap-4">
                                     {/* Strict Mode Toggle: Executive White Aesthetic */}
                                     <button
-                                        onClick={() => setBlueprint({ strictMode: !blueprint.strictMode })}
+                                        onClick={() => setBlueprint({ strictMode: blueprint.strictMode !== true })}
                                         className={`
                                             h-12 flex items-center gap-3 px-6 rounded-2xl border transition-all shadow-sm
-                                            ${blueprint.strictMode
+                                            ${(blueprint.strictMode === true)
                                                 ? 'bg-emerald-50 border-emerald-200 text-emerald-600 shadow-emerald-500/10'
                                                 : 'bg-slate-50 border-slate-200 text-slate-400'
                                             }
                                         `}
-                                        title={blueprint.strictMode ? "Taxonomy Check Enabled" : "Taxonomy Check Disabled"}
+                                        title={(blueprint.strictMode === true) ? "Taxonomy Check Enabled" : "Taxonomy Check Disabled"}
                                     >
-                                        <ShieldCheck size={18} className={blueprint.strictMode ? 'animate-pulse' : ''} />
+                                        <ShieldCheck size={18} className={(blueprint.strictMode === true) ? 'animate-pulse' : ''} />
                                         <span className="text-[10px] font-black uppercase tracking-widest hidden lg:inline">
-                                            {blueprint.strictMode ? "Strict" : "Legacy"}
+                                            {(blueprint.strictMode === true) ? "Strict" : "Legacy"}
                                         </span>
                                     </button>
 
                                     {/* Global Skills Badge: Emerald/Compact - Integrated into Group */}
-                                    {globalSkills && globalSkills.length > 0 ? <div className="flex items-center gap-2 px-4 h-12 bg-emerald-50/30 border border-emerald-100/50 rounded-2xl">
+                                    {globalSkills != null && globalSkills.length > 0 ? <div className="flex items-center gap-2 px-4 h-12 bg-emerald-50/30 border border-emerald-100/50 rounded-2xl">
                                         <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse shadow-lg shadow-emerald-500/50" />
                                         <span className="text-[9px] font-black text-emerald-600 uppercase tracking-widest">
                                             {globalSkills.length} SKILLS

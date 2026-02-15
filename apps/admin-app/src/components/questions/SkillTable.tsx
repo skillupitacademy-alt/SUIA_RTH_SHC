@@ -134,14 +134,15 @@ export function SkillTable() {
 
     // --- FORM LOGIC ---
     const handleOpenForm = (skill: any = null) => {
-        if (skill !== null) {
+        if (skill != null) {
             setCurrentSkill(skill);
             setFormData({
-                name: skill.name,
-                category: skill.category || '',
-                mappingType: skill.mappingType || 'conceptual',
-                weight: skill.weight || 1
+                name: (skill.name as string),
+                category: (skill.category as string | undefined) ?? 'technical',
+                mappingType: (skill.mappingType as 'conceptual' | 'technical' | 'practical' | undefined) ?? 'conceptual',
+                weight: (skill.weight != null && skill.weight !== 0) ? (skill.weight as number) : 1
             });
+            setIsFormOpen(true);
         } else {
             setCurrentSkill(null);
             setFormData({

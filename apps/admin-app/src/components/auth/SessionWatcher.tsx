@@ -161,7 +161,7 @@ export function SessionWatcher({ expiresAt, onRefresh, onLogout, isRedirecting, 
     }, [isRedirecting, isLocked, isForcedLogoutWarning]);
 
     let warningTitle = "Session Expiring";
-    let warningDesc = `Your secure governance session will expire in ${remainingSeconds ? Math.ceil(remainingSeconds / 60) : 3} minutes. Would you like to stay logged in?`;
+    let warningDesc = `Your secure governance session will expire in ${remainingSeconds !== null ? Math.ceil(remainingSeconds / 60) : 3} minutes. Would you like to stay logged in?`;
 
     if (isForcedLogoutWarning) {
         warningTitle = "Security Cutoff Imminent";

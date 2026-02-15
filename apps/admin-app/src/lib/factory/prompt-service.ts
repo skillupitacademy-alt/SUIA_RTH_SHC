@@ -19,7 +19,7 @@ export const PromptService = {
     generateTechnicalPrompt: (blueprint: FactoryBlueprint): string => {
         const total = blueprint.counts.simple + blueprint.counts.intermediate + blueprint.counts.expert;
         const skillsList = (blueprint.knownSkills?.length ?? 0) > 0 
-            ? `\n### OFFICIAL TAXONOMY (PRIORITY)\nYou MUST prioritize using these existing skills for the 'skillNames' array:\n${blueprint.knownSkills!.map(s => `- ${s}`).join('\n')}\n\n${blueprint.strictMode 
+            ? `\n### OFFICIAL TAXONOMY (PRIORITY)\nYou MUST prioritize using these existing skills for the 'skillNames' array:\n${blueprint.knownSkills!.map(s => `- ${s}`).join('\n')}\n\n${blueprint.strictMode === true 
                 ? "*CRITICAL RULE: You are FORBIDDEN from creating new skill names. You MUST map every question to at least one skill from the list above.*" 
                 : "*Rule: Only create a new skill name if the concept is absolutely not covered by the list above.*"}`
             : '';

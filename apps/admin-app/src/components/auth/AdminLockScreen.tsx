@@ -83,7 +83,7 @@ export function AdminLockScreen() {
                 </div>
 
                 {/* Password Input */}
-                <form onSubmit={handleUnlock} className="w-full space-y-4">
+                <form onSubmit={(e) => void handleUnlock(e)} className="w-full space-y-4">
                     <div className="relative group">
                         <input
                             type="password"

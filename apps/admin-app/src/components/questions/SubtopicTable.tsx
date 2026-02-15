@@ -80,25 +80,25 @@ export function SubtopicTable() {
     }, [page, pageSize, debouncedSearch]);
 
     const handleOpenForm = (subtopic: any = null) => {
-        if (subtopic) {
+        if (subtopic != null) {
             setCurrentSubtopic(subtopic);
 
             // Robust lineage extraction with fallbacks
             const topic = subtopic.topic;
-            const topicId = subtopic.topicId || topic?.id || '';
+            const topicId = (subtopic.topicId as string | undefined) ?? (topic?.id as string | undefined) ?? '';
             const subject = topic?.subject;
-            const subjectId = topic?.subjectId || subject?.id || '';
-            const domainId = subject?.domainId || subject?.domain?.id || '';
+            const subjectId = (topic?.subjectId as string | undefined) ?? (subject?.id as string | undefined) ?? '';
+            const domainId = (subject?.domainId as string | undefined) ?? (subject?.domain?.id as string | undefined) ?? '';
 
             setFormData({
-                name: subtopic.name,
+                name: (subtopic.name as string),
                 topicId: topicId,
-                description: subtopic.description || '',
-                status: subtopic.status || 'active',
+                description: (subtopic.description as string | undefined) ?? '',
+                status: ((subtopic.status as string | undefined) ?? 'active') as 'active' | 'inactive',
                 domainId: domainId,
                 subjectId: subjectId,
-                order: subtopic.order || 0,
-                depthLevel: subtopic.depthLevel || 1
+                order: (subtopic.order as number | undefined) ?? 0,
+                depthLevel: (subtopic.depthLevel as number | undefined) ?? 1
             });
             setIsFormOpen(true);
         } else {
@@ -244,15 +244,15 @@ export function SubtopicTable() {
                                 <div className="grid grid-cols-3 gap-4 p-6 bg-slate-50/50 rounded-2xl border border-dashed border-slate-200">
                                     <div className="space-y-1 text-center">
                                         <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Domain</label>
-                                        <div className="font-bold text-slate-600 text-xs truncate">{domains.find((d: any) => d.id === formData.domainId)?.name || 'N/A'}</div>
+                                        <div className="font-bold text-slate-600 text-xs truncate">{(domains != null && Array.isArray(domains)) ? (domains.find((d: { id: string; name: string }) => d.id === formData.domainId)?.name ?? 'N/A') : 'N/A'}</div>
                                     </div>
                                     <div className="space-y-1 text-center border-x border-slate-200">
                                         <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Subject</label>
-                                        <div className="font-bold text-slate-600 text-xs truncate">{subjects.find((s: any) => s.id === formData.subjectId)?.name || 'N/A'}</div>
+                                        <div className="font-bold text-slate-600 text-xs truncate">{(subjects != null && Array.isArray(subjects)) ? (subjects.find((s: { id: string; name: string }) => s.id === formData.subjectId)?.name ?? 'N/A') : 'N/A'}</div>
                                     </div>
                                     <div className="space-y-1 text-center">
                                         <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Topic</label>
-                                        <div className="font-bold text-teal-600 text-xs truncate">{topics.find((t: any) => t.id === formData.topicId)?.name || 'N/A'}</div>
+                                        <div className="font-bold text-teal-600 text-xs truncate">{(topics != null && Array.isArray(topics)) ? (topics.find((t: { id: string; name: string }) => t.id === formData.topicId)?.name ?? 'N/A') : 'N/A'}</div>
                                     </div>
                                 </div>
 
@@ -336,14 +336,14 @@ export function SubtopicTable() {
                                                 </div>
                                                 <div>
                                                     <p className="font-black text-slate-900 uppercase tracking-tight">{item.name}</p>
-                                                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-0.5 truncate max-w-[200px]">{item.description || 'Standard Knowledge Node'}</p>
+                                                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-0.5 truncate max-w-[200px]">{(item.description != null && item.description !== '') ? item.description : 'Standard Knowledge Node'}</p>
                                                 </div>
                                             </div>
                                         </td>
                                         <td className="p-6">
                                             <div className="flex items-center gap-2">
                                                 <span className="px-3 py-1 rounded-full bg-slate-100 border border-slate-200 text-[10px] font-black text-slate-600 uppercase tracking-widest">
-                                                    {item.topic?.name || 'Unlinked'}
+                                                    {(item.topic?.name != null && item.topic.name !== '') ? item.topic.name : 'Unlinked'}
                                                 </span>
                                             </div>
                                         </td>
@@ -352,7 +352,7 @@ export function SubtopicTable() {
                                         </td>
                                         <td className="p-6">
                                             <span className={cn("px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border", item.status === 'active' ? "bg-green-50 text-green-600 border-green-100" : "bg-slate-100 text-slate-400 border-slate-200")}>
-                                                {item.status || 'Active'}
+                                                {item.status != null && item.status !== '' ? item.status : 'Active'}
                                             </span>
                                         </td>
                                         <td className="p-6 text-right">

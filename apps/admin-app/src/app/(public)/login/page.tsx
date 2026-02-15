@@ -2,7 +2,7 @@
 
 import { apiClient } from '@quiz/api-client';
 import { ZLoader } from '@quiz/ui';
-import { Lock, Mail,ShieldCheck } from 'lucide-react';
+import { Lock, Mail, ShieldCheck } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
@@ -29,7 +29,7 @@ export default function AdminLoginPage() {
             const { user } = await apiClient.admin.login(formData.email, formData.password);
 
             // Redundant check (API should handle this), but safe for UI
-            if (!user.isAdmin) {
+            if (user.isAdmin !== true) {
                 throw new Error("Access Denied: Governance Privileges Required.");
             }
 
@@ -52,11 +52,11 @@ export default function AdminLoginPage() {
             </div>
 
             {error ? <div className="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-600 text-sm font-bold flex items-center gap-2">
-                    <ShieldCheck size={16} />
-                    {error}
-                </div> : null}
+                <ShieldCheck size={16} />
+                {error}
+            </div> : null}
 
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={(e) => void handleSubmit(e)} className="space-y-6">
                 <div className="space-y-2">
                     <label className="text-sm font-medium leading-none text-slate-500">Email Address</label>
                     <div className="relative">

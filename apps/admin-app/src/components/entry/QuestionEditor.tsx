@@ -1,7 +1,6 @@
 'use client';
-/* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { Check, Clock, FileText,List, Plus, Trash2 } from 'lucide-react';
+import { Check, Clock, FileText, List, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 
 import { cn } from '@/lib/utils';
@@ -24,16 +23,16 @@ interface QuestionEditorProps {
 
 export function QuestionEditor({ onSubmit, loading, initialData }: QuestionEditorProps) {
     const [data, setData] = useState<QuestionFormData>({
-        text: initialData?.text || '',
-        type: initialData?.type || 'single',
+        text: initialData?.text ?? '',
+        type: initialData?.type ?? 'single',
         options: initialData?.options?.map(o => ({
             ...o,
-            id: o.id || crypto.randomUUID()
-        })) || [{ id: '1', text: '', isCorrect: false }, { id: '2', text: '', isCorrect: false }],
-        explanation: initialData?.explanation || '',
-        difficulty: initialData?.difficulty || 'intermediate',
-        estimatedTime: initialData?.estimatedTime || 60,
-        mappingType: initialData?.mappingType || 'conceptual',
+            id: (o.id != null && o.id !== '') ? o.id : crypto.randomUUID()
+        })) ?? [{ id: '1', text: '', isCorrect: false }, { id: '2', text: '', isCorrect: false }],
+        explanation: initialData?.explanation ?? '',
+        difficulty: initialData?.difficulty ?? 'intermediate',
+        estimatedTime: initialData?.estimatedTime ?? 60,
+        mappingType: initialData?.mappingType ?? 'conceptual',
     });
 
     const addOption = () => {
@@ -68,13 +67,14 @@ export function QuestionEditor({ onSubmit, loading, initialData }: QuestionEdito
                 options: prev.options.map(o => ({ ...o, isCorrect: o.id === id }))
             }));
         } else {
-            updateOption(id, { isCorrect: !data.options.find(o => o.id === id)?.isCorrect });
+            const currentOption = data.options.find(o => o.id === id);
+            updateOption(id, { isCorrect: currentOption?.isCorrect === false });
         }
     };
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        onSubmit(data);
+        void onSubmit(data);
     };
 
     return (
@@ -138,7 +138,7 @@ export function QuestionEditor({ onSubmit, loading, initialData }: QuestionEdito
                                 onChange={(e) => updateOption(opt.id, { text: e.target.value })}
                                 className={cn(
                                     "flex-1 h-12 px-4 bg-white border rounded-xl text-[#1A1A1A] font-medium outline-none focus:border-[#FF4B91]/50 transition-all placeholder:text-slate-400",
-                                    opt.isCorrect
+                                    opt.isCorrect === true
                                         ? "border-green-500/50 shadow-[0_0_15px_rgba(34,197,94,0.1)] bg-green-50"
                                         : "border-slate-200"
                                 )}
@@ -149,7 +149,7 @@ export function QuestionEditor({ onSubmit, loading, initialData }: QuestionEdito
                                 onClick={() => setCorrectOption(opt.id)}
                                 className={cn(
                                     "w-12 h-12 flex items-center justify-center rounded-xl border transition-all",
-                                    opt.isCorrect
+                                    opt.isCorrect === true
                                         ? "bg-green-500 text-white border-green-500 shadow-lg shadow-green-500/20"
                                         : "bg-white border-slate-200 text-slate-400 hover:text-green-500 hover:border-green-500/30"
                                 )}
@@ -256,10 +256,10 @@ export function QuestionEditor({ onSubmit, loading, initialData }: QuestionEdito
             <div className="pt-8 border-t border-slate-100 flex justify-end">
                 <button
                     type="submit"
-                    disabled={loading || !data.text || !data.options.some(o => o.isCorrect)}
+                    disabled={loading === true || data.text === '' || data.options.some(o => o.isCorrect === true) === false}
                     className="flex items-center gap-2 px-8 py-4 bg-[#FF4B91] hover:bg-[#ff3382] text-white font-black uppercase tracking-widest text-xs rounded-xl shadow-lg shadow-[#FF4B91]/20 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-[0_0_30px_rgba(255,75,145,0.4)]"
                 >
-                    {loading ? 'Saving Question...' : 'Save Question'}
+                    {loading === true ? 'Saving Question...' : 'Save Question'}
                 </button>
             </div>
         </form>

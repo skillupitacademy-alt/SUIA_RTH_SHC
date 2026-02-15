@@ -1,5 +1,4 @@
 'use client';
-/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { apiClient } from '@quiz/api-client';
 import { ZLoader } from '@quiz/ui';
@@ -19,17 +18,49 @@ import {
 import { useEffect, useState } from 'react';
 
 import { BlueprintFactoryWizard } from '@/components/content/BlueprintFactoryWizard';
-import { HierarchyFactoryWizard } from '@/components/content/HierarchyFactoryWizard';
+import { HierarchyFactoryWizard, HierarchyInitialData } from '@/components/content/HierarchyFactoryWizard';
 import { cn } from '@/lib/utils';
 
+interface ContentStats {
+    simple: number;
+    intermediate: number;
+    expert: number;
+    isReady: boolean;
+    total: number;
+}
+
+interface HierarchyNode {
+    id: string;
+    name: string;
+    stats: ContentStats;
+}
+
+interface TopicHealth extends HierarchyNode {
+    subtopics?: HierarchyNode[];
+}
+
+interface SubjectHealth extends HierarchyNode {
+    topics?: TopicHealth[];
+}
+
+interface DomainHealth {
+    domainId: string;
+    domainName: string;
+    isReady: boolean;
+    hasBlueprint: boolean;
+    stats: ContentStats;
+    subjects?: SubjectHealth[];
+    error?: string;
+}
+
 export function ContentReadinessBoard() {
-    const [domains, setDomains] = useState<any[]>([]);
+    const [domains, setDomains] = useState<DomainHealth[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [expandedNodes, setExpandedNodes] = useState<Record<string, boolean>>({});
-    const [factoryModal, setFactoryModal] = useState<{ isOpen: boolean, initialData: any }>({
+    const [factoryModal, setFactoryModal] = useState<{ isOpen: boolean, initialData: HierarchyInitialData | undefined }>({
         isOpen: false,
-        initialData: null
+        initialData: undefined
     });
     const [blueprintModal, setBlueprintModal] = useState({ isOpen: false, domainId: '', domainName: '' });
 
@@ -48,43 +79,37 @@ export function ContentReadinessBoard() {
         void fetch();
     }, []);
 
-    const openHealWizard = (nodeType: string, node: any, domainId: string, domainName?: string) => {
-        let template: any = { domainId };
+    const openHealWizard = (nodeType: string, node: HierarchyNode | DomainHealth | Record<string, unknown>, domainId: string, domainName?: string) => {
+        let template: HierarchyInitialData = { target: 'subject', domainId };
 
         // Smart Context Construction
         // We use available names to pre-fill the hierarchy so the factory touches the right nodes.
         if (nodeType === 'domain') {
+            const d = node as DomainHealth;
             template = {
                 target: 'subject',
-                domainId: node.domainId,
-                domainName: node.domainName,
-                subjects: []
+                domainId: d.domainId,
+                domainName: d.domainName
             };
         } else if (nodeType === 'subject') {
+            const s = node as HierarchyNode;
             template = {
                 target: 'topic',
                 domainId,
                 domainName: domainName, // Passed from parent
-                subjects: [{
-                    id: node.id,
-                    name: node.name,
-                    topics: []
-                }]
+                subjectId: s.id,
+                subjectName: s.name
             };
         } else if (nodeType === 'topic') {
+            const t = node as Record<string, unknown>; // Cast for context access
             template = {
                 target: 'subtopic',
                 domainId,
                 domainName: domainName,
-                subjects: [{
-                    id: node.subjectId,
-                    name: ((node.subjectName as string | undefined | null) !== undefined && (node.subjectName as string | undefined | null) !== null && (node.subjectName as string) !== '') ? (node.subjectName as string) : "PARENT_SUBJECT",
-                    topics: [{
-                        id: node.id,
-                        name: node.name,
-                        questions: [] // Explicitly setting this encourages question filling
-                    }]
-                }]
+                subjectId: t.subjectId as string,
+                subjectName: ((t.subjectName as string | undefined | null) != null && (t.subjectName as string) !== '') ? (t.subjectName as string) : "PARENT_SUBJECT",
+                topicId: t.id as string,
+                topicName: t.name as string
             };
         }
 
@@ -101,12 +126,12 @@ export function ContentReadinessBoard() {
         </div>
     );
 
-    const filteredDomains = domains.filter((d: any) =>
-        (d.domainName as string).toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (d.subjects as any[])?.some((s: any) => (s.name as string).toLowerCase().includes(searchQuery.toLowerCase()))
+    const filteredDomains = domains.filter((d) =>
+        d.domainName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (d.subjects != null && d.subjects.some((s) => s.name.toLowerCase().includes(searchQuery.toLowerCase())))
     );
 
-    const readyDomainsCount = domains.filter((d: any) => d.isReady === true).length;
+    const readyDomainsCount = domains.filter((d) => d.isReady === true).length;
 
     return (
         <div className="p-8 rounded-[2rem] border border-primary/10 bg-muted/5 backdrop-blur-md shadow-sm">
@@ -141,7 +166,7 @@ export function ContentReadinessBoard() {
             </div>
 
             <div className="space-y-4 max-h-[700px] overflow-y-auto pr-3 custom-scrollbar">
-                {filteredDomains.map((domain: any) => (
+                {filteredDomains.map((domain) => (
                     <div key={domain.domainId} className="space-y-2">
                         {/* Domain Row */}
                         <div
@@ -168,7 +193,7 @@ export function ContentReadinessBoard() {
                                         )}
                                     </h4>
                                     <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest leading-none mt-1">
-                                        {(domain.subjects as any[])?.length || 0} Subjects • {domain.hasBlueprint === true ? "Blueprint Active" : "Blueprint Missing"}
+                                        {domain.subjects?.length ?? 0} Subjects • {domain.hasBlueprint === true ? "Blueprint Active" : "Blueprint Missing"}
                                     </p>
                                 </div>
                             </div>
@@ -196,7 +221,7 @@ export function ContentReadinessBoard() {
                                             <Activity size={16} />
                                         </button>
                                     )}
-                                    {domain.isReady === false && ((domain.subjects as any[])?.length === 0) && (
+                                    {domain.isReady === false && (domain.subjects?.length === 0) && (
                                         <button
                                             onClick={(e) => { e.stopPropagation(); openHealWizard('domain', domain, domain.domainId); }}
                                             className="p-2.5 rounded-xl bg-red-500/10 text-red-600 hover:bg-red-500/20 transition-all border border-red-500/10"
@@ -214,7 +239,7 @@ export function ContentReadinessBoard() {
 
                         {/* Subjects Drill-down */}
                         {expandedNodes[domain.domainId] ? <div className="ml-8 space-y-2 border-l-2 border-primary/5 pl-4 animate-in slide-in-from-top-2 duration-300">
-                            {domain.subjects?.map((subject: any) => (
+                            {domain.subjects?.map((subject) => (
                                 <div key={subject.id} className="space-y-2">
                                     <div
                                         onClick={(e) => { e.stopPropagation(); toggleNode(subject.id); }}
@@ -226,7 +251,7 @@ export function ContentReadinessBoard() {
                                         <div className="flex items-center gap-3">
                                             <BookOpen size={16} className={subject.stats.isReady === true ? "text-primary/40" : "text-red-500/40"} />
                                             <span className="text-xs font-black text-[#1A1A1A] uppercase tracking-wider">{subject.name}</span>
-                                            <ReadyIndicator isReady={subject.stats.isReady === true} />
+                                            <ReadyIndicator isReady={subject.stats.isReady} />
                                         </div>
                                         <div className="flex items-center gap-4">
                                             <div className="grid grid-cols-3 gap-1.5 transform scale-90">
@@ -234,7 +259,7 @@ export function ContentReadinessBoard() {
                                                 <StatsBadge label="I" val={subject.stats.intermediate} target={4} />
                                                 <StatsBadge label="E" val={subject.stats.expert} target={5} />
                                             </div>
-                                            {subject.stats.isReady === false && ((subject.topics as any[])?.length === 0) && (
+                                            {subject.stats.isReady === false && (subject.topics?.length === 0) && (
                                                 <button
                                                     onClick={(e) => { e.stopPropagation(); openHealWizard('subject', subject, domain.domainId, domain.domainName); }}
                                                     className="p-1.5 rounded-lg bg-red-500/5 text-red-500 hover:bg-red-500/10 border border-red-500/5"
@@ -248,7 +273,7 @@ export function ContentReadinessBoard() {
 
                                     {/* Topics Drill-down */}
                                     {expandedNodes[subject.id] ? <div className="ml-6 space-y-1.5 border-l border-primary/10 pl-4 animate-in slide-in-from-top-1">
-                                        {subject.topics?.map((topic: any) => (
+                                        {subject.topics?.map((topic) => (
                                             <div key={topic.id} className="space-y-1.5">
                                                 <div
                                                     onClick={(e) => { e.stopPropagation(); toggleNode(topic.id); }}
@@ -257,7 +282,7 @@ export function ContentReadinessBoard() {
                                                     <div className="flex items-center gap-3">
                                                         <Target size={14} className="text-muted-foreground" />
                                                         <span className="text-[11px] font-bold text-slate-600">{topic.name}</span>
-                                                        <ReadyIndicator isReady={topic.stats.isReady === true} />
+                                                        <ReadyIndicator isReady={topic.stats.isReady} />
                                                     </div>
                                                     <div className="flex items-center gap-3 scale-75 origin-right">
                                                         <StatsBadge label="S" val={topic.stats.simple} target={4} />
@@ -265,7 +290,7 @@ export function ContentReadinessBoard() {
                                                         <StatsBadge label="E" val={topic.stats.expert} target={5} />
                                                         {topic.stats.isReady === false && (
                                                             <button
-                                                                onClick={(e) => { e.stopPropagation(); openHealWizard('topic', { ...topic, subjectName: subject.name }, domain.domainId, domain.domainName); }}
+                                                                onClick={(e) => { e.stopPropagation(); openHealWizard('topic', { ...(topic as unknown as Record<string, unknown>), subjectName: subject.name }, domain.domainId, domain.domainName); }}
                                                                 className="p-1 rounded bg-red-500/10 text-red-500 hover:bg-red-500/20"
                                                             >
                                                                 <Zap size={10} />
@@ -277,7 +302,7 @@ export function ContentReadinessBoard() {
 
                                                 {/* Subtopics Drill-down */}
                                                 {expandedNodes[topic.id] ? <div className="ml-6 space-y-1 pl-4">
-                                                    {topic.subtopics?.map((sub: any) => (
+                                                    {topic.subtopics?.map((sub) => (
                                                         <div key={sub.id} className="flex items-center justify-between p-2 rounded-lg bg-muted/20 text-[10px]">
                                                             <div className="flex items-center gap-2">
                                                                 <MapPin size={10} className="text-muted-foreground" />
@@ -305,7 +330,7 @@ export function ContentReadinessBoard() {
             <HierarchyFactoryWizard
                 isOpen={factoryModal.isOpen}
                 initialData={factoryModal.initialData}
-                onClose={() => setFactoryModal({ isOpen: false, initialData: null })}
+                onClose={() => setFactoryModal({ isOpen: false, initialData: undefined })}
                 onSuccess={() => { void fetch(); }}
             />
 

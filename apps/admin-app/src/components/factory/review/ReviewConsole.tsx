@@ -1,5 +1,4 @@
 'use client';
-/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 
 import {
     CheckCheck,
@@ -11,7 +10,6 @@ import { toast } from 'sonner';
 
 import { ZConfirmationDialog } from '@/components/ui/ZConfirmationDialog';
 import { useFactory } from '@/context/FactoryContext';
-import { cn } from '@/lib/utils';
 import { GeneratedQuestion } from '@/types/factory';
 
 import { QuestionCard } from './QuestionCard';
@@ -96,14 +94,14 @@ export function ReviewConsole() {
     const readyCount = stagedQuestions.length;
 
     const [isSaving, setIsSaving] = React.useState(false);
-    const [officialSkills, setOfficialSkills] = React.useState<any[]>([]);
+    const [officialSkills, setOfficialSkills] = React.useState<Array<{ id: string; name: string }>>([]);
     const [duplicateMap, setDuplicateMap] = React.useState<Map<number, string>>(new Map()); // Index -> Original ID
     const { blueprint } = useFactory();
 
     // Fetch existing skills on mount to prevent duplicates/typos
     React.useEffect(() => {
         const fetchSkills = async () => {
-            if (!blueprint?.topicId) return;
+            if (blueprint.topicId == null || blueprint.topicId === '') return;
             try {
                 // Dynamically import to keep bundle small if needed
                 const { apiClient } = await import('@quiz/api-client');
@@ -114,12 +112,12 @@ export function ReviewConsole() {
             }
         };
         void fetchSkills();
-    }, [blueprint?.topicId]);
+    }, [blueprint.topicId]);
 
     // Check for duplicates when staged questions change
     React.useEffect(() => {
         const checkDuplicates = async () => {
-            if (!blueprint?.topicId || stagedQuestions.length === 0) {
+            if (blueprint.topicId == null || blueprint.topicId === '' || stagedQuestions.length === 0) {
                 setDuplicateMap(new Map());
                 return;
             }
@@ -131,9 +129,9 @@ export function ReviewConsole() {
                     topicId: blueprint.topicId
                 });
 
-                if (result.details && result.details.length > 0) {
-                    const nextMap = new Map();
-                    result.details.forEach((d: any) => nextMap.set(d.index, d.originalId));
+                if (result.details != null && result.details.length > 0) {
+                    const nextMap = new Map<number, string>();
+                    result.details.forEach((d: { index: number; originalId: string }) => nextMap.set(d.index, d.originalId));
                     setDuplicateMap(nextMap);
                 } else {
                     setDuplicateMap(new Map());
@@ -146,7 +144,7 @@ export function ReviewConsole() {
         // Debounce slightly to avoid rapid firing if questions are updated frequently
         const timer = setTimeout(() => { void checkDuplicates(); }, 500);
         return () => clearTimeout(timer);
-    }, [stagedQuestions, blueprint?.topicId]);
+    }, [stagedQuestions, blueprint.topicId]);
 
     const performCommit = async () => {
         setIsSaving(true);
@@ -158,9 +156,9 @@ export function ReviewConsole() {
                 subtopicId: blueprint.subtopicId
             };
 
-            const result = await apiClient.admin.saveFactoryBatch(payload);
+            const result = await apiClient.admin.saveFactoryBatch(payload) as { success: boolean; insertedCount: number; newSkillsCreated: number };
 
-            if (result.success) {
+            if (result.success === true) {
                 toast.success(`Success! Saved ${result.insertedCount} questions and created ${result.newSkillsCreated} new skills.`);
                 resetFactory();
                 window.location.href = '/factory/question-generator';
@@ -174,7 +172,7 @@ export function ReviewConsole() {
     };
 
     const handleSave = async () => {
-        if (!blueprint.topicId) {
+        if (blueprint.topicId == null || blueprint.topicId === '') {
             toast.error("No blueprint context found (Missing Topic). Please return to Ingest.");
             return;
         }
@@ -189,7 +187,7 @@ export function ReviewConsole() {
             return;
         }
 
-        performCommit();
+        void performCommit();
     };
 
     return (
@@ -309,9 +307,9 @@ export function ReviewConsole() {
                             officialSkills={officialSkills}
                             isDuplicate={duplicateMap.has(idx)}
                             isSelected={selectedIndices.has(idx)}
-                            onUpdate={(updates) => handleUpdate(idx, updates)}
+                            onUpdate={(updates: Partial<GeneratedQuestion>) => handleUpdate(idx, updates)}
                             onDelete={() => handleDelete(idx)}
-                            onSelect={(selected) => toggleSelect(idx, selected)}
+                            onSelect={(selected: boolean) => toggleSelect(idx, selected)}
                         />
                     </div>
                 ))}

@@ -6,11 +6,8 @@ import { ZLoader, ZPagination } from '@quiz/ui';
 import { BookOpen, Check, Edit2, Hash, Layers, Plus, Trash, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
-import { ErrorBanner } from '@/components/layout/ErrorBanner';
-import { useDomains, useSubjects } from '@/hooks/useAdminHierarchy';
-import { cn } from '@/lib/utils';
-import { ZPortalModal } from '@/components/ui/ZPortalModal';
 import { SelectField } from '@/components/entry/SelectionFields';
+import { ErrorBanner } from '@/components/layout/ErrorBanner';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -19,9 +16,31 @@ import {
     AlertDialogDescription,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { ZPortalModal } from '@/components/ui/ZPortalModal';
+import { useDomains, useSubjects } from '@/hooks/useAdminHierarchy';
+import { cn } from '@/lib/utils';
+
+interface Topic {
+    id: string;
+    name: string;
+    description?: string;
+    status: 'active' | 'inactive';
+    weight: number;
+    complexityLevel: number;
+    subjectId: string;
+    subject?: {
+        id: string;
+        name: string;
+        domainId: string;
+        domain?: {
+            id: string;
+            name: string;
+        };
+    };
+}
 
 export function TopicTable() {
-    const [data, setData] = useState<any[]>([]);
+    const [data, setData] = useState<Topic[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [page, setPage] = useState(1);
     const [pageSize, setPageSize] = useState(20);
@@ -35,7 +54,7 @@ export function TopicTable() {
     // Modal states
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [isDeleteOpen, setIsDeleteOpen] = useState(false); const [isFactoryOpen, setIsFactoryOpen] = useState(false);
-    const [currentTopic, setCurrentTopic] = useState<any>(null);
+    const [currentTopic, setCurrentTopic] = useState<Topic | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     // Selection State
@@ -84,19 +103,19 @@ export function TopicTable() {
         void fetchTopics();
     }, [page, pageSize, debouncedSearch]);
 
-    const handleOpenForm = (topic: any = null) => {
-        if (topic) {
+    const handleOpenForm = (topic: Topic | null = null) => {
+        if (topic != null) {
             setCurrentTopic(topic);
             setFormData({
                 name: topic.name,
-                subjectId: topic.subjectId || topic.subject?.id || '',
-                description: topic.description || '',
-                status: topic.status || 'active',
-                domainId: topic.subject?.domainId || topic.subject?.domain?.id || '',
-                weight: topic.weight || 1,
-                complexityLevel: topic.complexityLevel || 1
+                subjectId: (topic.subjectId ?? topic.subject?.id ?? ''),
+                description: topic.description ?? '',
+                status: (topic.status ?? 'active') as 'active' | 'inactive',
+                domainId: (topic.subject?.domainId ?? topic.subject?.domain?.id ?? ''),
+                weight: topic.weight ?? 1,
+                complexityLevel: topic.complexityLevel ?? 1
             });
-            if (topic.subject?.domainId) {
+            if (topic.subject?.domainId != null && topic.subject.domainId !== '') {
                 // No manual fetch needed with atomic hooks
             }
         } else {
@@ -198,9 +217,11 @@ export function TopicTable() {
             await apiClient.admin.batchDeleteTopics(Array.from(selectedIds));
             setSelectedIds(new Set());
             setIsDeleteOpen(false);
-            fetchTopics();
-        } catch (error: any) {
-            setErrorMessage(`Batch Deletion Failed: ${error.message}`);
+            setIsDeleteOpen(false);
+            void fetchTopics();
+        } catch (error: unknown) {
+            const msg = error instanceof Error ? error.message : 'Unknown error during batch deletion';
+            setErrorMessage(`Batch Deletion Failed: ${msg}`);
         } finally {
             setIsBatchDeleting(false);
         }
@@ -280,14 +301,14 @@ export function TopicTable() {
                                                 </div>
                                                 <div>
                                                     <p className="font-black text-slate-900 uppercase tracking-tight">{topic.name}</p>
-                                                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-0.5 truncate max-w-[200px]">{topic.description || 'No specialized metadata'}</p>
+                                                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-0.5 truncate max-w-[200px]">{(topic.description != null && topic.description !== '') ? topic.description : 'No specialized metadata'}</p>
                                                 </div>
                                             </div>
                                         </td>
                                         <td className="p-6">
                                             <div className="flex items-center gap-2">
                                                 <span className="px-3 py-1 rounded-full bg-slate-100 border border-slate-200 text-[10px] font-black text-slate-600 uppercase tracking-widest">
-                                                    {topic.subject?.name || 'Unlinked'}
+                                                    {topic.subject?.name != null && topic.subject.name !== '' ? topic.subject.name : 'Unlinked'}
                                                 </span>
                                             </div>
                                         </td>
@@ -400,7 +421,7 @@ export function TopicTable() {
                                     <SelectField
                                         label="Parent Domain"
                                         value={formData.domainId}
-                                        options={domains.map((d: any) => ({ id: d.id, name: d.name }))}
+                                        options={domains?.map((d: any) => ({ id: d.id, name: d.name })) ?? []}
                                         onChange={handleDomainChange}
                                         placeholder="Select Domain"
                                         loading={domainsHook.loading}
@@ -410,7 +431,7 @@ export function TopicTable() {
                                     <SelectField
                                         label="Parent Subject"
                                         value={formData.subjectId}
-                                        options={subjects.map((s: any) => ({ id: s.id, name: s.name }))}
+                                        options={subjects?.map((s: any) => ({ id: s.id, name: s.name })) ?? []}
                                         onChange={(val: string) => setFormData({ ...formData, subjectId: val })}
                                         placeholder="Select Subject"
                                         loading={subjectsHook.loading}

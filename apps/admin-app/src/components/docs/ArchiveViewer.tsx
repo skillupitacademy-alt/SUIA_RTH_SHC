@@ -1,5 +1,5 @@
 import { ZLoader } from '@quiz/ui';
-import { Archive, CornerDownRight,FileText, History, Lock, Share2 } from 'lucide-react';
+import { Archive, CornerDownRight, FileText, History, Lock, Share2 } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -27,7 +27,7 @@ export function ArchiveViewer({ path }: ArchiveViewerProps) {
             }
         };
 
-        fetchContent();
+        void fetchContent();
     }, [path]);
 
     if (isLoading) {

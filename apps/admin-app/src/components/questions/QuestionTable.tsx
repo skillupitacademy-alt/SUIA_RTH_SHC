@@ -1,5 +1,4 @@
 'use client';
-/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 
 import { apiClient } from '@quiz/api-client';
 import { ZLoader, ZPagination } from '@quiz/ui';
@@ -8,7 +7,6 @@ import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 import { CascadingSelect, Selection } from '@/components/entry/CascadingSelect';
-import { useAllSkills } from '@/hooks/useAdminHierarchy';
 
 import { QuestionReviewCard } from './QuestionReviewCard';
 
@@ -20,8 +18,10 @@ interface QuestionData {
     status: string;
     createdAt: string;
     mappingType?: string;
+    options?: (string | { text: string; isCorrect: boolean })[];
     questionSkills?: Array<{
         skill: {
+            id: string;
             name: string;
             category: string;
         }
@@ -44,7 +44,6 @@ export function QuestionTable() {
     const [pageSize, setPageSize] = useState(20);
     const [totalPages, setTotalPages] = useState(1);
     const [totalCount, setTotalCount] = useState(0);
-    const skills = useAllSkills();
 
     // Phase 8: Filters
     const [filters, setFilters] = useState({
@@ -54,7 +53,6 @@ export function QuestionTable() {
         subtopicId: '',
         skillIds: [] as string[]
     });
-    const [isFiltering, setIsFiltering] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [debouncedSearch, setDebouncedSearch] = useState('');
 
@@ -76,21 +74,21 @@ export function QuestionTable() {
     const handleFilterChange = useCallback((selection: Selection) => {
         setFilters(prev => {
             if (
-                prev.domainId === (selection.domainId || '') &&
-                prev.subjectId === (selection.subjectId || '') &&
-                prev.topicId === (selection.topicId || '') &&
-                prev.subtopicId === (selection.subtopicId || '') &&
+                prev.domainId === (selection.domainId ?? '') &&
+                prev.subjectId === (selection.subjectId ?? '') &&
+                prev.topicId === (selection.topicId ?? '') &&
+                prev.subtopicId === (selection.subtopicId ?? '') &&
                 JSON.stringify(prev.skillIds) === JSON.stringify(selection.skillIds)
             ) {
                 return prev;
             }
             return {
                 ...prev,
-                domainId: selection.domainId || '',
-                subjectId: selection.subjectId || '',
-                topicId: selection.topicId || '',
-                subtopicId: selection.subtopicId || '',
-                skillIds: selection.skillIds || []
+                domainId: (selection.domainId != null && selection.domainId !== '') ? selection.domainId : '',
+                subjectId: (selection.subjectId != null && selection.subjectId !== '') ? selection.subjectId : '',
+                topicId: (selection.topicId != null && selection.topicId !== '') ? selection.topicId : '',
+                subtopicId: (selection.subtopicId != null && selection.subtopicId !== '') ? selection.subtopicId : '',
+                skillIds: (selection.skillIds != null) ? selection.skillIds : []
             };
         });
         setPage(1);
@@ -102,16 +100,16 @@ export function QuestionTable() {
             setIsLoading(true);
             try {
                 const data = await apiClient.admin.getQuestions(page, pageSize, {
-                    domainId: filters.domainId || undefined,
-                    subjectId: filters.subjectId || undefined,
-                    topicId: filters.topicId || undefined,
-                    subtopicId: filters.subtopicId || undefined,
+                    domainId: (filters.domainId != null && filters.domainId !== '') ? filters.domainId : undefined,
+                    subjectId: (filters.subjectId != null && filters.subjectId !== '') ? filters.subjectId : undefined,
+                    topicId: (filters.topicId != null && filters.topicId !== '') ? filters.topicId : undefined,
+                    subtopicId: (filters.subtopicId != null && filters.subtopicId !== '') ? filters.subtopicId : undefined,
                     skillIds: filters.skillIds.length > 0 ? filters.skillIds : undefined,
-                    search: debouncedSearch || undefined,
+                    search: (debouncedSearch != null && debouncedSearch !== '') ? debouncedSearch : undefined,
                 });
                 setQuestions(data.questions);
                 setTotalPages(data.totalPages);
-                setTotalCount(data.total || data.questions.length); // Fallback if total is missing
+                setTotalCount(data.total ?? data.questions.length); // Fallback if total is missing
             } catch (error) {
                 console.error('Failed to fetch questions:', error);
                 // We keep silence for main table load but could set an error state if requested
@@ -209,8 +207,8 @@ export function QuestionTable() {
                                     className="w-full bg-slate-50 border-none rounded-2xl pl-12 pr-6 py-3.5 text-[11px] font-black tracking-widest text-[#1A1A1A] placeholder:text-slate-300 focus:ring-2 focus:ring-[#FF4B91]/10 transition-all outline-none border border-transparent shadow-inner"
                                 />
                             </div>
-                            {/* eslint-disable-next-line @typescript-eslint/strict-boolean-expressions */}
-                            {(filters.domainId || filters.subjectId || filters.topicId || filters.subtopicId || filters.skillIds.length > 0 || searchQuery) ? <button
+
+                            {(filters.domainId !== '' || filters.subjectId !== '' || filters.topicId !== '' || filters.subtopicId !== '' || filters.skillIds.length > 0 || searchQuery !== '') ? <button
                                 onClick={() => {
                                     setFilters({ domainId: '', subjectId: '', topicId: '', subtopicId: '', skillIds: [] });
                                     setSearchQuery('');
@@ -225,7 +223,7 @@ export function QuestionTable() {
 
                     <div className="space-y-6">
                         <CascadingSelect
-                            value={filters as any}
+                            value={filters as { domainId: string | null; subjectId: string | null; topicId: string | null; subtopicId: string | null; skillIds: string[]; }}
                             onChange={handleFilterChange}
                         />
                     </div>
@@ -233,19 +231,19 @@ export function QuestionTable() {
 
                 {/* Question Stack Area */}
                 <div className="relative min-h-[400px]">
-                    {isLoading ? <div className="absolute inset-0 z-40 bg-white/60 backdrop-blur-sm flex items-center justify-center animate-in fade-in duration-300 rounded-[1.75rem]">
+                    {isLoading === true ? <div className="absolute inset-0 z-40 bg-white/60 backdrop-blur-sm flex items-center justify-center animate-in fade-in duration-300 rounded-[1.75rem]">
                         <ZLoader text="Synchronizing Matrix_" />
                     </div> : null}
 
                     {/* Question List */}
                     <div className="space-y-6">
-                        {questions.length === 0 && (
+                        {questions.length === 0 ? (
                             <div className="text-center py-24 opacity-50">
                                 <Hash className="w-16 h-16 mx-auto mb-4 text-slate-300" />
                                 <p className="text-sm font-bold text-slate-500 uppercase tracking-widest">No Intelligence Assets Found</p>
                             </div>
-                        )}
-                        {questions.length > 0 && questions.map((q, idx) => (
+                        ) : null}
+                        {questions.length > 0 ? questions.map((q, idx) => (
                             <QuestionReviewCard
                                 key={q.id}
                                 question={q}
@@ -254,11 +252,11 @@ export function QuestionTable() {
                                 onSelect={toggleSelect}
                                 onDeleteRequest={openDeleteModal}
                             />
-                        ))}
+                        )) : null}
                     </div>
 
                     {/* Floating Command Bar */}
-                    {selectedIds.size > 0 && (
+                    {selectedIds.size > 0 ? (
                         <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-bottom-5 duration-500">
                             <div className="bg-slate-900/90 backdrop-blur-2xl border border-white/10 rounded-full px-8 py-4 shadow-[0_20px_50px_rgba(0,0,0,0.3)] flex items-center gap-8 min-w-[500px]">
                                 <div className="flex items-center gap-4 border-r border-white/10 pr-8">
@@ -284,7 +282,7 @@ export function QuestionTable() {
                                         disabled={isBatchDeleting}
                                         className="px-6 py-2.5 rounded-xl bg-red-500 text-white text-[10px] font-black uppercase tracking-widest hover:bg-red-600 transition-all shadow-lg shadow-red-500/20 flex items-center gap-2 group disabled:opacity-50"
                                     >
-                                        {isBatchDeleting ? (
+                                        {isBatchDeleting === true ? (
                                             <ZLoader size="xs" className="text-white" center={false} />
                                         ) : (
                                             <>
@@ -303,7 +301,7 @@ export function QuestionTable() {
                                 </button>
                             </div>
                         </div>
-                    )}
+                    ) : null}
                 </div>
             </div>
 
@@ -339,7 +337,7 @@ export function QuestionTable() {
                         </div>
 
                         <div className="flex flex-col gap-3 w-full pt-4">
-                            {deleteModal.error !== null ? <div className="mb-4 p-4 bg-red-50 border border-red-100 rounded-2xl text-red-600 text-xs font-bold animate-in slide-in-from-top-2 duration-300">
+                            {deleteModal.error != null && deleteModal.error !== '' ? <div className="mb-4 p-4 bg-red-50 border border-red-100 rounded-2xl text-red-600 text-xs font-bold animate-in slide-in-from-top-2 duration-300">
                                 {deleteModal.error}
                             </div> : null}
                             <button
@@ -347,7 +345,7 @@ export function QuestionTable() {
                                 disabled={deleteModal.isDeleting}
                                 className="flex items-center justify-center gap-2 w-full py-4 bg-red-600 hover:bg-red-700 text-white text-xs font-black uppercase tracking-[0.2em] rounded-2xl shadow-lg shadow-red-200 active:scale-95 transition-all disabled:opacity-50"
                             >
-                                {deleteModal.isDeleting ? <ZLoader size="xs" className="text-white" center={false} /> : 'Delete Question'}
+                                {deleteModal.isDeleting === true ? <ZLoader size="xs" className="text-white" center={false} /> : 'Delete Question'}
                             </button>
                             <button
                                 onClick={handleCloseDelete}

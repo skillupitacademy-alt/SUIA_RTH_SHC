@@ -2,8 +2,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import {
-BookOpen, Clock,     Edit2, Layers,
-Trash2} from 'lucide-react';
+    BookOpen, Clock, Edit2, Layers,
+    Trash2
+} from 'lucide-react';
 import React from 'react';
 
 import { cn, formatTimeAgo } from '@/lib/utils';
@@ -36,7 +37,7 @@ export function SubjectReviewCard({
             isSelected && "ring-2 ring-purple-500 border-transparent shadow-2xl bg-purple-500/[0.01]"
         )}>
             {/* SELECTION OVERLAY GLOW */}
-            {isSelected ? <div className="absolute inset-0 bg-purple-500/[0.02] pointer-events-none animate-in fade-in duration-500" /> : null}
+            {isSelected === true ? <div className="absolute inset-0 bg-purple-500/[0.02] pointer-events-none animate-in fade-in duration-500" /> : null}
 
             {/* Header Area: Status */}
             <div className="px-8 py-5 border-b border-slate-100 flex flex-wrap items-center justify-between gap-4 bg-slate-50/50">
@@ -46,14 +47,14 @@ export function SubjectReviewCard({
                         <input
                             type="checkbox"
                             checked={isSelected}
-                            onChange={(e) => onSelect?.(subject.id, e.target.checked)}
+                            onChange={(e) => onSelect?.(subject.id as string, e.target.checked)}
                             className="w-5 h-5 rounded-lg border-2 border-slate-200 text-purple-500 focus:ring-purple-500/20 cursor-pointer transition-all checked:border-purple-500"
                         />
                     </div>
 
                     <div className={cn(
                         "w-10 h-10 rounded-2xl flex items-center justify-center font-bold border-2 transition-all duration-300",
-                        isSelected ? "bg-indigo-600 text-white border-indigo-600 shadow-lg" : "bg-indigo-50 text-indigo-600 border-indigo-100"
+                        isSelected === true ? "bg-indigo-600 text-white border-indigo-600 shadow-lg" : "bg-indigo-50 text-indigo-600 border-indigo-100"
                     )}>
                         #{index + 1}
                     </div>
@@ -61,19 +62,19 @@ export function SubjectReviewCard({
                     <div className="flex flex-col">
                         <div className="flex items-center gap-2 text-[10px] uppercase font-black tracking-widest text-slate-500">
                             <Layers size={10} className="text-slate-500" />
-                            <span>{subject.domain?.name || 'Unlinked'}</span>
+                            <span>{(subject.domain?.name != null && subject.domain.name !== '') ? (subject.domain.name as string) : 'Unlinked'}</span>
                         </div>
-                        <p className="text-[10px] font-bold text-slate-500 mt-0.5">SID: {subject.id}</p>
+                        <p className="text-[10px] font-bold text-slate-500 mt-0.5">SID: {subject.id as string}</p>
                     </div>
                 </div>
 
                 <div className="flex items-center gap-2">
                     <div className={cn(
                         "px-3 py-1 rounded-full border text-[9px] font-black uppercase tracking-widest flex items-center gap-1.5",
-                        statusColors[subject.status] || statusColors.active
+                        (subject.status != null && statusColors[subject.status as string] != null) ? statusColors[subject.status as string] : statusColors.active
                     )}>
                         <div className={cn("w-1 h-1 rounded-full", subject.status === 'active' ? "bg-emerald-500 animate-pulse" : "bg-slate-500")} />
-                        {subject.status}
+                        {subject.status as string}
                     </div>
 
                     <div className="w-[1px] h-6 bg-slate-200 mx-2" />
@@ -104,14 +105,14 @@ export function SubjectReviewCard({
                             <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-500">Hierarchy Root</h4>
                             <div className="flex items-center gap-2 text-purple-600">
                                 <Layers size={14} />
-                                <span className="text-sm font-black uppercase tracking-tight">{subject.domain?.name || 'Unlinked'}</span>
+                                <span className="text-sm font-black uppercase tracking-tight">{(subject.domain?.name != null && subject.domain.name !== '') ? (subject.domain.name as string) : 'Unlinked'}</span>
                             </div>
                         </div>
                     </div>
 
                     <div className="flex items-center gap-2 px-4 py-3 rounded-2xl bg-slate-50/50 border border-slate-100 text-[10px] font-bold text-slate-500">
                         <Clock size={12} />
-                        <span>Created {formatTimeAgo(subject.createdAt)}</span>
+                        <span>Created {formatTimeAgo(subject.createdAt as string)}</span>
                     </div>
                 </div>
 
@@ -124,10 +125,10 @@ export function SubjectReviewCard({
                             </div>
                             <div className="flex-1">
                                 <h3 className="text-xl font-black text-slate-800 tracking-tight leading-none mb-2">
-                                    {subject.name}
+                                    {subject.name as string}
                                 </h3>
                                 <p className="text-sm text-slate-600 font-medium leading-relaxed max-w-2xl">
-                                    {subject.description || 'No formal definition provided.'}
+                                    {(subject.description != null && subject.description !== '') ? (subject.description as string) : 'No formal definition provided.'}
                                 </p>
                             </div>
                         </div>
@@ -137,7 +138,7 @@ export function SubjectReviewCard({
                     <div className="flex flex-wrap gap-3 pl-12">
                         <div className="px-4 py-2 rounded-xl bg-slate-50 border border-slate-100 flex items-center gap-2">
                             <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Topics:</span>
-                            <span className="text-xs font-bold text-slate-700">{subject.topicsCount || subject.topics?.length || 0}</span>
+                            <span className="text-xs font-bold text-slate-700">{(subject.topicsCount != null && subject.topicsCount !== 0) ? (subject.topicsCount as number) : (subject.topics?.length ?? 0)}</span>
                         </div>
                     </div>
                 </div>

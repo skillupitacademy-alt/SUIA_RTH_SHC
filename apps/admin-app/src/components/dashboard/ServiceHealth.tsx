@@ -31,8 +31,9 @@ export function ServiceHealth() {
             const res = await apiClient.admin.getSystemUsage();
             setData(res);
             setError(null);
-        } catch (err: any) {
-            console.error('Failed to fetch system usage:', err);
+        } catch (err: unknown) {
+            const msg = err instanceof Error ? err.message : 'Unknown system fault';
+            console.error('Failed to fetch system usage:', msg);
             setError('Failed to load system health.');
         } finally {
             setLoading(false);

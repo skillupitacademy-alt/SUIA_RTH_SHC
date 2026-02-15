@@ -2,8 +2,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import {
-Cpu,
-    Edit2, Hash, Shield, Trash2, Zap} from 'lucide-react';
+    Cpu,
+    Edit2, Hash, Shield, Trash2, Zap
+} from 'lucide-react';
 import React from 'react';
 
 import { cn } from '@/lib/utils';
@@ -48,7 +49,7 @@ export function SkillReviewCard({
             isSelected && "ring-2 ring-cyan-500 border-transparent shadow-2xl bg-cyan-500/[0.01]"
         )}>
             {/* SELECTION OVERLAY GLOW */}
-            {isSelected ? <div className="absolute inset-0 bg-cyan-500/[0.02] pointer-events-none animate-in fade-in duration-500" /> : null}
+            {isSelected === true ? <div className="absolute inset-0 bg-cyan-500/[0.02] pointer-events-none animate-in fade-in duration-500" /> : null}
 
             {/* Header Area: Status */}
             <div className="px-8 py-5 border-b border-slate-100 flex flex-wrap items-center justify-between gap-4 bg-slate-50/50">
@@ -58,14 +59,14 @@ export function SkillReviewCard({
                         <input
                             type="checkbox"
                             checked={isSelected}
-                            onChange={(e) => onSelect?.(skill.id, e.target.checked)}
+                            onChange={(e) => onSelect?.(skill.id as string, e.target.checked)}
                             className="w-5 h-5 rounded-lg border-2 border-slate-200 text-cyan-500 focus:ring-cyan-500/20 cursor-pointer transition-all checked:border-cyan-500"
                         />
                     </div>
 
                     <div className={cn(
                         "w-10 h-10 rounded-2xl flex items-center justify-center font-bold border-2 transition-all duration-300",
-                        isSelected ? "bg-cyan-600 text-white border-cyan-600 shadow-lg" : "bg-cyan-50 text-cyan-600 border-cyan-100"
+                        isSelected === true ? "bg-cyan-600 text-white border-cyan-600 shadow-lg" : "bg-cyan-50 text-cyan-600 border-cyan-100"
                     )}>
                         #{index + 1}
                     </div>
@@ -73,16 +74,16 @@ export function SkillReviewCard({
                     <div className="flex flex-col">
                         <div className="flex items-center gap-2 text-[10px] uppercase font-black tracking-widest text-slate-500">
                             <Hash size={10} className="text-slate-500" />
-                            <span>{SKILL_CATEGORIES[skill.category] || skill.category || 'Technical'}</span>
+                            <span>{(skill.category != null && SKILL_CATEGORIES[skill.category as string] != null) ? SKILL_CATEGORIES[skill.category as string] : (skill.category as string | undefined) ?? 'Technical'}</span>
                         </div>
-                        <p className="text-[10px] font-bold text-slate-500 mt-0.5">KID: {skill.id.split('-')[0]}...</p>
+                        <p className="text-[10px] font-bold text-slate-500 mt-0.5">KID: {(skill.id as string).split('-')[0]}...</p>
                     </div>
                 </div>
 
                 <div className="flex items-center gap-2">
                     <div className="px-3 py-1 rounded-full border border-slate-200 bg-slate-50 text-slate-500 text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5">
                         <Cpu size={10} />
-                        {skill.mappingType || 'conceptual'}
+                        {(skill.mappingType as string | undefined) ?? 'conceptual'}
                     </div>
 
                     <div className="w-[1px] h-6 bg-slate-200 mx-2" />
@@ -113,21 +114,21 @@ export function SkillReviewCard({
                             <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-500">Classification</h4>
                             <div className="flex items-center gap-2 text-cyan-600">
                                 <Hash size={14} />
-                                <span className="text-sm font-black uppercase tracking-tight">{SKILL_CATEGORIES[skill.category] || skill.category || 'General'}</span>
+                                <span className="text-sm font-black uppercase tracking-tight">{(skill.category != null && SKILL_CATEGORIES[skill.category as string] != null) ? SKILL_CATEGORIES[skill.category as string] : (skill.category as string | undefined) ?? 'General'}</span>
                             </div>
                         </div>
                         <div className="flex flex-col gap-1 border-t border-slate-200 pt-4">
                             <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-500">Application</h4>
                             <div className="flex items-center gap-2 text-slate-600">
                                 <Cpu size={14} />
-                                <span className="text-sm font-black uppercase tracking-tight">{skill.mappingType || 'conceptual'}</span>
+                                <span className="text-sm font-black uppercase tracking-tight">{(skill.mappingType as string | undefined) ?? 'conceptual'}</span>
                             </div>
                         </div>
                         <div className="flex flex-col gap-1 border-t border-slate-200 pt-4">
                             <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-500">Global Weight</h4>
                             <div className="flex items-center gap-2 text-amber-600">
                                 <Zap size={14} className="text-amber-500" />
-                                <span className="text-sm font-black uppercase tracking-tight">Impact: {skill.weight || 1}</span>
+                                <span className="text-sm font-black uppercase tracking-tight">Impact: {(skill.weight != null && skill.weight !== 0) ? (skill.weight as number) : 1}</span>
                             </div>
                         </div>
                     </div>
@@ -142,7 +143,7 @@ export function SkillReviewCard({
                             </div>
                             <div className="flex-1">
                                 <h3 className="text-xl font-black text-slate-800 tracking-tight leading-none mb-2">
-                                    {skill.name}
+                                    {skill.name as string}
                                 </h3>
                             </div>
                         </div>

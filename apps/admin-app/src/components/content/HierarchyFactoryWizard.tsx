@@ -1,5 +1,4 @@
 'use client';
-/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 
 import { apiClient } from '@quiz/api-client';
 import { ZLoader } from '@quiz/ui';
@@ -29,15 +28,50 @@ import { SelectField } from '@/components/entry/SelectionFields';
 import { ZTooltip } from '@/components/ui/ZTooltip';
 import { cn } from '@/lib/utils';
 
+export interface HierarchyInitialData {
+    target?: string;
+    domainId?: string;
+    domainName?: string;
+    subjectId?: string;
+    subjectName?: string;
+    topicId?: string;
+    topicName?: string;
+}
+
 interface HierarchyFactoryWizardProps {
     isOpen: boolean;
     onClose: () => void;
-    initialData?: any;
+    initialData?: HierarchyInitialData;
     onSuccess?: () => void;
 }
 
 type ExecutionStep = 'idle' | 'lookup' | 'transaction' | 'filter' | 'done';
 type FactoryMode = 'manual' | 'bulk';
+
+interface DomainOption { domainId: string; domainName: string; }
+interface SubjectOption { id: string; name: string; }
+interface TopicOption { id: string; name: string; }
+
+interface QuestionStats {
+    simple: number;
+    intermediate: number;
+    expert: number;
+    total: number;
+}
+
+interface BlueprintModalState {
+    isOpen: boolean;
+    domainId: string;
+    domainName: string;
+    questionIds: string[];
+    questionStats: QuestionStats | null;
+}
+interface AtomicSeedSuccess {
+    domainId: string;
+    questionIds?: string[];
+    questionStats?: QuestionStats | null;
+    stats?: Record<string, { added: number; skipped: number }>;
+}
 
 export function HierarchyFactoryWizard({ isOpen, onClose, initialData, onSuccess }: HierarchyFactoryWizardProps) {
     const [mode, setMode] = useState<FactoryMode>('manual');
@@ -47,37 +81,45 @@ export function HierarchyFactoryWizard({ isOpen, onClose, initialData, onSuccess
     const [isProcessing, setIsProcessing] = useState(false);
     const [executionStep, setExecutionStep] = useState<ExecutionStep>('idle');
     const [error, setError] = useState<string | null>(null);
-    const [success, setSuccess] = useState<any>(null);
+    const [success, setSuccess] = useState<AtomicSeedSuccess | null>(null);
     const [isMounted, setIsMounted] = useState(false);
-    const [blueprintModal, setBlueprintModal] = useState({
+
+    const [blueprintModal, setBlueprintModal] = useState<BlueprintModalState>({
         isOpen: false,
         domainId: '',
         domainName: '',
-        questionIds: [] as string[],
-        questionStats: null as any
+        questionIds: [],
+        questionStats: null
     });
+
     const [existingDomains, setExistingDomains] = useState<string[]>([]);
     const [hierarchicalChoices, setHierarchicalChoices] = useState({
-        domains: [] as any[],
-        subjects: [] as any[],
-        topics: [] as any[]
+        domains: [] as DomainOption[],
+        subjects: [] as SubjectOption[],
+        topics: [] as TopicOption[]
     });
     const [loadingChoices, setLoadingChoices] = useState({
         domains: false,
         subjects: false,
         topics: false
     });
-    const [selections, setSelections] = useState({
-        domainId: initialData?.domainId || '',
-        subjectId: initialData?.subjectId || '',
-        topicId: initialData?.topicId || ''
+    interface SelectionState {
+        domainId: string;
+        subjectId: string;
+        topicId: string;
+    }
+
+    const [selections, setSelections] = useState<SelectionState>({
+        domainId: (initialData?.domainId != null && initialData.domainId !== '' ? initialData.domainId : ''),
+        subjectId: (initialData?.subjectId != null && initialData.subjectId !== '' ? initialData.subjectId : ''),
+        topicId: (initialData?.topicId != null && initialData.topicId !== '' ? initialData.topicId : '')
     });
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         setIsMounted(true);
         if (isOpen === true) {
-            fetchExistingDomains();
+            void fetchExistingDomains();
         }
     }, [isOpen]);
 
@@ -85,8 +127,8 @@ export function HierarchyFactoryWizard({ isOpen, onClose, initialData, onSuccess
         setLoadingChoices(prev => ({ ...prev, domains: true }));
         try {
             const data = await apiClient.admin.getContentHealthReport();
-            setExistingDomains(data.map((d: any) => d.domainName));
-            setHierarchicalChoices(prev => ({ ...prev, domains: data }));
+            setExistingDomains(data.map((d: { domainName: string }) => d.domainName));
+            setHierarchicalChoices(prev => ({ ...prev, domains: data as DomainOption[] }));
         } catch (e) {
             console.error("Failed to fetch existing domains", e);
         } finally {
@@ -96,11 +138,11 @@ export function HierarchyFactoryWizard({ isOpen, onClose, initialData, onSuccess
 
     useEffect(() => {
         const fetchSubjects = async () => {
-            if (selections.domainId !== undefined && selections.domainId !== null && selections.domainId !== '') {
+            if (selections.domainId != null && selections.domainId !== '') {
                 setLoadingChoices(prev => ({ ...prev, subjects: true }));
                 try {
                     const data = await apiClient.admin.getSubjectsByDomain(selections.domainId);
-                    setHierarchicalChoices(prev => ({ ...prev, subjects: data }));
+                    setHierarchicalChoices(prev => ({ ...prev, subjects: data as SubjectOption[] }));
                 } catch (e) { console.error(e); }
                 finally { setLoadingChoices(prev => ({ ...prev, subjects: false })); }
             } else {
@@ -116,7 +158,7 @@ export function HierarchyFactoryWizard({ isOpen, onClose, initialData, onSuccess
                 setLoadingChoices(prev => ({ ...prev, topics: true }));
                 try {
                     const data = await apiClient.admin.getTopicsBySubject(selections.subjectId);
-                    setHierarchicalChoices(prev => ({ ...prev, topics: data }));
+                    setHierarchicalChoices(prev => ({ ...prev, topics: data as TopicOption[] }));
                 } catch (e) { console.error(e); }
                 finally { setLoadingChoices(prev => ({ ...prev, topics: false })); }
             } else {
@@ -139,13 +181,13 @@ export function HierarchyFactoryWizard({ isOpen, onClose, initialData, onSuccess
 
     // AI Prompt Generation Logic
     const generateAiPrompt = () => {
-        const target = initialData?.target || 'hierarchy';
+        const target = (initialData?.target != null && initialData.target !== '') ? initialData.target : 'hierarchy';
 
         // Resolve parent names from either initialData or state lookups
         // Resolve parent names dynamically from state first (enabling context switching), backing off to initialData only if needed.
-        const domainName = hierarchicalChoices.domains.find(d => d.domainId === selections.domainId)?.domainName || (selections.domainId === initialData?.domainId ? initialData?.domainName : null) || "Selected Domain";
-        const subjectName = hierarchicalChoices.subjects.find(s => s.id === selections.subjectId)?.name || (selections.subjectId === initialData?.subjectId ? initialData?.subjectName : null) || "Selected Subject";
-        const topicName = hierarchicalChoices.topics.find(t => t.id === selections.topicId)?.name || (selections.topicId === initialData?.topicId ? initialData?.topicName : null) || "Selected Topic";
+        const domainName = hierarchicalChoices.domains.find(d => d.domainId === selections.domainId)?.domainName ?? (selections.domainId === initialData?.domainId ? initialData?.domainName : null) ?? "Selected Domain";
+        const subjectName = hierarchicalChoices.subjects.find(s => s.id === selections.subjectId)?.name ?? (selections.subjectId === initialData?.subjectId ? initialData?.subjectName : null) ?? "Selected Subject";
+        const topicName = hierarchicalChoices.topics.find(t => t.id === selections.topicId)?.name ?? (selections.topicId === initialData?.topicId ? initialData?.topicName : null) ?? "Selected Topic";
 
         const base = `I need to generate a structured educational hierarchy.
         
@@ -303,7 +345,7 @@ Please provide a valid JSON object matching this schema:
     };
 
     const copyToClipboard = (text: string) => {
-        navigator.clipboard.writeText(text);
+        void navigator.clipboard.writeText(text);
     };
 
     const handleCreate = async () => {
@@ -321,9 +363,9 @@ Please provide a valid JSON object matching this schema:
 
             setExecutionStep('filter');
 
-            let finalData: any = {};
+            let finalData: Record<string, unknown> = {};
             if (mode === 'manual') {
-                const target = initialData?.target || 'domain';
+                const target = (initialData?.target != null && initialData.target !== '') ? initialData.target : 'domain';
                 if (target === 'domain') finalData = { domainName: manualEntry.name };
                 if (target === 'subject') finalData = { domainId: selections.domainId, subjects: [{ name: manualEntry.name }] };
                 if (target === 'topic') finalData = { domainId: selections.domainId, subjects: [{ id: selections.subjectId, topics: [{ name: manualEntry.name }] }] };
@@ -339,109 +381,26 @@ Please provide a valid JSON object matching this schema:
                 };
                 if (target === 'skill') finalData = { batchSkills: [{ name: manualEntry.name }] };
             } else {
-                finalData = JSON.parse(payload);
+                finalData = JSON.parse(payload) as Record<string, unknown>;
             }
 
-            const result = await apiClient.admin.atomicSeed(finalData);
+            const result = await apiClient.admin.atomicSeed(finalData) as AtomicSeedSuccess;
 
             setExecutionStep('done');
             await new Promise(r => setTimeout(r, 400));
 
             setSuccess(result);
             if (onSuccess) onSuccess();
-        } catch (err: any) {
-            setError(err.message || "Failed to process hierarchy factory request. Please verify your data.");
+        } catch (err: unknown) {
+            const msg = err instanceof Error ? err.message : "Failed to process hierarchy factory request. Please verify your data.";
+            setError(msg);
             setExecutionStep('idle');
         } finally {
             setIsProcessing(false);
         }
     };
 
-    const generateTemplate = () => {
-        const target = initialData?.target || 'hierarchy';
-        let template: any = {};
 
-        if (target === 'domain') {
-            template = {
-                batchDomains: [
-                    { name: "string", description: "string", category: "string" }
-                ]
-            };
-        } else if (target === 'subject') {
-            template = {
-                domainId: selections.domainId || "DOMAIN_UUID",
-                subjects: [
-                    { name: "string" }
-                ]
-            };
-        } else if (target === 'topic') {
-            template = {
-                domainId: selections.domainId || "DOMAIN_UUID",
-                subjects: [{
-                    id: selections.subjectId || "SUBJECT_UUID",
-                    topics: [
-                        { name: "string", weight: 1, complexityLevel: 1 }
-                    ]
-                }]
-            };
-        } else if (target === 'subtopic') {
-            template = {
-                domainId: selections.domainId || "DOMAIN_UUID",
-                subjects: [{
-                    id: selections.subjectId || "SUBJECT_UUID",
-                    topics: [{
-                        id: selections.topicId || "TOPIC_UUID",
-                        subtopics: [
-                            {
-                                name: "string",
-                                depthLevel: 1,
-                                questions: [{
-                                    questionText: "string",
-                                    options: ["A", "B", "C", "D"],
-                                    correctAnswer: "string",
-                                    difficulty: "simple|intermediate|expert",
-                                    mappingType: "conceptual|technical|practical",
-                                    skillNames: ["Skill A", "Skill B"]
-                                }]
-                            }
-                        ]
-                    }]
-                }]
-            };
-        } else if (target === 'skill') {
-            template = {
-                batchSkills: [
-                    { name: "string", category: "technical|conceptual|process", mappingType: "conceptual|technical|practical" }
-                ]
-            };
-        } else {
-            // Default Hierarchy template
-            template = {
-                domainName: "ENTER_NEW_DOMAIN",
-                subjects: [{
-                    name: "TOPIC_AREA_1",
-                    topics: [{
-                        name: "SPECIFIC_TOPIC",
-                        questions: [
-                            {
-                                questionText: "Sample Question?",
-                                options: [
-                                    { text: "Correct Ans", isCorrect: true },
-                                    { text: "Wrong Ans", isCorrect: false }
-                                ],
-                                correctAnswer: "Correct Ans",
-                                difficulty: "intermediate",
-                                mappingType: "technical"
-                            }
-                        ]
-                    }]
-                }]
-            };
-        }
-
-        setPayload(JSON.stringify(template, null, 2));
-        setShowEditor(true);
-    };
 
     const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -489,10 +448,10 @@ Please provide a valid JSON object matching this schema:
                     </ZTooltip>
                     <ZTooltip content={
                         (() => {
-                            const t = initialData?.target || 'domain';
-                            if (t === 'subject' && !selections.domainId) return "Locked: Select a Target Domain to unlock Bulk Factory.";
-                            if (t === 'topic' && (!selections.domainId || !selections.subjectId)) return "Locked: Select Domain and Subject to unlock Bulk Factory.";
-                            if (t === 'subtopic' && (!selections.domainId || !selections.subjectId || !selections.topicId)) return "Locked: Select Domain, Subject, and Topic to unlock Bulk Factory.";
+                            const t = initialData?.target != null && initialData.target !== '' ? initialData.target : 'domain';
+                            if (t === 'subject' && (selections.domainId == null || selections.domainId === '')) return "Locked: Select a Target Domain to unlock Bulk Factory.";
+                            if (t === 'topic' && ((selections.domainId == null || selections.domainId === '') || (selections.subjectId == null || selections.subjectId === ''))) return "Locked: Select Domain and Subject to unlock Bulk Factory.";
+                            if (t === 'subtopic' && ((selections.domainId == null || selections.domainId === '') || (selections.subjectId == null || selections.subjectId === '') || (selections.topicId == null || selections.topicId === ''))) return "Locked: Select Domain, Subject, and Topic to unlock Bulk Factory.";
                             return "Switch to Bulk Engine: Use AI prompts or JSON manifests to insert entire hierarchical branches at once.";
                         })()
                     } side="bottom">
@@ -500,32 +459,32 @@ Please provide a valid JSON object matching this schema:
                             <button
                                 onClick={() => setMode('bulk')}
                                 disabled={(() => {
-                                    const t = initialData?.target || 'domain';
-                                    if (t === 'subject' && !selections.domainId) return true;
-                                    if (t === 'topic' && (!selections.domainId || !selections.subjectId)) return true;
-                                    if (t === 'subtopic' && (!selections.domainId || !selections.subjectId || !selections.topicId)) return true;
+                                    const t = initialData?.target != null && initialData.target !== '' ? initialData.target : 'domain';
+                                    if (t === 'subject' && (selections.domainId == null || selections.domainId === '')) return true;
+                                    if (t === 'topic' && ((selections.domainId == null || selections.domainId === '') || (selections.subjectId == null || selections.subjectId === ''))) return true;
+                                    if (t === 'subtopic' && ((selections.domainId == null || selections.domainId === '') || (selections.subjectId == null || selections.subjectId === '') || (selections.topicId == null || selections.topicId === ''))) return true;
                                     return false;
                                 })()}
                                 className={cn(
                                     "px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
                                     mode === 'bulk' ? "bg-white text-primary shadow-sm" : "text-muted-foreground hover:text-primary",
                                     (() => {
-                                        const t = initialData?.target || 'domain';
-                                        if (t === 'subject' && !selections.domainId) return true;
-                                        if (t === 'topic' && (!selections.domainId || !selections.subjectId)) return true;
-                                        if (t === 'subtopic' && (!selections.domainId || !selections.subjectId || !selections.topicId)) return true;
+                                        const t = initialData?.target != null && initialData.target !== '' ? initialData.target : 'domain';
+                                        if (t === 'subject' && (selections.domainId == null || selections.domainId === '')) return true;
+                                        if (t === 'topic' && ((selections.domainId == null || selections.domainId === '') || (selections.subjectId == null || selections.subjectId === ''))) return true;
+                                        if (t === 'subtopic' && ((selections.domainId == null || selections.domainId === '') || (selections.subjectId == null || selections.subjectId === '') || (selections.topicId == null || selections.topicId === ''))) return true;
                                         return false;
-                                    })() && "opacity-50 cursor-not-allowed bg-slate-100"
+                                    })() === true && "opacity-50 cursor-not-allowed bg-slate-100"
                                 )}
                             >
                                 Bulk Factory
                                 {(() => {
-                                    const t = initialData?.target || 'domain';
-                                    if (t === 'subject' && !selections.domainId) return true;
-                                    if (t === 'topic' && (!selections.domainId || !selections.subjectId)) return true;
-                                    if (t === 'subtopic' && (!selections.domainId || !selections.subjectId || !selections.topicId)) return true;
+                                    const t = initialData?.target != null && initialData.target !== '' ? initialData.target : 'domain';
+                                    if (t === 'subject' && (selections.domainId == null || selections.domainId === '')) return true;
+                                    if (t === 'topic' && ((selections.domainId == null || selections.domainId === '') || (selections.subjectId == null || selections.subjectId === ''))) return true;
+                                    if (t === 'subtopic' && ((selections.domainId == null || selections.domainId === '') || (selections.subjectId == null || selections.subjectId === '') || (selections.topicId == null || selections.topicId === ''))) return true;
                                     return false;
-                                })() && (
+                                })() === true && (
                                         <div className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse" />
                                     )}
                             </button>
@@ -541,43 +500,45 @@ Please provide a valid JSON object matching this schema:
                         <X size={20} /> Close Terminal
                     </button>
                 </ZTooltip>
-            </div>
+            </div >
 
             {/* Main Workspace */}
-            <div className="flex-1 flex overflow-hidden lg:flex-row divide-x divide-primary/5">
+            < div className="flex-1 flex overflow-hidden lg:flex-row divide-x divide-primary/5" >
                 {/* Workspace Area */}
-                <div className={cn(
-                    "flex-1 flex flex-col overflow-hidden p-12 gap-10",
-                    mode === 'manual' ? "bg-white" : "bg-white"
-                )}>
+                < div className={
+                    cn(
+                        "flex-1 flex flex-col overflow-hidden p-12 gap-10",
+                        mode === 'manual' ? "bg-white" : "bg-white"
+                    )
+                }>
                     {mode === 'manual' ? (
                         <div className="max-w-5xl w-full mx-auto space-y-12 animate-in slide-in-from-bottom-4 duration-500">
                             <div className="space-y-4">
                                 <h3 className="text-4xl font-black uppercase tracking-tighter text-[#1A1A1A]">
-                                    {initialData?.target ? `Single ${initialData.target.charAt(0).toUpperCase() + initialData.target.slice(1)} Registry` : "Single Domain Registry"}
+                                    {(initialData?.target != null && initialData.target !== '' ? `Single ${initialData.target.charAt(0).toUpperCase() + initialData.target.slice(1)} Registry` : "Single Domain Registry")}
                                 </h3>
                                 <p className="text-sm font-medium text-muted-foreground leading-relaxed">
-                                    Register a new {initialData?.target || 'domain'}.
-                                    {(!initialData?.target || initialData.target === 'domain') && " You will be able to customize the Assessment Blueprint after registration is complete."}
-                                    {initialData?.domainName ? ` Target Domain: ${initialData.domainName}` : null}
+                                    Register a new {(initialData?.target != null && initialData.target !== '') ? initialData.target : 'domain'}.
+                                    {(initialData?.target == null || initialData.target === '' || initialData.target === 'domain') && " You will be able to customize the Assessment Blueprint after registration is complete."}
+                                    {(initialData?.domainName != null && initialData.domainName !== '' ? ` Target Domain: ${initialData.domainName}` : null)}
                                 </p>
                             </div>
 
                             <div className="space-y-8">
                                 <div className="space-y-3">
                                     <label className="text-[10px] font-black uppercase tracking-widest text-primary flex items-center gap-2">
-                                        <Layers size={14} /> {initialData?.target?.toUpperCase() || 'DOMAIN'} IDENTITY NAME
+                                        <Layers size={14} /> {(initialData?.target != null && initialData.target !== '') ? initialData.target.toUpperCase() : 'DOMAIN'} IDENTITY NAME
                                     </label>
                                     <input
                                         type="text"
-                                        placeholder={`e.g., Advanced ${initialData?.domainName || 'Engineering'}`}
+                                        placeholder={`e.g., Advanced ${(initialData?.domainName != null && initialData.domainName !== '') ? initialData.domainName : 'Engineering'}`}
                                         value={manualEntry.name}
                                         onChange={(e) => setManualEntry({ ...manualEntry, name: e.target.value })}
                                         className="w-full bg-[#FAFAFA] border-2 border-primary/5 rounded-3xl p-6 text-2xl font-black tracking-tight focus:ring-4 focus:ring-primary/5 focus:border-primary/20 outline-none transition-all placeholder:text-slate-300"
                                     />
                                 </div>
 
-                                {(['subject', 'topic', 'subtopic'].includes(initialData?.target)) && (
+                                {(initialData?.target != null && ['subject', 'topic', 'subtopic'].includes(initialData.target)) && (
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         <div className="space-y-3">
                                             <SelectField
@@ -592,7 +553,7 @@ Please provide a valid JSON object matching this schema:
                                             />
                                         </div>
 
-                                        {(['topic', 'subtopic'].includes(initialData?.target)) && (
+                                        {(initialData?.target != null && ['topic', 'subtopic'].includes(initialData.target)) && (
                                             <div className="space-y-3 animate-in fade-in slide-in-from-top-2">
                                                 <SelectField
                                                     label="Target Subject"
@@ -626,7 +587,7 @@ Please provide a valid JSON object matching this schema:
                                     </div>
                                 )}
 
-                                {(initialData?.target === 'domain' || !initialData) && (
+                                {(initialData?.target === 'domain' || (initialData?.domainId == null || initialData.domainId === '')) && (
                                     <div className="space-y-3">
                                         <label className="text-[10px] font-black uppercase tracking-widest text-[#1A1A1A] flex items-center gap-2 opacity-40">
                                             <Activity size={14} /> Factory Compliance
@@ -648,7 +609,7 @@ Please provide a valid JSON object matching this schema:
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-4">
                                     <h3 className="text-3xl font-black uppercase tracking-tighter text-[#1A1A1A]">
-                                        {initialData?.target ? `Bulk ${initialData.target} Factory` : "Bulk Hierarchy Engine"}
+                                        {(initialData?.target != null && initialData.target !== '') ? `Bulk ${initialData.target} Factory` : "Bulk Hierarchy Engine"}
                                     </h3>
                                     <div className="flex items-center gap-2">
                                         <span className="px-3 py-1 bg-primary/10 text-primary text-[9px] font-bold uppercase rounded-lg">JSON STRICT</span>
@@ -688,16 +649,16 @@ Please provide a valid JSON object matching this schema:
                                                         <div className="flex flex-col">
                                                             <h4 className="text-lg font-black uppercase tracking-widest text-slate-800">Surgical AI Prompt</h4>
                                                             <div className="flex items-center gap-1.5 text-[9px] font-bold text-slate-400 mt-0.5">
-                                                                <span className={cn("uppercase tracking-wider", selections.domainId ? "text-[#FF4B91]" : "text-slate-300")}>
-                                                                    {hierarchicalChoices.domains.find(d => d.domainId === selections.domainId)?.domainName || "Domain"}
+                                                                <span className={cn("uppercase tracking-wider", (selections.domainId !== undefined && selections.domainId !== null && selections.domainId !== '') ? "text-[#FF4B91]" : "text-slate-300")}>
+                                                                    {hierarchicalChoices.domains.find(d => d.domainId === selections.domainId)?.domainName ?? "Domain"}
                                                                 </span>
                                                                 <span className="text-slate-200">/</span>
-                                                                <span className={cn("uppercase tracking-wider", selections.subjectId ? "text-[#FF4B91]" : "text-slate-300")}>
-                                                                    {hierarchicalChoices.subjects.find(s => s.id === selections.subjectId)?.name || "Subject"}
+                                                                <span className={cn("uppercase tracking-wider", (selections.subjectId !== undefined && selections.subjectId !== null && selections.subjectId !== '') ? "text-[#FF4B91]" : "text-slate-300")}>
+                                                                    {hierarchicalChoices.subjects.find(s => s.id === selections.subjectId)?.name ?? "Subject"}
                                                                 </span>
                                                                 <span className="text-slate-200">/</span>
-                                                                <span className={cn("uppercase tracking-wider", selections.topicId ? "text-[#FF4B91]" : "text-slate-300")}>
-                                                                    {hierarchicalChoices.topics.find(t => t.id === selections.topicId)?.name || "Topic"}
+                                                                <span className={cn("uppercase tracking-wider", (selections.topicId !== undefined && selections.topicId !== null && selections.topicId !== '') ? "text-[#FF4B91]" : "text-slate-300")}>
+                                                                    {hierarchicalChoices.topics.find(t => t.id === selections.topicId)?.name ?? "Topic"}
                                                                 </span>
                                                             </div>
                                                         </div>
@@ -779,7 +740,7 @@ Please provide a valid JSON object matching this schema:
                                                     </div>
                                                     <div className="text-center space-y-2">
                                                         <h5 className="text-xs font-black uppercase tracking-[0.2em] text-slate-400">
-                                                            Paste {initialData?.target?.toUpperCase() || 'HIERARCHY'} Payload
+                                                            Paste {(initialData?.target != null && initialData.target !== '' ? initialData.target.toUpperCase() : 'HIERARCHY')} Payload
                                                         </h5>
                                                         <p className="text-[10px] font-bold text-slate-300">
                                                             Ctrl + V to Insert JSON
@@ -804,142 +765,146 @@ Please provide a valid JSON object matching this schema:
                             )}
                         </div>
                     )}
-                </div>
+                </div >
 
                 {/* Sidebar: Intelligence & Steps (Only visible in Bulk Mode) */}
-                {mode === 'bulk' && (
-                    <div className="w-full lg:w-[480px] bg-slate-50/50 flex flex-col p-12 gap-10 overflow-hidden border-l border-slate-200/50 animate-in slide-in-from-right-4 duration-500">
-                        <div className="h-[40px] flex items-center shrink-0">
-                            <h3 className="text-3xl font-black uppercase tracking-tighter text-[#1A1A1A]">
-                                Factory Monitor
-                            </h3>
-                        </div>
-
-                        {/* Scrollable Content */}
-                        <div className="flex-1 overflow-y-auto space-y-6 custom-scrollbar pr-2">
-                            {/* execution tracker */}
-                            <div className="p-8 rounded-[2rem] bg-white border border-primary/5 shadow-xl space-y-6">
-                                <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-[#1A1A1A] flex items-center gap-3">
-                                    <Activity size={18} className="text-primary" /> Execution Timeline
-                                </h4>
-
-                                <div className="space-y-4">
-                                    <ExecutionItem label="Data Validation" status={executionStep === 'idle' ? 'pending' : (['lookup', 'transaction', 'filter', 'blueprint', 'done'].includes(executionStep) ? 'done' : 'pending')} />
-                                    <ExecutionItem label="Database Lookup" status={executionStep === 'lookup' ? 'active' : (['transaction', 'filter', 'blueprint', 'done'].includes(executionStep) ? 'done' : 'pending')} />
-                                    <ExecutionItem label="Registry Transaction" status={executionStep === 'transaction' ? 'active' : (['filter', 'done'].includes(executionStep) ? 'done' : 'pending')} />
-                                    <ExecutionItem label="Hierarchy Sealing" status={executionStep === 'filter' ? 'active' : (executionStep === 'done' ? 'done' : 'pending')} />
-                                </div>
+                {
+                    mode === 'bulk' && (
+                        <div className="w-full lg:w-[480px] bg-slate-50/50 flex flex-col p-12 gap-10 overflow-hidden border-l border-slate-200/50 animate-in slide-in-from-right-4 duration-500">
+                            <div className="h-[40px] flex items-center shrink-0">
+                                <h3 className="text-3xl font-black uppercase tracking-tighter text-[#1A1A1A]">
+                                    Factory Monitor
+                                </h3>
                             </div>
 
-                            {error ? <div className="p-6 rounded-2xl bg-red-50 border border-red-200 text-red-600 animate-in shake-1 space-y-2">
-                                <div className="flex items-center gap-2 font-black uppercase text-xs">
-                                    <AlertTriangle size={16} /> Factory Halted
-                                </div>
-                                <p className="text-[11px] font-bold">{error}</p>
-                            </div> : null}
+                            {/* Scrollable Content */}
+                            <div className="flex-1 overflow-y-auto space-y-6 custom-scrollbar pr-2">
+                                {/* execution tracker */}
+                                <div className="p-8 rounded-[2rem] bg-white border border-primary/5 shadow-xl space-y-6">
+                                    <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-[#1A1A1A] flex items-center gap-3">
+                                        <Activity size={18} className="text-primary" /> Execution Timeline
+                                    </h4>
 
-                            {success ? <div className="p-8 rounded-[2rem] bg-green-50 border border-green-200 animate-in slide-in-from-bottom-4 shadow-2xl shadow-green-500/10 space-y-6 text-center">
-                                <div className="mx-auto w-16 h-16 rounded-full bg-green-500 text-white flex items-center justify-center shadow-lg shadow-green-500/30">
-                                    <CheckCircle2 size={32} />
-                                </div>
-                                <div>
-                                    <h4 className="text-xl font-black uppercase tracking-tighter text-green-800">Emission Successful</h4>
-                                    <p className="text-[10px] font-bold text-green-700 uppercase tracking-widest mt-1">Domain ID: {success.domainId}</p>
+                                    <div className="space-y-4">
+                                        <ExecutionItem label="Data Validation" status={executionStep === 'idle' ? 'pending' : (['lookup', 'transaction', 'filter', 'blueprint', 'done'].includes(executionStep) ? 'done' : 'pending')} />
+                                        <ExecutionItem label="Database Lookup" status={executionStep === 'lookup' ? 'active' : (['transaction', 'filter', 'blueprint', 'done'].includes(executionStep) ? 'done' : 'pending')} />
+                                        <ExecutionItem label="Registry Transaction" status={executionStep === 'transaction' ? 'active' : (['filter', 'done'].includes(executionStep) ? 'done' : 'pending')} />
+                                        <ExecutionItem label="Hierarchy Sealing" status={executionStep === 'filter' ? 'active' : (executionStep === 'done' ? 'done' : 'pending')} />
+                                    </div>
                                 </div>
 
-                                {success.stats ? <div className="p-4 rounded-3xl bg-white/50 border border-green-200/50 space-y-3">
-                                    <h5 className="text-[9px] font-black uppercase tracking-widest text-green-800/60 text-left px-2">Registry Summary</h5>
-                                    <div className="grid grid-cols-2 gap-2">
-                                        {Object.entries(success.stats).map(([k, v]: [string, any]) => (
-                                            (v.added > 0 || v.skipped > 0) && (
-                                                <div key={k} className="p-3 bg-white rounded-2xl border border-green-100 flex items-center justify-between">
-                                                    <span className="text-[9px] font-black uppercase tracking-widest text-slate-500">{k}</span>
-                                                    <div className="flex gap-2">
-                                                        {v.added > 0 && <span className="text-[9px] font-black px-1.5 py-0.5 bg-green-100 text-green-700 rounded-md">+{v.added}</span>}
-                                                        {v.skipped > 0 && <span className="text-[9px] font-black px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded-md text-nowrap">Skipped: {v.skipped}</span>}
+                                {(error != null && error !== '') ? <div className="p-6 rounded-2xl bg-red-50 border border-red-200 text-red-600 animate-in shake-1 space-y-2">
+                                    <div className="flex items-center gap-2 font-black uppercase text-xs">
+                                        <AlertTriangle size={16} /> Factory Halted
+                                    </div>
+                                    <p className="text-[11px] font-bold">{error}</p>
+                                </div> : null}
+
+                                {success != null ? <div className="p-8 rounded-[2rem] bg-green-50 border border-green-200 animate-in slide-in-from-bottom-4 shadow-2xl shadow-green-500/10 space-y-6 text-center">
+                                    <div className="mx-auto w-16 h-16 rounded-full bg-green-500 text-white flex items-center justify-center shadow-lg shadow-green-500/30">
+                                        <CheckCircle2 size={32} />
+                                    </div>
+                                    <div>
+                                        <h4 className="text-xl font-black uppercase tracking-tighter text-green-800">Emission Successful</h4>
+                                        <p className="text-[10px] font-bold text-green-700 uppercase tracking-widest mt-1">Domain ID: {success.domainId}</p>
+                                    </div>
+
+                                    {success.stats != null ? <div className="p-4 rounded-3xl bg-white/50 border border-green-200/50 space-y-3">
+                                        <h5 className="text-[9px] font-black uppercase tracking-widest text-green-800/60 text-left px-2">Registry Summary</h5>
+                                        <div className="grid grid-cols-2 gap-2">
+                                            {Object.entries(success.stats).map(([k, v]: [string, { added: number; skipped: number }]) => (
+                                                ((v.added > 0) || (v.skipped > 0)) && (
+                                                    <div key={k} className="p-3 bg-white rounded-2xl border border-green-100 flex items-center justify-between">
+                                                        <span className="text-[9px] font-black uppercase tracking-widest text-slate-500">{k}</span>
+                                                        <div className="flex gap-2">
+                                                            {v.added > 0 && <span className="text-[9px] font-black px-1.5 py-0.5 bg-green-100 text-green-700 rounded-md">+{v.added}</span>}
+                                                            {v.skipped > 0 && <span className="text-[9px] font-black px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded-md text-nowrap">Skipped: {v.skipped}</span>}
+                                                        </div>
                                                     </div>
-                                                </div>
-                                            )
-                                        ))}
+                                                )
+                                            ))}
+                                        </div>
+                                    </div> : null}
+                                    <div className="grid grid-cols-1 gap-3">
+                                        <button
+                                            onClick={() => setBlueprintModal({
+                                                isOpen: true,
+                                                domainId: success.domainId,
+                                                domainName: manualEntry.name != null && manualEntry.name !== '' ? manualEntry.name : (mode === 'bulk' && (payload != null && payload !== '') ? (JSON.parse(payload) as { domainName?: string }).domainName ?? "Assessment" : "Assessment"),
+                                                questionIds: success.questionIds ?? [],
+                                                questionStats: success.questionStats ?? null
+                                            })}
+                                            title="Open the static configuration panel to lock specific questions and calibrate the assessment blueprint for this domain."
+                                            className="w-full py-4 bg-[#1A1A1A] text-white rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] hover:scale-[1.02] transition-all flex items-center justify-center gap-3 px-6 shadow-xl"
+                                        >
+                                            <ClipboardList size={16} />
+                                            Configure Blueprint
+                                        </button>
+                                        <button
+                                            onClick={onClose}
+                                            title="Close the factory engine and return to the domain overview. All hierarchical records have been safely committed."
+                                            className="w-full py-4 bg-white border border-green-200 text-green-700 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] hover:bg-green-100 transition-all flex items-center justify-center gap-3 px-6"
+                                        >
+                                            Close Engine
+                                        </button>
                                     </div>
                                 </div> : null}
-                                <div className="grid grid-cols-1 gap-3">
-                                    <button
-                                        onClick={() => setBlueprintModal({
-                                            isOpen: true,
-                                            domainId: success.domainId,
-                                            domainName: manualEntry.name || (mode === 'bulk' && payload ? JSON.parse(payload).domainName : "Assessment"),
-                                            questionIds: success.questionIds || [],
-                                            questionStats: success.questionStats
-                                        })}
-                                        title="Open the static configuration panel to lock specific questions and calibrate the assessment blueprint for this domain."
-                                        className="w-full py-4 bg-[#1A1A1A] text-white rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] hover:scale-[1.02] transition-all flex items-center justify-center gap-3 px-6 shadow-xl"
-                                    >
-                                        <ClipboardList size={16} />
-                                        Configure Blueprint
-                                    </button>
-                                    <button
-                                        onClick={onClose}
-                                        title="Close the factory engine and return to the domain overview. All hierarchical records have been safely committed."
-                                        className="w-full py-4 bg-white border border-green-200 text-green-700 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] hover:bg-green-100 transition-all flex items-center justify-center gap-3 px-6"
-                                    >
-                                        Close Engine
-                                    </button>
-                                </div>
-                            </div> : null}
-                        </div>
+                            </div>
 
-                        {/* Utility Clustering at Bottom */}
-                        <div className="pt-8 border-t border-primary/5 space-y-3 shrink-0">
-                            <div className="grid grid-cols-1 gap-5">
-                                <ZTooltip content="Load a .json manifest file from your local storage. This is the fastest way to re-run previously validated batches or bulk-import legacy content." side="top">
-                                    <button
-                                        onClick={() => fileInputRef.current?.click()}
-                                        className="w-full px-6 py-4 bg-slate-100 border-2 border-slate-200 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-slate-200 hover:border-slate-300 transition-all flex items-center justify-center gap-3 text-slate-700 shadow-sm hover:scale-[1.01]"
-                                    >
-                                        <Upload size={16} /> Upload Manifest
-                                    </button>
-                                </ZTooltip>
-                                <input type="file" ref={fileInputRef} onChange={handleFileUpload} accept=".json" className="hidden" />
+                            {/* Utility Clustering at Bottom */}
+                            <div className="pt-8 border-t border-primary/5 space-y-3 shrink-0">
+                                <div className="grid grid-cols-1 gap-5">
+                                    <ZTooltip content="Load a .json manifest file from your local storage. This is the fastest way to re-run previously validated batches or bulk-import legacy content." side="top">
+                                        <button
+                                            onClick={() => fileInputRef.current?.click()}
+                                            className="w-full px-6 py-4 bg-slate-100 border-2 border-slate-200 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-slate-200 hover:border-slate-300 transition-all flex items-center justify-center gap-3 text-slate-700 shadow-sm hover:scale-[1.01]"
+                                        >
+                                            <Upload size={16} /> Upload Manifest
+                                        </button>
+                                    </ZTooltip>
+                                    <input type="file" ref={fileInputRef} onChange={handleFileUpload} accept=".json" className="hidden" />
+                                </div>
                             </div>
                         </div>
-                    </div>
-                )}
-            </div>
+                    )
+                }
+            </div >
 
             {/* Footer */}
-            {!success && (
-                <div className="px-12 py-6 border-t border-primary/5 bg-white flex items-center justify-between">
-                    <div className="flex items-center gap-6">
-                        <div className="flex items-center gap-3 px-4 py-2 bg-slate-100 rounded-xl">
-                            <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                            <span className="text-[9px] font-black uppercase tracking-widest text-primary">Terminal v1.1 Active</span>
+            {
+                success == null && (
+                    <div className="px-12 py-6 border-t border-primary/5 bg-white flex items-center justify-between">
+                        <div className="flex items-center gap-6">
+                            <div className="flex items-center gap-3 px-4 py-2 bg-slate-100 rounded-xl">
+                                <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                                <span className="text-[9px] font-black uppercase tracking-widest text-primary">Terminal v1.1 Active</span>
+                            </div>
+                            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                                {mode === 'manual' ? "Creating a single entry container." : "Executing parallel hierarchy insertion."}
+                            </p>
                         </div>
-                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
-                            {mode === 'manual' ? "Creating a single entry container." : "Executing parallel hierarchy insertion."}
-                        </p>
-                    </div>
 
-                    <div className="flex items-center gap-4">
-                        <button
-                            onClick={onClose}
-                            title="Cancel current operation and close the Terminal. Warning: Uncommitted manual entries or unsaved manifests will be lost."
-                            className="px-8 py-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:bg-slate-50 rounded-2xl transition-all"
-                        >
-                            Abort Process
-                        </button>
-                        <button
-                            disabled={isProcessing || (mode === 'manual' && !manualEntry.name) || (mode === 'bulk' && !payload)}
-                            onClick={handleCreate}
-                            title={mode === 'manual' ? `Commit the current entry for "${manualEntry.name}" to the live database.` : "Execute the atomic hierarchy insertion. This will validate the JSON, lookup existing records, and perform a transactional commit."}
-                            className="px-12 py-4 bg-[#FF4B91] text-white rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] shadow-2xl shadow-[#FF4B91]/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center gap-3 disabled:grayscale disabled:opacity-50"
-                        >
-                            {isProcessing ? <ZLoader size="xs" className="text-white" center={false} /> : <ShieldCheck size={16} />}
-                            {mode === 'manual' ? `Commit ${initialData?.target || 'Domain'}` : "Fire Bulk Factory"}
-                        </button>
+                        <div className="flex items-center gap-4">
+                            <button
+                                onClick={onClose}
+                                title="Cancel current operation and close the Terminal. Warning: Uncommitted manual entries or unsaved manifests will be lost."
+                                className="px-8 py-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:bg-slate-50 rounded-2xl transition-all"
+                            >
+                                Abort Process
+                            </button>
+                            <button
+                                disabled={isProcessing === true || (mode === 'manual' && (manualEntry.name == null || manualEntry.name === '')) || (mode === 'bulk' && (payload == null || payload === ''))}
+                                onClick={() => { void handleCreate(); }}
+                                title={mode === 'manual' ? `Commit the current entry for "${manualEntry.name}" to the live database.` : "Execute the atomic hierarchy insertion. This will validate the JSON, lookup existing records, and perform a transactional commit."}
+                                className="px-12 py-4 bg-[#FF4B91] text-white rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] shadow-2xl shadow-[#FF4B91]/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center gap-3 disabled:grayscale disabled:opacity-50"
+                            >
+                                {isProcessing ? <ZLoader size="xs" className="text-white" center={false} /> : <ShieldCheck size={16} />}
+                                {mode === 'manual' ? `Commit ${initialData?.target != null && initialData.target !== '' ? initialData.target : 'Domain'}` : "Fire Bulk Factory"}
+                            </button>
+                        </div>
                     </div>
-                </div>
-            )}
+                )
+            }
             {/* Blueprint Configuration Modal */}
             <BlueprintFactoryWizard
                 isOpen={blueprintModal.isOpen}

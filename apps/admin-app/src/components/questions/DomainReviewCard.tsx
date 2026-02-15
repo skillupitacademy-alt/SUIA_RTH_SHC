@@ -2,8 +2,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import {
-BookOpen,
-Clock,     Edit2, Globe, Layers, Trash2} from 'lucide-react';
+    BookOpen,
+    Clock, Edit2, Globe, Layers, Trash2
+} from 'lucide-react';
 import React from 'react';
 
 import { cn, formatTimeAgo } from '@/lib/utils';
@@ -36,7 +37,7 @@ export function DomainReviewCard({
             isSelected && "ring-2 ring-blue-500 border-transparent shadow-2xl bg-blue-500/[0.01]"
         )}>
             {/* SELECTION OVERLAY GLOW */}
-            {isSelected ? <div className="absolute inset-0 bg-blue-500/[0.02] pointer-events-none animate-in fade-in duration-500" /> : null}
+            {isSelected === true ? <div className="absolute inset-0 bg-blue-500/[0.02] pointer-events-none animate-in fade-in duration-500" /> : null}
 
             {/* Header Area: Status */}
             <div className="px-8 py-5 border-b border-slate-100 flex flex-wrap items-center justify-between gap-4 bg-slate-50/50">
@@ -46,14 +47,14 @@ export function DomainReviewCard({
                         <input
                             type="checkbox"
                             checked={isSelected}
-                            onChange={(e) => onSelect?.(domain.id, e.target.checked)}
+                            onChange={(e) => onSelect?.(domain.id as string, e.target.checked)}
                             className="w-5 h-5 rounded-lg border-2 border-slate-200 text-blue-500 focus:ring-blue-500/20 cursor-pointer transition-all checked:border-blue-500"
                         />
                     </div>
 
                     <div className={cn(
                         "w-10 h-10 rounded-2xl flex items-center justify-center font-bold border-2 transition-all duration-300",
-                        isSelected ? "bg-blue-600 text-white border-blue-600 shadow-lg" : "bg-blue-50 text-blue-600 border-blue-100"
+                        isSelected === true ? "bg-blue-600 text-white border-blue-600 shadow-lg" : "bg-blue-50 text-blue-600 border-blue-100"
                     )}>
                         #{index + 1}
                     </div>
@@ -63,17 +64,17 @@ export function DomainReviewCard({
                             <Layers size={10} className="text-slate-500" />
                             <span>Root Domain</span>
                         </div>
-                        <p className="text-[10px] font-bold text-slate-500 mt-0.5">DID: {domain.id}</p>
+                        <p className="text-[10px] font-bold text-slate-500 mt-0.5">DID: {domain.id as string}</p>
                     </div>
                 </div>
 
                 <div className="flex items-center gap-2">
                     <div className={cn(
                         "px-3 py-1 rounded-full border text-[9px] font-black uppercase tracking-widest flex items-center gap-1.5",
-                        statusColors[domain.status] || statusColors.active
+                        (domain.status != null && statusColors[domain.status as string] != null) ? statusColors[domain.status as string] : statusColors.active
                     )}>
                         <div className={cn("w-1 h-1 rounded-full", domain.status === 'active' ? "bg-emerald-500 animate-pulse" : "bg-slate-500")} />
-                        {domain.status}
+                        {domain.status as string}
                     </div>
 
                     <div className="w-[1px] h-6 bg-slate-200 mx-2" />
@@ -104,14 +105,14 @@ export function DomainReviewCard({
                             <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-500">Classification</h4>
                             <div className="flex items-center gap-2 text-blue-600">
                                 <Globe size={14} />
-                                <span className="text-sm font-black uppercase tracking-tight">{domain.category || 'General'}</span>
+                                <span className="text-sm font-black uppercase tracking-tight">{domain.category != null && domain.category !== '' ? (domain.category as string) : 'General'}</span>
                             </div>
                         </div>
                     </div>
 
                     <div className="flex items-center gap-2 px-4 py-3 rounded-2xl bg-slate-50/50 border border-slate-100 text-[10px] font-bold text-slate-500">
                         <Clock size={12} />
-                        <span>Created {formatTimeAgo(domain.createdAt)}</span>
+                        <span>Created {formatTimeAgo(domain.createdAt as string)}</span>
                     </div>
                 </div>
 
@@ -124,10 +125,10 @@ export function DomainReviewCard({
                             </div>
                             <div className="flex-1">
                                 <h3 className="text-xl font-black text-slate-800 tracking-tight leading-none mb-2">
-                                    {domain.name}
+                                    {domain.name as string}
                                 </h3>
                                 <p className="text-sm text-slate-600 font-medium leading-relaxed max-w-2xl">
-                                    {domain.description || 'No formal definition provided.'}
+                                    {domain.description != null && domain.description !== '' ? (domain.description as string) : 'No formal definition provided.'}
                                 </p>
                             </div>
                         </div>
@@ -138,7 +139,7 @@ export function DomainReviewCard({
                         <div className="px-4 py-2 rounded-xl bg-slate-50 border border-slate-100 flex items-center gap-2">
                             <BookOpen size={12} className="text-slate-500" />
                             <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Subjects:</span>
-                            <span className="text-xs font-bold text-slate-700">{domain.subjectsCount || domain.subjects?.length || 0}</span>
+                            <span className="text-xs font-bold text-slate-700">{(domain.subjectsCount != null && domain.subjectsCount !== 0) ? (domain.subjectsCount as number) : (domain.subjects?.length ?? 0)}</span>
                         </div>
                     </div>
                 </div>

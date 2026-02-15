@@ -1,10 +1,10 @@
 'use client';
-/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 
 import {
-Activity, AlertCircle, ChevronDown, ChevronUp,
-Clock,     Edit3, ExternalLink, Hash,
-Info,     Layers, Tag, Target, Trash2} from 'lucide-react';
+    Activity, AlertCircle, ChevronDown, ChevronUp,
+    Clock, Edit3, ExternalLink,
+    Info, Tag, Target, Trash2
+} from 'lucide-react';
 import Link from 'next/link';
 import React, { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
@@ -12,8 +12,30 @@ import remarkGfm from 'remark-gfm';
 
 import { cn, formatTimeAgo } from '@/lib/utils';
 
+interface Question {
+    id: string;
+    questionText: string;
+    status: string;
+    difficulty: string;
+    mappingType?: string;
+    createdAt: string;
+    explanation?: string;
+    correctAnswer?: string;
+    options?: (string | { text: string; isCorrect: boolean })[];
+    questionSkills?: { id?: string; skill: { id: string; name: string; category: string } }[];
+    topic?: {
+        name: string;
+        subject?: {
+            name: string;
+            domain?: {
+                name: string;
+            };
+        };
+    };
+}
+
 interface QuestionReviewCardProps {
-    question: any;
+    question: Question;
     index: number;
     isSelected?: boolean;
     onSelect?: (id: string, selected: boolean) => void;
@@ -52,10 +74,10 @@ export function QuestionReviewCard({
     return (
         <div className={cn(
             "w-full bg-white border border-slate-200 rounded-[2rem] shadow-sm hover:shadow-xl hover:border-[#FF4B91]/20 transition-all duration-500 overflow-hidden flex flex-col group relative",
-            isSelected && "ring-2 ring-[#FF4B91] border-transparent shadow-2xl bg-[#FF4B91]/[0.01]"
+            isSelected === true && "ring-2 ring-[#FF4B91] border-transparent shadow-2xl bg-[#FF4B91]/[0.01]"
         )}>
             {/* SELECTION OVERLAY GLOW */}
-            {isSelected ? <div className="absolute inset-0 bg-[#FF4B91]/[0.02] pointer-events-none animate-in fade-in duration-500" /> : null}
+            {isSelected === true ? <div className="absolute inset-0 bg-[#FF4B91]/[0.02] pointer-events-none animate-in fade-in duration-500" /> : null}
 
             {/* 1. Header Area: Hierarchy & Status */}
             <div className="px-8 py-5 border-b border-slate-100 flex flex-wrap items-center justify-between gap-4 bg-slate-50/50">
@@ -65,25 +87,25 @@ export function QuestionReviewCard({
                         <input
                             type="checkbox"
                             checked={isSelected}
-                            onChange={(e) => onSelect?.(question.id, e.target.checked)}
+                            onChange={(e) => { onSelect?.(question.id, e.target.checked); }}
                             className="w-5 h-5 rounded-lg border-2 border-slate-200 text-[#FF4B91] focus:ring-[#FF4B91]/20 cursor-pointer transition-all checked:border-[#FF4B91]"
                         />
                     </div>
 
                     <div className={cn(
                         "w-10 h-10 rounded-2xl flex items-center justify-center font-bold border-2 transition-all duration-300",
-                        isSelected ? "bg-[#FF4B91] text-white border-[#FF4B91] shadow-lg" : "bg-pink-50 text-[#FF4B91] border-pink-100"
+                        isSelected === true ? "bg-[#FF4B91] text-white border-[#FF4B91] shadow-lg" : "bg-pink-50 text-[#FF4B91] border-pink-100"
                     )}>
                         #{index + 1}
                     </div>
 
                     <div className="flex flex-col">
                         <div className="flex items-center gap-2 text-[10px] uppercase font-black tracking-widest text-slate-500">
-                            <span>{question.topic?.subject?.domain?.name || 'N/A'}</span>
+                            <span>{(question.topic?.subject?.domain?.name != null && question.topic?.subject?.domain?.name !== '') ? question.topic.subject.domain.name : 'N/A'}</span>
                             <span className="opacity-30">/</span>
-                            <span>{question.topic?.subject?.name || 'N/A'}</span>
+                            <span>{(question.topic?.subject?.name != null && question.topic?.subject?.name !== '') ? question.topic.subject.name : 'N/A'}</span>
                             <span className="opacity-30">/</span>
-                            <span className="text-[#FF4B91]">{question.topic?.name || 'N/A'}</span>
+                            <span className="text-[#FF4B91]">{(question.topic?.name != null && question.topic?.name !== '') ? question.topic.name : 'N/A'}</span>
                         </div>
                         <p className="text-[10px] font-bold text-slate-500 mt-0.5">QID: {question.id}</p>
                     </div>
@@ -92,10 +114,10 @@ export function QuestionReviewCard({
                 <div className="flex items-center gap-2">
                     <div className={cn(
                         "px-3 py-1 rounded-full border text-[9px] font-black uppercase tracking-widest flex items-center gap-1.5",
-                        statusColors[question.status] || statusColors.active
+                        (question.status != null && statusColors[question.status] != null) ? statusColors[question.status] : statusColors.active
                     )}>
                         <div className={cn("w-1 h-1 rounded-full", question.status === 'active' ? "bg-emerald-500 animate-pulse" : "bg-slate-500")} />
-                        {question.status}
+                        {String(question.status)}
                     </div>
 
                     <div className="w-[1px] h-6 bg-slate-200 mx-2" />
@@ -108,7 +130,7 @@ export function QuestionReviewCard({
                         <Edit3 size={14} />
                     </Link>
                     <button
-                        onClick={() => onDeleteRequest(question.id)}
+                        onClick={() => { onDeleteRequest(question.id); }}
                         className="p-2.5 rounded-xl bg-white border border-slate-200 text-slate-500 hover:text-rose-500 hover:border-rose-100 transition-all active:scale-95 shadow-sm"
                         title="Delete Question"
                     >
@@ -129,31 +151,31 @@ export function QuestionReviewCard({
                 <div className="w-64 flex-shrink-0 space-y-4">
                     <div className={cn(
                         "p-4 rounded-2xl border flex flex-col gap-1",
-                        difficultyColors[question.difficulty] || difficultyColors.intermediate
+                        (question.difficulty != null && difficultyColors[question.difficulty] != null) ? difficultyColors[question.difficulty] : difficultyColors.intermediate
                     )}>
                         <h4 className="text-[9px] font-black uppercase tracking-widest opacity-60">Complexity Level</h4>
                         <div className="flex items-center gap-2">
                             <Activity size={14} />
-                            <span className="text-sm font-black uppercase">{question.difficulty}</span>
+                            <span className="text-sm font-black uppercase">{String(question.difficulty)}</span>
                         </div>
                     </div>
 
                     <div className={cn(
                         "p-4 rounded-2xl border flex flex-col gap-1",
-                        mappingColors[question.mappingType] || 'bg-slate-50 text-slate-500 border-slate-100'
+                        (question.mappingType != null && mappingColors[question.mappingType] != null) ? mappingColors[question.mappingType] : 'bg-slate-50 text-slate-500 border-slate-100'
                     )}>
                         <h4 className="text-[9px] font-black uppercase tracking-widest opacity-60">Mapping Nature</h4>
                         <div className="flex items-center gap-2">
                             <Target size={14} />
-                            <span className="text-sm font-black uppercase">{question.mappingType || 'Legacy'}</span>
+                            <span className="text-sm font-black uppercase">{(question.mappingType != null && question.mappingType !== '') ? question.mappingType : 'Legacy'}</span>
                         </div>
                     </div>
 
                     <div className="p-4 rounded-2xl bg-slate-50/50 border border-slate-100 flex flex-col gap-3">
                         <h4 className="text-[9px] font-black uppercase tracking-widest text-slate-500">Targeted Dimensions</h4>
                         <div className="flex flex-wrap gap-1.5">
-                            {question.questionSkills?.length ? (
-                                [...new Set(question.questionSkills.map((qs: any) => qs.skill.category))].map((cat: any) => (
+                            {(question.questionSkills != null && question.questionSkills.length > 0) ? (
+                                [...new Set(question.questionSkills.map((qs) => qs.skill.category))].map((cat) => (
                                     <span key={cat} className={cn(
                                         "px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-wider border",
                                         cat === 'technical' ? 'bg-indigo-50 text-indigo-600 border-indigo-100' :
@@ -169,9 +191,11 @@ export function QuestionReviewCard({
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-2 px-4 py-3 rounded-2xl bg-slate-50/50 border border-slate-100 text-[10px] font-bold text-slate-500">
-                        <Clock size={12} />
-                        <span>Created {formatTimeAgo(question.createdAt)}</span>
+                    <div className="p-4 rounded-2xl bg-slate-50/50 border border-slate-100 text-[10px] font-bold text-slate-500">
+                        <div className="flex items-center gap-2">
+                            <Clock size={12} />
+                            <span>Created {formatTimeAgo(question.createdAt)}</span>
+                        </div>
                     </div>
                 </div>
 
@@ -185,7 +209,7 @@ export function QuestionReviewCard({
                             <div className="flex-1">
                                 <div className="text-lg font-bold text-slate-800 leading-snug tracking-tight prose prose-slate max-w-none">
                                     <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                                        {question.questionText}
+                                        {String(question.questionText)}
                                     </ReactMarkdown>
                                 </div>
                             </div>
@@ -194,7 +218,7 @@ export function QuestionReviewCard({
 
                     {/* Options Preview */}
                     <div className="grid grid-cols-2 gap-3 pl-10">
-                        {Array.isArray(question.options) && question.options.map((opt: any, oIdx: number) => {
+                        {Array.isArray(question.options) ? question.options.map((opt, oIdx: number) => {
                             const isCorrect = typeof opt === 'object' ? opt.isCorrect : opt === question.correctAnswer;
                             const text = typeof opt === 'object' ? opt.text : opt;
 
@@ -214,7 +238,7 @@ export function QuestionReviewCard({
                                     </span>
                                 </div>
                             );
-                        })}
+                        }) : null}
                     </div>
                 </div>
             </div>
@@ -235,26 +259,26 @@ export function QuestionReviewCard({
                 </button>
 
                 {isRationaleOpen ? <div className="px-10 pb-10 animate-in slide-in-from-top-2 duration-300">
-                        <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
-                            <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-[#FF4B91] mb-4">Official Explanation</h4>
-                            <p className="text-xs text-slate-600 font-medium leading-relaxed">
-                                {question.explanation || 'No rationale document provided for this assessment.'}
-                            </p>
+                    <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+                        <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-[#FF4B91] mb-4">Official Explanation</h4>
+                        <p className="text-xs text-slate-600 font-medium leading-relaxed">
+                            {(question.explanation != null && question.explanation !== '') ? question.explanation : 'No rationale document provided for this assessment.'}
+                        </p>
 
-                            <div className="mt-8">
-                                <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mb-4">Skill Taxonomy Mapping</h4>
-                                <div className="flex flex-wrap gap-2">
-                                    {question.questionSkills?.map((qs: any) => (
-                                        <div key={qs.id || qs.skill.id} className="px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-[#FF4B91] text-[10px] font-bold flex items-center gap-2">
-                                            <Tag size={10} className="text-slate-400" />
-                                            {qs.skill.name}
-                                        </div>
-                                    ))}
-                                    {!question.questionSkills?.length && <span className="text-[10px] font-bold text-slate-400">No skills mapped.</span>}
-                                </div>
+                        <div className="mt-8">
+                            <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mb-4">Skill Taxonomy Mapping</h4>
+                            <div className="flex flex-wrap gap-2">
+                                {question.questionSkills != null ? question.questionSkills.map((qs) => (
+                                    <div key={(qs.id != null && qs.id !== '') ? qs.id : qs.skill.id} className="px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-[#FF4B91] text-[10px] font-bold flex items-center gap-2">
+                                        <Tag size={10} className="text-slate-400" />
+                                        {qs.skill.name}
+                                    </div>
+                                )) : null}
+                                {(question.questionSkills != null ? question.questionSkills.length : 0) === 0 && <span className="text-[10px] font-bold text-slate-400">No skills mapped.</span>}
                             </div>
                         </div>
-                    </div> : null}
+                    </div>
+                </div> : null}
             </div>
         </div>
     );

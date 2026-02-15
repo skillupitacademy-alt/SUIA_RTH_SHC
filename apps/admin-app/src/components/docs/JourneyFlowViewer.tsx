@@ -55,20 +55,25 @@ export function JourneyFlowViewer({ path }: JourneyFlowViewerProps) {
                             <div className="absolute -bottom-4 left-0 w-24 h-2 bg-[#FF4B91] rounded-full" />
                         </div>
                     ),
-                    h2: ({ children }) => (
-                        <div className="flex items-center gap-4 mt-20 mb-10 group">
-                            <div className="h-10 w-10 rounded-2xl bg-[#1A1A1A] text-white flex items-center justify-center text-lg font-black shadow-xl group-hover:scale-110 transition-transform">
-                                {children?.toString().match(/^\d+/)?.[0] || '—'}
+                    h2: ({ children }) => {
+                        const childStr = children != null ? children.toString() : '';
+                        const match = childStr.match(/^\d+/);
+                        return (
+                            <div className="flex items-center gap-4 mt-20 mb-10 group">
+                                <div className="h-10 w-10 rounded-2xl bg-[#1A1A1A] text-white flex items-center justify-center text-lg font-black shadow-xl group-hover:scale-110 transition-transform">
+                                    {(match != null && match[0] != null) ? match[0] : '—'}
+                                </div>
+                                <h2 className="text-2xl font-black text-[#1A1A1A] tracking-tight uppercase m-0 border-b-2 border-slate-100 pb-2 flex-1">
+                                    {childStr.replace(/^\d+\.\s*/, '')}
+                                </h2>
                             </div>
-                            <h2 className="text-2xl font-black text-[#1A1A1A] tracking-tight uppercase m-0 border-b-2 border-slate-100 pb-2 flex-1">
-                                {children?.toString().replace(/^\d+\.\s*/, '')}
-                            </h2>
-                        </div>
-                    ),
+                        );
+                    },
                     h3: ({ children }) => {
-                        const icon = children?.toString().toLowerCase().includes('purpose') ? <Shield size={14} /> :
-                            children?.toString().toLowerCase().includes('behavior') ? <Activity size={14} /> :
-                                children?.toString().toLowerCase().includes('verification') ? <ListChecks size={14} /> :
+                        const childStr = children != null ? children.toString().toLowerCase() : '';
+                        const icon = childStr.includes('purpose') ? <Shield size={14} /> :
+                            childStr.includes('behavior') ? <Activity size={14} /> :
+                                childStr.includes('verification') ? <ListChecks size={14} /> :
                                     <ChevronRight size={14} />;
 
                         return (
@@ -81,8 +86,8 @@ export function JourneyFlowViewer({ path }: JourneyFlowViewerProps) {
                         );
                     },
                     p: ({ children }) => {
-                        const text = children?.toString();
-                        if (text && text.includes('**Path**:')) {
+                        const text = children != null ? children.toString() : '';
+                        if (text !== '' && text.includes('**Path**:')) {
                             return (
                                 <div className="inline-flex items-center gap-3 px-4 py-2 bg-slate-50 border border-slate-100 rounded-xl mb-8">
                                     <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Digital Source</span>
@@ -90,9 +95,9 @@ export function JourneyFlowViewer({ path }: JourneyFlowViewerProps) {
                                 </div>
                             );
                         }
-                        if (text && text.includes(':') && text.length < 150 && !text.includes('\n')) {
+                        if (text !== '' && text.includes(':') && text.length < 150 && text.includes('\n') === false) {
                             const [key, ...valueParts] = text.split(':');
-                            const value = valueParts.join(':').trim();
+                            const value = (valueParts.length > 0) ? valueParts.join(':').trim() : '';
                             return (
                                 <div className="group flex items-center justify-between p-5 bg-white border border-slate-100 rounded-2xl mb-3 hover:shadow-lg hover:shadow-primary/5 transition-all">
                                     <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">{key}</span>
@@ -119,7 +124,7 @@ export function JourneyFlowViewer({ path }: JourneyFlowViewerProps) {
                     },
                     code(props) {
                         const { children, className, ...rest } = props;
-                        const match = /language-(\w+)/.exec(className || '');
+                        const match = /language-(\w+)/.exec(className != null && className !== '' ? className : '');
 
                         if (!match) {
                             return (

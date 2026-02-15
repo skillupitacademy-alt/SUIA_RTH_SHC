@@ -1,5 +1,4 @@
 'use client';
-/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 
 import { apiClient } from '@quiz/api-client';
 import { ZLoader } from '@quiz/ui';
@@ -7,7 +6,6 @@ import {
     Activity,
     AlertTriangle,
     ArrowLeft,
-    BarChart3,
     ChevronRight,
     Database,
     Filter,
@@ -36,15 +34,22 @@ interface HierarchyItem {
     subtopics?: HierarchyItem[];
 }
 
+interface ViewState {
+    level: 'domain' | 'subject' | 'topic' | 'subtopic';
+    data: HierarchyItem[];
+    title: string;
+    parentName?: string;
+}
+
 export const HierarchyReports: React.FC = () => {
     const [loading, setLoading] = useState(true);
-    const [reportData, setReportData] = useState<any[]>([]);
-    const [viewStack, setViewStack] = useState<any[]>([{ level: 'domain', data: [], title: 'Global Domains' }]);
+    const [reportData, setReportData] = useState<HierarchyItem[]>([]);
+    const [viewStack, setViewStack] = useState<ViewState[]>([{ level: 'domain', data: [], title: 'Global Domains' }]);
     const [searchQuery, setSearchQuery] = useState('');
     const [isActionLoading, setIsActionLoading] = useState(false);
     const [isPageLoading, setIsPageLoading] = useState(false);
 
-    const currentView = viewStack[viewStack.length - 1];
+    const currentView: ViewState = viewStack[viewStack.length - 1] ?? { level: 'domain', data: [], title: 'Global Domains' };
 
     useEffect(() => {
         void fetchReport();
@@ -56,22 +61,22 @@ export const HierarchyReports: React.FC = () => {
             const data = await apiClient.admin.getContentHealthReport();
             await new Promise(r => setTimeout(r, 800)); // Diagnostic delay for ZLoader
             // Transform for consistent display
-            const normalizedData = data.map((d: any) => ({
-                id: d.domainId,
-                name: d.domainName,
-                stats: d.stats,
-                subjects: d.subjects.map((s: any) => ({
-                    id: s.id,
-                    name: s.name,
-                    stats: s.stats,
-                    topics: s.topics.map((t: any) => ({
-                        id: t.id,
-                        name: t.name,
-                        stats: t.stats,
-                        subtopics: t.subtopics.map((st: any) => ({
-                            id: st.id,
-                            name: st.name,
-                            stats: st.stats
+            const normalizedData: HierarchyItem[] = (data as Record<string, unknown>[]).map((d) => ({
+                id: d.domainId as string,
+                name: d.domainName as string,
+                stats: d.stats as HierarchyItem['stats'],
+                subjects: (d.subjects as Record<string, unknown>[]).map((s) => ({
+                    id: s.id as string,
+                    name: s.name as string,
+                    stats: s.stats as HierarchyItem['stats'],
+                    topics: (s.topics as Record<string, unknown>[]).map((t) => ({
+                        id: t.id as string,
+                        name: t.name as string,
+                        stats: t.stats as HierarchyItem['stats'],
+                        subtopics: (t.subtopics as Record<string, unknown>[]).map((st) => ({
+                            id: st.id as string,
+                            name: st.name as string,
+                            stats: st.stats as HierarchyItem['stats']
                         }))
                     }))
                 }))
@@ -86,22 +91,22 @@ export const HierarchyReports: React.FC = () => {
         }
     };
 
-    const handleDrillDown = async (item: any, nextLevel: string) => {
+    const handleDrillDown = async (item: HierarchyItem, nextLevel: 'domain' | 'subject' | 'topic' | 'subtopic') => {
         setIsActionLoading(true);
         await new Promise(r => setTimeout(r, 1000)); // Diagnostic delay for Activity
         setIsActionLoading(false);
 
-        let nextData: any[] = [];
+        let nextData: HierarchyItem[] = [];
         let title = '';
 
         if (nextLevel === 'subject') {
-            nextData = item.subjects || [];
+            nextData = item.subjects ?? [];
             title = `Domain: ${item.name}`;
         } else if (nextLevel === 'topic') {
-            nextData = item.topics || [];
+            nextData = item.topics ?? [];
             title = `Subject: ${item.name}`;
         } else if (nextLevel === 'subtopic') {
-            nextData = item.subtopics || [];
+            nextData = item.subtopics ?? [];
             title = `Topic: ${item.name}`;
         }
 
@@ -116,7 +121,7 @@ export const HierarchyReports: React.FC = () => {
         }
     };
 
-    const filteredData = currentView.data.filter((item: any) =>
+    const filteredData = currentView.data.filter((item) =>
         item.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
@@ -224,13 +229,13 @@ export const HierarchyReports: React.FC = () => {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-primary/5">
-                                {filteredData.map((item: any) => (
+                                {filteredData.map((item) => (
                                     <tr key={item.id} className="group hover:bg-[#FF4B91]/5 transition-all duration-300">
                                         <td className="p-8">
                                             <div className="flex items-center gap-6">
                                                 <div className={cn(
                                                     "h-14 w-14 rounded-2xl flex items-center justify-center shadow-lg transition-transform group-hover:scale-110",
-                                                    item.stats.isReady ? "bg-green-50 text-green-600" : "bg-red-50 text-red-600"
+                                                    item.stats.isReady === true ? "bg-green-50 text-green-600" : "bg-red-50 text-red-600"
                                                 )}>
                                                     <Database size={24} />
                                                 </div>
@@ -265,7 +270,7 @@ export const HierarchyReports: React.FC = () => {
                                             </div>
                                         </td>
                                         <td className="p-8">
-                                            {item.stats.isReady ? (
+                                            {item.stats.isReady === true ? (
                                                 <div className="flex items-center gap-2 px-4 py-2 bg-green-50 text-green-600 rounded-xl border border-green-100 w-fit shrink-0">
                                                     <ShieldCheck size={14} />
                                                     <span className="text-[10px] font-black uppercase tracking-widest">Certified</span>
@@ -341,8 +346,8 @@ export const HierarchyReports: React.FC = () => {
                 />
                 <SummaryPanel
                     icon={ShieldCheck}
-                    label="Content Integrity"
-                    value={`${Math.round((reportData.filter(d => d.stats.isReady).length / reportData.length) * 100 || 0)}%`}
+                    label="Content Readiness"
+                    value={`${Math.round((reportData.filter(d => d.stats.isReady === true).length / reportData.length) * 100) ?? 0}%`}
                     subvalue="Readiness Score"
                     color="text-green-600"
                     bg="bg-green-50"
@@ -350,7 +355,7 @@ export const HierarchyReports: React.FC = () => {
                 <SummaryPanel
                     icon={AlertTriangle}
                     label="Attention Required"
-                    value={reportData.filter(d => !d.stats.isReady).length.toString()}
+                    value={reportData.filter(d => d.stats.isReady === false).length.toString()}
                     subvalue="Draft Containers"
                     color="text-red-500"
                     bg="bg-red-50"
@@ -360,14 +365,29 @@ export const HierarchyReports: React.FC = () => {
     );
 };
 
-const MetricSmall = ({ label, value, color }: any) => (
+interface MetricSmallProps {
+    label: string;
+    value: number;
+    color: string;
+}
+
+const MetricSmall = ({ label, value, color }: MetricSmallProps) => (
     <div className="flex flex-col items-center min-w-[32px]">
         <span className={cn("text-xs font-black", color)}>{value}</span>
         <span className="text-[8px] font-black uppercase text-slate-300">{label}</span>
     </div>
 );
 
-const SummaryPanel = ({ icon: Icon, label, value, subvalue, color, bg }: any) => (
+interface SummaryPanelProps {
+    icon: React.ElementType;
+    label: string;
+    value: string;
+    subvalue: string;
+    color: string;
+    bg: string;
+}
+
+const SummaryPanel = ({ icon: Icon, label, value, subvalue, color, bg }: SummaryPanelProps) => (
     <div className="p-8 rounded-[2.5rem] bg-white border-2 border-primary/5 shadow-xl shadow-muted/5 flex items-center gap-6 group hover:scale-[1.02] transition-all duration-500">
         <div className={cn("p-4 rounded-2xl shadow-lg group-hover:rotate-6 transition-transform duration-500", bg, color)}>
             <Icon size={24} />

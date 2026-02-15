@@ -1,5 +1,4 @@
 'use client';
-/* eslint-disable @typescript-eslint/no-unused-vars */
 
 import { ZLoader } from '@quiz/ui';
 import { AlertOctagon, ChevronRight, Terminal } from 'lucide-react';
@@ -30,10 +29,10 @@ export function UniversalMarkdownViewer({ path }: UniversalMarkdownViewerProps) 
             }
         };
 
-        fetchContent();
+        void fetchContent();
     }, [path]);
 
-    if (isLoading) {
+    if (isLoading === true) {
         return (
             <div className="flex flex-col items-center justify-center py-40 gap-6">
                 <ZLoader size="lg" text="Loading Intelligence Stream..." />
@@ -69,11 +68,10 @@ export function UniversalMarkdownViewer({ path }: UniversalMarkdownViewerProps) 
                         </h3>
                     ),
                     p: ({ children }) => {
-                        // Check for Key: Value patterns
-                        const text = children?.toString();
-                        if (text && text.includes(':') && text.length < 150 && !text.includes('\n')) {
+                        const text = children != null ? children.toString() : '';
+                        if (text !== '' && text.includes(':') && text.length < 150 && text.includes('\n') === false) {
                             const [key, ...valueParts] = text.split(':');
-                            const value = valueParts.join(':').trim();
+                            const value = (valueParts.length > 0) ? valueParts.join(':').trim() : '';
                             return (
                                 <div className="group flex items-center justify-between p-6 bg-slate-50 border border-slate-100 rounded-2xl mb-4 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300">
                                     <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{key}</span>
@@ -108,8 +106,8 @@ export function UniversalMarkdownViewer({ path }: UniversalMarkdownViewerProps) 
                         <td className="px-8 py-5 text-sm font-bold text-slate-600 border-b border-slate-50">{children}</td>
                     ),
                     code(props) {
-                        const { children, className, node, ...rest } = props;
-                        const match = /language-(\w+)/.exec(className || '');
+                        const { children, className, ...rest } = props;
+                        const match = /language-(\w+)/.exec(className != null && className !== '' ? className : '');
 
                         if (!match) {
                             return (

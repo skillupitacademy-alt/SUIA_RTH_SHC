@@ -1,5 +1,4 @@
 'use client';
-/* eslint-disable @typescript-eslint/no-explicit-any, react-hooks/exhaustive-deps */
 
 import { apiClient } from '@quiz/api-client';
 import { ZLoader } from '@quiz/ui';
@@ -47,8 +46,8 @@ export function BlueprintFactoryWizard({ isOpen, onClose, domainId, domainName, 
             intermediate: 30,
             expert: 40
         },
-        questionIds: questionIds || [] as string[],
-        blueprintMode: (questionIds && questionIds.length > 0) ? 'static' : 'dynamic' as 'static' | 'dynamic'
+        questionIds: (questionIds != null) ? questionIds : [] as string[],
+        blueprintMode: (questionIds != null && questionIds.length > 0) ? 'static' : 'dynamic' as 'static' | 'dynamic'
     });
 
     const [isProcessing, setIsProcessing] = useState(false);
@@ -67,9 +66,9 @@ export function BlueprintFactoryWizard({ isOpen, onClose, domainId, domainName, 
                 ...prev,
                 name: `${domainName} Assessment`,
                 description: `Official assessment for ${domainName}.`,
-                totalQuestions: questionIds?.length || 10,
-                questionIds: questionIds || [],
-                blueprintMode: (questionIds && questionIds.length > 0) ? 'static' : 'dynamic'
+                totalQuestions: (questionIds != null && questionIds.length > 0) ? questionIds.length : 10,
+                questionIds: (questionIds != null) ? questionIds : [],
+                blueprintMode: (questionIds != null && questionIds.length > 0) ? 'static' : 'dynamic'
             }));
         } else {
             document.body.style.overflow = 'unset';
@@ -79,7 +78,7 @@ export function BlueprintFactoryWizard({ isOpen, onClose, domainId, domainName, 
         return () => {
             document.body.style.overflow = 'unset';
         };
-    }, [isOpen, domainName]);
+    }, [isOpen, domainName, questionIds]);
 
     const handleCreate = async () => {
         // Validation: Existence Rule
@@ -350,8 +349,8 @@ export function BlueprintFactoryWizard({ isOpen, onClose, domainId, domainName, 
                                 Cancel Design
                             </button>
                             <button
-                                disabled={isProcessing || totalDist !== 100}
-                                onClick={handleCreate}
+                                disabled={isProcessing === true || totalDist !== 100}
+                                onClick={() => { void handleCreate(); }}
                                 title="Atomic commit of the Blueprint to the system registry. This will finalize the delivery protocol and make the assessment available for student sessions."
                                 className="px-10 py-4 bg-[#1A1A1A] text-white rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] shadow-xl hover:scale-105 transition-all flex items-center gap-3 disabled:grayscale disabled:opacity-50"
                             >

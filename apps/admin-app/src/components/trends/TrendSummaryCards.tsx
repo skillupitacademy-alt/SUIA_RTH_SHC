@@ -1,5 +1,4 @@
 'use client';
-
 interface TrendSummaryCardsProps {
     summary: {
         avgScore: number;
@@ -32,7 +31,7 @@ export function TrendSummaryCards({ summary }: TrendSummaryCardsProps) {
                 ? `${summary.deltaPct > 0 ? '+' : ''}${summary.deltaPct}pp vs last period`
                 : `${summary.totalExams} exams`,
             color: getHealthColor(summary.healthStatus),
-            subtextColor: summary.deltaPct ? getDeltaColor(summary.deltaPct) : 'text-slate-500'
+            subtextColor: (summary.deltaPct != null && summary.deltaPct !== 0) ? getDeltaColor(summary.deltaPct) : 'text-slate-500'
         },
         {
             label: 'Pass Rate',
@@ -43,15 +42,15 @@ export function TrendSummaryCards({ summary }: TrendSummaryCardsProps) {
         },
         {
             label: 'Best Skill',
-            value: summary.bestSkill ? `+${summary.bestSkill.delta}%` : '—',
-            subtext: summary.bestSkill?.name || 'No data',
+            value: (summary.bestSkill != null) ? `+${summary.bestSkill.delta}%` : '—',
+            subtext: (summary.bestSkill?.name != null && summary.bestSkill.name !== '') ? summary.bestSkill.name : 'No data',
             color: 'text-emerald-600',
             subtextColor: 'text-slate-500'
         },
         {
             label: 'Worst Skill',
-            value: summary.worstSkill ? `${summary.worstSkill.delta}%` : '—',
-            subtext: summary.worstSkill?.name || 'No data',
+            value: (summary.worstSkill != null) ? `${summary.worstSkill.delta}%` : '—',
+            subtext: (summary.worstSkill?.name != null && summary.worstSkill.name !== '') ? summary.worstSkill.name : 'No data',
             color: 'text-rose-600',
             subtextColor: 'text-slate-500'
         }

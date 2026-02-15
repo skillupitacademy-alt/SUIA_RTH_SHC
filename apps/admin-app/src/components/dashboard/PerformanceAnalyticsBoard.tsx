@@ -1,5 +1,4 @@
 'use client';
-/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { apiClient } from '@quiz/api-client';
 import { ZLoader } from '@quiz/ui';
@@ -10,9 +9,45 @@ import { EfficiencyQuadrant } from './EfficiencyQuadrant';
 
 type TimeRange = '7d' | '14d' | '28d';
 
+interface DomainPerformance {
+    id: string;
+    name: string;
+    avgAccuracy: number;
+    delta?: number;
+    sampleSize: number;
+}
+
+interface DifficultyPerformance {
+    level: string;
+    avgAccuracy: number;
+}
+
+interface EfficiencyData {
+    mastery: number;
+    persistence: number;
+    rash: number;
+    struggle: number;
+    noData: number;
+    total: number;
+}
+
+interface PerformanceData {
+    domains: DomainPerformance[];
+    difficulty: DifficultyPerformance[];
+    passFailTrends: { pass: number, fail: number };
+    efficiency: EfficiencyData; // Properly typed
+}
+
+interface GrowthMetric {
+    id: string;
+    name: string;
+    accuracy: number;
+    sampleSize: number;
+}
+
 export function PerformanceAnalyticsBoard() {
-    const [perf, setPerf] = useState<any>(null);
-    const [growth, setGrowth] = useState<any[]>([]);
+    const [perf, setPerf] = useState<PerformanceData | null>(null);
+    const [growth, setGrowth] = useState<GrowthMetric[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [range, setRange] = useState<TimeRange>('7d');
 
@@ -75,7 +110,7 @@ export function PerformanceAnalyticsBoard() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {perf.domains.map((domain: any) => (
+                    {perf.domains.map((domain) => (
                         <div key={domain.id} className="p-6 rounded-[1.5rem] bg-white border border-slate-200 hover:border-blue-500/30 transition-all group shadow-sm">
                             <div className="flex items-center justify-between mb-3">
                                 <span className="alpha-terminal text-slate-600">{domain.name}</span>
@@ -106,7 +141,7 @@ export function PerformanceAnalyticsBoard() {
                     <div>
                         <h4 className="alpha-terminal text-slate-500 mb-6 !tracking-wide">Accuracy by Difficulty</h4>
                         <div className="grid grid-cols-3 gap-4">
-                            {perf.difficulty.map((d: any) => (
+                            {perf.difficulty.map((d) => (
                                 <div key={d.level} className="p-5 rounded-3xl bg-white border border-slate-200 text-center">
                                     <p className="alpha-terminal text-slate-600 mb-1 !tracking-wide">{d.level}</p>
                                     <p className="text-2xl font-outfit font-black text-[#1A1A1A]">{d.avgAccuracy}%</p>

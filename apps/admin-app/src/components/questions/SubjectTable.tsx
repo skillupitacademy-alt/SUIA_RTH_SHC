@@ -1,5 +1,4 @@
 'use client';
-/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars, react-hooks/exhaustive-deps */
 
 import { apiClient } from '@quiz/api-client';
 import { ZLoader, ZPagination } from '@quiz/ui';
@@ -15,8 +14,6 @@ import {
     AlertDialogCancel,
     AlertDialogContent,
     AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { ZPortalModal } from '@/components/ui/ZPortalModal';
@@ -25,8 +22,24 @@ import { cn } from '@/lib/utils';
 
 import { SubjectReviewCard } from './SubjectReviewCard';
 
+interface SubjectItem {
+    id: string;
+    name: string;
+    domainId: string;
+    description?: string;
+    status?: string;
+    order?: number;
+    stats: {
+        total: number;
+        isReady: boolean;
+        simple: number;
+        intermediate: number;
+        expert: number;
+    };
+}
+
 export function SubjectTable() {
-    const [data, setData] = useState<any[]>([]);
+    const [data, setData] = useState<SubjectItem[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [page, setPage] = useState(1);
     const [pageSize, setPageSize] = useState(20);
@@ -42,12 +55,11 @@ export function SubjectTable() {
 
     // Batch Operation State
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-    const [isBatchDeleting, setIsBatchDeleting] = useState(false);
 
     // Modal states
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-    const [currentSubject, setCurrentSubject] = useState<any>(null);
+    const [currentSubject, setCurrentSubject] = useState<SubjectItem | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isFactoryOpen, setIsFactoryOpen] = useState(false);
 
@@ -83,7 +95,7 @@ export function SubjectTable() {
 
     useEffect(() => {
         void fetchSubjects();
-    }, [page, pageSize, debouncedSearch]);
+    }, [page, pageSize, debouncedSearch]); // eslint-disable-line react-hooks/exhaustive-deps
 
     // --- SELECTION LOGIC ---
     const handleSelect = (id: string, selected: boolean) => {
@@ -108,31 +120,29 @@ export function SubjectTable() {
     const handleBatchDelete = async () => { // Make sure this is called by the UI
         if (selectedIds.size === 0) return;
 
-        setIsBatchDeleting(true);
         try {
             await apiClient.admin.batchDeleteSubjects(Array.from(selectedIds));
             setSelectedIds(new Set());
-            fetchSubjects();
+            void fetchSubjects();
             setIsDeleteOpen(false); // Close modal if open
             setCurrentSubject(null);
         } catch (error) {
             console.error('Batch delete failed:', error);
             setErrorMessage('Batch Deletion Failed: Some subjects could not be removed.');
         } finally {
-            setIsBatchDeleting(false);
         }
     };
 
     // --- FORM LOGIC ---
-    const handleOpenForm = (subject: any = null) => {
-        if (subject !== null) {
+    const handleOpenForm = (subject: SubjectItem | null = null) => {
+        if (subject != null) {
             setCurrentSubject(subject);
             setFormData({
                 name: subject.name,
-                domainId: subject.domainId || '',
-                description: subject.description || '',
-                status: subject.status || 'active',
-                order: subject.order || 0
+                domainId: subject.domainId,
+                description: subject.description ?? '',
+                status: (subject.status as 'active' | 'inactive') ?? 'active',
+                order: subject.order ?? 0
             });
             setIsFormOpen(true);
         } else {
@@ -186,7 +196,7 @@ export function SubjectTable() {
                 await apiClient.admin.createSubject(formData);
             }
             handleCloseForm();
-            fetchSubjects();
+            void fetchSubjects();
         } catch (error) {
             console.error('Failed to save subject:', error);
             setErrorMessage('Saving Failed: Please ensure all fields are correct.');
@@ -209,7 +219,7 @@ export function SubjectTable() {
             await apiClient.admin.deleteSubject(currentSubject.id);
             setIsDeleteOpen(false);
             setCurrentSubject(null);
-            fetchSubjects();
+            void fetchSubjects();
         } catch (error) {
             console.error('Failed to delete subject:', error);
             setErrorMessage('Deletion Blocked: This subject is linked to active topics.');
@@ -284,7 +294,7 @@ export function SubjectTable() {
                                         <SelectField
                                             label="Parent Domain"
                                             value={formData.domainId}
-                                            options={domains.map((d: any) => ({ id: d.id, name: d.name }))}
+                                            options={(domains ?? []).map((d: { id: string, name: string }) => ({ id: d.id, name: d.name }))}
                                             loading={domainsHook.loading}
                                             onChange={(val: string) => setFormData({ ...formData, domainId: val })}
                                             placeholder="Select Domain"
@@ -327,7 +337,7 @@ export function SubjectTable() {
                                                 <button
                                                     key={status}
                                                     type="button"
-                                                    onClick={() => setFormData({ ...formData, status: status as any })}
+                                                    onClick={() => setFormData({ ...formData, status: status as 'active' | 'inactive' })}
                                                     className={`flex-1 py-2.5 px-4 rounded-lg text-xs font-black uppercase tracking-wider transition-all ${formData.status === status
                                                         ? 'bg-[#1A1A1A] text-white shadow-sm'
                                                         : 'text-slate-500 hover:text-slate-600'
@@ -371,8 +381,8 @@ export function SubjectTable() {
                         void fetchSubjects();
                     }}
                     initialData={
-                        formData.domainId
-                            ? { target: 'subject', domainId: formData.domainId, domainName: domains.find(d => d.id === formData.domainId)?.name || '' }
+                        (formData.domainId != null && formData.domainId !== '')
+                            ? { target: 'subject', domainId: formData.domainId as string, domainName: ((domains ?? []).find(d => d.id === formData.domainId)?.name) ?? '' }
                             : { target: 'subject' }
                     }
                 />

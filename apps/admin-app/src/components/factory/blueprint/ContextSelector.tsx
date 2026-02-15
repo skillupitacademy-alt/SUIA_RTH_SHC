@@ -1,10 +1,9 @@
 'use client';
-
-import { AlertCircle,Bookmark, Box, Layers, Target } from 'lucide-react';
+import { AlertCircle, Bookmark, Box, Layers, Target } from 'lucide-react';
 import React from 'react';
 
 import { SelectField } from '@/components/entry/SelectionFields';
-import { useDomains, useSubjects, useSubtopics,useTopics } from '@/hooks/useAdminHierarchy';
+import { useDomains, useSubjects, useSubtopics, useTopics } from '@/hooks/useAdminHierarchy';
 
 interface ContextSelectorProps {
     selections: {
@@ -18,9 +17,9 @@ interface ContextSelectorProps {
 
 export function ContextSelector({ selections, onChange }: ContextSelectorProps) {
     const domainsHook = useDomains();
-    const subjectsHook = useSubjects(selections.domainId || undefined);
-    const topicsHook = useTopics(selections.subjectId || undefined);
-    const subtopicsHook = useSubtopics(selections.topicId || undefined);
+    const subjectsHook = useSubjects((selections.domainId != null && selections.domainId !== '') ? selections.domainId : undefined);
+    const topicsHook = useTopics((selections.subjectId != null && selections.subjectId !== '') ? selections.subjectId : undefined);
+    const subtopicsHook = useSubtopics((selections.topicId != null && selections.topicId !== '') ? selections.topicId : undefined);
 
     return (
         <div className="space-y-6">
@@ -36,7 +35,7 @@ export function ContextSelector({ selections, onChange }: ContextSelectorProps) 
                     label="Target Domain"
                     value={selections.domainId}
                     onChange={(id) => onChange('domainId', id)}
-                    options={domainsHook.data || []}
+                    options={domainsHook.data ?? []}
                     loading={domainsHook.loading}
                     placeholder="Select Domain"
                     active={true}
@@ -48,11 +47,11 @@ export function ContextSelector({ selections, onChange }: ContextSelectorProps) 
                     label="Target Subject"
                     value={selections.subjectId}
                     onChange={(id) => onChange('subjectId', id)}
-                    options={subjectsHook.data || []}
+                    options={subjectsHook.data ?? []}
                     loading={subjectsHook.loading}
-                    disabled={!selections.domainId}
+                    disabled={selections.domainId == null || selections.domainId === ''}
                     placeholder="Select Subject"
-                    active={!!selections.domainId}
+                    active={selections.domainId != null && selections.domainId !== ''}
                     icon={<Box className="w-3 h-3" />}
                     hideCreate={true}
                 />
@@ -61,24 +60,24 @@ export function ContextSelector({ selections, onChange }: ContextSelectorProps) 
                     label="Target Topic"
                     value={selections.topicId}
                     onChange={(id) => onChange('topicId', id)}
-                    options={topicsHook.data || []}
+                    options={topicsHook.data ?? []}
                     loading={topicsHook.loading}
-                    disabled={!selections.subjectId}
+                    disabled={selections.subjectId == null || selections.subjectId === ''}
                     placeholder="Select Topic"
-                    active={!!selections.subjectId}
+                    active={selections.subjectId != null && selections.subjectId !== ''}
                     icon={<Bookmark className="w-3 h-3" />}
                     hideCreate={true}
                 />
 
                 <SelectField
                     label="Target Sub-Topic"
-                    value={selections.subtopicId || ''}
+                    value={(selections.subtopicId != null && selections.subtopicId !== '') ? selections.subtopicId : ''}
                     onChange={(id) => onChange('subtopicId', id)}
-                    options={subtopicsHook.data || []}
+                    options={subtopicsHook.data ?? []}
                     loading={subtopicsHook.loading}
-                    disabled={!selections.topicId}
+                    disabled={selections.topicId == null || selections.topicId === ''}
                     placeholder="Select Sub-Topic"
-                    active={!!selections.topicId}
+                    active={selections.topicId != null && selections.topicId !== ''}
                     icon={<Target className="w-3 h-3" />}
                     hideCreate={true}
                 />

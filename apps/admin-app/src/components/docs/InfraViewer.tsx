@@ -85,7 +85,7 @@ export function InfraViewer() {
                         {INFRA_DATA.envConfig.map((item: any, idx) => (
                             <div key={idx} className="p-6 rounded-[1.5rem] bg-slate-50 border border-slate-100">
                                 <div className="text-[10px] font-black text-[#FF4B91] uppercase tracking-widest mb-2">{item.Detection}</div>
-                                <div className="text-sm font-bold text-slate-600 truncate">{item.Link || item.Status}</div>
+                                <div className="text-sm font-bold text-slate-600 truncate">{item.Link != null && item.Link !== '' ? item.Link : item.Status}</div>
                             </div>
                         ))}
                     </div>

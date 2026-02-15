@@ -1,0 +1,311 @@
+﻿
+> @quiz/admin-app@0.1.0 lint D:\onlinewebsites\quiz-platform\apps\admin-app
+> cross-env ESLINT_USE_FLAT_CONFIG=false eslint --max-warnings=0 --ext .ts,.tsx,.js,.jsx .
+
+
+D:\onlinewebsites\quiz-platform\apps\admin-app\src\app\(authenticated)\factory\question-generator\page.tsx
+   64:32  error  Unexpected nullable string value in conditional. Please handle the nullish/empty cases explicitly  @typescript-eslint/strict-boolean-expressions
+   65:33  error  Unexpected nullable string value in conditional. Please handle the nullish/empty cases explicitly  @typescript-eslint/strict-boolean-expressions
+   66:31  error  Unexpected nullable string value in conditional. Please handle the nullish/empty cases explicitly  @typescript-eslint/strict-boolean-expressions
+  177:84  error  Unexpected nullable boolean value in conditional. Please handle the nullish case explicitly        @typescript-eslint/strict-boolean-expressions
+  180:47  error  Unexpected nullable boolean value in conditional. Please handle the nullish case explicitly        @typescript-eslint/strict-boolean-expressions
+  185:48  error  Unexpected nullable boolean value in conditional. Please handle the nullish case explicitly        @typescript-eslint/strict-boolean-expressions
+  187:75  error  Unexpected nullable boolean value in conditional. Please handle the nullish case explicitly        @typescript-eslint/strict-boolean-expressions
+  189:46  error  Unexpected nullable boolean value in conditional. Please handle the nullish case explicitly        @typescript-eslint/strict-boolean-expressions
+
+D:\onlinewebsites\quiz-platform\apps\admin-app\src\app\(authenticated)\questions\new\page.tsx
+  31:14  error  Unexpected nullable string value in conditional. Please handle the nullish/empty cases explicitly  @typescript-eslint/strict-boolean-expressions
+  78:26  error  Unexpected nullable string value in conditional. Please handle the nullish/empty cases explicitly  @typescript-eslint/strict-boolean-expressions
+
+D:\onlinewebsites\quiz-platform\apps\admin-app\src\components\content\BlueprintFactoryWizard.tsx
+  70:33  error  Unexpected nullable number value in conditional. Please handle the nullish/zero/NaN cases explicitly  @typescript-eslint/strict-boolean-expressions
+
+D:\onlinewebsites\quiz-platform\apps\admin-app\src\components\content\ContentManager.tsx
+  23:9  error  Promises must be awaited, end with a call to .catch, end with a call to .then with a rejection handler or be explicitly marked as ignored with the `void` operator  @typescript-eslint/no-floating-promises
+
+D:\onlinewebsites\quiz-platform\apps\admin-app\src\components\content\HierarchyFactoryWizard.tsx
+   92:19   error  Unexpected any value in conditional. An explicit comparison or type conversion is required                                                                          @typescript-eslint/strict-boolean-expressions
+   93:20   error  Unexpected any value in conditional. An explicit comparison or type conversion is required                                                                          @typescript-eslint/strict-boolean-expressions
+   94:18   error  Unexpected any value in conditional. An explicit comparison or type conversion is required                                                                          @typescript-eslint/strict-boolean-expressions
+  101:13   error  Promises must be awaited, end with a call to .catch, end with a call to .then with a rejection handler or be explicitly marked as ignored with the `void` operator  @typescript-eslint/no-floating-promises
+  163:24   error  Unexpected any value in conditional. An explicit comparison or type conversion is required                                                                          @typescript-eslint/strict-boolean-expressions
+  167:28   error  Unexpected nullable string value in conditional. Please handle the nullish/empty cases explicitly                                                                   @typescript-eslint/strict-boolean-expressions
+  167:118  error  Unexpected any value in conditional. An explicit comparison or type conversion is required                                                                          @typescript-eslint/strict-boolean-expressions
+  168:29   error  Unexpected nullable string value in conditional. Please handle the nullish/empty cases explicitly                                                                   @typescript-eslint/strict-boolean-expressions
+  168:109  error  Unexpected any value in conditional. An explicit comparison or type conversion is required                                                                          @typescript-eslint/strict-boolean-expressions
+  169:27   error  Unexpected nullable string value in conditional. Please handle the nullish/empty cases explicitly                                                                   @typescript-eslint/strict-boolean-expressions
+  169:103  error  Unexpected any value in conditional. An explicit comparison or type conversion is required                                                                          @typescript-eslint/strict-boolean-expressions
+  347:32   error  Unexpected any value in conditional. An explicit comparison or type conversion is required                                                                          @typescript-eslint/strict-boolean-expressions
+  383:24   error  Unexpected any value in conditional. An explicit comparison or type conversion is required                                                                          @typescript-eslint/strict-boolean-expressions
+  394:27   error  Unexpected any value in conditional. An explicit comparison or type conversion is required                                                                          @typescript-eslint/strict-boolean-expressions
+  401:27   error  Unexpected any value in conditional. An explicit comparison or type conversion is required                                                                          @typescript-eslint/strict-boolean-expressions
+  403:25   error  Unexpected any value in conditional. An explicit comparison or type conversion is required                                                                          @typescript-eslint/strict-boolean-expressions
+  411:27   error  Unexpected any value in conditional. An explicit comparison or type conversion is required                                                                          @typescript-eslint/strict-boolean-expressions
+  413:25   error  Unexpected any value in conditional. An explicit comparison or type conversion is required                                                                          @typescript-eslint/strict-boolean-expressions
+  415:29   error  Unexpected any value in conditional. An explicit comparison or type conversion is required                                                                          @typescript-eslint/strict-boolean-expressions
+  514:39   error  Unexpected any value in conditional. An explicit comparison or type conversion is required                                                                          @typescript-eslint/strict-boolean-expressions
+  515:53   error  Unexpected any value in conditional. An explicit comparison or type conversion is required                                                                          @typescript-eslint/strict-boolean-expressions
+  516:52   error  Unexpected any value in conditional. An explicit comparison or type conversion is required                                                                          @typescript-eslint/strict-boolean-expressions
+  516:76   error  Unexpected any value in conditional. An explicit comparison or type conversion is required                                                                          @typescript-eslint/strict-boolean-expressions
+  517:55   error  Unexpected any value in conditional. An explicit comparison or type conversion is required                                                                          @typescript-eslint/strict-boolean-expressions
+  517:79   error  Unexpected any value in conditional. An explicit comparison or type conversion is required                                                                          @typescript-eslint/strict-boolean-expressions
+  517:104  error  Unexpected any value in conditional. An explicit comparison or type conversion is required                                                                          @typescript-eslint/strict-boolean-expressions
+  525:47   error  Unexpected any value in conditional. An explicit comparison or type conversion is required                                                                          @typescript-eslint/strict-boolean-expressions
+  526:61   error  Unexpected any value in conditional. An explicit comparison or type conversion is required                                                                          @typescript-eslint/strict-boolean-expressions
+  527:60   error  Unexpected any value in conditional. An explicit comparison or type conversion is required                                                                          @typescript-eslint/strict-boolean-expressions
+  527:84   error  Unexpected any value in conditional. An explicit comparison or type conversion is required                                                                          @typescript-eslint/strict-boolean-expressions
+  528:63   error  Unexpected any value in conditional. An explicit comparison or type conversion is required                                                                          @typescript-eslint/strict-boolean-expressions
+  528:87   error  Unexpected any value in conditional. An explicit comparison or type conversion is required                                                                          @typescript-eslint/strict-boolean-expressions
+  528:112  error  Unexpected any value in conditional. An explicit comparison or type conversion is required                                                                          @typescript-eslint/strict-boolean-expressions
+  535:51   error  Unexpected any value in conditional. An explicit comparison or type conversion is required                                                                          @typescript-eslint/strict-boolean-expressions
+  536:65   error  Unexpected any value in conditional. An explicit comparison or type conversion is required                                                                          @typescript-eslint/strict-boolean-expressions
+  537:64   error  Unexpected any value in conditional. An explicit comparison or type conversion is required                                                                          @typescript-eslint/strict-boolean-expressions
+  537:88   error  Unexpected any value in conditional. An explicit comparison or type conversion is required                                                                          @typescript-eslint/strict-boolean-expressions
+  538:67   error  Unexpected any value in conditional. An explicit comparison or type conversion is required                                                                          @typescript-eslint/strict-boolean-expressions
+  538:91   error  Unexpected any value in conditional. An explicit comparison or type conversion is required                                                                          @typescript-eslint/strict-boolean-expressions
+  538:116  error  Unexpected any value in conditional. An explicit comparison or type conversion is required                                                                          @typescript-eslint/strict-boolean-expressions
+  545:47   error  Unexpected any value in conditional. An explicit comparison or type conversion is required                                                                          @typescript-eslint/strict-boolean-expressions
+  546:61   error  Unexpected any value in conditional. An explicit comparison or type conversion is required                                                                          @typescript-eslint/strict-boolean-expressions
+  547:60   error  Unexpected any value in conditional. An explicit comparison or type conversion is required                                                                          @typescript-eslint/strict-boolean-expressions
+  547:84   error  Unexpected any value in conditional. An explicit comparison or type conversion is required                                                                          @typescript-eslint/strict-boolean-expressions
+  548:63   error  Unexpected any value in conditional. An explicit comparison or type conversion is required                                                                          @typescript-eslint/strict-boolean-expressions
+  548:87   error  Unexpected any value in conditional. An explicit comparison or type conversion is required                                                                          @typescript-eslint/strict-boolean-expressions
+  548:112  error  Unexpected any value in conditional. An explicit comparison or type conversion is required                                                                          @typescript-eslint/strict-boolean-expressions
+  579:38   error  Unexpected any value in conditional. An explicit comparison or type conversion is required                                                                          @typescript-eslint/strict-boolean-expressions
+  582:53   error  Unexpected any value in conditional. An explicit comparison or type conversion is required                                                                          @typescript-eslint/strict-boolean-expressions
+  583:40   error  Unexpected any value in conditional. An explicit comparison or type conversion is required                                                                          @typescript-eslint/strict-boolean-expressions
+  584:38   error  Unexpected any value in conditional. An explicit comparison or type conversion is required                                                                          @typescript-eslint/strict-boolean-expressions
+  591:63   error  Unexpected any value in conditional. An explicit comparison or type conversion is required                                                                          @typescript-eslint/strict-boolean-expressions
+  595:72   error  Unexpected any value in conditional. An explicit comparison or type conversion is required                                                                          @typescript-eslint/strict-boolean-expressions
+  651:72   error  Unexpected any value in conditional. An explicit comparison or type conversion is required                                                                          @typescript-eslint/strict-boolean-expressions
+  673:42   error  Unexpected any value in conditional. An explicit comparison or type conversion is required                                                                          @typescript-eslint/strict-boolean-expressions
+  713:113  error  Unexpected any value in conditional. An explicit comparison or type conversion is required                                                                          @typescript-eslint/strict-boolean-expressions
+  714:70   error  Unexpected nullable string value in conditional. Please handle the nullish/empty cases explicitly                                                                   @typescript-eslint/strict-boolean-expressions
+  717:113  error  Unexpected any value in conditional. An explicit comparison or type conversion is required                                                                          @typescript-eslint/strict-boolean-expressions
+  718:70   error  Unexpected nullable string value in conditional. Please handle the nullish/empty cases explicitly                                                                   @typescript-eslint/strict-boolean-expressions
+  721:113  error  Unexpected any value in conditional. An explicit comparison or type conversion is required                                                                          @typescript-eslint/strict-boolean-expressions
+  722:70   error  Unexpected nullable string value in conditional. Please handle the nullish/empty cases explicitly                                                                   @typescript-eslint/strict-boolean-expressions
+  804:68   error  Unexpected any value in conditional. An explicit comparison or type conversion is required                                                                          @typescript-eslint/strict-boolean-expressions
+  856:30   error  Unexpected nullable string value in conditional. Please handle the nullish/empty cases explicitly                                                                   @typescript-eslint/strict-boolean-expressions
+  863:30   error  Unexpected any value in conditional. An explicit comparison or type conversion is required                                                                          @typescript-eslint/strict-boolean-expressions
+  872:34   error  Unexpected any value in conditional. An explicit comparison or type conversion is required                                                                          @typescript-eslint/strict-boolean-expressions
+  894:58   error  Unexpected any value in conditional. An explicit comparison or type conversion is required                                                                          @typescript-eslint/strict-boolean-expressions
+  933:15   error  Unexpected any value in conditional. An explicit comparison or type conversion is required                                                                          @typescript-eslint/strict-boolean-expressions
+  955:37   error  Promise-returning function provided to attribute where a void return was expected                                                                                   @typescript-eslint/no-misused-promises
+
+D:\onlinewebsites\quiz-platform\apps\admin-app\src\components\dashboard\ContentReadinessBoard.tsx
+  136:44  error  Unexpected nullable boolean value in array predicate return type. Please handle the nullish case explicitly  @typescript-eslint/strict-boolean-expressions
+
+D:\onlinewebsites\quiz-platform\apps\admin-app\src\components\docs\JourneyFlowViewer.tsx
+  61:34  error  Unexpected nullable string value in conditional. Please handle the nullish/empty cases explicitly  @typescript-eslint/strict-boolean-expressions
+  69:38  error  Unexpected nullable boolean value in conditional. Please handle the nullish case explicitly        @typescript-eslint/strict-boolean-expressions
+  70:29  error  Unexpected nullable boolean value in conditional. Please handle the nullish case explicitly        @typescript-eslint/strict-boolean-expressions
+  71:33  error  Unexpected nullable boolean value in conditional. Please handle the nullish case explicitly        @typescript-eslint/strict-boolean-expressions
+  85:29  error  Unexpected nullable string value in conditional. Please handle the nullish/empty cases explicitly  @typescript-eslint/strict-boolean-expressions
+  93:29  error  Unexpected nullable string value in conditional. Please handle the nullish/empty cases explicitly  @typescript-eslint/strict-boolean-expressions
+
+D:\onlinewebsites\quiz-platform\apps\admin-app\src\components\docs\UniversalMarkdownViewer.tsx
+  33:9   error  Promises must be awaited, end with a call to .catch, end with a call to .then with a rejection handler or be explicitly marked as ignored with the `void` operator  @typescript-eslint/no-floating-promises
+  74:29  error  Unexpected nullable string value in conditional. Please handle the nullish/empty cases explicitly                                                                   @typescript-eslint/strict-boolean-expressions
+
+D:\onlinewebsites\quiz-platform\apps\admin-app\src\components\entry\BulkUploadPanel.tsx
+   52:30   error  Unexpected any value in conditional. An explicit comparison or type conversion is required         @typescript-eslint/strict-boolean-expressions
+   52:41   error  Unexpected any value in conditional. An explicit comparison or type conversion is required         @typescript-eslint/strict-boolean-expressions
+   58:33   error  Unexpected any value in conditional. An explicit comparison or type conversion is required         @typescript-eslint/strict-boolean-expressions
+   88:29   error  Unexpected nullable string value in conditional. Please handle the nullish/empty cases explicitly  @typescript-eslint/strict-boolean-expressions
+   97:21   error  Unexpected any value in conditional. An explicit comparison or type conversion is required         @typescript-eslint/strict-boolean-expressions
+  126:68   error  Unexpected nullable string value in conditional. Please handle the nullish/empty cases explicitly  @typescript-eslint/strict-boolean-expressions
+  162:34   error  Promise-returning function provided to attribute where a void return was expected                  @typescript-eslint/no-misused-promises
+  216:117  error  Unexpected any value in conditional. An explicit comparison or type conversion is required         @typescript-eslint/strict-boolean-expressions
+  223:52   error  Unexpected any value in conditional. An explicit comparison or type conversion is required         @typescript-eslint/strict-boolean-expressions
+
+D:\onlinewebsites\quiz-platform\apps\admin-app\src\components\entry\CascadingSelect.tsx
+   48:34  error  Unexpected nullable string value in conditional. Please handle the nullish/empty cases explicitly  @typescript-eslint/strict-boolean-expressions
+   49:30  error  Unexpected nullable string value in conditional. Please handle the nullish/empty cases explicitly  @typescript-eslint/strict-boolean-expressions
+   50:36  error  Unexpected nullable string value in conditional. Please handle the nullish/empty cases explicitly  @typescript-eslint/strict-boolean-expressions
+   52:40  error  Unexpected nullable string value in conditional. Please handle the nullish/empty cases explicitly  @typescript-eslint/strict-boolean-expressions
+   57:71  error  Unexpected object value in conditional. The condition is always true                               @typescript-eslint/strict-boolean-expressions
+   65:14  error  Unexpected object value in conditional. The condition is always true                               @typescript-eslint/strict-boolean-expressions
+  159:32  error  Unexpected nullable string value in conditional. Please handle the nullish/empty cases explicitly  @typescript-eslint/strict-boolean-expressions
+  172:32  error  Unexpected nullable string value in conditional. Please handle the nullish/empty cases explicitly  @typescript-eslint/strict-boolean-expressions
+  180:19  error  Unexpected nullable boolean value in conditional. Please handle the nullish case explicitly        @typescript-eslint/strict-boolean-expressions
+  184:37  error  Unexpected object value in conditional. The condition is always true                               @typescript-eslint/strict-boolean-expressions
+  201:32  error  Unexpected nullable string value in conditional. Please handle the nullish/empty cases explicitly  @typescript-eslint/strict-boolean-expressions
+  263:22  error  Unexpected any value in conditional. An explicit comparison or type conversion is required         @typescript-eslint/strict-boolean-expressions
+  285:32  error  Promise-returning function provided to attribute where a void return was expected                  @typescript-eslint/no-misused-promises
+
+D:\onlinewebsites\quiz-platform\apps\admin-app\src\components\entry\QuestionEditor.tsx
+  71:44  error  Unexpected nullable boolean value in conditional. Please handle the nullish case explicitly  @typescript-eslint/strict-boolean-expressions
+
+D:\onlinewebsites\quiz-platform\apps\admin-app\src\components\entry\SelectionFields.tsx
+  33:83  error  Unexpected nullable boolean value in conditional. Please handle the nullish case explicitly                 @typescript-eslint/strict-boolean-expressions
+  61:60  error  Unexpected any value in array predicate return type. An explicit comparison or type conversion is required  @typescript-eslint/strict-boolean-expressions
+  70:49  error  Unexpected any value in conditional. An explicit comparison or type conversion is required                  @typescript-eslint/strict-boolean-expressions
+  77:42  error  Unexpected any value in conditional. An explicit comparison or type conversion is required                  @typescript-eslint/strict-boolean-expressions
+  78:34  error  Unexpected any value in conditional. An explicit comparison or type conversion is required                  @typescript-eslint/strict-boolean-expressions
+
+D:\onlinewebsites\quiz-platform\apps\admin-app\src\components\factory\blueprint\ContextSelector.tsx
+  38:30  error  Unexpected object value in conditional. The condition is always true                               @typescript-eslint/strict-boolean-expressions
+  50:30  error  Unexpected object value in conditional. The condition is always true                               @typescript-eslint/strict-boolean-expressions
+  63:30  error  Unexpected object value in conditional. The condition is always true                               @typescript-eslint/strict-boolean-expressions
+  74:28  error  Unexpected nullable string value in conditional. Please handle the nullish/empty cases explicitly  @typescript-eslint/strict-boolean-expressions
+  76:30  error  Unexpected object value in conditional. The condition is always true                               @typescript-eslint/strict-boolean-expressions
+
+D:\onlinewebsites\quiz-platform\apps\admin-app\src\components\factory\ingest\JsonIngestBox.tsx
+  48:17  error  Unexpected nullable string value in conditional. Please handle the nullish/empty cases explicitly  @typescript-eslint/strict-boolean-expressions
+  97:26  error  Unexpected any value in conditional. An explicit comparison or type conversion is required         @typescript-eslint/strict-boolean-expressions
+
+D:\onlinewebsites\quiz-platform\apps\admin-app\src\components\factory\review\QuestionCard.tsx
+   55:13  error  Unexpected nullable boolean value in conditional. Please handle the nullish case explicitly        @typescript-eslint/strict-boolean-expressions
+   61:14  error  Unexpected nullable boolean value in conditional. Please handle the nullish case explicitly        @typescript-eslint/strict-boolean-expressions
+   85:93  error  Unexpected nullable string value in conditional. Please handle the nullish/empty cases explicitly  @typescript-eslint/strict-boolean-expressions
+  154:18  error  Unexpected nullable string value in conditional. Please handle the nullish/empty cases explicitly  @typescript-eslint/strict-boolean-expressions
+  276:41  error  Unexpected nullable boolean value in conditional. Please handle the nullish case explicitly        @typescript-eslint/strict-boolean-expressions
+  280:72  error  Unexpected nullable boolean value in conditional. Please handle the nullish case explicitly        @typescript-eslint/strict-boolean-expressions
+  282:42  error  Unexpected nullable boolean value in conditional. Please handle the nullish case explicitly        @typescript-eslint/strict-boolean-expressions
+
+D:\onlinewebsites\quiz-platform\apps\admin-app\src\components\factory\review\ReviewConsole.tsx
+  134:21  error  Unexpected object value in conditional. The condition is always true                        @typescript-eslint/strict-boolean-expressions
+  163:17  error  Unexpected any value in conditional. An explicit comparison or type conversion is required  @typescript-eslint/strict-boolean-expressions
+
+D:\onlinewebsites\quiz-platform\apps\admin-app\src\components\jobs\JobStatusBadge.tsx
+  70:57  error  Unexpected nullable string value in conditional. Please handle the nullish/empty cases explicitly  @typescript-eslint/strict-boolean-expressions
+
+D:\onlinewebsites\quiz-platform\apps\admin-app\src\components\questions\DomainReviewCard.tsx
+  108:96  error  Unexpected any value in conditional. An explicit comparison or type conversion is required  @typescript-eslint/strict-boolean-expressions
+  131:38  error  Unexpected any value in conditional. An explicit comparison or type conversion is required  @typescript-eslint/strict-boolean-expressions
+
+D:\onlinewebsites\quiz-platform\apps\admin-app\src\components\questions\DomainTable.tsx
+  107:17  error  Unexpected any value in conditional. An explicit comparison or type conversion is required  @typescript-eslint/strict-boolean-expressions
+  133:27  error  Unexpected any value in conditional. An explicit comparison or type conversion is required  @typescript-eslint/strict-boolean-expressions
+  134:30  error  Unexpected any value in conditional. An explicit comparison or type conversion is required  @typescript-eslint/strict-boolean-expressions
+  135:25  error  Unexpected any value in conditional. An explicit comparison or type conversion is required  @typescript-eslint/strict-boolean-expressions
+
+D:\onlinewebsites\quiz-platform\apps\admin-app\src\components\questions\QuestionReviewCard.tsx
+  105:36  error  Unexpected nullable string value in conditional. Please handle the nullish/empty cases explicitly     @typescript-eslint/strict-boolean-expressions
+  107:36  error  Unexpected nullable string value in conditional. Please handle the nullish/empty cases explicitly     @typescript-eslint/strict-boolean-expressions
+  109:63  error  Unexpected nullable string value in conditional. Please handle the nullish/empty cases explicitly     @typescript-eslint/strict-boolean-expressions
+  178:30  error  Unexpected nullable number value in conditional. Please handle the nullish/zero/NaN cases explicitly  @typescript-eslint/strict-boolean-expressions
+  264:30  error  Unexpected nullable string value in conditional. Please handle the nullish/empty cases explicitly     @typescript-eslint/strict-boolean-expressions
+  271:47  error  Unexpected nullable string value in conditional. Please handle the nullish/empty cases explicitly     @typescript-eslint/strict-boolean-expressions
+
+D:\onlinewebsites\quiz-platform\apps\admin-app\src\components\questions\QuestionTable.tsx
+  79:36  error  Unexpected nullable string value in conditional. Please handle the nullish/empty cases explicitly  @typescript-eslint/strict-boolean-expressions
+  80:37  error  Unexpected nullable string value in conditional. Please handle the nullish/empty cases explicitly  @typescript-eslint/strict-boolean-expressions
+  81:35  error  Unexpected nullable string value in conditional. Please handle the nullish/empty cases explicitly  @typescript-eslint/strict-boolean-expressions
+  82:38  error  Unexpected nullable string value in conditional. Please handle the nullish/empty cases explicitly  @typescript-eslint/strict-boolean-expressions
+
+D:\onlinewebsites\quiz-platform\apps\admin-app\src\components\questions\SkillReviewCard.tsx
+   77:72   error  Unexpected any value in conditional. An explicit comparison or type conversion is required  @typescript-eslint/strict-boolean-expressions
+   86:26   error  Unexpected any value in conditional. An explicit comparison or type conversion is required  @typescript-eslint/strict-boolean-expressions
+  117:132  error  Unexpected any value in conditional. An explicit comparison or type conversion is required  @typescript-eslint/strict-boolean-expressions
+  124:96   error  Unexpected any value in conditional. An explicit comparison or type conversion is required  @typescript-eslint/strict-boolean-expressions
+
+D:\onlinewebsites\quiz-platform\apps\admin-app\src\components\questions\SkillTable.tsx
+  141:27  error  Unexpected any value in conditional. An explicit comparison or type conversion is required  @typescript-eslint/strict-boolean-expressions
+  142:30  error  Unexpected any value in conditional. An explicit comparison or type conversion is required  @typescript-eslint/strict-boolean-expressions
+
+D:\onlinewebsites\quiz-platform\apps\admin-app\src\components\questions\SubjectReviewCard.tsx
+   65:36  error  Unexpected any value in conditional. An explicit comparison or type conversion is required  @typescript-eslint/strict-boolean-expressions
+  108:96  error  Unexpected any value in conditional. An explicit comparison or type conversion is required  @typescript-eslint/strict-boolean-expressions
+  131:38  error  Unexpected any value in conditional. An explicit comparison or type conversion is required  @typescript-eslint/strict-boolean-expressions
+
+D:\onlinewebsites\quiz-platform\apps\admin-app\src\components\questions\SubjectTable.tsx
+  132:27  error  Unexpected any value in conditional. An explicit comparison or type conversion is required         @typescript-eslint/strict-boolean-expressions
+  133:30  error  Unexpected any value in conditional. An explicit comparison or type conversion is required         @typescript-eslint/strict-boolean-expressions
+  134:25  error  Unexpected any value in conditional. An explicit comparison or type conversion is required         @typescript-eslint/strict-boolean-expressions
+  135:24  error  Unexpected any value in conditional. An explicit comparison or type conversion is required         @typescript-eslint/strict-boolean-expressions
+  375:93  error  Unexpected nullable string value in conditional. Please handle the nullish/empty cases explicitly  @typescript-eslint/strict-boolean-expressions
+
+D:\onlinewebsites\quiz-platform\apps\admin-app\src\components\questions\SubtopicReviewCard.tsx
+   67:36  error  Unexpected any value in conditional. An explicit comparison or type conversion is required  @typescript-eslint/strict-boolean-expressions
+   70:36  error  Unexpected any value in conditional. An explicit comparison or type conversion is required  @typescript-eslint/strict-boolean-expressions
+   73:73  error  Unexpected any value in conditional. An explicit comparison or type conversion is required  @typescript-eslint/strict-boolean-expressions
+  123:93  error  Unexpected any value in conditional. An explicit comparison or type conversion is required  @typescript-eslint/strict-boolean-expressions
+  130:93  error  Unexpected any value in conditional. An explicit comparison or type conversion is required  @typescript-eslint/strict-boolean-expressions
+  153:38  error  Unexpected any value in conditional. An explicit comparison or type conversion is required  @typescript-eslint/strict-boolean-expressions
+
+D:\onlinewebsites\quiz-platform\apps\admin-app\src\components\questions\SubtopicTable.tsx
+   83:13   error  Unexpected any value in conditional. An explicit comparison or type conversion is required         @typescript-eslint/strict-boolean-expressions
+   88:29   error  Unexpected any value in conditional. An explicit comparison or type conversion is required         @typescript-eslint/strict-boolean-expressions
+   88:49   error  Unexpected any value in conditional. An explicit comparison or type conversion is required         @typescript-eslint/strict-boolean-expressions
+   90:31   error  Unexpected any value in conditional. An explicit comparison or type conversion is required         @typescript-eslint/strict-boolean-expressions
+   90:51   error  Unexpected any value in conditional. An explicit comparison or type conversion is required         @typescript-eslint/strict-boolean-expressions
+   91:30   error  Unexpected any value in conditional. An explicit comparison or type conversion is required         @typescript-eslint/strict-boolean-expressions
+   91:51   error  Unexpected any value in conditional. An explicit comparison or type conversion is required         @typescript-eslint/strict-boolean-expressions
+   96:30   error  Unexpected any value in conditional. An explicit comparison or type conversion is required         @typescript-eslint/strict-boolean-expressions
+   97:25   error  Unexpected any value in conditional. An explicit comparison or type conversion is required         @typescript-eslint/strict-boolean-expressions
+  100:24   error  Unexpected any value in conditional. An explicit comparison or type conversion is required         @typescript-eslint/strict-boolean-expressions
+  101:29   error  Unexpected any value in conditional. An explicit comparison or type conversion is required         @typescript-eslint/strict-boolean-expressions
+  247:101  error  Unexpected nullable string value in conditional. Please handle the nullish/empty cases explicitly  @typescript-eslint/strict-boolean-expressions
+  251:101  error  Unexpected nullable string value in conditional. Please handle the nullish/empty cases explicitly  @typescript-eslint/strict-boolean-expressions
+  255:100  error  Unexpected nullable string value in conditional. Please handle the nullish/empty cases explicitly  @typescript-eslint/strict-boolean-expressions
+  339:169  error  Unexpected any value in conditional. An explicit comparison or type conversion is required         @typescript-eslint/strict-boolean-expressions
+  346:54   error  Unexpected any value in conditional. An explicit comparison or type conversion is required         @typescript-eslint/strict-boolean-expressions
+
+D:\onlinewebsites\quiz-platform\apps\admin-app\src\components\questions\TopicReviewCard.tsx
+   67:36  error  Unexpected any value in conditional. An explicit comparison or type conversion is required  @typescript-eslint/strict-boolean-expressions
+   70:36  error  Unexpected any value in conditional. An explicit comparison or type conversion is required  @typescript-eslint/strict-boolean-expressions
+  120:94  error  Unexpected any value in conditional. An explicit comparison or type conversion is required  @typescript-eslint/strict-boolean-expressions
+  127:90  error  Unexpected any value in conditional. An explicit comparison or type conversion is required  @typescript-eslint/strict-boolean-expressions
+  150:38  error  Unexpected any value in conditional. An explicit comparison or type conversion is required  @typescript-eslint/strict-boolean-expressions
+
+D:\onlinewebsites\quiz-platform\apps\admin-app\src\components\questions\TopicTable.tsx
+  111:47   error  Unexpected nullable string value in conditional. Please handle the nullish/empty cases explicitly  @typescript-eslint/strict-boolean-expressions
+  112:30   error  Unexpected nullable string value in conditional. Please handle the nullish/empty cases explicitly  @typescript-eslint/strict-boolean-expressions
+  114:27   error  Unexpected nullable string value in conditional. Please handle the nullish/empty cases explicitly  @typescript-eslint/strict-boolean-expressions
+  114:54   error  Unexpected nullable string value in conditional. Please handle the nullish/empty cases explicitly  @typescript-eslint/strict-boolean-expressions
+  118:17   error  Unexpected nullable string value in conditional. Please handle the nullish/empty cases explicitly  @typescript-eslint/strict-boolean-expressions
+  304:169  error  Unexpected nullable string value in conditional. Please handle the nullish/empty cases explicitly  @typescript-eslint/strict-boolean-expressions
+
+D:\onlinewebsites\quiz-platform\apps\admin-app\src\components\reports\HierarchyReports.tsx
+   98:24  error  Unexpected any value in conditional. An explicit comparison or type conversion is required  @typescript-eslint/strict-boolean-expressions
+  101:24  error  Unexpected any value in conditional. An explicit comparison or type conversion is required  @typescript-eslint/strict-boolean-expressions
+  104:24  error  Unexpected any value in conditional. An explicit comparison or type conversion is required  @typescript-eslint/strict-boolean-expressions
+  233:53  error  Unexpected any value in conditional. An explicit comparison or type conversion is required  @typescript-eslint/strict-boolean-expressions
+  268:46  error  Unexpected any value in conditional. An explicit comparison or type conversion is required  @typescript-eslint/strict-boolean-expressions
+
+D:\onlinewebsites\quiz-platform\apps\admin-app\src\components\trends\ScoreProgressionChart.tsx
+  29:24  error  Unexpected nullable string value in conditional. Please handle the nullish/empty cases explicitly  @typescript-eslint/strict-boolean-expressions
+  42:23  error  Unexpected object value in conditional. The condition is always true                               @typescript-eslint/strict-boolean-expressions
+  98:43  error  Unexpected any value in conditional. An explicit comparison or type conversion is required         @typescript-eslint/strict-boolean-expressions
+
+D:\onlinewebsites\quiz-platform\apps\admin-app\src\components\trends\TrendSummaryCards.tsx
+  34:27  error  Unexpected nullable number value in conditional. Please handle the nullish/zero/NaN cases explicitly  @typescript-eslint/strict-boolean-expressions
+
+D:\onlinewebsites\quiz-platform\apps\admin-app\src\components\ui\fields\SelectField.tsx
+  21:31  error  Unexpected nullable boolean value in conditional. Please handle the nullish case explicitly        @typescript-eslint/strict-boolean-expressions
+  26:27  error  Unexpected nullable string value in conditional. Please handle the nullish/empty cases explicitly  @typescript-eslint/strict-boolean-expressions
+  30:58  error  Unexpected value in conditional. A boolean expression is required                                  @typescript-eslint/strict-boolean-expressions
+  31:26  error  Unexpected nullable string value in conditional. Please handle the nullish/empty cases explicitly  @typescript-eslint/strict-boolean-expressions
+
+D:\onlinewebsites\quiz-platform\apps\admin-app\src\components\users\UserTable.tsx
+  184:18   error  Unexpected nullable string value in conditional. Please handle the nullish/empty cases explicitly  @typescript-eslint/strict-boolean-expressions
+  262:54   error  Unexpected nullable string value in conditional. Please handle the nullish/empty cases explicitly  @typescript-eslint/strict-boolean-expressions
+  277:98   error  Unexpected nullable string value in conditional. Please handle the nullish/empty cases explicitly  @typescript-eslint/strict-boolean-expressions
+  336:61   error  Promise-returning function provided to attribute where a void return was expected                  @typescript-eslint/no-misused-promises
+  347:61   error  Promise-returning function provided to attribute where a void return was expected                  @typescript-eslint/no-misused-promises
+  464:104  error  Unexpected nullable string value in conditional. Please handle the nullish/empty cases explicitly  @typescript-eslint/strict-boolean-expressions
+
+D:\onlinewebsites\quiz-platform\apps\admin-app\src\lib\factory\json-validator.ts
+  156:64  error  Unexpected any value in conditional. An explicit comparison or type conversion is required  @typescript-eslint/strict-boolean-expressions
+  180:35  error  Unexpected any value in conditional. An explicit comparison or type conversion is required  @typescript-eslint/strict-boolean-expressions
+  181:34  error  Unexpected any value in conditional. An explicit comparison or type conversion is required  @typescript-eslint/strict-boolean-expressions
+  182:30  error  Unexpected any value in conditional. An explicit comparison or type conversion is required  @typescript-eslint/strict-boolean-expressions
+  183:36  error  Unexpected any value in conditional. An explicit comparison or type conversion is required  @typescript-eslint/strict-boolean-expressions
+  184:34  error  Unexpected any value in conditional. An explicit comparison or type conversion is required  @typescript-eslint/strict-boolean-expressions
+  185:34  error  Unexpected any value in conditional. An explicit comparison or type conversion is required  @typescript-eslint/strict-boolean-expressions
+
+D:\onlinewebsites\quiz-platform\apps\admin-app\tests\e2e\fixtures\auth.ts
+  13:17  error  Unexpected nullable string value in conditional. Please handle the nullish/empty cases explicitly                                                                   @typescript-eslint/strict-boolean-expressions
+  14:20  error  Unexpected nullable string value in conditional. Please handle the nullish/empty cases explicitly                                                                   @typescript-eslint/strict-boolean-expressions
+  15:8   error  Unexpected nullable string value in conditional. Please handle the nullish/empty cases explicitly                                                                   @typescript-eslint/strict-boolean-expressions
+  15:18  error  Unexpected nullable string value in conditional. Please handle the nullish/empty cases explicitly                                                                   @typescript-eslint/strict-boolean-expressions
+  61:5   error  Promises must be awaited, end with a call to .catch, end with a call to .then with a rejection handler or be explicitly marked as ignored with the `void` operator  @typescript-eslint/no-floating-promises
+  64:5   error  Promises must be awaited, end with a call to .catch, end with a call to .then with a rejection handler or be explicitly marked as ignored with the `void` operator  @typescript-eslint/no-floating-promises
+  71:5   error  Promises must be awaited, end with a call to .catch, end with a call to .then with a rejection handler or be explicitly marked as ignored with the `void` operator  @typescript-eslint/no-floating-promises
+
+Γ£û 230 problems (230 errors, 0 warnings)
+
+ΓÇëERR_PNPM_RECURSIVE_RUN_FIRST_FAILΓÇë @quiz/admin-app@0.1.0 lint: `cross-env ESLINT_USE_FLAT_CONFIG=false eslint --max-warnings=0 --ext .ts,.tsx,.js,.jsx .`
+Exit status 1

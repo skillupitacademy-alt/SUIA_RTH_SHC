@@ -2,7 +2,7 @@
 
 import { apiClient } from '@quiz/api-client';
 import { ZLoader } from '@quiz/ui';
-import { ArrowLeft, CheckCircle2,Mail, Send } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, Mail, Send } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
 
@@ -67,11 +67,11 @@ export default function ForgotPasswordPage() {
                     </Link>
                 </div>
             ) : (
-                <form onSubmit={handleSubmit} className="space-y-6">
+                <form onSubmit={(e) => void handleSubmit(e)} className="space-y-6">
                     {error ? <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-600 text-sm font-bold flex items-center gap-2">
-                            <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
-                            {error}
-                        </div> : null}
+                        <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+                        {error}
+                    </div> : null}
 
                     <div className="space-y-2">
                         <label className="text-xs font-black uppercase tracking-widest text-muted-foreground">Admin Email</label>

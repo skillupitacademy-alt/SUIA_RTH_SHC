@@ -35,7 +35,7 @@ export class AdminClient {
 
   async getDomains(page: number = 1, limit: number = 20, search?: string) {
     const query = new URLSearchParams({ page: page.toString(), limit: limit.toString() });
-    if (search) query.append('search', search);
+    if (search != null && search !== '') query.append('search', search);
 
     return this.client.get<{
         data: any[];
@@ -48,8 +48,8 @@ export class AdminClient {
 
   async getSubjects(page: number = 1, limit: number = 20, domainId?: string, search?: string) {
     const query = new URLSearchParams({ page: page.toString(), limit: limit.toString() });
-    if (domainId) query.append('domainId', domainId);
-    if (search) query.append('search', search);
+    if (domainId != null && domainId !== '') query.append('domainId', domainId);
+    if (search != null && search !== '') query.append('search', search);
     
     return this.client.get<{
         data: any[];
@@ -62,8 +62,8 @@ export class AdminClient {
 
   async getTopics(page: number = 1, limit: number = 20, subjectId?: string, search?: string) {
     const query = new URLSearchParams({ page: page.toString(), limit: limit.toString() });
-    if (subjectId) query.append('subjectId', subjectId);
-    if (search) query.append('search', search);
+    if (subjectId != null && subjectId !== '') query.append('subjectId', subjectId);
+    if (search != null && search !== '') query.append('search', search);
 
     return this.client.get<{
         data: any[];
@@ -88,8 +88,8 @@ export class AdminClient {
 
   async getSubtopics(page: number = 1, limit: number = 20, topicId?: string, search?: string) {
     const query = new URLSearchParams({ page: page.toString(), limit: limit.toString() });
-    if (topicId) query.append('topicId', topicId);
-    if (search) query.append('search', search);
+    if (topicId != null && topicId !== '') query.append('topicId', topicId);
+    if (search != null && search !== '') query.append('search', search);
 
     return this.client.get<{
         data: any[];
@@ -102,7 +102,7 @@ export class AdminClient {
 
   async getSkills(page: number = 1, limit: number = 20, search?: string) {
     const query = new URLSearchParams({ page: page.toString(), limit: limit.toString() });
-    if (search) query.append('search', search);
+    if (search != null && search !== '') query.append('search', search);
 
     return this.client.get<{
         data: any[];
@@ -115,15 +115,15 @@ export class AdminClient {
 
   async getQuestions(page: number = 1, limit: number = 20, filters?: { domainId?: string; subjectId?: string; topicId?: string; subtopicId?: string; skillIds?: string[]; status?: string; search?: string }) {
     const query = new URLSearchParams({ page: page.toString(), limit: limit.toString() });
-    if (filters?.domainId) query.append('domainId', filters.domainId);
-    if (filters?.subjectId) query.append('subjectId', filters.subjectId);
-    if (filters?.topicId) query.append('topicId', filters.topicId);
-    if (filters?.subtopicId) query.append('subtopicId', filters.subtopicId);
-    if (filters?.skillIds && filters.skillIds.length > 0) {
+    if (filters?.domainId != null && filters.domainId !== '') query.append('domainId', filters.domainId);
+    if (filters?.subjectId != null && filters.subjectId !== '') query.append('subjectId', filters.subjectId);
+    if (filters?.topicId != null && filters.topicId !== '') query.append('topicId', filters.topicId);
+    if (filters?.subtopicId != null && filters.subtopicId !== '') query.append('subtopicId', filters.subtopicId);
+    if (filters?.skillIds != null && filters.skillIds.length > 0) {
         filters.skillIds.forEach(id => query.append('skillIds', id));
     }
-    if (filters?.status) query.append('status', filters.status);
-    if (filters?.search) query.append('search', filters.search);
+    if (filters?.status != null && filters.status !== '') query.append('status', filters.status);
+    if (filters?.search != null && filters.search !== '') query.append('search', filters.search);
 
     return this.client.get<{
         questions: any[];
@@ -284,7 +284,7 @@ export class AdminClient {
 
   async getLiveSessions(page: number = 1, limit: number = 10, search?: string) {
     const query = new URLSearchParams({ page: page.toString(), limit: limit.toString() });
-    if (search) query.append('search', search);
+    if (search != null && search !== '') query.append('search', search);
 
     return this.client.get<{
       sessions: any[];
@@ -297,11 +297,11 @@ export class AdminClient {
 
   async getUsers(page: number = 1, limit: number = 20, status: 'active' | 'deleted' = 'active', filters?: { search?: string; role?: string; isBlocked?: boolean; isVerified?: boolean; status?: string }) {
     const query = new URLSearchParams({ page: page.toString(), limit: limit.toString(), status });
-    if (filters?.search) query.append('search', filters.search);
-    if (filters?.role) query.append('role', filters.role);
+    if (filters?.search != null && filters.search !== '') query.append('search', filters.search);
+    if (filters?.role != null && filters.role !== '') query.append('role', filters.role);
     if (filters?.isBlocked !== undefined) query.append('isBlocked', filters.isBlocked ? 'true' : 'false');
     if (filters?.isVerified !== undefined) query.append('isVerified', filters.isVerified ? 'true' : 'false');
-    if (filters?.status) query.append('xStatus', filters.status);
+    if (filters?.status != null && filters.status !== '') query.append('xStatus', filters.status);
 
     return this.client.get<{
         users: any[];
@@ -326,7 +326,7 @@ export class AdminClient {
 
   async getBlueprints(page: number = 1, limit: number = 20, search?: string) {
     const query = new URLSearchParams({ page: page.toString(), limit: limit.toString() });
-    if (search) query.append('search', search);
+    if (search != null && search !== '') query.append('search', search);
 
     return this.client.get<{
         data: any[];
@@ -371,21 +371,21 @@ export class AdminClient {
 
   async getTrendSummary(params: { range?: string } = {}) {
     const query = new URLSearchParams();
-    if (params.range) query.append('range', params.range);
+    if (params.range != null && params.range !== '') query.append('range', params.range);
     return this.client.get<AdminTrendSummary>(`/admin/trends/summary?${query.toString()}`);
   }
 
   async getScoreTrends(params: { userId?: string; range?: string } = {}) {
     const query = new URLSearchParams();
-    if (params.userId) query.append('userId', params.userId);
-    if (params.range) query.append('range', params.range);
+    if (params.userId != null && params.userId !== '') query.append('userId', params.userId);
+    if (params.range != null && params.range !== '') query.append('range', params.range);
     return this.client.get<{ scores: any[] }>(`/admin/trends/scores?${query.toString()}`);
   }
 
   async getSkillTrends(params: { userId?: string; range?: string } = {}) {
     const query = new URLSearchParams();
-    if (params.userId) query.append('userId', params.userId);
-    if (params.range) query.append('range', params.range);
+    if (params.userId != null && params.userId !== '') query.append('userId', params.userId);
+    if (params.range != null && params.range !== '') query.append('range', params.range);
     return this.client.get<{ skills: any[] }>(`/admin/trends/skills?${query.toString()}`);
   }
 

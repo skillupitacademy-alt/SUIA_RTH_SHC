@@ -3,10 +3,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { apiClient } from '@quiz/api-client';
 import { ZLoader } from '@quiz/ui';
-import { AlertTriangle, CheckCircle2, Eye, EyeOff,Lock, ShieldCheck } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, Eye, EyeOff, Lock, ShieldCheck } from 'lucide-react';
 import Link from 'next/link';
-import { useRouter,useSearchParams } from 'next/navigation';
-import { Suspense, useEffect,useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Suspense, useEffect, useState } from 'react';
 
 function ResetPasswordForm() {
     const searchParams = useSearchParams();
@@ -24,7 +24,7 @@ function ResetPasswordForm() {
 
     useEffect(() => {
         const verifyToken = async () => {
-            if (!token) {
+            if (token === null || token === '') {
                 setError('Reset token is missing.');
                 setIsVerifying(false);
                 return;
@@ -41,7 +41,7 @@ function ResetPasswordForm() {
             }
         };
 
-        verifyToken();
+        void verifyToken();
     }, [token]);
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -58,9 +58,10 @@ function ResetPasswordForm() {
             await apiClient.auth.resetPassword(token!, newPassword);
             setIsSuccess(true);
             setTimeout(() => router.push('/login'), 5000); // Redirect after 5s
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error(err);
-            setError(err.message || 'Failed to update password.');
+            const msg = err instanceof Error ? err.message : 'Failed to update password.';
+            setError(msg);
         } finally {
             setIsLoading(false);
         }
@@ -126,11 +127,11 @@ function ResetPasswordForm() {
                 <p className="text-muted-foreground text-sm font-medium">Define your new administrative access credentials.</p>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={(e) => void handleSubmit(e)} className="space-y-6">
                 {error ? <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-600 text-sm font-bold flex items-center gap-2">
-                        <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
-                        {error}
-                    </div> : null}
+                    <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+                    {error}
+                </div> : null}
 
                 <div className="space-y-2">
                     <label className="text-xs font-black uppercase tracking-widest text-muted-foreground">New Password</label>

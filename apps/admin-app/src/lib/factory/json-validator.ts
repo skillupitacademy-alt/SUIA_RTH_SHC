@@ -1,11 +1,16 @@
-/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { GeneratedQuestion, ValidationResult } from '../../types/factory';
+
+interface ValidationStats {
+    trailingCommas: number;
+    unescapedQuotes: number;
+    unquotedKeys: number;
+}
 
 export const JsonValidator = {
     /**
      * Attempts to heal common JSON syntax errors from AI
      */
-    repairJson: (raw: string): { healed: string, stats: any } => {
+    repairJson: (raw: string): { healed: string, stats: ValidationStats } => {
         let healed = raw.trim();
         const stats = {
             trailingCommas: 0,
@@ -44,14 +49,14 @@ export const JsonValidator = {
             const repairedItems = items.map(item => {
                 // Match from the first quote to the last quote of this item
                 const itemMatch = item.match(/(\s*")([\s\S]*)(")/);
-                if (itemMatch && itemMatch.length >= 4) {
-                    const p = itemMatch[1];
-                    const c = itemMatch[2];
-                    const s = itemMatch[3];
+                if (itemMatch != null && itemMatch.length >= 4) {
+                    const p = itemMatch[1] ?? '';
+                    const c = itemMatch[2] ?? '';
+                    const s = itemMatch[3] ?? '';
                     const escaped = c.replace(/(?<!\\)"/g, '\\"');
                     if (escaped !== c) {
                         const matches = escaped.match(/\\"/g);
-                        if (matches) stats.unescapedQuotes += matches.length;
+                        if (matches != null) stats.unescapedQuotes += matches.length;
                     }
                     return `${p}${escaped}${s}`;
                 }
@@ -83,12 +88,10 @@ export const JsonValidator = {
     /**
      * Cleans conversational text from AI and extracts the JSON array
      */
-    cleanJson: (raw: string): { cleaned: string, report: any } => {
+    cleanJson: (raw: string): { cleaned: string, report: { modified: boolean, stats: ValidationStats & { conversationalStrip: boolean } } } => {
         let cleaned = raw.trim();
         let conversationalStrip = false;
         
-        const original = cleaned;
-
         // Remove markdown code blocks if present
         if (cleaned.startsWith('```')) {
             conversationalStrip = true;
@@ -144,24 +147,25 @@ export const JsonValidator = {
             const { cleaned, report } = JsonValidator.cleanJson(jsonString);
             result.healingReport = report;
             
-            const parsed = JSON.parse(cleaned);
+            const parsed = JSON.parse(cleaned) as { questions?: unknown[] };
             
             // AI might wrap in { "questions": [...] } or just return [...]
-            const rawItems = Array.isArray(parsed) ? parsed : (parsed.questions || []);
+            const rawItems = Array.isArray(parsed) ? parsed : (parsed.questions != null ? parsed.questions : []);
 
             if (!Array.isArray(rawItems)) {
                 throw new Error("Payload must be an array or contain a 'questions' array.");
             }
 
-            result.questions = rawItems.map((item: any, index: number) => {
+            result.questions = rawItems.map((item: unknown, index: number) => {
                 const errors: string[] = [];
                 const idx = index + 1;
+                const itemObj = item as Record<string, unknown>;
 
-                if (item.questionText === undefined || item.questionText === null || item.questionText === '') errors.push(`Q${idx}: Missing questionText`);
-                if (!Array.isArray(item.options) || item.options.length < 2) errors.push(`Q${idx}: Options must be an array of at least 2 items`);
-                if (item.correctAnswer === undefined || item.correctAnswer === null || item.correctAnswer === '') errors.push(`Q${idx}: Missing correctAnswer`);
-                if ((item.correctAnswer !== undefined && item.correctAnswer !== null && item.correctAnswer !== '') && item.options?.includes(item.correctAnswer) === false) {
-                    errors.push(`Q${idx}: Correct answer "${item.correctAnswer}" not found in options`);
+                if (itemObj.questionText == null || itemObj.questionText === '') errors.push(`Q${idx}: Missing questionText`);
+                if (!Array.isArray(itemObj.options) || itemObj.options.length < 2) errors.push(`Q${idx}: Options must be an array of at least 2 items`);
+                if (itemObj.correctAnswer == null || itemObj.correctAnswer === '') errors.push(`Q${idx}: Missing correctAnswer`);
+                if ((itemObj.correctAnswer != null && itemObj.correctAnswer !== '') && (Array.isArray(itemObj.options) && (itemObj.options as unknown[]).includes(itemObj.correctAnswer) === false)) {
+                    errors.push(`Q${idx}: Correct answer "${itemObj.correctAnswer as string}" not found in options`);
                 }
 
                 if (errors.length > 0) {
@@ -169,17 +173,18 @@ export const JsonValidator = {
                     result.errors.push(...errors);
                 }
 
+                const finalItemObj = item as Record<string, unknown>;
                 return {
                     id: `tmp-${Date.now()}-${index}`,
-                    questionText: item.questionText || '',
-                    codeSnippet: item.codeSnippet || '',
-                    options: item.options || [],
-                    correctAnswer: item.correctAnswer || '',
-                    explanation: item.explanation || '',
-                    difficulty: (item.difficulty || 'intermediate') as any,
-                    depthLevel: parseInt(item.depthLevel) || 5,
-                    mappingType: (item.mappingType || 'technical') as any,
-                    skillNames: Array.isArray(item.skillNames) ? item.skillNames : []
+                    questionText: (finalItemObj.questionText != null && finalItemObj.questionText !== '') ? (finalItemObj.questionText as string) : '',
+                    codeSnippet: (finalItemObj.codeSnippet != null && finalItemObj.codeSnippet !== '') ? (finalItemObj.codeSnippet as string) : '',
+                    options: Array.isArray(finalItemObj.options) ? (finalItemObj.options as string[]) : [],
+                    correctAnswer: (finalItemObj.correctAnswer != null && finalItemObj.correctAnswer !== '') ? (finalItemObj.correctAnswer as string) : '',
+                    explanation: (finalItemObj.explanation != null && finalItemObj.explanation !== '') ? (finalItemObj.explanation as string) : '',
+                    difficulty: (finalItemObj.difficulty != null && finalItemObj.difficulty !== '' ? finalItemObj.difficulty : 'intermediate') as GeneratedQuestion['difficulty'],
+                    depthLevel: typeof finalItemObj.depthLevel === 'number' ? finalItemObj.depthLevel : (typeof finalItemObj.depthLevel === 'string' ? (parseInt(finalItemObj.depthLevel as string, 10) || 1) : 1),
+                    mappingType: (finalItemObj.mappingType != null && finalItemObj.mappingType !== '' ? finalItemObj.mappingType : 'technical') as GeneratedQuestion['mappingType'],
+                    skillNames: Array.isArray(finalItemObj.skillNames) ? (finalItemObj.skillNames as string[]) : []
                 };
             });
 
@@ -188,9 +193,10 @@ export const JsonValidator = {
                 result.errors.push("No questions found in payload.");
             }
 
-        } catch (e: any) {
+        } catch (e: unknown) {
+            const msg = e instanceof Error ? e.message : 'Unknown parsing error';
             result.isValid = false;
-            result.errors.push(`Critical Parsing Error: ${e.message}`);
+            result.errors.push(`Critical Parsing Error: ${msg}`);
         }
 
         return result;

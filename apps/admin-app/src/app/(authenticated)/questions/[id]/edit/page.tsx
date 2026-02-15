@@ -12,6 +12,20 @@ interface Question {
     questionText?: string;
     question_text?: string;
     type?: string;
+    topicId?: string;
+    topic_id?: string;
+    subtopicId?: string;
+    subtopic_id?: string;
+    topic?: {
+        id: string;
+        subjectId?: string;
+        subject_id?: string;
+        subject?: {
+            id: string;
+            domainId?: string;
+            domain_id?: string;
+        }
+    };
     options?: Array<{
         id: string;
         text?: string;
@@ -26,6 +40,14 @@ interface Question {
         estimatedTime?: number;
         estimated_time?: number;
     };
+    questionSkills?: Array<{
+        skillId?: string;
+        skill_id?: string;
+        skill: {
+            id: string;
+            name: string;
+        }
+    }>;
 }
 import { ZLoader } from '@quiz/ui';
 import { AlertCircle, ArrowLeft, CheckCircle2, Edit3, X } from 'lucide-react';
@@ -53,20 +75,23 @@ export default function EditQuestionPage() {
     useEffect(() => {
         const fetchQuestion = async () => {
             try {
-                const data = await apiClient.admin.getQuestionById(params.id as string);
+                const data = (await apiClient.admin.getQuestionById(String(params.id))) as unknown as Question;
 
-                if (data !== null && data !== undefined) {
+                if (data != null) {
 
                     setQuestion(data);
 
                     // Explicitly map hierarchy with Fallbacks for potential naming variations
-                    const domainId = data.topic?.subject?.domainId || data.topic?.subject?.domain_id || null;
-                    const subjectId = data.topic?.subjectId || data.topic?.subject_id || null;
-                    const topicId = data.topicId || data.topic_id || null;
-                    const subtopicId = data.subtopicId || data.subtopic_id || null;
+                    const domainId = (data.topic?.subject?.domainId != null && data.topic.subject.domainId !== '') ? data.topic.subject.domainId : (data.topic?.subject?.domain_id ?? null);
+                    const subjectId = (data.topic?.subjectId != null && data.topic.subjectId !== '') ? data.topic.subjectId : (data.topic?.subject_id ?? null);
+                    const topicId = (data.topicId != null && data.topicId !== '') ? data.topicId : (data.topic_id ?? null);
+                    const subtopicId = (data.subtopicId != null && data.subtopicId !== '') ? data.subtopicId : (data.subtopic_id ?? null);
 
                     // Extract Skill IDs from the junction table relation
-                    const skillIds = data.questionSkills?.map((qs: { skillId?: string; skill_id?: string }) => qs.skillId || qs.skill_id) || [];
+                    const questionSkills = data.questionSkills as Array<{ skillId?: string; skill_id?: string; skill: { id: string; name: string } }> | null | undefined;
+                    const skillIds = (questionSkills != null && Array.isArray(questionSkills))
+                        ? questionSkills.map((qs) => (qs.skillId != null && qs.skillId !== '') ? qs.skillId : (qs.skill_id ?? ''))
+                        : [];
 
                     setSelection({
                         domainId,
@@ -86,7 +111,7 @@ export default function EditQuestionPage() {
     }, [params.id]);
 
     const handleSubmit = async (formData: QuestionFormData) => {
-        if (!selection.topicId) {
+        if (selection.topicId == null || selection.topicId === '') {
             setStatus({ type: 'error', message: 'Please select at least a Topic in the hierarchy.' });
             return;
         }
@@ -97,10 +122,10 @@ export default function EditQuestionPage() {
             const payload = {
                 ...formData,
                 topicId: selection.topicId,
-                subtopicId: selection.subtopicId,
-                skillIds: selection.skillIds,
+                subtopicId: (selection.subtopicId != null && selection.subtopicId !== '') ? selection.subtopicId : null,
+                skillIds: (selection.skillIds != null && selection.skillIds.length > 0) ? selection.skillIds : [],
             };
-            await apiClient.admin.updateQuestion(params.id as string, payload);
+            await apiClient.admin.updateQuestion(String(params.id), payload);
             setStatus({ type: 'success', message: 'Assessment updated successfully! Redirecting...' });
 
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -116,9 +141,9 @@ export default function EditQuestionPage() {
         }
     };
 
-    const isUnlocked = selection.topicId !== null && selection.topicId !== ''; // Unlocked at Topic level for edit flexibility, but guided
+    const isUnlocked = (selection.topicId != null && selection.topicId !== ''); // Unlocked at Topic level for edit flexibility, but guided
 
-    if (isLoading) {
+    if (isLoading === true) {
         return (
             <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
                 <ZLoader size="lg" text="Initializing Editor..." />
@@ -169,7 +194,7 @@ export default function EditQuestionPage() {
                         <div className="relative">
                             <h1 className="text-4xl font-black text-[#1A1A1A] tracking-tighter uppercase">Edit Assessment_</h1>
                             <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mt-2 flex items-center gap-2">
-                                System-Alpha • Manual Orchestration Active • ID: {params.id}
+                                System-Alpha • Manual Orchestration Active • ID: {String(params.id)}
                             </p>
                         </div>
                     </div>
@@ -194,16 +219,16 @@ export default function EditQuestionPage() {
                                 loading={isSaving}
                                 onSubmit={handleSubmit}
                                 initialData={{
-                                    text: question?.questionText || question?.question_text || '',
-                                    type: question?.type === 'mcq' || question?.type === 'single' ? 'single' : 'multiple',
+                                    text: (question?.questionText != null && question.questionText !== '') ? question.questionText : (question?.question_text ?? ''),
+                                    type: (question?.type === 'mcq' || question?.type === 'single') ? 'single' : 'multiple',
                                     options: question?.options?.map((o) => ({
                                         id: o.id,
-                                        text: o.text || o.optionText || o.option_text || '',
-                                        isCorrect: o.isCorrect || o.is_correct || false
+                                        text: (o.text != null && o.text !== '') ? o.text : ((o.optionText != null && o.optionText !== '') ? o.optionText : (o.option_text ?? '')),
+                                        isCorrect: (o.isCorrect === true || o.is_correct === true)
                                     })) || [],
-                                    explanation: question?.explanation || '',
-                                    difficulty: (question?.difficulty as 'simple' | 'intermediate' | 'expert') || 'simple',
-                                    estimatedTime: question?.metadata?.estimatedTime || question?.metadata?.estimated_time || 60,
+                                    explanation: question?.explanation ?? '',
+                                    difficulty: (question?.difficulty as 'simple' | 'intermediate' | 'expert' | undefined) ?? 'simple',
+                                    estimatedTime: (question?.metadata?.estimatedTime != null) ? question.metadata.estimatedTime : (question?.metadata?.estimated_time ?? 60),
                                 }}
                             />
                         </div>

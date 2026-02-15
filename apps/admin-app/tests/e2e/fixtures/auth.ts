@@ -10,9 +10,10 @@ async function loginAdmin(
   page: Page,
   creds: { email?: string; password?: string } = {}
 ): Promise<void> {
-  const email = creds.email || defaultAdminEmail;
-  const password = creds.password || defaultAdminPassword;
-  if (!email || !password) {
+  const email = (creds.email != null && creds.email !== '') ? creds.email : defaultAdminEmail;
+  const password = (creds.password != null && creds.password !== '') ? creds.password : defaultAdminPassword;
+  
+  if ((email == null || email === '') || (password == null || password === '')) {
     throw new Error('TEST_ADMIN_EMAIL/TEST_ADMIN_PASSWORD env vars are required for admin login');
   }
 
@@ -58,17 +59,17 @@ async function hasAuth(page: Page): Promise<boolean> {
 
 async function forceRefreshFail(page: Page) {
   await page.route('**/api/auth/refresh', (route) => {
-    route.fulfill({ status: 401, body: 'forced refresh fail' });
+    void route.fulfill({ status: 401, body: 'forced refresh fail' });
   });
   await page.route('**/api/admin/auth/refresh', (route) => {
-    route.fulfill({ status: 401, body: 'forced refresh fail' });
+    void route.fulfill({ status: 401, body: 'forced refresh fail' });
   });
 }
 
 async function shortenSession(page: Page) {
   const soon = new Date(Date.now() + 90 * 1000).toISOString();
   await page.route('**/api/admin/auth/me', (route) => {
-    route.fulfill({
+    void route.fulfill({
       status: 200,
       body: JSON.stringify({ user: { isAdmin: true }, expiresAt: soon }),
       headers: { 'Content-Type': 'application/json' },
@@ -79,16 +80,16 @@ async function shortenSession(page: Page) {
 async function mockRenewSession(page: Page) {
   const later = new Date(Date.now() + 60 * 60 * 1000).toISOString();
   // Mock the refresh call that happens when "Stay Logged In" is clicked
-  await page.route('**/api/admin/auth/refresh', (route) => {
-    route.fulfill({
+  await page.route('**/api/admin/auth/refresh', async (route) => {
+    await route.fulfill({
       status: 200,
       body: JSON.stringify({ success: true, user: { isAdmin: true }, expiresAt: later }),
       headers: { 'Content-Type': 'application/json' },
     });
   });
   // Update the 'me' mock to also reflect the extension
-  await page.route('**/api/admin/auth/me', (route) => {
-    route.fulfill({
+  await page.route('**/api/admin/auth/me', async (route) => {
+    await route.fulfill({
       status: 200,
       body: JSON.stringify({ user: { isAdmin: true }, expiresAt: later }),
       headers: { 'Content-Type': 'application/json' },

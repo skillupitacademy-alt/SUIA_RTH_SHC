@@ -1,6 +1,6 @@
-import { AlertTriangle, CheckCircle2, FileJson,Import, Trash2, Zap } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, FileJson, Import, Trash2, Zap } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import React, { useRef,useState } from 'react';
+import React, { useRef, useState } from 'react';
 
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { useFactory } from '@/context/FactoryContext';
@@ -45,7 +45,7 @@ export function JsonIngestBox() {
         } else {
             // Attempt to extract line/column from the first error if it looks like a parsing error
             const parseError = validationErrors.find(e => e.includes('Parsing Error'));
-            if (parseError) {
+            if (parseError != null && parseError !== '') {
                 const lineMatch = parseError.match(/line (\d+)/i);
                 const colMatch = parseError.match(/column (\d+)/i);
                 setErrorInfo({
@@ -68,8 +68,8 @@ export function JsonIngestBox() {
                 </div>
                 <div className="flex items-center gap-2">
                     {isContextMissing ? <div className="flex items-center gap-2 px-3 py-1 bg-amber-50 text-amber-600 rounded-full text-[9px] font-black uppercase tracking-widest border border-amber-100 animate-in fade-in duration-300">
-                            <AlertTriangle size={10} /> Context Missing: Select Topic First
-                        </div> : null}
+                        <AlertTriangle size={10} /> Context Missing: Select Topic First
+                    </div> : null}
                     <div className="flex items-center gap-2 px-3 py-1 bg-emerald-50 text-emerald-600 rounded-full text-[9px] font-black uppercase tracking-widest border border-emerald-100">
                         <Zap size={10} /> Healing Active
                     </div>
@@ -91,33 +91,33 @@ export function JsonIngestBox() {
                         <h4 className="text-sm font-black uppercase tracking-widest text-[#1A1A1A]">Payload Editor</h4>
                     </div>
                     <div className="flex items-center gap-3">
-                        {isContextMissing ? <div className="text-[9px] font-black text-amber-500 bg-amber-50 px-4 py-2 rounded-xl border border-amber-100 uppercase tracking-widest flex items-center gap-2">
-                                <AlertTriangle size={12} /> Target Context (Topic) Not Set
-                            </div> : null}
-                        {lastHealingReport?.modified ? <div className="flex items-center gap-4 px-4 py-2 bg-emerald-50 border border-emerald-100 rounded-xl animate-in fade-in slide-in-from-right-4 duration-500">
-                                <div className="flex items-center gap-2">
-                                    <CheckCircle2 size={12} className="text-emerald-500" />
-                                    <span className="text-[9px] font-black text-emerald-600 uppercase tracking-widest">Healer Summary:</span>
-                                </div>
-                                <div className="flex items-center gap-3">
-                                    {lastHealingReport.stats.unescapedQuotes > 0 && (
-                                        <span className="text-[9px] font-bold text-emerald-500 bg-white px-2 py-0.5 rounded-md border border-emerald-100">
-                                            {lastHealingReport.stats.unescapedQuotes} Quotes Escaped
-                                        </span>
-                                    )}
-                                    {lastHealingReport.stats.trailingCommas > 0 && (
-                                        <span className="text-[9px] font-bold text-emerald-500 bg-white px-2 py-0.5 rounded-md border border-emerald-100">
-                                            {lastHealingReport.stats.trailingCommas} Commas Removed
-                                        </span>
-                                    )}
-                                    {lastHealingReport.stats.conversationalStrip ? <span className="text-[9px] font-bold text-emerald-500 bg-white px-2 py-0.5 rounded-md border border-emerald-100">
-                                            Conversational Strip Active
-                                        </span> : null}
-                                </div>
-                            </div> : null}
-                        {errorInfo?.line ? <div className="text-[10px] font-black text-rose-500 bg-rose-50 px-4 py-2 rounded-xl border border-rose-100 uppercase tracking-widest">
-                                Error at Line {errorInfo.line}
-                            </div> : null}
+                        {isContextMissing === true ? <div className="text-[9px] font-black text-amber-500 bg-amber-50 px-4 py-2 rounded-xl border border-amber-100 uppercase tracking-widest flex items-center gap-2">
+                            <AlertTriangle size={12} /> Target Context (Topic) Not Set
+                        </div> : null}
+                        {(lastHealingReport != null && lastHealingReport.modified === true) ? <div className="flex items-center gap-4 px-4 py-2 bg-emerald-50 border border-emerald-100 rounded-xl animate-in fade-in slide-in-from-right-4 duration-500">
+                            <div className="flex items-center gap-2">
+                                <CheckCircle2 size={12} className="text-emerald-500" />
+                                <span className="text-[9px] font-black text-emerald-600 uppercase tracking-widest">Healer Summary:</span>
+                            </div>
+                            <div className="flex items-center gap-3">
+                                {lastHealingReport.stats.unescapedQuotes > 0 && (
+                                    <span className="text-[9px] font-bold text-emerald-500 bg-white px-2 py-0.5 rounded-md border border-emerald-100">
+                                        {lastHealingReport.stats.unescapedQuotes} Quotes Escaped
+                                    </span>
+                                )}
+                                {lastHealingReport.stats.trailingCommas > 0 && (
+                                    <span className="text-[9px] font-bold text-emerald-500 bg-white px-2 py-0.5 rounded-md border border-emerald-100">
+                                        {lastHealingReport.stats.trailingCommas} Commas Removed
+                                    </span>
+                                )}
+                                {lastHealingReport.stats.conversationalStrip === true ? <span className="text-[9px] font-bold text-emerald-500 bg-white px-2 py-0.5 rounded-md border border-emerald-100">
+                                    Conversational Strip Active
+                                </span> : null}
+                            </div>
+                        </div> : null}
+                        {(errorInfo?.line != null && errorInfo.line !== 0) ? <div className="text-[10px] font-black text-rose-500 bg-rose-50 px-4 py-2 rounded-xl border border-rose-100 uppercase tracking-widest">
+                            Error at Line {errorInfo.line}
+                        </div> : null}
                     </div>
                 </div>
 
@@ -168,12 +168,12 @@ export function JsonIngestBox() {
                     </div>
                     <div className="flex items-center gap-3">
                         {rawJson ? <button
-                                onClick={() => setRawJson('')}
-                                className="p-4 rounded-xl text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-all active:scale-95"
-                                title="Clear Editor"
-                            >
-                                <Trash2 size={16} />
-                            </button> : null}
+                            onClick={() => setRawJson('')}
+                            className="p-4 rounded-xl text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-all active:scale-95"
+                            title="Clear Editor"
+                        >
+                            <Trash2 size={16} />
+                        </button> : null}
                         <button
                             onClick={handleIngest}
                             disabled={!rawJson || isIngesting || isContextMissing}

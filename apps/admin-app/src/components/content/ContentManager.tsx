@@ -1,26 +1,32 @@
 'use client';
-/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { apiClient } from '@quiz/api-client';
-import { ExternalLink,FileText, MoreHorizontal } from 'lucide-react';
+import { ExternalLink, FileText, MoreHorizontal } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
+interface ContentItem {
+    id: string;
+    questionText: string;
+    difficulty: string;
+    type: string;
+}
+
 export function ContentManager() {
-    const [content, setContent] = useState<any[]>([]);
+    const [content, setContent] = useState<ContentItem[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchContent = async () => {
             try {
                 const data = await apiClient.admin.getQuestions();
-                setContent(data.questions);
+                setContent(data.questions as ContentItem[]);
             } catch (err) {
                 console.error("Failed to fetch admin content", err);
             } finally {
                 setLoading(false);
             }
         };
-        fetchContent();
+        void fetchContent();
     }, []);
 
     return (

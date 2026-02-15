@@ -30,6 +30,14 @@ interface UserData {
     };
 }
 
+interface UserFilters {
+    search?: string;
+    role?: string;
+    isBlocked?: boolean;
+    status?: string;
+    isVerified?: boolean;
+}
+
 export function UserTable() {
     const [users, setUsers] = useState<UserData[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -53,8 +61,8 @@ export function UserTable() {
     const fetchUsers = async () => {
         setIsLoading(true);
         try {
-            const serverFilters: any = {};
-            if (searchQuery) serverFilters.search = searchQuery;
+            const serverFilters: UserFilters = {};
+            if (searchQuery !== '') serverFilters.search = searchQuery;
             if (filterRole !== 'ALL') serverFilters.role = filterRole;
 
             if (filterBlocked === 'BLOCKED') {
@@ -102,11 +110,11 @@ export function UserTable() {
         setIsSaving(true);
         try {
             const currentRoles = editingUser.userRoles.map(r => r.role.name);
-            const payload: any = {
+            const payload: Record<string, unknown> = {
                 isBlocked: editingUser.isBlocked,
                 roles: currentRoles
             };
-            if (newPassword) payload.password = newPassword;
+            if (newPassword !== '') payload.password = newPassword;
 
             await apiClient.admin.updateUser(editingUser.id, payload);
             await fetchUsers();
@@ -173,7 +181,7 @@ export function UserTable() {
     return (
         <div className="space-y-6 flex flex-col min-h-[850px]">
             <div className="flex-1">
-                {errorMessage ? <ErrorBanner
+                {(errorMessage != null && errorMessage !== '') ? <ErrorBanner
                     message={errorMessage}
                     onClose={() => setErrorMessage(null)}
                 /> : null}
@@ -251,7 +259,7 @@ export function UserTable() {
                                         <td className="p-6">
                                             <div className="flex items-center gap-4">
                                                 <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center border border-white shadow-sm overflow-hidden">
-                                                    {user.profile?.avatarUrl ? (
+                                                    {(user.profile?.avatarUrl != null && user.profile.avatarUrl !== '') ? (
                                                         <Image
                                                             src={user.profile.avatarUrl}
                                                             alt="User avatar"
@@ -266,8 +274,8 @@ export function UserTable() {
                                                 </div>
                                                 <div>
                                                     <div className="flex items-center gap-2">
-                                                        <p className="font-bold text-[#1A1A1A]">{user.profile?.name || 'Unknown Agent'}</p>
-                                                        {user.emailVerified ? <div className="p-0.5 rounded-full bg-green-500 text-white" title="Identity Verified">
+                                                        <p className="font-bold text-[#1A1A1A]">{(user.profile?.name != null && user.profile.name !== '') ? user.profile.name : 'Unknown Agent'}</p>
+                                                        {user.emailVerified === true ? <div className="p-0.5 rounded-full bg-green-500 text-white" title="Identity Verified">
                                                             <CheckCircle size={10} />
                                                         </div> : null}
                                                     </div>
@@ -325,22 +333,28 @@ export function UserTable() {
                                         <td className="p-6 text-right">
                                             <div className="flex items-center justify-end gap-2">
                                                 <button
-                                                    onClick={async () => {
-                                                        setIsActionLoading(true);
-                                                        await new Promise(r => setTimeout(r, 1000));
-                                                        setIsActionLoading(false);
-                                                        setEditingUser(user);
+                                                    onClick={() => {
+                                                        const p = (async () => {
+                                                            setIsActionLoading(true);
+                                                            await new Promise(r => setTimeout(r, 1000));
+                                                            setIsActionLoading(false);
+                                                            setEditingUser(user);
+                                                        })();
+                                                        void p;
                                                     }}
                                                     className="px-3 py-1.5 rounded-lg border border-gray-200 text-[#1A1A1A] text-[10px] font-black uppercase tracking-widest hover:bg-black hover:text-white transition-all shadow-sm"
                                                 >
                                                     Manage
                                                 </button>
                                                 <button
-                                                    onClick={async () => {
-                                                        setIsActionLoading(true);
-                                                        await new Promise(r => setTimeout(r, 1000));
-                                                        setIsActionLoading(false);
-                                                        setSelectedUser(user);
+                                                    onClick={() => {
+                                                        const p = (async () => {
+                                                            setIsActionLoading(true);
+                                                            await new Promise(r => setTimeout(r, 1000));
+                                                            setIsActionLoading(false);
+                                                            setSelectedUser(user);
+                                                        })();
+                                                        void p;
                                                     }}
                                                     className="px-3 py-1.5 rounded-lg bg-white border border-gray-200 text-[10px] font-black uppercase tracking-widest hover:bg-gray-50 hover:border-[#FF4B91]/30 hover:text-[#FF4B91] transition-all shadow-sm"
                                                 >
@@ -453,17 +467,17 @@ export function UserTable() {
                 selectedUser ? <div className="fixed inset-0 z-[200] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
                     <div className="bg-background rounded-[2rem] max-w-lg w-full overflow-hidden shadow-2xl animate-in zoom-in-95 duration-300">
                         <div className="h-32 bg-gradient-to-r from-[#FF4B91] to-[#FF8E9E] p-8 flex items-end">
-                            <h2 className="text-3xl font-black text-white tracking-tighter uppercase">{selectedUser.profile?.name || 'Agent Profile'}</h2>
+                            <h2 className="text-3xl font-black text-white tracking-tighter uppercase">{(selectedUser.profile?.name != null && selectedUser.profile.name !== '') ? selectedUser.profile.name : 'Agent Profile'}</h2>
                         </div>
                         <div className="p-8 space-y-8">
                             <div className="grid grid-cols-2 gap-6">
                                 <div className="space-y-1">
                                     <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Professional Status</label>
-                                    <p className="font-bold text-lg text-[#1A1A1A]">{selectedUser.profile?.professionalStatus || 'N/A'}</p>
+                                    <p className="font-bold text-lg text-[#1A1A1A]">{selectedUser.profile?.professionalStatus != null && selectedUser.profile.professionalStatus !== '' ? selectedUser.profile.professionalStatus : 'N/A'}</p>
                                 </div>
                                 <div className="space-y-1">
                                     <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Education</label>
-                                    <p className="font-bold text-lg text-[#1A1A1A]">{selectedUser.profile?.educationLevel || 'N/A'}</p>
+                                    <p className="font-bold text-lg text-[#1A1A1A]">{selectedUser.profile?.educationLevel != null && selectedUser.profile.educationLevel !== '' ? selectedUser.profile.educationLevel : 'N/A'}</p>
                                 </div>
                             </div>
 

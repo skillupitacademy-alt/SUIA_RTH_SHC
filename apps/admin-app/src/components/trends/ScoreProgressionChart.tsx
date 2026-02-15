@@ -1,7 +1,6 @@
 'use client';
-
 import { format } from 'date-fns';
-import { CartesianGrid, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, type TooltipProps,XAxis, YAxis } from 'recharts';
+import { CartesianGrid, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, type TooltipProps, XAxis, YAxis } from 'recharts';
 
 interface ScoreProgressionChartProps {
     scores: Array<{
@@ -27,7 +26,7 @@ export function ScoreProgressionChart({ scores, passThreshold = 70 }: ScoreProgr
         date: format(new Date(s.date), 'MMM dd'),
         score: s.score,
         passed: s.passed,
-        blueprintName: s.blueprintName || 'Unknown',
+        blueprintName: (s.blueprintName != null && s.blueprintName !== '') ? s.blueprintName : 'Unknown',
         fullDate: format(new Date(s.date), 'PPP')
     }));
 
@@ -40,7 +39,7 @@ export function ScoreProgressionChart({ scores, passThreshold = 70 }: ScoreProgr
     };
 
     const tooltipLabelFormatter: TooltipProps<number, string>['labelFormatter'] = (_label, payload) => {
-        const first = payload && payload[0];
+        const first = (payload != null && payload.length > 0) ? payload[0] : null;
         return first?.payload?.fullDate ?? _label;
     };
 
@@ -89,14 +88,15 @@ export function ScoreProgressionChart({ scores, passThreshold = 70 }: ScoreProgr
                         dataKey="score"
                         stroke="#2563eb"
                         strokeWidth={2}
-                        dot={(props) => {
-                            const { cx, cy, payload } = props;
+                        dot={(props: Record<string, unknown>) => {
+                            const { cx, cy, payload } = props as { cx: number, cy: number, payload: { passed: boolean } };
+                            const isPassed = (payload as { passed: boolean }).passed === true;
                             return (
                                 <circle
                                     cx={cx}
                                     cy={cy}
                                     r={4}
-                                    fill={payload.passed ? '#16a34a' : '#dc2626'}
+                                    fill={isPassed ? '#16a34a' : '#dc2626'}
                                     stroke="#fff"
                                     strokeWidth={2}
                                 />
