@@ -107,8 +107,8 @@ test.describe('Admin Auth & Security Suite', () => {
 
     await adminAuthFixtures.loginAdmin(page);
 
-    // a) Navigate to Factory and Trigger Mock Job
-    await page.goto(`${ADMIN_UI_URL}/factory/question-generator`);
+    // a) Navigate to Factory and Trigger Mock Job (with ?e2e=true override)
+    await page.goto(`${ADMIN_UI_URL}/factory/question-generator?e2e=true`);
     await page.getByTestId('mock-job-button').click();
 
     // b) Verify Badge appears in header (Polling started)

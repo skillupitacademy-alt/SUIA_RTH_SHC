@@ -2,7 +2,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { Check, Copy, RefreshCcw, ShieldCheck } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
+import React, { Suspense, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 import { ContextSelector } from '@/components/factory/blueprint/ContextSelector';
@@ -18,7 +19,9 @@ import { PromptService } from '@/lib/factory/prompt-service';
 
 export default function QuestionFactoryPage() {
     return (
-        <QuestionFactoryContent />
+        <Suspense fallback={<div className="p-8 text-center text-slate-400">Loading Factory...</div>}>
+            <QuestionFactoryContent />
+        </Suspense>
     );
 }
 
@@ -27,17 +30,27 @@ function QuestionFactoryContent() {
     const [isCopying, setIsCopying] = useState(false);
     const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
     const { startJob } = useJobTracker();
-    const [allowMockJobs, setAllowMockJobs] = useState(process.env.NODE_ENV !== 'production');
+    const searchParams = useSearchParams();
+    const [allowMockJobs, setAllowMockJobs] = useState(false);
 
     useEffect(() => {
+        // 1. Dev Environment
         if (process.env.NODE_ENV !== 'production') {
             setAllowMockJobs(true);
             return;
         }
+
+        // 2. E2E Override (Robust query param check)
+        if (searchParams.get('e2e') === 'true') {
+            setAllowMockJobs(true);
+            return;
+        }
+
+        // 3. Fallback to window injection
         if (typeof window !== 'undefined' && (window as unknown as { __E2E_TEST_MODE__?: boolean }).__E2E_TEST_MODE__ === true) {
             setAllowMockJobs(true);
         }
-    }, []);
+    }, [searchParams]);
 
     // Context resolution hooks for human-readable names
     const { data: domains } = useDomains();
