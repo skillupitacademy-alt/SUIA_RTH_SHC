@@ -71,3 +71,23 @@ Scoring is an asynchronous process triggered during `/quiz/submit`.
 *   **Solution:**
     *   **Endpoint Correction:** Switched the lock screen component to use `apiClient.admin.login`, ensuring the correct `admin` scope and cookies are established.
     *   **Optimized Flow:** Removed a redundant `getAdminSession()` call immediately after login, instead initializing the session state directly from the login response to eliminate race conditions and reduce network overhead.
+
+## 8. The Stabilization Journey & Lessons Learned
+
+### The Journey: From Flaky to Fortress
+The stabilization of the Admin Auth suite (`admin-auth.spec.ts`) involved three distinct stages of failure and recovery:
+
+1.  **Stage 1 - The Timeout Trap**: Initial failures were attributed to "slow network" on the live site. We increased timeouts from 10s to 45s, but the tests still failed.
+2.  **Stage 2 - The Logic Leak**: Detailed network logs revealed that the "Locked Terminal" was calling the wrong authentication endpoint (`/api/auth/login` instead of `/api/admin/auth/login`). This resulted in a User session trying to control an Admin app, leading to silent `403` failures.
+3.  **Stage 3 - The Race Condition**: After fixing the endpoint, the test *still* failed locally. Diagnostics showed that the app was correctly unlocking, but because the "Idle Timer" hadn't been reset, the application would see that it had been "inactive" for the duration of the lock and **immediately re-lock itself**. This happened in milliseconds, making it look like the unlock failed.
+
+### Mistakes to Avoid (The "Blacklist")
+*   **Band-Aid Timeouts**: Never assume a timeout is the root cause. If a 10s test fails, a 60s timeout usually just makes the failure slower. Look for `401/403` errors first.
+*   **Shared Cookie Names**: Avoid using generic names like `session`. Our use of `admin_accessToken` was the only reason the system survived a "locked admin vs active user" scenario.
+*   **Hidden State Race**: In component-based logic (like `SessionWatcher.tsx`), always ensure that **manual state transitions** (like `unlock()`) are accompanied by **timer resets**.
+
+### Compliance Standards for Future Tests
+*   **Activity Reset**: Every "Unlock" or "Stay Active" action **MUST** call `setLastActivityAt(Date.now())` to prevent instant re-locking.
+*   **Role-Specific Auth**: Admin components must strictly use the `@quiz/api-client`'s `admin` module, never the generic `auth` module.
+*   **Diagnostic Transparency**: Keep the `page.on('console', ...)` and network listeners active in chaos tests. Without them, debugging live site latency is impossible.
+*   **Idempotent Simulation**: In "Long-Task" tests, always check `if (isAlreadyProcessing)` before clicking mock buttons. The system should be able to recover its state even if the test started in the middle of a job.

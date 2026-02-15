@@ -18,24 +18,17 @@ export function AdminLockScreen() {
 
     const handleUnlock = async (e?: React.FormEvent) => {
         e?.preventDefault();
-        console.log('Unlock attempt started for:', user?.email);
-        if (password === '') {
-            console.log('Unlock aborted: empty password');
-            return;
-        }
+        if (password === '') return;
 
         setIsLoading(true);
         setError(null);
 
         try {
-            console.log('Calling apiClient.admin.login...');
             // 1. Verify password & establish fresh cookies
             const { user: refreshedUser, expiresAt } = await apiClient.admin.login(user.email, password);
-            console.log('Login successful, user:', refreshedUser?.email);
 
             // 2. Update local state
             login(refreshedUser, expiresAt);
-            console.log('Auth store updated');
 
             setPassword('');
             unlock();

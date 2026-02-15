@@ -154,19 +154,6 @@ test.describe('Admin Auth & Security Suite', () => {
 
   // 9. Locked Terminal Protects State
   test('Locked Terminal Protects State', async ({ page, context }) => {
-    page.on('console', msg => {
-      console.log(`[Browser ${msg.type()}] ${msg.text()}`);
-    });
-    page.on('request', request => {
-      console.log(`>> [Request] ${request.method()} ${request.url()}`);
-    });
-    page.on('requestfailed', request => {
-      console.log(`!! [Request Failed] ${request.url()} - ${request.failure()?.errorText}`);
-    });
-    page.on('response', response => {
-      console.log(`<< [Response ${response.status()}] ${response.url()}`);
-    });
-
     await context.addInitScript(() => {
         window.__idleTestConfig = {
             IDLE_WARNING_MS: 2000,
@@ -187,7 +174,6 @@ test.describe('Admin Auth & Security Suite', () => {
     await input.fill(testValue);
 
     // Wait for lock
-    console.log('Waiting for lock to appear...');
     await page.waitForTimeout(12000); // Wait > 10s
     await expect(page.getByText('Terminal Locked')).toBeVisible({ timeout: 20000 });
 
