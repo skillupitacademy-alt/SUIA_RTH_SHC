@@ -221,11 +221,9 @@ Output strictly in the following JSON format:
                                                     "bg-red-50 text-red-600 border-red-100"
                                         )}>{q.difficulty || 'intermediate'}</span>
 
-                                        {q.mappingType && (
-                                            <span className="text-[10px] font-black uppercase px-2 py-1 rounded-lg bg-blue-50 text-blue-600 border border-blue-100">
+                                        {q.mappingType ? <span className="text-[10px] font-black uppercase px-2 py-1 rounded-lg bg-blue-50 text-blue-600 border border-blue-100">
                                                 {q.mappingType}
-                                            </span>
-                                        )}
+                                            </span> : null}
 
                                         <span className="text-[10px] font-bold text-slate-400 flex items-center gap-1">
                                             <Check className="w-3 h-3" /> {q.options.length} Options

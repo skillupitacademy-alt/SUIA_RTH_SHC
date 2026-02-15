@@ -173,12 +173,10 @@ export function UserTable() {
     return (
         <div className="space-y-6 flex flex-col min-h-[850px]">
             <div className="flex-1">
-                {errorMessage && (
-                    <ErrorBanner
+                {errorMessage ? <ErrorBanner
                         message={errorMessage}
                         onClose={() => setErrorMessage(null)}
-                    />
-                )}
+                    /> : null}
 
                 {/* Filter Bar: Discovery Orchestrator */}
                 <div className="grid grid-cols-1 xl:grid-cols-4 gap-4 p-6 bg-white border border-primary/10 rounded-[2.5rem] shadow-sm">
@@ -269,11 +267,9 @@ export function UserTable() {
                                                 <div>
                                                     <div className="flex items-center gap-2">
                                                         <p className="font-bold text-[#1A1A1A]">{user.profile?.name || 'Unknown Agent'}</p>
-                                                        {user.emailVerified && (
-                                                            <div className="p-0.5 rounded-full bg-green-500 text-white" title="Identity Verified">
+                                                        {user.emailVerified ? <div className="p-0.5 rounded-full bg-green-500 text-white" title="Identity Verified">
                                                                 <CheckCircle size={10} />
-                                                            </div>
-                                                        )}
+                                                            </div> : null}
                                                     </div>
                                                     <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                                                         <Mail size={10} />
@@ -314,12 +310,10 @@ export function UserTable() {
                                                         <span className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Offline</span>
                                                     </>
                                                 )}
-                                                {user.isBlocked && (
-                                                    <>
+                                                {user.isBlocked ? <>
                                                         <Shield size={14} className="fill-current text-red-600" />
                                                         <span className="text-xs font-bold uppercase tracking-wide text-red-600">Blocked</span>
-                                                    </>
-                                                )}
+                                                    </> : null}
                                             </div>
                                         </td>
                                         <td className="p-6">
@@ -374,8 +368,7 @@ export function UserTable() {
                 }}
             />
 
-            {editingUser && (
-                <div className="fixed inset-0 z-[200] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
+            {editingUser ? <div className="fixed inset-0 z-[200] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
                     <div className="bg-background rounded-[2rem] max-w-md w-full overflow-hidden shadow-2xl animate-in zoom-in-95 duration-300">
                         <div className="h-24 bg-gradient-to-r from-gray-900 to-gray-800 p-8 flex items-end">
                             <h2 className="text-2xl font-black text-white tracking-tighter uppercase">Manage Access</h2>
@@ -453,13 +446,11 @@ export function UserTable() {
                             </div>
                         </form>
                     </div>
-                </div>
-            )
+                </div> : null
             }
 
             {
-                selectedUser && (
-                    <div className="fixed inset-0 z-[200] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
+                selectedUser ? <div className="fixed inset-0 z-[200] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
                         <div className="bg-background rounded-[2rem] max-w-lg w-full overflow-hidden shadow-2xl animate-in zoom-in-95 duration-300">
                             <div className="h-32 bg-gradient-to-r from-[#FF4B91] to-[#FF8E9E] p-8 flex items-end">
                                 <h2 className="text-3xl font-black text-white tracking-tighter uppercase">{selectedUser.profile?.name || 'Agent Profile'}</h2>
@@ -486,26 +477,21 @@ export function UserTable() {
                                 </div>
                             </div>
                         </div>
-                    </div>
-                )
+                    </div> : null
             }
 
             {
-                isActionLoading && (
-                    <div className="fixed inset-0 z-[300] bg-white/20 backdrop-blur-[2px] flex items-center justify-center animate-in fade-in duration-200">
+                isActionLoading ? <div className="fixed inset-0 z-[300] bg-white/20 backdrop-blur-[2px] flex items-center justify-center animate-in fade-in duration-200">
                         <div className="bg-white p-8 rounded-3xl shadow-2xl border border-primary/10 flex flex-col items-center gap-4">
                             <ZLoader size="md" text="Accessing Identity..." />
                         </div>
-                    </div>
-                )
+                    </div> : null
             }
 
             {
-                isPageLoading && (
-                    <div className="fixed inset-0 z-[300] bg-black/5 backdrop-blur-[1px] flex items-center justify-center animate-in fade-in duration-200">
+                isPageLoading ? <div className="fixed inset-0 z-[300] bg-black/5 backdrop-blur-[1px] flex items-center justify-center animate-in fade-in duration-200">
                         <ZLoader text="Syncing Matrix..." />
-                    </div>
-                )
+                    </div> : null
             }
         </div >
     );

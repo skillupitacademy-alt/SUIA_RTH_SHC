@@ -1,0 +1,24 @@
+﻿
+> @quiz/api-server@0.1.1 lint D:\onlinewebsites\quiz-platform\apps\api-server
+> cross-env ESLINT_USE_FLAT_CONFIG=false eslint --max-warnings=0 --ext .ts,.tsx,.js,.jsx .
+
+
+D:\onlinewebsites\quiz-platform\apps\api-server\src\app\api\admin\jobs\route.ts
+  47:7  warning  Promises must be awaited, end with a call to .catch, end with a call to .then with a rejection handler or be explicitly marked as ignored with the `void` operator  @typescript-eslint/no-floating-promises
+
+D:\onlinewebsites\quiz-platform\apps\api-server\src\modules\admin-engine\admin.analytics.engine.ts
+    1:86   error  'subjects' is defined but never used. Allowed unused vars must match /^_/u   @typescript-eslint/no-unused-vars
+    1:96   error  'subtopics' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+    1:107  error  'topics' is defined but never used. Allowed unused vars must match /^_/u     @typescript-eslint/no-unused-vars
+  237:33   error  Unexpected any. Specify a different type                                     @typescript-eslint/no-explicit-any
+  249:30   error  Unexpected any. Specify a different type                                     @typescript-eslint/no-explicit-any
+  251:33   error  Unexpected any. Specify a different type                                     @typescript-eslint/no-explicit-any
+
+D:\onlinewebsites\quiz-platform\apps\api-server\src\modules\auth\auth.service.ts
+  368:10  error  Unexpected nullable string value in conditional. Please handle the nullish/empty cases explicitly  @typescript-eslint/strict-boolean-expressions
+
+Γ£û 8 problems (7 errors, 1 warning)
+
+D:\onlinewebsites\quiz-platform\apps\api-server:
+ΓÇëERR_PNPM_RECURSIVE_RUN_FIRST_FAILΓÇë @quiz/api-server@0.1.1 lint: `cross-env ESLINT_USE_FLAT_CONFIG=false eslint --max-warnings=0 --ext .ts,.tsx,.js,.jsx .`
+Exit status 1

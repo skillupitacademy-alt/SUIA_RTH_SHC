@@ -15,9 +15,9 @@ async function _verifyAdmin(_req: NextRequest) {
     }
 
     try {
-        const _payload = await TokenService.verifyAccessToken(_token, true);
-        return { userId: _payload.userId };
-    } catch (_err) {
+        const payload = await TokenService.verifyAccessToken(_token, true);
+        return { userId: payload.userId };
+    } catch {
         return { _error: 'Unauthorized', status: 401 };
     }
 }

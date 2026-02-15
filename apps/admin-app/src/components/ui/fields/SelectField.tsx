@@ -12,11 +12,9 @@ interface SelectFieldProps extends React.SelectHTMLAttributes<HTMLSelectElement>
 export function SelectField({ label, options, isLoading, error, className, ...props }: SelectFieldProps) {
     return (
         <div className="space-y-1.5 w-full">
-            {label && (
-                <label className="text-[10px] font-bold uppercase text-slate-400 tracking-wider">
+            {label ? <label className="text-[10px] font-bold uppercase text-slate-400 tracking-wider">
                     {label}
-                </label>
-            )}
+                </label> : null}
             <div className="relative">
                 <select
                     {...props}
@@ -49,7 +47,7 @@ export function SelectField({ label, options, isLoading, error, className, ...pr
                     )}
                 </div>
             </div>
-            {error && <p className="text-xs text-rose-500 font-medium">{error}</p>}
+            {error ? <p className="text-xs text-rose-500 font-medium">{error}</p> : null}
         </div>
     );
 }

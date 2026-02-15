@@ -558,7 +558,7 @@ Please provide a valid JSON object matching this schema:
                                 <p className="text-sm font-medium text-muted-foreground leading-relaxed">
                                     Register a new {initialData?.target || 'domain'}.
                                     {(!initialData?.target || initialData.target === 'domain') && " You will be able to customize the Assessment Blueprint after registration is complete."}
-                                    {initialData?.domainName && ` Target Domain: ${initialData.domainName}`}
+                                    {initialData?.domainName ? ` Target Domain: ${initialData.domainName}` : null}
                                 </p>
                             </div>
 
@@ -830,17 +830,14 @@ Please provide a valid JSON object matching this schema:
                                 </div>
                             </div>
 
-                            {error && (
-                                <div className="p-6 rounded-2xl bg-red-50 border border-red-200 text-red-600 animate-in shake-1 space-y-2">
+                            {error ? <div className="p-6 rounded-2xl bg-red-50 border border-red-200 text-red-600 animate-in shake-1 space-y-2">
                                     <div className="flex items-center gap-2 font-black uppercase text-xs">
                                         <AlertTriangle size={16} /> Factory Halted
                                     </div>
                                     <p className="text-[11px] font-bold">{error}</p>
-                                </div>
-                            )}
+                                </div> : null}
 
-                            {success && (
-                                <div className="p-8 rounded-[2rem] bg-green-50 border border-green-200 animate-in slide-in-from-bottom-4 shadow-2xl shadow-green-500/10 space-y-6 text-center">
+                            {success ? <div className="p-8 rounded-[2rem] bg-green-50 border border-green-200 animate-in slide-in-from-bottom-4 shadow-2xl shadow-green-500/10 space-y-6 text-center">
                                     <div className="mx-auto w-16 h-16 rounded-full bg-green-500 text-white flex items-center justify-center shadow-lg shadow-green-500/30">
                                         <CheckCircle2 size={32} />
                                     </div>
@@ -849,8 +846,7 @@ Please provide a valid JSON object matching this schema:
                                         <p className="text-[10px] font-bold text-green-700 uppercase tracking-widest mt-1">Domain ID: {success.domainId}</p>
                                     </div>
 
-                                    {success.stats && (
-                                        <div className="p-4 rounded-3xl bg-white/50 border border-green-200/50 space-y-3">
+                                    {success.stats ? <div className="p-4 rounded-3xl bg-white/50 border border-green-200/50 space-y-3">
                                             <h5 className="text-[9px] font-black uppercase tracking-widest text-green-800/60 text-left px-2">Registry Summary</h5>
                                             <div className="grid grid-cols-2 gap-2">
                                                 {Object.entries(success.stats).map(([k, v]: [string, any]) => (
@@ -865,8 +861,7 @@ Please provide a valid JSON object matching this schema:
                                                     )
                                                 ))}
                                             </div>
-                                        </div>
-                                    )}
+                                        </div> : null}
                                     <div className="grid grid-cols-1 gap-3">
                                         <button
                                             onClick={() => setBlueprintModal({
@@ -890,8 +885,7 @@ Please provide a valid JSON object matching this schema:
                                             Close Engine
                                         </button>
                                     </div>
-                                </div>
-                            )}
+                                </div> : null}
                         </div>
 
                         {/* Utility Clustering at Bottom */}

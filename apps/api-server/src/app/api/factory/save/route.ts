@@ -28,23 +28,23 @@ interface SavePayload {
   skillId?: string;
 }
 
-export async function POST(_req: NextRequest) {
+export async function POST(req: NextRequest) {
   try {
     // 1. Defense-in-Depth Admin Check (P0-SEC-002)
-    const _token = TokenService.getAccessToken(_req, { scope: 'admin' });
-    if (_token === undefined || _token === null || _token === '') {
+    const token = TokenService.getAccessToken(req, { scope: 'admin' });
+    if (token === undefined || token === null || token === '') {
       return NextResponse.json({ _error: "Authentication required", scope: 'admin' }, { status: 401 });
     }
 
-    const _payload = await TokenService.verifyAccessToken(_token, true);
+    await TokenService.verifyAccessToken(token, true);
 
-    const { questions: checkQuestions, topicId, subtopicId } = (await _req.json()) as SavePayload;
+    const { questions: checkQuestions, topicId, subtopicId } = (await req.json()) as SavePayload;
 
     if (!checkQuestions?.length || !topicId) {
-      return NextResponse.json({ _error: "Invalid _payload" }, { status: 400 });
+      return NextResponse.json({ _error: "Invalid payload" }, { status: 400 });
     }
 
-    // 1. Extract all unique skill names from the _payload
+    // 1. Extract all unique skill names from the payload
     const allSkillNames = Array.from(
       new Set(checkQuestions.flatMap((q) => (q.skillNames !== undefined && q.skillNames !== null ? q.skillNames : [])).map((s) => s.toLowerCase().trim()))
     ).filter(Boolean);
@@ -122,10 +122,10 @@ export async function POST(_req: NextRequest) {
       insertedCount: checkQuestions.length,
       newSkillsCreated: skillsToCreate.length,
     });
-  } catch (_error: unknown) {
-    console.error("Factory Save Error:", _error);
+  } catch (error: unknown) {
+    console.error("Factory Save Error:", error);
     return NextResponse.json(
-      { _error: _error instanceof Error ? _error.message : "Access denied" },
+      { _error: error instanceof Error ? error.message : "Access denied" },
       { status: 403 }
     );
   }

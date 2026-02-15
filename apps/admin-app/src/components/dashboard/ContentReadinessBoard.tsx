@@ -213,8 +213,7 @@ export function ContentReadinessBoard() {
                         </div>
 
                         {/* Subjects Drill-down */}
-                        {expandedNodes[domain.domainId] && (
-                            <div className="ml-8 space-y-2 border-l-2 border-primary/5 pl-4 animate-in slide-in-from-top-2 duration-300">
+                        {expandedNodes[domain.domainId] ? <div className="ml-8 space-y-2 border-l-2 border-primary/5 pl-4 animate-in slide-in-from-top-2 duration-300">
                                 {domain.subjects?.map((subject: any) => (
                                     <div key={subject.id} className="space-y-2">
                                         <div
@@ -248,8 +247,7 @@ export function ContentReadinessBoard() {
                                         </div>
 
                                         {/* Topics Drill-down */}
-                                        {expandedNodes[subject.id] && (
-                                            <div className="ml-6 space-y-1.5 border-l border-primary/10 pl-4 animate-in slide-in-from-top-1">
+                                        {expandedNodes[subject.id] ? <div className="ml-6 space-y-1.5 border-l border-primary/10 pl-4 animate-in slide-in-from-top-1">
                                                 {subject.topics?.map((topic: any) => (
                                                     <div key={topic.id} className="space-y-1.5">
                                                         <div
@@ -278,8 +276,7 @@ export function ContentReadinessBoard() {
                                                         </div>
 
                                                         {/* Subtopics Drill-down */}
-                                                        {expandedNodes[topic.id] && (
-                                                            <div className="ml-6 space-y-1 pl-4">
+                                                        {expandedNodes[topic.id] ? <div className="ml-6 space-y-1 pl-4">
                                                                 {topic.subtopics?.map((sub: any) => (
                                                                     <div key={sub.id} className="flex items-center justify-between p-2 rounded-lg bg-muted/20 text-[10px]">
                                                                         <div className="flex items-center gap-2">
@@ -294,16 +291,13 @@ export function ContentReadinessBoard() {
                                                                         </div>
                                                                     </div>
                                                                 ))}
-                                                            </div>
-                                                        )}
+                                                            </div> : null}
                                                     </div>
                                                 ))}
-                                            </div>
-                                        )}
+                                            </div> : null}
                                     </div>
                                 ))}
-                            </div>
-                        )}
+                            </div> : null}
                     </div>
                 ))}
             </div>

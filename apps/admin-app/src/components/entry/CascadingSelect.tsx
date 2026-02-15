@@ -131,12 +131,10 @@ export function CascadingSelect({ onChange, value, hideSkills }: CascadingSelect
                     <h3 className="text-xl font-black text-[#1A1A1A] tracking-tight uppercase">Target Hierarchy</h3>
                 </div>
                 {/* Visual state indicator for debugging */}
-                {value && (
-                    <div className="flex items-center gap-2 px-4 py-1.5 bg-slate-100 rounded-full border border-slate-300">
+                {value ? <div className="flex items-center gap-2 px-4 py-1.5 bg-slate-100 rounded-full border border-slate-300">
                         <Binary className="w-3.5 h-3.5 text-slate-500" />
                         <span className="text-[10px] font-black text-slate-600 uppercase tracking-[0.1em]">Active Session</span>
-                    </div>
-                )}
+                    </div> : null}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-6">
@@ -227,8 +225,7 @@ export function CascadingSelect({ onChange, value, hideSkills }: CascadingSelect
             </div>
 
             {/* Quick Create Modal */}
-            {modalConfig.isOpen && modalConfig.type && (
-                <QuickCreateModal
+            {modalConfig.isOpen && modalConfig.type ? <QuickCreateModal
                     type={modalConfig.type}
                     onClose={() => setModalConfig({ type: null, isOpen: false })}
                     onSuccess={handleCreateSuccess}
@@ -238,8 +235,7 @@ export function CascadingSelect({ onChange, value, hideSkills }: CascadingSelect
                                 modalConfig.type === 'subtopic' ? selection.topicId! : undefined
                     }
                     hooks={{ domains, subjects, topics, subtopics }}
-                />
-            )}
+                /> : null}
         </div>
     );
 }
@@ -300,11 +296,9 @@ function QuickCreateModal({ type, onClose, onSuccess, parentId, hooks }: any) {
                         />
                     </div>
 
-                    {error && (
-                        <div className="p-4 bg-red-50 border border-red-100 text-red-600 text-sm font-bold rounded-xl flex items-center gap-2">
+                    {error ? <div className="p-4 bg-red-50 border border-red-100 text-red-600 text-sm font-bold rounded-xl flex items-center gap-2">
                             <div className="w-1.5 h-1.5 rounded-full bg-red-500" /> {error}
-                        </div>
-                    )}
+                        </div> : null}
 
                     <div className="flex justify-end gap-3 pt-4">
                         <button
@@ -319,7 +313,7 @@ function QuickCreateModal({ type, onClose, onSuccess, parentId, hooks }: any) {
                             disabled={loading || !name.trim()}
                             className="flex items-center gap-2 px-6 py-3 bg-[#FF4B91] hover:bg-[#ff3382] text-white text-xs font-black uppercase tracking-widest rounded-xl shadow-lg shadow-[#FF4B91]/20 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            {loading && <ZLoader size="xs" className="text-white" center={false} />}
+                            {loading ? <ZLoader size="xs" className="text-white" center={false} /> : null}
                             Create {type}
                         </button>
                     </div>

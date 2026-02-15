@@ -94,15 +94,12 @@ export default function TrendsPage() {
                 </div>
 
                 {/* Loading State */}
-                {loading && (
-                    <div className="flex items-center justify-center py-20">
+                {loading ? <div className="flex items-center justify-center py-20">
                         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
-                    </div>
-                )}
+                    </div> : null}
 
                 {/* Error State */}
-                {error && !loading && (
-                    <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
+                {error && !loading ? <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
                         <p className="text-red-800 font-medium mb-2">Error loading trends</p>
                         <p className="text-red-600 text-sm mb-4">{error}</p>
                         <button
@@ -111,20 +108,16 @@ export default function TrendsPage() {
                         >
                             Retry
                         </button>
-                    </div>
-                )}
+                    </div> : null}
 
                 {/* Empty State */}
-                {!loading && !error && summary && summary.totalExams === 0 && (
-                    <div className="bg-white border border-slate-200 rounded-lg p-12 text-center">
+                {!loading && !error && summary && summary.totalExams === 0 ? <div className="bg-white border border-slate-200 rounded-lg p-12 text-center">
                         <p className="text-slate-500 text-lg">No exam data yet for this range</p>
                         <p className="text-slate-400 text-sm mt-2">Try selecting a longer time period</p>
-                    </div>
-                )}
+                    </div> : null}
 
                 {/* Data Display */}
-                {!loading && !error && summary && summary.totalExams > 0 && (
-                    <div className="space-y-6">
+                {!loading && !error && summary && summary.totalExams > 0 ? <div className="space-y-6">
                         {/* Summary Cards */}
                         <TrendSummaryCards summary={summary} />
 
@@ -135,8 +128,7 @@ export default function TrendsPage() {
                             {/* Skill Delta List */}
                             <SkillDeltaList skills={skills} />
                         </div>
-                    </div>
-                )}
+                    </div> : null}
             </div>
         </div>
     );

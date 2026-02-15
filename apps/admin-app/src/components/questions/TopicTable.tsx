@@ -195,9 +195,7 @@ export function TopicTable() {
     return (
         <div className="space-y-6 flex flex-col min-h-[850px]">
             <div className="flex-1">
-                {errorMessage && (
-                    <ErrorBanner message={errorMessage} onClose={() => setErrorMessage(null)} />
-                )}
+                {errorMessage ? <ErrorBanner message={errorMessage} onClose={() => setErrorMessage(null)} /> : null}
 
                 <div className="flex items-center justify-between gap-4 p-6 bg-white border border-primary/10 rounded-[2.5rem] shadow-sm overflow-hidden relative">
                     <div className="flex items-center gap-6 flex-1">
@@ -359,11 +357,9 @@ export function TopicTable() {
             )}
 
             {/* Modals remain below */}
-            {isLoading && (
-                <div className="fixed inset-0 z-[200] bg-white/50 backdrop-blur-sm flex items-center justify-center">
+            {isLoading ? <div className="fixed inset-0 z-[200] bg-white/50 backdrop-blur-sm flex items-center justify-center">
                     <ZLoader text="Syncing Nodes..." />
-                </div>
-            )}
+                </div> : null}
         </div >
     );
 }

@@ -205,9 +205,7 @@ export function DomainTable() {
     return (
         <div className="space-y-6 relative min-h-[750px] flex flex-col">
             <div className="flex-1">
-                {errorMessage && (
-                    <ErrorBanner message={errorMessage} onClose={() => setErrorMessage(null)} />
-                )}
+                {errorMessage ? <ErrorBanner message={errorMessage} onClose={() => setErrorMessage(null)} /> : null}
 
                 {/* FLOATING COMMAND BAR */}
                 <div className={cn(

@@ -14,7 +14,7 @@ export async function GET(_req: NextRequest) {
     if (_token === null || _token === undefined || _token.trim() === '') {
       return NextResponse.json({ _error: 'Unauthorized', scope: 'admin' }, { status: 401 });
     }
-    const _payload = await TokenService.verifyAccessToken(_token, true);
+    await TokenService.verifyAccessToken(_token, true);
 
     const searchParams = _req.nextUrl.searchParams;
     const page = parseInt(searchParams.get('page') ?? '1');
@@ -54,4 +54,3 @@ export async function POST(_req: NextRequest) {
     return NextResponse.json({ _error: message }, { status: 500 });
   }
 }
-

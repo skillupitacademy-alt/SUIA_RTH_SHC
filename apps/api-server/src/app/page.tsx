@@ -2,15 +2,13 @@
 
 import { ZLoader } from "@quiz/ui";
 import { ChevronRight } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { AdminGuard } from "@/components/auth/AdminGuard";
-import { type AuthState,useAuthStore } from "@/store/auth-store";
+import { type AuthState, useAuthStore } from "@/store/auth-store";
 
 export default function Home() {
-    const _router = useRouter();
-    const { _user, initialized } = useAuthStore() as AuthState;
+    const { initialized } = useAuthStore() as AuthState;
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
@@ -18,7 +16,7 @@ export default function Home() {
             setIsLoading(false);
         }
     }, [initialized]);
-    // ... modules and buildDate logic ...
+
     const modules = [
         { name: 'Authentication', path: '/api/auth', status: 'Active' },
         { name: 'Admin Console', path: '/api/admin', status: 'Active' },
@@ -44,12 +42,10 @@ export default function Home() {
     return (
         <AdminGuard>
             <main className="main-container">
-                {/* ... dashboard contents ... */}
                 <div className="glow-top" />
                 <div className="glow-bottom" />
 
                 <div className="content-wrapper">
-                    {/* Header Section */}
                     <div className="header-flex">
                         <div style={{ flex: 1 }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
@@ -74,7 +70,6 @@ export default function Home() {
                         </div>
                     </div>
 
-                    {/* Modules Grid */}
                     <div className="module-grid">
                         {modules.map((module) => (
                             <div key={module.name} className="module-card">
@@ -87,7 +82,6 @@ export default function Home() {
                             </div>
                         ))}
 
-                        {/* Status Check Card */}
                         <a
                             href="/api/status"
                             className="action-card"
@@ -99,7 +93,6 @@ export default function Home() {
                         </a>
                     </div>
 
-                    {/* Technical Specs Footer */}
                     <div className="footer-section">
                         <div className="footer-stats-list">
                             <p>ENGINE: <span className="footer-value">NODE.JS 20.x</span></p>

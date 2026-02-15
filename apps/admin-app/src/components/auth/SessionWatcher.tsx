@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback,useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { ZConfirmationDialog } from '@/components/ui/ZConfirmationDialog';
 import { useAuthStore } from '@/store/auth-store';
@@ -173,20 +173,18 @@ export function SessionWatcher({ expiresAt, onRefresh, onLogout, isRedirecting, 
 
     return (
         <>
-            {isRedirecting && (
-                <div className="fixed top-6 right-6 z-[10000] animate-in fade-in slide-in-from-right duration-500">
-                    <div className="bg-white border-l-4 border-[#FF4B91] px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-4 min-w-[300px]">
-                        <div className="h-2 w-2 rounded-full bg-[#FF4B91] animate-pulse" />
-                        <div className="flex flex-col">
-                            <span className="alpha-terminal text-[10px] text-[#FF4B91] !tracking-[0.2em]">Security Protocol</span>
-                            <span className="text-sm font-bold text-slate-800">{redirectMessage ?? 'Redirecting...'}</span>
-                        </div>
+            {isRedirecting ? <div className="fixed top-6 right-6 z-[10000] animate-in fade-in slide-in-from-right duration-500">
+                <div className="bg-white border-l-4 border-[#FF4B91] px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-4 min-w-[300px]">
+                    <div className="h-2 w-2 rounded-full bg-[#FF4B91] animate-pulse" />
+                    <div className="flex flex-col">
+                        <span className="alpha-terminal text-[10px] text-[#FF4B91] !tracking-[0.2em]">Security Protocol</span>
+                        <span className="text-sm font-bold text-slate-800">{redirectMessage ?? 'Redirecting...'}</span>
                     </div>
                 </div>
-            )}
+            </div> : null}
 
             <ZConfirmationDialog
-                isOpen={showWarning && !isRedirecting && !isLoggingOut && (!isLocked || isForcedLogoutWarning)}
+                isOpen={!!(showWarning && !isRedirecting && !isLoggingOut && (!isLocked || isForcedLogoutWarning))}
                 title={warningTitle}
                 description={warningDesc}
                 confirmText={isRefreshing ? "Renewing..." : ((isIdleWarning || isForcedLogoutWarning) ? "Stay Active" : "Stay Logged In")}

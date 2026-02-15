@@ -200,8 +200,7 @@ export function BlueprintFactoryWizard({ isOpen, onClose, domainId, domainName, 
                             </div>
 
                             {/* Calibration Summary */}
-                            {formData.blueprintMode === 'static' && questionStats && (
-                                <div className="p-8 bg-primary/5 rounded-[2.5rem] border border-primary/10 space-y-4 animate-in zoom-in-95 duration-500">
+                            {formData.blueprintMode === 'static' && questionStats ? <div className="p-8 bg-primary/5 rounded-[2.5rem] border border-primary/10 space-y-4 animate-in zoom-in-95 duration-500">
                                     <h4 className="text-[10px] font-black text-primary uppercase tracking-[0.3em] flex items-center gap-2">
                                         <Activity size={14} /> Calibration Summary_
                                     </h4>
@@ -214,8 +213,7 @@ export function BlueprintFactoryWizard({ isOpen, onClose, domainId, domainName, 
                                     <p className="text-[9px] font-bold text-muted-foreground uppercase text-center tracking-widest pt-2">
                                         Metrics confirmed by Factory Emission Engine.
                                     </p>
-                                </div>
-                            )}
+                                </div> : null}
 
                             {/* General Settings */}
                             <div className="space-y-6">

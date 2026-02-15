@@ -139,8 +139,7 @@ export default function EditQuestionPage() {
     return (
         <div className="w-full relative">
             {/* Status Banner */}
-            {status && (
-                <div className={cn(
+            {status ? <div className={cn(
                     "fixed top-8 right-8 z-[9999] max-w-md w-full p-6 rounded-2xl border shadow-2xl backdrop-blur-xl animate-in slide-in-from-right-10 fade-in duration-300",
                     status.type === 'success'
                         ? 'bg-green-500/10 border-green-500/20 text-green-900 shadow-[0_20px_50px_rgba(34,197,94,0.2)]'
@@ -158,8 +157,7 @@ export default function EditQuestionPage() {
                             <X className="w-6 h-6" />
                         </button>
                     </div>
-                </div>
-            )}
+                </div> : null}
 
             <div className="w-full max-w-[1400px] mx-auto space-y-12 pb-24">
                 {/* Header */}

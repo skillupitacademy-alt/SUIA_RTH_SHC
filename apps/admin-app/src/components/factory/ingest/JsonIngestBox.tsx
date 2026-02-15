@@ -67,11 +67,9 @@ export function JsonIngestBox() {
                     </h3>
                 </div>
                 <div className="flex items-center gap-2">
-                    {isContextMissing && (
-                        <div className="flex items-center gap-2 px-3 py-1 bg-amber-50 text-amber-600 rounded-full text-[9px] font-black uppercase tracking-widest border border-amber-100 animate-in fade-in duration-300">
+                    {isContextMissing ? <div className="flex items-center gap-2 px-3 py-1 bg-amber-50 text-amber-600 rounded-full text-[9px] font-black uppercase tracking-widest border border-amber-100 animate-in fade-in duration-300">
                             <AlertTriangle size={10} /> Context Missing: Select Topic First
-                        </div>
-                    )}
+                        </div> : null}
                     <div className="flex items-center gap-2 px-3 py-1 bg-emerald-50 text-emerald-600 rounded-full text-[9px] font-black uppercase tracking-widest border border-emerald-100">
                         <Zap size={10} /> Healing Active
                     </div>
@@ -93,13 +91,10 @@ export function JsonIngestBox() {
                         <h4 className="text-sm font-black uppercase tracking-widest text-[#1A1A1A]">Payload Editor</h4>
                     </div>
                     <div className="flex items-center gap-3">
-                        {isContextMissing && (
-                            <div className="text-[9px] font-black text-amber-500 bg-amber-50 px-4 py-2 rounded-xl border border-amber-100 uppercase tracking-widest flex items-center gap-2">
+                        {isContextMissing ? <div className="text-[9px] font-black text-amber-500 bg-amber-50 px-4 py-2 rounded-xl border border-amber-100 uppercase tracking-widest flex items-center gap-2">
                                 <AlertTriangle size={12} /> Target Context (Topic) Not Set
-                            </div>
-                        )}
-                        {lastHealingReport?.modified && (
-                            <div className="flex items-center gap-4 px-4 py-2 bg-emerald-50 border border-emerald-100 rounded-xl animate-in fade-in slide-in-from-right-4 duration-500">
+                            </div> : null}
+                        {lastHealingReport?.modified ? <div className="flex items-center gap-4 px-4 py-2 bg-emerald-50 border border-emerald-100 rounded-xl animate-in fade-in slide-in-from-right-4 duration-500">
                                 <div className="flex items-center gap-2">
                                     <CheckCircle2 size={12} className="text-emerald-500" />
                                     <span className="text-[9px] font-black text-emerald-600 uppercase tracking-widest">Healer Summary:</span>
@@ -115,19 +110,14 @@ export function JsonIngestBox() {
                                             {lastHealingReport.stats.trailingCommas} Commas Removed
                                         </span>
                                     )}
-                                    {lastHealingReport.stats.conversationalStrip && (
-                                        <span className="text-[9px] font-bold text-emerald-500 bg-white px-2 py-0.5 rounded-md border border-emerald-100">
+                                    {lastHealingReport.stats.conversationalStrip ? <span className="text-[9px] font-bold text-emerald-500 bg-white px-2 py-0.5 rounded-md border border-emerald-100">
                                             Conversational Strip Active
-                                        </span>
-                                    )}
+                                        </span> : null}
                                 </div>
-                            </div>
-                        )}
-                        {errorInfo?.line && (
-                            <div className="text-[10px] font-black text-rose-500 bg-rose-50 px-4 py-2 rounded-xl border border-rose-100 uppercase tracking-widest">
+                            </div> : null}
+                        {errorInfo?.line ? <div className="text-[10px] font-black text-rose-500 bg-rose-50 px-4 py-2 rounded-xl border border-rose-100 uppercase tracking-widest">
                                 Error at Line {errorInfo.line}
-                            </div>
-                        )}
+                            </div> : null}
                     </div>
                 </div>
 
@@ -177,15 +167,13 @@ export function JsonIngestBox() {
                         </p>
                     </div>
                     <div className="flex items-center gap-3">
-                        {rawJson && (
-                            <button
+                        {rawJson ? <button
                                 onClick={() => setRawJson('')}
                                 className="p-4 rounded-xl text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-all active:scale-95"
                                 title="Clear Editor"
                             >
                                 <Trash2 size={16} />
-                            </button>
-                        )}
+                            </button> : null}
                         <button
                             onClick={handleIngest}
                             disabled={!rawJson || isIngesting || isContextMissing}

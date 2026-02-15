@@ -1,0 +1,196 @@
+﻿
+> @quiz/api-server@0.1.1 lint D:\onlinewebsites\quiz-platform\apps\api-server
+> cross-env ESLINT_USE_FLAT_CONFIG=false eslint --max-warnings=0 --ext .ts,.tsx,.js,.jsx .
+
+
+D:\onlinewebsites\quiz-platform\apps\api-server\src\app\api\admin\approve\route.ts
+  20:14  warning  '_err' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\onlinewebsites\quiz-platform\apps\api-server\src\app\api\admin\blueprints\[id]\route.ts
+  19:14  warning  '_err' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\onlinewebsites\quiz-platform\apps\api-server\src\app\api\admin\blueprints\route.ts
+  19:14  warning  '_err' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\onlinewebsites\quiz-platform\apps\api-server\src\app\api\admin\domains\batch-delete\route.ts
+  20:14  warning  '_err' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\onlinewebsites\quiz-platform\apps\api-server\src\app\api\admin\domains\route.ts
+  16:11  warning  '_payload' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+D:\onlinewebsites\quiz-platform\apps\api-server\src\app\api\admin\hierarchy\atomic\route.ts
+  18:14  warning  '_err' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\onlinewebsites\quiz-platform\apps\api-server\src\app\api\admin\logs\route.ts
+  18:14  warning  '_err' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\onlinewebsites\quiz-platform\apps\api-server\src\app\api\admin\metrics\blueprints\route.ts
+  18:14  warning  '_err' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\onlinewebsites\quiz-platform\apps\api-server\src\app\api\admin\metrics\content\route.ts
+  18:14  warning  '_err' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\onlinewebsites\quiz-platform\apps\api-server\src\app\api\admin\metrics\exams\route.ts
+  18:14  warning  '_err' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\onlinewebsites\quiz-platform\apps\api-server\src\app\api\admin\metrics\growth\route.ts
+  18:14  warning  '_err' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\onlinewebsites\quiz-platform\apps\api-server\src\app\api\admin\metrics\performance\route.ts
+  18:14  warning  '_err' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\onlinewebsites\quiz-platform\apps\api-server\src\app\api\admin\metrics\rbac\route.ts
+  18:14  warning  '_err' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\onlinewebsites\quiz-platform\apps\api-server\src\app\api\admin\metrics\route.ts
+  12:11  warning  '_payload' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+D:\onlinewebsites\quiz-platform\apps\api-server\src\app\api\admin\metrics\security\route.ts
+  18:14  warning  '_err' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\onlinewebsites\quiz-platform\apps\api-server\src\app\api\admin\metrics\users\route.ts
+  18:14  warning  '_err' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\onlinewebsites\quiz-platform\apps\api-server\src\app\api\admin\publish\route.ts
+  20:14  warning  '_err' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\onlinewebsites\quiz-platform\apps\api-server\src\app\api\admin\questions\[id]\route.ts
+  21:14  warning  '_err' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\onlinewebsites\quiz-platform\apps\api-server\src\app\api\admin\questions\batch-delete\route.ts
+  20:14  warning  '_err' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\onlinewebsites\quiz-platform\apps\api-server\src\app\api\admin\sessions\live\route.ts
+  18:14  warning  '_err' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\onlinewebsites\quiz-platform\apps\api-server\src\app\api\admin\skills\batch-delete\route.ts
+  20:14  warning  '_err' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\onlinewebsites\quiz-platform\apps\api-server\src\app\api\admin\skills\route.ts
+  16:11  warning  '_payload' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+D:\onlinewebsites\quiz-platform\apps\api-server\src\app\api\admin\subjects\batch-delete\route.ts
+  20:14  warning  '_err' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\onlinewebsites\quiz-platform\apps\api-server\src\app\api\admin\subjects\route.ts
+  16:11  warning  '_payload' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+D:\onlinewebsites\quiz-platform\apps\api-server\src\app\api\admin\subtopics\batch-delete\route.ts
+  20:14  warning  '_err' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\onlinewebsites\quiz-platform\apps\api-server\src\app\api\admin\subtopics\route.ts
+  17:11  warning  '_payload' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+D:\onlinewebsites\quiz-platform\apps\api-server\src\app\api\admin\system\usage\route.ts
+  8:27  warning  '_request' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\onlinewebsites\quiz-platform\apps\api-server\src\app\api\admin\topics\batch-delete\route.ts
+  20:14  warning  '_err' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\onlinewebsites\quiz-platform\apps\api-server\src\app\api\admin\topics\route.ts
+  17:11  warning  '_payload' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+D:\onlinewebsites\quiz-platform\apps\api-server\src\app\api\admin\users\route.ts
+   5:10  warning  '_verifyAdmin' is defined but never used       @typescript-eslint/no-unused-vars
+  16:11  warning  '_payload' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+D:\onlinewebsites\quiz-platform\apps\api-server\src\app\api\auth\login\route.ts
+  72:12  warning  '_error' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\onlinewebsites\quiz-platform\apps\api-server\src\app\api\factory\check-duplicates\route.ts
+  20:11  warning  '_payload' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+D:\onlinewebsites\quiz-platform\apps\api-server\src\app\api\factory\save\route.ts
+  39:11  warning  '_payload' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+D:\onlinewebsites\quiz-platform\apps\api-server\src\app\api\status\route.ts
+  5:27  warning  '_req' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\onlinewebsites\quiz-platform\apps\api-server\src\app\api\telemetry\route.ts
+  19:14  warning  '_e' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\onlinewebsites\quiz-platform\apps\api-server\src\app\page.tsx
+  12:11  warning  '_router' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  13:13  warning  '_user' is assigned a value but never used    @typescript-eslint/no-unused-vars
+
+D:\onlinewebsites\quiz-platform\apps\api-server\src\components\auth\AppAuthWrapper.tsx
+  13:11  warning  '_router' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+D:\onlinewebsites\quiz-platform\apps\api-server\src\components\auth\SessionWatcher.tsx
+  26:18  warning  '_error' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\onlinewebsites\quiz-platform\apps\api-server\src\modules\admin-engine\admin.analytics.engine.ts
+    1:86   warning  'subjects' is defined but never used      @typescript-eslint/no-unused-vars
+    1:96   warning  'subtopics' is defined but never used     @typescript-eslint/no-unused-vars
+    1:107  warning  'topics' is defined but never used        @typescript-eslint/no-unused-vars
+  237:33   warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  249:30   warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  251:33   warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\onlinewebsites\quiz-platform\apps\api-server\src\modules\admin-engine\admin.hierarchy.engine.ts
+  49:30  warning  '_topicId' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\onlinewebsites\quiz-platform\apps\api-server\src\modules\admin-engine\admin.question.engine.ts
+  133:116  warning  '_adminId' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\onlinewebsites\quiz-platform\apps\api-server\src\modules\answer-engine\answer.engine.ts
+  29:32  warning  '_type' is defined but never used       @typescript-eslint/no-unused-vars
+  29:47  warning  '_options' is defined but never used    @typescript-eslint/no-unused-vars
+  29:66  warning  '_selection' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\onlinewebsites\quiz-platform\apps\api-server\src\modules\auth\auth.service.ts
+  248:29  warning  '_token' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\onlinewebsites\quiz-platform\apps\api-server\src\modules\auth\token.service.ts
+  89:14  warning  '_err' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\onlinewebsites\quiz-platform\apps\api-server\src\modules\core\cache.service.ts
+  4:11  warning  '_CacheOptions' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\onlinewebsites\quiz-platform\apps\api-server\src\modules\domain\hierarchy.factory.ts
+  298:27  warning  '_skillNames' is assigned a value but never used   @typescript-eslint/no-unused-vars
+  298:53  warning  '_mappingType' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  298:80  warning  '_skillWeight' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+D:\onlinewebsites\quiz-platform\apps\api-server\src\modules\email\providers\MockEmailProvider.ts
+  4:19  warning  '_options' is defined but never used   @typescript-eslint/no-unused-vars
+  9:27  warning  '_email' is defined but never used     @typescript-eslint/no-unused-vars
+  9:43  warning  '_resetUrl' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\onlinewebsites\quiz-platform\apps\api-server\src\modules\email\providers\ResendEmailProvider.ts
+  22:14  warning  '_error' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\onlinewebsites\quiz-platform\apps\api-server\src\modules\question-engine\question.engine.ts
+   9:48  warning  '_userId' is defined but never used  @typescript-eslint/no-unused-vars
+  32:33  warning  '_examId' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\onlinewebsites\quiz-platform\apps\api-server\src\modules\report-engine\report.engine.ts
+  77:88  warning  '_score' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\onlinewebsites\quiz-platform\apps\api-server\src\modules\selection-engine\selection.service.ts
+   64:11  warning  '_totalSelectionStart' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  214:5   warning  '_blueprint' is defined but never used                     @typescript-eslint/no-unused-vars
+  255:15  warning  '_pool_count_ms' is assigned a value but never used        @typescript-eslint/no-unused-vars
+  269:15  warning  '_sampleFetchStart' is assigned a value but never used     @typescript-eslint/no-unused-vars
+
+D:\onlinewebsites\quiz-platform\apps\api-server\src\modules\system\jobs.service.ts
+  85:43  warning  '_userId' is defined but never used  @typescript-eslint/no-unused-vars
+
+Γ£û 69 problems (0 errors, 69 warnings)
+
+node.exe : ESLint found too many warnings (maximum: 
+0).
+At C:\Users\RealTutorialHub\AppData\Roaming\npm\pnpm
+.ps1:24 char:5
++     & "node$exe"  
+"$basedir/node_modules/pnpm/bin/pnpm.cjs" $args
++     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (ESLint 
+    found to...s (maximum: 0).:String) [], RemoteE  
+  xception
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+D:\onlinewebsites\quiz-platform\apps\api-server:
+ΓÇëERR_PNPM_RECURSIVE_RUN_FIRST_FAILΓÇë @quiz/api-server@0.1.1 lint: `cross-env ESLINT_USE_FLAT_CONFIG=false eslint --max-warnings=0 --ext .ts,.tsx,.js,.jsx .`
+Exit status 1

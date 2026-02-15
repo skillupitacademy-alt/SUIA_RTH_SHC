@@ -1,7 +1,6 @@
 "use client";
 
 import { apiClient } from '@quiz/api-client';
-import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 import { SessionWatcher } from '@/components/auth/SessionWatcher';
@@ -10,16 +9,15 @@ import { useAuthStore } from '@/store/auth-store';
 export function AppAuthWrapper({ children }: { children: React.ReactNode }) {
     const { expiresAt, login, logout, initialized } = useAuthStore();
     const [isRedirecting, setIsRedirecting] = useState(false);
-    const _router = useRouter();
 
     const handleRefresh = async () => {
         try {
             const { expiresAt: newExpiry } = await apiClient.auth.refresh();
             const { user: validatedUser } = await apiClient.auth.getAdminSession();
             login(validatedUser, newExpiry);
-        } catch (_error) {
+        } catch (error) {
             handleLogout();
-            throw _error;
+            throw error;
         }
     };
 

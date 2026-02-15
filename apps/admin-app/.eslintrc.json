@@ -13,7 +13,16 @@
         "@typescript-eslint/no-explicit-any": "warn",
         "@typescript-eslint/no-empty-object-type": "warn",
         "@typescript-eslint/ban-ts-comment": "warn",
-        "react-hooks/exhaustive-deps": "warn",
+        "react-hooks/exhaustive-deps": "error",
+        "react/jsx-no-leaked-render": [
+            "error",
+            {
+                "validStrategies": [
+                    "ternary",
+                    "coerce"
+                ]
+            }
+        ],
         "prefer-const": "warn",
         "react/no-unescaped-entities": "warn",
         "react/self-closing-comp": "error",

@@ -213,12 +213,10 @@ export function SubtopicTable() {
     return (
         <div className="space-y-6 flex flex-col min-h-[800px]">
             <div className="flex-1 space-y-6">
-                {errorMessage && (
-                    <ErrorBanner message={errorMessage} onClose={() => setErrorMessage(null)} />
-                )}
+                {errorMessage ? <ErrorBanner message={errorMessage} onClose={() => setErrorMessage(null)} /> : null}
 
                 {/* Modalized Form */}
-                <ZPortalModal isOpen={isFormOpen && !!currentSubtopic} zIndex={100}>
+                <ZPortalModal isOpen={!!(isFormOpen && currentSubtopic)} zIndex={100}>
                     <div className="h-full min-h-0 flex flex-col bg-white animate-in slide-in-from-right duration-300">
                         {/* Header Strip */}
                         <div className="px-12 py-6 border-b border-primary/5 flex items-center justify-between bg-white sticky top-0 z-20">

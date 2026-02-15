@@ -190,26 +190,22 @@ function QuestionFactoryContent() {
                                     </button>
 
                                     {/* Global Skills Badge: Emerald/Compact - Integrated into Group */}
-                                    {globalSkills && globalSkills.length > 0 && (
-                                        <div className="flex items-center gap-2 px-4 h-12 bg-emerald-50/30 border border-emerald-100/50 rounded-2xl">
+                                    {globalSkills && globalSkills.length > 0 ? <div className="flex items-center gap-2 px-4 h-12 bg-emerald-50/30 border border-emerald-100/50 rounded-2xl">
                                             <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse shadow-lg shadow-emerald-500/50" />
                                             <span className="text-[9px] font-black text-emerald-600 uppercase tracking-widest">
                                                 {globalSkills.length} SKILLS
                                             </span>
-                                        </div>
-                                    )}
+                                        </div> : null}
 
                                     {/* MOCK JOB TRIGGER: Resilience Test */}
-                                    {allowMockJobs && (
-                                        <button
+                                    {allowMockJobs ? <button
                                             data-testid="mock-job-button"
                                             onClick={() => startJob('MOCK_JOB', { test: true })}
                                             className="h-12 px-6 rounded-2xl bg-slate-50 border border-slate-200 text-slate-500 font-black uppercase tracking-widest text-[10px] hover:bg-slate-100 transition-all shadow-sm"
                                             title="Trigger Mock Background Job"
                                         >
                                             Mock Job
-                                        </button>
-                                    )}
+                                        </button> : null}
 
                                     <button
                                         onClick={handleCopyPrompt}

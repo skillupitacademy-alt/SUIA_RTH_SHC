@@ -11,9 +11,9 @@ interface LoginRequest {
   password?: string;
 }
 
-export async function POST(_req: NextRequest) {
+export async function POST(req: NextRequest) {
   try {
-    const { email, password } = (await _req.json()) as LoginRequest;
+    const { email, password } = (await req.json()) as LoginRequest;
 
     if (email === undefined || email === null || email === '' || password === undefined || password === null || password === '') {
       return NextResponse.json({ _error: 'Credentials required' }, { status: 400 });
@@ -31,14 +31,13 @@ export async function POST(_req: NextRequest) {
       email: _user.email,
       name: _user.profile?.name ?? 'User',
       onboarded,
-      role: isAdmin === true ? 'admin' : '_user',
+      role: isAdmin === true ? 'admin' : 'user',
       isAdmin
     };
 
     const response = NextResponse.json({
       user,
       expiresAt: null, // client uses cookie lifetime; keeps shape consistent with AuthClient expectations
-      // accessToken removed from body
     });
 
     const cookieDomain = process.env.COOKIE_DOMAIN;
@@ -56,7 +55,7 @@ export async function POST(_req: NextRequest) {
 
     // Set HttpOnly cookies for Refresh Token
     const refreshCookieName = isAdmin === true ? 'admin_refreshToken' : 'refreshToken';
-    const refreshMaxAge = isAdmin === true ? 24 * 60 * 60 : 7 * 24 * 60 * 60; // 24h for admin, 7d for _user
+    const refreshMaxAge = isAdmin === true ? 24 * 60 * 60 : 7 * 24 * 60 * 60; // 24h for admin, 7d for user
     response.cookies.set(refreshCookieName, refreshToken, {
       httpOnly: true,
       secure: true,
@@ -69,7 +68,8 @@ export async function POST(_req: NextRequest) {
     setCsrfToken(response);
 
     return response;
-  } catch (_error: unknown) {
+  } catch (error) {
+    console.error('[AUTH_LOGIN] Error:', error);
     return NextResponse.json({ _error: 'Invalid credentials' }, { status: 401 });
   }
 }

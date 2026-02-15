@@ -28,11 +28,9 @@ export function FactoryLayout({ children, title, subtitle, backPath = '/' }: Fac
                                 {title}
                             </h1>
                         </div>
-                        {subtitle && (
-                            <p className="text-[10px] font-bold text-slate-400 tracking-wide uppercase mt-0.5 ml-7">
+                        {subtitle ? <p className="text-[10px] font-bold text-slate-400 tracking-wide uppercase mt-0.5 ml-7">
                                 {subtitle}
-                            </p>
-                        )}
+                            </p> : null}
                     </div>
                 </div>
 

@@ -55,9 +55,7 @@ export function QuestionReviewCard({
             isSelected && "ring-2 ring-[#FF4B91] border-transparent shadow-2xl bg-[#FF4B91]/[0.01]"
         )}>
             {/* SELECTION OVERLAY GLOW */}
-            {isSelected && (
-                <div className="absolute inset-0 bg-[#FF4B91]/[0.02] pointer-events-none animate-in fade-in duration-500" />
-            )}
+            {isSelected ? <div className="absolute inset-0 bg-[#FF4B91]/[0.02] pointer-events-none animate-in fade-in duration-500" /> : null}
 
             {/* 1. Header Area: Hierarchy & Status */}
             <div className="px-8 py-5 border-b border-slate-100 flex flex-wrap items-center justify-between gap-4 bg-slate-50/50">
@@ -236,8 +234,7 @@ export function QuestionReviewCard({
                     {isRationaleOpen ? <ChevronUp size={14} className="text-slate-500" /> : <ChevronDown size={14} className="text-slate-500" />}
                 </button>
 
-                {isRationaleOpen && (
-                    <div className="px-10 pb-10 animate-in slide-in-from-top-2 duration-300">
+                {isRationaleOpen ? <div className="px-10 pb-10 animate-in slide-in-from-top-2 duration-300">
                         <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
                             <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-[#FF4B91] mb-4">Official Explanation</h4>
                             <p className="text-xs text-slate-600 font-medium leading-relaxed">
@@ -257,8 +254,7 @@ export function QuestionReviewCard({
                                 </div>
                             </div>
                         </div>
-                    </div>
-                )}
+                    </div> : null}
             </div>
         </div>
     );

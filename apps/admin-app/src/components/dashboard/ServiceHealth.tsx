@@ -65,7 +65,7 @@ export function ServiceHealth() {
                     <Server size={18} />
                     System Health Tier
                 </h3>
-                {loading && <RefreshCw size={14} className="animate-spin text-muted-foreground" />}
+                {loading ? <RefreshCw size={14} className="animate-spin text-muted-foreground" /> : null}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -144,8 +144,7 @@ function HealthCard({ title, icon: Icon, data, loading, type }: { title: string,
                 <h4 className="text-sm font-bold text-muted-foreground uppercase tracking-wide">{title}</h4>
 
                 {/* NEON METRICS */}
-                {type === 'neon' && metrics.limitMb && (
-                    <div className="pt-2">
+                {type === 'neon' && metrics.limitMb ? <div className="pt-2">
                         <div className="flex justify-between text-xs mb-1.5 font-mono">
                             <span>{metrics.sizeMb} MB / {metrics.limitMb} MB</span>
                             <span className={status === 'error' ? 'text-destructive' : ''}>{metrics.usagePercent}%</span>
@@ -156,12 +155,10 @@ function HealthCard({ title, icon: Icon, data, loading, type }: { title: string,
                                 style={{ width: `${Math.min(100, metrics.usagePercent)}%` }}
                             />
                         </div>
-                    </div>
-                )}
+                    </div> : null}
 
                 {/* REDIS METRICS */}
-                {type === 'redis' && metrics.limitMb && (
-                    <div className="pt-2">
+                {type === 'redis' && metrics.limitMb ? <div className="pt-2">
                         <div className="flex justify-between text-xs mb-1.5 font-mono">
                             <span>{metrics.memory} / {metrics.limitMb} MB</span>
                             <span className={status === 'error' ? 'text-destructive' : ''}>{metrics.usagePercent}%</span>
@@ -176,19 +173,16 @@ function HealthCard({ title, icon: Icon, data, loading, type }: { title: string,
                             <span>Keys: {metrics.keys}</span>
                             <span>{metrics.snapshot}</span>
                         </div>
-                    </div>
-                )}
+                    </div> : null}
 
                 {/* REDIS WITHOUT LIMIT (Raw) */}
-                {type === 'redis' && !metrics.limitMb && isConfigured && (
-                    <div className="pt-2 space-y-1">
+                {type === 'redis' && !metrics.limitMb && isConfigured ? <div className="pt-2 space-y-1">
                         <p className="text-2xl font-black">{metrics.memory || '0B'}</p>
                         <div className="flex justify-between text-[10px] text-muted-foreground uppercase tracking-wider">
                             <span>Keys: {metrics.keys}</span>
                             <span>{metrics.snapshot}</span>
                         </div>
-                    </div>
-                )}
+                    </div> : null}
 
                 {/* RESEND METRICS */}
                 {type === 'resend' && (
@@ -204,8 +198,7 @@ function HealthCard({ title, icon: Icon, data, loading, type }: { title: string,
                 )}
 
                 {/* CLOUDFLARE METRICS */}
-                {type === 'cloudflare' && isConfigured && (
-                    <div className="pt-2">
+                {type === 'cloudflare' && isConfigured ? <div className="pt-2">
                         <div className="flex justify-between items-end">
                             <div>
                                 <p className="text-2xl font-black">{metrics.requests24h?.toLocaleString()}</p>
@@ -216,8 +209,7 @@ function HealthCard({ title, icon: Icon, data, loading, type }: { title: string,
                                 <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Bandwidth</p>
                             </div>
                         </div>
-                    </div>
-                )}
+                    </div> : null}
 
                 {/* NOT CONFIGURED / ERROR STATES */}
                 {!isConfigured && status === 'not_configured' && (
@@ -226,11 +218,9 @@ function HealthCard({ title, icon: Icon, data, loading, type }: { title: string,
                     </p>
                 )}
 
-                {data.error && (
-                    <p className="text-[10px] text-destructive pt-2 font-mono">
+                {data.error ? <p className="text-[10px] text-destructive pt-2 font-mono">
                         Error: {data.error.message}
-                    </p>
-                )}
+                    </p> : null}
 
             </div>
         </div>

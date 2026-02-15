@@ -1,0 +1,57 @@
+﻿
+> @quiz/admin-app@0.1.0 build D:\onlinewebsites\quiz-platform\apps\admin-app
+> next build
+
+Γû▓ Next.js 16.1.6 (Turbopack)
+- Environments: .env.local
+
+node.exe : ΓÜá The "middleware" file convention is 
+deprecated. Please use "proxy" instead. Learn more: 
+https://nextjs.org/docs/messages/middleware-to-proxy
+At C:\Users\RealTutorialHub\AppData\Roaming\npm\pnpm
+.ps1:24 char:5
++     & "node$exe"  
+"$basedir/node_modules/pnpm/bin/pnpm.cjs" $args
++     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (ΓÜá Th 
+   e "middle...leware-to-proxy:String) [], RemoteE  
+  xception
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  Creating an optimized production build ...
+Γ£ô Compiled successfully in 4.1s
+  Running TypeScript ...
+Failed to compile.
+
+./src/components/auth/SessionWatcher.tsx:187:17
+Type error: Type 'boolean | null' is not assignable 
+to type 'boolean'.
+  Type 'null' is not assignable to type 'boolean'.
+
+[0m [90m 185 |[39m
+ [90m 186 |[39m             
+[33m<[39m[33mZConfirmationDialog[39m
+[31m[1m>[22m[39m[90m 187 |[39m                
+ isOpen[33m=[39m{showWarning [33m&&[39m 
+[33m![39misRedirecting [33m&&[39m 
+[33m![39misLoggingOut [33m?[39m 
+[33m![39misLocked [33m||[39m 
+isForcedLogoutWarning [33m:[39m [36mnull[39m}
+ [90m     |[39m                 
+[31m[1m^[22m[39m
+ [90m 188 |[39m                 
+title[33m=[39m{warningTitle}
+ [90m 189 |[39m                 
+description[33m=[39m{warningDesc}
+ [90m 190 |[39m                 
+confirmText[33m=[39m{isRefreshing [33m?[39m 
+[32m"Renewing..."[39m [33m:[39m ((isIdleWarning 
+[33m||[39m isForcedLogoutWarning) [33m?[39m 
+[32m"Stay Active"[39m [33m:[39m [32m"Stay 
+Logged In"[39m)}[0m
+Next.js build worker exited with code: 1 and 
+signal: null
+D:\onlinewebsites\quiz-platform\apps\admin-app:
+ΓÇëERR_PNPM_RECURSIVE_RUN_FIRST_FAILΓÇë @quiz/admin-app@0.1.0 build: `next build`
+Exit status 1

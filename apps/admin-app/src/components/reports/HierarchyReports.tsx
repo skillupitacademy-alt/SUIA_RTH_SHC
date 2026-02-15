@@ -313,22 +313,18 @@ export const HierarchyReports: React.FC = () => {
             )}
 
             {/* Diagnostic Overlays */}
-            {isActionLoading && (
-                <div className="fixed inset-0 z-[300] bg-white/40 backdrop-blur-[4px] flex items-center justify-center animate-in fade-in duration-300">
+            {isActionLoading ? <div className="fixed inset-0 z-[300] bg-white/40 backdrop-blur-[4px] flex items-center justify-center animate-in fade-in duration-300">
                     <div className="bg-white p-12 rounded-[3.5rem] shadow-[0_32px_128px_rgba(0,0,0,0.1)] border-2 border-primary/5 flex flex-col items-center gap-4 scale-100">
                         <ZLoader size="lg" text="Accessing Branch_" />
                     </div>
-                </div>
-            )}
+                </div> : null}
 
-            {isPageLoading && (
-                <div className="fixed inset-0 z-[300] bg-black/10 backdrop-blur-[2px] flex items-center justify-center animate-in fade-in duration-300">
+            {isPageLoading ? <div className="fixed inset-0 z-[300] bg-black/10 backdrop-blur-[2px] flex items-center justify-center animate-in fade-in duration-300">
                     <div className="bg-white p-12 rounded-[3.5rem] shadow-[0_32px_128px_rgba(0,0,0,0.15)] border-2 border-[#FF4B91]/10 flex flex-col items-center gap-6">
                         <ZLoader size="lg" text="Standardizing Metrics..." />
                         <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground mt-4">Loader: ZLoader (Premium)</p>
                     </div>
-                </div>
-            )}
+                </div> : null}
 
             {/* Footer Stats Summary */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">

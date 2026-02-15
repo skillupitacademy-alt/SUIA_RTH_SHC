@@ -35,8 +35,7 @@ export function JobStatusBadge() {
                 </span>
             </button>
 
-            {isOpen && (
-                <div className="absolute top-full mt-4 right-0 w-80 bg-white border border-slate-200 rounded-[2rem] shadow-2xl p-6 z-50 animate-in fade-in slide-in-from-top-4 duration-300">
+            {isOpen ? <div className="absolute top-full mt-4 right-0 w-80 bg-white border border-slate-200 rounded-[2rem] shadow-2xl p-6 z-50 animate-in fade-in slide-in-from-top-4 duration-300">
                     <div className="flex items-center justify-between mb-6">
                         <h4 className="alpha-terminal !tracking-[0.2em] text-[#FF4B91]">Active Tasks</h4>
                         <button onClick={() => setIsOpen(false)} className="text-slate-400 hover:text-[#1A1A1A]">
@@ -69,11 +68,9 @@ export function JobStatusBadge() {
                                         <X size={14} />
                                     </button>
                                 </div>
-                                {job.status === 'failed' && job.error && (
-                                    <p className="mt-2 p-2 rounded-xl bg-red-50 text-[10px] text-red-600 font-medium">
+                                {job.status === 'failed' && job.error ? <p className="mt-2 p-2 rounded-xl bg-red-50 text-[10px] text-red-600 font-medium">
                                         {job.error}
-                                    </p>
-                                )}
+                                    </p> : null}
                             </div>
                         ))}
                     </div>
@@ -83,8 +80,7 @@ export function JobStatusBadge() {
                             All jobs synced
                         </p>
                     )}
-                </div>
-            )}
+                </div> : null}
         </div>
     );
 }

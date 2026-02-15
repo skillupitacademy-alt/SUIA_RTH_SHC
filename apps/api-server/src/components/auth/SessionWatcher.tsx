@@ -23,7 +23,7 @@ export function SessionWatcher({ expiresAt, onRefresh, onLogout, isRedirecting }
         try {
             await onRefresh();
             setShowWarning(false);
-        } catch (_error) {
+        } catch {
             onLogout();
         } finally {
             setIsRefreshing(false);

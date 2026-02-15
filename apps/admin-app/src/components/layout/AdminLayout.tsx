@@ -88,8 +88,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 redirectMessage={redirectMessage}
             />
             <AdminLockScreen />
-            {showWarning && (
-                <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
+            {showWarning ? <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
                     <div className="bg-background border rounded-[2.5rem] p-8 max-w-md w-full shadow-2xl relative overflow-hidden">
                         <div className="absolute top-0 left-0 w-full h-2 bg-[#FF4B91] z-10" />
                         <div className="flex flex-col items-center text-center gap-4">
@@ -117,8 +116,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                             </div>
                         </div>
                     </div>
-                </div>
-            )}
+                </div> : null}
 
             <div className="h-screen bg-muted/10 overflow-hidden font-sans relative">
                 {/* Sidebar */}

@@ -114,7 +114,7 @@ export function ZTooltip({ content, children, side = 'bottom', className, delay 
             >
                 {children}
             </div>
-            {isVisible && createPortal(
+            {isVisible ? createPortal(
                 <div
                     className="fixed z-[9999] pointer-events-none animate-in fade-in zoom-in-95 duration-150"
                     style={{
@@ -137,7 +137,7 @@ export function ZTooltip({ content, children, side = 'bottom', className, delay 
                     </div>
                 </div>,
                 document.body
-            )}
+            ) : null}
         </>
     );
 }

@@ -38,9 +38,7 @@ export function TopicReviewCard({
             isSelected && "ring-2 ring-orange-500 border-transparent shadow-2xl bg-orange-500/[0.01]"
         )}>
             {/* SELECTION OVERLAY GLOW */}
-            {isSelected && (
-                <div className="absolute inset-0 bg-orange-500/[0.02] pointer-events-none animate-in fade-in duration-500" />
-            )}
+            {isSelected ? <div className="absolute inset-0 bg-orange-500/[0.02] pointer-events-none animate-in fade-in duration-500" /> : null}
 
             {/* Header Area: Hierarchy & Status */}
             <div className="px-8 py-5 border-b border-slate-100 flex flex-wrap items-center justify-between gap-4 bg-slate-50/50">

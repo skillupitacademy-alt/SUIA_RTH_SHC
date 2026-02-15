@@ -210,8 +210,7 @@ export function QuestionTable() {
                                 />
                             </div>
 
-                            {(filters.domainId || filters.subjectId || filters.topicId || filters.subtopicId || filters.skillIds.length > 0 || searchQuery) && (
-                                <button
+                            {(filters.domainId || filters.subjectId || filters.topicId || filters.subtopicId || filters.skillIds.length > 0 || searchQuery) ? <button
                                     onClick={() => {
                                         setFilters({ domainId: '', subjectId: '', topicId: '', subtopicId: '', skillIds: [] });
                                         setSearchQuery('');
@@ -220,8 +219,7 @@ export function QuestionTable() {
                                     className="flex-shrink-0 flex items-center gap-2 px-4 py-3.5 rounded-2xl bg-red-50 text-red-600 text-[10px] font-black uppercase tracking-widest hover:bg-red-100 transition-all border border-red-100 h-full"
                                 >
                                     <X className="w-3 h-3" /> Clear
-                                </button>
-                            )}
+                                </button> : null}
                         </div>
                     </div>
 
@@ -235,11 +233,9 @@ export function QuestionTable() {
 
                 {/* Question Stack Area */}
                 <div className="relative min-h-[400px]">
-                    {isLoading && (
-                        <div className="absolute inset-0 z-40 bg-white/60 backdrop-blur-sm flex items-center justify-center animate-in fade-in duration-300 rounded-[1.75rem]">
+                    {isLoading ? <div className="absolute inset-0 z-40 bg-white/60 backdrop-blur-sm flex items-center justify-center animate-in fade-in duration-300 rounded-[1.75rem]">
                             <ZLoader text="Synchronizing Matrix_" />
-                        </div>
-                    )}
+                        </div> : null}
 
                     {/* Question List */}
                     <div className="space-y-6">
@@ -325,8 +321,7 @@ export function QuestionTable() {
             />
 
             {/* Delete Confirmation Modal */}
-            {deleteModal.isOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+            {deleteModal.isOpen ? <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
                     <div className="w-full max-w-md bg-white border border-white/20 rounded-[2.5rem] shadow-2xl p-8 relative overflow-hidden">
                         {/* Glows */}
                         <div className="absolute top-0 right-0 w-[150px] h-[150px] bg-red-500/5 rounded-full blur-[60px] -z-10" />
@@ -344,11 +339,9 @@ export function QuestionTable() {
                             </div>
 
                             <div className="flex flex-col gap-3 w-full pt-4">
-                                {deleteModal.error && (
-                                    <div className="mb-4 p-4 bg-red-50 border border-red-100 rounded-2xl text-red-600 text-xs font-bold animate-in slide-in-from-top-2 duration-300">
+                                {deleteModal.error ? <div className="mb-4 p-4 bg-red-50 border border-red-100 rounded-2xl text-red-600 text-xs font-bold animate-in slide-in-from-top-2 duration-300">
                                         {deleteModal.error}
-                                    </div>
-                                )}
+                                    </div> : null}
                                 <button
                                     onClick={handleDelete}
                                     disabled={deleteModal.isDeleting}
@@ -365,8 +358,7 @@ export function QuestionTable() {
                             </div>
                         </div>
                     </div>
-                </div>
-            )}
+                </div> : null}
         </div>
     );
 }

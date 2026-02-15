@@ -1,4 +1,4 @@
-import { auditLogs, db, domains, examQuestions,exams, questions, resultsByDimension, subjects, subtopics, topics, users } from '@quiz/db';
+import { auditLogs, db, domains, examQuestions,exams, questions, resultsByDimension, users } from '@quiz/db';
 import { count, desc, eq, isNotNull,sql } from 'drizzle-orm';
 
 import { TrendsService } from '@/modules/metrics/trends.service';
@@ -177,7 +177,7 @@ export class AdminAnalyticsEngine {
     };
 
     const deltaData = deltaDataResult.status === 'fulfilled' ? deltaDataResult.value : null;
-    const domainDeltas = domainDeltasResult.status === 'fulfilled' ? domainDeltasResult.value : {};
+    const domainDeltas = domainDeltasResult.status === 'fulfilled' ? (domainDeltasResult.value as Record<string, { delta: number }>) : {};
     const healthStatus = TrendsService.getExecHealth(trendSummary.avgScore, deltaData?.deltaPct ?? null);
 
     return {
@@ -216,6 +216,7 @@ export class AdminAnalyticsEngine {
   }
 
   static async getBlueprintMetrics() { return { total: 0, active: 0, popular: [] }; }
+
   static async getContentHealthReport() {
     const allDomains = await db.query.domains.findMany({
       with: {
@@ -234,7 +235,7 @@ export class AdminAnalyticsEngine {
       }
     });
 
-    const calculateStats = (qs: any[]) => {
+    const calculateStats = (qs: { difficulty: string; subtopicId: string | null }[]) => {
       const stats = {
         total: qs.length,
         simple: qs.filter(q => q.difficulty === 'simple').length,
@@ -246,19 +247,19 @@ export class AdminAnalyticsEngine {
     };
 
     return allDomains.map(domain => {
-      const domainQuestions: any[] = [];
-      const subjects = domain.subjects.map(subject => {
-        const subjectQuestions: any[] = [];
-        const topics = subject.topics.map(topic => {
-          subjectQuestions.push(...topic.questions);
+      const domainQuestions: { difficulty: string; subtopicId: string | null }[] = [];
+      const subjectsResults = domain.subjects.map(subject => {
+        const subjectQuestions: { difficulty: string; subtopicId: string | null }[] = [];
+        const topicsResults = subject.topics.map(topic => {
+          subjectQuestions.push(...topic.questions.map(q => ({ difficulty: q.difficulty, subtopicId: q.subtopicId })));
           return {
             id: topic.id,
             name: topic.name,
-            stats: calculateStats(topic.questions),
+            stats: calculateStats(topic.questions.map(q => ({ difficulty: q.difficulty, subtopicId: q.subtopicId }))),
             subtopics: topic.subtopics.map(st => ({
               id: st.id,
               name: st.name,
-              stats: calculateStats(topic.questions.filter(q => q.subtopicId === st.id))
+              stats: calculateStats(topic.questions.filter(q => q.subtopicId === st.id).map(q => ({ difficulty: q.difficulty, subtopicId: q.subtopicId })))
             }))
           };
         });
@@ -267,7 +268,7 @@ export class AdminAnalyticsEngine {
           id: subject.id,
           name: subject.name,
           stats: calculateStats(subjectQuestions),
-          topics
+          topics: topicsResults
         };
       });
 
@@ -275,13 +276,13 @@ export class AdminAnalyticsEngine {
         domainId: domain.id,
         domainName: domain.name,
         stats: calculateStats(domainQuestions),
-        subjects
+        subjects: subjectsResults
       };
     });
   }
   static async getGrowthZones() { return { areas: [] }; }
   static async getRBACMetrics() { return { roles: [], permissions: [] }; }
-  static async getSecuritySignals() { return { threats: [], status: 'nominal' }; }
+  static async getSecuritySignals() { return { threats: [], status: 'nominal' as const }; }
   static async getAccountMetrics() { return { active: 0, new: 0, churn: 0 }; }
   static async getLiveSessions() { return { active: 0, peak24h: 0 }; }
 }

@@ -54,16 +54,12 @@ export function QuestionCard({
             isDuplicate && "ring-2 ring-rose-500 border-rose-200 bg-rose-50"
         )}>
             {/* SELECTION OVERLAY GLOW */}
-            {isSelected && (
-                <div className="absolute inset-0 bg-[#FF4B91]/[0.02] pointer-events-none animate-in fade-in duration-500" />
-            )}
+            {isSelected ? <div className="absolute inset-0 bg-[#FF4B91]/[0.02] pointer-events-none animate-in fade-in duration-500" /> : null}
 
             {/* Duplicate Warning Banner */}
-            {isDuplicate && (
-                <div className="w-full bg-rose-500 text-white text-[10px] font-black uppercase tracking-widest py-1 text-center animate-pulse">
+            {isDuplicate ? <div className="w-full bg-rose-500 text-white text-[10px] font-black uppercase tracking-widest py-1 text-center animate-pulse">
                     ⚠️ Duplicate Detected - This question already exists in this topic
-                </div>
-            )}
+                </div> : null}
             {/* 1. Header Area: Identity & Metadata */}
             <div className="px-10 py-6 border-b border-slate-100 flex flex-wrap items-center justify-between gap-4 bg-slate-50/30">
                 <div className="flex items-center gap-6">
@@ -154,17 +150,14 @@ export function QuestionCard({
                 </div>
 
                 {/* Surgical AI Prompt Style Code Snippet (Light Mode) */}
-                {question.codeSnippet && !isEditing && (
-                    <div className="p-8 bg-slate-50 border border-slate-200/60 rounded-3xl text-sm font-medium text-blue-600 leading-relaxed whitespace-pre-wrap selection:bg-[#FF4B91]/10 shadow-sm relative overflow-hidden group/code">
+                {question.codeSnippet && !isEditing ? <div className="p-8 bg-slate-50 border border-slate-200/60 rounded-3xl text-sm font-medium text-blue-600 leading-relaxed whitespace-pre-wrap selection:bg-[#FF4B91]/10 shadow-sm relative overflow-hidden group/code">
                         <div className="absolute top-0 right-0 p-4 opacity-0 group-hover/code:opacity-100 transition-opacity pointer-events-none">
                             <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Read-Only Preview</span>
                         </div>
                         {question.codeSnippet}
-                    </div>
-                )}
+                    </div> : null}
 
-                {isEditing && (
-                    <div className="space-y-3">
+                {isEditing ? <div className="space-y-3">
                         <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest flex items-center gap-2">
                             <Code2 size={12} /> Source Code Context
                         </label>
@@ -174,8 +167,7 @@ export function QuestionCard({
                             className="w-full min-h-[150px] p-6 rounded-3xl bg-slate-50 border border-slate-200/60 text-blue-600 text-sm font-medium focus:ring-2 focus:ring-[#FF4B91]/10 outline-none transition-all placeholder:text-slate-400"
                             placeholder="Paste code snippet here..."
                         />
-                    </div>
-                )}
+                    </div> : null}
 
                 {/* Options Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -222,8 +214,7 @@ export function QuestionCard({
                 </div>
 
                 {/* Correct Answer Selector (Editing Only) */}
-                {isEditing && (
-                    <div className="space-y-3">
+                {isEditing ? <div className="space-y-3">
                         <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Mark Correct Answer</label>
                         <div className="flex gap-2">
                             {question.options.map((option, oIdx) => (
@@ -241,8 +232,7 @@ export function QuestionCard({
                                 </button>
                             ))}
                         </div>
-                    </div>
-                )}
+                    </div> : null}
             </div>
 
             {/* 3. Footer Area: Rationale & Skills */}
@@ -260,8 +250,7 @@ export function QuestionCard({
                     {isRationaleOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                 </button>
 
-                {isRationaleOpen && (
-                    <div className="px-10 pb-10 animate-in slide-in-from-top-2 duration-300">
+                {isRationaleOpen ? <div className="px-10 pb-10 animate-in slide-in-from-top-2 duration-300">
                         {isEditing ? (
                             <textarea
                                 value={question.explanation}
@@ -289,7 +278,7 @@ export function QuestionCard({
                                         )}>
                                             <Sparkles size={10} className={isNew ? "text-orange-400" : "text-[#FF4B91] opacity-40"} />
                                             <span>{skill}</span>
-                                            {isNew && <span className="text-[8px] px-1.5 py-0.5 rounded bg-orange-100 text-orange-700 font-bold">SUGGESTED</span>}
+                                            {isNew ? <span className="text-[8px] px-1.5 py-0.5 rounded bg-orange-100 text-orange-700 font-bold">SUGGESTED</span> : null}
                                         </div>
 
                                         {/* REMAP DROPDOWN */}
@@ -320,8 +309,7 @@ export function QuestionCard({
                                 );
                             })}
                         </div>
-                    </div>
-                )}
+                    </div> : null}
             </div>
         </div>
     );

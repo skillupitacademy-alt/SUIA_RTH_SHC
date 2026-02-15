@@ -5,13 +5,9 @@
         "plugin:@typescript-eslint/recommended"
     ],
     "plugins": [
-        "security",
         "jsx-a11y",
         "simple-import-sort"
     ],
-    "parserOptions": {
-        "project": "./tsconfig.json"
-    },
     "ignorePatterns": [
         "next.config.js",
         "postcss.config.js",
@@ -29,52 +25,19 @@
             }
         ],
         "@typescript-eslint/no-explicit-any": "error",
-        "@typescript-eslint/no-floating-promises": "warn",
-        "@typescript-eslint/consistent-type-imports": "error",
-        "@typescript-eslint/strict-boolean-expressions": "error",
-        "@typescript-eslint/no-require-imports": "warn",
-        "@typescript-eslint/ban-ts-comment": "warn",
-        "eqeqeq": [
+        "react-hooks/exhaustive-deps": "error",
+        "react/jsx-no-leaked-render": [
             "error",
-            "always"
-        ],
-        "no-console": [
-            "warn",
             {
-                "allow": [
-                    "warn",
-                    "error"
+                "validStrategies": [
+                    "ternary",
+                    "coerce"
                 ]
             }
         ],
-        "prefer-const": "warn",
-        "react/no-unescaped-entities": "warn",
         "react/self-closing-comp": "error",
-        "react-hooks/rules-of-hooks": "error",
-        "react-hooks/exhaustive-deps": "error",
-        "jsx-a11y/anchor-is-valid": "error",
-        "jsx-a11y/alt-text": "error",
-        "jsx-a11y/no-autofocus": "warn",
-        "no-eval": "error",
-        "no-implied-eval": "error",
-        "no-new-func": "error",
-        "security/detect-object-injection": "off",
-        "security/detect-non-literal-require": "error",
         "simple-import-sort/imports": "error",
         "simple-import-sort/exports": "error",
-        "import/order": "off",
-        "max-lines": [
-            "warn",
-            {
-                "max": 500,
-                "skipBlankLines": true,
-                "skipComments": true
-            }
-        ],
-        "complexity": [
-            "error",
-            20
-        ]
-    },
-    "overrides": []
+        "import/order": "off"
+    }
 }

@@ -51,12 +51,10 @@ export default function AdminLoginPage() {
                 <p className="text-sm text-muted-foreground">Authenticate to access the governance terminal.</p>
             </div>
 
-            {error && (
-                <div className="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-600 text-sm font-bold flex items-center gap-2">
+            {error ? <div className="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-600 text-sm font-bold flex items-center gap-2">
                     <ShieldCheck size={16} />
                     {error}
-                </div>
-            )}
+                </div> : null}
 
             <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="space-y-2">

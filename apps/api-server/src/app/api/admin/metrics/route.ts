@@ -9,7 +9,7 @@ export async function GET(_req: NextRequest) {
     const _token = TokenService.getAccessToken(_req, { scope: 'admin' });
     if (_token === null || _token === undefined || _token.trim() === '') return NextResponse.json({ _error: 'Unauthorized', scope: 'admin' }, { status: 401 });
 
-    const _payload = await TokenService.verifyAccessToken(_token, true); // true for isAdmin check
+    await TokenService.verifyAccessToken(_token, true); // true for isAdmin check
     
     const metrics = await AdminEngine.getPlatformMetrics();
     return NextResponse.json(metrics);

@@ -93,9 +93,7 @@ export function LiveSessionsList() {
                                     <div>
                                         <div className="flex items-center gap-3">
                                             <h4 className="text-lg font-black tracking-tight text-[#1A1A1A]">{session.user.profile?.name || 'Unknown User'}</h4>
-                                            {session.isAdmin && (
-                                                <span className="px-2 py-0.5 rounded-md bg-[#FF4B91]/10 text-[#FF4B91] text-[9px] font-black uppercase tracking-widest">Master</span>
-                                            )}
+                                            {session.isAdmin ? <span className="px-2 py-0.5 rounded-md bg-[#FF4B91]/10 text-[#FF4B91] text-[9px] font-black uppercase tracking-widest">Master</span> : null}
                                         </div>
                                         <p className="text-sm font-bold text-muted-foreground">{session.user.email}</p>
                                     </div>

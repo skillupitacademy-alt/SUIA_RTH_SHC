@@ -82,8 +82,7 @@ export default function QuestionEntryPage() {
         <div className="w-full relative">
 
             {/* Status Banner */}
-            {status && (
-                <div className={`
+            {status ? <div className={`
                     fixed top-8 right-8 z-[9999] max-w-md w-full p-6 rounded-2xl border shadow-2xl backdrop-blur-xl animate-in slide-in-from-right-10 fade-in duration-300
                     ${status.type === 'success'
                         ? 'bg-green-500/10 border-green-500/20 text-green-900 shadow-[0_20px_50px_rgba(34,197,94,0.2)]'
@@ -104,8 +103,7 @@ export default function QuestionEntryPage() {
                     {status.type === 'success' && (
                         <div className="absolute bottom-0 left-0 h-1 bg-green-500 transition-all duration-[6000ms] ease-linear w-full animate-[shrink_6s_linear_forwards]" />
                     )}
-                </div>
-            )}
+                </div> : null}
 
             <div className="w-full max-w-[1800px] mx-auto space-y-12 pb-24">
 

@@ -35,7 +35,7 @@ export function MultiSelectField({ label, values, options, loading, onChange, pl
                 "text-[10px] font-black uppercase tracking-[0.2em] transition-colors flex items-center gap-2",
                 active ? "text-[#FF4B91]" : "text-slate-500"
             )}>
-                {icon && icon}
+                {icon ? icon : null}
                 {label} (Multi)
             </label>
             <div className="relative flex-1">
@@ -52,7 +52,7 @@ export function MultiSelectField({ label, values, options, loading, onChange, pl
                             : "border-slate-300"
                     )}
                 >
-                    {loading && <option disabled className="p-2 opacity-50" />}
+                    {loading ? <option disabled className="p-2 opacity-50" /> : null}
                     {!loading && options.length === 0 && <option disabled className="p-2 opacity-50">No skills available for this topic</option>}
 
                     {/* Grouped Options Logic */}
@@ -95,11 +95,9 @@ export function MultiSelectField({ label, values, options, loading, onChange, pl
                         ));
                     })()}
                 </select>
-                {loading && (
-                    <div className="absolute top-2 right-2 pointer-events-none">
+                {loading ? <div className="absolute top-2 right-2 pointer-events-none">
                         <ZLoader size="xs" center={false} />
-                    </div>
-                )}
+                    </div> : null}
                 {!values.length && !loading && options.length > 0 && (
                     <div className="absolute top-4 left-4 pointer-events-none text-slate-400 text-[10px] font-black uppercase tracking-widest opacity-40">
                         {placeholder}

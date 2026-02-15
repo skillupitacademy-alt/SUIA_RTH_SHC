@@ -221,9 +221,7 @@ export function SubjectTable() {
     return (
         <div className="space-y-6 flex flex-col min-h-[800px]">
             <div className="flex-1 space-y-6">
-                {errorMessage && (
-                    <ErrorBanner message={errorMessage} onClose={() => setErrorMessage(null)} />
-                )}
+                {errorMessage ? <ErrorBanner message={errorMessage} onClose={() => setErrorMessage(null)} /> : null}
 
                 {/* FLOATING COMMAND BAR */}
                 <div className={cn(
