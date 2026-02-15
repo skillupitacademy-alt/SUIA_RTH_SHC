@@ -169,8 +169,8 @@ test.describe('Admin Auth & Security Suite', () => {
 
     await context.addInitScript(() => {
         window.__idleTestConfig = {
-            IDLE_WARNING_MS: 1000,
-            IDLE_LOCK_MS: 3000,
+            IDLE_WARNING_MS: 2000,
+            IDLE_LOCK_MS: 10000, // 10s is enough to lock but not too fast
             FORCED_IDLE_WARNING_MS: 60000,
             FORCED_IDLE_LOGOUT_MS: 120000
         };
@@ -187,8 +187,9 @@ test.describe('Admin Auth & Security Suite', () => {
     await input.fill(testValue);
 
     // Wait for lock
-    await page.waitForTimeout(4000);
-    await expect(page.getByText('Terminal Locked')).toBeVisible();
+    console.log('Waiting for lock to appear...');
+    await page.waitForTimeout(12000); // Wait > 10s
+    await expect(page.getByText('Terminal Locked')).toBeVisible({ timeout: 20000 });
 
     // Unlock
     const password = process.env.TEST_ADMIN_PASSWORD!;

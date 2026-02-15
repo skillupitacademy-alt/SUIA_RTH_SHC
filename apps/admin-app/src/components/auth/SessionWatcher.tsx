@@ -91,6 +91,13 @@ export function SessionWatcher({ expiresAt, onRefresh, onLogout, isRedirecting, 
         };
     }, [resetIdleTimer]);
 
+    // 1.5. Reset idle timer on unlock
+    useEffect(() => {
+        if (!isLocked) {
+            setLastActivityAt(Date.now());
+        }
+    }, [isLocked]);
+
     // 2. Poll for Session Expiry & Inactivity
     useEffect(() => {
         const checkStatus = () => {
