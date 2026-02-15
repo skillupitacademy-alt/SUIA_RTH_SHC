@@ -76,7 +76,7 @@ test.describe('Chaos scenarios (live)', () => {
     if (!loginRes.ok()) {
       throw new Error(`Login failed (${loginRes.status()}): ${await loginRes.text()}`);
     }
-    console.log('[Chaos] ✓ Login successful');
+
 
     // ── Step 2: Parse Set-Cookie headers into Playwright Cookie[] ─────
     const setCookieHeaders = loginRes
@@ -104,7 +104,7 @@ test.describe('Chaos scenarios (live)', () => {
     const cookieString = cookies.map(c => `${c.name}=${c.value}`).join('; ');
     const csrfToken    = cookies.find(c => c.name === 'csrfToken')?.value ?? '';
     const hasAccess    = cookies.some(c => c.name === 'accessToken');
-    console.log(`[Chaos] ✓ Cookies captured (accessToken=${hasAccess ? 'YES' : 'NO'}, csrf=${csrfToken ? 'YES' : 'NO'})`);
+
 
     // ── Step 3: Build authenticated request context ───────────────────
     // Use Authorization: Bearer header instead of Cookie+CSRF.
@@ -132,14 +132,14 @@ test.describe('Chaos scenarios (live)', () => {
       throw new Error(`GET /api/domains → ${domainsRes.status()}: ${await domainsRes.text()}`);
     }
     const domains: Domain[] = await domainsRes.json();
-    console.log(`[Chaos] Found ${domains.length} domains`);
+
 
     const domain = domains.find(d => d.name === TARGET_DOMAIN);
     if (!domain) {
       const available = domains.map((d: any) => d.name).join(', ');
       throw new Error(`Domain "${TARGET_DOMAIN}" not found. Available: ${available}`);
     }
-    console.log(`[Chaos] ✓ Domain: ${domain.name} (${domain.id})`);
+
 
     // Fetch subjects for this domain
     const subjectsRes = await api.get(`/api/subjects?domainId=${domain.id}`);
@@ -153,7 +153,7 @@ test.describe('Chaos scenarios (live)', () => {
       const available = subjects.map((s: any) => s.name).join(', ');
       throw new Error(`Subject "${TARGET_SUBJECT}" not found under "${TARGET_DOMAIN}". Available: ${available}`);
     }
-    console.log(`[Chaos] ✓ Subject: ${subject.name} (${subject.id})`);
+
 
     // Fetch topics for this subject
     const topicsRes = await api.get(`/api/topics?subjectId=${subject.id}`);
@@ -167,7 +167,7 @@ test.describe('Chaos scenarios (live)', () => {
       const available = topics.map((t: any) => t.name).join(', ');
       throw new Error(`Topic "${TARGET_TOPIC}" not found under "${TARGET_SUBJECT}". Available: ${available}`);
     }
-    console.log(`[Chaos] ✓ Topic: ${topic.name} (${topic.id})`);
+
 
     // ── Step 5: Assemble payload (matches QuizSelectionConsole shape) ─
     chaosPayload = {
@@ -177,7 +177,7 @@ test.describe('Chaos scenarios (live)', () => {
       difficulty: 'simple',
       questionCount: 10,
     };
-    console.log('[Chaos] ✓ Setup complete — payload:', JSON.stringify(chaosPayload));
+
   });
 
   /**
@@ -212,7 +212,7 @@ test.describe('Chaos scenarios (live)', () => {
     }
     expect(startRes.ok(), `startExam → ${startRes.status()}`).toBeTruthy();
     const { examId } = await startRes.json();
-    console.log(`[Test 1] Exam started: ${examId}`);
+
 
     // Simulate network drop: fire submit but race against a short timeout
     const submitKey = crypto.randomUUID();
@@ -233,7 +233,7 @@ test.describe('Chaos scenarios (live)', () => {
     // Reconnect & Poll for completion
     const state = await waitForStatus(examId, 'completed');
     expect(state.status).toBe('completed');
-    console.log('[Test 1] ✓ Exam completed after simulated disconnect');
+
   });
 
   /* ═══════════════════════ TEST 2 ═════════════════════════════════════ */
@@ -249,7 +249,7 @@ test.describe('Chaos scenarios (live)', () => {
     }
     expect(startRes.ok(), `startExam → ${startRes.status()}`).toBeTruthy();
     const { examId } = await startRes.json();
-    console.log(`[Test 2] Exam started: ${examId}`);
+
 
     // Fire two submits simultaneously with the SAME idempotency key
     const submitKey = crypto.randomUUID();
@@ -266,7 +266,7 @@ test.describe('Chaos scenarios (live)', () => {
     // Poll for completion
     const state = await waitForStatus(examId, 'completed');
     expect(state.status).toBe('completed');
-    console.log(`[Test 2] ✓ Double-click deduped (${r1.status()}, ${r2.status()})`);
+
   });
 
   /* ═══════════════════════ TEST 3 ═════════════════════════════════════ */
@@ -283,7 +283,7 @@ test.describe('Chaos scenarios (live)', () => {
     }
     expect(startRes.ok(), `startExam → ${startRes.status()}`).toBeTruthy();
     const { examId, firstQuestion } = await startRes.json();
-    console.log(`[Test 3] Exam started: ${examId}`);
+
 
     // Simulate stale session: rebuild cookie string WITHOUT the accessToken
     const staleCookies = cookies.filter(c => !['accessToken', 'admin_accessToken'].includes(c.name));
@@ -310,6 +310,6 @@ test.describe('Chaos scenarios (live)', () => {
     // In the real browser, FetchClient would auto-refresh via /auth/refresh and retry.
     // The key assertion: NO 5xx — the server handles it gracefully.
     expect(res.status()).toBeLessThan(500);
-    console.log(`[Test 3] ✓ Stale token handled gracefully (${res.status()})`);
+
   });
 });
