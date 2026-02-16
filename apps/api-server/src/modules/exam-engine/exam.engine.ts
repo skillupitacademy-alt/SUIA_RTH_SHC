@@ -1,12 +1,14 @@
 import type { examBlueprints } from '@quiz/db';
 import { db, examQuestions, exams, idempotencyKeys } from '@quiz/db';
+import { JobType } from '@quiz/types';
 import type { InferSelectModel } from 'drizzle-orm';
 import { and,eq } from 'drizzle-orm';
 
 import { AnswerEvaluationEngine } from '../answer-engine/answer.engine';
 import { cacheService } from '../core/cache.service';
-import { ScoringEngine } from '../scoring-engine/scoring.engine';
 import { SelectionService } from '../selection-engine/selection.service';
+import { JobOrchestrator } from '../system/job-orchestrator';
+import { JobsService } from '../system/jobs.service';
 
 export interface StartExamConfig {
   subjectId?: string;
@@ -295,15 +297,29 @@ export class ExamEngine {
       .where(and(eq(exams.id, targetExamId), eq(exams.status, 'started')))
       .returning({ id: exams.id });
 
+    let jobId: string | undefined;
+
     if (updated.length > 0) {
         if (idempotencyKey !== undefined && idempotencyKey !== null && idempotencyKey !== '') {
             await db.insert(idempotencyKeys).values({ userId, key: `submit:${idempotencyKey}`, examId: targetExamId }).onConflictDoNothing();
         }
-        ScoringEngine.calculateExamResults(targetExamId).catch(err => {
-            console.error(`[ExamEngine] Scoring failed for ${targetExamId}:`, err);
+        const job = await JobsService.createJob({
+            userId,
+            type: JobType.EXAM_SCORING,
+            payload: { examId: targetExamId }
         });
+        jobId = job.id;
+        
+        // Phase 10: Rollback Safety / Feature Flag
+        const isAsyncEnabled = process.env.SCORING_ASYNC_ENABLED !== 'false';
+        
+        if (isAsyncEnabled) {
+            void JobOrchestrator.runJob(job.id, userId);
+        } else {
+            await JobOrchestrator.runJob(job.id, userId);
+        }
     }
 
-    return { examId: targetExamId, status: 'processing' };
+    return { examId: targetExamId, status: 'processing', jobId };
   }
 }

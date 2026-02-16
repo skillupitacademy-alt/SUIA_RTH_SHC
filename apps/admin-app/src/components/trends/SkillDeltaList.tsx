@@ -11,6 +11,8 @@ interface SkillDeltaListProps {
         delta: number;
         trend: 'improving' | 'declining' | 'stable';
         sparkline: number[];
+        predictedMasteryDate?: string | null;
+        isStruggling?: boolean;
     }>;
 }
 
@@ -53,6 +55,25 @@ export function SkillDeltaList({ skills }: SkillDeltaListProps) {
                                 {skill.previousScore !== null && (
                                     <span className="ml-2">
                                         (Previous: {skill.previousScore}%)
+                                    </span>
+                                )}
+                            </div>
+
+                            {/* Intelligent Trajectory Badge */}
+                            <div className="mt-2 flex items-center gap-2">
+                                {skill.predictedMasteryDate != null ? (
+                                    <span className="text-[10px] font-bold uppercase tracking-tighter px-1.5 py-0.5 bg-blue-50 text-blue-600 rounded border border-blue-100 animate-pulse">
+                                        Predicted Mastery: {new Date(skill.predictedMasteryDate).toLocaleDateString()}
+                                    </span>
+                                ) : (
+                                    <span className="text-[10px] font-medium text-slate-400">
+                                        Trajectory: Calculating...
+                                    </span>
+                                )}
+
+                                {skill.isStruggling === true && (
+                                    <span className="text-[10px] font-bold uppercase tracking-tighter px-1.5 py-0.5 bg-red-50 text-red-600 rounded border border-red-100">
+                                        At Risk
                                     </span>
                                 )}
                             </div>

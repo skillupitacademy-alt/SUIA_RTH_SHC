@@ -17,11 +17,20 @@ export class AdminAnalyticsEngine {
     const [examCount] = await db.select({ count: count() }).from(exams);
     const [domainCount] = await db.select({ count: count() }).from(domains);
 
+    const yesterday = new Date();
+    yesterday.setHours(yesterday.getHours() - 24);
+    
+    const [activeUsers] = await db.select({ 
+        count: sql<number>`count(distinct ${exams.userId})`.mapWith(Number) 
+    })
+    .from(exams)
+    .where(sql`${exams.startedAt} >= ${yesterday}`);
+
     return {
       totalUsers: userCount.count,
       totalExams: examCount.count,
       totalDomains: domainCount.count,
-      activeUsers24h: 0 
+      activeUsers24h: activeUsers !== undefined ? activeUsers.count : 0 
     };
   }
 
@@ -130,31 +139,33 @@ export class AdminAnalyticsEngine {
         deltaDataResult,
         domainDeltasResult
     ] = await Promise.allSettled([
-        db.select({
-            dimensionId: resultsByDimension.dimensionId,
-            name: resultsByDimension.name,
-            avgAccuracy: sql`avg(${resultsByDimension.accuracy})`,
-            count: sql`count(*)`,
-        })
-        .from(resultsByDimension)
-        .where(eq(resultsByDimension.dimensionType, 'domain'))
-        .groupBy(resultsByDimension.dimensionId, resultsByDimension.name),
+        // Use Materialized View for performance - Level 5 Architecture
+        db.execute(sql`
+            SELECT 
+                dimension_id as "dimensionId", 
+                name, 
+                avg_accuracy as "avgAccuracy", 
+                sample_size as "count" 
+            FROM mv_mastery_matrix 
+            WHERE dimension_type = 'domain'
+        `),
 
-        db.select({
-            difficulty: resultsByDimension.name,
-            avgAccuracy: sql`avg(${resultsByDimension.accuracy})`,
-        })
-        .from(resultsByDimension)
-        .where(eq(resultsByDimension.dimensionType, 'difficulty'))
-        .groupBy(resultsByDimension.name),
+        db.execute(sql`
+            SELECT 
+                name as difficulty, 
+                avg_accuracy as "avgAccuracy" 
+            FROM mv_mastery_matrix 
+            WHERE dimension_type = 'difficulty'
+        `),
 
-        db.select({
-            isPass: sql`case when ${resultsByDimension.accuracy} >= 70 then true else false end`.mapWith(Boolean),
-            count: sql`count(*)`.mapWith(Number),
-        })
-        .from(resultsByDimension)
-        .where(eq(resultsByDimension.dimensionType, 'domain'))
-        .groupBy(sql`case when ${resultsByDimension.accuracy} >= 70 then true else false end`),
+        db.execute(sql`
+            SELECT 
+                (avg_accuracy >= 70) as "isPass", 
+                SUM(sample_size) as count 
+            FROM mv_mastery_matrix 
+            WHERE dimension_type = 'domain'
+            GROUP BY (avg_accuracy >= 70)
+        `),
 
         this.getEfficiencyAnalytics(),
 
@@ -163,10 +174,13 @@ export class AdminAnalyticsEngine {
         TrendsService.getDomainDeltas(range)
     ]);
 
-    const domainsData = domainScores.status === 'fulfilled' ? domainScores.value : [];
-    const difficulties = difficultyScores.status === 'fulfilled' ? difficultyScores.value : [];
+    interface DomainRow { dimensionId: string | null; name: string | null; avgAccuracy: number; count: number; }
+    interface DifficultyRow { difficulty: string; avgAccuracy: number; }
     interface PassFailItem { isPass: boolean; count: number; }
-    const passFailData: PassFailItem[] = passFail.status === 'fulfilled' ? (passFail.value as PassFailItem[]) : [];
+
+    const domainsData: DomainRow[] = domainScores.status === 'fulfilled' ? (domainScores.value.rows as unknown as DomainRow[]) : [];
+    const difficulties: DifficultyRow[] = difficultyScores.status === 'fulfilled' ? (difficultyScores.value.rows as unknown as DifficultyRow[]) : [];
+    const passFailData: PassFailItem[] = passFail.status === 'fulfilled' ? (passFail.value.rows as unknown as PassFailItem[]) : [];
     
     const efficiency = efficiencyResult.status === 'fulfilled' ? efficiencyResult.value : {
         mastery: 0, persistence: 0, rash: 0, struggle: 0, noData: 0, total: 0

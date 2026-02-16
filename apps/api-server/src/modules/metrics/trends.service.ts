@@ -1,6 +1,8 @@
 import { db, exams, resultsByDimension } from '@quiz/db';
 import { and, desc, eq, gte, lt, sql } from 'drizzle-orm';
 
+import { ForecastService } from '../intelligence/forecast.service';
+
 export interface ScoreTrend {
   examId: string;
   date: Date;
@@ -17,6 +19,8 @@ export interface SkillTrend {
   delta: number;
   trend: 'improving' | 'declining' | 'stable';
   sparkline: number[];
+  predictedMasteryDate?: string | null;
+  isStruggling?: boolean;
 }
 
 export interface TrendSummary {
@@ -150,6 +154,14 @@ export class TrendsService {
       if (delta > 5) trend = 'improving';
       else if (delta < -5) trend = 'declining';
 
+      // Prediction Engine Integration
+      const forecast = ForecastService.calculateTrajectory(
+        data.scores.map((s, idx) => ({ 
+          accuracy: s, 
+          date: data.examDates[idx] 
+        }))
+      );
+
       trends.push({
         skillId,
         skillName: data.name,
@@ -157,7 +169,9 @@ export class TrendsService {
         previousScore,
         delta,
         trend,
-        sparkline: data.scores.slice(0, 5).reverse() // Last 5 scores, oldest first
+        sparkline: data.scores.slice(0, 5).reverse(), // Last 5 scores, oldest first
+        predictedMasteryDate: forecast.predictedMasteryDate,
+        isStruggling: forecast.isStruggling
       });
     }
 

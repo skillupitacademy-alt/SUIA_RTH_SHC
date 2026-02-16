@@ -1487,3 +1487,26 @@ Reduce documentation fragmentation and improve discoverability by consolidating 
     - **Security Muzzle**: Implemented a `SecurityMuzzle.tsx` React component to filter CSP-related console noise. This prevents "console spam" in local development and production while auditing is active.
     - **verification**: Confirmed 100% build stability and zero lint/type errors across the monorepo (`pnpm lint:all`, `pnpm typecheck:all`, `pnpm build:all`).
 - **Outcome**: Delivered a full-stack security auditing pipeline that captures real-world violation data without impacting user experience or developer productivity.
+
+### Batch 210: Async Scoring Migration (Phase 10)
+- **Objective**: Decouple exam scoring from the synchronous request-response cycle.
+- **Status**: COMPLETED
+- **Implementation**:
+    - **JobOrchestrator**: Created `apps/api-server/src/modules/system/job-orchestrator.ts` as a centralized dispatch for `EXAM_SCORING` jobs.
+    - **ExamEngine**: Refactored `submitExam` to delegate scoring via `JobOrchestrator` instead of inline execution.
+    - **JobsService**: Updated to support new job type routing.
+    - **Testing**: Added vitest unit tests in `__tests__/job-orchestrator.test.ts`.
+    - **Types**: Created `@quiz/types` package with `JobType` enum (`EXAM_SCORING`, `MOCK_JOB`).
+    - **Verification**: Full monorepo build and type-check (Exit Code 0).
+- **Outcome**: Established the foundation for scalable background job processing.
+
+### Batch 212: Deep Analytics & Predictive Intelligence (Phase 11)
+- **Objective**: Implement high-performance predictive analytics layer.
+- **Status**: COMPLETED
+- **Implementation**:
+    - **Materialized Views**: Created `mv_mastery_matrix` and `mv_user_daily_snapshots` in `packages/db/migrations/0005_analytics_materialized_views.sql`.
+    - **Forecast Engine**: Developed `ForecastService` using linear velocity to predict mastery dates and identify "At Risk" users.
+    - **Refresh Orchestration**: Added `ANALYTICS_REFRESH` to `JobType` and updated `JobOrchestrator` for concurrent view refreshes.
+    - **UI Integration**: Enhanced `SkillDeltaList` and Deep Analytics page with predictive trajectory badges.
+    - **Verification**: Verified zero regressions and 100% build stability (Exit Code 0).
+- **Outcome**: Established "Predictive Intelligence" within the platform for actionable learning insights.

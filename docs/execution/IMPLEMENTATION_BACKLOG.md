@@ -12,4 +12,5 @@
 | OPS-001 | Ops | Distributed rate limiting | P2 | COMPLETED | None | M |
 | PIPE-001 | Scoring | Move scoring async | P2 | COMPLETED | RT-001 | L |
 | SCALE-001 | Scale | Multi-region failover | P3 | BACKLOG | PIPE-001 | L |
-| ANALYTICS-001 | Analytics | Warehouse + materialized views | P3 | BACKLOG | PIPE-001 | L |
+| ANALYTICS-001 | Analytics | Warehouse + materialized views | P3 | COMPLETED | PIPE-001 | L |
+| JOB-001 | Ops | Background Job Orchestrator & Audit | P1 | COMPLETED | OPS-001 | M |
