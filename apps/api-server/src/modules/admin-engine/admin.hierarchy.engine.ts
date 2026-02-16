@@ -260,12 +260,13 @@ export class AdminHierarchyEngine {
   }
 
   static async getSkillsByTopic(topicId: string) {
-    return await db.query.topicSkills.findMany({
+    const res = await db.query.topicSkills.findMany({
       where: eq(topicSkills.topicId, topicId),
       with: {
         skill: true
       }
     });
+    return res.map(rs => rs.skill);
   }
 
   static async mapTopicToSkills(topicId: string, skillIds: string[]) {

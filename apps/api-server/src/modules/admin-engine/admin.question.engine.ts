@@ -55,12 +55,28 @@ export class AdminQuestionEngine {
 
     const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
 
-    return await db.query.questions.findMany({
+    const res = await db.query.questions.findMany({
       where: whereClause,
       limit,
       offset,
       orderBy: [desc(questions.updatedAt)]
     });
+
+    const [{ count }] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(questions)
+      .where(whereClause ?? sql`true`);
+
+    const total = Number(count ?? 0);
+    const totalPages = Math.max(1, Math.ceil(total / limit));
+
+    return { 
+      questions: res, 
+      total, 
+      page, 
+      limit, 
+      totalPages 
+    };
   }
 
   static async createQuestion(data: CreateQuestionInput) {
