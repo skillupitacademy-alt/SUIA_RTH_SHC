@@ -24,16 +24,16 @@ describe.skip('AuthService (unit)', () => {
   it('login returns user profile + tokens when credentials are valid', async () => {
     const { AuthService } = await import('@/modules/auth/auth.service');
     const loginResult: LoginReturn = {
-      _user: { id: 'u1', email: 'a@b.com', profile: { name: 'Test' } },
-      accessToken: 'access',
-      refreshToken: 'refresh',
+      _user: { id: 'u1', email: 'test@example.com', profile: { name: 'Test User' } },
+      accessToken: 'access-token',
+      refreshToken: 'refresh-token',
       isAdmin: false,
     };
     vi.mocked(AuthService.login).mockResolvedValue(loginResult);
 
-    const result = await AuthService.login('a@b.com', 'password');
-    expect(result.accessToken).toBe('access');
-    expect(result._user.email).toBe('a@b.com');
+    const result = await AuthService.login('test@example.com', 'password');
+    expect(result.accessToken).toBe('access-token');
+    expect(result._user.email).toBe('test@example.com');
   });
 
   it('signup creates user then logs in', async () => {

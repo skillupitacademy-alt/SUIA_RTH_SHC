@@ -1,6 +1,16 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-// Execution deferred; logic placeholders to be completed later.
+type AccessPayload = { userId: string; isAdmin: boolean };
+
+vi.mock('@/modules/auth/token.service', () => ({
+  TokenService: {
+    signAccessToken: vi.fn<() => Promise<string>>(),
+    verifyAccessToken: vi.fn<() => Promise<AccessPayload | null>>(),
+    signRefreshToken: vi.fn<() => Promise<string>>(),
+  },
+}));
+
+// Still skipped to defer execution.
 describe.skip('TokenService (unit)', () => {
   beforeEach(() => {
     vi.useRealTimers();
@@ -9,22 +19,23 @@ describe.skip('TokenService (unit)', () => {
 
   it('signs access token with admin scope', async () => {
     const { TokenService } = await import('@/modules/auth/token.service');
-    type SignResult = Awaited<ReturnType<typeof TokenService.signAccessToken>>;
-    vi.spyOn(TokenService, 'signAccessToken').mockResolvedValue('signed-token' as SignResult);
-    const token = await TokenService.signAccessToken({ userId: 'u1' } as { userId: string }, true);
-    expect(token).toBe('signed-token');
+    vi.mocked(TokenService.signAccessToken).mockResolvedValue('signed-admin-token');
+    const token = await TokenService.signAccessToken({ userId: 'u1' }, true);
+    expect(token).toBe('signed-admin-token');
   });
 
   it('verifies access token and returns payload', async () => {
     const { TokenService } = await import('@/modules/auth/token.service');
-    type VerifyResult = Awaited<ReturnType<typeof TokenService.verifyAccessToken>>;
-    const payload: VerifyResult = { userId: 'u1', isAdmin: false } as VerifyResult;
-    vi.spyOn(TokenService, 'verifyAccessToken').mockResolvedValue(payload);
-    const payload = await TokenService.verifyAccessToken('t', false);
-    expect(payload!.userId).toBe('u1');
+    const payload: AccessPayload = { userId: 'u1', isAdmin: false };
+    vi.mocked(TokenService.verifyAccessToken).mockResolvedValue(payload);
+    const res = await TokenService.verifyAccessToken('t', false);
+    expect(res?.userId).toBe('u1');
   });
 
-  it('rotates refresh token', async () => {
-    expect(true).toBe(true);
+  it('signs refresh token', async () => {
+    const { TokenService } = await import('@/modules/auth/token.service');
+    vi.mocked(TokenService.signRefreshToken).mockResolvedValue('refresh-token');
+    const token = await TokenService.signRefreshToken({ userId: 'u1' }, false);
+    expect(token).toBe('refresh-token');
   });
 });

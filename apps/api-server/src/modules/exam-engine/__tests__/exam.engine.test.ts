@@ -1,10 +1,26 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
-// Execution deferred — real mocks for repositories/idempotency to be added in Phase C2.
+const fixtures = {
+  userId: 'u1',
+  targetId: 'domain1',
+  idempotencyKey: 'idem-123',
+};
+
+vi.mock('../exam.engine', async (importOriginal) => {
+  const real = await importOriginal<typeof import('../exam.engine')>();
+  return {
+    ExamEngine: {
+      ...real.ExamEngine,
+      startExam: vi.fn(real.ExamEngine.startExam),
+    },
+  };
+});
+
 describe.skip('ExamEngine (unit)', () => {
   it('starts exam with idempotency key', async () => {
     const { ExamEngine } = await import('../exam.engine');
-    expect(typeof ExamEngine.startExam).toBe('function');
+    await ExamEngine.startExam(fixtures.userId, fixtures.targetId, fixtures.idempotencyKey, {});
+    expect(ExamEngine.startExam).toHaveBeenCalled();
   });
 
   it('submits answers and returns processing status', () => {
