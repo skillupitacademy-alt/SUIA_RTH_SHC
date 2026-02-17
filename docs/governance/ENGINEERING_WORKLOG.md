@@ -385,3 +385,10 @@
 - Lint @quiz/admin-app with --max-warnings=0 passes.
 - Pending F3 items: remaining admin console calls (UserTable, dashboard reports/tables, question tables, forgot/reset pages) and web-app clientLogger + swaps (exam resume/auth/localStorage backups).
 
+
+## 2026-02-18 — Phase F3 client logging (batch4 admin dashboard) 
+
+- Swapped dashboard metrics components to clientLogger (error-only, sanitized): AdminStats and ControlCenterDeck now log via clientLogger instead of console.*.
+- Lint @quiz/admin-app with --max-warnings=0 passes.
+- Pending F3: remaining admin console calls (UserTable, other dashboard panels, content/factory UIs, docs viewers, auth forgot/reset) and web-app clientLogger + swaps.
+

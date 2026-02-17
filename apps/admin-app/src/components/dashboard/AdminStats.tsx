@@ -5,6 +5,8 @@ import { apiClient } from '@quiz/api-client';
 import { FileCheck, LucideIcon, ShieldAlert, Users, Zap } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
+import { clientLogger } from '@/utils/clientLogger';
+
 interface MetricCardProps {
     label: string;
     value: string | number;
@@ -41,7 +43,7 @@ export function AdminMetricsGrid() {
                 const data = await apiClient.admin.getMetrics();
                 setMetrics(data);
             } catch (err) {
-                console.error("Failed to fetch admin metrics", err);
+                clientLogger.error("Failed to fetch admin metrics", { error: err instanceof Error ? err.message : 'unknown' });
             }
         };
         void fetchMetrics();

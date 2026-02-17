@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 
 import { ZTooltip } from '@/components/ui/ZTooltip';
 import { cn } from '@/lib/utils';
+import { clientLogger } from '@/utils/clientLogger';
 
 interface SummaryData {
     avgScore: number;
@@ -25,7 +26,7 @@ export function ControlCenterDeck() {
                 const data = await apiClient.admin.getPerformanceAnalytics();
                 setStats(data.summary);
             } catch (err) {
-                console.error("Failed to fetch control center stats", err);
+                clientLogger.error("Failed to fetch control center stats", { error: err instanceof Error ? err.message : 'unknown' });
             } finally {
                 setLoading(false);
             }
