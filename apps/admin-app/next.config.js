@@ -1,3 +1,9 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
+/* eslint-disable @next/next/no-html-link-for-pages */
+const withBundleAnalyzer = require('@next/bundle-analyzer')({
+    enabled: process.env.ANALYZE === 'true'
+});
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     transpilePackages: ['@quiz/api-client', '@quiz/db', 'react-markdown', 'remark-gfm', 'lucide-react'],
@@ -49,4 +55,4 @@ const nextConfig = {
     },
 };
 
-module.exports = nextConfig;
+module.exports = withBundleAnalyzer(nextConfig);
