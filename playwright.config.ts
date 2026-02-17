@@ -1,33 +1,19 @@
-import path from 'path';
-import dotenv from 'dotenv';
 import { defineConfig, devices } from '@playwright/test';
-
-// Load .env from the root directory relative to this config file
-dotenv.config({ path: path.resolve(__dirname, '.env') });
+import 'tsconfig-paths/register';
 
 export default defineConfig({
-  testDir: '.',
-  timeout: 90_000,
-  expect: {
-    timeout: 10_000,
-  },
-  reporter: [['list'], ['html', { outputFolder: 'playwright-report', open: 'never' }]],
-  outputDir: 'playwright-artifacts',
-  /* Opt out of parallel tests on local for live-site stability. */
-  workers: 1,
+  testDir: './apps',
+  testMatch: '**/tests/e2e/**/*.spec.ts',
+  testIgnore: ['**/src/**', '**/__tests__/**'],
+  timeout: 30 * 1000,
+  expect: { timeout: 10 * 1000 },
+  reporter: [['list']],
+  fullyParallel: false,
   use: {
-    // Always capture full traces so the HTML report shows step-by-step state.
-    trace: 'on',
-    // Also capture a full-page screenshot at the end of every test (pass/fail).
-    screenshot: 'on',
-    // Keep video only when failing to control artifact size.
+    baseURL: process.env.NEXT_PUBLIC_WEB_APP_URL || process.env.NEXT_PUBLIC_ADMIN_URL || 'http://localhost:3000',
+    trace: 'retain-on-failure',
+    screenshot: 'only-on-failure',
     video: 'retain-on-failure',
-    // Slow actions slightly so the UI can settle between steps (helps with clean snapshots).
-    launchOptions: {
-      slowMo: 100,
-    },
-    navigationTimeout: 45_000,
-    actionTimeout: 20_000,
   },
   projects: [
     {

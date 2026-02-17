@@ -1,4 +1,4 @@
-import { expect,test } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 import { setupCSPAudit } from '@tests/utils/csp-audit-collector';
 
 // Execution deferred: kept skipped until E2E phase is enabled.
