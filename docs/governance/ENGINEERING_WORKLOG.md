@@ -123,3 +123,8 @@
 - Switched all previously soft-validated routes to strict Zod handling: if `safeParse` fails, requests now return 400 with `issues`; no fallbacks to raw bodies. Coverage includes auth (login/signup/reset), quiz (start/answer/submit), hierarchy CRUD, questions (create/update/bulk/batch-delete), blueprints, jobs, users update, publish/approve, and validate.
 - No runtime behavior changes for valid inputs; invalid payloads are rejected early. This completes Manifesto Phase A3 rollout.
 - Verification after the switch: `pnpm lint:all`, `pnpm typecheck:all`, `pnpm build:all` all pass.
+
+## 2026-02-18 — Branch consolidation for next phases
+
+- Created `manifesto/phase-a-parent` to anchor all Phase A work (A1–A3 strict) before moving on.
+- Created and switched to `manifesto/phase-b-parent` as the base for Phase B tasks (CI/CD & hooks). Working tree clean and includes all Phase A commits; prior quality gates are green.
