@@ -406,3 +406,9 @@
 - Lint @quiz/admin-app with --max-warnings=0 passes after import sort autofix.
 - Pending admin swaps: dashboard panels (content/performance/security/usage etc.), reports, question tables, forgot/reset pages, trends/deep-analytics pages, and factory ReviewConsole; then roll out clientLogger to web-app.
 
+
+## 2026-02-18 — Phase F3 client logging (batch7 admin dashboard)
+
+- Converted admin dashboard panels to clientLogger (error-only, sanitized): BlueprintAuditBoard, ContentReadinessBoard, PerformanceAnalyticsBoard, SecurityHealthPanel, ServiceHealth, RBACGovernancePanel, LiveSessionsList, SystemAuditTerminal, ExamActivityBoard, UserAnalyticsPanel. Behaviors unchanged; logs stay warn/error in prod.
+- Lint @quiz/admin-app with --max-warnings=0 passes post-change.
+- Pending admin swaps: reports, question tables, ReviewConsole, forgot/reset pages, trends/deep-analytics pages; then web-app clientLogger rollout.
