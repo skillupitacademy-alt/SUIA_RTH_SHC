@@ -213,3 +213,10 @@
 ## 2026-02-18 — Phase D3 (prefers-reduced-motion baseline)
 
 - Added `prefers-reduced-motion: reduce` safeguards to global styles in both apps (`apps/web-app/src/app/globals.css`, `apps/admin-app/src/app/globals.css`), forcing minimal animation/transition durations and disabling smooth scroll when users request reduced motion. Purely additive; no runtime logic change.
+
+## 2026-02-18 — Phase D1 kickoff (jsx-a11y strict enablement)
+
+- Enabled `plugin:jsx-a11y/strict` in `@quiz/eslint-config` to start accessibility enforcement.
+- Resolved initial web-app issues: added aria labels/roles for settings summary text, dialog backdrops now keyboard-safe buttons without layout change, quiz config labels accessible, footer GitHub link now navigable, and global search dialog uses a button backdrop while keeping UX intact.
+- Fixed api-server login form labels with proper `htmlFor`/`id` bindings.
+- Current status: lint passes for web-app and api-server; admin-app pending (~53 label/keyboard violations) to be addressed next without altering layout/visuals.
