@@ -26,14 +26,18 @@ const nextConfig = {
                             "img-src 'self' data: blob: https://images.unsplash.com " + (process.env.NEXT_PUBLIC_WEB_APP_URL || ""),
                             "font-src 'self' https://fonts.gstatic.com",
                             "connect-src 'self' " +
-                            [process.env.NEXT_PUBLIC_API_URL, process.env.NEXT_PUBLIC_ADMIN_URL, process.env.NEXT_PUBLIC_WEB_APP_URL]
+                            [
+                                process.env.NEXT_PUBLIC_API_URL,
+                                process.env.NEXT_PUBLIC_ADMIN_URL,
+                                process.env.NEXT_PUBLIC_WEB_APP_URL,
+                                "https://api.realtutorialhub.com"
+                            ]
                                 .filter(Boolean).join(" "),
                             "frame-ancestors 'none'",
                             "base-uri 'self'",
                             "form-action 'self'",
                             "object-src 'none'",
                             "manifest-src 'self'",
-                            "upgrade-insecure-requests",
                             `report-uri ${process.env.NEXT_PUBLIC_API_URL || "https://api.realtutorialhub.com"}/api/security/report`,
                         ].join('; '),
                     },
