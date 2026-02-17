@@ -1,10 +1,13 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
+import { logger } from '@/lib/logger';
 import { AdminEngine } from '@/modules/admin-engine/admin.engine';
 import { TokenService } from '@/modules/auth/token.service';
 
 export const dynamic = 'force-dynamic';
+
+const log = logger.child({ module: 'admin:metrics:security' });
 
 async function _verifyAdmin(_req: NextRequest) {
     const _token = TokenService.getAccessToken(_req, { scope: 'admin' });
@@ -29,7 +32,7 @@ export async function GET(_req: NextRequest) {
         return NextResponse.json(data);
     } catch (_error: unknown) {
         const message = _error instanceof Error ? _error.message : 'Internal Server Error';
-        console.error('[ADMIN_METRICS_SECURITY] Error:', message);
+        log.error({ error: message }, 'ADMIN_METRICS_SECURITY failed');
         return NextResponse.json({ _error: 'Internal Server Error' }, { status: 500 });
     }
 }

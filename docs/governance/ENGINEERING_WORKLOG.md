@@ -357,3 +357,10 @@
 - Lint @quiz/api-server with --max-warnings=0 passes after autofix.
 - Remaining F2c scope: metrics routes (blueprints/exams/users/rbac/performance/security/growth/content), trends (scores/skills/summary), system usage already done, publish done, users done, questions done, subjects/domains batch done.
 
+
+## 2026-02-18 — Phase F2c console → Pino (batch11 metrics/trends)
+
+- Converted remaining metrics/trends routes to Pino child loggers: metrics exams/rbac/performance/security/growth/content/users and trends scores/skills/summary. Logs are structured, error-only; no headers/bodies recorded.
+- Lint @quiz/api-server with --max-warnings=0 passes after autofix.
+- F2c scope now complete (all api-server routes off console.*).
+
