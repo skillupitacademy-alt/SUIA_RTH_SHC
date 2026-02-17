@@ -6,6 +6,7 @@ import { NextResponse } from 'next/server';
 import type { CreateQuestionInput } from '@/modules/admin-engine/admin.engine';
 import { AdminEngine } from '@/modules/admin-engine/admin.engine';
 import { TokenService } from '@/modules/auth/token.service';
+import { questionSchema } from '@/schemas/admin.schemas';
 
 export const dynamic = 'force-dynamic';
 
@@ -63,7 +64,9 @@ export async function PATCH(_req: NextRequest, { params }: { params: Promise<{ i
     if (auth._error !== undefined) return NextResponse.json({ _error: auth._error }, { status: auth.status });
 
     try {
-        const body = await _req.json() as Partial<CreateQuestionInput>;
+        const rawBody = await _req.json() as Partial<CreateQuestionInput>;
+        const parsed = questionSchema.partial().safeParse(rawBody);
+        const body = parsed.success ? parsed.data : rawBody;
         const result = await AdminEngine.updateQuestion(id, body, auth.userId!);
         return NextResponse.json(result);
     } catch (_error: unknown) {

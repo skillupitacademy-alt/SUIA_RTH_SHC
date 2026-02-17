@@ -103,3 +103,10 @@
 - Wired soft `safeParse` + guard checks into admin CRUD routes for hierarchy entities (create/update of domains, subjects, topics, subtopics, skills) while keeping runtime behavior intact; minimal 400 responses on missing required fields only.
 - All quality gates remain green after changes: `pnpm lint:all`, `pnpm typecheck:all`, `pnpm build:all`.
 - Next A3 step: apply the same soft Zod validation to admin questions, blueprints, jobs, users before moving to strict enforcement phase.
+
+## 2026-02-18 — Phase A3c soft validation for admin questions/blueprints/jobs/users
+
+- Added `apps/api-server/src/schemas/admin.schemas.ts` for question, bulk question, blueprint, job, and user update payloads (UUID guards, required names/topicId/type, option array minimums, optional distributions/payloads).
+- Integrated `safeParse` + minimal required-field checks into admin routes: questions (create/update/bulk), blueprints (create), jobs (create), and users (update). Behavior preserved; only malformed payloads get 400s.
+- Verification: `pnpm lint:all`, `pnpm typecheck:all`, `pnpm build:all` all pass after these changes (no warnings).
+- Next: finalize Phase A3 by covering remaining admin endpoints (if any edge routes left), then plan soft→strict transition once logs show zero mismatches.

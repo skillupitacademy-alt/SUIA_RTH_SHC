@@ -5,6 +5,7 @@ import type { CreateQuestionInput } from '@/modules/admin-engine/admin.engine';
 import { AdminEngine } from '@/modules/admin-engine/admin.engine';
 import { _verifyAdmin } from '@/modules/auth/rbac.service';
 import { TokenService } from '@/modules/auth/token.service';
+import { questionSchema } from '@/schemas/admin.schemas';
 
 export const dynamic = 'force-dynamic';
 
@@ -54,7 +55,14 @@ export async function POST(_req: NextRequest) {
     const _payload = await TokenService.verifyAccessToken(_token, true);
 
     const body = await _req.json() as CreateQuestionInput;
-    const result = await AdminEngine.createQuestion(body, _payload.userId);
+    const parsed = questionSchema.safeParse(body);
+    const input = parsed.success ? parsed.data : body;
+
+    if (typeof input.topicId !== 'string' || typeof input.questionText !== 'string' || !Array.isArray(input.options)) {
+      return NextResponse.json({ _error: 'topicId, questionText and options are required' }, { status: 400 });
+    }
+
+    const result = await AdminEngine.createQuestion(input, _payload.userId);
     
     return NextResponse.json(result);
   } catch (_error: unknown) {

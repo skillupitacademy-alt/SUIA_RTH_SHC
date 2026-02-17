@@ -4,6 +4,7 @@ import { NextResponse } from 'next/server';
 import type { BlueprintInsert } from '@/modules/admin-engine/admin.engine';
 import { AdminEngine } from '@/modules/admin-engine/admin.engine';
 import { TokenService } from '@/modules/auth/token.service';
+import { blueprintSchema } from '@/schemas/admin.schemas';
 
 export const dynamic = 'force-dynamic';
 
@@ -45,7 +46,14 @@ export async function POST(_req: NextRequest) {
     if (auth._error !== undefined) return NextResponse.json({ _error: auth._error, scope: auth.scope }, { status: auth.status });
 
     try {
-        const body = await _req.json() as BlueprintInsert;
+        const rawBody = await _req.json() as BlueprintInsert;
+        const parsed = blueprintSchema.safeParse(rawBody);
+        const body = parsed.success ? parsed.data : rawBody;
+
+        if (typeof body.name !== 'string' || body.name.trim() === '') {
+            return NextResponse.json({ _error: 'name is required' }, { status: 400 });
+        }
+
         // AdminEngine.createBlueprint(data) - only 1 arg
         const result = await AdminEngine.createBlueprint(body);
         return NextResponse.json(result);

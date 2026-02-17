@@ -5,6 +5,7 @@ import type { CreateQuestionInput } from '@/modules/admin-engine/admin.engine';
 import { AdminEngine } from '@/modules/admin-engine/admin.engine';
 import { _verifyAdmin } from '@/modules/auth/rbac.service';
 import { TokenService } from '@/modules/auth/token.service';
+import { bulkQuestionSchema } from '@/schemas/admin.schemas';
 
 export const dynamic = 'force-dynamic';
 
@@ -29,7 +30,9 @@ export async function POST(_req: NextRequest) {
         return NextResponse.json({ _error: 'Forbidden' }, { status: 403 });
     }
 
-    const { topicId, subtopicId, skillId, skillIds, questions } = await _req.json() as BulkQuestionBody;
+    const rawBody = await _req.json() as BulkQuestionBody;
+    const parsed = bulkQuestionSchema.safeParse(rawBody);
+    const { topicId, subtopicId, skillId, skillIds, questions } = parsed.success ? parsed.data : rawBody;
 
     if (topicId === null || topicId === undefined || topicId.trim() === '' || !Array.isArray(questions)) {
         return NextResponse.json({ _error: 'Missing required fields: topicId and questions array' }, { status: 400 });

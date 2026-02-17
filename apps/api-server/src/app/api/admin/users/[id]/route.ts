@@ -5,6 +5,7 @@ import type { UpdateUserInput } from '@/modules/admin-engine/admin.engine';
 import { AdminEngine } from '@/modules/admin-engine/admin.engine';
 import { _verifyAdmin } from '@/modules/auth/rbac.service';
 import { TokenService } from '@/modules/auth/token.service';
+import { updateUserSchema } from '@/schemas/admin.schemas';
 
 export async function PATCH(
   _req: NextRequest,
@@ -18,7 +19,10 @@ export async function PATCH(
     }
     const _payload = await TokenService.verifyAccessToken(_token, true);
 
-    const body = await _req.json() as UpdateUserInput;
+    const rawBody = await _req.json() as UpdateUserInput;
+    const parsed = updateUserSchema.safeParse(rawBody);
+    const body = parsed.success ? parsed.data : rawBody;
+
     const result = await AdminEngine.updateUser(id, body, _payload.userId);
     
     return NextResponse.json(result);
