@@ -240,11 +240,14 @@
 \n## 2026-02-17 - Admin app lint fix\n- Fixed simple-import-sort warning in apps/admin-app/src/components/auth/AdminLockScreen.tsx by letting eslint --fix reorder mixed workspace/external imports per repo convention (single non-local group alphabetized).\n- Guarded nullable email/password flows and confirmed lint now passes for @quiz/admin-app (strict-boolean-expressions cleared).\n- No functional/UI changes; only lint/config compliance.\n
 \n## 2026-02-18 - Phase D2 kick-off (aria-labels)\n- Added explicit aria-label/labelledby for admin lock screen password input and unlock action; switch-account button now labeled for screen readers.\n- Marked admin sidebar nav links with aria-label and aria-current to improve SR navigation without altering layout.\n- Next: continue D2 Tier-1 aria-label injection across tables (domain/subject/topic/subtopic/skill/user), QuestionTable, and web-app interactive controls as outlined in MANIFESTO_ROADMAP.\n
 - Continued Phase D2 aria-label rollout: added labels to AdminLockScreen controls (password input, unlock, switch account) and admin sidebar nav (aria-current). Extended to QuestionTable search/clear controls and DomainTable search, select-all checkbox, bulk factory, and add-domain buttons to improve SR usability without layout changes.\n
+
 - Continued D2 aria-label sweep across admin tables: added labels to QuestionTable search/clear controls (already), DomainReviewCard/Subject/Topic/Subtopic/Skill review cards (checkbox, edit/delete icon buttons), DomainTable controls (search/select-all/bulk factory/add) and UserTable (search input, block/unblock toggle, role badges). Ran lint for @quiz/admin-app with max-warnings=0 � cache hit, still green.\n
+
 - Phase D2 continues: added aria-labels across remaining admin tables (Subject/Topic/Subtopic/Skill) for search inputs, select-all checkboxes, bulk/add actions, and clear/delete selection buttons. Updated web-app AuthForms password toggle buttons with aria-label/pressed for SR clarity. Lint run: @quiz/web-app passes with --max-warnings=0.\n
 - Phase D2 (web): added aria labels to ExamInterface controls (error dismiss, question nav dots with status, option buttons, prev/next, review toggle, submit/finish). Web AuthForms password toggle already updated earlier. Lint: @quiz/web-app passes with --max-warnings=0.\n
 - Phase D2 (web) continued: added aria-pressed/labels to DomainCard and TopicChip selectors; QuizSelectionConsole pagination buttons, resume banner CTA, difficulty tier and question-count tiles now labeled for screen readers. ExamInterface updates previously logged. Lint: @quiz/web-app still passes with --max-warnings=0.\n
 - Phase D2 (web) Header: added aria-label/current to dashboard nav; login/signup/logout buttons now explicitly labeled for SR users. Lint remains green for @quiz/web-app with --max-warnings=0.\n
+
 - Committed Phase D2 aria-label rollout for admin/web (commit c74b15f3, 2026-02-17 14:41:39 +0530). Scope: admin tables/review cards, lock screen, sidebar, domain/topic/skill/subtopic/subject controls, user table toggles; web exam interface, selection console, domain/topic chips, header, auth password toggles. Lint all green pre-commit.\n
 - Phase D5 start: WCAG AA contrast tune via shared tokens only. Darkened muted-foreground to hsl(215 18% 30%) and strengthened border/input to hsl(214 28% 82%) for web-app (80% for admin) to improve legibility on light panels while keeping existing look. No layout changes. Lint: admin-app and web-app pass with --max-warnings=0.\n
 - Phase E1 kickoff: added optional bundle analyzer to web/admin Next configs (ANALYZE=true) and new analyze scripts; installed @next/bundle-analyzer at workspace root. No runtime changes; lint still clean for both apps.\n
@@ -426,6 +429,7 @@ equestId without global mutable state.
 - Converted admin question tables to clientLogger (error-only, sanitized): DomainTable, SubjectTable, TopicTable, SubtopicTable, SkillTable, QuestionTable. Added clientLogger to Factory ReviewConsole (fetch duplicates/skills and save). No UI or behavior changes; only logging plumbing.
 - Lint @quiz/admin-app with --max-warnings=0 passes.
 - Pending admin swaps: none (console.* removed except intentional SecurityMuzzle); next move to web-app clientLogger rollout.
+
 
 
 
