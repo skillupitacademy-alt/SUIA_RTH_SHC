@@ -1,4 +1,4 @@
-# Engineering Worklog (append-only)
+ï»¿# Engineering Worklog (append-only)
 
 > Maintain this log by **appending** new entries; never rewrite or delete existing notes.
 
@@ -240,7 +240,7 @@
 \n## 2026-02-17 - Admin app lint fix\n- Fixed simple-import-sort warning in apps/admin-app/src/components/auth/AdminLockScreen.tsx by letting eslint --fix reorder mixed workspace/external imports per repo convention (single non-local group alphabetized).\n- Guarded nullable email/password flows and confirmed lint now passes for @quiz/admin-app (strict-boolean-expressions cleared).\n- No functional/UI changes; only lint/config compliance.\n
 \n## 2026-02-18 - Phase D2 kick-off (aria-labels)\n- Added explicit aria-label/labelledby for admin lock screen password input and unlock action; switch-account button now labeled for screen readers.\n- Marked admin sidebar nav links with aria-label and aria-current to improve SR navigation without altering layout.\n- Next: continue D2 Tier-1 aria-label injection across tables (domain/subject/topic/subtopic/skill/user), QuestionTable, and web-app interactive controls as outlined in MANIFESTO_ROADMAP.\n
 - Continued Phase D2 aria-label rollout: added labels to AdminLockScreen controls (password input, unlock, switch account) and admin sidebar nav (aria-current). Extended to QuestionTable search/clear controls and DomainTable search, select-all checkbox, bulk factory, and add-domain buttons to improve SR usability without layout changes.\n
-- Continued D2 aria-label sweep across admin tables: added labels to QuestionTable search/clear controls (already), DomainReviewCard/Subject/Topic/Subtopic/Skill review cards (checkbox, edit/delete icon buttons), DomainTable controls (search/select-all/bulk factory/add) and UserTable (search input, block/unblock toggle, role badges). Ran lint for @quiz/admin-app with max-warnings=0 — cache hit, still green.\n
+- Continued D2 aria-label sweep across admin tables: added labels to QuestionTable search/clear controls (already), DomainReviewCard/Subject/Topic/Subtopic/Skill review cards (checkbox, edit/delete icon buttons), DomainTable controls (search/select-all/bulk factory/add) and UserTable (search input, block/unblock toggle, role badges). Ran lint for @quiz/admin-app with max-warnings=0 ï¿½ cache hit, still green.\n
 - Phase D2 continues: added aria-labels across remaining admin tables (Subject/Topic/Subtopic/Skill) for search inputs, select-all checkboxes, bulk/add actions, and clear/delete selection buttons. Updated web-app AuthForms password toggle buttons with aria-label/pressed for SR clarity. Lint run: @quiz/web-app passes with --max-warnings=0.\n
 - Phase D2 (web): added aria labels to ExamInterface controls (error dismiss, question nav dots with status, option buttons, prev/next, review toggle, submit/finish). Web AuthForms password toggle already updated earlier. Lint: @quiz/web-app passes with --max-warnings=0.\n
 - Phase D2 (web) continued: added aria-pressed/labels to DomainCard and TopicChip selectors; QuizSelectionConsole pagination buttons, resume banner CTA, difficulty tier and question-count tiles now labeled for screen readers. ExamInterface updates previously logged. Lint: @quiz/web-app still passes with --max-warnings=0.\n
@@ -249,15 +249,20 @@
 - Phase D5 start: WCAG AA contrast tune via shared tokens only. Darkened muted-foreground to hsl(215 18% 30%) and strengthened border/input to hsl(214 28% 82%) for web-app (80% for admin) to improve legibility on light panels while keeping existing look. No layout changes. Lint: admin-app and web-app pass with --max-warnings=0.\n
 - Phase E1 kickoff: added optional bundle analyzer to web/admin Next configs (ANALYZE=true) and new analyze scripts; installed @next/bundle-analyzer at workspace root. No runtime changes; lint still clean for both apps.\n
 
-## 2026-02-18 — Phase E2a safeLocalStorage helper
+## 2026-02-18 ï¿½ Phase E2a safeLocalStorage helper
 
-- Added SSR-safe ""safeLocalStorage"" utility with TTL, try/catch, and availability probe in both apps (pps/web-app/src/utils/safeLocalStorage.ts, pps/admin-app/src/utils/safeLocalStorage.ts) to prevent window/Quota errors and centralize key handling. No functional usage yet—helper is ready for future adoption.
+- Added SSR-safe ""safeLocalStorage"" utility with TTL, try/catch, and availability probe in both apps (pps/web-app/src/utils/safeLocalStorage.ts, pps/admin-app/src/utils/safeLocalStorage.ts) to prevent window/Quota errors and centralize key handling. No functional usage yetï¿½helper is ready for future adoption.
 - Updated MANIFESTO_ROADMAP to track E2a task under Phase E.
 
-- Phase E2a wiring: replaced direct localStorage in web useExamBackup and admin FactoryContext/useJobTracker with safeLocalStorage helpers (SSR-safe, TTL-capable); guarded admin unauthorized logout for windowless cases. No behavior change, only safer persistence.\n
-- Testing status: smoke checks for exam resume and admin factory/job tracker intentionally deferred to the consolidated testing phase (execution pending), aligned with existing policy of deferring all test runs until post-phase completion.\n
-- Phase E3 next/image audit: scanned web/admin apps for raw <img> usage; none found. No code changes required; existing image handling already compliant.\n
-- Phase E4 memoization audit prep: outlined checklist (identify chatty components, wrap heavy lists/cards with React.memo, ensure stable deps for useMemo/useCallback, avoid inline objects in hot renders). No code changes yet; execution deferred until scheduled E4 session.\n
-- Phase E4 scheduling note: memoization audit will run after E1–E3 stabilize and before Phase F, using profiler/analyzer data; work will be batched in one session to avoid rework and minimize risk (render-efficiency only, no UI/behavior changes).\n
-- Next phase prep: queued Phase F1 (Pino structured logging) as the next executable task after performance items; no code changes yet—will add Pino config and transport wiring when approved to start.\n
-- Phase F1 kickoff: installed Pino deps (pino, pino-http, pino-pretty) for @quiz/api-server in prep for structured logging wiring. No code changes yet.\n
+## 2026-02-18 â€” Phase E2a safeLocalStorage helper
+
+- Added SSR-safe "safeLocalStorage" utility with TTL, try/catch, and availability probe in both apps (apps/web-app/src/utils/safeLocalStorage.ts, apps/admin-app/src/utils/safeLocalStorage.ts) to prevent window/Quota errors and centralize key handling. No functional usage yetâ€”helper is ready for future adoption.
+- Updated MANIFESTO_ROADMAP to track E2a task under Phase E.
+- Phase E2a wiring: replaced direct localStorage in web useExamBackup and admin FactoryContext/useJobTracker with safeLocalStorage helpers (SSR-safe, TTL-capable); guarded admin unauthorized logout for windowless cases. No behavior change, only safer persistence.
+- Testing status: smoke checks for exam resume and admin factory/job tracker intentionally deferred to the consolidated testing phase (execution pending), aligned with existing policy of deferring all test runs until post-phase completion.
+- Phase E3 next/image audit: scanned web/admin apps for raw <img> usage; none found. No code changes required; existing image handling already compliant.
+- Phase E4 memoization audit prep: outlined checklist (identify chatty components, wrap heavy lists/cards with React.memo, ensure stable deps for useMemo/useCallback, avoid inline objects in hot renders). No code changes yet; execution deferred until scheduled E4 session.
+- Phase E4 scheduling note: memoization audit will run after E1â€“E3 stabilize and before Phase F, using profiler/analyzer data; work will be batched in one session to avoid rework and minimize risk (render-efficiency only, no UI/behavior changes).
+- Next phase prep: queued Phase F1 (Pino structured logging) as the next executable task after performance items; no code changes yetâ€”will add Pino config and transport wiring when approved to start.
+- Phase F1 kickoff: installed Pino deps (pino, pino-http, pino-pretty) for @quiz/api-server in prep for structured logging wiring. No code changes yet.
+
