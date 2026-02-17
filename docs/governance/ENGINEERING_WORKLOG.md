@@ -322,3 +322,10 @@
 - Lint @quiz/api-server with --max-warnings=0 passes after autofix.
 - Remaining F2c scope: subtopics routes/batch, questions routes/bulk/batch, metrics/logs/publish, users/sessions/trends, etc.
 
+
+## 2026-02-18 — Phase F2c console → Pino (batch6 subtopics)
+
+- Converted admin subtopics routes (list/create) to Pino child logger with structured error logs only; no bodies/headers logged.
+- Lint @quiz/api-server with --max-warnings=0 passes after autofix.
+- Remaining F2c scope: questions routes/bulk/batch, metrics/logs/publish, users/sessions/trends, hierarchy atomic, subjects/users id, domains batch-delete, etc.
+
