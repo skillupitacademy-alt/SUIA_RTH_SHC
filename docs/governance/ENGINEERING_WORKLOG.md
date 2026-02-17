@@ -258,3 +258,4 @@
 - Testing status: smoke checks for exam resume and admin factory/job tracker intentionally deferred to the consolidated testing phase (execution pending), aligned with existing policy of deferring all test runs until post-phase completion.\n
 - Phase E3 next/image audit: scanned web/admin apps for raw <img> usage; none found. No code changes required; existing image handling already compliant.\n
 - Phase E4 memoization audit prep: outlined checklist (identify chatty components, wrap heavy lists/cards with React.memo, ensure stable deps for useMemo/useCallback, avoid inline objects in hot renders). No code changes yet; execution deferred until scheduled E4 session.\n
+- Phase E4 scheduling note: memoization audit will run after E1–E3 stabilize and before Phase F, using profiler/analyzer data; work will be batched in one session to avoid rework and minimize risk (render-efficiency only, no UI/behavior changes).\n

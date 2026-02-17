@@ -1109,6 +1109,9 @@ PHASE E: Performance (4 sessions)
 │   └── E2a: Add shared `safeLocalStorage` helper (SSR-safe, TTL support, try/catch) + document key/version conventions.
 ├── E3: next/image audit ............................... Session 27
 └── E4: Memoization audit .............................. Session 28
+    ▸ Timing: run after E1–E3 are settled and before Phase F, to avoid rework while other changes are in flux.
+    ▸ Scope: profile hot renders, add React.memo/useMemo/useCallback where measured benefit, stabilize prop shapes, rerun lint/typecheck.
+    ▸ Risk control: batch in one session with analyzer/profiling data; no UI/behavior changes expected, only render efficiency.
 
 PHASE F: Observability (3-4 sessions)
 ├── F1: Pino structured logger ......................... Session 29
