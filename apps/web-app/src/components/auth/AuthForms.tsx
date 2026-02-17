@@ -54,6 +54,7 @@ export function LoginForm() {
                         </label>
                         <input
                             id="email"
+                            name="email"
                             type="email"
                             placeholder="name@example.com"
                             className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 mt-1.5"
@@ -67,6 +68,7 @@ export function LoginForm() {
                         <div className="relative mt-1.5">
                             <input
                                 id="password"
+                                name="password"
                                 type={showPassword ? "text" : "password"}
                                 placeholder="••••••••"
                                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
@@ -153,6 +155,7 @@ export function SignupForm() {
                         <label className="text-sm font-medium leading-none" htmlFor="name">Full Name</label>
                         <input
                             id="name"
+                            name="name"
                             type="text"
                             placeholder="John Doe"
                             className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm mt-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
@@ -163,6 +166,7 @@ export function SignupForm() {
                         <label className="text-sm font-medium leading-none" htmlFor="email">Email Address</label>
                         <input
                             id="email"
+                            name="email"
                             type="email"
                             placeholder="name@example.com"
                             className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm mt-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
@@ -173,6 +177,7 @@ export function SignupForm() {
                         <label className="text-sm font-medium leading-none" htmlFor="password">Password</label>
                         <input
                             id="password"
+                            name="password"
                             type="password"
                             placeholder="••••••••"
                             className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm mt-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
@@ -244,6 +249,7 @@ export function ForgotPasswordForm() {
                     <label className="text-sm font-bold leading-none" htmlFor="email">Email Address</label>
                     <input
                         id="email"
+                        name="email"
                         type="email"
                         placeholder="name@example.com"
                         className="flex h-12 w-full rounded-xl border border-input bg-background px-4 py-2 text-sm mt-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
@@ -376,6 +382,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
                         <div className="relative mt-2">
                             <input
                                 id="password"
+                                name="password"
                                 type={showPassword ? "text" : "password"}
                                 placeholder="••••••••"
                                 className="flex h-12 w-full rounded-xl border border-input bg-background px-4 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
@@ -396,6 +403,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
                         <label className="text-sm font-bold leading-none" htmlFor="confirm">Confirm Password</label>
                         <input
                             id="confirm"
+                            name="confirm"
                             type="password"
                             placeholder="••••••••"
                             className="flex h-12 w-full rounded-xl border border-input bg-background px-4 py-2 text-sm mt-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
