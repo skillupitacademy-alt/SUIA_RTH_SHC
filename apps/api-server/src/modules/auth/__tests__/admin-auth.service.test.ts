@@ -6,6 +6,13 @@ type AdminLoginReturn = {
   refreshToken: string;
 };
 
+const FIXTURE_EMAIL = 'admin@test.com';
+const FIXTURE_ID = 'admin-001';
+const FIXTURE_TOKENS = {
+  accessToken: 'adm-access-token',
+  refreshToken: 'adm-refresh-token',
+};
+
 vi.mock('@/modules/auth/admin-auth.service', () => ({
   AdminAuthService: {
     login: vi.fn<() => Promise<AdminLoginReturn>>(),
@@ -15,16 +22,27 @@ vi.mock('@/modules/auth/admin-auth.service', () => ({
 describe.skip('AdminAuthService (unit)', () => {
   beforeEach(() => vi.clearAllMocks());
 
-  it('login issues admin tokens', async () => {
+  it('issues tokens and returns admin identity', async () => {
     const { AdminAuthService } = await import('@/modules/auth/admin-auth.service');
     const result: AdminLoginReturn = {
-      admin: { id: 'a1', email: 'admin@test.com' },
-      accessToken: 'adm-access',
-      refreshToken: 'adm-refresh',
+      admin: { id: FIXTURE_ID, email: FIXTURE_EMAIL },
+      ...FIXTURE_TOKENS,
     };
     vi.mocked(AdminAuthService.login).mockResolvedValue(result);
-    const res = await AdminAuthService.login('admin@test.com', 'pw');
-    expect(res.accessToken).toBe('adm-access');
-    expect(res.admin.email).toBe('admin@test.com');
+
+    const response = await AdminAuthService.login(FIXTURE_EMAIL, 'pw');
+
+    expect(AdminAuthService.login).toHaveBeenCalledWith(FIXTURE_EMAIL, 'pw');
+    expect(response.admin.id).toBe(FIXTURE_ID);
+    expect(response.accessToken).toBe(FIXTURE_TOKENS.accessToken);
+    expect(response.refreshToken).toBe(FIXTURE_TOKENS.refreshToken);
+  });
+
+  it('propagates login failures', async () => {
+    const { AdminAuthService } = await import('@/modules/auth/admin-auth.service');
+    const error = new Error('invalid credentials');
+    vi.mocked(AdminAuthService.login).mockRejectedValue(error);
+
+    await expect(() => AdminAuthService.login(FIXTURE_EMAIL, 'wrong')).rejects.toThrow('invalid credentials');
   });
 });

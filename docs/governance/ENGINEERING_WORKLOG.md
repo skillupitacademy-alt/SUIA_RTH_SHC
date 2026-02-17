@@ -190,3 +190,8 @@
 ## 2026-02-18 — Phase C2 lint tidy (admin auth suite)
 
 - Minor formatting cleanup in `apps/api-server/src/modules/auth/__tests__/admin-auth.service.test.ts` to keep Vitest imports lint-compliant across suites; no behavior change and tests remain `describe.skip`.
+
+## 2026-02-18 — Phase C2 real assertions for remaining Tier 1 suites (still skipped)
+
+- Added realistic, data-backed assertions to the remaining skipped suites: `admin-auth.service`, `rbac.service`, `rate-limit.middleware`, `selection.service`, `quiz.engine`, and `report.engine`. Each test now validates expected inputs/outputs using in-memory fixtures (tokens, blueprints, rate-limit headers, score breakdowns) aligned with testing guides, while keeping `describe.skip` to defer execution.
+- No production data or DB changes; tests remain isolated/mocked so CI stays green until we intentionally un-skip in later phases.
