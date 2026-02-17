@@ -343,3 +343,10 @@
 - Lint @quiz/api-server with --max-warnings=0 passes after autofix.
 - Remaining F2c scope: subjects id + batch-delete, domains batch-delete, hierarchy atomic, logs/metrics (blueprints/exams/users/rbac/performance/security/growth/content), sessions live, system usage, trends (scores/skills/summary).
 
+
+## 2026-02-18 — Phase F2c console → Pino (batch9 subjects/domains)
+
+- Converted admin subjects routes (id patch/delete, batch-delete) and domains batch-delete to Pino child loggers with structured error-only logs; no headers/bodies logged.
+- Lint @quiz/api-server with --max-warnings=0 passes after autofix.
+- Remaining F2c scope: hierarchy atomic, logs route, metrics routes (blueprints/exams/users/rbac/performance/security/growth/content), sessions live, system usage, trends (scores/skills/summary).
+
