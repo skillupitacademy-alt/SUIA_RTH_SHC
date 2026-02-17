@@ -281,3 +281,9 @@
 - Replaced remaining console.error calls in auth audit logger and rate-limit middleware with request-safe Pino child loggers (modules/auth/audit.service.ts, modules/auth/rate-limit.middleware.ts); log only sanitized error messages, no headers/bodies.
 - Ran lint for @quiz/api-server with --max-warnings=0; clean.
 
+
+## 2026-02-18 — Phase F2b console → Pino (engines + jobs)
+
+- Converted remaining console logs to Pino child loggers in api-server engines/jobs: selection-engine (cache warn paths), scoring-engine (error + catch handlers), report-engine (percentile calc errors), and system/job-orchestrator (missing job, duplicate state, job failure, analytics refresh). Sanitized messages only; no headers/bodies logged.
+- Ran lint for @quiz/api-server with --max-warnings=0; clean.
+

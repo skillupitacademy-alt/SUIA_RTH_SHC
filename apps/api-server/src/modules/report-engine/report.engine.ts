@@ -1,5 +1,7 @@
 import { db, exams, resultsByDimension } from '@quiz/db';
-import { and,desc, eq } from 'drizzle-orm';
+import { and, desc, eq } from 'drizzle-orm';
+
+import { logger } from '../../lib/logger';
 
 export interface ActionPlanItem {
   id: string;
@@ -58,6 +60,8 @@ class ActionPlanBuilder {
 }
 
 export class ReportEngine {
+  private static log = logger.child({ module: 'report-engine' });
+
   static async getUserPerformance(userId: string) {
     const userExams = await db.query.exams.findMany({
       where: eq(exams.userId, userId),
@@ -110,7 +114,10 @@ export class ReportEngine {
 
         return Math.max(1, percentile); // Minimum 1st percentile
     } catch (e) {
-        console.error("Percentile calc failed", e);
+        ReportEngine.log.error(
+          { examId, blueprintId, error: e instanceof Error ? e.message : 'unknown error' },
+          'Percentile calculation failed',
+        );
         return 50; 
     }
   }
