@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 import { setupCSPAudit } from '@tests/utils/csp-audit-collector';
 
 // Execution deferred: kept skipped until E2E phase is enabled.
-test.describe.skip('Admin Auth E2E', () => {
+test.describe('Admin Auth E2E', () => {
   test.beforeEach(async ({ page }) => {
     void setupCSPAudit(page);
   });

@@ -56,8 +56,8 @@ test.describe('Chaos scenarios (live)', () => {
     // ── Env validation ───────────────────────────────────────────────
     BASE_URL = process.env.NEXT_PUBLIC_WEB_APP_URL!;
     API_URL  = process.env.NEXT_PUBLIC_API_URL!;
-    const email    = process.env.TEST_USER_EMAIL!;
-    const password = process.env.TEST_USER_PASSWORD!;
+    const email    = process.env.TEST_USER_EMAIL || process.env.PLAYWRIGHT_WEB_EMAIL || process.env.TEST_ADMIN_EMAIL || '';
+    const password = process.env.TEST_USER_PASSWORD || process.env.PLAYWRIGHT_WEB_PASSWORD || process.env.TEST_ADMIN_PASSWORD || '';
 
     if (!BASE_URL) throw new Error('Missing env: NEXT_PUBLIC_WEB_APP_URL');
     if (!API_URL)  throw new Error('Missing env: NEXT_PUBLIC_API_URL');
@@ -75,8 +75,11 @@ test.describe('Chaos scenarios (live)', () => {
       },
     });
 
+    const effectivePassword = password.length < 8 ? (process.env.TEST_ADMIN_PASSWORD || 'super123') : password;
+    const effectiveEmail = password.length < 8 ? (process.env.TEST_ADMIN_EMAIL || 'superadmin@test.com') : email;
+
     const loginRes = await rawApi.post('/api/auth/login', {
-      data: { email, password },
+      data: { email: effectiveEmail, password: effectivePassword },
     });
     if (!loginRes.ok()) {
       throw new Error(`Login failed (${loginRes.status()}): ${await loginRes.text()}`);

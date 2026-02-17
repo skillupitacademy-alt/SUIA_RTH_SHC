@@ -1,7 +1,8 @@
-import { resolveWorkspacePath } from '../../packages/config/envPaths';
 import react from '@vitejs/plugin-react';
 import tsconfigPaths from 'vite-tsconfig-paths';
 import { defineConfig } from 'vitest/config';
+
+import { resolveWorkspacePath } from '../../packages/config/envPaths';
 
 export default defineConfig({
   plugins: [tsconfigPaths(), react()],

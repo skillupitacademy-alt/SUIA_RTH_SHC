@@ -1,10 +1,16 @@
 import { defineConfig, devices } from '@playwright/test';
+import dotenv from 'dotenv';
 import 'tsconfig-paths/register';
 
+import { envPath } from './packages/config/envPaths';
+
+// Load root .env so Playwright has base URLs and creds
+dotenv.config({ path: envPath('.env') });
+
 export default defineConfig({
-  testDir: './apps',
-  testMatch: '**/tests/e2e/**/*.spec.ts',
-  testIgnore: ['**/src/**', '**/__tests__/**'],
+  testDir: '.',
+  testMatch: ['**/tests/**/*.{spec,test}.ts'],
+  testIgnore: ['**/src/**', '**/__tests__/**', '**/node_modules/**'],
   timeout: 30 * 1000,
   expect: { timeout: 10 * 1000 },
   reporter: [['list']],
