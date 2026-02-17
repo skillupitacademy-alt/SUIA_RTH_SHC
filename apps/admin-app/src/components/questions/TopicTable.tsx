@@ -19,6 +19,7 @@ import {
 import { ZPortalModal } from '@/components/ui/ZPortalModal';
 import { useDomains, useSubjects } from '@/hooks/useAdminHierarchy';
 import { cn } from '@/lib/utils';
+import { clientLogger } from '@/utils/clientLogger';
 
 interface Topic {
     id: string;
@@ -92,7 +93,7 @@ export function TopicTable() {
             setTotalCount(response.total || response.data.length);
             setSelectedIds(new Set());
         } catch (error) {
-            console.error('Failed to fetch topics:', error);
+            clientLogger.error('Failed to fetch topics', { error: error instanceof Error ? error.message : 'unknown' });
             setErrorMessage('Connection Error: Unable to load topics at this time.');
         } finally {
             setIsLoading(false);
@@ -168,7 +169,7 @@ export function TopicTable() {
             handleCloseForm();
             void fetchTopics();
         } catch (error) {
-            console.error('Failed to save topic:', error);
+            clientLogger.error('Failed to save topic', { error: error instanceof Error ? error.message : 'unknown' });
             setErrorMessage('Saving Failed: Please ensure all fields (including parent subject) are correct.');
         } finally {
             setIsSubmitting(false);
@@ -188,7 +189,7 @@ export function TopicTable() {
             setCurrentTopic(null);
             void fetchTopics();
         } catch (error) {
-            console.error('Failed to delete topic:', error);
+            clientLogger.error('Failed to delete topic', { error: error instanceof Error ? error.message : 'unknown' });
             setErrorMessage('Deletion Blocked: This topic is linked to subtopics or questions and cannot be removed.');
         } finally {
             setIsSubmitting(false);

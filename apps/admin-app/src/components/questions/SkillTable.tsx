@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { ZPortalModal } from '@/components/ui/ZPortalModal';
 import { cn } from '@/lib/utils';
+import { clientLogger } from '@/utils/clientLogger';
 
 import { SkillReviewCard } from './SkillReviewCard';
 
@@ -83,7 +84,7 @@ export function SkillTable() {
             setTotalCount(response.total || response.data.length);
             setSelectedIds(new Set());
         } catch (error) {
-            console.error('Failed to fetch skills:', error);
+            clientLogger.error('Failed to fetch skills', { error: error instanceof Error ? error.message : 'unknown' });
             setErrorMessage('Connection Error: Unable to load skills at this time.');
         } finally {
             setIsLoading(false);
@@ -125,7 +126,7 @@ export function SkillTable() {
             setIsDeleteOpen(false);
             setCurrentSkill(null);
         } catch (error) {
-            console.error('Batch delete failed:', error);
+            clientLogger.error('Batch delete skills failed', { error: error instanceof Error ? error.message : 'unknown' });
             setErrorMessage('Batch Deletion Failed: Some skills could not be removed.');
         } finally {
             setIsBatchDeleting(false);
@@ -179,7 +180,7 @@ export function SkillTable() {
             handleCloseForm();
             void fetchSkills();
         } catch (error) {
-            console.error('Failed to save skill:', error);
+            clientLogger.error('Failed to save skill', { error: error instanceof Error ? error.message : 'unknown' });
             setErrorMessage('Saving Failed: Please ensure the skill name is unique and try again.');
         } finally {
             setIsSubmitting(false);
@@ -200,7 +201,7 @@ export function SkillTable() {
             setCurrentSkill(null);
             void fetchSkills();
         } catch (error) {
-            console.error('Failed to delete skill:', error);
+            clientLogger.error('Failed to delete skill', { error: error instanceof Error ? error.message : 'unknown' });
             setErrorMessage('Deletion Blocked: This skill is currently assigned to questions and cannot be removed.');
         } finally {
             setIsSubmitting(false);

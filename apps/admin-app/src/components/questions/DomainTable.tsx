@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { ZPortalModal } from '@/components/ui/ZPortalModal';
 import { cn } from '@/lib/utils';
+import { clientLogger } from '@/utils/clientLogger';
 
 import { DomainReviewCard } from './DomainReviewCard';
 
@@ -65,7 +66,7 @@ export function DomainTable() {
             setTotalCount(response.total || response.data.length);
             setSelectedIds(new Set()); // Reset selection on refresh
         } catch (error) {
-            console.error('Failed to fetch domains:', error);
+            clientLogger.error('Failed to fetch domains', { error: error instanceof Error ? error.message : 'unknown' });
             setErrorMessage('Connection Error: Unable to load the domain catalog at this time.');
         } finally {
             setIsLoading(false);
@@ -117,7 +118,7 @@ export function DomainTable() {
             setSelectedIds(new Set());
             void fetchDomains();
         } catch (error) {
-            console.error('Batch delete failed:', error);
+            clientLogger.error('Batch delete failed', { error: error instanceof Error ? error.message : 'unknown' });
             setErrorMessage('Batch Deletion Failed: Some domains could not be removed (they may have dependencies).');
         } finally {
             setIsBatchDeleting(false);
@@ -170,7 +171,7 @@ export function DomainTable() {
             handleCloseForm();
             void fetchDomains();
         } catch (error) {
-            console.error('Failed to save domain:', error);
+            clientLogger.error('Failed to save domain', { error: error instanceof Error ? error.message : 'unknown' });
             setErrorMessage('Saving Failed: Please ensure all fields are correct and try again.');
         } finally {
             setIsSubmitting(false);
@@ -195,7 +196,7 @@ export function DomainTable() {
             setCurrentDomain(null);
             void fetchDomains();
         } catch (error) {
-            console.error('Failed to delete domain:', error);
+            clientLogger.error('Failed to delete domain', { error: error instanceof Error ? error.message : 'unknown' });
             setErrorMessage('Deletion Blocked: This domain is currently linked to active subjects or topics and cannot be removed.');
         } finally {
             setIsSubmitting(false);

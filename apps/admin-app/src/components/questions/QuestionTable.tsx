@@ -7,6 +7,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 import { CascadingSelect, Selection } from '@/components/entry/CascadingSelect';
+import { clientLogger } from '@/utils/clientLogger';
 
 import { QuestionReviewCard } from './QuestionReviewCard';
 
@@ -123,16 +124,16 @@ export function QuestionTable() {
                     questionSkills: (q as { questionSkills?: QuestionData['questionSkills'] }).questionSkills,
                     topic: (q as { topic?: QuestionData['topic'] }).topic
                 }));
-                setQuestions(mappedQuestions);
-                setTotalPages(data.totalPages);
-                setTotalCount(data.total ?? data.questions.length); // Fallback if total is missing
-            } catch (error) {
-                console.error('Failed to fetch questions:', error);
-                // We keep silence for main table load but could set an error state if requested
-            } finally {
-                setIsLoading(false);
-            }
-        };
+            setQuestions(mappedQuestions);
+            setTotalPages(data.totalPages);
+            setTotalCount(data.total ?? data.questions.length); // Fallback if total is missing
+        } catch (error) {
+            clientLogger.error('Failed to fetch questions', { error: error instanceof Error ? error.message : 'unknown' });
+            // We keep silence for main table load but could set an error state if requested
+        } finally {
+            setIsLoading(false);
+        }
+    };
         void fetchQuestions();
     }, [page, pageSize, filters, debouncedSearch]);
 
@@ -145,7 +146,7 @@ export function QuestionTable() {
             setQuestions(prev => prev.filter(q => q.id !== deleteModal.questionId));
             handleCloseDelete();
         } catch (error) {
-            console.error('Delete failed:', error);
+            clientLogger.error('Question delete failed', { error: error instanceof Error ? error.message : 'unknown' });
             setDeleteModal(prev => ({ ...prev, isDeleting: false, error: 'Deletion Failed: System could not process the request.' }));
         }
     };
@@ -186,7 +187,7 @@ export function QuestionTable() {
             setSelectedIds(new Set());
             toast.success(`Successfully deleted ${idsToDelete.length} assessments.`);
         } catch (error) {
-            console.error('Batch delete failed:', error);
+            clientLogger.error('Batch delete questions failed', { error: error instanceof Error ? error.message : 'unknown' });
             toast.error('System failed to process batch deletion.');
         } finally {
             setIsBatchDeleting(false);

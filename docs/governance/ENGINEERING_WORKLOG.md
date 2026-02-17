@@ -421,4 +421,11 @@ equestId without global mutable state.
 - Lint @quiz/admin-app with --max-warnings=0 passes after autofix.
 - Pending admin swaps: question tables (domain/subject/topic/subtopic/skill/question) and factory ReviewConsole; then web-app clientLogger rollout.
 
+## 2026-02-18 — Phase F3 client logging (batch9 admin questions/factory)
+
+- Converted admin question tables to clientLogger (error-only, sanitized): DomainTable, SubjectTable, TopicTable, SubtopicTable, SkillTable, QuestionTable. Added clientLogger to Factory ReviewConsole (fetch duplicates/skills and save). No UI or behavior changes; only logging plumbing.
+- Lint @quiz/admin-app with --max-warnings=0 passes.
+- Pending admin swaps: none (console.* removed except intentional SecurityMuzzle); next move to web-app clientLogger rollout.
+
+
 

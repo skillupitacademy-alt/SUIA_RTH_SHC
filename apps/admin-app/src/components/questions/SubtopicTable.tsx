@@ -10,6 +10,7 @@ import { ErrorBanner } from '@/components/layout/ErrorBanner';
 import { ZPortalModal } from '@/components/ui/ZPortalModal';
 import { useDomains, useSubjects, useTopics } from '@/hooks/useAdminHierarchy';
 import { cn } from '@/lib/utils';
+import { clientLogger } from '@/utils/clientLogger';
 
 export function SubtopicTable() {
     const [data, setData] = useState<any[]>([]);
@@ -68,7 +69,7 @@ export function SubtopicTable() {
             setTotalCount(response.total || response.data.length);
             setSelectedIds(new Set());
         } catch (error) {
-            console.error('Failed to fetch subtopics:', error);
+            clientLogger.error('Failed to fetch subtopics', { error: error instanceof Error ? error.message : 'unknown' });
             setErrorMessage('Connection Error: Unable to load subtopics at this time.');
         } finally {
             setIsLoading(false);
@@ -157,7 +158,7 @@ export function SubtopicTable() {
             handleCloseForm();
             void fetchSubtopics();
         } catch (error) {
-            console.error('Failed to save subtopic:', error);
+            clientLogger.error('Failed to save subtopic', { error: error instanceof Error ? error.message : 'unknown' });
             setErrorMessage('Saving Failed: Please ensure all parent hierarchy fields are selected.');
         } finally {
             setIsSubmitting(false);
@@ -173,7 +174,7 @@ export function SubtopicTable() {
             setCurrentSubtopic(null);
             void fetchSubtopics();
         } catch (error) {
-            console.error('Failed to delete subtopic:', error);
+            clientLogger.error('Failed to delete subtopic', { error: error instanceof Error ? error.message : 'unknown' });
             setErrorMessage('Deletion Blocked: This subtopic is currently in use and cannot be removed.');
         } finally {
             setIsSubmitting(false);

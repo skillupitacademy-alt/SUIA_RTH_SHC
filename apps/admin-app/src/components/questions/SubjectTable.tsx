@@ -19,6 +19,7 @@ import {
 import { ZPortalModal } from '@/components/ui/ZPortalModal';
 import { useDomains } from '@/hooks/useAdminHierarchy';
 import { cn } from '@/lib/utils';
+import { clientLogger } from '@/utils/clientLogger';
 
 import { SubjectReviewCard } from './SubjectReviewCard';
 
@@ -97,7 +98,7 @@ export function SubjectTable() {
             setTotalCount(response.total || response.data.length);
             setSelectedIds(new Set());
         } catch (error) {
-            console.error('Failed to fetch subjects:', error);
+            clientLogger.error('Failed to fetch subjects', { error: error instanceof Error ? error.message : 'unknown' });
             setErrorMessage('Connection Error: Unable to load subjects.');
         } finally {
             setIsLoading(false);
@@ -138,7 +139,7 @@ export function SubjectTable() {
             setIsDeleteOpen(false); // Close modal if open
             setCurrentSubject(null);
         } catch (error) {
-            console.error('Batch delete failed:', error);
+            clientLogger.error('Batch delete subjects failed', { error: error instanceof Error ? error.message : 'unknown' });
             setErrorMessage('Batch Deletion Failed: Some subjects could not be removed.');
         }
     };
@@ -208,7 +209,7 @@ export function SubjectTable() {
             handleCloseForm();
             void fetchSubjects();
         } catch (error) {
-            console.error('Failed to save subject:', error);
+            clientLogger.error('Failed to save subject', { error: error instanceof Error ? error.message : 'unknown' });
             setErrorMessage('Saving Failed: Please ensure all fields are correct.');
         } finally {
             setIsSubmitting(false);
@@ -231,7 +232,7 @@ export function SubjectTable() {
             setCurrentSubject(null);
             void fetchSubjects();
         } catch (error) {
-            console.error('Failed to delete subject:', error);
+            clientLogger.error('Failed to delete subject', { error: error instanceof Error ? error.message : 'unknown' });
             setErrorMessage('Deletion Blocked: This subject is linked to active topics.');
         } finally {
             setIsSubmitting(false);

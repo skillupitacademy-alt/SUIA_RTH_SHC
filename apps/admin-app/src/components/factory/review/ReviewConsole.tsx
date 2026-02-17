@@ -11,6 +11,7 @@ import { toast } from 'sonner';
 import { ZConfirmationDialog } from '@/components/ui/ZConfirmationDialog';
 import { useFactory } from '@/context/FactoryContext';
 import { GeneratedQuestion } from '@/types/factory';
+import { clientLogger } from '@/utils/clientLogger';
 
 import { QuestionCard } from './QuestionCard';
 
@@ -108,7 +109,7 @@ export function ReviewConsole() {
                 const skills = await apiClient.admin.getTopicSkills(blueprint.topicId);
                 setOfficialSkills(skills);
             } catch (err) {
-                console.error("Failed to fetch existing skills context", err);
+                clientLogger.error('Failed to fetch existing skills context', { error: err instanceof Error ? err.message : 'unknown' });
             }
         };
         void fetchSkills();
@@ -141,7 +142,7 @@ export function ReviewConsole() {
                     setDuplicateMap(new Map());
                 }
             } catch (error) {
-                console.error("Duplicate check failed", error);
+                clientLogger.error('Duplicate check failed', { error: error instanceof Error ? error.message : 'unknown' });
             }
         };
 
@@ -181,7 +182,7 @@ export function ReviewConsole() {
                 window.location.href = '/factory/question-generator';
             }
         } catch (error) {
-            console.error("Save failed", error);
+            clientLogger.error('Save failed', { error: error instanceof Error ? error.message : 'unknown' });
             toast.error("Failed to save batch. Check console for details.");
         } finally {
             setIsSaving(false);
