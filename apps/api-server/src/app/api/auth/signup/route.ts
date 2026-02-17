@@ -1,11 +1,14 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
+import { logger } from '@/lib/logger';
 import { AuthService } from '@/modules/auth/auth.service';
 import { setCsrfToken } from '@/modules/auth/csrf.middleware';
 import { signupSchema } from '@/schemas/auth.schemas';
 
 export const dynamic = 'force-dynamic';
+
+const log = logger.child({ module: 'auth:signup' });
 
 export async function POST(_req: NextRequest) {
   try {
@@ -41,8 +44,8 @@ export async function POST(_req: NextRequest) {
 
     return response;
   } catch (_error: unknown) {
-    console.error('Signup.Error:', _error);
     const message = _error instanceof Error ? _error.message : 'Unknown error';
+    log.error({ error: message }, 'Signup failed');
     return NextResponse.json({ _error: message }, { status: 400 });
   }
 }

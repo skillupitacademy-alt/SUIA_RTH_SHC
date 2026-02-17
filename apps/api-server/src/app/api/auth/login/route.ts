@@ -1,11 +1,14 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
+import { logger } from '@/lib/logger';
 import { AuthService } from '@/modules/auth/auth.service';
 import { setCsrfToken } from '@/modules/auth/csrf.middleware';
 import { loginSchema } from '@/schemas/auth.schemas';
 
 export const dynamic = 'force-dynamic';
+
+const log = logger.child({ module: 'auth:login' });
 
 export async function POST(req: NextRequest) {
   try {
@@ -66,7 +69,7 @@ export async function POST(req: NextRequest) {
 
     return response;
   } catch (error) {
-    console.error('[AUTH_LOGIN] Error:', error);
+    log.error({ error: error instanceof Error ? error.message : 'unknown error' }, 'AUTH_LOGIN failed');
     return NextResponse.json({ _error: 'Invalid credentials' }, { status: 401 });
   }
 }

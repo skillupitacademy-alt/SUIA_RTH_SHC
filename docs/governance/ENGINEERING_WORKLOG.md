@@ -294,3 +294,10 @@
 - Lint @quiz/api-server with --max-warnings=0 now clean for this batch.
 - Remaining F2c todo: swap console.* in other admin/auth/metrics route handlers (batch-delete, topics, skills, users, publish, etc.).
 
+
+## 2026-02-18 — Phase F2c console → Pino (auth login/signup, domains routes)
+
+- Replaced console logging with Pino child loggers in auth login/signup routes and admin domains routes (list/create/update/delete). Added module-scoped loggers; messages remain minimal and sanitized.
+- Lint @quiz/api-server with --max-warnings=0 passes after autofix.
+- Remaining F2c todo: migrate console.* across remaining admin routes (topics, skills, subtopics, questions, metrics, logs, publish/approve, batch-delete sets, users, sessions, trends).
+

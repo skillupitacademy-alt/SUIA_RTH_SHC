@@ -1,12 +1,15 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
+import { logger } from '@/lib/logger';
 import type { DomainInsert } from '@/modules/admin-engine/admin.engine';
 import { AdminEngine } from '@/modules/admin-engine/admin.engine';
 import { TokenService } from '@/modules/auth/token.service';
 import { domainSchema } from '@/schemas/hierarchy.schemas';
 
 export const dynamic = 'force-dynamic';
+
+const log = logger.child({ module: 'admin:domains' });
 
 export async function GET(_req: NextRequest) {
   try {
@@ -25,7 +28,7 @@ export async function GET(_req: NextRequest) {
     return NextResponse.json(data);
   } catch (_error: unknown) {
     const message = _error instanceof Error ? _error.message : 'Internal Server Error';
-    console.error('[ADMIN_DOMAINS_GET] Error:', message);
+    log.error({ error: message }, 'ADMIN_DOMAINS_GET failed');
     return NextResponse.json({ _error: message }, { status: 500 });
   }
 }
@@ -57,7 +60,7 @@ export async function POST(_req: NextRequest) {
     return NextResponse.json(result);
   } catch (_error: unknown) {
     const message = _error instanceof Error ? _error.message : 'Internal Server Error';
-    console.error('[ADMIN_DOMAINS_POST] Error:', message);
+    log.error({ error: message }, 'ADMIN_DOMAINS_POST failed');
     return NextResponse.json({ _error: message }, { status: 500 });
   }
 }
