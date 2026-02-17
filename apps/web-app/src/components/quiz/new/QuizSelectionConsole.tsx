@@ -2,8 +2,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars, react-hooks/exhaustive-deps */
 
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useState, useEffect, Suspense } from 'react';
-import { apiClient } from '@quiz/api-client';
+import { Suspense, useEffect, useState } from 'react';
+import { apiClient, Domain, Subject, Subtopic, Topic } from '@quiz/api-client';
 import { AssessmentSummary } from './AssessmentSummary';
 import { DomainCard } from './DomainCard';
 import { TopicChip } from './TopicChip';
@@ -14,6 +14,7 @@ import { ExitConfirmationDialog } from '@/components/ui/ExitConfirmationDialog';
 import { ExamPreflightDialog } from '@/components/quiz/ExamPreflightDialog';
 import { getActiveExamId } from '@/hooks/useExamBackup';
 import { ZLoader } from '@quiz/ui';
+import { clientLogger } from '@/utils/clientLogger';
 
 export function QuizSelectionConsole() {
     return (
@@ -30,10 +31,10 @@ export function QuizSelectionConsole() {
 function QuizSelectionConsoleContent() {
     const router = useRouter();
     const [step, setStep] = useState(1);
-    const [domains, setDomains] = useState<any[]>([]);
-    const [subjects, setSubjects] = useState<any[]>([]);
-    const [topics, setTopics] = useState<any[]>([]);
-    const [subtopics, setSubtopics] = useState<any[]>([]);
+    const [domains, setDomains] = useState<Domain[]>([]);
+    const [subjects, setSubjects] = useState<Subject[]>([]);
+    const [topics, setTopics] = useState<Topic[]>([]);
+    const [subtopics, setSubtopics] = useState<Subtopic[]>([]);
 
     const [selectedDomains, setSelectedDomains] = useState<string[]>([]);
     const [selectedSubjects, setSelectedSubjects] = useState<string[]>([]);
@@ -110,7 +111,7 @@ function QuizSelectionConsoleContent() {
             try {
                 await apiClient.auth.heartbeat();
             } catch (err) {
-                console.warn('[Heartbeat] Silence failed - likely background refresh will catch it');
+                clientLogger.warn('[Heartbeat] Silence failed - likely background refresh will catch it', { error: err instanceof Error ? err.message : 'unknown' });
             }
             // Jittered interval (120s - 180s) to prevent "Thundering Herd" server spikes
             const jitter = Math.floor(Math.random() * 60000); // 0-60s
@@ -133,7 +134,7 @@ function QuizSelectionConsoleContent() {
                 const data = await apiClient.quiz.getDomains();
                 setDomains(data || []);
             } catch (err) {
-                console.error('Failed to fetch domains', err);
+                clientLogger.error('Failed to fetch domains', { error: err instanceof Error ? err.message : 'unknown' });
             } finally {
                 setLoading(false);
             }
@@ -150,7 +151,7 @@ function QuizSelectionConsoleContent() {
                     const data = await apiClient.quiz.getSubjects(selectedDomains[0]);
                     setSubjects(data || []);
                 } catch (err) {
-                    console.error('Failed to fetch subjects', err);
+                    clientLogger.error('Failed to fetch subjects', { error: err instanceof Error ? err.message : 'unknown' });
                 } finally {
                     setLoading(false);
                 }
@@ -171,7 +172,7 @@ function QuizSelectionConsoleContent() {
                     const data = await apiClient.quiz.getTopics(selectedSubjects[0]);
                     setTopics(data || []);
                 } catch (err) {
-                    console.error('Failed to fetch topics', err);
+                    clientLogger.error('Failed to fetch topics', { error: err instanceof Error ? err.message : 'unknown' });
                 } finally {
                     setLoading(false);
                 }
@@ -191,7 +192,7 @@ function QuizSelectionConsoleContent() {
                     const data = await apiClient.quiz.getSubtopics(selectedTopics[0]);
                     setSubtopics(data || []);
                 } catch (err) {
-                    console.error('Failed to fetch subtopics', err);
+                    clientLogger.error('Failed to fetch subtopics', { error: err instanceof Error ? err.message : 'unknown' });
                 } finally {
                     setLoading(false);
                 }
@@ -356,11 +357,12 @@ function QuizSelectionConsoleContent() {
             // Officially cutting over to Premium HUD
             router.push(`/exam/${data.examId}`);
 
-        } catch (err: any) {
-            console.error('Launch failed:', err);
+        } catch (err: unknown) {
+            clientLogger.error('Launch failed', { error: err instanceof Error ? err.message : 'unknown' });
+            const message = err instanceof Error ? err.message : "Launch failed. Please try again.";
             setLaunchError({
                 title: "Couldn't start your assessment",
-                reason: err.message || "Launch failed. Please try again."
+                reason: message
             });
             setIsLocked(false);
             setLoading(false);
@@ -450,6 +452,7 @@ function QuizSelectionConsoleContent() {
                         <button
                             onClick={() => router.push(`/exam/${activeExamId}`)}
                             className="px-6 py-2 rounded-xl bg-[#FF2D55] text-white text-[10px] font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-lg shadow-[#FF2D55]/20 flex items-center gap-2 group"
+                            aria-label="Resume active assessment session"
                         >
                             Resume Now
                             <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />
@@ -557,17 +560,18 @@ function QuizSelectionConsoleContent() {
                                 <div className="flex items-center gap-2 bg-white/80 p-0.5 rounded-lg border border-gray-200 shadow-sm backdrop-blur-sm">
                                     <button
                                         onClick={handlePrevPage}
-                                        disabled={page === 0 || loading || isLocked || (step === 5 && isArmed)}
-                                        className={cn(
-                                            "p-1.5 rounded-md transition-all",
-                                            "bg-[#FF2D551A] border border-[#FF2D5533] text-[#FF2D55] hover:bg-[#FF2D55] hover:text-white",
-                                            "disabled:bg-[#FF2D550D] disabled:text-[#FF2D554D] disabled:border-[#FF2D551A] disabled:opacity-100", // PKG FIX
-                                            (isArmed && step === 5) && "opacity-100"
-                                        )}
-                                        title="Previous Page"
-                                    >
-                                        <ChevronLeft size={14} />
-                                    </button>
+                                    disabled={page === 0 || loading || isLocked || (step === 5 && isArmed)}
+                                    className={cn(
+                                        "p-1.5 rounded-md transition-all",
+                                        "bg-[#FF2D551A] border border-[#FF2D5533] text-[#FF2D55] hover:bg-[#FF2D55] hover:text-white",
+                                        "disabled:bg-[#FF2D550D] disabled:text-[#FF2D554D] disabled:border-[#FF2D551A] disabled:opacity-100", // PKG FIX
+                                        (isArmed && step === 5) && "opacity-100"
+                                    )}
+                                    title="Previous Page"
+                                    aria-label="Previous page"
+                                >
+                                    <ChevronLeft size={14} />
+                                </button>
                                     <div className="px-2 min-w-[60px] text-center border-x border-gray-200">
                                         <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">
                                             Page {page + 1} of {Math.ceil((step === 1 ? domains.length : (step === 3 ? topics.length : (step === 2 ? subjects.length : (step === 4 ? subtopics.length : 0)))) / currentPageSize)}
@@ -575,17 +579,18 @@ function QuizSelectionConsoleContent() {
                                     </div>
                                     <button
                                         onClick={handleNextPage}
-                                        disabled={page >= Math.ceil((step === 1 ? domains.length : (step === 3 ? topics.length : (step === 2 ? subjects.length : (step === 4 ? subtopics.length : 0)))) / currentPageSize) - 1 || loading || isLocked || (step === 5 && isArmed)}
-                                        className={cn(
-                                            "p-1.5 rounded-md transition-all",
-                                            "bg-[#FF2D551A] border border-[#FF2D5533] text-[#FF2D55] hover:bg-[#FF2D55] hover:text-white",
-                                            "disabled:bg-[#FF2D550D] disabled:text-[#FF2D554D] disabled:border-[#FF2D551A] disabled:opacity-100", // PKG FIX
-                                            (isArmed && step === 5) && "opacity-100"
-                                        )}
-                                        title="Next Page"
-                                    >
-                                        <ChevronRight size={14} />
-                                    </button>
+                                    disabled={page >= Math.ceil((step === 1 ? domains.length : (step === 3 ? topics.length : (step === 2 ? subjects.length : (step === 4 ? subtopics.length : 0)))) / currentPageSize) - 1 || loading || isLocked || (step === 5 && isArmed)}
+                                    className={cn(
+                                        "p-1.5 rounded-md transition-all",
+                                        "bg-[#FF2D551A] border border-[#FF2D5533] text-[#FF2D55] hover:bg-[#FF2D55] hover:text-white",
+                                        "disabled:bg-[#FF2D550D] disabled:text-[#FF2D554D] disabled:border-[#FF2D551A] disabled:opacity-100", // PKG FIX
+                                        (isArmed && step === 5) && "opacity-100"
+                                    )}
+                                    title="Next Page"
+                                    aria-label="Next page"
+                                >
+                                    <ChevronRight size={14} />
+                                </button>
                                 </div>
                             ) : <div className="h-1" />}
                         </div>
@@ -602,16 +607,23 @@ function QuizSelectionConsoleContent() {
 
                             {step === 1 && (
                                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 grid-rows-[repeat(2,min-content)] gap-6 duration-300 items-start overflow-visible">
-                                    {paginatedDomains.map((domain, idx) => (
+                                    {paginatedDomains.map((domain, idx) => {
+                                        const meta = getDomainMeta(idx + page * currentPageSize);
+                                        const coverage = 70 + ((idx + page * currentPageSize) % 6) * 5; // synthetic coverage for UI
+                                        return (
                                         <DomainCard
                                             key={domain.id}
                                             {...domain}
-                                            {...getDomainMeta(idx + page * currentPageSize)}
+                                            description={domain.description ?? 'Explore curated challenges and labs in this domain.'}
+                                            category={domain.category ?? 'General'}
+                                            coverage={coverage}
+                                            {...meta}
                                             isSelected={selectedDomains.includes(domain.id)}
                                             onSelect={toggleDomain}
-                                            accentColor={getDomainMeta(idx + page * currentPageSize).accent}
+                                            accentColor={meta.accent}
                                         />
-                                    ))}
+                                    );
+                                    })}
                                 </div>
                             )}
 
@@ -649,6 +661,8 @@ function QuizSelectionConsoleContent() {
                                                             ? "bg-[#FF2D55] text-white border-[#FF2D55] shadow-[0_10px_30px_rgba(255,45,85,0.4)] scale-[1.02] z-10"
                                                             : "bg-[#2D2D2D] text-white/90 border-transparent hover:border-[#FF2D55]/30 hover:bg-[#3D3D3D] hover:scale-[1.01]"
                                                     )}
+                                                    aria-label={`Select difficulty ${tier.name}`}
+                                                    aria-pressed={difficulty === tier.id}
                                                 >
                                                     <p className={cn("text-base font-bold font-inter leading-tight mb-2", difficulty === tier.id ? "text-white" : "text-white")}>{tier.name}</p>
                                                     <p className={cn("text-[11px] font-medium font-inter leading-relaxed", difficulty === tier.id ? "text-white/80" : "text-white/40")}>{tier.desc}</p>
@@ -672,6 +686,8 @@ function QuizSelectionConsoleContent() {
                                                             ? "bg-[#FF2D55] text-white border-[#FF2D55] shadow-[0_10px_30px_rgba(255,45,85,0.4)] scale-[1.02] z-10"
                                                             : "bg-[#2D2D2D] text-white/90 border-transparent hover:border-[#FF2D55]/30 hover:bg-[#3D3D3D] hover:scale-[1.01]"
                                                     )}
+                                                    aria-label={`Set question count to ${v}`}
+                                                    aria-pressed={questionCount === v}
                                                 >
                                                     <div className={cn("text-xl font-bold font-inter leading-none mb-1", questionCount === v ? "text-white" : "text-white")}>{v}</div>
                                                     <div className={cn("text-[10px] font-bold uppercase tracking-widest", questionCount === v ? "text-white/60" : "text-white/40")}>Questions</div>
@@ -734,7 +750,11 @@ function QuizSelectionConsoleContent() {
                             topicsCount={selectedTopics.length}
                             questionCount={questionCount}
                             difficulty={difficulty.charAt(0).toUpperCase() + difficulty.slice(1)}
-                            totalPoints={currentTopics.reduce((acc, curr) => acc + (curr.points || 15 * questionCount / selectedTopics.length), 0)}
+                            totalPoints={currentTopics.reduce((acc, curr) => {
+                                const points = (curr as Topic & { points?: number }).points
+                                    ?? Math.round(15 * questionCount / Math.max(selectedTopics.length || 1, 1));
+                                return acc + points;
+                            }, 0)}
                             isReady={isArmed}
                             onStart={handleLaunch}
                             isLocked={isLocked}

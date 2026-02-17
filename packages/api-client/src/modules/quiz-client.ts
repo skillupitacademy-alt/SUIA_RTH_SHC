@@ -1,4 +1,14 @@
-import { FetchClient } from '../core/fetch-client';
+import { FetchClient } from '@quiz/api-client/core/fetch-client';
+import {
+  Domain,
+  DomainHierarchy,
+  ExamStartResponse,
+  QuestionCounts,
+  QuestionOption,
+  Subject,
+  Subtopic,
+  Topic,
+} from '@quiz/api-client/types';
 
 export interface QuizState {
   id: string;
@@ -69,23 +79,23 @@ export class QuizClient {
   }
 
   async getDomains() {
-    return this.client.get<any[]>('/domains');
+    return this.client.get<Domain[]>('/domains');
   }
 
   async getDomainHierarchy(domainId: string) {
-    return this.client.get<any>(`/domains?id=${domainId}`);
+    return this.client.get<DomainHierarchy>(`/domains?id=${domainId}`);
   }
 
   async getSubjects(domainId: string) {
-    return this.client.get<any[]>(`/subjects?domainId=${domainId}`);
+    return this.client.get<Subject[]>(`/subjects?domainId=${domainId}`);
   }
 
   async getTopics(subjectId: string) {
-    return this.client.get<any[]>(`/topics?subjectId=${subjectId}`);
+    return this.client.get<Topic[]>(`/topics?subjectId=${subjectId}`);
   }
 
   async getSubtopics(topicId: string) {
-    return this.client.get<any[]>(`/subtopics?topicId=${topicId}`);
+    return this.client.get<Subtopic[]>(`/subtopics?topicId=${topicId}`);
   }
 
   async getQuestionCount(filters: {
@@ -94,50 +104,46 @@ export class QuizClient {
     topicIds?: string[];
     subtopicIds?: string[];
   }) {
-    return this.client.post<any>('/quiz/count', filters);
+    return this.client.post<QuestionCounts, typeof filters>('/quiz/count', filters);
   }
 
-  async startExam(config: { 
-    domainId?: string; 
-    blueprintId?: string; 
-    subjectIds?: string[]; 
-    topicIds?: string[];
-    subtopicIds?: string[];
-    difficulty?: string; 
-    questionCount?: number 
-  }, opts: { idempotencyKey: string }) {
-    return this.client.post<{ 
-      examId: string; 
-      status: string;
-      totalQuestions: number;
-      durationSeconds: number | null;
-      remainingSeconds: number | null; // Keep remainingSeconds as per backend startExam
-      firstQuestion: {
-        id: string;
-        questionText: string;
-        options: any[];
-        codeSnippet: string | null;
-        type: string;
-        order: number;
-      } | null;
-    }>('/quiz/start', config, {
-        headers: {
-            'Idempotency-Key': opts.idempotencyKey
-        }
+  async startExam(
+    config: {
+      domainId?: string;
+      blueprintId?: string;
+      subjectIds?: string[];
+      topicIds?: string[];
+      subtopicIds?: string[];
+      difficulty?: string;
+      questionCount?: number;
+    },
+    opts: { idempotencyKey: string }
+  ) {
+    return this.client.post<ExamStartResponse, typeof config>('/quiz/start', config, {
+      headers: {
+        'Idempotency-Key': opts.idempotencyKey,
+      },
     });
   }
 
   async submitAnswer(examId: string, questionId: string, answer: string, opts?: { idempotencyKey?: string }) {
-    return this.client.post<{ 
-      success: boolean; 
-      data: { 
-        examId: string; 
-        questionId: string; 
-        status: 'recorded' 
-      } 
-    }>('/quiz/answer', { examId, questionId, answer }, {
-        headers: opts?.idempotencyKey ? { 'Idempotency-Key': opts.idempotencyKey } : undefined
-    });
+    return this.client.post<
+      {
+        success: boolean;
+        data: {
+          examId: string;
+          questionId: string;
+          status: 'recorded';
+        };
+      },
+      { examId: string; questionId: string; answer: string }
+    >(
+      '/quiz/answer',
+      { examId, questionId, answer },
+      {
+        headers: opts?.idempotencyKey ? { 'Idempotency-Key': opts.idempotencyKey } : undefined,
+      }
+    );
   }
 
   async submitExam(examId: string, opts?: { idempotencyKey?: string }) {

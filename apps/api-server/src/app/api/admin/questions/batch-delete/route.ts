@@ -1,12 +1,16 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
+import { logger } from '@/lib/logger';
 import { AdminEngine } from '@/modules/admin-engine/admin.engine';
 import { TokenService } from '@/modules/auth/token.service';
+import { idArraySchema } from '@/schemas/admin.schemas';
 
 export const dynamic = 'force-dynamic';
 
 type BatchDeleteBody = { ids: string[] };
+
+const log = logger.child({ module: 'admin:questions:batch-delete' });
 
 async function _verifyAdmin(_req: NextRequest) {
     const _token = TokenService.getAccessToken(_req, { scope: 'admin' });
@@ -27,16 +31,18 @@ export async function POST(_req: NextRequest) {
     if (auth._error !== undefined) return NextResponse.json({ _error: auth._error, scope: auth.scope }, { status: auth.status });
 
     try {
-        const { ids } = await _req.json() as BatchDeleteBody;
-        if (ids === null || ids === undefined || !Array.isArray(ids)) {
-            return NextResponse.json({ _error: 'Invalid IDs' }, { status: 400 });
-        }
+        const rawBody = await _req.json() as BatchDeleteBody;
+    const parsed = idArraySchema.safeParse(rawBody);
+    if (!parsed.success) {
+        return NextResponse.json({ _error: 'Invalid payload', issues: parsed.error.issues }, { status: 400 });
+    }
+    const { ids } = parsed.data;
 
         const result = await AdminEngine.deleteQuestionsBatch(ids, auth.userId!);
         return NextResponse.json(result);
     } catch (_error: unknown) {
         const message = _error instanceof Error ? _error.message : 'Internal Server Error';
-        console.error('[ADMIN_QUESTIONS_BATCH_DELETE] Error:', message);
+        log.error({ error: message }, 'ADMIN_QUESTIONS_BATCH_DELETE failed');
         return NextResponse.json({ _error: message }, { status: 500 });
     }
 }

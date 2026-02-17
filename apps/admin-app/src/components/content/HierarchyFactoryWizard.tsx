@@ -27,6 +27,7 @@ import { BlueprintFactoryWizard } from '@/components/content/BlueprintFactoryWiz
 import { SelectField } from '@/components/entry/SelectionFields';
 import { ZTooltip } from '@/components/ui/ZTooltip';
 import { cn } from '@/lib/utils';
+import { clientLogger } from '@/utils/clientLogger';
 
 export interface HierarchyInitialData {
     target?: string;
@@ -130,7 +131,7 @@ export function HierarchyFactoryWizard({ isOpen, onClose, initialData, onSuccess
             setExistingDomains(data.map((d: { domainName: string }) => d.domainName));
             setHierarchicalChoices(prev => ({ ...prev, domains: data as DomainOption[] }));
         } catch (e) {
-            console.error("Failed to fetch existing domains", e);
+            clientLogger.error('Failed to fetch existing domains', { error: e instanceof Error ? e.message : 'unknown' });
         } finally {
             setLoadingChoices(prev => ({ ...prev, domains: false }));
         }
@@ -143,7 +144,7 @@ export function HierarchyFactoryWizard({ isOpen, onClose, initialData, onSuccess
                 try {
                     const data = await apiClient.admin.getSubjectsByDomain(selections.domainId);
                     setHierarchicalChoices(prev => ({ ...prev, subjects: data as SubjectOption[] }));
-                } catch (e) { console.error(e); }
+                } catch (e) { clientLogger.error('Fetch subjects failed in wizard', { error: e instanceof Error ? e.message : 'unknown' }); }
                 finally { setLoadingChoices(prev => ({ ...prev, subjects: false })); }
             } else {
                 setHierarchicalChoices(prev => ({ ...prev, subjects: [] }));
@@ -159,7 +160,7 @@ export function HierarchyFactoryWizard({ isOpen, onClose, initialData, onSuccess
                 try {
                     const data = await apiClient.admin.getTopicsBySubject(selections.subjectId);
                     setHierarchicalChoices(prev => ({ ...prev, topics: data as TopicOption[] }));
-                } catch (e) { console.error(e); }
+                } catch (e) { clientLogger.error('Fetch topics failed in wizard', { error: e instanceof Error ? e.message : 'unknown' }); }
                 finally { setLoadingChoices(prev => ({ ...prev, topics: false })); }
             } else {
                 setHierarchicalChoices(prev => ({ ...prev, topics: [] }));
@@ -384,7 +385,13 @@ Please provide a valid JSON object matching this schema:
                 finalData = JSON.parse(payload) as Record<string, unknown>;
             }
 
-            const result = await apiClient.admin.atomicSeed(finalData) as AtomicSeedSuccess;
+            const rawResult = await apiClient.admin.atomicSeed(finalData) as Record<string, unknown>;
+            const result: AtomicSeedSuccess = {
+                domainId: (rawResult.domainId as string) ?? manualEntry.domainId ?? selections.domainId ?? '',
+                questionIds: (rawResult.questionIds as string[] | undefined) ?? [],
+                questionStats: (rawResult.questionStats as QuestionStats | null | undefined) ?? null,
+                stats: rawResult.stats as AtomicSeedSuccess['stats'],
+            };
 
             setExecutionStep('done');
             await new Promise(r => setTimeout(r, 400));
@@ -589,9 +596,9 @@ Please provide a valid JSON object matching this schema:
 
                                 {(initialData?.target === 'domain' || (initialData?.domainId == null || initialData.domainId === '')) && (
                                     <div className="space-y-3">
-                                        <label className="text-[10px] font-black uppercase tracking-widest text-[#1A1A1A] flex items-center gap-2 opacity-40">
+                                        <p className="text-[10px] font-black uppercase tracking-widest text-[#1A1A1A] flex items-center gap-2 opacity-40">
                                             <Activity size={14} /> Factory Compliance
-                                        </label>
+                                        </p>
                                         <div className="p-6 rounded-3xl border border-dashed border-primary/10 bg-primary/[0.01] flex items-center gap-5">
                                             <div className="w-10 h-10 rounded-full bg-green-500/10 flex items-center justify-center text-green-600">
                                                 <ShieldCheck size={20} />

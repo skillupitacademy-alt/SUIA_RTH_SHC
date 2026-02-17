@@ -24,6 +24,7 @@ import { usePresenceHeartbeat } from '@/hooks/usePresenceHeartbeat';
 import { useStrictNavigation } from '@/hooks/useStrictNavigation';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/store/auth-store';
+import { clientLogger } from '@/utils/clientLogger';
 
 const ADMIN_NAV = [
     { name: 'Dashboard', href: '/', icon: LayoutDashboard },
@@ -54,7 +55,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         try {
             await apiClient.auth.logout();
         } catch (err) {
-            console.error("Admin logout server call failed:", err);
+            clientLogger.error('Admin logout server call failed', { error: err instanceof Error ? err.message : 'unknown' });
         }
 
         // Brief delay for toast visibility
@@ -144,6 +145,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                                                 ? "bg-[#FF4B91] text-white shadow-xl shadow-[#FF4B91]/30 scale-[1.02]"
                                                 : "text-slate-600 hover:bg-slate-50 hover:text-[#1A1A1A]"
                                         )}
+                                        aria-label={item.name}
+                                        aria-current={isActive ? "page" : undefined}
                                     >
                                         <div className="flex items-center gap-3">
                                             <item.icon size={20} className={cn("transition-colors", isActive ? "text-white" : "text-[#FF4B91]")} />

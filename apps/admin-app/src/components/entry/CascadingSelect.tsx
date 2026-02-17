@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { ZLoader } from '@quiz/ui';
 import { Binary, Sparkles, X } from 'lucide-react';
@@ -304,11 +304,11 @@ function QuickCreateModal({ type, onClose, onSuccess, hooks }: QuickCreateModalP
 
                 <form onSubmit={(e) => { void handleSubmit(e); }} className="space-y-6">
                     <div className="space-y-3">
-                        <label className="block text-[11px] font-black text-slate-600 mb-2 uppercase tracking-[0.1em]">Nomenclature / Identity</label>
+                        <label className="block text-[11px] font-black text-slate-600 mb-2 uppercase tracking-[0.1em]" htmlFor="cascading-name">Nomenclature / Identity</label>
                         <input
                             type="text"
                             required
-                            autoFocus
+                            id="cascading-name"
                             value={name}
                             onChange={(e) => setName(e.target.value)}
                             className="w-full h-14 px-5 bg-slate-50 border border-slate-300 rounded-xl text-[#1A1A1A] text-lg font-black focus:border-[#FF4B91] focus:ring-4 focus:ring-[#FF4B91]/10 outline-none transition-all placeholder:text-slate-300 shadow-sm"

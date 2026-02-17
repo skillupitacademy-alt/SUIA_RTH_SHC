@@ -7,6 +7,8 @@ import { formatDistanceToNow } from 'date-fns';
 import { Clock, Globe, Users } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
+import { clientLogger } from '@/utils/clientLogger';
+
 export function LiveSessionsList() {
     const [sessions, setSessions] = useState<any[]>([]);
     const [meta, setMeta] = useState<any>({ page: 1, totalPages: 1, total: 0 });
@@ -33,7 +35,7 @@ export function LiveSessionsList() {
                 total: data.total ?? sessionsData.length ?? 0
             });
         } catch (err) {
-            console.error("Failed to fetch live sessions", err);
+            clientLogger.error('Failed to fetch live sessions', { error: err instanceof Error ? err.message : 'unknown' });
         } finally {
             setIsLoading(false);
         }

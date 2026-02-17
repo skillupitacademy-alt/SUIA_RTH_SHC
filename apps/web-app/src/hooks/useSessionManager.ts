@@ -1,7 +1,9 @@
 
-import { useEffect, useRef } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
 import { apiClient } from '@quiz/api-client';
+import { useRouter, usePathname } from 'next/navigation';
+import { useEffect, useRef } from 'react';
+
+import { clientLogger } from '@/utils/clientLogger';
 
 const IDLE_TIMEOUT_MS = 5 * 60 * 1000; // 5 minutes
 const HEARTBEAT_INTERVAL_MS = 60 * 1000; // 1 minute
@@ -43,7 +45,7 @@ export function useSessionManager() {
           await apiClient.auth.heartbeat();
         }
       } catch (e) {
-        console.error('[Session] Heartbeat failed', e);
+        clientLogger.error('[Session] Heartbeat failed', { error: e instanceof Error ? e.message : 'unknown' });
       } finally {
         isInFlightRef.current = false;
       }
@@ -58,14 +60,14 @@ export function useSessionManager() {
       const isActiveExam = pathname?.startsWith('/exam/') || pathname?.startsWith('/quiz/active-session');
       
       if (isActiveExam) {
-        console.log('[Session] Idle check skipped: Active exam in progress');
+        clientLogger.debug('[Session] Idle check skipped: Active exam in progress');
         return;
       }
 
       const now = Date.now();
       if (now - lastActivityRef.current > IDLE_TIMEOUT_MS) {
         // User is Idle > 5 mins
-        console.warn('[Session] User idle timeout. Logging out...');
+        clientLogger.warn('[Session] User idle timeout. Logging out...');
         // Correct Logout: Session is cleared via cookies on server
         // We just need to redirect to login
         router.push('/login?reason=idle');

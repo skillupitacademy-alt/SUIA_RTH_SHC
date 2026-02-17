@@ -7,6 +7,7 @@ import { Activity, CheckCircle2, Clock, Globe, XCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import { ZTooltip } from '@/components/ui/ZTooltip';
+import { clientLogger } from '@/utils/clientLogger';
 
 export function ExamActivityBoard() {
     const [stats, setStats] = useState<any>(null);
@@ -17,7 +18,7 @@ export function ExamActivityBoard() {
                 const data = await apiClient.admin.getExamActivity();
                 setStats(data);
             } catch (err) {
-                console.error("Failed to fetch exam activity", err);
+                clientLogger.error('Failed to fetch exam activity', { error: err instanceof Error ? err.message : 'unknown' });
             }
         };
         void fetch();

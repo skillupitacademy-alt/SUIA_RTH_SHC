@@ -1,10 +1,13 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
-import type { DomainInsert } from '@/modules/admin-engine/admin.engine';
+import { logger } from '@/lib/logger';
 import { AdminEngine } from '@/modules/admin-engine/admin.engine';
 import { _verifyAdmin } from '@/modules/auth/rbac.service';
 import { TokenService } from '@/modules/auth/token.service';
+import { domainSchema } from '@/schemas/hierarchy.schemas';
+
+const log = logger.child({ module: 'admin:domains:id' });
 
 export async function PATCH(
   _req: NextRequest,
@@ -22,13 +25,18 @@ export async function PATCH(
       return NextResponse.json({ _error: 'Forbidden' }, { status: 403 });
     }
 
-    const body = await _req.json() as Partial<DomainInsert>;
+    const rawBody = await _req.json();
+    const parsed = domainSchema.partial().safeParse(rawBody);
+    if (!parsed.success) {
+      return NextResponse.json({ _error: 'Invalid payload', issues: parsed.error.issues }, { status: 400 });
+    }
+    const body = parsed.data;
     const result = await AdminEngine.updateDomain(id, body, _payload.userId);
     
     return NextResponse.json(result);
   } catch (_error: unknown) {
     const message = _error instanceof Error ? _error.message : 'Internal Server Error';
-    console.error('[ADMIN_DOMAIN_PATCH] Error:', message);
+    log.error({ error: message }, 'ADMIN_DOMAIN_PATCH failed');
     return NextResponse.json({ _error: message }, { status: 500 });
   }
 }
@@ -53,7 +61,7 @@ export async function DELETE(
     return NextResponse.json(result);
   } catch (_error: unknown) {
     const message = _error instanceof Error ? _error.message : 'Internal Server Error';
-    console.error('[ADMIN_DOMAIN_DELETE] Error:', message);
+    log.error({ error: message }, 'ADMIN_DOMAIN_DELETE failed');
     return NextResponse.json({ _error: message }, { status: 500 });
   }
 }

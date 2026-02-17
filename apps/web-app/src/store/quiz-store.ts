@@ -26,7 +26,7 @@ interface QuizState {
   isSubmitted: boolean;
 
   // Actions
-  startQuiz: (questions: Question[], config: any, duration: number) => void; // eslint-disable-line @typescript-eslint/no-explicit-any
+  startQuiz: (questions: Question[], config: NonNullable<QuizState['config']>, duration: number) => void;
   setExamId: (id: string) => void;
   setQuestions: (questions: Question[]) => void;
   setAnswer: (questionId: string, optionIndex: number) => void;

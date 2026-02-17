@@ -4,6 +4,8 @@ import React, { useEffect, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
+import { clientLogger } from '@/utils/clientLogger';
+
 interface JourneyFlowViewerProps {
     path: string;
 }
@@ -20,7 +22,7 @@ export function JourneyFlowViewer({ path }: JourneyFlowViewerProps) {
                 const data = await response.json();
                 setContent(data.content);
             } catch (error) {
-                console.error('Failed to fetch journey content:', error);
+                clientLogger.error('Failed to fetch journey content', { error: error instanceof Error ? error.message : 'unknown' });
                 setContent('# Error\nFailed to load the journey intelligence file.');
             } finally {
                 setIsLoading(false);

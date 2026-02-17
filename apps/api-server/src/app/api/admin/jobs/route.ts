@@ -5,6 +5,7 @@ import { NextResponse } from 'next/server';
 import { TokenService } from '@/modules/auth/token.service';
 import { JobOrchestrator } from '@/modules/system/job-orchestrator';
 import { JobsService } from '@/modules/system/jobs.service';
+import { jobSchema } from '@/schemas/admin.schemas';
 
 export const dynamic = 'force-dynamic';
 
@@ -43,7 +44,12 @@ export async function POST(_req: NextRequest) {
     }
 
     const _payload = await TokenService.verifyAccessToken(_token, true);
-    const _body = await _req.json() as { type: string; payload?: Record<string, unknown> };
+    const rawBody = await _req.json();
+    const parsed = jobSchema.safeParse(rawBody);
+    if (!parsed.success) {
+      return NextResponse.json({ _error: 'Invalid payload', issues: parsed.error.issues }, { status: 400 });
+    }
+    const _body = parsed.data;
     const _type = _body.type?.trim();
 
     if (_type === undefined || _type === null || _type === '') {

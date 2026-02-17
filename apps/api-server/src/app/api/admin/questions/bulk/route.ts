@@ -1,10 +1,12 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
+import { logger } from '@/lib/logger';
 import type { CreateQuestionInput } from '@/modules/admin-engine/admin.engine';
 import { AdminEngine } from '@/modules/admin-engine/admin.engine';
 import { _verifyAdmin } from '@/modules/auth/rbac.service';
 import { TokenService } from '@/modules/auth/token.service';
+import { bulkQuestionSchema } from '@/schemas/admin.schemas';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,6 +17,8 @@ type BulkQuestionBody = {
   skillIds?: string[];
   questions: CreateQuestionInput[];
 };
+
+const log = logger.child({ module: 'admin:questions:bulk' });
 
 export async function POST(_req: NextRequest) {
   try {
@@ -29,11 +33,12 @@ export async function POST(_req: NextRequest) {
         return NextResponse.json({ _error: 'Forbidden' }, { status: 403 });
     }
 
-    const { topicId, subtopicId, skillId, skillIds, questions } = await _req.json() as BulkQuestionBody;
-
-    if (topicId === null || topicId === undefined || topicId.trim() === '' || !Array.isArray(questions)) {
-        return NextResponse.json({ _error: 'Missing required fields: topicId and questions array' }, { status: 400 });
+    const rawBody = await _req.json() as BulkQuestionBody;
+    const parsed = bulkQuestionSchema.safeParse(rawBody);
+    if (!parsed.success) {
+        return NextResponse.json({ _error: 'Invalid payload', issues: parsed.error.issues }, { status: 400 });
     }
+    const { topicId, subtopicId, skillId, skillIds, questions } = parsed.data;
 
     const result = await AdminEngine.bulkCreateQuestionsWithContext(
         questions, 
@@ -48,7 +53,7 @@ export async function POST(_req: NextRequest) {
     });
   } catch (_error: unknown) {
     const message = _error instanceof Error ? _error.message : 'Internal Server Error';
-    console.error('[ADMIN_QUESTIONS_BULK] Error:', message);
+    log.error({ error: message }, 'ADMIN_QUESTIONS_BULK failed');
     return NextResponse.json({ _error: message }, { status: 500 });
   }
 }

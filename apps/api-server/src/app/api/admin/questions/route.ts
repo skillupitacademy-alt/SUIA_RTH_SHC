@@ -1,12 +1,16 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
+import { logger } from '@/lib/logger';
 import type { CreateQuestionInput } from '@/modules/admin-engine/admin.engine';
 import { AdminEngine } from '@/modules/admin-engine/admin.engine';
 import { _verifyAdmin } from '@/modules/auth/rbac.service';
 import { TokenService } from '@/modules/auth/token.service';
+import { questionSchema } from '@/schemas/admin.schemas';
 
 export const dynamic = 'force-dynamic';
+
+const log = logger.child({ module: 'admin:questions' });
 
 export async function GET(_req: NextRequest) {
   try {
@@ -18,7 +22,7 @@ export async function GET(_req: NextRequest) {
     const _payload = await TokenService.verifyAccessToken(_token, true);
 
     if (!(await _verifyAdmin(_payload))) {
-        console.warn(`[ADMIN_QUESTIONS] Forbidden: User ${_payload.userId} lacks admin role.`);
+        log.warn({ userId: _payload.userId }, 'ADMIN_QUESTIONS forbidden (missing admin role)');
         return NextResponse.json({ _error: 'Forbidden' }, { status: 403 });
     }
     
@@ -40,7 +44,7 @@ export async function GET(_req: NextRequest) {
     return NextResponse.json(data);
   } catch (_error: unknown) {
     const message = _error instanceof Error ? _error.message : 'Internal Server Error';
-    console.error('[ADMIN_QUESTIONS] Error:', message);
+    log.error({ error: message }, 'ADMIN_QUESTIONS failed');
     return NextResponse.json({ _error: message }, { status: 500 });
   }
 }
@@ -54,12 +58,17 @@ export async function POST(_req: NextRequest) {
     const _payload = await TokenService.verifyAccessToken(_token, true);
 
     const body = await _req.json() as CreateQuestionInput;
-    const result = await AdminEngine.createQuestion(body, _payload.userId);
+    const parsed = questionSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json({ _error: 'Invalid payload', issues: parsed.error.issues }, { status: 400 });
+    }
+
+    const result = await AdminEngine.createQuestion(parsed.data, _payload.userId);
     
     return NextResponse.json(result);
   } catch (_error: unknown) {
     const message = _error instanceof Error ? _error.message : 'Internal Server Error';
-    console.error('[ADMIN_QUESTIONS_POST] Error:', message);
+    log.error({ error: message }, 'ADMIN_QUESTIONS_POST failed');
     return NextResponse.json({ _error: message }, { status: 500 });
   }
 }

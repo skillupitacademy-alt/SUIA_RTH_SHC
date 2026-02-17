@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { ForecastService } from '../forecast.service';
+import { ForecastService } from '@/modules/intelligence/forecast.service';
 
 describe('ForecastService', () => {
     it('should return confidence: low for insufficient data', () => {

@@ -1,5 +1,4 @@
 'use client';
-/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { useEffect, useState, Suspense } from "react";
 import { ResultSummary } from "@/components/reports/ResultSummary";
@@ -13,17 +12,47 @@ import ActionPlanPanel from "@/components/reports/ActionPlanPanel";
 import { ArrowLeft, Download, Share2, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
-import { apiClient } from "@quiz/api-client";
+import { ActionPlanItem, apiClient } from "@quiz/api-client";
 import { cn } from "@/lib/utils";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 import { useAuthStore } from "@/store/auth-store";
+import { clientLogger } from '@/utils/clientLogger';
+
+type PerformanceEntry = { id?: string; name?: string; score?: number; accuracy?: number };
+type ReportQuestion = {
+  id: string;
+  questionText: string;
+  text: string;
+  userAnswer: string | null;
+  correctAnswer?: string;
+  isCorrect: boolean;
+  timeSpent: number;
+};
+
+type ReportViewModel = {
+  score: number;
+  total: number;
+  totalPercent: number;
+  timeTaken: string;
+  percentile: number;
+  status: 'passed' | 'failed';
+  topics: Array<{ name: string; score: number; total: number }>;
+  difficulty: Array<{ level: string; accuracy: number }>;
+  growthZones: Array<{ topic: string; suggestion: string }>;
+  skillMatrix: Array<{ id: string; name: string; score: number; accuracy: number }>;
+  behaviorRadar: Array<{ name: string; accuracy: number }>;
+  knowledgeTrinity: Array<{ id: string; name: string; score: number; accuracy: number }>;
+  subtopics: Array<{ id: string; name: string; score: number; accuracy: number }>;
+  actionPlan: ActionPlanItem[];
+  questions: ReportQuestion[];
+};
 
 function ReportContent() {
     const searchParams = useSearchParams();
     const router = useRouter();
     const { isAuthenticated } = useAuthStore();
     const examId = searchParams.get('examId');
-    const [reportData, setReportData] = useState<any>(null); // eslint-disable-line @typescript-eslint/no-explicit-any
+    const [reportData, setReportData] = useState<ReportViewModel | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [isProcessing, setIsProcessing] = useState(false);
     const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -70,37 +99,58 @@ function ReportContent() {
                 }
 
                 // Narrow data to the report object (status: 'completed' etc)
-                const report = data as any; // Temporary cast to bypass property existence checks in the union
+                const report = data;
 
                 // Map API data to UI format
-                const mappedData = {
+                const mapPerformance = (
+                    list: PerformanceEntry[] | undefined,
+                    fallbackPrefix: string
+                ) => (list || []).map((entry: PerformanceEntry, idx: number) => ({
+                    id: entry.id ?? `${fallbackPrefix}-${idx}`,
+                    name: entry.name ?? 'Unknown',
+                    score: entry.score ?? Math.round(entry.accuracy ?? 0),
+                    accuracy: Math.round(entry.accuracy ?? 0),
+                }));
+
+                const mappedData: ReportViewModel = {
                     score: report.score,
                     total: report.total,
                     totalPercent: Math.round(report.percentage),
                     timeTaken: report.timeTaken || "00:00",
                     percentile: report.percentile || 0,
                     status: (report.statusLabel || (report.percentage >= 70 ? 'passed' : 'failed')) as 'passed' | 'failed',
-                    topics: (report.performance?.topic || []).map((t: any) => ({
+                    topics: (report.performance?.topic || []).map((t: PerformanceEntry) => ({
                         name: t.name || 'Unknown',
-                        score: Math.round(t.accuracy),
+                        score: Math.round(t.accuracy ?? 0),
                         total: 100
                     })),
-                    difficulty: (report.performance?.difficulty || []).map((d: any) => ({
-                        level: d.id,
-                        accuracy: Math.round(d.accuracy)
+                    difficulty: (report.performance?.difficulty || []).map((d: PerformanceEntry) => ({
+                        level: d.name ?? d.id ?? 'unknown',
+                        accuracy: Math.round(d.accuracy ?? 0)
                     })),
-                    growthZones: report.growthZones || [],
+                    growthZones: (report as { growthZones?: Array<{ topic: string; suggestion: string }> }).growthZones || [],
 
                     // Multi-Dimensional Mapping
-                    skillMatrix: report.performance?.skill || [],
-                    behaviorRadar: report.performance?.category || [], // API use 'category' for Technical/Cognitive/Process
-                    knowledgeTrinity: report.performance?.mapping_type || [], // API use 'mapping_type' for Conceptual/Technical/Practical
-                    subtopics: report.performance?.subtopic || [],
-                    actionPlan: report.actionPlan || [],
+                    skillMatrix: mapPerformance(report.performance?.skill, 'skill'),
+                    behaviorRadar: (report.performance?.category || []).map((c: PerformanceEntry, idx: number) => ({
+                        name: c.name ?? c.id ?? `category-${idx}`,
+                        accuracy: Math.round(c.accuracy ?? 0),
+                    })), // API uses 'category' for Technical/Cognitive/Process
+                    knowledgeTrinity: mapPerformance(report.performance?.mapping_type, 'mapping'),
+                    subtopics: mapPerformance(report.performance?.subtopic, 'subtopic'),
+                    actionPlan: ((report as { actionPlan?: ActionPlanItem[] }).actionPlan || []).map((item, idx) => ({
+                        id: item.id ?? `action-${idx}`,
+                        priority: item.priority ?? 'growth',
+                        label: item.label ?? 'Recommendation',
+                        recommendation: item.recommendation ?? 'Focus on practice tasks to improve this area.',
+                        skills: item.skills ?? ['Skill'],
+                        accuracy: item.accuracy ?? 0,
+                    })),
 
-                    questions: report.questions?.map((q: any, idx: number) => ({
+                    questions: ((report.questions as ReportQuestion[] | undefined) ?? []).map((q: ReportQuestion, idx: number) => ({
                         id: q.id || `q-${idx}`,
-                        questionText: q.text,
+                        questionText: q.text ?? 'Question',
+                        text: q.text ?? 'Question',
                         userAnswer: q.userAnswer,
                         correctAnswer: q.correctAnswer, // Sanitized by backend
                         isCorrect: q.isCorrect,
@@ -113,8 +163,8 @@ function ReportContent() {
                     setIsProcessing(false);
                     setIsLoading(false);
                 }
-            } catch (err: any) {
-                console.error("Failed to load report", err);
+            } catch (err: unknown) {
+                clientLogger.error('Failed to load report', { error: err instanceof Error ? err.message : 'unknown' });
                 if (isMounted) {
                     setErrorMsg("Unable to retrieve report. Please ensure your assessment was submitted.");
                     setIsLoading(false);
@@ -217,7 +267,7 @@ function ReportContent() {
                     </div>
 
                     {/* 5. Efficiency Analysis */}
-                    {reportData.questions?.some((q: any) => q.timeSpent > 0) && (
+                    {reportData.questions?.some((q) => q.timeSpent > 0) && (
                         <div className="mt-12">
                             <EfficiencyQuadrant questions={reportData.questions} />
                         </div>
@@ -248,7 +298,7 @@ function ReportContent() {
                         </div>
 
                         <div className="grid gap-6">
-                            {reportData.questions?.map((q: any, idx: number) => ( // eslint-disable-line @typescript-eslint/no-explicit-any
+                            {reportData.questions?.map((q, idx: number) => (
                                 <div key={q.id} className="p-8 rounded-[2.5rem] border bg-background shadow-sm space-y-6">
                                     <div className="flex items-start justify-between gap-4">
                                         <div className="flex gap-4">

@@ -2,6 +2,7 @@ import { db, questions, questionSkills, skills } from "@quiz/db";
 import { inArray,sql } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 
+import { logger } from "@/lib/logger";
 import { TokenService } from "@/modules/auth/token.service";
 
 // Define strict types locally to ensure safety without circular deps
@@ -123,7 +124,7 @@ export async function POST(req: NextRequest) {
       newSkillsCreated: skillsToCreate.length,
     });
   } catch (error: unknown) {
-    console.error("Factory Save Error:", error);
+    logger.error({ err: error }, "Factory Save Error");
     return NextResponse.json(
       { _error: error instanceof Error ? error.message : "Access denied" },
       { status: 403 }

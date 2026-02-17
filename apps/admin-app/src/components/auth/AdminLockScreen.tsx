@@ -1,18 +1,21 @@
-
 'use client';
 
 import { apiClient } from '@quiz/api-client';
 import { ZLoader } from '@quiz/ui';
 import { ChevronRight, Lock, LogOut, ShieldCheck, User as UserIcon } from 'lucide-react';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 
+import { useFocusTrap } from '@/hooks/useFocusTrap';
 import { useAuthStore } from '@/store/auth-store';
+import { clientLogger } from '@/utils/clientLogger';
 
 export function AdminLockScreen() {
     const { user, unlock, logout, isLocked, login } = useAuthStore();
     const [password, setPassword] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const inputRef = useRef<HTMLInputElement>(null);
+    useFocusTrap(inputRef, isLocked === true);
 
     if (isLocked === false || user === null || user === undefined) return null;
 
@@ -24,8 +27,14 @@ export function AdminLockScreen() {
         setError(null);
 
         try {
+            const email = user?.email ?? '';
+            if (email.length === 0) {
+                setError('Missing admin email');
+                setIsLoading(false);
+                return;
+            }
             // 1. Verify password & establish fresh cookies
-            const { user: refreshedUser, expiresAt } = await apiClient.admin.login(user.email, password);
+            const { user: refreshedUser, expiresAt } = await apiClient.admin.login(email, password);
 
             // 2. Update local state
             login(refreshedUser, expiresAt);
@@ -34,7 +43,7 @@ export function AdminLockScreen() {
             unlock();
         } catch (err: unknown) {
             setError('Incorrect master password');
-            console.error('Lock screen unlock failed:', err);
+            clientLogger.error('Lock screen unlock failed', { error: err instanceof Error ? err.message : 'unknown' });
         } finally {
             setIsLoading(false);
         }
@@ -78,61 +87,70 @@ export function AdminLockScreen() {
                     </div>
                     <div className="flex-1 min-w-0">
                         <p className="text-xs font-bold text-slate-400 uppercase tracking-wider truncate">
-                            {user.name}
+                            {user?.email}
                         </p>
-                        <p className="text-[10px] font-medium text-slate-500 truncate lowercase">
-                            {user.email}
+                        <p className="text-sm font-black text-white truncate flex items-center gap-2">
+                            {user?.name ?? 'Admin User'}
+                            <span className="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-widest text-emerald-400">
+                                <ShieldCheck size={12} /> Admin
+                            </span>
                         </p>
                     </div>
                 </div>
 
-                {/* Password Input */}
-                <form onSubmit={(e) => void handleUnlock(e)} className="w-full space-y-4">
-                    <div className="relative group">
-                        <input
-                            type="password"
-                            placeholder="MASTER PASSWORD"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            disabled={isLoading}
-                            autoFocus
-                            className="w-full bg-white/5 border border-white/10 p-5 rounded-2xl text-white text-center font-bold tracking-[0.2em] focus:outline-none focus:border-[#FF4B91] focus:ring-1 focus:ring-[#FF4B91] transition-all placeholder:text-slate-600 placeholder:tracking-normal placeholder:font-medium placeholder:text-xs"
-                        />
-                        {(error as string | null) !== null ? <p className="absolute -bottom-6 left-0 right-0 text-center text-[10px] font-bold text-red-400 uppercase tracking-wider">
-                            {error}
-                        </p> : null}
+                {/* Input */}
+                <form onSubmit={(e) => { void handleUnlock(e); }} className="w-full space-y-4">
+                    <div className="space-y-2">
+                        <div className="flex items-center justify-between text-slate-300 text-[11px] font-bold uppercase tracking-[0.2em]">
+                            <span id="lock-screen-password-label">Master Password</span>
+                            <button
+                                type="button"
+                                onClick={handleSwitchAccount}
+                                className="inline-flex items-center gap-1 text-[10px] text-slate-400 hover:text-white transition-colors"
+                                aria-label="Switch account"
+                            >
+                                Switch Account <ChevronRight size={12} />
+                            </button>
+                        </div>
+                        <div className="relative">
+                            <input
+                                ref={inputRef}
+                                type="password"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                className="w-full rounded-2xl bg-white/10 border border-white/20 px-4 py-3 text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#FF4B91]/40"
+                                placeholder="Enter master password"
+                                aria-label="Master password"
+                                aria-labelledby="lock-screen-password-label"
+                            />
+                            <LogOut className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                        </div>
                     </div>
+
+                    {error !== null ? <div className="text-red-400 text-[11px] font-bold uppercase tracking-[0.2em] text-center">{error}</div> : null}
 
                     <button
                         type="submit"
-                        disabled={isLoading === true || password === ''}
-                        className="w-full h-14 rounded-2xl bg-[#FF4B91] text-white font-black uppercase tracking-widest text-xs flex items-center justify-center gap-3 shadow-xl shadow-pink-500/20 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 disabled:grayscale disabled:hover:scale-100"
+                        disabled={isLoading || password === ''}
+                        className="w-full py-4 rounded-2xl bg-gradient-to-r from-[#FF4B91] to-[#FF8E9E] text-white font-black uppercase tracking-[0.2em] text-sm shadow-lg shadow-pink-500/20 hover:scale-[1.01] active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                        aria-label="Unlock terminal"
                     >
                         {isLoading ? (
-                            <ZLoader size="sm" />
-                        ) : (
-                            <>
-                                Unlock Protocol
-                                <ChevronRight size={18} />
-                            </>
-                        )}
+                            <span className="flex items-center justify-center gap-2">
+                                <ZLoader size="xs" className="text-white" center={false} />
+                                Re-establishing Session...
+                            </span>
+                        ) : 'Unlock Terminal'}
                     </button>
                 </form>
 
-                {/* Secondary Actions */}
                 <button
+                    type="button"
                     onClick={handleSwitchAccount}
-                    className="flex items-center gap-2 text-slate-500 hover:text-white transition-colors text-[10px] font-bold uppercase tracking-widest py-2"
+                    className="text-[11px] font-bold uppercase tracking-[0.25em] text-slate-500 hover:text-white transition-colors flex items-center gap-2"
                 >
-                    <LogOut size={14} />
-                    Switch Authority
+                    <LogOut size={14} /> Log out securely
                 </button>
-            </div>
-
-            {/* Background Aesthetic */}
-            <div className="absolute inset-0 z-[-1] overflow-hidden pointer-events-none opacity-20">
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#FF4B91] rounded-full blur-[160px]" />
-                <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-blue-500 rounded-full blur-[140px] opacity-30" />
             </div>
         </div>
     );

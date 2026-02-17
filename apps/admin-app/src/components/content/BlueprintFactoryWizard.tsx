@@ -219,9 +219,10 @@ export function BlueprintFactoryWizard({ isOpen, onClose, domainId, domainName, 
                             <div className="space-y-6">
                                 <div className="grid grid-cols-2 gap-6">
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-black uppercase tracking-widest text-[#1A1A1A]">Blueprint Identity_</label>
+                                        <label className="text-[10px] font-black uppercase tracking-widest text-[#1A1A1A]" htmlFor="blueprint-name">Blueprint Identity_</label>
                                         <input
                                             type="text"
+                                            id="blueprint-name"
                                             value={formData.name}
                                             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                             title="Assign an authoritative name to this Blueprint. This will be the public identity of the assessment in the testing portal."
@@ -229,7 +230,7 @@ export function BlueprintFactoryWizard({ isOpen, onClose, domainId, domainName, 
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-black uppercase tracking-widest text-[#1A1A1A]">Target Domain_</label>
+                                        <p className="text-[10px] font-black uppercase tracking-widest text-[#1A1A1A]">Target Domain_</p>
                                         <div
                                             className="w-full bg-slate-100 border border-primary/5 rounded-2xl p-4 font-black text-xs text-primary/60"
                                             title="The specific hierarchical Domain this blueprint is anchored to. Calibrations performed here will only affect this domain."
@@ -239,8 +240,9 @@ export function BlueprintFactoryWizard({ isOpen, onClose, domainId, domainName, 
                                     </div>
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-[#1A1A1A]">Operational Scope_</label>
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-[#1A1A1A]" htmlFor="blueprint-scope">Operational Scope_</label>
                                     <textarea
+                                        id="blueprint-scope"
                                         value={formData.description}
                                         onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                                         title="Define the operational scope and instructions for this assessment. This information helps students understand what competencies are being tested."
@@ -252,12 +254,13 @@ export function BlueprintFactoryWizard({ isOpen, onClose, domainId, domainName, 
                             {/* Constraints */}
                             <div className="grid grid-cols-2 gap-8 p-8 bg-slate-50 rounded-[2.5rem] border border-primary/5">
                                 <div className="space-y-3">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-[#1A1A1A] flex items-center gap-2">
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-[#1A1A1A] flex items-center gap-2" htmlFor="blueprint-total-questions">
                                         <LayoutGrid size={14} className="text-primary" /> Question Payload_
                                     </label>
                                     <div className="flex items-center gap-4">
                                         <input
                                             type="number"
+                                            id="blueprint-total-questions"
                                             value={formData.totalQuestions}
                                             onChange={(e) => setFormData({ ...formData, totalQuestions: parseInt(e.target.value) })}
                                             title="Total number of questions to be presented in a single test session. Higher counts increase assessment depth but may fatigue the student."
@@ -267,12 +270,13 @@ export function BlueprintFactoryWizard({ isOpen, onClose, domainId, domainName, 
                                     </div>
                                 </div>
                                 <div className="space-y-3">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-[#1A1A1A] flex items-center gap-2">
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-[#1A1A1A] flex items-center gap-2" htmlFor="blueprint-time-limit">
                                         <Clock size={14} className="text-primary" /> Temporal Limit_
                                     </label>
                                     <div className="flex items-center gap-4">
                                         <input
                                             type="number"
+                                            id="blueprint-time-limit"
                                             value={formData.timeLimit}
                                             onChange={(e) => setFormData({ ...formData, timeLimit: parseInt(e.target.value) })}
                                             title="Global countdown duration in minutes. Ensure this provides adequate time for the assigned question count and difficulty mix."
@@ -286,9 +290,9 @@ export function BlueprintFactoryWizard({ isOpen, onClose, domainId, domainName, 
                             {/* Tiers Distribution */}
                             <div className="space-y-6">
                                 <div className="flex items-center justify-between">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-[#1A1A1A] flex items-center gap-2">
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-[#1A1A1A] flex items-center gap-2">
                                         <Activity size={14} className="text-primary" /> Difficulty Toning_
-                                    </label>
+                                    </p>
                                     <div className={cn(
                                         "px-3 py-1 rounded-lg text-[9px] font-black uppercase transition-all",
                                         totalDist === 100 ? "bg-green-500/10 text-green-600" : "bg-red-500/10 text-red-600"

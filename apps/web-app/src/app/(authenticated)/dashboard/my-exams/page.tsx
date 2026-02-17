@@ -54,9 +54,18 @@ export default function MyExamsPage() {
     const totalPages = data?.pagination?.totalPages || 0;
 
     // Filter metadata - Source from decoupled store state
-    const allDomains = drilldownMetadata?.domains || [];
-    const allSubjects = drilldownMetadata?.subjects || [];
-    const allTopics = drilldownMetadata?.topics || [];
+    const allDomains = (drilldownMetadata?.domains || []).map((d) => ({
+        id: d.dimensionId ?? d.name,
+        name: d.name,
+    }));
+    const allSubjects = (drilldownMetadata?.subjects || []).map((s) => ({
+        id: s.dimensionId ?? s.name,
+        name: s.name,
+    }));
+    const allTopics = (drilldownMetadata?.topics || []).map((t) => ({
+        id: t.dimensionId ?? t.name,
+        name: t.name,
+    }));
 
     // Cascading Filter Logic
     const availableDomains = allDomains;
@@ -140,48 +149,36 @@ export default function MyExamsPage() {
                                     loading={loading}
                                     onChange={handleRangeChange}
                                     placeholder="Select Range"
-                                    active={true}
-                                    hideCreate={true}
-                                    accentColor="#FF2D55"
                                     icon={<Clock className="w-3.5 h-3.5" />}
                                 />
 
                                 <SelectField
                                     label="Domain"
                                     value={filters.domain === 'all' ? null : filters.domain}
-                                    options={[{ dimensionId: 'all', name: 'All Domains' }, ...domains]}
+                                    options={[{ id: 'all', name: 'All Domains' }, ...domains]}
                                     loading={metadataLoading}
                                     onChange={(id: string) => setFilter('domain', id || 'all')}
                                     placeholder="All Domains"
-                                    active={true}
-                                    hideCreate={true}
-                                    accentColor="#FF2D55"
                                     icon={<Layers className="w-3.5 h-3.5" />}
                                 />
 
                                 <SelectField
                                     label="Subject"
                                     value={filters.subject === 'all' ? null : filters.subject}
-                                    options={[{ dimensionId: 'all', name: 'All Subjects' }, ...subjects]}
+                                    options={[{ id: 'all', name: 'All Subjects' }, ...subjects]}
                                     loading={metadataLoading}
                                     onChange={(id: string) => setFilter('subject', id || 'all')}
                                     placeholder="All Subjects"
-                                    active={true}
-                                    hideCreate={true}
-                                    accentColor="#FF2D55"
                                     icon={<BookIcon className="w-3.5 h-3.5" />}
                                 />
 
                                 <SelectField
                                     label="Topic"
                                     value={filters.topic === 'all' ? null : filters.topic}
-                                    options={[{ dimensionId: 'all', name: 'All Topics' }, ...topics]}
+                                    options={[{ id: 'all', name: 'All Topics' }, ...topics]}
                                     loading={metadataLoading}
                                     onChange={(id: string) => setFilter('topic', id || 'all')}
                                     placeholder="All Topics"
-                                    active={true}
-                                    hideCreate={true}
-                                    accentColor="#FF2D55"
                                     icon={<Hash className="w-3.5 h-3.5" />}
                                 />
                             </div>

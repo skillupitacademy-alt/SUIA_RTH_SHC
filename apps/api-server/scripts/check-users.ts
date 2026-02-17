@@ -6,7 +6,8 @@ import { desc } from 'drizzle-orm';
 async function main() {
   try {
     await db.select().from(users).orderBy(desc(users.createdAt)).limit(5);
-  } catch {
+  } catch (err) {
+    console.error('Failed to query users', err);
   }
   process.exit(0);
 }

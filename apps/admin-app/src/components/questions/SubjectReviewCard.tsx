@@ -1,6 +1,4 @@
 'use client';
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 import {
     BookOpen, Clock, Edit2, Layers,
     Trash2
@@ -8,14 +6,20 @@ import {
 import React from 'react';
 
 import { cn, formatTimeAgo } from '@/lib/utils';
+import { SubjectSummary } from '@/types/review';
 
 interface SubjectReviewCardProps {
-    subject: any;
+    subject: SubjectSummary & {
+        domain?: { name?: string };
+        status?: string;
+        description?: string;
+        createdAt?: string;
+    };
     index: number;
     isSelected?: boolean;
     onSelect?: (id: string, selected: boolean) => void;
-    onDeleteRequest: (subject: any) => void;
-    onEditRequest: (subject: any) => void;
+    onDeleteRequest: (subject: SubjectReviewCardProps['subject']) => void;
+    onEditRequest: (subject: SubjectReviewCardProps['subject']) => void;
 }
 
 export function SubjectReviewCard({
@@ -49,6 +53,7 @@ export function SubjectReviewCard({
                             checked={isSelected}
                             onChange={(e) => onSelect?.(subject.id as string, e.target.checked)}
                             className="w-5 h-5 rounded-lg border-2 border-slate-200 text-purple-500 focus:ring-purple-500/20 cursor-pointer transition-all checked:border-purple-500"
+                            aria-label={`Select subject ${subject.name as string ?? 'item'}`}
                         />
                     </div>
 
@@ -83,6 +88,7 @@ export function SubjectReviewCard({
                         onClick={() => onEditRequest(subject)}
                         className="p-2.5 rounded-xl bg-white border border-slate-200 text-slate-500 hover:text-purple-500 hover:border-purple-500/20 transition-all active:scale-95 shadow-sm"
                         title="Edit Subject"
+                        aria-label={`Edit subject ${subject.name as string ?? ''}`}
                     >
                         <Edit2 size={14} />
                     </button>
@@ -90,6 +96,7 @@ export function SubjectReviewCard({
                         onClick={() => onDeleteRequest(subject)}
                         className="p-2.5 rounded-xl bg-white border border-slate-200 text-slate-500 hover:text-rose-500 hover:border-rose-100 transition-all active:scale-95 shadow-sm"
                         title="Delete Subject"
+                        aria-label={`Delete subject ${subject.name as string ?? ''}`}
                     >
                         <Trash2 size={14} />
                     </button>
@@ -138,7 +145,7 @@ export function SubjectReviewCard({
                     <div className="flex flex-wrap gap-3 pl-12">
                         <div className="px-4 py-2 rounded-xl bg-slate-50 border border-slate-100 flex items-center gap-2">
                             <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Topics:</span>
-                            <span className="text-xs font-bold text-slate-700">{(subject.topicsCount != null && subject.topicsCount !== 0) ? (subject.topicsCount as number) : (subject.topics?.length ?? 0)}</span>
+                            <span className="text-xs font-bold text-slate-700">{subject.topicsCount ?? 0}</span>
                         </div>
                     </div>
                 </div>

@@ -1,4 +1,4 @@
-import { FetchClient } from '../core/fetch-client';
+import { FetchClient } from '@quiz/api-client/core/fetch-client';
 
 export interface TrendResponse {
     performanceTrend: { score: number; date: string }[];

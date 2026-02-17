@@ -7,6 +7,14 @@
         "apps/*",
         "packages/*"
     ],
+    "lint-staged": {
+        "apps/**/*.{ts,tsx,js,jsx}": [
+            "eslint --no-ignore --max-warnings=0 --fix"
+        ],
+        "packages/**/*.{ts,tsx,js,jsx}": [
+            "eslint --no-ignore --max-warnings=0 --fix"
+        ]
+    },
     "scripts": {
         "dev": "turbo run dev",
         "build": "turbo run build",
@@ -15,14 +23,19 @@
         "lint:all": "turbo run lint --filter=@quiz/web-app --filter=@quiz/admin-app --filter=@quiz/api-server -- --max-warnings=0",
         "test": "turbo run test",
         "test:pw": "pnpm --filter @quiz/web-app exec playwright test",
+        "test:all": "turbo run test",
         "type-check": "turbo run type-check",
         "typecheck:all": "turbo run type-check --filter=@quiz/web-app --filter=@quiz/admin-app --filter=@quiz/api-server",
         "ci": "pnpm lint:all && pnpm typecheck:all && pnpm build:all",
-        "clean": "turbo run clean && rm -rf node_modules"
+        "clean": "turbo run clean && rm -rf node_modules",
+        "prepare": "husky"
     },
     "devDependencies": {
+        "@next/bundle-analyzer": "^16.1.6",
         "@playwright/test": "^1.49.1",
+        "@quiz/eslint-config": "workspace:^",
         "@types/bcrypt": "^5.0.2",
+        "@types/bcryptjs": "^3.0.0",
         "@types/jsonwebtoken": "^9.0.8",
         "@types/node": "^25.0.10",
         "cross-env": "^10.1.0",
@@ -30,6 +43,8 @@
         "eslint-plugin-react-hooks": "4.6.2",
         "eslint-plugin-security": "^3.0.1",
         "eslint-plugin-simple-import-sort": "^12.1.1",
+        "husky": "^9.1.7",
+        "lint-staged": "^16.2.7",
         "turbo": "^2.3.3"
     },
     "packageManager": "pnpm@9.15.4",

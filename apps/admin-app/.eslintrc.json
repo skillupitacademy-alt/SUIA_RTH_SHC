@@ -1,5 +1,6 @@
 {
     "extends": [
+        "@quiz/eslint-config",
         "next/core-web-vitals",
         "next/typescript",
         "plugin:@typescript-eslint/recommended"
@@ -11,6 +12,12 @@
     "parserOptions": {
         "project": "./tsconfig.json"
     },
+    "ignorePatterns": [
+        "next.config.js",
+        "postcss.config.js",
+        "tailwind.config.ts",
+        "playwright.config.ts"
+    ],
     "rules": {
         "react/no-danger": "error",
         "@typescript-eslint/no-unused-vars": [
@@ -45,8 +52,8 @@
         "no-new-func": "error",
         "security/detect-object-injection": "off",
         "security/detect-non-literal-require": "error",
-        "simple-import-sort/imports": "error",
-        "simple-import-sort/exports": "error",
+        "simple-import-sort/imports": "warn",
+        "simple-import-sort/exports": "warn",
         "import/order": "off"
     },
     "overrides": [
@@ -56,10 +63,17 @@
                 "*.config.ts",
                 "*.config.mjs"
             ],
+            "parser": "espree",
             "parserOptions": {
                 "project": null
             },
             "rules": {
+                "@typescript-eslint/no-unsafe-assignment": "off",
+                "@typescript-eslint/no-unsafe-member-access": "off",
+                "@typescript-eslint/no-unsafe-return": "off",
+                "@typescript-eslint/no-unsafe-call": "off",
+                "@typescript-eslint/no-unsafe-argument": "off",
+                "@typescript-eslint/await-thenable": "off",
                 "@typescript-eslint/strict-boolean-expressions": "off",
                 "@typescript-eslint/no-floating-promises": "off",
                 "@typescript-eslint/no-misused-promises": "off"

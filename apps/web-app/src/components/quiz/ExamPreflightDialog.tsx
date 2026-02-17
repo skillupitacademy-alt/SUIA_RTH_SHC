@@ -1,16 +1,14 @@
-/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars, react-hooks/exhaustive-deps */
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { ZLoader } from '@quiz/ui';
-// import { ZLoader } from '../../../../../packages/ui/src/ZLoader';
 import { useRouter } from 'next/navigation';
 import { apiClient } from '@quiz/api-client';
-import { ShieldCheck, Wifi, UserCheck, Database, AlertTriangle, ArrowRight, RotateCw } from 'lucide-react';
+import { ShieldCheck, Wifi, UserCheck, Database, AlertTriangle, ArrowRight, RotateCw, LucideIcon } from 'lucide-react';
 
 interface PreflightCheck {
     id: string;
     label: string;
     status: 'pending' | 'running' | 'success' | 'error' | 'warning';
-    icon: any;
+    icon: LucideIcon;
 }
 
 interface ExamPreflightDialogProps {
@@ -30,20 +28,14 @@ export function ExamPreflightDialog({ isOpen, onSuccess, onClose }: ExamPrefligh
     const [overallStatus, setOverallStatus] = useState<'running' | 'success' | 'error'>('running');
     const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-    useEffect(() => {
-        if (isOpen) {
-            runChecks();
-        }
-    }, [isOpen]);
-
-    const updateCheck = (id: string, status: PreflightCheck['status']) => {
-        setChecks(prev => prev.map(c => c.id === id ? { ...c, status } : c));
-    };
-
-    const runChecks = async () => {
+    const runChecks = useCallback(async () => {
         setOverallStatus('running');
         setErrorMsg(null);
         setChecks(prev => prev.map(c => ({ ...c, status: 'pending' })));
+
+        const updateCheck = (id: string, status: PreflightCheck['status']) => {
+            setChecks(prev => prev.map(c => c.id === id ? { ...c, status } : c));
+        };
 
         try {
             // 1. Session Refresh
@@ -51,7 +43,7 @@ export function ExamPreflightDialog({ isOpen, onSuccess, onClose }: ExamPrefligh
             try {
                 await apiClient.auth.refresh(); // Assuming this exists or using /auth/me
                 updateCheck('session', 'success');
-            } catch (_err) {
+            } catch {
                 updateCheck('session', 'error');
                 throw new Error('Session validation failed. Please log in again.');
             }
@@ -64,7 +56,7 @@ export function ExamPreflightDialog({ isOpen, onSuccess, onClose }: ExamPrefligh
                 await apiClient.auth.getSession();
                 updateCheck('csrf', 'success');
                 updateCheck('network', 'success');
-            } catch (_err) {
+            } catch {
                 updateCheck('csrf', 'error');
                 updateCheck('network', 'error');
                 throw new Error('Unable to establish secure connection.');
@@ -76,7 +68,7 @@ export function ExamPreflightDialog({ isOpen, onSuccess, onClose }: ExamPrefligh
                 localStorage.setItem('__preflight_test__', 'ok');
                 localStorage.removeItem('__preflight_test__');
                 updateCheck('storage', 'success');
-            } catch (_err) {
+            } catch {
                 // Warning only - allow continue
                 updateCheck('storage', 'warning');
             }
@@ -87,11 +79,18 @@ export function ExamPreflightDialog({ isOpen, onSuccess, onClose }: ExamPrefligh
                 onSuccess();
             }, 1000);
 
-        } catch (err: any) {
+        } catch (err: unknown) {
             setOverallStatus('error');
-            setErrorMsg(err.message || 'Pre-flight checklist failed.');
+            const message = err instanceof Error ? err.message : 'Pre-flight checklist failed.';
+            setErrorMsg(message);
         }
-    };
+    }, [onSuccess]);
+
+    useEffect(() => {
+        if (isOpen) {
+            void runChecks();
+        }
+    }, [isOpen, runChecks]);
 
     if (!isOpen) return null;
 

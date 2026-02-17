@@ -1,11 +1,15 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
+import { logger } from '@/lib/logger';
 import type { SkillInsert } from '@/modules/admin-engine/admin.engine';
 import { AdminEngine } from '@/modules/admin-engine/admin.engine';
 import { TokenService } from '@/modules/auth/token.service';
+import { skillSchema } from '@/schemas/hierarchy.schemas';
 
 export const dynamic = 'force-dynamic';
+
+const log = logger.child({ module: 'admin:skills' });
 
 export async function GET(_req: NextRequest) {
   try {
@@ -24,7 +28,7 @@ export async function GET(_req: NextRequest) {
     return NextResponse.json(data);
   } catch (_error: unknown) {
     const message = _error instanceof Error ? _error.message : 'Internal Server Error';
-    console.error('[ADMIN_SKILLS_GET] Error:', message);
+    log.error({ error: message }, 'ADMIN_SKILLS_GET failed');
     return NextResponse.json({ _error: message }, { status: 500 });
   }
 }
@@ -37,13 +41,26 @@ export async function POST(_req: NextRequest) {
     }
     const _payload = await TokenService.verifyAccessToken(_token, true);
 
-    const body = await _req.json() as SkillInsert;
-    const result = await AdminEngine.createSkill(body, _payload.userId);
+    const rawBody = await _req.json();
+    const parsed = skillSchema.safeParse(rawBody);
+    if (!parsed.success) {
+      return NextResponse.json({ _error: 'Invalid payload', issues: parsed.error.issues }, { status: 400 });
+    }
+    const body = parsed.data;
+
+    const createBody: SkillInsert = {
+      name: body.name,
+      category: body.category,
+      mappingType: body.mappingType,
+      weight: body.weight,
+    };
+
+    const result = await AdminEngine.createSkill(createBody, _payload.userId);
     
     return NextResponse.json(result);
   } catch (_error: unknown) {
     const message = _error instanceof Error ? _error.message : 'Internal Server Error';
-    console.error('[ADMIN_SKILLS_POST] Error:', message);
+    log.error({ error: message }, 'ADMIN_SKILLS_POST failed');
     return NextResponse.json({ _error: message }, { status: 500 });
   }
 }

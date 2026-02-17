@@ -1,11 +1,14 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
+import { logger } from '@/lib/logger';
 import type { BlueprintInsert } from '@/modules/admin-engine/admin.engine';
 import { AdminEngine } from '@/modules/admin-engine/admin.engine';
 import { TokenService } from '@/modules/auth/token.service';
 
 export const dynamic = 'force-dynamic';
+
+const log = logger.child({ module: 'admin:blueprints:id' });
 
 async function _verifyAdmin(_req: NextRequest) {
     const _token = TokenService.getAccessToken(_req, { scope: 'admin' });
@@ -33,7 +36,7 @@ export async function PATCH(_req: NextRequest, { params }: { params: Promise<{ i
         return NextResponse.json(result);
     } catch (_error: unknown) {
         const message = _error instanceof Error ? _error.message : 'Internal Server Error';
-        console.error('[ADMIN_BLUEPRINT_PATCH] Error:', message);
+        log.error({ id, error: message }, 'ADMIN_BLUEPRINT_PATCH failed');
         return NextResponse.json({ _error: message }, { status: 500 });
     }
 }
@@ -49,7 +52,7 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
         return NextResponse.json(result);
     } catch (_error: unknown) {
         const message = _error instanceof Error ? _error.message : 'Internal Server Error';
-        console.error('[ADMIN_BLUEPRINT_DELETE] Error:', message);
+        log.error({ id, error: message }, 'ADMIN_BLUEPRINT_DELETE failed');
         return NextResponse.json({ _error: message }, { status: 500 });
     }
 }

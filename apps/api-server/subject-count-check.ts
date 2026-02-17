@@ -1,12 +1,11 @@
 /* eslint-disable no-console */
+import { envPath } from '@quiz/config/envPaths';
+import { db, domains, subjects } from '@quiz/db';
 import dotenv from 'dotenv';
 import { sql } from 'drizzle-orm';
 import { writeFileSync } from 'fs';
-import path from 'path';
 
-import { db, domains, subjects } from '../../packages/db/src/index';
-
-dotenv.config({ path: path.join(__dirname, '../../packages/db/.env') });
+dotenv.config({ path: envPath('packages/db/.env') });
 
 async function checkCounts() {
     try {

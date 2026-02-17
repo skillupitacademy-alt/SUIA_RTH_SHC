@@ -1,5 +1,5 @@
 // Module-level lock for deduplicating refresh calls across parallel requests
-let globalRefreshPromise: Promise<any> | null = null;
+let globalRefreshPromise: Promise<unknown> | null = null;
 
 export class FetchClient {
   private baseUrl: string;
@@ -16,7 +16,7 @@ export class FetchClient {
     return null;
   }
 
-  public async request<T>(endpoint: string, options: RequestInit & { _isRetry?: boolean } = {}): Promise<T> {
+  public async request<TResponse>(endpoint: string, options: RequestInit & { _isRetry?: boolean } = {}): Promise<TResponse> {
     const url = `${this.baseUrl}${endpoint}`;
     
     const headers: Record<string, string> = {
@@ -53,7 +53,7 @@ export class FetchClient {
 
           // 2. RETRY: Fire the original request again
           console.log(`[API] Retrying ${endpoint} after successful refresh...`);
-          return this.request<T>(endpoint, { ...options, _isRetry: true });
+          return this.request<TResponse>(endpoint, { ...options, _isRetry: true });
 
         } catch (refreshErr) {
           globalRefreshPromise = null; // Clear lock on failure
@@ -91,39 +91,39 @@ export class FetchClient {
       throw new Error(errorMessage);
     }
 
-    return response.json();
+    return response.json() as Promise<TResponse>;
   }
 
-  get<T>(endpoint: string, options?: RequestInit) {
-    return this.request<T>(endpoint, { ...options, method: 'GET' });
+  get<TResponse>(endpoint: string, options?: RequestInit) {
+    return this.request<TResponse>(endpoint, { ...options, method: 'GET' });
   }
 
-  post<T>(endpoint: string, body: any, options?: RequestInit) {
-    return this.request<T>(endpoint, {
+  post<TResponse, TBody = unknown>(endpoint: string, body: TBody, options?: RequestInit) {
+    return this.request<TResponse>(endpoint, {
       ...options,
       method: 'POST',
       body: JSON.stringify(body),
     });
   }
 
-  put<T>(endpoint: string, body: any, options?: RequestInit) {
-    return this.request<T>(endpoint, {
+  put<TResponse, TBody = unknown>(endpoint: string, body: TBody, options?: RequestInit) {
+    return this.request<TResponse>(endpoint, {
       ...options,
       method: 'PUT',
       body: JSON.stringify(body),
     });
   }
 
-  patch<T>(endpoint: string, body: any, options?: RequestInit) {
-    return this.request<T>(endpoint, {
+  patch<TResponse, TBody = unknown>(endpoint: string, body: TBody, options?: RequestInit) {
+    return this.request<TResponse>(endpoint, {
       ...options,
       method: 'PATCH',
       body: JSON.stringify(body),
     });
   }
 
-  delete<T>(endpoint: string, options?: RequestInit) {
-    return this.request<T>(endpoint, { ...options, method: 'DELETE' });
+  delete<TResponse>(endpoint: string, options?: RequestInit) {
+    return this.request<TResponse>(endpoint, { ...options, method: 'DELETE' });
   }
 }
 

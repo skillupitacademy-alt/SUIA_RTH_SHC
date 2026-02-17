@@ -2,12 +2,12 @@
 
 import { apiClient } from '@quiz/api-client';
 import { ZLoader, ZPagination } from '@quiz/ui';
-import { AlertTriangle, Check, FileText, Filter, Hash, Trash2, X } from 'lucide-react';
+import { AlertTriangle, FileText, Filter, Hash, Trash2, X } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 import { CascadingSelect, Selection } from '@/components/entry/CascadingSelect';
-import { cn } from '@/lib/utils';
+import { clientLogger } from '@/utils/clientLogger';
 
 import { QuestionReviewCard } from './QuestionReviewCard';
 
@@ -108,17 +108,45 @@ export function QuestionTable() {
                     skillIds: filters.skillIds.length > 0 ? filters.skillIds : undefined,
                     search: (debouncedSearch != null && debouncedSearch !== '') ? debouncedSearch : undefined,
                 });
-                const fetchedQuestions = Array.isArray(data.questions) ? data.questions : [];
-                setQuestions(fetchedQuestions);
-                setTotalPages(data.totalPages);
-                setTotalCount(data.total ?? fetchedQuestions.length ?? 0); // Fallback if total is missing
-            } catch (error) {
-                console.error('Failed to fetch questions:', error);
-                // We keep silence for main table load but could set an error state if requested
-            } finally {
-                setIsLoading(false);
-            }
-        };
+                type RawQuestion = {
+                    id?: string;
+                    questionText: string;
+                    type?: string;
+                    difficulty?: string;
+                    status?: string;
+                    createdAt?: string;
+                    mappingType?: string;
+                    options?: { text: string; isCorrect?: boolean; id?: string }[];
+                    questionSkills?: QuestionData['questionSkills'];
+                    topic?: QuestionData['topic'];
+                };
+
+                const mappedQuestions: QuestionData[] = data.questions.map((q: RawQuestion, idx: number) => ({
+                    id: q.id ?? `q-${idx}`,
+                    questionText: q.questionText,
+                    type: q.type ?? 'single',
+                    difficulty: q.difficulty ?? 'intermediate',
+                    status: q.status ?? 'draft',
+                    createdAt: (q as { createdAt?: string }).createdAt ?? new Date().toISOString(),
+                    mappingType: (q as { mappingType?: string }).mappingType,
+                    options: q.options?.map((opt: { text: string; isCorrect?: boolean; id?: string }, optIdx: number) => ({
+                        text: opt.text,
+                        isCorrect: opt.isCorrect ?? false,
+                        id: opt.id ?? `${idx}-${optIdx}`
+                    })),
+                    questionSkills: (q as { questionSkills?: QuestionData['questionSkills'] }).questionSkills,
+                    topic: (q as { topic?: QuestionData['topic'] }).topic
+                }));
+            setQuestions(mappedQuestions);
+            setTotalPages(data.totalPages);
+            setTotalCount(data.total ?? data.questions.length); // Fallback if total is missing
+        } catch (error) {
+            clientLogger.error('Failed to fetch questions', { error: error instanceof Error ? error.message : 'unknown' });
+            // We keep silence for main table load but could set an error state if requested
+        } finally {
+            setIsLoading(false);
+        }
+    };
         void fetchQuestions();
     }, [page, pageSize, filters, debouncedSearch]);
 
@@ -131,7 +159,7 @@ export function QuestionTable() {
             setQuestions(prev => prev.filter(q => q.id !== deleteModal.questionId));
             handleCloseDelete();
         } catch (error) {
-            console.error('Delete failed:', error);
+            clientLogger.error('Question delete failed', { error: error instanceof Error ? error.message : 'unknown' });
             setDeleteModal(prev => ({ ...prev, isDeleting: false, error: 'Deletion Failed: System could not process the request.' }));
         }
     };
@@ -172,7 +200,7 @@ export function QuestionTable() {
             setSelectedIds(new Set());
             toast.success(`Successfully deleted ${idsToDelete.length} assessments.`);
         } catch (error) {
-            console.error('Batch delete failed:', error);
+            clientLogger.error('Batch delete questions failed', { error: error instanceof Error ? error.message : 'unknown' });
             toast.error('System failed to process batch deletion.');
         } finally {
             setIsBatchDeleting(false);
@@ -204,6 +232,7 @@ export function QuestionTable() {
                                 <input
                                     type="text"
                                     placeholder="Search assessment text..."
+                                    aria-label="Search assessments"
                                     value={searchQuery}
                                     onChange={(e) => { setSearchQuery(e.target.value); setPage(1); }}
                                     className="w-full bg-slate-50 border-none rounded-2xl pl-12 pr-6 py-3.5 text-[11px] font-black tracking-widest text-[#1A1A1A] placeholder:text-slate-300 focus:ring-2 focus:ring-[#FF4B91]/10 transition-all outline-none border border-transparent shadow-inner"
@@ -217,6 +246,7 @@ export function QuestionTable() {
                                     setPage(1);
                                 }}
                                 className="flex-shrink-0 flex items-center gap-2 px-4 py-3.5 rounded-2xl bg-red-50 text-red-600 text-[10px] font-black uppercase tracking-widest hover:bg-red-100 transition-all border border-red-100 h-full"
+                                aria-label="Clear filters"
                             >
                                 <X className="w-3 h-3" /> Clear
                             </button> : null}
@@ -239,30 +269,22 @@ export function QuestionTable() {
 
                     {/* Question List */}
                     <div className="space-y-6">
-                        {(isLoading === true && (Array.isArray(questions) ? questions.length === 0 : true)) ? (
-                            Array.from({ length: 3 }).map((_, i) => (
-                                <div key={i} className="h-48 rounded-[2rem] bg-slate-50 border border-slate-100 animate-pulse" />
-                            ))
-                        ) : (
-                            <>
-                                {(Array.isArray(questions) && questions.length === 0) && !isLoading && (
-                                    <div className="text-center py-24 opacity-50">
-                                        <Hash className="w-16 h-16 mx-auto mb-4 text-slate-300" />
-                                        <p className="text-sm font-bold text-slate-500 uppercase tracking-widest">No Intelligence Assets Found</p>
-                                    </div>
-                                )}
-                                {Array.isArray(questions) && questions.map((q, idx) => (
-                                    <QuestionReviewCard
-                                        key={q.id}
-                                        question={q}
-                                        index={(page - 1) * 20 + idx}
-                                        isSelected={selectedIds.has(q.id)}
-                                        onSelect={toggleSelect}
-                                        onDeleteRequest={openDeleteModal}
-                                    />
-                                ))}
-                            </>
-                        )}
+                        {questions.length === 0 ? (
+                            <div className="text-center py-24 opacity-50">
+                                <Hash className="w-16 h-16 mx-auto mb-4 text-slate-300" />
+                                <p className="text-sm font-bold text-slate-500 uppercase tracking-widest">No Intelligence Assets Found</p>
+                            </div>
+                        ) : null}
+                        {questions.length > 0 ? questions.map((q, idx) => (
+                            <QuestionReviewCard
+                                key={q.id}
+                                question={q}
+                                index={(page - 1) * 20 + idx}
+                                isSelected={selectedIds.has(q.id)}
+                                onSelect={toggleSelect}
+                                onDeleteRequest={openDeleteModal}
+                            />
+                        )) : null}
                     </div>
 
                     {/* Floating Command Bar */}

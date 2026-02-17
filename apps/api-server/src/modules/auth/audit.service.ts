@@ -1,4 +1,6 @@
-import { auditLogs,db } from '@quiz/db';
+import { auditLogs, db } from '@quiz/db';
+
+import { logger } from '@/lib/logger';
 
 export interface AuditLogEntry {
   userId?: string;
@@ -10,6 +12,8 @@ export interface AuditLogEntry {
 
 export class AuditService {
   static async log(entry: AuditLogEntry) {
+    const auditLogger = logger.child({ module: 'auth:audit' });
+
     try {
       await db.insert(auditLogs).values({
         userId: entry.userId,
@@ -18,10 +22,14 @@ export class AuditService {
         device: entry.device,
         metadata: entry.metadata !== undefined && entry.metadata !== null ? JSON.stringify(entry.metadata) : null,
       });
-    } catch (_error) {
-      // We don't want to crash the main flow if a log fails,
-      // but in production, this should go to a monitoring system.
-      console.error('Failed to write audit log:', _error);
+    } catch (_error: unknown) {
+      // Do not block primary flows if audit logging fails.
+      auditLogger.error(
+        {
+          error: _error instanceof Error ? _error.message : 'unknown error',
+        },
+        'Failed to write audit log',
+      );
     }
   }
 }

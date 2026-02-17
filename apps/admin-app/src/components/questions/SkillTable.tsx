@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { ZPortalModal } from '@/components/ui/ZPortalModal';
 import { cn } from '@/lib/utils';
+import { clientLogger } from '@/utils/clientLogger';
 
 import { SkillReviewCard } from './SkillReviewCard';
 
@@ -66,7 +67,8 @@ export function SkillTable() {
         name: '',
         category: 'technical',
         mappingType: 'conceptual' as 'conceptual' | 'technical' | 'practical',
-        weight: 1
+        weight: 1,
+        description: ''
     });
 
     useEffect(() => {
@@ -78,13 +80,12 @@ export function SkillTable() {
         setIsLoading(true);
         try {
             const response = await apiClient.admin.getSkills(page, pageSize, debouncedSearch || undefined);
-            const skills = Array.isArray(response.data) ? response.data : [];
-            setData(skills);
+            setData(response.data);
             setTotalPages(response.totalPages);
-            setTotalCount(response.total ?? skills.length ?? 0);
+            setTotalCount(response.total ?? response.data.length);
             setSelectedIds(new Set());
         } catch (error) {
-            console.error('Failed to fetch skills:', error);
+            clientLogger.error('Failed to fetch skills', { error: error instanceof Error ? error.message : 'unknown' });
             setErrorMessage('Connection Error: Unable to load skills at this time.');
         } finally {
             setIsLoading(false);
@@ -126,7 +127,7 @@ export function SkillTable() {
             setIsDeleteOpen(false);
             setCurrentSkill(null);
         } catch (error) {
-            console.error('Batch delete failed:', error);
+            clientLogger.error('Batch delete skills failed', { error: error instanceof Error ? error.message : 'unknown' });
             setErrorMessage('Batch Deletion Failed: Some skills could not be removed.');
         } finally {
             setIsBatchDeleting(false);
@@ -141,7 +142,8 @@ export function SkillTable() {
                 name: (skill.name as string),
                 category: (skill.category as string | undefined) ?? 'technical',
                 mappingType: (skill.mappingType as 'conceptual' | 'technical' | 'practical' | undefined) ?? 'conceptual',
-                weight: (skill.weight != null && skill.weight !== 0) ? (skill.weight as number) : 1
+                weight: (skill.weight != null && skill.weight !== 0) ? (skill.weight as number) : 1,
+                description: (skill.description as string | undefined) ?? ''
             });
             setIsFormOpen(true);
         } else {
@@ -150,7 +152,8 @@ export function SkillTable() {
                 name: '',
                 category: 'technical',
                 mappingType: 'conceptual',
-                weight: 1
+                weight: 1,
+                description: ''
             });
         }
         setIsFormOpen(true);
@@ -164,7 +167,8 @@ export function SkillTable() {
             name: '',
             category: 'technical',
             mappingType: 'conceptual',
-            weight: 1
+            weight: 1,
+            description: ''
         });
     };
 
@@ -172,15 +176,16 @@ export function SkillTable() {
         e.preventDefault();
         setIsSubmitting(true);
         try {
+            const payload: any = { ...formData, description: formData.description ?? '' };
             if (currentSkill !== null) {
-                await apiClient.admin.updateSkill(currentSkill.id, formData);
+                await apiClient.admin.updateSkill(currentSkill.id, payload);
             } else {
-                await apiClient.admin.createSkill(formData);
+                await apiClient.admin.createSkill(payload);
             }
             handleCloseForm();
             void fetchSkills();
         } catch (error) {
-            console.error('Failed to save skill:', error);
+            clientLogger.error('Failed to save skill', { error: error instanceof Error ? error.message : 'unknown' });
             setErrorMessage('Saving Failed: Please ensure the skill name is unique and try again.');
         } finally {
             setIsSubmitting(false);
@@ -201,7 +206,7 @@ export function SkillTable() {
             setCurrentSkill(null);
             void fetchSkills();
         } catch (error) {
-            console.error('Failed to delete skill:', error);
+            clientLogger.error('Failed to delete skill', { error: error instanceof Error ? error.message : 'unknown' });
             setErrorMessage('Deletion Blocked: This skill is currently assigned to questions and cannot be removed.');
         } finally {
             setIsSubmitting(false);
@@ -228,12 +233,14 @@ export function SkillTable() {
                         <button
                             onClick={() => setSelectedIds(new Set())}
                             className="px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-widest hover:bg-white/10 transition-colors"
+                            aria-label="Clear selected skills"
                         >
                             Clear
                         </button>
                         <button
                             onClick={() => setIsDeleteOpen(true)}
                             className="px-6 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-black uppercase tracking-widest shadow-lg shadow-red-600/20 transition-all active:scale-95 flex items-center gap-2"
+                            aria-label="Delete selected skills"
                         >
                             <Trash2 size={14} />
                             Delete Selection
@@ -270,10 +277,11 @@ export function SkillTable() {
                                     <div className="grid grid-cols-2 gap-6">
                                         {/* Skill Name */}
                                         <div className="space-y-2">
-                                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-2">Skill Name</label>
+                                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-2" htmlFor="skill-name">Skill Name</label>
                                             <input
                                                 required
                                                 type="text"
+                                                id="skill-name"
                                                 placeholder="e.g., Problem Solving"
                                                 value={formData.name}
                                                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
@@ -283,13 +291,14 @@ export function SkillTable() {
 
                                         {/* Weight */}
                                         <div className="space-y-2">
-                                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-2">Weight (1-10)</label>
+                                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-2" htmlFor="skill-weight">Weight (1-10)</label>
                                             <div className="flex items-center gap-4 px-4 py-3 bg-slate-50 rounded-2xl">
                                                 <Zap size={16} className="text-amber-500" />
                                                 <input
                                                     type="range"
                                                     min="1"
                                                     max="10"
+                                                    id="skill-weight"
                                                     value={formData.weight || 1}
                                                     onChange={(e) => setFormData({ ...formData, weight: parseInt(e.target.value) })}
                                                     className="flex-1 accent-[#FF4B91] h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer"
@@ -413,6 +422,7 @@ export function SkillTable() {
                             <input
                                 type="text"
                                 placeholder="Search Skills..."
+                                aria-label="Search skills"
                                 value={searchQuery}
                                 onChange={(e) => { setSearchQuery(e.target.value); setPage(1); }}
                                 className="w-full bg-slate-50 border-none rounded-2xl px-5 py-3 text-[11px] font-black tracking-widest text-[#1A1A1A] placeholder:text-slate-400 focus:ring-2 focus:ring-cyan-500/10 transition-all outline-none border border-transparent shadow-inner"
@@ -424,6 +434,7 @@ export function SkillTable() {
                                     checked={data.length > 0 && selectedIds.size === data.length}
                                     onChange={(e) => handleSelectAll(e.target.checked)}
                                     className="w-4 h-4 rounded border-slate-300 text-cyan-600 focus:ring-offset-0 focus:ring-0 cursor-pointer"
+                                    aria-label="Select all skills"
                                 />
                                 <span className="text-[9px] font-bold uppercase tracking-wider text-slate-500">Select All</span>
                             </div>
@@ -433,6 +444,7 @@ export function SkillTable() {
                         <button
                             onClick={() => setIsFactoryOpen(true)}
                             className="px-6 py-3 rounded-2xl bg-slate-900 text-white text-[10px] font-bold uppercase tracking-wider shadow-lg hover:bg-slate-800 transition-all flex items-center gap-2"
+                            aria-label="Open skill bulk factory"
                         >
                             <Plus size={14} className="text-[#FF4B91]" />
                             Bulk Factory
@@ -440,6 +452,7 @@ export function SkillTable() {
                         <button
                             onClick={() => handleOpenForm()}
                             className="px-6 py-3 rounded-2xl bg-[#FF4B91] hover:bg-[#ff3382] text-white text-[10px] font-bold uppercase tracking-wider shadow-lg shadow-[#FF4B91]/20 transition-all flex items-center gap-3 active:scale-95"
+                            aria-label="Add skill"
                         >
                             <Plus size={16} />
                             Add Skill
@@ -448,41 +461,31 @@ export function SkillTable() {
                 </div>
 
                 {/* SKILL CARD STACK */}
-                <div className="relative min-h-[400px]">
-                    {isLoading === true && (
-                        <div className="absolute inset-x-0 -top-4 bottom-0 z-10 bg-white/40 backdrop-blur-[2px] flex items-center justify-center rounded-[2.5rem]">
-                            <ZLoader text="Synchronizing Skill Matrix_" />
-                        </div>
-                    )}
-
+                {isLoading === true ? (
+                    <div className="min-h-[400px] flex items-center justify-center">
+                        <ZLoader text="Loading Skills..." />
+                    </div>
+                ) : (
                     <div className="grid grid-cols-1 gap-4">
-                        {(isLoading === true && data.length === 0) ? (
-                            Array.from({ length: 5 }).map((_, i) => (
-                                <div key={i} className="h-28 rounded-[2.5rem] bg-slate-50 border border-slate-100 animate-pulse" />
-                            ))
-                        ) : (
-                            <>
-                                {data.map((skill, index) => (
-                                    <SkillReviewCard
-                                        key={skill.id}
-                                        skill={skill}
-                                        index={index + (page - 1) * 20}
-                                        isSelected={selectedIds.has(skill.id)}
-                                        onSelect={handleSelect}
-                                        onDeleteRequest={(d) => { setCurrentSkill(d); setIsDeleteOpen(true); }}
-                                        onEditRequest={(d) => handleOpenForm(d)}
-                                    />
-                                ))}
-                                {data.length === 0 && !isLoading && (
-                                    <div className="text-center py-20 opacity-50">
-                                        <Zap className="w-16 h-16 mx-auto mb-4 text-slate-400" />
-                                        <h3 className="text-lg font-bold text-slate-500 font-outfit uppercase tracking-tighter">Negative Skill Match_</h3>
-                                    </div>
-                                )}
-                            </>
+                        {data.map((skill, index) => (
+                            <SkillReviewCard
+                                key={skill.id}
+                                skill={skill}
+                                index={index + (page - 1) * 20}
+                                isSelected={selectedIds.has(skill.id)}
+                                onSelect={handleSelect}
+                                onDeleteRequest={(d) => { setCurrentSkill(d); setIsDeleteOpen(true); }}
+                                onEditRequest={(d) => handleOpenForm(d)}
+                            />
+                        ))}
+                        {data.length === 0 && (
+                            <div className="text-center py-20 opacity-50">
+                                <Shield className="w-16 h-16 mx-auto mb-4 text-slate-400" />
+                                <h3 className="text-lg font-bold text-slate-500">No skills found</h3>
+                            </div>
                         )}
                     </div>
-                </div>
+                )}
             </div>
 
             <ZPagination

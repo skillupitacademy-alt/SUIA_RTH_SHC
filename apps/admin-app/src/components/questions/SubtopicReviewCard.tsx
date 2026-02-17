@@ -51,6 +51,7 @@ export function SubtopicReviewCard({
                             checked={isSelected}
                             onChange={(e) => onSelect?.(subtopic.id as string, e.target.checked)}
                             className="w-5 h-5 rounded-lg border-2 border-slate-200 text-teal-500 focus:ring-teal-500/20 cursor-pointer transition-all checked:border-teal-500"
+                            aria-label={`Select subtopic ${subtopic.name as string ?? 'item'}`}
                         />
                     </div>
 
@@ -91,6 +92,7 @@ export function SubtopicReviewCard({
                         onClick={() => onEditRequest(subtopic)}
                         className="p-2.5 rounded-xl bg-white border border-slate-200 text-slate-500 hover:text-teal-500 hover:border-teal-500/20 transition-all active:scale-95 shadow-sm"
                         title="Edit Subtopic"
+                        aria-label={`Edit subtopic ${subtopic.name as string ?? ''}`}
                     >
                         <Edit3 size={14} />
                     </button>
@@ -98,6 +100,7 @@ export function SubtopicReviewCard({
                         onClick={() => onDeleteRequest(subtopic)}
                         className="p-2.5 rounded-xl bg-white border border-slate-200 text-slate-500 hover:text-rose-500 hover:border-rose-100 transition-all active:scale-95 shadow-sm"
                         title="Delete Subtopic"
+                        aria-label={`Delete subtopic ${subtopic.name as string ?? ''}`}
                     >
                         <Trash2 size={14} />
                     </button>

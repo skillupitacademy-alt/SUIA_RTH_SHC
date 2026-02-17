@@ -1,7 +1,7 @@
 'use client';
-/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { apiClient, QuizState } from '@quiz/api-client';
 import {
@@ -22,7 +22,9 @@ import { useExitGuard } from '@/hooks/useExitGuard';
 import { ExitConfirmationDialog } from '@/components/ui/ExitConfirmationDialog';
 import { useSessionManager } from '@/hooks/useSessionManager';
 import { useExamBackup, getFilteredBackup } from '@/hooks/useExamBackup';
+import { clientLogger } from '@/utils/clientLogger';
 
+type QuizQuestion = QuizState['questions'][number];
 
 // Detailed Question Status
 type QuestionStatus = 'current' | 'answered' | 'flagged' | 'unvisited';
@@ -55,7 +57,7 @@ export default function ActiveExamPage() {
             // Guardrail: Validate examId format before proceeding
             const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
             if (!examId || examId === 'undefined' || !uuidRegex.test(examId)) {
-                console.warn('[ActiveExamPage] Invalid examId detected, redirecting to Mission Control (/quiz/new?error=invalid_exam).');
+                clientLogger.warn('[ActiveExamPage] Invalid examId detected, redirecting to Mission Control (/quiz/new?error=invalid_exam).');
                 router.replace('/quiz/new?error=invalid_exam');
                 return;
             }
@@ -71,12 +73,15 @@ export default function ActiveExamPage() {
                 }
 
                 // Reconcile with Local Backup for UI Prefill (Phase 4 Security)
-                const localBackup = getFilteredBackup(data.id, data.questions.map(q => q.questionId));
+                const localBackup = getFilteredBackup(
+                    data.id,
+                    data.questions.map((q: QuizQuestion) => q.questionId)
+                );
                 const finalLocalAnswers = {
-                    ...data.questions.reduce((acc, q) => {
+                    ...data.questions.reduce<Record<string, string>>((acc, q: QuizQuestion) => {
                         if (q.userAnswer) acc[q.questionId] = q.userAnswer;
                         return acc;
-                    }, {} as Record<string, string>)
+                    }, {})
                 };
 
                 // Only prefill from local if server answer is null
@@ -96,10 +101,11 @@ export default function ActiveExamPage() {
                 });
 
                 setTimeLeft(data.remainingTimeSeconds || 0);
-            } catch (err: any) {
-                console.error('Failed to load exam:', err);
-                if (err.message.includes('403')) setError('Unauthorized: Session ownership mismatch.');
-                else if (err.message.includes('404')) setError('Assessment session not found.');
+            } catch (err: unknown) {
+                clientLogger.error('Failed to load exam', { error: err instanceof Error ? err.message : 'unknown' });
+                const message = err instanceof Error ? err.message : '';
+                if (message.includes('403')) setError('Unauthorized: Session ownership mismatch.');
+                else if (message.includes('404')) setError('Assessment session not found.');
                 else setError('Failed to connect to Mission Control.');
             } finally {
                 setLoading(false);
@@ -155,7 +161,7 @@ export default function ActiveExamPage() {
             // Persistence (No raw fetch - using apiClient)
             await apiClient.quiz.submitAnswer(examId, questionId, optionId);
         } catch (err) {
-            console.error('Critical: Failed to persist answer', err);
+            clientLogger.error('Critical: Failed to persist answer', { error: err instanceof Error ? err.message : 'unknown' });
             // In a real premium app, we might show a "Sync Error" toast here
         }
     };
@@ -185,7 +191,7 @@ export default function ActiveExamPage() {
             clearBackup(examId);
             router.replace(`/reports/active-report?examId=${examId}`);
         } catch (err) {
-            console.error('Failed to submit exam', err);
+            clientLogger.error('Failed to submit exam', { error: err instanceof Error ? err.message : 'unknown' });
             // Re-arm on failure if necessary, or stay in 'started'
             setState(prev => prev ? { ...prev, status: 'started' } : null);
             setIsSubmitting(false);
@@ -422,8 +428,7 @@ export default function ActiveExamPage() {
 
                             {/* Options Grid */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-4">
-                                {currentQuestion.options.map((option: any, oIdx: number) => {
-                                    // Handle both string and object options
+                                {currentQuestion.options.map((option: string | { text?: string; label?: string }, oIdx: number) => {
                                     const optionText = typeof option === 'string' ? option : (option.text || option.label || 'Unknown Option');
                                     const isSelected = state.localAnswers[currentQuestion.questionId] === optionText;
 

@@ -3,8 +3,8 @@ import dotenv from "dotenv";
 
 dotenv.config({ path: path.resolve(__dirname, "../.env") });
 
-import { db } from "../src";
-import { skills, topics, subjects, domains } from "../src/schema/domain";
+import { db } from "@quiz/db";
+import { domains, skills, subjects, topics } from "@quiz/db/schema/domain";
 import { like, or, eq } from "drizzle-orm";
 
 async function main() {

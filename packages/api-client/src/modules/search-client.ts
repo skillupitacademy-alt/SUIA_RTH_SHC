@@ -1,4 +1,4 @@
-import { FetchClient } from '../core/fetch-client';
+import { FetchClient } from '@quiz/api-client/core/fetch-client';
 
 export type SearchKind = 'topic' | 'question';
 

@@ -7,7 +7,7 @@ import { rateLimit } from './modules/auth/rate-limit.middleware';
 import { _verifyAdmin } from './modules/auth/rbac.service';
 import { TokenService } from './modules/auth/token.service';
 
-export async function middleware(_request: NextRequest) {
+export default async function proxy(_request: NextRequest) {
   
   // 1. CORS Preflight
   if (_request.method === 'OPTIONS') {

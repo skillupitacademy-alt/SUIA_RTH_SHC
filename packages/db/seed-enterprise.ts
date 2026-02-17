@@ -33,7 +33,7 @@ async function seed() {
         for (const statement of statements) {
             try {
                 await sql(statement);
-            } catch (err: any) {
+            } catch (err: unknown) {
                 if (!err.message.includes('already exists')) {
                     console.error(`Error in statement: ${statement.substring(0, 50)}...`);
                     console.error(err.message);

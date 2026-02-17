@@ -4,8 +4,10 @@
 import React, { createContext, ReactNode, useContext, useState } from 'react';
 import { toast } from 'sonner';
 
-import { JsonValidator } from '../lib/factory/json-validator';
-import { FactoryBlueprint, GeneratedQuestion, ValidationResult } from '../types/factory';
+import { JsonValidator } from '@/lib/factory/json-validator';
+import { FactoryBlueprint, GeneratedQuestion, HealingReport, ValidationResult } from '@/types/factory';
+import { clientLogger } from '@/utils/clientLogger';
+import { safeGet, safeRemove, safeSet } from '@/utils/safeLocalStorage';
 
 interface FactoryContextType {
     blueprint: FactoryBlueprint;
@@ -13,7 +15,7 @@ interface FactoryContextType {
     stagedQuestions: GeneratedQuestion[];
     isIngesting: boolean;
     validationErrors: string[];
-    lastHealingReport: any | null;
+    lastHealingReport: HealingReport | null;
 
     setBlueprint: (blueprint: Partial<FactoryBlueprint>) => void;
     setSourceCode: (code: string) => void;
@@ -45,27 +47,26 @@ export function FactoryProvider({ children }: { children: ReactNode }) {
     const [stagedQuestions, setStagedQuestions] = useState<GeneratedQuestion[]>([]);
     const [isIngesting, setIsIngesting] = useState(false);
     const [validationErrors, setValidationErrors] = useState<string[]>([]);
-    const [lastHealingReport, setLastHealingReport] = useState<any | null>(null);
+    const [lastHealingReport, setLastHealingReport] = useState<HealingReport | null>(null);
     const [isInitialized, setIsInitialized] = useState(false);
 
     // Hydrate from storage on mount
     React.useEffect(() => {
         try {
-            const saved = localStorage.getItem(STORAGE_KEY);
-            if (saved !== null && saved !== '') {
-                const parsed = JSON.parse(saved);
-                if ((parsed.blueprint as FactoryBlueprint | undefined) !== undefined) {
-                    setBlueprintState(parsed.blueprint as FactoryBlueprint);
+            const saved = safeGet<{ blueprint?: FactoryBlueprint; stagedQuestions?: GeneratedQuestion[]; sourceCode?: string; }>(STORAGE_KEY);
+            if (saved !== null) {
+                if (saved.blueprint !== undefined) {
+                    setBlueprintState(saved.blueprint as FactoryBlueprint);
                 }
-                if ((parsed.stagedQuestions as GeneratedQuestion[] | undefined) !== undefined) {
-                    setStagedQuestions(parsed.stagedQuestions as GeneratedQuestion[]);
+                if (saved.stagedQuestions !== undefined) {
+                    setStagedQuestions(saved.stagedQuestions as GeneratedQuestion[]);
                 }
-                if ((parsed.sourceCode as string | undefined) !== undefined) {
-                    setSourceCode(parsed.sourceCode as string);
+                if (saved.sourceCode !== undefined) {
+                    setSourceCode(saved.sourceCode as string);
                 }
             }
         } catch (e) {
-            console.error("[Persistence] ❌ HYDRATION FAILED", e);
+            clientLogger.error("[Persistence] HYDRATION FAILED", { error: e instanceof Error ? e.message : 'unknown' });
         } finally {
             setIsInitialized(true);
         }
@@ -75,7 +76,7 @@ export function FactoryProvider({ children }: { children: ReactNode }) {
         return () => {
             // Note: We don't call resetFactory() directly here because we want to 
             // surgically wipe storage immediately to prevent leakage
-            localStorage.removeItem(STORAGE_KEY);
+            safeRemove(STORAGE_KEY);
         };
     }, []);
 
@@ -88,9 +89,9 @@ export function FactoryProvider({ children }: { children: ReactNode }) {
         const timeout = setTimeout(() => {
             try {
                 const state = { blueprint, stagedQuestions, sourceCode };
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+                safeSet(STORAGE_KEY, state);
             } catch (e) {
-                console.error("Failed to persist factory state", e);
+                clientLogger.error("Failed to persist factory state", { error: e instanceof Error ? e.message : 'unknown' });
             }
         }, 500); // Debounce to avoid thrashing storage
         return () => clearTimeout(timeout);
@@ -107,7 +108,7 @@ export function FactoryProvider({ children }: { children: ReactNode }) {
 
         try {
             const result: ValidationResult = JsonValidator.validateBatch(json);
-            setLastHealingReport((result.healingReport as any | undefined) ?? null);
+            setLastHealingReport(result.healingReport ?? null);
 
             if (result.isValid) {
                 setStagedQuestions(result.questions);
@@ -157,7 +158,7 @@ export function FactoryProvider({ children }: { children: ReactNode }) {
         setStagedQuestions([]);
         setValidationErrors([]);
         setLastHealingReport(null);
-        localStorage.removeItem(STORAGE_KEY);
+        safeRemove(STORAGE_KEY);
         toast.info("Workspace has been reset.");
     };
 

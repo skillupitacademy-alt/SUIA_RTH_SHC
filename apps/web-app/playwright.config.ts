@@ -2,8 +2,10 @@ import { defineConfig, devices } from '@playwright/test';
 import path from 'path';
 import dotenv from 'dotenv';
 
+import { envPath } from '@quiz/config/envPaths';
+
 // Load root .env so TEST_* creds are available in workers
-dotenv.config({ path: path.resolve(__dirname, '../../.env') });
+dotenv.config({ path: envPath('.env') });
 
 export default defineConfig({
   testDir: './tests',

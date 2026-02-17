@@ -6,8 +6,12 @@
     "dev": "next dev -p 3001",
     "build": "next build",
     "start": "next start",
-        "lint": "cross-env ESLINT_USE_FLAT_CONFIG=false eslint --max-warnings=0 --ext .ts,.tsx,.js,.jsx .",
-    "type-check": "tsc --noEmit -p tsconfig.json"
+    "lint": "cross-env ESLINT_USE_FLAT_CONFIG=false eslint --ext .ts,.tsx,.js,.jsx .",
+    "type-check": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "analyze": "ANALYZE=true next build"
   },
   "dependencies": {
     "@quiz/api-client": "workspace:*",
@@ -18,8 +22,8 @@
     "autoprefixer": "^10.4.23",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
-        "eslint": "^8.57.0",
-        "eslint-config-next": "15.2.0",
+    "eslint": "^8.57.0",
+    "eslint-config-next": "15.2.0",
     "isomorphic-dompurify": "3.0.0-rc.2",
     "lucide-react": "^0.563.0",
     "next": "16.1.6",
@@ -34,5 +38,13 @@
   },
   "engines": {
     "node": "20.x"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@vitejs/plugin-react": "^5.1.4",
+    "@vitest/coverage-v8": "^4.0.18",
+    "jsdom": "^28.1.0",
+    "vitest": "^4.0.18"
   }
 }

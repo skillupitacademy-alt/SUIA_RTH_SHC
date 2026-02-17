@@ -1,11 +1,13 @@
 
 'use client';
 
-import { useEffect } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
-import { useAuthStore } from '@/store/auth-store';
 import { LogOut, ShieldAlert } from 'lucide-react';
 import { apiClient } from '@quiz/api-client';
+import { useRouter, usePathname } from 'next/navigation';
+import { useEffect } from 'react';
+
+import { useAuthStore } from '@/store/auth-store';
+import { clientLogger } from '@/utils/clientLogger';
 
 export function SessionExpiryModal() {
     const router = useRouter();
@@ -28,7 +30,7 @@ export function SessionExpiryModal() {
         try {
             await apiClient.auth.logout();
         } catch (err) {
-            console.error("Session expiry server-logout failed:", err);
+            clientLogger.error('Session expiry server-logout failed', { error: err instanceof Error ? err.message : 'unknown' });
         } finally {
             logout(); // Clear Zustand state
             localStorage.removeItem('quiz-platform-auth'); // Force hard purge

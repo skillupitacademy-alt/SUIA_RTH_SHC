@@ -1,7 +1,5 @@
 'use client';
-/* eslint-disable @typescript-eslint/no-explicit-any, react-hooks/exhaustive-deps */
 
-import { useEffect, useState, useMemo } from 'react';
 import { apiClient } from '@quiz/api-client';
 import {
     Clock,
@@ -11,11 +9,24 @@ import {
     Flag,
     Code
 } from 'lucide-react';
+import { useSearchParams, useRouter } from 'next/navigation';
+import { useEffect, useMemo, useState } from 'react';
+
+import { useExamBackup, getFilteredBackup } from '@/hooks/useExamBackup';
+import { useSessionManager } from '@/hooks/useSessionManager';
 import { cn } from '@/lib/utils';
 import { useQuizStore } from '@/store/quiz-store';
-import { useSearchParams, useRouter } from 'next/navigation';
-import { useSessionManager } from '@/hooks/useSessionManager';
-import { useExamBackup, getFilteredBackup } from '@/hooks/useExamBackup';
+import { clientLogger } from '@/utils/clientLogger';
+
+type RemoteQuestion = {
+    questionId: string;
+    type?: string;
+    text: string;
+    codeSnippet?: string | null;
+    options: string[];
+    difficulty?: string;
+    userAnswer: string | null;
+};
 
 export function ExamInterface() {
     useSessionManager();
@@ -33,7 +44,6 @@ export function ExamInterface() {
         toggleReview,
         setCurrentIndex,
         finishQuiz,
-        setQuestions,
         examId,
         setExamId,
         isSubmitted,
@@ -86,17 +96,17 @@ export function ExamInterface() {
                 // Format: examId:questionId:optionIndex
                 const idempotencyKey = `${examId}:${questionId}:${optionIndex}`;
 
-                await withRetry(() =>
-                    apiClient.quiz.submitAnswer(examId, questionId, option, {
-                        idempotencyKey
-                    })
-                );
-            } catch (err) {
-                console.error("Failed to save answer after retries", err);
-                // We keep optimistic UI, but maybe show a subtle indicator
-            }
+            await withRetry(() =>
+                apiClient.quiz.submitAnswer(examId, questionId, option, {
+                    idempotencyKey
+                })
+            );
+        } catch (err) {
+            clientLogger.error('Failed to save answer after retries', { error: err instanceof Error ? err.message : 'unknown' });
+            // We keep optimistic UI, but maybe show a subtle indicator
         }
-    };
+    }
+};
 
     useEffect(() => {
         const initExam = async () => {
@@ -116,7 +126,7 @@ export function ExamInterface() {
                 }
 
                 // Map Questions to store interface
-                const mappedQuestions = state.questions.map((q) => ({
+                const mappedQuestions = state.questions.map((q: RemoteQuestion) => ({
                     id: q.questionId, // Actual question UUID
                     type: (q.type === 'code_mcq' ? 'CODE_MCQ' : 'MCQ') as 'MCQ' | 'CODE_MCQ',
                     text: q.text,
@@ -127,11 +137,16 @@ export function ExamInterface() {
 
                 // Reset and Hydrate Store (Phase 2 Revision)
                 // Using startQuiz to clear old state and set initial duration
-                useQuizStore.getState().startQuiz(mappedQuestions, null, state.remainingTimeSeconds || 0);
+                const defaultConfig = {
+                    domain: state.id || 'unknown',
+                    subjects: [],
+                    difficulty: 'mixed',
+                };
+                useQuizStore.getState().startQuiz(mappedQuestions, defaultConfig, state.remainingTimeSeconds || 0);
                 setExamId(state.id);
 
                 // Hydrate answers from backend
-                state.questions.forEach((q: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
+                state.questions.forEach((q: RemoteQuestion) => {
                     if (q.userAnswer !== null) {
                         const idx = q.options.indexOf(q.userAnswer);
                         if (idx !== -1) {
@@ -141,17 +156,17 @@ export function ExamInterface() {
                 });
 
                 // Calculate connection-safe starting index (first unanswered or 0)
-                const firstUnanswered = state.questions.findIndex((q: any) => q.userAnswer === null); // eslint-disable-line @typescript-eslint/no-explicit-any
+                const firstUnanswered = state.questions.findIndex((q: RemoteQuestion) => q.userAnswer === null);
                 setCurrentIndex(firstUnanswered !== -1 ? firstUnanswered : 0);
 
                 // Reconcile with Local Backup for UI Prefill (Phase 4 Security)
-                const localBackup = getFilteredBackup(state.id, state.questions.map(q => q.questionId));
+                const localBackup = getFilteredBackup(state.id, state.questions.map((q: RemoteQuestion) => q.questionId));
                 Object.entries(localBackup).forEach(([qId, localAnswer]) => {
                     const storeState = useQuizStore.getState();
                     const questionInStore = storeState.questions.find(q => q.id === qId);
 
                     // Only prefill if server-side answer is missing
-                    const serverQuestion = state.questions.find((q: any) => q.questionId === qId); // eslint-disable-line @typescript-eslint/no-explicit-any
+                    const serverQuestion = state.questions.find((q: RemoteQuestion) => q.questionId === qId);
                     if (serverQuestion && serverQuestion.userAnswer === null && questionInStore) {
                         const optionIdx = questionInStore.options.indexOf(localAnswer);
                         if (optionIdx !== -1) {
@@ -161,7 +176,7 @@ export function ExamInterface() {
                 });
 
             } catch (err) {
-                console.error("Failed to load exam session", err);
+                clientLogger.error('Failed to load exam session', { error: err instanceof Error ? err.message : 'unknown' });
                 router.push('/quiz/new');
             } finally {
                 setIsLoading(false);
@@ -169,7 +184,7 @@ export function ExamInterface() {
         };
 
         initExam();
-    }, [examIdParam, router, setExamId, setQuestions, questions.length, examId]);
+    }, [examIdParam, router, setExamId, setCurrentIndex, questions.length, examId]);
 
     // Timer logic
     useEffect(() => {
@@ -226,7 +241,7 @@ export function ExamInterface() {
             finishQuiz();
             router.push(`/reports/active-report?examId=${examId}`);
         } catch (err) {
-            console.error("Failed to submit exam", err);
+            clientLogger.error('Failed to submit exam', { error: err instanceof Error ? err.message : 'unknown' });
             setError("Submission failed after multiple attempts. Check your connection.");
         } finally {
             setIsSubmitting(false);
@@ -251,7 +266,7 @@ export function ExamInterface() {
                     <div className="absolute top-20 left-1/2 -translate-x-1/2 z-50 bg-red-600 text-white px-6 py-3 rounded-full font-bold shadow-2xl animate-in slide-in-from-top-4 flex items-center gap-3">
                         <span className="h-2 w-2 rounded-full bg-white animate-pulse" />
                         {error}
-                        <button onClick={() => setError(null)} className="ml-2 hover:bg-white/20 rounded-full p-1">
+                        <button onClick={() => setError(null)} className="ml-2 hover:bg-white/20 rounded-full p-1" aria-label="Dismiss error message">
                             <ChevronRight size={14} className="rotate-90" />
                         </button>
                     </div>
@@ -273,6 +288,8 @@ export function ExamInterface() {
                                             markedForReview.includes(q.id) ? "border-orange-500 bg-orange-500/10 text-orange-600" :
                                                 "border-muted bg-background text-muted-foreground"
                                 )}
+                                aria-label={`Go to question ${i + 1}${answers[q.id] !== undefined ? ' (answered)' : markedForReview.includes(q.id) ? ' (marked for review)' : ''}`}
+                                aria-current={currentQuestionIndex === i ? "true" : undefined}
                             >
                                 {i + 1}
                             </button>
@@ -292,6 +309,7 @@ export function ExamInterface() {
                         onClick={handleFinish}
                         disabled={isSubmitting}
                         className="hidden sm:flex items-center gap-2 px-6 py-2 rounded-2xl bg-primary text-primary-foreground font-black shadow-lg shadow-primary/20 hover:scale-105 transition-transform active:scale-95 disabled:opacity-50"
+                        aria-label="Submit exam"
                     >
                         {isSubmitting ? "Submitting..." : "Submit Exam"}
                     </button>
@@ -349,6 +367,8 @@ export function ExamInterface() {
                                             ? "border-primary bg-primary/5 ring-4 ring-primary/10"
                                             : "border-muted bg-muted/5 hover:border-primary/20 hover:bg-white"
                                     )}
+                                    aria-label={`Select option ${String.fromCharCode(65 + i)}: ${option}`}
+                                    aria-pressed={answers[question.id] === i}
                                 >
                                     <div className="flex items-center gap-6">
                                         <div className={cn(
@@ -374,6 +394,7 @@ export function ExamInterface() {
                                 disabled={currentQuestionIndex === 0}
                                 onClick={() => setCurrentIndex(currentQuestionIndex - 1)}
                                 className="p-4 rounded-2xl border-2 font-bold hover:bg-muted transition-all disabled:opacity-30"
+                                aria-label="Previous question"
                             >
                                 <ChevronLeft size={24} />
                             </button>
@@ -383,6 +404,8 @@ export function ExamInterface() {
                                     "flex items-center gap-2 px-6 py-4 rounded-2xl border-2 font-bold transition-all",
                                     markedForReview.includes(question.id) ? "bg-orange-500 border-orange-500 text-white" : "hover:bg-muted"
                                 )}
+                                aria-label={markedForReview.includes(question.id) ? "Unmark question for review" : "Mark question for review"}
+                                aria-pressed={markedForReview.includes(question.id)}
                             >
                                 <Flag size={20} className={markedForReview.includes(question.id) ? "fill-current" : ""} />
                                 <span className="hidden sm:inline">Review later</span>
@@ -394,6 +417,7 @@ export function ExamInterface() {
                                 <button
                                     onClick={() => setCurrentIndex(currentQuestionIndex + 1)}
                                     className="flex items-center gap-2 px-8 py-4 rounded-2xl bg-secondary text-primary-foreground font-black shadow-lg hover:bg-secondary/90 transition-all active:scale-95 group"
+                                    aria-label="Next question"
                                 >
                                     Next Question
                                     <ChevronRight size={20} className="group-hover:translate-x-1 transition-transform" />
@@ -403,6 +427,7 @@ export function ExamInterface() {
                                     onClick={handleFinish}
                                     disabled={isSubmitting}
                                     className="flex items-center gap-2 px-8 py-4 rounded-2xl bg-green-600 text-white font-black shadow-lg hover:bg-green-700 transition-all active:scale-95 disabled:opacity-50"
+                                    aria-label="Finish attempt"
                                 >
                                     {isSubmitting ? "Submitting..." : "Finish Attempt"}
                                     <CheckCircle2 size={20} />

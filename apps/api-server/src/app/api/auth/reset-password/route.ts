@@ -1,14 +1,11 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
+import { logger } from '@/lib/logger';
 import { AuthService } from '@/modules/auth/auth.service';
+import { resetPasswordSchema } from '@/schemas/auth.schemas';
 
 export const dynamic = 'force-dynamic';
-
-interface ResetPasswordRequest {
-  token?: string;
-  password?: string;
-}
 
 export async function GET(_req: NextRequest) {
     const _token = _req.nextUrl.searchParams.get('_token');
@@ -26,18 +23,19 @@ export async function GET(_req: NextRequest) {
 
 export async function POST(_req: NextRequest) {
   try {
-    const { token, password } = (await _req.json()) as ResetPasswordRequest;
-    
-    if (typeof token !== 'string' || token.trim() === '' || typeof password !== 'string' || password.trim() === '' || password.length < 8) {
-        return NextResponse.json({ _error: 'Invalid _request data' }, { status: 400 });
+    const rawBody = await _req.json();
+    const parsed = resetPasswordSchema.safeParse(rawBody);
+    if (!parsed.success) {
+        return NextResponse.json({ _error: 'Invalid payload', issues: parsed.error.issues }, { status: 400 });
     }
+    const { token, password } = parsed.data;
 
     const ip = _req.headers.get('x-forwarded-for') ?? '0.0.0.0';
     await AuthService.resetPassword(token, password, ip);
 
     return NextResponse.json({ success: true });
   } catch (_error: unknown) {
-    console.error('ResetPassword.Error:', _error);
+    logger.error({ err: _error }, 'ResetPassword.Error');
     const message = _error instanceof Error ? _error.message : 'Error resetting password';
     return NextResponse.json({ _error: message }, { status: 400 });
   }

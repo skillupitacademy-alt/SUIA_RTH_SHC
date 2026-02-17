@@ -1,7 +1,7 @@
 import { db, exams, resultsByDimension } from '@quiz/db';
 import { and, desc, eq, gte, lt, sql } from 'drizzle-orm';
 
-import { ForecastService } from '../intelligence/forecast.service';
+import { ForecastService } from '@/modules/intelligence/forecast.service';
 
 export interface ScoreTrend {
   examId: string;

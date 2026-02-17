@@ -3,12 +3,9 @@ import { NextResponse } from 'next/server';
 
 import { TokenService } from '@/modules/auth/token.service';
 import { ExamEngine } from '@/modules/exam-engine/exam.engine';
+import { submitSchema } from '@/schemas/quiz.schemas';
 
 export const dynamic = 'force-dynamic';
-
-interface SubmitRequestBody {
-  examId: string;
-}
 
 /**
  * SUBMIT/COMPLETE EXAM
@@ -22,7 +19,12 @@ export async function POST(_req: NextRequest) {
     }
 
     const _payload = await TokenService.verifyAccessToken(_token, false);
-    const { examId } = (await _req.json()) as SubmitRequestBody;
+    const rawBody = await _req.json();
+    const parsed = submitSchema.safeParse(rawBody);
+    if (!parsed.success) {
+      return NextResponse.json({ _error: 'Invalid payload', issues: parsed.error.issues }, { status: 400 });
+    }
+    const { examId } = parsed.data;
     const idempotencyKey = _req.headers.get('idempotency-key') ?? undefined;
     
     // Step 5 Hardening: Pass idempotency key for safe retries

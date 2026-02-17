@@ -3,7 +3,7 @@ import { sql } from 'drizzle-orm';
 import { LRUCache } from 'lru-cache';
 import { Resend } from 'resend';
 
-import { cacheService } from '../core/cache.service';
+import { cacheService } from '@/modules/core/cache.service';
 
 interface ServiceStatus {
   status: 'ok' | 'warning' | '_error' | 'not_configured';

@@ -1,15 +1,14 @@
 'use client';
 
-import { Check } from 'lucide-react';
+import { Check, LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
-/* eslint-disable @typescript-eslint/no-explicit-any */
 
 interface DomainCardProps {
     id: string;
     name: string;
     description: string;
     category: string;
-    icon: any; // Lucide icon
+    icon: LucideIcon;
     coverage: number;
     isSelected: boolean;
     onSelect: (id: string) => void;
@@ -52,6 +51,8 @@ export function DomainCard({
                     ? "border-[#FF2D55] shadow-[0_10px_30px_rgba(255,45,85,0.15)] scale-[1.02] z-10"
                     : "border-transparent shadow-[0_4px_20px_rgba(0,0,0,0.05)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] hover:scale-[1.01]"
             )}
+            aria-label={`Select domain ${name}`}
+            aria-pressed={isSelected}
         >
             {/* Top Row: Icon and Checkmark */}
             <div className="flex justify-between items-start mb-4 flex-none">

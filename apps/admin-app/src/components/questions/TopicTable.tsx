@@ -19,19 +19,20 @@ import {
 import { ZPortalModal } from '@/components/ui/ZPortalModal';
 import { useDomains, useSubjects } from '@/hooks/useAdminHierarchy';
 import { cn } from '@/lib/utils';
+import { clientLogger } from '@/utils/clientLogger';
 
 interface Topic {
     id: string;
     name: string;
     description?: string;
-    status: 'active' | 'inactive';
-    weight: number;
-    complexityLevel: number;
+    status?: 'active' | 'inactive';
+    weight?: number;
+    complexityLevel?: number;
     subjectId: string;
     subject?: {
         id: string;
         name: string;
-        domainId: string;
+        domainId?: string;
         domain?: {
             id: string;
             name: string;
@@ -87,13 +88,12 @@ export function TopicTable() {
         setIsLoading(true);
         try {
             const response = await apiClient.admin.getTopics(page, pageSize, debouncedSearch || undefined);
-            const topics = Array.isArray(response.data) ? response.data : [];
-            setData(topics);
+            setData(response.data);
             setTotalPages(response.totalPages);
-            setTotalCount(response.total ?? topics.length ?? 0);
+            setTotalCount(response.total ?? response.data.length);
             setSelectedIds(new Set());
         } catch (error) {
-            console.error('Failed to fetch topics:', error);
+            clientLogger.error('Failed to fetch topics', { error: error instanceof Error ? error.message : 'unknown' });
             setErrorMessage('Connection Error: Unable to load topics at this time.');
         } finally {
             setIsLoading(false);
@@ -161,15 +161,21 @@ export function TopicTable() {
         }
         setIsSubmitting(true);
         try {
+            const payload: any = {
+                ...formData,
+                slug: formData.name || 'topic',
+                orderIndex: formData.weight ?? 0,
+                complexity: formData.complexityLevel ?? 0
+            };
             if (currentTopic !== null) {
-                await apiClient.admin.updateTopic(currentTopic.id, formData);
+                await apiClient.admin.updateTopic(currentTopic.id, payload);
             } else {
-                await apiClient.admin.createTopic(formData);
+                await apiClient.admin.createTopic(payload);
             }
             handleCloseForm();
             void fetchTopics();
         } catch (error) {
-            console.error('Failed to save topic:', error);
+            clientLogger.error('Failed to save topic', { error: error instanceof Error ? error.message : 'unknown' });
             setErrorMessage('Saving Failed: Please ensure all fields (including parent subject) are correct.');
         } finally {
             setIsSubmitting(false);
@@ -189,7 +195,7 @@ export function TopicTable() {
             setCurrentTopic(null);
             void fetchTopics();
         } catch (error) {
-            console.error('Failed to delete topic:', error);
+            clientLogger.error('Failed to delete topic', { error: error instanceof Error ? error.message : 'unknown' });
             setErrorMessage('Deletion Blocked: This topic is linked to subtopics or questions and cannot be removed.');
         } finally {
             setIsSubmitting(false);
@@ -242,6 +248,7 @@ export function TopicTable() {
                             <input
                                 type="text"
                                 placeholder="Search Topic Nodes..."
+                                aria-label="Search topics"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 className="w-full pl-12 pr-4 py-3 bg-slate-50 border-none rounded-2xl text-sm font-bold placeholder:text-slate-300 focus:ring-2 focus:ring-[#FF4B91]/20 transition-all"
@@ -267,14 +274,8 @@ export function TopicTable() {
                     </div>
                 </div>
 
-                <div className="mt-6 rounded-[2.5rem] border border-primary/10 bg-white/50 backdrop-blur-sm overflow-hidden shadow-xl relative min-h-[400px]">
-                    {isLoading === true && (
-                        <div className="absolute inset-x-0 -top-4 bottom-0 z-10 bg-white/40 backdrop-blur-[2px] flex items-center justify-center rounded-[2.5rem]">
-                            <ZLoader text="Synchronizing Topic Matrix_" />
-                        </div>
-                    )}
+                <div className="mt-6 rounded-[2.5rem] border border-primary/10 bg-white/50 backdrop-blur-sm overflow-hidden shadow-xl">
                     <div className="overflow-x-auto">
-
                         <table className="w-full text-left">
                             <thead>
                                 <tr className="border-b border-primary/5 bg-primary/5/30 backdrop-blur-md">
@@ -291,95 +292,55 @@ export function TopicTable() {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-primary/5">
-                                {(isLoading === true && data.length === 0) ? (
-                                    Array.from({ length: 8 }).map((_, i) => (
-                                        <tr key={i} className="animate-pulse">
-                                            <td colSpan={6} className="p-8">
-                                                <div className="h-8 bg-slate-100/50 rounded-xl w-full" />
-                                            </td>
-                                        </tr>
-                                    ))
-                                ) : (
-                                    <>
-                                        {Array.isArray(data) && data.map((topic) => (
-                                            <tr key={topic.id} className={cn("group transition-colors hover:bg-white/60", selectedIds.has(topic.id) && "bg-[#FF4B91]/5")}>
-                                                {/* CHECKBOX CELL */}
-                                                <td className="p-6">
-                                                    <button
-                                                        onClick={() => toggleSelect(topic.id, !selectedIds.has(topic.id))}
-                                                        className={cn(
-                                                            "w-5 h-5 rounded-lg border-2 transition-all flex items-center justify-center",
-                                                            selectedIds.has(topic.id) ? "bg-[#FF4B91] border-[#FF4B91] shadow-lg shadow-[#FF4B91]/20" : "bg-white border-slate-200"
-                                                        )}
-                                                    >
-                                                        {selectedIds.has(topic.id) && <Check size={12} className="text-white" />}
-                                                    </button>
-                                                </td>
-                                                {/* TOPIC INFO */}
-                                                <td className="p-6">
-                                                    <div className="flex items-center gap-4">
-                                                        <div className="w-10 h-10 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-[#FF4B91]/10 group-hover:text-[#FF4B91] transition-colors">
-                                                            <BookOpen size={18} />
-                                                        </div>
-                                                        <div className="flex flex-col">
-                                                            <span className="text-sm font-black text-[#1A1A1A]">{topic.name}</span>
-                                                            <span className="text-[10px] font-bold text-slate-400">ID: {topic.id}</span>
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                                {/* SUBJECT INFO */}
-                                                <td className="p-6">
-                                                    <div className="flex flex-col">
-                                                        <span className="text-xs font-bold text-slate-600">{topic.subject?.name ?? 'Unlinked'}</span>
-                                                        <span className="text-[9px] font-black uppercase tracking-tighter text-slate-400">{topic.subject?.domain?.name ?? 'No Domain'}</span>
-                                                    </div>
-                                                </td>
-                                                {/* WEIGHT */}
-                                                <td className="p-6 text-center">
-                                                    <div className="inline-flex flex-col items-center">
-                                                        <span className="text-xs font-black text-[#1A1A1A]">{topic.weight}x</span>
-                                                        <div className="flex gap-0.5 mt-1">
-                                                            {Array.from({ length: 5 }).map((_, i) => (
-                                                                <div key={i} className={cn("w-1 h-1 rounded-full", i < topic.complexityLevel ? "bg-[#FF4B91]" : "bg-slate-200")} />
-                                                            ))}
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                                {/* STATUS */}
-                                                <td className="p-6">
-                                                    <div className={cn(
-                                                        "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-widest",
-                                                        topic.status === 'active' ? "bg-emerald-50 text-emerald-600" : "bg-slate-100 text-slate-400"
-                                                    )}>
-                                                        <div className={cn("w-1 h-1 rounded-full", topic.status === 'active' ? "bg-emerald-500 animate-pulse" : "bg-slate-400")} />
-                                                        {topic.status}
-                                                    </div>
-                                                </td>
-                                                {/* ACTIONS */}
-                                                <td className="p-6 text-right">
-                                                    <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                        <button onClick={() => { setCurrentTopic(topic); setFormData({ ...topic, domainId: topic.subject?.domainId || '' } as any); setIsFormOpen(true); }} className="p-2 rounded-xl bg-white border border-slate-100 text-slate-400 hover:text-[#FF4B91] hover:border-[#FF4B91]/20 transition-all shadow-sm">
-                                                            <Edit2 size={14} />
-                                                        </button>
-                                                        <button onClick={() => { setCurrentTopic(topic); setIsDeleteOpen(true); }} className="p-2 rounded-xl bg-white border border-slate-100 text-slate-400 hover:text-rose-500 hover:border-rose-100 transition-all shadow-sm">
-                                                            <Trash2 size={14} />
-                                                        </button>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                        {(Array.isArray(data) && data.length === 0) && !isLoading && (
-                                            <tr>
-                                                <td colSpan={6} className="py-32 text-center opacity-50">
-                                                    <BookOpen className="w-16 h-16 mx-auto mb-4 text-slate-300" />
-                                                    <h3 className="text-lg font-bold text-slate-500 font-outfit uppercase tracking-tighter">Negative Topic Match_</h3>
-                                                </td>
-                                            </tr>
-                                        )}
-                                    </>
-                                )}
+                                {data.map((topic) => (
+                                    <tr key={topic.id} className={cn("group transition-colors hover:bg-white/60", selectedIds.has(topic.id) && "bg-[#FF4B91]/5")}>
+                                        <td className="p-6">
+                                            <button
+                                                onClick={() => toggleSelect(topic.id, !selectedIds.has(topic.id))}
+                                                className={cn("w-5 h-5 rounded-lg border-2 transition-all flex items-center justify-center", selectedIds.has(topic.id) ? "border-[#FF4B91] bg-[#FF4B91] text-white" : "border-primary/10 hover:border-primary/30")}
+                                            >
+                                                {selectedIds.has(topic.id) && <Check size={12} />}
+                                            </button>
+                                        </td>
+                                        <td className="p-6">
+                                            <div className="flex items-center gap-4">
+                                                <div className="w-12 h-12 rounded-2xl bg-slate-50 border border-primary/5 flex items-center justify-center text-slate-400 group-hover:bg-white group-hover:text-[#FF4B91] transition-all">
+                                                    <BookOpen size={20} />
+                                                </div>
+                                                <div>
+                                                    <p className="font-black text-slate-900 uppercase tracking-tight">{topic.name}</p>
+                                                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-0.5 truncate max-w-[200px]">{(topic.description != null && topic.description !== '') ? topic.description : 'No specialized metadata'}</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td className="p-6">
+                                            <div className="flex items-center gap-2">
+                                                <span className="px-3 py-1 rounded-full bg-slate-100 border border-slate-200 text-[10px] font-black text-slate-600 uppercase tracking-widest">
+                                                    {topic.subject?.name != null && topic.subject.name !== '' ? topic.subject.name : 'Unlinked'}
+                                                </span>
+                                            </div>
+                                        </td>
+                                        <td className="p-6 text-center">
+                                            <span className="text-sm font-black text-slate-800">{topic.weight}x</span>
+                                        </td>
+                                        <td className="p-6">
+                                            <span className={cn("px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border", topic.status === 'active' ? "bg-green-50 text-green-600 border-green-100" : "bg-slate-100 text-slate-400 border-slate-200")}>
+                                                {topic.status || 'Active'}
+                                            </span>
+                                        </td>
+                                        <td className="p-6 text-right">
+                                            <div className="flex items-center justify-end gap-2 opacity-100 xl:opacity-0 group-hover:opacity-100 transition-all">
+                                                <button onClick={() => handleOpenForm(topic)} className="p-2.5 rounded-xl bg-slate-50 hover:bg-[#FF4B91] text-slate-400 hover:text-white transition-all border border-slate-100">
+                                                    <Edit2 size={16} />
+                                                </button>
+                                                <button onClick={() => { setCurrentTopic(topic); setIsDeleteOpen(true); }} className="p-2.5 rounded-xl bg-slate-50 hover:bg-red-500 text-slate-400 hover:text-white transition-all border border-slate-100">
+                                                    <Trash2 size={16} />
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
                             </tbody>
-
                         </table>
                     </div>
                 </div>
@@ -488,10 +449,11 @@ export function TopicTable() {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 pl-1">Topic Name</label>
+                                    <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 pl-1" htmlFor="topic-name">Topic Name</label>
                                     <input
                                         type="text"
                                         required
+                                        id="topic-name"
                                         value={formData.name}
                                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                         className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
@@ -501,22 +463,24 @@ export function TopicTable() {
 
                                 <div className="grid grid-cols-2 gap-6">
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 pl-1">Weight Multiplier</label>
+                                        <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 pl-1" htmlFor="topic-weight">Weight Multiplier</label>
                                         <input
                                             type="number"
                                             min="0"
                                             step="0.1"
+                                            id="topic-weight"
                                             value={formData.weight}
                                             onChange={(e) => setFormData({ ...formData, weight: parseFloat(e.target.value) })}
                                             className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all bg-slate-50/50"
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 pl-1">Complexity Level</label>
+                                        <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 pl-1" htmlFor="topic-complexity">Complexity Level</label>
                                         <input
                                             type="number"
                                             min="1"
                                             max="10"
+                                            id="topic-complexity"
                                             value={formData.complexityLevel}
                                             onChange={(e) => setFormData({ ...formData, complexityLevel: parseInt(e.target.value) })}
                                             className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all bg-slate-50/50"
@@ -525,8 +489,9 @@ export function TopicTable() {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 pl-1">Description</label>
+                                    <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 pl-1" htmlFor="topic-description">Description</label>
                                     <textarea
+                                        id="topic-description"
                                         value={formData.description}
                                         onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                                         rows={4}

@@ -11,6 +11,7 @@ import { toast } from 'sonner';
 import { ZConfirmationDialog } from '@/components/ui/ZConfirmationDialog';
 import { useFactory } from '@/context/FactoryContext';
 import { GeneratedQuestion } from '@/types/factory';
+import { clientLogger } from '@/utils/clientLogger';
 
 import { QuestionCard } from './QuestionCard';
 
@@ -108,7 +109,7 @@ export function ReviewConsole() {
                 const skills = await apiClient.admin.getTopicSkills(blueprint.topicId);
                 setOfficialSkills(skills);
             } catch (err) {
-                console.error("Failed to fetch existing skills context", err);
+                clientLogger.error('Failed to fetch existing skills context', { error: err instanceof Error ? err.message : 'unknown' });
             }
         };
         void fetchSkills();
@@ -131,13 +132,17 @@ export function ReviewConsole() {
 
                 if (result.details != null && result.details.length > 0) {
                     const nextMap = new Map<number, string>();
-                    result.details.forEach((d: { index: number; originalId: string }) => nextMap.set(d.index, d.originalId));
+                    result.details.forEach((d: { id?: string }, idx: number) => {
+                        if (d.id != null) {
+                            nextMap.set(idx, d.id);
+                        }
+                    });
                     setDuplicateMap(nextMap);
                 } else {
                     setDuplicateMap(new Map());
                 }
             } catch (error) {
-                console.error("Duplicate check failed", error);
+                clientLogger.error('Duplicate check failed', { error: error instanceof Error ? error.message : 'unknown' });
             }
         };
 
@@ -151,7 +156,20 @@ export function ReviewConsole() {
         try {
             const { apiClient } = await import('@quiz/api-client');
             const payload = {
-                questions: stagedQuestions,
+                questions: stagedQuestions.map((q, idx) => ({
+                    id: q.id ?? `gen-${idx}`,
+                    questionText: q.questionText,
+                    type: 'single',
+                    status: 'draft',
+                    difficulty: q.difficulty,
+                    topicId: blueprint.topicId,
+                    subtopicId: blueprint.subtopicId,
+                    options: q.options.map((opt, optIdx) => ({
+                        id: `${idx}-${optIdx}`,
+                        text: opt,
+                        isCorrect: opt === q.correctAnswer
+                    }))
+                })),
                 topicId: blueprint.topicId,
                 subtopicId: blueprint.subtopicId
             };
@@ -164,7 +182,7 @@ export function ReviewConsole() {
                 window.location.href = '/factory/question-generator';
             }
         } catch (error) {
-            console.error("Save failed", error);
+            clientLogger.error('Save failed', { error: error instanceof Error ? error.message : 'unknown' });
             toast.error("Failed to save batch. Check console for details.");
         } finally {
             setIsSaving(false);

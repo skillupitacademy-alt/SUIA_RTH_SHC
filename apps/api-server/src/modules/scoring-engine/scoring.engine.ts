@@ -1,8 +1,12 @@
-import { db, exams,resultsByDimension } from '@quiz/db';
+import { db, exams, resultsByDimension } from '@quiz/db';
 import { eq } from 'drizzle-orm';
 export const dynamic = 'force-dynamic';
 
+import { logger } from '@/lib/logger';
+
 export class ScoringEngine {
+  private static log = logger.child({ module: 'scoring-engine' });
+
   static async calculateExamResults(examId: string) {
     try {
       const exam = await db.query.exams.findFirst({
@@ -162,11 +166,19 @@ export class ScoringEngine {
 
       return finalScore;
     } catch (_error) {
-      console.error(`[ScoringEngine] Failed to calculate results for exam ${examId}:`, _error);
+      ScoringEngine.log.error(
+        { examId, error: _error instanceof Error ? _error.message : 'unknown error' },
+        'Failed to calculate results for exam',
+      );
       await db.update(exams)
         .set({ status: 'failed' })
         .where(eq(exams.id, examId))
-        .catch(console.error);
+        .catch(err => {
+          ScoringEngine.log.error(
+            { examId, error: err instanceof Error ? err.message : 'unknown error' },
+            'Failed to mark exam as failed after scoring error',
+          );
+        });
       throw _error;
     }
   }

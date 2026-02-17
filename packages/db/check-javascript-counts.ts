@@ -62,7 +62,7 @@ async function main() {
             }
         }
 
-    } catch (err: any) {
+    } catch (err: unknown) {
         console.error("Database query failed:");
         console.error(err.message);
         if (err.detail) console.error("Detail:", err.detail);

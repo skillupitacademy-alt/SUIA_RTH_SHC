@@ -1,10 +1,13 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
-import type { SubjectInsert } from '@/modules/admin-engine/admin.engine';
+import { logger } from '@/lib/logger';
 import { AdminEngine } from '@/modules/admin-engine/admin.engine';
 import { _verifyAdmin } from '@/modules/auth/rbac.service';
 import { TokenService } from '@/modules/auth/token.service';
+import { subjectSchema } from '@/schemas/hierarchy.schemas';
+
+const log = logger.child({ module: 'admin:subjects:id' });
 
 export async function PATCH(
   _req: NextRequest,
@@ -18,13 +21,18 @@ export async function PATCH(
     }
     const _payload = await TokenService.verifyAccessToken(_token, true);
 
-    const body = await _req.json() as Partial<SubjectInsert>;
+    const rawBody = await _req.json();
+    const parsed = subjectSchema.partial().safeParse(rawBody);
+    if (!parsed.success) {
+      return NextResponse.json({ _error: 'Invalid payload', issues: parsed.error.issues }, { status: 400 });
+    }
+    const body = parsed.data;
     const result = await AdminEngine.updateSubject(id, body, _payload.userId);
     
     return NextResponse.json(result);
   } catch (_error: unknown) {
     const message = _error instanceof Error ? _error.message : 'Internal Server Error';
-    console.error('[ADMIN_SUBJECT_PATCH] Error:', message);
+    log.error({ id: (await params).id, error: message }, 'ADMIN_SUBJECT_PATCH failed');
     return NextResponse.json({ _error: message }, { status: 500 });
   }
 }
@@ -49,7 +57,7 @@ export async function DELETE(
     return NextResponse.json(result);
   } catch (_error: unknown) {
     const message = _error instanceof Error ? _error.message : 'Internal Server Error';
-    console.error('[ADMIN_SUBJECT_DELETE] Error:', message);
+    log.error({ id: (await params).id, error: message }, 'ADMIN_SUBJECT_DELETE failed');
     return NextResponse.json({ _error: message }, { status: 500 });
   }
 }

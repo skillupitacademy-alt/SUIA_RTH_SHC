@@ -2,12 +2,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { apiClient } from '@quiz/api-client';
+import { ZLoader } from '@quiz/ui';
 import { TrendingUp, UserCheck, Users } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
+import { clientLogger } from '@/utils/clientLogger';
+
 export function UserAnalyticsPanel() {
     const [stats, setStats] = useState<any>(null);
-    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
         const fetch = async () => {
@@ -15,37 +17,19 @@ export function UserAnalyticsPanel() {
                 const data = await apiClient.admin.getUserMetrics();
                 setStats(data);
             } catch (err) {
-                console.error("Failed to fetch user metrics", err);
-            } finally {
-                setIsLoading(false);
+                clientLogger.error('Failed to fetch user metrics', { error: err instanceof Error ? err.message : 'unknown' });
             }
         };
         void fetch();
     }, []);
 
-    if (isLoading || stats === null) {
+    if (stats === null) {
         return (
-            <div className="p-8 rounded-[2rem] border border-primary/10 bg-muted/5 animate-pulse h-[450px]">
-                <div className="flex justify-between mb-8">
-                    <div className="h-10 w-40 bg-black/5 rounded" />
-                    <div className="h-10 w-44 bg-black/5 rounded-full" />
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                    <div className="h-28 bg-white/50 rounded-[1.5rem]" />
-                    <div className="h-28 bg-white/50 rounded-[1.5rem]" />
-                </div>
-                <div className="grid grid-cols-2 gap-3 mb-8">
-                    <div className="h-16 bg-white/30 rounded-[1.25rem]" />
-                    <div className="h-16 bg-white/30 rounded-[1.25rem]" />
-                </div>
-                <div className="h-14 bg-black/5 rounded-xl" />
+            <div className="p-12 flex items-center justify-center bg-muted/5 border border-primary/10 rounded-[2rem]">
+                <ZLoader text="Accessing User Matrix..." />
             </div>
         );
     }
-
-    const total = stats.total ?? 0;
-    const verified = stats.verified ?? 0;
-    const verificationRate = total > 0 ? Math.round((verified / total) * 100) : 0;
 
     return (
         <div className="p-8 rounded-[2rem] border border-primary/10 bg-muted/5 backdrop-blur-md shadow-sm h-full">
@@ -69,7 +53,7 @@ export function UserAnalyticsPanel() {
                             </div>
                             <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Total Users</span>
                         </div>
-                        <p className="text-3xl font-black tracking-tighter text-[#1A1A1A]">{total.toLocaleString()}</p>
+                        <p className="text-3xl font-black tracking-tighter text-[#1A1A1A]">{stats.total.toLocaleString()}</p>
                     </div>
                 </div>
 
@@ -80,30 +64,30 @@ export function UserAnalyticsPanel() {
                         </div>
                         <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Verified Accounts</span>
                     </div>
-                    <p className="text-3xl font-black tracking-tighter text-[#1A1A1A]">{verified.toLocaleString()}</p>
+                    <p className="text-3xl font-black tracking-tighter text-[#1A1A1A]">{stats.verified.toLocaleString()}</p>
                 </div>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
                 <div className="p-4 rounded-[1.25rem] bg-muted/20 border border-muted-foreground/5 text-center">
                     <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">New Today</p>
-                    <p className="text-xl font-black text-[#1A1A1A]">+{stats.newToday ?? 0}</p>
+                    <p className="text-xl font-black text-[#1A1A1A]">+{stats.newToday}</p>
                 </div>
                 <div className="p-4 rounded-[1.25rem] bg-red-500/5 border border-red-500/10 text-center">
                     <p className="text-[10px] font-bold text-red-500 uppercase tracking-widest mb-1">Locked Accounts</p>
-                    <p className="text-xl font-black text-red-600">{stats.lockedCount ?? 0}</p>
+                    <p className="text-xl font-black text-red-600">{stats.lockedCount}</p>
                 </div>
             </div>
 
             <div className="mt-8 pt-8 border-t border-muted-foreground/10">
                 <div className="flex items-center justify-between text-[11px] font-black uppercase tracking-widest">
                     <span className="text-muted-foreground">Verification Rate</span>
-                    <span className="text-[#FF4B91]">{verificationRate}%</span>
+                    <span className="text-[#FF4B91]">{Math.round((stats.verified / stats.total) * 100)}%</span>
                 </div>
                 <div className="mt-3 h-2 w-full bg-muted rounded-full overflow-hidden">
                     <div
                         className="h-full bg-gradient-to-r from-[#FF4B91] to-[#FF8E9E]"
-                        style={{ width: `${verificationRate}%` }}
+                        style={{ width: `${(stats.verified / stats.total) * 100}%` }}
                     />
                 </div>
             </div>

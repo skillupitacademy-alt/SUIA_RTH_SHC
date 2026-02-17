@@ -7,6 +7,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 
 import { useAuthStore } from '@/store/auth-store';
+import { clientLogger } from '@/utils/clientLogger';
 
 export function AdminGuard({ children }: { children: React.ReactNode }) {
     const { user, isAuthenticated, initialized, login, logout, expiresAt, isLocked } = useAuthStore();
@@ -32,9 +33,9 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
                     login(validatedUser, validatedExpiresAt);
                 }
             } catch (err: unknown) {
-                console.error("Session revalidation failed:", err);
+                clientLogger.error("Session revalidation failed", { error: err instanceof Error ? err.message : 'unknown' });
                 if (err instanceof Error && (err.message.includes('Invalid token') || err.message.includes('signature') || err.message.includes('jwt'))) {
-                    console.warn("Detected invalid token, forcing logout...");
+                    clientLogger.warn("Detected invalid token, forcing logout...");
                     logout();
                     router.push('/login');
                 }
@@ -54,20 +55,22 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
             // We should NOT trigger a hard logout/redirect in the background.
             // The AdminLockScreen will handle re-authentication when the user attempts to unlock.
             if (isLocked === true) {
-                console.warn("Circuit Breaker: 401 detected while LOCKED. Deferring to Lock Protocol.");
+                clientLogger.warn("Circuit Breaker: 401 detected while LOCKED. Deferring to Lock Protocol.");
                 e.preventDefault(); // Tells FetchClient NOT to perform hard window.location redirect
                 return;
             }
 
             void (async () => {
-                console.warn("Circuit Breaker: Global 401 detected. Logging out.");
+                clientLogger.warn("Circuit Breaker: Global 401 detected. Logging out.");
                 try {
                     await apiClient.auth.logout();
                 } catch (err) {
-                    console.error("Server-side logout failed during unauthorized event:", err);
+                    clientLogger.error("Server-side logout failed during unauthorized event", { error: err instanceof Error ? err.message : 'unknown' });
                 } finally {
                     logout();
-                    localStorage.removeItem('quiz-platform-admin-auth');
+                    if (typeof window !== 'undefined') {
+                        window.localStorage.removeItem('quiz-platform-admin-auth');
+                    }
                     router.push('/login?reason=session_expired');
                 }
             })();

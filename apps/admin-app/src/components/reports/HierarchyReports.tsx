@@ -18,6 +18,7 @@ import {
 import React, { useEffect, useState } from 'react';
 
 import { cn } from '@/lib/utils';
+import { clientLogger } from '@/utils/clientLogger';
 
 interface HierarchyItem {
     id: string;
@@ -84,7 +85,7 @@ export const HierarchyReports: React.FC = () => {
             setReportData(normalizedData);
             setViewStack([{ level: 'domain', data: normalizedData, title: 'Global Domains' }]);
         } catch (error) {
-            console.error('Failed to fetch report:', error);
+            clientLogger.error('Failed to fetch hierarchy report', { error: error instanceof Error ? error.message : 'unknown' });
         } finally {
             setLoading(false);
             setIsPageLoading(false);

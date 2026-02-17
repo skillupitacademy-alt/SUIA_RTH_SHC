@@ -9,16 +9,17 @@ import Image from 'next/image';
 import { useEffect, useState } from 'react';
 
 import { ErrorBanner } from '@/components/layout/ErrorBanner';
+import { clientLogger } from '@/utils/clientLogger';
 
 interface UserData {
     id: string;
     email: string;
-    emailVerified: boolean;
-    isBlocked: boolean;
+    emailVerified?: boolean;
+    isBlocked?: boolean;
     lastActiveAt?: string;
     status?: 'online' | 'idle' | 'offline' | 'blocked';
-    createdAt: string;
-    userRoles: { role: { name: string } }[];
+    createdAt?: string;
+    userRoles?: { role: { name: string } }[];
     profile?: {
         name?: string;
         avatarUrl?: string;
@@ -83,9 +84,9 @@ export function UserTable() {
 
             setUsers(activeData.users);
             setTotalPages(activeData.totalPages);
-            setTotalCount(activeData.total ?? activeData.users?.length ?? 0);
+            setTotalCount(activeData.total ?? activeData.users.length);
         } catch (error) {
-            console.error('Failed to fetch users:', error);
+            clientLogger.error('Failed to fetch users', { error: error instanceof Error ? error.message : 'unknown' });
             setErrorMessage('Connection Error: Unable to sync user accounts at this time.');
         } finally {
             setIsLoading(false);
@@ -109,7 +110,7 @@ export function UserTable() {
         if (editingUser === null) return;
         setIsSaving(true);
         try {
-            const currentRoles = editingUser.userRoles.map(r => r.role.name);
+            const currentRoles = (editingUser.userRoles ?? []).map(r => r.role.name);
             const payload: Record<string, unknown> = {
                 isBlocked: editingUser.isBlocked,
                 roles: currentRoles
@@ -120,7 +121,7 @@ export function UserTable() {
             await fetchUsers();
             handleCloseEdit();
         } catch (error) {
-            console.error('Failed to update user:', error);
+            clientLogger.error('Failed to update user', { error: error instanceof Error ? error.message : 'unknown' });
             setErrorMessage('Update Failed: Unable to save changes to this user account.');
         } finally {
             setIsSaving(false);
@@ -136,7 +137,7 @@ export function UserTable() {
             handleCloseEdit();
             setShowDeleteConfirm(false);
         } catch (error) {
-            console.error('Failed to delete user:', error);
+            clientLogger.error('Failed to delete user', { error: error instanceof Error ? error.message : 'unknown' });
             setErrorMessage('Action Rejected: This user cannot be terminated from the system.');
         } finally {
             setIsSaving(false);
@@ -145,16 +146,17 @@ export function UserTable() {
 
     const toggleAdminRole = (isAdmin: boolean) => {
         if (editingUser === null) return;
-        const hasAdmin = editingUser.userRoles.some(r => r.role.name === 'ADMIN');
+        const currentRoles = editingUser.userRoles ?? [];
+        const hasAdmin = currentRoles.some(r => r.role.name === 'ADMIN');
         if (isAdmin && !hasAdmin) {
             setEditingUser({
                 ...editingUser,
-                userRoles: [...editingUser.userRoles, { role: { name: 'ADMIN' } }]
+                userRoles: [...currentRoles, { role: { name: 'ADMIN' } }]
             });
         } else if (!isAdmin && hasAdmin) {
             setEditingUser({
                 ...editingUser,
-                userRoles: editingUser.userRoles.filter(r => r.role.name !== 'ADMIN')
+                userRoles: currentRoles.filter(r => r.role.name !== 'ADMIN')
             });
         }
     };
@@ -170,7 +172,13 @@ export function UserTable() {
         setErrorMessage(null);
     };
 
-
+    if (isLoading) {
+        return (
+            <div className="flex flex-col items-center justify-center py-40 gap-4">
+                <ZLoader size="md" text="Syncing Pulse Diagnostic..." />
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-6 flex flex-col min-h-[850px]">
@@ -189,6 +197,7 @@ export function UserTable() {
                         <input
                             type="text"
                             placeholder="Search Identity (Name/Email)..."
+                            aria-label="Search users by name or email"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             className="w-full pl-12 pr-4 py-3 bg-slate-50 border-none rounded-2xl text-sm font-bold placeholder:text-slate-300 focus:ring-2 focus:ring-[#FF4B91]/20 transition-all"
@@ -235,13 +244,7 @@ export function UserTable() {
                     </div>
                 </div>
 
-                <div className="mt-6 rounded-[2.5rem] border border-primary/10 bg-white/50 backdrop-blur-xl overflow-hidden shadow-xl relative min-h-[400px]">
-                    {isLoading === true && (
-                        <div className="absolute inset-0 z-10 bg-white/40 backdrop-blur-[2px] flex items-center justify-center">
-                            <ZLoader size="md" text="Syncing Identity Matrix_" />
-                        </div>
-                    )}
-
+                <div className="mt-6 rounded-[2.5rem] border border-primary/10 bg-white/50 backdrop-blur-xl overflow-hidden shadow-xl">
                     <div className="overflow-x-auto">
                         <table className="w-full text-left">
                             <thead>
@@ -254,139 +257,121 @@ export function UserTable() {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-primary/5">
-                                {(isLoading === true && users.length === 0) ? (
-                                    Array.from({ length: 5 }).map((_, i) => (
-                                        <tr key={i} className="animate-pulse">
-                                            <td colSpan={5} className="p-8">
-                                                <div className="h-12 bg-slate-100 rounded-2xl w-full" />
-                                            </td>
-                                        </tr>
-                                    ))
-                                ) : (
-                                    <>
-                                        {users.map((user) => (
-                                            <tr key={user.id} className={`group transition-colors ${user.isBlocked ? 'bg-red-50/50 hover:bg-red-50' : 'hover:bg-primary/5'}`}>
-
-                                                <td className="p-6">
-                                                    <div className="flex items-center gap-4">
-                                                        <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center border border-white shadow-sm overflow-hidden">
-                                                            {(user.profile?.avatarUrl != null && user.profile.avatarUrl !== '') ? (
-                                                                <Image
-                                                                    src={user.profile.avatarUrl}
-                                                                    alt="User avatar"
-                                                                    width={40}
-                                                                    height={40}
-                                                                    className="h-full w-full object-cover"
-                                                                    unoptimized
-                                                                />
-                                                            ) : (
-                                                                <User size={18} className="text-gray-400" />
-                                                            )}
-                                                        </div>
-                                                        <div>
-                                                            <div className="flex items-center gap-2">
-                                                                <p className="font-bold text-[#1A1A1A]">{(user.profile?.name != null && user.profile.name !== '') ? user.profile.name : 'Unknown Agent'}</p>
-                                                                {user.emailVerified === true ? <div className="p-0.5 rounded-full bg-green-500 text-white" title="Identity Verified">
-                                                                    <CheckCircle size={10} />
-                                                                </div> : null}
-                                                            </div>
-                                                            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                                                                <Mail size={10} />
-                                                                {user.email}
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                                <td className="p-6">
-                                                    <div className="flex flex-wrap gap-2">
-                                                        {user.userRoles.map((r, i) => (
-                                                            <span key={i} className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider border ${r.role.name === 'admin' ? 'bg-[#FF4B91]/10 text-[#FF4B91] border-[#FF4B91]/20' : 'bg-gray-100 text-gray-600 border-gray-200'}`}>
-                                                                {r.role.name}
-                                                            </span>
-                                                        ))}
-                                                    </div>
-                                                </td>
-                                                <td className="p-6">
+                                {users.map((user) => (
+                                    <tr key={user.id} className={`group transition-colors ${user.isBlocked === true ? 'bg-red-50/50 hover:bg-red-50' : 'hover:bg-primary/5'}`}>
+                                        <td className="p-6">
+                                            <div className="flex items-center gap-4">
+                                                <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center border border-white shadow-sm overflow-hidden">
+                                                    {(user.profile?.avatarUrl != null && user.profile.avatarUrl !== '') ? (
+                                                        <Image
+                                                            src={user.profile.avatarUrl}
+                                                            alt="User avatar"
+                                                            width={40}
+                                                            height={40}
+                                                            className="h-full w-full object-cover"
+                                                            unoptimized
+                                                        />
+                                                    ) : (
+                                                        <User size={18} className="text-gray-400" />
+                                                    )}
+                                                </div>
+                                                <div>
                                                     <div className="flex items-center gap-2">
-                                                        {user.status === 'online' && (
-                                                            <>
-                                                                <span className="relative flex h-3 w-3">
-                                                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
-                                                                    <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500" />
-                                                                </span>
-                                                                <span className="text-xs font-bold uppercase tracking-wide text-green-600">Online</span>
-                                                            </>
-                                                        )}
-                                                        {user.status === 'idle' && (
-                                                            <>
-                                                                <div className="h-2.5 w-2.5 rounded-full bg-yellow-400" />
-                                                                <span className="text-xs font-bold uppercase tracking-wide text-yellow-600">Idle</span>
-                                                            </>
-                                                        )}
-                                                        {(user.status === 'offline' || !user.status) && !user.isBlocked && (
-                                                            <>
-                                                                <div className="h-2.5 w-2.5 rounded-full bg-gray-300" />
-                                                                <span className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Offline</span>
-                                                            </>
-                                                        )}
-                                                        {user.isBlocked ? <>
-                                                            <Shield size={14} className="fill-current text-red-600" />
-                                                            <span className="text-xs font-bold uppercase tracking-wide text-red-600">Blocked</span>
-                                                        </> : null}
+                                                        <p className="font-bold text-[#1A1A1A]">{(user.profile?.name != null && user.profile.name !== '') ? user.profile.name : 'Unknown Agent'}</p>
+                                                        {user.emailVerified === true ? <div className="p-0.5 rounded-full bg-green-500 text-white" title="Identity Verified">
+                                                            <CheckCircle size={10} />
+                                                        </div> : null}
                                                     </div>
-                                                </td>
-                                                <td className="p-6">
-                                                    <div className="flex items-center gap-2 text-muted-foreground">
-                                                        <Calendar size={14} />
-                                                        <span className="text-xs font-medium">{formatDistanceToNow(new Date(user.createdAt), { addSuffix: true })}</span>
+                                                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                                                        <Mail size={10} />
+                                                        {user.email}
                                                     </div>
-                                                </td>
-                                                <td className="p-6 text-right">
-                                                    <div className="flex items-center justify-end gap-2">
-                                                        <button
-                                                            onClick={() => {
-                                                                const p = (async () => {
-                                                                    setIsActionLoading(true);
-                                                                    await new Promise(r => setTimeout(r, 1000));
-                                                                    setIsActionLoading(false);
-                                                                    setEditingUser(user);
-                                                                })();
-                                                                void p;
-                                                            }}
-                                                            className="px-3 py-1.5 rounded-lg border border-gray-200 text-[#1A1A1A] text-[10px] font-black uppercase tracking-widest hover:bg-black hover:text-white transition-all shadow-sm"
-                                                        >
-                                                            Manage
-                                                        </button>
-                                                        <button
-                                                            onClick={() => {
-                                                                const p = (async () => {
-                                                                    setIsActionLoading(true);
-                                                                    await new Promise(r => setTimeout(r, 1000));
-                                                                    setIsActionLoading(false);
-                                                                    setSelectedUser(user);
-                                                                })();
-                                                                void p;
-                                                            }}
-                                                            className="px-3 py-1.5 rounded-lg bg-white border border-gray-200 text-[10px] font-black uppercase tracking-widest hover:bg-gray-50 hover:border-[#FF4B91]/30 hover:text-[#FF4B91] transition-all shadow-sm"
-                                                        >
-                                                            Profile
-                                                        </button>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                        {users.length === 0 && !isLoading && (
-                                            <tr>
-                                                <td colSpan={5} className="py-32 text-center opacity-50">
-                                                    <User className="w-16 h-16 mx-auto mb-4 text-slate-400" />
-                                                    <h3 className="text-lg font-bold text-slate-500 font-outfit uppercase tracking-tighter">Negative Identity Match_</h3>
-                                                </td>
-                                            </tr>
-                                        )}
-                                    </>
-                                )}
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td className="p-6">
+                                            <div className="flex flex-wrap gap-2">
+                                                {(user.userRoles ?? []).map((r, i) => (
+                                                    <span
+                                                        key={i}
+                                                        className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider border ${r.role.name === 'admin' ? 'bg-[#FF4B91]/10 text-[#FF4B91] border-[#FF4B91]/20' : 'bg-gray-100 text-gray-600 border-gray-200'}`}
+                                                        aria-label={`Role ${r.role.name}`}
+                                                    >
+                                                        {r.role.name}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        </td>
+                                        <td className="p-6">
+                                            <div className="flex items-center gap-2">
+                                                {user.status === 'online' && (
+                                                    <>
+                                                        <span className="relative flex h-3 w-3">
+                                                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
+                                                            <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500" />
+                                                        </span>
+                                                        <span className="text-xs font-bold uppercase tracking-wide text-green-600">Online</span>
+                                                    </>
+                                                )}
+                                                {user.status === 'idle' && (
+                                                    <>
+                                                        <div className="h-2.5 w-2.5 rounded-full bg-yellow-400" />
+                                                        <span className="text-xs font-bold uppercase tracking-wide text-yellow-600">Idle</span>
+                                                    </>
+                                                )}
+                                                {(user.status === 'offline' || !user.status) && user.isBlocked !== true && (
+                                                    <>
+                                                        <div className="h-2.5 w-2.5 rounded-full bg-gray-300" />
+                                                        <span className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Offline</span>
+                                                    </>
+                                                )}
+                                                {user.isBlocked === true ? <>
+                                                    <Shield size={14} className="fill-current text-red-600" />
+                                                    <span className="text-xs font-bold uppercase tracking-wide text-red-600">Blocked</span>
+                                                </> : null}
+                                            </div>
+                                        </td>
+                                        <td className="p-6">
+                                            <div className="flex items-center gap-2 text-muted-foreground">
+                                                <Calendar size={14} />
+                                                <span className="text-xs font-medium">{formatDistanceToNow(new Date(user.createdAt ?? Date.now()), { addSuffix: true })}</span>
+                                            </div>
+                                        </td>
+                                        <td className="p-6 text-right">
+                                            <div className="flex items-center justify-end gap-2">
+                                                <button
+                                                    onClick={() => {
+                                                        const p = (async () => {
+                                                            setIsActionLoading(true);
+                                                            await new Promise(r => setTimeout(r, 1000));
+                                                            setIsActionLoading(false);
+                                                            setEditingUser(user);
+                                                        })();
+                                                        void p;
+                                                    }}
+                                                    className="px-3 py-1.5 rounded-lg border border-gray-200 text-[#1A1A1A] text-[10px] font-black uppercase tracking-widest hover:bg-black hover:text-white transition-all shadow-sm"
+                                                >
+                                                    Manage
+                                                </button>
+                                                <button
+                                                    onClick={() => {
+                                                        const p = (async () => {
+                                                            setIsActionLoading(true);
+                                                            await new Promise(r => setTimeout(r, 1000));
+                                                            setIsActionLoading(false);
+                                                            setSelectedUser(user);
+                                                        })();
+                                                        void p;
+                                                    }}
+                                                    className="px-3 py-1.5 rounded-lg bg-white border border-gray-200 text-[10px] font-black uppercase tracking-widest hover:bg-gray-50 hover:border-[#FF4B91]/30 hover:text-[#FF4B91] transition-all shadow-sm"
+                                                >
+                                                    Profile
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
                             </tbody>
-
                         </table>
                     </div>
                 </div>
@@ -412,24 +397,25 @@ export function UserTable() {
                     <form onSubmit={(e) => { void handleSaveUser(e); }} className="p-8 space-y-6">
                         <div className="space-y-4">
                             <div className="space-y-2">
-                                <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">User Status</label>
+                                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">User Status</p>
                                 <div className="flex items-center justify-between p-4 rounded-xl border border-gray-200 bg-gray-50">
                                     <div className="flex items-center gap-3">
-                                        <Shield size={18} className={editingUser.isBlocked ? "text-red-500" : "text-green-500"} />
+                                        <Shield size={18} className={editingUser.isBlocked === true ? "text-red-500" : "text-green-500"} />
                                         <span className="text-sm font-bold text-[#1A1A1A]">Block Access</span>
                                     </div>
                                     <button
                                         type="button"
-                                        onClick={() => setEditingUser({ ...editingUser, isBlocked: !editingUser.isBlocked })}
-                                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${editingUser.isBlocked ? 'bg-red-500' : 'bg-gray-200'}`}
+                                        onClick={() => setEditingUser({ ...editingUser, isBlocked: editingUser.isBlocked === true ? false : true })}
+                                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${editingUser.isBlocked === true ? 'bg-red-500' : 'bg-gray-200'}`}
+                                        aria-label={editingUser.isBlocked === true ? "Unblock user" : "Block user"}
                                     >
-                                        <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${editingUser.isBlocked ? 'translate-x-6' : 'translate-x-1'}`} />
+                                        <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${editingUser.isBlocked === true ? 'translate-x-6' : 'translate-x-1'}`} />
                                     </button>
                                 </div>
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Role Assignment</label>
+                                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Role Assignment</p>
                                 <div className="flex items-center justify-between p-4 rounded-xl border border-gray-200 bg-gray-50">
                                     <div className="flex items-center gap-3">
                                         <User size={18} className="text-[#FF4B91]" />
@@ -437,22 +423,24 @@ export function UserTable() {
                                     </div>
                                     <input
                                         type="checkbox"
+                                        id="user-admin-toggle"
                                         className="h-5 w-5 rounded border-gray-300 text-[#FF4B91] focus:ring-[#FF4B91]"
-                                        checked={editingUser.userRoles.some(r => r.role.name === 'ADMIN')}
+                                        checked={(editingUser.userRoles ?? []).some(r => r.role.name === 'ADMIN')}
                                         onChange={(e) => toggleAdminRole(e.target.checked)}
                                     />
                                 </div>
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Security</label>
+                                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Security</p>
                                 <div className="p-4 rounded-xl border border-gray-200 bg-gray-50 space-y-4">
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-bold text-gray-500 uppercase">Change Password</label>
+                                        <label className="text-[10px] font-bold text-gray-500 uppercase" htmlFor="user-new-password">Change Password</label>
                                         <div className="flex items-center gap-3">
                                             <Lock size={16} className="text-gray-400" />
                                             <input
                                                 type="password"
+                                                id="user-new-password"
                                                 placeholder="Enter new password (optional)"
                                                 value={newPassword}
                                                 onChange={(e) => setNewPassword(e.target.value)}
@@ -494,11 +482,11 @@ export function UserTable() {
                         <div className="p-8 space-y-8">
                             <div className="grid grid-cols-2 gap-6">
                                 <div className="space-y-1">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Professional Status</label>
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Professional Status</p>
                                     <p className="font-bold text-lg text-[#1A1A1A]">{selectedUser.profile?.professionalStatus != null && selectedUser.profile.professionalStatus !== '' ? selectedUser.profile.professionalStatus : 'N/A'}</p>
                                 </div>
                                 <div className="space-y-1">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Education</label>
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Education</p>
                                     <p className="font-bold text-lg text-[#1A1A1A]">{selectedUser.profile?.educationLevel != null && selectedUser.profile.educationLevel !== '' ? selectedUser.profile.educationLevel : 'N/A'}</p>
                                 </div>
                             </div>

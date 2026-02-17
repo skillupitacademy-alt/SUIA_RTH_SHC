@@ -2,6 +2,7 @@ import { db, questions } from "@quiz/db";
 import { and,eq } from 'drizzle-orm';
 import { type NextRequest, NextResponse } from 'next/server';
 
+import { logger } from "@/lib/logger";
 import { TokenService } from "@/modules/auth/token.service";
 
 interface DuplicateCheckPayload {
@@ -62,7 +63,7 @@ export async function POST(req: NextRequest) {
     });
 
   } catch (error) {
-    console.error("Duplicate Check Error:", error);
+    logger.error({ err: error }, "Duplicate Check Error");
     return NextResponse.json(
       { _error: error instanceof Error ? error.message : "Access denied" },
       { status: 403 }

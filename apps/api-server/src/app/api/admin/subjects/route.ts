@@ -1,11 +1,15 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
+import { logger } from '@/lib/logger';
 import type { SubjectInsert } from '@/modules/admin-engine/admin.engine';
 import { AdminEngine } from '@/modules/admin-engine/admin.engine';
 import { TokenService } from '@/modules/auth/token.service';
+import { subjectSchema } from '@/schemas/hierarchy.schemas';
 
 export const dynamic = 'force-dynamic';
+
+const log = logger.child({ module: 'admin:subjects' });
 
 export async function GET(_req: NextRequest) {
   try {
@@ -25,7 +29,7 @@ export async function GET(_req: NextRequest) {
     return NextResponse.json(data);
   } catch (_error: unknown) {
     const message = _error instanceof Error ? _error.message : 'Internal Server Error';
-    console.error('[ADMIN_SUBJECTS_GET] Error:', message);
+    log.error({ error: message }, 'ADMIN_SUBJECTS_GET failed');
     return NextResponse.json({ _error: message }, { status: 500 });
   }
 }
@@ -38,13 +42,27 @@ export async function POST(_req: NextRequest) {
     }
     const _payload = await TokenService.verifyAccessToken(_token, true);
 
-    const body = await _req.json() as SubjectInsert;
-    const result = await AdminEngine.createSubject(body, _payload.userId);
+    const rawBody = await _req.json();
+    const parsed = subjectSchema.safeParse(rawBody);
+    if (!parsed.success) {
+      return NextResponse.json({ _error: 'Invalid payload', issues: parsed.error.issues }, { status: 400 });
+    }
+    const body = parsed.data;
+
+    const createBody: SubjectInsert = {
+      domainId: body.domainId,
+      name: body.name,
+      description: body.description,
+      status: body.status,
+      order: body.order,
+    };
+
+    const result = await AdminEngine.createSubject(createBody, _payload.userId);
     
     return NextResponse.json(result);
   } catch (_error: unknown) {
     const message = _error instanceof Error ? _error.message : 'Internal Server Error';
-    console.error('[ADMIN_SUBJECTS_POST] Error:', message);
+    log.error({ error: message }, 'ADMIN_SUBJECTS_POST failed');
     return NextResponse.json({ _error: message }, { status: 500 });
   }
 }

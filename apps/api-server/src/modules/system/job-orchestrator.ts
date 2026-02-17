@@ -2,10 +2,13 @@ import { db } from '@quiz/db';
 import { JobStatus, JobType } from '@quiz/types';
 import { sql } from 'drizzle-orm';
 
-import { ScoringEngine } from '../scoring-engine/scoring.engine';
-import { JobsService } from './jobs.service';
+import { logger } from '@/lib/logger';
+import { ScoringEngine } from '@/modules/scoring-engine/scoring.engine';
+import { JobsService } from '@/modules/system/jobs.service';
 
 export class JobOrchestrator {
+    private static log = logger.child({ module: 'system:job-orchestrator' });
+
     /**
      * Executes a job based on its type.
      * This is intended to be called in a "fire-and-forget" manner from the API
@@ -14,12 +17,12 @@ export class JobOrchestrator {
     static async runJob(jobId: string, userId: string): Promise<void> {
         const job = await JobsService.getJob(jobId, userId);
         if (job === undefined) {
-            console.error(`[JobOrchestrator] Job ${jobId} not found for user ${userId}`);
+            this.log.error({ jobId, userId }, 'Job not found');
             return;
         }
 
         if (job.status !== 'pending') {
-            console.warn(`[JobOrchestrator] Job ${jobId} is already in ${job.status} state. Skipping.`);
+            this.log.warn({ jobId, status: job.status }, 'Job already in terminal state');
             return;
         }
 
@@ -42,7 +45,10 @@ export class JobOrchestrator {
                     throw new Error(`Unknown job type: ${job.type}`);
             }
         } catch (err) {
-            console.error(`[JobOrchestrator] Job ${jobId} failed:`, err);
+            this.log.error(
+                { jobId, error: err instanceof Error ? err.message : 'unknown error' },
+                'Job failed',
+            );
             await JobsService.updateJobStatus(jobId, JobStatus.FAILED, {
                 error: err instanceof Error ? err.message : 'Unknown error during execution'
             });
@@ -52,21 +58,15 @@ export class JobOrchestrator {
     private static async handleExamScoring(jobId: string, payload: { examId: string }): Promise<void> {
         if (payload.examId === undefined || payload.examId === null || payload.examId === '') throw new Error('Missing examId in payload');
 
-        try {
-            const finalScore = await ScoringEngine.calculateExamResults(payload.examId);
-            
-            await JobsService.updateJobStatus(jobId, JobStatus.COMPLETED, {
-                result: {
-                    examId: payload.examId,
-                    finalScore,
-                    completedAt: new Date().toISOString()
-                }
-            });
-        } catch (err) {
-            // ScoringEngine already updates exam status to 'failed', 
-            // but we need to update the job status too.
-            throw err; 
-        }
+        const finalScore = await ScoringEngine.calculateExamResults(payload.examId);
+        
+        await JobsService.updateJobStatus(jobId, JobStatus.COMPLETED, {
+            result: {
+                examId: payload.examId,
+                finalScore,
+                completedAt: new Date().toISOString()
+            }
+        });
     }
 
     private static async handleAnalyticsRefresh(jobId: string): Promise<void> {
@@ -85,7 +85,10 @@ export class JobOrchestrator {
                 }
             });
         } catch (err) {
-            console.error(`[JobOrchestrator] Analytics refresh failed:`, err);
+            this.log.error(
+                { jobId, error: err instanceof Error ? err.message : 'unknown error' },
+                'Analytics refresh failed',
+            );
             throw err;
         }
     }

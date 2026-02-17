@@ -1,7 +1,8 @@
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
-require('dotenv').config({ path: path.join(__dirname, '../.env') });
+const { envPath } = require('../config/envPaths');
+require('dotenv').config({ path: envPath('packages/db/.env') });
 const { neon } = require('@neondatabase/serverless');
 
 const DATABASE_URL = process.env.DATABASE_URL;

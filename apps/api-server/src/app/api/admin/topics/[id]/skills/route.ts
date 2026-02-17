@@ -1,11 +1,14 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
+import { logger } from '@/lib/logger';
 import { AdminEngine } from '@/modules/admin-engine/admin.engine';
 import { _verifyAdmin } from '@/modules/auth/rbac.service';
 import { TokenService } from '@/modules/auth/token.service';
 
 export const dynamic = 'force-dynamic';
+
+const log = logger.child({ module: 'admin:topics:skills' });
 
 export async function GET(
     _req: NextRequest,
@@ -28,7 +31,7 @@ export async function GET(
         return NextResponse.json(data);
     } catch (_error: unknown) {
         const message = _error instanceof Error ? _error.message : 'Internal Server Error';
-        console.error('[TOPIC_SKILLS_GET] Error:', message);
+        log.error({ id: (await params).id, error: message }, 'TOPIC_SKILLS_GET failed');
         return NextResponse.json({ _error: 'Internal Server Error' }, { status: 500 });
     }
 }
@@ -56,7 +59,7 @@ export async function POST(
         return NextResponse.json(result);
     } catch (_error: unknown) {
         const message = _error instanceof Error ? _error.message : 'Internal Server Error';
-        console.error('[TOPIC_SKILLS_POST] Error:', message);
+        log.error({ id: (await params).id, error: message }, 'TOPIC_SKILLS_POST failed');
         return NextResponse.json({ _error: message }, { status: 500 });
     }
 }

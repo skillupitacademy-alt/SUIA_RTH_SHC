@@ -1,6 +1,6 @@
 import { Resend } from 'resend';
 
-import type { EmailOptions,IEmailProvider } from '../types';
+import type { EmailOptions, IEmailProvider } from '@/modules/email/types';
 
 export class ResendEmailProvider implements IEmailProvider {
   private resend: Resend;

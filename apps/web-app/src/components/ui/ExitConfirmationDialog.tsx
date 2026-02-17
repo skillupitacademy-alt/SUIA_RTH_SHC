@@ -3,6 +3,7 @@
 import { useEffect, useRef } from 'react';
 import { AlertTriangle, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useFocusTrap } from '@/hooks/useFocusTrap';
 
 interface ExitConfirmationDialogProps {
     isOpen: boolean;
@@ -20,6 +21,7 @@ export function ExitConfirmationDialog({
     message = "You have unsaved progress. Are you sure you want to leave?"
 }: ExitConfirmationDialogProps) {
     const dialogRef = useRef<HTMLDivElement>(null);
+    useFocusTrap(dialogRef, isOpen);
 
     // Focus trap and escape key handling
     useEffect(() => {
@@ -50,9 +52,11 @@ export function ExitConfirmationDialog({
             aria-labelledby="exit-dialog-title"
         >
             {/* Backdrop */}
-            <div
+            <button
+                type="button"
                 className="absolute inset-0 bg-black/60 backdrop-blur-sm"
                 onClick={onCancel}
+                aria-label="Close exit dialog"
             />
 
             {/* Dialog */}

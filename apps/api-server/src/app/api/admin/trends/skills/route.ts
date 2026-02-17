@@ -1,9 +1,12 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
+import { logger } from '@/lib/logger';
 import { TrendsService } from '@/modules/metrics/trends.service';
 
 export const dynamic = 'force-dynamic';
+
+const log = logger.child({ module: 'admin:trends:skills' });
 
 export async function GET(_request: NextRequest) {
   try {
@@ -19,7 +22,7 @@ export async function GET(_request: NextRequest) {
     return NextResponse.json({ skills });
   } catch (_error: unknown) {
     const message = _error instanceof Error ? _error.message : 'Unknown error';
-    console.error('[Trends Skills API] Error:', message);
+    log.error({ error: message }, 'Trends Skills API failed');
     return NextResponse.json(
       { _error: 'Failed to fetch skill trends', message },
       { status: 500 }

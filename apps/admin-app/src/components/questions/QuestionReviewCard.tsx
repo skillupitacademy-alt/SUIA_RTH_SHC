@@ -15,10 +15,10 @@ import { cn, formatTimeAgo } from '@/lib/utils';
 interface Question {
     id: string;
     questionText: string;
-    status: string;
-    difficulty: string;
+    status?: string;
+    difficulty?: string;
     mappingType?: string;
-    createdAt: string;
+    createdAt?: string;
     explanation?: string;
     correctAnswer?: string;
     options?: (string | { text: string; isCorrect: boolean })[];

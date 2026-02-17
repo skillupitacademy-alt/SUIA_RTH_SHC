@@ -5,6 +5,8 @@ import { apiClient } from '@quiz/api-client';
 import { Key, Shield, UserCog } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
+import { clientLogger } from '@/utils/clientLogger';
+
 export function RBACGovernancePanel() {
     const [roles, setRoles] = useState<any[]>([]);
 
@@ -12,11 +14,9 @@ export function RBACGovernancePanel() {
         const fetch = async () => {
             try {
                 const data = await apiClient.admin.getRBACMetrics();
-                const rolesData = Array.isArray(data) ? data : [];
-                setRoles(rolesData);
+                setRoles(data);
             } catch (err) {
-                console.error("Failed to fetch RBAC metrics", err);
-                setRoles([]);
+                clientLogger.error('Failed to fetch RBAC metrics', { error: err instanceof Error ? err.message : 'unknown' });
             }
         };
         void fetch();
@@ -37,16 +37,16 @@ export function RBACGovernancePanel() {
             </div>
 
             <div className="space-y-4">
-                {roles.map((r, i) => (
-                    <div key={r.role || i} className="flex items-center justify-between p-4 rounded-2xl bg-background border border-muted/50 group hover:border-primary/20 transition-all">
+                {roles.map((r) => (
+                    <div key={r.role} className="flex items-center justify-between p-4 rounded-2xl bg-background border border-muted/50 group hover:border-primary/20 transition-all">
                         <div className="flex items-center gap-4">
-                            <div className={`p-2 rounded-xl ${(r.role ?? '').includes('ADMIN') ? 'bg-red-500/10 text-red-500' : 'bg-blue-500/10 text-blue-500'}`}>
+                            <div className={`p-2 rounded-xl ${r.role === 'SUPER_ADMIN' ? 'bg-red-500/10 text-red-500' : 'bg-blue-500/10 text-blue-500'}`}>
                                 <UserCog size={18} />
                             </div>
-                            <span className="text-sm font-black uppercase tracking-widest text-[#1A1A1A]">{(r.role || 'Unknown').replace('_', ' ')}</span>
+                            <span className="text-sm font-black uppercase tracking-widest text-[#1A1A1A]">{r.role.replace('_', ' ')}</span>
                         </div>
                         <div className="flex items-center gap-3">
-                            <span className="text-xl font-black tracking-tighter text-[#1A1A1A]">{r.count ?? 0}</span>
+                            <span className="text-xl font-black tracking-tighter text-[#1A1A1A]">{r.count}</span>
                             <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest leading-none">Users<br />Assigned</span>
                         </div>
                     </div>

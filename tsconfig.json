@@ -27,8 +27,20 @@
             "@quiz/db": [
                 "./packages/db/src/index.ts"
             ],
+            "@quiz/db/*": [
+                "./packages/db/src/*"
+            ],
             "@quiz/api-client": [
                 "./packages/api-client/src/index.ts"
+            ],
+            "@quiz/api-client/*": [
+                "./packages/api-client/src/*"
+            ],
+            "@quiz/config": [
+                "./packages/config/envPaths.ts"
+            ],
+            "@quiz/config/*": [
+                "./packages/config/*"
             ],
             "@quiz/ui": [
                 "./packages/ui/src/index.ts"
@@ -38,8 +50,15 @@
                 "./apps/admin-app/src/*",
                 "./apps/api-server/src/*",
                 "./packages/ui/src/*"
+            ],
+            "@tests/*": [
+                "./tests/*"
             ]
         },
+        "typeRoots": [
+            "./types",
+            "./node_modules/@types"
+        ],
         "noEmit": true
     },
     "exclude": [
@@ -48,7 +67,12 @@
         "build",
         ".next",
         "**/*.config.js",
-        "**/*.config.mjs",
-        "**/*.config.ts"
+        "**/*.config.mjs"
+    ],
+    "include": [
+        "types/**/*.d.ts",
+        "apps",
+        "packages",
+        "tests"
     ]
 }

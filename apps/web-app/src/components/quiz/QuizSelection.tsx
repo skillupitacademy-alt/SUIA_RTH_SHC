@@ -1,7 +1,6 @@
 'use client';
-/* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
     Code,
@@ -19,10 +18,11 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/store/auth-store';
-import { apiClient } from '@quiz/api-client';
+import { apiClient, Domain, DomainHierarchy, QuestionCounts, Subject, Topic, Subtopic } from '@quiz/api-client';
+import { clientLogger } from '@/utils/clientLogger';
 
 // Map icons to domain IDs (fallback/static mapping for aesthetics)
-const ICON_MAP: Record<string, any> = { // eslint-disable-line @typescript-eslint/no-explicit-any
+const ICON_MAP: Record<string, typeof Code> = {
     'full-stack': Code,
     'web-development': Code,
     'data-analyst': LineChart,
@@ -42,14 +42,14 @@ const ICON_MAP: Record<string, any> = { // eslint-disable-line @typescript-eslin
 export function QuizSelection() {
     const router = useRouter();
     const { isAuthenticated } = useAuthStore();
-    const [domains, setDomains] = useState<any[]>([]); // eslint-disable-line @typescript-eslint/no-explicit-any
+    const [domains, setDomains] = useState<Domain[]>([]);
     const [loading, setLoading] = useState(true);
     const [starting, setStarting] = useState(false);
     const [fetchingHierarchy, setFetchingHierarchy] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
     const [selectedDomain, setSelectedDomain] = useState<string | null>(null);
-    const [fullHierarchy, setFullHierarchy] = useState<any>(null); // eslint-disable-line @typescript-eslint/no-explicit-any
+    const [fullHierarchy, setFullHierarchy] = useState<DomainHierarchy | null>(null);
 
     const [selectedSubjects, setSelectedSubjects] = useState<string[]>([]);
     const [selectedTopics, setSelectedTopics] = useState<string[]>([]);
@@ -57,13 +57,7 @@ export function QuizSelection() {
 
     const [difficulty, setDifficulty] = useState('mixed');
     const [questionCount, setQuestionCount] = useState(10);
-    const [availableCounts, setAvailableCounts] = useState<{
-        simple: number;
-        intermediate: number;
-        expert: number;
-        total: number;
-        isReady: boolean;
-    } | null>(null);
+    const [availableCounts, setAvailableCounts] = useState<QuestionCounts | null>(null);
     // counts fetched inline; no separate fetching state required
 
     // Initial load of active domains
@@ -74,7 +68,7 @@ export function QuizSelection() {
                 const data = await apiClient.quiz.getDomains();
                 setDomains(data);
             } catch (err) {
-                console.error("Failed to load domains", err);
+                clientLogger.error('Failed to load domains', { error: err instanceof Error ? err.message : 'unknown' });
             } finally {
                 setLoading(false);
             }
@@ -95,7 +89,7 @@ export function QuizSelection() {
                 const hierarchy = await apiClient.quiz.getDomainHierarchy(selectedDomain);
                 setFullHierarchy(hierarchy);
             } catch (err) {
-                console.error("Failed to fetch domain hierarchy", err);
+                clientLogger.error('Failed to fetch domain hierarchy', { error: err instanceof Error ? err.message : 'unknown' });
             } finally {
                 setFetchingHierarchy(false);
             }
@@ -119,25 +113,24 @@ export function QuizSelection() {
                 });
                 setAvailableCounts(counts);
             } catch (err) {
-                console.error("Failed to fetch counts", err);
-            } finally {
+                clientLogger.error('Failed to fetch counts', { error: err instanceof Error ? err.message : 'unknown' });
             }
         };
         fetchCounts();
     }, [selectedDomain, selectedSubjects, selectedTopics, selectedSubtopics]);
 
     // Derived data for steps
-    const subjects = fullHierarchy?.subjects || [];
+    const subjects: Array<Subject & { topics: Array<Topic & { subtopics: Subtopic[] }> }> = fullHierarchy?.subjects || [];
     const activeSubjects = selectedSubjects.length > 0
-        ? subjects.filter((s: any) => selectedSubjects.includes(s.id)) // eslint-disable-line @typescript-eslint/no-explicit-any
+        ? subjects.filter((s) => selectedSubjects.includes(s.id))
         : subjects;
 
-    const topics = activeSubjects.flatMap((s: any) => s.topics || []); // eslint-disable-line @typescript-eslint/no-explicit-any
+    const topics = activeSubjects.flatMap((s) => s.topics || []);
     const activeTopics = selectedTopics.length > 0
-        ? topics.filter((t: any) => selectedTopics.includes(t.id)) // eslint-disable-line @typescript-eslint/no-explicit-any
+        ? topics.filter((t) => selectedTopics.includes(t.id))
         : topics;
 
-    const subtopics = activeTopics.flatMap((t: any) => t.subtopics || []); // eslint-disable-line @typescript-eslint/no-explicit-any
+    const subtopics = activeTopics.flatMap((t) => t.subtopics || []);
 
     const toggleItem = (list: string[], setList: (val: string[]) => void, id: string, resetChildren?: () => void) => {
         setError(null);
@@ -177,9 +170,10 @@ export function QuizSelection() {
             });
 
             router.push(`/quiz/active-session?examId=${exam.examId}`);
-        } catch (err: any) {
-            console.error("Failed to start exam", err);
-            setError(err.message || "Failed to start exam session.");
+        } catch (err: unknown) {
+            clientLogger.error('Failed to start exam', { error: err instanceof Error ? err.message : 'unknown' });
+            const message = err instanceof Error ? err.message : "Failed to start exam session.";
+            setError(message);
             setStarting(false);
         }
     };
@@ -206,7 +200,8 @@ export function QuizSelection() {
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-8">
                     {domains.map((item) => {
-                        const Icon = ICON_MAP[item.category?.toLowerCase()] || ICON_MAP[item.id] || Code;
+                        const categoryKey = item.category ? item.category.toLowerCase() : '';
+                        const Icon = ICON_MAP[categoryKey] || ICON_MAP[item.id] || Code;
                         const isSelected = selectedDomain === item.id;
                         return (
                             <button
@@ -295,7 +290,7 @@ export function QuizSelection() {
                             >
                                 [ GLOBAL_SCOPE ]
                             </button>
-                            {subjects.map((subject: any) => ( // eslint-disable-line @typescript-eslint/no-explicit-any
+                            {subjects.map((subject) => (
                                 <button
                                     key={subject.id}
                                     onClick={() => toggleItem(selectedSubjects, setSelectedSubjects, subject.id, () => {
@@ -345,7 +340,7 @@ export function QuizSelection() {
                         >
                             [ TOTAL_CLUSTER ]
                         </button>
-                        {topics.map((topic: any) => ( // eslint-disable-line @typescript-eslint/no-explicit-any
+                        {topics.map((topic) => (
                             <button
                                 key={topic.id}
                                 onClick={() => toggleItem(selectedTopics, setSelectedTopics, topic.id, () => setSelectedSubtopics([]))}
@@ -391,7 +386,7 @@ export function QuizSelection() {
                         >
                             [ ATOMIC_SUM ]
                         </button>
-                        {subtopics.map((subtopic: any) => ( // eslint-disable-line @typescript-eslint/no-explicit-any
+                        {subtopics.map((subtopic) => (
                             <button
                                 key={subtopic.id}
                                 onClick={() => toggleItem(selectedSubtopics, setSelectedSubtopics, subtopic.id)}
@@ -438,7 +433,7 @@ export function QuizSelection() {
 
                         <div className="xl:col-span-2 space-y-16">
                             <div className="space-y-8">
-                                <label className="text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground mb-4 block opacity-60">Question Count (Max Capability)</label>
+                                <p className="text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground mb-4 block opacity-60" aria-label="Question Count (Max Capability)">Question Count (Max Capability)</p>
                                 <div className="flex flex-wrap items-center gap-6">
                                     {[5, 10, 15, 20, 25, 30].map(count => {
                                         const totalAvail = availableCounts?.total || 0;
@@ -476,7 +471,7 @@ export function QuizSelection() {
                             </div>
 
                             <div className="space-y-8">
-                                <label className="text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground mb-4 block opacity-60">Difficulty Calibration</label>
+                                <p className="text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground mb-4 block opacity-60" aria-label="Difficulty Calibration">Difficulty Calibration</p>
                                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
                                     {['mixed', 'simple', 'intermediate', 'expert'].map(opt => (
                                         <button

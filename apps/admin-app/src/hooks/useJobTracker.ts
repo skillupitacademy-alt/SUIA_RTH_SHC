@@ -6,6 +6,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useAuthStore } from '@/store/auth-store';
 import { useJobStore } from '@/store/job-store';
+import { safeGet, safeSet } from '@/utils/safeLocalStorage';
 
 const POLL_INTERVAL = 5000; // 5 seconds
 const LOCAL_STORAGE_KEY = 'admin-active-jobs';
@@ -18,19 +19,15 @@ export function useJobTracker() {
 
     // 1. Load active job IDs from localStorage for the current user
     const getStoredJobIds = useCallback((): string[] => {
-        if (typeof window === 'undefined' || user?.id === undefined || user.id === null || user.id === '') return [];
-        const stored = localStorage.getItem(`${LOCAL_STORAGE_KEY}-${user.id}`);
-        if (stored === null || stored === '') return [];
-        try {
-            return JSON.parse(stored) as string[];
-        } catch {
-            return [];
-        }
+        if (user?.id === undefined || user.id === null || user.id === '') return [];
+        const stored = safeGet<string[]>(`${LOCAL_STORAGE_KEY}-${user.id}`);
+        if (stored === null || stored === undefined) return [];
+        return stored;
     }, [user?.id]);
 
     const saveStoredJobIds = useCallback((ids: string[]) => {
-        if (typeof window === 'undefined' || user?.id === undefined || user.id === null || user.id === '') return;
-        localStorage.setItem(`${LOCAL_STORAGE_KEY}-${user.id}`, JSON.stringify(ids));
+        if (user?.id === undefined || user.id === null || user.id === '') return;
+        safeSet(`${LOCAL_STORAGE_KEY}-${user.id}`, ids);
     }, [user?.id]);
 
     // 2. Poll status for all tracked jobs
@@ -44,7 +41,8 @@ export function useJobTracker() {
         }
 
         try {
-            const results = await Promise.all(
+            type JobResult = { job: BackgroundJob } | { _removeId: string } | null;
+            const results: JobResult[] = await Promise.all(
                 jobIds.map(async (id) => {
                     try {
                         return await apiClient.admin.getJobById(id);
@@ -57,11 +55,11 @@ export function useJobTracker() {
                 })
             );
 
-            const fetchedJobs = results
+            const fetchedJobs: BackgroundJob[] = results
                 .filter((res): res is { job: BackgroundJob } => res !== null && !('_removeId' in res))
                 .map(res => res.job);
 
-            const idsToRemove = results
+            const idsToRemove: string[] = results
                 .filter((res): res is { _removeId: string } => res !== null && '_removeId' in res)
                 .map(res => res._removeId);
 
@@ -74,7 +72,7 @@ export function useJobTracker() {
             
             const hasActiveJobs = fetchedJobs.some(j => j.status === 'pending' || j.status === 'processing');
             
-            if (!hasActiveJobs && pollTimerRef.current) {
+            if (!hasActiveJobs && pollTimerRef.current !== null) {
                 clearInterval(pollTimerRef.current);
                 pollTimerRef.current = null;
                 setPolling(false);

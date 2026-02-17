@@ -1,5 +1,12 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { LucideIcon, TrendingUp, TrendingDown, Info } from 'lucide-react';
+
+type StatsOverview = {
+    avgScore: number;
+    totalExams: number;
+    masteryPoints: number;
+    weeklyExamsCount: number;
+    globalRank: number | null;
+};
 
 interface StatCardProps {
     title: string;
@@ -52,7 +59,7 @@ export function StatCard({ title, value, icon: Icon, trend, color, tooltip }: St
     );
 }
 
-export function StatsGrid({ overview, deltaPct, healthStatus }: { overview?: any; deltaPct?: number | null; healthStatus?: 'green' | 'yellow' | 'red' }) {
+export function StatsGrid({ overview, deltaPct, healthStatus }: { overview?: StatsOverview; deltaPct?: number | null; healthStatus?: 'green' | 'yellow' | 'red' }) {
     const globalRankValue = overview?.globalRank ?? "Pending";
     const globalRankTrend = overview?.globalRank
         ? { value: "Top 10%", positive: true }

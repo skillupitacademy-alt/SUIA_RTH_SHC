@@ -1,10 +1,10 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
-import type { SubtopicInsert } from '@/modules/admin-engine/admin.engine';
 import { AdminEngine } from '@/modules/admin-engine/admin.engine';
 import { _verifyAdmin } from '@/modules/auth/rbac.service';
 import { TokenService } from '@/modules/auth/token.service';
+import { subtopicSchema } from '@/schemas/hierarchy.schemas';
 
 export async function PATCH(
   _req: NextRequest,
@@ -18,7 +18,12 @@ export async function PATCH(
     }
     const _payload = await TokenService.verifyAccessToken(_token, true);
 
-    const body = await _req.json() as Partial<SubtopicInsert>;
+    const rawBody = await _req.json();
+    const parsed = subtopicSchema.partial().safeParse(rawBody);
+    if (!parsed.success) {
+      return NextResponse.json({ _error: 'Invalid payload', issues: parsed.error.issues }, { status: 400 });
+    }
+    const body = parsed.data;
     const result = await AdminEngine.updateSubtopic(id, body, _payload.userId);
     
     return NextResponse.json(result);

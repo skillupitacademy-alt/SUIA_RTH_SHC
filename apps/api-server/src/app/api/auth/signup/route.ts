@@ -1,28 +1,23 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
+import { logger } from '@/lib/logger';
 import { AuthService } from '@/modules/auth/auth.service';
 import { setCsrfToken } from '@/modules/auth/csrf.middleware';
+import { signupSchema } from '@/schemas/auth.schemas';
 
 export const dynamic = 'force-dynamic';
 
-interface SignupRequest {
-  email?: string;
-  password?: string;
-  name?: string;
-}
+const log = logger.child({ module: 'auth:signup' });
 
 export async function POST(_req: NextRequest) {
   try {
-    const { email, password, name } = (await _req.json()) as SignupRequest;
-
-    if (
-      email === undefined || email === null || email === '' || email.trim() === '' || 
-      password === undefined || password === null || password === '' || password.trim() === '' || 
-      name === undefined || name === null || name === '' || name.trim() === ''
-    ) {
-      return NextResponse.json({ _error: 'Missing fields' }, { status: 400 });
+    const rawBody = await _req.json();
+    const parsed = signupSchema.safeParse(rawBody);
+    if (!parsed.success) {
+      return NextResponse.json({ _error: 'Invalid payload', issues: parsed.error.issues }, { status: 400 });
     }
+    const { email, password, name } = parsed.data;
 
     const _user = await AuthService.signup(email, password, name);
 
@@ -49,8 +44,8 @@ export async function POST(_req: NextRequest) {
 
     return response;
   } catch (_error: unknown) {
-    console.error('Signup.Error:', _error);
     const message = _error instanceof Error ? _error.message : 'Unknown error';
+    log.error({ error: message }, 'Signup failed');
     return NextResponse.json({ _error: message }, { status: 400 });
   }
 }

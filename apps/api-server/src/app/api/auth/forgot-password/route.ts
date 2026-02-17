@@ -1,6 +1,7 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
+import { logger } from '@/lib/logger';
 import { AuthService } from '@/modules/auth/auth.service';
 
 export const dynamic = 'force-dynamic';
@@ -28,7 +29,7 @@ export async function POST(_req: NextRequest) {
     // Return success to be neutral even on internal errors if we want strict non-disclosure,
     // but typically server errors can be 500 if they don't leak account status.
     // Given the contract "Always return 200 OK", we stay strict.
-    console.error('ForgotPassword.Error:', _error);
+    logger.error({ err: _error }, 'ForgotPassword.Error');
     return NextResponse.json({ success: true });
   }
 }

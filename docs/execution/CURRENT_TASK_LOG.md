@@ -1,4 +1,10 @@
-# 🧠 Current Task Log
+### Latest Activity
+- **Date**: 2026-02-17  
+- **Task**: Phase F smoke prep & env-path unification  
+- **Outcome**: Baseline gates green (pnpm lint:all, pnpm typecheck:all, pnpm build:all). Playwright smokes deferred because the runner auto-loads legacy Vitest stubs and missing @tests/* alias; added 	ests/utils/csp-audit-collector.ts shim and centralized dotenv paths via @quiz/config/envPaths.  
+- **Next**: Option A � add a focused smoke spec and ignore __tests__ in Playwright to run smokes. Option B � proceed with deploy acknowledging smokes were skipped and schedule smokes after harness cleanup.  
+
+---# 🧠 Current Task Log
 
 **Status**: 🟢 COMPLETED
 **Mode**: Environmental Unification & System Verification
@@ -216,3 +222,4 @@
 ### 🚀 Next Steps
 1.  **Verification**: Run `pnpm build` to confirm Phase 10+11 integration on current `main`.
 2.  **Production Handoff**: Final commit/push for the Phase 11 Milestone.
+

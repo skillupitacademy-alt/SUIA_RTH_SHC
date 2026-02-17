@@ -1,13 +1,15 @@
 import { type NextRequest, NextResponse } from 'next/server';
 
-import { cacheService } from '../core/cache.service';
-import { TokenService } from './token.service';
+import { logger } from '@/lib/logger';
+import { TokenService } from '@/modules/auth/token.service';
+import { cacheService } from '@/modules/core/cache.service';
 
 const WINDOW_MS = 15 * 60 * 1000;
 const MAX_IP_REQUESTS = 1000;
 const MAX_USER_REQUESTS = 2000;
 
 export async function rateLimit(_request: NextRequest) {
+  const rateLimitLogger = logger.child({ module: 'auth:rate-limit' });
   const ip = _request.headers.get('x-forwarded-for')?.split(',')[0] ?? 'unknown';
   
   // 1. Resolve Scope & Auth (Absolute Isolation)
@@ -62,8 +64,11 @@ export async function rateLimit(_request: NextRequest) {
         );
       }
     }
-  } catch (_error) {
-    console.error('[RateLimit] Error processing limits:', _error);
+  } catch (_error: unknown) {
+    rateLimitLogger.error(
+      { error: _error instanceof Error ? _error.message : 'unknown error' },
+      'Rate limit processing failed',
+    );
     // Graceful fallback: Allow _request if limiter fails
   }
 

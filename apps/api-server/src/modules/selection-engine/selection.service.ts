@@ -1,10 +1,11 @@
-import { db, examBlueprints, questions, subjects as subjectsTable,subtopics, topics } from '@quiz/db';
+import { db, examBlueprints, questions, subjects as subjectsTable, subtopics, topics } from '@quiz/db';
 import crypto from 'crypto';
 import type { InferSelectModel } from 'drizzle-orm';
-import { and, asc,eq, gte, inArray, notInArray, or, sql } from 'drizzle-orm';
+import { and, asc, eq, gte, inArray, notInArray, or, sql } from 'drizzle-orm';
 import { performance } from 'perf_hooks';
 
-import { cacheService } from '../core/cache.service';
+import { logger } from '@/lib/logger';
+import { cacheService } from '@/modules/core/cache.service';
 
 type Blueprint = InferSelectModel<typeof examBlueprints>;
 type Question = InferSelectModel<typeof questions>;
@@ -29,6 +30,8 @@ interface SelectionConfig {
 }
 
 export class SelectionService {
+  private static log = logger.child({ module: 'selection-engine' });
+
   /**
    * Generates a set of deterministic UUID anchors based on a seed.
    */
@@ -90,7 +93,10 @@ export class SelectionService {
     try {
       blueprint = await cacheService.get(blueprintCacheKey);
     } catch (e) {
-      console.warn('[Selection] Cache lookup failed', e);
+      SelectionService.log.warn(
+        { error: e instanceof Error ? e.message : 'unknown error' },
+        'Cache lookup failed when resolving blueprint',
+      );
     }
 
     if (!blueprint) {
@@ -110,7 +116,10 @@ export class SelectionService {
         try {
           await cacheService.set(blueprintCacheKey, blueprint, 1000 * 60 * 10);
         } catch (e) {
-          console.warn('[Selection] Cache storage failed', e);
+          SelectionService.log.warn(
+            { error: e instanceof Error ? e.message : 'unknown error' },
+            'Cache storage failed when caching blueprint',
+          );
         }
       }
     }

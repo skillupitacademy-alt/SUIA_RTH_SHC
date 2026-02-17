@@ -39,6 +39,7 @@ export default function QuestionEntryPage() {
         try {
             await apiClient.admin.createQuestion({
                 ...formData,
+                questionText: formData.text,
                 topicId: selection.topicId,
                 subtopicId: (selection.subtopicId != null && selection.subtopicId !== '') ? selection.subtopicId : undefined,
                 skillIds: (selection.skillIds != null && selection.skillIds.length > 0) ? selection.skillIds : [],

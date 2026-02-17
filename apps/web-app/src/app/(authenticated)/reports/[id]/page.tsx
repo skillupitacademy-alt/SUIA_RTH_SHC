@@ -14,6 +14,7 @@ import { ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { ZLoader } from '@quiz/ui';
+import { clientLogger } from '@/utils/clientLogger';
 
 export default function DynamicReportPage() {
     const { id } = useParams();
@@ -57,7 +58,7 @@ export default function DynamicReportPage() {
                     setLoading(false);
                 }
             } catch (err) {
-                console.error("Failed to fetch report", err);
+                clientLogger.error('Failed to fetch report', { error: err instanceof Error ? err.message : 'unknown' });
                 if (isMounted) {
                     setErrorMsg("Unable to retrieve results.");
                     setLoading(false);

@@ -61,6 +61,7 @@ export function SkillReviewCard({
                             checked={isSelected}
                             onChange={(e) => onSelect?.(skill.id as string, e.target.checked)}
                             className="w-5 h-5 rounded-lg border-2 border-slate-200 text-cyan-500 focus:ring-cyan-500/20 cursor-pointer transition-all checked:border-cyan-500"
+                            aria-label={`Select skill ${skill.name as string ?? 'item'}`}
                         />
                     </div>
 
@@ -92,6 +93,7 @@ export function SkillReviewCard({
                         onClick={() => onEditRequest(skill)}
                         className="p-2.5 rounded-xl bg-white border border-slate-200 text-slate-500 hover:text-cyan-500 hover:border-cyan-500/20 transition-all active:scale-95 shadow-sm"
                         title="Edit Skill"
+                        aria-label={`Edit skill ${skill.name as string ?? ''}`}
                     >
                         <Edit2 size={14} />
                     </button>
@@ -99,6 +101,7 @@ export function SkillReviewCard({
                         onClick={() => onDeleteRequest(skill)}
                         className="p-2.5 rounded-xl bg-white border border-slate-200 text-slate-500 hover:text-rose-500 hover:border-rose-100 transition-all active:scale-95 shadow-sm"
                         title="Delete Skill"
+                        aria-label={`Delete skill ${skill.name as string ?? ''}`}
                     >
                         <Trash2 size={14} />
                     </button>

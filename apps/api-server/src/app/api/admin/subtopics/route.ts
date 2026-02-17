@@ -1,12 +1,16 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
+import { logger } from '@/lib/logger';
 import type { SubtopicInsert } from '@/modules/admin-engine/admin.engine';
 import { AdminEngine } from '@/modules/admin-engine/admin.engine';
 import { _verifyAdmin } from '@/modules/auth/rbac.service';
 import { TokenService } from '@/modules/auth/token.service';
+import { subtopicSchema } from '@/schemas/hierarchy.schemas';
 
 export const dynamic = 'force-dynamic';
+
+const log = logger.child({ module: 'admin:subtopics' });
 
 export async function GET(_req: NextRequest) {
   try {
@@ -26,7 +30,7 @@ export async function GET(_req: NextRequest) {
     return NextResponse.json(data);
   } catch (_error: unknown) {
     const message = _error instanceof Error ? _error.message : 'Internal Server Error';
-    console.error('[ADMIN_SUBTOPICS_GET] Error:', message);
+    log.error({ error: message }, 'ADMIN_SUBTOPICS_GET failed');
     return NextResponse.json({ _error: message }, { status: 500 });
   }
 }
@@ -44,13 +48,26 @@ export async function POST(_req: NextRequest) {
         return NextResponse.json({ _error: 'Forbidden' }, { status: 403 });
     }
 
-    const body = await _req.json() as SubtopicInsert;
-    const result = await AdminEngine.createSubtopic(body, _payload.userId);
+    const rawBody = await _req.json();
+    const parsed = subtopicSchema.safeParse(rawBody);
+    if (!parsed.success) {
+      return NextResponse.json({ _error: 'Invalid payload', issues: parsed.error.issues }, { status: 400 });
+    }
+    const body = parsed.data;
+
+    const createBody: SubtopicInsert = {
+      topicId: body.topicId,
+      name: body.name,
+      description: body.description,
+      depthLevel: body.depthLevel,
+    };
+
+    const result = await AdminEngine.createSubtopic(createBody, _payload.userId);
     
     return NextResponse.json(result);
   } catch (_error: unknown) {
     const message = _error instanceof Error ? _error.message : 'Internal Server Error';
-    console.error('[ADMIN_SUBTOPICS_POST] Error:', message);
+    log.error({ error: message }, 'ADMIN_SUBTOPICS_POST failed');
     return NextResponse.json({ _error: message }, { status: 500 });
   }
 }

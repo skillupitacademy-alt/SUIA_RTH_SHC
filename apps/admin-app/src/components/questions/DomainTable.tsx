@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { ZPortalModal } from '@/components/ui/ZPortalModal';
 import { cn } from '@/lib/utils';
+import { clientLogger } from '@/utils/clientLogger';
 
 import { DomainReviewCard } from './DomainReviewCard';
 
@@ -60,13 +61,12 @@ export function DomainTable() {
         setIsLoading(true);
         try {
             const response = await apiClient.admin.getDomains(page, pageSize, debouncedSearch || undefined);
-            const domains = Array.isArray(response.data) ? response.data : [];
-            setData(domains);
+            setData(response.data);
             setTotalPages(response.totalPages);
-            setTotalCount(response.total ?? domains.length ?? 0);
+            setTotalCount(response.total ?? response.data.length);
             setSelectedIds(new Set()); // Reset selection on refresh
         } catch (error) {
-            console.error('Failed to fetch domains:', error);
+            clientLogger.error('Failed to fetch domains', { error: error instanceof Error ? error.message : 'unknown' });
             setErrorMessage('Connection Error: Unable to load the domain catalog at this time.');
         } finally {
             setIsLoading(false);
@@ -118,7 +118,7 @@ export function DomainTable() {
             setSelectedIds(new Set());
             void fetchDomains();
         } catch (error) {
-            console.error('Batch delete failed:', error);
+            clientLogger.error('Batch delete failed', { error: error instanceof Error ? error.message : 'unknown' });
             setErrorMessage('Batch Deletion Failed: Some domains could not be removed (they may have dependencies).');
         } finally {
             setIsBatchDeleting(false);
@@ -163,15 +163,21 @@ export function DomainTable() {
         e.preventDefault();
         setIsSubmitting(true);
         try {
+            const payload: any = {
+                ...formData,
+                slug: formData.name || 'domain',
+                icon: formData.category || 'default',
+                orderIndex: 0
+            };
             if (currentDomain !== null) {
-                await apiClient.admin.updateDomain(currentDomain.id, formData);
+                await apiClient.admin.updateDomain(currentDomain.id, payload);
             } else {
-                await apiClient.admin.createDomain(formData);
+                await apiClient.admin.createDomain(payload);
             }
             handleCloseForm();
             void fetchDomains();
         } catch (error) {
-            console.error('Failed to save domain:', error);
+            clientLogger.error('Failed to save domain', { error: error instanceof Error ? error.message : 'unknown' });
             setErrorMessage('Saving Failed: Please ensure all fields are correct and try again.');
         } finally {
             setIsSubmitting(false);
@@ -196,7 +202,7 @@ export function DomainTable() {
             setCurrentDomain(null);
             void fetchDomains();
         } catch (error) {
-            console.error('Failed to delete domain:', error);
+            clientLogger.error('Failed to delete domain', { error: error instanceof Error ? error.message : 'unknown' });
             setErrorMessage('Deletion Blocked: This domain is currently linked to active subjects or topics and cannot be removed.');
         } finally {
             setIsSubmitting(false);
@@ -269,10 +275,11 @@ export function DomainTable() {
                                     <div className="grid grid-cols-2 gap-6">
                                         {/* Domain Name */}
                                         <div className="space-y-2">
-                                            <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 pl-1">Domain Name</label>
+                                            <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 pl-1" htmlFor="domain-name">Domain Name</label>
                                             <input
                                                 required
                                                 type="text"
+                                                id="domain-name"
                                                 placeholder="Enter domain name..."
                                                 value={formData.name}
                                                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
@@ -282,9 +289,10 @@ export function DomainTable() {
 
                                         {/* Category */}
                                         <div className="space-y-2">
-                                            <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 pl-1">Category (Reporting Dimension)</label>
+                                            <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 pl-1" htmlFor="domain-category">Category (Reporting Dimension)</label>
                                             <input
                                                 type="text"
+                                                id="domain-category"
                                                 placeholder="e.g., DevOps, Security, Frontend..."
                                                 value={formData.category || ''}
                                                 onChange={(e) => setFormData({ ...formData, category: e.target.value })}
@@ -295,8 +303,9 @@ export function DomainTable() {
 
                                     {/* Description */}
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 pl-1">Description</label>
+                                        <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 pl-1" htmlFor="domain-description">Description</label>
                                         <textarea
+                                            id="domain-description"
                                             rows={4}
                                             placeholder="Brief summary of this domain..."
                                             value={formData.description}
@@ -307,7 +316,7 @@ export function DomainTable() {
 
                                     {/* Status */}
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 pl-1">Status</label>
+                                        <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500 pl-1">Status</p>
                                         <div className="flex bg-white p-1.5 rounded-xl border border-slate-200">
                                             {['active', 'inactive'].map((status) => (
                                                 <button
@@ -404,6 +413,7 @@ export function DomainTable() {
                             <input
                                 type="text"
                                 placeholder="Search Domains..."
+                                aria-label="Search domains"
                                 value={searchQuery}
                                 onChange={(e) => { setSearchQuery(e.target.value); setPage(1); }}
                                 className="w-full bg-slate-50 border-none rounded-2xl px-5 py-3 text-[11px] font-black tracking-widest text-[#1A1A1A] placeholder:text-slate-400 focus:ring-2 focus:ring-blue-500/10 transition-all outline-none border border-transparent shadow-inner"
@@ -415,6 +425,7 @@ export function DomainTable() {
                                     checked={data.length > 0 && selectedIds.size === data.length}
                                     onChange={(e) => handleSelectAll(e.target.checked)}
                                     className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-offset-0 focus:ring-0 cursor-pointer"
+                                    aria-label="Select all domains"
                                 />
                                 <span className="text-[9px] font-bold uppercase tracking-wider text-slate-500">Select All</span>
                             </div>
@@ -424,6 +435,7 @@ export function DomainTable() {
                         <button
                             onClick={() => setIsFactoryOpen(true)}
                             className="px-6 py-3 rounded-2xl bg-slate-900 text-white text-[10px] font-bold uppercase tracking-wider shadow-lg hover:bg-slate-800 transition-all flex items-center gap-2"
+                            aria-label="Open domain bulk factory"
                         >
                             <Plus size={14} className="text-[#FF4B91]" />
                             Bulk Factory
@@ -431,6 +443,7 @@ export function DomainTable() {
                         <button
                             onClick={() => handleOpenForm()} // Open for Create
                             className="px-6 py-3 rounded-2xl bg-[#FF4B91] hover:bg-[#ff3382] text-white text-[10px] font-bold uppercase tracking-wider shadow-lg shadow-[#FF4B91]/20 transition-all flex items-center gap-3 active:scale-95"
+                            aria-label="Add domain"
                         >
                             <Plus size={16} />
                             Add Domain
@@ -439,41 +452,31 @@ export function DomainTable() {
                 </div>
 
                 {/* DOMAIN CARD STACK */}
-                <div className="relative min-h-[400px]">
-                    {isLoading === true && (
-                        <div className="absolute inset-x-0 -top-4 bottom-0 z-10 bg-white/40 backdrop-blur-[2px] flex items-center justify-center rounded-[2.5rem]">
-                            <ZLoader text="Synchronizing Domain Matrix_" />
-                        </div>
-                    )}
-
+                {isLoading === true ? (
+                    <div className="min-h-[400px] flex items-center justify-center">
+                        <ZLoader text="Loading Domains..." />
+                    </div>
+                ) : (
                     <div className="grid grid-cols-1 gap-4">
-                        {(isLoading === true && data.length === 0) ? (
-                            Array.from({ length: 5 }).map((_, i) => (
-                                <div key={i} className="h-28 rounded-[2.5rem] bg-slate-50 border border-slate-100 animate-pulse" />
-                            ))
-                        ) : (
-                            <>
-                                {data.map((domain, index) => (
-                                    <DomainReviewCard
-                                        key={domain.id}
-                                        domain={domain}
-                                        index={index + (page - 1) * 20}
-                                        isSelected={selectedIds.has(domain.id)}
-                                        onSelect={handleSelect}
-                                        onDeleteRequest={(d) => { setCurrentDomain(d); setIsDeleteOpen(true); }}
-                                        onEditRequest={(d) => handleOpenForm(d)}
-                                    />
-                                ))}
-                                {data.length === 0 && !isLoading && (
-                                    <div className="text-center py-20 opacity-50">
-                                        <Globe className="w-16 h-16 mx-auto mb-4 text-slate-400" />
-                                        <h3 className="text-lg font-bold text-slate-500 font-outfit uppercase tracking-tighter">Negative Domain Match_</h3>
-                                    </div>
-                                )}
-                            </>
+                        {data.map((domain, index) => (
+                            <DomainReviewCard
+                                key={domain.id}
+                                domain={domain}
+                                index={index + (page - 1) * 20}
+                                isSelected={selectedIds.has(domain.id)}
+                                onSelect={handleSelect}
+                                onDeleteRequest={(d) => { setCurrentDomain(d); setIsDeleteOpen(true); }}
+                                onEditRequest={(d) => handleOpenForm(d)}
+                            />
+                        ))}
+                        {data.length === 0 && (
+                            <div className="text-center py-20 opacity-50">
+                                <Globe className="w-16 h-16 mx-auto mb-4 text-slate-400" />
+                                <h3 className="text-lg font-bold text-slate-500">No domains found</h3>
+                            </div>
                         )}
                     </div>
-                </div>
+                )}
             </div>
 
             <ZPagination

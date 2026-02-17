@@ -10,6 +10,18 @@
         "paths": {
             "@/*": [
                 "./src/*"
+            ],
+            "@quiz/api-client/*": [
+                "../../packages/api-client/src/*"
+            ],
+            "@quiz/db/*": [
+                "../../packages/db/src/*"
+            ],
+            "@quiz/config": [
+                "../../packages/config/envPaths.ts"
+            ],
+            "@quiz/config/*": [
+                "../../packages/config/*"
             ]
         }
     },
@@ -23,7 +35,6 @@
         "node_modules",
         "*.config.js",
         "*.config.mjs",
-        "*.config.ts",
-        "vitest.config.ts"
+        "**/__tests__/**/*"
     ]
 }

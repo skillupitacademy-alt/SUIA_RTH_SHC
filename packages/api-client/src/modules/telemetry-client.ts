@@ -1,4 +1,4 @@
-import { FetchClient } from '../core/fetch-client';
+import { FetchClient } from '@quiz/api-client/core/fetch-client';
 
 export class TelemetryClient {
   private client: FetchClient;
@@ -7,7 +7,7 @@ export class TelemetryClient {
     this.client = client;
   }
 
-  async logEvent(action: string, metadata?: any) {
+  async logEvent(action: string, metadata?: Record<string, unknown>) {
     try {
       return await this.client.post('/telemetry', { action, metadata });
     } catch (error) {

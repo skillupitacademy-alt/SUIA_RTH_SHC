@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { apiClient } from '@quiz/api-client';
 import { ZLoader } from '@quiz/ui';
@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 import { useAuthStore } from '@/store/auth-store';
+import { clientLogger } from '@/utils/clientLogger';
 
 export default function AdminLoginPage() {
     const router = useRouter();
@@ -36,7 +37,7 @@ export default function AdminLoginPage() {
             login(user);
             router.push('/');
         } catch (err: unknown) {
-            console.error(err);
+            clientLogger.error('Admin login failed', { error: err instanceof Error ? err.message : 'unknown' });
             const message = err instanceof Error ? err.message : 'Authentication failed';
             setError(message);
         } finally {
@@ -58,12 +59,13 @@ export default function AdminLoginPage() {
 
             <form onSubmit={(e) => void handleSubmit(e)} className="space-y-6">
                 <div className="space-y-2">
-                    <label className="text-sm font-medium leading-none text-slate-500">Email Address</label>
+                    <label className="text-sm font-medium leading-none text-slate-500" htmlFor="admin-login-email">Email Address</label>
                     <div className="relative">
                         <Mail className="absolute left-4 top-4 text-slate-400 h-5 w-5" />
                         <input
                             type="email"
                             required
+                            id="admin-login-email"
                             className="w-full pl-12 pr-4 py-4 rounded-xl border bg-slate-50 text-[#1A1A1A] text-[15px] focus:bg-white focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all font-semibold"
                             placeholder="admin@quizplatform.com"
                             value={formData.email}
@@ -74,7 +76,7 @@ export default function AdminLoginPage() {
 
                 <div className="space-y-2">
                     <div className="flex items-center justify-between">
-                        <label className="text-sm font-medium leading-none text-slate-500">Password</label>
+                        <label className="text-sm font-medium leading-none text-slate-500" htmlFor="admin-login-password">Password</label>
                         <Link
                             href="/forgot-password"
                             className="text-sm font-medium text-[#FF4B91] hover:underline"
@@ -87,6 +89,7 @@ export default function AdminLoginPage() {
                         <input
                             type="password"
                             required
+                            id="admin-login-password"
                             className="w-full pl-12 pr-4 py-4 rounded-xl border bg-slate-50 text-[#1A1A1A] text-[15px] focus:bg-white focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all font-semibold"
                             placeholder="••••••••••••"
                             value={formData.password}
@@ -118,3 +121,11 @@ export default function AdminLoginPage() {
         </div>
     );
 }
+
+
+
+
+
+
+
+

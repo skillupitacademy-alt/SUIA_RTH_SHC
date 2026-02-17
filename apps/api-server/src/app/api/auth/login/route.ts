@@ -1,23 +1,23 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
+import { logger } from '@/lib/logger';
 import { AuthService } from '@/modules/auth/auth.service';
 import { setCsrfToken } from '@/modules/auth/csrf.middleware';
+import { loginSchema } from '@/schemas/auth.schemas';
 
 export const dynamic = 'force-dynamic';
 
-interface LoginRequest {
-  email?: string;
-  password?: string;
-}
+const log = logger.child({ module: 'auth:login' });
 
 export async function POST(req: NextRequest) {
   try {
-    const { email, password } = (await req.json()) as LoginRequest;
-
-    if (email === undefined || email === null || email === '' || password === undefined || password === null || password === '') {
-      return NextResponse.json({ _error: 'Credentials required' }, { status: 400 });
+    const rawBody = await req.json();
+    const parsed = loginSchema.safeParse(rawBody);
+    if (!parsed.success) {
+      return NextResponse.json({ _error: 'Invalid payload', issues: parsed.error.issues }, { status: 400 });
     }
+    const { email, password } = parsed.data;
 
     const { _user, accessToken, refreshToken, isAdmin } = await AuthService.login(email, password);
 
@@ -69,7 +69,7 @@ export async function POST(req: NextRequest) {
 
     return response;
   } catch (error) {
-    console.error('[AUTH_LOGIN] Error:', error);
+    log.error({ error: error instanceof Error ? error.message : 'unknown error' }, 'AUTH_LOGIN failed');
     return NextResponse.json({ _error: 'Invalid credentials' }, { status: 401 });
   }
 }
