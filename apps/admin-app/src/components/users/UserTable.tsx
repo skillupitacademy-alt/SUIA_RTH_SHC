@@ -196,6 +196,7 @@ export function UserTable() {
                         <input
                             type="text"
                             placeholder="Search Identity (Name/Email)..."
+                            aria-label="Search users by name or email"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             className="w-full pl-12 pr-4 py-3 bg-slate-50 border-none rounded-2xl text-sm font-bold placeholder:text-slate-300 focus:ring-2 focus:ring-[#FF4B91]/20 transition-all"
@@ -290,7 +291,11 @@ export function UserTable() {
                                         <td className="p-6">
                                             <div className="flex flex-wrap gap-2">
                                                 {(user.userRoles ?? []).map((r, i) => (
-                                                    <span key={i} className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider border ${r.role.name === 'admin' ? 'bg-[#FF4B91]/10 text-[#FF4B91] border-[#FF4B91]/20' : 'bg-gray-100 text-gray-600 border-gray-200'}`}>
+                                                    <span
+                                                        key={i}
+                                                        className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider border ${r.role.name === 'admin' ? 'bg-[#FF4B91]/10 text-[#FF4B91] border-[#FF4B91]/20' : 'bg-gray-100 text-gray-600 border-gray-200'}`}
+                                                        aria-label={`Role ${r.role.name}`}
+                                                    >
                                                         {r.role.name}
                                                     </span>
                                                 ))}
@@ -401,6 +406,7 @@ export function UserTable() {
                                         type="button"
                                         onClick={() => setEditingUser({ ...editingUser, isBlocked: editingUser.isBlocked === true ? false : true })}
                                         className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${editingUser.isBlocked === true ? 'bg-red-500' : 'bg-gray-200'}`}
+                                        aria-label={editingUser.isBlocked === true ? "Unblock user" : "Block user"}
                                     >
                                         <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${editingUser.isBlocked === true ? 'translate-x-6' : 'translate-x-1'}`} />
                                     </button>

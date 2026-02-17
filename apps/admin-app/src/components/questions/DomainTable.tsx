@@ -406,6 +406,7 @@ export function DomainTable() {
                             <input
                                 type="text"
                                 placeholder="Search Domains..."
+                                aria-label="Search domains"
                                 value={searchQuery}
                                 onChange={(e) => { setSearchQuery(e.target.value); setPage(1); }}
                                 className="w-full bg-slate-50 border-none rounded-2xl px-5 py-3 text-[11px] font-black tracking-widest text-[#1A1A1A] placeholder:text-slate-400 focus:ring-2 focus:ring-blue-500/10 transition-all outline-none border border-transparent shadow-inner"
@@ -417,6 +418,7 @@ export function DomainTable() {
                                     checked={data.length > 0 && selectedIds.size === data.length}
                                     onChange={(e) => handleSelectAll(e.target.checked)}
                                     className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-offset-0 focus:ring-0 cursor-pointer"
+                                    aria-label="Select all domains"
                                 />
                                 <span className="text-[9px] font-bold uppercase tracking-wider text-slate-500">Select All</span>
                             </div>
@@ -426,6 +428,7 @@ export function DomainTable() {
                         <button
                             onClick={() => setIsFactoryOpen(true)}
                             className="px-6 py-3 rounded-2xl bg-slate-900 text-white text-[10px] font-bold uppercase tracking-wider shadow-lg hover:bg-slate-800 transition-all flex items-center gap-2"
+                            aria-label="Open domain bulk factory"
                         >
                             <Plus size={14} className="text-[#FF4B91]" />
                             Bulk Factory
@@ -433,6 +436,7 @@ export function DomainTable() {
                         <button
                             onClick={() => handleOpenForm()} // Open for Create
                             className="px-6 py-3 rounded-2xl bg-[#FF4B91] hover:bg-[#ff3382] text-white text-[10px] font-bold uppercase tracking-wider shadow-lg shadow-[#FF4B91]/20 transition-all flex items-center gap-3 active:scale-95"
+                            aria-label="Add domain"
                         >
                             <Plus size={16} />
                             Add Domain

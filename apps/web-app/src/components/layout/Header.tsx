@@ -35,6 +35,8 @@ export function Header() {
                             <Link
                                 href="/dashboard"
                                 className="flex items-center text-sm font-medium text-muted-foreground hover:text-primary transition-colors"
+                                aria-label="Go to dashboard"
+                                aria-current={pathname === '/dashboard' ? "page" : undefined}
                             >
                                 <LayoutDashboard size={18} className="mr-2" />
                                 Dashboard
@@ -54,6 +56,7 @@ export function Header() {
                                 <Link
                                     href="/login"
                                     className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2"
+                                    aria-label="Log in"
                                 >
                                     <LogIn size={18} className="mr-2" />
                                     Login
@@ -61,6 +64,7 @@ export function Header() {
                                 <Link
                                     href="/signup"
                                     className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground shadow hover:bg-primary/90 h-9 px-4 py-2"
+                                    aria-label="Create an account"
                                 >
                                     <UserPlus size={18} className="mr-2" />
                                     Sign Up
@@ -75,6 +79,7 @@ export function Header() {
                                 <button
                                     onClick={handleLogout}
                                     className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2 text-red-500"
+                                    aria-label="Log out"
                                 >
                                     <LogOut size={18} className="mr-2" />
                                     Logout

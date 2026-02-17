@@ -451,6 +451,7 @@ function QuizSelectionConsoleContent() {
                         <button
                             onClick={() => router.push(`/exam/${activeExamId}`)}
                             className="px-6 py-2 rounded-xl bg-[#FF2D55] text-white text-[10px] font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-lg shadow-[#FF2D55]/20 flex items-center gap-2 group"
+                            aria-label="Resume active assessment session"
                         >
                             Resume Now
                             <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />
@@ -558,17 +559,18 @@ function QuizSelectionConsoleContent() {
                                 <div className="flex items-center gap-2 bg-white/80 p-0.5 rounded-lg border border-gray-200 shadow-sm backdrop-blur-sm">
                                     <button
                                         onClick={handlePrevPage}
-                                        disabled={page === 0 || loading || isLocked || (step === 5 && isArmed)}
-                                        className={cn(
-                                            "p-1.5 rounded-md transition-all",
-                                            "bg-[#FF2D551A] border border-[#FF2D5533] text-[#FF2D55] hover:bg-[#FF2D55] hover:text-white",
-                                            "disabled:bg-[#FF2D550D] disabled:text-[#FF2D554D] disabled:border-[#FF2D551A] disabled:opacity-100", // PKG FIX
-                                            (isArmed && step === 5) && "opacity-100"
-                                        )}
-                                        title="Previous Page"
-                                    >
-                                        <ChevronLeft size={14} />
-                                    </button>
+                                    disabled={page === 0 || loading || isLocked || (step === 5 && isArmed)}
+                                    className={cn(
+                                        "p-1.5 rounded-md transition-all",
+                                        "bg-[#FF2D551A] border border-[#FF2D5533] text-[#FF2D55] hover:bg-[#FF2D55] hover:text-white",
+                                        "disabled:bg-[#FF2D550D] disabled:text-[#FF2D554D] disabled:border-[#FF2D551A] disabled:opacity-100", // PKG FIX
+                                        (isArmed && step === 5) && "opacity-100"
+                                    )}
+                                    title="Previous Page"
+                                    aria-label="Previous page"
+                                >
+                                    <ChevronLeft size={14} />
+                                </button>
                                     <div className="px-2 min-w-[60px] text-center border-x border-gray-200">
                                         <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">
                                             Page {page + 1} of {Math.ceil((step === 1 ? domains.length : (step === 3 ? topics.length : (step === 2 ? subjects.length : (step === 4 ? subtopics.length : 0)))) / currentPageSize)}
@@ -576,17 +578,18 @@ function QuizSelectionConsoleContent() {
                                     </div>
                                     <button
                                         onClick={handleNextPage}
-                                        disabled={page >= Math.ceil((step === 1 ? domains.length : (step === 3 ? topics.length : (step === 2 ? subjects.length : (step === 4 ? subtopics.length : 0)))) / currentPageSize) - 1 || loading || isLocked || (step === 5 && isArmed)}
-                                        className={cn(
-                                            "p-1.5 rounded-md transition-all",
-                                            "bg-[#FF2D551A] border border-[#FF2D5533] text-[#FF2D55] hover:bg-[#FF2D55] hover:text-white",
-                                            "disabled:bg-[#FF2D550D] disabled:text-[#FF2D554D] disabled:border-[#FF2D551A] disabled:opacity-100", // PKG FIX
-                                            (isArmed && step === 5) && "opacity-100"
-                                        )}
-                                        title="Next Page"
-                                    >
-                                        <ChevronRight size={14} />
-                                    </button>
+                                    disabled={page >= Math.ceil((step === 1 ? domains.length : (step === 3 ? topics.length : (step === 2 ? subjects.length : (step === 4 ? subtopics.length : 0)))) / currentPageSize) - 1 || loading || isLocked || (step === 5 && isArmed)}
+                                    className={cn(
+                                        "p-1.5 rounded-md transition-all",
+                                        "bg-[#FF2D551A] border border-[#FF2D5533] text-[#FF2D55] hover:bg-[#FF2D55] hover:text-white",
+                                        "disabled:bg-[#FF2D550D] disabled:text-[#FF2D554D] disabled:border-[#FF2D551A] disabled:opacity-100", // PKG FIX
+                                        (isArmed && step === 5) && "opacity-100"
+                                    )}
+                                    title="Next Page"
+                                    aria-label="Next page"
+                                >
+                                    <ChevronRight size={14} />
+                                </button>
                                 </div>
                             ) : <div className="h-1" />}
                         </div>
@@ -657,6 +660,8 @@ function QuizSelectionConsoleContent() {
                                                             ? "bg-[#FF2D55] text-white border-[#FF2D55] shadow-[0_10px_30px_rgba(255,45,85,0.4)] scale-[1.02] z-10"
                                                             : "bg-[#2D2D2D] text-white/90 border-transparent hover:border-[#FF2D55]/30 hover:bg-[#3D3D3D] hover:scale-[1.01]"
                                                     )}
+                                                    aria-label={`Select difficulty ${tier.name}`}
+                                                    aria-pressed={difficulty === tier.id}
                                                 >
                                                     <p className={cn("text-base font-bold font-inter leading-tight mb-2", difficulty === tier.id ? "text-white" : "text-white")}>{tier.name}</p>
                                                     <p className={cn("text-[11px] font-medium font-inter leading-relaxed", difficulty === tier.id ? "text-white/80" : "text-white/40")}>{tier.desc}</p>
@@ -680,6 +685,8 @@ function QuizSelectionConsoleContent() {
                                                             ? "bg-[#FF2D55] text-white border-[#FF2D55] shadow-[0_10px_30px_rgba(255,45,85,0.4)] scale-[1.02] z-10"
                                                             : "bg-[#2D2D2D] text-white/90 border-transparent hover:border-[#FF2D55]/30 hover:bg-[#3D3D3D] hover:scale-[1.01]"
                                                     )}
+                                                    aria-label={`Set question count to ${v}`}
+                                                    aria-pressed={questionCount === v}
                                                 >
                                                     <div className={cn("text-xl font-bold font-inter leading-none mb-1", questionCount === v ? "text-white" : "text-white")}>{v}</div>
                                                     <div className={cn("text-[10px] font-bold uppercase tracking-widest", questionCount === v ? "text-white/60" : "text-white/40")}>Questions</div>

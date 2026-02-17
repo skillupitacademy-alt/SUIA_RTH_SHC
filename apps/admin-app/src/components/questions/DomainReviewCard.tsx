@@ -48,6 +48,7 @@ export function DomainReviewCard({
                             checked={isSelected}
                             onChange={(e) => onSelect?.(domain.id as string, e.target.checked)}
                             className="w-5 h-5 rounded-lg border-2 border-slate-200 text-blue-500 focus:ring-blue-500/20 cursor-pointer transition-all checked:border-blue-500"
+                            aria-label={`Select domain ${domain.name as string ?? 'item'}`}
                         />
                     </div>
 
@@ -82,6 +83,7 @@ export function DomainReviewCard({
                         onClick={() => onEditRequest(domain)}
                         className="p-2.5 rounded-xl bg-white border border-slate-200 text-slate-500 hover:text-blue-500 hover:border-blue-500/20 transition-all active:scale-95 shadow-sm"
                         title="Edit Domain"
+                        aria-label={`Edit domain ${domain.name as string ?? ''}`}
                     >
                         <Edit2 size={14} />
                     </button>
@@ -89,6 +91,7 @@ export function DomainReviewCard({
                         onClick={() => onDeleteRequest(domain)}
                         className="p-2.5 rounded-xl bg-white border border-slate-200 text-slate-500 hover:text-rose-500 hover:border-rose-100 transition-all active:scale-95 shadow-sm"
                         title="Delete Domain"
+                        aria-label={`Delete domain ${domain.name as string ?? ''}`}
                     >
                         <Trash2 size={14} />
                     </button>

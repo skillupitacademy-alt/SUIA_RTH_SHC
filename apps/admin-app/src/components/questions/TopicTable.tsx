@@ -241,6 +241,7 @@ export function TopicTable() {
                             <input
                                 type="text"
                                 placeholder="Search Topic Nodes..."
+                                aria-label="Search topics"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 className="w-full pl-12 pr-4 py-3 bg-slate-50 border-none rounded-2xl text-sm font-bold placeholder:text-slate-300 focus:ring-2 focus:ring-[#FF4B91]/20 transition-all"

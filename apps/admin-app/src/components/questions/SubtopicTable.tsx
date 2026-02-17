@@ -276,6 +276,7 @@ export function SubtopicTable() {
                             <input
                                 type="text"
                                 placeholder="Search Subtopics..."
+                                aria-label="Search subtopics"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 className="w-full pl-12 pr-4 py-3 bg-slate-50 border-none rounded-2xl text-sm font-bold placeholder:text-slate-300 focus:ring-2 focus:ring-teal-500/20 transition-all"

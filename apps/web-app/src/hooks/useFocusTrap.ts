@@ -4,7 +4,10 @@ import { useEffect } from 'react';
  * Lightweight focus trap for modals/dialogs.
  * Keeps tab focus within the given container while it's mounted.
  */
-export function useFocusTrap(containerRef: React.RefObject<HTMLElement>, isActive: boolean) {
+export function useFocusTrap<T extends HTMLElement = HTMLElement>(
+  containerRef: React.RefObject<T | null>,
+  isActive: boolean,
+) {
   useEffect(() => {
     if (!isActive) return;
     const container = containerRef.current;

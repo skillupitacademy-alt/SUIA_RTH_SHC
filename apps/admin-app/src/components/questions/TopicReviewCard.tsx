@@ -60,6 +60,7 @@ export function TopicReviewCard({
                             checked={isSelected}
                             onChange={(e) => onSelect?.(topic.id as string, e.target.checked)}
                             className="w-5 h-5 rounded-lg border-2 border-slate-200 text-orange-500 focus:ring-orange-500/20 cursor-pointer transition-all checked:border-orange-500"
+                            aria-label={`Select topic ${topic.name as string ?? 'item'}`}
                         />
                     </div>
 
@@ -97,6 +98,7 @@ export function TopicReviewCard({
                         onClick={() => onEditRequest(topic)}
                         className="p-2.5 rounded-xl bg-white border border-slate-200 text-slate-500 hover:text-orange-500 hover:border-orange-500/20 transition-all active:scale-95 shadow-sm"
                         title="Edit Topic"
+                        aria-label={`Edit topic ${topic.name as string ?? ''}`}
                     >
                         <Edit3 size={14} />
                     </button>
@@ -104,6 +106,7 @@ export function TopicReviewCard({
                         onClick={() => onDeleteRequest(topic)}
                         className="p-2.5 rounded-xl bg-white border border-slate-200 text-slate-500 hover:text-rose-500 hover:border-rose-100 transition-all active:scale-95 shadow-sm"
                         title="Delete Topic"
+                        aria-label={`Delete topic ${topic.name as string ?? ''}`}
                     >
                         <Trash2 size={14} />
                     </button>

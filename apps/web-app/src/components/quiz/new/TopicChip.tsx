@@ -28,6 +28,8 @@ export function TopicChip({
                     ? "bg-[#FF2D55] text-white border-[#FF2D55] shadow-[0_10px_30px_rgba(255,45,85,0.4)] scale-[1.02] z-10"
                     : "bg-[#2D2D2D] text-white/90 border-transparent hover:border-[#FF2D55]/30 hover:bg-[#3D3D3D] hover:scale-[1.01]"
             )}
+            aria-label={`Select topic ${name}`}
+            aria-pressed={isSelected}
         >
             <div className="flex justify-between items-start w-full mb-3">
                 <span className="text-base font-bold font-inter leading-tight">{name}</span>

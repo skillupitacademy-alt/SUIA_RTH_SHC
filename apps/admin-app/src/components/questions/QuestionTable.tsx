@@ -218,6 +218,7 @@ export function QuestionTable() {
                                 <input
                                     type="text"
                                     placeholder="Search assessment text..."
+                                    aria-label="Search assessments"
                                     value={searchQuery}
                                     onChange={(e) => { setSearchQuery(e.target.value); setPage(1); }}
                                     className="w-full bg-slate-50 border-none rounded-2xl pl-12 pr-6 py-3.5 text-[11px] font-black tracking-widest text-[#1A1A1A] placeholder:text-slate-300 focus:ring-2 focus:ring-[#FF4B91]/10 transition-all outline-none border border-transparent shadow-inner"
@@ -231,6 +232,7 @@ export function QuestionTable() {
                                     setPage(1);
                                 }}
                                 className="flex-shrink-0 flex items-center gap-2 px-4 py-3.5 rounded-2xl bg-red-50 text-red-600 text-[10px] font-black uppercase tracking-widest hover:bg-red-100 transition-all border border-red-100 h-full"
+                                aria-label="Clear filters"
                             >
                                 <X className="w-3 h-3" /> Clear
                             </button> : null}

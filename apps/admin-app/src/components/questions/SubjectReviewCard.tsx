@@ -53,6 +53,7 @@ export function SubjectReviewCard({
                             checked={isSelected}
                             onChange={(e) => onSelect?.(subject.id as string, e.target.checked)}
                             className="w-5 h-5 rounded-lg border-2 border-slate-200 text-purple-500 focus:ring-purple-500/20 cursor-pointer transition-all checked:border-purple-500"
+                            aria-label={`Select subject ${subject.name as string ?? 'item'}`}
                         />
                     </div>
 
@@ -87,6 +88,7 @@ export function SubjectReviewCard({
                         onClick={() => onEditRequest(subject)}
                         className="p-2.5 rounded-xl bg-white border border-slate-200 text-slate-500 hover:text-purple-500 hover:border-purple-500/20 transition-all active:scale-95 shadow-sm"
                         title="Edit Subject"
+                        aria-label={`Edit subject ${subject.name as string ?? ''}`}
                     >
                         <Edit2 size={14} />
                     </button>
@@ -94,6 +96,7 @@ export function SubjectReviewCard({
                         onClick={() => onDeleteRequest(subject)}
                         className="p-2.5 rounded-xl bg-white border border-slate-200 text-slate-500 hover:text-rose-500 hover:border-rose-100 transition-all active:scale-95 shadow-sm"
                         title="Delete Subject"
+                        aria-label={`Delete subject ${subject.name as string ?? ''}`}
                     >
                         <Trash2 size={14} />
                     </button>

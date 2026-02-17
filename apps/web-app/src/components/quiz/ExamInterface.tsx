@@ -254,7 +254,7 @@ export function ExamInterface() {
                     <div className="absolute top-20 left-1/2 -translate-x-1/2 z-50 bg-red-600 text-white px-6 py-3 rounded-full font-bold shadow-2xl animate-in slide-in-from-top-4 flex items-center gap-3">
                         <span className="h-2 w-2 rounded-full bg-white animate-pulse" />
                         {error}
-                        <button onClick={() => setError(null)} className="ml-2 hover:bg-white/20 rounded-full p-1">
+                        <button onClick={() => setError(null)} className="ml-2 hover:bg-white/20 rounded-full p-1" aria-label="Dismiss error message">
                             <ChevronRight size={14} className="rotate-90" />
                         </button>
                     </div>
@@ -276,6 +276,8 @@ export function ExamInterface() {
                                             markedForReview.includes(q.id) ? "border-orange-500 bg-orange-500/10 text-orange-600" :
                                                 "border-muted bg-background text-muted-foreground"
                                 )}
+                                aria-label={`Go to question ${i + 1}${answers[q.id] !== undefined ? ' (answered)' : markedForReview.includes(q.id) ? ' (marked for review)' : ''}`}
+                                aria-current={currentQuestionIndex === i ? "true" : undefined}
                             >
                                 {i + 1}
                             </button>
@@ -295,6 +297,7 @@ export function ExamInterface() {
                         onClick={handleFinish}
                         disabled={isSubmitting}
                         className="hidden sm:flex items-center gap-2 px-6 py-2 rounded-2xl bg-primary text-primary-foreground font-black shadow-lg shadow-primary/20 hover:scale-105 transition-transform active:scale-95 disabled:opacity-50"
+                        aria-label="Submit exam"
                     >
                         {isSubmitting ? "Submitting..." : "Submit Exam"}
                     </button>
@@ -352,6 +355,8 @@ export function ExamInterface() {
                                             ? "border-primary bg-primary/5 ring-4 ring-primary/10"
                                             : "border-muted bg-muted/5 hover:border-primary/20 hover:bg-white"
                                     )}
+                                    aria-label={`Select option ${String.fromCharCode(65 + i)}: ${option}`}
+                                    aria-pressed={answers[question.id] === i}
                                 >
                                     <div className="flex items-center gap-6">
                                         <div className={cn(
@@ -377,6 +382,7 @@ export function ExamInterface() {
                                 disabled={currentQuestionIndex === 0}
                                 onClick={() => setCurrentIndex(currentQuestionIndex - 1)}
                                 className="p-4 rounded-2xl border-2 font-bold hover:bg-muted transition-all disabled:opacity-30"
+                                aria-label="Previous question"
                             >
                                 <ChevronLeft size={24} />
                             </button>
@@ -386,6 +392,8 @@ export function ExamInterface() {
                                     "flex items-center gap-2 px-6 py-4 rounded-2xl border-2 font-bold transition-all",
                                     markedForReview.includes(question.id) ? "bg-orange-500 border-orange-500 text-white" : "hover:bg-muted"
                                 )}
+                                aria-label={markedForReview.includes(question.id) ? "Unmark question for review" : "Mark question for review"}
+                                aria-pressed={markedForReview.includes(question.id)}
                             >
                                 <Flag size={20} className={markedForReview.includes(question.id) ? "fill-current" : ""} />
                                 <span className="hidden sm:inline">Review later</span>
@@ -397,6 +405,7 @@ export function ExamInterface() {
                                 <button
                                     onClick={() => setCurrentIndex(currentQuestionIndex + 1)}
                                     className="flex items-center gap-2 px-8 py-4 rounded-2xl bg-secondary text-primary-foreground font-black shadow-lg hover:bg-secondary/90 transition-all active:scale-95 group"
+                                    aria-label="Next question"
                                 >
                                     Next Question
                                     <ChevronRight size={20} className="group-hover:translate-x-1 transition-transform" />
@@ -406,6 +415,7 @@ export function ExamInterface() {
                                     onClick={handleFinish}
                                     disabled={isSubmitting}
                                     className="flex items-center gap-2 px-8 py-4 rounded-2xl bg-green-600 text-white font-black shadow-lg hover:bg-green-700 transition-all active:scale-95 disabled:opacity-50"
+                                    aria-label="Finish attempt"
                                 >
                                     {isSubmitting ? "Submitting..." : "Finish Attempt"}
                                     <CheckCircle2 size={20} />

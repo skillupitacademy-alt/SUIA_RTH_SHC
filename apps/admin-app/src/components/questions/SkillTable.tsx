@@ -227,12 +227,14 @@ export function SkillTable() {
                         <button
                             onClick={() => setSelectedIds(new Set())}
                             className="px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-widest hover:bg-white/10 transition-colors"
+                            aria-label="Clear selected skills"
                         >
                             Clear
                         </button>
                         <button
                             onClick={() => setIsDeleteOpen(true)}
                             className="px-6 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-black uppercase tracking-widest shadow-lg shadow-red-600/20 transition-all active:scale-95 flex items-center gap-2"
+                            aria-label="Delete selected skills"
                         >
                             <Trash2 size={14} />
                             Delete Selection
@@ -414,6 +416,7 @@ export function SkillTable() {
                             <input
                                 type="text"
                                 placeholder="Search Skills..."
+                                aria-label="Search skills"
                                 value={searchQuery}
                                 onChange={(e) => { setSearchQuery(e.target.value); setPage(1); }}
                                 className="w-full bg-slate-50 border-none rounded-2xl px-5 py-3 text-[11px] font-black tracking-widest text-[#1A1A1A] placeholder:text-slate-400 focus:ring-2 focus:ring-cyan-500/10 transition-all outline-none border border-transparent shadow-inner"
@@ -425,6 +428,7 @@ export function SkillTable() {
                                     checked={data.length > 0 && selectedIds.size === data.length}
                                     onChange={(e) => handleSelectAll(e.target.checked)}
                                     className="w-4 h-4 rounded border-slate-300 text-cyan-600 focus:ring-offset-0 focus:ring-0 cursor-pointer"
+                                    aria-label="Select all skills"
                                 />
                                 <span className="text-[9px] font-bold uppercase tracking-wider text-slate-500">Select All</span>
                             </div>
@@ -434,6 +438,7 @@ export function SkillTable() {
                         <button
                             onClick={() => setIsFactoryOpen(true)}
                             className="px-6 py-3 rounded-2xl bg-slate-900 text-white text-[10px] font-bold uppercase tracking-wider shadow-lg hover:bg-slate-800 transition-all flex items-center gap-2"
+                            aria-label="Open skill bulk factory"
                         >
                             <Plus size={14} className="text-[#FF4B91]" />
                             Bulk Factory
@@ -441,6 +446,7 @@ export function SkillTable() {
                         <button
                             onClick={() => handleOpenForm()}
                             className="px-6 py-3 rounded-2xl bg-[#FF4B91] hover:bg-[#ff3382] text-white text-[10px] font-bold uppercase tracking-wider shadow-lg shadow-[#FF4B91]/20 transition-all flex items-center gap-3 active:scale-95"
+                            aria-label="Add skill"
                         >
                             <Plus size={16} />
                             Add Skill

@@ -144,6 +144,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                                                 ? "bg-[#FF4B91] text-white shadow-xl shadow-[#FF4B91]/30 scale-[1.02]"
                                                 : "text-slate-600 hover:bg-slate-50 hover:text-[#1A1A1A]"
                                         )}
+                                        aria-label={item.name}
+                                        aria-current={isActive ? "page" : undefined}
                                     >
                                         <div className="flex items-center gap-3">
                                             <item.icon size={20} className={cn("transition-colors", isActive ? "text-white" : "text-[#FF4B91]")} />
