@@ -7,6 +7,7 @@ import { useRef, useState } from 'react';
 
 import { useFocusTrap } from '@/hooks/useFocusTrap';
 import { useAuthStore } from '@/store/auth-store';
+import { clientLogger } from '@/utils/clientLogger';
 
 export function AdminLockScreen() {
     const { user, unlock, logout, isLocked, login } = useAuthStore();
@@ -42,7 +43,7 @@ export function AdminLockScreen() {
             unlock();
         } catch (err: unknown) {
             setError('Incorrect master password');
-            console.error('Lock screen unlock failed:', err);
+            clientLogger.error('Lock screen unlock failed', { error: err instanceof Error ? err.message : 'unknown' });
         } finally {
             setIsLoading(false);
         }
