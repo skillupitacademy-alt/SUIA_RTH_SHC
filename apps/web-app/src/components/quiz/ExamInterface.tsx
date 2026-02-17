@@ -1,6 +1,5 @@
 'use client';
 
-import { useEffect, useState, useMemo } from 'react';
 import { apiClient } from '@quiz/api-client';
 import {
     Clock,
@@ -10,11 +9,14 @@ import {
     Flag,
     Code
 } from 'lucide-react';
+import { useSearchParams, useRouter } from 'next/navigation';
+import { useEffect, useMemo, useState } from 'react';
+
+import { useExamBackup, getFilteredBackup } from '@/hooks/useExamBackup';
+import { useSessionManager } from '@/hooks/useSessionManager';
 import { cn } from '@/lib/utils';
 import { useQuizStore } from '@/store/quiz-store';
-import { useSearchParams, useRouter } from 'next/navigation';
-import { useSessionManager } from '@/hooks/useSessionManager';
-import { useExamBackup, getFilteredBackup } from '@/hooks/useExamBackup';
+import { clientLogger } from '@/utils/clientLogger';
 
 export function ExamInterface() {
     useSessionManager();
@@ -84,17 +86,17 @@ export function ExamInterface() {
                 // Format: examId:questionId:optionIndex
                 const idempotencyKey = `${examId}:${questionId}:${optionIndex}`;
 
-                await withRetry(() =>
-                    apiClient.quiz.submitAnswer(examId, questionId, option, {
-                        idempotencyKey
-                    })
-                );
-            } catch (err) {
-                console.error("Failed to save answer after retries", err);
-                // We keep optimistic UI, but maybe show a subtle indicator
-            }
+            await withRetry(() =>
+                apiClient.quiz.submitAnswer(examId, questionId, option, {
+                    idempotencyKey
+                })
+            );
+        } catch (err) {
+            clientLogger.error('Failed to save answer after retries', { error: err instanceof Error ? err.message : 'unknown' });
+            // We keep optimistic UI, but maybe show a subtle indicator
         }
-    };
+    }
+};
 
     useEffect(() => {
         const initExam = async () => {
@@ -164,7 +166,7 @@ export function ExamInterface() {
                 });
 
             } catch (err) {
-                console.error("Failed to load exam session", err);
+                clientLogger.error('Failed to load exam session', { error: err instanceof Error ? err.message : 'unknown' });
                 router.push('/quiz/new');
             } finally {
                 setIsLoading(false);
@@ -229,7 +231,7 @@ export function ExamInterface() {
             finishQuiz();
             router.push(`/reports/active-report?examId=${examId}`);
         } catch (err) {
-            console.error("Failed to submit exam", err);
+            clientLogger.error('Failed to submit exam', { error: err instanceof Error ? err.message : 'unknown' });
             setError("Submission failed after multiple attempts. Check your connection.");
         } finally {
             setIsSubmitting(false);

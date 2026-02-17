@@ -1,10 +1,13 @@
 "use client";
 
-import { useState } from 'react';
-import { useAuthStore } from '@/store/auth-store';
 import { apiClient } from '@quiz/api-client';
-import { SessionWatcher } from './SessionWatcher';
 import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+
+import { useAuthStore } from '@/store/auth-store';
+import { clientLogger } from '@/utils/clientLogger';
+
+import { SessionWatcher } from './SessionWatcher';
 
 export function WebSessionWatcherContainer() {
     const { expiresAt, login, logout, user, isAuthenticated, setSessionExpired } = useAuthStore();
@@ -28,7 +31,7 @@ export function WebSessionWatcherContainer() {
         try {
             await apiClient.auth.logout();
         } catch (err) {
-            console.error("Auto-logout server call failed:", err);
+            clientLogger.error('Auto-logout server call failed', { error: err instanceof Error ? err.message : 'unknown' });
         }
 
         // 1. Clear state IMMEDIATELY so E2E and UI react

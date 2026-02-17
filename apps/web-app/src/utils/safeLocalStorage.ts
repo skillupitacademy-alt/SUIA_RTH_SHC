@@ -1,3 +1,5 @@
+import { clientLogger } from '@/utils/clientLogger';
+
 type JsonValue = string | number | boolean | null | Record<string, unknown> | JsonValue[];
 
 interface StoredPayload {
@@ -23,7 +25,7 @@ export function safeGet<T extends JsonValue = JsonValue>(key: string): T | null 
         }
         return parsed as T;
     } catch (error) {
-        console.warn(`[safeLocalStorage] read failed for key: ${key}`, error);
+        clientLogger.warn('[safeLocalStorage] read failed', { key, error: error instanceof Error ? error.message : 'unknown' });
         return null;
     }
 }
@@ -34,7 +36,7 @@ export function safeSet(key: string, value: JsonValue, ttlMs?: number): void {
         const payload: StoredPayload = { value, expiresAt: ttlMs != null ? Date.now() + ttlMs : undefined };
         window.localStorage.setItem(key, JSON.stringify(payload));
     } catch (error) {
-        console.warn(`[safeLocalStorage] write failed for key: ${key}`, error);
+        clientLogger.warn('[safeLocalStorage] write failed', { key, error: error instanceof Error ? error.message : 'unknown' });
     }
 }
 
@@ -43,7 +45,7 @@ export function safeRemove(key: string): void {
     try {
         window.localStorage.removeItem(key);
     } catch (error) {
-        console.warn(`[safeLocalStorage] remove failed for key: ${key}`, error);
+        clientLogger.warn('[safeLocalStorage] remove failed', { key, error: error instanceof Error ? error.message : 'unknown' });
     }
 }
 

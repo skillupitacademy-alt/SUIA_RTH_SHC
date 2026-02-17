@@ -1,7 +1,5 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import {
     User,
     Briefcase,
@@ -15,9 +13,13 @@ import {
     ArrowLeft,
     CheckCircle2
 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/store/auth-store';
 import { apiClient, UserProfile } from '@quiz/api-client';
+import { clientLogger } from '@/utils/clientLogger';
 
 const ROLES = [
     { id: 'student_school', title: 'School Student', icon: User },
@@ -64,7 +66,7 @@ export function OnboardingWizard() {
             completeOnboarding();
             router.push('/dashboard');
         } catch (err) {
-            console.error("Failed to save profile", err);
+            clientLogger.error('Failed to save profile', { error: err instanceof Error ? err.message : 'unknown' });
             setError("Something went wrong ensuring your profile is secure. Please try again.");
         } finally {
             setLoading(false);

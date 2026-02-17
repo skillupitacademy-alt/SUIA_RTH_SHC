@@ -1,9 +1,11 @@
 'use client';
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars, react-hooks/exhaustive-deps */
 
-import { createContext, useContext, useEffect, useState } from 'react';
-import { useAuthStore } from '@/store/auth-store';
 import { apiClient } from '@quiz/api-client';
+import { createContext, useContext, useEffect, useState } from 'react';
+
+import { useAuthStore } from '@/store/auth-store';
+import { clientLogger } from '@/utils/clientLogger';
 
 // We keep the Context API for backward compatibility/wrapping, 
 // but it delegates to the store.
@@ -34,7 +36,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         try {
             await apiClient.auth.logout();
         } catch (err) {
-            console.error("Server-side logout failed:", err);
+            clientLogger.error('Server-side logout failed', { error: err instanceof Error ? err.message : 'unknown' });
         } finally {
             storeLogout();
             localStorage.removeItem('quiz-platform-auth');

@@ -1,7 +1,7 @@
 'use client';
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { apiClient, QuizState } from '@quiz/api-client';
 import {
@@ -22,6 +22,7 @@ import { useExitGuard } from '@/hooks/useExitGuard';
 import { ExitConfirmationDialog } from '@/components/ui/ExitConfirmationDialog';
 import { useSessionManager } from '@/hooks/useSessionManager';
 import { useExamBackup, getFilteredBackup } from '@/hooks/useExamBackup';
+import { clientLogger } from '@/utils/clientLogger';
 
 
 // Detailed Question Status
@@ -55,7 +56,7 @@ export default function ActiveExamPage() {
             // Guardrail: Validate examId format before proceeding
             const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
             if (!examId || examId === 'undefined' || !uuidRegex.test(examId)) {
-                console.warn('[ActiveExamPage] Invalid examId detected, redirecting to Mission Control (/quiz/new?error=invalid_exam).');
+                clientLogger.warn('[ActiveExamPage] Invalid examId detected, redirecting to Mission Control (/quiz/new?error=invalid_exam).');
                 router.replace('/quiz/new?error=invalid_exam');
                 return;
             }
@@ -97,7 +98,7 @@ export default function ActiveExamPage() {
 
                 setTimeLeft(data.remainingTimeSeconds || 0);
             } catch (err: unknown) {
-                console.error('Failed to load exam:', err);
+                clientLogger.error('Failed to load exam', { error: err instanceof Error ? err.message : 'unknown' });
                 const message = err instanceof Error ? err.message : '';
                 if (message.includes('403')) setError('Unauthorized: Session ownership mismatch.');
                 else if (message.includes('404')) setError('Assessment session not found.');
@@ -156,7 +157,7 @@ export default function ActiveExamPage() {
             // Persistence (No raw fetch - using apiClient)
             await apiClient.quiz.submitAnswer(examId, questionId, optionId);
         } catch (err) {
-            console.error('Critical: Failed to persist answer', err);
+            clientLogger.error('Critical: Failed to persist answer', { error: err instanceof Error ? err.message : 'unknown' });
             // In a real premium app, we might show a "Sync Error" toast here
         }
     };
@@ -186,7 +187,7 @@ export default function ActiveExamPage() {
             clearBackup(examId);
             router.replace(`/reports/active-report?examId=${examId}`);
         } catch (err) {
-            console.error('Failed to submit exam', err);
+            clientLogger.error('Failed to submit exam', { error: err instanceof Error ? err.message : 'unknown' });
             // Re-arm on failure if necessary, or stay in 'started'
             setState(prev => prev ? { ...prev, status: 'started' } : null);
             setIsSubmitting(false);

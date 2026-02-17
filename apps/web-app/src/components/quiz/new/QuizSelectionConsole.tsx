@@ -2,8 +2,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars, react-hooks/exhaustive-deps */
 
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useState, useEffect, Suspense } from 'react';
-import { apiClient, Domain, Subject, Topic, Subtopic } from '@quiz/api-client';
+import { Suspense, useEffect, useState } from 'react';
+import { apiClient, Domain, Subject, Subtopic, Topic } from '@quiz/api-client';
 import { AssessmentSummary } from './AssessmentSummary';
 import { DomainCard } from './DomainCard';
 import { TopicChip } from './TopicChip';
@@ -14,6 +14,7 @@ import { ExitConfirmationDialog } from '@/components/ui/ExitConfirmationDialog';
 import { ExamPreflightDialog } from '@/components/quiz/ExamPreflightDialog';
 import { getActiveExamId } from '@/hooks/useExamBackup';
 import { ZLoader } from '@quiz/ui';
+import { clientLogger } from '@/utils/clientLogger';
 
 export function QuizSelectionConsole() {
     return (
@@ -110,7 +111,7 @@ function QuizSelectionConsoleContent() {
             try {
                 await apiClient.auth.heartbeat();
             } catch (err) {
-                console.warn('[Heartbeat] Silence failed - likely background refresh will catch it', err);
+                clientLogger.warn('[Heartbeat] Silence failed - likely background refresh will catch it', { error: err instanceof Error ? err.message : 'unknown' });
             }
             // Jittered interval (120s - 180s) to prevent "Thundering Herd" server spikes
             const jitter = Math.floor(Math.random() * 60000); // 0-60s
@@ -133,7 +134,7 @@ function QuizSelectionConsoleContent() {
                 const data = await apiClient.quiz.getDomains();
                 setDomains(data || []);
             } catch (err) {
-                console.error('Failed to fetch domains', err);
+                clientLogger.error('Failed to fetch domains', { error: err instanceof Error ? err.message : 'unknown' });
             } finally {
                 setLoading(false);
             }
@@ -150,7 +151,7 @@ function QuizSelectionConsoleContent() {
                     const data = await apiClient.quiz.getSubjects(selectedDomains[0]);
                     setSubjects(data || []);
                 } catch (err) {
-                    console.error('Failed to fetch subjects', err);
+                    clientLogger.error('Failed to fetch subjects', { error: err instanceof Error ? err.message : 'unknown' });
                 } finally {
                     setLoading(false);
                 }
@@ -171,7 +172,7 @@ function QuizSelectionConsoleContent() {
                     const data = await apiClient.quiz.getTopics(selectedSubjects[0]);
                     setTopics(data || []);
                 } catch (err) {
-                    console.error('Failed to fetch topics', err);
+                    clientLogger.error('Failed to fetch topics', { error: err instanceof Error ? err.message : 'unknown' });
                 } finally {
                     setLoading(false);
                 }
@@ -191,7 +192,7 @@ function QuizSelectionConsoleContent() {
                     const data = await apiClient.quiz.getSubtopics(selectedTopics[0]);
                     setSubtopics(data || []);
                 } catch (err) {
-                    console.error('Failed to fetch subtopics', err);
+                    clientLogger.error('Failed to fetch subtopics', { error: err instanceof Error ? err.message : 'unknown' });
                 } finally {
                     setLoading(false);
                 }
@@ -357,7 +358,7 @@ function QuizSelectionConsoleContent() {
             router.push(`/exam/${data.examId}`);
 
         } catch (err: unknown) {
-            console.error('Launch failed:', err);
+            clientLogger.error('Launch failed', { error: err instanceof Error ? err.message : 'unknown' });
             const message = err instanceof Error ? err.message : "Launch failed. Please try again.";
             setLaunchError({
                 title: "Couldn't start your assessment",

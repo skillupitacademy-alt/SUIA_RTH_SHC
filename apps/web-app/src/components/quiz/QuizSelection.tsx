@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
     Code,
@@ -19,6 +19,7 @@ import {
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/store/auth-store';
 import { apiClient, Domain, DomainHierarchy, QuestionCounts, Subject, Topic, Subtopic } from '@quiz/api-client';
+import { clientLogger } from '@/utils/clientLogger';
 
 // Map icons to domain IDs (fallback/static mapping for aesthetics)
 const ICON_MAP: Record<string, typeof Code> = {
@@ -67,7 +68,7 @@ export function QuizSelection() {
                 const data = await apiClient.quiz.getDomains();
                 setDomains(data);
             } catch (err) {
-                console.error("Failed to load domains", err);
+                clientLogger.error('Failed to load domains', { error: err instanceof Error ? err.message : 'unknown' });
             } finally {
                 setLoading(false);
             }
@@ -88,7 +89,7 @@ export function QuizSelection() {
                 const hierarchy = await apiClient.quiz.getDomainHierarchy(selectedDomain);
                 setFullHierarchy(hierarchy);
             } catch (err) {
-                console.error("Failed to fetch domain hierarchy", err);
+                clientLogger.error('Failed to fetch domain hierarchy', { error: err instanceof Error ? err.message : 'unknown' });
             } finally {
                 setFetchingHierarchy(false);
             }
@@ -112,7 +113,7 @@ export function QuizSelection() {
                 });
                 setAvailableCounts(counts);
             } catch (err) {
-                console.error("Failed to fetch counts", err);
+                clientLogger.error('Failed to fetch counts', { error: err instanceof Error ? err.message : 'unknown' });
             }
         };
         fetchCounts();
@@ -170,7 +171,7 @@ export function QuizSelection() {
 
             router.push(`/quiz/active-session?examId=${exam.examId}`);
         } catch (err: unknown) {
-            console.error("Failed to start exam", err);
+            clientLogger.error('Failed to start exam', { error: err instanceof Error ? err.message : 'unknown' });
             const message = err instanceof Error ? err.message : "Failed to start exam session.";
             setError(message);
             setStarting(false);

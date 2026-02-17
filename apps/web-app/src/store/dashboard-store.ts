@@ -1,7 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/ban-ts-comment */
-import { create } from 'zustand';
 import { apiClient } from '@quiz/api-client';
+import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+
+import { clientLogger } from '@/utils/clientLogger';
 
 interface DashboardData {
     overview: {
@@ -110,7 +112,7 @@ export const useDashboardStore = create<DashboardState>()(
                         } : null
                     }));
                 } catch (err: unknown) {
-                    console.error("Failed to fetch performance trend:", err);
+                    clientLogger.error('Failed to fetch performance trend', { error: err instanceof Error ? err.message : 'unknown' });
                 }
             },
 
@@ -126,7 +128,7 @@ export const useDashboardStore = create<DashboardState>()(
                         metadataLoading: false 
                     });
                 } catch (err: unknown) {
-                    console.error("Failed to fetch drilldown metadata:", err);
+                    clientLogger.error('Failed to fetch drilldown metadata', { error: err instanceof Error ? err.message : 'unknown' });
                     set({ metadataLoading: false });
                 }
             },
@@ -141,7 +143,7 @@ export const useDashboardStore = create<DashboardState>()(
                         } : null
                     }));
                 } catch (err: unknown) {
-                    console.error("Failed to fetch drilldown analytics:", err);
+                    clientLogger.error('Failed to fetch drilldown analytics', { error: err instanceof Error ? err.message : 'unknown' });
                 }
             }
         }),

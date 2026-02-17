@@ -16,6 +16,7 @@ import { ActionPlanItem, apiClient } from "@quiz/api-client";
 import { cn } from "@/lib/utils";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 import { useAuthStore } from "@/store/auth-store";
+import { clientLogger } from '@/utils/clientLogger';
 
 type PerformanceEntry = { id?: string; name?: string; score?: number; accuracy?: number };
 type ReportQuestion = {
@@ -163,7 +164,7 @@ function ReportContent() {
                     setIsLoading(false);
                 }
             } catch (err: unknown) {
-                console.error("Failed to load report", err);
+                clientLogger.error('Failed to load report', { error: err instanceof Error ? err.message : 'unknown' });
                 if (isMounted) {
                     setErrorMsg("Unable to retrieve report. Please ensure your assessment was submitted.");
                     setIsLoading(false);

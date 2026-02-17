@@ -433,3 +433,10 @@ equestId without global mutable state.
 
 
 
+
+## 2026-02-18 — Phase F3 client logging (batch10 web auth/exam)
+
+- Added web-app clientLogger helper and replaced console.* in auth/session/storage and critical exam flows: auth-context logout, session manager heartbeat/idle, session expiry modal, WebSessionWatcherContainer, safeLocalStorage. Converted exam/quiz surfaces (ExamInterface, ActiveExamPage, QuizSelection, QuizSelectionConsole) and reports pages to clientLogger; dashboard store and global search/onboarding now log via clientLogger. SecurityMuzzle left intact by design.
+- Lint @quiz/web-app with --max-warnings=0 passes.
+- Remaining console.* only in intentional SecurityMuzzle shim.
+

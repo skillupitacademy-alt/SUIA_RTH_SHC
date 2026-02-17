@@ -1,5 +1,3 @@
-import * as React from "react";
-import { useRouter } from "next/navigation";
 import { Command } from "cmdk";
 import {
     Calculator,
@@ -12,7 +10,11 @@ import {
     Laptop
 } from "lucide-react";
 import { useTheme } from "next-themes";
+import { useRouter } from "next/navigation";
+import * as React from "react";
 import { SearchResult } from "@quiz/api-client";
+
+import { clientLogger } from '@/utils/clientLogger';
 
 export function GlobalSearchDialog() {
     const [open, setOpen] = React.useState(false);
@@ -37,7 +39,7 @@ export function GlobalSearchDialog() {
                 const data = await apiClient.search.searchGlobal(query);
                 setResults(data);
             } catch (error) {
-                console.error("Search failed", error);
+                clientLogger.error('Global search failed', { error: error instanceof Error ? error.message : 'unknown' });
             } finally {
                 setLoading(false);
             }
