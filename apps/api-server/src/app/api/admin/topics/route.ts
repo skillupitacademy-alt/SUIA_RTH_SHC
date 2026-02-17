@@ -5,6 +5,7 @@ import type { TopicInsert } from '@/modules/admin-engine/admin.engine';
 import { AdminEngine } from '@/modules/admin-engine/admin.engine';
 import { _verifyAdmin } from '@/modules/auth/rbac.service';
 import { TokenService } from '@/modules/auth/token.service';
+import { topicSchema } from '@/schemas/hierarchy.schemas';
 
 export const dynamic = 'force-dynamic';
 
@@ -44,8 +45,24 @@ export async function POST(_req: NextRequest) {
         return NextResponse.json({ _error: 'Forbidden' }, { status: 403 });
     }
 
-    const body = await _req.json() as TopicInsert;
-    const result = await AdminEngine.createTopic(body, _payload.userId);
+    const rawBody = await _req.json();
+    const parsed = topicSchema.safeParse(rawBody);
+    const body = parsed.success ? parsed.data : (rawBody as Partial<typeof topicSchema['_input']>);
+
+    if (typeof body.subjectId !== 'string' || typeof body.name !== 'string' || body.name.trim() === '') {
+      return NextResponse.json({ _error: 'subjectId and name are required' }, { status: 400 });
+    }
+
+    const createBody: TopicInsert = {
+      subjectId: body.subjectId,
+      name: body.name,
+      description: body.description,
+      status: body.status,
+      complexityLevel: body.complexityLevel,
+      weight: body.weight,
+    };
+
+    const result = await AdminEngine.createTopic(createBody, _payload.userId);
     
     return NextResponse.json(result);
   } catch (_error: unknown) {

@@ -4,6 +4,7 @@ import { NextResponse } from 'next/server';
 import type { DomainInsert } from '@/modules/admin-engine/admin.engine';
 import { AdminEngine } from '@/modules/admin-engine/admin.engine';
 import { TokenService } from '@/modules/auth/token.service';
+import { domainSchema } from '@/schemas/hierarchy.schemas';
 
 export const dynamic = 'force-dynamic';
 
@@ -37,8 +38,22 @@ export async function POST(_req: NextRequest) {
     }
     const _payload = await TokenService.verifyAccessToken(_token, true);
 
-    const body = await _req.json() as DomainInsert;
-    const result = await AdminEngine.createDomain(body, _payload.userId);
+    const rawBody = await _req.json();
+    const parsed = domainSchema.safeParse(rawBody);
+    const body = parsed.success ? parsed.data : (rawBody as Partial<typeof domainSchema['_input']>);
+
+    if (typeof body.name !== 'string' || body.name.trim() === '') {
+      return NextResponse.json({ _error: 'name is required' }, { status: 400 });
+    }
+
+    const createBody: DomainInsert = {
+      name: body.name,
+      description: body.description,
+      category: body.category,
+      status: body.status,
+    };
+
+    const result = await AdminEngine.createDomain(createBody, _payload.userId);
     
     return NextResponse.json(result);
   } catch (_error: unknown) {

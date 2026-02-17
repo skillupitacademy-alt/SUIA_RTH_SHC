@@ -1,10 +1,10 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
-import type { SubjectInsert } from '@/modules/admin-engine/admin.engine';
 import { AdminEngine } from '@/modules/admin-engine/admin.engine';
 import { _verifyAdmin } from '@/modules/auth/rbac.service';
 import { TokenService } from '@/modules/auth/token.service';
+import { subjectSchema } from '@/schemas/hierarchy.schemas';
 
 export async function PATCH(
   _req: NextRequest,
@@ -18,7 +18,9 @@ export async function PATCH(
     }
     const _payload = await TokenService.verifyAccessToken(_token, true);
 
-    const body = await _req.json() as Partial<SubjectInsert>;
+    const rawBody = await _req.json();
+    const parsed = subjectSchema.partial().safeParse(rawBody);
+    const body = parsed.success ? parsed.data : (rawBody as Partial<typeof subjectSchema['_input']>);
     const result = await AdminEngine.updateSubject(id, body, _payload.userId);
     
     return NextResponse.json(result);

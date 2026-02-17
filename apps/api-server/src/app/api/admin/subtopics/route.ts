@@ -5,6 +5,7 @@ import type { SubtopicInsert } from '@/modules/admin-engine/admin.engine';
 import { AdminEngine } from '@/modules/admin-engine/admin.engine';
 import { _verifyAdmin } from '@/modules/auth/rbac.service';
 import { TokenService } from '@/modules/auth/token.service';
+import { subtopicSchema } from '@/schemas/hierarchy.schemas';
 
 export const dynamic = 'force-dynamic';
 
@@ -44,8 +45,22 @@ export async function POST(_req: NextRequest) {
         return NextResponse.json({ _error: 'Forbidden' }, { status: 403 });
     }
 
-    const body = await _req.json() as SubtopicInsert;
-    const result = await AdminEngine.createSubtopic(body, _payload.userId);
+    const rawBody = await _req.json();
+    const parsed = subtopicSchema.safeParse(rawBody);
+    const body = parsed.success ? parsed.data : (rawBody as Partial<typeof subtopicSchema['_input']>);
+
+    if (typeof body.topicId !== 'string' || typeof body.name !== 'string' || body.name.trim() === '') {
+      return NextResponse.json({ _error: 'topicId and name are required' }, { status: 400 });
+    }
+
+    const createBody: SubtopicInsert = {
+      topicId: body.topicId,
+      name: body.name,
+      description: body.description,
+      depthLevel: body.depthLevel,
+    };
+
+    const result = await AdminEngine.createSubtopic(createBody, _payload.userId);
     
     return NextResponse.json(result);
   } catch (_error: unknown) {

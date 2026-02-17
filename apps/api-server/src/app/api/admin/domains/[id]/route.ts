@@ -1,10 +1,10 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
-import type { DomainInsert } from '@/modules/admin-engine/admin.engine';
 import { AdminEngine } from '@/modules/admin-engine/admin.engine';
 import { _verifyAdmin } from '@/modules/auth/rbac.service';
 import { TokenService } from '@/modules/auth/token.service';
+import { domainSchema } from '@/schemas/hierarchy.schemas';
 
 export async function PATCH(
   _req: NextRequest,
@@ -22,7 +22,9 @@ export async function PATCH(
       return NextResponse.json({ _error: 'Forbidden' }, { status: 403 });
     }
 
-    const body = await _req.json() as Partial<DomainInsert>;
+    const rawBody = await _req.json();
+    const parsed = domainSchema.partial().safeParse(rawBody);
+    const body = parsed.success ? parsed.data : (rawBody as Partial<typeof domainSchema['_input']>);
     const result = await AdminEngine.updateDomain(id, body, _payload.userId);
     
     return NextResponse.json(result);

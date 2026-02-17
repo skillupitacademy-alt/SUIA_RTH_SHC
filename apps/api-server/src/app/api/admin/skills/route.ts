@@ -4,6 +4,7 @@ import { NextResponse } from 'next/server';
 import type { SkillInsert } from '@/modules/admin-engine/admin.engine';
 import { AdminEngine } from '@/modules/admin-engine/admin.engine';
 import { TokenService } from '@/modules/auth/token.service';
+import { skillSchema } from '@/schemas/hierarchy.schemas';
 
 export const dynamic = 'force-dynamic';
 
@@ -37,8 +38,22 @@ export async function POST(_req: NextRequest) {
     }
     const _payload = await TokenService.verifyAccessToken(_token, true);
 
-    const body = await _req.json() as SkillInsert;
-    const result = await AdminEngine.createSkill(body, _payload.userId);
+    const rawBody = await _req.json();
+    const parsed = skillSchema.safeParse(rawBody);
+    const body = parsed.success ? parsed.data : (rawBody as Partial<typeof skillSchema['_input']>);
+
+    if (typeof body.name !== 'string' || body.name.trim() === '') {
+      return NextResponse.json({ _error: 'name is required' }, { status: 400 });
+    }
+
+    const createBody: SkillInsert = {
+      name: body.name,
+      category: body.category,
+      mappingType: body.mappingType,
+      weight: body.weight,
+    };
+
+    const result = await AdminEngine.createSkill(createBody, _payload.userId);
     
     return NextResponse.json(result);
   } catch (_error: unknown) {

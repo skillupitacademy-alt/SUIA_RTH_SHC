@@ -4,6 +4,7 @@ import { NextResponse } from 'next/server';
 import type { SubjectInsert } from '@/modules/admin-engine/admin.engine';
 import { AdminEngine } from '@/modules/admin-engine/admin.engine';
 import { TokenService } from '@/modules/auth/token.service';
+import { subjectSchema } from '@/schemas/hierarchy.schemas';
 
 export const dynamic = 'force-dynamic';
 
@@ -38,8 +39,23 @@ export async function POST(_req: NextRequest) {
     }
     const _payload = await TokenService.verifyAccessToken(_token, true);
 
-    const body = await _req.json() as SubjectInsert;
-    const result = await AdminEngine.createSubject(body, _payload.userId);
+    const rawBody = await _req.json();
+    const parsed = subjectSchema.safeParse(rawBody);
+    const body = parsed.success ? parsed.data : (rawBody as Partial<typeof subjectSchema['_input']>);
+
+    if (typeof body.domainId !== 'string' || typeof body.name !== 'string' || body.name.trim() === '') {
+      return NextResponse.json({ _error: 'domainId and name are required' }, { status: 400 });
+    }
+
+    const createBody: SubjectInsert = {
+      domainId: body.domainId,
+      name: body.name,
+      description: body.description,
+      status: body.status,
+      order: body.order,
+    };
+
+    const result = await AdminEngine.createSubject(createBody, _payload.userId);
     
     return NextResponse.json(result);
   } catch (_error: unknown) {
