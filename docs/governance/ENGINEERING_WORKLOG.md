@@ -163,3 +163,9 @@
 
 - Expanded skipped scaffolds for api-server Tier 1 services (auth, token, session, scoring, exam engines) with clearer scenarios to fill later; still `describe.skip` to keep execution deferred.
 - Goal: enable rapid fill-in of real assertions in later sessions without re-plumbing paths or suite structures.
+
+## 2026-02-18 — Phase C2 scaffolds refined (typed mocks, lint clean)
+
+- Tightened api-server Tier 1 skipped tests with typed mocks/return types to make future assertions drop-in ready while staying skipped.
+- Cleaned skipped Playwright auth specs for admin/web apps to satisfy lint (no floating promises) while keeping them non-executing.
+- CI remains green with execution deferred; ready to un-skip in later C phases when coverage is implemented.
