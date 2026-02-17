@@ -1,4 +1,4 @@
-import { resolveWorkspacePath } from '@quiz/config/envPaths';
+import { resolveWorkspacePath } from '../../packages/config/envPaths';
 import react from '@vitejs/plugin-react';
 import tsconfigPaths from 'vite-tsconfig-paths';
 import { defineConfig } from 'vitest/config';
