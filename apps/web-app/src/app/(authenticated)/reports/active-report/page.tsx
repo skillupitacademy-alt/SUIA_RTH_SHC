@@ -105,7 +105,7 @@ function ReportContent() {
                 const mapPerformance = (
                     list: PerformanceEntry[] | undefined,
                     fallbackPrefix: string
-                ) => (list || []).map((entry, idx) => ({
+                ) => (list || []).map((entry: PerformanceEntry, idx: number) => ({
                     id: entry.id ?? `${fallbackPrefix}-${idx}`,
                     name: entry.name ?? 'Unknown',
                     score: entry.score ?? Math.round(entry.accuracy ?? 0),
@@ -132,7 +132,7 @@ function ReportContent() {
 
                     // Multi-Dimensional Mapping
                     skillMatrix: mapPerformance(report.performance?.skill, 'skill'),
-                    behaviorRadar: (report.performance?.category || []).map((c, idx) => ({
+                    behaviorRadar: (report.performance?.category || []).map((c: PerformanceEntry, idx: number) => ({
                         name: c.name ?? c.id ?? `category-${idx}`,
                         accuracy: Math.round(c.accuracy ?? 0),
                     })), // API uses 'category' for Technical/Cognitive/Process
@@ -147,15 +147,15 @@ function ReportContent() {
                         accuracy: item.accuracy ?? 0,
                     })),
 
-                    questions: report.questions?.map((q, idx: number) => ({
-                        id: (q as { id?: string }).id || `q-${idx}`,
+                    questions: ((report.questions as ReportQuestion[] | undefined) ?? []).map((q: ReportQuestion, idx: number) => ({
+                        id: q.id || `q-${idx}`,
                         questionText: q.text ?? 'Question',
                         text: q.text ?? 'Question',
                         userAnswer: q.userAnswer,
                         correctAnswer: q.correctAnswer, // Sanitized by backend
                         isCorrect: q.isCorrect,
                         timeSpent: q.timeSpent || 0
-                    })) || []
+                    }))
                 };
 
                 if (isMounted) {

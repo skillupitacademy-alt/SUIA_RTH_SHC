@@ -1,8 +1,8 @@
 import { type NextRequest, NextResponse } from 'next/server';
 
-import { logger } from '../../lib/logger';
-import { cacheService } from '../core/cache.service';
-import { TokenService } from './token.service';
+import { logger } from '@/lib/logger';
+import { TokenService } from '@/modules/auth/token.service';
+import { cacheService } from '@/modules/core/cache.service';
 
 const WINDOW_MS = 15 * 60 * 1000;
 const MAX_IP_REQUESTS = 1000;

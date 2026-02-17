@@ -13,7 +13,7 @@ const fixtures = {
 
 describe.skip('ScoringEngine (unit)', () => {
   it('calculates weighted score for correct answers', async () => {
-    const { ScoringEngine } = await import('../scoring.engine');
+    const { ScoringEngine } = await import('@/modules/scoring-engine/scoring.engine');
     const score = await ScoringEngine.calculateExamResults(
       fixtures.answers,
       fixtures.questions
@@ -22,7 +22,7 @@ describe.skip('ScoringEngine (unit)', () => {
   });
 
   it('penalizes unanswered or incorrect items', async () => {
-    const { ScoringEngine } = await import('../scoring.engine');
+    const { ScoringEngine } = await import('@/modules/scoring-engine/scoring.engine');
     const score = await ScoringEngine.calculateExamResults(
       [{ questionId: 'q1', answer: null }],
       fixtures.questions

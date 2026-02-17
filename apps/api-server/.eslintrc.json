@@ -16,7 +16,8 @@
                            "next.config.js",
                            "postcss.config.js",
                            "tailwind.config.js",
-                           "tailwind.config.ts"
+                           "tailwind.config.ts",
+                           "src/modules/**/__tests__/**/*"
                        ],
     "overrides":  [
                       {

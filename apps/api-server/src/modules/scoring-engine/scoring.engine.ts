@@ -2,7 +2,7 @@ import { db, exams, resultsByDimension } from '@quiz/db';
 import { eq } from 'drizzle-orm';
 export const dynamic = 'force-dynamic';
 
-import { logger } from '../../lib/logger';
+import { logger } from '@/lib/logger';
 
 export class ScoringEngine {
   private static log = logger.child({ module: 'scoring-engine' });

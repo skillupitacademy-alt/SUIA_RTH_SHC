@@ -20,8 +20,20 @@
       "@quiz/api-client": [
         "../../packages/api-client/src/index.ts"
       ],
+      "@quiz/api-client/*": [
+        "../../packages/api-client/src/*"
+      ],
+      "@quiz/config": [
+        "../../packages/config/envPaths.ts"
+      ],
+      "@quiz/config/*": [
+        "../../packages/config/*"
+      ],
       "@quiz/db": [
         "../../packages/db/src/index.ts"
+      ],
+      "@quiz/db/*": [
+        "../../packages/db/src/*"
       ]
     },
     "jsx": "preserve",

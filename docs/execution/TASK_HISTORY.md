@@ -1,8 +1,9 @@
-﻿# 📜 Task History & Executive Milestone Log
+# ?? Task History & Executive Milestone Log
 
 | Date | Milestone | Status | Details |
 | :--- | :--- | :--- | :--- |
 | 2026-01-28 | Domain Management | COMPLETED | Basic CRUD for domains with category support. |
+| 2026-02-17 | Phase F Smoke Prep | PARTIAL | Baseline gates green; smokes deferred (Playwright loading legacy Vitest stubs and missing @tests alias). |
 | 2026-01-29 | Subject & Topic CRUD | COMPLETED | Full cascading management for hierarchy levels. |
 | 2026-01-30 | UI/UX Refactor | COMPLETED | Executive White aesthetic applied to all tables/modals. |
 | 2026-02-01 | Bulk Factory 1.0 | COMPLETED | Hierarchy Factory with AI prompt generator (Bulk). |

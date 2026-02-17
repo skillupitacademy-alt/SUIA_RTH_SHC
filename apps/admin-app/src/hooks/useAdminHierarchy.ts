@@ -4,9 +4,8 @@
 import { apiClient } from '@quiz/api-client';
 import { useEffect, useState } from 'react';
 
+import { Domain, Skill, Subject, Subtopic, Topic } from '@/types/domain';
 import { clientLogger } from '@/utils/clientLogger';
-
-import { Domain, Skill, Subject, Subtopic, Topic } from '../types/domain';
 
 export function useDomains() {
     const [data, setData] = useState<Domain[]>([]);

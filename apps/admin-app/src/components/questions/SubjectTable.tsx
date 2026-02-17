@@ -95,7 +95,7 @@ export function SubjectTable() {
             })) as SubjectItem[];
             setData(mapped);
             setTotalPages(response.totalPages);
-            setTotalCount(response.total || response.data.length);
+            setTotalCount(response.total ?? response.data.length);
             setSelectedIds(new Set());
         } catch (error) {
             clientLogger.error('Failed to fetch subjects', { error: error instanceof Error ? error.message : 'unknown' });
@@ -201,10 +201,25 @@ export function SubjectTable() {
         }
         setIsSubmitting(true);
         try {
+            const payload: {
+                name: string;
+                domainId: string;
+                description?: string;
+                status: 'active' | 'inactive';
+                order?: number;
+                slug: string;
+                icon: string;
+                orderIndex: number;
+            } = {
+                ...formData,
+                slug: formData.name || 'subject',
+                icon: 'default',
+                orderIndex: formData.order ?? 0
+            };
             if (currentSubject !== null) {
-                await apiClient.admin.updateSubject(currentSubject.id, formData);
+                await apiClient.admin.updateSubject(currentSubject.id, payload);
             } else {
-                await apiClient.admin.createSubject(formData);
+                await apiClient.admin.createSubject(payload);
             }
             handleCloseForm();
             void fetchSubjects();

@@ -4,9 +4,10 @@
 import React, { createContext, ReactNode, useContext, useState } from 'react';
 import { toast } from 'sonner';
 
-import { JsonValidator } from '../lib/factory/json-validator';
-import { FactoryBlueprint, GeneratedQuestion, HealingReport,ValidationResult } from '../types/factory';
-import { safeGet, safeRemove, safeSet } from '../utils/safeLocalStorage';
+import { JsonValidator } from '@/lib/factory/json-validator';
+import { FactoryBlueprint, GeneratedQuestion, HealingReport, ValidationResult } from '@/types/factory';
+import { clientLogger } from '@/utils/clientLogger';
+import { safeGet, safeRemove, safeSet } from '@/utils/safeLocalStorage';
 
 interface FactoryContextType {
     blueprint: FactoryBlueprint;

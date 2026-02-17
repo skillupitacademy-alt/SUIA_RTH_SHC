@@ -14,8 +14,8 @@ export function AdminLockScreen() {
     const [password, setPassword] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const dialogRef = useRef<HTMLDivElement>(null);
-    useFocusTrap(dialogRef, isLocked === true);
+    const inputRef = useRef<HTMLInputElement>(null);
+    useFocusTrap(inputRef, isLocked === true);
 
     if (isLocked === false || user === null || user === undefined) return null;
 
@@ -114,7 +114,7 @@ export function AdminLockScreen() {
                         </div>
                         <div className="relative">
                             <input
-                                ref={dialogRef}
+                                ref={inputRef}
                                 type="password"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}

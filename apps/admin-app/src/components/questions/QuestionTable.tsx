@@ -108,7 +108,20 @@ export function QuestionTable() {
                     skillIds: filters.skillIds.length > 0 ? filters.skillIds : undefined,
                     search: (debouncedSearch != null && debouncedSearch !== '') ? debouncedSearch : undefined,
                 });
-                const mappedQuestions: QuestionData[] = data.questions.map((q, idx) => ({
+                type RawQuestion = {
+                    id?: string;
+                    questionText: string;
+                    type?: string;
+                    difficulty?: string;
+                    status?: string;
+                    createdAt?: string;
+                    mappingType?: string;
+                    options?: { text: string; isCorrect?: boolean; id?: string }[];
+                    questionSkills?: QuestionData['questionSkills'];
+                    topic?: QuestionData['topic'];
+                };
+
+                const mappedQuestions: QuestionData[] = data.questions.map((q: RawQuestion, idx: number) => ({
                     id: q.id ?? `q-${idx}`,
                     questionText: q.questionText,
                     type: q.type ?? 'single',
@@ -116,7 +129,7 @@ export function QuestionTable() {
                     status: q.status ?? 'draft',
                     createdAt: (q as { createdAt?: string }).createdAt ?? new Date().toISOString(),
                     mappingType: (q as { mappingType?: string }).mappingType,
-                    options: q.options?.map((opt, optIdx) => ({
+                    options: q.options?.map((opt: { text: string; isCorrect?: boolean; id?: string }, optIdx: number) => ({
                         text: opt.text,
                         isCorrect: opt.isCorrect ?? false,
                         id: opt.id ?? `${idx}-${optIdx}`

@@ -4,8 +4,8 @@ import type { InferSelectModel } from 'drizzle-orm';
 import { and, asc, eq, gte, inArray, notInArray, or, sql } from 'drizzle-orm';
 import { performance } from 'perf_hooks';
 
-import { logger } from '../../lib/logger';
-import { cacheService } from '../core/cache.service';
+import { logger } from '@/lib/logger';
+import { cacheService } from '@/modules/core/cache.service';
 
 type Blueprint = InferSelectModel<typeof examBlueprints>;
 type Question = InferSelectModel<typeof questions>;

@@ -41,7 +41,8 @@ export function useJobTracker() {
         }
 
         try {
-            const results = await Promise.all(
+            type JobResult = { job: BackgroundJob } | { _removeId: string } | null;
+            const results: JobResult[] = await Promise.all(
                 jobIds.map(async (id) => {
                     try {
                         return await apiClient.admin.getJobById(id);
@@ -54,11 +55,11 @@ export function useJobTracker() {
                 })
             );
 
-            const fetchedJobs = results
+            const fetchedJobs: BackgroundJob[] = results
                 .filter((res): res is { job: BackgroundJob } => res !== null && !('_removeId' in res))
                 .map(res => res.job);
 
-            const idsToRemove = results
+            const idsToRemove: string[] = results
                 .filter((res): res is { _removeId: string } => res !== null && '_removeId' in res)
                 .map(res => res._removeId);
 
@@ -71,7 +72,7 @@ export function useJobTracker() {
             
             const hasActiveJobs = fetchedJobs.some(j => j.status === 'pending' || j.status === 'processing');
             
-            if (!hasActiveJobs && pollTimerRef.current) {
+            if (!hasActiveJobs && pollTimerRef.current !== null) {
                 clearInterval(pollTimerRef.current);
                 pollTimerRef.current = null;
                 setPolling(false);

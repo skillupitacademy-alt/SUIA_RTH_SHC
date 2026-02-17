@@ -1,8 +1,9 @@
 import { neon } from '@neondatabase/serverless';
 import * as dotenv from 'dotenv';
-import path from 'path';
 
-dotenv.config({ path: path.join(__dirname, '../.env') });
+import { envPath } from '@quiz/config/envPaths';
+
+dotenv.config({ path: envPath('packages/db/.env') });
 
 async function verify() {
   if (!process.env.DATABASE_URL) {

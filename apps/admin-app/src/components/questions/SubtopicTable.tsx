@@ -66,7 +66,7 @@ export function SubtopicTable() {
             const response = await apiClient.admin.getSubtopics(page, pageSize, debouncedSearch || undefined);
             setData(response.data);
             setTotalPages(response.totalPages);
-            setTotalCount(response.total || response.data.length);
+            setTotalCount(response.total ?? response.data.length);
             setSelectedIds(new Set());
         } catch (error) {
             clientLogger.error('Failed to fetch subtopics', { error: error instanceof Error ? error.message : 'unknown' });
@@ -150,10 +150,15 @@ export function SubtopicTable() {
         }
         setIsSubmitting(true);
         try {
+            const payload: any = {
+                ...formData,
+                slug: formData.name || 'subtopic',
+                orderIndex: formData.order ?? 0
+            };
             if (currentSubtopic !== null) {
-                await apiClient.admin.updateSubtopic(currentSubtopic.id, formData);
+                await apiClient.admin.updateSubtopic(currentSubtopic.id, payload);
             } else {
-                await apiClient.admin.createSubtopic(formData);
+                await apiClient.admin.createSubtopic(payload);
             }
             handleCloseForm();
             void fetchSubtopics();

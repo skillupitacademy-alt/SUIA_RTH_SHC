@@ -24,6 +24,7 @@ import { useSessionManager } from '@/hooks/useSessionManager';
 import { useExamBackup, getFilteredBackup } from '@/hooks/useExamBackup';
 import { clientLogger } from '@/utils/clientLogger';
 
+type QuizQuestion = QuizState['questions'][number];
 
 // Detailed Question Status
 type QuestionStatus = 'current' | 'answered' | 'flagged' | 'unvisited';
@@ -72,12 +73,15 @@ export default function ActiveExamPage() {
                 }
 
                 // Reconcile with Local Backup for UI Prefill (Phase 4 Security)
-                const localBackup = getFilteredBackup(data.id, data.questions.map(q => q.questionId));
+                const localBackup = getFilteredBackup(
+                    data.id,
+                    data.questions.map((q: QuizQuestion) => q.questionId)
+                );
                 const finalLocalAnswers = {
-                    ...data.questions.reduce((acc, q) => {
+                    ...data.questions.reduce<Record<string, string>>((acc, q: QuizQuestion) => {
                         if (q.userAnswer) acc[q.questionId] = q.userAnswer;
                         return acc;
-                    }, {} as Record<string, string>)
+                    }, {})
                 };
 
                 // Only prefill from local if server answer is null

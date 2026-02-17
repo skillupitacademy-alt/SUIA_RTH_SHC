@@ -1,8 +1,9 @@
-import type { domains, examBlueprints,skills, subjects, subtopics, topics } from '@quiz/db';
+import type { domains,examBlueprints, skills, subjects, subtopics, topics } from '@quiz/db';
 
-import { AuditService } from '../auth/audit.service';
-import type { AtomicHierarchyPayload } from '../domain/hierarchy.factory';
-import { HierarchyFactory } from '../domain/hierarchy.factory';
+import { AuditService } from '@/modules/auth/audit.service';
+import type { AtomicHierarchyPayload } from '@/modules/domain/hierarchy.factory';
+import { HierarchyFactory } from '@/modules/domain/hierarchy.factory';
+
 import { AdminAnalyticsEngine } from './admin.analytics.engine';
 import { AdminBlueprintEngine } from './admin.blueprint.engine';
 import { AdminHierarchyEngine } from './admin.hierarchy.engine';

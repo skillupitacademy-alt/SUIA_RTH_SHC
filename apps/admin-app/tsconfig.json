@@ -13,6 +13,18 @@
       ],
       "@web-tests/*": [
         "../web-app/tests/e2e/*"
+      ],
+      "@quiz/api-client/*": [
+        "../../packages/api-client/src/*"
+      ],
+      "@quiz/db/*": [
+        "../../packages/db/src/*"
+      ],
+      "@quiz/config": [
+        "../../packages/config/envPaths.ts"
+      ],
+      "@quiz/config/*": [
+        "../../packages/config/*"
       ]
     },
     "jsx": "preserve"

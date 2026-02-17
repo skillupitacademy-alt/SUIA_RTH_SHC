@@ -1,4 +1,4 @@
-import { FetchClient } from '../core/fetch-client';
+import { FetchClient } from '@quiz/api-client/core/fetch-client';
 import {
   AdminUserProfile,
   BackgroundJob,
@@ -11,7 +11,7 @@ import {
   Subject,
   Topic,
   UserProfile,
-} from '../types';
+} from '@quiz/api-client/types';
 export interface AdminTrendSummary {
   avgScore: number;
   passRate: number;

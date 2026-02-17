@@ -63,7 +63,7 @@ export function DomainTable() {
             const response = await apiClient.admin.getDomains(page, pageSize, debouncedSearch || undefined);
             setData(response.data);
             setTotalPages(response.totalPages);
-            setTotalCount(response.total || response.data.length);
+            setTotalCount(response.total ?? response.data.length);
             setSelectedIds(new Set()); // Reset selection on refresh
         } catch (error) {
             clientLogger.error('Failed to fetch domains', { error: error instanceof Error ? error.message : 'unknown' });
@@ -163,10 +163,16 @@ export function DomainTable() {
         e.preventDefault();
         setIsSubmitting(true);
         try {
+            const payload: any = {
+                ...formData,
+                slug: formData.name || 'domain',
+                icon: formData.category || 'default',
+                orderIndex: 0
+            };
             if (currentDomain !== null) {
-                await apiClient.admin.updateDomain(currentDomain.id, formData);
+                await apiClient.admin.updateDomain(currentDomain.id, payload);
             } else {
-                await apiClient.admin.createDomain(formData);
+                await apiClient.admin.createDomain(payload);
             }
             handleCloseForm();
             void fetchDomains();

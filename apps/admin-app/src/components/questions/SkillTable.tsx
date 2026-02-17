@@ -67,7 +67,8 @@ export function SkillTable() {
         name: '',
         category: 'technical',
         mappingType: 'conceptual' as 'conceptual' | 'technical' | 'practical',
-        weight: 1
+        weight: 1,
+        description: ''
     });
 
     useEffect(() => {
@@ -81,7 +82,7 @@ export function SkillTable() {
             const response = await apiClient.admin.getSkills(page, pageSize, debouncedSearch || undefined);
             setData(response.data);
             setTotalPages(response.totalPages);
-            setTotalCount(response.total || response.data.length);
+            setTotalCount(response.total ?? response.data.length);
             setSelectedIds(new Set());
         } catch (error) {
             clientLogger.error('Failed to fetch skills', { error: error instanceof Error ? error.message : 'unknown' });
@@ -141,7 +142,8 @@ export function SkillTable() {
                 name: (skill.name as string),
                 category: (skill.category as string | undefined) ?? 'technical',
                 mappingType: (skill.mappingType as 'conceptual' | 'technical' | 'practical' | undefined) ?? 'conceptual',
-                weight: (skill.weight != null && skill.weight !== 0) ? (skill.weight as number) : 1
+                weight: (skill.weight != null && skill.weight !== 0) ? (skill.weight as number) : 1,
+                description: (skill.description as string | undefined) ?? ''
             });
             setIsFormOpen(true);
         } else {
@@ -150,7 +152,8 @@ export function SkillTable() {
                 name: '',
                 category: 'technical',
                 mappingType: 'conceptual',
-                weight: 1
+                weight: 1,
+                description: ''
             });
         }
         setIsFormOpen(true);
@@ -164,7 +167,8 @@ export function SkillTable() {
             name: '',
             category: 'technical',
             mappingType: 'conceptual',
-            weight: 1
+            weight: 1,
+            description: ''
         });
     };
 
@@ -172,10 +176,11 @@ export function SkillTable() {
         e.preventDefault();
         setIsSubmitting(true);
         try {
+            const payload: any = { ...formData, description: formData.description ?? '' };
             if (currentSkill !== null) {
-                await apiClient.admin.updateSkill(currentSkill.id, formData);
+                await apiClient.admin.updateSkill(currentSkill.id, payload);
             } else {
-                await apiClient.admin.createSkill(formData);
+                await apiClient.admin.createSkill(payload);
             }
             handleCloseForm();
             void fetchSkills();

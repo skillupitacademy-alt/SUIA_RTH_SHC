@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-vi.mock('../report.engine', () => ({
+vi.mock('@/modules/report-engine/report.engine', () => ({
   ReportEngine: {
     generateUserReport: vi.fn(),
   },
@@ -15,7 +15,7 @@ const REPORT_FIXTURE = {
 
 describe.skip('ReportEngine (unit)', () => {
   it('generates report with score summary and topic breakdown', async () => {
-    const { ReportEngine } = await import('../report.engine');
+    const { ReportEngine } = await import('@/modules/report-engine/report.engine');
     vi.mocked(ReportEngine.generateUserReport).mockResolvedValue(REPORT_FIXTURE);
 
     const res = await ReportEngine.generateUserReport('u1', 'exam1');

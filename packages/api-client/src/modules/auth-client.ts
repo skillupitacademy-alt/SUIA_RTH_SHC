@@ -1,5 +1,5 @@
-import { UserProfile } from '../types';
-import { FetchClient } from '../core/fetch-client';
+import { UserProfile } from '@quiz/api-client/types';
+import { FetchClient } from '@quiz/api-client/core/fetch-client';
 
 export class AuthClient {
   private client: FetchClient;

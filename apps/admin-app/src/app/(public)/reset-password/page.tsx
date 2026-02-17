@@ -34,8 +34,9 @@ function ResetPasswordForm() {
 
             try {
                 const { valid } = await apiClient.auth.validateResetToken(token);
-                setIsTokenValid(valid);
-                if (!valid) setError('This link has expired or is invalid.');
+                const isValid = valid === true;
+                setIsTokenValid(isValid);
+                if (isValid === false) setError('This link has expired or is invalid.');
             } catch {
                 setError('Failed to verify security token.');
             } finally {

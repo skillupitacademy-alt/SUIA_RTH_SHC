@@ -18,7 +18,7 @@ export interface ZTooltipProps {
 export function ZTooltip({ content, children, side = 'bottom', className, delay = 200, followCursor = true }: ZTooltipProps) {
     const [isVisible, setIsVisible] = useState(false);
     const [coords, setCoords] = useState({ top: 0, left: 0 });
-    const triggerRef = useRef<HTMLDivElement>(null);
+    const triggerRef = useRef<HTMLButtonElement>(null);
     const timeoutRef = useRef<NodeJS.Timeout>(null);
 
     const updatePosition = () => {
@@ -51,7 +51,7 @@ export function ZTooltip({ content, children, side = 'bottom', className, delay 
         }
     };
 
-    const handleMouseEnter = (e: React.MouseEvent) => {
+    const handleMouseEnter = (e: React.MouseEvent<HTMLButtonElement>) => {
         if (followCursor) {
             setCoords({ top: e.clientY, left: e.clientX });
         } else {
@@ -63,7 +63,7 @@ export function ZTooltip({ content, children, side = 'bottom', className, delay 
         }, delay);
     };
 
-    const handleMouseMove = (e: React.MouseEvent) => {
+    const handleMouseMove = (e: React.MouseEvent<HTMLButtonElement>) => {
         if (!followCursor) return;
         setCoords({ top: e.clientY, left: e.clientX });
     };
@@ -111,8 +111,8 @@ export function ZTooltip({ content, children, side = 'bottom', className, delay 
                 onMouseEnter={handleMouseEnter}
                 onMouseMove={handleMouseMove}
                 onMouseLeave={handleMouseLeave}
-                onFocus={handleMouseEnter}
-                onBlur={handleMouseLeave}
+                onFocus={() => setIsVisible(true)}
+                onBlur={() => setIsVisible(false)}
                 className={cn("contents", className)}
                 style={{ background: 'none', border: 'none', padding: 0 }}
             >

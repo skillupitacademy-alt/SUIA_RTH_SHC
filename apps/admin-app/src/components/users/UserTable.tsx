@@ -84,7 +84,7 @@ export function UserTable() {
 
             setUsers(activeData.users);
             setTotalPages(activeData.totalPages);
-            setTotalCount(activeData.total || activeData.users.length);
+            setTotalCount(activeData.total ?? activeData.users.length);
         } catch (error) {
             clientLogger.error('Failed to fetch users', { error: error instanceof Error ? error.message : 'unknown' });
             setErrorMessage('Connection Error: Unable to sync user accounts at this time.');

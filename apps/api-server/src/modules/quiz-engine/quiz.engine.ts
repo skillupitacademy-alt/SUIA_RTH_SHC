@@ -2,7 +2,7 @@ import { db, exams } from '@quiz/db';
 import crypto from 'crypto';
 import { eq } from 'drizzle-orm';
 
-import { SelectionService } from '../selection-engine/selection.service';
+import { SelectionService } from '@/modules/selection-engine/selection.service';
 
 /**
  * QuizEngine handles self-paced, flexible quiz flows.

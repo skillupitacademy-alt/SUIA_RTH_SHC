@@ -6,7 +6,7 @@ import { safeGet, safeRemove, safeSet } from '@/utils/safeLocalStorage';
 
 const BACKUP_KEY_PREFIX = 'exam_backup_';
 
-interface BackupData {
+interface BackupData extends Record<string, unknown> {
     examId: string;
     answers: Record<string, string>;
     lastUpdated: number;

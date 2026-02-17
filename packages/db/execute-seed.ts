@@ -4,17 +4,16 @@ import path from 'path';
 import dotenv from 'dotenv';
 import { Pool } from '@neondatabase/serverless';
 import { drizzle } from 'drizzle-orm/neon-serverless';
+import { envPath, resolveWorkspacePath } from '@quiz/config/envPaths';
 
 // Load environment variables from specific paths
 const envPaths = [
-    path.resolve(__dirname, '../../apps/api-server/.env.local'),
-    path.resolve(__dirname, '../../apps/api-server/.env'),
-    path.resolve(__dirname, '../../../apps/web-app/.env.local'),
-    path.resolve(__dirname, '../../../apps/web-app/.env'),
-    path.resolve(__dirname, '../../apps/web-app/.env.local'),
-    path.resolve(__dirname, '../../apps/web-app/.env'),
-    path.resolve(__dirname, '../../.env.local'),
-    path.resolve(__dirname, '../../.env')
+    envPath('apps/api-server/.env.local'),
+    envPath('apps/api-server/.env'),
+    envPath('apps/web-app/.env.local'),
+    envPath('apps/web-app/.env'),
+    envPath('.env.local'),
+    envPath('.env')
 ];
 
 let dbUrl: string | undefined;

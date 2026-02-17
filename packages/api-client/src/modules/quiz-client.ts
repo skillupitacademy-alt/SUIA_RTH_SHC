@@ -1,4 +1,4 @@
-import { FetchClient } from '../core/fetch-client';
+import { FetchClient } from '@quiz/api-client/core/fetch-client';
 import {
   Domain,
   DomainHierarchy,
@@ -8,7 +8,7 @@ import {
   Subject,
   Subtopic,
   Topic,
-} from '../types';
+} from '@quiz/api-client/types';
 
 export interface QuizState {
   id: string;

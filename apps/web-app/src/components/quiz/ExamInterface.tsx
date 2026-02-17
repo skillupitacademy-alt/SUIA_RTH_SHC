@@ -18,6 +18,16 @@ import { cn } from '@/lib/utils';
 import { useQuizStore } from '@/store/quiz-store';
 import { clientLogger } from '@/utils/clientLogger';
 
+type RemoteQuestion = {
+    questionId: string;
+    type?: string;
+    text: string;
+    codeSnippet?: string | null;
+    options: string[];
+    difficulty?: string;
+    userAnswer: string | null;
+};
+
 export function ExamInterface() {
     useSessionManager();
     const router = useRouter();
@@ -116,7 +126,7 @@ export function ExamInterface() {
                 }
 
                 // Map Questions to store interface
-                const mappedQuestions = state.questions.map((q) => ({
+                const mappedQuestions = state.questions.map((q: RemoteQuestion) => ({
                     id: q.questionId, // Actual question UUID
                     type: (q.type === 'code_mcq' ? 'CODE_MCQ' : 'MCQ') as 'MCQ' | 'CODE_MCQ',
                     text: q.text,
@@ -136,7 +146,7 @@ export function ExamInterface() {
                 setExamId(state.id);
 
                 // Hydrate answers from backend
-                state.questions.forEach((q) => {
+                state.questions.forEach((q: RemoteQuestion) => {
                     if (q.userAnswer !== null) {
                         const idx = q.options.indexOf(q.userAnswer);
                         if (idx !== -1) {
@@ -146,17 +156,17 @@ export function ExamInterface() {
                 });
 
                 // Calculate connection-safe starting index (first unanswered or 0)
-                const firstUnanswered = state.questions.findIndex((q) => q.userAnswer === null);
+                const firstUnanswered = state.questions.findIndex((q: RemoteQuestion) => q.userAnswer === null);
                 setCurrentIndex(firstUnanswered !== -1 ? firstUnanswered : 0);
 
                 // Reconcile with Local Backup for UI Prefill (Phase 4 Security)
-                const localBackup = getFilteredBackup(state.id, state.questions.map(q => q.questionId));
+                const localBackup = getFilteredBackup(state.id, state.questions.map((q: RemoteQuestion) => q.questionId));
                 Object.entries(localBackup).forEach(([qId, localAnswer]) => {
                     const storeState = useQuizStore.getState();
                     const questionInStore = storeState.questions.find(q => q.id === qId);
 
                     // Only prefill if server-side answer is missing
-                    const serverQuestion = state.questions.find((q) => q.questionId === qId);
+                    const serverQuestion = state.questions.find((q: RemoteQuestion) => q.questionId === qId);
                     if (serverQuestion && serverQuestion.userAnswer === null && questionInStore) {
                         const optionIdx = questionInStore.options.indexOf(localAnswer);
                         if (optionIdx !== -1) {

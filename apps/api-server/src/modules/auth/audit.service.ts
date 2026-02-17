@@ -1,6 +1,6 @@
 import { auditLogs, db } from '@quiz/db';
 
-import { logger } from '../../lib/logger';
+import { logger } from '@/lib/logger';
 
 export interface AuditLogEntry {
   userId?: string;

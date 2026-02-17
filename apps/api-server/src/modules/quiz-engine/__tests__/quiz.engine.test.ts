@@ -13,7 +13,7 @@ const MOCK_SELECTION = {
 
 describe.skip('QuizEngine (unit)', () => {
   it('delegates question selection to SelectionService and returns shaped exam', async () => {
-    const { QuizEngine } = await import('../quiz.engine');
+    const { QuizEngine } = await import('@/modules/quiz-engine/quiz.engine');
     const { SelectionService } = await import('@/modules/selection-engine/selection.service');
     vi.mocked(SelectionService.composeExam).mockResolvedValue(MOCK_SELECTION);
 

@@ -1,13 +1,13 @@
-import { db, exams,passwordResetTokens, refreshTokens, roles, userProfiles, userRoles, users, verificationTokens } from '@quiz/db';
+import { db, exams, passwordResetTokens, refreshTokens, roles, userProfiles, userRoles, users, verificationTokens } from '@quiz/db';
 import crypto from 'crypto';
-import { and, eq, gt,sql } from 'drizzle-orm';
+import { and, eq, gt, sql } from 'drizzle-orm';
 import { decodeJwt } from 'jose';
 
-import { EmailService } from '../email/EmailService';
-import { AuditService } from './audit.service';
-import { PasswordService } from './password.service';
-import { SecurityService } from './security.service';
-import { TokenService } from './token.service';
+import { AuditService } from '@/modules/auth/audit.service';
+import { PasswordService } from '@/modules/auth/password.service';
+import { SecurityService } from '@/modules/auth/security.service';
+import { TokenService } from '@/modules/auth/token.service';
+import { EmailService } from '@/modules/email/EmailService';
 
 export class AuthService {
   static async signup(email: string, password: string, name: string, ip?: string) {

@@ -1,7 +1,7 @@
 import { db, exams, resultsByDimension } from '@quiz/db';
 import { and, desc, eq } from 'drizzle-orm';
 
-import { logger } from '../../lib/logger';
+import { logger } from '@/lib/logger';
 
 export interface ActionPlanItem {
   id: string;

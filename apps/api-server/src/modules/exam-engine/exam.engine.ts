@@ -4,11 +4,11 @@ import { JobType } from '@quiz/types';
 import type { InferSelectModel } from 'drizzle-orm';
 import { and,eq } from 'drizzle-orm';
 
-import { AnswerEvaluationEngine } from '../answer-engine/answer.engine';
-import { cacheService } from '../core/cache.service';
-import { SelectionService } from '../selection-engine/selection.service';
-import { JobOrchestrator } from '../system/job-orchestrator';
-import { JobsService } from '../system/jobs.service';
+import { AnswerEvaluationEngine } from '@/modules/answer-engine/answer.engine';
+import { cacheService } from '@/modules/core/cache.service';
+import { SelectionService } from '@/modules/selection-engine/selection.service';
+import { JobOrchestrator } from '@/modules/system/job-orchestrator';
+import { JobsService } from '@/modules/system/jobs.service';
 
 export interface StartExamConfig {
   subjectId?: string;

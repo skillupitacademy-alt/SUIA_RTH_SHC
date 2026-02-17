@@ -2,9 +2,9 @@ import { db } from '@quiz/db';
 import { JobStatus, JobType } from '@quiz/types';
 import { sql } from 'drizzle-orm';
 
-import { logger } from '../../lib/logger';
-import { ScoringEngine } from '../scoring-engine/scoring.engine';
-import { JobsService } from './jobs.service';
+import { logger } from '@/lib/logger';
+import { ScoringEngine } from '@/modules/scoring-engine/scoring.engine';
+import { JobsService } from '@/modules/system/jobs.service';
 
 export class JobOrchestrator {
     private static log = logger.child({ module: 'system:job-orchestrator' });

@@ -1,3 +1,5 @@
+import { clientLogger } from './clientLogger';
+
 type JsonValue = string | number | boolean | null | Record<string, unknown> | JsonValue[];
 
 interface StoredPayload {

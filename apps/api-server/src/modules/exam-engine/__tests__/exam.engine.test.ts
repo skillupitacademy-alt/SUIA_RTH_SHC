@@ -6,8 +6,8 @@ const fixtures = {
   idempotencyKey: 'idem-123',
 };
 
-vi.mock('../exam.engine', async (importOriginal) => {
-  const real = await importOriginal<typeof import('../exam.engine')>();
+vi.mock('@/modules/exam-engine/exam.engine', async (importOriginal) => {
+  const real = await importOriginal<typeof import('@/modules/exam-engine/exam.engine')>();
   return {
     ExamEngine: {
       ...real.ExamEngine,
@@ -18,7 +18,7 @@ vi.mock('../exam.engine', async (importOriginal) => {
 
 describe.skip('ExamEngine (unit)', () => {
   it('starts exam with idempotency key', async () => {
-    const { ExamEngine } = await import('../exam.engine');
+    const { ExamEngine } = await import('@/modules/exam-engine/exam.engine');
     await ExamEngine.startExam(fixtures.userId, fixtures.targetId, fixtures.idempotencyKey, {});
     expect(ExamEngine.startExam).toHaveBeenCalled();
   });

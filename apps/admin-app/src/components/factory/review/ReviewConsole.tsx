@@ -132,7 +132,7 @@ export function ReviewConsole() {
 
                 if (result.details != null && result.details.length > 0) {
                     const nextMap = new Map<number, string>();
-                    result.details.forEach((d, idx) => {
+                    result.details.forEach((d: { id?: string }, idx: number) => {
                         if (d.id != null) {
                             nextMap.set(idx, d.id);
                         }

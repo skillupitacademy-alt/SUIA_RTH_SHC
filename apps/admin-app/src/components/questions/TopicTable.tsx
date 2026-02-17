@@ -90,7 +90,7 @@ export function TopicTable() {
             const response = await apiClient.admin.getTopics(page, pageSize, debouncedSearch || undefined);
             setData(response.data);
             setTotalPages(response.totalPages);
-            setTotalCount(response.total || response.data.length);
+            setTotalCount(response.total ?? response.data.length);
             setSelectedIds(new Set());
         } catch (error) {
             clientLogger.error('Failed to fetch topics', { error: error instanceof Error ? error.message : 'unknown' });
@@ -161,10 +161,16 @@ export function TopicTable() {
         }
         setIsSubmitting(true);
         try {
+            const payload: any = {
+                ...formData,
+                slug: formData.name || 'topic',
+                orderIndex: formData.weight ?? 0,
+                complexity: formData.complexityLevel ?? 0
+            };
             if (currentTopic !== null) {
-                await apiClient.admin.updateTopic(currentTopic.id, formData);
+                await apiClient.admin.updateTopic(currentTopic.id, payload);
             } else {
-                await apiClient.admin.createTopic(formData);
+                await apiClient.admin.createTopic(payload);
             }
             handleCloseForm();
             void fetchTopics();

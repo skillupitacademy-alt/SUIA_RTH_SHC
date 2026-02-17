@@ -10,6 +10,18 @@
         "paths": {
             "@/*": [
                 "./src/*"
+            ],
+            "@quiz/api-client/*": [
+                "../../packages/api-client/src/*"
+            ],
+            "@quiz/db/*": [
+                "../../packages/db/src/*"
+            ],
+            "@quiz/config": [
+                "../../packages/config/envPaths.ts"
+            ],
+            "@quiz/config/*": [
+                "../../packages/config/*"
             ]
         }
     },
@@ -22,6 +34,7 @@
     "exclude": [
         "node_modules",
         "*.config.js",
-        "*.config.mjs"
+        "*.config.mjs",
+        "**/__tests__/**/*"
     ]
 }

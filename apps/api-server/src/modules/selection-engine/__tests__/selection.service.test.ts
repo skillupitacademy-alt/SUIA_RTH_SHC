@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('../selection.service', () => ({
+vi.mock('@/modules/selection-engine/selection.service', () => ({
   SelectionService: {
     composeExam: vi.fn(),
   },
@@ -16,7 +16,7 @@ describe.skip('SelectionService (unit)', () => {
   beforeEach(() => vi.clearAllMocks());
 
   it('uses user + domain + idempotency to compose repeatable exam', async () => {
-    const { SelectionService } = await import('../selection.service');
+    const { SelectionService } = await import('@/modules/selection-engine/selection.service');
     vi.mocked(SelectionService.composeExam).mockResolvedValue({
       questions: QUESTIONS,
       blueprint: { id: BLUEPRINT_ID, domainId: 'domain1' },
