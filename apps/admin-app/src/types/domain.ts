@@ -1,9 +1,10 @@
 export interface Domain {
     id: string;
     name: string;
-    slug: string;
+    slug?: string;
     description?: string;
     icon?: string;
+    status?: string;
     createdAt?: string;
     updatedAt?: string;
 }
@@ -12,10 +13,11 @@ export interface Subject {
     id: string;
     name: string;
     domainId: string;
-    slug: string;
+    slug?: string;
     description?: string;
     icon?: string;
     orderIndex?: number;
+    status?: string;
     createdAt?: string;
     updatedAt?: string;
 }
@@ -24,10 +26,13 @@ export interface Topic {
     id: string;
     name: string;
     subjectId: string;
-    slug: string;
+    slug?: string;
     description?: string;
     orderIndex?: number;
     complexity?: 'beginner' | 'intermediate' | 'advanced';
+    complexityLevel?: string;
+    weight?: number;
+    status?: string;
     createdAt?: string;
     updatedAt?: string;
 }
@@ -36,9 +41,10 @@ export interface Subtopic {
     id: string;
     name: string;
     topicId: string;
-    slug: string;
+    slug?: string;
     description?: string;
     orderIndex?: number;
+    status?: string;
     createdAt?: string;
     updatedAt?: string;
 }

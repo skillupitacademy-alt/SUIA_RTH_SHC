@@ -16,7 +16,7 @@ async function main() {
         console.log("Attempting query...");
         const res = await pool.query("SELECT 1 as connected");
         console.log("Result:", res.rows[0]);
-    } catch (err: any) {
+    } catch (err: unknown) {
         console.error("Query failed!");
         console.error("Error Code:", err.code);
         console.error("Error Message:", err.message);

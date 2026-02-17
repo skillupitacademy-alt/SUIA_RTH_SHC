@@ -122,7 +122,7 @@ export default function EditQuestionPage() {
             const payload = {
                 ...formData,
                 topicId: selection.topicId,
-                subtopicId: (selection.subtopicId != null && selection.subtopicId !== '') ? selection.subtopicId : null,
+                subtopicId: (selection.subtopicId != null && selection.subtopicId !== '') ? selection.subtopicId : undefined,
                 skillIds: (selection.skillIds != null && selection.skillIds.length > 0) ? selection.skillIds : [],
             };
             await apiClient.admin.updateQuestion(String(params.id), payload);

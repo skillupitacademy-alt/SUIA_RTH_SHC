@@ -1,5 +1,5 @@
 import { test, expect, type Cookie } from '@playwright/test';
-import { setupCSPAudit } from '../../../tests/utils/csp-audit-collector';
+import { setupCSPAudit } from '@tests/utils/csp-audit-collector';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL;
 

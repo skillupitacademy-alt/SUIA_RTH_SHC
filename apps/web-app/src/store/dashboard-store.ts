@@ -84,15 +84,16 @@ export const useDashboardStore = create<DashboardState>()(
                 try {
                     const data = await apiClient.dashboard.getDashboard(range, page, limit) as DashboardData; 
                     set({ data, loading: false });
-                } catch (err: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
-                    set({ error: err.message, loading: false });
+                } catch (err: unknown) {
+                    const message = err instanceof Error ? err.message : 'Failed to load dashboard';
+                    set({ error: message, loading: false });
                 }
             },
 
             fetchPerformanceTrend: async (range = '7d') => {
                 try {
                     const trendData = await apiClient.dashboard.getTrend(range) as { 
-                        performanceTrend: any;
+                        performanceTrend: Array<{ score: number; date: string }>;
                         deltaPct?: number | null;
                         currentAvg?: number;
                         previousAvg?: number;
@@ -108,7 +109,7 @@ export const useDashboardStore = create<DashboardState>()(
                             healthStatus: trendData.healthStatus
                         } : null
                     }));
-                } catch (err: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
+                } catch (err: unknown) {
                     console.error("Failed to fetch performance trend:", err);
                 }
             },
@@ -124,7 +125,7 @@ export const useDashboardStore = create<DashboardState>()(
                         drilldownMetadata: metadata,
                         metadataLoading: false 
                     });
-                } catch (err: any) {
+                } catch (err: unknown) {
                     console.error("Failed to fetch drilldown metadata:", err);
                     set({ metadataLoading: false });
                 }
@@ -139,7 +140,7 @@ export const useDashboardStore = create<DashboardState>()(
                             drilldownBreakdown: breakdownData.breakdown
                         } : null
                     }));
-                } catch (err: any) {
+                } catch (err: unknown) {
                     console.error("Failed to fetch drilldown analytics:", err);
                 }
             }

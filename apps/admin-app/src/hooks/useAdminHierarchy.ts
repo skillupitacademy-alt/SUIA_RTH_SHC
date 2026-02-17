@@ -23,7 +23,12 @@ export function useDomains() {
     };
 
     const create = async (payload: Partial<Domain>) => {
-        const res = await apiClient.admin.createDomain(payload);
+        const res = await apiClient.admin.createDomain({
+            name: payload.name ?? '',
+            slug: payload.slug,
+            description: payload.description,
+            icon: payload.icon
+        });
         await fetch();
         return res;
     };
@@ -54,7 +59,14 @@ export function useSubjects(domainId?: string) {
     };
 
     const create = async (payload: Partial<Subject>) => {
-        const res = await apiClient.admin.createSubject({ ...payload, domainId });
+        const res = await apiClient.admin.createSubject({
+            name: payload.name ?? '',
+            domainId: domainId ?? '',
+            slug: payload.slug,
+            description: payload.description,
+            icon: payload.icon,
+            orderIndex: payload.orderIndex
+        });
         await fetch();
         return res;
     };
@@ -85,7 +97,14 @@ export function useTopics(subjectId?: string) {
     };
 
     const create = async (payload: Partial<Topic>) => {
-        const res = await apiClient.admin.createTopic({ ...payload, subjectId });
+        const res = await apiClient.admin.createTopic({
+            name: payload.name ?? '',
+            subjectId: subjectId ?? '',
+            slug: payload.slug,
+            description: payload.description,
+            orderIndex: payload.orderIndex,
+            complexity: payload.complexity
+        });
         await fetch();
         return res;
     };
@@ -116,7 +135,13 @@ export function useSubtopics(topicId?: string) {
     };
 
     const create = async (payload: Partial<Subtopic>) => {
-        const res = await apiClient.admin.createSubtopic({ ...payload, topicId });
+        const res = await apiClient.admin.createSubtopic({
+            name: payload.name ?? '',
+            topicId: topicId ?? '',
+            slug: payload.slug,
+            description: payload.description,
+            orderIndex: payload.orderIndex
+        });
         await fetch();
         return res;
     };

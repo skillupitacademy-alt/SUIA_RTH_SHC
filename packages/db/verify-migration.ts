@@ -64,7 +64,7 @@ async function verify() {
              console.log('   - No migrations recorded.');
          }
       }
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.log('   - Error querying registry:', e.message);
     }
 

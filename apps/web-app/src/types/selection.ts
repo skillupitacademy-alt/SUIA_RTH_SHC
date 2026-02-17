@@ -1,3 +1,5 @@
+import { Domain, Subject, Topic, Subtopic } from '@quiz/api-client';
+
 export interface SelectionState {
   domainId: string;
   subjectIds: string[];
@@ -9,10 +11,9 @@ export interface SelectionState {
   step: number;
 }
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
 export interface SelectionMetadata {
-  domains: any[];
-  subjects: any[];
-  topics: any[];
-  subtopics: any[];
+  domains: Domain[];
+  subjects: Subject[];
+  topics: Topic[];
+  subtopics: Subtopic[];
 }

@@ -32,7 +32,7 @@ async function verify() {
         console.table(rows);
       }
     }
-  } catch (e: any) {
+  } catch (e: unknown) {
     console.error('Audit Investigation Failed:', e.message);
   }
   console.log('-------------------------------------\n');

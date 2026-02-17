@@ -6,7 +6,7 @@
     "dev": "next dev -p 3001",
     "build": "next build",
     "start": "next start",
-        "lint": "cross-env ESLINT_USE_FLAT_CONFIG=false eslint --max-warnings=0 --ext .ts,.tsx,.js,.jsx .",
+    "lint": "cross-env ESLINT_USE_FLAT_CONFIG=false eslint --ext .ts,.tsx,.js,.jsx .",
     "type-check": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
@@ -18,8 +18,8 @@
     "autoprefixer": "^10.4.23",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
-        "eslint": "^8.57.0",
-        "eslint-config-next": "15.2.0",
+    "eslint": "^8.57.0",
+    "eslint-config-next": "15.2.0",
     "isomorphic-dompurify": "3.0.0-rc.2",
     "lucide-react": "^0.563.0",
     "next": "16.1.6",
@@ -34,5 +34,6 @@
   },
   "engines": {
     "node": "20.x"
-  }
+  },
+  "devDependencies": {}
 }

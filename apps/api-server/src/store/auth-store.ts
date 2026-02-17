@@ -6,7 +6,7 @@ export interface User {
   name: string;
   email: string;
   isAdmin: boolean;
-  role?: string;
+  role: 'user' | 'admin' | 'super_admin';
   onboarded?: boolean;
 }
 

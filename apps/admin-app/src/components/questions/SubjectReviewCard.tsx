@@ -1,6 +1,4 @@
 'use client';
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 import {
     BookOpen, Clock, Edit2, Layers,
     Trash2
@@ -8,14 +6,20 @@ import {
 import React from 'react';
 
 import { cn, formatTimeAgo } from '@/lib/utils';
+import { SubjectSummary } from '@/types/review';
 
 interface SubjectReviewCardProps {
-    subject: any;
+    subject: SubjectSummary & {
+        domain?: { name?: string };
+        status?: string;
+        description?: string;
+        createdAt?: string;
+    };
     index: number;
     isSelected?: boolean;
     onSelect?: (id: string, selected: boolean) => void;
-    onDeleteRequest: (subject: any) => void;
-    onEditRequest: (subject: any) => void;
+    onDeleteRequest: (subject: SubjectReviewCardProps['subject']) => void;
+    onEditRequest: (subject: SubjectReviewCardProps['subject']) => void;
 }
 
 export function SubjectReviewCard({
@@ -138,7 +142,7 @@ export function SubjectReviewCard({
                     <div className="flex flex-wrap gap-3 pl-12">
                         <div className="px-4 py-2 rounded-xl bg-slate-50 border border-slate-100 flex items-center gap-2">
                             <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Topics:</span>
-                            <span className="text-xs font-bold text-slate-700">{(subject.topicsCount != null && subject.topicsCount !== 0) ? (subject.topicsCount as number) : (subject.topics?.length ?? 0)}</span>
+                            <span className="text-xs font-bold text-slate-700">{subject.topicsCount ?? 0}</span>
                         </div>
                     </div>
                 </div>

@@ -80,7 +80,7 @@ async function runSeed() {
         for (const statement of statements) {
             try {
                 await pool.query(statement);
-            } catch (stmtErr: any) {
+            } catch (stmtErr: unknown) {
                  // Ignore "already exists" errors during seed
                  if (stmtErr.message.includes('already exists')) {
                  } else {

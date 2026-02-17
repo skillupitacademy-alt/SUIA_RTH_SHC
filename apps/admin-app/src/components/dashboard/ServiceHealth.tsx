@@ -1,7 +1,6 @@
 'use client';
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 import { apiClient } from '@quiz/api-client';
+import type { LucideIcon } from 'lucide-react';
 import { AlertCircle, CheckCircle2, Cloud, Database, Mail, RefreshCw, Server } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
@@ -9,7 +8,7 @@ interface ServiceMetric {
     status: 'ok' | 'warning' | 'error' | 'not_configured';
     configured: boolean;
     checkedAt: string;
-    metrics?: any;
+    metrics?: Record<string, unknown>;
     error?: { message: string };
 }
 
@@ -103,7 +102,7 @@ export function ServiceHealth() {
     );
 }
 
-function HealthCard({ title, icon: Icon, data, loading, type }: { title: string, icon: any, data?: ServiceMetric, loading: boolean, type: 'neon' | 'redis' | 'resend' | 'cloudflare' }) {
+function HealthCard({ title, icon: Icon, data, loading, type }: { title: string; icon: LucideIcon; data?: ServiceMetric; loading: boolean; type: 'neon' | 'redis' | 'resend' | 'cloudflare' }) {
     if (loading && !data) {
         return (
             <div className="h-40 rounded-[1.5rem] bg-muted/5 border animate-pulse" />
@@ -113,8 +112,9 @@ function HealthCard({ title, icon: Icon, data, loading, type }: { title: string,
     if (!data) return null;
 
     const isConfigured = data.configured;
-    const metrics = (data.metrics as Record<string, any> | undefined) ?? {};
+    const metrics = (data.metrics as Record<string, number | string | null | undefined> | undefined) ?? {};
     const status = data.status;
+    const usage = Number(metrics.usagePercent ?? 0);
 
     // Usage Colors
     const getProgressColor = (percent: number) => {
@@ -148,12 +148,12 @@ function HealthCard({ title, icon: Icon, data, loading, type }: { title: string,
                 {type === 'neon' && (metrics.limitMb as number | undefined) !== undefined ? <div className="pt-2">
                     <div className="flex justify-between text-xs mb-1.5 font-mono">
                         <span>{metrics.sizeMb} MB / {metrics.limitMb} MB</span>
-                        <span className={status === 'error' ? 'text-destructive' : ''}>{metrics.usagePercent}%</span>
+                        <span className={status === 'error' ? 'text-destructive' : ''}>{usage}%</span>
                     </div>
                     <div className="h-2 w-full bg-muted/20 rounded-full overflow-hidden">
                         <div
-                            className={`h-full rounded-full transition-all duration-500 ${getProgressColor(metrics.usagePercent)}`}
-                            style={{ width: `${Math.min(100, metrics.usagePercent)}%` }}
+                            className={`h-full rounded-full transition-all duration-500 ${getProgressColor(usage)}`}
+                            style={{ width: `${Math.min(100, usage)}%` }}
                         />
                     </div>
                 </div> : null}
@@ -162,12 +162,12 @@ function HealthCard({ title, icon: Icon, data, loading, type }: { title: string,
                 {type === 'redis' && (metrics.limitMb as number | undefined) !== undefined ? <div className="pt-2">
                     <div className="flex justify-between text-xs mb-1.5 font-mono">
                         <span>{metrics.memory} / {metrics.limitMb} MB</span>
-                        <span className={status === 'error' ? 'text-destructive' : ''}>{metrics.usagePercent}%</span>
+                        <span className={status === 'error' ? 'text-destructive' : ''}>{usage}%</span>
                     </div>
                     <div className="h-2 w-full bg-muted/20 rounded-full overflow-hidden">
                         <div
-                            className={`h-full rounded-full transition-all duration-500 ${getProgressColor(metrics.usagePercent)}`}
-                            style={{ width: `${Math.min(100, metrics.usagePercent)}%` }}
+                            className={`h-full rounded-full transition-all duration-500 ${getProgressColor(usage)}`}
+                            style={{ width: `${Math.min(100, usage)}%` }}
                         />
                     </div>
                     <div className="flex justify-between mt-2 text-[10px] text-muted-foreground/60 uppercase tracking-wider">

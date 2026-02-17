@@ -14,20 +14,20 @@ export function LoginForm() {
     const { login } = useAuthStore();
     const router = useRouter();
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setLoading(true);
         try {
+            const formData = new FormData(e.currentTarget);
+            const email = formData.get('email')?.toString() ?? '';
+            const password = formData.get('password')?.toString() ?? '';
             // Real API Call
-            const { user } = await apiClient.auth.login(
-                (e.target as any).email.value, // eslint-disable-line @typescript-eslint/no-explicit-any
-                (e.target as any).password.value // eslint-disable-line @typescript-eslint/no-explicit-any
-            );
-
-            login(user);
+            const { user } = await apiClient.auth.login(email, password);
+            login({ ...user, onboarded: user.onboarded ?? false });
             router.push('/dashboard');
-        } catch (err: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
-            setError(err.message || "Invalid credentials. Please try again.");
+        } catch (err: unknown) {
+            const message = err instanceof Error ? err.message : "Invalid credentials. Please try again.";
+            setError(message);
         } finally {
             setLoading(false);
         }
@@ -113,20 +113,20 @@ export function SignupForm() {
     const [error, setError] = useState<string | null>(null);
     const router = useRouter(); // Added missing router
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setLoading(true);
         try {
-            const { user } = await apiClient.auth.signup(
-                (e.target as any).email.value, // eslint-disable-line @typescript-eslint/no-explicit-any
-                (e.target as any).password.value, // eslint-disable-line @typescript-eslint/no-explicit-any
-                (e.target as any).name.value // eslint-disable-line @typescript-eslint/no-explicit-any
-            );
-
-            useAuthStore.getState().login(user);
+            const formData = new FormData(e.currentTarget);
+            const email = formData.get('email')?.toString() ?? '';
+            const password = formData.get('password')?.toString() ?? '';
+            const name = formData.get('name')?.toString() ?? '';
+            const { user } = await apiClient.auth.signup(email, password, name);
+            useAuthStore.getState().login({ ...user, onboarded: user.onboarded ?? false });
             router.push('/dashboard');
-        } catch (err: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
-            setError(err.message || "Failed to create account.");
+        } catch (err: unknown) {
+            const message = err instanceof Error ? err.message : "Failed to create account.";
+            setError(message);
         } finally {
             setLoading(false);
         }
@@ -200,12 +200,13 @@ export function ForgotPasswordForm() {
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
     // error state removed as per contract "Always show neutral success message"
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setLoading(true);
 
         try {
-            const email = (e.target as any).email.value; // eslint-disable-line @typescript-eslint/no-explicit-any
+            const formData = new FormData(e.currentTarget);
+            const email = formData.get('email')?.toString() ?? '';
             await apiClient.auth.forgotPassword(email);
             setSuccess(true);
         } catch {
@@ -290,10 +291,11 @@ export function ResetPasswordForm({ token }: { token: string }) {
         validate();
     }, [token]);
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        const password = (e.target as any).password.value; // eslint-disable-line @typescript-eslint/no-explicit-any
-        const confirm = (e.target as any).confirm.value; // eslint-disable-line @typescript-eslint/no-explicit-any
+        const formData = new FormData(e.currentTarget);
+        const password = formData.get('password')?.toString() ?? '';
+        const confirm = formData.get('confirm')?.toString() ?? '';
 
         if (password.length < 8) {
             setError("Password must be at least 8 characters long");

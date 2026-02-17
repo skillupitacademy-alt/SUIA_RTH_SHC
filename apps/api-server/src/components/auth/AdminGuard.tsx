@@ -25,7 +25,7 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
                 // Access _token is handled via httpOnly cookies
                 // Using getAdminSession parity
                 const { user: validatedUser, expiresAt } = await apiClient.auth.getAdminSession();
-                const isAdmin = (validatedUser as { isAdmin?: boolean } | null | undefined)?.isAdmin === true;
+                const isAdmin = validatedUser.isAdmin === true;
                 if (isAdmin === false) throw new Error("Revoked");
                 login(validatedUser, expiresAt);
             } catch (_err: unknown) {

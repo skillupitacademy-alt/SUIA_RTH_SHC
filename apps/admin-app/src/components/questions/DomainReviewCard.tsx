@@ -1,6 +1,4 @@
 'use client';
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 import {
     BookOpen,
     Clock, Edit2, Globe, Layers, Trash2
@@ -8,14 +6,15 @@ import {
 import React from 'react';
 
 import { cn, formatTimeAgo } from '@/lib/utils';
+import { DomainSummary } from '@/types/review';
 
 interface DomainReviewCardProps {
-    domain: any;
+    domain: DomainSummary;
     index: number;
     isSelected?: boolean;
     onSelect?: (id: string, selected: boolean) => void;
-    onDeleteRequest: (domain: any) => void;
-    onEditRequest: (domain: any) => void;
+    onDeleteRequest: (domain: DomainSummary) => void;
+    onEditRequest: (domain: DomainSummary) => void;
 }
 
 export function DomainReviewCard({

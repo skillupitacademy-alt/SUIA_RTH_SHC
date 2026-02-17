@@ -38,8 +38,15 @@
                 "./apps/admin-app/src/*",
                 "./apps/api-server/src/*",
                 "./packages/ui/src/*"
+            ],
+            "@tests/*": [
+                "./tests/*"
             ]
         },
+        "typeRoots": [
+            "./types",
+            "./node_modules/@types"
+        ],
         "noEmit": true
     },
     "exclude": [
@@ -49,5 +56,11 @@
         ".next",
         "**/*.config.js",
         "**/*.config.mjs"
+    ],
+    "include": [
+        "types/**/*.d.ts",
+        "apps",
+        "packages",
+        "tests"
     ]
 }

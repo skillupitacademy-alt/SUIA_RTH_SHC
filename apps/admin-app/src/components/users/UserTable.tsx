@@ -13,12 +13,12 @@ import { ErrorBanner } from '@/components/layout/ErrorBanner';
 interface UserData {
     id: string;
     email: string;
-    emailVerified: boolean;
-    isBlocked: boolean;
+    emailVerified?: boolean;
+    isBlocked?: boolean;
     lastActiveAt?: string;
     status?: 'online' | 'idle' | 'offline' | 'blocked';
-    createdAt: string;
-    userRoles: { role: { name: string } }[];
+    createdAt?: string;
+    userRoles?: { role: { name: string } }[];
     profile?: {
         name?: string;
         avatarUrl?: string;
@@ -109,7 +109,7 @@ export function UserTable() {
         if (editingUser === null) return;
         setIsSaving(true);
         try {
-            const currentRoles = editingUser.userRoles.map(r => r.role.name);
+            const currentRoles = (editingUser.userRoles ?? []).map(r => r.role.name);
             const payload: Record<string, unknown> = {
                 isBlocked: editingUser.isBlocked,
                 roles: currentRoles
@@ -145,16 +145,17 @@ export function UserTable() {
 
     const toggleAdminRole = (isAdmin: boolean) => {
         if (editingUser === null) return;
-        const hasAdmin = editingUser.userRoles.some(r => r.role.name === 'ADMIN');
+        const currentRoles = editingUser.userRoles ?? [];
+        const hasAdmin = currentRoles.some(r => r.role.name === 'ADMIN');
         if (isAdmin && !hasAdmin) {
             setEditingUser({
                 ...editingUser,
-                userRoles: [...editingUser.userRoles, { role: { name: 'ADMIN' } }]
+                userRoles: [...currentRoles, { role: { name: 'ADMIN' } }]
             });
         } else if (!isAdmin && hasAdmin) {
             setEditingUser({
                 ...editingUser,
-                userRoles: editingUser.userRoles.filter(r => r.role.name !== 'ADMIN')
+                userRoles: currentRoles.filter(r => r.role.name !== 'ADMIN')
             });
         }
     };
@@ -255,7 +256,7 @@ export function UserTable() {
                             </thead>
                             <tbody className="divide-y divide-primary/5">
                                 {users.map((user) => (
-                                    <tr key={user.id} className={`group transition-colors ${user.isBlocked ? 'bg-red-50/50 hover:bg-red-50' : 'hover:bg-primary/5'}`}>
+                                    <tr key={user.id} className={`group transition-colors ${user.isBlocked === true ? 'bg-red-50/50 hover:bg-red-50' : 'hover:bg-primary/5'}`}>
                                         <td className="p-6">
                                             <div className="flex items-center gap-4">
                                                 <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center border border-white shadow-sm overflow-hidden">
@@ -288,7 +289,7 @@ export function UserTable() {
                                         </td>
                                         <td className="p-6">
                                             <div className="flex flex-wrap gap-2">
-                                                {user.userRoles.map((r, i) => (
+                                                {(user.userRoles ?? []).map((r, i) => (
                                                     <span key={i} className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider border ${r.role.name === 'admin' ? 'bg-[#FF4B91]/10 text-[#FF4B91] border-[#FF4B91]/20' : 'bg-gray-100 text-gray-600 border-gray-200'}`}>
                                                         {r.role.name}
                                                     </span>
@@ -312,13 +313,13 @@ export function UserTable() {
                                                         <span className="text-xs font-bold uppercase tracking-wide text-yellow-600">Idle</span>
                                                     </>
                                                 )}
-                                                {(user.status === 'offline' || !user.status) && !user.isBlocked && (
+                                                {(user.status === 'offline' || !user.status) && user.isBlocked !== true && (
                                                     <>
                                                         <div className="h-2.5 w-2.5 rounded-full bg-gray-300" />
                                                         <span className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Offline</span>
                                                     </>
                                                 )}
-                                                {user.isBlocked ? <>
+                                                {user.isBlocked === true ? <>
                                                     <Shield size={14} className="fill-current text-red-600" />
                                                     <span className="text-xs font-bold uppercase tracking-wide text-red-600">Blocked</span>
                                                 </> : null}
@@ -327,7 +328,7 @@ export function UserTable() {
                                         <td className="p-6">
                                             <div className="flex items-center gap-2 text-muted-foreground">
                                                 <Calendar size={14} />
-                                                <span className="text-xs font-medium">{formatDistanceToNow(new Date(user.createdAt), { addSuffix: true })}</span>
+                                                <span className="text-xs font-medium">{formatDistanceToNow(new Date(user.createdAt ?? Date.now()), { addSuffix: true })}</span>
                                             </div>
                                         </td>
                                         <td className="p-6 text-right">
@@ -393,15 +394,15 @@ export function UserTable() {
                                 <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">User Status</label>
                                 <div className="flex items-center justify-between p-4 rounded-xl border border-gray-200 bg-gray-50">
                                     <div className="flex items-center gap-3">
-                                        <Shield size={18} className={editingUser.isBlocked ? "text-red-500" : "text-green-500"} />
+                                        <Shield size={18} className={editingUser.isBlocked === true ? "text-red-500" : "text-green-500"} />
                                         <span className="text-sm font-bold text-[#1A1A1A]">Block Access</span>
                                     </div>
                                     <button
                                         type="button"
-                                        onClick={() => setEditingUser({ ...editingUser, isBlocked: !editingUser.isBlocked })}
-                                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${editingUser.isBlocked ? 'bg-red-500' : 'bg-gray-200'}`}
+                                        onClick={() => setEditingUser({ ...editingUser, isBlocked: editingUser.isBlocked === true ? false : true })}
+                                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${editingUser.isBlocked === true ? 'bg-red-500' : 'bg-gray-200'}`}
                                     >
-                                        <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${editingUser.isBlocked ? 'translate-x-6' : 'translate-x-1'}`} />
+                                        <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${editingUser.isBlocked === true ? 'translate-x-6' : 'translate-x-1'}`} />
                                     </button>
                                 </div>
                             </div>
@@ -416,7 +417,7 @@ export function UserTable() {
                                     <input
                                         type="checkbox"
                                         className="h-5 w-5 rounded border-gray-300 text-[#FF4B91] focus:ring-[#FF4B91]"
-                                        checked={editingUser.userRoles.some(r => r.role.name === 'ADMIN')}
+                                        checked={(editingUser.userRoles ?? []).some(r => r.role.name === 'ADMIN')}
                                         onChange={(e) => toggleAdminRole(e.target.checked)}
                                     />
                                 </div>

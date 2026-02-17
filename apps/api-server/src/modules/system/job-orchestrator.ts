@@ -52,21 +52,15 @@ export class JobOrchestrator {
     private static async handleExamScoring(jobId: string, payload: { examId: string }): Promise<void> {
         if (payload.examId === undefined || payload.examId === null || payload.examId === '') throw new Error('Missing examId in payload');
 
-        try {
-            const finalScore = await ScoringEngine.calculateExamResults(payload.examId);
-            
-            await JobsService.updateJobStatus(jobId, JobStatus.COMPLETED, {
-                result: {
-                    examId: payload.examId,
-                    finalScore,
-                    completedAt: new Date().toISOString()
-                }
-            });
-        } catch (err) {
-            // ScoringEngine already updates exam status to 'failed', 
-            // but we need to update the job status too.
-            throw err; 
-        }
+        const finalScore = await ScoringEngine.calculateExamResults(payload.examId);
+        
+        await JobsService.updateJobStatus(jobId, JobStatus.COMPLETED, {
+            result: {
+                examId: payload.examId,
+                finalScore,
+                completedAt: new Date().toISOString()
+            }
+        });
     }
 
     private static async handleAnalyticsRefresh(jobId: string): Promise<void> {

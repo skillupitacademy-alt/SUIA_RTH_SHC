@@ -33,6 +33,7 @@ export * from './modules/dashboard-client';
 export * from './modules/report-client';
 export * from './modules/search-client';
 export * from './modules/telemetry-client';
+export * from './types';
 
 export const apiClient = {
   auth: new AuthClient(baseClient),

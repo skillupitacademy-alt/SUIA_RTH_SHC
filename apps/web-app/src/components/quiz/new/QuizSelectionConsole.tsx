@@ -3,7 +3,7 @@
 
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState, useEffect, Suspense } from 'react';
-import { apiClient } from '@quiz/api-client';
+import { apiClient, Domain, Subject, Topic, Subtopic } from '@quiz/api-client';
 import { AssessmentSummary } from './AssessmentSummary';
 import { DomainCard } from './DomainCard';
 import { TopicChip } from './TopicChip';
@@ -30,10 +30,10 @@ export function QuizSelectionConsole() {
 function QuizSelectionConsoleContent() {
     const router = useRouter();
     const [step, setStep] = useState(1);
-    const [domains, setDomains] = useState<any[]>([]);
-    const [subjects, setSubjects] = useState<any[]>([]);
-    const [topics, setTopics] = useState<any[]>([]);
-    const [subtopics, setSubtopics] = useState<any[]>([]);
+    const [domains, setDomains] = useState<Domain[]>([]);
+    const [subjects, setSubjects] = useState<Subject[]>([]);
+    const [topics, setTopics] = useState<Topic[]>([]);
+    const [subtopics, setSubtopics] = useState<Subtopic[]>([]);
 
     const [selectedDomains, setSelectedDomains] = useState<string[]>([]);
     const [selectedSubjects, setSelectedSubjects] = useState<string[]>([]);
@@ -110,7 +110,7 @@ function QuizSelectionConsoleContent() {
             try {
                 await apiClient.auth.heartbeat();
             } catch (err) {
-                console.warn('[Heartbeat] Silence failed - likely background refresh will catch it');
+                console.warn('[Heartbeat] Silence failed - likely background refresh will catch it', err);
             }
             // Jittered interval (120s - 180s) to prevent "Thundering Herd" server spikes
             const jitter = Math.floor(Math.random() * 60000); // 0-60s
@@ -356,11 +356,12 @@ function QuizSelectionConsoleContent() {
             // Officially cutting over to Premium HUD
             router.push(`/exam/${data.examId}`);
 
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error('Launch failed:', err);
+            const message = err instanceof Error ? err.message : "Launch failed. Please try again.";
             setLaunchError({
                 title: "Couldn't start your assessment",
-                reason: err.message || "Launch failed. Please try again."
+                reason: message
             });
             setIsLocked(false);
             setLoading(false);
@@ -602,16 +603,23 @@ function QuizSelectionConsoleContent() {
 
                             {step === 1 && (
                                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 grid-rows-[repeat(2,min-content)] gap-6 duration-300 items-start overflow-visible">
-                                    {paginatedDomains.map((domain, idx) => (
+                                    {paginatedDomains.map((domain, idx) => {
+                                        const meta = getDomainMeta(idx + page * currentPageSize);
+                                        const coverage = 70 + ((idx + page * currentPageSize) % 6) * 5; // synthetic coverage for UI
+                                        return (
                                         <DomainCard
                                             key={domain.id}
                                             {...domain}
-                                            {...getDomainMeta(idx + page * currentPageSize)}
+                                            description={domain.description ?? 'Explore curated challenges and labs in this domain.'}
+                                            category={domain.category ?? 'General'}
+                                            coverage={coverage}
+                                            {...meta}
                                             isSelected={selectedDomains.includes(domain.id)}
                                             onSelect={toggleDomain}
-                                            accentColor={getDomainMeta(idx + page * currentPageSize).accent}
+                                            accentColor={meta.accent}
                                         />
-                                    ))}
+                                    );
+                                    })}
                                 </div>
                             )}
 
@@ -734,7 +742,11 @@ function QuizSelectionConsoleContent() {
                             topicsCount={selectedTopics.length}
                             questionCount={questionCount}
                             difficulty={difficulty.charAt(0).toUpperCase() + difficulty.slice(1)}
-                            totalPoints={currentTopics.reduce((acc, curr) => acc + (curr.points || 15 * questionCount / selectedTopics.length), 0)}
+                            totalPoints={currentTopics.reduce((acc, curr) => {
+                                const points = (curr as Topic & { points?: number }).points
+                                    ?? Math.round(15 * questionCount / Math.max(selectedTopics.length || 1, 1));
+                                return acc + points;
+                            }, 0)}
                             isReady={isArmed}
                             onStart={handleLaunch}
                             isLocked={isLocked}

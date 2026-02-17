@@ -1,5 +1,4 @@
 'use client';
-/* eslint-disable @typescript-eslint/no-explicit-any, react-hooks/exhaustive-deps */
 
 import { useEffect, useState, useMemo } from 'react';
 import { apiClient } from '@quiz/api-client';
@@ -33,7 +32,6 @@ export function ExamInterface() {
         toggleReview,
         setCurrentIndex,
         finishQuiz,
-        setQuestions,
         examId,
         setExamId,
         isSubmitted,
@@ -127,11 +125,16 @@ export function ExamInterface() {
 
                 // Reset and Hydrate Store (Phase 2 Revision)
                 // Using startQuiz to clear old state and set initial duration
-                useQuizStore.getState().startQuiz(mappedQuestions, null, state.remainingTimeSeconds || 0);
+                const defaultConfig = {
+                    domain: state.id || 'unknown',
+                    subjects: [],
+                    difficulty: 'mixed',
+                };
+                useQuizStore.getState().startQuiz(mappedQuestions, defaultConfig, state.remainingTimeSeconds || 0);
                 setExamId(state.id);
 
                 // Hydrate answers from backend
-                state.questions.forEach((q: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
+                state.questions.forEach((q) => {
                     if (q.userAnswer !== null) {
                         const idx = q.options.indexOf(q.userAnswer);
                         if (idx !== -1) {
@@ -141,7 +144,7 @@ export function ExamInterface() {
                 });
 
                 // Calculate connection-safe starting index (first unanswered or 0)
-                const firstUnanswered = state.questions.findIndex((q: any) => q.userAnswer === null); // eslint-disable-line @typescript-eslint/no-explicit-any
+                const firstUnanswered = state.questions.findIndex((q) => q.userAnswer === null);
                 setCurrentIndex(firstUnanswered !== -1 ? firstUnanswered : 0);
 
                 // Reconcile with Local Backup for UI Prefill (Phase 4 Security)
@@ -151,7 +154,7 @@ export function ExamInterface() {
                     const questionInStore = storeState.questions.find(q => q.id === qId);
 
                     // Only prefill if server-side answer is missing
-                    const serverQuestion = state.questions.find((q: any) => q.questionId === qId); // eslint-disable-line @typescript-eslint/no-explicit-any
+                    const serverQuestion = state.questions.find((q) => q.questionId === qId);
                     if (serverQuestion && serverQuestion.userAnswer === null && questionInStore) {
                         const optionIdx = questionInStore.options.indexOf(localAnswer);
                         if (optionIdx !== -1) {
@@ -169,7 +172,7 @@ export function ExamInterface() {
         };
 
         initExam();
-    }, [examIdParam, router, setExamId, setQuestions, questions.length, examId]);
+    }, [examIdParam, router, setExamId, setCurrentIndex, questions.length, examId]);
 
     // Timer logic
     useEffect(() => {

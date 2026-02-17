@@ -29,7 +29,7 @@ interface SubjectItem {
     description?: string;
     status?: string;
     order?: number;
-    stats: {
+    stats?: {
         total: number;
         isReady: boolean;
         simple: number;
@@ -81,7 +81,18 @@ export function SubjectTable() {
         setIsLoading(true);
         try {
             const response = await apiClient.admin.getSubjects(page, pageSize, debouncedSearch || undefined);
-            setData(response.data);
+            const mapped = response.data.map((s) => ({
+                ...s,
+                stats: {
+                    total: 0,
+                    isReady: false,
+                    simple: 0,
+                    intermediate: 0,
+                    expert: 0,
+                    ...(s as { stats?: SubjectItem['stats'] }).stats
+                }
+            })) as SubjectItem[];
+            setData(mapped);
             setTotalPages(response.totalPages);
             setTotalCount(response.total || response.data.length);
             setSelectedIds(new Set());
@@ -129,7 +140,6 @@ export function SubjectTable() {
         } catch (error) {
             console.error('Batch delete failed:', error);
             setErrorMessage('Batch Deletion Failed: Some subjects could not be removed.');
-        } finally {
         }
     };
 

@@ -24,14 +24,14 @@ interface Topic {
     id: string;
     name: string;
     description?: string;
-    status: 'active' | 'inactive';
-    weight: number;
-    complexityLevel: number;
+    status?: 'active' | 'inactive';
+    weight?: number;
+    complexityLevel?: number;
     subjectId: string;
     subject?: {
         id: string;
         name: string;
-        domainId: string;
+        domainId?: string;
         domain?: {
             id: string;
             name: string;

@@ -1,5 +1,5 @@
 'use client';
-/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 
 import { useEffect, useState, useMemo } from 'react';
 import { useRouter, useParams } from 'next/navigation';
@@ -96,10 +96,11 @@ export default function ActiveExamPage() {
                 });
 
                 setTimeLeft(data.remainingTimeSeconds || 0);
-            } catch (err: any) {
+            } catch (err: unknown) {
                 console.error('Failed to load exam:', err);
-                if (err.message.includes('403')) setError('Unauthorized: Session ownership mismatch.');
-                else if (err.message.includes('404')) setError('Assessment session not found.');
+                const message = err instanceof Error ? err.message : '';
+                if (message.includes('403')) setError('Unauthorized: Session ownership mismatch.');
+                else if (message.includes('404')) setError('Assessment session not found.');
                 else setError('Failed to connect to Mission Control.');
             } finally {
                 setLoading(false);
@@ -422,8 +423,7 @@ export default function ActiveExamPage() {
 
                             {/* Options Grid */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-4">
-                                {currentQuestion.options.map((option: any, oIdx: number) => {
-                                    // Handle both string and object options
+                                {currentQuestion.options.map((option: string | { text?: string; label?: string }, oIdx: number) => {
                                     const optionText = typeof option === 'string' ? option : (option.text || option.label || 'Unknown Option');
                                     const isSelected = state.localAnswers[currentQuestion.questionId] === optionText;
 

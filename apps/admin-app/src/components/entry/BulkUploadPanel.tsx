@@ -70,6 +70,7 @@ export function BulkUploadPanel({ topicId, subtopicId, skillIds, onSuccess, onEr
                         return {
                             ...q,
                             text: textVal,
+                            questionText: textVal,
                             options: sanitizedOptions
                         };
                     });
@@ -94,11 +95,16 @@ export function BulkUploadPanel({ topicId, subtopicId, skillIds, onSuccess, onEr
         setIsUploading(true);
 
         try {
+            const payloadQuestions = questions.map((q) => ({
+                ...q,
+                questionText: q.questionText ?? q.text
+            }));
+
             await apiClient.admin.bulkCreateQuestions({
                 topicId,
                 subtopicId: (subtopicId != null && subtopicId !== '') ? subtopicId : undefined,
                 skillIds: skillIds.length > 0 ? skillIds : undefined,
-                questions
+                questions: payloadQuestions
             });
 
             onSuccess(questions.length);

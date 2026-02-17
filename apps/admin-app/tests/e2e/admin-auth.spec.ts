@@ -1,6 +1,6 @@
-import { expect, Page,test } from '@playwright/test';
+import { expect, Page, test } from '@playwright/test';
+import { setupCSPAudit } from '@tests/utils/csp-audit-collector';
 
-import { setupCSPAudit } from '../../../../tests/utils/csp-audit-collector';
 import { adminAuthFixtures } from './fixtures/auth';
 
 const ADMIN_UI_URL = adminAuthFixtures.ADMIN_UI_URL;
@@ -14,7 +14,7 @@ async function logoutAdmin(page: Page) {
 test.describe('Admin Auth & Security Suite', () => {
 
   test.beforeEach(async ({ page }) => {
-    setupCSPAudit(page);
+    await setupCSPAudit(page);
   });
 
   // 1. Happy Path: Login -> Dashboard -> Logout

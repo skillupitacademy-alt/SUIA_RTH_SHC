@@ -56,7 +56,7 @@ async function main() {
             }
         }
 
-    } catch (err: any) {
+    } catch (err: unknown) {
         console.error("Database query (HTTP) failed:");
         console.error(err.message);
     }

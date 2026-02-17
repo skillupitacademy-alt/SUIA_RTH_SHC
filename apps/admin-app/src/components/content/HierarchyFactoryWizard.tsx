@@ -384,7 +384,13 @@ Please provide a valid JSON object matching this schema:
                 finalData = JSON.parse(payload) as Record<string, unknown>;
             }
 
-            const result = await apiClient.admin.atomicSeed(finalData) as AtomicSeedSuccess;
+            const rawResult = await apiClient.admin.atomicSeed(finalData) as Record<string, unknown>;
+            const result: AtomicSeedSuccess = {
+                domainId: (rawResult.domainId as string) ?? manualEntry.domainId ?? selections.domainId ?? '',
+                questionIds: (rawResult.questionIds as string[] | undefined) ?? [],
+                questionStats: (rawResult.questionStats as QuestionStats | null | undefined) ?? null,
+                stats: rawResult.stats as AtomicSeedSuccess['stats'],
+            };
 
             setExecutionStep('done');
             await new Promise(r => setTimeout(r, 400));

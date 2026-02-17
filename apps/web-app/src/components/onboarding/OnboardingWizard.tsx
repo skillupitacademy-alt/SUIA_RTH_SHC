@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/store/auth-store';
-import { apiClient } from '@quiz/api-client';
+import { apiClient, UserProfile } from '@quiz/api-client';
 
 const ROLES = [
     { id: 'student_school', title: 'School Student', icon: User },
@@ -54,11 +54,10 @@ export function OnboardingWizard() {
     const handleComplete = async () => {
         setLoading(true);
         try {
-            const payload = {
-                professionalStatus: data.role || undefined,
-                educationLevel: data.educationLevel || undefined,
-                domainInterest: data.domain ? [data.domain] : undefined,
-                experienceYears: data.experience ? Number(data.experience) : undefined,
+            const payload: Partial<UserProfile> = {
+                role: 'user',
+                onboarded: true,
+                isAdmin: false,
             };
 
             await apiClient.auth.updateProfile(payload);

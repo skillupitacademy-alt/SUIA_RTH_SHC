@@ -35,14 +35,15 @@ export function AuthGuard({ children, requireAdmin = false }: AuthGuardProps) {
                     // We might need an accessToken here if getSession provides it or we rely on cookie
                     // For now, let's assume getSession validates the cookie and returns user
                     if (session && session.user) {
-                        login(session.user); // Token is httpOnly cookie handled
+                        login({ ...session.user, onboarded: session.user.onboarded ?? false }); // Token is httpOnly cookie handled
                     } else {
                         throw new Error('No session');
                     }
                 }
 
                 // Admin check
-                if (requireAdmin && user?.role !== 'admin' && user?.role !== 'super_admin') {
+                const role = user?.role ?? 'user';
+                if (requireAdmin && role !== 'admin' && role !== 'super_admin') {
                     router.push('/dashboard');
                     return;
                 }

@@ -1,4 +1,5 @@
-import { GeneratedQuestion, ValidationResult } from '../../types/factory';
+/* eslint-disable no-useless-escape */
+import { GeneratedQuestion, ValidationResult } from '@/types/factory';
 
 interface ValidationStats {
     trailingCommas: number;

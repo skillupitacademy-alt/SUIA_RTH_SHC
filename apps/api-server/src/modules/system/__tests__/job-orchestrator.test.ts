@@ -1,13 +1,14 @@
-import { Job,JobStatus, JobType } from '@quiz/types';
+import { Job, JobStatus, JobType } from '@quiz/types';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { ScoringEngine } from '../../scoring-engine/scoring.engine';
+import { ScoringEngine } from '@/modules/scoring-engine/scoring.engine';
+
 import { JobOrchestrator } from '../job-orchestrator';
 import { JobsService } from '../jobs.service';
 
 // Mock the services
 vi.mock('../jobs.service');
-vi.mock('../../scoring-engine/scoring.engine');
+vi.mock('@/modules/scoring-engine/scoring.engine');
 
 describe('JobOrchestrator - handleExamScoring', () => {
     const mockJobId = 'job-123';

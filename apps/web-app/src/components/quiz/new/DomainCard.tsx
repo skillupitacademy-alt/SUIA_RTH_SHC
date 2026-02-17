@@ -1,15 +1,14 @@
 'use client';
 
-import { Check } from 'lucide-react';
+import { Check, LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
-/* eslint-disable @typescript-eslint/no-explicit-any */
 
 interface DomainCardProps {
     id: string;
     name: string;
     description: string;
     category: string;
-    icon: any; // Lucide icon
+    icon: LucideIcon;
     coverage: number;
     isSelected: boolean;
     onSelect: (id: string) => void;

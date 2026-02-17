@@ -1,6 +1,4 @@
 'use client';
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 import {
     Activity, BookOpen,
     Clock, Edit3, ExternalLink,
@@ -10,14 +8,25 @@ import Link from 'next/link';
 import React from 'react';
 
 import { cn, formatTimeAgo } from '@/lib/utils';
+import { TopicSummary } from '@/types/review';
 
 interface TopicReviewCardProps {
-    topic: any;
+    topic: TopicSummary & {
+        subject?: { name?: string; domain?: { name?: string } };
+        weight?: number;
+        complexityLevel?: number;
+        subtopicsCount?: number;
+        subtopics?: Array<{ id: string }>;
+        questionsCount?: number;
+        status?: string;
+        description?: string;
+        createdAt?: string;
+    };
     index: number;
     isSelected?: boolean;
     onSelect?: (id: string, selected: boolean) => void;
-    onDeleteRequest: (topic: any) => void;
-    onEditRequest: (topic: any) => void;
+    onDeleteRequest: (topic: TopicReviewCardProps['topic']) => void;
+    onEditRequest: (topic: TopicReviewCardProps['topic']) => void;
 }
 
 export function TopicReviewCard({

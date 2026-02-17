@@ -107,7 +107,23 @@ export function QuestionTable() {
                     skillIds: filters.skillIds.length > 0 ? filters.skillIds : undefined,
                     search: (debouncedSearch != null && debouncedSearch !== '') ? debouncedSearch : undefined,
                 });
-                setQuestions(data.questions);
+                const mappedQuestions: QuestionData[] = data.questions.map((q, idx) => ({
+                    id: q.id ?? `q-${idx}`,
+                    questionText: q.questionText,
+                    type: q.type ?? 'single',
+                    difficulty: q.difficulty ?? 'intermediate',
+                    status: q.status ?? 'draft',
+                    createdAt: (q as { createdAt?: string }).createdAt ?? new Date().toISOString(),
+                    mappingType: (q as { mappingType?: string }).mappingType,
+                    options: q.options?.map((opt, optIdx) => ({
+                        text: opt.text,
+                        isCorrect: opt.isCorrect ?? false,
+                        id: opt.id ?? `${idx}-${optIdx}`
+                    })),
+                    questionSkills: (q as { questionSkills?: QuestionData['questionSkills'] }).questionSkills,
+                    topic: (q as { topic?: QuestionData['topic'] }).topic
+                }));
+                setQuestions(mappedQuestions);
                 setTotalPages(data.totalPages);
                 setTotalCount(data.total ?? data.questions.length); // Fallback if total is missing
             } catch (error) {

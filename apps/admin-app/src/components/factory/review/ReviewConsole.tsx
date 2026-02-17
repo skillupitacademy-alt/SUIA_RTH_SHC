@@ -131,7 +131,11 @@ export function ReviewConsole() {
 
                 if (result.details != null && result.details.length > 0) {
                     const nextMap = new Map<number, string>();
-                    result.details.forEach((d: { index: number; originalId: string }) => nextMap.set(d.index, d.originalId));
+                    result.details.forEach((d, idx) => {
+                        if (d.id != null) {
+                            nextMap.set(idx, d.id);
+                        }
+                    });
                     setDuplicateMap(nextMap);
                 } else {
                     setDuplicateMap(new Map());
@@ -151,7 +155,20 @@ export function ReviewConsole() {
         try {
             const { apiClient } = await import('@quiz/api-client');
             const payload = {
-                questions: stagedQuestions,
+                questions: stagedQuestions.map((q, idx) => ({
+                    id: q.id ?? `gen-${idx}`,
+                    questionText: q.questionText,
+                    type: 'single',
+                    status: 'draft',
+                    difficulty: q.difficulty,
+                    topicId: blueprint.topicId,
+                    subtopicId: blueprint.subtopicId,
+                    options: q.options.map((opt, optIdx) => ({
+                        id: `${idx}-${optIdx}`,
+                        text: opt,
+                        isCorrect: opt === q.correctAnswer
+                    }))
+                })),
                 topicId: blueprint.topicId,
                 subtopicId: blueprint.subtopicId
             };

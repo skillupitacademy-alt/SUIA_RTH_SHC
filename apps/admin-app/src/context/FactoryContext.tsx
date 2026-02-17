@@ -5,7 +5,7 @@ import React, { createContext, ReactNode, useContext, useState } from 'react';
 import { toast } from 'sonner';
 
 import { JsonValidator } from '../lib/factory/json-validator';
-import { FactoryBlueprint, GeneratedQuestion, ValidationResult } from '../types/factory';
+import { FactoryBlueprint, GeneratedQuestion, HealingReport,ValidationResult } from '../types/factory';
 
 interface FactoryContextType {
     blueprint: FactoryBlueprint;
@@ -13,7 +13,7 @@ interface FactoryContextType {
     stagedQuestions: GeneratedQuestion[];
     isIngesting: boolean;
     validationErrors: string[];
-    lastHealingReport: any | null;
+    lastHealingReport: HealingReport | null;
 
     setBlueprint: (blueprint: Partial<FactoryBlueprint>) => void;
     setSourceCode: (code: string) => void;
@@ -45,7 +45,7 @@ export function FactoryProvider({ children }: { children: ReactNode }) {
     const [stagedQuestions, setStagedQuestions] = useState<GeneratedQuestion[]>([]);
     const [isIngesting, setIsIngesting] = useState(false);
     const [validationErrors, setValidationErrors] = useState<string[]>([]);
-    const [lastHealingReport, setLastHealingReport] = useState<any | null>(null);
+    const [lastHealingReport, setLastHealingReport] = useState<HealingReport | null>(null);
     const [isInitialized, setIsInitialized] = useState(false);
 
     // Hydrate from storage on mount
@@ -107,7 +107,7 @@ export function FactoryProvider({ children }: { children: ReactNode }) {
 
         try {
             const result: ValidationResult = JsonValidator.validateBatch(json);
-            setLastHealingReport((result.healingReport as any | undefined) ?? null);
+            setLastHealingReport(result.healingReport ?? null);
 
             if (result.isValid) {
                 setStagedQuestions(result.questions);
