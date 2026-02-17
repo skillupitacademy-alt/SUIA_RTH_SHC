@@ -1106,6 +1106,7 @@ PHASE D: Accessibility (6 sessions)
 PHASE E: Performance (4 sessions)
 ├── E1: Bundle analyzer setup + baseline ............... Session 25
 ├── E2: localStorage render-path fixes ................. Session 26
+│   └── E2a: Add shared `safeLocalStorage` helper (SSR-safe, TTL support, try/catch) + document key/version conventions.
 ├── E3: next/image audit ............................... Session 27
 └── E4: Memoization audit .............................. Session 28
 

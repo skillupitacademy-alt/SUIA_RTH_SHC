@@ -248,3 +248,9 @@
 - Committed Phase D2 aria-label rollout for admin/web (commit c74b15f3, 2026-02-17 14:41:39 +0530). Scope: admin tables/review cards, lock screen, sidebar, domain/topic/skill/subtopic/subject controls, user table toggles; web exam interface, selection console, domain/topic chips, header, auth password toggles. Lint all green pre-commit.\n
 - Phase D5 start: WCAG AA contrast tune via shared tokens only. Darkened muted-foreground to hsl(215 18% 30%) and strengthened border/input to hsl(214 28% 82%) for web-app (80% for admin) to improve legibility on light panels while keeping existing look. No layout changes. Lint: admin-app and web-app pass with --max-warnings=0.\n
 - Phase E1 kickoff: added optional bundle analyzer to web/admin Next configs (ANALYZE=true) and new analyze scripts; installed @next/bundle-analyzer at workspace root. No runtime changes; lint still clean for both apps.\n
+
+## 2026-02-18 — Phase E2a safeLocalStorage helper
+
+- Added SSR-safe ""safeLocalStorage"" utility with TTL, try/catch, and availability probe in both apps (pps/web-app/src/utils/safeLocalStorage.ts, pps/admin-app/src/utils/safeLocalStorage.ts) to prevent window/Quota errors and centralize key handling. No functional usage yet—helper is ready for future adoption.
+- Updated MANIFESTO_ROADMAP to track E2a task under Phase E.
+
