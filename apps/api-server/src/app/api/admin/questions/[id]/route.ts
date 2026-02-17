@@ -66,8 +66,10 @@ export async function PATCH(_req: NextRequest, { params }: { params: Promise<{ i
     try {
         const rawBody = await _req.json() as Partial<CreateQuestionInput>;
         const parsed = questionSchema.partial().safeParse(rawBody);
-        const body = parsed.success ? parsed.data : rawBody;
-        const result = await AdminEngine.updateQuestion(id, body, auth.userId!);
+        if (!parsed.success) {
+          return NextResponse.json({ _error: 'Invalid payload', issues: parsed.error.issues }, { status: 400 });
+        }
+        const result = await AdminEngine.updateQuestion(id, parsed.data, auth.userId!);
         return NextResponse.json(result);
     } catch (_error: unknown) {
         const message = _error instanceof Error ? _error.message : 'Internal Server Error';

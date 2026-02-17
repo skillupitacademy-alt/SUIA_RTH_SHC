@@ -40,11 +40,10 @@ export async function POST(_req: NextRequest) {
 
     const rawBody = await _req.json();
     const parsed = domainSchema.safeParse(rawBody);
-    const body = parsed.success ? parsed.data : (rawBody as Partial<typeof domainSchema['_input']>);
-
-    if (typeof body.name !== 'string' || body.name.trim() === '') {
-      return NextResponse.json({ _error: 'name is required' }, { status: 400 });
+    if (!parsed.success) {
+      return NextResponse.json({ _error: 'Invalid payload', issues: parsed.error.issues }, { status: 400 });
     }
+    const body = parsed.data;
 
     const createBody: DomainInsert = {
       name: body.name,

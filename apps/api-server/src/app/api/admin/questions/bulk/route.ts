@@ -32,11 +32,10 @@ export async function POST(_req: NextRequest) {
 
     const rawBody = await _req.json() as BulkQuestionBody;
     const parsed = bulkQuestionSchema.safeParse(rawBody);
-    const { topicId, subtopicId, skillId, skillIds, questions } = parsed.success ? parsed.data : rawBody;
-
-    if (topicId === null || topicId === undefined || topicId.trim() === '' || !Array.isArray(questions)) {
-        return NextResponse.json({ _error: 'Missing required fields: topicId and questions array' }, { status: 400 });
+    if (!parsed.success) {
+        return NextResponse.json({ _error: 'Invalid payload', issues: parsed.error.issues }, { status: 400 });
     }
+    const { topicId, subtopicId, skillId, skillIds, questions } = parsed.data;
 
     const result = await AdminEngine.bulkCreateQuestionsWithContext(
         questions, 

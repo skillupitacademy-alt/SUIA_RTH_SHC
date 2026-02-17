@@ -76,3 +76,18 @@ export const updateUserSchema = z.object({
   isBlocked: z.boolean().optional(),
 });
 export type UpdateUserInput = z.infer<typeof updateUserSchema>;
+
+export const idArraySchema = z.object({
+  ids: z.array(uuid).min(1),
+});
+export type IdArrayInput = z.infer<typeof idArraySchema>;
+
+export const publishSchema = z.object({
+  id: uuid,
+});
+export type PublishInput = z.infer<typeof publishSchema>;
+
+export const validateTopicSchema = z.object({
+  topicId: uuid,
+});
+export type ValidateTopicInput = z.infer<typeof validateTopicSchema>;

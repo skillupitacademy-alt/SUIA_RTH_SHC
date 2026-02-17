@@ -11,15 +11,10 @@ export async function POST(_req: NextRequest) {
   try {
     const rawBody = await _req.json();
     const parsed = signupSchema.safeParse(rawBody);
-    const { email, password, name } = parsed.success ? parsed.data : (rawBody as Partial<typeof signupSchema['_input']>);
-
-    if (
-      email === undefined || email === null || email === '' || email.trim() === '' || 
-      password === undefined || password === null || password === '' || password.trim() === '' || 
-      name === undefined || name === null || name === '' || name.trim() === ''
-    ) {
-      return NextResponse.json({ _error: 'Missing fields' }, { status: 400 });
+    if (!parsed.success) {
+      return NextResponse.json({ _error: 'Invalid payload', issues: parsed.error.issues }, { status: 400 });
     }
+    const { email, password, name } = parsed.data;
 
     const _user = await AuthService.signup(email, password, name);
 

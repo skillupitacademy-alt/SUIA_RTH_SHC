@@ -17,7 +17,10 @@ export async function POST(_req: NextRequest) {
     const _payload = await TokenService.verifyAccessToken(_token, false);
     const rawBody = await _req.json();
     const parsed = startQuizSchema.safeParse(rawBody);
-    const body = parsed.success ? parsed.data : (rawBody as Partial<typeof startQuizSchema['_input']>);
+    if (!parsed.success) {
+      return NextResponse.json({ _error: 'Invalid payload', issues: parsed.error.issues }, { status: 400 });
+    }
+    const body = parsed.data;
     const { domainId, blueprintId, ...config } = body;
     const targetId = blueprintId ?? domainId;
     const idempotencyKey = _req.headers.get('idempotency-key') ?? _req.headers.get('Idempotency-Key');

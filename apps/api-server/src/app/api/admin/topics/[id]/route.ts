@@ -20,7 +20,10 @@ export async function PATCH(
 
     const rawBody = await _req.json();
     const parsed = topicSchema.partial().safeParse(rawBody);
-    const body = parsed.success ? parsed.data : (rawBody as Partial<typeof topicSchema['_input']>);
+    if (!parsed.success) {
+      return NextResponse.json({ _error: 'Invalid payload', issues: parsed.error.issues }, { status: 400 });
+    }
+    const body = parsed.data;
     const result = await AdminEngine.updateTopic(id, body, _payload.userId);
     
     return NextResponse.json(result);

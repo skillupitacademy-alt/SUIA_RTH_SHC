@@ -24,11 +24,10 @@ export async function POST(_req: NextRequest) {
   try {
     const rawBody = await _req.json();
     const parsed = resetPasswordSchema.safeParse(rawBody);
-    const { token, password } = parsed.success ? parsed.data : (rawBody as Partial<typeof resetPasswordSchema['_input']>);
-    
-    if (typeof token !== 'string' || token.trim() === '' || typeof password !== 'string' || password.trim() === '' || password.length < 8) {
-        return NextResponse.json({ _error: 'Invalid _request data' }, { status: 400 });
+    if (!parsed.success) {
+        return NextResponse.json({ _error: 'Invalid payload', issues: parsed.error.issues }, { status: 400 });
     }
+    const { token, password } = parsed.data;
 
     const ip = _req.headers.get('x-forwarded-for') ?? '0.0.0.0';
     await AuthService.resetPassword(token, password, ip);

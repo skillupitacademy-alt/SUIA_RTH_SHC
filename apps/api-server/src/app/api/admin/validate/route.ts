@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 export const dynamic = 'force-dynamic';
 import { AdminEngine } from '@/modules/admin-engine/admin.engine';
 import { TokenService } from '@/modules/auth/token.service';
+import { validateTopicSchema } from '@/schemas/admin.schemas';
 
 type ValidateBody = { topicId: string };
 
@@ -22,7 +23,12 @@ export async function POST(_req: NextRequest) {
   if (admin === null || admin === undefined) return NextResponse.json({ _error: 'Admin access required' }, { status: 403 });
 
   try {
-    const { topicId } = await _req.json() as ValidateBody;
+    const rawBody = await _req.json() as ValidateBody;
+    const parsed = validateTopicSchema.safeParse(rawBody);
+    if (!parsed.success) {
+      return NextResponse.json({ _error: 'Invalid payload', issues: parsed.error.issues }, { status: 400 });
+    }
+    const { topicId } = parsed.data;
     const result = await AdminEngine.validateTopic(topicId);
     return NextResponse.json(result);
   } catch (_error: unknown) {

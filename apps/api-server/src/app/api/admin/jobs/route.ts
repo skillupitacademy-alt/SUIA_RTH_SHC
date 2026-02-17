@@ -46,7 +46,10 @@ export async function POST(_req: NextRequest) {
     const _payload = await TokenService.verifyAccessToken(_token, true);
     const rawBody = await _req.json();
     const parsed = jobSchema.safeParse(rawBody);
-    const _body = parsed.success ? parsed.data : (rawBody as { type?: string; payload?: Record<string, unknown> });
+    if (!parsed.success) {
+      return NextResponse.json({ _error: 'Invalid payload', issues: parsed.error.issues }, { status: 400 });
+    }
+    const _body = parsed.data;
     const _type = _body.type?.trim();
 
     if (_type === undefined || _type === null || _type === '') {

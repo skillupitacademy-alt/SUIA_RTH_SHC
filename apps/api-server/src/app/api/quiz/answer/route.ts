@@ -17,12 +17,11 @@ export async function POST(_req: NextRequest) {
     const _payload = await TokenService.verifyAccessToken(_token, false);
     const rawBody = await _req.json();
     const parsed = answerSchema.safeParse(rawBody);
-    const body = parsed.success ? parsed.data : (rawBody as Partial<typeof answerSchema['_input']>);
-    
-    if (typeof body.examId !== 'string' || typeof body.questionId !== 'string' || typeof body.answer !== 'string') {
-      return NextResponse.json({ _error: 'Invalid payload' }, { status: 400 });
+    if (!parsed.success) {
+      return NextResponse.json({ _error: 'Invalid payload', issues: parsed.error.issues }, { status: 400 });
     }
-
+    const body = parsed.data;
+    
     const idempotencyKey = _req.headers.get('idempotency-key') ?? _req.headers.get('Idempotency-Key');
 
     await ExamEngine.submitAnswer(

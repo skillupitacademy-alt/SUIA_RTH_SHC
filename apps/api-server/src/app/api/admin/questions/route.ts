@@ -56,13 +56,11 @@ export async function POST(_req: NextRequest) {
 
     const body = await _req.json() as CreateQuestionInput;
     const parsed = questionSchema.safeParse(body);
-    const input = parsed.success ? parsed.data : body;
-
-    if (typeof input.topicId !== 'string' || typeof input.questionText !== 'string' || !Array.isArray(input.options)) {
-      return NextResponse.json({ _error: 'topicId, questionText and options are required' }, { status: 400 });
+    if (!parsed.success) {
+      return NextResponse.json({ _error: 'Invalid payload', issues: parsed.error.issues }, { status: 400 });
     }
 
-    const result = await AdminEngine.createQuestion(input, _payload.userId);
+    const result = await AdminEngine.createQuestion(parsed.data, _payload.userId);
     
     return NextResponse.json(result);
   } catch (_error: unknown) {

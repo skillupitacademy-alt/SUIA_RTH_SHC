@@ -48,14 +48,12 @@ export async function POST(_req: NextRequest) {
     try {
         const rawBody = await _req.json() as BlueprintInsert;
         const parsed = blueprintSchema.safeParse(rawBody);
-        const body = parsed.success ? parsed.data : rawBody;
-
-        if (typeof body.name !== 'string' || body.name.trim() === '') {
-            return NextResponse.json({ _error: 'name is required' }, { status: 400 });
+        if (!parsed.success) {
+            return NextResponse.json({ _error: 'Invalid payload', issues: parsed.error.issues }, { status: 400 });
         }
 
         // AdminEngine.createBlueprint(data) - only 1 arg
-        const result = await AdminEngine.createBlueprint(body);
+        const result = await AdminEngine.createBlueprint(parsed.data);
         return NextResponse.json(result);
     } catch (_error: unknown) {
         const message = _error instanceof Error ? _error.message : 'Internal Server Error';

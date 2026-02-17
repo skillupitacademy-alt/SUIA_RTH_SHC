@@ -11,11 +11,10 @@ export async function POST(req: NextRequest) {
   try {
     const rawBody = await req.json();
     const parsed = loginSchema.safeParse(rawBody);
-    const { email, password } = parsed.success ? parsed.data : (rawBody as Partial<typeof loginSchema['_input']>);
-
-    if (email === undefined || email === null || email === '' || password === undefined || password === null || password === '') {
-      return NextResponse.json({ _error: 'Credentials required' }, { status: 400 });
+    if (!parsed.success) {
+      return NextResponse.json({ _error: 'Invalid payload', issues: parsed.error.issues }, { status: 400 });
     }
+    const { email, password } = parsed.data;
 
     const { _user, accessToken, refreshToken, isAdmin } = await AuthService.login(email, password);
 

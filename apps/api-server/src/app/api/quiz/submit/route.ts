@@ -21,12 +21,11 @@ export async function POST(_req: NextRequest) {
     const _payload = await TokenService.verifyAccessToken(_token, false);
     const rawBody = await _req.json();
     const parsed = submitSchema.safeParse(rawBody);
-    const { examId } = parsed.success ? parsed.data : (rawBody as Partial<typeof submitSchema['_input']>);
-    const idempotencyKey = _req.headers.get('idempotency-key') ?? undefined;
-
-    if (typeof examId !== 'string') {
-        return NextResponse.json({ _error: 'Invalid payload' }, { status: 400 });
+    if (!parsed.success) {
+      return NextResponse.json({ _error: 'Invalid payload', issues: parsed.error.issues }, { status: 400 });
     }
+    const { examId } = parsed.data;
+    const idempotencyKey = _req.headers.get('idempotency-key') ?? undefined;
     
     // Step 5 Hardening: Pass idempotency key for safe retries
     const result = await ExamEngine.completeExam(examId, _payload.userId, idempotencyKey);

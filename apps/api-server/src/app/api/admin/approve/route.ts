@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 
 import { AdminEngine } from '@/modules/admin-engine/admin.engine';
 import { TokenService } from '@/modules/auth/token.service';
+import { publishSchema } from '@/schemas/admin.schemas';
 
 export const dynamic = 'force-dynamic';
 
@@ -27,7 +28,12 @@ export async function POST(_req: NextRequest) {
     if (auth._error !== undefined) return NextResponse.json({ _error: auth._error, scope: auth.scope }, { status: auth.status });
 
     try {
-        const body = await _req.json() as ApproveBody;
+        const rawBody = await _req.json() as ApproveBody;
+        const parsed = publishSchema.safeParse(rawBody);
+        if (!parsed.success) {
+            return NextResponse.json({ _error: 'Invalid payload', issues: parsed.error.issues }, { status: 400 });
+        }
+        const body = parsed.data;
         // AdminEngine has publishQuestion, but not approveQuestion. 
         // Mapping both to publishQuestion as they serve the same intent (activating content)
         const result = await AdminEngine.publishQuestion(body.id, auth.userId!);
