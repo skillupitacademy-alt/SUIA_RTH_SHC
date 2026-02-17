@@ -209,3 +209,7 @@
 
 - Consolidated all Phase C work on parent branch `manifesto/phase-c-parent`; created new parent branch `manifesto/phase-d-parent` to continue next roadmap initiatives without merging to main yet.
 - No code changes in this step; purely branch/coordination to keep phases isolated and auditable.
+
+## 2026-02-18 — Phase D3 (prefers-reduced-motion baseline)
+
+- Added `prefers-reduced-motion: reduce` safeguards to global styles in both apps (`apps/web-app/src/app/globals.css`, `apps/admin-app/src/app/globals.css`), forcing minimal animation/transition durations and disabling smooth scroll when users request reduced motion. Purely additive; no runtime logic change.
