@@ -110,3 +110,10 @@
 - Integrated `safeParse` + minimal required-field checks into admin routes: questions (create/update/bulk), blueprints (create), jobs (create), and users (update). Behavior preserved; only malformed payloads get 400s.
 - Verification: `pnpm lint:all`, `pnpm typecheck:all`, `pnpm build:all` all pass after these changes (no warnings).
 - Next: finalize Phase A3 by covering remaining admin endpoints (if any edge routes left), then plan soft→strict transition once logs show zero mismatches.
+
+## 2026-02-18 — Phase A3d soft validation wrap-up (batch-delete / approve / publish / validate)
+
+- Extended `admin.schemas.ts` with shared shapes for id arrays, publish payloads, and topic validation; applied `safeParse` guards to remaining admin endpoints: `questions/batch-delete`, `approve`, `publish`, and `validate`.
+- All admin edges now use Zod soft validation; malformed payloads respond 400 without changing runtime behavior.
+- Quality gates re-run and green: `pnpm lint:all`, `pnpm typecheck:all`, `pnpm build:all`.
+- Ready for Phase A3 strictening: switch `safeParse`→`parse` after short log burn-in if no mismatches observed.
