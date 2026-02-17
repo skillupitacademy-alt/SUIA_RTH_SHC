@@ -1,6 +1,7 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
+import { logger } from '@/lib/logger';
 import { AuthService } from '@/modules/auth/auth.service';
 import { resetPasswordSchema } from '@/schemas/auth.schemas';
 
@@ -34,7 +35,7 @@ export async function POST(_req: NextRequest) {
 
     return NextResponse.json({ success: true });
   } catch (_error: unknown) {
-    console.error('ResetPassword.Error:', _error);
+    logger.error({ err: _error }, 'ResetPassword.Error');
     const message = _error instanceof Error ? _error.message : 'Error resetting password';
     return NextResponse.json({ _error: message }, { status: 400 });
   }

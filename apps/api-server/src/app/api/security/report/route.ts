@@ -2,6 +2,8 @@ import fs from 'fs';
 import { type NextRequest, NextResponse } from 'next/server';
 import path from 'path';
 
+import { logger } from '@/lib/logger';
+
 /**
  * SECURITY SINK: CSP Reporting Endpoint
  * Handles standard JSON reports from browsers regarding Content Security Policy violations.
@@ -55,12 +57,17 @@ export async function POST(req: NextRequest) {
 
     fs.appendFileSync(logFile, logEntry + '\n');
 
-    // 4. Trace to console for real-time monitoring in dev/prod logs
-    console.warn(`[CSP-AUDIT] Violation at ${report['document-uri']} | Blocked: ${report['blocked-uri']}`);
+    // 4. Trace to logger for real-time monitoring (no bodies/headers)
+    logger.warn({
+      route: '/api/security/report',
+      method: req.method,
+      documentUri: report['document-uri'],
+      blockedUri: report['blocked-uri'],
+    }, '[CSP-AUDIT] Violation');
 
     return new NextResponse(null, { status: 204 }); // Standard success for reporting endpoints
   } catch (err) {
-    console.error('[CSP-AUDIT] Error processing report:', err);
+    logger.error({ err, route: '/api/security/report', method: 'POST' }, '[CSP-AUDIT] Error processing report');
     return new NextResponse(null, { status: 500 });
   }
 }

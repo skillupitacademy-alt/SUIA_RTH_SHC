@@ -1,14 +1,16 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
+import { logger } from '@/lib/logger';
+
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
+    await req.json();
     
-    // Log telemetry but don't block
-    console.log('[TELEMETRY] Captured:', body);
+    // Minimal telemetry log (redacted body)
+    logger.info({ route: '/api/telemetry', method: 'POST' }, '[TELEMETRY] Captured');
     
     return NextResponse.json({ received: true });
   } catch {
