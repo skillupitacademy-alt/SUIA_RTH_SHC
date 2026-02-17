@@ -128,3 +128,10 @@
 
 - Created `manifesto/phase-a-parent` to anchor all Phase A work (A1–A3 strict) before moving on.
 - Created and switched to `manifesto/phase-b-parent` as the base for Phase B tasks (CI/CD & hooks). Working tree clean and includes all Phase A commits; prior quality gates are green.
+
+## 2026-02-18 — Phase B1 pre-commit hooks (husky + lint-staged)
+
+- Added dev deps `husky` and `lint-staged`; initialized `.husky/pre-commit` to run `pnpm lint-staged`.
+- Configured `lint-staged` in `package.json` to auto-run `eslint --max-warnings=0 --fix` on staged `apps/**/*.{ts,tsx,js,jsx}` and `packages/**/*.{ts,tsx,js,jsx}`.
+- Build warnings from Turbo about missing outputs cleared by setting `build.outputs` to `[]` in `turbo.json` (disables output caching, no runtime impact).
+- Verification post-setup: `pnpm lint:all`, `pnpm typecheck:all`, `pnpm build:all` all pass.
