@@ -96,3 +96,10 @@
 - Wired schemas into corresponding route handlers with lightweight guards for missing/invalid fields, preserving existing auth/ExamEngine flows and idempotency headers.
 - Re-ran full quality gates: `pnpm lint:all`, `pnpm typecheck:all`, `pnpm build:all` all green post-change (no new warnings/errors).
 - Next steps for Phase A3: extend Zod validation to remaining admin CRUD routes and progressively tighten from soft to strict once logs show zero mismatches.
+
+## 2026-02-18 — Phase A3b soft validation for admin hierarchy routes
+
+- Created `apps/api-server/src/schemas/hierarchy.schemas.ts` covering domains, subjects, topics, subtopics, and skills (UUID/id validation, required names, optional status/category/mappingType/weights).
+- Wired soft `safeParse` + guard checks into admin CRUD routes for hierarchy entities (create/update of domains, subjects, topics, subtopics, skills) while keeping runtime behavior intact; minimal 400 responses on missing required fields only.
+- All quality gates remain green after changes: `pnpm lint:all`, `pnpm typecheck:all`, `pnpm build:all`.
+- Next A3 step: apply the same soft Zod validation to admin questions, blueprints, jobs, users before moving to strict enforcement phase.
