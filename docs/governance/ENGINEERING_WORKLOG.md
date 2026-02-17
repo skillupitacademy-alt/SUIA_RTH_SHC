@@ -329,3 +329,10 @@
 - Lint @quiz/api-server with --max-warnings=0 passes after autofix.
 - Remaining F2c scope: questions routes/bulk/batch, metrics/logs/publish, users/sessions/trends, hierarchy atomic, subjects/users id, domains batch-delete, etc.
 
+
+## 2026-02-18 — Phase F2c console → Pino (batch7 questions core)
+
+- Migrated admin questions routes to Pino child loggers: list/create, get/patch/delete by id, bulk create, batch delete. Structured error-only logs; no headers/bodies recorded. Added warning → structured warn for forbidden admin role.
+- Lint @quiz/api-server with --max-warnings=0 passes after autofix.
+- Remaining F2c scope: users routes, subjects/id + batch-delete, domains batch-delete, hierarchy atomic, logs/metrics/publish, sessions live, system usage, trends metrics, etc.
+

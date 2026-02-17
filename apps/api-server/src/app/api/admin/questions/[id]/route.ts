@@ -3,12 +3,15 @@ import { eq } from 'drizzle-orm';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
+import { logger } from '@/lib/logger';
 import type { CreateQuestionInput } from '@/modules/admin-engine/admin.engine';
 import { AdminEngine } from '@/modules/admin-engine/admin.engine';
 import { TokenService } from '@/modules/auth/token.service';
 import { questionSchema } from '@/schemas/admin.schemas';
 
 export const dynamic = 'force-dynamic';
+
+const log = logger.child({ module: 'admin:questions:id' });
 
 async function _verifyAdmin(_req: NextRequest) {
     const _token = TokenService.getAccessToken(_req, { scope: 'admin' });
@@ -53,7 +56,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
         return NextResponse.json(question);
     } catch (_error: unknown) {
         const message = _error instanceof Error ? _error.message : 'Internal Server Error';
-        console.error('[ADMIN_QUESTION_GET] Error:', message);
+        log.error({ id, error: message }, 'ADMIN_QUESTION_GET failed');
         return NextResponse.json({ _error: message }, { status: 500 });
     }
 }
@@ -73,7 +76,7 @@ export async function PATCH(_req: NextRequest, { params }: { params: Promise<{ i
         return NextResponse.json(result);
     } catch (_error: unknown) {
         const message = _error instanceof Error ? _error.message : 'Internal Server Error';
-        console.error('[ADMIN_QUESTION_PATCH] Error:', message);
+        log.error({ id, error: message }, 'ADMIN_QUESTION_PATCH failed');
         return NextResponse.json({ _error: message }, { status: 500 });
     }
 }
@@ -88,7 +91,7 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
         return NextResponse.json(result);
     } catch (_error: unknown) {
         const message = _error instanceof Error ? _error.message : 'Internal Server Error';
-        console.error('[ADMIN_QUESTION_DELETE] Error:', message);
+        log.error({ id, error: message }, 'ADMIN_QUESTION_DELETE failed');
         return NextResponse.json({ _error: message }, { status: 500 });
     }
 }

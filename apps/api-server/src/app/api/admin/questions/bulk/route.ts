@@ -1,6 +1,7 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
+import { logger } from '@/lib/logger';
 import type { CreateQuestionInput } from '@/modules/admin-engine/admin.engine';
 import { AdminEngine } from '@/modules/admin-engine/admin.engine';
 import { _verifyAdmin } from '@/modules/auth/rbac.service';
@@ -16,6 +17,8 @@ type BulkQuestionBody = {
   skillIds?: string[];
   questions: CreateQuestionInput[];
 };
+
+const log = logger.child({ module: 'admin:questions:bulk' });
 
 export async function POST(_req: NextRequest) {
   try {
@@ -50,7 +53,7 @@ export async function POST(_req: NextRequest) {
     });
   } catch (_error: unknown) {
     const message = _error instanceof Error ? _error.message : 'Internal Server Error';
-    console.error('[ADMIN_QUESTIONS_BULK] Error:', message);
+    log.error({ error: message }, 'ADMIN_QUESTIONS_BULK failed');
     return NextResponse.json({ _error: message }, { status: 500 });
   }
 }
