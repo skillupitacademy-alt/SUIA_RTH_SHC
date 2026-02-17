@@ -1,10 +1,13 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
+import { logger } from '@/lib/logger';
 import { AdminEngine } from '@/modules/admin-engine/admin.engine';
 import { _verifyAdmin } from '@/modules/auth/rbac.service';
 import { TokenService } from '@/modules/auth/token.service';
 import { topicSchema } from '@/schemas/hierarchy.schemas';
+
+const log = logger.child({ module: 'admin:topics:id' });
 
 export async function PATCH(
   _req: NextRequest,
@@ -29,7 +32,7 @@ export async function PATCH(
     return NextResponse.json(result);
   } catch (_error: unknown) {
     const message = _error instanceof Error ? _error.message : 'Internal Server Error';
-    console.error('[ADMIN_TOPIC_PATCH] Error:', message);
+    log.error({ id: (await params).id, error: message }, 'ADMIN_TOPIC_PATCH failed');
     return NextResponse.json({ _error: message }, { status: 500 });
   }
 }
@@ -54,7 +57,7 @@ export async function DELETE(
     return NextResponse.json(result);
   } catch (_error: unknown) {
     const message = _error instanceof Error ? _error.message : 'Internal Server Error';
-    console.error('[ADMIN_TOPIC_DELETE] Error:', message);
+    log.error({ id: (await params).id, error: message }, 'ADMIN_TOPIC_DELETE failed');
     return NextResponse.json({ _error: message }, { status: 500 });
   }
 }

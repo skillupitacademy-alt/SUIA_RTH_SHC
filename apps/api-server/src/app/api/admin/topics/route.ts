@@ -1,6 +1,7 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
+import { logger } from '@/lib/logger';
 import type { TopicInsert } from '@/modules/admin-engine/admin.engine';
 import { AdminEngine } from '@/modules/admin-engine/admin.engine';
 import { _verifyAdmin } from '@/modules/auth/rbac.service';
@@ -8,6 +9,8 @@ import { TokenService } from '@/modules/auth/token.service';
 import { topicSchema } from '@/schemas/hierarchy.schemas';
 
 export const dynamic = 'force-dynamic';
+
+const log = logger.child({ module: 'admin:topics' });
 
 export async function GET(_req: NextRequest) {
   try {
@@ -27,7 +30,7 @@ export async function GET(_req: NextRequest) {
     return NextResponse.json(data);
   } catch (_error: unknown) {
     const message = _error instanceof Error ? _error.message : 'Internal Server Error';
-    console.error('[ADMIN_TOPICS_GET] Error:', message);
+    log.error({ error: message }, 'ADMIN_TOPICS_GET failed');
     return NextResponse.json({ _error: message }, { status: 500 });
   }
 }
@@ -66,7 +69,7 @@ export async function POST(_req: NextRequest) {
     return NextResponse.json(result);
   } catch (_error: unknown) {
     const message = _error instanceof Error ? _error.message : 'Internal Server Error';
-    console.error('[ADMIN_TOPICS_POST] Error:', message);
+    log.error({ error: message }, 'ADMIN_TOPICS_POST failed');
     return NextResponse.json({ _error: message }, { status: 500 });
   }
 }
