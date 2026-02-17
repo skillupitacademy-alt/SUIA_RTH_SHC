@@ -195,3 +195,7 @@
 
 - Added realistic, data-backed assertions to the remaining skipped suites: `admin-auth.service`, `rbac.service`, `rate-limit.middleware`, `selection.service`, `quiz.engine`, and `report.engine`. Each test now validates expected inputs/outputs using in-memory fixtures (tokens, blueprints, rate-limit headers, score breakdowns) aligned with testing guides, while keeping `describe.skip` to defer execution.
 - No production data or DB changes; tests remain isolated/mocked so CI stays green until we intentionally un-skip in later phases.
+
+## 2026-02-18 — Phase C2 coverage audit (prep for C3 enablement)
+
+- Reviewed remaining Tier-1/api suites (`job-orchestrator`, `forecast.service`) and verified mocks/fixtures already align with alias setup; no code changes required before future un-skipping/runs. All newly fleshed Tier-1 suites remain skipped per plan; execution will stay deferred until we explicitly enable them in Phase C3.
