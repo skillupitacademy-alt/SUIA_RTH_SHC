@@ -82,3 +82,10 @@
 - Cleared locked `.next` artifacts with user assistance; reran builds successfully. `pnpm build:all` now passes for web-app, admin-app, and api-server (only Next middleware deprecation warnings remain).
 - Final admin-app fixes: normalized `ServiceHealth` metrics usage and mapped `QuestionTable` API results to typed view model.
 - Reminder: do not delete project files without explicit approval (except `.next` cleanup when requested).
+
+## 2026-02-17 — Phase A2.4 middleware → proxy migration & checkpoint
+
+- Addressed Next.js middleware deprecation warning by renaming `middleware.ts` to `proxy.ts` in all apps (`apps/web-app`, `apps/admin-app`, `apps/api-server`) and exporting default `proxy` handlers; kept existing logic intact (auth checks, CORS/CSRF/rate-limit, dashboard gating).
+- Restored lint strictness (`--max-warnings=0`) while keeping shared config dependencies (`@quiz/eslint-config`, `@types/bcryptjs`) at the root for consistent tooling.
+- Verification: `pnpm lint:all`, `pnpm typecheck:all`, and `pnpm build:all` all pass after the proxy migration (Turbo cache hits on builds; no lingering warnings).
+- Governance reminder: no file deletions without explicit approval; renames performed with prior user approval for the proxy change.
