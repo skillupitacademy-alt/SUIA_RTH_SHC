@@ -1,6 +1,7 @@
 import { db, examBlueprints, questions, subjects,subtopics, topics } from "@quiz/db";
 import { and, eq, inArray, or, sql } from "drizzle-orm";
 
+import { logger } from "@/lib/logger";
 import { cacheService } from "@/modules/core/cache.service";
 
 
@@ -196,7 +197,7 @@ export class ExamBlueprintService {
       const cached = await cacheService.get<{ simple: number; intermediate: number; expert: number; total: number; isReady: boolean }>(cacheKey);
       if (cached) return cached;
     } catch (e) {
-      console.warn('[Blueprint] Cache lookup failed, falling back to DB', e);
+      logger.warn({ err: e }, '[Blueprint] Cache lookup failed, falling back to DB');
     }
 
     const { domainId, subjectIds, topicIds, subtopicIds } = filters;
@@ -223,7 +224,7 @@ export class ExamBlueprintService {
     try {
       await cacheService.set(cacheKey, counts, 1000 * 60 * 5); // 5 minute TTL
     } catch (e) {
-      console.warn('[Blueprint] Cache storage failed', e);
+      logger.warn({ err: e }, '[Blueprint] Cache storage failed');
     }
 
     return counts;

@@ -1,6 +1,8 @@
 import { Redis } from '@upstash/redis';
 import { LRUCache } from 'lru-cache';
 
+import { logger } from '@/lib/logger';
+
 interface _CacheOptions {
   ttl?: number;
   maxSize?: number;
@@ -36,9 +38,9 @@ export class CacheService {
           url: redisUrl,
           token: redisToken,
         });
-        // console.log('[Cache] Edge-compatible Redis provider initialized (Upstash)');
+        // logger.debug('[Cache] Edge-compatible Redis provider initialized (Upstash)');
       } catch (e) {
-        console.error('[Cache] Failed to initialize Redis provider:', e);
+        logger.error({ err: e }, '[Cache] Failed to initialize Redis provider');
       }
     }
   }
@@ -58,7 +60,7 @@ export class CacheService {
 
     // Circuit Breaker: Skip if in cooldown
     if (Date.now() < this.redisDeadUntil) {
-      if (this.isDebug) { /* console.log('[Cache] Redis in cooldown, skipping...'); */ }
+      if (this.isDebug) { /* logger.debug('[Cache] Redis in cooldown, skipping...'); */ }
       return fallback;
     }
 
@@ -69,17 +71,15 @@ export class CacheService {
     try {
       return await Promise.race([promise, timeout]);
     } catch (e: unknown) {
-      const errorMessage = e instanceof Error ? e.message : String(e);
-      console.error(`[Cache] Redis operation failed or timed out. Entering ${REDIS_COOLDOWN_MS / 1000}s cooldown:`, errorMessage);
+      logger.error({ err: e, cooldownSeconds: REDIS_COOLDOWN_MS / 1000 }, '[Cache] Redis operation failed or timed out; entering cooldown');
       this.redisDeadUntil = Date.now() + REDIS_COOLDOWN_MS;
       return fallback;
     }
   }
 
-  private debug(op: string, key: string, data?: unknown) {
+  private debug(op: string, key: string) {
     if (this.isDebug) {
-      // eslint-disable-next-line no-console
-      console.log(`[Cache] [${op}]: ${key}`, data !== undefined ? data : '');
+      logger.debug({ op, key }, '[Cache] debug');
     }
   }
 
@@ -120,7 +120,7 @@ export class CacheService {
 
       return null;
     } catch (_error) {
-      console.error(`[Cache] Error retrieving key ${key}:`, _error);
+      logger.error({ err: _error, key }, '[Cache] Error retrieving key');
       return null;
     }
   }
@@ -139,7 +139,7 @@ export class CacheService {
         await this.withTimeout(setPromise, null);
       }
     } catch (_error) {
-      console.error(`[Cache] Error setting key ${key}:`, _error);
+      logger.error({ err: _error, key }, '[Cache] Error setting key');
     }
   }
 
@@ -154,7 +154,7 @@ export class CacheService {
         await this.withTimeout(this.redis.del(key), null);
       }
     } catch (_error) {
-      console.error(`[Cache] Error deleting key ${key}:`, _error);
+      logger.error({ err: _error, key }, '[Cache] Error deleting key');
     }
   }
 
@@ -169,7 +169,7 @@ export class CacheService {
         }
       }
     } catch (_error) {
-      console.error(`[Cache] Error deleting prefix ${prefix}:`, _error);
+      logger.error({ err: _error, prefix }, '[Cache] Error deleting prefix');
     }
   }
 
@@ -215,7 +215,7 @@ export class CacheService {
 
       return { count, ttlRem: ttlRemSeconds };
     } catch (_error) {
-      console.error(`[Cache] Error incrementing key ${key}:`, _error);
+      logger.error({ err: _error, key }, '[Cache] Error incrementing key');
       return { count: 1, ttlRem: 60 };
     }
   }
@@ -260,7 +260,7 @@ export class CacheService {
         memoryBytes,
       };
     } catch (_error) {
-      console.error('[Cache] Error getting Redis usage:', _error);
+      logger.error({ err: _error }, '[Cache] Error getting Redis usage');
       // Return a safer fallback that doesn't just say "Error" if we can help it
       return { configured: true, keys: 0, memory: 'Unavailable', memoryBytes: 0 };
     }

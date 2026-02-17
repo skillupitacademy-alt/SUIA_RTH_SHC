@@ -262,3 +262,4 @@
 - Next phase prep: queued Phase F1 (Pino structured logging) as the next executable task after performance items; no code changes yet—will add Pino config and transport wiring when approved to start.\n
 - Phase F1 kickoff: installed Pino deps (pino, pino-http, pino-pretty) for @quiz/api-server in prep for structured logging wiring. No code changes yet.\n
 - Phase F1: added production-safe Pino logging for api-server. Created shared logger (warn default in prod, pretty in dev), request-scoped withLogging wrapper that reuses/generates x-request-id, logs only warn/error with route/method/status/duration (no bodies/headers/tokens), and example usage in app/api/health/route.ts. Avoids pino-http/Express, compatible with Next App Router on Vercel.\n
+- Phase F2 (partial): replaced console logs with Pino logger in core services (session.service, ExamBlueprintService, cache.service); lint clean. Remaining route-level console logs queued for next F2 sweep.\n

@@ -1,6 +1,8 @@
 import type { examBlueprints } from '@quiz/db';
 import { db, exams } from '@quiz/db';
-import { and,eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
+
+import { logger } from '@/lib/logger';
 
 import { cacheService } from '../core/cache.service';
 import { ScoringEngine } from '../scoring-engine/scoring.engine';
@@ -17,7 +19,7 @@ export class SessionService {
     try {
       exam = await cacheService.get(cacheKey) as typeof exam;
     } catch (e) {
-      console.warn('[Session] Cache lookup failed', e);
+      logger.warn({ err: e }, '[Session] Cache lookup failed');
     }
 
     if (exam === null || exam === undefined) {
@@ -32,7 +34,7 @@ export class SessionService {
         try {
           await cacheService.set(cacheKey, exam, 1000 * 60 * 2); // 2 min TTL for active session meta
         } catch (e) {
-          console.warn('[Session] Cache storage failed', e);
+          logger.warn({ err: e }, '[Session] Cache storage failed');
         }
       }
     }
@@ -59,7 +61,7 @@ export class SessionService {
         .where(eq(exams.id, examId));
 
       ScoringEngine.calculateExamResults(examId).catch(_err => {
-        console.error(`[SessionService] Async auto-submit scoring failed for ${examId}:`, _err);
+        logger.error({ err: _err, examId }, '[SessionService] Async auto-submit scoring failed');
       });
 
       // Return the updated status immediately
