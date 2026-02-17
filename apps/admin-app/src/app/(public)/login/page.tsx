@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 import { useAuthStore } from '@/store/auth-store';
+import { clientLogger } from '@/utils/clientLogger';
 
 export default function AdminLoginPage() {
     const router = useRouter();
@@ -36,7 +37,7 @@ export default function AdminLoginPage() {
             login(user);
             router.push('/');
         } catch (err: unknown) {
-            console.error(err);
+            clientLogger.error('Admin login failed', { error: err instanceof Error ? err.message : 'unknown' });
             const message = err instanceof Error ? err.message : 'Authentication failed';
             setError(message);
         } finally {

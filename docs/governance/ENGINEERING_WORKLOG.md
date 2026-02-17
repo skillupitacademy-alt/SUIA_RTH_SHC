@@ -378,3 +378,10 @@
 - Lint @quiz/admin-app with --max-warnings=0 passes.
 - Pending F3 items: swap remaining admin-app console calls (safeLocalStorage warnings, useAdminHierarchy, UserTable, dashboards/questions tables/auth pages) and add web-app clientLogger with critical swaps (exam resume/auth/localStorage backups).
 
+
+## 2026-02-18 — Phase F3 client logging (batch3 admin hooks/auth/storage)
+
+- Converted admin hooks and auth UI to clientLogger (warn/error only): useAdminHierarchy fetch paths, Admin login page errors, and safeLocalStorage warnings. Sanitized messages; no headers/bodies/tokens logged.
+- Lint @quiz/admin-app with --max-warnings=0 passes.
+- Pending F3 items: remaining admin console calls (UserTable, dashboard reports/tables, question tables, forgot/reset pages) and web-app clientLogger + swaps (exam resume/auth/localStorage backups).
+

@@ -4,6 +4,8 @@
 import { apiClient } from '@quiz/api-client';
 import { useEffect, useState } from 'react';
 
+import { clientLogger } from '@/utils/clientLogger';
+
 import { Domain, Skill, Subject, Subtopic, Topic } from '../types/domain';
 
 export function useDomains() {
@@ -16,7 +18,7 @@ export function useDomains() {
             const res = await apiClient.admin.getDomains(1, 100);
             setData(res.data);
         } catch (e) {
-            console.error('Fetch domains failed', e);
+            clientLogger.error('Fetch domains failed', { error: e instanceof Error ? e.message : 'unknown' });
         } finally {
             setLoading(false);
         }
@@ -52,7 +54,7 @@ export function useSubjects(domainId?: string) {
             const res = await apiClient.admin.getSubjects(1, 200, domainId);
             setData(res.data as Subject[]);
         } catch (e) {
-            console.error('Fetch subjects failed', e);
+            clientLogger.error('Fetch subjects failed', { error: e instanceof Error ? e.message : 'unknown' });
         } finally {
             setLoading(false);
         }
@@ -90,7 +92,7 @@ export function useTopics(subjectId?: string) {
             const res = await apiClient.admin.getTopics(1, 500, subjectId);
             setData(res.data as Topic[]);
         } catch (e) {
-            console.error('Fetch topics failed', e);
+            clientLogger.error('Fetch topics failed', { error: e instanceof Error ? e.message : 'unknown' });
         } finally {
             setLoading(false);
         }
@@ -128,7 +130,7 @@ export function useSubtopics(topicId?: string) {
             const res = await apiClient.admin.getSubtopics(1, 1000, topicId);
             setData(res.data as Subtopic[]);
         } catch (e) {
-            console.error('Fetch subtopics failed', e);
+            clientLogger.error('Fetch subtopics failed', { error: e instanceof Error ? e.message : 'unknown' });
         } finally {
             setLoading(false);
         }
@@ -161,7 +163,7 @@ export function useAllSkills() {
             const res = await apiClient.admin.getSkills(1, 2000);
             setData(res.data as Skill[]);
         } catch (e) {
-            console.error('Fetch skills failed', e);
+            clientLogger.error('Fetch skills failed', { error: e instanceof Error ? e.message : 'unknown' });
         } finally {
             setLoading(false);
         }
@@ -186,7 +188,7 @@ export function useTopicSkills(topicId?: string) {
             const res = await apiClient.admin.getTopicSkills(topicId);
             setData(res as Skill[]);
         } catch (e) {
-            console.error('Fetch topic skills failed', e);
+            clientLogger.error('Fetch topic skills failed', { error: e instanceof Error ? e.message : 'unknown' });
         } finally {
             setLoading(false);
         }
