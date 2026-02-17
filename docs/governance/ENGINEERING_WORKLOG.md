@@ -169,3 +169,9 @@
 - Tightened api-server Tier 1 skipped tests with typed mocks/return types to make future assertions drop-in ready while staying skipped.
 - Cleaned skipped Playwright auth specs for admin/web apps to satisfy lint (no floating promises) while keeping them non-executing.
 - CI remains green with execution deferred; ready to un-skip in later C phases when coverage is implemented.
+
+## 2026-02-18 — Phase C2 real test logic (execution still deferred)
+
+- Added typed mock-based assertions to api-server Tier 1 suites (auth.service, token.service, session.service, scoring.engine, exam.engine) while keeping `describe.skip` to defer execution.
+- Kept admin/web Playwright auth specs and unit placeholders skipped but lint-clean, ready for future enablement.
+- Goal: drop-in unskip later without further plumbing; pipelines remain green today.
