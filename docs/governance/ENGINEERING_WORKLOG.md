@@ -364,3 +364,10 @@
 - Lint @quiz/api-server with --max-warnings=0 passes after autofix.
 - F2c scope now complete (all api-server routes off console.*).
 
+
+## 2026-02-18 — Phase F3 kickoff (client-side logging) batch1
+
+- Created lightweight browser-safe clientLogger for admin app (console-backed, level-gated: warn/error in prod, debug in dev; no headers/bodies/tokens).
+- Swapped AdminGuard to use clientLogger for session revalidation and global 401 handling (structured warn/error, avoids noisy console).*n- Lint @quiz/admin-app with --max-warnings=0 passes.
+- Note: Phase F3 is on branch manifesto/phase-f3-client-logging; server routes from prior batch remain on phase-f-parent but tracked here for completeness.
+
