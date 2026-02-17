@@ -4,6 +4,8 @@ import type { LucideIcon } from 'lucide-react';
 import { AlertCircle, CheckCircle2, Cloud, Database, Mail, RefreshCw, Server } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
+import { clientLogger } from '@/utils/clientLogger';
+
 interface ServiceMetric {
     status: 'ok' | 'warning' | 'error' | 'not_configured';
     configured: boolean;
@@ -32,7 +34,7 @@ export function ServiceHealth() {
             setError(null);
         } catch (err: unknown) {
             const msg = err instanceof Error ? err.message : 'Unknown system fault';
-            console.error('Failed to fetch system usage:', msg);
+            clientLogger.error('Failed to fetch system usage', { error: msg });
             setError('Failed to load system health.');
         } finally {
             setLoading(false);

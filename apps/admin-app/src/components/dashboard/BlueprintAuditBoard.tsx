@@ -5,6 +5,8 @@ import { apiClient } from '@quiz/api-client';
 import { CheckCircle2, ClipboardCheck, FileText } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
+import { clientLogger } from '@/utils/clientLogger';
+
 export function BlueprintAuditBoard() {
     const [stats, setStats] = useState<any>(null);
 
@@ -14,7 +16,7 @@ export function BlueprintAuditBoard() {
                 const data = await apiClient.admin.getBlueprintMetrics();
                 setStats(data);
             } catch (err) {
-                console.error("Failed to fetch blueprint metrics", err);
+                clientLogger.error('Failed to fetch blueprint metrics', { error: err instanceof Error ? err.message : 'unknown' });
             }
         };
         void fetch();

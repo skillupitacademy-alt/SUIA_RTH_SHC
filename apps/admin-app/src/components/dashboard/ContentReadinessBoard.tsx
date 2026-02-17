@@ -20,6 +20,7 @@ import { useEffect, useState } from 'react';
 import { BlueprintFactoryWizard } from '@/components/content/BlueprintFactoryWizard';
 import { HierarchyFactoryWizard, HierarchyInitialData } from '@/components/content/HierarchyFactoryWizard';
 import { cn } from '@/lib/utils';
+import { clientLogger } from '@/utils/clientLogger';
 
 interface ContentStats {
     simple: number;
@@ -69,7 +70,7 @@ export function ContentReadinessBoard() {
             const data = await apiClient.admin.getContentHealthReport();
             setDomains(data);
         } catch (err) {
-            console.error("Failed to fetch content health", err);
+            clientLogger.error('Failed to fetch content health', { error: err instanceof Error ? err.message : 'unknown' });
         } finally {
             setIsLoading(false);
         }

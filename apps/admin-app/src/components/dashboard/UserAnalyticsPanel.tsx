@@ -6,6 +6,8 @@ import { ZLoader } from '@quiz/ui';
 import { TrendingUp, UserCheck, Users } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
+import { clientLogger } from '@/utils/clientLogger';
+
 export function UserAnalyticsPanel() {
     const [stats, setStats] = useState<any>(null);
 
@@ -15,7 +17,7 @@ export function UserAnalyticsPanel() {
                 const data = await apiClient.admin.getUserMetrics();
                 setStats(data);
             } catch (err) {
-                console.error("Failed to fetch user metrics", err);
+                clientLogger.error('Failed to fetch user metrics', { error: err instanceof Error ? err.message : 'unknown' });
             }
         };
         void fetch();

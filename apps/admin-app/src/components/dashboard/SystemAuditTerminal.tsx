@@ -6,6 +6,8 @@ import { formatDistanceToNow } from 'date-fns';
 import { Clock, HardDrive, Terminal, User } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
+import { clientLogger } from '@/utils/clientLogger';
+
 export function SystemAuditTerminal() {
     const [logs, setLogs] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -16,7 +18,7 @@ export function SystemAuditTerminal() {
                 const data = await apiClient.admin.getAuditLogs();
                 setLogs(data);
             } catch (err) {
-                console.error("Failed to fetch audit logs", err);
+                clientLogger.error('Failed to fetch audit logs', { error: err instanceof Error ? err.message : 'unknown' });
             } finally {
                 setIsLoading(false);
             }

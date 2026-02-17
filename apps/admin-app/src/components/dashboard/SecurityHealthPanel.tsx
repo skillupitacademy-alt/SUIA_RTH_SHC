@@ -5,6 +5,8 @@ import { apiClient } from '@quiz/api-client';
 import { Activity, Lock, ShieldAlert, ShieldCheck } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
+import { clientLogger } from '@/utils/clientLogger';
+
 export function SecurityHealthPanel() {
     const [stats, setStats] = useState<any>(null);
 
@@ -14,7 +16,7 @@ export function SecurityHealthPanel() {
                 const data = await apiClient.admin.getSecurityMetrics();
                 setStats(data);
             } catch (err) {
-                console.error("Failed to fetch security metrics", err);
+                clientLogger.error('Failed to fetch security metrics', { error: err instanceof Error ? err.message : 'unknown' });
             }
         };
         void fetch();

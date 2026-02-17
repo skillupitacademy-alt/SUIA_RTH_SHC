@@ -5,6 +5,8 @@ import { ZLoader } from '@quiz/ui';
 import { BarChart2, Target } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
+import { clientLogger } from '@/utils/clientLogger';
+
 import { EfficiencyQuadrant } from './EfficiencyQuadrant';
 
 type TimeRange = '7d' | '14d' | '28d';
@@ -62,7 +64,7 @@ export function PerformanceAnalyticsBoard() {
                 setPerf(perfData);
                 setGrowth(growthData);
             } catch (err) {
-                console.error("Failed to fetch performance analytics", err);
+                clientLogger.error('Failed to fetch performance analytics', { error: err instanceof Error ? err.message : 'unknown' });
             } finally {
                 setIsLoading(false);
             }

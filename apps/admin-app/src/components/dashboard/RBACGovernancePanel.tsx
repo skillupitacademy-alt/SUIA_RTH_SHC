@@ -5,6 +5,8 @@ import { apiClient } from '@quiz/api-client';
 import { Key, Shield, UserCog } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
+import { clientLogger } from '@/utils/clientLogger';
+
 export function RBACGovernancePanel() {
     const [roles, setRoles] = useState<any[]>([]);
 
@@ -14,7 +16,7 @@ export function RBACGovernancePanel() {
                 const data = await apiClient.admin.getRBACMetrics();
                 setRoles(data);
             } catch (err) {
-                console.error("Failed to fetch RBAC metrics", err);
+                clientLogger.error('Failed to fetch RBAC metrics', { error: err instanceof Error ? err.message : 'unknown' });
             }
         };
         void fetch();
