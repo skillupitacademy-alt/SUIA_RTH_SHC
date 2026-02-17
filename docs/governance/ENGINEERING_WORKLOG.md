@@ -175,3 +175,9 @@
 - Added typed mock-based assertions to api-server Tier 1 suites (auth.service, token.service, session.service, scoring.engine, exam.engine) while keeping `describe.skip` to defer execution.
 - Kept admin/web Playwright auth specs and unit placeholders skipped but lint-clean, ready for future enablement.
 - Goal: drop-in unskip later without further plumbing; pipelines remain green today.
+
+## 2026-02-18 — Phase C2 expanded skipped suites (admin/rbac/rate-limit/selection/quiz/report)
+
+- Added skipped unit tests with typed mocks for remaining Tier 1/selection flows: `admin-auth.service`, `rbac.service`, `rate-limit.middleware`, `selection.service`, `quiz.engine`, `report.engine`.
+- Playwright auth specs remain skipped; all new tests are `describe.skip`, so execution is still deferred until final phases.
+- Referenced testing guides under `docs/testing` (including Chaos Stability Guide) for future enabling; no runtime changes made.
