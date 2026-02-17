@@ -255,3 +255,4 @@
 - Updated MANIFESTO_ROADMAP to track E2a task under Phase E.
 
 - Phase E2a wiring: replaced direct localStorage in web useExamBackup and admin FactoryContext/useJobTracker with safeLocalStorage helpers (SSR-safe, TTL-capable); guarded admin unauthorized logout for windowless cases. No behavior change, only safer persistence.\n
+- Testing status: smoke checks for exam resume and admin factory/job tracker intentionally deferred to the consolidated testing phase (execution pending), aligned with existing policy of deferring all test runs until post-phase completion.\n
