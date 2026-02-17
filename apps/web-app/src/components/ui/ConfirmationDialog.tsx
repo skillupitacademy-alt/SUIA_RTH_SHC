@@ -3,6 +3,7 @@
 import { useEffect, useRef } from 'react';
 import { AlertTriangle, Info, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useFocusTrap } from '@/hooks/useFocusTrap';
 
 interface ConfirmationDialogProps {
     isOpen: boolean;
@@ -26,6 +27,7 @@ export function ConfirmationDialog({
     variant = 'info'
 }: ConfirmationDialogProps) {
     const dialogRef = useRef<HTMLDivElement>(null);
+    useFocusTrap(dialogRef, isOpen);
 
     useEffect(() => {
         if (!isOpen) return;

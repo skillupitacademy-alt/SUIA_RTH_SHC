@@ -1,11 +1,13 @@
 ﻿
 'use client';
 
+/* eslint-disable simple-import-sort/imports */
 import { apiClient } from '@quiz/api-client';
 import { ZLoader } from '@quiz/ui';
 import { ChevronRight, Lock, LogOut, ShieldCheck, User as UserIcon } from 'lucide-react';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 
+import { useFocusTrap } from '@/hooks/useFocusTrap';
 import { useAuthStore } from '@/store/auth-store';
 
 export function AdminLockScreen() {
@@ -13,6 +15,8 @@ export function AdminLockScreen() {
     const [password, setPassword] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const dialogRef = useRef<HTMLDivElement>(null);
+    useFocusTrap(dialogRef, isLocked === true);
 
     if (isLocked === false || user === null || user === undefined) return null;
 

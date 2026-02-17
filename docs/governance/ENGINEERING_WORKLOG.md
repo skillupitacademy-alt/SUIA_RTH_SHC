@@ -233,3 +233,7 @@
 ## 2026-02-18 — Phase D1 admin a11y sweep (complete)
 
 - Finished remaining jsx-a11y fixes across admin-app: added `htmlFor`/`id` pairs and converted decorative labels to paragraphs in blueprint/hierarchy wizards, question editor/card, domain/subject/topic/skill/subtopic tables, user management modal, and login/forgot/reset forms; converted interactive rows/tooltips to keyboard-accessible buttons; removed `autoFocus` usages. Lint now passes for all packages with `jsx-a11y/strict` enabled.
+
+## 2026-02-18 — Phase D4 focus-trap hooks
+
+- Added lightweight `useFocusTrap` hooks for both apps (`apps/web-app/src/hooks/useFocusTrap.ts`, `apps/admin-app/src/hooks/useFocusTrap.ts`) and wired them into modal dialogs (web Confirmation/Exit dialogs, admin lock screen) to keep keyboard focus contained when open. Purely additive; no layout changes.
