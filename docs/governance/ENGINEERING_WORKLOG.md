@@ -371,3 +371,10 @@
 - Swapped AdminGuard to use clientLogger for session revalidation and global 401 handling (structured warn/error, avoids noisy console).*n- Lint @quiz/admin-app with --max-warnings=0 passes.
 - Note: Phase F3 is on branch manifesto/phase-f3-client-logging; server routes from prior batch remain on phase-f-parent but tracked here for completeness.
 
+
+## 2026-02-18 — Phase F3 client logging (batch2 admin persistence/guard)
+
+- Added clientLogger to admin app and replaced console usage in AdminGuard (session revalidation + global 401 handling) and FactoryContext persistence (hydrate/persist failures). Logs are level-gated (warn/error in prod) and sanitized (no headers/bodies/tokens).
+- Lint @quiz/admin-app with --max-warnings=0 passes.
+- Pending F3 items: swap remaining admin-app console calls (safeLocalStorage warnings, useAdminHierarchy, UserTable, dashboards/questions tables/auth pages) and add web-app clientLogger with critical swaps (exam resume/auth/localStorage backups).
+

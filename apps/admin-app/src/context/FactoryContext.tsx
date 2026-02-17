@@ -65,7 +65,7 @@ export function FactoryProvider({ children }: { children: ReactNode }) {
                 }
             }
         } catch (e) {
-            console.error("[Persistence] ❌ HYDRATION FAILED", e);
+            clientLogger.error("[Persistence] HYDRATION FAILED", { error: e instanceof Error ? e.message : 'unknown' });
         } finally {
             setIsInitialized(true);
         }
@@ -90,7 +90,7 @@ export function FactoryProvider({ children }: { children: ReactNode }) {
                 const state = { blueprint, stagedQuestions, sourceCode };
                 safeSet(STORAGE_KEY, state);
             } catch (e) {
-                console.error("Failed to persist factory state", e);
+                clientLogger.error("Failed to persist factory state", { error: e instanceof Error ? e.message : 'unknown' });
             }
         }, 500); // Debounce to avoid thrashing storage
         return () => clearTimeout(timeout);
