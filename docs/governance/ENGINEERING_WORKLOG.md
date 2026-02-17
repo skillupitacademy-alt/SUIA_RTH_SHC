@@ -117,3 +117,9 @@
 - All admin edges now use Zod soft validation; malformed payloads respond 400 without changing runtime behavior.
 - Quality gates re-run and green: `pnpm lint:all`, `pnpm typecheck:all`, `pnpm build:all`.
 - Ready for Phase A3 strictening: switch `safeParse`→`parse` after short log burn-in if no mismatches observed.
+
+## 2026-02-18 — Phase A3 strict enforcement (auth + quiz + all admin routes)
+
+- Switched all previously soft-validated routes to strict Zod handling: if `safeParse` fails, requests now return 400 with `issues`; no fallbacks to raw bodies. Coverage includes auth (login/signup/reset), quiz (start/answer/submit), hierarchy CRUD, questions (create/update/bulk/batch-delete), blueprints, jobs, users update, publish/approve, and validate.
+- No runtime behavior changes for valid inputs; invalid payloads are rejected early. This completes Manifesto Phase A3 rollout.
+- Verification after the switch: `pnpm lint:all`, `pnpm typecheck:all`, `pnpm build:all` all pass.
