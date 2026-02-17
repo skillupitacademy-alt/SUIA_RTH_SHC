@@ -78,10 +78,11 @@ export default function LoginPage() {
                     <form onSubmit={(e) => { void handleLogin(e); }} className="space-y-6">
                         <div className="space-y-4">
                             <div className="space-y-2">
-                                <label className="text-xs font-black uppercase tracking-widest text-slate-400 ml-1">Identity</label>
+                                <label className="text-xs font-black uppercase tracking-widest text-slate-400 ml-1" htmlFor="api-login-email">Identity</label>
                                 <div className="relative group">
                                     <input
                                         type="email"
+                                        id="api-login-email"
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
                                         className="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-3.5 pl-11 text-sm focus:outline-none focus:border-[#FF2D55]/50 focus:bg-white transition-all text-slate-900 placeholder:text-slate-300"
@@ -91,10 +92,11 @@ export default function LoginPage() {
                                 </div>
                             </div>
                             <div className="space-y-2">
-                                <label className="text-xs font-black uppercase tracking-widest text-slate-400 ml-1">Passkey</label>
+                                <label className="text-xs font-black uppercase tracking-widest text-slate-400 ml-1" htmlFor="api-login-password">Passkey</label>
                                 <div className="relative group">
                                     <input
                                         type="password"
+                                        id="api-login-password"
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
                                         className="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-3.5 pl-11 text-sm focus:outline-none focus:border-[#FF2D55]/50 focus:bg-white transition-all text-slate-900 placeholder:text-slate-300"

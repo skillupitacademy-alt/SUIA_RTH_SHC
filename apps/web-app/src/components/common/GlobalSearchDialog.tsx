@@ -75,10 +75,19 @@ export function GlobalSearchDialog() {
     if (!open) return null;
 
     return (
-        <div className="fixed inset-0 z-[9999] bg-background/80 backdrop-blur-sm" onClick={() => setOpen(false)}>
+        <button
+            type="button"
+            className="fixed inset-0 z-[9999] bg-background/80 backdrop-blur-sm"
+            aria-label="Close global search"
+            onClick={(e) => {
+                if (e.target === e.currentTarget) setOpen(false);
+            }}
+        >
             <div
                 className="fixed left-[50%] top-[20%] translate-x-[-50%] w-full max-w-[640px] shadow-2xl rounded-xl border bg-popover text-popover-foreground overflow-hidden"
-                onClick={(e) => e.stopPropagation()}
+                role="dialog"
+                aria-modal="true"
+                aria-label="Global search dialog"
             >
                 <Command shouldFilter={false} className="w-full bg-transparent">
                     <div className="flex items-center border-b px-3">
@@ -143,7 +152,7 @@ export function GlobalSearchDialog() {
                     </Command.List>
                 </Command>
             </div>
-        </div>
+        </button>
     );
 }
 

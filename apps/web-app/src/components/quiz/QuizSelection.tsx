@@ -432,7 +432,7 @@ export function QuizSelection() {
 
                         <div className="xl:col-span-2 space-y-16">
                             <div className="space-y-8">
-                                <label className="text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground mb-4 block opacity-60">Question Count (Max Capability)</label>
+                                <p className="text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground mb-4 block opacity-60" aria-label="Question Count (Max Capability)">Question Count (Max Capability)</p>
                                 <div className="flex flex-wrap items-center gap-6">
                                     {[5, 10, 15, 20, 25, 30].map(count => {
                                         const totalAvail = availableCounts?.total || 0;
@@ -470,7 +470,7 @@ export function QuizSelection() {
                             </div>
 
                             <div className="space-y-8">
-                                <label className="text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground mb-4 block opacity-60">Difficulty Calibration</label>
+                                <p className="text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground mb-4 block opacity-60" aria-label="Difficulty Calibration">Difficulty Calibration</p>
                                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
                                     {['mixed', 'simple', 'intermediate', 'expert'].map(opt => (
                                         <button

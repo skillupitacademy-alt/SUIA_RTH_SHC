@@ -1,4 +1,4 @@
-
+﻿
 'use client';
 
 import { apiClient } from '@quiz/api-client';
@@ -95,7 +95,6 @@ export function AdminLockScreen() {
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             disabled={isLoading}
-                            autoFocus
                             className="w-full bg-white/5 border border-white/10 p-5 rounded-2xl text-white text-center font-bold tracking-[0.2em] focus:outline-none focus:border-[#FF4B91] focus:ring-1 focus:ring-[#FF4B91] transition-all placeholder:text-slate-600 placeholder:tracking-normal placeholder:font-medium placeholder:text-xs"
                         />
                         {(error as string | null) !== null ? <p className="absolute -bottom-6 left-0 right-0 text-center text-[10px] font-bold text-red-400 uppercase tracking-wider">

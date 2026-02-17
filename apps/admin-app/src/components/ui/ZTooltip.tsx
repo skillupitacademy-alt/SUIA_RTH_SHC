@@ -105,15 +105,19 @@ export function ZTooltip({ content, children, side = 'bottom', className, delay 
 
     return (
         <>
-            <div
+            <button
+                type="button"
                 ref={triggerRef}
                 onMouseEnter={handleMouseEnter}
                 onMouseMove={handleMouseMove}
                 onMouseLeave={handleMouseLeave}
+                onFocus={handleMouseEnter}
+                onBlur={handleMouseLeave}
                 className={cn("contents", className)}
+                style={{ background: 'none', border: 'none', padding: 0 }}
             >
                 {children}
-            </div>
+            </button>
             {isVisible ? createPortal(
                 <div
                     className="fixed z-[9999] pointer-events-none animate-in fade-in zoom-in-95 duration-150"

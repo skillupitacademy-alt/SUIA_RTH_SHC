@@ -243,15 +243,15 @@ export function SubtopicTable() {
                                 {/* Form Header Context */}
                                 <div className="grid grid-cols-3 gap-4 p-6 bg-slate-50/50 rounded-2xl border border-dashed border-slate-200">
                                     <div className="space-y-1 text-center">
-                                        <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Domain</label>
+                                        <p className="text-[9px] font-black uppercase tracking-widest text-slate-500">Domain</p>
                                         <div className="font-bold text-slate-600 text-xs truncate">{(domains != null && Array.isArray(domains)) ? (domains.find((d: { id: string; name: string }) => d.id === formData.domainId)?.name ?? 'N/A') : 'N/A'}</div>
                                     </div>
                                     <div className="space-y-1 text-center border-x border-slate-200">
-                                        <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Subject</label>
+                                        <p className="text-[9px] font-black uppercase tracking-widest text-slate-500">Subject</p>
                                         <div className="font-bold text-slate-600 text-xs truncate">{(subjects != null && Array.isArray(subjects)) ? (subjects.find((s: { id: string; name: string }) => s.id === formData.subjectId)?.name ?? 'N/A') : 'N/A'}</div>
                                     </div>
                                     <div className="space-y-1 text-center">
-                                        <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Topic</label>
+                                        <p className="text-[9px] font-black uppercase tracking-widest text-slate-500">Topic</p>
                                         <div className="font-bold text-teal-600 text-xs truncate">{(topics != null && Array.isArray(topics)) ? (topics.find((t: { id: string; name: string }) => t.id === formData.topicId)?.name ?? 'N/A') : 'N/A'}</div>
                                     </div>
                                 </div>

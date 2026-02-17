@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { apiClient } from '@quiz/api-client';
@@ -134,13 +134,14 @@ function ResetPasswordForm() {
                 </div> : null}
 
                 <div className="space-y-2">
-                    <label className="text-xs font-black uppercase tracking-widest text-muted-foreground">New Password</label>
+                    <label className="text-xs font-black uppercase tracking-widest text-muted-foreground" htmlFor="admin-reset-new-password">New Password</label>
                     <div className="relative">
                         <Lock className="absolute left-4 top-3.5 text-muted-foreground h-5 w-5" />
                         <input
                             type={showPassword ? "text" : "password"}
                             required
                             minLength={8}
+                            id="admin-reset-new-password"
                             className="w-full pl-12 pr-12 py-3 rounded-xl border bg-muted/30 text-foreground focus:bg-background focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all font-medium"
                             placeholder="••••••••••••"
                             value={newPassword}
@@ -157,12 +158,13 @@ function ResetPasswordForm() {
                 </div>
 
                 <div className="space-y-2">
-                    <label className="text-xs font-black uppercase tracking-widest text-muted-foreground">Confirm New Password</label>
+                    <label className="text-xs font-black uppercase tracking-widest text-muted-foreground" htmlFor="admin-reset-confirm-password">Confirm New Password</label>
                     <div className="relative">
                         <Lock className="absolute left-4 top-3.5 text-muted-foreground h-5 w-5" />
                         <input
                             type={showPassword ? "text" : "password"}
                             required
+                            id="admin-reset-confirm-password"
                             className="w-full pl-12 pr-4 py-3 rounded-xl border bg-muted/30 text-foreground focus:bg-background focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all font-medium"
                             placeholder="••••••••••••"
                             value={confirmPassword}
@@ -194,3 +196,4 @@ export default function ResetPasswordPage() {
         </Suspense>
     );
 }
+

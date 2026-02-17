@@ -315,10 +315,11 @@ export function SubjectTable() {
 
                                         {/* Subject Name */}
                                         <div className="space-y-2">
-                                            <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 pl-1">Subject Name</label>
+                                            <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 pl-1" htmlFor="subject-name">Subject Name</label>
                                             <input
                                                 type="text"
                                                 required
+                                                id="subject-name"
                                                 value={formData.name}
                                                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                                 className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all placeholder:text-slate-400"
@@ -329,8 +330,9 @@ export function SubjectTable() {
 
                                     {/* Description */}
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 pl-1">Description</label>
+                                        <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 pl-1" htmlFor="subject-description">Description</label>
                                         <textarea
+                                            id="subject-description"
                                             value={formData.description}
                                             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                                             rows={4}
@@ -341,7 +343,7 @@ export function SubjectTable() {
 
                                     {/* Status */}
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 pl-1">Status</label>
+                                        <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500 pl-1" id="subject-status-label">Status</p>
                                         <div className="flex bg-white p-1.5 rounded-xl border border-slate-200">
                                             {['active', 'inactive'].map((status) => (
                                                 <button
@@ -352,6 +354,7 @@ export function SubjectTable() {
                                                         ? 'bg-[#1A1A1A] text-white shadow-sm'
                                                         : 'text-slate-500 hover:text-slate-600'
                                                         }`}
+                                                    aria-labelledby="subject-status-label"
                                                 >
                                                     {status}
                                                 </button>

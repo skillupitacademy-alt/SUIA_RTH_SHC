@@ -17,7 +17,7 @@ export function Footer() {
                         </a>
                         . The source code is available on{" "}
                         <a
-                            href="#"
+                            href={process.env.NEXT_PUBLIC_GITHUB_URL || "https://github.com"}
                             target="_blank"
                             rel="noreferrer"
                             className="font-medium underline underline-offset-4"

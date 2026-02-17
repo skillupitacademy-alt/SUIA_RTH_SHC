@@ -41,15 +41,15 @@ export default function SettingsPage() {
 
                             <div className="grid md:grid-cols-2 gap-8 pt-6 border-t">
                                 <div className="space-y-1">
-                                    <label className="text-xs font-black uppercase text-muted-foreground tracking-widest flex items-center gap-2">
+                                    <p className="text-xs font-black uppercase text-muted-foreground tracking-widest flex items-center gap-2" aria-label="Email Address">
                                         <Mail size={14} /> Email Address
-                                    </label>
+                                    </p>
                                     <p className="text-lg font-bold">{user?.email}</p>
                                 </div>
                                 <div className="space-y-1">
-                                    <label className="text-xs font-black uppercase text-muted-foreground tracking-widest flex items-center gap-2">
+                                    <p className="text-xs font-black uppercase text-muted-foreground tracking-widest flex items-center gap-2" aria-label="Security Status">
                                         <Shield size={14} /> Security Status
-                                    </label>
+                                    </p>
                                     <div className="flex items-center gap-2 text-green-600 font-bold">
                                         <CheckCircle2 size={16} />
                                         <span>Onboarded & Verified</span>

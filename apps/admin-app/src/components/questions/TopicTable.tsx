@@ -441,10 +441,11 @@ export function TopicTable() {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 pl-1">Topic Name</label>
+                                    <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 pl-1" htmlFor="topic-name">Topic Name</label>
                                     <input
                                         type="text"
                                         required
+                                        id="topic-name"
                                         value={formData.name}
                                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                         className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
@@ -454,22 +455,24 @@ export function TopicTable() {
 
                                 <div className="grid grid-cols-2 gap-6">
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 pl-1">Weight Multiplier</label>
+                                        <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 pl-1" htmlFor="topic-weight">Weight Multiplier</label>
                                         <input
                                             type="number"
                                             min="0"
                                             step="0.1"
+                                            id="topic-weight"
                                             value={formData.weight}
                                             onChange={(e) => setFormData({ ...formData, weight: parseFloat(e.target.value) })}
                                             className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all bg-slate-50/50"
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 pl-1">Complexity Level</label>
+                                        <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 pl-1" htmlFor="topic-complexity">Complexity Level</label>
                                         <input
                                             type="number"
                                             min="1"
                                             max="10"
+                                            id="topic-complexity"
                                             value={formData.complexityLevel}
                                             onChange={(e) => setFormData({ ...formData, complexityLevel: parseInt(e.target.value) })}
                                             className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all bg-slate-50/50"
@@ -478,8 +481,9 @@ export function TopicTable() {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 pl-1">Description</label>
+                                    <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 pl-1" htmlFor="topic-description">Description</label>
                                     <textarea
+                                        id="topic-description"
                                         value={formData.description}
                                         onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                                         rows={4}

@@ -74,12 +74,13 @@ export default function ForgotPasswordPage() {
                     </div> : null}
 
                     <div className="space-y-2">
-                        <label className="text-xs font-black uppercase tracking-widest text-muted-foreground">Admin Email</label>
+                        <label className="text-xs font-black uppercase tracking-widest text-muted-foreground" htmlFor="admin-forgot-email">Admin Email</label>
                         <div className="relative">
                             <Mail className="absolute left-4 top-3.5 text-muted-foreground h-5 w-5" />
                             <input
                                 type="email"
                                 required
+                                id="admin-forgot-email"
                                 className="w-full pl-12 pr-4 py-3 rounded-xl border bg-muted/30 text-foreground focus:bg-background focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all font-medium"
                                 placeholder="admin@example.com"
                                 value={email}

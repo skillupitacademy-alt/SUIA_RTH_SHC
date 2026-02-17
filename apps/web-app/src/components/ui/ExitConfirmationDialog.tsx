@@ -50,9 +50,11 @@ export function ExitConfirmationDialog({
             aria-labelledby="exit-dialog-title"
         >
             {/* Backdrop */}
-            <div
+            <button
+                type="button"
                 className="absolute inset-0 bg-black/60 backdrop-blur-sm"
                 onClick={onCancel}
+                aria-label="Close exit dialog"
             />
 
             {/* Dialog */}

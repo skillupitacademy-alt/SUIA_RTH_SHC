@@ -595,9 +595,9 @@ Please provide a valid JSON object matching this schema:
 
                                 {(initialData?.target === 'domain' || (initialData?.domainId == null || initialData.domainId === '')) && (
                                     <div className="space-y-3">
-                                        <label className="text-[10px] font-black uppercase tracking-widest text-[#1A1A1A] flex items-center gap-2 opacity-40">
+                                        <p className="text-[10px] font-black uppercase tracking-widest text-[#1A1A1A] flex items-center gap-2 opacity-40">
                                             <Activity size={14} /> Factory Compliance
-                                        </label>
+                                        </p>
                                         <div className="p-6 rounded-3xl border border-dashed border-primary/10 bg-primary/[0.01] flex items-center gap-5">
                                             <div className="w-10 h-10 rounded-full bg-green-500/10 flex items-center justify-center text-green-600">
                                                 <ShieldCheck size={20} />

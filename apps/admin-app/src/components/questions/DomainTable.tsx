@@ -268,10 +268,11 @@ export function DomainTable() {
                                     <div className="grid grid-cols-2 gap-6">
                                         {/* Domain Name */}
                                         <div className="space-y-2">
-                                            <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 pl-1">Domain Name</label>
+                                            <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 pl-1" htmlFor="domain-name">Domain Name</label>
                                             <input
                                                 required
                                                 type="text"
+                                                id="domain-name"
                                                 placeholder="Enter domain name..."
                                                 value={formData.name}
                                                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
@@ -281,9 +282,10 @@ export function DomainTable() {
 
                                         {/* Category */}
                                         <div className="space-y-2">
-                                            <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 pl-1">Category (Reporting Dimension)</label>
+                                            <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 pl-1" htmlFor="domain-category">Category (Reporting Dimension)</label>
                                             <input
                                                 type="text"
+                                                id="domain-category"
                                                 placeholder="e.g., DevOps, Security, Frontend..."
                                                 value={formData.category || ''}
                                                 onChange={(e) => setFormData({ ...formData, category: e.target.value })}
@@ -294,8 +296,9 @@ export function DomainTable() {
 
                                     {/* Description */}
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 pl-1">Description</label>
+                                        <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 pl-1" htmlFor="domain-description">Description</label>
                                         <textarea
+                                            id="domain-description"
                                             rows={4}
                                             placeholder="Brief summary of this domain..."
                                             value={formData.description}
@@ -306,7 +309,7 @@ export function DomainTable() {
 
                                     {/* Status */}
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 pl-1">Status</label>
+                                        <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500 pl-1">Status</p>
                                         <div className="flex bg-white p-1.5 rounded-xl border border-slate-200">
                                             {['active', 'inactive'].map((status) => (
                                                 <button

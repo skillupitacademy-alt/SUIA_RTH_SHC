@@ -169,10 +169,11 @@ export function ContentReadinessBoard() {
                 {filteredDomains.map((domain) => (
                     <div key={domain.domainId} className="space-y-2">
                         {/* Domain Row */}
-                        <div
+                        <button
+                            type="button"
                             onClick={() => toggleNode(domain.domainId)}
                             className={cn(
-                                "p-5 rounded-3xl border transition-all cursor-pointer group flex items-center justify-between shadow-sm",
+                                "p-5 rounded-3xl border transition-all cursor-pointer group flex items-center justify-between shadow-sm w-full text-left",
                                 domain.isReady === true ? "bg-white border-primary/10 hover:border-primary/30" : "bg-red-500/[0.02] border-red-500/20 hover:border-red-500/40"
                             )}
                         >
@@ -235,16 +236,17 @@ export function ContentReadinessBoard() {
                                     {expandedNodes[domain.domainId] ? <ChevronDown size={20} className="text-muted-foreground" /> : <ChevronRight size={20} className="text-muted-foreground" />}
                                 </div>
                             </div>
-                        </div>
+                        </button>
 
                         {/* Subjects Drill-down */}
                         {expandedNodes[domain.domainId] ? <div className="ml-8 space-y-2 border-l-2 border-primary/5 pl-4 animate-in slide-in-from-top-2 duration-300">
                             {domain.subjects?.map((subject) => (
                                 <div key={subject.id} className="space-y-2">
-                                    <div
+                                    <button
+                                        type="button"
                                         onClick={(e) => { e.stopPropagation(); toggleNode(subject.id); }}
                                         className={cn(
-                                            "p-4 rounded-2xl border bg-white/50 flex items-center justify-between hover:bg-white cursor-pointer transition-all",
+                                            "p-4 rounded-2xl border bg-white/50 flex items-center justify-between hover:bg-white cursor-pointer transition-all w-full text-left",
                                             subject.stats.isReady === true ? "border-primary/5" : "border-red-500/10 bg-red-500/[0.01]"
                                         )}
                                     >
@@ -269,15 +271,16 @@ export function ContentReadinessBoard() {
                                             )}
                                             {expandedNodes[subject.id] ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
                                         </div>
-                                    </div>
+                                    </button>
 
                                     {/* Topics Drill-down */}
                                     {expandedNodes[subject.id] ? <div className="ml-6 space-y-1.5 border-l border-primary/10 pl-4 animate-in slide-in-from-top-1">
                                         {subject.topics?.map((topic) => (
                                             <div key={topic.id} className="space-y-1.5">
-                                                <div
+                                                <button
+                                                    type="button"
                                                     onClick={(e) => { e.stopPropagation(); toggleNode(topic.id); }}
-                                                    className="flex items-center justify-between p-3 rounded-xl hover:bg-primary/5 cursor-pointer group"
+                                                    className="flex items-center justify-between p-3 rounded-xl hover:bg-primary/5 cursor-pointer group w-full text-left"
                                                 >
                                                     <div className="flex items-center gap-3">
                                                         <Target size={14} className="text-muted-foreground" />
@@ -298,7 +301,7 @@ export function ContentReadinessBoard() {
                                                         )}
                                                         {expandedNodes[topic.id] ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
                                                     </div>
-                                                </div>
+                                                </button>
 
                                                 {/* Subtopics Drill-down */}
                                                 {expandedNodes[topic.id] ? <div className="ml-6 space-y-1 pl-4">

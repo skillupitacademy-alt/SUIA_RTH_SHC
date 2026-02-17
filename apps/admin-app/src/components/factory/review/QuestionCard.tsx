@@ -131,11 +131,12 @@ export function QuestionCard({
             <div className="p-10 space-y-8 flex-1">
                 {/* Question Text */}
                 <div className="space-y-3">
-                    <label className="text-[10px] font-black uppercase text-[#FF4B91] tracking-widest flex items-center gap-2">
+                    <label className="text-[10px] font-black uppercase text-[#FF4B91] tracking-widest flex items-center gap-2" htmlFor="review-question-text">
                         <AlertCircle size={12} /> Question Statement
                     </label>
                     {isEditing ? (
                         <textarea
+                            id="review-question-text"
                             value={question.questionText}
                             onChange={(e) => onUpdate({ questionText: e.target.value })}
                             className="w-full min-h-[120px] p-6 rounded-2xl bg-slate-50 border border-slate-200 text-slate-700 text-sm font-medium focus:ring-2 focus:ring-[#FF4B91]/10 focus:border-[#FF4B91]/20 outline-none transition-all"
@@ -158,10 +159,11 @@ export function QuestionCard({
                 </div> : null}
 
                 {isEditing ? <div className="space-y-3">
-                    <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest flex items-center gap-2">
+                    <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest flex items-center gap-2" htmlFor="review-code-snippet">
                         <Code2 size={12} /> Source Code Context
                     </label>
                     <textarea
+                        id="review-code-snippet"
                         value={question.codeSnippet}
                         onChange={(e) => onUpdate({ codeSnippet: e.target.value })}
                         className="w-full min-h-[150px] p-6 rounded-3xl bg-slate-50 border border-slate-200/60 text-blue-600 text-sm font-medium focus:ring-2 focus:ring-[#FF4B91]/10 outline-none transition-all placeholder:text-slate-400"
@@ -215,7 +217,7 @@ export function QuestionCard({
 
                 {/* Correct Answer Selector (Editing Only) */}
                 {isEditing ? <div className="space-y-3">
-                    <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Mark Correct Answer</label>
+                    <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Mark Correct Answer</p>
                     <div className="flex gap-2">
                         {question.options.map((option, oIdx) => (
                             <button

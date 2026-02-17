@@ -220,3 +220,16 @@
 - Resolved initial web-app issues: added aria labels/roles for settings summary text, dialog backdrops now keyboard-safe buttons without layout change, quiz config labels accessible, footer GitHub link now navigable, and global search dialog uses a button backdrop while keeping UX intact.
 - Fixed api-server login form labels with proper `htmlFor`/`id` bindings.
 - Current status: lint passes for web-app and api-server; admin-app pending (~53 label/keyboard violations) to be addressed next without altering layout/visuals.
+
+## 2026-02-18 — Phase D1 admin login form fixes
+
+- Added `htmlFor`/`id` associations to email/password fields in `apps/admin-app/src/app/(public)/login/page.tsx` to satisfy jsx-a11y label controls; kept UI/UX layout unchanged.
+- Normalized password placeholder text; remaining admin-app a11y items (forgot/reset pages, wizards, tables, tooltips, lock screen) queued next.
+
+## 2026-02-18 — Phase D1 admin a11y sweep (in-progress, pre-commit)
+
+- Began admin-app accessibility fixes: labeled inputs on forgot-password and reset-password pages; added ids to new/confirm password fields; removed `autoFocus` from `AdminLockScreen` and `CascadingSelect`; added `htmlFor`/`id` pairs for Domain name/category fields. Work is local/uncommitted pending completion of remaining jsx-a11y violations in wizards/tables/tooltips.
+
+## 2026-02-18 — Phase D1 admin a11y sweep (complete)
+
+- Finished remaining jsx-a11y fixes across admin-app: added `htmlFor`/`id` pairs and converted decorative labels to paragraphs in blueprint/hierarchy wizards, question editor/card, domain/subject/topic/skill/subtopic tables, user management modal, and login/forgot/reset forms; converted interactive rows/tooltips to keyboard-accessible buttons; removed `autoFocus` usages. Lint now passes for all packages with `jsx-a11y/strict` enabled.

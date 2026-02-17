@@ -89,9 +89,10 @@ export function QuestionEditor({ onSubmit, loading, initialData }: QuestionEdito
 
             {/* Question Text */}
             <div className="space-y-3">
-                <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Question Content (Markdown)</label>
+                <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1" htmlFor="question-text">Question Content (Markdown)</label>
                 <textarea
                     required
+                    id="question-text"
                     value={data.text}
                     onChange={(e) => setData({ ...data, text: e.target.value })}
                     rows={4}
@@ -103,7 +104,7 @@ export function QuestionEditor({ onSubmit, loading, initialData }: QuestionEdito
             {/* Options */}
             <div className="space-y-6 bg-slate-50 p-6 rounded-2xl border border-slate-100 shadow-inner">
                 <div className="flex items-center justify-between">
-                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Answer Options</label>
+                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]" aria-label="Answer Options">Answer Options</p>
                     <div className="flex items-center gap-2 bg-white p-1 rounded-xl border border-slate-200 shadow-sm">
                         <button
                             type="button"
@@ -178,8 +179,9 @@ export function QuestionEditor({ onSubmit, loading, initialData }: QuestionEdito
 
             {/* Explanation */}
             <div className="space-y-3">
-                <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Explanation</label>
+                <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1" htmlFor="question-explanation">Explanation</label>
                 <textarea
+                    id="question-explanation"
                     value={data.explanation}
                     onChange={(e) => setData({ ...data, explanation: e.target.value })}
                     rows={2}
@@ -191,7 +193,7 @@ export function QuestionEditor({ onSubmit, loading, initialData }: QuestionEdito
             {/* Metadata */}
             <div className="space-y-6">
                 <div className="space-y-3">
-                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Mapping Type (Nature of Question)</label>
+                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Mapping Type (Nature of Question)</p>
                     <div className="flex bg-slate-100 p-1.5 rounded-xl border border-slate-200 shadow-inner">
                         {(['conceptual', 'technical', 'practical'] as const).map((type) => (
                             <button
@@ -213,7 +215,7 @@ export function QuestionEditor({ onSubmit, loading, initialData }: QuestionEdito
 
                 <div className="grid grid-cols-2 gap-8">
                     <div className="space-y-3">
-                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Difficulty</label>
+                        <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Difficulty</p>
                         <div className="flex bg-slate-50 p-1.5 rounded-xl border border-slate-200 shadow-inner">
                             {(['simple', 'intermediate', 'expert'] as const).map((level) => (
                                 <button
@@ -234,11 +236,12 @@ export function QuestionEditor({ onSubmit, loading, initialData }: QuestionEdito
                     </div>
 
                     <div className="space-y-3">
-                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Estimated Time</label>
+                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1" htmlFor="question-estimated-time">Estimated Time</label>
                         <div className="relative group/time">
                             <Clock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-hover/time:text-[#FF4B91] transition-colors" />
                             <input
                                 type="number"
+                                id="question-estimated-time"
                                 value={isNaN(data.estimatedTime) ? '' : data.estimatedTime}
                                 onChange={(e) => {
                                     const val = parseInt(e.target.value);

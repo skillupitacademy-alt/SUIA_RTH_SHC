@@ -391,7 +391,7 @@ export function UserTable() {
                     <form onSubmit={(e) => { void handleSaveUser(e); }} className="p-8 space-y-6">
                         <div className="space-y-4">
                             <div className="space-y-2">
-                                <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">User Status</label>
+                                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">User Status</p>
                                 <div className="flex items-center justify-between p-4 rounded-xl border border-gray-200 bg-gray-50">
                                     <div className="flex items-center gap-3">
                                         <Shield size={18} className={editingUser.isBlocked === true ? "text-red-500" : "text-green-500"} />
@@ -408,7 +408,7 @@ export function UserTable() {
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Role Assignment</label>
+                                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Role Assignment</p>
                                 <div className="flex items-center justify-between p-4 rounded-xl border border-gray-200 bg-gray-50">
                                     <div className="flex items-center gap-3">
                                         <User size={18} className="text-[#FF4B91]" />
@@ -416,6 +416,7 @@ export function UserTable() {
                                     </div>
                                     <input
                                         type="checkbox"
+                                        id="user-admin-toggle"
                                         className="h-5 w-5 rounded border-gray-300 text-[#FF4B91] focus:ring-[#FF4B91]"
                                         checked={(editingUser.userRoles ?? []).some(r => r.role.name === 'ADMIN')}
                                         onChange={(e) => toggleAdminRole(e.target.checked)}
@@ -424,14 +425,15 @@ export function UserTable() {
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Security</label>
+                                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Security</p>
                                 <div className="p-4 rounded-xl border border-gray-200 bg-gray-50 space-y-4">
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-bold text-gray-500 uppercase">Change Password</label>
+                                        <label className="text-[10px] font-bold text-gray-500 uppercase" htmlFor="user-new-password">Change Password</label>
                                         <div className="flex items-center gap-3">
                                             <Lock size={16} className="text-gray-400" />
                                             <input
                                                 type="password"
+                                                id="user-new-password"
                                                 placeholder="Enter new password (optional)"
                                                 value={newPassword}
                                                 onChange={(e) => setNewPassword(e.target.value)}
@@ -473,11 +475,11 @@ export function UserTable() {
                         <div className="p-8 space-y-8">
                             <div className="grid grid-cols-2 gap-6">
                                 <div className="space-y-1">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Professional Status</label>
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Professional Status</p>
                                     <p className="font-bold text-lg text-[#1A1A1A]">{selectedUser.profile?.professionalStatus != null && selectedUser.profile.professionalStatus !== '' ? selectedUser.profile.professionalStatus : 'N/A'}</p>
                                 </div>
                                 <div className="space-y-1">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Education</label>
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Education</p>
                                     <p className="font-bold text-lg text-[#1A1A1A]">{selectedUser.profile?.educationLevel != null && selectedUser.profile.educationLevel !== '' ? selectedUser.profile.educationLevel : 'N/A'}</p>
                                 </div>
                             </div>

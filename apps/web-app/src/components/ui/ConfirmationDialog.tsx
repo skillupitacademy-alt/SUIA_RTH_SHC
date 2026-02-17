@@ -71,7 +71,12 @@ export function ConfirmationDialog({
 
     return (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
-            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onCancel} />
+            <button
+                type="button"
+                className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+                aria-label="Close confirmation dialog"
+                onClick={onCancel}
+            />
             <div
                 ref={dialogRef}
                 className={cn(

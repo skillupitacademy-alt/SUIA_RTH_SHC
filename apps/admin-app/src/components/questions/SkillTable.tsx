@@ -269,10 +269,11 @@ export function SkillTable() {
                                     <div className="grid grid-cols-2 gap-6">
                                         {/* Skill Name */}
                                         <div className="space-y-2">
-                                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-2">Skill Name</label>
+                                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-2" htmlFor="skill-name">Skill Name</label>
                                             <input
                                                 required
                                                 type="text"
+                                                id="skill-name"
                                                 placeholder="e.g., Problem Solving"
                                                 value={formData.name}
                                                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
@@ -282,13 +283,14 @@ export function SkillTable() {
 
                                         {/* Weight */}
                                         <div className="space-y-2">
-                                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-2">Weight (1-10)</label>
+                                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-2" htmlFor="skill-weight">Weight (1-10)</label>
                                             <div className="flex items-center gap-4 px-4 py-3 bg-slate-50 rounded-2xl">
                                                 <Zap size={16} className="text-amber-500" />
                                                 <input
                                                     type="range"
                                                     min="1"
                                                     max="10"
+                                                    id="skill-weight"
                                                     value={formData.weight || 1}
                                                     onChange={(e) => setFormData({ ...formData, weight: parseInt(e.target.value) })}
                                                     className="flex-1 accent-[#FF4B91] h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer"
