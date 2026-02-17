@@ -257,3 +257,4 @@
 - Phase E2a wiring: replaced direct localStorage in web useExamBackup and admin FactoryContext/useJobTracker with safeLocalStorage helpers (SSR-safe, TTL-capable); guarded admin unauthorized logout for windowless cases. No behavior change, only safer persistence.\n
 - Testing status: smoke checks for exam resume and admin factory/job tracker intentionally deferred to the consolidated testing phase (execution pending), aligned with existing policy of deferring all test runs until post-phase completion.\n
 - Phase E3 next/image audit: scanned web/admin apps for raw <img> usage; none found. No code changes required; existing image handling already compliant.\n
+- Phase E4 memoization audit prep: outlined checklist (identify chatty components, wrap heavy lists/cards with React.memo, ensure stable deps for useMemo/useCallback, avoid inline objects in hot renders). No code changes yet; execution deferred until scheduled E4 session.\n
