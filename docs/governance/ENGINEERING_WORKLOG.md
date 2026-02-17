@@ -315,3 +315,10 @@
 - Lint @quiz/api-server with --max-warnings=0 passes after autofix.
 - Remaining F2c scope: skills routes (list/create/patch/delete/batch), subtopics routes/batch, questions routes/bulk/batch, metrics/logs/publish, users/sessions/trends, etc.
 
+
+## 2026-02-18 — Phase F2c console → Pino (batch5 skills)
+
+- Migrated admin skills routes to Pino child loggers: list/create, patch/delete, and batch-delete. Errors are structured and sanitized; no request bodies/headers logged.
+- Lint @quiz/api-server with --max-warnings=0 passes after autofix.
+- Remaining F2c scope: subtopics routes/batch, questions routes/bulk/batch, metrics/logs/publish, users/sessions/trends, etc.
+
