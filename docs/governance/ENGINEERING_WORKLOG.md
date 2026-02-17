@@ -275,3 +275,9 @@
 - Demonstrated usage in pps/api-server/app/api/health/route.ts GET handler; compatible with Vercel Node runtime (no Edge assumptions).
 - Branch hygiene: cherry-picked prior Phase F commits onto manifesto/phase-f-parent after isolating Phase E on its own parent branch; worklog conflicts resolved without altering earlier entries.
 
+
+## 2026-02-18 — Phase F2a console → Pino (auth + rate-limit)
+
+- Replaced remaining console.error calls in auth audit logger and rate-limit middleware with request-safe Pino child loggers (modules/auth/audit.service.ts, modules/auth/rate-limit.middleware.ts); log only sanitized error messages, no headers/bodies.
+- Ran lint for @quiz/api-server with --max-warnings=0; clean.
+
