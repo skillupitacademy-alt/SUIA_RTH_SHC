@@ -78,9 +78,10 @@ export function SkillTable() {
         setIsLoading(true);
         try {
             const response = await apiClient.admin.getSkills(page, pageSize, debouncedSearch || undefined);
-            setData(response.data);
+            const skills = Array.isArray(response.data) ? response.data : [];
+            setData(skills);
             setTotalPages(response.totalPages);
-            setTotalCount(response.total ?? response.data?.length ?? 0);
+            setTotalCount(response.total ?? skills.length ?? 0);
             setSelectedIds(new Set());
         } catch (error) {
             console.error('Failed to fetch skills:', error);

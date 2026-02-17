@@ -25,11 +25,12 @@ export function LiveSessionsList() {
     const fetchSessions = async (p: number) => {
         try {
             const data = await apiClient.admin.getLiveSessions(p, pageSize, debouncedSearch || undefined);
-            setSessions(data.sessions);
+            const sessionsData = Array.isArray(data.sessions) ? data.sessions : [];
+            setSessions(sessionsData);
             setMeta({
-                page: data.page,
-                totalPages: data.totalPages,
-                total: data.total
+                page: data.page ?? 1,
+                totalPages: data.totalPages ?? 1,
+                total: data.total ?? sessionsData.length ?? 0
             });
         } catch (err) {
             console.error("Failed to fetch live sessions", err);
@@ -78,7 +79,7 @@ export function LiveSessionsList() {
                 </div>
 
                 <div className="space-y-3 mb-8">
-                    {sessions.length === 0 ? (
+                    {(!Array.isArray(sessions) || sessions.length === 0) ? (
                         <div className="text-center py-12 border-2 border-dashed rounded-[2rem] border-muted-foreground">
                             <Users className="mx-auto text-muted-foreground mb-4" size={56} />
                             <p className="text-sm font-bold text-muted-foreground uppercase tracking-widest">No Active Sessions Detected</p>
@@ -88,14 +89,14 @@ export function LiveSessionsList() {
                             <div key={session.id} className="p-5 rounded-[1.75rem] bg-background border border-muted/50 hover:border-[#FF4B91]/30 transition-all group flex items-center justify-between shadow-sm">
                                 <div className="flex items-center gap-5">
                                     <div className="w-12 h-12 rounded-xl bg-[#FF4B91]/5 flex items-center justify-center text-[#FF4B91] font-black text-xl border border-[#FF4B91]/10">
-                                        {((session.user.profile?.name?.[0] as string | undefined | null) !== undefined && (session.user.profile?.name?.[0] as string | undefined | null) !== null && (session.user.profile?.name?.[0] as string) !== '') ? (session.user.profile?.name?.[0] as string) : 'U'}
+                                        {(session.user?.profile?.name?.[0] ?? 'U')}
                                     </div>
                                     <div>
                                         <div className="flex items-center gap-3">
-                                            <h4 className="text-lg font-black tracking-tight text-[#1A1A1A]">{((session.user.profile?.name as string | undefined | null) !== undefined && (session.user.profile?.name as string | undefined | null) !== null && (session.user.profile?.name as string) !== '') ? (session.user.profile?.name as string) : 'Unknown User'}</h4>
+                                            <h4 className="text-lg font-black tracking-tight text-[#1A1A1A]">{(session.user?.profile?.name ?? 'Unknown User')}</h4>
                                             {session.isAdmin === true ? <span className="px-2 py-0.5 rounded-md bg-[#FF4B91]/10 text-[#FF4B91] text-[9px] font-black uppercase tracking-widest">Master</span> : null}
                                         </div>
-                                        <p className="text-sm font-bold text-muted-foreground">{session.user.email}</p>
+                                        <p className="text-sm font-bold text-muted-foreground">{session.user?.email ?? 'No Email'}</p>
                                     </div>
                                 </div>
 
@@ -104,13 +105,13 @@ export function LiveSessionsList() {
                                         <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Last Seen</p>
                                         <div className="flex items-center gap-2 justify-end text-sm font-bold text-[#1A1A1A]">
                                             <Clock size={14} className="text-[#FF4B91]" />
-                                            {formatDistanceToNow(new Date(session.lastActiveAt), { addSuffix: true })}
+                                            {session.lastActiveAt ? formatDistanceToNow(new Date(session.lastActiveAt), { addSuffix: true }) : 'N/A'}
                                         </div>
                                     </div>
                                     <div className="w-px h-10 bg-muted-foreground/10" />
                                     <div className="space-y-1">
                                         <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Expiry</p>
-                                        <p className="text-sm font-bold text-[#1A1A1A]">{new Date(session.expiresAt).toLocaleDateString([], { month: 'short', day: 'numeric' })}</p>
+                                        <p className="text-sm font-bold text-[#1A1A1A]">{session.expiresAt ? new Date(session.expiresAt).toLocaleDateString([], { month: 'short', day: 'numeric' }) : 'N/A'}</p>
                                     </div>
                                     <div className="w-px h-10 bg-muted-foreground/10" />
                                     <div className="space-y-1">

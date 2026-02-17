@@ -60,9 +60,10 @@ export function DomainTable() {
         setIsLoading(true);
         try {
             const response = await apiClient.admin.getDomains(page, pageSize, debouncedSearch || undefined);
-            setData(response.data);
+            const domains = Array.isArray(response.data) ? response.data : [];
+            setData(domains);
             setTotalPages(response.totalPages);
-            setTotalCount(response.total ?? response.data?.length ?? 0);
+            setTotalCount(response.total ?? domains.length ?? 0);
             setSelectedIds(new Set()); // Reset selection on refresh
         } catch (error) {
             console.error('Failed to fetch domains:', error);

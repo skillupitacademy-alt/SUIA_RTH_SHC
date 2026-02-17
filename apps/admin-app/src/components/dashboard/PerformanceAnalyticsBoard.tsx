@@ -110,7 +110,7 @@ export function PerformanceAnalyticsBoard() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {perf.domains.map((domain) => (
+                    {Array.isArray(perf.domains) && perf.domains.map((domain) => (
                         <div key={domain.id} className="p-6 rounded-[1.5rem] bg-white border border-slate-200 hover:border-blue-500/30 transition-all group shadow-sm">
                             <div className="flex items-center justify-between mb-3">
                                 <span className="alpha-terminal text-slate-600">{domain.name}</span>
@@ -141,7 +141,7 @@ export function PerformanceAnalyticsBoard() {
                     <div>
                         <h4 className="alpha-terminal text-slate-500 mb-6 !tracking-wide">Accuracy by Difficulty</h4>
                         <div className="grid grid-cols-3 gap-4">
-                            {perf.difficulty.map((d) => (
+                            {Array.isArray(perf.difficulty) && perf.difficulty.map((d) => (
                                 <div key={d.level} className="p-5 rounded-3xl bg-white border border-slate-200 text-center">
                                     <p className="alpha-terminal text-slate-600 mb-1 !tracking-wide">{d.level}</p>
                                     <p className="text-2xl font-outfit font-black text-[#1A1A1A]">{d.avgAccuracy}%</p>
@@ -177,7 +177,7 @@ export function PerformanceAnalyticsBoard() {
                         </div>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-                        {growth.map((t) => (
+                        {Array.isArray(growth) && growth.map((t) => (
                             <div key={t.id} className="p-6 rounded-[2rem] bg-white border border-amber-500/20 shadow-sm text-center">
                                 <p className="alpha-terminal text-slate-600 mb-1 truncate !tracking-wide">{t.name}</p>
                                 <p className="text-2xl font-outfit font-black text-rose-600">{t.accuracy}% Accuracy</p>

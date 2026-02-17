@@ -61,7 +61,7 @@ export const HierarchyReports: React.FC = () => {
             const data = await apiClient.admin.getContentHealthReport();
             await new Promise(r => setTimeout(r, 800)); // Diagnostic delay for ZLoader
             // Transform for consistent display
-            const normalizedData: HierarchyItem[] = (data as Record<string, unknown>[]).map((d) => ({
+            const normalizedData: HierarchyItem[] = Array.isArray(data) ? (data as Record<string, unknown>[]).map((d) => ({
                 id: d.domainId as string,
                 name: d.domainName as string,
                 stats: d.stats as HierarchyItem['stats'],
@@ -80,7 +80,7 @@ export const HierarchyReports: React.FC = () => {
                         })) : []
                     })) : []
                 })) : []
-            }));
+            })) : [];
             setReportData(normalizedData);
             setViewStack([{ level: 'domain', data: normalizedData, title: 'Global Domains' }]);
         } catch (error) {

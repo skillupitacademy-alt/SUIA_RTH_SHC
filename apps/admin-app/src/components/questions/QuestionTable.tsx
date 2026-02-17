@@ -2,11 +2,12 @@
 
 import { apiClient } from '@quiz/api-client';
 import { ZLoader, ZPagination } from '@quiz/ui';
-import { AlertTriangle, FileText, Filter, Hash, Trash2, X } from 'lucide-react';
+import { AlertTriangle, Check, FileText, Filter, Hash, Trash2, X } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 import { CascadingSelect, Selection } from '@/components/entry/CascadingSelect';
+import { cn } from '@/lib/utils';
 
 import { QuestionReviewCard } from './QuestionReviewCard';
 
@@ -107,9 +108,10 @@ export function QuestionTable() {
                     skillIds: filters.skillIds.length > 0 ? filters.skillIds : undefined,
                     search: (debouncedSearch != null && debouncedSearch !== '') ? debouncedSearch : undefined,
                 });
-                setQuestions(data.questions);
+                const fetchedQuestions = Array.isArray(data.questions) ? data.questions : [];
+                setQuestions(fetchedQuestions);
                 setTotalPages(data.totalPages);
-                setTotalCount(data.total ?? data.questions?.length ?? 0); // Fallback if total is missing
+                setTotalCount(data.total ?? fetchedQuestions.length ?? 0); // Fallback if total is missing
             } catch (error) {
                 console.error('Failed to fetch questions:', error);
                 // We keep silence for main table load but could set an error state if requested
@@ -237,19 +239,19 @@ export function QuestionTable() {
 
                     {/* Question List */}
                     <div className="space-y-6">
-                        {(isLoading === true && questions.length === 0) ? (
+                        {(isLoading === true && (Array.isArray(questions) ? questions.length === 0 : true)) ? (
                             Array.from({ length: 3 }).map((_, i) => (
                                 <div key={i} className="h-48 rounded-[2rem] bg-slate-50 border border-slate-100 animate-pulse" />
                             ))
                         ) : (
                             <>
-                                {questions.length === 0 ? (
+                                {(Array.isArray(questions) && questions.length === 0) && !isLoading && (
                                     <div className="text-center py-24 opacity-50">
                                         <Hash className="w-16 h-16 mx-auto mb-4 text-slate-300" />
                                         <p className="text-sm font-bold text-slate-500 uppercase tracking-widest">No Intelligence Assets Found</p>
                                     </div>
-                                ) : null}
-                                {questions.map((q, idx) => (
+                                )}
+                                {Array.isArray(questions) && questions.map((q, idx) => (
                                     <QuestionReviewCard
                                         key={q.id}
                                         question={q}

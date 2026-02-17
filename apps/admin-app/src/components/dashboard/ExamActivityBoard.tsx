@@ -92,19 +92,19 @@ export function ExamActivityBoard() {
                     Activity by Domain
                 </h4>
                 <div className="space-y-3">
-                    {stats.byDomain?.map((d: any) => (
+                    {Array.isArray(stats.byDomain) && stats.byDomain.map((d: any) => (
                         <div key={d.name} className="flex items-center justify-between p-4 rounded-2xl bg-slate-50/50 border border-slate-100 hover:border-slate-200 transition-colors">
                             <div className="flex items-center gap-3">
                                 <div className="w-1.5 h-1.5 rounded-full bg-slate-300" />
-                                <span className="text-xs font-bold uppercase tracking-wider text-slate-700">{d.name}</span>
+                                <span className="text-xs font-bold uppercase tracking-wider text-slate-700">{d.name ?? 'Unknown'}</span>
                             </div>
                             <div className="flex items-center gap-2">
-                                <span className="text-sm font-black text-[#1A1A1A]">{d.count}</span>
+                                <span className="text-sm font-black text-[#1A1A1A]">{d.count ?? 0}</span>
                                 <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Exams</span>
                             </div>
                         </div>
                     ))}
-                    {((stats.byDomain as any[]) === null || (stats.byDomain as any[]).length === 0) && (
+                    {(!Array.isArray(stats.byDomain) || stats.byDomain.length === 0) && (
                         <p className="text-xs font-bold text-slate-400">No domain activity recorded yet.</p>
                     )}
                 </div>

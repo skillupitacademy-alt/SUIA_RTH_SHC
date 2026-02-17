@@ -87,9 +87,10 @@ export function TopicTable() {
         setIsLoading(true);
         try {
             const response = await apiClient.admin.getTopics(page, pageSize, debouncedSearch || undefined);
-            setData(response.data);
+            const topics = Array.isArray(response.data) ? response.data : [];
+            setData(topics);
             setTotalPages(response.totalPages);
-            setTotalCount(response.total ?? response.data?.length ?? 0);
+            setTotalCount(response.total ?? topics.length ?? 0);
             setSelectedIds(new Set());
         } catch (error) {
             console.error('Failed to fetch topics:', error);
@@ -300,59 +301,77 @@ export function TopicTable() {
                                     ))
                                 ) : (
                                     <>
-                                        {data.map((topic) => (
+                                        {Array.isArray(data) && data.map((topic) => (
                                             <tr key={topic.id} className={cn("group transition-colors hover:bg-white/60", selectedIds.has(topic.id) && "bg-[#FF4B91]/5")}>
-
+                                                {/* CHECKBOX CELL */}
                                                 <td className="p-6">
                                                     <button
                                                         onClick={() => toggleSelect(topic.id, !selectedIds.has(topic.id))}
-                                                        className={cn("w-5 h-5 rounded-lg border-2 transition-all flex items-center justify-center", selectedIds.has(topic.id) ? "border-[#FF4B91] bg-[#FF4B91] text-white" : "border-primary/10 hover:border-primary/30")}
+                                                        className={cn(
+                                                            "w-5 h-5 rounded-lg border-2 transition-all flex items-center justify-center",
+                                                            selectedIds.has(topic.id) ? "bg-[#FF4B91] border-[#FF4B91] shadow-lg shadow-[#FF4B91]/20" : "bg-white border-slate-200"
+                                                        )}
                                                     >
-                                                        {selectedIds.has(topic.id) && <Check size={12} />}
+                                                        {selectedIds.has(topic.id) && <Check size={12} className="text-white" />}
                                                     </button>
                                                 </td>
+                                                {/* TOPIC INFO */}
                                                 <td className="p-6">
                                                     <div className="flex items-center gap-4">
-                                                        <div className="w-12 h-12 rounded-2xl bg-slate-50 border border-primary/5 flex items-center justify-center text-slate-400 group-hover:bg-white group-hover:text-[#FF4B91] transition-all">
-                                                            <BookOpen size={20} />
+                                                        <div className="w-10 h-10 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-[#FF4B91]/10 group-hover:text-[#FF4B91] transition-colors">
+                                                            <BookOpen size={18} />
                                                         </div>
-                                                        <div>
-                                                            <p className="font-black text-slate-900 uppercase tracking-tight">{topic.name}</p>
-                                                            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-0.5 truncate max-w-[200px]">{(topic.description != null && topic.description !== '') ? topic.description : 'No specialized metadata'}</p>
+                                                        <div className="flex flex-col">
+                                                            <span className="text-sm font-black text-[#1A1A1A]">{topic.name}</span>
+                                                            <span className="text-[10px] font-bold text-slate-400">ID: {topic.id}</span>
                                                         </div>
                                                     </div>
                                                 </td>
+                                                {/* SUBJECT INFO */}
                                                 <td className="p-6">
-                                                    <div className="flex items-center gap-2">
-                                                        <span className="px-3 py-1 rounded-full bg-slate-100 border border-slate-200 text-[10px] font-black text-slate-600 uppercase tracking-widest">
-                                                            {topic.subject?.name != null && topic.subject.name !== '' ? topic.subject.name : 'Unlinked'}
-                                                        </span>
+                                                    <div className="flex flex-col">
+                                                        <span className="text-xs font-bold text-slate-600">{topic.subject?.name ?? 'Unlinked'}</span>
+                                                        <span className="text-[9px] font-black uppercase tracking-tighter text-slate-400">{topic.subject?.domain?.name ?? 'No Domain'}</span>
                                                     </div>
                                                 </td>
+                                                {/* WEIGHT */}
                                                 <td className="p-6 text-center">
-                                                    <span className="text-sm font-black text-slate-800">{topic.weight}x</span>
+                                                    <div className="inline-flex flex-col items-center">
+                                                        <span className="text-xs font-black text-[#1A1A1A]">{topic.weight}x</span>
+                                                        <div className="flex gap-0.5 mt-1">
+                                                            {Array.from({ length: 5 }).map((_, i) => (
+                                                                <div key={i} className={cn("w-1 h-1 rounded-full", i < topic.complexityLevel ? "bg-[#FF4B91]" : "bg-slate-200")} />
+                                                            ))}
+                                                        </div>
+                                                    </div>
                                                 </td>
+                                                {/* STATUS */}
                                                 <td className="p-6">
-                                                    <span className={cn("px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border", topic.status === 'active' ? "bg-green-50 text-green-600 border-green-100" : "bg-slate-100 text-slate-400 border-slate-200")}>
-                                                        {topic.status || 'Active'}
-                                                    </span>
+                                                    <div className={cn(
+                                                        "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-widest",
+                                                        topic.status === 'active' ? "bg-emerald-50 text-emerald-600" : "bg-slate-100 text-slate-400"
+                                                    )}>
+                                                        <div className={cn("w-1 h-1 rounded-full", topic.status === 'active' ? "bg-emerald-500 animate-pulse" : "bg-slate-400")} />
+                                                        {topic.status}
+                                                    </div>
                                                 </td>
+                                                {/* ACTIONS */}
                                                 <td className="p-6 text-right">
-                                                    <div className="flex items-center justify-end gap-2 opacity-100 xl:opacity-0 group-hover:opacity-100 transition-all">
-                                                        <button onClick={() => handleOpenForm(topic)} className="p-2.5 rounded-xl bg-slate-50 hover:bg-[#FF4B91] text-slate-400 hover:text-white transition-all border border-slate-100">
-                                                            <Edit2 size={16} />
+                                                    <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                        <button onClick={() => { setCurrentTopic(topic); setFormData({ ...topic, domainId: topic.subject?.domainId || '' } as any); setIsFormOpen(true); }} className="p-2 rounded-xl bg-white border border-slate-100 text-slate-400 hover:text-[#FF4B91] hover:border-[#FF4B91]/20 transition-all shadow-sm">
+                                                            <Edit2 size={14} />
                                                         </button>
-                                                        <button onClick={() => { setCurrentTopic(topic); setIsDeleteOpen(true); }} className="p-2.5 rounded-xl bg-slate-50 hover:bg-red-500 text-slate-400 hover:text-white transition-all border border-slate-100">
-                                                            <Trash2 size={16} />
+                                                        <button onClick={() => { setCurrentTopic(topic); setIsDeleteOpen(true); }} className="p-2 rounded-xl bg-white border border-slate-100 text-slate-400 hover:text-rose-500 hover:border-rose-100 transition-all shadow-sm">
+                                                            <Trash2 size={14} />
                                                         </button>
                                                     </div>
                                                 </td>
                                             </tr>
                                         ))}
-                                        {data.length === 0 && !isLoading && (
+                                        {(Array.isArray(data) && data.length === 0) && !isLoading && (
                                             <tr>
                                                 <td colSpan={6} className="py-32 text-center opacity-50">
-                                                    <Hash className="w-16 h-16 mx-auto mb-4 text-slate-300" />
+                                                    <BookOpen className="w-16 h-16 mx-auto mb-4 text-slate-300" />
                                                     <h3 className="text-lg font-bold text-slate-500 font-outfit uppercase tracking-tighter">Negative Topic Match_</h3>
                                                 </td>
                                             </tr>
