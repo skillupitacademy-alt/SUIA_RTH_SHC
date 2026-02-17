@@ -33,8 +33,8 @@ jobs:
       - name: Type-check (all apps)
         run: pnpm typecheck:all
 
-      - name: Unit Tests (placeholder)
-        run: pnpm test || true
+      - name: Unit Tests
+        run: pnpm test:all
 
       - name: Build (all apps)
         run: pnpm build:all

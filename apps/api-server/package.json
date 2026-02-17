@@ -7,7 +7,10 @@
         "build": "next build",
         "start": "next start",
         "lint": "cross-env ESLINT_USE_FLAT_CONFIG=false eslint --ext .ts,.tsx,.js,.jsx .",
-        "type-check": "tsc --noEmit -p tsconfig.json"
+        "type-check": "tsc --noEmit -p tsconfig.json",
+        "test": "vitest run",
+        "test:watch": "vitest",
+        "test:coverage": "vitest run --coverage"
     },
     "dependencies": {
         "@quiz/api-client": "workspace:*",
@@ -46,6 +49,7 @@
         "zustand": "^5.0.0"
     },
     "devDependencies": {
+        "@vitest/coverage-v8": "^4.0.18",
         "vite-tsconfig-paths": "^6.1.1",
         "vitest": "^4.0.18"
     },

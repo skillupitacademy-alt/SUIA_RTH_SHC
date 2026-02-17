@@ -140,3 +140,11 @@
 
 - Phase B tracked on parent branch `manifesto/phase-b-parent`; CI pipeline expanded (quality gates + e2e smoke scaffold) and Husky/lint-staged enabled.
 - Created `manifesto/phase-c-parent` from Phase B parent to begin testing initiatives (Phase C). Working tree clean on new branch.
+
+## 2026-02-18 — Phase C1 testing groundwork (Vitest across apps)
+
+- Installed Vitest stacks: api-server (`vitest`, coverage), admin/web apps (`vitest`, RTL, jsdom, plugin-react, coverage). Added per-app configs and setup files.
+- Added test scripts to each app (`test`, `test:watch`, `test:coverage`) and root `test:all`; CI now runs `pnpm test:all`.
+- Enabled tsconfig path aliases in Vitest (tsconfigPaths) and alias `@tests` → `tests/` so shared Playwright utils resolve; limited includes to unit test globs and set `passWithNoTests: true` for admin/web until specs exist.
+- Fixed scoring engine import in job orchestrator tests via tsconfig paths; all Vitest suites now pass (no unit tests yet in admin/web, api-server suites green).
+- Current gates: `pnpm lint:all`, `pnpm typecheck:all`, `pnpm build:all`, `pnpm test:all` all succeed.
