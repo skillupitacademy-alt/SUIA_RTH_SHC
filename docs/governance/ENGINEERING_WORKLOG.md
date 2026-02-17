@@ -350,3 +350,10 @@
 - Lint @quiz/api-server with --max-warnings=0 passes after autofix.
 - Remaining F2c scope: hierarchy atomic, logs route, metrics routes (blueprints/exams/users/rbac/performance/security/growth/content), sessions live, system usage, trends (scores/skills/summary).
 
+
+## 2026-02-18 — Phase F2c console → Pino (batch10 infra/admin logs)
+
+- Added Pino child loggers to admin hierarchy atomic seed, audit logs fetch, live sessions list, and system usage routes; structured error-only logs, no bodies/headers.
+- Lint @quiz/api-server with --max-warnings=0 passes after autofix.
+- Remaining F2c scope: metrics routes (blueprints/exams/users/rbac/performance/security/growth/content), trends (scores/skills/summary), system usage already done, publish done, users done, questions done, subjects/domains batch done.
+

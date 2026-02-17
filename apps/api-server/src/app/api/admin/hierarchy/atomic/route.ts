@@ -1,10 +1,13 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
+import { logger } from '@/lib/logger';
 import { AdminEngine } from '@/modules/admin-engine/admin.engine';
 import { TokenService } from '@/modules/auth/token.service';
 
 export const dynamic = 'force-dynamic';
+
+const log = logger.child({ module: 'admin:hierarchy-atomic' });
 
 async function _verifyAdmin(_req: NextRequest) {
     const _token = TokenService.getAccessToken(_req, { scope: 'admin' });
@@ -30,7 +33,7 @@ export async function POST(_req: NextRequest) {
         return NextResponse.json(result);
     } catch (_error: unknown) {
         const message = _error instanceof Error ? _error.message : 'Internal Server Error';
-        console.error('[ADMIN_HIERARCHY_ATOMIC] Error:', message);
+        log.error({ error: message }, 'ADMIN_HIERARCHY_ATOMIC failed');
         return NextResponse.json({ _error: message }, { status: 500 });
     }
 }
