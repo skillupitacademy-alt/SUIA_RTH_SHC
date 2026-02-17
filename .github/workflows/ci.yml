@@ -7,7 +7,7 @@ on:
     branches: ["*"]
 
 jobs:
-  lint-typecheck-build:
+  quality-gates:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -33,5 +33,35 @@ jobs:
       - name: Type-check (all apps)
         run: pnpm typecheck:all
 
+      - name: Unit Tests (placeholder)
+        run: pnpm test || true
+
       - name: Build (all apps)
         run: pnpm build:all
+
+  e2e-smoke:
+    needs: quality-gates
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PNPM
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "pnpm"
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: E2E Smoke (placeholder)
+        run: pnpm e2e:smoke || true
