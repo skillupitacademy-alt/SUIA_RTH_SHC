@@ -266,3 +266,12 @@
 - Next phase prep: queued Phase F1 (Pino structured logging) as the next executable task after performance items; no code changes yet—will add Pino config and transport wiring when approved to start.
 - Phase F1 kickoff: installed Pino deps (pino, pino-http, pino-pretty) for @quiz/api-server in prep for structured logging wiring. No code changes yet. 374414c (docs: log f2 route logging batch2 start)
 
+
+## 2026-02-18 — Phase F1 Pino logging (api-server)
+
+- Added production-safe Pino logger in pps/api-server/src/lib/logger.ts: JSON output in prod (default level warn, overridable via LOG_LEVEL), pretty print only in dev; avoids logging headers/bodies and skips request-by-default noise.
+- Implemented request ID generation/reuse with response header passthrough; all request-scoped logs include equestId without global mutable state.
+- Wrapped App Router handlers with withLogging helper to log only warnings/errors, catch unhandled exceptions, emit structured 500s, and avoid sensitive fields; no pino-http/Express middleware to keep serverless cold starts light.
+- Demonstrated usage in pps/api-server/app/api/health/route.ts GET handler; compatible with Vercel Node runtime (no Edge assumptions).
+- Branch hygiene: cherry-picked prior Phase F commits onto manifesto/phase-f-parent after isolating Phase E on its own parent branch; worklog conflicts resolved without altering earlier entries.
+
