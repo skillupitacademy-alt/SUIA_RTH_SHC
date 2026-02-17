@@ -41,7 +41,7 @@
   - Auth context now normalizes `user.onboarded` and `isAdmin` before storing; context types tightened (no `unknown` user).
   - Onboarding wizard sends a minimal, typed profile payload (`role: user`, `onboarded: true`, `isAdmin: false`).
   - Exam interface starts quizzes with a default config instead of `null`; prevents store type violations.
-  - Dashboard “My Exams” filter metadata now emits `{id,name}` for SelectField compatibility.
+  - Dashboard “My Exams� filter metadata now emits `{id,name}` for SelectField compatibility.
   - QuizSelection/Console guard against missing domain category icons and supply DomainCard requirements (`category`, `coverage`); topic points defaulted when absent.
   - Dependency hygiene: removed duplicate `@types/bcryptjs` from `apps/web-app` (kept root devDependency + shim).
 
@@ -270,7 +270,8 @@
 ## 2026-02-18 — Phase F1 Pino logging (api-server)
 
 - Added production-safe Pino logger in pps/api-server/src/lib/logger.ts: JSON output in prod (default level warn, overridable via LOG_LEVEL), pretty print only in dev; avoids logging headers/bodies and skips request-by-default noise.
-- Implemented request ID generation/reuse with response header passthrough; all request-scoped logs include equestId without global mutable state.
+- Implemented request ID generation/reuse with response header passthrough; all request-scoped logs include 
+equestId without global mutable state.
 - Wrapped App Router handlers with withLogging helper to log only warnings/errors, catch unhandled exceptions, emit structured 500s, and avoid sensitive fields; no pino-http/Express middleware to keep serverless cold starts light.
 - Demonstrated usage in pps/api-server/app/api/health/route.ts GET handler; compatible with Vercel Node runtime (no Edge assumptions).
 - Branch hygiene: cherry-picked prior Phase F commits onto manifesto/phase-f-parent after isolating Phase E on its own parent branch; worklog conflicts resolved without altering earlier entries.
@@ -409,6 +410,15 @@
 
 ## 2026-02-18 — Phase F3 client logging (batch7 admin dashboard)
 
+
 - Converted admin dashboard panels to clientLogger (error-only, sanitized): BlueprintAuditBoard, ContentReadinessBoard, PerformanceAnalyticsBoard, SecurityHealthPanel, ServiceHealth, RBACGovernancePanel, LiveSessionsList, SystemAuditTerminal, ExamActivityBoard, UserAnalyticsPanel. Behaviors unchanged; logs stay warn/error in prod.
 - Lint @quiz/admin-app with --max-warnings=0 passes post-change.
 - Pending admin swaps: reports, question tables, ReviewConsole, forgot/reset pages, trends/deep-analytics pages; then web-app clientLogger rollout.
+
+## 2026-02-18 � Phase F3 client logging (batch8 admin reports/auth/trends)
+
+- Swapped remaining admin report/auth/trend pages to clientLogger (error-only, sanitized): HierarchyReports, forgot-password, reset-password, TrendsPage, DeepAnalyticsPage. No UI/behavior changes.
+- Lint @quiz/admin-app with --max-warnings=0 passes after autofix.
+- Pending admin swaps: question tables (domain/subject/topic/subtopic/skill/question) and factory ReviewConsole; then web-app clientLogger rollout.
+
+
