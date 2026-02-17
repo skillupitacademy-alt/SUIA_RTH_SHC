@@ -158,3 +158,8 @@
 
 - Added skipped unit-test scaffolds in `apps/admin-app/src/__tests__/placeholder.test.ts` and `apps/web-app/src/__tests__/placeholder.test.ts` to reserve suite locations for future coverage without running now.
 - Added skipped Playwright placeholders (`_skip-placeholder.spec.ts`) under `apps/admin-app/tests/e2e/` and `apps/web-app/tests/e2e/` to note pending E2E implementation; these are not executed.
+
+## 2026-02-18 — Phase C2 prep: fleshed scaffolds (still skipped)
+
+- Expanded skipped scaffolds for api-server Tier 1 services (auth, token, session, scoring, exam engines) with clearer scenarios to fill later; still `describe.skip` to keep execution deferred.
+- Goal: enable rapid fill-in of real assertions in later sessions without re-plumbing paths or suite structures.

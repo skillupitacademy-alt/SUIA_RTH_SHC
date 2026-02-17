@@ -1,12 +1,21 @@
-import { describe, expect,it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-// TODO: Flesh out token generation/verification tests with seeded secrets and clock mocks.
-describe.skip('TokenService', () => {
-  it('should sign access token', () => {
+// Execution deferred until full mocks/fixtures are ready.
+describe.skip('TokenService (scaffold)', () => {
+  beforeEach(() => {
+    vi.useRealTimers();
+    vi.clearAllMocks();
+  });
+
+  it('should sign access token with admin scope', async () => {
     expect(true).toBe(true);
   });
 
-  it('should verify access token', () => {
+  it('should reject expired token', async () => {
+    expect(true).toBe(true);
+  });
+
+  it('should rotate refresh token', async () => {
     expect(true).toBe(true);
   });
 });

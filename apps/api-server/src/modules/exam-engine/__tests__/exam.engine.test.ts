@@ -1,8 +1,16 @@
-import { describe, expect,it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
-// TODO: Cover start/submit/complete flows with mocked repositories and idempotency keys.
-describe.skip('ExamEngine', () => {
-  it('should start an exam with idempotency key', () => {
+// Execution deferred — real mocks for repositories/idempotency to be added in Phase C2.
+describe.skip('ExamEngine (scaffold)', () => {
+  it('starts exam with idempotency key', () => {
+    expect(true).toBe(true);
+  });
+
+  it('submits answers and returns processing status', () => {
+    expect(true).toBe(true);
+  });
+
+  it('completes exam and returns result', () => {
     expect(true).toBe(true);
   });
 });

@@ -1,12 +1,21 @@
-import { describe, expect,it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-// TODO: Implement real unit tests for AuthService once test harness and fakes are ready.
-describe.skip('AuthService', () => {
-  it('login should return user and tokens', () => {
+// Execution deferred: fill in real mocks later.
+describe.skip('AuthService (scaffold)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('login should return user and tokens', async () => {
+    // TODO: mock AuthService dependencies and assert token/cookie payloads.
     expect(true).toBe(true);
   });
 
-  it('signup should create a new user', () => {
+  it('signup should create user and auto-login', async () => {
+    expect(true).toBe(true);
+  });
+
+  it('forgot-password should trigger email with reset token', async () => {
     expect(true).toBe(true);
   });
 });
