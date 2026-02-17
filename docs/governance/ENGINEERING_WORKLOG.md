@@ -254,3 +254,4 @@
 - Added SSR-safe ""safeLocalStorage"" utility with TTL, try/catch, and availability probe in both apps (pps/web-app/src/utils/safeLocalStorage.ts, pps/admin-app/src/utils/safeLocalStorage.ts) to prevent window/Quota errors and centralize key handling. No functional usage yet—helper is ready for future adoption.
 - Updated MANIFESTO_ROADMAP to track E2a task under Phase E.
 
+- Phase E2a wiring: replaced direct localStorage in web useExamBackup and admin FactoryContext/useJobTracker with safeLocalStorage helpers (SSR-safe, TTL-capable); guarded admin unauthorized logout for windowless cases. No behavior change, only safer persistence.\n
