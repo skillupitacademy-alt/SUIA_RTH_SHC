@@ -301,3 +301,10 @@
 - Lint @quiz/api-server with --max-warnings=0 passes after autofix.
 - Remaining F2c todo: migrate console.* across remaining admin routes (topics, skills, subtopics, questions, metrics, logs, publish/approve, batch-delete sets, users, sessions, trends).
 
+
+## 2026-02-18 — Phase F2c console → Pino (batch3 partial)
+
+- Converted console logs to Pino child loggers in admin blueprints/[id] routes (patch/delete) and admin approve route; minimal structured errors only.
+- Lint @quiz/api-server with --max-warnings=0 passes.
+- Remaining F2c scope: other admin routes (topics/skills/subtopics/questions batches, metrics/logs/publish, users/sessions/trends, etc.).
+
