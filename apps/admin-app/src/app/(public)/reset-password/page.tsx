@@ -8,6 +8,8 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useState } from 'react';
 
+import { clientLogger } from '@/utils/clientLogger';
+
 function ResetPasswordForm() {
     const searchParams = useSearchParams();
     const router = useRouter();
@@ -59,7 +61,7 @@ function ResetPasswordForm() {
             setIsSuccess(true);
             setTimeout(() => router.push('/login'), 5000); // Redirect after 5s
         } catch (err: unknown) {
-            console.error(err);
+            clientLogger.error('Reset password failed', { error: err instanceof Error ? err.message : 'unknown' });
             const msg = err instanceof Error ? err.message : 'Failed to update password.';
             setError(msg);
         } finally {

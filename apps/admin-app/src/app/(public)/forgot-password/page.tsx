@@ -6,6 +6,8 @@ import { ArrowLeft, CheckCircle2, Mail, Send } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
 
+import { clientLogger } from '@/utils/clientLogger';
+
 export default function ForgotPasswordPage() {
     const [email, setEmail] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -24,7 +26,7 @@ export default function ForgotPasswordPage() {
             setIsSuccess(true);
             setMessage('Recovery link sent! Check your inbox (including spam).');
         } catch (err: unknown) {
-            console.error(err);
+            clientLogger.error('Forgot password request failed', { error: err instanceof Error ? err.message : 'unknown' });
             const message = err instanceof Error ? err.message : 'Failed to send recovery link. Please verify your email.';
             setError(message);
         } finally {
