@@ -35,6 +35,8 @@
         "node_modules",
         "*.config.js",
         "*.config.mjs",
-        "**/__tests__/**/*"
+        "**/__tests__/**/*",
+        "vitest.config.ts",
+        "vitest.setup.ts"
     ]
 }
