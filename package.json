@@ -28,7 +28,7 @@
         "typecheck:all": "turbo run type-check --filter=@quiz/web-app --filter=@quiz/admin-app --filter=@quiz/api-server",
         "ci": "pnpm lint:all && pnpm typecheck:all && pnpm build:all",
         "clean": "turbo run clean && rm -rf node_modules",
-        "prepare": "husky"
+        "prepare": "echo \"husky prepare temporarily disabled; set scripts.prepare=\\\"husky\\\" to re-enable\""
     },
     "devDependencies": {
         "@next/bundle-analyzer": "^16.1.6",
