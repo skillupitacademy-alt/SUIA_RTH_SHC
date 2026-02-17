@@ -186,3 +186,7 @@
 
 - Enriched skipped Tier 1 api-server tests (auth, token, session, scoring, exam engines) with realistic in-memory fixtures and typed mocks drawn from testing docs (`test@example.com`, `access-token`, `refresh-token`, UUID-like ids). Kept `describe.skip` to defer execution.
 - CI remains green; tests ready to un-skip later without additional plumbing.
+
+## 2026-02-18 — Phase C2 lint tidy (admin auth suite)
+
+- Minor formatting cleanup in `apps/api-server/src/modules/auth/__tests__/admin-auth.service.test.ts` to keep Vitest imports lint-compliant across suites; no behavior change and tests remain `describe.skip`.
