@@ -392,3 +392,17 @@
 - Lint @quiz/admin-app with --max-warnings=0 passes.
 - Pending F3: remaining admin console calls (UserTable, other dashboard panels, content/factory UIs, docs viewers, auth forgot/reset) and web-app clientLogger + swaps.
 
+
+## 2026-02-18 — Phase F3 client logging (batch5 admin auth lock) 
+
+- Swapped AdminLockScreen unlock errors to clientLogger (error-only, sanitized).
+- Lint @quiz/admin-app with --max-warnings=0 passes.
+- Pending admin swaps: user tables, content/factory UIs, docs viewers, forgot/reset pages, dashboard panels still listing console.*; then web-app clientLogger rollout.
+
+
+## 2026-02-18 — Phase F3 client logging (batch6 admin content/docs/layout)
+
+- Replaced console.* with clientLogger in SessionExpiryModal, HierarchyFactoryWizard, ContentManager, AdminLayout logout, API docs route, and docs viewers (ArchiveViewer, JourneyFlowViewer, UniversalMarkdownViewer); also migrated UserTable fetch/save/delete paths. All logs are warn/error only and sanitized (no headers/bodies/tokens).
+- Lint @quiz/admin-app with --max-warnings=0 passes after import sort autofix.
+- Pending admin swaps: dashboard panels (content/performance/security/usage etc.), reports, question tables, forgot/reset pages, trends/deep-analytics pages, and factory ReviewConsole; then roll out clientLogger to web-app.
+

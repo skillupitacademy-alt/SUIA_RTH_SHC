@@ -2,6 +2,8 @@ import fs from 'fs/promises';
 import { NextRequest, NextResponse } from 'next/server';
 import path from 'path';
 
+import { clientLogger } from '@/utils/clientLogger';
+
 export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const docPath = searchParams.get('path');
@@ -26,7 +28,7 @@ export async function GET(request: NextRequest) {
         const content = await fs.readFile(absolutePath, 'utf8');
         return NextResponse.json({ content });
     } catch (error) {
-        console.error('API Doc Fetch Error:', error);
+        clientLogger.error('API Doc Fetch Error', { error: error instanceof Error ? error.message : 'unknown' });
         return NextResponse.json({ error: 'File Not Found' }, { status: 404 });
     }
 }

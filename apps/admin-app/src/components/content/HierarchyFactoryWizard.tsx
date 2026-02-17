@@ -27,6 +27,7 @@ import { BlueprintFactoryWizard } from '@/components/content/BlueprintFactoryWiz
 import { SelectField } from '@/components/entry/SelectionFields';
 import { ZTooltip } from '@/components/ui/ZTooltip';
 import { cn } from '@/lib/utils';
+import { clientLogger } from '@/utils/clientLogger';
 
 export interface HierarchyInitialData {
     target?: string;
@@ -130,7 +131,7 @@ export function HierarchyFactoryWizard({ isOpen, onClose, initialData, onSuccess
             setExistingDomains(data.map((d: { domainName: string }) => d.domainName));
             setHierarchicalChoices(prev => ({ ...prev, domains: data as DomainOption[] }));
         } catch (e) {
-            console.error("Failed to fetch existing domains", e);
+            clientLogger.error('Failed to fetch existing domains', { error: e instanceof Error ? e.message : 'unknown' });
         } finally {
             setLoadingChoices(prev => ({ ...prev, domains: false }));
         }
@@ -143,7 +144,7 @@ export function HierarchyFactoryWizard({ isOpen, onClose, initialData, onSuccess
                 try {
                     const data = await apiClient.admin.getSubjectsByDomain(selections.domainId);
                     setHierarchicalChoices(prev => ({ ...prev, subjects: data as SubjectOption[] }));
-                } catch (e) { console.error(e); }
+                } catch (e) { clientLogger.error('Fetch subjects failed in wizard', { error: e instanceof Error ? e.message : 'unknown' }); }
                 finally { setLoadingChoices(prev => ({ ...prev, subjects: false })); }
             } else {
                 setHierarchicalChoices(prev => ({ ...prev, subjects: [] }));
@@ -159,7 +160,7 @@ export function HierarchyFactoryWizard({ isOpen, onClose, initialData, onSuccess
                 try {
                     const data = await apiClient.admin.getTopicsBySubject(selections.subjectId);
                     setHierarchicalChoices(prev => ({ ...prev, topics: data as TopicOption[] }));
-                } catch (e) { console.error(e); }
+                } catch (e) { clientLogger.error('Fetch topics failed in wizard', { error: e instanceof Error ? e.message : 'unknown' }); }
                 finally { setLoadingChoices(prev => ({ ...prev, topics: false })); }
             } else {
                 setHierarchicalChoices(prev => ({ ...prev, topics: [] }));

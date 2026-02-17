@@ -4,6 +4,8 @@ import { apiClient } from '@quiz/api-client';
 import { ExternalLink, FileText, MoreHorizontal } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
+import { clientLogger } from '@/utils/clientLogger';
+
 interface ContentItem {
     id: string;
     questionText: string;
@@ -21,7 +23,7 @@ export function ContentManager() {
                 const data = await apiClient.admin.getQuestions();
                 setContent(data.questions as ContentItem[]);
             } catch (err) {
-                console.error("Failed to fetch admin content", err);
+                clientLogger.error('Failed to fetch admin content', { error: err instanceof Error ? err.message : 'unknown' });
             } finally {
                 setLoading(false);
             }

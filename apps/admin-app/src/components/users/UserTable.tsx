@@ -9,6 +9,7 @@ import Image from 'next/image';
 import { useEffect, useState } from 'react';
 
 import { ErrorBanner } from '@/components/layout/ErrorBanner';
+import { clientLogger } from '@/utils/clientLogger';
 
 interface UserData {
     id: string;
@@ -85,7 +86,7 @@ export function UserTable() {
             setTotalPages(activeData.totalPages);
             setTotalCount(activeData.total || activeData.users.length);
         } catch (error) {
-            console.error('Failed to fetch users:', error);
+            clientLogger.error('Failed to fetch users', { error: error instanceof Error ? error.message : 'unknown' });
             setErrorMessage('Connection Error: Unable to sync user accounts at this time.');
         } finally {
             setIsLoading(false);
@@ -120,7 +121,7 @@ export function UserTable() {
             await fetchUsers();
             handleCloseEdit();
         } catch (error) {
-            console.error('Failed to update user:', error);
+            clientLogger.error('Failed to update user', { error: error instanceof Error ? error.message : 'unknown' });
             setErrorMessage('Update Failed: Unable to save changes to this user account.');
         } finally {
             setIsSaving(false);
@@ -136,7 +137,7 @@ export function UserTable() {
             handleCloseEdit();
             setShowDeleteConfirm(false);
         } catch (error) {
-            console.error('Failed to delete user:', error);
+            clientLogger.error('Failed to delete user', { error: error instanceof Error ? error.message : 'unknown' });
             setErrorMessage('Action Rejected: This user cannot be terminated from the system.');
         } finally {
             setIsSaving(false);
