@@ -1,6 +1,7 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
+import { logger } from '@/lib/logger';
 import { TokenService } from '@/modules/auth/token.service';
 import { ExamEngine } from '@/modules/exam-engine/exam.engine';
 import { startQuizSchema } from '@/schemas/quiz.schemas';
@@ -39,7 +40,7 @@ export async function POST(_req: NextRequest) {
     return NextResponse.json(examData);
   } catch (_error: unknown) {
     const message = _error instanceof Error ? _error.message : 'Bad request';
-    console.error('[QUIZ_START] Error:', message);
+    logger.error({ err: _error, route: '/api/quiz/start' }, '[QUIZ_START] Error');
     return NextResponse.json({ _error: message }, { status: 400 });
   }
 }
