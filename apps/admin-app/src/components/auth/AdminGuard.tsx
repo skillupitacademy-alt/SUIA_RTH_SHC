@@ -67,7 +67,9 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
                     console.error("Server-side logout failed during unauthorized event:", err);
                 } finally {
                     logout();
-                    localStorage.removeItem('quiz-platform-admin-auth');
+                    if (typeof window !== 'undefined') {
+                        window.localStorage.removeItem('quiz-platform-admin-auth');
+                    }
                     router.push('/login?reason=session_expired');
                 }
             })();

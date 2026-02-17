@@ -2,6 +2,8 @@
 
 import { useEffect, useCallback, useRef } from 'react';
 
+import { safeGet, safeRemove, safeSet } from '@/utils/safeLocalStorage';
+
 const BACKUP_KEY_PREFIX = 'exam_backup_';
 
 interface BackupData {
@@ -23,9 +25,9 @@ export function useExamBackup(examId: string | undefined, answers: Record<string
             lastUpdated: Date.now()
         };
 
-        localStorage.setItem(`${BACKUP_KEY_PREFIX}${id}`, JSON.stringify(data));
+        safeSet(`${BACKUP_KEY_PREFIX}${id}`, data);
         // Keep track of the active examId for resume logic
-        localStorage.setItem('active_exam_id', id);
+        safeSet('active_exam_id', id);
     }, []);
 
     useEffect(() => {
@@ -44,9 +46,9 @@ export function useExamBackup(examId: string | undefined, answers: Record<string
 
     // 2. Clear Backup Helper
     const clearBackup = useCallback((id: string) => {
-        localStorage.removeItem(`${BACKUP_KEY_PREFIX}${id}`);
-        if (localStorage.getItem('active_exam_id') === id) {
-            localStorage.removeItem('active_exam_id');
+        safeRemove(`${BACKUP_KEY_PREFIX}${id}`);
+        if (safeGet<string>('active_exam_id') === id) {
+            safeRemove('active_exam_id');
         }
     }, []);
 
@@ -57,19 +59,11 @@ export function useExamBackup(examId: string | undefined, answers: Record<string
  * Static Helper to retrieve backup data without hook context
  */
 export function getExamBackup(examId: string): BackupData | null {
-    if (typeof window === 'undefined') return null;
-    const raw = localStorage.getItem(`${BACKUP_KEY_PREFIX}${examId}`);
-    if (!raw) return null;
-    try {
-        return JSON.parse(raw);
-    } catch {
-        return null;
-    }
+    return safeGet<BackupData>(`${BACKUP_KEY_PREFIX}${examId}`);
 }
 
 export function getActiveExamId(): string | null {
-    if (typeof window === 'undefined') return null;
-    return localStorage.getItem('active_exam_id');
+    return safeGet<string>('active_exam_id');
 }
 
 /**

@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 
 import { JsonValidator } from '../lib/factory/json-validator';
 import { FactoryBlueprint, GeneratedQuestion, HealingReport,ValidationResult } from '../types/factory';
+import { safeGet, safeRemove, safeSet } from '../utils/safeLocalStorage';
 
 interface FactoryContextType {
     blueprint: FactoryBlueprint;
@@ -51,17 +52,16 @@ export function FactoryProvider({ children }: { children: ReactNode }) {
     // Hydrate from storage on mount
     React.useEffect(() => {
         try {
-            const saved = localStorage.getItem(STORAGE_KEY);
-            if (saved !== null && saved !== '') {
-                const parsed = JSON.parse(saved);
-                if ((parsed.blueprint as FactoryBlueprint | undefined) !== undefined) {
-                    setBlueprintState(parsed.blueprint as FactoryBlueprint);
+            const saved = safeGet<{ blueprint?: FactoryBlueprint; stagedQuestions?: GeneratedQuestion[]; sourceCode?: string; }>(STORAGE_KEY);
+            if (saved !== null) {
+                if (saved.blueprint !== undefined) {
+                    setBlueprintState(saved.blueprint as FactoryBlueprint);
                 }
-                if ((parsed.stagedQuestions as GeneratedQuestion[] | undefined) !== undefined) {
-                    setStagedQuestions(parsed.stagedQuestions as GeneratedQuestion[]);
+                if (saved.stagedQuestions !== undefined) {
+                    setStagedQuestions(saved.stagedQuestions as GeneratedQuestion[]);
                 }
-                if ((parsed.sourceCode as string | undefined) !== undefined) {
-                    setSourceCode(parsed.sourceCode as string);
+                if (saved.sourceCode !== undefined) {
+                    setSourceCode(saved.sourceCode as string);
                 }
             }
         } catch (e) {
@@ -75,7 +75,7 @@ export function FactoryProvider({ children }: { children: ReactNode }) {
         return () => {
             // Note: We don't call resetFactory() directly here because we want to 
             // surgically wipe storage immediately to prevent leakage
-            localStorage.removeItem(STORAGE_KEY);
+            safeRemove(STORAGE_KEY);
         };
     }, []);
 
@@ -88,7 +88,7 @@ export function FactoryProvider({ children }: { children: ReactNode }) {
         const timeout = setTimeout(() => {
             try {
                 const state = { blueprint, stagedQuestions, sourceCode };
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+                safeSet(STORAGE_KEY, state);
             } catch (e) {
                 console.error("Failed to persist factory state", e);
             }
@@ -157,7 +157,7 @@ export function FactoryProvider({ children }: { children: ReactNode }) {
         setStagedQuestions([]);
         setValidationErrors([]);
         setLastHealingReport(null);
-        localStorage.removeItem(STORAGE_KEY);
+        safeRemove(STORAGE_KEY);
         toast.info("Workspace has been reset.");
     };
 
