@@ -1,11 +1,14 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
+import { logger } from '@/lib/logger';
 import type { UpdateUserInput } from '@/modules/admin-engine/admin.engine';
 import { AdminEngine } from '@/modules/admin-engine/admin.engine';
 import { _verifyAdmin } from '@/modules/auth/rbac.service';
 import { TokenService } from '@/modules/auth/token.service';
 import { updateUserSchema } from '@/schemas/admin.schemas';
+
+const log = logger.child({ module: 'admin:users:id' });
 
 export async function PATCH(
   _req: NextRequest,
@@ -31,7 +34,7 @@ export async function PATCH(
     return NextResponse.json(result);
   } catch (_error: unknown) {
     const message = _error instanceof Error ? _error.message : 'Internal Server Error';
-    console.error('[ADMIN_USER_PATCH] Error:', message);
+    log.error({ id: (await params).id, error: message }, 'ADMIN_USER_PATCH failed');
     return NextResponse.json({ _error: message }, { status: 500 });
   }
 }
@@ -56,7 +59,7 @@ export async function DELETE(
     return NextResponse.json(result);
   } catch (_error: unknown) {
     const message = _error instanceof Error ? _error.message : 'Internal Server Error';
-    console.error('[ADMIN_USER_DELETE] Error:', message);
+    log.error({ id: (await params).id, error: message }, 'ADMIN_USER_DELETE failed');
     return NextResponse.json({ _error: message }, { status: 500 });
   }
 }
