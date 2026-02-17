@@ -148,3 +148,13 @@
 - Enabled tsconfig path aliases in Vitest (tsconfigPaths) and alias `@tests` → `tests/` so shared Playwright utils resolve; limited includes to unit test globs and set `passWithNoTests: true` for admin/web until specs exist.
 - Fixed scoring engine import in job orchestrator tests via tsconfig paths; all Vitest suites now pass (no unit tests yet in admin/web, api-server suites green).
 - Current gates: `pnpm lint:all`, `pnpm typecheck:all`, `pnpm build:all`, `pnpm test:all` all succeed.
+
+## 2026-02-18 — Phase C1 test scaffolds (execution deferred)
+
+- Added skipped placeholder unit tests for top-priority services in api-server: `auth.service`, `token.service`, `session.service`, `scoring.engine`, and `exam.engine`. These are marked `describe.skip` so execution remains on hold until we implement full coverage per roadmap.
+- Intention: enable phased test authoring without blocking CI; will flesh out with real assertions in later C2/C3 sessions.
+
+## 2026-02-18 — Additional placeholders for admin/web apps
+
+- Added skipped unit-test scaffolds in `apps/admin-app/src/__tests__/placeholder.test.ts` and `apps/web-app/src/__tests__/placeholder.test.ts` to reserve suite locations for future coverage without running now.
+- Added skipped Playwright placeholders (`_skip-placeholder.spec.ts`) under `apps/admin-app/tests/e2e/` and `apps/web-app/tests/e2e/` to note pending E2E implementation; these are not executed.
