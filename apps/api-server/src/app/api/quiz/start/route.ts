@@ -3,22 +3,9 @@ import { NextResponse } from 'next/server';
 
 import { TokenService } from '@/modules/auth/token.service';
 import { ExamEngine } from '@/modules/exam-engine/exam.engine';
+import { startQuizSchema } from '@/schemas/quiz.schemas';
 
 export const dynamic = 'force-dynamic';
-
-interface StartQuizConfig {
-  questionCount?: number;
-  subjectIds?: string[];
-  topicIds?: string[];
-  subtopicIds?: string[];
-  topics?: string[];
-  difficulty?: string;
-}
-
-interface StartQuizBody extends StartQuizConfig {
-  domainId?: string;
-  blueprintId?: string;
-}
 
 export async function POST(_req: NextRequest) {
   try {
@@ -28,7 +15,9 @@ export async function POST(_req: NextRequest) {
     }
 
     const _payload = await TokenService.verifyAccessToken(_token, false);
-    const body = (await _req.json()) as StartQuizBody;
+    const rawBody = await _req.json();
+    const parsed = startQuizSchema.safeParse(rawBody);
+    const body = parsed.success ? parsed.data : (rawBody as Partial<typeof startQuizSchema['_input']>);
     const { domainId, blueprintId, ...config } = body;
     const targetId = blueprintId ?? domainId;
     const idempotencyKey = _req.headers.get('idempotency-key') ?? _req.headers.get('Idempotency-Key');
@@ -51,6 +40,15 @@ export async function POST(_req: NextRequest) {
     return NextResponse.json({ _error: message }, { status: 400 });
   }
 }
+
+type StartQuizConfig = {
+    questionCount?: number;
+    subjectIds?: string[];
+    topicIds?: string[];
+    subtopicIds?: string[];
+    topics?: string[];
+    difficulty?: string;
+};
 
 function validateStartQuizRequest(idempotencyKey: string | null, targetId: string | undefined, config: StartQuizConfig) {
     if (typeof idempotencyKey !== 'string' || idempotencyKey.trim() === '') {

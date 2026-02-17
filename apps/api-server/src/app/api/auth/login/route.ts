@@ -3,17 +3,15 @@ import { NextResponse } from 'next/server';
 
 import { AuthService } from '@/modules/auth/auth.service';
 import { setCsrfToken } from '@/modules/auth/csrf.middleware';
+import { loginSchema } from '@/schemas/auth.schemas';
 
 export const dynamic = 'force-dynamic';
 
-interface LoginRequest {
-  email?: string;
-  password?: string;
-}
-
 export async function POST(req: NextRequest) {
   try {
-    const { email, password } = (await req.json()) as LoginRequest;
+    const rawBody = await req.json();
+    const parsed = loginSchema.safeParse(rawBody);
+    const { email, password } = parsed.success ? parsed.data : (rawBody as Partial<typeof loginSchema['_input']>);
 
     if (email === undefined || email === null || email === '' || password === undefined || password === null || password === '') {
       return NextResponse.json({ _error: 'Credentials required' }, { status: 400 });

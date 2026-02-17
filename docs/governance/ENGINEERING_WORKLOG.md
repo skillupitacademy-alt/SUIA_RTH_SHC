@@ -89,3 +89,10 @@
 - Restored lint strictness (`--max-warnings=0`) while keeping shared config dependencies (`@quiz/eslint-config`, `@types/bcryptjs`) at the root for consistent tooling.
 - Verification: `pnpm lint:all`, `pnpm typecheck:all`, and `pnpm build:all` all pass after the proxy migration (Turbo cache hits on builds; no lingering warnings).
 - Governance reminder: no file deletions without explicit approval; renames performed with prior user approval for the proxy change.
+
+## 2026-02-18 — Phase A3a soft boundary validation (auth + quiz)
+
+- Added Zod schemas in `apps/api-server/src/schemas/` for auth (`login`, `signup`, `resetPassword`) and quiz (`start`, `answer`, `submit`) payloads. Using `safeParse` + fall-through keeps behavior stable while logging typed intent.
+- Wired schemas into corresponding route handlers with lightweight guards for missing/invalid fields, preserving existing auth/ExamEngine flows and idempotency headers.
+- Re-ran full quality gates: `pnpm lint:all`, `pnpm typecheck:all`, `pnpm build:all` all green post-change (no new warnings/errors).
+- Next steps for Phase A3: extend Zod validation to remaining admin CRUD routes and progressively tighten from soft to strict once logs show zero mismatches.

@@ -3,18 +3,15 @@ import { NextResponse } from 'next/server';
 
 import { AuthService } from '@/modules/auth/auth.service';
 import { setCsrfToken } from '@/modules/auth/csrf.middleware';
+import { signupSchema } from '@/schemas/auth.schemas';
 
 export const dynamic = 'force-dynamic';
 
-interface SignupRequest {
-  email?: string;
-  password?: string;
-  name?: string;
-}
-
 export async function POST(_req: NextRequest) {
   try {
-    const { email, password, name } = (await _req.json()) as SignupRequest;
+    const rawBody = await _req.json();
+    const parsed = signupSchema.safeParse(rawBody);
+    const { email, password, name } = parsed.success ? parsed.data : (rawBody as Partial<typeof signupSchema['_input']>);
 
     if (
       email === undefined || email === null || email === '' || email.trim() === '' || 
