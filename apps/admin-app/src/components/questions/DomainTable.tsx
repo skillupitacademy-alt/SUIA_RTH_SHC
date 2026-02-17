@@ -62,7 +62,7 @@ export function DomainTable() {
             const response = await apiClient.admin.getDomains(page, pageSize, debouncedSearch || undefined);
             setData(response.data);
             setTotalPages(response.totalPages);
-            setTotalCount(response.total || response.data.length);
+            setTotalCount(response.total ?? response.data?.length ?? 0);
             setSelectedIds(new Set()); // Reset selection on refresh
         } catch (error) {
             console.error('Failed to fetch domains:', error);
@@ -438,31 +438,41 @@ export function DomainTable() {
                 </div>
 
                 {/* DOMAIN CARD STACK */}
-                {isLoading === true ? (
-                    <div className="min-h-[400px] flex items-center justify-center">
-                        <ZLoader text="Loading Domains..." />
-                    </div>
-                ) : (
+                <div className="relative min-h-[400px]">
+                    {isLoading === true && (
+                        <div className="absolute inset-x-0 -top-4 bottom-0 z-10 bg-white/40 backdrop-blur-[2px] flex items-center justify-center rounded-[2.5rem]">
+                            <ZLoader text="Synchronizing Domain Matrix_" />
+                        </div>
+                    )}
+
                     <div className="grid grid-cols-1 gap-4">
-                        {data.map((domain, index) => (
-                            <DomainReviewCard
-                                key={domain.id}
-                                domain={domain}
-                                index={index + (page - 1) * 20}
-                                isSelected={selectedIds.has(domain.id)}
-                                onSelect={handleSelect}
-                                onDeleteRequest={(d) => { setCurrentDomain(d); setIsDeleteOpen(true); }}
-                                onEditRequest={(d) => handleOpenForm(d)}
-                            />
-                        ))}
-                        {data.length === 0 && (
-                            <div className="text-center py-20 opacity-50">
-                                <Globe className="w-16 h-16 mx-auto mb-4 text-slate-400" />
-                                <h3 className="text-lg font-bold text-slate-500">No domains found</h3>
-                            </div>
+                        {(isLoading === true && data.length === 0) ? (
+                            Array.from({ length: 5 }).map((_, i) => (
+                                <div key={i} className="h-28 rounded-[2.5rem] bg-slate-50 border border-slate-100 animate-pulse" />
+                            ))
+                        ) : (
+                            <>
+                                {data.map((domain, index) => (
+                                    <DomainReviewCard
+                                        key={domain.id}
+                                        domain={domain}
+                                        index={index + (page - 1) * 20}
+                                        isSelected={selectedIds.has(domain.id)}
+                                        onSelect={handleSelect}
+                                        onDeleteRequest={(d) => { setCurrentDomain(d); setIsDeleteOpen(true); }}
+                                        onEditRequest={(d) => handleOpenForm(d)}
+                                    />
+                                ))}
+                                {data.length === 0 && !isLoading && (
+                                    <div className="text-center py-20 opacity-50">
+                                        <Globe className="w-16 h-16 mx-auto mb-4 text-slate-400" />
+                                        <h3 className="text-lg font-bold text-slate-500 font-outfit uppercase tracking-tighter">Negative Domain Match_</h3>
+                                    </div>
+                                )}
+                            </>
                         )}
                     </div>
-                )}
+                </div>
             </div>
 
             <ZPagination

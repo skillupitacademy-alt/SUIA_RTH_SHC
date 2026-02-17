@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars, react-hooks/exhaustive-deps */
 
 import { apiClient } from '@quiz/api-client';
-import { ZPagination } from '@quiz/ui';
+import { ZLoader, ZPagination } from '@quiz/ui';
 import { Check, Edit2, GitBranch, Layers, Plus, Trash, Trash2, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
@@ -65,7 +65,7 @@ export function SubtopicTable() {
             const response = await apiClient.admin.getSubtopics(page, pageSize, debouncedSearch || undefined);
             setData(response.data);
             setTotalPages(response.totalPages);
-            setTotalCount(response.total || response.data.length);
+            setTotalCount(response.total ?? response.data?.length ?? 0);
             setSelectedIds(new Set());
         } catch (error) {
             console.error('Failed to fetch subtopics:', error);
@@ -301,8 +301,14 @@ export function SubtopicTable() {
                     </div>
                 </div>
 
-                <div className="mt-6 rounded-[2.5rem] border border-primary/10 bg-white/50 backdrop-blur-sm overflow-hidden shadow-xl">
+                <div className="mt-6 rounded-[2.5rem] border border-primary/10 bg-white/50 backdrop-blur-sm overflow-hidden shadow-xl relative min-h-[400px]">
+                    {isLoading === true && (
+                        <div className="absolute inset-x-0 -top-4 bottom-0 z-10 bg-white/40 backdrop-blur-[2px] flex items-center justify-center rounded-[2.5rem]">
+                            <ZLoader text="Synchronizing Subtopic Matrix_" />
+                        </div>
+                    )}
                     <div className="overflow-x-auto">
+
                         <table className="w-full text-left">
                             <thead>
                                 <tr className="border-b border-primary/5 bg-primary/5/30 backdrop-blur-md">
@@ -319,55 +325,77 @@ export function SubtopicTable() {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-primary/5">
-                                {data.map((item) => (
-                                    <tr key={item.id} className={cn("group transition-colors hover:bg-white/60", selectedIds.has(item.id) && "bg-teal-50/30")}>
-                                        <td className="p-6">
-                                            <button
-                                                onClick={() => toggleSelect(item.id, !selectedIds.has(item.id))}
-                                                className={cn("w-5 h-5 rounded-lg border-2 transition-all flex items-center justify-center", selectedIds.has(item.id) ? "border-teal-500 bg-teal-500 text-white" : "border-primary/10 hover:border-primary/30")}
-                                            >
-                                                {selectedIds.has(item.id) && <Check size={12} />}
-                                            </button>
-                                        </td>
-                                        <td className="p-6">
-                                            <div className="flex items-center gap-4">
-                                                <div className="w-12 h-12 rounded-2xl bg-teal-50 border border-teal-100 flex items-center justify-center text-teal-400 group-hover:bg-white group-hover:text-teal-500 transition-all">
-                                                    <Layers size={20} />
-                                                </div>
-                                                <div>
-                                                    <p className="font-black text-slate-900 uppercase tracking-tight">{item.name}</p>
-                                                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-0.5 truncate max-w-[200px]">{(item.description != null && item.description !== '') ? item.description : 'Standard Knowledge Node'}</p>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td className="p-6">
-                                            <div className="flex items-center gap-2">
-                                                <span className="px-3 py-1 rounded-full bg-slate-100 border border-slate-200 text-[10px] font-black text-slate-600 uppercase tracking-widest">
-                                                    {(item.topic?.name != null && item.topic.name !== '') ? item.topic.name : 'Unlinked'}
-                                                </span>
-                                            </div>
-                                        </td>
-                                        <td className="p-6 text-center">
-                                            <span className="text-sm font-black text-slate-800">#{item.order}</span>
-                                        </td>
-                                        <td className="p-6">
-                                            <span className={cn("px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border", item.status === 'active' ? "bg-green-50 text-green-600 border-green-100" : "bg-slate-100 text-slate-400 border-slate-200")}>
-                                                {item.status != null && item.status !== '' ? item.status : 'Active'}
-                                            </span>
-                                        </td>
-                                        <td className="p-6 text-right">
-                                            <div className="flex items-center justify-end gap-2 opacity-100 xl:opacity-0 group-hover:opacity-100 transition-all">
-                                                <button onClick={() => handleOpenForm(item)} className="p-2.5 rounded-xl bg-slate-50 hover:bg-teal-500 text-slate-400 hover:text-white transition-all border border-slate-100">
-                                                    <Edit2 size={16} />
-                                                </button>
-                                                <button onClick={() => { setCurrentSubtopic(item); setIsDeleteOpen(true); }} className="p-2.5 rounded-xl bg-slate-50 hover:bg-red-500 text-slate-400 hover:text-white transition-all border border-slate-100">
-                                                    <Trash2 size={16} />
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))}
+                                {(isLoading === true && data.length === 0) ? (
+                                    Array.from({ length: 8 }).map((_, i) => (
+                                        <tr key={i} className="animate-pulse">
+                                            <td colSpan={6} className="p-8">
+                                                <div className="h-8 bg-slate-100/50 rounded-xl w-full" />
+                                            </td>
+                                        </tr>
+                                    ))
+                                ) : (
+                                    <>
+                                        {data.map((item) => (
+                                            <tr key={item.id} className={cn("group transition-colors hover:bg-white/60", selectedIds.has(item.id) && "bg-teal-50/30")}>
+
+                                                <td className="p-6">
+                                                    <button
+                                                        onClick={() => toggleSelect(item.id, !selectedIds.has(item.id))}
+                                                        className={cn("w-5 h-5 rounded-lg border-2 transition-all flex items-center justify-center", selectedIds.has(item.id) ? "border-teal-500 bg-teal-500 text-white" : "border-primary/10 hover:border-primary/30")}
+                                                    >
+                                                        {selectedIds.has(item.id) && <Check size={12} />}
+                                                    </button>
+                                                </td>
+                                                <td className="p-6">
+                                                    <div className="flex items-center gap-4">
+                                                        <div className="w-12 h-12 rounded-2xl bg-teal-50 border border-teal-100 flex items-center justify-center text-teal-400 group-hover:bg-white group-hover:text-teal-500 transition-all">
+                                                            <Layers size={20} />
+                                                        </div>
+                                                        <div>
+                                                            <p className="font-black text-slate-900 uppercase tracking-tight">{item.name}</p>
+                                                            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-0.5 truncate max-w-[200px]">{(item.description != null && item.description !== '') ? item.description : 'Standard Knowledge Node'}</p>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td className="p-6">
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="px-3 py-1 rounded-full bg-slate-100 border border-slate-200 text-[10px] font-black text-slate-600 uppercase tracking-widest">
+                                                            {(item.topic?.name != null && item.topic.name !== '') ? item.topic.name : 'Unlinked'}
+                                                        </span>
+                                                    </div>
+                                                </td>
+                                                <td className="p-6 text-center">
+                                                    <span className="text-sm font-black text-slate-800">#{item.order}</span>
+                                                </td>
+                                                <td className="p-6">
+                                                    <span className={cn("px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border", item.status === 'active' ? "bg-green-50 text-green-600 border-green-100" : "bg-slate-100 text-slate-400 border-slate-200")}>
+                                                        {item.status != null && item.status !== '' ? item.status : 'Active'}
+                                                    </span>
+                                                </td>
+                                                <td className="p-6 text-right">
+                                                    <div className="flex items-center justify-end gap-2 opacity-100 xl:opacity-0 group-hover:opacity-100 transition-all">
+                                                        <button onClick={() => handleOpenForm(item)} className="p-2.5 rounded-xl bg-slate-50 hover:bg-teal-500 text-slate-400 hover:text-white transition-all border border-slate-100">
+                                                            <Edit2 size={16} />
+                                                        </button>
+                                                        <button onClick={() => { setCurrentSubtopic(item); setIsDeleteOpen(true); }} className="p-2.5 rounded-xl bg-slate-50 hover:bg-red-500 text-slate-400 hover:text-white transition-all border border-slate-100">
+                                                            <Trash2 size={16} />
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                        {data.length === 0 && !isLoading && (
+                                            <tr>
+                                                <td colSpan={6} className="py-32 text-center opacity-50">
+                                                    <Layers className="w-16 h-16 mx-auto mb-4 text-slate-300" />
+                                                    <h3 className="text-lg font-bold text-slate-500 font-outfit uppercase tracking-tighter">Negative Subtopic Match_</h3>
+                                                </td>
+                                            </tr>
+                                        )}
+                                    </>
+                                )}
                             </tbody>
+
                         </table>
                     </div>
                 </div>

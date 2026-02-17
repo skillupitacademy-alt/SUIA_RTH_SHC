@@ -52,7 +52,9 @@
     "overrides": [
         {
             "files": [
-                "*.js"
+                "*.js",
+                "*.config.ts",
+                "*.config.mjs"
             ],
             "parserOptions": {
                 "project": null

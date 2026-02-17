@@ -109,7 +109,7 @@ export function QuestionTable() {
                 });
                 setQuestions(data.questions);
                 setTotalPages(data.totalPages);
-                setTotalCount(data.total ?? data.questions.length); // Fallback if total is missing
+                setTotalCount(data.total ?? data.questions?.length ?? 0); // Fallback if total is missing
             } catch (error) {
                 console.error('Failed to fetch questions:', error);
                 // We keep silence for main table load but could set an error state if requested
@@ -237,22 +237,30 @@ export function QuestionTable() {
 
                     {/* Question List */}
                     <div className="space-y-6">
-                        {questions.length === 0 ? (
-                            <div className="text-center py-24 opacity-50">
-                                <Hash className="w-16 h-16 mx-auto mb-4 text-slate-300" />
-                                <p className="text-sm font-bold text-slate-500 uppercase tracking-widest">No Intelligence Assets Found</p>
-                            </div>
-                        ) : null}
-                        {questions.length > 0 ? questions.map((q, idx) => (
-                            <QuestionReviewCard
-                                key={q.id}
-                                question={q}
-                                index={(page - 1) * 20 + idx}
-                                isSelected={selectedIds.has(q.id)}
-                                onSelect={toggleSelect}
-                                onDeleteRequest={openDeleteModal}
-                            />
-                        )) : null}
+                        {(isLoading === true && questions.length === 0) ? (
+                            Array.from({ length: 3 }).map((_, i) => (
+                                <div key={i} className="h-48 rounded-[2rem] bg-slate-50 border border-slate-100 animate-pulse" />
+                            ))
+                        ) : (
+                            <>
+                                {questions.length === 0 ? (
+                                    <div className="text-center py-24 opacity-50">
+                                        <Hash className="w-16 h-16 mx-auto mb-4 text-slate-300" />
+                                        <p className="text-sm font-bold text-slate-500 uppercase tracking-widest">No Intelligence Assets Found</p>
+                                    </div>
+                                ) : null}
+                                {questions.map((q, idx) => (
+                                    <QuestionReviewCard
+                                        key={q.id}
+                                        question={q}
+                                        index={(page - 1) * 20 + idx}
+                                        isSelected={selectedIds.has(q.id)}
+                                        onSelect={toggleSelect}
+                                        onDeleteRequest={openDeleteModal}
+                                    />
+                                ))}
+                            </>
+                        )}
                     </div>
 
                     {/* Floating Command Bar */}

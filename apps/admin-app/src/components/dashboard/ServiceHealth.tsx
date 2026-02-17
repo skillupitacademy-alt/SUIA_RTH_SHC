@@ -130,6 +130,21 @@ function HealthCard({ title, icon: Icon, data, loading, type }: { title: string,
         return 'text-muted-foreground';
     };
 
+    if (loading || data === undefined) {
+        return (
+            <div className="p-6 rounded-[1.5rem] border bg-muted/5 animate-pulse h-[160px]">
+                <div className="flex justify-between items-start mb-4">
+                    <div className="p-3 rounded-xl bg-slate-200 h-10 w-10" />
+                    <div className="h-6 w-20 bg-slate-200 rounded-full" />
+                </div>
+                <div className="space-y-3">
+                    <div className="h-4 w-32 bg-slate-200 rounded" />
+                    <div className="h-2 w-full bg-slate-200 rounded-full" />
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="p-6 rounded-[1.5rem] border bg-muted/5 backdrop-blur-sm relative overflow-hidden group hover:border-primary/20 transition-all">
             <div className="flex justify-between items-start mb-4">
@@ -202,7 +217,7 @@ function HealthCard({ title, icon: Icon, data, loading, type }: { title: string,
                 {type === 'cloudflare' && isConfigured === true ? <div className="pt-2">
                     <div className="flex justify-between items-end">
                         <div>
-                            <p className="text-2xl font-black">{metrics.requests24h?.toLocaleString()}</p>
+                            <p className="text-2xl font-black">{(metrics.requests24h ?? 0).toLocaleString()}</p>
                             <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Requests (24h)</p>
                         </div>
                         <div className="text-right">

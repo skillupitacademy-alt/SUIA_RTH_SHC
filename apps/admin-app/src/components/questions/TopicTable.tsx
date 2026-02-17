@@ -89,7 +89,7 @@ export function TopicTable() {
             const response = await apiClient.admin.getTopics(page, pageSize, debouncedSearch || undefined);
             setData(response.data);
             setTotalPages(response.totalPages);
-            setTotalCount(response.total || response.data.length);
+            setTotalCount(response.total ?? response.data?.length ?? 0);
             setSelectedIds(new Set());
         } catch (error) {
             console.error('Failed to fetch topics:', error);
@@ -266,8 +266,14 @@ export function TopicTable() {
                     </div>
                 </div>
 
-                <div className="mt-6 rounded-[2.5rem] border border-primary/10 bg-white/50 backdrop-blur-sm overflow-hidden shadow-xl">
+                <div className="mt-6 rounded-[2.5rem] border border-primary/10 bg-white/50 backdrop-blur-sm overflow-hidden shadow-xl relative min-h-[400px]">
+                    {isLoading === true && (
+                        <div className="absolute inset-x-0 -top-4 bottom-0 z-10 bg-white/40 backdrop-blur-[2px] flex items-center justify-center rounded-[2.5rem]">
+                            <ZLoader text="Synchronizing Topic Matrix_" />
+                        </div>
+                    )}
                     <div className="overflow-x-auto">
+
                         <table className="w-full text-left">
                             <thead>
                                 <tr className="border-b border-primary/5 bg-primary/5/30 backdrop-blur-md">
@@ -284,55 +290,77 @@ export function TopicTable() {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-primary/5">
-                                {data.map((topic) => (
-                                    <tr key={topic.id} className={cn("group transition-colors hover:bg-white/60", selectedIds.has(topic.id) && "bg-[#FF4B91]/5")}>
-                                        <td className="p-6">
-                                            <button
-                                                onClick={() => toggleSelect(topic.id, !selectedIds.has(topic.id))}
-                                                className={cn("w-5 h-5 rounded-lg border-2 transition-all flex items-center justify-center", selectedIds.has(topic.id) ? "border-[#FF4B91] bg-[#FF4B91] text-white" : "border-primary/10 hover:border-primary/30")}
-                                            >
-                                                {selectedIds.has(topic.id) && <Check size={12} />}
-                                            </button>
-                                        </td>
-                                        <td className="p-6">
-                                            <div className="flex items-center gap-4">
-                                                <div className="w-12 h-12 rounded-2xl bg-slate-50 border border-primary/5 flex items-center justify-center text-slate-400 group-hover:bg-white group-hover:text-[#FF4B91] transition-all">
-                                                    <BookOpen size={20} />
-                                                </div>
-                                                <div>
-                                                    <p className="font-black text-slate-900 uppercase tracking-tight">{topic.name}</p>
-                                                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-0.5 truncate max-w-[200px]">{(topic.description != null && topic.description !== '') ? topic.description : 'No specialized metadata'}</p>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td className="p-6">
-                                            <div className="flex items-center gap-2">
-                                                <span className="px-3 py-1 rounded-full bg-slate-100 border border-slate-200 text-[10px] font-black text-slate-600 uppercase tracking-widest">
-                                                    {topic.subject?.name != null && topic.subject.name !== '' ? topic.subject.name : 'Unlinked'}
-                                                </span>
-                                            </div>
-                                        </td>
-                                        <td className="p-6 text-center">
-                                            <span className="text-sm font-black text-slate-800">{topic.weight}x</span>
-                                        </td>
-                                        <td className="p-6">
-                                            <span className={cn("px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border", topic.status === 'active' ? "bg-green-50 text-green-600 border-green-100" : "bg-slate-100 text-slate-400 border-slate-200")}>
-                                                {topic.status || 'Active'}
-                                            </span>
-                                        </td>
-                                        <td className="p-6 text-right">
-                                            <div className="flex items-center justify-end gap-2 opacity-100 xl:opacity-0 group-hover:opacity-100 transition-all">
-                                                <button onClick={() => handleOpenForm(topic)} className="p-2.5 rounded-xl bg-slate-50 hover:bg-[#FF4B91] text-slate-400 hover:text-white transition-all border border-slate-100">
-                                                    <Edit2 size={16} />
-                                                </button>
-                                                <button onClick={() => { setCurrentTopic(topic); setIsDeleteOpen(true); }} className="p-2.5 rounded-xl bg-slate-50 hover:bg-red-500 text-slate-400 hover:text-white transition-all border border-slate-100">
-                                                    <Trash2 size={16} />
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))}
+                                {(isLoading === true && data.length === 0) ? (
+                                    Array.from({ length: 8 }).map((_, i) => (
+                                        <tr key={i} className="animate-pulse">
+                                            <td colSpan={6} className="p-8">
+                                                <div className="h-8 bg-slate-100/50 rounded-xl w-full" />
+                                            </td>
+                                        </tr>
+                                    ))
+                                ) : (
+                                    <>
+                                        {data.map((topic) => (
+                                            <tr key={topic.id} className={cn("group transition-colors hover:bg-white/60", selectedIds.has(topic.id) && "bg-[#FF4B91]/5")}>
+
+                                                <td className="p-6">
+                                                    <button
+                                                        onClick={() => toggleSelect(topic.id, !selectedIds.has(topic.id))}
+                                                        className={cn("w-5 h-5 rounded-lg border-2 transition-all flex items-center justify-center", selectedIds.has(topic.id) ? "border-[#FF4B91] bg-[#FF4B91] text-white" : "border-primary/10 hover:border-primary/30")}
+                                                    >
+                                                        {selectedIds.has(topic.id) && <Check size={12} />}
+                                                    </button>
+                                                </td>
+                                                <td className="p-6">
+                                                    <div className="flex items-center gap-4">
+                                                        <div className="w-12 h-12 rounded-2xl bg-slate-50 border border-primary/5 flex items-center justify-center text-slate-400 group-hover:bg-white group-hover:text-[#FF4B91] transition-all">
+                                                            <BookOpen size={20} />
+                                                        </div>
+                                                        <div>
+                                                            <p className="font-black text-slate-900 uppercase tracking-tight">{topic.name}</p>
+                                                            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-0.5 truncate max-w-[200px]">{(topic.description != null && topic.description !== '') ? topic.description : 'No specialized metadata'}</p>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td className="p-6">
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="px-3 py-1 rounded-full bg-slate-100 border border-slate-200 text-[10px] font-black text-slate-600 uppercase tracking-widest">
+                                                            {topic.subject?.name != null && topic.subject.name !== '' ? topic.subject.name : 'Unlinked'}
+                                                        </span>
+                                                    </div>
+                                                </td>
+                                                <td className="p-6 text-center">
+                                                    <span className="text-sm font-black text-slate-800">{topic.weight}x</span>
+                                                </td>
+                                                <td className="p-6">
+                                                    <span className={cn("px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border", topic.status === 'active' ? "bg-green-50 text-green-600 border-green-100" : "bg-slate-100 text-slate-400 border-slate-200")}>
+                                                        {topic.status || 'Active'}
+                                                    </span>
+                                                </td>
+                                                <td className="p-6 text-right">
+                                                    <div className="flex items-center justify-end gap-2 opacity-100 xl:opacity-0 group-hover:opacity-100 transition-all">
+                                                        <button onClick={() => handleOpenForm(topic)} className="p-2.5 rounded-xl bg-slate-50 hover:bg-[#FF4B91] text-slate-400 hover:text-white transition-all border border-slate-100">
+                                                            <Edit2 size={16} />
+                                                        </button>
+                                                        <button onClick={() => { setCurrentTopic(topic); setIsDeleteOpen(true); }} className="p-2.5 rounded-xl bg-slate-50 hover:bg-red-500 text-slate-400 hover:text-white transition-all border border-slate-100">
+                                                            <Trash2 size={16} />
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                        {data.length === 0 && !isLoading && (
+                                            <tr>
+                                                <td colSpan={6} className="py-32 text-center opacity-50">
+                                                    <Hash className="w-16 h-16 mx-auto mb-4 text-slate-300" />
+                                                    <h3 className="text-lg font-bold text-slate-500 font-outfit uppercase tracking-tighter">Negative Topic Match_</h3>
+                                                </td>
+                                            </tr>
+                                        )}
+                                    </>
+                                )}
                             </tbody>
+
                         </table>
                     </div>
                 </div>

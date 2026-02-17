@@ -65,21 +65,21 @@ export const HierarchyReports: React.FC = () => {
                 id: d.domainId as string,
                 name: d.domainName as string,
                 stats: d.stats as HierarchyItem['stats'],
-                subjects: (d.subjects as Record<string, unknown>[]).map((s) => ({
+                subjects: Array.isArray(d.subjects) ? (d.subjects as Record<string, unknown>[]).map((s) => ({
                     id: s.id as string,
                     name: s.name as string,
                     stats: s.stats as HierarchyItem['stats'],
-                    topics: (s.topics as Record<string, unknown>[]).map((t) => ({
+                    topics: Array.isArray(s.topics) ? (s.topics as Record<string, unknown>[]).map((t) => ({
                         id: t.id as string,
                         name: t.name as string,
                         stats: t.stats as HierarchyItem['stats'],
-                        subtopics: (t.subtopics as Record<string, unknown>[]).map((st) => ({
+                        subtopics: Array.isArray(t.subtopics) ? (t.subtopics as Record<string, unknown>[]).map((st) => ({
                             id: st.id as string,
                             name: st.name as string,
                             stats: st.stats as HierarchyItem['stats']
-                        }))
-                    }))
-                }))
+                        })) : []
+                    })) : []
+                })) : []
             }));
             setReportData(normalizedData);
             setViewStack([{ level: 'domain', data: normalizedData, title: 'Global Domains' }]);
@@ -347,7 +347,7 @@ export const HierarchyReports: React.FC = () => {
                 <SummaryPanel
                     icon={ShieldCheck}
                     label="Content Readiness"
-                    value={`${Math.round((reportData.filter(d => d.stats.isReady === true).length / reportData.length) * 100) ?? 0}%`}
+                    value={`${reportData.length > 0 ? Math.round((reportData.filter(d => d.stats.isReady === true).length / reportData.length) * 100) : 0}%`}
                     subvalue="Readiness Score"
                     color="text-green-600"
                     bg="bg-green-50"

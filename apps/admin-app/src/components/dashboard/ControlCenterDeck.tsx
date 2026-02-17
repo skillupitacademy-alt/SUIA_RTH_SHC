@@ -33,7 +33,15 @@ export function ControlCenterDeck() {
         void fetch();
     }, []);
 
-    if (loading === true || stats === null) return null;
+    if (loading || stats === null) {
+        return (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {[1, 2, 3].map((i) => (
+                    <div key={i} className="p-8 rounded-[2.5rem] bg-muted/5 border border-primary/5 animate-pulse h-[220px]" />
+                ))}
+            </div>
+        );
+    }
 
     const cards = [
         {
@@ -50,13 +58,13 @@ export function ControlCenterDeck() {
             value: `${Math.round(stats.passRate * 100)}%`,
             subtext: 'Candidates scoring ≥70%',
             icon: CheckCircle2,
-            delta: null, // Pass rate delta calculation requires previous pass rate (api refactor needed for strict pp, using score delta as proxy for health)
+            delta: null,
             status: stats.passRate >= 0.7 ? 'green' : stats.passRate >= 0.5 ? 'yellow' : 'red',
             tooltip: "Percentage of exams meeting the 70% passing threshold."
         },
         {
             label: 'Total Exams Evaluated',
-            value: stats.totalExams.toLocaleString(),
+            value: (stats.totalExams ?? 0).toLocaleString(),
             subtext: 'Volume this period',
             icon: FileBarChart2,
             delta: null,
@@ -116,7 +124,6 @@ export function ControlCenterDeck() {
                         <p className="text-xs font-inter font-bold opacity-60 uppercase tracking-wide">{card.subtext}</p>
                     </div>
 
-                    {/* Status Indicator Bar */}
                     <div className="mt-6 h-1.5 w-full bg-black/5 rounded-full overflow-hidden">
                         <div className={cn(
                             "h-full rounded-full transition-all duration-1000",

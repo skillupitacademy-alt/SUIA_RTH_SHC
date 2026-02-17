@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react';
 
 export function SecurityHealthPanel() {
     const [stats, setStats] = useState<any>(null);
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
         const fetch = async () => {
@@ -15,6 +16,8 @@ export function SecurityHealthPanel() {
                 setStats(data);
             } catch (err) {
                 console.error("Failed to fetch security metrics", err);
+            } finally {
+                setIsLoading(false);
             }
         };
         void fetch();
@@ -22,7 +25,18 @@ export function SecurityHealthPanel() {
         return () => clearInterval(interval);
     }, []);
 
-    if (stats === null) return null;
+    if (isLoading || stats === null) {
+        return (
+            <div className="p-8 rounded-[2rem] border border-primary/10 bg-muted/5 animate-pulse h-[400px]">
+                <div className="h-8 w-48 bg-black/5 rounded mb-8" />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="h-32 bg-white/50 rounded-[1.5rem]" />
+                    <div className="h-32 bg-white/50 rounded-[1.5rem]" />
+                </div>
+                <div className="mt-8 h-20 bg-black/10 rounded-[2rem]" />
+            </div>
+        );
+    }
 
     const isHighThreat = stats.threatLevel === 'HIGH';
 
@@ -38,7 +52,7 @@ export function SecurityHealthPanel() {
                     : 'bg-green-500/10 border-green-500/20 text-green-500'
                     }`}>
                     {isHighThreat ? <ShieldAlert size={16} /> : <ShieldCheck size={16} />}
-                    <span className="text-[10px] font-black uppercase tracking-widest">Threat Level: {stats.threatLevel}</span>
+                    <span className="text-[10px] font-black uppercase tracking-widest">Threat Level: {stats.threatLevel ?? 'UNKNOWN'}</span>
                 </div>
             </div>
 
@@ -50,7 +64,7 @@ export function SecurityHealthPanel() {
                         </div>
                         <div>
                             <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Successful Logins</span>
-                            <p className="text-3xl font-black tracking-tighter text-[#1A1A1A] mt-0.5">{stats.successfulLogins.toLocaleString()}</p>
+                            <p className="text-3xl font-black tracking-tighter text-[#1A1A1A] mt-0.5">{(stats.successfulLogins ?? 0).toLocaleString()}</p>
                         </div>
                     </div>
                 </div>
@@ -62,7 +76,7 @@ export function SecurityHealthPanel() {
                         </div>
                         <div>
                             <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Failed Attempts</span>
-                            <p className="text-3xl font-black tracking-tighter text-[#1A1A1A] mt-0.5">{stats.failedLogins.toLocaleString()}</p>
+                            <p className="text-3xl font-black tracking-tighter text-[#1A1A1A] mt-0.5">{(stats.failedLogins ?? 0).toLocaleString()}</p>
                         </div>
                     </div>
                 </div>

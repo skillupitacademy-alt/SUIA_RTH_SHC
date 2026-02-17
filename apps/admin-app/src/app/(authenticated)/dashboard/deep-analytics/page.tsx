@@ -1,6 +1,5 @@
 'use client';
 import { apiClient } from '@quiz/api-client';
-
 import { Layers, RefreshCw } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
