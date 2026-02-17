@@ -107,13 +107,13 @@ export function LiveSessionsList() {
                                         <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Last Seen</p>
                                         <div className="flex items-center gap-2 justify-end text-sm font-bold text-[#1A1A1A]">
                                             <Clock size={14} className="text-[#FF4B91]" />
-                                            {session.lastActiveAt ? formatDistanceToNow(new Date(session.lastActiveAt), { addSuffix: true }) : 'N/A'}
+                                            {(session.lastActiveAt ?? null) !== null ? formatDistanceToNow(new Date(session.lastActiveAt), { addSuffix: true }) : 'N/A'}
                                         </div>
                                     </div>
                                     <div className="w-px h-10 bg-muted-foreground/10" />
                                     <div className="space-y-1">
                                         <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Expiry</p>
-                                        <p className="text-sm font-bold text-[#1A1A1A]">{session.expiresAt ? new Date(session.expiresAt).toLocaleDateString([], { month: 'short', day: 'numeric' }) : 'N/A'}</p>
+                                        <p className="text-sm font-bold text-[#1A1A1A]">{(session.expiresAt ?? null) !== null ? new Date(session.expiresAt).toLocaleDateString([], { month: 'short', day: 'numeric' }) : 'N/A'}</p>
                                     </div>
                                     <div className="w-px h-10 bg-muted-foreground/10" />
                                     <div className="space-y-1">

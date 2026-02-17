@@ -8,7 +8,9 @@
         "next.config.js",
         "postcss.config.js",
         "playwright.config.ts",
-        "tailwind.config.ts"
+        "tailwind.config.ts",
+        "vitest.config.ts",
+        "vitest.setup.ts"
     ],
     "parserOptions": {
         "project": "./tsconfig.json",

@@ -2,7 +2,6 @@ import { Job, JobStatus, JobType } from '@quiz/types';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ScoringEngine } from '@/modules/scoring-engine/scoring.engine';
-
 import { JobOrchestrator } from '@/modules/system/job-orchestrator';
 import { JobsService } from '@/modules/system/jobs.service';
 
