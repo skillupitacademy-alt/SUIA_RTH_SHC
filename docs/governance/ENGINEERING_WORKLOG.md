@@ -287,3 +287,10 @@
 - Converted remaining console logs to Pino child loggers in api-server engines/jobs: selection-engine (cache warn paths), scoring-engine (error + catch handlers), report-engine (percentile calc errors), and system/job-orchestrator (missing job, duplicate state, job failure, analytics refresh). Sanitized messages only; no headers/bodies logged.
 - Ran lint for @quiz/api-server with --max-warnings=0; clean.
 
+
+## 2026-02-18 — Phase F2c console → Pino (partial routes)
+
+- Converted console logs to Pino child loggers in api-server admin routes (blueprints list/create, subjects list/create) and client AdminGuard. Structured error logs only, no bodies/headers.
+- Lint @quiz/api-server with --max-warnings=0 now clean for this batch.
+- Remaining F2c todo: swap console.* in other admin/auth/metrics route handlers (batch-delete, topics, skills, users, publish, etc.).
+

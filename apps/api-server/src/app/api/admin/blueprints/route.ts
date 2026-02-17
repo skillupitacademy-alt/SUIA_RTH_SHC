@@ -1,6 +1,7 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
+import { logger } from '@/lib/logger';
 import type { BlueprintInsert } from '@/modules/admin-engine/admin.engine';
 import { AdminEngine } from '@/modules/admin-engine/admin.engine';
 import { TokenService } from '@/modules/auth/token.service';
@@ -22,6 +23,8 @@ async function _verifyAdmin(_req: NextRequest) {
     }
 }
 
+const log = logger.child({ module: 'admin:blueprints' });
+
 export async function GET(_req: NextRequest) {
     const auth = await _verifyAdmin(_req);
     if (auth._error !== undefined) return NextResponse.json({ _error: auth._error, scope: auth.scope }, { status: auth.status });
@@ -36,7 +39,7 @@ export async function GET(_req: NextRequest) {
         return NextResponse.json(data);
     } catch (_error: unknown) {
         const message = _error instanceof Error ? _error.message : 'Internal Server Error';
-        console.error('[ADMIN_BLUEPRINTS_GET] Error:', message);
+        log.error({ error: message }, 'ADMIN_BLUEPRINTS_GET failed');
         return NextResponse.json({ _error: message }, { status: 500 });
     }
 }
@@ -57,7 +60,7 @@ export async function POST(_req: NextRequest) {
         return NextResponse.json(result);
     } catch (_error: unknown) {
         const message = _error instanceof Error ? _error.message : 'Internal Server Error';
-        console.error('[ADMIN_BLUEPRINTS_POST] Error:', message);
+        log.error({ error: message }, 'ADMIN_BLUEPRINTS_POST failed');
         return NextResponse.json({ _error: message }, { status: 500 });
     }
 }
