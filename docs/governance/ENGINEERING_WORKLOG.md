@@ -199,3 +199,8 @@
 ## 2026-02-18 — Phase C2 coverage audit (prep for C3 enablement)
 
 - Reviewed remaining Tier-1/api suites (`job-orchestrator`, `forecast.service`) and verified mocks/fixtures already align with alias setup; no code changes required before future un-skipping/runs. All newly fleshed Tier-1 suites remain skipped per plan; execution will stay deferred until we explicitly enable them in Phase C3.
+
+## 2026-02-18 — Transition decision beyond testing
+
+- Confirmed with stakeholder to pause further test execution/enabling; all authored tests remain `describe.skip` (execution deferred). Admin/web placeholders stay skipped.
+- Agreed to move to the next roadmap phase after Phase C; testing work is considered feature-complete for now and will resume when un-skip is approved in later phases.
