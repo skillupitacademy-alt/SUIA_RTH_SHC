@@ -9,9 +9,15 @@ import { TelemetryClient } from './modules/telemetry-client';
 
 function getApiUrl(): string {
   if (process.env.NEXT_PUBLIC_API_URL) {
-    return process.env.NEXT_PUBLIC_API_URL.replace(/\/$/, '');
+    let url = process.env.NEXT_PUBLIC_API_URL.trim();
+    url = url.replace(/\/+$/, ''); // strip trailing slash(es)
+    // Ensure the path ends with /api to hit Next routes correctly
+    if (!url.toLowerCase().endsWith('/api')) {
+      url = `${url}/api`;
+    }
+    return url;
   }
-  return '/api'; 
+  return '/api';
 }
 
 function getAdminUrl(): string {

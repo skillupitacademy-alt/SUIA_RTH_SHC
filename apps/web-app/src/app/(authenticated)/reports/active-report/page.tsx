@@ -11,7 +11,7 @@ import { RemediationZone } from "@/components/reports/RemediationZone";
 import ActionPlanPanel from "@/components/reports/ActionPlanPanel";
 import {
     RetentionFunnel,
-    MasteryTreemap,
+    MasterySunburst,
     LearningVelocity,
     CompetencyRadar,
     DifficultyBars,
@@ -262,7 +262,7 @@ function ReportContent() {
 
                     {/* Visualization Suite (single column) */}
                     <div className="space-y-8 mt-12">
-                        <MasteryTreemap
+                        <MasterySunburst
                             items={reportData.topics.slice(0, 12).map((t) => ({
                                 name: t.name,
                                 value: t.score,

@@ -9,9 +9,6 @@ import {
     RadarChart,
     PolarGrid,
     PolarAngleAxis,
-    PolarRadiusAxis,
-    Line,
-    LineChart,
     XAxis,
     YAxis,
     Tooltip,
@@ -25,7 +22,6 @@ import {
     FunnelChart,
     Funnel,
     LabelList,
-    ComposedChart,
     Area,
     Cell,
     AreaChart
@@ -41,23 +37,38 @@ const COLORS = {
     slate: ['#94a3b8', '#64748b'],
 };
 
-const CustomTooltip = ({ active, payload, label }: any) => {
-    if (active && payload && payload.length) {
-        return (
-            <div className="bg-white/90 backdrop-blur-md border border-slate-200 p-4 rounded-2xl shadow-xl shadow-slate-200/50">
-                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">{label || 'Metric'}</p>
-                {payload.map((p: any, i: number) => (
+type SimpleTooltipPayload = {
+    color?: string;
+    name?: string;
+    value?: number;
+    payload?: { fill?: string; color?: string };
+};
+
+const CustomTooltip = (props: { active?: boolean; payload?: SimpleTooltipPayload[]; label?: string | number }) => {
+    const { active, payload, label } = props;
+    const items = payload ?? [];
+    if (!active || items.length === 0) return null;
+
+    return (
+        <div className="bg-white/90 backdrop-blur-md border border-slate-200 p-4 rounded-2xl shadow-xl shadow-slate-200/50">
+            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">{label || 'Metric'}</p>
+            {items.map((p, i) => {
+                const swatch =
+                    p.color ||
+                    (p.payload as { fill?: string; color?: string } | undefined)?.fill ||
+                    (p.payload as { color?: string } | undefined)?.color ||
+                    '#94a3b8';
+                return (
                     <div key={i} className="flex items-center gap-3">
-                        <div className="w-2 h-2 rounded-full" style={{ backgroundColor: p.color || p.fill }} />
+                        <div className="w-2 h-2 rounded-full" style={{ backgroundColor: swatch }} />
                         <p className="text-sm font-black text-slate-800 tabular-nums">
                             {p.name}: <span className="text-primary">{p.value}%</span>
                         </p>
                     </div>
-                ))}
-            </div>
-        );
-    }
-    return null;
+                );
+            })}
+        </div>
+    );
 };
 
 const ChartDefs = () => (
@@ -102,16 +113,16 @@ export const CompetencyRadar: React.FC<{ skills: Array<{ name: string; value: nu
     <Card title="Skill Capability Matrix (Radar)">
         <ResponsiveContainer>
             <RadarChart cx="50%" cy="50%" outerRadius="80%" data={skills}>
-                <PolarGrid stroke="#e2e8f0" strokeDasharray="4 4" />
-                <PolarAngleAxis dataKey="name" tick={{ fill: '#64748b', fontSize: 10, fontWeight: 800 }} />
-                <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
+                <PolarGrid strokeOpacity={0.1} />
+                <PolarAngleAxis dataKey="name" tick={{ fill: COLORS.slate[1], fontSize: 10, fontWeight: 'bold' }} />
                 <Radar
-                    name="Proficiency"
+                    name="Capability"
                     dataKey="value"
-                    stroke="#6366f1"
-                    strokeWidth={3}
-                    fill="url(#indigoGradient)"
-                    fillOpacity={0.4}
+                    stroke={COLORS.indigo[0]}
+                    strokeWidth={4}
+                    fill={COLORS.indigo[0]}
+                    fillOpacity={0.3}
+                    dot={{ r: 4, fill: COLORS.indigo[0], strokeWidth: 2, stroke: '#fff' }}
                 />
                 <Tooltip content={<CustomTooltip />} />
             </RadarChart>
@@ -161,6 +172,30 @@ export const MasteryTreemap: React.FC<{ items: Array<{ name: string; value: numb
     </Card>
 );
 
+export const MasterySunburst: React.FC<{ items: Array<{ name: string; value: number; fill?: string }> }> = ({ items }) => (
+    <Card title="Structural Hierarchy (Sunburst)">
+        <ResponsiveContainer>
+            <PieChart>
+                <Pie
+                    data={items}
+                    dataKey="value"
+                    nameKey="name"
+                    innerRadius="30%"
+                    outerRadius="95%"
+                    paddingAngle={2}
+                    animationBegin={500}
+                    cornerRadius={6}
+                >
+                    {items.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.fill || COLORS.emerald[0]} stroke="#fff" strokeWidth={2} />
+                    ))}
+                </Pie>
+                <Tooltip content={<CustomTooltip />} />
+            </PieChart>
+        </ResponsiveContainer>
+    </Card>
+);
+
 export const DifficultyBars: React.FC<{ bars: Array<{ label: string; simple: number; intermediate: number; expert: number }> }> = ({ bars }) => (
     <Card title="The Expertise Bridge (Difficulty Clusters)">
         <ResponsiveContainer>
@@ -180,9 +215,9 @@ export const DifficultyBars: React.FC<{ bars: Array<{ label: string; simple: num
 
 export const SnapshotDonut: React.FC<{ correct: number; incorrect: number; skipped: number }> = ({ correct, incorrect, skipped }) => {
     const data = [
-        { name: 'Succeeded', value: correct, fill: 'url(#emeraldGradient)' },
-        { name: 'Compromised', value: incorrect, fill: 'url(#roseGradient)' },
-        { name: 'Bypassed', value: skipped, fill: '#f1f5f9' },
+        { name: 'Succeeded', value: correct, color: 'url(#emeraldGradient)' },
+        { name: 'Compromised', value: incorrect, color: 'url(#roseGradient)' },
+        { name: 'Bypassed', value: skipped, color: '#f1f5f9' },
     ];
     return (
         <Card title="Operational Snapshot">
@@ -198,9 +233,27 @@ export const SnapshotDonut: React.FC<{ correct: number; incorrect: number; skipp
                         animationBegin={500}
                     >
                         {data.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={entry.fill} />
+                            <Cell key={`cell-${index}`} fill={entry.color} />
                         ))}
                     </Pie>
+                    <text
+                        x="50%"
+                        y="50%"
+                        textAnchor="middle"
+                        dominantBaseline="middle"
+                        className="fill-slate-900 font-black text-2xl"
+                    >
+                        {Math.round((correct / (correct + incorrect + skipped || 1)) * 100)}%
+                    </text>
+                    <text
+                        x="50%"
+                        y="58%"
+                        textAnchor="middle"
+                        dominantBaseline="middle"
+                        className="fill-slate-400 font-bold text-[10px] uppercase tracking-widest"
+                    >
+                        Mastery
+                    </text>
                     <Tooltip content={<CustomTooltip />} />
                     <Legend verticalAlign="middle" align="right" layout="vertical" iconType="circle" wrapperStyle={{ paddingLeft: 40, fontSize: 11, fontWeight: 900, textTransform: 'uppercase' }} />
                 </PieChart>

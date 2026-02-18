@@ -38,9 +38,16 @@ export async function rateLimit(_request: NextRequest) {
   try {
     // Tracking both IP and User (if present)
     const ipKey = `ratelimit:ip:${ip}`;
+    const start = Date.now();
     const { count: ipCount, ttlRem: ipTtl } = await cacheService.increment(ipKey, WINDOW_MS);
+    const duration = Date.now() - start;
+
+    if (duration > 500) {
+        rateLimitLogger.warn({ ip, duration, path }, 'Slow rate limit increment detected');
+    }
 
     if (ipCount > MAX_IP_REQUESTS) {
+      rateLimitLogger.warn({ ip, path, count: ipCount }, 'IP Rate limit hit');
       return NextResponse.json(
         { _error: 'Too many requests' }, 
         { 

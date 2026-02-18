@@ -12,7 +12,7 @@ import {
     SnapshotDonut,
     FluencyScatter,
     RetentionFunnel,
-    MasteryTreemap
+    MasterySunburst
 } from "@/components/reports/recharts/RechartsSuite";
 import { ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -109,9 +109,7 @@ export default function DynamicReportPage() {
 
     const performance = report.performance || {};
     const categoryData = performance.category || [];
-    const mappingData = performance.mapping_type || [];
     const subtopicData = performance.subtopic || [];
-    const skillData = performance.skill || [];
 
     return (
         <div className="min-h-screen bg-[#F8F9FC] selection:bg-primary/20">
@@ -181,7 +179,16 @@ export default function DynamicReportPage() {
                         }))}
                     />
 
-                    {/* 5. Survival Attrition (Funnel) */}
+                    {/* 5. Structural Hierarchy (Sunburst) */}
+                    <MasterySunburst
+                        items={categoryData.slice(0, 12).map((t) => ({
+                            name: t.name,
+                            value: t.accuracy,
+                            fill: t.accuracy >= 90 ? '#10b981' : t.accuracy >= 50 ? '#fbbf24' : '#ef4444'
+                        }))}
+                    />
+
+                    {/* 6. Survival Attrition (Funnel) */}
                     <RetentionFunnel
                         stages={[
                             { label: 'Total Questions', value: report.total },
