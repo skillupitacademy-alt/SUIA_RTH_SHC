@@ -75,7 +75,10 @@ export class AdminHierarchyEngine {
       where: whereClause,
       limit,
       offset,
-      orderBy: [desc(subjects.createdAt)]
+      orderBy: [desc(subjects.createdAt)],
+      with: {
+        domain: true,
+      }
     });
 
     const [{ count }] = await db
@@ -123,7 +126,14 @@ export class AdminHierarchyEngine {
       where: whereClause,
       limit,
       offset,
-      orderBy: [desc(topics.createdAt)]
+      orderBy: [desc(topics.createdAt)],
+      with: {
+        subject: {
+          with: {
+            domain: true,
+          }
+        }
+      }
     });
 
     const [{ count }] = await db
@@ -171,7 +181,18 @@ export class AdminHierarchyEngine {
       where: whereClause,
       limit,
       offset,
-      orderBy: [desc(subtopics.createdAt)]
+      orderBy: [desc(subtopics.createdAt)],
+      with: {
+        topic: {
+          with: {
+            subject: {
+              with: {
+                domain: true,
+              }
+            }
+          }
+        }
+      }
     });
 
     const [{ count }] = await db

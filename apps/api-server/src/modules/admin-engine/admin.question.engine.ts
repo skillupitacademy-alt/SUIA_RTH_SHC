@@ -59,7 +59,27 @@ export class AdminQuestionEngine {
       where: whereClause,
       limit,
       offset,
-      orderBy: [desc(questions.updatedAt)]
+      orderBy: [desc(questions.updatedAt)],
+      with: {
+        topic: {
+          with: {
+            subject: {
+              with: { domain: true }
+            }
+          }
+        },
+        subtopic: {
+          with: {
+            topic: {
+              with: {
+                subject: {
+                  with: { domain: true }
+                }
+              }
+            }
+          }
+        }
+      }
     });
 
     const [{ count }] = await db
