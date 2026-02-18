@@ -22,6 +22,7 @@ import { cn } from '@/lib/utils';
 import { clientLogger } from '@/utils/clientLogger';
 
 import { SubjectReviewCard } from './SubjectReviewCard';
+import { HierarchySearchBar } from './HierarchySearchBar';
 
 interface SubjectItem {
     id: string;
@@ -456,52 +457,40 @@ export function SubjectTable() {
                 </AlertDialog>
 
                 {/* HEADER & SEARCH */}
-                <div className="bg-white/50 backdrop-blur-xl border border-primary/10 p-6 rounded-[2rem] shadow-xl relative overflow-hidden flex items-center justify-between z-10">
-                    <div className="flex items-center gap-4 flex-1">
-                        <div className="p-2 rounded-xl bg-purple-50 text-purple-500 shadow-sm border border-purple-100">
-                            <BookOpen className="w-5 h-5" />
-                        </div>
-                        <div className="relative flex-1 max-w-md group">
-                            <input
-                                type="text"
-                                placeholder="Search Subjects..."
-                                aria-label="Search subjects"
-                                value={searchQuery}
-                                onChange={(e) => { setSearchQuery(e.target.value); setPage(1); }}
-                                className="w-full bg-slate-50 border-none rounded-2xl px-5 py-3 text-[11px] font-black tracking-widest text-[#1A1A1A] placeholder:text-slate-400 focus:ring-2 focus:ring-purple-500/10 transition-all outline-none border border-transparent shadow-inner"
-                            />
-                            {/* SELECT ALL CHECKBOX */}
-                            <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white border border-slate-100 cursor-pointer hover:border-purple-200 transition-all">
-                                <input
-                                    type="checkbox"
-                                    checked={data.length > 0 && selectedIds.size === data.length}
-                                    onChange={(e) => handleSelectAll(e.target.checked)}
-                                    className="w-4 h-4 rounded border-slate-300 text-purple-600 focus:ring-offset-0 focus:ring-0 cursor-pointer"
-                                    aria-label="Select all subjects"
-                                />
-                                <span className="text-[9px] font-bold uppercase tracking-wider text-slate-500">Select All</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                        <button
-                            onClick={() => setIsFactoryOpen(true)}
-                            className="px-6 py-3 rounded-2xl bg-slate-900 text-white text-[10px] font-bold uppercase tracking-wider shadow-lg hover:bg-slate-800 transition-all flex items-center gap-2"
-                            aria-label="Open subject bulk factory"
-                        >
-                            <Plus size={14} className="text-[#FF4B91]" />
-                            Bulk Factory
-                        </button>
-                        <button
-                            onClick={() => handleOpenForm()} // Open for Create
-                            className="px-6 py-3 rounded-2xl bg-[#FF4B91] hover:bg-[#ff3382] text-white text-[10px] font-bold uppercase tracking-wider shadow-lg shadow-[#FF4B91]/20 transition-all flex items-center gap-3 active:scale-95"
-                            aria-label="Add subject"
-                        >
-                            <Plus size={16} />
-                            Add Subject
-                        </button>
-                    </div>
-                </div>
+                <HierarchySearchBar
+                    value={searchQuery}
+                    placeholder="Search Subjects..."
+                    onChange={(val) => { setSearchQuery(val); setPage(1); }}
+                    onSelectAll={(checked) => {
+                        if (checked) {
+                            setSelectedIds(new Set(data.map((s) => s.id)));
+                        } else {
+                            setSelectedIds(new Set());
+                        }
+                    }}
+                    selectAllChecked={data.length > 0 && selectedIds.size === data.length}
+                    leftIcon={<BookOpen className="w-5 h-5" />}
+                    actions={(
+                        <>
+                            <button
+                                onClick={() => setIsFactoryOpen(true)}
+                                className="px-6 py-3 rounded-2xl bg-slate-900 text-white text-[10px] font-bold uppercase tracking-wider shadow-lg hover:bg-slate-800 transition-all flex items-center gap-2"
+                                aria-label="Open subject bulk factory"
+                            >
+                                <Plus size={14} className="text-[#FF4B91]" />
+                                Bulk Factory
+                            </button>
+                            <button
+                                onClick={() => handleOpenForm()} // Open for Create
+                                className="px-6 py-3 rounded-2xl bg-[#FF4B91] hover:bg-[#ff3382] text-white text-[10px] font-bold uppercase tracking-wider shadow-lg shadow-[#FF4B91]/20 transition-all flex items-center gap-3 active:scale-95"
+                                aria-label="Add subject"
+                            >
+                                <Plus size={16} />
+                                Add Subject
+                            </button>
+                        </>
+                    )}
+                />
 
                 {/* SUBJECT CARD STACK */}
                 {isLoading === true ? (

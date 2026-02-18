@@ -11,6 +11,7 @@ import { ZPortalModal } from '@/components/ui/ZPortalModal';
 import { useDomains, useSubjects, useTopics } from '@/hooks/useAdminHierarchy';
 import { cn } from '@/lib/utils';
 import { clientLogger } from '@/utils/clientLogger';
+import { HierarchySearchBar } from './HierarchySearchBar';
 
 export function SubtopicTable() {
     const [data, setData] = useState<any[]>([]);
@@ -273,40 +274,32 @@ export function SubtopicTable() {
                     </div>
                 </ZPortalModal>
 
-                <div className="flex items-center justify-between gap-4 p-6 bg-white border border-primary/10 rounded-[2.5rem] shadow-sm overflow-hidden relative">
-                    <div className="flex items-center gap-6 flex-1">
-                        <div className="relative flex-1 max-w-md group">
-                            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-teal-500 transition-colors">
-                                <GitBranch size={18} />
-                            </div>
-                            <input
-                                type="text"
-                                placeholder="Search Subtopics..."
-                                aria-label="Search subtopics"
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full pl-12 pr-4 py-3 bg-slate-50 border-none rounded-2xl text-sm font-bold placeholder:text-slate-300 focus:ring-2 focus:ring-teal-500/20 transition-all"
-                            />
-                        </div>
-                    </div>
-
-                    <div className="flex items-center gap-3">
-                        <button
-                            onClick={() => setIsFactoryOpen(true)}
-                            className="px-6 py-3 rounded-2xl bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest hover:bg-black transition-all flex items-center gap-2 shadow-xl shadow-black/10"
-                        >
-                            <Layers size={14} />
-                            Hierarchy Factory
-                        </button>
-                        <button
-                            onClick={() => handleOpenForm()}
-                            className="px-6 py-3 rounded-2xl bg-teal-500 text-white text-[10px] font-black uppercase tracking-widest hover:bg-teal-600 transition-all flex items-center gap-2 shadow-xl shadow-teal-500/20"
-                        >
-                            <Plus size={14} />
-                            Create Subtopic
-                        </button>
-                    </div>
-                </div>
+                <HierarchySearchBar
+                    value={searchQuery}
+                    placeholder="Search Subtopics..."
+                    onChange={(val) => setSearchQuery(val)}
+                    onSelectAll={() => toggleSelectAll()}
+                    selectAllChecked={selectedIds.size === data.length && data.length > 0}
+                    leftIcon={<GitBranch size={18} />}
+                    actions={(
+                        <>
+                            <button
+                                onClick={() => setIsFactoryOpen(true)}
+                                className="px-6 py-3 rounded-2xl bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest hover:bg-black transition-all flex items-center gap-2 shadow-xl shadow-black/10"
+                            >
+                                <Layers size={14} />
+                                Hierarchy Factory
+                            </button>
+                            <button
+                                onClick={() => handleOpenForm()}
+                                className="px-6 py-3 rounded-2xl bg-teal-500 text-white text-[10px] font-black uppercase tracking-widest hover:bg-teal-600 transition-all flex items-center gap-2 shadow-xl shadow-teal-500/20"
+                            >
+                                <Plus size={14} />
+                                Create Subtopic
+                            </button>
+                        </>
+                    )}
+                />
 
                 <div className="mt-6 rounded-[2.5rem] border border-primary/10 bg-white/50 backdrop-blur-sm overflow-hidden shadow-xl">
                     <div className="overflow-x-auto">

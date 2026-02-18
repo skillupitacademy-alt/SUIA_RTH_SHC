@@ -23,6 +23,7 @@ import { cn } from '@/lib/utils';
 import { clientLogger } from '@/utils/clientLogger';
 
 import { SkillReviewCard } from './SkillReviewCard';
+import { HierarchySearchBar } from './HierarchySearchBar';
 
 const SKILL_CATEGORIES: Record<string, string> = {
     problem_solving: 'Problem Solving',
@@ -413,52 +414,34 @@ export function SkillTable() {
 
 
                 {/* HEADER & SEARCH */}
-                <div className="bg-white/50 backdrop-blur-xl border border-primary/10 p-6 rounded-[2rem] shadow-xl relative overflow-hidden flex items-center justify-between z-10">
-                    <div className="flex items-center gap-4 flex-1">
-                        <div className="p-2 rounded-xl bg-cyan-50 text-cyan-500 shadow-sm border border-cyan-100">
-                            <Shield className="w-5 h-5" />
-                        </div>
-                        <div className="relative flex-1 max-w-md group">
-                            <input
-                                type="text"
-                                placeholder="Search Skills..."
-                                aria-label="Search skills"
-                                value={searchQuery}
-                                onChange={(e) => { setSearchQuery(e.target.value); setPage(1); }}
-                                className="w-full bg-slate-50 border-none rounded-2xl px-5 py-3 text-[11px] font-black tracking-widest text-[#1A1A1A] placeholder:text-slate-400 focus:ring-2 focus:ring-cyan-500/10 transition-all outline-none border border-transparent shadow-inner"
-                            />
-                            {/* SELECT ALL CHECKBOX */}
-                            <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white border border-slate-100 cursor-pointer hover:border-cyan-200 transition-all">
-                                <input
-                                    type="checkbox"
-                                    checked={data.length > 0 && selectedIds.size === data.length}
-                                    onChange={(e) => handleSelectAll(e.target.checked)}
-                                    className="w-4 h-4 rounded border-slate-300 text-cyan-600 focus:ring-offset-0 focus:ring-0 cursor-pointer"
-                                    aria-label="Select all skills"
-                                />
-                                <span className="text-[9px] font-bold uppercase tracking-wider text-slate-500">Select All</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                        <button
-                            onClick={() => setIsFactoryOpen(true)}
-                            className="px-6 py-3 rounded-2xl bg-slate-900 text-white text-[10px] font-bold uppercase tracking-wider shadow-lg hover:bg-slate-800 transition-all flex items-center gap-2"
-                            aria-label="Open skill bulk factory"
-                        >
-                            <Plus size={14} className="text-[#FF4B91]" />
-                            Bulk Factory
-                        </button>
-                        <button
-                            onClick={() => handleOpenForm()}
-                            className="px-6 py-3 rounded-2xl bg-[#FF4B91] hover:bg-[#ff3382] text-white text-[10px] font-bold uppercase tracking-wider shadow-lg shadow-[#FF4B91]/20 transition-all flex items-center gap-3 active:scale-95"
-                            aria-label="Add skill"
-                        >
-                            <Plus size={16} />
-                            Add Skill
-                        </button>
-                    </div>
-                </div>
+                <HierarchySearchBar
+                    value={searchQuery}
+                    placeholder="Search Skills..."
+                    onChange={(val) => { setSearchQuery(val); setPage(1); }}
+                    onSelectAll={(checked) => handleSelectAll(checked)}
+                    selectAllChecked={data.length > 0 && selectedIds.size === data.length}
+                    leftIcon={<Shield className="w-5 h-5" />}
+                    actions={(
+                        <>
+                            <button
+                                onClick={() => setIsFactoryOpen(true)}
+                                className="px-6 py-3 rounded-2xl bg-slate-900 text-white text-[10px] font-bold uppercase tracking-wider shadow-lg hover:bg-slate-800 transition-all flex items-center gap-2"
+                                aria-label="Open skill bulk factory"
+                            >
+                                <Plus size={14} className="text-[#FF4B91]" />
+                                Bulk Factory
+                            </button>
+                            <button
+                                onClick={() => handleOpenForm()}
+                                className="px-6 py-3 rounded-2xl bg-[#FF4B91] hover:bg-[#ff3382] text-white text-[10px] font-bold uppercase tracking-wider shadow-lg shadow-[#FF4B91]/20 transition-all flex items-center gap-3 active:scale-95"
+                                aria-label="Add skill"
+                            >
+                                <Plus size={16} />
+                                Add Skill
+                            </button>
+                        </>
+                    )}
+                />
 
                 {/* SKILL CARD STACK */}
                 {isLoading === true ? (
