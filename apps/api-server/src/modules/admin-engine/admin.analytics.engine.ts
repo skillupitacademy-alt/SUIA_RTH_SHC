@@ -1,4 +1,4 @@
-import { auditLogs, db, domains, examQuestions,exams, questions, resultsByDimension, users, roles, userRoles } from '@quiz/db';
+import { auditLogs, db, domains, examQuestions, exams, questions, resultsByDimension, roles, userRoles, users } from '@quiz/db';
 import { count, desc, eq, isNotNull,sql } from 'drizzle-orm';
 
 import { TrendsService } from '@/modules/metrics/trends.service';

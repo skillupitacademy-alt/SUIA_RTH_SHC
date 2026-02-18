@@ -2,6 +2,7 @@ import { db, roles, userRoles, users } from '@quiz/db';
 import { and, eq, sql } from 'drizzle-orm';
 
 import { logger } from '@/lib/logger';
+
 import type { TokenPayload } from './token.service';
 
 const log = logger.child({ module: 'auth:rbac' });

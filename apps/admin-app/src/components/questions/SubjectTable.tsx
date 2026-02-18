@@ -21,8 +21,8 @@ import { useDomains } from '@/hooks/useAdminHierarchy';
 import { cn } from '@/lib/utils';
 import { clientLogger } from '@/utils/clientLogger';
 
-import { SubjectReviewCard } from './SubjectReviewCard';
 import { HierarchySearchBar } from './HierarchySearchBar';
+import { SubjectReviewCard } from './SubjectReviewCard';
 
 interface SubjectItem {
     id: string;
@@ -461,13 +461,7 @@ export function SubjectTable() {
                     value={searchQuery}
                     placeholder="Search Subjects..."
                     onChange={(val) => { setSearchQuery(val); setPage(1); }}
-                    onSelectAll={(checked) => {
-                        if (checked) {
-                            setSelectedIds(new Set(data.map((s) => s.id)));
-                        } else {
-                            setSelectedIds(new Set());
-                        }
-                    }}
+                    onSelectAll={(checked) => handleSelectAll(checked)}
                     selectAllChecked={data.length > 0 && selectedIds.size === data.length}
                     leftIcon={<BookOpen className="w-5 h-5" />}
                     actions={(

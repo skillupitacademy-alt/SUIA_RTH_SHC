@@ -11,6 +11,7 @@ import { ZPortalModal } from '@/components/ui/ZPortalModal';
 import { useDomains, useSubjects, useTopics } from '@/hooks/useAdminHierarchy';
 import { cn } from '@/lib/utils';
 import { clientLogger } from '@/utils/clientLogger';
+
 import { HierarchySearchBar } from './HierarchySearchBar';
 
 export function SubtopicTable() {

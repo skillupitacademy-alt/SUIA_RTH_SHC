@@ -22,8 +22,8 @@ import { ZPortalModal } from '@/components/ui/ZPortalModal';
 import { cn } from '@/lib/utils';
 import { clientLogger } from '@/utils/clientLogger';
 
-import { SkillReviewCard } from './SkillReviewCard';
 import { HierarchySearchBar } from './HierarchySearchBar';
+import { SkillReviewCard } from './SkillReviewCard';
 
 const SKILL_CATEGORIES: Record<string, string> = {
     problem_solving: 'Problem Solving',
