@@ -8,7 +8,7 @@ interface _CacheOptions {
   maxSize?: number;
 }
 
-const REDIS_TIMEOUT_MS = 200; // 200ms "Quick or Skip"
+const REDIS_TIMEOUT_MS = 1000; // 1s "Quick or Skip"
 const REDIS_COOLDOWN_MS = 30000; // 30s cooldown on failure
 
 export class CacheService {

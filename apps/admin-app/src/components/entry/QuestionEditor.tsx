@@ -1,7 +1,7 @@
 'use client';
 
 import { Check, Clock, FileText, List, Plus, Trash2 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 import { cn } from '@/lib/utils';
 
@@ -30,24 +30,33 @@ export function QuestionEditor({ onSubmit, loading, initialData, onCancel }: Que
         { id: '4', text: '', isCorrect: false },
     ];
 
-    // Normalize incoming options; if none or empty, fall back to the base 4 slots
-    const normalizedInitialOptions =
-        (initialData?.options != null && initialData.options.length > 0)
-            ? initialData.options.map(o => ({
-                ...o,
-                id: (o.id != null && o.id !== '') ? o.id : crypto.randomUUID(),
-            }))
-            : baseOptions;
+    const buildState = (seed?: Partial<QuestionFormData>): QuestionFormData => {
+        const normalizedOptions =
+            (seed?.options != null && seed.options.length > 0)
+                ? seed.options.map(o => ({
+                    ...o,
+                    id: (o.id != null && o.id !== '') ? o.id : crypto.randomUUID(),
+                }))
+                : baseOptions;
 
-    const [data, setData] = useState<QuestionFormData>({
-        text: initialData?.text ?? '',
-        type: initialData?.type ?? 'single',
-        options: normalizedInitialOptions,
-        explanation: initialData?.explanation ?? '',
-        difficulty: initialData?.difficulty ?? 'intermediate',
-        estimatedTime: initialData?.estimatedTime ?? 60,
-        mappingType: initialData?.mappingType ?? 'conceptual',
-    });
+        return {
+            text: seed?.text ?? '',
+            type: seed?.type ?? 'single',
+            options: normalizedOptions,
+            explanation: seed?.explanation ?? '',
+            difficulty: seed?.difficulty ?? 'intermediate',
+            estimatedTime: seed?.estimatedTime ?? 60,
+            mappingType: seed?.mappingType ?? 'conceptual',
+        };
+    };
+
+    const [data, setData] = useState<QuestionFormData>(buildState(initialData));
+
+    // Keep form in sync when initialData arrives/changes (e.g., after async fetch)
+    useEffect(() => {
+        setData(buildState(initialData));
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [initialData]);
 
     const addOption = () => {
         setData(prev => ({
