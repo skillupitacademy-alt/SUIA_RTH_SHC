@@ -22,7 +22,10 @@ export const config = {
       httpOnly: false,
       secure: true,
       sameSite: 'lax' as const,
-      domain: process.env.COOKIE_DOMAIN,
+      domain: (() => {
+        const raw = process.env.COOKIE_DOMAIN;
+        return raw === undefined || raw === null || raw === '' ? undefined : raw;
+      })(),
     },
   },
 

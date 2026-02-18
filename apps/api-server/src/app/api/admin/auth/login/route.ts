@@ -20,8 +20,8 @@ export async function POST(_req: Request) {
     const result = await AdminAuthService.login(email, password, ip);
 
     // Set Cookies
-    const cookieDomain = process.env.COOKIE_DOMAIN;
-    const isProd = true; // always secure cookies in prod and previews
+    const rawDomain = process.env.COOKIE_DOMAIN;
+    const cookieDomain = rawDomain === undefined || rawDomain === null || rawDomain === '' ? undefined : rawDomain;
 
     const user = {
         id: result.user.id,
@@ -32,27 +32,31 @@ export async function POST(_req: Request) {
 
     const response = NextResponse.json({
         user,
-        expiresAt: result.expiresAt, // Return exact expiry for SessionWatcher
-        // accessToken intentionally omitted from body (HttpOnly cookie)
+        expiresAt: result.expiresAt,
     });
 
-    response.cookies.set('admin_accessToken', result.accessToken, {
+    // Sync settings with unified student/admin login for maximum stability
+    const cookieOptions = {
         httpOnly: true,
-        secure: isProd,
-        sameSite: 'none',
+        secure: true, // Always true for cross-domain stability in live env
+        sameSite: 'none' as const,
         path: '/',
         domain: cookieDomain,
-        maxAge: 15 * 60
+    };
+
+    response.cookies.set('admin_accessToken', result.accessToken, {
+        ...cookieOptions,
+        maxAge: 15 * 60,
     });
 
     response.cookies.set('admin_refreshToken', result.refreshToken, {
-        httpOnly: true,
-        secure: isProd,
-        sameSite: 'none',
-        path: '/',
-        domain: cookieDomain,
-        maxAge: 24 * 60 * 60 // 24 hours
+        ...cookieOptions,
+        maxAge: 24 * 60 * 60, // 24 hours
     });
+
+    // SECURITY: Ensure CSRF token is issued upon administrative login
+    const { setCsrfToken } = await import('@/modules/auth/csrf.middleware');
+    setCsrfToken(response);
 
     return response;
 

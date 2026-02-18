@@ -51,7 +51,8 @@ export async function POST(_req: NextRequest) {
 
     const response = NextResponse.json({ success: true, expiresAt });
 
-    const cookieDomain = process.env.COOKIE_DOMAIN;
+    const rawDomain = process.env.COOKIE_DOMAIN;
+    const cookieDomain = rawDomain === undefined || rawDomain === null || rawDomain === '' ? undefined : rawDomain;
 
     // Re-issue Access Token Cookie
     const accessTokenCookieName = isAdmin ? 'admin_accessToken' : 'accessToken';

@@ -24,9 +24,9 @@ export async function POST(_req: NextRequest) {
     // Auto-login after signup
     const { accessToken, refreshToken } = await AuthService.login(email, password);
 
-    const response = NextResponse.json({ 
-      message: 'User created', 
-      user: { 
+    const response = NextResponse.json({
+      message: 'User created',
+      user: {
         id: _user.id, 
         email: _user.email, 
         name, 
@@ -37,7 +37,8 @@ export async function POST(_req: NextRequest) {
       accessToken
     });
 
-    const cookieDomain = process.env.COOKIE_DOMAIN;
+    const rawDomain = process.env.COOKIE_DOMAIN;
+    const cookieDomain = rawDomain === undefined || rawDomain === null || rawDomain === '' ? undefined : rawDomain;
 
     // Set HttpOnly cookies for Access Token
     response.cookies.set('accessToken', accessToken, {

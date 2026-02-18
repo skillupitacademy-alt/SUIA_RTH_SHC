@@ -3,6 +3,7 @@ import "./globals.css";
 import type { Metadata } from "next";
 
 import { SecurityMuzzle } from "@/components/auth/SecurityMuzzle";
+import { FetchCredentialsProvider } from "@/components/providers/FetchCredentialsProvider";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 
 export const metadata: Metadata = {
@@ -19,6 +20,7 @@ export default function RootLayout({
         <html lang="en" suppressHydrationWarning>
             <body>
                 <ThemeProvider>
+                    <FetchCredentialsProvider />
                     <SecurityMuzzle />
                     {children}
                 </ThemeProvider>

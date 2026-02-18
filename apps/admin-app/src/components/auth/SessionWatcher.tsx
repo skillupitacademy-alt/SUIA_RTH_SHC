@@ -93,7 +93,7 @@ export function SessionWatcher({ expiresAt, onRefresh, onLogout, isRedirecting, 
 
     // 1.5. Reset idle timer on unlock
     useEffect(() => {
-        if (!isLocked) {
+        if (isLocked === false) {
             setLastActivityAt(Date.now());
         }
     }, [isLocked]);
@@ -106,7 +106,7 @@ export function SessionWatcher({ expiresAt, onRefresh, onLogout, isRedirecting, 
             const idleTime = now - lastActivityAt;
 
             // Determine thresholds (Support E2E overrides)
-            const config = typeof window !== 'undefined' && window.__idleTestConfig ? window.__idleTestConfig : {
+            const config = (typeof window !== 'undefined' && window.__idleTestConfig !== undefined) ? window.__idleTestConfig : {
                 IDLE_WARNING_MS: DEFAULT_IDLE_WARNING_MS,
                 IDLE_LOCK_MS: DEFAULT_IDLE_LOCK_MS,
                 FORCED_IDLE_WARNING_MS: DEFAULT_FORCED_IDLE_WARNING_MS,

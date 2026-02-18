@@ -63,3 +63,5 @@
 | 2026-02-16 | Async Scoring Migration (Ph 10) | COMPLETED | Migrated scoring to background jobs via JobOrchestrator; Added unit tests; Achieved Absolute Zero lint compliance. |
 | 2026-02-16 | Deep Analytics (Ph 11) | COMPLETED | Implemented Materialized Views for infinite scale; Integrated Predictive Forecast engine (Linear Velocity); Built Admin Refresh Workers. |
 | 2026-02-18 | Auth Resilience & Join Refactor | COMPLETED | Fixed 400 Bad Request errors; Implemented Join-based auth queries; Unified onboarding data structure; Reached Absolute Zero. |
+| 2026-02-18 | Password Policy Relaxation | COMPLETED | Removed 8-character password constraint across all apps; Fixed remaining strict-boolean lint errors. |
+| 2026-02-18 | Auth Cookie Stability | COMPLETED | Fixed missing admin auth cookies in live env; Standardized COOKIE_DOMAIN handling; Added CSRF to admin login. |

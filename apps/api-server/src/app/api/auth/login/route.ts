@@ -40,7 +40,8 @@ export async function POST(req: NextRequest) {
       expiresAt: null, // client uses cookie lifetime; keeps shape consistent with AuthClient expectations
     });
 
-    const cookieDomain = process.env.COOKIE_DOMAIN;
+    const rawDomain = process.env.COOKIE_DOMAIN;
+    const cookieDomain = rawDomain === undefined || rawDomain === null || rawDomain === '' ? undefined : rawDomain;
 
     // Set HttpOnly cookies for Access Token
     const accessTokenCookieName = isAdmin === true ? 'admin_accessToken' : 'accessToken';

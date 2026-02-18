@@ -19,8 +19,9 @@ export async function POST(_req: NextRequest) {
   }
 
   const response = NextResponse.json({ message: 'Logged out' });
-  const cookieDomain = process.env.COOKIE_DOMAIN;
-  
+  const rawDomain = process.env.COOKIE_DOMAIN;
+  const cookieDomain = rawDomain === undefined || rawDomain === null || rawDomain === '' ? undefined : rawDomain;
+
   const clear = (name: string) => {
     response.cookies.set(name, '', {
       httpOnly: true,
@@ -37,6 +38,6 @@ export async function POST(_req: NextRequest) {
   clear('admin_accessToken');
   clear('admin_refreshToken');
   clear('csrfToken');
-  
+
   return response;
 }

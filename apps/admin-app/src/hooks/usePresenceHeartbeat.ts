@@ -7,7 +7,7 @@ export function usePresenceHeartbeat() {
     const { isAuthenticated, initialized, isLocked } = useAuthStore();
 
     useEffect(() => {
-        if (!initialized || !isAuthenticated || isLocked) return;
+        if (initialized === false || isAuthenticated === false || isLocked === true) return;
 
         // Initial heartbeat
         apiClient.auth.adminHeartbeat().catch(() => {});
