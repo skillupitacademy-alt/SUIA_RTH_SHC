@@ -44,12 +44,9 @@ export function useSubjects(domainId?: string) {
     const [loading, setLoading] = useState(false);
 
     const fetch = async () => {
-        if (domainId === undefined || domainId === null || domainId === '') {
-            setData([]);
-            return;
-        }
         setLoading(true);
         try {
+            // If no domain is selected, fetch all subjects so edit forms still have options.
             const res = await apiClient.admin.getSubjects(1, 200, domainId);
             setData(res.data as Subject[]);
         } catch (e) {
