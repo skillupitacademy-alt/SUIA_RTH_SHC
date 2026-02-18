@@ -17,7 +17,7 @@ export function QuestionFactoryAIPanel() {
                         <div className="h-10 w-10 rounded-2xl bg-indigo-500/10 flex items-center justify-center text-indigo-500 shadow-lg shadow-indigo-500/10">
                             <Wand2 size={22} />
                         </div>
-                        <span className="text-xs font-black uppercase tracking-widest text-indigo-500">AI Intelligence_</span>
+                        <span className="text-xs font-black uppercase tracking-widest text-indigo-500">AI Intelligence</span>
                     </div>
 
                     <div>

@@ -166,7 +166,7 @@ export function ContentReadinessBoard() {
                 </div>
             </div>
 
-            <div className="space-y-4 max-h-[700px] overflow-y-auto pr-3 custom-scrollbar">
+            <div className="space-y-4 pb-4">
                 {filteredDomains.map((domain) => (
                     <div key={domain.domainId} className="space-y-2">
                         {/* Domain Row */}

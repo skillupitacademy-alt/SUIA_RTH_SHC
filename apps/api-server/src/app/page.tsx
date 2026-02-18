@@ -1,14 +1,16 @@
 "use client";
 
 import { ZLoader } from "@quiz/ui";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, LogOut } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { AdminGuard } from "@/components/auth/AdminGuard";
 import { type AuthState, useAuthStore } from "@/store/auth-store";
 
 export default function Home() {
-    const { initialized } = useAuthStore() as AuthState;
+    const router = useRouter();
+    const { initialized, logout } = useAuthStore() as AuthState & { logout: () => void };
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
@@ -64,9 +66,22 @@ export default function Home() {
                             </p>
                         </div>
 
-                        <div className="stats-card">
-                            <span className="stats-label">System Latency</span>
-                            <span className="stats-value">12<span className="stats-unit">ms</span></span>
+                        <div className="stats-card" style={{ gap: '12px' }}>
+                            <div style={{ flex: 1 }}>
+                                <span className="stats-label">System Latency</span>
+                                <span className="stats-value">12<span className="stats-unit">ms</span></span>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    logout();
+                                    router.push('/login');
+                                }}
+                                className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-white text-slate-700 border border-slate-200 hover:border-slate-300 hover:shadow-sm transition-colors text-xs font-bold uppercase tracking-widest"
+                            >
+                                <LogOut size={14} />
+                                Sign Out
+                            </button>
                         </div>
                     </div>
 

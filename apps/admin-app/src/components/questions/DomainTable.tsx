@@ -405,34 +405,36 @@ export function DomainTable() {
                 </AlertDialog>
 
                 {/* HEADER & SEARCH */}
-                <HierarchySearchBar
-                    value={searchQuery}
-                    placeholder="Search Domains..."
-                    onChange={(val) => { setSearchQuery(val); setPage(1); }}
-                    onSelectAll={handleSelectAll}
-                    selectAllChecked={data.length > 0 && selectedIds.size === data.length}
-                    leftIcon={<Globe className="w-5 h-5" />}
-                    actions={(
-                        <>
-                            <button
-                                onClick={() => setIsFactoryOpen(true)}
-                                className="px-6 py-3 rounded-2xl bg-slate-900 text-white text-[10px] font-bold uppercase tracking-wider shadow-lg hover:bg-slate-800 transition-all flex items-center gap-2"
-                                aria-label="Open domain bulk factory"
-                            >
-                                <Plus size={14} className="text-[#FF4B91]" />
-                                Bulk Factory
-                            </button>
-                            <button
-                                onClick={() => handleOpenForm()} // Open for Create
-                                className="px-6 py-3 rounded-2xl bg-[#FF4B91] hover:bg-[#ff3382] text-white text-[10px] font-bold uppercase tracking-wider shadow-lg shadow-[#FF4B91]/20 transition-all flex items-center gap-3 active:scale-95"
-                                aria-label="Add domain"
-                            >
-                                <Plus size={16} />
-                                Add Domain
-                            </button>
-                        </>
-                    )}
-                />
+                <div className="mb-4">
+                    <HierarchySearchBar
+                        value={searchQuery}
+                        placeholder="Search Domains..."
+                        onChange={(val) => { setSearchQuery(val); setPage(1); }}
+                        onSelectAll={handleSelectAll}
+                        selectAllChecked={data.length > 0 && selectedIds.size === data.length}
+                        leftIcon={<Globe className="w-5 h-5" />}
+                        actions={(
+                            <>
+                                <button
+                                    onClick={() => setIsFactoryOpen(true)}
+                                    className="px-6 py-3 rounded-2xl bg-slate-900 text-white text-[10px] font-bold uppercase tracking-wider shadow-lg hover:bg-slate-800 transition-all flex items-center gap-2"
+                                    aria-label="Open domain bulk factory"
+                                >
+                                    <Plus size={14} className="text-[#FF4B91]" />
+                                    Bulk Factory
+                                </button>
+                                <button
+                                    onClick={() => handleOpenForm()} // Open for Create
+                                    className="px-6 py-3 rounded-2xl bg-[#FF4B91] hover:bg-[#ff3382] text-white text-[10px] font-bold uppercase tracking-wider shadow-lg shadow-[#FF4B91]/20 transition-all flex items-center gap-3 active:scale-95"
+                                    aria-label="Add domain"
+                                >
+                                    <Plus size={16} />
+                                    Add Domain
+                                </button>
+                            </>
+                        )}
+                    />
+                </div>
 
                 {/* DOMAIN CARD STACK */}
                 {isLoading === true ? (

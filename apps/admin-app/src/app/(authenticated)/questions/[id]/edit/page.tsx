@@ -192,11 +192,17 @@ export default function EditQuestionPage() {
                     </Link>
                     <div className="flex items-end justify-between gap-8 pb-8 border-b border-gray-100">
                         <div className="relative">
-                            <h1 className="text-4xl font-black text-[#1A1A1A] tracking-tighter uppercase">Edit Assessment_</h1>
+                            <h1 className="text-4xl font-black text-[#1A1A1A] tracking-tighter uppercase">Edit Assessment</h1>
                             <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mt-2 flex items-center gap-2">
                                 System-Alpha • Manual Orchestration Active • ID: {String(params.id)}
                             </p>
                         </div>
+                        <Link
+                            href="/questions"
+                            className="px-4 py-3 rounded-xl border border-slate-200 text-[10px] font-black uppercase tracking-widest text-slate-600 hover:bg-slate-50 transition-colors"
+                        >
+                            Cancel
+                        </Link>
                     </div>
                 </div>
 
@@ -218,14 +224,18 @@ export default function EditQuestionPage() {
                             <QuestionEditor
                                 loading={isSaving}
                                 onSubmit={handleSubmit}
+                                onCancel={() => router.push('/questions')}
                                 initialData={{
                                     text: (question?.questionText != null && question.questionText !== '') ? question.questionText : (question?.question_text ?? ''),
                                     type: (question?.type === 'mcq' || question?.type === 'single') ? 'single' : 'multiple',
-                                    options: question?.options?.map((o) => ({
-                                        id: o.id,
-                                        text: (o.text != null && o.text !== '') ? o.text : ((o.optionText != null && o.optionText !== '') ? o.optionText : (o.option_text ?? '')),
-                                        isCorrect: (o.isCorrect === true || o.is_correct === true)
-                                    })) || [],
+                                    options: (() => {
+                                        const mapped = question?.options?.map((o) => ({
+                                            id: o.id,
+                                            text: (o.text != null && o.text !== '') ? o.text : ((o.optionText != null && o.optionText !== '') ? o.optionText : (o.option_text ?? '')),
+                                            isCorrect: (o.isCorrect === true || o.is_correct === true)
+                                        })) ?? [];
+                                        return mapped.length > 0 ? mapped : undefined;
+                                    })(),
                                     explanation: question?.explanation ?? '',
                                     difficulty: (question?.difficulty as 'simple' | 'intermediate' | 'expert' | undefined) ?? 'simple',
                                     estimatedTime: (question?.metadata?.estimatedTime != null) ? question.metadata.estimatedTime : (question?.metadata?.estimated_time ?? 60),

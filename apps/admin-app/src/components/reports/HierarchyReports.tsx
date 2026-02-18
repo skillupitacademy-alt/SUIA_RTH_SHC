@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 
+import { PageTitle } from '@/components/layout/PageTitle';
 import { cn } from '@/lib/utils';
 import { clientLogger } from '@/utils/clientLogger';
 
@@ -150,9 +151,10 @@ export const HierarchyReports: React.FC = () => {
                             </button>
                         )}
                         <div>
-                            <h1 className="text-5xl font-black text-[#1A1A1A] tracking-tighter uppercase leading-none">
-                                {currentView.level.charAt(0).toUpperCase() + currentView.level.slice(1)} Intelligence_
-                            </h1>
+                            <PageTitle
+                                text={`${currentView.level.charAt(0).toUpperCase() + currentView.level.slice(1)} Intelligence`}
+                                className="leading-none"
+                            />
                             <div className="flex items-center gap-3 mt-4">
                                 <div className="px-3 py-1 bg-[#1A1A1A] text-[#FF4B91] rounded-lg text-[10px] font-black uppercase tracking-widest shadow-xl">
                                     {currentView.title}
@@ -314,7 +316,7 @@ export const HierarchyReports: React.FC = () => {
                     <div className="p-8 bg-slate-50 rounded-full mb-8 shadow-inner ring-1 ring-slate-100">
                         <Filter className="text-slate-300 w-12 h-12" />
                     </div>
-                    <h3 className="text-2xl font-black text-[#1A1A1A] uppercase tracking-tighter">Negative Intelligence_</h3>
+                    <h3 className="text-2xl font-black text-[#1A1A1A] uppercase tracking-tighter">Negative Intelligence</h3>
                     <p className="text-muted-foreground font-medium mt-2 max-w-sm">
                         No containers found matching your filter criteria in this hierarchical branch.
                     </p>

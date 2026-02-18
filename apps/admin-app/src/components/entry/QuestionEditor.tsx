@@ -19,16 +19,24 @@ interface QuestionEditorProps {
     onSubmit: (data: QuestionFormData) => Promise<void>;
     loading?: boolean;
     initialData?: Partial<QuestionFormData>;
+    onCancel?: () => void;
 }
 
-export function QuestionEditor({ onSubmit, loading, initialData }: QuestionEditorProps) {
+export function QuestionEditor({ onSubmit, loading, initialData, onCancel }: QuestionEditorProps) {
+    const baseOptions = [
+        { id: '1', text: '', isCorrect: false },
+        { id: '2', text: '', isCorrect: false },
+        { id: '3', text: '', isCorrect: false },
+        { id: '4', text: '', isCorrect: false },
+    ];
+
     const [data, setData] = useState<QuestionFormData>({
         text: initialData?.text ?? '',
         type: initialData?.type ?? 'single',
         options: initialData?.options?.map(o => ({
             ...o,
             id: (o.id != null && o.id !== '') ? o.id : crypto.randomUUID()
-        })) ?? [{ id: '1', text: '', isCorrect: false }, { id: '2', text: '', isCorrect: false }],
+        })) ?? baseOptions,
         explanation: initialData?.explanation ?? '',
         difficulty: initialData?.difficulty ?? 'intermediate',
         estimatedTime: initialData?.estimatedTime ?? 60,
@@ -82,9 +90,20 @@ export function QuestionEditor({ onSubmit, loading, initialData }: QuestionEdito
             {/* Decor */}
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#FF4B91] to-transparent opacity-20" />
 
-            <div className="flex items-center gap-3 mb-2 border-b border-gray-100 pb-6">
-                <FileText className="w-6 h-6 text-[#FF4B91]" />
-                <h3 className="text-xl font-black text-[#1A1A1A] tracking-tight uppercase">Question Details</h3>
+            <div className="flex items-center justify-between gap-3 mb-2 border-b border-gray-100 pb-6">
+                <div className="flex items-center gap-3">
+                    <FileText className="w-6 h-6 text-[#FF4B91]" />
+                    <h3 className="text-xl font-black text-[#1A1A1A] tracking-tight uppercase">Question Details</h3>
+                </div>
+                {onCancel != null ? (
+                    <button
+                        type="button"
+                        onClick={onCancel}
+                        className="px-4 py-2 rounded-xl border border-slate-200 text-[11px] font-black uppercase tracking-widest text-slate-600 hover:bg-slate-50 transition-colors"
+                    >
+                        Cancel
+                    </button>
+                ) : null}
             </div>
 
             {/* Question Text */}
