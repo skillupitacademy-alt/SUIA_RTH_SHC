@@ -5,12 +5,21 @@ import { TokenService } from '@/modules/auth/token.service';
 import { cacheService } from '@/modules/core/cache.service';
 
 const WINDOW_MS = 15 * 60 * 1000;
-const MAX_IP_REQUESTS = 1000;
-const MAX_USER_REQUESTS = 2000;
+
+// Tuned limits (admin flows generate more parallel calls)
+const ADMIN_MAX_IP_REQUESTS = 5000;
+const ADMIN_MAX_USER_REQUESTS = 8000;
+const USER_MAX_IP_REQUESTS = 2000;
+const USER_MAX_USER_REQUESTS = 4000;
 
 export async function rateLimit(_request: NextRequest) {
   const rateLimitLogger = logger.child({ module: 'auth:rate-limit' });
-  const ip = _request.headers.get('x-forwarded-for')?.split(',')[0] ?? 'unknown';
+  // Prefer real client IP headers (Cloudflare → Vercel)
+  const ip =
+    _request.headers.get('cf-connecting-ip') ??
+    _request.headers.get('x-real-ip') ??
+    _request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
+    'unknown';
   
   // 1. Resolve Scope & Auth (Absolute Isolation)
   const path = _request.nextUrl.pathname;
@@ -36,6 +45,10 @@ export async function rateLimit(_request: NextRequest) {
 
   // 2. Apply Limits
   try {
+    const isAdminScope = scope === 'admin';
+    const maxIp = isAdminScope ? ADMIN_MAX_IP_REQUESTS : USER_MAX_IP_REQUESTS;
+    const maxUser = isAdminScope ? ADMIN_MAX_USER_REQUESTS : USER_MAX_USER_REQUESTS;
+
     // Tracking both IP and User (if present)
     const ipKey = `ratelimit:ip:${ip}`;
     const start = Date.now();
@@ -46,7 +59,7 @@ export async function rateLimit(_request: NextRequest) {
         rateLimitLogger.warn({ ip, duration, path }, 'Slow rate limit increment detected');
     }
 
-    if (ipCount > MAX_IP_REQUESTS) {
+    if (ipCount > maxIp) {
       rateLimitLogger.warn({ ip, path, count: ipCount }, 'IP Rate limit hit');
       return NextResponse.json(
         { _error: 'Too many requests' }, 
@@ -61,7 +74,7 @@ export async function rateLimit(_request: NextRequest) {
       const userKey = `ratelimit:_user:${userId}`;
       const { count: userCount, ttlRem: userTtl } = await cacheService.increment(userKey, WINDOW_MS);
 
-      if (userCount > MAX_USER_REQUESTS) {
+      if (userCount > maxUser) {
         return NextResponse.json(
           { _error: 'User rate limit exceeded' }, 
           { 
