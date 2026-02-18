@@ -404,12 +404,12 @@ export function DomainTable() {
                 </AlertDialog>
 
                 {/* HEADER & SEARCH */}
-                <div className="bg-white/50 backdrop-blur-xl border border-primary/10 p-6 rounded-[2rem] shadow-xl relative overflow-hidden flex items-center justify-between z-10">
-                    <div className="flex items-center gap-4 flex-1">
-                        <div className="p-2 rounded-xl bg-blue-50 text-blue-500 shadow-sm border border-blue-100">
+                <div className="bg-white/50 backdrop-blur-xl border border-primary/10 p-6 rounded-[2rem] shadow-xl relative overflow-hidden flex flex-wrap md:flex-nowrap items-start md:items-center justify-between gap-4 z-10">
+                    <div className="flex items-center gap-4 flex-1 min-w-0">
+                        <div className="p-2 rounded-xl bg-blue-50 text-blue-500 shadow-sm border border-blue-100 shrink-0">
                             <Globe className="w-5 h-5" />
                         </div>
-                        <div className="relative flex-1 group">
+                        <div className="relative flex-1 group min-w-0">
                             <input
                                 type="text"
                                 placeholder="Search Domains..."
@@ -431,7 +431,7 @@ export function DomainTable() {
                             </div>
                         </div>
                     </div>
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3 flex-wrap justify-end">
                         <button
                             onClick={() => setIsFactoryOpen(true)}
                             className="px-6 py-3 rounded-2xl bg-slate-900 text-white text-[10px] font-bold uppercase tracking-wider shadow-lg hover:bg-slate-800 transition-all flex items-center gap-2"
