@@ -57,7 +57,7 @@ export default function AdminLoginPage() {
                 {error}
             </div> : null}
 
-            <form onSubmit={(e) => void handleSubmit(e)} className="space-y-6">
+            <form onSubmit={(e) => void handleSubmit(e)} className="space-y-6" autoComplete="off">
                 <div className="space-y-2">
                     <label className="text-sm font-medium leading-none text-slate-500" htmlFor="admin-login-email">Email Address</label>
                     <div className="relative">
@@ -66,6 +66,8 @@ export default function AdminLoginPage() {
                             type="email"
                             required
                             id="admin-login-email"
+                            name="username"
+                            autoComplete="username"
                             className="w-full pl-12 pr-4 py-4 rounded-xl border bg-slate-50 text-[#1A1A1A] text-[15px] focus:bg-white focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all font-semibold"
                             placeholder="admin@quizplatform.com"
                             value={formData.email}
@@ -91,6 +93,8 @@ export default function AdminLoginPage() {
                             required
                             minLength={1}
                             id="admin-login-password"
+                            name="password"
+                            autoComplete="new-password"
                             className="w-full pl-12 pr-4 py-4 rounded-xl border bg-slate-50 text-[#1A1A1A] text-[15px] focus:bg-white focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all font-semibold"
                             placeholder="••••••••••••"
                             value={formData.password}

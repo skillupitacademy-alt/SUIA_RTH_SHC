@@ -49,7 +49,7 @@ export function LoginForm() {
                 </div>
             )}
 
-            <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+            <form className="mt-8 space-y-6" onSubmit={handleSubmit} autoComplete="off">
                 <div className="space-y-4">
                     <div>
                         <label className="text-sm font-medium leading-none" htmlFor="email">
@@ -60,6 +60,7 @@ export function LoginForm() {
                             name="email"
                             type="email"
                             placeholder="name@example.com"
+                            autoComplete="username"
                             className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm mt-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                             required
                         />
@@ -75,6 +76,7 @@ export function LoginForm() {
                                 type={showPassword ? "text" : "password"}
                                 placeholder="••••••••"
                                 minLength={1}
+                                autoComplete="new-password"
                                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                                 required
                             />
