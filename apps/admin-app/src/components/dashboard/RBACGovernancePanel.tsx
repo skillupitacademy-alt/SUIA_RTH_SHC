@@ -14,7 +14,7 @@ export function RBACGovernancePanel() {
         const fetch = async () => {
             try {
                 const data = await apiClient.admin.getRBACMetrics();
-                setRoles(data);
+                setRoles(Array.isArray(data) ? data : []);
             } catch (err) {
                 clientLogger.error('Failed to fetch RBAC metrics', { error: err instanceof Error ? err.message : 'unknown' });
             }
