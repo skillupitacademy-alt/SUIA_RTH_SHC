@@ -26,75 +26,152 @@ import {
     Funnel,
     LabelList,
     ComposedChart,
-    Area
+    Area,
+    Cell
 } from 'recharts';
 import React from 'react';
 
+// --- Premium Design Tokens ---
+const COLORS = {
+    emerald: ['#10b981', '#059669'],
+    indigo: ['#6366f1', '#4f46e5'],
+    rose: ['#f43f5e', '#e11d48'],
+    amber: ['#f59e0b', '#d97706'],
+    slate: ['#94a3b8', '#64748b'],
+};
+
+const CustomTooltip = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+        return (
+            <div className="bg-white/90 backdrop-blur-md border border-slate-200 p-4 rounded-2xl shadow-xl shadow-slate-200/50">
+                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">{label || 'Metric'}</p>
+                {payload.map((p: any, i: number) => (
+                    <div key={i} className="flex items-center gap-3">
+                        <div className="w-2 h-2 rounded-full" style={{ backgroundColor: p.color || p.fill }} />
+                        <p className="text-sm font-black text-slate-800 tabular-nums">
+                            {p.name}: <span className="text-primary">{p.value}%</span>
+                        </p>
+                    </div>
+                ))}
+            </div>
+        );
+    }
+    return null;
+};
+
+const ChartDefs = () => (
+    <svg style={{ height: 0, width: 0, position: 'absolute' }}>
+        <defs>
+            <linearGradient id="emeraldGradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor={COLORS.emerald[0]} stopOpacity={0.8} />
+                <stop offset="95%" stopColor={COLORS.emerald[1]} stopOpacity={1} />
+            </linearGradient>
+            <linearGradient id="indigoGradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor={COLORS.indigo[0]} stopOpacity={0.8} />
+                <stop offset="95%" stopColor={COLORS.indigo[1]} stopOpacity={1} />
+            </linearGradient>
+            <linearGradient id="roseGradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor={COLORS.rose[0]} stopOpacity={0.8} />
+                <stop offset="95%" stopColor={COLORS.rose[1]} stopOpacity={1} />
+            </linearGradient>
+        </defs>
+    </svg>
+);
+
 export const Card: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => (
-    <div className="rounded-3xl border border-slate-200 bg-white shadow-sm p-4 w-full">
-        <div className="text-sm font-bold text-slate-500 uppercase tracking-widest mb-3">{title}</div>
-        <div className="h-[260px] w-full">
+    <div className="group relative rounded-[2.5rem] border border-white bg-white/60 backdrop-blur-xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-8 w-full transition-all hover:shadow-[0_20px_50px_rgba(0,0,0,0.1)] hover:-translate-y-1">
+        <ChartDefs />
+        <div className="flex items-center justify-between mb-8">
+            <div>
+                <h3 className="text-xs font-black text-slate-400 uppercase tracking-[0.2em]">{title}</h3>
+                <div className="h-1 w-8 bg-primary/20 rounded-full mt-2 group-hover:w-16 transition-all duration-500" />
+            </div>
+            <div className="flex gap-1">
+                <div className="h-1.5 w-1.5 rounded-full bg-slate-200" />
+                <div className="h-1.5 w-1.5 rounded-full bg-slate-200" />
+            </div>
+        </div>
+        <div className="h-[400px] w-full">
             {children}
         </div>
     </div>
 );
 
-export const MasteryTreemap: React.FC<{ items: Array<{ name: string; value: number; fill?: string }> }> = ({ items }) => (
-    <Card title="Mastery Sunburst (Treemap)">
-        <ResponsiveContainer>
-            <Treemap data={items} dataKey="value" stroke="#fff" fill="#10b981" />
-        </ResponsiveContainer>
-    </Card>
-);
-
 export const CompetencyRadar: React.FC<{ skills: Array<{ name: string; value: number }> }> = ({ skills }) => (
-    <Card title="Competency Radar">
+    <Card title="Skill Capability Matrix (Radar)">
         <ResponsiveContainer>
-            <RadarChart data={skills}>
-                <PolarGrid />
-                <PolarAngleAxis dataKey="name" />
-                <PolarRadiusAxis angle={45} domain={[0, 100]} />
-                <Radar name="Skill" dataKey="value" stroke="#FF4B91" fill="#FF4B91" fillOpacity={0.35} />
+            <RadarChart cx="50%" cy="50%" outerRadius="80%" data={skills}>
+                <PolarGrid stroke="#e2e8f0" strokeDasharray="4 4" />
+                <PolarAngleAxis dataKey="name" tick={{ fill: '#64748b', fontSize: 10, fontWeight: 800 }} />
+                <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
+                <Radar
+                    name="Proficiency"
+                    dataKey="value"
+                    stroke="#6366f1"
+                    strokeWidth={3}
+                    fill="url(#indigoGradient)"
+                    fillOpacity={0.4}
+                />
+                <Tooltip content={<CustomTooltip />} />
             </RadarChart>
         </ResponsiveContainer>
     </Card>
 );
 
 export const LearningVelocity: React.FC<{ points: Array<{ label: string; value: number }> }> = ({ points }) => (
-    <Card title="Learning Velocity">
+    <Card title="Learning Velocity & Momentum">
         <ResponsiveContainer>
-            <LineChart data={points}>
-                <CartesianGrid strokeDasharray="3 3" />
+            <AreaChart data={points}>
+                <defs>
+                    <linearGradient id="velocityFill" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.1} />
+                        <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                    </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="10 10" stroke="#f1f5f9" vertical={false} />
                 <XAxis dataKey="label" hide />
-                <YAxis domain={[0, 100]} />
-                <Tooltip />
-                <Line type="monotone" dataKey="value" stroke="#2563eb" strokeWidth={3} dot={false} activeDot={{ r: 5 }} />
-                <Area dataKey="value" stroke="none" fill="#2563eb" fillOpacity={0.15} />
-            </LineChart>
+                <YAxis domain={[0, 100]} axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: 700 }} />
+                <Tooltip content={<CustomTooltip />} />
+                <Area
+                    type="monotone"
+                    dataKey="value"
+                    stroke="#3b82f6"
+                    strokeWidth={4}
+                    fill="url(#velocityFill)"
+                    animationDuration={2000}
+                />
+            </AreaChart>
         </ResponsiveContainer>
     </Card>
 );
 
-export const KnowledgeTreemap: React.FC<{ items: Array<{ name: string; value: number; fill?: string }> }> = ({ items }) => (
-    <Card title="Knowledge Volume Treemap">
+export const MasteryTreemap: React.FC<{ items: Array<{ name: string; value: number }> }> = ({ items }) => (
+    <Card title="Structural Hierarchy (Treemap)">
         <ResponsiveContainer>
-            <Treemap data={items} dataKey="value" stroke="#fff" />
+            <Treemap
+                data={items}
+                dataKey="value"
+                stroke="#fff"
+                fill="#10b981"
+            >
+                <Tooltip content={<CustomTooltip />} />
+            </Treemap>
         </ResponsiveContainer>
     </Card>
 );
 
 export const DifficultyBars: React.FC<{ bars: Array<{ label: string; simple: number; intermediate: number; expert: number }> }> = ({ bars }) => (
-    <Card title="Difficulty Bridge">
+    <Card title="The Expertise Bridge (Difficulty Clusters)">
         <ResponsiveContainer>
-            <BarChart data={bars}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="label" />
-                <YAxis domain={[0, 100]} />
-                <Tooltip />
-                <Legend />
-                <Bar dataKey="simple" fill="#10b981" name="Simple" />
-                <Bar dataKey="intermediate" fill="#f59e0b" name="Intermediate" />
-                <Bar dataKey="expert" fill="#ef4444" name="Expert" />
+            <BarChart data={bars} barGap={12}>
+                <CartesianGrid strokeDasharray="10 10" stroke="#f1f5f9" vertical={false} />
+                <XAxis dataKey="label" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 10, fontWeight: 800 }} />
+                <YAxis domain={[0, 100]} axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: 700 }} />
+                <Tooltip content={<CustomTooltip />} />
+                <Legend iconType="circle" wrapperStyle={{ paddingTop: 40, fontSize: 10, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.1em' }} />
+                <Bar dataKey="simple" radius={[10, 10, 0, 0]} fill="url(#emeraldGradient)" name="CORE" />
+                <Bar dataKey="intermediate" radius={[10, 10, 0, 0]} fill="url(#indigoGradient)" name="APPLIED" />
+                <Bar dataKey="expert" radius={[10, 10, 0, 0]} fill="url(#roseGradient)" name="SURGICAL" />
             </BarChart>
         </ResponsiveContainer>
     </Card>
@@ -102,66 +179,67 @@ export const DifficultyBars: React.FC<{ bars: Array<{ label: string; simple: num
 
 export const SnapshotDonut: React.FC<{ correct: number; incorrect: number; skipped: number }> = ({ correct, incorrect, skipped }) => {
     const data = [
-        { name: 'Correct', value: correct, fill: '#10b981' },
-        { name: 'Incorrect', value: incorrect, fill: '#ef4444' },
-        { name: 'Skipped', value: skipped, fill: '#94a3b8' },
+        { name: 'Succeeded', value: correct, fill: 'url(#emeraldGradient)' },
+        { name: 'Compromised', value: incorrect, fill: 'url(#roseGradient)' },
+        { name: 'Bypassed', value: skipped, fill: '#f1f5f9' },
     ];
     return (
-        <Card title="Exam Snapshot">
+        <Card title="Operational Snapshot">
             <ResponsiveContainer>
                 <PieChart>
-                    <Pie data={data} dataKey="value" nameKey="name" innerRadius="50%" outerRadius="80%" />
-                    <Tooltip />
-                    <Legend />
+                    <Pie
+                        data={data}
+                        dataKey="value"
+                        nameKey="name"
+                        innerRadius="65%"
+                        outerRadius="90%"
+                        paddingAngle={8}
+                        animationBegin={500}
+                    >
+                        {data.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.fill} />
+                        ))}
+                    </Pie>
+                    <Tooltip content={<CustomTooltip />} />
+                    <Legend verticalAlign="middle" align="right" layout="vertical" iconType="circle" wrapperStyle={{ paddingLeft: 40, fontSize: 11, fontWeight: 900, textTransform: 'uppercase' }} />
                 </PieChart>
             </ResponsiveContainer>
         </Card>
     );
 };
 
-export const FluencyScatter: React.FC<{ points: Array<{ x: number; y: number; label: string; correct: boolean }> }> = ({ points }) => (
-    <Card title="Fluency Scatter">
-        <ResponsiveContainer>
-            <ScatterChart>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="x" name="Time (s)" />
-                <YAxis dataKey="y" name="Accuracy" domain={[0, 100]} />
-                <Tooltip cursor={{ strokeDasharray: '3 3' }} />
-                <Legend />
-                <ReferenceLine x={Math.max(...points.map(p => p.x)) / 2} stroke="#cbd5e1" strokeDasharray="4 4" />
-                <ReferenceLine y={50} stroke="#cbd5e1" strokeDasharray="4 4" />
-                <Scatter name="Questions" data={points} fill="#10b981" shape="circle" />
-            </ScatterChart>
-        </ResponsiveContainer>
-    </Card>
-);
-
 export const RetentionFunnel: React.FC<{ stages: Array<{ label: string; value: number }> }> = ({ stages }) => (
-    <Card title="Retention Funnel">
+    <Card title="Survival Attrition (Retention Funnel)">
         <ResponsiveContainer>
             <FunnelChart>
-                <Tooltip />
-                <Funnel dataKey="value" data={stages} isAnimationActive fill="#FF4B91">
-                    <LabelList position="right" fill="#334155" stroke="none" dataKey="label" />
+                <Tooltip content={<CustomTooltip />} />
+                <Funnel dataKey="value" data={stages} isAnimationActive stroke="none">
+                    <Cell fill="url(#indigoGradient)" fillOpacity={1} />
+                    <Cell fill="url(#indigoGradient)" fillOpacity={0.8} />
+                    <Cell fill="url(#indigoGradient)" fillOpacity={0.6} />
+                    <LabelList position="center" fill="#fff" stroke="none" dataKey="label" style={{ fontWeight: 900, fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.1em' }} />
                 </Funnel>
             </FunnelChart>
         </ResponsiveContainer>
     </Card>
 );
 
-export const DeltaLollipop: React.FC<{ items: Array<{ label: string; value: number; baseline: number }> }> = ({ items }) => (
-    <Card title="Delta vs Baseline">
+export const FluencyScatter: React.FC<{ points: Array<{ x: number; y: number; label: string }> }> = ({ points }) => (
+    <Card title="Cognitive Fluency (Speed vs Accuracy)">
         <ResponsiveContainer>
-            <ComposedChart data={items} layout="vertical">
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis type="number" domain={[0, 100]} />
-                <YAxis type="category" dataKey="label" width={120} />
-                <Tooltip />
-                <Legend />
-                <ReferenceLine x={70} stroke="#94a3b8" strokeDasharray="4 4" label="Baseline" />
-                <Bar dataKey="value" barSize={10} fill="#0ea5e9" name="Score" />
-                <Scatter dataKey="value" fill="#0f172a" name="Marker" />
-            </ComposedChart>
+            <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                <XAxis type="number" dataKey="x" name="Reaction Time" unit="s" label={{ value: 'Response Time (s)', position: 'insideBottom', offset: -10, fontSize: 10, fontWeight: 800 }} />
+                <YAxis type="number" dataKey="y" name="Precision" unit="%" domain={[0, 100]} label={{ value: 'Accuracy (%)', angle: -90, position: 'insideLeft', fontSize: 10, fontWeight: 800 }} />
+                <Tooltip content={<CustomTooltip />} />
+                <ReferenceLine x={4} stroke="#f43f5e" strokeDasharray="10 10" label={{ value: 'Lag Threshold', position: 'top', fill: '#f43f5e', fontSize: 8, fontWeight: 900 }} />
+                <ReferenceLine y={70} stroke="#10b981" strokeDasharray="10 10" label={{ value: 'Mastery Line', position: 'right', fill: '#10b981', fontSize: 8, fontWeight: 900 }} />
+                <Scatter name="Tasks" data={points} fill="#6366f1">
+                    {points.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.y > 70 ? '#10b981' : '#6366f1'} />
+                    ))}
+                </Scatter>
+            </ScatterChart>
         </ResponsiveContainer>
     </Card>
 );

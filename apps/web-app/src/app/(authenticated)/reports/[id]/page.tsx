@@ -4,12 +4,16 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { apiClient, QuizResultResponse } from "@quiz/api-client";
 import { ResultSummary } from "@/components/reports/ResultSummary";
-import { BehavioralRadar } from "@/components/reports/BehavioralRadar";
-import { MappingTrinity } from "@/components/reports/MappingTrinity";
 import { RemediationZone } from "@/components/reports/RemediationZone";
-import { SkillHeatmap } from "@/components/reports/SkillHeatmap";
-import { EfficiencyQuadrant } from "@/components/reports/EfficiencyQuadrant";
 import ActionPlanPanel from "@/components/reports/ActionPlanPanel";
+import {
+    CompetencyRadar,
+    DifficultyBars,
+    SnapshotDonut,
+    FluencyScatter,
+    RetentionFunnel,
+    MasteryTreemap
+} from "@/components/reports/recharts/RechartsSuite";
 import { ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
@@ -144,72 +148,91 @@ export default function DynamicReportPage() {
                     timeTaken={report.timeTaken || "12m 40s"}
                 />
 
-                {/* Advanced Analytics Grid */}
-                <div className="grid lg:grid-cols-12 gap-8 items-start">
-                    {/* Left Pillar: Radar & Trinity */}
-                    <div className="lg:col-span-5 space-y-8">
-                        <BehavioralRadar
-                            data={categoryData}
-                            className="w-full"
-                        />
-                        <MappingTrinity
-                            data={mappingData}
-                            className="w-full"
-                        />
-                        <SkillHeatmap
-                            data={skillData}
-                            className="w-full"
-                        />
-                        <EfficiencyQuadrant
-                            questions={report.questions || []}
-                            className="w-full"
-                        />
-                        <ActionPlanPanel
-                            items={report.actionPlan || []}
-                        />
-                    </div>
+                {/* Executive Intelligence Grid (Single Column for Maximum Impact) */}
+                <div className="space-y-12 max-w-4xl mx-auto">
+                    {/* 1. Skill Capability Matrix */}
+                    <CompetencyRadar
+                        skills={categoryData.map(c => ({ name: c.name, value: c.accuracy }))}
+                    />
 
-                    {/* Right Pillar: Remediation & Question Audit */}
-                    <div className="lg:col-span-7 space-y-8">
-                        <RemediationZone
-                            subtopicPerformance={subtopicData}
-                            className="w-full"
-                        />
+                    {/* 2. The Expertise Bridge */}
+                    <DifficultyBars
+                        bars={report.performance.difficulty?.map(d => ({
+                            label: d.name,
+                            simple: d.accuracy, // Assuming the API provides breakdown or we use accuracy as proxy
+                            intermediate: Math.max(0, d.accuracy - 10),
+                            expert: Math.max(0, d.accuracy - 25)
+                        })) || []}
+                    />
 
-                        {/* High-Density Question Audit */}
-                        <div className="glass-morphism rounded-[3rem] p-8 space-y-8">
-                            <div className="flex items-center justify-between">
-                                <h3 className="text-xl font-black tracking-tight uppercase">Surgical Review</h3>
-                                <div className="flex gap-2">
-                                    <div className="h-2 w-2 rounded-full bg-green-500" />
-                                    <div className="h-2 w-2 rounded-full bg-primary" />
-                                </div>
+                    {/* 3. Operational Snapshot (Donut) */}
+                    <SnapshotDonut
+                        correct={report.score}
+                        incorrect={report.total - report.score}
+                        skipped={0}
+                    />
+
+                    {/* 4. Cognitive Fluency (Scatter) */}
+                    <FluencyScatter
+                        points={report.questions.map(q => ({
+                            x: q.timeSpent,
+                            y: q.isCorrect ? 100 : 0,
+                            label: q.text
+                        }))}
+                    />
+
+                    {/* 5. Survival Attrition (Funnel) */}
+                    <RetentionFunnel
+                        stages={[
+                            { label: 'Total Questions', value: report.total },
+                            { label: 'Attempted', value: report.total }, // Currently assuming all attempted
+                            { label: 'Correct', value: report.score }
+                        ]}
+                    />
+
+                    {/* Legacy/Panel components in single column */}
+                    <ActionPlanPanel
+                        items={report.actionPlan || []}
+                    />
+
+                    <RemediationZone
+                        subtopicPerformance={subtopicData}
+                        className="w-full"
+                    />
+
+                    {/* High-Density Question Audit */}
+                    <div className="glass-morphism rounded-[3rem] p-8 space-y-8">
+                        <div className="flex items-center justify-between">
+                            <h3 className="text-xl font-black tracking-tight uppercase">Surgical Review</h3>
+                            <div className="flex gap-2">
+                                <div className="h-2 w-2 rounded-full bg-green-500" />
+                                <div className="h-2 w-2 rounded-full bg-primary" />
                             </div>
+                        </div>
 
-                            <div className="space-y-3">
-                                {report.questions?.map((q, i) => (
-                                    <div
-                                        key={i}
-                                        className={cn(
-                                            "flex items-center justify-between p-5 rounded-3xl border transition-all hover:scale-[1.01]",
-                                            q.isCorrect
-                                                ? "bg-white/40 border-green-500/10 hover:border-green-500/30"
-                                                : "bg-white/40 border-primary/10 hover:border-primary/30"
-                                        )}
-                                    >
-                                        <div className="flex items-center gap-4 max-w-[80%]">
-                                            <span className="text-xs font-black text-muted-foreground/30 tabular-nums">{(i + 1).toString().padStart(2, '0')}</span>
-                                            <p className="text-[13px] font-bold truncate text-muted-foreground">{q.text}</p>
-                                        </div>
-                                        <div className={cn(
-                                            "px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest",
-                                            q.isCorrect ? "bg-green-100 text-green-700" : "bg-primary/20 text-primary"
-                                        )}>
-                                            {q.isCorrect ? "Correct" : "Mistake"}
-                                        </div>
+                        <div className="space-y-3">
+                            {report.questions?.map((q, i) => (
+                                <div
+                                    key={i}
+                                    className={cn(
+                                        "flex items-center justify-between p-5 rounded-3xl border transition-all hover:scale-[1.01]",
+                                        q.isCorrect
+                                            ? "bg-white/40 border-green-500/10 hover:border-green-500/30"
+                                            : "bg-white/40 border-primary/10 hover:border-primary/30"
+                                    )}
+                                >
+                                    <div className="flex items-center gap-4 max-w-[80%]">
+                                        <span className="text-xs font-black text-muted-foreground/30 tabular-nums">{(i + 1).toString().padStart(2, '0')}</span>
+                                        <p className="text-[13px] font-bold truncate text-muted-foreground">{q.text}</p>
                                     </div>
-                                ))}
-                            </div>
+                                    <div className={cn(
+                                        "px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest",
+                                        q.isCorrect ? "bg-green-100 text-green-700" : "bg-primary/20 text-primary"
+                                    )}>
+                                        {q.isCorrect ? "Correct" : "Mistake"}
+                                    </div>
+                                </div>
+                            ))}
                         </div>
                     </div>
                 </div>

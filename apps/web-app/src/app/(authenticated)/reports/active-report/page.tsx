@@ -10,15 +10,13 @@ import { EfficiencyQuadrant } from "@/components/reports/EfficiencyQuadrant";
 import { RemediationZone } from "@/components/reports/RemediationZone";
 import ActionPlanPanel from "@/components/reports/ActionPlanPanel";
 import {
+    RetentionFunnel,
     MasteryTreemap,
-    CompetencyRadar,
     LearningVelocity,
+    CompetencyRadar,
     DifficultyBars,
     SnapshotDonut,
-    FluencyScatter,
-    RetentionFunnel,
-    DeltaLollipop,
-    KnowledgeTreemap
+    FluencyScatter
 } from "@/components/reports/recharts/RechartsSuite";
 import { ArrowLeft, Download, Share2, Loader2 } from "lucide-react";
 import Link from "next/link";
@@ -31,31 +29,31 @@ import { clientLogger } from '@/utils/clientLogger';
 
 type PerformanceEntry = { id?: string; name?: string; score?: number; accuracy?: number };
 type ReportQuestion = {
-  id: string;
-  questionText: string;
-  text: string;
-  userAnswer: string | null;
-  correctAnswer?: string;
-  isCorrect: boolean;
-  timeSpent: number;
+    id: string;
+    questionText: string;
+    text: string;
+    userAnswer: string | null;
+    correctAnswer?: string;
+    isCorrect: boolean;
+    timeSpent: number;
 };
 
 type ReportViewModel = {
-  score: number;
-  total: number;
-  totalPercent: number;
-  timeTaken: string;
-  percentile: number;
-  status: 'passed' | 'failed';
-  topics: Array<{ name: string; score: number; total: number }>;
-  difficulty: Array<{ level: string; accuracy: number }>;
-  growthZones: Array<{ topic: string; suggestion: string }>;
-  skillMatrix: Array<{ id: string; name: string; score: number; accuracy: number }>;
-  behaviorRadar: Array<{ name: string; accuracy: number }>;
-  knowledgeTrinity: Array<{ id: string; name: string; score: number; accuracy: number }>;
-  subtopics: Array<{ id: string; name: string; score: number; accuracy: number }>;
-  actionPlan: ActionPlanItem[];
-  questions: ReportQuestion[];
+    score: number;
+    total: number;
+    totalPercent: number;
+    timeTaken: string;
+    percentile: number;
+    status: 'passed' | 'failed';
+    topics: Array<{ name: string; score: number; total: number }>;
+    difficulty: Array<{ level: string; accuracy: number }>;
+    growthZones: Array<{ topic: string; suggestion: string }>;
+    skillMatrix: Array<{ id: string; name: string; score: number; accuracy: number }>;
+    behaviorRadar: Array<{ name: string; accuracy: number }>;
+    knowledgeTrinity: Array<{ id: string; name: string; score: number; accuracy: number }>;
+    subtopics: Array<{ id: string; name: string; score: number; accuracy: number }>;
+    actionPlan: ActionPlanItem[];
+    questions: ReportQuestion[];
 };
 
 function ReportContent() {
@@ -286,14 +284,6 @@ function ReportContent() {
                             }))}
                         />
 
-                        <KnowledgeTreemap
-                            items={reportData.topics.slice(0, 10).map((t) => ({
-                                name: t.name,
-                                value: Math.max(t.total || 1, 1),
-                                fill: t.score >= 90 ? '#10b981' : t.score >= 50 ? '#f97316' : '#ef4444'
-                            }))}
-                        />
-
                         <DifficultyBars
                             bars={reportData.topics.slice(0, 6).map((t) => ({
                                 label: t.name,
@@ -324,14 +314,6 @@ function ReportContent() {
                                 { label: 'Attempted', value: reportData.questions.filter((q) => q.userAnswer != null && q.userAnswer !== '').length },
                                 { label: 'Correct', value: reportData.questions.filter((q) => q.isCorrect).length },
                             ]}
-                        />
-
-                        <DeltaLollipop
-                            items={reportData.topics.slice(0, 8).map((t) => ({
-                                label: t.name,
-                                value: t.score,
-                                baseline: 70
-                            }))}
                         />
                     </div>
 
