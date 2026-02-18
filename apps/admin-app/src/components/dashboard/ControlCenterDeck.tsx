@@ -65,7 +65,7 @@ export function ControlCenterDeck() {
         },
         {
             label: 'Total Exams Evaluated',
-            value: (stats.totalExams ?? 0).toLocaleString(),
+            value: Number(stats?.totalExams ?? 0).toLocaleString(),
             subtext: 'Volume this period',
             icon: FileBarChart2,
             delta: null,

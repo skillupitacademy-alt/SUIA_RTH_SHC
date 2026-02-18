@@ -53,7 +53,7 @@ export function UserAnalyticsPanel() {
                             </div>
                             <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Total Users</span>
                         </div>
-                        <p className="text-3xl font-black tracking-tighter text-[#1A1A1A]">{stats.total.toLocaleString()}</p>
+                        <p className="text-3xl font-black tracking-tighter text-[#1A1A1A]">{Number(stats?.total ?? 0).toLocaleString()}</p>
                     </div>
                 </div>
 
@@ -64,7 +64,7 @@ export function UserAnalyticsPanel() {
                         </div>
                         <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Verified Accounts</span>
                     </div>
-                    <p className="text-3xl font-black tracking-tighter text-[#1A1A1A]">{stats.verified.toLocaleString()}</p>
+                    <p className="text-3xl font-black tracking-tighter text-[#1A1A1A]">{Number(stats?.verified ?? 0).toLocaleString()}</p>
                 </div>
             </div>
 

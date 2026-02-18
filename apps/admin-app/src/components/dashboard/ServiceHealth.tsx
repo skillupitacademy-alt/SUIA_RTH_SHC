@@ -219,7 +219,7 @@ function HealthCard({ title, icon: Icon, data, loading, type }: { title: string;
                 {type === 'cloudflare' && isConfigured === true ? <div className="pt-2">
                     <div className="flex justify-between items-end">
                         <div>
-                            <p className="text-2xl font-black">{(metrics.requests24h ?? 0).toLocaleString()}</p>
+                            <p className="text-2xl font-black">{Number(metrics?.requests24h ?? 0).toLocaleString()}</p>
                             <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Requests (24h)</p>
                         </div>
                         <div className="text-right">

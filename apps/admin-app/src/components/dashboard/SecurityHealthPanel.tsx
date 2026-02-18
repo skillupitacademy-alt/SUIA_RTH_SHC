@@ -52,7 +52,7 @@ export function SecurityHealthPanel() {
                         </div>
                         <div>
                             <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Successful Logins</span>
-                            <p className="text-3xl font-black tracking-tighter text-[#1A1A1A] mt-0.5">{stats.successfulLogins.toLocaleString()}</p>
+                            <p className="text-3xl font-black tracking-tighter text-[#1A1A1A] mt-0.5">{Number(stats?.successfulLogins ?? 0).toLocaleString()}</p>
                         </div>
                     </div>
                 </div>
@@ -64,7 +64,7 @@ export function SecurityHealthPanel() {
                         </div>
                         <div>
                             <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Failed Attempts</span>
-                            <p className="text-3xl font-black tracking-tighter text-[#1A1A1A] mt-0.5">{stats.failedLogins.toLocaleString()}</p>
+                            <p className="text-3xl font-black tracking-tighter text-[#1A1A1A] mt-0.5">{Number(stats?.failedLogins ?? 0).toLocaleString()}</p>
                         </div>
                     </div>
                 </div>
