@@ -41,6 +41,8 @@ interface ChaosPayload {
 }
 
 test.describe('Chaos scenarios (live)', () => {
+  // Allow slower live flows
+  test.setTimeout(120_000);
   test.beforeEach(async ({ page }) => {
     setupCSPAudit(page);
   });

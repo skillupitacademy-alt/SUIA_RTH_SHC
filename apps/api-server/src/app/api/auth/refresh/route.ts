@@ -12,19 +12,18 @@ interface RefreshRequest {
 
 export async function POST(_req: NextRequest) {
   try {
-    const refreshToken = _req.cookies.get('refreshToken')?.value;
-    const adminToken = _req.cookies.get('admin_accessToken')?.value;
+    const userRefresh = _req.cookies.get('refreshToken')?.value;
+    const adminRefresh = _req.cookies.get('admin_refreshToken')?.value;
 
-    if (typeof refreshToken !== 'string' && typeof adminToken !== 'string') {
+    if (typeof userRefresh !== 'string' && typeof adminRefresh !== 'string') {
       throw new Error('No refresh token');
     }
 
-    const tokenToUse = refreshToken ?? adminToken;
-    if (typeof tokenToUse !== 'string') {
-       throw new Error('Invalid token');
+    const isAdmin = typeof adminRefresh === 'string' && typeof userRefresh !== 'string';
+    const tokenToUse = adminRefresh ?? userRefresh;
+    if (tokenToUse === undefined) {
+      throw new Error('Invalid token');
     }
-
-    const isAdmin = typeof adminToken === 'string' && typeof refreshToken !== 'string';
     const cookieName = isAdmin ? 'admin_refreshToken' : 'refreshToken';
 
     const ip = _req.headers.get('x-forwarded-for') ?? '0.0.0.0';

@@ -50,7 +50,7 @@ test.describe('CSP Logs endpoint', () => {
     const token = await createAdminToken();
     const response = await request.get(`${API_BASE}/api/admin/security/csp-logs?limit=1`, {
       headers: {
-        cookie: `admin_accessToken=${token}`,
+        Authorization: `Bearer ${token}`,
       },
     });
 
