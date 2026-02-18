@@ -87,10 +87,21 @@ for (const role of Object.keys(cfg) as Role[]) {
     expect(access?.sameSite).toBe('None');
     expect(refresh?.sameSite).toBe('None');
 
-    // 5) Navigate to dashboard and ensure we stay there
-    await page.goto(`${creds.base}/dashboard`);
-    await page.waitForURL('**/dashboard', { timeout: 10000 });
-    await expect(page).toHaveURL(/dashboard/);
+    // 5) Navigate to dashboard and ensure we stay there (with one retry on network change)
+    const goDashboard = async () => {
+      await page.goto(`${creds.base}/dashboard`);
+      await page.waitForURL('**/dashboard', { timeout: 10000 });
+      await expect(page).toHaveURL(/dashboard/);
+    };
+    try {
+      await goDashboard();
+    } catch (err) {
+      if (err instanceof Error && err.message.includes('ERR_NETWORK_CHANGED')) {
+        await goDashboard();
+      } else {
+        throw err;
+      }
+    }
 
     // 6) Logout via API and confirm session is gone
     const logoutRes = await request.post(`${API_BASE}/api/auth/logout`, {
