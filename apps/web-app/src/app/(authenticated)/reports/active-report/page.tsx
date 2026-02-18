@@ -9,6 +9,16 @@ import { BehavioralRadar } from "@/components/reports/BehavioralRadar";
 import { EfficiencyQuadrant } from "@/components/reports/EfficiencyQuadrant";
 import { RemediationZone } from "@/components/reports/RemediationZone";
 import ActionPlanPanel from "@/components/reports/ActionPlanPanel";
+import { SunburstSimple } from "@/components/reports/viz/SunburstSimple";
+import { SkillsRadarSimple } from "@/components/reports/viz/SkillsRadarSimple";
+import { VelocityLine } from "@/components/reports/viz/VelocityLine";
+import { DifficultyGroupedBars } from "@/components/reports/viz/DifficultyGroupedBars";
+import { DonutSnapshot } from "@/components/reports/viz/DonutSnapshot";
+import { ScatterFluency } from "@/components/reports/viz/ScatterFluency";
+import { FunnelRetention } from "@/components/reports/viz/FunnelRetention";
+import { LollipopDelta } from "@/components/reports/viz/LollipopDelta";
+import { TreemapSimple } from "@/components/reports/viz/TreemapSimple";
+import { ChordPlaceholder } from "@/components/reports/viz/ChordPlaceholder";
 import { ArrowLeft, Download, Share2, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
@@ -250,6 +260,92 @@ function ReportContent() {
                         difficulty={reportData.difficulty}
                         growthZones={reportData.growthZones}
                     />
+
+                    {/* Visualization Suite */}
+                    <div className="grid gap-6 lg:grid-cols-3 mt-12">
+                        <SunburstSimple
+                            title="Mastery Sunburst"
+                            centerLabel="Mastery"
+                            slices={reportData.topics.slice(0, 12).map((t) => ({
+                                label: t.name,
+                                value: t.score,
+                                color: t.score >= 90 ? '#10b981' : t.score >= 50 ? '#fbbf24' : '#ef4444'
+                            }))}
+                        />
+                        <SkillsRadarSimple
+                            title="Competency Radar"
+                            skills={reportData.skillMatrix.slice(0, 8).map((s) => ({
+                                name: s.name,
+                                value: s.accuracy ?? s.score ?? 0
+                            }))}
+                        />
+                        <VelocityLine
+                            title="Learning Velocity"
+                            points={(reportData.topics.slice(0, 10).map((t) => ({
+                                label: t.name,
+                                value: t.score || 0
+                            })))}
+                        />
+                    </div>
+
+                    {/* Knowledge volume + difficulty bridge */}
+                    <div className="grid gap-6 lg:grid-cols-2 mt-8">
+                        <TreemapSimple
+                            title="Knowledge Volume Treemap"
+                            items={reportData.topics.slice(0, 10).map((t) => ({
+                                label: t.name,
+                                value: Math.max(t.total || 1, 1),
+                                color: t.score >= 90 ? '#10b981' : t.score >= 50 ? '#f97316' : '#ef4444'
+                            }))}
+                        />
+                        <DifficultyGroupedBars
+                            title="Difficulty Bridge"
+                            bars={reportData.topics.slice(0, 6).map((t) => ({
+                                label: t.name,
+                                simple: reportData.difficulty.find((d) => d.level?.toLowerCase().startsWith('simple'))?.accuracy ?? t.score ?? 0,
+                                intermediate: reportData.difficulty.find((d) => d.level?.toLowerCase().startsWith('inter'))?.accuracy ?? t.score ?? 0,
+                                expert: reportData.difficulty.find((d) => d.level?.toLowerCase().startsWith('expert'))?.accuracy ?? t.score ?? 0,
+                            }))}
+                        />
+                    </div>
+
+                    {/* Snapshot + Fluency */}
+                    <div className="grid gap-6 lg:grid-cols-3 mt-8">
+                        <DonutSnapshot
+                            title="Latest Exam Snapshot"
+                            correct={reportData.questions.filter((q) => q.isCorrect).length}
+                            incorrect={reportData.questions.filter((q) => !q.isCorrect).length}
+                            skipped={reportData.questions.filter((q) => q.userAnswer == null || q.userAnswer === '').length}
+                        />
+                        <ScatterFluency
+                            title="Fluency Scatter"
+                            points={reportData.questions.slice(0, 40).map((q, idx) => ({
+                                x: q.timeSpent || 0,
+                                y: q.isCorrect ? 100 : 0,
+                                label: `Q${idx + 1}`,
+                                correct: q.isCorrect
+                            }))}
+                        />
+                        <FunnelRetention
+                            stages={[
+                                { label: 'Total Questions', value: reportData.questions.length },
+                                { label: 'Attempted', value: reportData.questions.filter((q) => q.userAnswer != null && q.userAnswer !== '').length },
+                                { label: 'Correct', value: reportData.questions.filter((q) => q.isCorrect).length },
+                            ]}
+                        />
+                    </div>
+
+                    {/* Delta & Correlation */}
+                    <div className="grid gap-6 lg:grid-cols-2 mt-8">
+                        <LollipopDelta
+                            items={reportData.topics.slice(0, 8).map((t) => ({
+                                label: t.name,
+                                value: t.score,
+                                baseline: 70
+                            }))}
+                        />
+                        <ChordPlaceholder />
+                    </div>
 
                     {/* 3. Skill Matrix Matrix */}
                     {reportData.skillMatrix.length > 0 && (
