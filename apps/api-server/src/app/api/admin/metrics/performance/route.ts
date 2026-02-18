@@ -12,13 +12,22 @@ const log = logger.child({ module: 'admin:metrics:performance' });
 async function _verifyAdmin(_req: NextRequest) {
     const _token = TokenService.getAccessToken(_req, { scope: 'admin' });
     if (_token === null || _token === undefined || _token.trim() === '') {
+        log.warn({ reason: 'missing-token', headers: Object.fromEntries(_req.headers) }, 'No admin token found');
         return { _error: 'Unauthorized', scope: 'admin', status: 401 };
     }
 
     try {
         const _payload = await TokenService.verifyAccessToken(_token, true);
         return { userId: _payload.userId };
-    } catch {
+    } catch (err) {
+        log.error(
+            {
+                reason: 'verify-failed',
+                tokenHead: _token.slice(0, 12),
+                message: err instanceof Error ? err.message : String(err),
+            },
+            'Admin access token verification failed',
+        );
         return { _error: 'Unauthorized', status: 401 };
     }
 }

@@ -21,8 +21,36 @@ export class FetchClient {
     
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
-      ...options.headers as Record<string, string>,
+      ...(options.headers as Record<string, string>),
     };
+
+    const isServer = typeof document === 'undefined';
+
+    // Server-side (Next.js) cookie forwarding: include the incoming request cookies
+    if (isServer && headers.cookie === undefined) {
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
+        const { cookies } = require('next/headers');
+        const cookieHeader = cookies().toString();
+        if (cookieHeader) {
+          headers.cookie = cookieHeader;
+        } else {
+          console.warn(`[API] No incoming cookies on server request to ${endpoint}`);
+        }
+      } catch {
+        // If next/headers is not available, skip; client-side will handle cookies via browser
+        console.warn(`[API] Unable to read cookies() on server for ${endpoint}; request may be unauthenticated`);
+      }
+    }
+
+    // Client-side: log if auth cookies look missing
+    if (!isServer) {
+      const hasAdminCookie = document.cookie.includes('admin_accessToken=');
+      const hasUserCookie = document.cookie.includes('accessToken=');
+      if (!hasAdminCookie && !hasUserCookie) {
+        console.warn(`[API] No auth cookies present in browser for ${endpoint}; request may 401`);
+      }
+    }
 
     // Add CSRF token for mutation requests
     const isMutation = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(options.method || 'GET');
