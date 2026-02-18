@@ -59,6 +59,9 @@ export interface UserProfile {
   role: 'user' | 'admin' | 'super_admin';
   onboarded?: boolean;
   isAdmin: boolean;
+  professionalStatus?: string;
+  educationLevel?: string;
+  domainInterest?: string[];
 }
 
 export interface AdminUserProfile extends UserProfile {

@@ -89,6 +89,7 @@ export default function AdminLoginPage() {
                         <input
                             type="password"
                             required
+                            minLength={8}
                             id="admin-login-password"
                             className="w-full pl-12 pr-4 py-4 rounded-xl border bg-slate-50 text-[#1A1A1A] text-[15px] focus:bg-white focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all font-semibold"
                             placeholder="••••••••••••"

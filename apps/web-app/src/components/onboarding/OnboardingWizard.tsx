@@ -18,7 +18,7 @@ import { useState } from 'react';
 
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/store/auth-store';
-import { apiClient, UserProfile } from '@quiz/api-client';
+import { apiClient } from '@quiz/api-client';
 import { clientLogger } from '@/utils/clientLogger';
 
 const ROLES = [
@@ -56,10 +56,10 @@ export function OnboardingWizard() {
     const handleComplete = async () => {
         setLoading(true);
         try {
-            const payload: Partial<UserProfile> = {
-                role: 'user',
-                onboarded: true,
-                isAdmin: false,
+            const payload = {
+                professionalStatus: data.role,
+                educationLevel: data.educationLevel,
+                domainInterest: [data.domain]
             };
 
             await apiClient.auth.updateProfile(payload);

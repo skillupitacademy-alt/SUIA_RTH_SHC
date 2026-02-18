@@ -17,12 +17,15 @@ export function LoginForm() {
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setLoading(true);
+        setError(null);
         try {
             const formData = new FormData(e.currentTarget);
             const email = formData.get('email')?.toString() ?? '';
             const password = formData.get('password')?.toString() ?? '';
+
             // Real API Call
             const { user } = await apiClient.auth.login(email, password);
+            if (!user) throw new Error("Login succeeded but no user data was returned.");
             login({ ...user, onboarded: user.onboarded ?? false });
             router.push('/dashboard');
         } catch (err: unknown) {
@@ -49,7 +52,7 @@ export function LoginForm() {
             <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
                 <div className="space-y-4">
                     <div>
-                        <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70" htmlFor="email">
+                        <label className="text-sm font-medium leading-none" htmlFor="email">
                             Email Address
                         </label>
                         <input
@@ -57,12 +60,12 @@ export function LoginForm() {
                             name="email"
                             type="email"
                             placeholder="name@example.com"
-                            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 mt-1.5"
+                            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm mt-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                             required
                         />
                     </div>
                     <div>
-                        <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70" htmlFor="password">
+                        <label className="text-sm font-medium leading-none" htmlFor="password">
                             Password
                         </label>
                         <div className="relative mt-1.5">
@@ -71,7 +74,8 @@ export function LoginForm() {
                                 name="password"
                                 type={showPassword ? "text" : "password"}
                                 placeholder="••••••••"
-                                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                minLength={8}
+                                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                                 required
                             />
                             <button
@@ -79,7 +83,6 @@ export function LoginForm() {
                                 onClick={() => setShowPassword(!showPassword)}
                                 className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                                 aria-label={showPassword ? "Hide password" : "Show password"}
-                                aria-pressed={showPassword}
                             >
                                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                             </button>
@@ -98,7 +101,7 @@ export function LoginForm() {
                 <button
                     type="submit"
                     disabled={loading}
-                    className="w-full inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-bold text-primary-foreground shadow hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 h-11"
+                    className="w-full inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-bold text-primary-foreground shadow hover:bg-primary/90 h-11 transition-all"
                 >
                     {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Sign In"}
                 </button>
@@ -115,17 +118,21 @@ export function LoginForm() {
 export function SignupForm() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const router = useRouter(); // Added missing router
+    const router = useRouter();
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setLoading(true);
+        setError(null);
         try {
             const formData = new FormData(e.currentTarget);
             const email = formData.get('email')?.toString() ?? '';
             const password = formData.get('password')?.toString() ?? '';
             const name = formData.get('name')?.toString() ?? '';
+
             const { user } = await apiClient.auth.signup(email, password, name);
+            if (!user) throw new Error("Account created but failed to log you in automatically.");
+
             useAuthStore.getState().login({ ...user, onboarded: user.onboarded ?? false });
             router.push('/dashboard');
         } catch (err: unknown) {
@@ -180,6 +187,7 @@ export function SignupForm() {
                             name="password"
                             type="password"
                             placeholder="••••••••"
+                            minLength={8}
                             className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm mt-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                             required
                         />
@@ -189,7 +197,7 @@ export function SignupForm() {
                 <button
                     type="submit"
                     disabled={loading}
-                    className="w-full inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-bold text-primary-foreground shadow hover:bg-primary/90 h-11"
+                    className="w-full inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-bold text-primary-foreground shadow hover:bg-primary/90 h-11 transition-all"
                 >
                     {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Sign Up"}
                 </button>
@@ -206,7 +214,7 @@ export function SignupForm() {
 export function ForgotPasswordForm() {
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
-    // error state removed as per contract "Always show neutral success message"
+
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setLoading(true);
@@ -217,7 +225,7 @@ export function ForgotPasswordForm() {
             await apiClient.auth.forgotPassword(email);
             setSuccess(true);
         } catch {
-            // Success is true still as per contract "Always show neutral success message" 
+            // Always show neutral success message to prevent email enumeration
             setSuccess(true);
         } finally {
             setLoading(false);
@@ -226,7 +234,7 @@ export function ForgotPasswordForm() {
 
     if (success) {
         return (
-            <div className="w-full max-w-md space-y-8 p-10 bg-background border rounded-3xl shadow-sm text-center">
+            <div className="w-full max-w-md space-y-8 p-10 bg-background border rounded-3xl shadow-sm text-center border-green-100">
                 <div className="p-4 rounded-2xl bg-green-50 text-green-700 font-medium">
                     If an account exists for this email, a password reset link has been sent.
                 </div>
@@ -260,7 +268,7 @@ export function ForgotPasswordForm() {
                 <button
                     type="submit"
                     disabled={loading}
-                    className="w-full inline-flex items-center justify-center rounded-xl bg-primary px-4 py-3 text-sm font-bold text-primary-foreground shadow-lg shadow-primary/20 hover:bg-primary/90 h-12"
+                    className="w-full inline-flex items-center justify-center rounded-xl bg-primary px-4 py-3 text-sm font-bold text-primary-foreground shadow hover:bg-primary/90 h-12 transition-all"
                 >
                     {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Send reset link"}
                 </button>
@@ -281,16 +289,12 @@ export function ResetPasswordForm({ token }: { token: string }) {
     const [error, setError] = useState<string | null>(null);
     const [showPassword, setShowPassword] = useState(false);
 
-    // router removed as it was unused
-
-    // 1. Validate token on mount
     useEffect(() => {
         const validate = async () => {
             try {
                 const { valid } = await apiClient.auth.validateResetToken(token);
                 setIsValid(valid);
             } catch {
-                // Silently fail validation
                 setIsValid(false);
             } finally {
                 setValidating(false);
@@ -339,12 +343,12 @@ export function ResetPasswordForm({ token }: { token: string }) {
 
     if (!isValid) {
         return (
-            <div className="w-full max-w-md p-10 bg-background border rounded-3xl shadow-sm text-center">
+            <div className="w-full max-w-md p-10 bg-background border rounded-3xl shadow-sm text-center border-red-100">
                 <div className="p-4 rounded-2xl bg-red-50 text-red-700 font-medium">
                     This password reset link is invalid or has expired.
                 </div>
                 <div className="mt-8 space-y-4">
-                    <Link href="/forgot-password" className="inline-flex w-full items-center justify-center rounded-xl bg-primary px-4 py-3 text-sm font-bold text-primary-foreground shadow-lg shadow-primary/20 hover:bg-primary/90">
+                    <Link href="/forgot-password" className="inline-flex w-full items-center justify-center rounded-xl bg-primary px-4 py-3 text-sm font-bold text-primary-foreground shadow hover:bg-primary/90 transition-all">
                         Request a new reset link
                     </Link>
                     <Link href="/login" className="block text-sm font-bold text-muted-foreground hover:text-foreground">
@@ -357,11 +361,11 @@ export function ResetPasswordForm({ token }: { token: string }) {
 
     if (success) {
         return (
-            <div className="w-full max-w-md p-10 bg-background border rounded-3xl shadow-sm text-center">
+            <div className="w-full max-w-md p-10 bg-background border rounded-3xl shadow-sm text-center border-green-100">
                 <div className="p-4 rounded-2xl bg-green-50 text-green-700 font-medium">
                     Your password has been reset successfully. You can now sign in.
                 </div>
-                <Link href="/login" className="inline-flex w-full mt-8 items-center justify-center rounded-xl bg-primary px-4 py-3 text-sm font-bold text-primary-foreground shadow-lg shadow-primary/20 hover:bg-primary/90">
+                <Link href="/login" className="inline-flex w-full mt-8 items-center justify-center rounded-xl bg-primary px-4 py-3 text-sm font-bold text-primary-foreground shadow hover:bg-primary/90 transition-all">
                     Go to login
                 </Link>
             </div>
@@ -385,6 +389,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
                                 name="password"
                                 type={showPassword ? "text" : "password"}
                                 placeholder="••••••••"
+                                minLength={8}
                                 className="flex h-12 w-full rounded-xl border border-input bg-background px-4 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                                 required
                             />
@@ -393,7 +398,6 @@ export function ResetPasswordForm({ token }: { token: string }) {
                                 onClick={() => setShowPassword(!showPassword)}
                                 className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                                 aria-label={showPassword ? "Hide password" : "Show password"}
-                                aria-pressed={showPassword}
                             >
                                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                             </button>
@@ -406,6 +410,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
                             name="confirm"
                             type="password"
                             placeholder="••••••••"
+                            minLength={8}
                             className="flex h-12 w-full rounded-xl border border-input bg-background px-4 py-2 text-sm mt-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                             required
                         />
@@ -413,7 +418,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
                 </div>
 
                 {error && (
-                    <div className="p-3 text-xs font-medium bg-red-50 text-red-600 rounded-lg">
+                    <div className="p-3 text-xs font-medium bg-red-50 text-red-600 rounded-lg border border-red-100">
                         {error}
                     </div>
                 )}
@@ -421,7 +426,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
                 <button
                     type="submit"
                     disabled={loading}
-                    className="w-full inline-flex items-center justify-center rounded-xl bg-primary px-4 py-3 text-sm font-bold text-primary-foreground shadow-lg shadow-primary/20 hover:bg-primary/90 h-12"
+                    className="w-full inline-flex items-center justify-center rounded-xl bg-primary px-4 py-3 text-sm font-bold text-primary-foreground shadow hover:bg-primary/90 h-12 transition-all"
                 >
                     {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Reset password"}
                 </button>
@@ -433,4 +438,3 @@ export function ResetPasswordForm({ token }: { token: string }) {
         </div>
     );
 }
-

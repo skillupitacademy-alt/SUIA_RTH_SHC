@@ -145,25 +145,28 @@ export class AuthService {
       throw new Error('Refresh _token expired');
     }
 
-    const _user = await db.query.users.findFirst({
-      where: eq(users.id, _payload.userId),
-      with: {
-        userRoles: {
-          with: { role: true }
-        }
-      }
-    });
+    const _usersWithRoles = await db.select({
+        id: users.id,
+        email: users.email,
+        isBlocked: users.isBlocked,
+        roleName: roles.name
+    })
+    .from(users)
+    .leftJoin(userRoles, eq(users.id, userRoles.userId))
+    .leftJoin(roles, eq(userRoles.roleId, roles.id))
+    .where(eq(users.id, _payload.userId));
 
-    if (_user === undefined) throw new Error('User not found');
+    if (_usersWithRoles.length === 0) throw new Error('User not found');
     
-    if (_user.isBlocked === true) {
+    if (_usersWithRoles[0].isBlocked === true) {
         throw new Error('access_denied:user_blocked');
     }
 
     // Update Last Active on Refresh
-    await db.update(users).set({ lastActiveAt: new Date() }).where(eq(users.id, _user.id));
+    await db.update(users).set({ lastActiveAt: new Date() }).where(eq(users.id, _payload.userId));
 
-    const roleNames = _user.userRoles.map(ur => ur.role.name);
+    const _user = _usersWithRoles[0];
+    const roleNames = _usersWithRoles.map(r => r.roleName).filter((name): name is string => name !== null);
     const isAdminNow = roleNames.includes('ADMIN') || roleNames.includes('SUPER_ADMIN');
 
     // EXAM GRACE WINDOW LOGIC (Phase 3 Requirement)

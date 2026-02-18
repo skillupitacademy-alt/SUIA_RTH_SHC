@@ -7,7 +7,7 @@ import { AdminAuthService } from '@/modules/auth/admin-auth.service';
 
 const loginSchema = z.object({
   email: z.string().email(),
-  password: z.string().min(1)
+  password: z.string().min(8)
 });
 
 export async function POST(_req: Request) {
@@ -26,7 +26,7 @@ export async function POST(_req: Request) {
     const user = {
         id: result.user.id,
         email: result.user.email,
-        name: result.user.profile?.name ?? 'Admin',
+        name: result.user.name,
         isAdmin: true,
     };
 

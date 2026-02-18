@@ -87,7 +87,13 @@ export class FetchClient {
       }
       // Clone response to read body twice if needed (though we only read once here)
       const errorBody = await response.json().catch(() => ({ message: 'Unknown error' }));
-      const errorMessage = errorBody.message || errorBody.error || `API Error: ${response.status}`;
+      
+      // Extraction Priority: 1. Explicit message, 2. Global _error, 3. First issue message, 4. Status code fallback
+      const errorMessage = errorBody.message || 
+                          errorBody.error || 
+                          errorBody._error || 
+                          (errorBody.issues && errorBody.issues.length > 0 ? errorBody.issues[0].message : null) || 
+                          `API Error: ${response.status}`;
       throw new Error(errorMessage);
     }
 

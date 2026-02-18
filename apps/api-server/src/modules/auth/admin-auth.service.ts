@@ -1,4 +1,4 @@
-import { db, refreshTokens,users } from '@quiz/db';
+import { db, refreshTokens, roles, userProfiles, userRoles, users } from '@quiz/db';
 import { eq } from "drizzle-orm";
 
 import { AuditService } from './audit.service';
@@ -17,20 +17,25 @@ export class AdminAuthService {
     }
 
     // 2. Find User with Roles
-    const user = await db.query.users.findFirst({
-      where: eq(users.email, cleanEmail),
-      with: {
-        profile: true,
-        userRoles: {
-          with: { role: true }
-        }
-      }
-    });
+    const _usersWithRoles = await db.select({
+        id: users.id,
+        email: users.email,
+        passwordHash: users.passwordHash,
+        name: userProfiles.name,
+        roleName: roles.name
+    })
+    .from(users)
+    .leftJoin(userProfiles, eq(users.id, userProfiles.userId))
+    .leftJoin(userRoles, eq(users.id, userRoles.userId))
+    .leftJoin(roles, eq(userRoles.roleId, roles.id))
+    .where(eq(users.email, cleanEmail));
     
-    if (user === undefined) {
+    if (_usersWithRoles.length === 0) {
       await SecurityService.trackLoginAttempt(ip, cleanEmail, false);
       throw new Error('Access Denied');
     }
+
+    const user = _usersWithRoles[0];
 
     // 3. Validate Credentials
     const isPasswordMatch = await PasswordService.compare(password, user.passwordHash);
@@ -41,8 +46,7 @@ export class AdminAuthService {
       throw new Error('Access Denied');
     }
 
-    // 4. Validate Admin Role (Governance Check)
-    const roleNames = user.userRoles.map(ur => ur.role.name);
+    const roleNames = _usersWithRoles.map(r => r.roleName).filter((name): name is string => name !== null);
     const isAdmin = roleNames.includes('ADMIN') || roleNames.includes('SUPER_ADMIN');
 
     if (isAdmin === false) {
@@ -74,7 +78,7 @@ export class AdminAuthService {
     });
 
     return { 
-      user: { id: user.id, email: user.email, profile: user.profile, name: user.profile?.name }, 
+      user: { id: user.id, email: user.email, name: user.name ?? 'Admin', isAdmin: true }, 
       accessToken, 
       refreshToken,
       expiresAt: expiresAt.toISOString()

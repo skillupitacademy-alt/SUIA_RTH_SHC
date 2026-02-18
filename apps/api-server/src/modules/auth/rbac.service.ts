@@ -5,12 +5,12 @@ import type { TokenPayload } from './token.service';
 
 export async function _verifyAdmin(_payload: TokenPayload): Promise<boolean> {
     // 0. Security: Check if _user is blocked (Always hit DB for Admin actions)
-    const _user = await db.query.users.findFirst({
-        where: eq(users.id, _payload.userId),
-        columns: { isBlocked: true }
-    });
+    const _users = await db.select({ isBlocked: users.isBlocked })
+        .from(users)
+        .where(eq(users.id, _payload.userId))
+        .limit(1);
 
-    if (_user?.isBlocked === true) {
+    if (_users.length === 0 || _users[0].isBlocked === true) {
         return false;
     }
 

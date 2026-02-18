@@ -26,18 +26,37 @@ export async function POST(_req: NextRequest) {
 
     const response = NextResponse.json({ 
       message: 'User created', 
-      _user: { id: _user.id, email: _user.email, name, onboarded: false },
+      user: { 
+        id: _user.id, 
+        email: _user.email, 
+        name, 
+        onboarded: false,
+        role: 'user',
+        isAdmin: false
+      },
       accessToken
     });
 
-    // Set HttpOnly cookies for refresh _token
+    const cookieDomain = process.env.COOKIE_DOMAIN;
+
+    // Set HttpOnly cookies for Access Token
+    response.cookies.set('accessToken', accessToken, {
+      httpOnly: true,
+      secure: true, // Always true for cross-domain stability
+      sameSite: 'none', // Needed for cross-subdomain (api.<->quiz/admin)
+      maxAge: 15 * 60, // 15 minutes
+      path: '/',
+      domain: cookieDomain,
+    });
+
+    // Set HttpOnly cookies for Refresh Token
     response.cookies.set('refreshToken', refreshToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      domain: process.env.COOKIE_DOMAIN ?? undefined,
-      sameSite: 'strict',
+      secure: true,
+      sameSite: 'none',
       maxAge: 7 * 24 * 60 * 60, // 7 days
       path: '/',
+      domain: cookieDomain,
     });
 
     setCsrfToken(response);
