@@ -1,4 +1,4 @@
-import { auditLogs, db, domains, examQuestions,exams, questions, resultsByDimension, users } from '@quiz/db';
+import { auditLogs, db, domains, examQuestions,exams, questions, resultsByDimension, users, roles, userRoles } from '@quiz/db';
 import { count, desc, eq, isNotNull,sql } from 'drizzle-orm';
 
 import { TrendsService } from '@/modules/metrics/trends.service';
@@ -295,7 +295,19 @@ export class AdminAnalyticsEngine {
     });
   }
   static async getGrowthZones() { return { areas: [] }; }
-  static async getRBACMetrics() { return { roles: [], permissions: [] }; }
+  static async getRBACMetrics() {
+    const rows = await db
+      .select({
+        role: roles.name,
+        count: sql<number>`count(${userRoles.userId})`.mapWith(Number),
+      })
+      .from(roles)
+      .leftJoin(userRoles, eq(roles.id, userRoles.roleId))
+      .groupBy(roles.name)
+      .orderBy(desc(sql`count(${userRoles.userId})`));
+
+    return rows;
+  }
   static async getSecuritySignals() { return { threats: [], status: 'nominal' as const }; }
   static async getAccountMetrics() { return { active: 0, new: 0, churn: 0 }; }
   static async getLiveSessions() { return { active: 0, peak24h: 0 }; }
