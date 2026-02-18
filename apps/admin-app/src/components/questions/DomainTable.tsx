@@ -409,7 +409,7 @@ export function DomainTable() {
                         <div className="p-2 rounded-xl bg-blue-50 text-blue-500 shadow-sm border border-blue-100">
                             <Globe className="w-5 h-5" />
                         </div>
-                        <div className="relative flex-1 max-w-md group">
+                        <div className="relative flex-1 group">
                             <input
                                 type="text"
                                 placeholder="Search Domains..."
