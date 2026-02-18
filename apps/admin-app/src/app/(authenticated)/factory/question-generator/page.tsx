@@ -122,7 +122,7 @@ function QuestionFactoryContent() {
                     {/* Header: Context & Blueprint (Adjacent) */}
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
                         {/* 1. Context Selection */}
-                        <div className="bg-white rounded-[2.5rem] p-10 border border-slate-200 shadow-sm flex flex-col gap-6 relative group">
+                        <div className="bg-white rounded-[2.5rem] p-10 border border-slate-200 shadow-sm flex flex-col gap-6 relative group h-full min-h-[420px]">
                             <ContextSelector
                                 selections={blueprint}
                                 onChange={(f, v) => setBlueprint({ [f]: v })}
@@ -140,7 +140,7 @@ function QuestionFactoryContent() {
                         </div>
 
                         {/* 2. Distribution Matrix */}
-                        <div className="bg-white rounded-[2.5rem] p-10 border border-slate-200 shadow-sm flex flex-col gap-6">
+                        <div className="bg-white rounded-[2.5rem] p-10 border border-slate-200 shadow-sm flex flex-col gap-6 h-full">
                             <DistributionMatrix
                                 counts={blueprint.counts}
                                 onChange={(f, v) => setBlueprint({ counts: { ...blueprint.counts, [f]: v } })}
