@@ -272,7 +272,7 @@ export function SkillTable() {
                         </div>
 
                         <div className="flex-1 overflow-y-auto">
-                            <div className="max-w-4xl mx-auto px-8 py-8">
+                            <div className="w-full max-w-[1920px] mx-auto px-8 py-8">
                                 <form onSubmit={(e) => { void handleSubmit(e); }} className="space-y-6">
                                     {/* Row 1: Name and Weight */}
                                     <div className="grid grid-cols-2 gap-6">

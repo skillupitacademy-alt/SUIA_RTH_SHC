@@ -2,6 +2,8 @@ import { ArrowLeft, Box } from 'lucide-react';
 import Link from 'next/link';
 import React from 'react';
 
+import { PageTitle } from './PageTitle';
+
 interface FactoryLayoutProps {
     children: React.ReactNode;
     title: string;
@@ -24,9 +26,7 @@ export function FactoryLayout({ children, title, subtitle, backPath = '/' }: Fac
                     <div>
                         <div className="flex items-center gap-2">
                             <Box className="w-5 h-5 text-indigo-600" />
-                            <h1 className="text-sm font-black uppercase tracking-wider text-slate-800">
-                                {title}
-                            </h1>
+                            <PageTitle text={title} className="text-4xl leading-none" />
                         </div>
                         {(subtitle as string | undefined) !== undefined && (subtitle as string) !== '' ? <p className="text-[10px] font-bold text-slate-400 tracking-wide uppercase mt-0.5 ml-7">
                             {subtitle}

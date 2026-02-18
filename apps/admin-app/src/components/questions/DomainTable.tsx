@@ -271,7 +271,7 @@ export function DomainTable() {
 
                         {/* Content - Landscape Grid */}
                         <div className="flex-1 overflow-y-auto">
-                            <div className="max-w-5xl mx-auto px-8 py-8">
+                            <div className="w-full max-w-[1920px] mx-auto px-8 py-8">
                                 <form onSubmit={(e) => { void handleSubmit(e); }} className="space-y-6">
                                     <div className="grid grid-cols-2 gap-6">
                                         {/* Domain Name */}

@@ -17,6 +17,7 @@ import {
 import Link from 'next/link';
 import React from 'react';
 
+import { PageTitle } from '@/components/layout/PageTitle';
 import { cn } from '@/lib/utils';
 
 const dashboardCards = [
@@ -144,9 +145,7 @@ export default function AdminDashboard() {
                             Administrative Core · v3.0
                         </span>
                     </div>
-                    <h1 className="text-5xl font-outfit font-black tracking-tighter uppercase text-[#1A1A1A]">
-                        Executive <span className="text-[#FF4B91]">Command</span> Hub
-                    </h1>
+                    <PageTitle text="Executive Command Hub" />
                     <p className="mt-2 text-sm font-bold text-muted-foreground uppercase tracking-widest">
                         System-wide orchestration and high-fidelity intelligence
                     </p>

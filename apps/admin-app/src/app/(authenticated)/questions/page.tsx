@@ -4,6 +4,7 @@ import { Award, BookOpen, Database, GitBranch, Hash, Layers, Plus } from 'lucide
 import Link from 'next/link';
 import { useState } from 'react';
 
+import { PageTitle } from '@/components/layout/PageTitle';
 import { DomainTable } from '@/components/questions/DomainTable';
 import { QuestionTable } from '@/components/questions/QuestionTable';
 import { SkillTable } from '@/components/questions/SkillTable';
@@ -23,7 +24,7 @@ export default function QuestionsPage() {
                         <Database size={20} className="text-[#FF4B91]" />
                         <span className="text-xs font-black uppercase tracking-[0.3em] text-[#FF4B91]">Governance_Matrix</span>
                     </div>
-                    <h1 className="text-5xl font-black tracking-tighter uppercase text-[#1A1A1A]">Question Bank</h1>
+                    <PageTitle text="Question Bank" />
                     <p className="text-sm font-bold text-muted-foreground uppercase tracking-widest mt-2">Hierarchy • Difficulty • Compliance</p>
                 </div>
                 <div className="flex flex-col items-end gap-3 text-right">

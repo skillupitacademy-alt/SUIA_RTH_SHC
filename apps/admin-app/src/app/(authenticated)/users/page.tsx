@@ -1,5 +1,6 @@
 import { Users } from 'lucide-react';
 
+import { PageTitle } from '@/components/layout/PageTitle';
 import { UserTable } from '@/components/users/UserTable';
 
 export default function UsersPage() {
@@ -12,7 +13,7 @@ export default function UsersPage() {
                         <Users size={20} className="text-[#FF4B91]" />
                         <span className="text-xs font-black uppercase tracking-[0.3em] text-[#FF4B91]">Identity_Layer</span>
                     </div>
-                    <h1 className="text-5xl font-black tracking-tighter uppercase text-[#1A1A1A]">User Management</h1>
+                    <PageTitle text="User Management" />
                     <p className="text-sm font-bold text-muted-foreground uppercase tracking-widest mt-2">Access Control • Demographics • Verification</p>
                 </div>
                 <div className="flex flex-col items-end gap-3 text-right">

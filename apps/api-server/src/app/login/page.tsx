@@ -2,7 +2,7 @@
 'use client';
 
 import { ZLoader } from '@quiz/ui';
-import { Activity, ArrowRight, Database, Lock, Server, Shield, Terminal } from 'lucide-react';
+import { Activity, ArrowRight, Database, Lock, Server, Shield } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
@@ -68,9 +68,6 @@ export default function LoginPage() {
             <div className="flex-1 flex items-center justify-center p-8 bg-white">
                 <div className="w-full max-w-md space-y-8">
                     <div className="text-center lg:text-left space-y-2">
-                        <div className="h-12 w-12 bg-[#FF2D55]/5 rounded-xl border border-[#FF2D55]/10 flex items-center justify-center mb-6 mx-auto lg:mx-0">
-                            <Terminal size={24} className="text-[#FF2D55]" />
-                        </div>
                         <h2 className="text-3xl font-black tracking-tight text-slate-900 font-outfit">Root Access</h2>
                         <p className="text-slate-500">Authenticate to establish secure connection.</p>
                     </div>
@@ -110,7 +107,9 @@ export default function LoginPage() {
                         <button
                             type="submit"
                             disabled={isLoading}
-                            className="w-full bg-[#1A1A1A] text-white h-12 rounded-xl font-bold text-sm uppercase tracking-wide hover:bg-[#333] transition-colors disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg shadow-black/5"
+                            className="w-full h-12 rounded-xl font-bold text-sm uppercase tracking-wide flex items-center justify-center gap-2
+                                       bg-[#FF2D55] text-white hover:bg-[#ff3382] transition-colors
+                                       disabled:opacity-70 disabled:cursor-not-allowed shadow-lg shadow-[#FF2D55]/20"
                         >
                             {isLoading ? (
                                 <>

@@ -246,10 +246,10 @@ export function SubtopicTable() {
                         </div>
 
                         {/* Content Area */}
-                        <div className="flex-1 flex flex-col min-h-0 bg-slate-50/30 p-8 custom-scrollbar overflow-y-auto" style={{ scrollbarGutter: 'stable' }}>
-                            <div className="max-w-5xl mx-auto space-y-6 bg-white border border-primary/10 rounded-[2.5rem] p-8 shadow-2xl shadow-primary/5 relative overflow-hidden">
+                        <div className="flex-1 flex flex-col min-h-0 bg-slate-50/30 p-6 custom-scrollbar overflow-y-auto" style={{ scrollbarGutter: 'stable' }}>
+                            <div className="w-full max-w-[1920px] mx-auto space-y-4 bg-white border border-primary/10 rounded-[2rem] p-6 shadow-2xl shadow-primary/5 relative overflow-hidden">
                                 {/* Form Header Context */}
-                                <div className="grid grid-cols-3 gap-4 p-6 bg-slate-50/50 rounded-2xl border border-dashed border-slate-200">
+                                <div className="grid grid-cols-3 gap-3 p-5 bg-slate-50/50 rounded-2xl border border-dashed border-slate-200">
                                     <div className="space-y-1 text-center">
                                         <p className="text-[9px] font-black uppercase tracking-widest text-slate-500">Domain</p>
                                         <div className="font-bold text-slate-600 text-xs truncate">{(domains != null && Array.isArray(domains)) ? (domains.find((d: { id: string; name: string }) => d.id === formData.domainId)?.name ?? 'N/A') : 'N/A'}</div>
@@ -265,8 +265,8 @@ export function SubtopicTable() {
                                 </div>
 
                                 {/* Inputs Section */}
-                                <form onSubmit={(e) => { void handleSubmit(e); }} className="space-y-6">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <form onSubmit={(e) => { void handleSubmit(e); }} className="space-y-4">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div className="space-y-2">
                                             <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Parent Domain</p>
                                             <select
@@ -363,7 +363,7 @@ export function SubtopicTable() {
                                         />
                                     </div>
 
-                                    <div className="flex items-center justify-end gap-3 pt-2">
+                                    <div className="flex items-center justify-end gap-3 pt-1">
                                         <button
                                             type="button"
                                             onClick={handleCloseForm}
