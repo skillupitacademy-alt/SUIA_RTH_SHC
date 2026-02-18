@@ -27,7 +27,8 @@ import {
     LabelList,
     ComposedChart,
     Area,
-    Cell
+    Cell,
+    AreaChart
 } from 'recharts';
 import React from 'react';
 
