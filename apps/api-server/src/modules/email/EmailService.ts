@@ -7,7 +7,7 @@ export class EmailService {
 
   static getInstance(): IEmailProvider {
     if (this.instance === null) {
-      const provider = process.env.EMAIL_PROVIDER ?? 'mock';
+      const provider = (process.env.EMAIL_PROVIDER ?? 'mock').toLowerCase();
       
       if (provider === 'resend') {
         const apiKey = process.env.RESEND_API_KEY;
