@@ -72,7 +72,7 @@ export type JobInput = z.infer<typeof jobSchema>;
 
 export const updateUserSchema = z.object({
   roles: z.array(z.string()).optional(),
-  password: z.string().min(8).optional(),
+  password: z.string().min(1).optional(),
   isBlocked: z.boolean().optional(),
 });
 export type UpdateUserInput = z.infer<typeof updateUserSchema>;

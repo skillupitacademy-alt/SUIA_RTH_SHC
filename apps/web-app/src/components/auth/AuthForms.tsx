@@ -74,7 +74,7 @@ export function LoginForm() {
                                 name="password"
                                 type={showPassword ? "text" : "password"}
                                 placeholder="••••••••"
-                                minLength={8}
+                                minLength={1}
                                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                                 required
                             />
@@ -187,7 +187,7 @@ export function SignupForm() {
                             name="password"
                             type="password"
                             placeholder="••••••••"
-                            minLength={8}
+                            minLength={1}
                             className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm mt-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                             required
                         />
@@ -309,8 +309,8 @@ export function ResetPasswordForm({ token }: { token: string }) {
         const password = formData.get('password')?.toString() ?? '';
         const confirm = formData.get('confirm')?.toString() ?? '';
 
-        if (password.length < 8) {
-            setError("Password must be at least 8 characters long");
+        if (password.length < 1) {
+            setError("Password is required");
             return;
         }
 
@@ -389,7 +389,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
                                 name="password"
                                 type={showPassword ? "text" : "password"}
                                 placeholder="••••••••"
-                                minLength={8}
+                                minLength={1}
                                 className="flex h-12 w-full rounded-xl border border-input bg-background px-4 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                                 required
                             />
@@ -410,7 +410,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
                             name="confirm"
                             type="password"
                             placeholder="••••••••"
-                            minLength={8}
+                            minLength={1}
                             className="flex h-12 w-full rounded-xl border border-input bg-background px-4 py-2 text-sm mt-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                             required
                         />

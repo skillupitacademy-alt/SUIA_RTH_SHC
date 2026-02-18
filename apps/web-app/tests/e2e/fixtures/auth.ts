@@ -21,7 +21,8 @@ async function loginUser(
   
   // 2. Fill and submit
   await page.getByLabel(/email/i, { exact: false }).fill(email);
-  await page.getByLabel(/password/i, { exact: false }).fill(password);
+  // The password field has an adjacent "show password" button; pick the input explicitly.
+  await page.locator('input[type="password"], input[name="password"]').first().fill(password);
   await page.getByRole('button', { name: /login|sign in|authenticate|continue/i }).click();
   
   // 3. Wait for redirect

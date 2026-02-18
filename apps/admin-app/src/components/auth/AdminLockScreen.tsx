@@ -118,7 +118,7 @@ export function AdminLockScreen() {
                                 type="password"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
-                                minLength={8}
+                                minLength={1}
                                 className="w-full rounded-2xl bg-white/10 border border-white/20 px-4 py-3 text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#FF4B91]/40"
                                 placeholder="Enter master password"
                                 aria-label="Master password"
