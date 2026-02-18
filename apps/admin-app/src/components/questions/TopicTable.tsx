@@ -21,6 +21,7 @@ import { useDomains, useSubjects } from '@/hooks/useAdminHierarchy';
 import { cn } from '@/lib/utils';
 import { clientLogger } from '@/utils/clientLogger';
 
+import { HierarchySearchBar } from './HierarchySearchBar';
 interface Topic {
     id: string;
     name: string;
