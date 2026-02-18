@@ -19,8 +19,9 @@ export class ResendEmailProvider implements IEmailProvider {
         subject: options.subject,
         html: options.html,
       });
-    } catch (_error: unknown) {
-      // We do not throw as per contract "Never throw _user-visible errors due to email failure"
+    } catch (error: unknown) {
+      console.error('[EmailService] Failed to send email via Resend:', error);
+      // We do not throw as per contract "Never throw user-visible errors due to email failure"
     }
   }
 
