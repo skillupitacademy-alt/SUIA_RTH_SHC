@@ -30,13 +30,19 @@ export function QuestionEditor({ onSubmit, loading, initialData, onCancel }: Que
         { id: '4', text: '', isCorrect: false },
     ];
 
+    // Normalize incoming options; if none or empty, fall back to the base 4 slots
+    const normalizedInitialOptions =
+        (initialData?.options != null && initialData.options.length > 0)
+            ? initialData.options.map(o => ({
+                ...o,
+                id: (o.id != null && o.id !== '') ? o.id : crypto.randomUUID(),
+            }))
+            : baseOptions;
+
     const [data, setData] = useState<QuestionFormData>({
         text: initialData?.text ?? '',
         type: initialData?.type ?? 'single',
-        options: initialData?.options?.map(o => ({
-            ...o,
-            id: (o.id != null && o.id !== '') ? o.id : crypto.randomUUID()
-        })) ?? baseOptions,
+        options: normalizedInitialOptions,
         explanation: initialData?.explanation ?? '',
         difficulty: initialData?.difficulty ?? 'intermediate',
         estimatedTime: initialData?.estimatedTime ?? 60,
