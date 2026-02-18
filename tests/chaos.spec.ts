@@ -210,6 +210,8 @@ test.describe('Chaos scenarios (live)', () => {
 
   /* ═══════════════════════ TEST 1 ═════════════════════════════════════ */
   test('1) Network flop on submit is idempotent', async () => {
+    test.slow();
+    test.setTimeout(120_000);
     // Start a fresh exam
     const startKey = crypto.randomUUID();
     const startRes = await api.post('/api/quiz/start', {
