@@ -64,9 +64,9 @@ export function SubtopicTable() {
         setIsLoading(true);
         try {
             const response = await apiClient.admin.getSubtopics(page, pageSize, debouncedSearch || undefined);
-            setData(response.data);
+            setData(Array.isArray(response.data) ? response.data : []);
             setTotalPages(response.totalPages);
-            setTotalCount(response.total ?? response.data.length);
+            setTotalCount(response.total ?? (Array.isArray(response.data) ? response.data.length : 0));
             setSelectedIds(new Set());
         } catch (error) {
             clientLogger.error('Failed to fetch subtopics', { error: error instanceof Error ? error.message : 'unknown' });
