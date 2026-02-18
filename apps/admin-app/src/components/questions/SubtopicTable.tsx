@@ -265,8 +265,118 @@ export function SubtopicTable() {
 
                                 {/* Inputs Section */}
                                 <form onSubmit={(e) => { void handleSubmit(e); }} className="space-y-6">
-                                    <div className="grid grid-cols-2 gap-6">
-                                        {/* The rest of the form inputs would go here */}
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div className="space-y-2">
+                                            <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Parent Domain</p>
+                                            <select
+                                                value={formData.domainId}
+                                                onChange={(e) => handleDomainChange(e.target.value)}
+                                                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-[#1A1A1A] focus:ring-2 focus:ring-teal-500/20"
+                                            >
+                                                <option value="">Select Domain</option>
+                                                {Array.isArray(domains) && domains.map((d: { id: string; name: string }) => (
+                                                    <option key={d.id} value={d.id}>{d.name}</option>
+                                                ))}
+                                            </select>
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Parent Subject</p>
+                                            <select
+                                                value={formData.subjectId}
+                                                onChange={(e) => handleSubjectChange(e.target.value)}
+                                                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-[#1A1A1A] focus:ring-2 focus:ring-teal-500/20"
+                                            >
+                                                <option value="">Select Subject</option>
+                                                {Array.isArray(subjects) && subjects.map((s: { id: string; name: string }) => (
+                                                    <option key={s.id} value={s.id}>{s.name}</option>
+                                                ))}
+                                            </select>
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Parent Topic</p>
+                                            <select
+                                                value={formData.topicId}
+                                                onChange={(e) => setFormData({ ...formData, topicId: e.target.value })}
+                                                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-[#1A1A1A] focus:ring-2 focus:ring-teal-500/20"
+                                            >
+                                                <option value="">Select Topic</option>
+                                                {Array.isArray(topics) && topics.map((t: { id: string; name: string }) => (
+                                                    <option key={t.id} value={t.id}>{t.name}</option>
+                                                ))}
+                                            </select>
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Status</p>
+                                            <select
+                                                value={formData.status}
+                                                onChange={(e) => setFormData({ ...formData, status: e.target.value as 'active' | 'inactive' })}
+                                                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-[#1A1A1A] focus:ring-2 focus:ring-teal-500/20"
+                                            >
+                                                <option value="active">Active</option>
+                                                <option value="inactive">Inactive</option>
+                                            </select>
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Display Order</p>
+                                            <input
+                                                type="number"
+                                                value={formData.order}
+                                                onChange={(e) => setFormData({ ...formData, order: Number(e.target.value) })}
+                                                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-[#1A1A1A] focus:ring-2 focus:ring-teal-500/20"
+                                            />
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Depth Level</p>
+                                            <input
+                                                type="number"
+                                                value={formData.depthLevel}
+                                                onChange={(e) => setFormData({ ...formData, depthLevel: Number(e.target.value) })}
+                                                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-[#1A1A1A] focus:ring-2 focus:ring-teal-500/20"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Subtopic Name</p>
+                                        <input
+                                            type="text"
+                                            value={formData.name}
+                                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                            className="w-full rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-bold text-[#1A1A1A] focus:ring-2 focus:ring-teal-500/20"
+                                            placeholder="Enter subtopic name"
+                                        />
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Description</p>
+                                        <textarea
+                                            value={formData.description}
+                                            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                            className="w-full rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-bold text-[#1A1A1A] focus:ring-2 focus:ring-teal-500/20 min-h-[120px]"
+                                            placeholder="Brief description of this subtopic"
+                                        />
+                                    </div>
+
+                                    <div className="flex items-center justify-end gap-3 pt-2">
+                                        <button
+                                            type="button"
+                                            onClick={handleCloseForm}
+                                            className="px-5 py-3 rounded-2xl border border-slate-200 text-[10px] font-black uppercase tracking-widest text-slate-600 hover:bg-slate-50 transition-all"
+                                        >
+                                            Cancel
+                                        </button>
+                                        <button
+                                            type="submit"
+                                            disabled={isSubmitting}
+                                            className="px-6 py-3 rounded-2xl bg-teal-500 text-white text-[10px] font-black uppercase tracking-widest hover:bg-teal-600 transition-all shadow-lg shadow-teal-500/20 disabled:opacity-60"
+                                        >
+                                            {isSubmitting ? 'Saving...' : 'Save Changes'}
+                                        </button>
                                     </div>
                                 </form>
                             </div>
