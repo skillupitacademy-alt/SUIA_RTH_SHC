@@ -35,21 +35,17 @@ export class FetchClient {
         if (cookieHeader) {
           headers.cookie = cookieHeader;
         } else {
-          console.warn(`[API] No incoming cookies on server request to ${endpoint}`);
+        // silent
         }
       } catch {
         // If next/headers is not available, skip; client-side will handle cookies via browser
-        console.warn(`[API] Unable to read cookies() on server for ${endpoint}; request may be unauthenticated`);
+        // silent
       }
     }
 
     // Client-side: log if auth cookies look missing
     if (!isServer) {
-      const hasAdminCookie = document.cookie.includes('admin_accessToken=');
-      const hasUserCookie = document.cookie.includes('accessToken=');
-      if (!hasAdminCookie && !hasUserCookie) {
-        console.warn(`[API] No auth cookies present in browser for ${endpoint}; request may 401`);
-      }
+      // quiet client-side cookie checks
     }
 
     // Add CSRF token for mutation requests
@@ -80,12 +76,12 @@ export class FetchClient {
           globalRefreshPromise = null; // Clear lock after success
 
           // 2. RETRY: Fire the original request again
-          console.log(`[API] Retrying ${endpoint} after successful refresh...`);
+          // silent retry
           return this.request<TResponse>(endpoint, { ...options, _isRetry: true });
 
         } catch (refreshErr) {
           globalRefreshPromise = null; // Clear lock on failure
-          console.error('[API] Auto-refresh failed. Redirecting to login...');
+          // silent refresh failure
           // Fall through to existing error/redirect logic below
         }
       }
@@ -105,7 +101,7 @@ export class FetchClient {
 
           if (shouldRedirect && !isLoginPage && !isAlreadyRedirecting) {
             (window as any).__authRedirecting = true;
-            console.warn(`[API] ${response.status} detected. Redirecting to login...`);
+            // silent redirect log
             
             const redirectUrl = encodeURIComponent(currentPath + search);
             const reason = response.status === 401 ? 'session_expired' : 'unauthorized';

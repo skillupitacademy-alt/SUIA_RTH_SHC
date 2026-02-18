@@ -333,7 +333,6 @@ export class AuthService {
 
   static async forgotPassword(email: string, ip?: string) {
     const cleanEmail = email.toLowerCase().trim();
-    console.log(`[AuthService.forgotPassword] Request for: ${cleanEmail}`);
     
     await AuditService.log({ action: 'auth_forgot_password_requested', metadata: { email_redacted: '***' }, ip });
 
@@ -349,11 +348,8 @@ export class AuthService {
 
     // 2. Regardless of existence, return success (prevents enumeration)
     if (_user === undefined) {
-      console.warn(`[AuthService.forgotPassword] User not found: ${cleanEmail}`);
       return true; 
     }
-
-    console.log(`[AuthService.forgotPassword] User found with ID: ${_user.id}`);
 
     // 3. User exists: Generate secure reset _token
     const _token = crypto.randomBytes(32).toString('hex');
