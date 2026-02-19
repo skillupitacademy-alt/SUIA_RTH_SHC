@@ -22,6 +22,12 @@
             ],
             "@quiz/config/*": [
                 "../../packages/config/*"
+            ],
+            "@quiz/types": [
+                "../../packages/types/src/index.ts"
+            ],
+            "@quiz/types/*": [
+                "../../packages/types/src/*"
             ]
         }
     },
