@@ -3,11 +3,12 @@ import { type NextRequest, NextResponse } from "next/server";
 
 import { sql } from "@/lib/db";
 import { redis } from "@/lib/redis";
+import { CACHE_KEYS, CACHE_TTL } from "@/modules/analytics/analytics.constants";
 import { TokenService } from "@/modules/auth/token.service";
 
 export const dynamic = "force-dynamic";
 
-const CACHE_TTL = 300; // 5 mins for personal trend
+// Standard TTL used via ANALYTICS_CACHE.USER_PERSONAL
 
 interface UserMasteryTrendRow {
   exam_date: string;
@@ -25,7 +26,7 @@ export async function GET(req: NextRequest) {
     const payload = await TokenService.verifyAccessToken(token, false);
     const userId = payload.userId;
 
-    const CACHE_KEY = `analytics:user:${userId}:mastery-trend`;
+    const CACHE_KEY = CACHE_KEYS.ANALYTICS.USER(userId, "mastery-trend");
 
     // 2. Try Redis
     try {
@@ -56,7 +57,7 @@ export async function GET(req: NextRequest) {
     // 5. Cache
     try {
       if (rows.length > 0) {
-        await redis.set(CACHE_KEY, result, { ex: CACHE_TTL });
+        await redis.set(CACHE_KEY, result, { ex: CACHE_TTL.USER_PERSONAL });
       }
     } catch (redisError) {
       console.error("[Redis Cache Error]:", redisError);

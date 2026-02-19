@@ -1,11 +1,11 @@
 
 import { sql } from "@/lib/db";
 import { redis } from "@/lib/redis";
+import { CACHE_KEYS, CACHE_TTL } from "@/modules/analytics/analytics.constants";
 
 export const dynamic = "force-dynamic";
 
-const CACHE_KEY = "analytics:admin:mastery-trend";
-const CACHE_TTL = 3600; // 1 hour for admin trends
+// Standard TTL used via ANALYTICS_CACHE.ADMIN_GLOBAL
 
 interface MasteryTrendRow {
   exam_date: Date;
@@ -16,7 +16,7 @@ export async function GET() {
   try {
     // 1. Try Redis GET
     try {
-      const cachedData = await redis.get(CACHE_KEY);
+      const cachedData = await redis.get(CACHE_KEYS.ANALYTICS.ADMIN("mastery-trend"));
       if (cachedData !== null) return Response.json(cachedData);
     } catch (redisError) {
       console.error("[Redis Error]:", redisError);
@@ -38,7 +38,7 @@ export async function GET() {
     // 4. Cache
     try {
       if (rows.length > 0) {
-        await redis.set(CACHE_KEY, result, { ex: CACHE_TTL });
+        await redis.set(CACHE_KEYS.ANALYTICS.ADMIN("mastery-trend"), result, { ex: CACHE_TTL.ADMIN_GLOBAL });
       }
     } catch (redisError) {
       console.error("[Redis Cache Error]:", redisError);

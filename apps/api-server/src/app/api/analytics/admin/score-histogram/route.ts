@@ -1,10 +1,10 @@
 import { sql } from "@/lib/db";
 import { redis } from "@/lib/redis";
+import { CACHE_KEYS, CACHE_TTL } from "@/modules/analytics/analytics.constants";
 
 export const dynamic = "force-dynamic";
 
-const CACHE_KEY = "analytics:score-histogram";
-const CACHE_TTL = 900;
+// Standard TTL used via ANALYTICS_CACHE.ADMIN_GLOBAL
 
 interface ScoreDistributionRow {
   score_bucket: number;
@@ -15,7 +15,7 @@ export async function GET() {
   try {
     // 1. Try Redis GET
     try {
-      const cachedData = await redis.get(CACHE_KEY);
+      const cachedData = await redis.get(CACHE_KEYS.ANALYTICS.ADMIN("score-histogram"));
       if (cachedData !== null) {
         return Response.json(cachedData);
       }
@@ -41,7 +41,7 @@ export async function GET() {
     // 4. Cache in Redis (Fire and forget, don't block response)
     try {
       if (rows.length > 0) {
-        await redis.set(CACHE_KEY, result, { ex: CACHE_TTL });
+        await redis.set(CACHE_KEYS.ANALYTICS.ADMIN("score-histogram"), result, { ex: CACHE_TTL.ADMIN_GLOBAL });
       }
     } catch (redisError) {
       console.error("[Redis Cache Error]:", redisError);
