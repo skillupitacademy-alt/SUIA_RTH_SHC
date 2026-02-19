@@ -20,6 +20,7 @@ import React from 'react';
 
 import AdminItemDifficultyChart from '@/components/charts/AdminItemDifficultyChart';
 import AdminTopicSkillHeatmap from '@/components/charts/AdminTopicSkillHeatmap';
+import AdminScoreHistogram from "@/components/charts/AdminScoreHistogram";
 import { PageTitle } from '@/components/layout/PageTitle';
 import { cn } from '@/lib/utils';
 
@@ -208,9 +209,13 @@ export default function AdminDashboard() {
             </div>
 
             {/* Analytics Deep Dive */}
-            <div className="pt-10 grid lg:grid-cols-2 gap-8">
+            <div className="grid lg:grid-cols-2 gap-8 mb-8">
                 <AdminTopicSkillHeatmap />
                 <AdminItemDifficultyChart />
+            </div>
+
+            <div className="mb-8">
+                <AdminScoreHistogram />
             </div>
 
             {/* System Status Footer */}
