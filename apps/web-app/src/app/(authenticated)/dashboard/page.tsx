@@ -2,6 +2,7 @@
 
 import { StatsGrid } from "@/components/dashboard/StatsCards";
 import ScoreHistoryChart from "@/components/charts/ScoreHistoryChart";
+import MasteryTrendChart from "@/components/charts/MasteryTrendChart";
 import { Sidebar } from "@/components/dashboard/Sidebar";
 import { ArrowRight, Play, BookOpen } from "lucide-react";
 import Link from "next/link";
@@ -55,8 +56,9 @@ export default function DashboardPage() {
                     <StatsGrid overview={data?.overview} deltaPct={data?.deltaPct} healthStatus={data?.healthStatus} />
 
                     <div className="grid lg:grid-cols-3 gap-8 mt-10">
-                        <div className="lg:col-span-2">
+                        <div className="lg:col-span-2 space-y-8">
                             <ScoreHistoryChart />
+                            <MasteryTrendChart />
                         </div>
                         <div className="space-y-6">
                             <h3 className="text-xl font-bold px-1">Recent Activity</h3>
