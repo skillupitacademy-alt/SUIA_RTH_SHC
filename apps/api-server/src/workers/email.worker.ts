@@ -5,7 +5,7 @@ import { EmailService } from "@/modules/email/EmailService";
 
 type SendNotesPayload = {
   topicId: string;
-  notesAssetId: string;
+  notesPath: string;
   learningUrl?: string | null;
   recommendationLevel: string;
 };
@@ -48,6 +48,15 @@ export async function processEmailJobs(): Promise<number> {
       });
       const topicName = topic?.name ?? "your topic";
 
+      let notesLink: string | null = null;
+      const rawPath = (payload as { notesPath?: unknown }).notesPath;
+      if (typeof rawPath === "string") {
+        const trimmed = rawPath.trim();
+        if (trimmed.length > 0) {
+          notesLink = trimmed;
+        }
+      }
+
       const html = `
         <p>Hi,</p>
         <p>Based on your recent assessment, we recommend you <b>${payload.recommendationLevel}</b> <b>${topicName}</b>.</p>
@@ -55,6 +64,11 @@ export async function processEmailJobs(): Promise<number> {
           typeof payload.learningUrl === "string" && payload.learningUrl.length > 0
             ? `<p>Study link: <a href="${payload.learningUrl}">${payload.learningUrl}</a></p>`
             : ""
+        }
+        ${
+          notesLink !== null
+            ? `<p>Your secure notes are available here: <a href="${notesLink}">${notesLink}</a></p>`
+            : "<p>Notes are being prepared.</p>"
         }
         <p>Your secure notes are being delivered via our system.</p>
         <p>Keep learning 🚀</p>

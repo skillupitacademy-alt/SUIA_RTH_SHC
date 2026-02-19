@@ -65,7 +65,10 @@ export function NotificationItem({
                         target="_blank"
                         rel="noopener noreferrer"
                         className="inline-flex items-center gap-1.5 text-[11px] font-black uppercase tracking-widest text-primary mt-3 hover:underline"
-                        onClick={(e) => e.stopPropagation()}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onRead(item.id);
+                        }}
                     >
                         Study Resource <Sparkles size={10} />
                     </a>

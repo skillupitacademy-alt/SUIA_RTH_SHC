@@ -56,12 +56,18 @@ export class TutorService {
 
           const topicData = await tx.query.topics.findFirst({
             where: eq(topics.id, topicId),
-            columns: { learningUrl: true, notesAssetId: true },
+            columns: { learningUrl: true, detailedNotesPath: true, notesAssetId: true },
           });
           const actionUrl =
             typeof topicData?.learningUrl === "string" && topicData.learningUrl.length > 0
               ? topicData.learningUrl
               : null;
+          const notesPath =
+            typeof topicData?.notesAssetId === "string" && topicData.notesAssetId.length > 0
+              ? topicData.notesAssetId
+              : typeof topicData?.detailedNotesPath === "string" && topicData.detailedNotesPath.length > 0
+                ? topicData.detailedNotesPath
+                : null;
 
           await tx.insert(userRecommendations).values({
             userId,
@@ -103,15 +109,18 @@ export class TutorService {
             deliveryDate: today,
           });
 
-          if (typeof topicData?.notesAssetId === "string" && topicData.notesAssetId.length > 0) {
+          if (notesPath !== null) {
             await tx.insert(backgroundJobs).values({
               userId,
               type: "SEND_NOTES_EMAIL",
               status: "pending",
               payload: {
                 topicId,
-                notesAssetId: topicData.notesAssetId,
-                learningUrl: topicData.learningUrl,
+                notesPath,
+                learningUrl:
+                  typeof topicData?.learningUrl === "string" && topicData.learningUrl.length > 0
+                    ? topicData.learningUrl
+                    : null,
                 recommendationLevel: level,
               },
             });
