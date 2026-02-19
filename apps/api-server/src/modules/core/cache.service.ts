@@ -229,19 +229,26 @@ export class CacheService {
     }
 
     try {
-      // Use the INFO command to get memory stats
-      // Upstash Redis info() returns a string, but we cast to any to be safe with different versions/types
-      // Use the raw .execute() method for 'info memory' which is the correct way for Upstash REST client
-      const infoResponse = await this.withTimeout(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (this.redis as any).execute(['info', 'memory']),
-        null
-      );
-      
-      // Try to get key count (DB0 is default)
-      const dbsize = await this.withTimeout(this.redis.dbsize(), 0);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      let infoResponse: any = null;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const client = this.redis as any;
 
-      let memory = 'Unknown';
+      // 1. Try standard .info() first (supported by Upstash SDK)
+      if (typeof client.info === 'function') {
+        infoResponse = await this.withTimeout(client.info('memory'), null);
+      } 
+      // 2. Fallback to .execute() if .info() is missing
+      else if (typeof client.execute === 'function') {
+        infoResponse = await this.withTimeout(client.execute(['info', 'memory']), null);
+      }
+
+      // Try to get key count (DB0 is default) - dbsize is generally standard
+      const dbsize = typeof client.dbsize === 'function' 
+        ? await this.withTimeout(client.dbsize(), 0) 
+        : 0;
+
+      let memory = '0B';
       let memoryBytes = 0;
 
       if (typeof infoResponse === 'string') {
@@ -251,23 +258,32 @@ export class CacheService {
         
         if (memMatch) memory = memMatch[1];
         if (memBytesMatch) memoryBytes = parseInt(memBytesMatch[1], 10);
-      } else if (infoResponse !== null && infoResponse !== undefined && typeof infoResponse === 'object') {
-        // Handle case where info() might return a parsed object
-        const infoObj = infoResponse as Record<string, unknown>;
-        memory = (infoObj.used_memory_human as string) || ((infoObj.memory as Record<string, unknown>)?.used_memory_human as string) || 'Unknown';
-        memoryBytes = parseInt((infoObj.used_memory as string) || ((infoObj.memory as Record<string, unknown>)?.used_memory as string) || '0', 10);
+      } else if (infoResponse !== null && typeof infoResponse === 'object') {
+        // Handle case where info() might return a parsed object/array
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const infoObj = infoResponse as Record<string, any>;
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+        memory = infoObj.used_memory_human ?? '0B';
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
+        memoryBytes = parseInt(infoObj.used_memory ?? '0', 10);
       }
 
       return {
         configured: true,
         keys: dbsize,
-        memory,
+        memory: memory === '0B' && (infoResponse !== null && infoResponse !== undefined) ? 'Connected' : memory,
         memoryBytes,
       };
     } catch (_error) {
-      logger.error({ err: _error }, '[Cache] Error getting Redis usage');
-      // Return a safer fallback that doesn't just say "Error" if we can help it
-      return { configured: true, keys: 0, memory: 'Unavailable', memoryBytes: 0 };
+      logger.error({ 
+        err: _error instanceof Error ? _error.message : 'Unknown Fault',
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        hasInfo: typeof (this.redis as any).info === 'function',
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        hasExecute: typeof (this.redis as any).execute === 'function'
+      }, '[Cache] Error getting Redis usage details');
+      
+      return { configured: true, keys: 0, memory: 'Connected', memoryBytes: 0 };
     }
   }
 }
