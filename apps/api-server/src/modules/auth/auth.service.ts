@@ -382,25 +382,20 @@ export class AuthService {
   }
 
   static async validateResetToken(_token: string) {
-    const validToken = await db.query.passwordResetTokens.findFirst({
+    const resetToken = await db.query.passwordResetTokens.findFirst({
       where: and(
         eq(passwordResetTokens.token, _token),
-        gt(passwordResetTokens.expiresAt, new Date())
-      ),
+        gt(passwordResetTokens.expiresAt, sql`now()`)
+      )
     });
 
-    return validToken !== undefined;
+    return resetToken || null;
   }
 
   static async resetPassword(_token: string, newPassword: string, ip?: string) {
-    const validToken = await db.query.passwordResetTokens.findFirst({
-      where: and(
-        eq(passwordResetTokens.token, _token),
-        gt(passwordResetTokens.expiresAt, new Date())
-      ),
-    });
+    const validToken = await this.validateResetToken(_token);
 
-    if (validToken === undefined) {
+    if (validToken === null) {
       await AuditService.log({ action: 'password_reset_failed', metadata: { reason: 'invalid_or_expired_token' }, ip });
       throw new Error('Invalid or expired password reset link');
     }
