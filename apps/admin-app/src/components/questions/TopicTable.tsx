@@ -3,7 +3,7 @@
 
 import { apiClient } from '@quiz/api-client';
 import { ZLoader, ZPagination } from '@quiz/ui';
-import { BookOpen, Check, Edit2, Hash, Layers, Plus, Trash, Trash2 } from 'lucide-react';
+import { BookOpen, Check, Edit2, Hash, Layers, Plus, Sparkles, Trash, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import { SelectField } from '@/components/entry/SelectionFields';
@@ -312,7 +312,14 @@ export function TopicTable() {
                                                     <BookOpen size={20} />
                                                 </div>
                                                 <div>
-                                                    <p className="font-black text-slate-900 uppercase tracking-tight">{topic.name}</p>
+                                                    <div className="flex items-center gap-2">
+                                                        <p className="font-black text-slate-900 uppercase tracking-tight">{topic.name}</p>
+                                                        {(topic.learningUrl || topic.detailedNotesPath) && (
+                                                            <div className="p-1 rounded bg-orange-50 text-orange-500 border border-orange-100" title="Smart Tutor Enabled">
+                                                                <Sparkles size={8} className="fill-orange-500" />
+                                                            </div>
+                                                        )}
+                                                    </div>
                                                     <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-0.5 truncate max-w-[200px]">{(topic.description != null && topic.description !== '') ? topic.description : 'No specialized metadata'}</p>
                                                 </div>
                                             </div>
