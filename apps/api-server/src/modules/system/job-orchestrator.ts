@@ -1,8 +1,7 @@
-import { db } from '@quiz/db';
 import { JobStatus, JobType } from '@quiz/types';
-import { sql } from 'drizzle-orm';
 
 import { logger } from '@/lib/logger';
+import { AnalyticsService } from '@/modules/analytics/analytics.service';
 import { ScoringEngine } from '@/modules/scoring-engine/scoring.engine';
 import { JobsService } from '@/modules/system/jobs.service';
 
@@ -76,8 +75,7 @@ export class JobOrchestrator {
              * without locking out readers, but requires a UNIQUE INDEX 
              * on the view. This is essential for Absolute Zero zero-downtime.
              */
-            await db.execute(sql`REFRESH MATERIALIZED VIEW CONCURRENTLY mv_mastery_matrix`);
-            await db.execute(sql`REFRESH MATERIALIZED VIEW CONCURRENTLY mv_user_daily_snapshots`);
+            await AnalyticsService.refreshAllViews();
 
             await JobsService.updateJobStatus(jobId, JobStatus.COMPLETED, {
                 result: {

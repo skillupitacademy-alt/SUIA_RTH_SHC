@@ -1,7 +1,7 @@
 'use client';
 
 import { StatsGrid } from "@/components/dashboard/StatsCards";
-import { ProgressChart } from "@/components/dashboard/ProgressChart";
+import ScoreHistoryChart from "@/components/charts/ScoreHistoryChart";
 import { Sidebar } from "@/components/dashboard/Sidebar";
 import { ArrowRight, Play, BookOpen } from "lucide-react";
 import Link from "next/link";
@@ -56,7 +56,7 @@ export default function DashboardPage() {
 
                     <div className="grid lg:grid-cols-3 gap-8 mt-10">
                         <div className="lg:col-span-2">
-                            <ProgressChart trendData={data?.performanceTrend} />
+                            <ScoreHistoryChart />
                         </div>
                         <div className="space-y-6">
                             <h3 className="text-xl font-bold px-1">Recent Activity</h3>

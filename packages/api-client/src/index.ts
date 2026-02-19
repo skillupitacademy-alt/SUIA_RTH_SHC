@@ -4,6 +4,7 @@ import { QuizClient } from './modules/quiz-client';
 import { AdminClient } from './modules/admin-client';
 import { DashboardClient } from './modules/dashboard-client';
 import { SearchClient } from './modules/search-client';
+import { AnalyticsClient } from './modules/analytics-client';
 import { ReportClient } from './modules/report-client';
 import { TelemetryClient } from './modules/telemetry-client';
 
@@ -39,6 +40,7 @@ export * from './modules/dashboard-client';
 export * from './modules/report-client';
 export * from './modules/search-client';
 export * from './modules/telemetry-client';
+export * from './modules/analytics-client';
 export * from './types';
 
 export const apiClient = {
@@ -49,6 +51,7 @@ export const apiClient = {
   reports: new ReportClient(baseClient),
   search: new SearchClient(baseClient),
   telemetry: new TelemetryClient(baseClient),
+  analytics: new AnalyticsClient(baseClient),
   client: baseClient,
   getAdminUrl: () => ADMIN_URL,
 };
