@@ -13,6 +13,13 @@ const typeIcons: Record<string, React.ComponentType<{ size?: number }>> = {
     system: BookOpen,
 };
 
+const filterOptions = [
+    { label: "All", value: null },
+    { label: "Notes", value: "notes_sent" },
+    { label: "Levels", value: "level_up" },
+    { label: "System", value: "system" },
+];
+
 export function NotificationItem({
     item,
     onRead
@@ -83,36 +90,12 @@ export function NotificationItem({
 }
 
 export function InboxPanel() {
-    const { notifications, loading, markAsRead, markAllAsRead } = useNotifications();
-
-    if (loading && notifications.length === 0) {
-        return (
-            <div className="space-y-4">
-                {[1, 2, 3].map((i) => (
-                    <div key={i} className="h-24 w-full bg-slate-50 rounded-2xl animate-pulse border border-slate-100" />
-                ))}
-            </div>
-        );
-    }
-
-    if (notifications.length === 0) {
-        return (
-            <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
-                <div className="w-16 h-16 rounded-3xl bg-slate-50 flex items-center justify-center text-slate-300 mb-4 border border-slate-100">
-                    <Mail size={32} />
-                </div>
-                <h3 className="text-lg font-bold text-slate-900">Your inbox is empty</h3>
-                <p className="text-sm text-slate-500 max-w-[240px] mt-1 font-medium">
-                    Personalized study notes and mission alerts will appear here.
-                </p>
-            </div>
-        );
-    }
+    const { notifications, loading, filterType, setFilterType, markAsRead, markAllAsRead } = useNotifications();
 
     return (
         <div className="space-y-4">
             <div className="flex items-center justify-between px-2">
-                <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Recent Messages</h3>
+                <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Your Inbox</h3>
                 <button
                     onClick={markAllAsRead}
                     className="text-[10px] font-black uppercase tracking-widest text-primary hover:text-primary/80 transition-colors flex items-center gap-1"
@@ -121,15 +104,53 @@ export function InboxPanel() {
                 </button>
             </div>
 
-            <div className="space-y-3">
-                {notifications.map((item) => (
-                    <NotificationItem
-                        key={item.id}
-                        item={item}
-                        onRead={markAsRead}
-                    />
+            {/* Filter Tabs */}
+            <div className="flex items-center p-1 rounded-xl bg-slate-50 border border-slate-100 gap-1 overflow-x-auto no-scrollbar">
+                {filterOptions.map((opt) => (
+                    <button
+                        key={opt.label}
+                        onClick={() => setFilterType(opt.value)}
+                        className={cn(
+                            "px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap",
+                            filterType === opt.value
+                                ? "bg-white text-primary shadow-sm ring-1 ring-slate-200"
+                                : "text-slate-400 hover:text-slate-600"
+                        )}
+                    >
+                        {opt.label}
+                    </button>
                 ))}
             </div>
+
+            {loading ? (
+                <div className="space-y-4">
+                    {[1, 2, 3].map((i) => (
+                        <div key={i} className="h-24 w-full bg-slate-50 rounded-2xl animate-pulse border border-slate-100" />
+                    ))}
+                </div>
+            ) : notifications.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
+                    <div className="w-16 h-16 rounded-3xl bg-slate-50 flex items-center justify-center text-slate-300 mb-4 border border-slate-100">
+                        <Mail size={32} />
+                    </div>
+                    <h3 className="text-lg font-bold text-slate-900">No messages found</h3>
+                    <p className="text-sm text-slate-500 max-w-[240px] mt-1 font-medium">
+                        {filterType
+                            ? `You don't have any ${filterType.replace('_', ' ')} messages.`
+                            : "Your personalized study hub is empty."}
+                    </p>
+                </div>
+            ) : (
+                <div className="space-y-3">
+                    {notifications.map((item) => (
+                        <NotificationItem
+                            key={item.id}
+                            item={item}
+                            onRead={markAsRead}
+                        />
+                    ))}
+                </div>
+            )}
         </div>
     );
 }

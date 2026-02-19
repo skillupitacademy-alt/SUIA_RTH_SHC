@@ -21,6 +21,7 @@ export function useNotifications() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [filterType, setFilterType] = useState<string | null>(null);
 
   const fetchUnreadCount = useCallback(async () => {
     if (!isAuthenticated) return;
@@ -39,7 +40,10 @@ export function useNotifications() {
     if (!isAuthenticated) return;
     setLoading(true);
     try {
-      const res = await fetch("/api/notifications?limit=20");
+      const url = filterType 
+        ? `/api/notifications?limit=20&type=${filterType}`
+        : "/api/notifications?limit=20";
+      const res = await fetch(url);
       if (res.ok) {
         const data = await res.json();
         setNotifications(data);
@@ -49,7 +53,7 @@ export function useNotifications() {
     } finally {
       setLoading(false);
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, filterType]);
 
   const markAsRead = async (id: string) => {
     try {
@@ -96,6 +100,8 @@ export function useNotifications() {
     notifications,
     unreadCount,
     loading,
+    filterType,
+    setFilterType,
     markAsRead,
     markAllAsRead,
     refresh: () => {

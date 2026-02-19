@@ -1,5 +1,5 @@
 import { db, notifications } from "@quiz/db";
-import { desc, eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 
 import { TokenService } from "@/modules/auth/token.service";
@@ -20,9 +20,21 @@ export async function GET(req: NextRequest) {
 
     const limit = Number(req.nextUrl.searchParams.get("limit") ?? 50);
     const offset = Number(req.nextUrl.searchParams.get("offset") ?? 0);
+    const typeParam = req.nextUrl.searchParams.get("type");
+    const allowedTypes = ["notes_sent", "level_up", "live_session", "system"] as const;
+    type NotificationType = (typeof allowedTypes)[number];
+    const type: NotificationType | null =
+      typeof typeParam === "string" && allowedTypes.includes(typeParam.trim() as NotificationType)
+        ? (typeParam.trim() as NotificationType)
+        : null;
+
+    const whereClause =
+      type !== null
+        ? and(eq(notifications.userId, payload.userId), eq(notifications.type, type))
+        : eq(notifications.userId, payload.userId);
 
     const inbox = await db.query.notifications.findMany({
-      where: eq(notifications.userId, payload.userId),
+      where: whereClause,
       orderBy: [desc(notifications.createdAt)],
       limit,
       offset,

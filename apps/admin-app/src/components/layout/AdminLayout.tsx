@@ -5,6 +5,7 @@ import { ThemeToggle } from '@quiz/ui';
 import {
     AlertTriangle,
     BarChart3,
+    Brain,
     ChevronRight,
     Database,
     LayoutDashboard,
@@ -28,6 +29,7 @@ import { clientLogger } from '@/utils/clientLogger';
 
 const ADMIN_NAV = [
     { name: 'Dashboard', href: '/', icon: LayoutDashboard },
+    { name: 'Smart Tutor', href: '/dashboard/tutor', icon: Brain },
     { name: 'Question Bank', href: '/questions', icon: Database },
     { name: 'Question Factory', href: '/factory/question-generator', icon: BarChart3 },
     { name: 'Reports', href: '/reports', icon: BarChart3 },
