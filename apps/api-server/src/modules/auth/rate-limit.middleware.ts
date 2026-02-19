@@ -60,12 +60,21 @@ export async function rateLimit(_request: NextRequest) {
     }
 
     if (ipCount > maxIp) {
-      rateLimitLogger.warn({ ip, path, count: ipCount }, 'IP Rate limit hit');
+      rateLimitLogger.warn({ ip, path, count: ipCount, limit: maxIp, scope }, 'IP Rate limit hit');
       return NextResponse.json(
-        { _error: 'Too many requests' }, 
+        { 
+          _error: 'Too many requests',
+          count: ipCount,
+          limit: maxIp,
+          retryAfter: ipTtl
+        }, 
         { 
           status: 429,
-          headers: { 'Retry-After': ipTtl.toString() }
+          headers: { 
+            'Retry-After': ipTtl.toString(),
+            'X-RateLimit-Count': ipCount.toString(),
+            'X-RateLimit-Limit': maxIp.toString()
+          }
         }
       );
     }
