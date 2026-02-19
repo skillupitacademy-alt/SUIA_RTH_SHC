@@ -181,6 +181,9 @@ importers:
 
   apps/api-server:
     dependencies:
+      '@neondatabase/serverless':
+        specifier: ^0.10.4
+        version: 0.10.4
       '@quiz/api-client':
         specifier: workspace:*
         version: link:../../packages/api-client

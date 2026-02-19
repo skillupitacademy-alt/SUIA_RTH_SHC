@@ -48,7 +48,7 @@ export default async function middleware(_request: NextRequest) {
     
     // 4.1 Determine Auth Scope (P0-SEC-004)
     let scope: 'admin' | '_user' = '_user';
-    if (pathname.startsWith('/api/admin') || pathname.startsWith('/api/factory')) {
+    if (pathname.startsWith('/api/admin') || pathname.startsWith('/api/factory') || pathname.startsWith('/api/analytics/admin')) {
       scope = 'admin';
     }
 
@@ -68,7 +68,8 @@ export default async function middleware(_request: NextRequest) {
 
       // 4.2 Central RBAC Enforcement (P0-SEC-002)
       const isAdminRoute = (pathname.startsWith('/api/admin') && !pathname.startsWith('/api/admin/auth')) || 
-                           pathname.startsWith('/api/factory');
+                           pathname.startsWith('/api/factory') ||
+                           pathname.startsWith('/api/analytics/admin');
 
       if (isAdminRoute) {
         const hasAdminAccess = await _verifyAdmin(_payload);
