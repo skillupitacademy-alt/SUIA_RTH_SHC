@@ -21,6 +21,12 @@ export interface TopicSkillHeatmapResponse {
   matrix: [number, number, number][];
 }
 
+export interface ItemDifficultyResponse {
+  ids: string[];
+  accuracy: number[];
+  attempts: number[];
+}
+
 export class AnalyticsClient {
   constructor(private client: FetchClient) {}
 
@@ -57,5 +63,12 @@ export class AnalyticsClient {
    */
   async getAdminTopicSkillHeatmap(): Promise<TopicSkillHeatmapResponse> {
     return this.client.get<TopicSkillHeatmapResponse>('/analytics/admin/topic-skill-heatmap');
+  }
+
+  /**
+   * Fetch item difficulty report (Admin only).
+   */
+  async getAdminItemDifficulty(): Promise<ItemDifficultyResponse> {
+    return this.client.get<ItemDifficultyResponse>('/analytics/admin/item-difficulty');
   }
 }

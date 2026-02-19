@@ -11,7 +11,7 @@ export async function GET(_req: NextRequest) {
   try {
     const _token = TokenService.getAccessToken(_req);
     if (typeof _token !== 'string' || _token.trim() === '') {
-      return NextResponse.json({ _error: 'Unauthorized', scope: '_user' }, { status: 401 });
+      return NextResponse.json({ _error: 'Unauthorized', scope: 'user' }, { status: 401 });
     }
 
     const _payload = await TokenService.verifyAccessToken(_token, false);

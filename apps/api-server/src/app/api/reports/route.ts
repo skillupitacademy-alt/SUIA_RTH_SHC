@@ -15,8 +15,8 @@ export async function GET(_req: NextRequest) {
     const { searchParams } = new URL(_req.url);
     const id = searchParams.get('id');
 
-    const _token = TokenService.getAccessToken(_req, { scope: '_user' });
-    if (_token === undefined || _token === null || _token === '') return NextResponse.json({ _error: 'Unauthorized', scope: '_user' }, { status: 401 });
+    const _token = TokenService.getAccessToken(_req, { scope: 'user' });
+    if (_token === undefined || _token === null || _token === '') return NextResponse.json({ _error: 'Unauthorized', scope: 'user' }, { status: 401 });
 
     const _payload = await TokenService.verifyAccessToken(_token, false);
 

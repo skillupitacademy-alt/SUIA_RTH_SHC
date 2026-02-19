@@ -18,7 +18,7 @@ interface UserMasteryTrendRow {
 export async function GET(req: NextRequest) {
   try {
     // 1. Auth & Identity
-    const token = TokenService.getAccessToken(req, { scope: "_user" });
+    const token = TokenService.getAccessToken(req, { scope: "user" });
     if (token === undefined || token === null || token === "") {
       return NextResponse.json({ error: "Authentication required" }, { status: 401 });
     }

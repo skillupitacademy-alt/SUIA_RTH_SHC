@@ -47,7 +47,7 @@ export default async function middleware(_request: NextRequest) {
     const pathname = _request.nextUrl.pathname;
     
     // 4.1 Determine Auth Scope (P0-SEC-004)
-    let scope: 'admin' | '_user' = '_user';
+    let scope: 'admin' | 'user' = 'user';
     if (pathname.startsWith('/api/admin') || pathname.startsWith('/api/factory') || pathname.startsWith('/api/analytics/admin')) {
       scope = 'admin';
     }

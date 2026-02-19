@@ -18,6 +18,7 @@ import {
 import Link from 'next/link';
 import React from 'react';
 
+import AdminItemDifficultyChart from '@/components/charts/AdminItemDifficultyChart';
 import AdminTopicSkillHeatmap from '@/components/charts/AdminTopicSkillHeatmap';
 import { PageTitle } from '@/components/layout/PageTitle';
 import { cn } from '@/lib/utils';
@@ -207,8 +208,9 @@ export default function AdminDashboard() {
             </div>
 
             {/* Analytics Deep Dive */}
-            <div className="pt-10">
+            <div className="pt-10 grid lg:grid-cols-2 gap-8">
                 <AdminTopicSkillHeatmap />
+                <AdminItemDifficultyChart />
             </div>
 
             {/* System Status Footer */}

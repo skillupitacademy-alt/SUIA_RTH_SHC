@@ -20,14 +20,14 @@ export class TokenService {
   /**
    * Universal _token extraction: Scope-Aware
    */
-  static getAccessToken(_req: NextRequest, options?: { scope?: 'admin' | '_user' }): string | undefined {
+  static getAccessToken(_req: NextRequest, options?: { scope?: 'admin' | 'user' }): string | undefined {
     const scope = options?.scope;
 
     // 1. Check Cookies based on scope
     if (scope === 'admin') {
         const adminToken = _req.cookies.get('admin_accessToken')?.value;
         if (adminToken !== undefined && adminToken !== null && adminToken !== '') return adminToken;
-    } else if (scope === '_user') {
+    } else if (scope === 'user') {
         const userToken = _req.cookies.get('accessToken')?.value;
         if (userToken !== undefined && userToken !== null && userToken !== '') return userToken;
     } else {

@@ -27,7 +27,7 @@ export async function GET(_req: NextRequest) {
 
     if (_user === null || _user === undefined) return NextResponse.json({ _error: 'User not found' }, { status: 404 });
 
-    const role = _user.userRoles[0]?.role?.name?.toLowerCase() || '_user';
+    const role = _user.userRoles[0]?.role?.name?.toLowerCase() || 'user';
     const isAdmin = role === 'admin' || role === 'super_admin';
 
     if (!isAdmin) {

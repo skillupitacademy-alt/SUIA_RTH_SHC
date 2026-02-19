@@ -23,12 +23,12 @@ export async function rateLimit(_request: NextRequest) {
   
   // 1. Resolve Scope & Auth (Absolute Isolation)
   const path = _request.nextUrl.pathname;
-  let scope: 'admin' | '_user' | undefined;
+  let scope: 'admin' | 'user' | undefined;
 
   if (path.startsWith('/api/admin') || path.startsWith('/api/factory') || path === '/api/migrate') {
     scope = 'admin';
   } else if (path.startsWith('/api/quiz') || path.startsWith('/api/auth') || path.startsWith('/api/reports') || path.startsWith('/api/dashboard')) {
-    scope = '_user';
+    scope = 'user';
   }
 
   const _token = scope ? TokenService.getAccessToken(_request, { scope }) : undefined;
@@ -80,7 +80,7 @@ export async function rateLimit(_request: NextRequest) {
     }
 
     if (userId !== null) {
-      const userKey = `ratelimit:_user:${userId}`;
+      const userKey = `ratelimit:user:${userId}`;
       const { count: userCount, ttlRem: userTtl } = await cacheService.increment(userKey, WINDOW_MS);
 
       if (userCount > maxUser) {
