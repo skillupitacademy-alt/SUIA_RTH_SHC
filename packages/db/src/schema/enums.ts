@@ -24,3 +24,16 @@ export const jobStatusEnum = pgEnum("job_status", [
   "completed",
   "failed"
 ]);
+
+export const notificationTypeEnum = pgEnum("notification_type", [
+  "notes_sent",
+  "level_up",
+  "live_session",
+  "system",
+]);
+
+export const recommendationLevelEnum = pgEnum("recommendation_level", [
+  "revise",
+  "practice",
+  "advance",
+]);

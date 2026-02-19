@@ -18,10 +18,14 @@ export async function GET(req: NextRequest) {
     }
     const payload = await TokenService.verifyAccessToken(token, false);
 
+    const limit = Number(req.nextUrl.searchParams.get("limit") ?? 50);
+    const offset = Number(req.nextUrl.searchParams.get("offset") ?? 0);
+
     const inbox = await db.query.notifications.findMany({
       where: eq(notifications.userId, payload.userId),
       orderBy: [desc(notifications.createdAt)],
-      limit: 50,
+      limit,
+      offset,
     });
 
     return NextResponse.json(inbox);

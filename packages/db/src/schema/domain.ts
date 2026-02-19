@@ -39,6 +39,7 @@ export const topics = pgTable("topics", {
   weight: integer("weight").notNull().default(1),
   learningUrl: text("learning_url"),
   detailedNotesPath: text("detailed_notes_path"),
+  notesAssetId: text("notes_asset_id"),
   status: statusEnum("status").notNull().default("active"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
@@ -79,4 +80,3 @@ export const topicSkills = pgTable("topic_skills", {
 }, (t) => ({
   pk: primaryKey({ columns: [t.topicId, t.skillId] }),
 }));
-

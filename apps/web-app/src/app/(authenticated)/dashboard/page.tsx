@@ -21,6 +21,7 @@ import { useDashboardStore } from "@/store/dashboard-store";
 import { useEffect, useState } from "react";
 
 import { ZLoader } from "@quiz/ui";
+import { TutorInsightCard } from "@/components/tutor/TutorInsightCard";
 
 export default function DashboardPage() {
     const { user } = useAuthStore();
@@ -106,6 +107,7 @@ export default function DashboardPage() {
                             </div>
                         </div>
                         <div className="space-y-6">
+                            <TutorInsightCard />
                             <h3 className="text-xl font-bold px-1">Recent Activity</h3>
                             <div className="space-y-4">
                                 {data?.recentActivity?.length === 0 ? (

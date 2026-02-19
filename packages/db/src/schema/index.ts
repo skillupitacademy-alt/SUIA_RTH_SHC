@@ -3,5 +3,7 @@ export * from './domain';
 export * from './enums';
 export * from './exam';
 export * from './jobs';
+export * from './notification';
 export * from './question';
 export * from './relations';
+export * from './tutor';

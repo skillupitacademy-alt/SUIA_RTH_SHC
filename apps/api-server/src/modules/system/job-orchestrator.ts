@@ -4,6 +4,7 @@ import { logger } from '@/lib/logger';
 import { AnalyticsService } from '@/modules/analytics/analytics.service';
 import { ScoringEngine } from '@/modules/scoring-engine/scoring.engine';
 import { JobsService } from '@/modules/system/jobs.service';
+import { TutorService } from '@/modules/tutor/tutor.service';
 
 export class JobOrchestrator {
     private static log = logger.child({ module: 'system:job-orchestrator' });
@@ -58,6 +59,9 @@ export class JobOrchestrator {
         if (payload.examId === undefined || payload.examId === null || payload.examId === '') throw new Error('Missing examId in payload');
 
         const finalScore = await ScoringEngine.calculateExamResults(payload.examId);
+
+        // Fire-and-forget tutor processing; do not block scoring completion
+        void TutorService.processExamResults(payload.examId);
         
         await JobsService.updateJobStatus(jobId, JobStatus.COMPLETED, {
             result: {

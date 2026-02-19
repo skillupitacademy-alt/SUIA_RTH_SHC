@@ -94,7 +94,12 @@ export function TopicTable() {
         setIsLoading(true);
         try {
             const response = await apiClient.admin.getTopics(page, pageSize, debouncedSearch || undefined);
-            setData(response.data);
+            const mapped = response.data.map((topic: any) => ({
+                ...topic,
+                learningUrl: topic.learningUrl ?? '',
+                detailedNotesPath: topic.detailedNotesPath ?? '',
+            })) as Topic[];
+            setData(mapped);
             setTotalPages(response.totalPages);
             setTotalCount(response.total ?? response.data.length);
             setSelectedIds(new Set());
@@ -313,12 +318,12 @@ export function TopicTable() {
                                                 </div>
                                                 <div>
                                                     <div className="flex items-center gap-2">
-                                                        <p className="font-black text-slate-900 uppercase tracking-tight">{topic.name}</p>
-                                                        {(topic.learningUrl || topic.detailedNotesPath) && (
+                                                        <p className="font-black text-slate-900 uppercase tracking-tight">{topic.name ?? "Topic"}</p>
+                                                        {(topic.learningUrl ?? "") !== "" || (topic.detailedNotesPath ?? "") !== "" ? (
                                                             <div className="p-1 rounded bg-orange-50 text-orange-500 border border-orange-100" title="Smart Tutor Enabled">
                                                                 <Sparkles size={8} className="fill-orange-500" />
                                                             </div>
-                                                        )}
+                                                        ) : null}
                                                     </div>
                                                     <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-0.5 truncate max-w-[200px]">{(topic.description != null && topic.description !== '') ? topic.description : 'No specialized metadata'}</p>
                                                 </div>

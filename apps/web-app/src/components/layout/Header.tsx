@@ -4,12 +4,13 @@ import Link from 'next/link';
 import { LayoutDashboard, LogIn, UserPlus, LogOut, User } from 'lucide-react';
 import { useAuth } from '@/context/auth-context';
 import { useRouter, usePathname } from 'next/navigation';
+import { BellNotification } from '@/components/inbox/BellNotification';
 
 export function Header() {
     const auth = useAuth();
     const isAuthenticated = auth?.isAuthenticated ?? false;
     const user = auth?.user;
-    const logout = auth?.logout ?? (() => {});
+    const logout = auth?.logout ?? (() => { });
     const loading = auth?.loading ?? false;
     const router = useRouter();
     const pathname = usePathname();
@@ -72,6 +73,7 @@ export function Header() {
                             </>
                         ) : (
                             <div className="flex items-center gap-4">
+                                <BellNotification />
                                 <span className="text-sm font-bold text-muted-foreground flex items-center gap-2">
                                     <User size={16} />
                                     {user?.name}

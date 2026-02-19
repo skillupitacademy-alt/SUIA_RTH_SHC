@@ -1,0 +1,126 @@
+import { backgroundJobs, db, exams, notesDeliveryLocks, notifications, resultsByDimension, topics, userRecommendations } from "@quiz/db";
+import { and, eq, gte, sql } from "drizzle-orm";
+
+import { cacheService } from "@/modules/core/cache.service";
+
+type RecommendationLevel = "revise" | "practice";
+
+export class TutorService {
+  /**
+   * Process a completed exam and create recommendations, notifications, and email jobs.
+   */
+  static async processExamResults(examId: string): Promise<void> {
+    try {
+      const exam = await db.query.exams.findFirst({
+        where: eq(exams.id, examId),
+        columns: { userId: true },
+      });
+      if (!exam) return;
+
+      const userId = exam.userId;
+
+      const weakTopics = await db
+        .select({
+          topicId: resultsByDimension.dimensionId,
+          topicName: resultsByDimension.name,
+          accuracy: resultsByDimension.accuracy,
+        })
+        .from(resultsByDimension)
+        .where(
+          and(
+            eq(resultsByDimension.examId, examId),
+            eq(resultsByDimension.dimensionType, "topic"),
+            sql`${resultsByDimension.accuracy} <= 75`,
+          ),
+        );
+
+      if (weakTopics.length === 0) return;
+
+      await db.transaction(async (tx) => {
+        for (const record of weakTopics) {
+          const topicId = record.topicId as string;
+          const topicName =
+            typeof record.topicName === "string" && record.topicName.length > 0 ? record.topicName : "Topic";
+          const accuracy = Number(record.accuracy ?? 0);
+
+          const level: RecommendationLevel = accuracy < 50 ? "revise" : "practice";
+
+          const existing = await tx.query.userRecommendations.findFirst({
+            where: and(
+              eq(userRecommendations.userId, userId),
+              eq(userRecommendations.topicId, topicId),
+              gte(userRecommendations.createdAt, sql`NOW() - INTERVAL '24 HOURS'`),
+            ),
+          });
+          if (existing) continue;
+
+          const topicData = await tx.query.topics.findFirst({
+            where: eq(topics.id, topicId),
+            columns: { learningUrl: true, notesAssetId: true },
+          });
+          const actionUrl =
+            typeof topicData?.learningUrl === "string" && topicData.learningUrl.length > 0
+              ? topicData.learningUrl
+              : null;
+
+          await tx.insert(userRecommendations).values({
+            userId,
+            topicId,
+            recommendationLevel: level,
+            sourceExamId: examId,
+            metadata: { accuracy },
+          });
+
+          await tx.insert(notifications).values({
+            userId,
+            type: "notes_sent",
+            title: "Refresher Sent!",
+            message: `We sent you notes for ${topicName} to your registered email.`,
+            actionUrl,
+            metadata: { topicId, examId, level, accuracy },
+          });
+
+          const rateKey = `notes:request:${userId}:${topicId}`;
+          const cache = cacheService;
+          const cached = await cache.get<string>(rateKey);
+          if (cached !== null && cached !== undefined) continue;
+
+          await cache.set(rateKey, "1", 86400 * 1000);
+
+          const today = new Date().toISOString().split("T")[0];
+          const lock = await tx.query.notesDeliveryLocks.findFirst({
+            where: and(
+              eq(notesDeliveryLocks.userId, userId),
+              eq(notesDeliveryLocks.topicId, topicId),
+              eq(notesDeliveryLocks.deliveryDate, today),
+            ),
+          });
+          if (lock) continue;
+
+          await tx.insert(notesDeliveryLocks).values({
+            userId,
+            topicId,
+            deliveryDate: today,
+          });
+
+          if (typeof topicData?.notesAssetId === "string" && topicData.notesAssetId.length > 0) {
+            await tx.insert(backgroundJobs).values({
+              userId,
+              type: "SEND_NOTES_EMAIL",
+              status: "pending",
+              payload: {
+                topicId,
+                notesAssetId: topicData.notesAssetId,
+                learningUrl: topicData.learningUrl,
+                recommendationLevel: level,
+              },
+            });
+          }
+        }
+      });
+    } catch (error) {
+      // Do not throw to avoid breaking exam completion flow
+      console.error("[TutorService] processExamResults failed", error);
+    }
+  }
+}

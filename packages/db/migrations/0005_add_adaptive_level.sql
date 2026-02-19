@@ -1,5 +1,9 @@
-CREATE TYPE "public"."job_status" AS ENUM('pending', 'processing', 'completed', 'failed');--> statement-breakpoint
-CREATE TABLE "background_jobs" (
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'job_status') THEN
+        CREATE TYPE "public"."job_status" AS ENUM('pending', 'processing', 'completed', 'failed');
+    END IF;
+END $$;--> statement-breakpoint
+CREATE TABLE IF NOT EXISTS "background_jobs" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"user_id" uuid NOT NULL,
 	"type" text NOT NULL,
@@ -14,5 +18,5 @@ CREATE TABLE "background_jobs" (
 );
 --> statement-breakpoint
 ALTER TABLE "background_jobs" ADD CONSTRAINT "background_jobs_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-CREATE INDEX "idx_jobs_user_id" ON "background_jobs" USING btree ("user_id");--> statement-breakpoint
-CREATE INDEX "idx_jobs_status" ON "background_jobs" USING btree ("status");
+CREATE INDEX IF NOT EXISTS "idx_jobs_user_id" ON "background_jobs" USING btree ("user_id");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "idx_jobs_status" ON "background_jobs" USING btree ("status");
