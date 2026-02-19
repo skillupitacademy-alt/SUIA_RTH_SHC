@@ -8,6 +8,8 @@ import WeaknessTreeChart from "@/components/charts/WeaknessTreeChart";
 import { Sidebar } from "@/components/dashboard/Sidebar";
 import { ArrowRight, Play, BookOpen } from "lucide-react";
 import Link from "next/link";
+import PersonalTimeBoxplot from "@/components/charts/PersonalTimeBoxplot";
+import PersonalDifficultySplit from "@/components/charts/PersonalDifficultySplit";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 import { cn } from "@/lib/utils";
 import { MobileNav } from "@/components/dashboard/MobileNav";
@@ -63,6 +65,10 @@ export default function DashboardPage() {
                             <MasteryTrendChart />
                             <TopicPerformanceHeatmap />
                             <WeaknessTreeChart />
+                            <div className="grid md:grid-cols-2 gap-8">
+                                <PersonalTimeBoxplot />
+                                <PersonalDifficultySplit />
+                            </div>
                         </div>
                         <div className="space-y-6">
                             <h3 className="text-xl font-bold px-1">Recent Activity</h3>

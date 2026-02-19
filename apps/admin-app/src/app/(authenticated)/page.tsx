@@ -20,6 +20,8 @@ import React from 'react';
 
 import AdminDiscriminationScatter from "@/components/charts/AdminDiscriminationScatter";
 import AdminItemDifficultyChart from '@/components/charts/AdminItemDifficultyChart';
+import AdminPlannedVsActualDifficulty from "@/components/charts/AdminPlannedVsActualDifficulty";
+import AdminPoolSufficiency from "@/components/charts/AdminPoolSufficiency";
 import AdminScoreHistogram from "@/components/charts/AdminScoreHistogram";
 import AdminTopicSkillHeatmap from '@/components/charts/AdminTopicSkillHeatmap';
 import { PageTitle } from '@/components/layout/PageTitle';
@@ -218,6 +220,11 @@ export default function AdminDashboard() {
             <div className="grid lg:grid-cols-2 gap-8 mb-8">
                 <AdminScoreHistogram />
                 <AdminDiscriminationScatter />
+            </div>
+
+            <div className="grid lg:grid-cols-2 gap-8 mb-8">
+                <AdminPoolSufficiency />
+                <AdminPlannedVsActualDifficulty />
             </div>
 
             {/* System Status Footer */}

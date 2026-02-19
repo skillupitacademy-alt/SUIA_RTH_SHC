@@ -42,6 +42,27 @@ export interface DiscriminationResponse {
   points: { id: string; top: number; bottom: number }[];
 }
 
+export interface TimeBoxplotResponse {
+  data: number[];
+}
+
+export interface DifficultyAccuracyResponse {
+  labels: string[];
+  accuracy: number[];
+}
+
+export interface PoolSufficiencyResponse {
+  available: number;
+  required: number;
+  percent: number;
+}
+
+export interface DifficultyVarianceResponse {
+  labels: string[];
+  planned: number[];
+  actual: number[];
+}
+
 export class AnalyticsClient {
   constructor(private client: FetchClient) {}
 
@@ -71,6 +92,20 @@ export class AnalyticsClient {
    */
   async getUserWeaknessTree(): Promise<WeaknessTreeNode[]> {
     return this.client.get<WeaknessTreeNode[]>('/analytics/user/weakness-tree');
+  }
+
+  /**
+   * Fetch personal time-per-question distribution (Pacing analysis).
+   */
+  async getUserTimeBoxplot(): Promise<TimeBoxplotResponse> {
+    return this.client.get<TimeBoxplotResponse>('/analytics/user/time-boxplot');
+  }
+
+  /**
+   * Fetch personal accuracy per difficulty level.
+   */
+  async getUserDifficultyAccuracy(): Promise<DifficultyAccuracyResponse> {
+    return this.client.get<DifficultyAccuracyResponse>('/analytics/user/difficulty-accuracy');
   }
 
   /**
@@ -106,5 +141,19 @@ export class AnalyticsClient {
    */
   async getAdminDiscrimination(): Promise<DiscriminationResponse> {
     return this.client.get<DiscriminationResponse>('/analytics/admin/discrimination');
+  }
+
+  /**
+   * Fetch question pool sufficiency data (Admin only).
+   */
+  async getAdminPoolSufficiency(): Promise<PoolSufficiencyResponse> {
+    return this.client.get<PoolSufficiencyResponse>('/analytics/admin/pool-sufficiency');
+  }
+
+  /**
+   * Fetch planned vs actual difficulty variance (Admin only).
+   */
+  async getAdminPlannedVsActualDifficulty(): Promise<DifficultyVarianceResponse> {
+    return this.client.get<DifficultyVarianceResponse>('/analytics/admin/planned-vs-actual-difficulty');
   }
 }
