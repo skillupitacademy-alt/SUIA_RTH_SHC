@@ -65,6 +65,7 @@ export default function AdminItemDifficultyChart() {
                 const fullId = data.ids[index];
                 const accuracy = data.accuracy[index];
                 const attempts = data.attempts[index];
+                const acColor = accuracy < 40 ? "#ef4444" : accuracy < 70 ? "#f59e0b" : "#22c55e";
 
                 return `
           <div class="font-bold mb-1 text-slate-800">Question ID</div>
@@ -72,7 +73,7 @@ export default function AdminItemDifficultyChart() {
           <div class="flex items-center gap-4">
             <div>
               <div class="text-xs text-slate-500">Accuracy</div>
-              <div class="font-bold text-red-500">${accuracy}%</div>
+              <div class="font-bold" style="color:${acColor}">${accuracy}%</div>
             </div>
             <div>
               <div class="text-xs text-slate-500">Attempts</div>
@@ -114,16 +115,12 @@ export default function AdminItemDifficultyChart() {
                 barMaxWidth: 20,
                 itemStyle: {
                     borderRadius: [0, 4, 4, 0],
-                    color: {
-                        type: "linear",
-                        x: 0,
-                        y: 0,
-                        x2: 1,
-                        y2: 0,
-                        colorStops: [
-                            { offset: 0, color: "#ef4444" }, // Red-500
-                            { offset: 1, color: "#f59e0b" }, // Amber-500
-                        ],
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    color: (params: any) => {
+                        const value = params.value as number;
+                        if (value < 40) return "#ef4444";  // 🔴 Red — broken / needs review
+                        if (value < 70) return "#f59e0b";  // 🟡 Amber — moderate difficulty
+                        return "#22c55e";                   // 🟢 Green — acceptable
                     },
                 },
             },
