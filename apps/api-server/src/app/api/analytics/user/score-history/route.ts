@@ -7,12 +7,11 @@ import { TokenService } from "@/modules/auth/token.service";
 
 export const dynamic = "force-dynamic";
 
-// Personal cache is shorter and unique per user
-const CACHE_TTL = 300; // 5 minutes
+const CACHE_TTL = 120; // 120 seconds per requirements
 
 export async function GET(req: NextRequest) {
   try {
-    // 1. Extract User Identity from Secure Cookie
+    // 1. Identity Extraction (No query params allowed)
     const token = TokenService.getAccessToken(req, { scope: "_user" });
     if (token === undefined || token === null || token === "") {
       return NextResponse.json({ error: "Authentication required" }, { status: 401 });
@@ -21,9 +20,9 @@ export async function GET(req: NextRequest) {
     const payload = await TokenService.verifyAccessToken(token, false);
     const userId = payload.userId;
 
-    const CACHE_KEY = `analytics:personal:${userId}:score-history`;
+    const CACHE_KEY = `analytics:user:${userId}:score-history`;
 
-    // 2. Try Redis GET
+    // 2. Redis Cache-Aside Strategy
     try {
       const cachedData = await redis.get(CACHE_KEY);
       if (cachedData !== null) return NextResponse.json(cachedData);
@@ -31,30 +30,26 @@ export async function GET(req: NextRequest) {
       console.error("[Redis Error]:", redisError);
     }
 
-    // 3. Query Personal Data (Last 10 Exams)
-    // We query the exams table for this specific user
+    // 3. Query Personal Score History (Chronological)
     const rows = (await sql`
-      SELECT 
-        id,
-        total_score,
-        completed_at
+      SELECT
+        DATE(completed_at) AS exam_date,
+        total_score
       FROM exams
-      WHERE user_id = ${userId} 
+      WHERE user_id = ${userId}
         AND status = 'completed'
-      ORDER BY completed_at DESC
+        AND total_score IS NOT NULL
+      ORDER BY completed_at ASC
       LIMIT 10
-    `) as { total_score: number; completed_at: string }[];
+    `) as { exam_date: string; total_score: number }[];
 
-    // 4. Transform for ECharts Line Chart
-    // Reversed so chronological order (oldest to newest)
-    const sortedRows = rows.reverse();
-    
+    // 4. ECharts-Ready Transformation
     const result = {
-      dates: sortedRows.map((r) => new Date(r.completed_at).toLocaleDateString()),
-      scores: sortedRows.map((r) => Number(r.total_score)),
+      dates: rows.map((r) => new Date(r.exam_date).toLocaleDateString()),
+      scores: rows.map((r) => Number(r.total_score)),
     };
 
-    // 5. Cache result
+    // 5. Fire-and-Forget Cache Backfill
     try {
       if (rows.length > 0) {
         await redis.set(CACHE_KEY, result, { ex: CACHE_TTL });
@@ -65,10 +60,10 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json(result);
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "An unknown error occurred";
-    console.error("[Personal Analytics Error]:", error);
+    const message = error instanceof Error ? error.message : "Internal Server Error";
+    console.error("[Personal Score History Error]:", error);
     return NextResponse.json(
-      { error: "Failed to fetch personal analytics", message },
+      { error: "Failed to fetch score history", message },
       { status: 500 }
     );
   }
