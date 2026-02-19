@@ -3,6 +3,8 @@
 import { StatsGrid } from "@/components/dashboard/StatsCards";
 import ScoreHistoryChart from "@/components/charts/ScoreHistoryChart";
 import MasteryTrendChart from "@/components/charts/MasteryTrendChart";
+import TopicPerformanceHeatmap from "@/components/charts/TopicPerformanceHeatmap";
+import WeaknessTreeChart from "@/components/charts/WeaknessTreeChart";
 import { Sidebar } from "@/components/dashboard/Sidebar";
 import { ArrowRight, Play, BookOpen } from "lucide-react";
 import Link from "next/link";
@@ -59,6 +61,8 @@ export default function DashboardPage() {
                         <div className="lg:col-span-2 space-y-8">
                             <ScoreHistoryChart />
                             <MasteryTrendChart />
+                            <TopicPerformanceHeatmap />
+                            <WeaknessTreeChart />
                         </div>
                         <div className="space-y-6">
                             <h3 className="text-xl font-bold px-1">Recent Activity</h3>

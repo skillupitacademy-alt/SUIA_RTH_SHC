@@ -27,6 +27,17 @@ export interface ItemDifficultyResponse {
   attempts: number[];
 }
 
+export interface TopicPerformanceResponse {
+  topics: string[];
+  accuracy: number[];
+}
+
+export interface WeaknessTreeNode {
+  name: string;
+  value?: number;
+  children?: WeaknessTreeNode[];
+}
+
 export class AnalyticsClient {
   constructor(private client: FetchClient) {}
 
@@ -42,6 +53,20 @@ export class AnalyticsClient {
    */
   async getUserMasteryTrend(): Promise<MasteryTrendResponse> {
     return this.client.get<MasteryTrendResponse>('/analytics/user/mastery-trend');
+  }
+
+  /**
+   * Fetch personal topic performance (accuracy per topic).
+   */
+  async getUserTopicPerformance(): Promise<TopicPerformanceResponse> {
+    return this.client.get<TopicPerformanceResponse>('/analytics/user/topic-performance');
+  }
+
+  /**
+   * Fetch personal weakness tree (Domain → Topic → Skill hierarchy).
+   */
+  async getUserWeaknessTree(): Promise<WeaknessTreeNode[]> {
+    return this.client.get<WeaknessTreeNode[]>('/analytics/user/weakness-tree');
   }
 
   /**
