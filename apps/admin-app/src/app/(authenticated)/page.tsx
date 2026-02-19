@@ -13,10 +13,12 @@ import {
     ShieldAlert,
     ShieldCheck,
     Terminal,
-    Users} from 'lucide-react';
+    Users
+} from 'lucide-react';
 import Link from 'next/link';
 import React from 'react';
 
+import AdminTopicSkillHeatmap from '@/components/charts/AdminTopicSkillHeatmap';
 import { PageTitle } from '@/components/layout/PageTitle';
 import { cn } from '@/lib/utils';
 
@@ -202,6 +204,11 @@ export default function AdminDashboard() {
                         <div className="absolute inset-x-8 bottom-8 h-px bg-slate-100 scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left" />
                     </Link>
                 ))}
+            </div>
+
+            {/* Analytics Deep Dive */}
+            <div className="pt-10">
+                <AdminTopicSkillHeatmap />
             </div>
 
             {/* System Status Footer */}

@@ -15,6 +15,12 @@ export interface ScoreHistogramResponse {
   counts: number[];
 }
 
+export interface TopicSkillHeatmapResponse {
+  topics: string[];
+  skills: string[];
+  matrix: [number, number, number][];
+}
+
 export class AnalyticsClient {
   constructor(private client: FetchClient) {}
 
@@ -44,5 +50,12 @@ export class AnalyticsClient {
    */
   async getAdminMasteryTrend(): Promise<MasteryTrendResponse> {
     return this.client.get<MasteryTrendResponse>('/analytics/admin/mastery-trend');
+  }
+
+  /**
+   * Fetch topic-skill heatmap (Admin only).
+   */
+  async getAdminTopicSkillHeatmap(): Promise<TopicSkillHeatmapResponse> {
+    return this.client.get<TopicSkillHeatmapResponse>('/analytics/admin/topic-skill-heatmap');
   }
 }
