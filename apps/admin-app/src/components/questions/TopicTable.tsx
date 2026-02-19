@@ -22,6 +22,7 @@ import { cn } from '@/lib/utils';
 import { clientLogger } from '@/utils/clientLogger';
 
 import { HierarchySearchBar } from './HierarchySearchBar';
+
 interface Topic {
     id: string;
     name: string;
@@ -29,6 +30,8 @@ interface Topic {
     status?: 'active' | 'inactive';
     weight?: number;
     complexityLevel?: number;
+    learningUrl?: string;
+    detailedNotesPath?: string;
     subjectId: string;
     subject?: {
         id: string;
@@ -71,7 +74,9 @@ export function TopicTable() {
         status: 'active' as 'active' | 'inactive',
         domainId: '', // For cascading selection
         weight: 1,
-        complexityLevel: 1
+        complexityLevel: 1,
+        learningUrl: '',
+        detailedNotesPath: ''
     });
 
     // Hierarchy data
@@ -115,7 +120,9 @@ export function TopicTable() {
                 status: (topic.status ?? 'active') as 'active' | 'inactive',
                 domainId: (topic.subject?.domainId ?? topic.subject?.domain?.id ?? ''),
                 weight: topic.weight ?? 1,
-                complexityLevel: topic.complexityLevel ?? 1
+                complexityLevel: topic.complexityLevel ?? 1,
+                learningUrl: topic.learningUrl ?? '',
+                detailedNotesPath: topic.detailedNotesPath ?? ''
             });
             if (topic.subject?.domainId != null && topic.subject.domainId !== '') {
                 // No manual fetch needed with atomic hooks
@@ -129,7 +136,9 @@ export function TopicTable() {
                 status: 'active',
                 domainId: '',
                 weight: 1,
-                complexityLevel: 1
+                complexityLevel: 1,
+                learningUrl: '',
+                detailedNotesPath: ''
             });
         }
         setIsFormOpen(true);
@@ -146,7 +155,9 @@ export function TopicTable() {
             status: 'active',
             domainId: '',
             weight: 1,
-            complexityLevel: 1
+            complexityLevel: 1,
+            learningUrl: '',
+            detailedNotesPath: ''
         });
     };
 
@@ -449,7 +460,7 @@ export function TopicTable() {
                                         id="topic-name"
                                         value={formData.name}
                                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                        className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
+                                        className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all font-mono"
                                         placeholder="e.g., React Hooks"
                                     />
                                 </div>
@@ -477,6 +488,31 @@ export function TopicTable() {
                                             value={formData.complexityLevel}
                                             onChange={(e) => setFormData({ ...formData, complexityLevel: parseInt(e.target.value) })}
                                             className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all bg-slate-50/50"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-6">
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 pl-1" htmlFor="topic-learning-url">Learning Resource URL</label>
+                                        <input
+                                            type="url"
+                                            id="topic-learning-url"
+                                            value={formData.learningUrl}
+                                            onChange={(e) => setFormData({ ...formData, learningUrl: e.target.value })}
+                                            className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
+                                            placeholder="https://docs.microsoft.com/..."
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 pl-1" htmlFor="topic-notes-path">Master Notes Path/Link</label>
+                                        <input
+                                            type="text"
+                                            id="topic-notes-path"
+                                            value={formData.detailedNotesPath}
+                                            onChange={(e) => setFormData({ ...formData, detailedNotesPath: e.target.value })}
+                                            className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
+                                            placeholder="/path/to/notes.pdf"
                                         />
                                     </div>
                                 </div>
