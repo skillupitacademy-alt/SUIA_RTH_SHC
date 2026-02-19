@@ -8,7 +8,7 @@ interface _CacheOptions {
   maxSize?: number;
 }
 
-const REDIS_TIMEOUT_MS = 200; // 200ms "Quick or Skip"
+const REDIS_TIMEOUT_MS = 1000; // Increased to 1s for stable Admin checks (Upstash REST)
 const REDIS_COOLDOWN_MS = 60000; // 60s cooldown on failure
 
 export class CacheService {
