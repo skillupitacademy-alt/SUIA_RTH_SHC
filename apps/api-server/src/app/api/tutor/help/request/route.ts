@@ -1,8 +1,7 @@
-/* eslint-disable simple-import-sort/imports */
+import { db, notifications, topics, tutorHelpRequests, userRecommendations } from "@quiz/db";
 import { and, desc, eq, sql } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 
-import { db, notifications, topics, tutorHelpRequests, userRecommendations } from "@quiz/db";
 import { TokenService } from "@/modules/auth/token.service";
 
 export const dynamic = "force-dynamic";

@@ -1,8 +1,7 @@
-/* eslint-disable simple-import-sort/imports */
+import { db, topics } from "@quiz/db";
 import { eq } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 
-import { db, topics } from "@quiz/db";
 import { TutorSecurityService } from "@/modules/tutor/tutor.security";
 
 export const dynamic = "force-dynamic";

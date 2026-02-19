@@ -1,9 +1,9 @@
 'use client';
-/* eslint-disable simple-import-sort/imports */
 
-import { useCallback, useEffect, useState } from "react";
 import { formatDistanceToNow } from "date-fns";
-import { Calendar, BookOpen, CheckCircle2, Clock, User } from "lucide-react";
+import { BookOpen, Calendar, CheckCircle2, Clock, User } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+
 import { cn } from "@/lib/utils";
 
 type HelpRequest = {
