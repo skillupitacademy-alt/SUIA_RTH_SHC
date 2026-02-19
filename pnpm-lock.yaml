@@ -184,6 +184,9 @@ importers:
       '@quiz/db':
         specifier: workspace:*
         version: link:../../packages/db
+      '@quiz/types':
+        specifier: workspace:*
+        version: link:../../packages/types
       '@quiz/ui':
         specifier: workspace:*
         version: link:../../packages/ui
