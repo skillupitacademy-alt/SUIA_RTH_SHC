@@ -14,6 +14,7 @@
         "analyze": "ANALYZE=true next build"
     },
     "dependencies": {
+        "@next/bundle-analyzer": "^16.1.6",
         "@quiz/api-client": "workspace:*",
         "@quiz/ui": "workspace:*",
         "@radix-ui/react-alert-dialog": "^1.1.15",

@@ -31,7 +31,6 @@
         "prepare": "echo \"husky prepare temporarily disabled; set scripts.prepare=\\\"husky\\\" to re-enable\""
     },
     "devDependencies": {
-        "@next/bundle-analyzer": "^16.1.6",
         "@playwright/test": "^1.49.1",
         "@quiz/eslint-config": "workspace:^",
         "@types/bcrypt": "^5.0.2",
@@ -52,6 +51,7 @@
         "node": "20.x"
     },
     "dependencies": {
+        "@next/bundle-analyzer": "^16.1.6",
         "@neondatabase/serverless": "^0.10.4",
         "drizzle-kit": "^0.31.8",
         "drizzle-orm": "^0.45.1",
