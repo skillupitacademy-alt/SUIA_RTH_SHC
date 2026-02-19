@@ -272,8 +272,8 @@ export class CacheService {
       return {
         configured: true,
         keys: dbsize,
-        // Show 'Connected' if memory is empty and we have a response, or if parsing failed
-        memory: (memory === '0B' || memory === '') ? 'Connected' : memory,
+        // Show the raw memory string (e.g., '108B', '1.2K') exactly as Redis reports it
+        memory: (memory !== '' && memory !== 'Unknown') ? memory : '0 B',
         memoryBytes,
       };
     } catch (_error) {
