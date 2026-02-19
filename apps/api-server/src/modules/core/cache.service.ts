@@ -231,10 +231,10 @@ export class CacheService {
     try {
       // Use the INFO command to get memory stats
       // Upstash Redis info() returns a string, but we cast to any to be safe with different versions/types
-      // Use a raw command call for 'info memory' to avoid potential method-binding issues with the client
+      // Use the raw .execute() method for 'info memory' which is the correct way for Upstash REST client
       const infoResponse = await this.withTimeout(
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (this.redis as any).call(['info', 'memory']),
+        (this.redis as any).execute(['info', 'memory']),
         null
       );
       
