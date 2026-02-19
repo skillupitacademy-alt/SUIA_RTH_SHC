@@ -30,6 +30,8 @@ export const notificationTypeEnum = pgEnum("notification_type", [
   "level_up",
   "live_session",
   "system",
+  "help_requested",
+  "live_session_alert",
 ]);
 
 export const recommendationLevelEnum = pgEnum("recommendation_level", [

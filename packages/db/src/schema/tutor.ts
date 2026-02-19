@@ -57,3 +57,21 @@ export const notesDeliveryLocks = pgTable("notes_delivery_locks", {
     t.deliveryDate
   ),
 }));
+
+// 🆘 Live Help Requests
+export const tutorHelpRequests = pgTable("tutor_help_requests", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  topicId: uuid("topic_id")
+    .notNull()
+    .references(() => topics.id, { onDelete: "cascade" }),
+  status: text("status").notNull().default("pending"), // pending, scheduled, resolved
+  priority: text("priority").notNull().default("low"), // low, medium, high
+  metadata: jsonb("metadata"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (t) => ({
+  idx_help_request_user: index("idx_help_request_user").on(t.userId),
+  idx_help_request_status: index("idx_help_request_status").on(t.status),
+}));

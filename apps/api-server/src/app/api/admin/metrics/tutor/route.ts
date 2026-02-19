@@ -43,10 +43,18 @@ export async function GET(req: NextRequest) {
       LIMIT 10
     `);
 
+    // 4. Help Requests Status
+    const helpRequests = await db.execute(sql`
+      SELECT status, COUNT(*)::int as count
+      FROM tutor_help_requests
+      GROUP BY status
+    `);
+
     return NextResponse.json({
       notesDemand: notesDemand.rows,
       emailHealth: emailHealth.rows,
       weakTopics: weakTopics.rows,
+      helpRequests: helpRequests.rows,
     });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Internal Server Error";
