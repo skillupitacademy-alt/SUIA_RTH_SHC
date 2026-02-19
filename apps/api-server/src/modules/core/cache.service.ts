@@ -253,25 +253,27 @@ export class CacheService {
 
       if (typeof infoResponse === 'string') {
         const infoStr = infoResponse as string;
-        const memMatch = infoStr.match(/used_memory_human:([^\r\n]+)/);
-        const memBytesMatch = infoStr.match(/used_memory:(\d+)/);
+        // Improved regex to handle optional whitespace and case sensitivity
+        const memMatch = infoStr.match(/used_memory_human:\s*([^\r\n]+)/i);
+        const memBytesMatch = infoStr.match(/used_memory:\s*(\d+)/i);
         
-        if (memMatch) memory = memMatch[1];
+        if (memMatch) memory = memMatch[1].trim();
         if (memBytesMatch) memoryBytes = parseInt(memBytesMatch[1], 10);
       } else if (infoResponse !== null && typeof infoResponse === 'object') {
         // Handle case where info() might return a parsed object/array
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const infoObj = infoResponse as Record<string, any>;
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-        memory = infoObj.used_memory_human ?? '0B';
+        memory = infoObj.used_memory_human ?? infoObj.used_memory_rss_human ?? '0B';
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
-        memoryBytes = parseInt(infoObj.used_memory ?? '0', 10);
+        memoryBytes = parseInt(infoObj.used_memory ?? infoObj.used_memory_rss ?? '0', 10);
       }
 
       return {
         configured: true,
         keys: dbsize,
-        memory: memory === '0B' && (infoResponse !== null && infoResponse !== undefined) ? 'Connected' : memory,
+        // Show 'Connected' if memory is empty and we have a response, or if parsing failed
+        memory: (memory === '0B' || memory === '') ? 'Connected' : memory,
         memoryBytes,
       };
     } catch (_error) {
