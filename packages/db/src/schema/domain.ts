@@ -37,6 +37,8 @@ export const topics = pgTable("topics", {
   description: text("description"),
   complexityLevel: integer("complexity_level").notNull().default(1),
   weight: integer("weight").notNull().default(1),
+  learningUrl: text("learning_url"),
+  detailedNotesPath: text("detailed_notes_path"),
   status: statusEnum("status").notNull().default("active"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),

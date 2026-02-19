@@ -34,4 +34,8 @@ export class DashboardClient {
         const query = new URLSearchParams({ range });
         return this.client.get(`/dashboard/breakdown?${query.toString()}`);
     }
+
+    async getNotifications() {
+        return this.client.get<any[]>('/notifications');
+    }
 }

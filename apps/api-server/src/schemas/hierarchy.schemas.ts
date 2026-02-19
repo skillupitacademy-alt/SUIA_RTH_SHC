@@ -26,6 +26,8 @@ export const topicSchema = z.object({
   description: z.string().optional(),
   complexityLevel: z.number().int().min(1).optional(),
   weight: z.number().int().min(1).optional(),
+  learningUrl: z.string().url().or(z.string().length(0)).optional().nullable(),
+  detailedNotesPath: z.string().optional().nullable(),
   status,
 });
 export type TopicInput = z.infer<typeof topicSchema>;

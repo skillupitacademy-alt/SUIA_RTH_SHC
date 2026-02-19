@@ -62,6 +62,8 @@ export async function POST(_req: NextRequest) {
       status: body.status,
       complexityLevel: body.complexityLevel,
       weight: body.weight,
+      learningUrl: body.learningUrl,
+      detailedNotesPath: body.detailedNotesPath,
     };
 
     const result = await AdminEngine.createTopic(createBody, _payload.userId);

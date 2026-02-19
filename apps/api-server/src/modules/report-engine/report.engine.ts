@@ -1,7 +1,9 @@
-import { db, exams, resultsByDimension } from '@quiz/db';
-import { and, desc, eq } from 'drizzle-orm';
+import { db, exams, resultsByDimension } from "@quiz/db";
+import { and, desc, eq } from "drizzle-orm";
 
-import { logger } from '@/lib/logger';
+import { logger } from "@/lib/logger";
+
+import { AdaptiveTutorService } from "../adaptive-engine/adaptive-tutor.service";
 
 export interface ActionPlanItem {
   id: string;
@@ -160,6 +162,14 @@ export class ReportEngine {
     const includeCorrect = options.includeCorrectAnswers === true;
     const actionPlan = ActionPlanBuilder.build(results);
 
+    // Phase 3: Adaptive Tutor Insights
+    const topicResults = results.filter(r => r.dimensionType === 'topic');
+    const topicAccuracyRecords = topicResults.map(r => ({
+      topicId: r.dimensionId!,
+      accuracy: r.accuracy
+    }));
+    const tutorInsights = await AdaptiveTutorService.generateInsights(exam.userId, topicAccuracyRecords);
+
     return {
       id: exam.id,
       userId: exam.userId,
@@ -173,6 +183,7 @@ export class ReportEngine {
       percentile,
       blueprint: exam.blueprint,
       actionPlan,
+      tutorInsights,
       performance: (results as unknown as DimensionResult[]).reduce((acc: Record<string, DimensionResult[]>, r: DimensionResult) => {
         if (acc[r.dimensionType] === undefined) acc[r.dimensionType] = [];
         acc[r.dimensionType].push({

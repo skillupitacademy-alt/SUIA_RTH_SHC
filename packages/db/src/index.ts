@@ -6,6 +6,7 @@ import * as questionSchema from './schema/question';
 import * as examSchema from './schema/exam';
 import * as enumsSchema from './schema/enums';
 import * as jobsSchema from './schema/jobs';
+import * as notificationSchema from './schema/notification';
 
 import * as relationsSchema from './schema/relations';
 
@@ -16,6 +17,7 @@ const schema = {
   ...examSchema,
   ...enumsSchema,
   ...jobsSchema,
+  ...notificationSchema,
   ...relationsSchema,
 };
 
@@ -51,5 +53,6 @@ export * from './schema/question';
 export * from './schema/exam';
 export * from './schema/enums';
 export * from './schema/jobs';
+export * from './schema/notification';
 
 export type { InferSelectModel, InferInsertModel } from 'drizzle-orm';

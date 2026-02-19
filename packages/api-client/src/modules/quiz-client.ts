@@ -166,4 +166,8 @@ export class QuizClient {
   async getQuizState(examId: string) {
     return this.client.get<QuizState>(`/quiz/state?examId=${examId}`);
   }
+
+  async requestMasterNotes(topicId: string) {
+    return this.client.post<{ success: boolean; message: string }>(`/topics/${topicId}/request-notes`, {});
+  }
 }

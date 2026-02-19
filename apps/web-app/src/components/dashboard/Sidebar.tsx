@@ -9,7 +9,8 @@ import {
     Settings,
     ChevronRight,
     TrendingUp,
-    Award
+    Award,
+    Mail
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -18,6 +19,7 @@ import { useDashboardStore } from '@/store/dashboard-store';
 const NAV_ITEMS = [
     { name: 'Overview', href: '/dashboard', icon: LayoutDashboard },
     { name: 'My Exams', href: '/dashboard/my-exams', icon: BookOpen },
+    { name: 'Inbox', href: '/dashboard/inbox', icon: Mail },
     { name: 'Learning Path', href: '/dashboard/path', icon: TrendingUp },
     { name: 'Certifications', href: '/dashboard/certs', icon: Award },
     { name: 'Reports', href: '/dashboard/reports', icon: FileText },

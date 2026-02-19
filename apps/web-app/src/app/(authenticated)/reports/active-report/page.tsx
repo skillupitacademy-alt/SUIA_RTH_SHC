@@ -9,6 +9,7 @@ import { BehavioralRadar } from "@/components/reports/BehavioralRadar";
 import { EfficiencyQuadrant } from "@/components/reports/EfficiencyQuadrant";
 import { RemediationZone } from "@/components/reports/RemediationZone";
 import ActionPlanPanel from "@/components/reports/ActionPlanPanel";
+import { TutorInsightsPanel } from "@/components/quiz/TutorInsightsPanel";
 import {
     RetentionFunnel,
     MasterySunburst,
@@ -53,6 +54,15 @@ type ReportViewModel = {
     knowledgeTrinity: Array<{ id: string; name: string; score: number; accuracy: number }>;
     subtopics: Array<{ id: string; name: string; score: number; accuracy: number }>;
     actionPlan: ActionPlanItem[];
+    tutorInsights: Array<{
+        topicId: string;
+        topicName: string;
+        priority: 'critical' | 'growth' | 'stable';
+        label: string;
+        recommendation: string;
+        learningUrl?: string;
+        accuracy: number;
+    }>;
     questions: ReportQuestion[];
 };
 
@@ -155,6 +165,9 @@ function ReportContent() {
                         skills: item.skills ?? ['Skill'],
                         accuracy: item.accuracy ?? 0,
                     })),
+                    tutorInsights: Array.isArray((report as { tutorInsights?: ReportViewModel["tutorInsights"] }).tutorInsights)
+                        ? (report as { tutorInsights?: ReportViewModel["tutorInsights"] }).tutorInsights!
+                        : [],
 
                     questions: ((report.questions as ReportQuestion[] | undefined) ?? []).map((q: ReportQuestion, idx: number) => ({
                         id: q.id || `q-${idx}`,
@@ -252,6 +265,9 @@ function ReportContent() {
                         percentile={reportData.percentile}
                         status={reportData.status}
                     />
+
+                    {/* Adaptive Tutor Insights (Phase 3 & 4) */}
+                    <TutorInsightsPanel insights={reportData.tutorInsights} />
 
                     {/* 2. Performance Breakdown (Main Gauges) */}
                     <PerformanceBreakdown
