@@ -69,4 +69,6 @@
 | 2026-02-19 | Database Analytics Layer (Ph 1) | COMPLETED | Implemented 12 materialized views, prerequisite indexes, and unique index system for concurrent refresh. |
 | 2026-02-19 | Analytics API Layer (Ph 2) | COMPLETED | Restructured analytics to `/admin` and `/user` tracks; Finalized Score History (User) and Mastery Trends (Both); Implemented standardized `CACHE_TTL` & `CACHE_KEYS` system; Verified 100% build stability. |
 | 2026-02-19 | Frontend Charts (User) | COMPLETED | Implemented standardized BaseChart wrapper and first live ECharts component (ScoreHistory). |
-| 2026-02-19 | Frontend Charts (Admin) | COMPLETED | Implemented Global Analytics suite: Topic-Skill Heatmap and integrated with RBAC dashboard; Verified 100% build stability. |
+| 2026-02-19 | Analytics Suite Expansion | COMPLETED | Implemented Item Difficulty (Admin), Topic Performance (User), Weakness Tree (User), Score Histogram (Admin), and Discrimination Index Scatter (Admin); 100% ECharts integration. |
+| 2026-02-19 | Auth Scope Standardization | COMPLETED | Unified `_user` -> `user` and `_admin` -> `admin` scopes across 20+ API routes; Reached Absolute Zero build stability. |
+| 2026-02-19 | Psychometric Layer & Stability | COMPLETED | Finalized Discrimination Index (Admin) and Weakness Treemap (User); Verified 100% monorepo build, lint, and typecheck (Exit Code 0). |

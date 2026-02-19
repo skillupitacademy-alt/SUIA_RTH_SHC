@@ -38,6 +38,10 @@ export interface WeaknessTreeNode {
   children?: WeaknessTreeNode[];
 }
 
+export interface DiscriminationResponse {
+  points: { id: string; top: number; bottom: number }[];
+}
+
 export class AnalyticsClient {
   constructor(private client: FetchClient) {}
 
@@ -95,5 +99,12 @@ export class AnalyticsClient {
    */
   async getAdminItemDifficulty(): Promise<ItemDifficultyResponse> {
     return this.client.get<ItemDifficultyResponse>('/analytics/admin/item-difficulty');
+  }
+
+  /**
+   * Fetch item discrimination analysis (Admin only).
+   */
+  async getAdminDiscrimination(): Promise<DiscriminationResponse> {
+    return this.client.get<DiscriminationResponse>('/analytics/admin/discrimination');
   }
 }

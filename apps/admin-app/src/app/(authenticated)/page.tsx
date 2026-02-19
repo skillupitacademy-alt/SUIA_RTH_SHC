@@ -18,9 +18,10 @@ import {
 import Link from 'next/link';
 import React from 'react';
 
+import AdminDiscriminationScatter from "@/components/charts/AdminDiscriminationScatter";
 import AdminItemDifficultyChart from '@/components/charts/AdminItemDifficultyChart';
-import AdminTopicSkillHeatmap from '@/components/charts/AdminTopicSkillHeatmap';
 import AdminScoreHistogram from "@/components/charts/AdminScoreHistogram";
+import AdminTopicSkillHeatmap from '@/components/charts/AdminTopicSkillHeatmap';
 import { PageTitle } from '@/components/layout/PageTitle';
 import { cn } from '@/lib/utils';
 
@@ -214,8 +215,9 @@ export default function AdminDashboard() {
                 <AdminItemDifficultyChart />
             </div>
 
-            <div className="mb-8">
+            <div className="grid lg:grid-cols-2 gap-8 mb-8">
                 <AdminScoreHistogram />
+                <AdminDiscriminationScatter />
             </div>
 
             {/* System Status Footer */}
