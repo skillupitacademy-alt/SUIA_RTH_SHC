@@ -231,7 +231,12 @@ export class CacheService {
     try {
       // Use the INFO command to get memory stats
       // Upstash Redis info() returns a string, but we cast to any to be safe with different versions/types
-      const infoResponse = await this.withTimeout((this.redis as unknown as Record<string, (arg: string) => Promise<unknown>>).info('memory'), null);
+      // Use a raw command call for 'info memory' to avoid potential method-binding issues with the client
+      const infoResponse = await this.withTimeout(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (this.redis as any).call(['info', 'memory']),
+        null
+      );
       
       // Try to get key count (DB0 is default)
       const dbsize = await this.withTimeout(this.redis.dbsize(), 0);
