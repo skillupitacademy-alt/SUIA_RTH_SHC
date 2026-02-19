@@ -36,6 +36,20 @@
       "when": 1771050000000,
       "tag": "0004_background_jobs",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1771525895390,
+      "tag": "0005_add_adaptive_level",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1771525918704,
+      "tag": "0006_add_adaptive_level",
+      "breakpoints": true
     }
   ]
 }

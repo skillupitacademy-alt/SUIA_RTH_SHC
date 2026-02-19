@@ -6,8 +6,10 @@ import MasteryTrendChart from "@/components/charts/MasteryTrendChart";
 import TopicPerformanceHeatmap from "@/components/charts/TopicPerformanceHeatmap";
 import WeaknessTreeChart from "@/components/charts/WeaknessTreeChart";
 import { Sidebar } from "@/components/dashboard/Sidebar";
-import { ArrowRight, Play, BookOpen } from "lucide-react";
+import { ArrowRight, Play, BookOpen, Activity, Loader2 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { apiClient } from "@quiz/api-client";
 import PersonalTimeBoxplot from "@/components/charts/PersonalTimeBoxplot";
 import PersonalDifficultySplit from "@/components/charts/PersonalDifficultySplit";
 import { AuthGuard } from "@/components/auth/AuthGuard";
@@ -16,13 +18,15 @@ import { MobileNav } from "@/components/dashboard/MobileNav";
 
 import { useAuthStore } from "@/store/auth-store";
 import { useDashboardStore } from "@/store/dashboard-store";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 import { ZLoader } from "@quiz/ui";
 
 export default function DashboardPage() {
     const { user } = useAuthStore();
+    const router = useRouter();
     const { data, fetchDashboard, loading } = useDashboardStore();
+    const [isStarting, setIsStarting] = useState(false);
 
     useEffect(() => {
         fetchDashboard('7d', 1, 3);
@@ -47,13 +51,44 @@ export default function DashboardPage() {
                             <h1 className="text-3xl font-extrabold tracking-tight">Dashboard Overview</h1>
                             <p className="text-muted-foreground">Welcome back, <span className="text-pink-600 font-black">{user?.name || 'User'}</span>! Let&apos;s see your progress.</p>
                         </div>
-                        <Link
-                            href="/quiz/new"
-                            className="inline-flex items-center justify-center rounded-2xl bg-primary px-6 py-3 text-sm font-bold text-primary-foreground shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all hover:scale-105"
-                        >
-                            <Play size={18} className="mr-2" />
-                            Start New Exam
-                        </Link>
+                        <div className="flex flex-wrap items-center gap-4">
+                            <button
+                                onClick={async () => {
+                                    if (isStarting) return;
+                                    try {
+                                        setIsStarting(true);
+                                        const res = await apiClient.quiz.startAdaptiveExam();
+                                        router.push(`/exam/${res.examId}`);
+                                    } catch (err) {
+                                        console.error('Failed to start adaptive exam', err);
+                                        alert('Failed to start adaptive exam. Please try again.');
+                                    } finally {
+                                        setIsStarting(false);
+                                    }
+                                }}
+                                disabled={isStarting}
+                                className="inline-flex items-center justify-center rounded-2xl bg-black px-6 py-3 text-sm font-bold text-white shadow-lg shadow-black/10 hover:bg-gray-800 transition-all hover:scale-105 disabled:opacity-50 disabled:scale-100"
+                            >
+                                {isStarting ? (
+                                    <>
+                                        <Loader2 className="mr-2 h-4 w-4 animate-spin text-pink-500" />
+                                        Recruiting...
+                                    </>
+                                ) : (
+                                    <>
+                                        <Activity size={18} className="mr-2 text-pink-500 animate-pulse" />
+                                        Start Adaptive Mission
+                                    </>
+                                )}
+                            </button>
+                            <Link
+                                href="/quiz/new"
+                                className="inline-flex items-center justify-center rounded-2xl bg-primary px-6 py-3 text-sm font-bold text-primary-foreground shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all hover:scale-105"
+                            >
+                                <Play size={18} className="mr-2" />
+                                Start New Exam
+                            </Link>
+                        </div>
                     </div>
 
                     {/* Stats Section */}

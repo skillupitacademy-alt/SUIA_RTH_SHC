@@ -1,0 +1,2 @@
+CREATE TYPE "public"."adaptive_level" AS ENUM('beginner', 'intermediate', 'advanced');--> statement-breakpoint
+ALTER TABLE "user_profiles" ADD COLUMN "adaptive_level" "adaptive_level" DEFAULT 'beginner' NOT NULL;

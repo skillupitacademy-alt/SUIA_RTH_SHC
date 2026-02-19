@@ -72,3 +72,4 @@
 | 2026-02-19 | Analytics Suite Expansion | COMPLETED | Implemented Item Difficulty (Admin), Topic Performance (User), Weakness Tree (User), Score Histogram (Admin), and Discrimination Index Scatter (Admin); 100% ECharts integration. |
 | 2026-02-19 | Auth Scope Standardization | COMPLETED | Unified `_user` -> `user` and `_admin` -> `admin` scopes across 20+ API routes; Reached Absolute Zero build stability. |
 | 2026-02-19 | Psychometric Layer & Stability | COMPLETED | Finalized Discrimination Index (Admin) and Weakness Treemap (User); Verified 100% monorepo build, lint, and typecheck (Exit Code 0). |
+| 2026-02-20 | Adaptive Exam Engine (End-to-End) | COMPLETED | Implemented full adaptive pipeline: Analytics Extraction, Weight-based Blueprinting, Mastery Promotion, and Weighted Random Question Selection; Verified with persistent DB/Cache integration. |

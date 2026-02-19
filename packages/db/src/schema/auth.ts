@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, uuid, boolean, primaryKey, integer, index } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, uuid, boolean, primaryKey, integer, index, pgEnum } from "drizzle-orm/pg-core";
 import { backgroundJobs } from "./jobs";
 
 // --- CORE IDENTITY ---
@@ -15,6 +15,8 @@ export const users = pgTable("users", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
+export const adaptiveLevelEnum = pgEnum("adaptive_level", ["beginner", "intermediate", "advanced"]);
+
 export const userProfiles = pgTable("user_profiles", {
   id: uuid("id").primaryKey().defaultRandom(),
   userId: uuid("user_id")
@@ -26,6 +28,7 @@ export const userProfiles = pgTable("user_profiles", {
   ageGroup: text("age_group"),
   experienceYears: integer("experience_years"),
   domainInterest: text("domain_interest").array(),
+  adaptiveLevel: adaptiveLevelEnum("adaptive_level").notNull().default("beginner"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });

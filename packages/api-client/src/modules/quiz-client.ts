@@ -126,6 +126,10 @@ export class QuizClient {
     });
   }
 
+  async startAdaptiveExam() {
+    return this.client.post<{ examId: string; mode: string; questions: any[] }>('/exams/adaptive/start', {});
+  }
+
   async submitAnswer(examId: string, questionId: string, answer: string, opts?: { idempotencyKey?: string }) {
     return this.client.post<
       {
