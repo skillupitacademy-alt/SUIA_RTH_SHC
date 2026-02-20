@@ -9,9 +9,9 @@ export const masteryTrendGuide: InsightGuideCardProps = {
     sampleSize: 20,
     lastUpdated: "Just now",
     signals: [
-        { type: 'good', text: 'Rising ? keep current routine' },
-        { type: 'neutral', text: 'Flat ? add light mid-week reviews' },
-        { type: 'risk', text: 'Falling ? quick refresher needed' }
+        { type: 'good', text: 'Rising → keep current routine' },
+        { type: 'neutral', text: 'Flat → add light mid-week reviews' },
+        { type: 'risk', text: 'Falling → quick refresher needed' }
     ],
     nextSteps: [
         'Revisit notes for the last dip.',

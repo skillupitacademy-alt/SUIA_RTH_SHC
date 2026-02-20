@@ -10,8 +10,8 @@ export const helpQueueGuide: InsightGuideCardProps = {
     lastUpdated: "Just now",
     owner: "Tutor Ops",
     signals: [
-        { type: 'risk', text: 'Many urgent pending ? staffing or content issue' },
-        { type: 'good', text: 'Fast movement to resolved ? healthy ops' }
+        { type: 'risk', text: 'Many urgent pending → staffing or content issue' },
+        { type: 'good', text: 'Fast movement to resolved → healthy ops' }
     ],
     nextSteps: [
         'Schedule or resolve urgent requests first; add a tutor note.',

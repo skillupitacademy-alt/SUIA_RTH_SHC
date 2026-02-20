@@ -10,8 +10,8 @@ export const topicSkillHeatmapGuide: InsightGuideCardProps = {
     lastUpdated: "Just now",
     owner: "Academic Support",
     signals: [
-        { type: 'risk', text: 'Darkest cells ? immediate remediation targets' },
-        { type: 'neutral', text: 'Grey cells ? need coverage' }
+        { type: 'risk', text: 'Darkest cells → immediate remediation targets' },
+        { type: 'neutral', text: 'Grey cells → need coverage' }
     ],
     nextSteps: [
         'Add hints/notes for the darkest cells.',

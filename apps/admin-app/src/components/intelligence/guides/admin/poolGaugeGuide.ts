@@ -10,9 +10,9 @@ export const poolGaugeGuide: InsightGuideCardProps = {
     lastUpdated: "Just now",
     owner: "Asset Management",
     signals: [
-        { type: 'good', text: '>80% of required ? good' },
-        { type: 'neutral', text: '50–80% ? start authoring' },
-        { type: 'risk', text: '<50% ? at risk' }
+        { type: 'good', text: '>80% of required → good' },
+        { type: 'neutral', text: '50–80% → start authoring' },
+        { type: 'risk', text: '<50% → at risk' }
     ],
     nextSteps: [
         'Author items for low-stock topics/difficulties.',

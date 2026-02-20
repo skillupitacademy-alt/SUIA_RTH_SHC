@@ -10,9 +10,9 @@ export const itemDifficultyGuide: InsightGuideCardProps = {
     lastUpdated: "Just now",
     owner: "Content Team",
     signals: [
-        { type: 'risk', text: '<30% accuracy ? likely unclear' },
-        { type: 'risk', text: '>80% accuracy ? too easy' },
-        { type: 'good', text: '30–80% ? keep' }
+        { type: 'risk', text: '<30% accuracy → likely unclear' },
+        { type: 'risk', text: '>80% accuracy → too easy' },
+        { type: 'good', text: '30–80% → keep' }
     ],
     nextSteps: [
         'Rewrite or review the lowest/highest accuracy items.',

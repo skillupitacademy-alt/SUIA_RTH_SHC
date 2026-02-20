@@ -11,6 +11,7 @@ import AdminPoolSufficiency from "@/components/charts/AdminPoolSufficiency";
 import AdminScoreHistogram from "@/components/charts/AdminScoreHistogram";
 import AdminTopicSkillHeatmap from "@/components/charts/AdminTopicSkillHeatmap";
 import BaseChart from "@/components/charts/BaseChart";
+import { BrokenQuestionsRepairStation } from "@/components/intelligence/BrokenQuestionsRepairStation";
 import {
     discriminationGuide,
     helpQueueGuide,
@@ -19,7 +20,8 @@ import {
     plannedVsActualGuide,
     poolGaugeGuide,
     scoreHistogramGuide,
-    topicSkillHeatmapGuide} from "@/components/intelligence/guides";
+    topicSkillHeatmapGuide
+} from "@/components/intelligence/guides";
 import { InsightGuideCard } from "@/components/intelligence/InsightGuideCard";
 import { PageTitle } from "@/components/layout/PageTitle";
 import { HelpRequestManager } from "@/components/tutor/HelpRequestManager";
@@ -192,6 +194,15 @@ export default function AdminIntelligencePage() {
                         <HelpRequestManager />
                     </div>
                     <InsightGuideCard {...helpQueueGuide} />
+                </div>
+
+                {/* Content Repair Console */}
+                <div className="space-y-8 py-20 border-t border-slate-100">
+                    <div className="text-center space-y-2 mb-12">
+                        <h2 className="text-3xl font-black text-slate-900 uppercase tracking-tighter">Diagnostic Summary</h2>
+                        <p className="text-slate-500 font-bold uppercase text-[10px] tracking-[0.3em]">Operational Readiness & Content Reliability</p>
+                    </div>
+                    <BrokenQuestionsRepairStation />
                 </div>
 
                 {/* 8. Notes Security */}

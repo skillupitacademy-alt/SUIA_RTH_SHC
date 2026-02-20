@@ -9,8 +9,8 @@ export const weaknessTreeGuide: InsightGuideCardProps = {
     sampleSize: 20,
     lastUpdated: "Just now",
     signals: [
-        { type: 'good', text: 'Few red leaves ? isolated gaps' },
-        { type: 'risk', text: 'Whole red branch ? core concept missing' }
+        { type: 'good', text: 'Few red leaves → isolated gaps' },
+        { type: 'risk', text: 'Whole red branch → core concept missing' }
     ],
     nextSteps: [
         'If only leaves are red, study those subtopics.',

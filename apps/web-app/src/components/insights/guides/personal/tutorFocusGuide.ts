@@ -9,8 +9,8 @@ export const tutorFocusGuide: InsightGuideCardProps = {
     sampleSize: 10,
     lastUpdated: "Just now",
     signals: [
-        { type: 'good', text: 'Few revise items ? safe' },
-        { type: 'risk', text: 'Many revise items ? at risk' }
+        { type: 'good', text: 'Few revise items → safe' },
+        { type: 'risk', text: 'Many revise items → at risk' }
     ],
     nextSteps: [
         'Open the study link for the recommended topic.',

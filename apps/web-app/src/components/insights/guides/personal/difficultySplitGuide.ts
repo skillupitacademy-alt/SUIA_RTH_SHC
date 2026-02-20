@@ -9,9 +9,9 @@ export const difficultySplitGuide: InsightGuideCardProps = {
     sampleSize: 20,
     lastUpdated: "Just now",
     signals: [
-        { type: 'good', text: 'High expert ? advanced' },
-        { type: 'neutral', text: 'Strong simple, weak intermediate ? practice mids' },
-        { type: 'risk', text: 'Weak simple ? fix fundamentals first' }
+        { type: 'good', text: 'High expert → advanced' },
+        { type: 'neutral', text: 'Strong simple, weak intermediate → practice mids' },
+        { type: 'risk', text: 'Weak simple → fix fundamentals first' }
     ],
     nextSteps: [
         'Master simple, then intermediate, then expert.',

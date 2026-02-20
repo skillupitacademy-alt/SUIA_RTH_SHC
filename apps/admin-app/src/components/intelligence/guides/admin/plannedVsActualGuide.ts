@@ -10,8 +10,8 @@ export const plannedVsActualGuide: InsightGuideCardProps = {
     lastUpdated: "Just now",
     owner: "Content Team",
     signals: [
-        { type: 'good', text: 'Planned ≈ Actual ? compliant' },
-        { type: 'risk', text: 'Large mismatch ? selection bias or pool gap' }
+        { type: 'good', text: 'Planned ≈ Actual → compliant' },
+        { type: 'risk', text: 'Large mismatch → selection bias or pool gap' }
     ],
     nextSteps: [
         'Add/reclassify items to close gaps.',

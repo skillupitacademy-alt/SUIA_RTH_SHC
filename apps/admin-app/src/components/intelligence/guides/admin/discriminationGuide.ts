@@ -10,8 +10,8 @@ export const discriminationGuide: InsightGuideCardProps = {
     lastUpdated: "Just now",
     owner: "Psychometrics",
     signals: [
-        { type: 'good', text: 'Top-left ? keep' },
-        { type: 'risk', text: 'Bottom-right ? pull and fix' }
+        { type: 'good', text: 'Top-left → keep' },
+        { type: 'risk', text: 'Bottom-right → pull and fix' }
     ],
     nextSteps: [
         'Remove or rewrite bottom-right items.',

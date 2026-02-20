@@ -10,9 +10,9 @@ export const scoreHistogramGuide: InsightGuideCardProps = {
     lastUpdated: "Just now",
     owner: "Psychometrics",
     signals: [
-        { type: 'good', text: 'Most scores mid-range ? balanced' },
-        { type: 'risk', text: 'Left-heavy ? unclear or too-hard items' },
-        { type: 'risk', text: 'Right-heavy ? items too easy' }
+        { type: 'good', text: 'Most scores mid-range → balanced' },
+        { type: 'risk', text: 'Left-heavy → unclear or too-hard items' },
+        { type: 'risk', text: 'Right-heavy → items too easy' }
     ],
     nextSteps: [
         'If left-heavy, soften or replace the hardest items.',

@@ -9,9 +9,9 @@ export const scoreHistoryGuide: InsightGuideCardProps = {
     sampleSize: 20,
     lastUpdated: "Just now",
     signals: [
-        { type: 'good', text: 'Steady upward trend ? strong retention' },
-        { type: 'neutral', text: 'Zig-zag ? inconsistent understanding' },
-        { type: 'risk', text: 'Sharp drop ? weak fundamentals in recent topics' }
+        { type: 'good', text: 'Steady upward trend → strong retention' },
+        { type: 'neutral', text: 'Zig-zag → inconsistent understanding' },
+        { type: 'risk', text: 'Sharp drop → weak fundamentals in recent topics' }
     ],
     nextSteps: [
         'Review topics from the lowest recent test.',

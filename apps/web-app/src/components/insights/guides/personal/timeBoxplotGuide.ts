@@ -9,9 +9,9 @@ export const timeBoxplotGuide: InsightGuideCardProps = {
     sampleSize: 20,
     lastUpdated: "Just now",
     signals: [
-        { type: 'good', text: 'Medium time + good accuracy ? optimal' },
-        { type: 'risk', text: 'Low time + low accuracy ? guessing' },
-        { type: 'risk', text: 'High time + low accuracy ? confusion' }
+        { type: 'good', text: 'Medium time + good accuracy → optimal' },
+        { type: 'risk', text: 'Low time + low accuracy → guessing' },
+        { type: 'risk', text: 'High time + low accuracy → confusion' }
     ],
     nextSteps: [
         'If too fast, slow down and read fully.',

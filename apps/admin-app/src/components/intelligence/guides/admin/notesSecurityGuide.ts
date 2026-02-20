@@ -11,7 +11,7 @@ export const notesSecurityGuide: InsightGuideCardProps = {
     owner: "Infrastructure",
     signals: [
         { type: 'good', text: 'Successful deliveries; low failures' },
-        { type: 'risk', text: 'Many failures ? check storage or signatures' }
+        { type: 'risk', text: 'Many failures → check storage or signatures' }
     ],
     nextSteps: [
         'Monitor failures; reissue links if needed.',

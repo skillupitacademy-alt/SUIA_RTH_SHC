@@ -9,9 +9,9 @@ export const topicHeatmapGuide: InsightGuideCardProps = {
     sampleSize: 20,
     lastUpdated: "Just now",
     signals: [
-        { type: 'good', text: 'Green on core topics ? exam ready' },
-        { type: 'neutral', text: 'Yellow on advanced ? practice more' },
-        { type: 'risk', text: 'Red on fundamentals ? immediate revision' }
+        { type: 'good', text: 'Green on core topics → exam ready' },
+        { type: 'neutral', text: 'Yellow on advanced → practice more' },
+        { type: 'risk', text: 'Red on fundamentals → immediate revision' }
     ],
     nextSteps: [
         'Tackle the 2–3 reddest topics first.',
