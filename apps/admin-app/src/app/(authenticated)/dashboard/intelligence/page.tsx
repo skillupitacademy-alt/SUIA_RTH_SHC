@@ -187,9 +187,7 @@ export default function AdminIntelligencePage() {
                 {activeTab === "command" ? (
                     <div className="space-y-24 animate-in fade-in slide-in-from-bottom-4 duration-500">
                         {/* Repair Station */}
-                        <div className="space-y-8">
-                            <BrokenQuestionsRepairStation />
-                        </div>
+                        <BrokenQuestionsRepairStation />
 
                         {/* Pool Sufficiency */}
                         <div className="space-y-8">
@@ -202,9 +200,7 @@ export default function AdminIntelligencePage() {
                                     <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tight">Pool Sufficiency Gauge</h3>
                                 </div>
                             </div>
-                            <div className="bg-white p-12 rounded-[2.5rem] border border-slate-200 shadow-xl shadow-slate-200/20 max-w-[1400px] mx-auto overflow-hidden group hover:-translate-y-1 transition-all duration-300">
-                                <AdminPoolSufficiency />
-                            </div>
+                            <AdminPoolSufficiency />
                             <InsightGuideCard {...poolGaugeGuide} />
                         </div>
                     </div>

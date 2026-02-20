@@ -50,19 +50,33 @@ export default function AdminPoolSufficiency() {
     const status = getStatus(percent);
 
     const option = {
+        tooltip: {
+            trigger: 'item',
+            backgroundColor: 'rgba(15, 23, 42, 0.95)',
+            borderColor: 'rgba(255, 255, 255, 0.1)',
+            textStyle: { color: '#fff', fontSize: 12 },
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            formatter: (params: any) => {
+                return `<div class="p-2">
+                    <div class="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-1">Pool Status</div>
+                    <div class="text-lg font-black">${params.value}% Optimized</div>
+                    <div class="text-[10px] text-slate-500 mt-1">${available} / ${required} Items Cached</div>
+                </div>`;
+            }
+        },
         series: [
             {
                 type: 'gauge',
                 startAngle: 180,
                 endAngle: 0,
-                center: ['50%', '75%'],
-                radius: '100%',
+                center: ['50%', '85%'],
+                radius: '140%',
                 min: 0,
                 max: 100,
                 splitNumber: 10,
                 axisLine: {
                     lineStyle: {
-                        width: 12,
+                        width: 16,
                         color: [
                             [0.3, '#F43F5E'], // Critical
                             [0.5, '#F59E0B'], // Low
@@ -74,18 +88,18 @@ export default function AdminPoolSufficiency() {
                 pointer: {
                     icon: 'path://M12.8,0.7l12,40.1H0.7L12.8,0.7z',
                     length: '12%',
-                    width: 20,
+                    width: 24,
                     offsetCenter: [0, '-60%'],
                     itemStyle: { color: 'auto' }
                 },
                 axisTick: { length: 12, lineStyle: { color: 'auto', width: 2 } },
                 splitLine: { length: 20, lineStyle: { color: 'auto', width: 5 } },
-                axisLabel: { color: '#94A3B8', fontSize: 12, distance: -60, rotate: 'tangential' },
+                axisLabel: { color: '#94A3B8', fontSize: 12, distance: -75, rotate: 'tangential' },
                 title: { offsetCenter: [0, '-20%'], fontSize: 20, fontWeight: 'bold' },
                 detail: {
-                    fontSize: 40,
+                    fontSize: 48,
                     fontWeight: 'black',
-                    offsetCenter: [0, '0%'],
+                    offsetCenter: [0, '-5%'],
                     valueAnimation: true,
                     formatter: (value: number) => `${Math.round(value)}%`,
                     color: 'inherit'
@@ -96,54 +110,57 @@ export default function AdminPoolSufficiency() {
     };
 
     return (
-        <div className="w-full bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100 flex flex-col h-full border-b-[6px] border-b-slate-100/50">
+        <div className="w-full bg-white p-12 rounded-[2.5rem] shadow-xl shadow-slate-200/20 border border-slate-200 flex flex-col h-[600px] group hover:-translate-y-1 transition-all duration-300 overflow-hidden">
             <div className="mb-8 flex items-center justify-between">
                 <div>
-                    <h3 className="text-xl font-outfit font-black uppercase tracking-tight text-[#1A1A1A]">Question Pool Sufficiency</h3>
-                    <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mt-1">Operational Readiness Analytics</p>
+                    <div className="flex items-center gap-3 text-indigo-600 mb-1">
+                        <Database size={18} />
+                        <p className="text-[10px] font-black uppercase tracking-[0.3em]">Resources Protocol</p>
+                    </div>
+                    <h3 className="text-3xl font-outfit font-black uppercase tracking-tight text-slate-900">Pool Sufficiency</h3>
                 </div>
-                <div className="p-3 bg-indigo-50 text-indigo-600 rounded-2xl">
+                <div className="p-4 bg-slate-100 rounded-2xl text-slate-400 group-hover:bg-indigo-600 group-hover:text-white transition-colors duration-500">
                     <Database size={24} />
                 </div>
             </div>
 
-            <div className="flex-grow min-h-[300px] relative">
+            <div className="flex-grow min-h-[400px] relative">
                 <BaseChart option={option} loading={loading} height="100%" />
 
                 {/* Secondary Stats Overlay */}
-                <div className="absolute top-0 right-0 p-4 border-2 border-slate-100 rounded-3xl bg-slate-50/50 flex flex-col gap-2">
+                <div className="absolute top-0 right-0 p-6 border border-slate-100 rounded-[2rem] bg-slate-50/80 backdrop-blur-sm flex flex-col gap-2 shadow-sm">
                     <div className="flex items-center gap-2">
                         <Info size={12} className="text-slate-400" />
                         <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Inventory Status</span>
                     </div>
                     <div>
-                        <span className="text-2xl font-black text-slate-800">{available.toLocaleString()}</span>
-                        <span className="text-xs font-bold text-slate-400 ml-1">/{required}</span>
+                        <span className="text-3xl font-black text-slate-900">{available.toLocaleString()}</span>
+                        <span className="text-sm font-bold text-slate-400 ml-1">/ {required}</span>
                     </div>
                 </div>
             </div>
 
-            <div className="mt-8 pt-8 border-t border-slate-50">
-                <div className={`p-6 rounded-[2rem] flex items-center justify-between ${status.bg} border-2 border-white shadow-sm`}>
-                    <div className="flex items-center gap-4">
-                        <div className={`p-3 rounded-2xl bg-white shadow-sm ${status.color}`}>
-                            {percent < 30 ? <AlertTriangle size={24} /> : <CheckCircle2 size={24} />}
+            <div className="mt-4 pt-8 border-t border-slate-100">
+                <div className={`p-8 rounded-[2rem] flex items-center justify-between ${status.bg} border border-white shadow-inner`}>
+                    <div className="flex items-center gap-6">
+                        <div className={`p-4 rounded-2xl bg-white shadow-lg ${status.color}`}>
+                            {percent < 30 ? <AlertTriangle size={32} /> : <CheckCircle2 size={32} />}
                         </div>
                         <div>
                             <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">System Condition</p>
-                            <h4 className={`text-xl font-outfit font-black ${status.color}`}>
+                            <h4 className={`text-2xl font-outfit font-black ${status.color}`}>
                                 {status.label}
                             </h4>
                         </div>
                     </div>
 
                     <div className="text-right">
-                        <p className="text-[11px] text-slate-500 font-medium leading-relaxed max-w-[200px]">
+                        <p className="text-xs text-slate-500 font-bold leading-relaxed max-w-[280px] uppercase tracking-wide">
                             {percent < 30
-                                ? "Critical scarcity. Blueprint generation will likely fail due to insufficient depth."
+                                ? "Critical scarcity detected. Blueprint generation inhibited."
                                 : percent < 80
-                                    ? "Good depth. Sufficient for standard blueprints but monitor niche topics."
-                                    : "Optimal volume. Capable of supporting high-frequency adaptive exams."}
+                                    ? "Operational depth achieved. Monitoring niche topic variance."
+                                    : "Optimal volume reached. System redundancy fully established."}
                         </p>
                     </div>
                 </div>

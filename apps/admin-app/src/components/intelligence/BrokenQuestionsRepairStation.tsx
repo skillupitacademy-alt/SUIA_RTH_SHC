@@ -4,14 +4,14 @@ import { ZLoader } from "@quiz/ui";
 import {
     AlertTriangle,
     ArrowUpRight,
-    Check,
     Clock,
     ExternalLink,
     Wrench,
     Zap
 } from "lucide-react";
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 
 import { cn } from "@/lib/utils";
 
@@ -36,6 +36,7 @@ interface BrokenQuestion {
 export function BrokenQuestionsRepairStation() {
     const [questions, setQuestions] = useState<BrokenQuestion[]>([]);
     const [loading, setLoading] = useState(true);
+    const hasToasted = useRef(false);
 
     const fetchData = useCallback(async () => {
         try {
@@ -44,6 +45,16 @@ export function BrokenQuestionsRepairStation() {
             if (res.ok) {
                 const data = await res.json();
                 setQuestions(data);
+
+                if (data.length === 0 && !hasToasted.current) {
+                    toast.success("SYSTEM_NORMALIZED", {
+                        description: "No content anomalies detected in the current window.",
+                        duration: 5000,
+                    });
+                    hasToasted.current = true;
+                } else if (data.length > 0) {
+                    hasToasted.current = false;
+                }
             }
         } catch (err) {
             console.error('Failed to fetch broken questions', err);
@@ -65,15 +76,7 @@ export function BrokenQuestionsRepairStation() {
     }
 
     if (questions.length === 0) {
-        return (
-            <div className="p-12 text-center bg-white rounded-[2.5rem] border border-slate-200 shadow-sm">
-                <div className="p-4 rounded-full bg-emerald-50 text-emerald-500 w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-                    <Check size={32} />
-                </div>
-                <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight">System Normalized</h3>
-                <p className="text-slate-500 font-bold uppercase text-[10px] tracking-widest mt-2">No broken items detected in the last window.</p>
-            </div>
-        );
+        return null; // Return null per UX pivot: use toast instead of allocating segment
     }
 
     return (
