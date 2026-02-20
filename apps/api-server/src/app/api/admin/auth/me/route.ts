@@ -27,8 +27,8 @@ export async function GET(_req: NextRequest) {
 
     if (_user === null || _user === undefined) return NextResponse.json({ _error: 'User not found' }, { status: 404 });
 
-    const role = _user.userRoles[0]?.role?.name?.toLowerCase() || 'user';
-    const isAdmin = role === 'admin' || role === 'super_admin';
+    const role = _user.userRoles[0]?.role?.name?.toLowerCase() ?? 'user';
+    const isAdmin = role === 'admin' || role === 'super_admin' || role === 'infrastructure';
 
     if (!isAdmin) {
         return NextResponse.json({ _error: 'Forbidden: Admin access only' }, { status: 403 });
@@ -38,7 +38,7 @@ export async function GET(_req: NextRequest) {
       user: {
         id: _user.id,
         email: _user.email,
-        name: _user.profile?.name || 'Admin',
+        name: _user.profile?.name ?? 'Administrator',
         role,
         isAdmin
       },

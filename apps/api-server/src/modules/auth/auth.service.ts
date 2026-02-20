@@ -86,7 +86,7 @@ export class AuthService {
     await AuditService.log({ userId: _user.id, action: 'login_success', ip });
 
     const roleNames = _user.userRoles.map(ur => ur.role.name);
-    const isAdmin = roleNames.includes('ADMIN') || roleNames.includes('SUPER_ADMIN');
+    const isAdmin = roleNames.includes('ADMIN') || roleNames.includes('SUPER_ADMIN') || roleNames.includes('INFRASTRUCTURE');
 
     const accessToken = await TokenService.generateAccessToken({
       userId: _user.id,
@@ -167,7 +167,7 @@ export class AuthService {
 
     const _user = _usersWithRoles[0];
     const roleNames = _usersWithRoles.map(r => r.roleName).filter((name): name is string => name !== null);
-    const isAdminNow = roleNames.includes('ADMIN') || roleNames.includes('SUPER_ADMIN');
+    const isAdminNow = roleNames.includes('ADMIN') || roleNames.includes('SUPER_ADMIN') || roleNames.includes('INFRASTRUCTURE');
 
     // EXAM GRACE WINDOW LOGIC (Phase 3 Requirement)
     let customExpiration: number | undefined;

@@ -51,7 +51,7 @@ export async function _verifyAdmin(_payload: TokenPayload): Promise<boolean> {
         .where(and(
             eq(userRoles.userId, _payload.userId),
             // Use case-insensitive check for robustness
-            sql`lower(${roles.name}) IN ('admin', 'super_admin')`
+            sql`lower(${roles.name}) IN ('admin', 'super_admin', 'infrastructure')`
         ))
         .limit(1);
 

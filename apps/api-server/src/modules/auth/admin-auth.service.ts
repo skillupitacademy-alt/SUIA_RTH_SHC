@@ -47,7 +47,7 @@ export class AdminAuthService {
     }
 
     const roleNames = _usersWithRoles.map(r => r.roleName).filter((name): name is string => name !== null);
-    const isAdmin = roleNames.includes('ADMIN') || roleNames.includes('SUPER_ADMIN');
+    const isAdmin = roleNames.includes('ADMIN') || roleNames.includes('SUPER_ADMIN') || roleNames.includes('INFRASTRUCTURE');
 
     if (isAdmin === false) {
       await SecurityService.trackLoginAttempt(ip, cleanEmail, false);
@@ -77,8 +77,16 @@ export class AdminAuthService {
       expiresAt,
     });
 
+    const primaryRole = roleNames[0]?.toLowerCase() ?? 'admin';
+
     return { 
-      user: { id: user.id, email: user.email, name: user.name ?? 'Admin', isAdmin: true }, 
+      user: { 
+        id: user.id, 
+        email: user.email, 
+        name: user.name ?? 'Admin', 
+        isAdmin: true,
+        role: primaryRole
+      }, 
       accessToken, 
       refreshToken,
       expiresAt: expiresAt.toISOString()

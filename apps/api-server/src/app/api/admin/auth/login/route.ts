@@ -28,6 +28,7 @@ export async function POST(_req: Request) {
         email: result.user.email,
         name: result.user.name,
         isAdmin: true,
+        role: result.user.role ?? 'admin',
     };
 
     const response = NextResponse.json({

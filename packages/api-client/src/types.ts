@@ -56,7 +56,7 @@ export interface UserProfile {
   id: string;
   name: string;
   email: string;
-  role: 'user' | 'admin' | 'super_admin';
+  role: 'user' | 'admin' | 'super_admin' | 'infrastructure';
   onboarded?: boolean;
   isAdmin: boolean;
   professionalStatus?: string;

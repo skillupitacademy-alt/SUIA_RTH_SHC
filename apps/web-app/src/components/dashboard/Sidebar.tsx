@@ -7,7 +7,6 @@ import {
     BookOpen,
     FileText,
     Settings,
-    ChevronRight,
     TrendingUp,
     Award,
     Mail
@@ -35,10 +34,15 @@ export function Sidebar() {
     const progress = Math.min((weeklyExams / weeklyGoal) * 100, 100);
 
     return (
-        <aside className="hidden md:flex flex-col w-64 border-r-2 border-gray-200 bg-white">
+        <aside className="hidden md:flex flex-col w-64 bg-white border-r border-slate-100 shadow-xl shadow-slate-200/20 fixed inset-y-0 left-0 z-50">
             <div className="p-6">
-                <p className="text-xs font-bold uppercase tracking-widest text-gray-500 mb-4">Main Menu</p>
-                <nav className="space-y-1">
+                <div className="flex items-center gap-3 mb-10 pl-2">
+                    <div className="h-8 w-8 rounded-xl bg-[#FF4B91] flex items-center justify-center text-white font-outfit font-black text-lg shadow-lg shadow-[#FF4B91]/30">Q</div>
+                    <span className="font-outfit font-black text-xl tracking-tighter text-[#1A1A1A]">QUIZHUB</span>
+                </div>
+
+                <p className="alpha-terminal text-slate-400 mb-6 px-4 !tracking-[0.4em]">Main Menu</p>
+                <nav className="space-y-2">
                     {NAV_ITEMS.map((item) => {
                         const isActive = pathname === item.href;
                         return (
@@ -46,42 +50,48 @@ export function Sidebar() {
                                 key={item.name}
                                 href={item.href}
                                 className={cn(
-                                    "flex items-center justify-between group px-3 py-2.5 rounded-xl transition-all",
+                                    "flex items-center gap-3 px-5 py-3.5 rounded-[1.25rem] transition-all duration-300 group",
                                     isActive
-                                        ? "bg-pink-50 text-pink-600 border-l-4 border-pink-500"
-                                        : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                                        ? "bg-[#FF4B91] text-white shadow-xl shadow-[#FF4B91]/40 scale-[1.02] z-10"
+                                        : "text-slate-600 hover:bg-slate-50 hover:text-[#1A1A1A]"
                                 )}
+                                aria-label={item.name}
+                                aria-current={isActive ? "page" : undefined}
                             >
-                                <div className="flex items-center gap-3">
-                                    <item.icon size={20} className={cn(isActive ? "text-pink-500" : "text-gray-500")} />
-                                    <span className="font-semibold text-sm">{item.name}</span>
-                                </div>
-                                <ChevronRight
-                                    size={16}
+                                <item.icon
+                                    size={20}
                                     className={cn(
-                                        "transition-transform",
-                                        isActive ? "opacity-100" : "opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0"
+                                        "transition-colors duration-300",
+                                        isActive ? "text-white" : "text-[#FF4B91]"
                                     )}
                                 />
+                                <span className="font-inter font-bold text-[14px] uppercase tracking-wide">{item.name}</span>
                             </Link>
                         );
                     })}
                 </nav>
             </div>
 
-            <div className="mt-auto p-6">
+            <div className="mt-auto p-6 border-t border-slate-50 bg-slate-50/30">
                 <div
-                    className="p-4 rounded-xl bg-pink-50 border-2 border-pink-200 cursor-help"
+                    className="p-5 rounded-[2rem] bg-white border border-slate-200/60 shadow-sm cursor-help hover:border-[#FF4B91]/30 transition-colors group"
                     title="Target: 4 exams this week; progress can exceed 100%"
                 >
-                    <p className="text-sm font-bold text-gray-900 mb-1">Weekly Goal</p>
-                    <div className="h-2 w-full bg-gray-200 rounded-full mt-2 overflow-hidden">
-                        <div className="h-full bg-pink-500 transition-all duration-500" style={{ width: `${progress}%` }} />
+                    <p className="alpha-terminal text-[#FF4B91] mb-3 !tracking-[0.2em]">Weekly Target</p>
+                    <div className="h-2 w-full bg-slate-100 rounded-full mt-2 overflow-hidden">
+                        <div
+                            className="h-full bg-[#FF4B91] transition-all duration-1000 ease-out shadow-[0_0_12px_rgba(255,75,145,0.4)]"
+                            style={{ width: `${progress}%` }}
+                        />
                     </div>
-                    <p className="text-[10px] mt-2 text-gray-600 font-bold uppercase tracking-tight">
-                        {weeklyExams >= weeklyGoal ? 'Goal met: ' : ''}
-                        {weeklyExams} of {weeklyGoal} ({Math.round((weeklyExams / weeklyGoal) * 100)}%)
-                    </p>
+                    <div className="flex items-center justify-between mt-4">
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                            {weeklyExams} / {weeklyGoal}
+                        </span>
+                        <span className="text-[10px] font-black text-[#FF4B91] uppercase tracking-widest">
+                            {Math.round(progress)}%
+                        </span>
+                    </div>
                 </div>
             </div>
         </aside>
