@@ -16,8 +16,10 @@ export async function POST(_req: Request) {
     const { email, password } = loginSchema.parse(body);
 
     const ip = _req.headers.get('x-forwarded-for') ?? '';
+    const portalIdentity = _req.headers.get('x-portal-identity') ?? 'admin';
+    const audience = portalIdentity === 'infrastructure' ? 'infra' : 'admin';
     
-    const result = await AdminAuthService.login(email, password, ip);
+    const result = await AdminAuthService.login(email, password, ip, audience);
 
     // Set Cookies
     const rawDomain = process.env.COOKIE_DOMAIN;
@@ -45,12 +47,16 @@ export async function POST(_req: Request) {
         domain: cookieDomain,
     };
 
-    response.cookies.set('admin_accessToken', result.accessToken, {
+    // Set HttpOnly cookies with Tier Isolation
+    const accessTokenName = audience === 'infra' ? 'infra_accessToken' : 'admin_accessToken';
+    const refreshTokenName = audience === 'infra' ? 'infra_refreshToken' : 'admin_refreshToken';
+
+    response.cookies.set(accessTokenName, result.accessToken, {
         ...cookieOptions,
         maxAge: 15 * 60,
     });
 
-    response.cookies.set('admin_refreshToken', result.refreshToken, {
+    response.cookies.set(refreshTokenName, result.refreshToken, {
         ...cookieOptions,
         maxAge: 24 * 60 * 60, // 24 hours
     });

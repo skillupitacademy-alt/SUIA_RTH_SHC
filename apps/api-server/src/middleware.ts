@@ -22,7 +22,8 @@ export default async function middleware(_request: NextRequest) {
 
   // 2. Rate Limiting
   const rateLimitResponse = await rateLimit(_request);
-  if (rateLimitResponse) {
+  const hasRateLimitResponse = rateLimitResponse !== null;
+  if (hasRateLimitResponse) {
     return corsMiddleware(_request, rateLimitResponse);
   }
 
@@ -33,23 +34,29 @@ export default async function middleware(_request: NextRequest) {
   // Skip CSRF for auth routes (login/signup) which don't have tokens yet
   if (!isAuthRoute) {
     const csrfResponse = await csrfProtection(_request);
-    if (csrfResponse) {
+    if (csrfResponse !== null && csrfResponse !== undefined) {
       return corsMiddleware(_request, csrfResponse);
     }
   }
 
   // 4. Auth Protection (Exclude public routes)
-  // isAuthRoute already defined above
   const isPublicRoute = isAuthRoute || 
     _request.nextUrl.pathname === '/api/status';
 
   if (!isPublicRoute) {
     const pathname = _request.nextUrl.pathname;
     
-    // 4.1 Determine Auth Scope (P0-SEC-004)
-    let scope: 'admin' | 'user' = 'user';
-    if (pathname.startsWith('/api/admin') || pathname.startsWith('/api/factory') || pathname.startsWith('/api/analytics/admin')) {
-      scope = 'admin';
+    // 4.1 Determine Auth Scope & Audience (P0-SEC-004)
+    const portalIdentity = _request.headers.get('x-portal-identity') ?? 'user';
+    let scope: 'admin' | 'user' | 'infrastructure' = 'user';
+    let expectedAudience: 'admin' | 'user' | 'infra' = 'user';
+
+    if (portalIdentity === 'infrastructure') {
+        scope = 'infrastructure';
+        expectedAudience = 'infra';
+    } else if (pathname.startsWith('/api/admin') || pathname.startsWith('/api/factory') || pathname.startsWith('/api/analytics/admin') || portalIdentity === 'admin') {
+        scope = 'admin';
+        expectedAudience = 'admin';
     }
 
     const _token = TokenService.getAccessToken(_request, { scope });
@@ -63,15 +70,22 @@ export default async function middleware(_request: NextRequest) {
     }
 
     try {
-      // In middleware, we just want to ensure it's a valid, unexpired _token.
-      const _payload = await TokenService.verifyAccessToken(_token, scope === 'admin');
+      // In middleware, we just want to ensure it's a valid, unexpired _token with THE CORRECT AUDIENCE.
+      const isAdmin = scope === 'admin' || scope === 'infrastructure';
+      const _payload = await TokenService.verifyAccessToken(_token, { isAdmin, audience: expectedAudience });
 
       // 4.2 Central RBAC Enforcement (P0-SEC-002)
-      const isAdminRoute = (pathname.startsWith('/api/admin') && !pathname.startsWith('/api/admin/auth')) || 
+      const isInfraRoute = pathname.startsWith('/api/admin') && portalIdentity === 'infrastructure';
+      const isAdminRoute = (pathname.startsWith('/api/admin') && !pathname.startsWith('/api/admin/auth') && portalIdentity !== 'infrastructure') || 
                            pathname.startsWith('/api/factory') ||
                            pathname.startsWith('/api/analytics/admin');
 
-      if (isAdminRoute) {
+      if (isInfraRoute) {
+          const roles = Array.isArray(_payload.roles) ? (_payload.roles as string[]) : [];
+          if (!roles.includes('INFRASTRUCTURE')) {
+            return corsMiddleware(_request, NextResponse.json({ _error: 'Forbidden: Infrastructure privileges required' }, { status: 403 }));
+          }
+      } else if (isAdminRoute) {
         const hasAdminAccess = await _verifyAdmin(_payload);
         if (!hasAdminAccess) {
           const response = NextResponse.json(
@@ -82,7 +96,7 @@ export default async function middleware(_request: NextRequest) {
         }
       }
     } catch (_error: unknown) {
-    const errorMessage = _error instanceof Error ? _error.message : 'Authentication failed';
+      const errorMessage = _error instanceof Error ? _error.message : 'Authentication failed';
       const response = NextResponse.json(
         { _error: 'Invalid or expired _token', message: errorMessage },
         { status: 401 }

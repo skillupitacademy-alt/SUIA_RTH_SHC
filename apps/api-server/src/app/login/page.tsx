@@ -1,5 +1,6 @@
 'use client';
 
+import { apiClient } from '@quiz/api-client';
 import { ZLoader } from '@quiz/ui';
 import { ArrowRight, Lock, Shield } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -15,24 +16,34 @@ export default function LoginPage() {
     const [email, setEmail] = useState('root@system.internal');
     const [password, setPassword] = useState('password_infra_core');
     const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
+        setError(null);
         setIsLoading(true);
 
-        // Executive Handshake Simulation
-        await new Promise(resolve => setTimeout(resolve, 1500));
+        try {
+            // Executive Handshake Protocol
+            apiClient.client.setPortalIdentity('infrastructure');
+            const { user, expiresAt } = await apiClient.admin.login(email, password);
 
-        login({
-            id: 'sys-root-01',
-            name: 'Root Administrator',
-            email,
-            isAdmin: true,
-            role: 'infrastructure',
-            onboarded: true
-        });
+            // Critical Role Check: Only 'infrastructure' users can pass this gateway
+            if (user.role !== 'infrastructure') {
+                throw new Error("ACCESS_DENIED: SECURE_NODE_REQUIREMENT");
+            }
 
-        router.push('/');
+            login(user, expiresAt);
+            void router.push('/');
+        } catch (err: unknown) {
+            if (err instanceof Error) {
+                setError(err.message || 'Handshake failed. Verify passkey.');
+            } else {
+                setError('Handshake failed. Verify passkey.');
+            }
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (
@@ -42,6 +53,13 @@ export default function LoginPage() {
                     <h2 className="text-3xl font-black tracking-tight text-slate-900 font-outfit uppercase">Handshake Required</h2>
                     <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">Provide cryptographic passkey to initialize session.</p>
                 </div>
+
+                {error !== null && error !== '' && (
+                    <div className="bg-rose-50 border border-rose-100 rounded-2xl p-4 flex items-center gap-3 animate-shake">
+                        <div className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
+                        <span className="text-[10px] font-black uppercase tracking-widest text-rose-600">{error}</span>
+                    </div>
+                )}
 
                 <form onSubmit={(e) => { void handleLogin(e); }} className="space-y-6">
                     <div className="space-y-4">
@@ -80,8 +98,8 @@ export default function LoginPage() {
                         type="submit"
                         disabled={isLoading}
                         className="w-full h-14 rounded-2xl font-black text-xs uppercase tracking-[0.2em] flex items-center justify-center gap-3
-                                   bg-[#FF2D55] text-white hover:bg-[#E61E44] transition-all
-                                   disabled:opacity-70 disabled:cursor-not-allowed shadow-xl shadow-[#FF2D55]/20 hover:scale-[1.02] active:scale-95"
+                       bg-[#FF2D55] text-white hover:bg-[#E61E44] transition-all
+                       disabled:opacity-70 disabled:cursor-not-allowed shadow-xl shadow-[#FF2D55]/20 hover:scale-[1.02] active:scale-95"
                     >
                         {isLoading ? (
                             <>

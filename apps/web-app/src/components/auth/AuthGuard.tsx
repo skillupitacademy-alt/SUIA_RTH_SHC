@@ -18,6 +18,11 @@ export function AuthGuard({ children, requireAdmin = false }: AuthGuardProps) {
     const [isChecking, setIsChecking] = useState(true);
 
     useEffect(() => {
+        // 1. Establish Portal Identity Hint
+        apiClient.client.setPortalIdentity('user');
+    }, []);
+
+    useEffect(() => {
         const checkAuth = async () => {
             // CRITICAL: If session is already marked as expired, 
             // don't try to "re-login" from the background.

@@ -12,19 +12,21 @@ interface RefreshRequest {
 
 export async function POST(_req: NextRequest) {
   try {
-    const userRefresh = _req.cookies.get('refreshToken')?.value;
+    // Detect Portal Tier
+    const portalIdentity = _req.headers.get('x-portal-identity') ?? 'user';
+    const audience = portalIdentity === 'infrastructure' ? 'infra' : portalIdentity === 'admin' ? 'admin' : 'user';
+
+    const infraRefresh = _req.cookies.get('infra_refreshToken')?.value;
     const adminRefresh = _req.cookies.get('admin_refreshToken')?.value;
+    const userRefresh = _req.cookies.get('refreshToken')?.value;
 
-    if (typeof userRefresh !== 'string' && typeof adminRefresh !== 'string') {
-      throw new Error('No refresh token');
+    const tokenToUse = portalIdentity === 'infrastructure' ? infraRefresh : portalIdentity === 'admin' ? adminRefresh : userRefresh;
+    
+    if (tokenToUse === undefined || tokenToUse === null || tokenToUse === '') {
+      throw new Error(`No refresh token for scope: ${portalIdentity}`);
     }
 
-    const isAdmin = typeof adminRefresh === 'string' && typeof userRefresh !== 'string';
-    const tokenToUse = adminRefresh ?? userRefresh;
-    if (tokenToUse === undefined) {
-      throw new Error('Invalid token');
-    }
-    const cookieName = isAdmin ? 'admin_refreshToken' : 'refreshToken';
+    const cookieName = portalIdentity === 'infrastructure' ? 'infra_refreshToken' : portalIdentity === 'admin' ? 'admin_refreshToken' : 'refreshToken';
 
     const ip = _req.headers.get('x-forwarded-for') ?? '0.0.0.0';
     
@@ -37,7 +39,7 @@ export async function POST(_req: NextRequest) {
       // Body might be empty, ignore
     }
 
-    const { accessToken, refreshToken: newRefreshToken } = await AuthService.refresh(tokenToUse, ip, examId);
+    const { accessToken, refreshToken: newRefreshToken } = await AuthService.refresh(tokenToUse, ip, examId, audience);
     const expiresAt = TokenService.getExpiration(accessToken);
 
     // Calculate dynamic maxAge for cookie based on token expiration
@@ -54,8 +56,8 @@ export async function POST(_req: NextRequest) {
     const rawDomain = process.env.COOKIE_DOMAIN;
     const cookieDomain = rawDomain === undefined || rawDomain === null || rawDomain === '' ? undefined : rawDomain;
 
-    // Re-issue Access Token Cookie
-    const accessTokenCookieName = isAdmin ? 'admin_accessToken' : 'accessToken';
+    // Re-issue Access Token Cookie with Tier Isolation
+    const accessTokenCookieName = portalIdentity === 'infrastructure' ? 'infra_accessToken' : portalIdentity === 'admin' ? 'admin_accessToken' : 'accessToken';
     response.cookies.set(accessTokenCookieName, accessToken, {
       httpOnly: true,
       secure: true,

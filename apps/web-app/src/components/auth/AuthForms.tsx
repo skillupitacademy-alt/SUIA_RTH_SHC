@@ -24,6 +24,7 @@ export function LoginForm() {
             const password = formData.get('password')?.toString() ?? '';
 
             // Real API Call
+            apiClient.client.setPortalIdentity('user');
             const { user } = await apiClient.auth.login(email, password);
             if (!user) throw new Error("Login succeeded but no user data was returned.");
             login({ ...user, onboarded: user.onboarded ?? false });
@@ -132,6 +133,7 @@ export function SignupForm() {
             const password = formData.get('password')?.toString() ?? '';
             const name = formData.get('name')?.toString() ?? '';
 
+            apiClient.client.setPortalIdentity('user');
             const { user } = await apiClient.auth.signup(email, password, name);
             if (!user) throw new Error("Account created but failed to log you in automatically.");
 

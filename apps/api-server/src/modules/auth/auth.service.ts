@@ -107,13 +107,13 @@ export class AuthService {
     return { _user, accessToken, refreshToken, isAdmin };
   }
 
-  static async refresh(_token: string, ip?: string, examId?: string) {
+  static async refresh(_token: string, ip?: string, examId?: string, requestedAudience: string = 'user') {
     const decoded = decodeJwt(_token) as { isAdmin?: boolean; [key: string]: unknown };
     const isAdmin = decoded.isAdmin === true;
 
     let _payload;
     try {
-      _payload = await TokenService.verifyRefreshToken(_token, isAdmin);
+      _payload = await TokenService.verifyRefreshToken(_token, { isAdmin, audience: requestedAudience });
     } catch {
       await AuditService.log({ action: 'refresh_failed', metadata: { reason: 'invalid_token' }, ip });
       throw new Error('Invalid refresh _token');
@@ -169,6 +169,11 @@ export class AuthService {
     const roleNames = _usersWithRoles.map(r => r.roleName).filter((name): name is string => name !== null);
     const isAdminNow = roleNames.includes('ADMIN') || roleNames.includes('SUPER_ADMIN') || roleNames.includes('INFRASTRUCTURE');
 
+    // Portal Defense: Ensure 'infra' audience is only granted to users with the INFRASTRUCTURE role
+    if (requestedAudience === 'infra' && !roleNames.includes('INFRASTRUCTURE')) {
+        throw new Error('Access Denied: Infrastructure privileges required for this portal session');
+    }
+
     // EXAM GRACE WINDOW LOGIC (Phase 3 Requirement)
     let customExpiration: number | undefined;
     if (examId !== undefined && examId !== null && examId !== '' && isAdminNow === false) {
@@ -206,9 +211,10 @@ export class AuthService {
       email: _user.email,
       roles: roleNames,
       isAdmin: isAdminNow,
+      aud: requestedAudience
     }, customExpiration);
     
-    const newRefreshToken = await TokenService.generateRefreshToken(_user.id, isAdminNow);
+    const newRefreshToken = await TokenService.generateRefreshToken(_user.id, isAdminNow, requestedAudience);
     const newRefreshTokenHash = await TokenService.hashToken(newRefreshToken);
 
     await db.update(refreshTokens)

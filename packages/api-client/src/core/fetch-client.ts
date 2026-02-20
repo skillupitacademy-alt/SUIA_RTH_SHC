@@ -3,6 +3,7 @@ let globalRefreshPromise: Promise<unknown> | null = null;
 
 export class FetchClient {
   private baseUrl: string;
+  private portalIdentity: string | null = null;
 
   constructor(baseUrl: string) {
     this.baseUrl = baseUrl;
@@ -16,11 +17,16 @@ export class FetchClient {
     return null;
   }
 
+  public setPortalIdentity(identity: 'infrastructure' | 'admin' | 'user' | null) {
+    this.portalIdentity = identity;
+  }
+
   public async request<TResponse>(endpoint: string, options: RequestInit & { _isRetry?: boolean } = {}): Promise<TResponse> {
     const url = `${this.baseUrl}${endpoint}`;
     
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
+      ...(this.portalIdentity ? { 'x-portal-identity': this.portalIdentity } : {}),
       ...(options.headers as Record<string, string>),
     };
 

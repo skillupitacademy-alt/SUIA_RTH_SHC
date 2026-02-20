@@ -27,6 +27,7 @@ export default function AdminLoginPage() {
 
         try {
             // STRICT BOUNDARY: Use Admin Client (hits /api/admin/auth/login)
+            apiClient.client.setPortalIdentity('admin');
             const { user } = await apiClient.admin.login(formData.email, formData.password);
 
             // Redundant check (API should handle this), but safe for UI

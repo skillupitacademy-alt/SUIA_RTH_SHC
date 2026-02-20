@@ -15,6 +15,11 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
 
     useEffect(() => {
+        // 1. Establish Portal Identity Hint
+        apiClient.client.setPortalIdentity('admin');
+    }, []);
+
+    useEffect(() => {
         if (initialized === false) return;
 
         if ((isAuthenticated === false || user?.isAdmin !== true) && pathname !== '/login') {

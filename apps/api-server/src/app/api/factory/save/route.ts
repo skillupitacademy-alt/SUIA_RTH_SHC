@@ -1,9 +1,9 @@
 import { db, questions, questionSkills, skills } from "@quiz/db";
-import { inArray,sql } from "drizzle-orm";
+import { inArray, sql } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 
 import { logger } from "@/lib/logger";
-import { TokenService } from "@/modules/auth/token.service";
+import { verifyAdminOrInfraToken } from "@/modules/auth/admin-audience.util";
 
 // Define strict types locally to ensure safety without circular deps
 type Difficulty = 'simple' | 'intermediate' | 'expert';
@@ -32,12 +32,11 @@ interface SavePayload {
 export async function POST(req: NextRequest) {
   try {
     // 1. Defense-in-Depth Admin Check (P0-SEC-002)
-    const token = TokenService.getAccessToken(req, { scope: 'admin' });
-    if (token === undefined || token === null || token === '') {
+    try {
+      await verifyAdminOrInfraToken(req);
+    } catch {
       return NextResponse.json({ _error: "Authentication required", scope: 'admin' }, { status: 401 });
     }
-
-    await TokenService.verifyAccessToken(token, true);
 
     const { questions: checkQuestions, topicId, subtopicId } = (await req.json()) as SavePayload;
 

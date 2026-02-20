@@ -16,20 +16,23 @@ export function AppAuthWrapper({ children }: { children: React.ReactNode }) {
             const { user: validatedUser } = await apiClient.auth.getAdminSession();
             login(validatedUser, newExpiry);
         } catch (error) {
-            handleLogout();
+            void handleLogout();
             throw error;
         }
     };
 
-    const handleLogout = () => {
+    const handleLogout = async () => {
         if (isRedirecting) return;
         setIsRedirecting(true);
 
-        setTimeout(() => {
-            logout();
-            window.location.href = '/login?reason=session_expired';
-            setIsRedirecting(false);
-        }, 3000);
+        return new Promise<void>((resolve) => {
+            setTimeout(() => {
+                logout();
+                window.location.href = '/login?reason=session_expired';
+                setIsRedirecting(false);
+                resolve();
+            }, 3000);
+        });
     };
 
     if (!initialized) {

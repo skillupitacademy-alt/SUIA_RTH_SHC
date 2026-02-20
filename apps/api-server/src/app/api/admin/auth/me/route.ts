@@ -8,13 +8,18 @@ import { TokenService } from '@/modules/auth/token.service';
 
 export async function GET(_req: NextRequest) {
   try {
-    // Strictly use Admin Scope
-    const _token = TokenService.getAccessToken(_req, { scope: 'admin' });
+    // Detect Portal Tier
+    const portalIdentity = _req.headers.get('x-portal-identity') ?? 'admin';
+    const scope = portalIdentity === 'infrastructure' ? 'infrastructure' : 'admin';
+    const audience = portalIdentity === 'infrastructure' ? 'infra' : 'admin';
+
+    // Strictly use Scoped Access
+    const _token = TokenService.getAccessToken(_req, { scope });
     if (_token === null || _token === undefined || _token.trim() === '') {
-        return NextResponse.json({ _error: 'Unauthorized', scope: 'admin' }, { status: 401 });
+        return NextResponse.json({ _error: 'Unauthorized', scope }, { status: 401 });
     }
 
-    const _payload = await TokenService.verifyAccessToken(_token, true);
+    const _payload = await TokenService.verifyAccessToken(_token, { isAdmin: true, audience });
     const _user = await db.query.users.findFirst({
       where: eq(users.id, _payload.userId),
       with: {

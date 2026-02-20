@@ -7,7 +7,7 @@ import { SecurityService } from './security.service';
 import { TokenService } from './token.service';
 
 export class AdminAuthService {
-  static async login(email: string, password: string, ip: string = '0.0.0.0') {
+  static async login(email: string, password: string, ip: string = '0.0.0.0', requestedAudience: string = 'admin') {
     const cleanEmail = email.trim();
 
     // 1. Check Lockout
@@ -55,19 +55,26 @@ export class AdminAuthService {
       throw new Error('Unauthorized: Governance Privileges Required');
     }
 
+    // Portal Defense: Ensure 'infra' audience is only granted to users with the INFRASTRUCTURE role
+    if (requestedAudience === 'infra' && !roleNames.includes('INFRASTRUCTURE')) {
+        await AuditService.log({ userId: user.id, action: 'admin_audience_violation', metadata: { email: cleanEmail, requestedAud: requestedAudience }, ip });
+        throw new Error('Access Denied: Infrastructure privileges required for this portal');
+    }
+
     // 5. Success
     await SecurityService.trackLoginAttempt(ip, cleanEmail, true);
     await AuditService.log({ userId: user.id, action: 'admin_login_success', ip });
 
-    // 6. Generate Admin-Scoped Tokens
+    // 6. Generate Admin-Scoped Tokens with Portal Identity
     const accessToken = await TokenService.generateAccessToken({
       userId: user.id,
       email: user.email,
       roles: roleNames,
       isAdmin: true,
+      aud: requestedAudience
     });
 
-    const refreshToken = await TokenService.generateRefreshToken(user.id, true);
+    const refreshToken = await TokenService.generateRefreshToken(user.id, true, requestedAudience);
     const refreshTokenHash = await TokenService.hashToken(refreshToken);
     const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours absolute limit
 

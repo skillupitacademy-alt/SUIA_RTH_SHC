@@ -3,7 +3,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { sql } from "@/lib/db";
 import { redis } from "@/lib/redis";
 import { CACHE_KEYS } from "@/modules/analytics/analytics.constants";
-import { TokenService } from "@/modules/auth/token.service";
+import { verifyAdminOrInfraToken } from "@/modules/auth/admin-audience.util";
 
 export const dynamic = "force-dynamic";
 
@@ -14,12 +14,7 @@ interface PoolTotalRow {
 export async function GET(req: NextRequest) {
   try {
     // 1. RBAC (Admin/SuperAdmin)
-    const token = TokenService.getAccessToken(req, { scope: "admin" });
-    if (token === undefined || token === null || token === "") {
-        return NextResponse.json({ error: "Authentication required" }, { status: 401 });
-    }
-
-    const payload = await TokenService.verifyAccessToken(token, true);
+    const { payload } = await verifyAdminOrInfraToken(req);
     const hasAdminRole = Array.isArray(payload.roles) && payload.roles.some(
         (role: string) => role === "ADMIN" || role === "SUPER_ADMIN"
     );

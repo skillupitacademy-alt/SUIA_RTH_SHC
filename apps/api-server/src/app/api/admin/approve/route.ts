@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 
 import { logger } from '@/lib/logger';
 import { AdminEngine } from '@/modules/admin-engine/admin.engine';
-import { TokenService } from '@/modules/auth/token.service';
+import { verifyAdminOrInfraToken } from '@/modules/auth/admin-audience.util';
 import { publishSchema } from '@/schemas/admin.schemas';
 
 export const dynamic = 'force-dynamic';
@@ -13,16 +13,11 @@ const log = logger.child({ module: 'admin:approve' });
 type ApproveBody = { id: string };
 
 async function _verifyAdmin(_req: NextRequest) {
-    const _token = TokenService.getAccessToken(_req, { scope: 'admin' });
-    if (_token === null || _token === undefined || _token.trim() === '') {
-        return { _error: 'Unauthorized', scope: 'admin', status: 401 };
-    }
-
     try {
-        const payload = await TokenService.verifyAccessToken(_token, true);
-        return { userId: payload.userId };
+        const { payload, audience } = await verifyAdminOrInfraToken(_req);
+        return { userId: payload.userId, scope: audience };
     } catch {
-        return { _error: 'Unauthorized', status: 401 };
+        return { _error: 'Unauthorized', status: 401, scope: 'admin' };
     }
 }
 
