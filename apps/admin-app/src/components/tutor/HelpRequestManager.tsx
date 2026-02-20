@@ -1,7 +1,7 @@
 'use client';
 
 import { formatDistanceToNow } from "date-fns";
-import { BookOpen, Calendar, CheckCircle2, Clock, User } from "lucide-react";
+import { BookOpen, Calendar, CheckCircle2, Clock, MessageSquare, User, X } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 
 import { cn } from "@/lib/utils";
@@ -14,7 +14,7 @@ type HelpRequest = {
     email: string;
     userName: string;
     topicName: string;
-    metadata?: { accuracy?: number };
+    metadata?: { accuracy?: number; adminNote?: string };
 };
 
 export function HelpRequestManager() {
@@ -22,6 +22,11 @@ export function HelpRequestManager() {
     const [status, setStatus] = useState("pending");
     const [loading, setLoading] = useState(true);
     const [updating, setUpdating] = useState<string | null>(null);
+    const isUpdating = typeof updating === "string" && updating.length > 0;
+    const [adminNote, setAdminNote] = useState("");
+    const [activePrompt, setActivePrompt] = useState<{ id: string; status: string } | null>(null);
+    const promptId = activePrompt?.id ?? "";
+    const promptStatus = activePrompt?.status ?? "pending";
 
     const fetchRequests = useCallback(async () => {
         setLoading(true);
@@ -42,16 +47,18 @@ export function HelpRequestManager() {
         void fetchRequests();
     }, [fetchRequests]);
 
-    const updateStatus = async (requestId: string, nextStatus: string) => {
+    const updateStatus = async (requestId: string, nextStatus: string, note?: string) => {
         setUpdating(requestId);
         try {
             const res = await fetch('/api/admin/tutor/help/list', {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ requestId, status: nextStatus })
+                body: JSON.stringify({ requestId, status: nextStatus, note })
             });
             if (res.ok) {
                 setRequests(requests.filter(r => r.id !== requestId));
+                setActivePrompt(null);
+                setAdminNote("");
             }
         } catch (err) {
             console.error("Failed to update status", err);
@@ -61,7 +68,55 @@ export function HelpRequestManager() {
     };
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 relative">
+            {/* Action Prompt Overlay (Modal style) */}
+            {promptId.length > 0 && (
+                <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                    <div className="bg-white rounded-[2.5rem] p-8 max-w-md w-full shadow-2xl border border-slate-100 animate-in zoom-in-95 duration-200">
+                        <div className="flex items-center justify-between mb-6">
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-xl bg-primary/5 flex items-center justify-center text-primary">
+                                    <MessageSquare size={20} />
+                                </div>
+                                <div>
+                                    <h4 className="text-lg font-black text-slate-900 uppercase tracking-tight">Tutor Intervention</h4>
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Transitioning to {promptStatus}</p>
+                                </div>
+                            </div>
+                            <button onClick={() => { setActivePrompt(null); setAdminNote(""); }} className="w-8 h-8 flex items-center justify-center rounded-full bg-slate-50 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-all">
+                                <X size={16} />
+                            </button>
+                        </div>
+
+                        <div className="space-y-4">
+                            <div>
+                                <label
+                                    htmlFor="admin-note"
+                                    className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2 block"
+                                >
+                                    Resolution Note
+                                </label>
+                                <textarea
+                                    id="admin-note"
+                                    placeholder="Briefly describe the intervention logic or next steps..."
+                                    value={adminNote}
+                                    onChange={(e) => setAdminNote(e.target.value)}
+                                    className="w-full bg-slate-50 border border-slate-200 rounded-[1.5rem] p-5 text-sm font-medium text-slate-700 outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary/20 transition-all min-h-[140px] resize-none"
+                                />
+                            </div>
+
+                            <button
+                                disabled={isUpdating || promptId.length === 0}
+                                onClick={() => void updateStatus(promptId, promptStatus, adminNote)}
+                                className="w-full bg-primary text-white py-4 rounded-2xl text-[11px] font-black uppercase tracking-widest hover:opacity-90 active:scale-[0.98] transition-all shadow-lg shadow-primary/20 disabled:opacity-50"
+                            >
+                                {isUpdating ? "Processing..." : `Confirm ${promptStatus}`}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             <div className="flex items-center justify-between">
                 <div className="flex items-center p-1 rounded-xl bg-slate-50 border border-slate-100 gap-1">
                     {["pending", "scheduled", "resolved"].map((s) => (
@@ -136,7 +191,7 @@ export function HelpRequestManager() {
                                     </div>
                                 </div>
 
-                                {request.metadata?.accuracy !== undefined && (
+                                {typeof request.metadata?.accuracy === "number" && (
                                     <div className="p-3 bg-slate-50 rounded-xl">
                                         <div className="flex justify-between items-center mb-1">
                                             <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Last Accuracy</span>
@@ -161,35 +216,39 @@ export function HelpRequestManager() {
                             </div>
 
                             <div className="mt-6 pt-4 border-t border-slate-100 flex items-center gap-2">
-                        {status === "pending" && (
-                            <>
-                                <button
-                                    disabled={updating === request.id}
-                                    onClick={() => void updateStatus(request.id, "scheduled")}
-                                    className="flex-1 bg-primary text-white py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:opacity-90 transition-all flex items-center justify-center gap-2"
-                                >
-                                    <Calendar size={12} />
-                                    Schedule
-                                </button>
-                                <button
-                                    disabled={updating === request.id}
-                                    onClick={() => void updateStatus(request.id, "resolved")}
-                                    className="flex-1 bg-slate-100 text-slate-600 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-200 transition-all flex items-center justify-center gap-2"
-                                >
-                                    <CheckCircle2 size={12} />
-                                    Solve
-                                </button>
-                            </>
-                        )}
-                        {status === "scheduled" && (
-                            <button
-                                disabled={updating === request.id}
-                                onClick={() => void updateStatus(request.id, "resolved")}
-                                className="flex-1 bg-green-500 text-white py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:opacity-90 transition-all flex items-center justify-center gap-2"
-                            >
-                                <CheckCircle2 size={12} />
-                                Mark Resolved
-                            </button>
+                                {status === "pending" ? (
+                                    <>
+                                        <button
+                                            disabled={updating !== null}
+                                            onClick={() => setActivePrompt({ id: request.id, status: "scheduled" })}
+                                            className="flex-1 bg-primary text-white py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:opacity-90 transition-all flex items-center justify-center gap-2"
+                                        >
+                                            <Calendar size={12} />
+                                            Schedule
+                                        </button>
+                                        <button
+                                            disabled={updating !== null}
+                                            onClick={() => setActivePrompt({ id: request.id, status: "resolved" })}
+                                            className="flex-1 bg-slate-100 text-slate-600 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-200 transition-all flex items-center justify-center gap-2"
+                                        >
+                                            <CheckCircle2 size={12} />
+                                            Solve
+                                        </button>
+                                    </>
+                                ) : status === "scheduled" ? (
+                                    <button
+                                        disabled={updating !== null}
+                                        onClick={() => setActivePrompt({ id: request.id, status: "resolved" })}
+                                        className="flex-1 bg-green-500 text-white py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:opacity-90 transition-all flex items-center justify-center gap-2"
+                                    >
+                                        <CheckCircle2 size={12} />
+                                        Mark Resolved
+                                    </button>
+                                ) : (
+                                    <div className="flex-1 flex items-center gap-2 text-green-500 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest justify-center">
+                                        <CheckCircle2 size={12} />
+                                        Resolved
+                                    </div>
                                 )}
                             </div>
                         </div>

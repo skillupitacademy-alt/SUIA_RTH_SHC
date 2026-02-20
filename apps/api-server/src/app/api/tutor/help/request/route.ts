@@ -6,6 +6,8 @@ import { TokenService } from "@/modules/auth/token.service";
 
 export const dynamic = "force-dynamic";
 
+const HELP_REQUEST_COOLDOWN_HOURS = 12;
+
 /**
  * POST /api/tutor/help/request
  * Allows a student to request live help for a specific topic.
@@ -30,12 +32,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "topicId is required" }, { status: 400 });
     }
 
-    // 1. Check if a request already exists/pending or was recently requested (Cooldown: 12h)
+    // 1. Check if a request already exists/pending or was recently requested (Cooldown)
     const recentRequest = await db.query.tutorHelpRequests.findFirst({
       where: and(
         eq(tutorHelpRequests.userId, payload.userId),
         eq(tutorHelpRequests.topicId, topicId),
-        sql`created_at > NOW() - INTERVAL '12 HOURS'`
+        sql`created_at > NOW() - INTERVAL '${sql.raw(HELP_REQUEST_COOLDOWN_HOURS.toString())} HOURS'`
       ),
       orderBy: desc(tutorHelpRequests.createdAt)
     });
@@ -46,7 +48,7 @@ export async function POST(req: NextRequest) {
       } else {
         return NextResponse.json({ 
           error: "Cooldown active", 
-          message: "You can only request live help once every 12 hours per topic." 
+          message: `You can only request live help once every ${HELP_REQUEST_COOLDOWN_HOURS} hours per topic.` 
         }, { status: 429 });
       }
     }
