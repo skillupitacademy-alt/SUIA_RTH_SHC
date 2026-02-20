@@ -44,21 +44,18 @@
   }
 
   .text-gradient {
-    background: linear-gradient(to right, #FF2D55, #133382);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    color: #FF4B91;
   }
 
   .glow-top {
     @apply absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-3xl h-64 -z-10 rounded-full;
-    background-color: rgba(255, 45, 85, 0.05);
+    background-color: rgba(255, 75, 145, 0.03);
     filter: blur(120px);
   }
 
   .glow-bottom {
     @apply absolute bottom-0 right-0 w-96 h-96 -z-10 rounded-full;
-    background-color: rgba(19, 51, 130, 0.05);
+    background-color: rgba(255, 75, 145, 0.02);
     filter: blur(100px);
   }
 
@@ -145,12 +142,12 @@
 
   .action-card {
     @apply p-8 text-white flex flex-col items-center justify-center gap-4 transition-all duration-300 shadow-lg no-underline;
-    background-color: #FF2D55;
+    background-color: #FF4B91;
     border-radius: 2rem;
   }
 
   .action-card:hover {
-    background-color: #E61E44;
+    background-color: #E63B7F;
   }
 
   .action-icon {

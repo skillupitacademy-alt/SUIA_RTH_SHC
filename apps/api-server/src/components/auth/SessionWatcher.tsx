@@ -127,10 +127,10 @@ export function SessionWatcher({ expiresAt, onRefresh, onLogout, isRedirecting }
     if (redirecting) {
         return (
             <div className="fixed top-8 right-8 z-[10000] animate-in slide-in-from-right duration-500">
-                <div className="bg-slate-900/90 backdrop-blur border-l-4 border-rose-500 px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-4 min-w-[320px]">
-                    <ZLoader size="xs" color="#FF2D55" />
+                <div className="bg-slate-900/90 backdrop-blur border-l-4 border-[#FF4B91] px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-4 min-w-[320px]">
+                    <ZLoader size="xs" color="#FF4B91" />
                     <div className="flex flex-col">
-                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-rose-500">Security Breach Recovery</span>
+                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#FF4B91]">Security Breach Recovery</span>
                         <span className="text-sm font-bold text-white">Terminating link safely...</span>
                     </div>
                 </div>
@@ -152,7 +152,7 @@ export function SessionWatcher({ expiresAt, onRefresh, onLogout, isRedirecting }
         <div className="fixed inset-0 z-[99999] bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-6 animate-in fade-in duration-300">
             <div className="w-full max-w-sm bg-slate-900 border border-white/10 rounded-[2rem] p-8 shadow-2xl space-y-6">
                 <div className="flex flex-col items-center text-center space-y-4">
-                    <div className="w-16 h-16 rounded-2xl bg-rose-500/10 flex items-center justify-center text-rose-500 border border-rose-500/20">
+                    <div className="w-16 h-16 rounded-2xl bg-pink-500/10 flex items-center justify-center text-[#FF4B91] border border-[#FF4B91]/20">
                         {isForcedLogoutWarning ? <ShieldAlert size={32} /> : <Terminal size={32} />}
                     </div>
                     <div className="space-y-1">
@@ -165,7 +165,7 @@ export function SessionWatcher({ expiresAt, onRefresh, onLogout, isRedirecting }
                     <button
                         onClick={() => { void handleStayActive(); }}
                         disabled={isRefreshing}
-                        className="w-full py-4 rounded-2xl bg-[#FF2D55] text-white font-black uppercase tracking-[0.2em] text-[10px] shadow-lg shadow-rose-500/20 hover:scale-[1.02] active:scale-95 transition-all"
+                        className="w-full py-4 rounded-2xl bg-[#FF4B91] text-white font-black uppercase tracking-[0.2em] text-[10px] shadow-lg shadow-pink-500/20 hover:scale-[1.02] active:scale-95 transition-all"
                     >
                         {isRefreshing ? "Synchronizing..." : "Maintain Link"}
                     </button>

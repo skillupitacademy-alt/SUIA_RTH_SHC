@@ -27,7 +27,7 @@ export function GuestInfrastructureLayout({ children }: { children: React.ReactN
                     </div>
                     <h1 className="text-6xl font-black leading-tight tracking-tighter text-slate-900 font-outfit">
                         Core <br />
-                        <span className="text-gradient">Operations</span>
+                        <span className="text-[#FF4B91]">Operations</span>
                     </h1>
                     <p className="text-xl text-slate-500 max-w-md leading-relaxed">
                         Establishing secure handshake with the central nervous system. Authorized infrastructure personnel only.

@@ -91,7 +91,7 @@ export function InfrastructureGuard({ children }: { children: React.ReactNode })
     if (initialized === false || (isAuthenticated === false && !isLoggingOut) || (_user?.role as string) !== 'infrastructure') {
         return (
             <div className="h-screen w-screen bg-slate-950 flex flex-col items-center justify-center">
-                <ZLoader size="xl" text="COMMAND CENTER SYNCHRONIZING_" color="#FF2D55" />
+                <ZLoader size="xl" text="COMMAND CENTER SYNCHRONIZING_" color="#FF4B91" />
             </div>
         );
     }

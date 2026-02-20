@@ -69,7 +69,7 @@ export function InfrastructureLockScreen() {
                 {/* Secure Status Indicator */}
                 <div className="flex flex-col items-center space-y-6">
                     <div className="relative">
-                        <div className="w-28 h-28 rounded-[2.5rem] bg-gradient-to-br from-[#FF2D55] to-[#E61E44] flex items-center justify-center shadow-2xl shadow-[#FF2D55]/30 ring-1 ring-white/20">
+                        <div className="w-28 h-28 rounded-[2.5rem] bg-[#FF2D55] flex items-center justify-center shadow-2xl shadow-[#FF2D55]/30 ring-1 ring-white/20">
                             <Lock size={44} className="text-white" />
                         </div>
                         <div className="absolute -bottom-1 -right-1 bg-emerald-500 text-white p-2.5 rounded-full border-[6px] border-slate-950 shadow-lg">

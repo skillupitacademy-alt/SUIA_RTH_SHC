@@ -112,7 +112,7 @@ export default function Home() {
                                 </div>
                             </div>
                             <h1 className="heading-title">
-                                GLOBAL <span className="text-gradient">ORCHESTRATION</span>
+                                GLOBAL <span className="text-[#FF4B91]">ORCHESTRATION</span>
                             </h1>
                             <p className="description">
                                 High-authority administrative interface for the Quiz Platform&apos;s infrastructure.

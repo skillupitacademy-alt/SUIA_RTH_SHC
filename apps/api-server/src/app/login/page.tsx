@@ -50,7 +50,9 @@ export default function LoginPage() {
         <GuestInfrastructureLayout>
             <div className="space-y-8">
                 <div className="space-y-2 text-center lg:text-left">
-                    <h2 className="text-3xl font-black tracking-tight text-slate-900 font-outfit uppercase">Handshake Required</h2>
+                    <h2 className="text-3xl font-black tracking-tighter text-[#1A1A1A] font-outfit uppercase">
+                        Handshake <span className="text-[#FF4B91]">Required</span>
+                    </h2>
                     <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">Provide cryptographic passkey to initialize session.</p>
                 </div>
 
