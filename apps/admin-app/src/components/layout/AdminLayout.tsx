@@ -29,6 +29,7 @@ import { clientLogger } from '@/utils/clientLogger';
 
 const ADMIN_NAV = [
     { name: 'Dashboard', href: '/', icon: LayoutDashboard },
+    { name: 'Global Intelligence', href: '/dashboard/intelligence', icon: BarChart3 },
     { name: 'Smart Tutor', href: '/dashboard/tutor', icon: Brain },
     { name: 'Question Bank', href: '/questions', icon: Database },
     { name: 'Question Factory', href: '/factory/question-generator', icon: BarChart3 },

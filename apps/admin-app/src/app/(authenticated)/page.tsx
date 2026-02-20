@@ -5,8 +5,6 @@ import {
     ArrowRight,
     BarChart3,
     Cpu,
-    FileText,
-    GitBranch,
     GraduationCap,
     LayoutDashboard,
     Radio,
@@ -18,12 +16,6 @@ import {
 import Link from 'next/link';
 import React from 'react';
 
-import AdminDiscriminationScatter from "@/components/charts/AdminDiscriminationScatter";
-import AdminItemDifficultyChart from '@/components/charts/AdminItemDifficultyChart';
-import AdminPlannedVsActualDifficulty from "@/components/charts/AdminPlannedVsActualDifficulty";
-import AdminPoolSufficiency from "@/components/charts/AdminPoolSufficiency";
-import AdminScoreHistogram from "@/components/charts/AdminScoreHistogram";
-import AdminTopicSkillHeatmap from '@/components/charts/AdminTopicSkillHeatmap';
 import { PageTitle } from '@/components/layout/PageTitle';
 import { cn } from '@/lib/utils';
 
@@ -38,40 +30,40 @@ const dashboardCards = [
         border: "hover:border-[#FF4B91]/30"
     },
     {
-        title: "Performance",
-        description: "Accuracy & Skill Gaps",
+        title: "Intelligence Hub",
+        description: "Scale Trends & Cohort Intel",
         icon: <BarChart3 size={24} />,
-        href: "/dashboard/performance",
+        href: "/dashboard/intelligence",
         color: "text-blue-600",
         bg: "bg-blue-500/5",
         border: "hover:border-blue-500/30"
     },
     {
-        title: "Service Health",
-        description: "Infrastructure Monitoring",
-        icon: <Activity size={24} />,
-        href: "/dashboard/service-health",
+        title: "Smart Tutor",
+        description: "Operations & Coaching",
+        icon: <GraduationCap size={24} />,
+        href: "/dashboard/tutor",
         color: "text-emerald-500",
         bg: "bg-emerald-500/5",
         border: "hover:border-emerald-500/30"
     },
     {
-        title: "Content Readiness",
-        description: "Hierarchy & Gaps Audit",
-        icon: <GraduationCap size={24} />,
-        href: "/dashboard/content",
-        color: "text-indigo-600",
-        bg: "bg-indigo-600/5",
-        border: "hover:border-indigo-600/30"
+        title: "Question Factory",
+        description: "AI Generation Health",
+        icon: <Cpu size={24} />,
+        href: "/factory/question-generator",
+        color: "text-violet-500",
+        bg: "bg-violet-500/5",
+        border: "hover:border-violet-500/30"
     },
     {
-        title: "Security Protocol",
-        description: "Threats & Auth Logs",
-        icon: <ShieldAlert size={24} />,
-        href: "/dashboard/security",
-        color: "text-rose-500",
-        bg: "bg-rose-500/5",
-        border: "hover:border-rose-500/30"
+        title: "Live Operations",
+        description: "Active Sessions Tracking",
+        icon: <Radio size={24} />,
+        href: "/dashboard/live-sessions",
+        color: "text-rose-600",
+        bg: "bg-rose-600/5",
+        border: "hover:border-rose-600/30"
     },
     {
         title: "User Intelligence",
@@ -87,9 +79,9 @@ const dashboardCards = [
         description: "Full Administrative Trail",
         icon: <Activity size={24} />,
         href: "/dashboard/audit",
-        color: "text-emerald-600",
-        bg: "bg-emerald-600/5",
-        border: "hover:border-emerald-600/30"
+        color: "text-slate-600",
+        bg: "bg-slate-500/5",
+        border: "hover:border-slate-500/30"
     },
     {
         title: "RBAC Governance",
@@ -101,40 +93,13 @@ const dashboardCards = [
         border: "hover:border-indigo-500/30"
     },
     {
-        title: "Live Operations",
-        description: "Active Sessions Tracking",
-        icon: <Radio size={24} />,
-        href: "/dashboard/live-sessions",
-        color: "text-rose-600",
-        bg: "bg-rose-600/5",
-        border: "hover:border-rose-600/30"
-    },
-    {
-        title: "Exam Intelligence",
-        description: "Completion & Trends",
-        icon: <FileText size={24} />,
-        href: "/dashboard/exams",
-        color: "text-amber-500",
-        bg: "bg-amber-500/5",
-        border: "hover:border-amber-500/30"
-    },
-    {
-        title: "Blueprint Audit",
-        description: "Configuration Integrity",
-        icon: <GitBranch size={24} />,
-        href: "/dashboard/blueprints",
-        color: "text-blue-600",
-        bg: "bg-blue-600/5",
-        border: "hover:border-blue-600/30"
-    },
-    {
-        title: "Factory Analytics",
-        description: "AI Generation Health",
-        icon: <Cpu size={24} />,
-        href: "/dashboard/question-factory",
-        color: "text-violet-500",
-        bg: "bg-violet-500/5",
-        border: "hover:border-violet-500/30"
+        title: "Security Protocol",
+        description: "Threats & Auth Logs",
+        icon: <ShieldAlert size={24} />,
+        href: "/dashboard/security",
+        color: "text-rose-500",
+        bg: "bg-rose-500/5",
+        border: "hover:border-rose-500/30"
     }
 ];
 
@@ -169,7 +134,7 @@ export default function AdminDashboard() {
             </div>
 
             {/* Hub Grid - 3 Column Layout */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6 pb-12 border-b border-slate-100">
                 {dashboardCards.map((card, idx) => (
                     <Link
                         key={idx}
@@ -209,22 +174,6 @@ export default function AdminDashboard() {
                         <div className="absolute inset-x-8 bottom-8 h-px bg-slate-100 scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left" />
                     </Link>
                 ))}
-            </div>
-
-            {/* Analytics Deep Dive */}
-            <div className="grid lg:grid-cols-2 gap-8 mb-8">
-                <AdminTopicSkillHeatmap />
-                <AdminItemDifficultyChart />
-            </div>
-
-            <div className="grid lg:grid-cols-2 gap-8 mb-8">
-                <AdminScoreHistogram />
-                <AdminDiscriminationScatter />
-            </div>
-
-            <div className="grid lg:grid-cols-2 gap-8 mb-8">
-                <AdminPoolSufficiency />
-                <AdminPlannedVsActualDifficulty />
             </div>
 
             {/* System Status Footer */}

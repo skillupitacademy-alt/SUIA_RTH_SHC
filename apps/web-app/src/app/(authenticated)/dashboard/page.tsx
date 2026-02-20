@@ -1,17 +1,11 @@
 'use client';
 
 import { StatsGrid } from "@/components/dashboard/StatsCards";
-import ScoreHistoryChart from "@/components/charts/ScoreHistoryChart";
-import MasteryTrendChart from "@/components/charts/MasteryTrendChart";
-import TopicPerformanceHeatmap from "@/components/charts/TopicPerformanceHeatmap";
-import WeaknessTreeChart from "@/components/charts/WeaknessTreeChart";
 import { Sidebar } from "@/components/dashboard/Sidebar";
 import { ArrowRight, Play, BookOpen, Activity, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { apiClient } from "@quiz/api-client";
-import PersonalTimeBoxplot from "@/components/charts/PersonalTimeBoxplot";
-import PersonalDifficultySplit from "@/components/charts/PersonalDifficultySplit";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 import { cn } from "@/lib/utils";
 import { MobileNav } from "@/components/dashboard/MobileNav";
@@ -95,19 +89,11 @@ export default function DashboardPage() {
                     {/* Stats Section */}
                     <StatsGrid overview={data?.overview} deltaPct={data?.deltaPct} healthStatus={data?.healthStatus} />
 
-                    <div className="grid lg:grid-cols-3 gap-8 mt-10">
-                        <div className="lg:col-span-2 space-y-8">
-                            <ScoreHistoryChart />
-                            <MasteryTrendChart />
-                            <TopicPerformanceHeatmap />
-                            <WeaknessTreeChart />
-                            <div className="grid md:grid-cols-2 gap-8">
-                                <PersonalTimeBoxplot />
-                                <PersonalDifficultySplit />
-                            </div>
+                    <div className="grid lg:grid-cols-4 gap-8 mt-10">
+                        <div className="lg:col-span-3 space-y-8">
+                            <TutorInsightCard />
                         </div>
                         <div className="space-y-6">
-                            <TutorInsightCard />
                             <h3 className="text-xl font-bold px-1">Recent Activity</h3>
                             <div className="space-y-4">
                                 {data?.recentActivity?.length === 0 ? (

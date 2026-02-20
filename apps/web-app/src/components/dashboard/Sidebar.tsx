@@ -18,9 +18,9 @@ import { useDashboardStore } from '@/store/dashboard-store';
 
 const NAV_ITEMS = [
     { name: 'Overview', href: '/dashboard', icon: LayoutDashboard },
+    { name: 'Learning Insights', href: '/dashboard/insights', icon: TrendingUp },
     { name: 'My Exams', href: '/dashboard/my-exams', icon: BookOpen },
     { name: 'Inbox', href: '/dashboard/inbox', icon: Mail },
-    { name: 'Learning Path', href: '/dashboard/path', icon: TrendingUp },
     { name: 'Certifications', href: '/dashboard/certs', icon: Award },
     { name: 'Reports', href: '/dashboard/reports', icon: FileText },
     { name: 'Settings', href: '/dashboard/settings', icon: Settings },
