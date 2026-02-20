@@ -1,7 +1,18 @@
 'use client';
 
 import { ZLoader } from "@quiz/ui";
-import { BarChart3, BrainCircuit, PieChart as PieChartIcon, ShieldCheck, TrendingDown } from "lucide-react";
+import {
+    Activity,
+    BarChart3,
+    BrainCircuit,
+    Layers,
+    LayoutDashboard,
+    Microscope,
+    PieChart as PieChartIcon,
+    ShieldCheck,
+    TrendingDown,
+    Wrench
+} from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -126,15 +137,15 @@ export default function AdminIntelligencePage() {
         }]
     } : null;
 
-    const tabs: { key: typeof activeTab; label: string }[] = [
-        { key: "command", label: "Command & Repair" },
-        { key: "audit", label: "Psychometric Audit" },
-        { key: "cohort", label: "Cohort Mastery" },
-        { key: "telemetry", label: "Operational Telemetry" },
+    const tabs: { key: typeof activeTab; label: string, icon: React.ReactNode }[] = [
+        { key: "command", label: "Command", icon: <Wrench size={14} /> },
+        { key: "audit", label: "Audit", icon: <Microscope size={14} /> },
+        { key: "cohort", label: "Cohort", icon: <Layers size={14} /> },
+        { key: "telemetry", label: "Telemetry", icon: <Activity size={14} /> },
     ];
     const hasError = typeof error === "string" && error.length > 0;
     const hasTutorData = tutorData !== null;
-    const errorMessage = hasError ? error as string : null;
+    const errorMessage = hasError ? (error as string) : null;
 
     return (
         <div className="space-y-12 pb-24">
@@ -152,179 +163,243 @@ export default function AdminIntelligencePage() {
                 </p>
             </div>
 
-            {/* Tabs */}
-            <div className="flex flex-wrap gap-2">
-                {tabs.map((tab) => (
-                    <button
-                        key={tab.key}
-                        onClick={() => setActiveTab(tab.key)}
-                        className={`px-4 py-2 rounded-full text-[11px] font-black uppercase tracking-widest border transition-all ${
-                            activeTab === tab.key ? "bg-blue-600 text-white border-blue-600" : "bg-white text-slate-600 border-slate-200 hover:border-blue-200 hover:text-blue-600"
-                        }`}
-                    >
-                        {tab.label}
-                    </button>
-                ))}
+            {/* Tabs Container */}
+            <div className="flex justify-center md:justify-start">
+                <div className="inline-flex items-center p-1.5 bg-slate-100/50 border border-slate-200 rounded-3xl shadow-sm backdrop-blur-sm">
+                    {tabs.map((tab) => (
+                        <button
+                            key={tab.key}
+                            onClick={() => setActiveTab(tab.key)}
+                            className={`flex items-center gap-2 px-6 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${activeTab === tab.key
+                                ? "bg-slate-900 text-white shadow-lg shadow-slate-900/20"
+                                : "text-slate-500 hover:text-slate-800 hover:bg-white/50"
+                                }`}
+                        >
+                            {tab.icon}
+                            {tab.label}
+                        </button>
+                    ))}
+                </div>
             </div>
 
             {/* Tab Content */}
-            {activeTab === "command" && (
-                <div className="space-y-24">
-                    {/* Repair Station */}
-                    <div className="space-y-8">
-                        <div className="text-center space-y-2">
-                            <h2 className="text-3xl font-black text-slate-900 uppercase tracking-tighter">Diagnostic Summary</h2>
-                            <p className="text-slate-500 font-bold uppercase text-[10px] tracking-[0.3em]">Operational Readiness & Content Reliability</p>
+            <div className="mt-12">
+                {activeTab === "command" ? (
+                    <div className="space-y-24 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                        {/* Repair Station */}
+                        <div className="space-y-8">
+                            <BrokenQuestionsRepairStation />
                         </div>
-                        <BrokenQuestionsRepairStation />
-                    </div>
 
-                    {/* Pool Sufficiency */}
-                    <div className="space-y-8">
-                        <div className="bg-white p-12 rounded-[3.5rem] border border-slate-200 shadow-xl shadow-slate-200/20 max-w-[1400px] mx-auto overflow-hidden">
-                            <AdminPoolSufficiency />
-                        </div>
-                        <InsightGuideCard {...poolGaugeGuide} />
-                    </div>
-                </div>
-            )}
-
-            {activeTab === "audit" && (
-                <div className="space-y-24">
-                    {/* Item Difficulty */}
-                    <div className="space-y-8">
-                        <div className="bg-white p-12 rounded-[3.5rem] border border-slate-200 shadow-xl shadow-slate-200/20 max-w-[1400px] mx-auto overflow-hidden">
-                            <AdminItemDifficultyChart />
-                        </div>
-                        <InsightGuideCard {...itemDifficultyGuide} />
-                    </div>
-
-                    {/* Discrimination */}
-                    <div className="space-y-8">
-                        <div className="bg-white p-12 rounded-[3.5rem] border border-slate-200 shadow-xl shadow-slate-200/20 max-w-[1400px] mx-auto overflow-hidden">
-                            <AdminDiscriminationScatter />
-                        </div>
-                        <InsightGuideCard {...discriminationGuide} />
-                    </div>
-
-                    {/* Planned vs Actual */}
-                    <div className="space-y-8">
-                        <div className="bg-white p-12 rounded-[3.5rem] border border-slate-200 shadow-xl shadow-slate-200/20 max-w-[1400px] mx-auto overflow-hidden">
-                            <AdminPlannedVsActualDifficulty />
-                        </div>
-                        <InsightGuideCard {...plannedVsActualGuide} />
-                    </div>
-                </div>
-            )}
-
-            {activeTab === "cohort" && (
-                <div className="space-y-24">
-                    {/* Score Distribution */}
-                    <div className="space-y-8">
-                        <div className="bg-white p-12 rounded-[3.5rem] border border-slate-200 shadow-xl shadow-slate-200/20 max-w-[1400px] mx-auto overflow-hidden">
-                            <AdminScoreHistogram />
-                        </div>
-                        <InsightGuideCard {...scoreHistogramGuide} />
-                    </div>
-
-                    {/* Heatmap */}
-                    <div className="space-y-8">
-                        <div className="bg-white p-12 rounded-[3.5rem] border border-slate-200 shadow-xl shadow-slate-200/20 max-w-[1400px] mx-auto overflow-hidden">
-                            <AdminTopicSkillHeatmap />
-                        </div>
-                        <InsightGuideCard {...topicSkillHeatmapGuide} />
-                    </div>
-                </div>
-            )}
-
-            {activeTab === "telemetry" && (
-                <div className="space-y-24">
-                    {/* Help Queue */}
-                    <div className="space-y-8">
-                        <div className="bg-white p-12 rounded-[3.5rem] border border-slate-200 shadow-xl shadow-slate-200/20 max-w-[1400px] mx-auto overflow-hidden">
-                            <HelpRequestManager />
-                        </div>
-                        <InsightGuideCard {...helpQueueGuide} />
-                    </div>
-
-                    {/* Notes Security & Delivery */}
-                    <div className="max-w-[1400px] mx-auto space-y-8">
-                        <div className="p-12 rounded-[3.5rem] bg-slate-900 text-white space-y-10 shadow-2xl border border-white/5">
-                            <div className="flex items-center gap-4">
-                                <div className="p-3 rounded-2xl bg-blue-500/10 text-blue-400 border border-blue-500/20">
-                                    <ShieldCheck size={28} />
+                        {/* Pool Sufficiency */}
+                        <div className="space-y-8">
+                            <div className="flex items-center gap-4 mb-2">
+                                <div className="p-3 rounded-2xl bg-blue-600 text-white shadow-lg shadow-blue-600/20">
+                                    <PieChartIcon size={20} />
                                 </div>
                                 <div>
-                                    <h3 className="text-2xl font-black uppercase tracking-tight">Encryption & Delivery Node</h3>
-                                    <p className="text-[10px] font-bold text-blue-400 uppercase tracking-widest mt-1">Real-time Delivery Intelligence</p>
+                                    <p className="text-[10px] font-black text-blue-600 uppercase tracking-[0.3em]">Resources Protocol</p>
+                                    <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tight">Pool Sufficiency Gauge</h3>
                                 </div>
                             </div>
+                            <div className="bg-white p-12 rounded-[2.5rem] border border-slate-200 shadow-xl shadow-slate-200/20 max-w-[1400px] mx-auto overflow-hidden group hover:-translate-y-1 transition-all duration-300">
+                                <AdminPoolSufficiency />
+                            </div>
+                            <InsightGuideCard {...poolGaugeGuide} />
+                        </div>
+                    </div>
+                ) : null}
 
-                            {loading ? (
-                                <div className="flex justify-center py-6">
-                                    <ZLoader size="md" text="Loading delivery telemetry..." />
+                {activeTab === "audit" ? (
+                    <div className="space-y-24 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                        {/* Item Difficulty */}
+                        <div className="space-y-8">
+                            <div className="flex items-center gap-4 mb-2">
+                                <div className="p-3 rounded-2xl bg-indigo-600 text-white shadow-lg shadow-indigo-600/20">
+                                    <BarChart3 size={20} />
                                 </div>
-                            ) : null}
-                            {errorMessage !== null && !hasTutorData ? (
-                                <div className="p-4 rounded-2xl bg-rose-50 text-rose-600 border border-rose-100 text-sm font-bold">
-                                    Metrics offline: {errorMessage}. <button onClick={() => { setLoading(true); void fetchTutorMetrics(); }} className="underline">Retry</button>
+                                <div>
+                                    <p className="text-[10px] font-black text-indigo-600 uppercase tracking-[0.3em]">Quality Protocol</p>
+                                    <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tight">Item Difficulty Distribution</h3>
                                 </div>
-                            ) : null}
-                            {!loading && !hasError && hasTutorData ? (
-                                <div className="space-y-8">
-                                    <div className="grid md:grid-cols-2 gap-8">
-                                        <div className="space-y-6 bg-white/5 p-8 rounded-3xl border border-white/10">
-                                            <div className="flex items-center gap-3 text-orange-400">
-                                                <BarChart3 size={20} />
-                                                <h4 className="text-sm font-black uppercase tracking-widest">Material Demand</h4>
-                                            </div>
-                                            {notesDemandOption ? (
-                                                <BaseChart option={notesDemandOption} height={300} />
-                                            ) : (
-                                                <p className="text-[11px] font-bold text-slate-300">Data unavailable.</p>
-                                            )}
-                                        </div>
-                                        <div className="space-y-6 bg-white/5 p-8 rounded-3xl border border-white/10">
-                                            <div className="flex items-center gap-3 text-blue-400">
-                                                <PieChartIcon size={20} />
-                                                <h4 className="text-sm font-black uppercase tracking-widest">System Health</h4>
-                                            </div>
-                                            {emailHealthOption ? (
-                                                <BaseChart option={emailHealthOption} height={300} />
-                                            ) : (
-                                                <p className="text-[11px] font-bold text-slate-300">Data unavailable.</p>
-                                            )}
-                                        </div>
-                                    </div>
-
-                                    <div className="grid md:grid-cols-2 gap-8">
-                                        <div className="space-y-6 bg-white/5 p-8 rounded-3xl border border-white/10">
-                                            <div className="flex items-center gap-3 text-rose-400">
-                                                <TrendingDown size={20} />
-                                                <h4 className="text-sm font-black uppercase tracking-widest">Mastery Gaps</h4>
-                                            </div>
-                                            {weakTopicsOption ? (
-                                                <BaseChart option={weakTopicsOption} height={300} />
-                                            ) : (
-                                                <p className="text-[11px] font-bold text-slate-300">Data unavailable.</p>
-                                            )}
-                                        </div>
-                                        <div className="h-full flex flex-col justify-center gap-4 text-center p-8">
-                                            <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em]">Protocol Status</p>
-                                            <div className="flex items-center justify-center gap-3">
-                                                <div className="h-3 w-3 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_12px_rgba(16,185,129,0.5)]" />
-                                                <span className="text-3xl font-black tracking-tighter uppercase whitespace-nowrap">Node_Synchronized</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            ) : null}
+                            </div>
+                            <div className="bg-white p-12 rounded-[2.5rem] border border-slate-200 shadow-xl shadow-slate-200/20 max-w-[1400px] mx-auto overflow-hidden group hover:-translate-y-1 transition-all duration-300">
+                                <AdminItemDifficultyChart />
+                            </div>
+                            <InsightGuideCard {...itemDifficultyGuide} />
                         </div>
 
-                        <InsightGuideCard {...notesSecurityGuide} />
+                        {/* Discrimination */}
+                        <div className="space-y-8">
+                            <div className="flex items-center gap-4 mb-2">
+                                <div className="p-3 rounded-2xl bg-emerald-600 text-white shadow-lg shadow-emerald-600/20">
+                                    <TrendingDown size={20} className="rotate-180" />
+                                </div>
+                                <div>
+                                    <p className="text-[10px] font-black text-emerald-600 uppercase tracking-[0.3em]">Separation Protocol</p>
+                                    <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tight">Discrimination Analysis</h3>
+                                </div>
+                            </div>
+                            <div className="bg-white p-12 rounded-[2.5rem] border border-slate-200 shadow-xl shadow-slate-200/20 max-w-[1400px] mx-auto overflow-hidden group hover:-translate-y-1 transition-all duration-300">
+                                <AdminDiscriminationScatter />
+                            </div>
+                            <InsightGuideCard {...discriminationGuide} />
+                        </div>
+
+                        {/* Planned vs Actual */}
+                        <div className="space-y-8">
+                            <div className="flex items-center gap-4 mb-2">
+                                <div className="p-3 rounded-2xl bg-violet-600 text-white shadow-lg shadow-violet-600/20">
+                                    <LayoutDashboard size={20} />
+                                </div>
+                                <div>
+                                    <p className="text-[10px] font-black text-violet-600 uppercase tracking-[0.3em]">Calibration Protocol</p>
+                                    <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tight">Planned vs Actual Variance</h3>
+                                </div>
+                            </div>
+                            <div className="bg-white p-12 rounded-[2.5rem] border border-slate-200 shadow-xl shadow-slate-200/20 max-w-[1400px] mx-auto overflow-hidden group hover:-translate-y-1 transition-all duration-300">
+                                <AdminPlannedVsActualDifficulty />
+                            </div>
+                            <InsightGuideCard {...plannedVsActualGuide} />
+                        </div>
                     </div>
-                </div>
-            )}
+                ) : null}
+
+                {activeTab === "cohort" ? (
+                    <div className="space-y-24 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                        {/* Score Distribution */}
+                        <div className="space-y-8">
+                            <div className="flex items-center gap-4 mb-2">
+                                <div className="p-3 rounded-2xl bg-orange-600 text-white shadow-lg shadow-orange-600/20">
+                                    <TrendingDown size={20} />
+                                </div>
+                                <div>
+                                    <p className="text-[10px] font-black text-orange-600 uppercase tracking-[0.3em]">Cohort Protocol</p>
+                                    <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tight">Examination Score Distribution</h3>
+                                </div>
+                            </div>
+                            <div className="bg-white p-12 rounded-[2.5rem] border border-slate-200 shadow-xl shadow-slate-200/20 max-w-[1400px] mx-auto overflow-hidden group hover:-translate-y-1 transition-all duration-300">
+                                <AdminScoreHistogram />
+                            </div>
+                            <InsightGuideCard {...scoreHistogramGuide} />
+                        </div>
+
+                        {/* Heatmap */}
+                        <div className="space-y-8">
+                            <div className="flex items-center gap-4 mb-2">
+                                <div className="p-3 rounded-2xl bg-blue-500 text-white shadow-lg shadow-blue-500/20">
+                                    <Layers size={20} />
+                                </div>
+                                <div>
+                                    <p className="text-[10px] font-black text-blue-500 uppercase tracking-[0.3em]">Competency Protocol</p>
+                                    <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tight">Topic-Skill Mastery Heatmap</h3>
+                                </div>
+                            </div>
+                            <div className="bg-white p-12 rounded-[2.5rem] border border-slate-200 shadow-xl shadow-slate-200/20 max-w-[1400px] mx-auto overflow-hidden group hover:-translate-y-1 transition-all duration-300">
+                                <AdminTopicSkillHeatmap />
+                            </div>
+                            <InsightGuideCard {...topicSkillHeatmapGuide} />
+                        </div>
+                    </div>
+                ) : null}
+
+                {activeTab === "telemetry" ? (
+                    <div className="space-y-24 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                        {/* Help Queue */}
+                        <div className="space-y-8">
+                            <div className="flex items-center gap-4 mb-2">
+                                <div className="p-3 rounded-2xl bg-emerald-500 text-white shadow-lg shadow-emerald-500/20">
+                                    <Activity size={20} />
+                                </div>
+                                <div>
+                                    <p className="text-[10px] font-black text-emerald-500 uppercase tracking-[0.3em]">Support Protocol</p>
+                                    <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tight">Live Help Queue Manager</h3>
+                                </div>
+                            </div>
+                            <div className="bg-white p-12 rounded-[2.5rem] border border-slate-200 shadow-xl shadow-slate-200/20 max-w-[1400px] mx-auto overflow-hidden group hover:-translate-y-1 transition-all duration-300">
+                                <HelpRequestManager />
+                            </div>
+                            <InsightGuideCard {...helpQueueGuide} />
+                        </div>
+
+                        {/* Notes Security & Delivery */}
+                        <div className="max-w-[1400px] mx-auto space-y-8">
+                            <div className="flex items-center gap-4 mb-2">
+                                <div className="p-3 rounded-2xl bg-slate-900 text-white shadow-lg shadow-slate-900/20 border border-white/10">
+                                    <ShieldCheck size={20} />
+                                </div>
+                                <div>
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Systems Protocol</p>
+                                    <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tight">Encryption & Delivery Node</h3>
+                                </div>
+                            </div>
+                            <div className="p-12 rounded-[2.5rem] bg-slate-900 text-white space-y-10 shadow-2xl border border-white/5 relative overflow-hidden">
+                                {loading ? (
+                                    <div className="absolute inset-0 z-10 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center">
+                                        <ZLoader size="md" text="Synchronizing Telemetry..." />
+                                    </div>
+                                ) : null}
+
+                                {errorMessage !== null && !hasTutorData ? (
+                                    <div className="p-4 rounded-2xl bg-rose-500/10 text-rose-400 border border-rose-500/20 text-sm font-bold">
+                                        Metrics offline: {errorMessage}. <button onClick={() => { setLoading(true); void fetchTutorMetrics(); }} className="underline">Retry</button>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-8">
+                                        <div className="grid md:grid-cols-2 gap-8">
+                                            <div className="space-y-6 bg-white/5 p-8 rounded-3xl border border-white/10">
+                                                <div className="flex items-center gap-3 text-orange-400">
+                                                    <BarChart3 size={20} />
+                                                    <h4 className="text-sm font-black uppercase tracking-widest">Material Demand</h4>
+                                                </div>
+                                                {notesDemandOption ? (
+                                                    <BaseChart option={notesDemandOption} height={300} />
+                                                ) : (
+                                                    <p className="text-[11px] font-bold text-slate-300">Data unavailable.</p>
+                                                )}
+                                            </div>
+                                            <div className="space-y-6 bg-white/5 p-8 rounded-3xl border border-white/10">
+                                                <div className="flex items-center gap-3 text-blue-400">
+                                                    <PieChartIcon size={20} />
+                                                    <h4 className="text-sm font-black uppercase tracking-widest">System Health</h4>
+                                                </div>
+                                                {emailHealthOption ? (
+                                                    <BaseChart option={emailHealthOption} height={300} />
+                                                ) : (
+                                                    <p className="text-[11px] font-bold text-slate-300">Data unavailable.</p>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        <div className="grid md:grid-cols-2 gap-8">
+                                            <div className="space-y-6 bg-white/5 p-8 rounded-3xl border border-white/10">
+                                                <div className="flex items-center gap-3 text-rose-400">
+                                                    <TrendingDown size={20} />
+                                                    <h4 className="text-sm font-black uppercase tracking-widest">Mastery Gaps</h4>
+                                                </div>
+                                                {weakTopicsOption ? (
+                                                    <BaseChart option={weakTopicsOption} height={300} />
+                                                ) : (
+                                                    <p className="text-[11px] font-bold text-slate-300">Data unavailable.</p>
+                                                )}
+                                            </div>
+                                            <div className="h-full flex flex-col justify-center gap-4 text-center p-8 bg-white/5 rounded-3xl border border-white/10">
+                                                <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em]">Protocol Status</p>
+                                                <div className="flex items-center justify-center gap-3">
+                                                    <div className="h-3 w-3 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_12px_rgba(16,185,129,0.5)]" />
+                                                    <span className="text-2xl lg:text-3xl font-black tracking-tighter uppercase whitespace-nowrap">Node_Synchronized</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
+                            <InsightGuideCard {...notesSecurityGuide} />
+                        </div>
+                    </div>
+                ) : null}
+            </div>
         </div>
     );
 }

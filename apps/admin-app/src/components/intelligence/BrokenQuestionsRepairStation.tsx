@@ -39,7 +39,8 @@ export function BrokenQuestionsRepairStation() {
 
     const fetchData = useCallback(async () => {
         try {
-            const res = await fetch('/api/admin/metrics/broken-questions?limit=10&floor=10');
+            const apiBase = process.env.NEXT_PUBLIC_API_URL ?? "";
+            const res = await fetch(`${apiBase}/api/admin/metrics/broken-questions?limit=10&floor=10`, { credentials: "include" });
             if (res.ok) {
                 const data = await res.json();
                 setQuestions(data);
@@ -57,7 +58,7 @@ export function BrokenQuestionsRepairStation() {
 
     if (loading) {
         return (
-            <div className="flex h-64 items-center justify-center bg-white rounded-[3.5rem] border border-slate-200">
+            <div className="flex h-64 items-center justify-center bg-white rounded-[2.5rem] border border-slate-200">
                 <ZLoader size="md" text="Scanning content health..." />
             </div>
         );
@@ -65,7 +66,7 @@ export function BrokenQuestionsRepairStation() {
 
     if (questions.length === 0) {
         return (
-            <div className="p-12 text-center bg-white rounded-[3.5rem] border border-slate-200 shadow-sm">
+            <div className="p-12 text-center bg-white rounded-[2.5rem] border border-slate-200 shadow-sm">
                 <div className="p-4 rounded-full bg-emerald-50 text-emerald-500 w-16 h-16 mx-auto mb-4 flex items-center justify-center">
                     <Check size={32} />
                 </div>
@@ -76,7 +77,7 @@ export function BrokenQuestionsRepairStation() {
     }
 
     return (
-        <div className="bg-white rounded-[3.5rem] border border-slate-200 overflow-hidden shadow-xl shadow-slate-200/20 max-w-[1400px] mx-auto animate-in fade-in slide-in-from-bottom-8 duration-700">
+        <div className="bg-white rounded-[2.5rem] border border-slate-200 overflow-hidden shadow-xl shadow-slate-200/20 max-w-[1400px] mx-auto animate-in fade-in slide-in-from-bottom-8 duration-700 group hover:-translate-y-1 transition-all duration-300">
             <div className="p-10 border-b border-slate-100 bg-slate-50/50">
                 <div className="flex items-center justify-between gap-4">
                     <div className="flex items-center gap-4">
@@ -127,79 +128,80 @@ export function BrokenQuestionsRepairStation() {
                                 q.difficulty === "hard"
                                     ? "bg-rose-50 text-rose-600 border-rose-100"
                                     : q.difficulty === "medium"
-                                    ? "bg-blue-50 text-blue-600 border-blue-100"
-                                    : "bg-emerald-50 text-emerald-600 border-emerald-100";
+                                        ? "bg-blue-50 text-blue-600 border-blue-100"
+                                        : "bg-emerald-50 text-emerald-600 border-emerald-100";
                             const severityClass =
                                 q.brokenScore > 0.7
                                     ? "bg-rose-50 text-rose-600 border-rose-100"
                                     : "bg-amber-50 text-amber-600 border-amber-100";
 
                             return (
-                            <tr key={q.questionId} className="group hover:bg-slate-50/50 transition-colors">
-                                <td className="px-8 py-6">
-                                    <div className={cn(
-                                        "w-12 h-12 rounded-2xl flex flex-col items-center justify-center font-black transition-all group-hover:scale-110 shadow-sm border",
-                                        severityClass
-                                    )}>
-                                        <span className="text-[8px] leading-none uppercase">Score</span>
-                                        <span className="text-lg leading-tight">{(q.brokenScore * 100).toFixed(0)}</span>
-                                    </div>
-                                </td>
-                                <td className="px-8 py-6 max-w-md">
-                                    <p className="text-sm font-bold text-slate-700 leading-relaxed truncate group-hover:text-slate-900 transition-colors">
-                                        {stemText}...
-                                    </p>
-                                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1">ID: {q.questionId.slice(0, 8)}</p>
-                                </td>
-                                <td className="px-8 py-6">
-                                    <span className={cn(
-                                        "px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border",
-                                        difficultyClass
-                                    )}>
-                                        {q.difficulty}
-                                    </span>
-                                </td>
-                                <td className="px-8 py-6">
-                                    <div className="space-y-1.5">
-                                        <div className="flex items-center justify-between text-[10px] font-bold">
-                                            <span className="text-slate-400 uppercase">Acc:</span>
-                                            <span className={cn(accuracyClass)}>
-                                                {accuracyPct}%
-                                            </span>
+                                <tr key={q.questionId} className="group/row hover:bg-slate-50/50 transition-colors">
+                                    <td className="px-8 py-6">
+                                        <div className={cn(
+                                            "w-12 h-12 rounded-2xl flex flex-col items-center justify-center font-black transition-all group-hover/row:scale-110 shadow-sm border",
+                                            severityClass
+                                        )}>
+                                            <span className="text-[8px] leading-none uppercase">Score</span>
+                                            <span className="text-lg leading-tight">{(q.brokenScore * 100).toFixed(0)}</span>
                                         </div>
-                                        <div className="flex items-center justify-between text-[10px] font-bold">
-                                            <span className="text-slate-400 uppercase">Disc:</span>
-                                            <span className={cn(discrimClass)}>
-                                                {discriminationVal}
-                                            </span>
+                                    </td>
+                                    <td className="px-8 py-6 max-w-md">
+                                        <p className="text-sm font-bold text-slate-700 leading-relaxed truncate group-hover/row:text-slate-900 transition-colors">
+                                            {stemText}...
+                                        </p>
+                                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1">ID: {q.questionId.slice(0, 8)}</p>
+                                    </td>
+                                    <td className="px-8 py-6">
+                                        <span className={cn(
+                                            "px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border",
+                                            difficultyClass
+                                        )}>
+                                            {q.difficulty}
+                                        </span>
+                                    </td>
+                                    <td className="px-8 py-6">
+                                        <div className="space-y-1.5">
+                                            <div className="flex items-center justify-between text-[10px] font-bold">
+                                                <span className="text-slate-400 uppercase">Acc:</span>
+                                                <span className={cn(accuracyClass)}>
+                                                    {accuracyPct}%
+                                                </span>
+                                            </div>
+                                            <div className="flex items-center justify-between text-[10px] font-bold">
+                                                <span className="text-slate-400 uppercase">Disc:</span>
+                                                <span className={cn(discrimClass)}>
+                                                    {discriminationVal}
+                                                </span>
+                                            </div>
+                                            <div className="flex items-center justify-between text-[10px] font-bold border-t border-slate-50 pt-1">
+                                                <span className="text-slate-300 uppercase italic">n={q.attempts}</span>
+                                            </div>
                                         </div>
-                                        <div className="flex items-center justify-between text-[10px] font-bold border-t border-slate-50 pt-1">
-                                            <span className="text-slate-300 uppercase italic">n={q.attempts}</span>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td className="px-8 py-6">
-                                    <div className="flex flex-wrap gap-2">
-                                        {flags.hard ? <span className="p-1.5 rounded-lg bg-rose-50 text-rose-500 border border-rose-100" title="Low Accuracy"><AlertTriangle size={14} /></span> : null}
-                                        {flags.discrim ? <span className="p-1.5 rounded-lg bg-rose-100 text-rose-600 border border-rose-200" title="Low Discrimination"><ArrowUpRight size={14} className="rotate-90" /></span> : null}
-                                        {flags.time ? <div className="flex items-center gap-2 px-2 py-1 rounded-lg bg-amber-50 text-amber-600 border border-amber-100 group/tip relative">
+                                    </td>
+                                    <td className="px-8 py-6">
+                                        <div className="flex flex-wrap gap-2">
+                                            {flags.hard ? <span className="p-1.5 rounded-lg bg-rose-50 text-rose-500 border border-rose-100" title="Low Accuracy"><AlertTriangle size={14} /></span> : null}
+                                            {flags.discrim ? <span className="p-1.5 rounded-lg bg-rose-100 text-rose-600 border border-rose-200" title="Low Discrimination"><ArrowUpRight size={14} className="rotate-90" /></span> : null}
+                                            {flags.time ? <div className="flex items-center gap-2 px-2 py-1 rounded-lg bg-amber-50 text-amber-600 border border-amber-100 group/tip relative">
                                                 <Clock size={14} />
                                                 <span className="text-[9px] font-black uppercase">Anomaly</span>
                                             </div> : null}
-                                        {hasTimeNote ? <p className="text-[8px] font-bold text-slate-400 max-w-[120px] leading-tight italic">{q.timeNote}</p> : null}
-                                    </div>
-                                </td>
-                                <td className="px-8 py-6 text-right">
-                                    <Link
-                                        href={`/questions/${q.questionId}/edit`}
-                                        className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest hover:bg-blue-600 transition-all shadow-lg shadow-slate-900/10 hover:shadow-blue-500/20 active:scale-95 group-hover:translate-x-[-4px]"
-                                    >
-                                        Fix
-                                        <ExternalLink size={14} />
-                                    </Link>
-                                </td>
-                            </tr>
-                        )})}
+                                            {hasTimeNote ? <p className="text-[8px] font-bold text-slate-400 max-w-[120px] leading-tight italic">{q.timeNote}</p> : null}
+                                        </div>
+                                    </td>
+                                    <td className="px-8 py-6 text-right">
+                                        <Link
+                                            href={`/questions/${q.questionId}/edit`}
+                                            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest hover:bg-blue-600 transition-all shadow-lg shadow-slate-900/10 hover:shadow-blue-500/20 active:scale-95 group-hover/row:translate-x-[-4px]"
+                                        >
+                                            Fix
+                                            <ExternalLink size={14} />
+                                        </Link>
+                                    </td>
+                                </tr>
+                            )
+                        })}
                     </tbody>
                 </table>
             </div>
