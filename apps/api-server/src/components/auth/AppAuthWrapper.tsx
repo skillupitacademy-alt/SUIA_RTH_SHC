@@ -7,7 +7,7 @@ import { SessionWatcher } from '@/components/auth/SessionWatcher';
 import { useAuthStore } from '@/store/auth-store';
 
 export function AppAuthWrapper({ children }: { children: React.ReactNode }) {
-    const { expiresAt, login, logout, initialized } = useAuthStore();
+    const { expiresAt, login, logout, initialized, isAuthenticated } = useAuthStore();
     const [isRedirecting, setIsRedirecting] = useState(false);
 
     const handleRefresh = async () => {
@@ -35,19 +35,22 @@ export function AppAuthWrapper({ children }: { children: React.ReactNode }) {
         });
     };
 
-    if (!initialized) {
-        return <div className="invisible">{children}</div>;
-    }
+    if (!initialized) return null;
+
+    const shouldWatchSession = isAuthenticated && typeof expiresAt === 'string' && expiresAt.length > 0;
+    const sessionWatcher = shouldWatchSession ? (
+        <SessionWatcher
+            expiresAt={expiresAt}
+            onRefresh={handleRefresh}
+            onLogout={handleLogout}
+            isRedirecting={isRedirecting}
+        />
+    ) : null;
 
     return (
         <>
             {children}
-            <SessionWatcher
-                expiresAt={expiresAt}
-                onRefresh={handleRefresh}
-                onLogout={handleLogout}
-                isRedirecting={isRedirecting}
-            />
+            {sessionWatcher}
         </>
     );
 }

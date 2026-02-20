@@ -13,8 +13,8 @@ export default function LoginPage() {
     const router = useRouter();
     const login = useAuthStore((state) => state.login);
 
-    const [email, setEmail] = useState('root@system.internal');
-    const [password, setPassword] = useState('password_infra_core');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
