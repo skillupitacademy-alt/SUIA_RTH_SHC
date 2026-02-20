@@ -83,7 +83,7 @@ export default function TrendsPage() {
 
     return (
         <div className="min-h-screen bg-slate-50 p-8">
-            <div className="max-w-7xl mx-auto">
+            <div className="w-full">
                 {/* Header */}
                 <div className="flex items-center justify-between mb-8">
                     <div>

@@ -82,7 +82,7 @@ export default function MyExamsPage() {
         <AuthGuard>
             <div className="flex min-h-[calc(100vh-64px)] bg-white">
                 <Sidebar />
-                <main className="flex-1 p-6 md:p-10 pb-24 md:pb-10 space-y-8 overflow-y-auto">
+                <main className="flex-1 md:ml-64 p-6 md:p-10 pb-24 md:pb-10 space-y-8 overflow-y-auto">
                     {/* Header Section */}
                     <div className="flex items-center gap-5">
                         <Link href="/dashboard" className="p-3 rounded-2xl border bg-white shadow-sm hover:bg-slate-50 transition-all">

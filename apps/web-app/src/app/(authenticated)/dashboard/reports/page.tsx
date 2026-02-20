@@ -19,7 +19,7 @@ export default function ReportsPage() {
         <AuthGuard>
             <div className="flex min-h-[calc(100vh-64px)]">
                 <Sidebar />
-                <main className="flex-1 p-6 md:p-10 space-y-10">
+                <main className="flex-1 md:ml-64 p-6 md:p-10 space-y-10">
                     <div className="flex flex-col gap-4">
                         <div className="h-14 w-14 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
                             <FileText size={32} />

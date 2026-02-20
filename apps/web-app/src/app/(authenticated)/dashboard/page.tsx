@@ -39,7 +39,7 @@ export default function DashboardPage() {
         <AuthGuard>
             <div className="flex min-h-[calc(100vh-64px)]">
                 <Sidebar />
-                <main className="flex-1 p-6 md:p-10 pb-24 md:pb-10 space-y-10 overflow-y-auto bg-muted/5">
+                <main className="flex-1 md:ml-64 p-6 md:p-10 pb-24 md:pb-10 space-y-10 overflow-y-auto bg-muted/5">
                     {/* Welcome Header */}
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                         <div>

@@ -19,8 +19,8 @@ export default function SettingsPage() {
         <AuthGuard>
             <div className="flex min-h-[calc(100vh-64px)]">
                 <Sidebar />
-                <main className="flex-1 p-6 md:p-10 space-y-10 overflow-y-auto bg-muted/5">
-                    <div className="max-w-4xl mx-auto space-y-10">
+                <main className="flex-1 md:ml-64 p-6 md:p-10 space-y-10 overflow-y-auto bg-muted/5">
+                    <div className="w-full space-y-10">
                         {/* Header */}
                         <div>
                             <h1 className="text-3xl font-extrabold tracking-tight">Account Settings</h1>

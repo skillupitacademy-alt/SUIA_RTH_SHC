@@ -136,7 +136,7 @@ export default function DynamicReportPage() {
                 </div>
             </header>
 
-            <main className="max-w-7xl mx-auto py-12 px-6 md:px-12 space-y-12">
+            <main className="w-full py-12 px-6 md:px-12 space-y-12">
                 {/* Hero Metrics */}
                 <ResultSummary
                     score={report.score}
@@ -147,7 +147,7 @@ export default function DynamicReportPage() {
                 />
 
                 {/* Executive Intelligence Grid (Single Column for Maximum Impact) */}
-                <div className="space-y-12 max-w-4xl mx-auto">
+                <div className="space-y-12 w-full">
                     {/* 1. Skill Capability Matrix */}
                     <CompetencyRadar
                         skills={categoryData.map(c => ({ name: c.name, value: c.accuracy }))}
@@ -246,7 +246,7 @@ export default function DynamicReportPage() {
             </main>
 
             <footer className="py-12 border-t border-muted/10 opacity-40">
-                <div className="max-w-7xl mx-auto px-12 text-[10px] font-bold text-center tracking-widest uppercase">
+                <div className="w-full px-12 text-[10px] font-bold text-center tracking-widest uppercase">
                     Protocol: Executive Analytics Hub | Phase 20 Mastery Deployment | Zero-Occlusion Cockpit Verified
                 </div>
             </footer>
