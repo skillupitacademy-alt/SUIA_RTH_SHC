@@ -76,30 +76,33 @@ export default function PersonalTimeBoxplot() {
             },
         },
         grid: {
-            top: 20,
-            bottom: 40,
-            left: 50,
-            right: 30,
+            top: 60,
+            bottom: 60,
+            left: 80,
+            right: 40,
         },
         xAxis: {
             type: "category",
             data: ["Global Pacing"],
-            axisLine: { show: false },
+            axisLine: { lineStyle: { color: "#E2E8F0" } },
             axisTick: { show: false },
-            axisLabel: { show: false },
+            axisLabel: { color: "#94A3B8", fontSize: 10, fontWeight: "bold", margin: 20 },
         },
         yAxis: {
             type: "value",
-            name: "Seconds per Question",
+            name: "Seconds / Question",
             nameTextStyle: {
-                color: "#94A3B8",
+                color: "#64748B",
                 fontSize: 10,
-                padding: [0, 0, 10, 0],
+                fontWeight: "bold",
+                padding: [0, 0, 20, 0],
             },
             splitLine: {
                 lineStyle: { type: "dashed", color: "#F1F5F9" },
             },
-            axisLabel: { color: "#64748B", fontSize: 11 },
+            axisLabel: { color: "#94A3B8", fontSize: 10, fontWeight: "bold" },
+            minInterval: 10,
+            scale: true,
         },
         series: [
             {
@@ -140,7 +143,7 @@ export default function PersonalTimeBoxplot() {
                 </div>
             </div>
 
-            <div className="flex-grow min-h-[220px]">
+            <div className="flex-grow min-h-[300px]">
                 <BaseChart option={option} loading={loading} height="100%" />
             </div>
 

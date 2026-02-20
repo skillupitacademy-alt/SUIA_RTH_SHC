@@ -83,57 +83,48 @@ export default function WeaknessTreeChart() {
                 data: data,
                 roam: false,
                 nodeClick: "zoomToNode",
-                breadcrumb: {
+                leafDepth: 1,
+                label: {
                     show: true,
-                    top: 5,
-                    left: "center",
-                    itemStyle: {
-                        color: "#F1F5F9",
-                        borderColor: "#E2E8F0",
-                        textStyle: { color: "#475569", fontSize: 11 },
-                    },
+                    formatter: "{b}",
+                    fontSize: 12,
+                    fontWeight: "black",
+                    color: "#fff"
+                },
+                upperLabel: {
+                    show: true,
+                    height: 35,
+                    color: "#fff",
+                    fontWeight: "black",
+                    fontSize: 14,
+                    textBorderColor: "rgba(0,0,0,0.1)",
+                    textBorderWidth: 2
+                },
+                itemStyle: {
+                    borderColor: "#fff",
+                    borderWidth: 2,
+                    gapWidth: 1
                 },
                 levels: [
                     {
-                        // Domain level
                         itemStyle: {
-                            borderColor: "#94A3B8",
+                            borderColor: "#334155",
+                            borderWidth: 4,
+                            gapWidth: 4
+                        },
+                        upperLabel: { show: true }
+                    },
+                    {
+                        itemStyle: {
+                            borderColor: "#64748B",
                             borderWidth: 2,
-                            gapWidth: 3,
-                        },
-                        upperLabel: {
-                            show: true,
-                            height: 28,
-                            color: "#1E293B",
-                            fontWeight: "bold",
-                            fontSize: 13,
-                            backgroundColor: "rgba(241, 245, 249, 0.9)",
-                            padding: [4, 8],
-                        },
+                            gapWidth: 2
+                        }
                     },
                     {
-                        // Topic level
+                        colorMappingBy: "value",
                         itemStyle: {
-                            borderColor: "#CBD5E1",
-                            borderWidth: 1,
-                            gapWidth: 2,
-                        },
-                        upperLabel: {
-                            show: true,
-                            height: 24,
-                            color: "#334155",
-                            fontWeight: "600",
-                            fontSize: 11,
-                            backgroundColor: "rgba(248, 250, 252, 0.9)",
-                            padding: [3, 6],
-                        },
-                    },
-                    {
-                        // Skill level (leaf)
-                        itemStyle: {
-                            borderColor: "#E2E8F0",
-                            borderWidth: 1,
-                            gapWidth: 1,
+                            gapWidth: 1
                         },
                         label: {
                             show: true,
@@ -146,7 +137,7 @@ export default function WeaknessTreeChart() {
                                 return `${params.name}\n${100 - val}%`;
                             },
                         },
-                    },
+                    }
                 ],
                 visualMin: 0,
                 visualMax: 100,
@@ -158,7 +149,7 @@ export default function WeaknessTreeChart() {
     };
 
     return (
-        <div className="w-full bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+        <div className="w-full bg-white p-6 rounded-2xl shadow-sm border border-slate-100 h-full flex flex-col">
             <div className="mb-4 flex items-center justify-between">
                 <div>
                     <h3 className="text-lg font-semibold text-slate-800">Weakness Analysis</h3>
@@ -168,7 +159,9 @@ export default function WeaknessTreeChart() {
                     Adaptive
                 </div>
             </div>
-            <BaseChart option={option} height={450} loading={loading} />
+            <div className="flex-grow min-h-[450px]">
+                <BaseChart option={option} loading={loading} height="100%" />
+            </div>
         </div>
     );
 }

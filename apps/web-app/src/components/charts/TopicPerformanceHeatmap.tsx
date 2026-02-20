@@ -83,25 +83,27 @@ export default function TopicPerformanceHeatmap() {
             },
         },
         grid: {
-            top: 10,
-            right: 20,
-            bottom: 60,
-            left: 20,
+            top: 40,
+            right: 40,
+            bottom: 120,
+            left: 40,
         },
         xAxis: {
             type: "category",
             data: sortedTopics,
             axisLabel: {
-                color: "#64748B",
+                color: "#94A3B8",
                 fontSize: 10,
+                fontWeight: "bold",
                 rotate: 35,
                 interval: 0,
                 overflow: "truncate",
-                width: 80,
+                width: 100,
+                margin: 20
             },
-            axisLine: { show: false },
+            axisLine: { lineStyle: { color: "#E2E8F0" } },
             axisTick: { show: false },
-            splitArea: { show: true },
+            splitArea: { show: false },
         },
         yAxis: {
             type: "category",
@@ -116,10 +118,10 @@ export default function TopicPerformanceHeatmap() {
             calculable: false,
             orient: "horizontal",
             left: "center",
-            bottom: 0,
-            itemWidth: 12,
-            itemHeight: 100,
-            textStyle: { color: "#64748B", fontSize: 10 },
+            bottom: 20,
+            itemWidth: 15,
+            itemHeight: 200,
+            textStyle: { color: "#94A3B8", fontSize: 10, fontWeight: "bold" },
             inRange: {
                 color: ["#ef4444", "#f59e0b", "#22c55e"], // red → amber → green
             },
@@ -134,13 +136,17 @@ export default function TopicPerformanceHeatmap() {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     formatter: (params: any) => `${params.value[2]}%`,
                     color: "#fff",
-                    fontWeight: "bold",
-                    fontSize: 11,
+                    fontWeight: "black",
+                    fontSize: 12,
+                },
+                itemStyle: {
+                    borderWidth: 2,
+                    borderColor: "#fff"
                 },
                 emphasis: {
                     itemStyle: {
-                        shadowBlur: 10,
-                        shadowColor: "rgba(0, 0, 0, 0.2)",
+                        shadowBlur: 20,
+                        shadowColor: "rgba(0, 0, 0, 0.3)",
                     },
                 },
             },
@@ -153,7 +159,7 @@ export default function TopicPerformanceHeatmap() {
                 <h3 className="text-lg font-semibold text-slate-800">Topic Strengths & Weaknesses</h3>
                 <p className="text-sm text-slate-500">Your accuracy per topic — sorted weakest first</p>
             </div>
-            <BaseChart option={option} height={200} loading={loading} />
+            <BaseChart option={option} height={350} loading={loading} />
         </div>
     );
 }

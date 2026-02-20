@@ -74,37 +74,40 @@ export default function PersonalDifficultySplit() {
         },
         grid: {
             top: 40,
-            bottom: 40,
-            left: 50,
-            right: 20
+            bottom: 60,
+            left: 60,
+            right: 40,
+            containLabel: true
         },
         xAxis: {
             type: 'category',
             data: labels,
-            axisLine: { show: false },
+            axisLine: { lineStyle: { color: "#E2E8F0" } },
             axisTick: { show: false },
             axisLabel: {
-                color: '#64748B',
+                color: '#94A3B8',
                 fontWeight: 'bold',
-                fontSize: 11,
+                fontSize: 10,
+                margin: 15,
                 formatter: (v: string) => v.toUpperCase()
             }
         },
         yAxis: {
             type: 'value',
             max: 100,
+            minInterval: 20,
             splitLine: {
                 lineStyle: { type: 'dashed', color: '#F1F5F9' }
             },
-            axisLabel: { color: '#94A3B8', fontSize: 10 }
+            axisLabel: { color: '#94A3B8', fontSize: 10, fontWeight: 'bold' }
         },
         series: [
             {
                 data: accuracy,
                 type: 'bar',
-                barWidth: '40%',
+                barWidth: '35%',
                 itemStyle: {
-                    borderRadius: [8, 8, 0, 0],
+                    borderRadius: [4, 4, 0, 0],
                     color: (params: ChartParam) => {
                         const val = params.value;
                         if (val > 75) return "#10b981"; // Emerald
@@ -115,7 +118,7 @@ export default function PersonalDifficultySplit() {
                 showBackground: true,
                 backgroundStyle: {
                     color: 'rgba(241, 245, 249, 0.5)',
-                    borderRadius: [8, 8, 0, 0]
+                    borderRadius: [4, 4, 0, 0]
                 }
             }
         ]
@@ -133,7 +136,7 @@ export default function PersonalDifficultySplit() {
                 </div>
             </div>
 
-            <div className="flex-grow min-h-[250px]">
+            <div className="flex-grow min-h-[300px]">
                 <BaseChart option={option} loading={loading} height="100%" />
             </div>
 

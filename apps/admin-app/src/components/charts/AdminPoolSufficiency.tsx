@@ -1,7 +1,7 @@
 "use client";
 
 import { apiClient, type PoolSufficiencyResponse } from "@quiz/api-client";
-import { AlertTriangle, CheckCircle2, Database, Inbox, Info } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Database, Inbox } from "lucide-react";
 import React, { useEffect, useState } from "react";
 
 import BaseChart from "./BaseChart";
@@ -70,13 +70,13 @@ export default function AdminPoolSufficiency() {
                 startAngle: 180,
                 endAngle: 0,
                 center: ['50%', '85%'],
-                radius: '140%',
+                radius: '110%',
                 min: 0,
                 max: 100,
                 splitNumber: 10,
                 axisLine: {
                     lineStyle: {
-                        width: 16,
+                        width: 20,
                         color: [
                             [0.3, '#F43F5E'], // Critical
                             [0.5, '#F59E0B'], // Low
@@ -87,35 +87,36 @@ export default function AdminPoolSufficiency() {
                 },
                 pointer: {
                     icon: 'path://M12.8,0.7l12,40.1H0.7L12.8,0.7z',
-                    length: '12%',
-                    width: 24,
-                    offsetCenter: [0, '-60%'],
+                    length: '15%',
+                    width: 20,
+                    offsetCenter: [0, '-55%'],
                     itemStyle: { color: 'auto' }
                 },
                 axisTick: { length: 12, lineStyle: { color: 'auto', width: 2 } },
-                splitLine: { length: 20, lineStyle: { color: 'auto', width: 5 } },
-                axisLabel: { color: '#94A3B8', fontSize: 12, distance: -75, rotate: 'tangential' },
-                title: { offsetCenter: [0, '-20%'], fontSize: 20, fontWeight: 'bold' },
+                splitLine: { length: 20, lineStyle: { color: 'auto', width: 4 } },
+                axisLabel: { color: '#94A3B8', fontSize: 10, distance: -65, fontWeight: 'bold' },
+                title: { offsetCenter: [0, '-25%'], fontSize: 18, fontWeight: 'black', color: '#64748B' },
                 detail: {
-                    fontSize: 48,
+                    fontSize: 56,
                     fontWeight: 'black',
-                    offsetCenter: [0, '-5%'],
+                    fontFamily: 'Outfit',
+                    offsetCenter: [0, '15%'],
                     valueAnimation: true,
                     formatter: (value: number) => `${Math.round(value)}%`,
                     color: 'inherit'
                 },
-                data: [{ value: percent, name: '' }]
+                data: [{ value: percent, name: 'OPTIMIZED' }]
             }
         ]
     };
 
     return (
-        <div className="w-full bg-white p-12 rounded-[2.5rem] shadow-xl shadow-slate-200/20 border border-slate-200 flex flex-col h-[600px] group hover:-translate-y-1 transition-all duration-300 overflow-hidden">
-            <div className="mb-8 flex items-center justify-between">
+        <div className="w-full bg-white p-12 rounded-[2.5rem] shadow-xl shadow-slate-200/20 border border-slate-200 flex flex-col min-h-[780px] group hover:-translate-y-1 transition-all duration-300">
+            <div className="mb-10 flex items-center justify-between">
                 <div>
                     <div className="flex items-center gap-3 text-indigo-600 mb-1">
                         <Database size={18} />
-                        <p className="text-[10px] font-black uppercase tracking-[0.3em]">Resources Protocol</p>
+                        <p className="alpha-terminal !tracking-[0.3em]">Resource Protocol</p>
                     </div>
                     <h3 className="text-3xl font-outfit font-black uppercase tracking-tight text-slate-900">Pool Sufficiency</h3>
                 </div>
@@ -124,38 +125,38 @@ export default function AdminPoolSufficiency() {
                 </div>
             </div>
 
-            <div className="flex-grow min-h-[400px] relative">
+            <div className="flex-grow min-h-[450px] relative">
                 <BaseChart option={option} loading={loading} height="100%" />
 
                 {/* Secondary Stats Overlay */}
-                <div className="absolute top-0 right-0 p-6 border border-slate-100 rounded-[2rem] bg-slate-50/80 backdrop-blur-sm flex flex-col gap-2 shadow-sm">
+                <div className="absolute top-0 right-0 p-8 border border-slate-100 rounded-[2.5rem] bg-slate-50/80 backdrop-blur-md flex flex-col gap-2 shadow-sm">
                     <div className="flex items-center gap-2">
-                        <Info size={12} className="text-slate-400" />
-                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Inventory Status</span>
+                        <Inbox size={14} className="text-slate-400" />
+                        <p className="alpha-terminal !text-[9px] text-slate-400">Inventory Status</p>
                     </div>
-                    <div>
-                        <span className="text-3xl font-black text-slate-900">{available.toLocaleString()}</span>
-                        <span className="text-sm font-bold text-slate-400 ml-1">/ {required}</span>
+                    <div className="flex items-baseline gap-1">
+                        <span className="text-4xl font-outfit font-black text-slate-900">{available.toLocaleString()}</span>
+                        <span className="text-sm font-bold text-slate-400 uppercase">/ {required}</span>
                     </div>
                 </div>
             </div>
 
-            <div className="mt-4 pt-8 border-t border-slate-100">
-                <div className={`p-8 rounded-[2rem] flex items-center justify-between ${status.bg} border border-white shadow-inner`}>
+            <div className="mt-8 pt-8 border-t border-slate-100">
+                <div className={`p-8 rounded-[2.5rem] flex items-center justify-between ${status.bg} border border-white shadow-lg shadow-slate-200/50`}>
                     <div className="flex items-center gap-6">
-                        <div className={`p-4 rounded-2xl bg-white shadow-lg ${status.color}`}>
+                        <div className={`p-5 rounded-2xl bg-white shadow-xl ${status.color} animate-pulse-slow`}>
                             {percent < 30 ? <AlertTriangle size={32} /> : <CheckCircle2 size={32} />}
                         </div>
                         <div>
-                            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">System Condition</p>
-                            <h4 className={`text-2xl font-outfit font-black ${status.color}`}>
+                            <p className="alpha-terminal !text-[10px] text-slate-400 mb-1">System Condition</p>
+                            <h4 className={`text-3xl font-outfit font-black ${status.color}`}>
                                 {status.label}
                             </h4>
                         </div>
                     </div>
 
                     <div className="text-right">
-                        <p className="text-xs text-slate-500 font-bold leading-relaxed max-w-[280px] uppercase tracking-wide">
+                        <p className="text-[11px] text-slate-500 font-bold leading-relaxed max-w-[320px] uppercase tracking-widest opacity-80">
                             {percent < 30
                                 ? "Critical scarcity detected. Blueprint generation inhibited."
                                 : percent < 80
