@@ -20,6 +20,23 @@ export default function AdminLoginPage() {
         password: ''
     });
 
+    const toErrorMessage = (err: unknown): string => {
+        if (err instanceof TypeError && err.message === 'Failed to fetch') {
+            return 'Network/CORS block: unable to reach the API. Check allowed origins and portal headers.';
+        }
+
+        if (err !== null && typeof err === 'object') {
+            const maybeError = err as { _error?: unknown; message?: unknown };
+            const portalMsg = typeof maybeError._error === 'string' ? maybeError._error.trim() : '';
+            if (portalMsg !== '') return portalMsg;
+
+            const genericMsg = typeof maybeError.message === 'string' ? maybeError.message.trim() : '';
+            if (genericMsg !== '') return genericMsg;
+        }
+
+        return 'Authentication failed';
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
@@ -39,8 +56,7 @@ export default function AdminLoginPage() {
             router.push('/');
         } catch (err: unknown) {
             clientLogger.error('Admin login failed', { error: err instanceof Error ? err.message : 'unknown' });
-            const message = err instanceof Error ? err.message : 'Authentication failed';
-            setError(message);
+            setError(toErrorMessage(err));
         } finally {
             setIsLoading(false);
         }

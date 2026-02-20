@@ -14,6 +14,18 @@ export function LoginForm() {
     const { login } = useAuthStore();
     const router = useRouter();
 
+    const toErrorMessage = (err: unknown): string => {
+        if (err instanceof TypeError && err.message === 'Failed to fetch') {
+            return 'Network/CORS block: unable to reach the API. Check allowed origins and portal headers.';
+        }
+        if (err && typeof err === 'object') {
+            const maybe = err as { _error?: string; message?: string };
+            if (maybe._error) return maybe._error;
+            if (maybe.message) return maybe.message;
+        }
+        return "Invalid credentials. Please try again.";
+    };
+
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setLoading(true);
@@ -30,8 +42,7 @@ export function LoginForm() {
             login({ ...user, onboarded: user.onboarded ?? false });
             router.push('/dashboard');
         } catch (err: unknown) {
-            const message = err instanceof Error ? err.message : "Invalid credentials. Please try again.";
-            setError(message);
+            setError(toErrorMessage(err));
         } finally {
             setLoading(false);
         }

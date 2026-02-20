@@ -63,11 +63,21 @@ export class FetchClient {
       }
     }
 
-    const response = await fetch(url, {
-      ...options,
-      headers,
-      credentials: 'include',
-    });
+    let response: Response;
+    try {
+      response = await fetch(url, {
+        ...options,
+        headers,
+        credentials: 'include',
+      });
+    } catch (err: unknown) {
+      // Browser-level block (CORS/preflight/network)
+      if (err instanceof TypeError && err.message === 'Failed to fetch') {
+        throw new Error('Network/Security Error: Request blocked by browser (CORS or connectivity).');
+      }
+      // Fallback
+      throw err instanceof Error ? err : new Error('Network error');
+    }
 
     if (!response.ok) {
       // PATIENT CLIENT: Handle 401/403 with Auto-Refresh & Single-Flight Retry

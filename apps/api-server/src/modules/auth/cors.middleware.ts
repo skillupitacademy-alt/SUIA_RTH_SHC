@@ -10,7 +10,7 @@ export function corsMiddleware(_request: NextRequest, response: NextResponse) {
   }
 
   response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
-  response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-csrf-token, Idempotency-Key');
+  response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-csrf-token, Idempotency-Key, x-portal-identity');
   response.headers.set('Access-Control-Allow-Credentials', 'true');
   response.headers.set('Access-Control-Max-Age', '86400');
 
