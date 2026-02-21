@@ -3,6 +3,9 @@
 import React from 'react';
 import { RadialBarChart, RadialBar, ResponsiveContainer, PolarAngleAxis } from "recharts";
 
+// Recharts typings don't expose per-series radii, so we cast for multi-ring styling.
+const AnyRadialBar = RadialBar as unknown as React.ComponentType<any>;
+
 export interface RadialKPIProps {
     data: {
         score: number;
@@ -12,61 +15,82 @@ export interface RadialKPIProps {
 }
 
 export const RadialKPI = React.memo(({ data }: RadialKPIProps) => {
-    const chartData = [
-        { name: "Score", value: data.score, fill: "url(#scoreGradient)" },
-        { name: "Mastery", value: data.mastery, fill: "url(#masteryGradient)" },
-        { name: "Readiness", value: data.readiness, fill: "url(#readinessGradient)" }
+    const rings = [
+        { key: "score", dataKey: "score", color: "url(#scoreGradient)", inner: "65%", outer: "95%" },
+        { key: "mastery", dataKey: "mastery", color: "url(#masteryGradient)", inner: "50%", outer: "78%" },
+        { key: "readiness", dataKey: "readiness", color: "url(#readinessGradient)", inner: "35%", outer: "58%" },
     ];
+    const chartData = [{ score: data.score, mastery: data.mastery, readiness: data.readiness }];
 
     return (
         <div className="w-full h-[320px] flex flex-col items-center justify-center relative">
+            {/* dotted guide */}
+            <div className="absolute inset-6 rounded-full border border-dashed border-white/5 pointer-events-none" />
+
             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-10">
-                <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mb-1">Composite</span>
-                <span className="text-5xl font-black text-white tracking-tighter drop-shadow-2xl">{data.score}%</span>
+                <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mb-1">Overall Readiness</span>
+                <span className="text-5xl font-black text-white tracking-tighter drop-shadow-2xl">{Math.round((data.score + data.mastery + data.readiness) / 3)}%</span>
+                <div className="mt-2 text-[10px] text-slate-400 font-bold space-x-3 uppercase tracking-[0.2em]">
+                    <span>Score {data.score}%</span>
+                    <span>Mastery {data.mastery}%</span>
+                    <span>Readiness {data.readiness}%</span>
+                </div>
             </div>
 
             <ResponsiveContainer width="100%" height="100%">
                 <RadialBarChart
-                    innerRadius="35%"
+                    cx="50%"
+                    cy="50%"
+                    innerRadius="30%"
                     outerRadius="100%"
-                    data={chartData}
                     startAngle={90}
                     endAngle={450}
-                    barSize={12}
+                    data={chartData}
                 >
                     <defs>
                         <linearGradient id="scoreGradient" x1="0" y1="0" x2="1" y2="1">
-                            <stop offset="0%" stopColor="#6366f1" />
-                            <stop offset="100%" stopColor="#818cf8" />
+                            <stop offset="0%" stopColor="#06b6d4" />
+                            <stop offset="100%" stopColor="#60a5fa" />
                         </linearGradient>
                         <linearGradient id="masteryGradient" x1="0" y1="0" x2="1" y2="1">
                             <stop offset="0%" stopColor="#10b981" />
-                            <stop offset="100%" stopColor="#34d399" />
+                            <stop offset="100%" stopColor="#a3e635" />
                         </linearGradient>
                         <linearGradient id="readinessGradient" x1="0" y1="0" x2="1" y2="1">
                             <stop offset="0%" stopColor="#f59e0b" />
-                            <stop offset="100%" stopColor="#fbbf24" />
+                            <stop offset="100%" stopColor="#f97316" />
                         </linearGradient>
+                        <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+                            <feGaussianBlur stdDeviation="4" result="coloredBlur" />
+                            <feMerge>
+                                <feMergeNode in="coloredBlur" />
+                                <feMergeNode in="SourceGraphic" />
+                            </feMerge>
+                        </filter>
                     </defs>
-                    <PolarAngleAxis
-                        type="number"
-                        domain={[0, 100]}
-                        angleAxisId={0}
-                        tick={false}
-                    />
-                    <RadialBar
-                        background={{ fill: 'rgba(255,255,255,0.03)' }}
-                        dataKey="value"
-                        cornerRadius={15}
-                        animationDuration={1500}
-                        animationEasing="ease-out"
-                    />
+                    <PolarAngleAxis type="number" domain={[0, 100]} tick={false} />
+
+                    {rings.map((ring) => (
+                        <AnyRadialBar
+                            key={ring.key}
+                            dataKey={ring.dataKey}
+                            cornerRadius={20}
+                            fill={ring.color}
+                            background={{ fill: 'rgba(255,255,255,0.03)' }}
+                            innerRadius={ring.inner}
+                            outerRadius={ring.outer}
+                            barSize={12}
+                            filter="url(#glow)"
+                            animationDuration={1400}
+                            animationEasing="ease-out"
+                        />
+                    ))}
                 </RadialBarChart>
             </ResponsiveContainer>
 
             <div className="flex gap-6 mt-2 pb-4">
                 {[
-                    { name: "Score", fill: "#6366f1" },
+                    { name: "Score", fill: "#06b6d4" },
                     { name: "Mastery", fill: "#10b981" },
                     { name: "Readiness", fill: "#f59e0b" }
                 ].map((item) => (

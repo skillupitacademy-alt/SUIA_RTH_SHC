@@ -115,7 +115,7 @@ export default function DashboardPage() {
                                                 </p>
                                             )}
                                         </div>
-                                        <Link href={activity.status === 'completed' ? `/reports/active-report?examId=${activity.id}` : `/exam/${activity.id}`} className="h-10 w-10 rounded-full bg-slate-50 border border-slate-200 flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all">
+                                        <Link href={activity.status === 'completed' ? `/reports/${activity.id}` : `/exam/${activity.id}`} className="h-10 w-10 rounded-full bg-slate-50 border border-slate-200 flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all">
                                             <ArrowRight size={18} />
                                         </Link>
                                     </div>

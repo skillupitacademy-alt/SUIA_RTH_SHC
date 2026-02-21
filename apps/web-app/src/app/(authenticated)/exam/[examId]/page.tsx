@@ -68,7 +68,7 @@ export default function ActiveExamPage() {
                 // Status Gating (P0 Requirement)
                 const terminalStatuses = ['completed', 'processing', 'failed', 'abandoned'];
                 if (terminalStatuses.includes(data.status)) {
-                    router.replace(`/reports/active-report?examId=${examId}`);
+                    router.replace(`/reports/${examId}`);
                     return;
                 }
 
@@ -189,7 +189,7 @@ export default function ActiveExamPage() {
 
             await apiClient.quiz.submitExam(examId);
             clearBackup(examId);
-            router.replace(`/reports/active-report?examId=${examId}`);
+            router.replace(`/reports/${examId}`);
         } catch (err) {
             clientLogger.error('Failed to submit exam', { error: err instanceof Error ? err.message : 'unknown' });
             // Re-arm on failure if necessary, or stay in 'started'
