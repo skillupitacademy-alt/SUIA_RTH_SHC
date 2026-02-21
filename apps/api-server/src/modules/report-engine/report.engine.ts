@@ -77,7 +77,7 @@ type PremiumReport = {
   heatmap: { subtopic: string; difficulty: string; accuracy: number | null; attempts: number; showNoData?: boolean }[];
   timeBuckets: { stable: number; logic: number; neural: number };
   ai: {
-    status: 'READY' | 'BORDERLINE' | 'NOT_READY';
+    status: 'READY' | 'BORDERLINE' | 'NOT_READY' | 'DATA_INSUFFICIENT';
     actions: string[];
     weakest_subtopic?: string;
     weakest_skill?: string;
@@ -476,8 +476,12 @@ export class ReportEngine {
         neural: core.error_count ?? 0
       },
       ai: {
-        status: (core.score ?? 0) >= 80 ? 'READY' : ((core.score ?? 0) >= 60 ? 'BORDERLINE' : 'NOT_READY'),
-        actions: (core.score ?? 0) >= 95 ? [
+        status: (core.score === null) ? 'DATA_INSUFFICIENT' : ((core.score ?? 0) >= 80 ? 'READY' : ((core.score ?? 0) >= 60 ? 'BORDERLINE' : 'NOT_READY')),
+        actions: (core.score === null || core.confidence === 'LOW') ? [
+            "Complete more assessments to generate tactical signals",
+            "Focus on core foundational patterns first",
+            "Stability status: Awaiting baseline data"
+        ] : ((core.score ?? 0) >= 95 ? [
             "Maintain current performance baseline",
             "Expand into Expert-level edge cases",
             "Final verification of neural stability"
@@ -485,12 +489,14 @@ export class ReportEngine {
             (core.weakest_subtopic ?? '').length > 0 ? `Review foundational logic for ${core.weakest_subtopic}` : "Expand into adjacent topics",
             (core.weakest_skill ?? '').length > 0 ? `Focus on ${core.weakest_skill} tactical drills` : "Maintain neural baseline stability",
             (core.expert_drop_off ?? false) ? "Bridge Intermediate to Expert gap" : "Challenge higher complexity vectors"
-        ],
+        ]),
         weakest_subtopic: core.weakest_subtopic ?? undefined,
         weakest_skill: core.weakest_skill ?? undefined,
         nextExamHours: (core.score ?? 0) >= 80 ? 12 : 48
       },
       tutorInsights: await (async () => {
+        if (core.score === null) return "Data insufficient for personalized AI tutoring. Please complete the assessment to unlock insights.";
+        
         const topicAgg = (core.subtopics ?? []).reduce((acc, curr) => {
           const tid = curr.topicId;
           if (!tid) return acc;
@@ -505,8 +511,8 @@ export class ReportEngine {
           accuracy: t.count > 0 ? t.total / t.count : 0
         }));
 
-        // Suppress conceptual gaps for near-perfect scores
-        if ((core.score ?? 0) >= 95) return "Exceptional performance. No high-priority gaps detected.";
+        // Suppress conceptual gaps for near-perfect scores, but keep contract as an array
+        if ((core.score ?? 0) >= 95) return [];
 
         return AdaptiveTutorService.generateInsights(exam.userId, records);
       })(),
