@@ -4,6 +4,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { sql } from "@/lib/db";
 import { redis } from "@/lib/redis";
 import { CACHE_KEYS, CACHE_TTL } from "@/modules/analytics/analytics.constants";
+import { InsightEngineService } from "@/modules/analytics/insight-engine.service";
 import { TokenService } from "@/modules/auth/token.service";
 
 export const dynamic = "force-dynamic";
@@ -32,7 +33,8 @@ export async function GET(req: NextRequest) {
     }
 
     // 3. Query Personal Score History (Chronological)
-    const rows = (await sql`
+    const [rows, userProfile] = await Promise.all([
+      sql`
       SELECT
         DATE(completed_at) AS exam_date,
         total_score
@@ -42,15 +44,29 @@ export async function GET(req: NextRequest) {
         AND total_score IS NOT NULL
       ORDER BY completed_at ASC
       LIMIT 10
-    `) as { exam_date: string; total_score: number }[];
+    ` as unknown as Promise<{ exam_date: string; total_score: number }[]>,
+      sql`
+      SELECT name FROM user_profiles WHERE user_id = ${userId} LIMIT 1
+    ` as unknown as Promise<{ name: string }[]>
+    ]);
+
+    const userName = userProfile[0]?.name || "Student";
 
     // 4. ECharts-Ready Transformation
-    const result = {
+    const data = {
       dates: rows.map((r) => new Date(r.exam_date).toLocaleDateString()),
       scores: rows.map((r) => Number(r.total_score)),
     };
 
-    // 5. Fire-and-Forget Cache Backfill
+    // 5. Generate Dynamic Insight
+    const insight = InsightEngineService.analyzePerformanceTrend(userName, data);
+
+    const result = {
+      ...data,
+      insight,
+    };
+
+    // 6. Fire-and-Forget Cache Backfill
     try {
       if (rows.length > 0) {
         await redis.set(CACHE_KEY, result, { ex: CACHE_TTL.USER_PERSONAL });

@@ -7,10 +7,11 @@ import WeaknessTreeChart from "@/components/charts/WeaknessTreeChart";
 import PersonalTimeBoxplot from "@/components/charts/PersonalTimeBoxplot";
 import PersonalDifficultySplit from "@/components/charts/PersonalDifficultySplit";
 import { useDashboardStore } from "@/store/dashboard-store";
-import { useEffect } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { ZLoader } from "@quiz/ui";
 import { Telescope } from "lucide-react";
 import { InsightGuideCard } from "@/components/insights/InsightGuideCard";
+import { ScoreHistoryResponse, MasteryTrendResponse, TutorInsight } from "@quiz/api-client";
 import {
     scoreHistoryGuide,
     masteryTrendGuide,
@@ -22,10 +23,20 @@ import {
 
 export default function UserInsightsPage() {
     const { data, fetchDashboard, loading } = useDashboardStore();
+    const [performanceInsight, setPerformanceInsight] = useState<TutorInsight | null>(null);
+    const [masteryInsight, setMasteryInsight] = useState<TutorInsight | null>(null);
 
     useEffect(() => {
         fetchDashboard('7d', 1, 3);
     }, [fetchDashboard]);
+
+    const handleScoreHistoryFetched = useCallback((res: ScoreHistoryResponse) => {
+        if (res.insight) setPerformanceInsight(res.insight);
+    }, []);
+
+    const handleMasteryTrendFetched = useCallback((res: MasteryTrendResponse) => {
+        if (res.insight) setMasteryInsight(res.insight);
+    }, []);
 
     if (!data && loading) {
         return (
@@ -36,7 +47,7 @@ export default function UserInsightsPage() {
     }
 
     return (
-        <div className="space-y-12">
+        <div className="space-y-12 pb-20">
             {/* Header */}
             <div className="flex flex-col gap-2">
                 <div className="flex items-center gap-3 text-pink-600">
@@ -54,14 +65,20 @@ export default function UserInsightsPage() {
             <div className="space-y-24">
                 {/* 1. Score History */}
                 <div className="space-y-4">
-                    <ScoreHistoryChart />
-                    <InsightGuideCard {...scoreHistoryGuide} />
+                    <ScoreHistoryChart onDataFetched={handleScoreHistoryFetched} />
+                    <InsightGuideCard
+                        {...scoreHistoryGuide}
+                        insight={performanceInsight || undefined}
+                    />
                 </div>
 
                 {/* 2. Mastery Trend */}
                 <div className="space-y-4">
-                    <MasteryTrendChart />
-                    <InsightGuideCard {...masteryTrendGuide} />
+                    <MasteryTrendChart onDataFetched={handleMasteryTrendFetched} />
+                    <InsightGuideCard
+                        {...masteryTrendGuide}
+                        insight={masteryInsight || undefined}
+                    />
                 </div>
 
                 {/* 3. Topic Performance */}

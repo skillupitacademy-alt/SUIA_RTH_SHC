@@ -4,7 +4,11 @@ import { useEffect, useState } from "react";
 import { apiClient, ScoreHistoryResponse } from "@quiz/api-client";
 import BaseChart from "./BaseChart";
 
-export default function ScoreHistoryChart() {
+interface ScoreHistoryChartProps {
+    onDataFetched?: (data: ScoreHistoryResponse) => void;
+}
+
+export default function ScoreHistoryChart({ onDataFetched }: ScoreHistoryChartProps) {
     const [data, setData] = useState<ScoreHistoryResponse | null>(null);
     const [loading, setLoading] = useState(true);
 
@@ -13,6 +17,7 @@ export default function ScoreHistoryChart() {
             try {
                 const response = await apiClient.analytics.getUserScoreHistory();
                 setData(response);
+                if (onDataFetched) onDataFetched(response);
             } catch (error) {
                 console.error("Failed to fetch score history:", error);
             } finally {
@@ -21,7 +26,7 @@ export default function ScoreHistoryChart() {
         }
 
         fetchData();
-    }, []);
+    }, [onDataFetched]);
 
     // Empty State
     if (!loading && (!data || data.dates.length === 0)) {

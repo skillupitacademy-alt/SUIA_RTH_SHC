@@ -1,13 +1,32 @@
 import { FetchClient } from '../core/fetch-client';
 
+export interface TutorInsightSignal {
+  type: 'good' | 'neutral' | 'risk';
+  text: string;
+}
+
+export interface TutorInsight {
+  title: string;
+  measures: string;
+  matters: string;
+  howToRead: string;
+  signals: TutorInsightSignal[];
+  nextSteps: string[];
+  confidence: 'low' | 'medium' | 'high';
+  sampleSize: number;
+  expectedOutcome: string;
+}
+
 export interface ScoreHistoryResponse {
   dates: string[];
   scores: number[];
+  insight?: TutorInsight;
 }
 
 export interface MasteryTrendResponse {
   dates: string[];
   accuracy: number[];
+  insight?: TutorInsight;
 }
 
 export interface ScoreHistogramResponse {

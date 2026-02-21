@@ -4,7 +4,11 @@ import { useEffect, useState } from "react";
 import { apiClient, MasteryTrendResponse } from "@quiz/api-client";
 import BaseChart from "./BaseChart";
 
-export default function MasteryTrendChart() {
+interface MasteryTrendChartProps {
+    onDataFetched?: (data: MasteryTrendResponse) => void;
+}
+
+export default function MasteryTrendChart({ onDataFetched }: MasteryTrendChartProps) {
     const [data, setData] = useState<MasteryTrendResponse | null>(null);
     const [loading, setLoading] = useState(true);
 
@@ -13,6 +17,7 @@ export default function MasteryTrendChart() {
             try {
                 const response = await apiClient.analytics.getUserMasteryTrend();
                 setData(response);
+                if (onDataFetched) onDataFetched(response);
             } catch (error) {
                 console.error("Failed to fetch mastery trend:", error);
             } finally {
@@ -21,7 +26,7 @@ export default function MasteryTrendChart() {
         }
 
         fetchData();
-    }, []);
+    }, [onDataFetched]);
 
     if (!loading && (!data || data.dates.length === 0)) {
         return (

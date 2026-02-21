@@ -1,9 +1,9 @@
-
 import { type NextRequest, NextResponse } from "next/server";
 
 import { sql } from "@/lib/db";
 import { redis } from "@/lib/redis";
 import { CACHE_KEYS, CACHE_TTL } from "@/modules/analytics/analytics.constants";
+import { InsightEngineService } from "@/modules/analytics/insight-engine.service";
 import { TokenService } from "@/modules/auth/token.service";
 
 export const dynamic = "force-dynamic";
@@ -36,9 +36,9 @@ export async function GET(req: NextRequest) {
       console.error("[Redis Error]:", redisError);
     }
 
-    // 3. Query Personal Mastery Trend
-    // Aggregates accuracy per day for the specific user
-    const rows = (await sql`
+    // 3. Query Personal Mastery Trend & Context
+    const [rows, userProfile, scoreRows] = await Promise.all([
+      sql`
       SELECT 
         DATE(created_at) AS exam_date,
         AVG(accuracy) AS avg_accuracy
@@ -46,15 +46,36 @@ export async function GET(req: NextRequest) {
       WHERE exam_id IN (SELECT id FROM exams WHERE user_id = ${userId})
       GROUP BY DATE(created_at)
       ORDER BY exam_date ASC
-    `) as UserMasteryTrendRow[];
+    ` as unknown as Promise<UserMasteryTrendRow[]>,
+      sql`
+      SELECT name FROM user_profiles WHERE user_id = ${userId} LIMIT 1
+    ` as unknown as Promise<{ name: string }[]>,
+      sql`
+      SELECT total_score FROM exams WHERE user_id = ${userId} AND status = 'completed' ORDER BY completed_at ASC LIMIT 10
+    ` as unknown as Promise<{ total_score: number }[]>
+    ]);
+
+    const userName = userProfile[0]?.name || "Student";
 
     // 4. Transform for ECharts
-    const result = {
+    const data = {
       dates: rows.map((r) => new Date(r.exam_date).toLocaleDateString()),
       accuracy: rows.map((r) => Math.round(Number(r.avg_accuracy))),
     };
 
-    // 5. Cache
+    // 5. Generate Dynamic Insight
+    const insight = InsightEngineService.analyzeMasteryTrend(
+      userName,
+      data,
+      { scores: scoreRows.map(s => Number(s.total_score)) }
+    );
+
+    const result = {
+      ...data,
+      insight,
+    };
+
+    // 6. Cache
     try {
       if (rows.length > 0) {
         await redis.set(CACHE_KEY, result, { ex: CACHE_TTL.USER_PERSONAL });
