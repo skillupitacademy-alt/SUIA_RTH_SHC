@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { apiClient, MasteryTrendResponse } from "@quiz/api-client";
 import BaseChart from "./BaseChart";
 
@@ -11,6 +11,7 @@ interface MasteryTrendChartProps {
 export default function MasteryTrendChart({ onDataFetched }: MasteryTrendChartProps) {
     const [data, setData] = useState<MasteryTrendResponse | null>(null);
     const [loading, setLoading] = useState(true);
+    const [goal, setGoal] = useState<number>(80);
 
     useEffect(() => {
         async function fetchData() {
@@ -28,6 +29,36 @@ export default function MasteryTrendChart({ onDataFetched }: MasteryTrendChartPr
         fetchData();
     }, [onDataFetched]);
 
+    useEffect(() => {
+        const stored = typeof window !== "undefined" ? window.localStorage.getItem("masteryGoal") : null;
+        if (stored) setGoal(Number(stored));
+    }, []);
+
+    const handleGoalChange = (value: number) => {
+        const safe = Math.min(100, Math.max(0, value));
+        setGoal(safe);
+        if (typeof window !== "undefined") {
+            window.localStorage.setItem("masteryGoal", String(safe));
+        }
+    };
+
+    const { streakLabel, idleLabel } = useMemo(() => {
+        if (!data || data.dates.length === 0) return { streakLabel: "No data yet", idleLabel: "" };
+        const acc = data.accuracy;
+        let streak = 1;
+        for (let i = acc.length - 1; i > 0; i -= 1) {
+            if (acc[i] >= acc[i - 1]) streak += 1;
+            else break;
+        }
+        const lastDate = new Date(data.dates[data.dates.length - 1]);
+        const today = new Date();
+        const idleDays = Math.max(0, Math.floor((today.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24)));
+        return {
+            streakLabel: streak > 1 ? `Upward streak: ${streak} days` : "No upward streak yet",
+            idleLabel: idleDays > 0 ? `Idle: ${idleDays} day${idleDays > 1 ? "s" : ""}` : "Active today",
+        };
+    }, [data]);
+
     if (!loading && (!data || data.dates.length === 0)) {
         return (
             <div className="h-[300px] w-full flex flex-col items-center justify-center bg-slate-50 rounded-xl border border-dashed border-slate-200 text-slate-400">
@@ -36,8 +67,6 @@ export default function MasteryTrendChart({ onDataFetched }: MasteryTrendChartPr
             </div>
         );
     }
-
-    const goalLine = 80;
 
     const option = {
         tooltip: {
@@ -118,7 +147,7 @@ export default function MasteryTrendChart({ onDataFetched }: MasteryTrendChartPr
                 markLine: {
                     symbol: "none",
                     label: {
-                        formatter: `Goal ${goalLine}%`,
+                        formatter: `Goal ${goal}%`,
                         color: "#475569",
                         fontWeight: 700,
                         backgroundColor: "rgba(226, 232, 240, 0.9)",
@@ -132,7 +161,7 @@ export default function MasteryTrendChart({ onDataFetched }: MasteryTrendChartPr
                         color: "#CBD5E1",
                         width: 2,
                     },
-                    data: [{ yAxis: goalLine }],
+                    data: [{ yAxis: goal }],
                 },
             },
         ],
@@ -140,9 +169,27 @@ export default function MasteryTrendChart({ onDataFetched }: MasteryTrendChartPr
 
     return (
         <div className="w-full bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-            <div className="mb-6">
-                <h3 className="text-lg font-semibold text-slate-800">Mastery Trend</h3>
-                <p className="text-sm text-slate-500">Your average accuracy over time.</p>
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+                <div>
+                    <h3 className="text-lg font-semibold text-slate-800">Mastery Trend</h3>
+                    <p className="text-sm text-slate-500">Your average accuracy over time.</p>
+                </div>
+                <div className="flex items-center gap-3">
+                    <div className="rounded-full bg-slate-100 px-3 py-1 text-[11px] font-bold text-slate-600">{streakLabel}</div>
+                    <div className="rounded-full bg-slate-100 px-3 py-1 text-[11px] font-bold text-slate-600">{idleLabel}</div>
+                    <div className="flex items-center gap-2 text-[11px] font-bold text-slate-600">
+                        <span>Goal</span>
+                        <input
+                            type="number"
+                            min={0}
+                            max={100}
+                            value={goal}
+                            onChange={(e) => handleGoalChange(Number(e.target.value))}
+                            className="w-16 rounded-lg border border-slate-200 px-2 py-1 text-right text-[11px] focus:outline-none focus:ring-2 focus:ring-emerald-300"
+                        />
+                        <span>%</span>
+                    </div>
+                </div>
             </div>
             <BaseChart option={option} height={300} loading={loading} />
             {data?.insight?.dataNotes && data.insight.dataNotes.length > 0 && (
