@@ -323,7 +323,7 @@ export class ReportEngine {
             FROM (
             SELECT subtopic, skill, level, accuracy, attempts
             FROM dims
-            WHERE attempts >= 2
+            WHERE attempts >= 1
             ORDER BY accuracy ASC, attempts DESC
             LIMIT 1
             ) primary_rc
@@ -333,7 +333,6 @@ export class ReportEngine {
             SELECT subtopic, AVG(accuracy) as accuracy, SUM(attempts) as attempts
             FROM dims
             GROUP BY subtopic
-            HAVING SUM(attempts) >= 2
             ORDER BY accuracy ASC, attempts DESC
             LIMIT 1
             ) fallback_rc
@@ -392,8 +391,8 @@ export class ReportEngine {
                      AND a.slow_wrong >= a.slow_correct
                      AND a.slow_wrong >= a.fast_correct THEN 'slow_and_wrong'
                 WHEN a.fast_wrong >= a.slow_wrong
-                     AND a.fast_wrong >= a.slow_correct
-                     AND a.fast_wrong >= a.fast_correct THEN 'fast_and_wrong'
+                     AND a.fast_wrong >= a.fast_correct
+                     AND a.fast_wrong >= a.slow_correct THEN 'fast_and_wrong'
                 WHEN a.slow_correct >= a.fast_wrong
                      AND a.slow_correct >= a.slow_wrong
                      AND a.slow_correct >= a.fast_correct THEN 'slow_but_correct'
@@ -469,8 +468,8 @@ export class ReportEngine {
       timeEfficiency: ((core.score ?? 0) > 80 && (core.total_time ?? 0) < ((core.question_count ?? 0) * 40)) ? 'FAST' : 'OPTIMAL',
       subtopics: core.subtopics ?? [],
       skills: core.skills ?? [],
-      difficulty: (core.difficulty ?? []).map(d => ({ ...d, showNoData: d.attempts < 3 })),
-      heatmap: (core.heatmap ?? []).map(h => ({ ...h, showNoData: h.attempts < 3 })),
+      difficulty: (core.difficulty ?? []).map(d => ({ ...d, showNoData: d.attempts < 1 })),
+      heatmap: (core.heatmap ?? []).map(h => ({ ...h, showNoData: h.attempts < 1 })),
       timeBuckets: {
         stable: core.stable_count ?? 0,
         logic: core.logic_count ?? 0,
@@ -478,7 +477,11 @@ export class ReportEngine {
       },
       ai: {
         status: (core.score ?? 0) >= 80 ? 'READY' : ((core.score ?? 0) >= 60 ? 'BORDERLINE' : 'NOT_READY'),
-        actions: [
+        actions: (core.score ?? 0) >= 95 ? [
+            "Maintain current performance baseline",
+            "Expand into Expert-level edge cases",
+            "Final verification of neural stability"
+        ] : [
             (core.weakest_subtopic ?? '').length > 0 ? `Review foundational logic for ${core.weakest_subtopic}` : "Expand into adjacent topics",
             (core.weakest_skill ?? '').length > 0 ? `Focus on ${core.weakest_skill} tactical drills` : "Maintain neural baseline stability",
             (core.expert_drop_off ?? false) ? "Bridge Intermediate to Expert gap" : "Challenge higher complexity vectors"
@@ -488,20 +491,22 @@ export class ReportEngine {
         nextExamHours: (core.score ?? 0) >= 80 ? 12 : 48
       },
       tutorInsights: await (async () => {
-        // Fallback: derive topic accuracy by subtopic name (IDs not present in MV payload)
         const topicAgg = (core.subtopics ?? []).reduce((acc, curr) => {
-          const key = curr.name ?? '';
-          if (key.length === 0) return acc;
-          if (acc[key] === undefined) acc[key] = { topicId: key, total: 0, count: 0 };
-          acc[key].total += curr.accuracy;
-          acc[key].count += 1;
+          const tid = curr.topicId;
+          if (!tid) return acc;
+          if (acc[tid] === undefined) acc[tid] = { topicId: tid, total: 0, count: 0 };
+          acc[tid].total += curr.accuracy ?? 0;
+          acc[tid].count += 1;
           return acc;
         }, {} as Record<string, { topicId: string, total: number, count: number }>);
 
         const records = Object.values(topicAgg).map(t => ({
           topicId: t.topicId,
-          accuracy: t.total / t.count
+          accuracy: t.count > 0 ? t.total / t.count : 0
         }));
+
+        // Suppress conceptual gaps for near-perfect scores
+        if ((core.score ?? 0) >= 95) return "Exceptional performance. No high-priority gaps detected.";
 
         return AdaptiveTutorService.generateInsights(exam.userId, records);
       })(),
