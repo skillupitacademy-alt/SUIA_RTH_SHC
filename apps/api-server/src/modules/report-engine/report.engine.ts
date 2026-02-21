@@ -375,8 +375,8 @@ export class ReportEngine {
             a.question_count,
             a.total_time,
             a.mastery,
-            ROUND(COALESCE(a.score, 0) * 0.5 + COALESCE(a.mh_accuracy, 0) * 0.3 + 20, 2) as readiness,
-            p.percentile,
+            ROUND(COALESCE(a.score, 0) * 0.5 + COALESCE(a.mh_accuracy, 0) * 0.3 + 20, 2) AS readiness,
+            p2.percentile,
             CASE
                 WHEN a.question_count < 10 THEN 'LOW'
                 WHEN COALESCE(v.variance, 0) > 0.05 THEN 'MEDIUM'
@@ -387,7 +387,18 @@ export class ReportEngine {
             rc.subtopic AS weakest_subtopic,
             rc.skill AS weakest_skill,
             rc.difficulty AS weakest_difficulty,
-            a.time_pattern,
+            CASE
+                WHEN a.slow_wrong >= a.fast_wrong
+                     AND a.slow_wrong >= a.slow_correct
+                     AND a.slow_wrong >= a.fast_correct THEN 'slow_and_wrong'
+                WHEN a.fast_wrong >= a.slow_wrong
+                     AND a.fast_wrong >= a.slow_correct
+                     AND a.fast_wrong >= a.fast_correct THEN 'fast_and_wrong'
+                WHEN a.slow_correct >= a.fast_wrong
+                     AND a.slow_correct >= a.slow_wrong
+                     AND a.slow_correct >= a.fast_correct THEN 'slow_but_correct'
+                ELSE 'fast_and_correct'
+            END AS time_pattern,
             a.stable_count,
             a.logic_count,
             a.error_count,
