@@ -2,47 +2,65 @@
 
 import React from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
+import { MoreHorizontal } from "lucide-react";
 
 export interface SkillDonutChartProps {
     data: { name: string; accuracy: number }[];
 }
 
 export const SkillDonutChart = React.memo(({ data }: SkillDonutChartProps) => {
-    const COLORS = ['#6366f1', '#10b981', '#f59e0b', '#8b5cf6', '#06b6d4'];
+    // Subject Breakdown colors from image: Cyan, Green, Yellow
+    const COLORS = ['#22d3ee', '#34d399', '#facc15', '#818cf8', '#f472b6'];
+
+    // Calculate total average to show in center like the image
+    const totalAccuracy = data.length > 0
+        ? Math.round(data.reduce((acc, curr) => acc + curr.accuracy, 0) / data.length)
+        : 0;
 
     return (
-        <div className="w-full h-[300px] p-4 flex flex-col">
-            <div className="mb-2">
-                <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-1">Vector Distro</h3>
-                <p className="text-sm font-bold text-white tracking-tight">Skill Matrix</p>
+        <div className="w-full h-full flex flex-col p-8 bg-[#0d111a] rounded-[2.5rem] border border-white/5 shadow-2xl relative overflow-hidden group">
+            <div className="flex items-center justify-between mb-8">
+                <h3 className="text-xl font-bold text-white tracking-tight">Subject Breakdown</h3>
+                <MoreHorizontal className="text-slate-600 hover:text-slate-400 cursor-pointer transition-colors" size={20} />
             </div>
 
-            <div className="flex-grow relative">
+            <div className="relative h-[300px]">
                 <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
+                        <defs>
+                            <filter id="segmentGlow" x="-50%" y="-50%" width="200%" height="200%">
+                                <feGaussianBlur stdDeviation="8" result="blur" />
+                                <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                            </filter>
+                        </defs>
                         <Pie
                             data={data}
                             cx="50%"
                             cy="50%"
-                            innerRadius={60}
-                            outerRadius={85}
-                            paddingAngle={5}
+                            innerRadius={75}
+                            outerRadius={105}
+                            paddingAngle={4}
                             dataKey="accuracy"
                             stroke="none"
-                            animationDuration={1200}
+                            animationDuration={1500}
                             cornerRadius={4}
                         >
                             {data.map((entry, index) => (
-                                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                <Cell
+                                    key={`cell-${index}`}
+                                    fill={COLORS[index % COLORS.length]}
+                                    filter="url(#segmentGlow)"
+                                    className="hover:opacity-80 transition-opacity outline-none"
+                                />
                             ))}
                         </Pie>
                         <Tooltip
                             content={({ active, payload }) => {
                                 if (active && payload && payload.length) {
                                     return (
-                                        <div className="bg-slate-950 border border-slate-800 p-2 rounded-lg shadow-2xl">
-                                            <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest leading-none mb-1">{payload[0].payload.name}</p>
-                                            <p className="text-lg font-black text-white">{payload[0].value}%</p>
+                                        <div className="bg-[#0f172a]/95 backdrop-blur-xl border border-white/10 p-4 rounded-2xl shadow-2xl">
+                                            <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-1">{payload[0].payload.name}</p>
+                                            <p className="text-2xl font-black text-white">{payload[0].value}%</p>
                                         </div>
                                     );
                                 }
@@ -52,17 +70,26 @@ export const SkillDonutChart = React.memo(({ data }: SkillDonutChartProps) => {
                     </PieChart>
                 </ResponsiveContainer>
 
-                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                    <span className="text-[8px] font-black text-slate-600 uppercase tracking-widest">Skills</span>
-                    <span className="text-xl font-black text-white">{data.length}</span>
+                {/* Legend percentages inside segments (simulated with absolute positioning or just central) */}
+                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-10">
+                    <div className="flex flex-col items-center">
+                        <span className="text-6xl font-black text-white tracking-tighter drop-shadow-[0_0_15px_rgba(255,255,255,0.1)]">
+                            {totalAccuracy}%
+                        </span>
+                        <span className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mt-1">Total</span>
+                    </div>
                 </div>
             </div>
 
-            <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1">
-                {data.slice(0, 4).map((skill, i) => (
-                    <div key={skill.name} className="flex items-center gap-1.5 overflow-hidden">
-                        <div className="h-1 w-1 rounded-full flex-shrink-0" style={{ backgroundColor: COLORS[i % COLORS.length] }} />
-                        <span className="text-[9px] font-bold text-slate-400 truncate tracking-tight">{skill.name}</span>
+            {/* Horizontal Legend matching image */}
+            <div className="flex flex-wrap items-center justify-center gap-6 mt-8">
+                {data.map((skill, i) => (
+                    <div key={skill.name} className="flex items-center gap-2.5">
+                        <div
+                            className="h-2.5 w-2.5 rounded-full shadow-[0_0_8px_rgba(255,255,255,0.2)]"
+                            style={{ backgroundColor: COLORS[i % COLORS.length] }}
+                        />
+                        <span className="text-[11px] font-bold text-slate-400 tracking-tight">{skill.name}</span>
                     </div>
                 ))}
             </div>

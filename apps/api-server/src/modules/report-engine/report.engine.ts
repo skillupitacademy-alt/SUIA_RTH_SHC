@@ -274,10 +274,9 @@ export class ReportEngine {
     });
 
     const skillResults = results.filter(r => r.dimensionType === 'skill');
-    const skillsList = skillResults.map(r => ({
-      name: r.name ?? 'Unknown',
-      accuracy: r.accuracy
-    }));
+    const skillsList = Array.from(
+      new Map(skillResults.map(r => [r.name, { name: r.name ?? 'Unknown', accuracy: r.accuracy }])).values()
+    ).filter(s => s.name !== 'Unknown');
 
     const weakestSubtopic = subtopicsList.length > 0 ? subtopicsList[subtopicsList.length - 1] : null;
     const weakestSkill = skillsList.length > 0 ? skillsList.sort((a, b) => a.accuracy - b.accuracy)[0] : null;
@@ -299,11 +298,23 @@ export class ReportEngine {
       actions.push("Expand into adjacent topics to maintain neural elasticity");
     }
 
+    const totalTimeSpentSeconds = exam.examQuestions.reduce((acc, eq) => 
+      acc + ((eq.responseMetadata as Record<string, unknown>)?.timeSpentSeconds as number || 0), 0);
+    
+    // Simple efficiency logic: if average time per question < 30s, it's 'FAST'
+    const avgTimePerQuestion = totalQuestions > 0 ? totalTimeSpentSeconds / totalQuestions : 0;
+    const timeEfficiency = avgTimePerQuestion < 30 ? 'FAST' : (avgTimePerQuestion < 60 ? 'OPTIMAL' : 'SLOW');
+
+    const percentile = await ReportEngine.calculatePercentile(exam.id, exam.blueprintId, correctAnswers);
+
     return {
       examId: exam.id,
       score: scorePercentage,
       mastery,
       readiness,
+      percentile,
+      totalTimeSpentSeconds,
+      timeEfficiency,
       subtopics: subtopicsList,
       skills: skillsList,
       difficulty: difficultyList,
@@ -314,7 +325,16 @@ export class ReportEngine {
         weakest_subtopic: weakestSubtopic?.name,
         weakest_skill: weakestSkill?.name,
         nextExamHours: scorePercentage >= 80 ? 12 : 48
-      }
+      },
+      questions: exam.examQuestions.map(eq => ({
+        id: eq.id,
+        text: eq.question.questionText,
+        userAnswer: eq.userAnswer,
+        correctAnswer: eq.question.correctAnswer,
+        explanation: eq.question.explanation,
+        isCorrect: eq.isCorrect,
+        timeSpent: (eq.responseMetadata as Record<string, unknown>)?.timeSpentSeconds as number || 0,
+      }))
     };
   }
 }

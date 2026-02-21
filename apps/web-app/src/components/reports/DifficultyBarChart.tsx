@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell, Tooltip } from "recharts";
+import { motion } from "framer-motion";
 
 export interface DifficultyAccuracy {
     level: string;
@@ -13,74 +13,77 @@ export interface DifficultyBarChartProps {
 }
 
 export const DifficultyBarChart = React.memo(({ data }: DifficultyBarChartProps) => {
-    const COLORS = {
-        simple: '#10b981', // emerald-500
-        intermediate: '#f59e0b', // amber-500
-        expert: '#f43f5e', // rose-500
-    };
-
-    // Map user provided level strings if they are different (e.g. Easy/Medium/Hard)
-    // But we use the COLORS map as a fallback
-    const getLevelColor = (level: string) => {
+    const getLevelStyle = (level: string) => {
         const l = level.toLowerCase();
-        if (l.includes('simple') || l.includes('easy')) return COLORS.simple;
-        if (l.includes('inter') || l.includes('medium')) return COLORS.intermediate;
-        if (l.includes('expert') || l.includes('hard')) return COLORS.expert;
-        return '#6366f1';
+        if (l.includes('simple') || l.includes('easy')) return {
+            gradient: "from-emerald-600 to-teal-600",
+            shadow: "shadow-[0_0_15px_rgba(16,185,129,0.3)]",
+            text: "text-emerald-400"
+        };
+        if (l.includes('inter') || l.includes('medium')) return {
+            gradient: "from-amber-600 to-orange-600",
+            shadow: "shadow-[0_0_15px_rgba(245,158,11,0.3)]",
+            text: "text-amber-400"
+        };
+        if (l.includes('expert') || l.includes('hard')) return {
+            gradient: "from-rose-600 to-pink-600",
+            shadow: "shadow-[0_0_15px_rgba(244,63,94,0.3)]",
+            text: "text-rose-400"
+        };
+        return {
+            gradient: "from-indigo-600 to-violet-600",
+            shadow: "shadow-[0_0_15px_rgba(99,102,241,0.2)]",
+            text: "text-indigo-400"
+        };
     };
 
     return (
-        <div className="w-full h-[400px] p-6 flex flex-col">
-            <div className="mb-6">
-                <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-1">Complexity Ladder</h3>
-                <p className="text-sm font-bold text-white tracking-tight">Difficulty Accuracy Vertical</p>
+        <div className="w-full h-full flex flex-col space-y-12">
+            <div>
+                <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mb-1">Complexity Threshold</h3>
+                <p className="text-xl font-bold text-white tracking-tight">Difficulty Matrix Diagnostic</p>
             </div>
 
-            <div className="flex-grow">
-                <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={data} margin={{ top: 20, right: 30, left: 0, bottom: 40 }}>
-                        <XAxis
-                            dataKey="level"
-                            axisLine={false}
-                            tickLine={false}
-                            tick={{ fill: '#64748b', fontSize: 10, fontWeight: 800 }}
-                        />
-                        <YAxis hide domain={[0, 100]} />
-                        <Tooltip
-                            cursor={{ fill: 'rgba(255,255,255,0.02)' }}
-                            content={({ active, payload }) => {
-                                if (active && payload && payload.length) {
-                                    return (
-                                        <div className="bg-slate-950 border border-slate-800 p-2 rounded-lg shadow-2xl">
-                                            <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest leading-none mb-1">{payload[0].payload.level}</p>
-                                            <p className="text-lg font-black text-white">{payload[0].value}%</p>
-                                        </div>
-                                    );
-                                }
-                                return null;
-                            }}
-                        />
-                        <Bar
-                            dataKey="accuracy"
-                            radius={[12, 12, 12, 12]}
-                            barSize={40}
-                            animationDuration={1500}
-                        >
-                            {data.map((entry, index) => (
-                                <Cell
-                                    key={`cell-${index}`}
-                                    fill={getLevelColor(entry.level)}
-                                    fillOpacity={0.8}
+            <div className="flex flex-col gap-12 flex-grow justify-center">
+                {data.map((item, idx) => {
+                    const style = getLevelStyle(item.level);
+                    return (
+                        <div key={idx} className="group">
+                            <div className="flex items-end justify-between mb-4 px-1">
+                                <span className={`text-[12px] font-black uppercase tracking-[0.2em] ${style.text}`}>
+                                    {item.level} Level
+                                </span>
+                                <span className={`text-sm font-black tracking-tighter ${style.text}`}>
+                                    {item.accuracy}% Accuracy
+                                </span>
+                            </div>
+
+                            <div className="relative h-4 w-full bg-slate-800/50 rounded-full overflow-hidden border border-white/5">
+                                <motion.div
+                                    initial={{ width: 0 }}
+                                    animate={{ width: `${item.accuracy}%` }}
+                                    transition={{ duration: 1.5, delay: idx * 0.2, ease: "circOut" }}
+                                    className={`absolute top-0 left-0 h-full rounded-full transition-all duration-500 bg-gradient-to-r ${style.gradient} ${style.shadow}`}
                                 />
-                            ))}
-                        </Bar>
-                    </BarChart>
-                </ResponsiveContainer>
+                            </div>
+                        </div>
+                    );
+                })}
             </div>
 
-            <div className="mt-2 flex items-center gap-4 text-[9px] font-bold text-slate-600 tracking-[0.1em] border-t border-slate-900/40 pt-4">
-                <span className="text-white">Vertical Momentum:</span>
-                <span className="uppercase italic">High-Fidelity Tracking across difficulty spectrum</span>
+            <div className="pt-8 border-t border-slate-800 flex items-center gap-6">
+                <div className="flex items-center gap-2">
+                    <div className="h-2 w-2 rounded-full bg-emerald-500" />
+                    <span className="text-[8px] font-black text-slate-600 uppercase tracking-widest">Entry</span>
+                </div>
+                <div className="flex items-center gap-2">
+                    <div className="h-2 w-2 rounded-full bg-amber-500" />
+                    <span className="text-[8px] font-black text-slate-600 uppercase tracking-widest">Operational</span>
+                </div>
+                <div className="flex items-center gap-2">
+                    <div className="h-2 w-2 rounded-full bg-rose-500" />
+                    <span className="text-[8px] font-black text-slate-600 uppercase tracking-widest">Master</span>
+                </div>
             </div>
         </div>
     );
