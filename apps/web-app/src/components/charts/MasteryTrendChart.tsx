@@ -63,7 +63,7 @@ export default function MasteryTrendChart({ onDataFetched }: MasteryTrendChartPr
         },
         grid: {
             top: 30,
-            right: 20,
+            right: 48, // extra space for goal label
             bottom: 20,
             left: 20,
             containLabel: true,
@@ -124,6 +124,8 @@ export default function MasteryTrendChart({ onDataFetched }: MasteryTrendChartPr
                         backgroundColor: "rgba(226, 232, 240, 0.9)",
                         padding: [4, 8],
                         borderRadius: 8,
+                        position: "insideEndTop",
+                        distance: 6,
                     },
                     lineStyle: {
                         type: "dashed",
