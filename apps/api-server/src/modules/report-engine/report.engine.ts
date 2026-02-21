@@ -265,7 +265,7 @@ export class ReportEngine {
     };
   }
 
-  static async getPremiumExamReport(examId: string) {
+  static async getPremiumExamReport(examId: string): Promise<PremiumReport> {
     // 1. Check Redis Cache First
     const cached = await PerformanceService.getCachedReport<PremiumReport>(examId);
     if (cached !== null) return cached;
@@ -279,142 +279,151 @@ export class ReportEngine {
 
     if (exam === undefined || exam === null) throw new Error('Exam not found');
 
-    // Phase 1: Materialized View Analytics Engine
-    const coreMetricsRaw = await db.execute(sql`
-      WITH analytics AS (
-        SELECT * FROM attempt_analytics_mv WHERE exam_id = ${examId}
-      ),
-      dims AS (
-        SELECT * FROM attempt_dimension_accuracy_mv WHERE exam_id = ${examId}
-      ),
-      subtopics_agg AS (
-        SELECT JSON_AGG(r) as subtopics FROM (
-          SELECT subtopic as name, ROUND(AVG(accuracy)) as accuracy, SUM(attempts) as attempts
-          FROM dims
-          GROUP BY subtopic
-          ORDER BY accuracy DESC
-        ) r
-      ),
-      skills_agg AS (
-        SELECT JSON_AGG(r) as skills FROM (
-          SELECT skill as name, ROUND(AVG(accuracy)) as accuracy, SUM(attempts) as attempts
-          FROM dims
-          WHERE skill IS NOT NULL
-          GROUP BY skill
-          ORDER BY attempts DESC
-          LIMIT 4
-        ) r
-      ),
-      heatmap_agg AS (
-        SELECT JSON_AGG(r) as heatmap FROM (
-          SELECT subtopic, level as difficulty, ROUND(accuracy) as accuracy, attempts
-          FROM dims
-        ) r
-      ),
-      difficulty_agg AS (
-        SELECT JSON_AGG(r) as difficulty FROM (
-          SELECT level, ROUND(AVG(accuracy)) as accuracy, SUM(attempts) as attempts
-          FROM dims
-          GROUP BY level
-        ) r
-      ),
-      root_cause_cte AS (
-        -- 🥇 Primary: real weakest bucket (minimum 2 questions)
-        SELECT subtopic, skill, level as difficulty
-        FROM (
-          SELECT subtopic, skill, level, accuracy, attempts
-          FROM dims
-          WHERE attempts >= 2
-          ORDER BY accuracy ASC, attempts DESC
-          LIMIT 1
-        ) primary_rc
-        UNION ALL
-        -- 🥈 Fallback: weakest subtopic overall (if no bucket >= 2)
-        SELECT subtopic, NULL AS skill, NULL AS difficulty
-        FROM (
-          SELECT subtopic, AVG(accuracy) as accuracy, SUM(attempts) as attempts
-          FROM dims
-          GROUP BY subtopic
-          HAVING SUM(attempts) >= 2
-          ORDER BY accuracy ASC, attempts DESC
-          LIMIT 1
-        ) fallback_rc
-        UNION ALL
-        -- 🥉 Final fallback: return NULL row if no data qualifies
-        SELECT NULL, NULL, NULL
-        LIMIT 1
-      ),
-      variance_cte AS (
-        -- Calculate variance across and within dimensions 
-        SELECT 
-           VAR_SAMP(accuracy) as variance
-        FROM (
-          SELECT subtopic, AVG(accuracy) as accuracy FROM dims GROUP BY subtopic
-        ) v
-      ),
-      percentile_calc AS (
-        SELECT COALESCE(
-          (
-            SELECT ROUND(
-              100.0 * SUM(CASE WHEN c.score <= (SELECT score FROM analytics) THEN 1 ELSE 0 END)
-              / NULLIF(COUNT(*), 0),
-            2)
+    const runCoreQuery = async () => {
+        const res = await db.execute(sql`
+        WITH analytics AS (
+            SELECT * FROM attempt_analytics_mv WHERE exam_id = ${examId}
+        ),
+        dims AS (
+            SELECT * FROM attempt_dimension_accuracy_mv WHERE exam_id = ${examId}
+        ),
+        subtopics_agg AS (
+            SELECT JSON_AGG(r) as subtopics FROM (
+            SELECT subtopic as name, ROUND(AVG(accuracy)) as accuracy, SUM(attempts) as attempts
+            FROM dims
+            GROUP BY subtopic
+            ORDER BY accuracy DESC
+            ) r
+        ),
+        skills_agg AS (
+            SELECT JSON_AGG(r) as skills FROM (
+            SELECT skill as name, ROUND(AVG(accuracy)) as accuracy, SUM(attempts) as attempts
+            FROM dims
+            WHERE skill IS NOT NULL
+            GROUP BY skill
+            ORDER BY attempts DESC
+            LIMIT 4
+            ) r
+        ),
+        heatmap_agg AS (
+            SELECT JSON_AGG(r) as heatmap FROM (
+            SELECT subtopic, level as difficulty, ROUND(accuracy) as accuracy, attempts
+            FROM dims
+            ) r
+        ),
+        difficulty_agg AS (
+            SELECT JSON_AGG(r) as difficulty FROM (
+            SELECT level, ROUND(AVG(accuracy)) as accuracy, SUM(attempts) as attempts
+            FROM dims
+            GROUP BY level
+            ) r
+        ),
+        root_cause_cte AS (
+            SELECT subtopic, skill, level as difficulty
             FROM (
-              SELECT
-                e.id,
-                am.score
-              FROM exams e
-              JOIN attempt_analytics_mv am ON am.exam_id = e.id
-              WHERE (e.blueprint_id = (SELECT blueprint_id FROM exams WHERE id = ${examId}) OR (e.blueprint_id IS NULL AND (SELECT blueprint_id FROM exams WHERE id = ${examId}) IS NULL))
-                AND e.status = 'completed'
-                AND e.completed_at >= NOW() - INTERVAL '30 days'
-              GROUP BY e.id, am.score
-            ) c
-          ),
-          50
-        ) AS percentile
-      )
-      SELECT
-        a.score,
-        a.question_count,
-        a.total_time,
-        a.mastery,
-        ROUND(COALESCE(a.score, 0) * 0.5 + COALESCE(a.mh_accuracy, 0) * 0.3 + 20, 2) as readiness,
-        p.percentile,
-        CASE
-            WHEN a.question_count < 10 THEN 'LOW'
-            WHEN COALESCE(v.variance, 0) > 0.05 THEN 'MEDIUM'
-            WHEN NOT EXISTS (SELECT 1 FROM dims WHERE level IN ('intermediate', 'expert')) THEN 'LOW'
-            ELSE 'HIGH'
-        END AS confidence,
-        COALESCE(v.variance, 0) > 0.15 AS is_inconsistent,
-        rc.subtopic AS weakest_subtopic,
-        rc.skill AS weakest_skill,
-        rc.difficulty AS weakest_difficulty,
-        a.time_pattern,
-        a.stable_count,
-        a.logic_count,
-        a.error_count,
-        COALESCE(
-          (SELECT AVG(accuracy) FROM dims WHERE level = 'intermediate') - 
-          (SELECT AVG(accuracy) FROM dims WHERE level = 'expert'), 0
-        ) > 20 as expert_drop_off,
-        sa.subtopics,
-        ska.skills,
-        hl.heatmap,
-        da.difficulty
-      FROM analytics a
-      CROSS JOIN subtopics_agg sa
-      CROSS JOIN skills_agg ska
-      CROSS JOIN heatmap_agg hl
-      CROSS JOIN difficulty_agg da
-      CROSS JOIN root_cause_cte rc
-      CROSS JOIN variance_cte v
-      CROSS JOIN percentile_calc p;
-    `);
+            SELECT subtopic, skill, level, accuracy, attempts
+            FROM dims
+            WHERE attempts >= 2
+            ORDER BY accuracy ASC, attempts DESC
+            LIMIT 1
+            ) primary_rc
+            UNION ALL
+            SELECT subtopic, NULL AS skill, NULL AS difficulty
+            FROM (
+            SELECT subtopic, AVG(accuracy) as accuracy, SUM(attempts) as attempts
+            FROM dims
+            GROUP BY subtopic
+            HAVING SUM(attempts) >= 2
+            ORDER BY accuracy ASC, attempts DESC
+            LIMIT 1
+            ) fallback_rc
+            UNION ALL
+            SELECT NULL, NULL, NULL
+            LIMIT 1
+        ),
+        variance_cte AS (
+            SELECT 
+            VAR_SAMP(accuracy) as variance
+            FROM (
+            SELECT subtopic, AVG(accuracy) as accuracy FROM dims GROUP BY subtopic
+            ) v
+        ),
+        percentile_calc AS (
+            SELECT COALESCE(
+            (
+                SELECT ROUND(
+                100.0 * SUM(CASE WHEN c.score <= (SELECT score FROM analytics) THEN 1 ELSE 0 END)
+                / NULLIF(COUNT(*), 0),
+                2)
+                FROM (
+                SELECT
+                    e.id,
+                    am.score
+                FROM exams e
+                JOIN attempt_analytics_mv am ON am.exam_id = e.id
+                WHERE (e.blueprint_id = (SELECT blueprint_id FROM exams WHERE id = ${examId}) OR (e.blueprint_id IS NULL AND (SELECT blueprint_id FROM exams WHERE id = ${examId}) IS NULL))
+                    AND e.status = 'completed'
+                    AND e.completed_at >= NOW() - INTERVAL '30 days'
+                GROUP BY e.id, am.score
+                ) c
+            ),
+            50
+            ) AS percentile
+        )
+        SELECT
+            a.score,
+            a.question_count,
+            a.total_time,
+            a.mastery,
+            ROUND(COALESCE(a.score, 0) * 0.5 + COALESCE(a.mh_accuracy, 0) * 0.3 + 20, 2) as readiness,
+            p.percentile,
+            CASE
+                WHEN a.question_count < 10 THEN 'LOW'
+                WHEN COALESCE(v.variance, 0) > 0.05 THEN 'MEDIUM'
+                WHEN NOT EXISTS (SELECT 1 FROM dims WHERE level IN ('intermediate', 'expert')) THEN 'LOW'
+                ELSE 'HIGH'
+            END AS confidence,
+            COALESCE(v.variance, 0) > 0.15 AS is_inconsistent,
+            rc.subtopic AS weakest_subtopic,
+            rc.skill AS weakest_skill,
+            rc.difficulty AS weakest_difficulty,
+            a.time_pattern,
+            a.stable_count,
+            a.logic_count,
+            a.error_count,
+            COALESCE(
+            (SELECT AVG(accuracy) FROM dims WHERE level = 'intermediate') - 
+            (SELECT AVG(accuracy) FROM dims WHERE level = 'expert'), 0
+            ) > 20 as expert_drop_off,
+            sa.subtopics,
+            ska.skills,
+            hl.heatmap,
+            da.difficulty
+        FROM (SELECT 1 as pillar) p
+        LEFT JOIN analytics a ON TRUE
+        LEFT JOIN subtopics_agg sa ON TRUE
+        LEFT JOIN skills_agg ska ON TRUE
+        LEFT JOIN heatmap_agg hl ON TRUE
+        LEFT JOIN difficulty_agg da ON TRUE
+        LEFT JOIN root_cause_cte rc ON TRUE
+        LEFT JOIN variance_cte v ON TRUE
+        LEFT JOIN percentile_calc p2 ON TRUE
+        LIMIT 1;
+        `);
+        return res;
+    };
 
-    if (coreMetricsRaw.rows.length === 0) {
-        throw new Error('Analytics not precomputed for this exam.');
+    let coreMetricsRaw = await runCoreQuery();
+
+    // Lazy Refresh: If the primary row is empty (MV not refreshed for this attempt)
+    if (coreMetricsRaw.rows.length === 0 || (coreMetricsRaw.rows[0] as CoreRow).score === null) {
+        ReportEngine.log.info({ examId }, 'Analytic row missing in MV, triggering lazy refresh');
+        await PerformanceService.refreshAnalytics();
+        coreMetricsRaw = await runCoreQuery();
+    }
+
+    if (coreMetricsRaw.rows.length === 0 || (coreMetricsRaw.rows[0] as CoreRow).score === null) {
+        throw new Error('Analytics not precomputed for this exam even after refresh.');
     }
 
     const core = coreMetricsRaw.rows[0] as CoreRow;
@@ -434,7 +443,7 @@ export class ReportEngine {
         ORDER BY eq.id ASC
     `);
 
-    const finalReport = {
+    const finalReport: PremiumReport = {
       examId: exam.id,
       score: Math.round(core.score ?? 0),
       mastery: Math.round(core.mastery ?? 0),
