@@ -96,25 +96,15 @@ export class ReportEngine {
             }
         });
 
-        if (allExams.length <= 1) return 99; // Only this exam exists
+        if (allExams.length <= 1) return 99;
 
-        // Calculate score percentage for current exam (assuming 'score' passed in is raw count)
-        // Wait, 'score' passed in is correctAnswers count. We need percentage to compare with totalScore in DB.
-        // But we don't know totalQuestions here easily without querying blueprint/questions again.
-        // Actually, the caller calculates 'scorePercentage'. Let's trust the caller to pass percentage?
-        // NO, the caller passes 'correctAnswers' as 'score'.
-        // Let's rely on the FACT that the current exam is also in 'allExams' (if it is completed/updated).
-        // If the current exam is not yet 'completed' in DB when this runs? 
-        // getExamReport runs typically after submission.
-        
-        // Let's assume the current exam IS in the list.
         const currentExamWithType = allExams.find(e => e.id === examId);
         const myScore = (currentExamWithType !== undefined && currentExamWithType !== null && currentExamWithType.totalScore !== null) ? currentExamWithType.totalScore : 0;
 
         const lowerScores = allExams.filter(e => (e.totalScore !== null ? e.totalScore : 0) < myScore).length;
         const percentile = Math.round((lowerScores / allExams.length) * 100);
 
-        return Math.max(1, percentile); // Minimum 1st percentile
+        return Math.max(1, percentile);
     } catch (e) {
         ReportEngine.log.error(
           { examId, blueprintId, error: e instanceof Error ? e.message : 'unknown error' },
@@ -147,7 +137,6 @@ export class ReportEngine {
     const correctAnswers = exam.examQuestions.filter(eq => eq.isCorrect === true).length;
     const scorePercentage = totalQuestions > 0 ? (correctAnswers / totalQuestions) * 100 : 0;
 
-    // Calculate Time Taken
     let timeTaken = "00m 00s";
     if ((exam.completedAt !== null && exam.completedAt !== undefined) && (exam.startedAt !== null && exam.startedAt !== undefined)) {
         const diffMs = exam.completedAt.getTime() - exam.startedAt.getTime();
@@ -156,13 +145,10 @@ export class ReportEngine {
         timeTaken = `${diffMins}m ${diffSecs}s`;
     }
 
-    // Calculate Percentile
     const percentile = await ReportEngine.calculatePercentile(exam.id, exam.blueprintId, correctAnswers);
-
     const includeCorrect = options.includeCorrectAnswers === true;
     const actionPlan = ActionPlanBuilder.build(results);
 
-    // Phase 3: Adaptive Tutor Insights
     const topicResults = results.filter(r => r.dimensionType === 'topic');
     const topicAccuracyRecords = topicResults.map(r => ({
       topicId: r.dimensionId!,
@@ -202,6 +188,133 @@ export class ReportEngine {
         isCorrect: eq.isCorrect,
         timeSpent: (eq.responseMetadata as Record<string, unknown>)?.timeSpentSeconds as number || 0,
       }))
+    };
+  }
+
+  static async getPremiumExamReport(examId: string) {
+    const exam = await db.query.exams.findFirst({
+      where: eq(exams.id, examId),
+      with: {
+        examQuestions: {
+          with: {
+            question: {
+              with: {
+                subtopic: true
+              }
+            },
+          }
+        },
+        blueprint: true,
+      }
+    });
+
+    if (exam === undefined || exam === null) throw new Error('Exam not found');
+
+    const results = await db.query.resultsByDimension.findMany({
+      where: eq(resultsByDimension.examId, examId),
+    });
+
+    const totalQuestions = exam.examQuestions.length;
+    const correctAnswers = exam.examQuestions.filter(eq => eq.isCorrect === true).length;
+    const scorePercentage = Math.round(totalQuestions > 0 ? (correctAnswers / totalQuestions) * 100 : 0);
+
+    const topicResults = results.filter(r => r.dimensionType === 'topic');
+    const mastery = Math.round(topicResults.length > 0 
+      ? topicResults.reduce((acc, curr) => acc + curr.accuracy, 0) / topicResults.length 
+      : scorePercentage);
+
+    const readiness = Math.round((scorePercentage * 0.4) + (mastery * 0.4) + (20));
+
+    const subtopicMap = new Map<string, { total: number; correct: number; name: string }>();
+    exam.examQuestions.forEach(eq => {
+      const sub = eq.question.subtopic;
+      if (sub === null || sub === undefined) return;
+      const stats = subtopicMap.get(sub.id) || { total: 0, correct: 0, name: sub.name };
+      stats.total++;
+      if (eq.isCorrect === true) stats.correct++;
+      subtopicMap.set(sub.id, stats);
+    });
+
+    const subtopicsList = Array.from(subtopicMap.values()).map(s => ({
+      name: s.name,
+      accuracy: Math.round((s.correct / s.total) * 100)
+    })).sort((a, b) => b.accuracy - a.accuracy);
+
+    const diffMap = { simple: { t: 0, c: 0 }, intermediate: { t: 0, c: 0 }, expert: { t: 0, c: 0 } };
+    exam.examQuestions.forEach(eq => {
+      const d = eq.question.difficulty as 'simple' | 'intermediate' | 'expert';
+      if (diffMap[d] !== undefined) {
+        diffMap[d].t++;
+        if (eq.isCorrect === true) diffMap[d].c++;
+      }
+    });
+
+    const difficultyList = (['simple', 'intermediate', 'expert'] as const).map(level => ({
+      level,
+      accuracy: diffMap[level].t > 0 ? Math.round((diffMap[level].c / diffMap[level].t) * 100) : 0
+    }));
+
+    const heatmapList: { subtopic: string; difficulty: 'simple' | 'intermediate' | 'expert'; accuracy: number }[] = [];
+    const uniqueSubtopics = Array.from(subtopicMap.values()).map(s => s.name);
+    
+    uniqueSubtopics.forEach(subName => {
+      ['simple', 'intermediate', 'expert'].forEach(diff => {
+        const matchingQuestions = exam.examQuestions.filter(eq => 
+          eq.question.subtopic?.name === subName && eq.question.difficulty === diff
+        );
+        if (matchingQuestions.length > 0) {
+          const correct = matchingQuestions.filter(q => q.isCorrect === true).length;
+          heatmapList.push({
+            subtopic: subName,
+            difficulty: diff,
+            accuracy: Math.round((correct / matchingQuestions.length) * 100)
+          });
+        }
+      });
+    });
+
+    const skillResults = results.filter(r => r.dimensionType === 'skill');
+    const skillsList = skillResults.map(r => ({
+      name: r.name ?? 'Unknown',
+      accuracy: r.accuracy
+    }));
+
+    const weakestSubtopic = subtopicsList.length > 0 ? subtopicsList[subtopicsList.length - 1] : null;
+    const weakestSkill = skillsList.length > 0 ? skillsList.sort((a, b) => a.accuracy - b.accuracy)[0] : null;
+
+    const actions: string[] = [];
+    if (weakestSubtopic !== null && weakestSubtopic.accuracy < 60) {
+      actions.push(`Review foundational logic for ${weakestSubtopic.name}`);
+    }
+    if (weakestSkill !== null && weakestSkill.accuracy < 60) {
+      actions.push(`Focus on ${weakestSkill.name} tactical drills`);
+    }
+    if (difficultyList[1].accuracy < 50) {
+      actions.push("Stabilize intermediate difficulty mastery before moving to expert");
+    }
+    if (scorePercentage < 70) {
+      actions.push("Review incorrect answers with explanation tool");
+    }
+    if (actions.length < 3) {
+      actions.push("Expand into adjacent topics to maintain neural elasticity");
+    }
+
+    return {
+      examId: exam.id,
+      score: scorePercentage,
+      mastery,
+      readiness,
+      subtopics: subtopicsList,
+      skills: skillsList,
+      difficulty: difficultyList,
+      heatmap: heatmapList,
+      ai: {
+        status: scorePercentage >= 80 ? 'READY' : (scorePercentage >= 60 ? 'BORDERLINE' : 'NOT_READY'),
+        actions: actions.slice(0, 4),
+        weakest_subtopic: weakestSubtopic?.name,
+        weakest_skill: weakestSkill?.name,
+        nextExamHours: scorePercentage >= 80 ? 12 : 48
+      }
     };
   }
 }

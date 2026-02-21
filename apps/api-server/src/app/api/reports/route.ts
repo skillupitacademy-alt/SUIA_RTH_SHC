@@ -21,6 +21,8 @@ export async function GET(_req: NextRequest) {
     const _payload = await TokenService.verifyAccessToken(_token, false);
 
     if (id !== null && id !== '') {
+       const type = searchParams.get('type');
+
        // Step 2 Hardening: Pre-check Ownership & Status
        const examCheck = await db.query.exams.findFirst({
          where: eq(exams.id, id),
@@ -44,11 +46,15 @@ export async function GET(_req: NextRequest) {
          return NextResponse.json({ _error: 'Exam in progress' }, { status: 409 });
        }
        if (examCheck.status === 'processing') {
-         // Retry-After header could be added here
          return NextResponse.json({ status: 'processing', message: 'Report generating...' }, { status: 202 });
        }
 
-       // 3. Sanitized Report Generation (Step 4 contract: default is safe)
+       // 3. Selection of Report Type
+       if (type === 'premium') {
+         const report = await ReportEngine.getPremiumExamReport(id);
+         return NextResponse.json(report);
+       }
+
        const report = await ReportEngine.getExamReport(id, { includeCorrectAnswers: false });
        return NextResponse.json(report);
     }

@@ -14,4 +14,8 @@ export class ReportClient {
   async getExamReport(examId: string) {
     return this.client.get<any>(`/reports?id=${examId}`);
   }
+
+  async getPremiumExamReport(examId: string) {
+    return this.client.get<any>(`/reports?id=${examId}&type=premium`);
+  }
 }
