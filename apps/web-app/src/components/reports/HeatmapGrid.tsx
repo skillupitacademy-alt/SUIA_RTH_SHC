@@ -2,6 +2,8 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
+import { MethodologyDisclaimer } from './MethodologyDisclaimer';
+
 
 export interface HeatmapCell {
     subtopic: string;
@@ -100,6 +102,10 @@ export const HeatmapGrid = React.memo(({ data }: HeatmapGridProps) => {
                     </div>
                 ))}
             </div>
+
+            <MethodologyDisclaimer
+                text="NEURAL PROJECTION: MAPS CROSS-FUNCTIONAL PERFORMANCE DENSITY. MATRIX SATURATION CORRELATES WITH THE CONFIDENCE DEPTH OF UNDERLYING ACCURACY DATA."
+            />
         </div>
     );
 });

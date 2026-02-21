@@ -3,6 +3,8 @@
 import React from 'react';
 import { motion } from "framer-motion";
 import { AlertCircle } from 'lucide-react';
+import { MethodologyDisclaimer } from './MethodologyDisclaimer';
+
 
 export interface DifficultyAccuracy {
     level: string;
@@ -52,8 +54,8 @@ export const DifficultyBarChart = React.memo(({ data, expertDropOff }: Difficult
                 {data.map((item, idx) => {
                     const style = getLevelStyle(item.level);
                     const isHard = item.level.toLowerCase().includes('expert');
-                    // Force "---" if attempts < 3 per user instruction
-                    const showMetrics = item.attempts >= 3;
+                    // Show data as soon as we have at least 1 attempt
+                    const showMetrics = item.attempts >= 1;
 
                     return (
                         <div key={idx} className="group relative">
@@ -118,6 +120,10 @@ export const DifficultyBarChart = React.memo(({ data, expertDropOff }: Difficult
                     ))}
                 </div>
             </div>
+
+            <MethodologyDisclaimer
+                text="QUANTUM WEIGHTING: THRESHOLD ANALYSIS (EXPERT [2.0], INTERMEDIATE [1.5], SIMPLE [1.0]) IDENTIFIES SPECIFIC CONCEPTUAL RIGIDITY COLLAPSES."
+            />
         </div>
     );
 });

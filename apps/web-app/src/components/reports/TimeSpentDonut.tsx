@@ -3,6 +3,7 @@
 import React from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { MoreHorizontal, Clock } from "lucide-react";
+import { MethodologyDisclaimer } from './MethodologyDisclaimer';
 
 export interface TimeSpentDonutProps {
     data: {
@@ -109,6 +110,10 @@ export const TimeSpentDonut = React.memo(({ data }: TimeSpentDonutProps) => {
                     </div>
                 ))}
             </div>
+
+            <MethodologyDisclaimer
+                text="TEMPORAL ANALYSIS: CATEGORIZES COGNITIVE LOAD INTO STABLE (FAST), LOGIC (DELIBERATE), AND NEURAL FRICTION (CORRECTION) PHASES."
+            />
         </div>
     );
 });

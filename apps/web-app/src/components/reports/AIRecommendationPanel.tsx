@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { MethodologyDisclaimer } from './MethodologyDisclaimer';
 
 export interface AIRecommendation {
     status: "READY" | "BORDERLINE" | "NOT_READY";
@@ -174,6 +175,11 @@ export const AIRecommendationPanel = React.memo(({ ai }: AIRecommendationPanelPr
                 </div>
                 <span className="text-[12px] font-bold text-slate-600 italic">LOGID: PR0_{Math.random().toString(36).substring(7).toUpperCase()}</span>
             </div>
+
+            <MethodologyDisclaimer
+                className="mt-8"
+                text="ADAPTIVE AI: REMEDIATION ENGINE FILTERS PERSISTENCE DIPS VS. COGNITIVE-LOAD OUTLIERS. PRESCRIPTIONS ARE UPDATED DYNAMICALLY AFTER EACH ASSESSMENT VECTOR."
+            />
         </div>
     );
 });

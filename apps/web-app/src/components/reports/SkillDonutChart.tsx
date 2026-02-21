@@ -3,6 +3,7 @@
 import React from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { MoreHorizontal } from "lucide-react";
+import { MethodologyDisclaimer } from './MethodologyDisclaimer';
 
 export interface SkillDonutChartProps {
     data: { name: string; accuracy: number }[];
@@ -92,6 +93,10 @@ export const SkillDonutChart = React.memo(({ data }: SkillDonutChartProps) => {
                     </div>
                 ))}
             </div>
+
+            <MethodologyDisclaimer
+                text="DOMAIN DISTRIBUTION: PROPORTIONAL REPRESENTATION OF ACTIVE SUBJECT AREAS BASED ON TOTAL ASSESSMENT BLUEPRINT VOLUME."
+            />
         </div>
     );
 });

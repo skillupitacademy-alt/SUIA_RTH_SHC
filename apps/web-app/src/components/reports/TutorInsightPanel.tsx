@@ -12,6 +12,8 @@ import {
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { apiClient } from "@quiz/api-client";
+import { MethodologyDisclaimer } from './MethodologyDisclaimer';
+
 
 export interface TutorInsight {
     topicId: string;
@@ -158,6 +160,11 @@ export const TutorInsightPanel = React.memo(({ insights }: TutorInsightPanelProp
                     </div>
                 </div>
             </div>
+
+            <MethodologyDisclaimer
+                className="mt-10"
+                text="TUTOR INSIGHTS: DERIVED FROM CROSS-REFERENCE OF HISTORICAL STRESS-PERFORMANCE CURVES AND RECENT TOPIC FLUENCY DATA NODES."
+            />
         </div>
     );
 });

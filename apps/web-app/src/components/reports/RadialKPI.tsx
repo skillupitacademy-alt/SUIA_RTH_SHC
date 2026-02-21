@@ -3,6 +3,7 @@
 import React from 'react';
 import { RadialBarChart, RadialBar, ResponsiveContainer, PolarAngleAxis } from "recharts";
 import { Calendar, Activity, Trophy, Timer, Target } from "lucide-react";
+import { MethodologyDisclaimer } from './MethodologyDisclaimer';
 
 // Recharts typing is strict; cast to allow per-ring radii and filters.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -202,6 +203,10 @@ export const RadialKPI = React.memo(({ data }: RadialKPIProps) => {
                     </ResponsiveContainer>
                 </div>
             </div>
+
+            <MethodologyDisclaimer
+                text="READINESS INDEX: HIGH-PRECISION METRIC SYNTHESIZED FROM RAW SCORE (50%), HISTORICAL TOPIC MASTERY (30%), AND PERFORMANCE CONSISTENCY VARIANCE (20%)."
+            />
         </div>
     );
 });

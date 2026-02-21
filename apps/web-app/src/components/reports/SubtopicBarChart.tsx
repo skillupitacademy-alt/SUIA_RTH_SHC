@@ -3,6 +3,7 @@
 import React, { useMemo } from 'react';
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { MethodologyDisclaimer } from './MethodologyDisclaimer';
 
 export interface SubtopicBarChartProps {
     data: { name: string; accuracy: number; attempts: number }[];
@@ -33,7 +34,8 @@ export const SubtopicBarChart = React.memo(({ data, weakest, rootCauseText }: Su
             <div className="space-y-12 pr-2">
                 {sortedData.map((item, idx) => {
                     const isWeakest = item.name === weakest;
-                    const showMetrics = item.attempts >= 3;
+                    // Show data as soon as we have at least 1 attempt
+                    const showMetrics = item.attempts >= 1;
 
                     return (
                         <div key={idx} className="group">
@@ -82,6 +84,10 @@ export const SubtopicBarChart = React.memo(({ data, weakest, rootCauseText }: Su
                     );
                 })}
             </div>
+
+            <MethodologyDisclaimer
+                text="DIAGNOSTIC SWEEP: PROFILE CAPTURES THE RAW SUCCESS RATE PER VECTOR ATTEMPT. DATA STABILITY INCREASES WITH CUMULATIVE SAMPLE VOLUME."
+            />
         </div>
     );
 });
