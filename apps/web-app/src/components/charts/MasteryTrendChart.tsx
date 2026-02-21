@@ -37,6 +37,8 @@ export default function MasteryTrendChart({ onDataFetched }: MasteryTrendChartPr
         );
     }
 
+    const goalLine = 80;
+
     const option = {
         tooltip: {
             trigger: "axis",
@@ -113,6 +115,23 @@ export default function MasteryTrendChart({ onDataFetched }: MasteryTrendChartPr
                         ],
                     },
                 },
+                markLine: {
+                    symbol: "none",
+                    label: {
+                        formatter: `Goal ${goalLine}%`,
+                        color: "#475569",
+                        fontWeight: 700,
+                        backgroundColor: "rgba(226, 232, 240, 0.9)",
+                        padding: [4, 8],
+                        borderRadius: 8,
+                    },
+                    lineStyle: {
+                        type: "dashed",
+                        color: "#CBD5E1",
+                        width: 2,
+                    },
+                    data: [{ yAxis: goalLine }],
+                },
             },
         ],
     };
@@ -124,6 +143,22 @@ export default function MasteryTrendChart({ onDataFetched }: MasteryTrendChartPr
                 <p className="text-sm text-slate-500">Your average accuracy over time.</p>
             </div>
             <BaseChart option={option} height={300} loading={loading} />
+            {data?.insight?.dataNotes && data.insight.dataNotes.length > 0 && (
+                <div className="mt-4 bg-slate-50/70 border border-slate-100 rounded-xl p-4">
+                    <div className="flex items-center gap-2 mb-3">
+                        <span className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-500">Data Notes</span>
+                        <span className="text-[10px] font-bold text-slate-400">Personalized context</span>
+                    </div>
+                    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                        {data.insight.dataNotes.map((note, idx) => (
+                            <div key={idx} className="rounded-lg border border-slate-200 bg-white px-4 py-3 shadow-sm">
+                                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mb-1">{note.label}</p>
+                                <p className="text-[11px] font-semibold text-slate-700 leading-snug">{note.value}</p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
