@@ -38,10 +38,10 @@ const DiagnosticTier = ({
     progress: number;
     items: string[];
 }) => (
-    <div className="p-5 bg-slate-900/40 rounded-[2rem] border border-white/5 relative overflow-hidden group/tier hover:bg-slate-900/60 transition-all duration-500">
-        <div className="flex items-center justify-between mb-4 relative z-10">
-            <div className="flex items-center gap-3">
-                <div className={cn("p-2 rounded-xl border", color.replace('bg-', 'border-').replace('/10', '/20'))}>
+    <div className="p-6 bg-slate-900/40 rounded-[2rem] border border-white/5 relative overflow-hidden group/tier hover:bg-slate-900/60 transition-all duration-500">
+        <div className="flex items-center justify-between mb-5 relative z-10">
+            <div className="flex items-center gap-4">
+                <div className={cn("p-2.5 rounded-xl border shadow-inner", color.replace('bg-', 'border-').replace('/10', '/20'))}>
                     <Icon className={cn("h-4 w-4", color.replace('bg-', 'text-').split(' ')[0])} />
                 </div>
                 <div>
@@ -60,10 +60,10 @@ const DiagnosticTier = ({
             </div>
         </div>
 
-        <ul className="space-y-2 relative z-10">
+        <ul className="space-y-3 relative z-10">
             {items.map((item, i) => (
-                <li key={i} className="flex items-start gap-2.5 group/item">
-                    <div className={cn("h-1.5 w-1.5 rounded-full mt-1.5 shrink-0 transition-transform group-hover/item:scale-150", color.split(' ')[0])} />
+                <li key={i} className="flex items-start gap-3 group/item">
+                    <div className={cn("h-1.5 w-1.5 rounded-full mt-2 shrink-0 transition-transform group-hover/item:scale-150", color.split(' ')[0])} />
                     <span className="text-[13px] text-slate-300 font-medium leading-relaxed group-hover/item:text-slate-100 transition-colors">
                         {item}
                     </span>
@@ -103,12 +103,12 @@ export const AIRecommendationPanel = React.memo(({ ai }: AIRecommendationPanelPr
     ];
 
     return (
-        <div className="w-full h-full p-8 flex flex-col bg-[#0a0c12]/90 border border-slate-800/60 rounded-[2.5rem] shadow-[0_30px_60px_rgba(0,0,0,0.6)] backdrop-blur-3xl relative overflow-hidden group">
+        <div className="w-full flex flex-col p-8 lg:p-10 bg-[#0a0c12]/90 border border-slate-800/60 rounded-[2.5rem] shadow-[0_30px_60px_rgba(0,0,0,0.6)] backdrop-blur-3xl relative overflow-hidden group min-h-full">
             {/* Background pattern */}
             <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.01)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.01)_1px,transparent_1px)] bg-[size:24px_24px] [mask-image:radial-gradient(ellipse_at_center,black,transparent)] pointer-events-none" />
 
             {/* Header matching image exactly */}
-            <div className="flex items-center justify-between mb-10 relative z-10">
+            <div className="flex items-center justify-between mb-12 relative z-10">
                 <div className="flex items-center gap-4">
                     <div className="p-2.5 bg-indigo-500/10 rounded-2xl border border-indigo-500/20 shadow-inner group-hover:border-indigo-500/40 transition-all">
                         <BrainCircuit className="h-6 w-6 text-indigo-400" />
@@ -125,14 +125,14 @@ export const AIRecommendationPanel = React.memo(({ ai }: AIRecommendationPanelPr
 
             <h4 className="text-[12px] font-black text-slate-400 uppercase tracking-[0.3em] mb-8 border-b border-white/5 pb-4 relative z-10">Tactical Prescription</h4>
 
-            <div className="space-y-5 flex-grow relative z-10 scrollbar-hide overflow-y-auto pr-1">
+            <div className="space-y-6 flex-grow relative z-10">
                 {tiers.map((tier, idx) => (
                     <DiagnosticTier key={idx} {...tier} />
                 ))}
             </div>
 
             {/* Footer mirroring layout logic */}
-            <div className="mt-8 pt-6 border-t border-white/5 flex items-center justify-between relative z-10">
+            <div className="mt-10 pt-8 border-t border-white/5 flex items-center justify-between relative z-10">
                 <div className="flex items-center gap-2 text-[12px] font-black text-slate-500 uppercase tracking-widest">
                     <Activity size={12} className="text-indigo-500/40" />
                     <span>Diagnostic Engine v9.4</span>

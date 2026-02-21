@@ -1,12 +1,10 @@
 'use client';
 
 import React from 'react';
-import { RadialBarChart, RadialBar, ResponsiveContainer, PolarAngleAxis } from "recharts";
-import { Calendar, ChevronDown, Activity } from "lucide-react";
+import { RadialBarChart, RadialBar, ResponsiveContainer, PolarAngleAxis, type RadialBarProps } from "recharts";
+import { Calendar, Activity, Trophy, Timer, Target } from "lucide-react";
 
-// Recharts typings don't expose per-series radii, so we cast for multi-ring styling.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const AnyRadialBar = RadialBar as unknown as React.ComponentType<any>;
+const AnyRadialBar = RadialBar as unknown as React.ComponentType<RadialBarProps>;
 
 export interface RadialKPIProps {
     data: {
@@ -20,7 +18,6 @@ export interface RadialKPIProps {
 }
 
 export const RadialKPI = React.memo(({ data }: RadialKPIProps) => {
-    // Labels matching the high-fidelity request
     const getMasteryLabel = (val: number) => {
         if (val >= 90) return "Expert";
         if (val >= 75) return "Advanced";
@@ -35,13 +32,11 @@ export const RadialKPI = React.memo(({ data }: RadialKPIProps) => {
     };
 
     const rings = [
-        { key: "score", value: data.score, label: "Score", sub: `${data.score}%`, color: "url(#cyanLinear)", inner: "88%", outer: "95%" },
-        { key: "mastery", value: data.mastery, label: "Mastery", sub: getMasteryLabel(data.mastery), color: "url(#emeraldLinear)", inner: "74%", outer: "81%" },
-        { key: "rank", value: data.percentile, label: "Rank", sub: `${data.percentile}th Percentile`, color: "url(#amberLinear)", inner: "60%", outer: "67%" },
-        { key: "time", value: data.timeEfficiency === 'FAST' ? 95 : (data.timeEfficiency === 'OPTIMAL' ? 75 : 45), label: "Time Efficiency", sub: formatTime(data.totalTimeSpentSeconds), color: "url(#violetLinear)", inner: "46%", outer: "53%" },
+        { key: "score", value: data.score, color: "url(#cyanLinear)" },
+        { key: "mastery", value: data.mastery, color: "url(#emeraldLinear)" },
+        { key: "rank", value: data.percentile, color: "url(#amberLinear)" },
+        { key: "time", value: data.timeEfficiency === 'FAST' ? 95 : (data.timeEfficiency === 'OPTIMAL' ? 75 : 45), color: "url(#violetLinear)" },
     ];
-
-    const chartData = rings.map(r => ({ name: r.label, value: r.value, fill: r.color }));
 
     return (
         <div className="w-full h-full flex flex-col bg-[#0d111a] rounded-[2.5rem] p-8 lg:p-10 border border-white/5 shadow-2xl relative overflow-hidden group">
@@ -49,72 +44,83 @@ export const RadialKPI = React.memo(({ data }: RadialKPIProps) => {
             <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/5 blur-[120px] rounded-full pointer-events-none" />
             <div className="absolute bottom-0 left-0 w-64 h-64 bg-violet-500/5 blur-[120px] rounded-full pointer-events-none" />
 
-            {/* Header section matching image */}
-            <div className="flex items-center justify-between mb-4 relative z-20">
-                <h3 className="text-xl font-bold text-white tracking-tight">Executive Summary</h3>
-                <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-900/50 border border-white/5 rounded-xl cursor-default hover:bg-slate-800/80 transition-colors">
+            <div className="flex items-center justify-between mb-8 relative z-20">
+                <h3 className="text-xl font-bold text-white tracking-tight uppercase">Executive Summary</h3>
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-900/50 border border-white/5 rounded-xl cursor-default">
                     <Calendar size={14} className="text-slate-400" />
-                    <span className="text-[13px] font-bold text-slate-200">Session Metrics</span>
-                    <ChevronDown size={14} className="text-slate-500" />
+                    <span className="text-[13px] font-bold text-slate-300">Session Metrics</span>
                 </div>
             </div>
 
-            <div className="relative flex-grow flex items-center justify-center">
-                {/* Labels at top/bottom of rings matching image */}
-                <div className="absolute inset-0 z-10 pointer-events-none flex flex-col items-center justify-between py-6">
-                    <div className="flex flex-col items-center">
-                        <span className="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Score</span>
-                        <span className="text-[16px] font-black text-cyan-400 tracking-tighter">{data.score}%</span>
+            <div className="relative flex-grow flex flex-col items-center justify-center">
+                {/* Stats Grid Overlay - Replacing Colliding Absolute Stacks */}
+                <div className="absolute inset-0 z-10 pointer-events-none grid grid-cols-2 gap-4 p-4">
+                    {/* Top Left: Score */}
+                    <div className="flex flex-col items-start justify-start">
+                        <div className="flex items-center gap-2 mb-1">
+                            <Target size={14} className="text-cyan-400" />
+                            <span className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Score</span>
+                        </div>
+                        <span className="text-[18px] font-black text-white">{data.score}%</span>
                     </div>
-                    <div className="flex flex-col items-center mb-12">
-                        <span className="text-[11px] font-black text-amber-500/80 uppercase tracking-widest mb-0.5">Global Rank</span>
-                        <span className="text-[14px] font-bold text-amber-500/80">{data.percentile}th Percentile</span>
+
+                    {/* Top Right: Mastery */}
+                    <div className="flex flex-col items-end justify-start">
+                        <div className="flex items-center gap-2 mb-1">
+                            <span className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Synthesis</span>
+                            <Activity size={14} className="text-emerald-400" />
+                        </div>
+                        <span className="text-[18px] font-black text-emerald-400">{getMasteryLabel(data.mastery)}</span>
+                    </div>
+
+                    {/* Bottom Left: Rank */}
+                    <div className="flex flex-col items-start justify-end">
+                        <div className="flex items-center gap-2 mb-1">
+                            <Trophy size={14} className="text-amber-400" />
+                            <span className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Global Rank</span>
+                        </div>
+                        <span className="text-[18px] font-black text-amber-500">{data.percentile}th</span>
+                    </div>
+
+                    {/* Bottom Right: Time */}
+                    <div className="flex flex-col items-end justify-end">
+                        <div className="flex items-center gap-2 mb-1">
+                            <span className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Efficiency</span>
+                            <Timer size={14} className="text-violet-400" />
+                        </div>
+                        <span className="text-[18px] font-black text-violet-400">{formatTime(data.totalTimeSpentSeconds)}</span>
                     </div>
                 </div>
 
-                <div className="absolute inset-0 z-10 pointer-events-none flex flex-col items-center justify-center pt-24">
-                    <div className="flex flex-col items-center">
-                        <span className="text-[11px] font-black text-emerald-400 uppercase tracking-widest mb-0.5">Synthesis</span>
-                        <span className="text-[13px] font-bold text-emerald-300 uppercase">{getMasteryLabel(data.mastery)}</span>
-                    </div>
-                </div>
-
-                <div className="absolute inset-0 z-10 pointer-events-none flex flex-col items-center justify-end pb-12">
-                    <div className="flex flex-col items-center">
-                        <span className="text-[16px] font-black text-emerald-400 tracking-tighter">{formatTime(data.totalTimeSpentSeconds)}</span>
-                        <span className="text-[11px] font-black text-emerald-400/60 uppercase tracking-widest">Efficiency</span>
-                    </div>
-                </div>
-
-                {/* Center Content */}
-                <div className="absolute inset-0 flex flex-col items-center justify-center z-10 pointer-events-none">
-                    <div className="relative">
-                        {/* Glow Filter behind center text */}
-                        <div className="absolute inset-0 bg-white/5 blur-3xl rounded-full" />
-                        <div className="flex flex-col items-center relative gap-0.5">
-                            <span className="text-[13px] font-black text-slate-400 uppercase tracking-[0.3em]">Readiness</span>
-                            <span className="text-6xl font-black text-white tracking-tighter drop-shadow-[0_0_20px_rgba(255,255,255,0.2)]">
+                {/* Center Core Content */}
+                <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 flex flex-col items-center justify-center z-20 pointer-events-none">
+                    <div className="relative flex flex-col items-center">
+                        <span className="text-[13px] font-black text-slate-500 uppercase tracking-[0.4em] mb-2">Readiness</span>
+                        <div className="relative">
+                            <div className="absolute inset-0 bg-white/5 blur-3xl rounded-full" />
+                            <span className="text-7xl font-black text-white tracking-tighter drop-shadow-[0_0_25px_rgba(255,255,255,0.2)]">
                                 {data.readiness}%
                             </span>
-                            <div className="mt-3 p-2 bg-white/10 rounded-xl border border-white/10">
-                                <Activity size={18} className="text-slate-300" />
-                            </div>
+                        </div>
+                        <div className="mt-4 px-4 py-1.5 bg-white/5 rounded-full border border-white/10 flex items-center gap-2">
+                            <Activity size={14} className="text-indigo-400" />
+                            <span className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">AI Matrix Active</span>
                         </div>
                     </div>
                 </div>
 
-                {/* Main Radial Chart */}
-                <div className="w-[480px] h-[480px]">
+                {/* Main Radial Chart - Scaled down for white space */}
+                <div className="w-[440px] h-[440px] flex items-center justify-center relative">
                     <ResponsiveContainer width="100%" height="100%">
                         <RadialBarChart
                             cx="50%"
                             cy="50%"
-                            innerRadius="35%"
+                            innerRadius="40%"
                             outerRadius="100%"
                             startAngle={90}
                             endAngle={450}
                             barSize={12}
-                            data={chartData}
+                            data={rings}
                         >
                             <defs>
                                 <linearGradient id="cyanLinear" x1="0" y1="0" x2="1" y2="1">
@@ -142,7 +148,7 @@ export const RadialKPI = React.memo(({ data }: RadialKPIProps) => {
                             <AnyRadialBar
                                 dataKey="value"
                                 cornerRadius={20}
-                                background={{ fill: 'rgba(255,255,255,0.03)' }}
+                                background={{ fill: 'rgba(255,255,255,0.02)' }}
                                 filter="url(#glow)"
                                 animationDuration={1500}
                                 animationEasing="ease-out"

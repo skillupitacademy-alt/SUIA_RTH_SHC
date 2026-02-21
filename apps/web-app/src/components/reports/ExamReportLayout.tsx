@@ -129,12 +129,11 @@ const HeuristicPanel = ({
         <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
-            className="h-full flex flex-col p-8 lg:p-10 bg-[#0a0c12]/90 border border-slate-800/60 rounded-[2.5rem] shadow-[0_30px_60px_rgba(0,0,0,0.6)] backdrop-blur-3xl relative overflow-hidden group"
+            className="flex flex-col p-8 lg:p-10 bg-[#0a0c12]/90 border border-slate-800/60 rounded-[2.5rem] shadow-[0_30px_60px_rgba(0,0,0,0.6)] backdrop-blur-3xl relative overflow-hidden group min-h-full"
         >
             <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.01)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.01)_1px,transparent_1px)] bg-[size:24px_24px] [mask-image:radial-gradient(ellipse_at_center,black,transparent)] pointer-events-none" />
 
             <div className="relative z-10 flex flex-col h-full">
-                {/* Header matching image exactly */}
                 <div className="flex items-center justify-between mb-10">
                     <div className="flex items-center gap-4">
                         <div className="p-2.5 bg-indigo-500/10 rounded-2xl border border-indigo-500/20 shadow-inner group-hover:border-indigo-500/40 transition-all">
@@ -152,12 +151,12 @@ const HeuristicPanel = ({
 
                 <h4 className="text-[12px] font-black text-slate-400 uppercase tracking-[0.3em] mb-8 border-b border-white/5 pb-4">{title}</h4>
 
-                <div className="space-y-5 flex-grow overflow-y-auto scrollbar-hide pr-1">
+                <div className="space-y-6 flex-grow overflow-visible">
                     {details.map((tier, idx) => (
-                        <div key={idx} className="p-5 bg-slate-900/40 rounded-[2rem] border border-white/5 relative overflow-hidden group/tier hover:bg-slate-900/60 transition-all duration-300">
-                            <div className="flex items-center justify-between mb-4 relative z-10">
-                                <div className="flex items-center gap-3">
-                                    <div className={cn("p-2 rounded-xl border border-white/5", tier.color.replace('bg-', 'text-').split(' ')[0])}>
+                        <div key={idx} className="p-6 bg-slate-900/40 rounded-[2rem] border border-white/5 relative overflow-hidden group/tier hover:bg-slate-900/60 transition-all duration-300">
+                            <div className="flex items-center justify-between mb-5 relative z-10">
+                                <div className="flex items-center gap-4">
+                                    <div className={cn("p-2.5 rounded-xl border border-white/5 shadow-inner", tier.color.replace('bg-', 'text-').split(' ')[0])}>
                                         <tier.icon className="h-4 w-4" />
                                     </div>
                                     <div>
@@ -170,15 +169,15 @@ const HeuristicPanel = ({
                                         initial={{ width: 0 }}
                                         animate={{ width: `${tier.progress}%` }}
                                         transition={{ duration: 1.5, ease: "circOut" }}
-                                        className={cn("h-full rounded-full shadow-[0_0_8px_rgba(0,0,0,0.5)]", tier.color.split(' ')[0])}
+                                        className={cn("h-full rounded-full shadow-[0_0_10px_rgba(0,0,0,0.5)]", tier.color.split(' ')[0])}
                                     />
                                 </div>
                             </div>
 
-                            <ul className="space-y-2 relative z-10">
+                            <ul className="space-y-3 relative z-10">
                                 {tier.items.map((item, i) => (
-                                    <li key={i} className="flex items-start gap-2 group/item">
-                                        <div className={cn("h-2 w-2 rounded-full mt-1.5 shrink-0", tier.color.split(' ')[0])} />
+                                    <li key={i} className="flex items-start gap-3 group/item">
+                                        <div className={cn("h-1.5 w-1.5 rounded-full mt-2 shrink-0 shadow-sm", tier.color.split(' ')[0])} />
                                         <span className="text-[13px] text-slate-300 font-medium leading-relaxed group-hover/item:text-slate-100 transition-colors">
                                             {item}
                                         </span>
@@ -189,7 +188,7 @@ const HeuristicPanel = ({
                     ))}
                 </div>
 
-                <div className="mt-8 pt-6 border-t border-white/5 opacity-60">
+                <div className="mt-10 pt-8 border-t border-white/5">
                     <div className="flex items-center justify-between text-[11px] font-black text-slate-500 uppercase tracking-[0.3em]">
                         <div className="flex items-center gap-2">
                             <Activity size={12} className="text-indigo-400" />
@@ -244,10 +243,10 @@ export function ExamReportLayout({ data, loading }: ExamReportLayoutProps) {
                         {/* EXECUTIVE CORE TAB */}
                         {activeTab === 'summary' && (
                             <div className="grid grid-cols-1 lg:grid-cols-[65%_35%] gap-8 items-stretch pt-4">
-                                <div className="h-[650px] rounded-[2.5rem] bg-slate-900/50 border border-white/5 overflow-hidden shadow-2xl relative group">
+                                <div className="rounded-[2.5rem] bg-slate-900/50 border border-white/5 overflow-hidden shadow-2xl relative group">
                                     <RadialKPI data={data} />
                                 </div>
-                                <div className="h-full min-h-[650px]">
+                                <div className="flex flex-col">
                                     <AIRecommendationPanel ai={data.ai} />
                                 </div>
                             </div>
@@ -258,47 +257,49 @@ export function ExamReportLayout({ data, loading }: ExamReportLayoutProps) {
                             <div className="space-y-12 pt-4">
                                 {/* Section 1: Subtopic Variance */}
                                 <div className="grid grid-cols-1 lg:grid-cols-[65%_35%] gap-8 items-stretch">
-                                    <div className="min-h-[450px] rounded-[2.5rem] bg-slate-900/50 border border-white/5 p-8 lg:p-12 flex items-center">
+                                    <div className="rounded-[2.5rem] bg-slate-900/50 border border-white/5 p-10 lg:p-14 flex items-center shadow-xl">
                                         <SubtopicBarChart data={data.subtopics} weakest={data.ai.weakest_subtopic} />
                                     </div>
-                                    <HeuristicPanel
-                                        title="Domain Disparity"
-                                        details={[
-                                            {
-                                                label: "Focus Areas",
-                                                status: "Critical",
-                                                items: [`Review ${data.ai.weakest_subtopic || 'foundational'} logic`, "Practice dynamic integration"],
-                                                color: "bg-rose-500 text-rose-400",
-                                                progress: 35,
-                                                icon: AlertTriangle
-                                            },
-                                            {
-                                                label: "Strengthen",
-                                                status: "Proficient",
-                                                items: ["Deepen ML model context", "Improve physics section timing"],
-                                                color: "bg-amber-500 text-amber-400",
-                                                progress: 65,
-                                                icon: Zap
-                                            },
-                                            {
-                                                label: "Maintain",
-                                                status: "Mastered",
-                                                items: ["Stable neural baseline stability", "Continue daily vector drills"],
-                                                color: "bg-emerald-500 text-emerald-400",
-                                                progress: 95,
-                                                icon: CheckCircle2
-                                            }
-                                        ]}
-                                    />
+                                    <div className="flex flex-col">
+                                        <HeuristicPanel
+                                            title="Domain Disparity"
+                                            details={[
+                                                {
+                                                    label: "Focus Areas",
+                                                    status: "Critical",
+                                                    items: [`Review ${data.ai.weakest_subtopic || 'foundational'} logic`, "Practice dynamic integration"],
+                                                    color: "bg-rose-500 text-rose-400",
+                                                    progress: 35,
+                                                    icon: AlertTriangle
+                                                },
+                                                {
+                                                    label: "Strengthen",
+                                                    status: "Proficient",
+                                                    items: ["Deepen ML model context", "Improve physics section timing"],
+                                                    color: "bg-amber-500 text-amber-400",
+                                                    progress: 65,
+                                                    icon: Zap
+                                                },
+                                                {
+                                                    label: "Maintain",
+                                                    status: "Mastered",
+                                                    items: ["Stable neural baseline stability", "Continue daily vector drills"],
+                                                    color: "bg-emerald-500 text-emerald-400",
+                                                    progress: 95,
+                                                    icon: CheckCircle2
+                                                }
+                                            ]}
+                                        />
+                                    </div>
                                 </div>
 
                                 {/* Section 2: Skill & Time Matrix */}
                                 <div className="grid grid-cols-1 lg:grid-cols-[65%_35%] gap-8 items-stretch">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                        <div className="h-[600px]">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch">
+                                        <div className="flex flex-col">
                                             <SkillDonutChart data={data.skills} />
                                         </div>
-                                        <div className="h-[600px]">
+                                        <div className="flex flex-col">
                                             <TimeSpentDonut data={{
                                                 totalSeconds: data.totalTimeSpentSeconds,
                                                 questions: data.questions || [],
@@ -306,7 +307,7 @@ export function ExamReportLayout({ data, loading }: ExamReportLayoutProps) {
                                             }} />
                                         </div>
                                     </div>
-                                    <div className="h-[600px]">
+                                    <div className="flex flex-col">
                                         <HeuristicPanel
                                             title="Spatio-Temporal Correlation"
                                             details={[
@@ -341,38 +342,40 @@ export function ExamReportLayout({ data, loading }: ExamReportLayoutProps) {
 
                                 {/* Section 3: Heatmap Projection */}
                                 <div className="grid grid-cols-1 lg:grid-cols-[65%_35%] gap-8 items-stretch">
-                                    <div className="min-h-[500px] rounded-[2.5rem] bg-slate-900/50 border border-white/5 p-8 lg:p-12">
+                                    <div className="rounded-[2.5rem] bg-slate-900/50 border border-white/5 p-10 lg:p-14 shadow-xl">
                                         <HeatmapGrid data={data.heatmap} />
                                     </div>
-                                    <HeuristicPanel
-                                        title="Cognitive Load Analysis"
-                                        details={[
-                                            {
-                                                label: "Focus Areas",
-                                                status: "Critical",
-                                                items: ["Eliminate 'Red Out' at Expert Level", "Tackle high-entropy vectors"],
-                                                color: "bg-rose-500 text-rose-400",
-                                                progress: 25,
-                                                icon: AlertTriangle
-                                            },
-                                            {
-                                                label: "Strengthen",
-                                                status: "Proficient",
-                                                items: ["Bridge Intermediate to Expert gap", "Stabilize operational thresholds"],
-                                                color: "bg-amber-500 text-amber-400",
-                                                progress: 62,
-                                                icon: Zap
-                                            },
-                                            {
-                                                label: "Maintain",
-                                                status: "Mastered",
-                                                items: ["Perfect Score on Simple difficulty", "Stable Intermediate performance"],
-                                                color: "bg-emerald-500 text-emerald-400",
-                                                progress: 98,
-                                                icon: CheckCircle2
-                                            }
-                                        ]}
-                                    />
+                                    <div className="flex flex-col">
+                                        <HeuristicPanel
+                                            title="Cognitive Load Analysis"
+                                            details={[
+                                                {
+                                                    label: "Focus Areas",
+                                                    status: "Critical",
+                                                    items: ["Eliminate 'Red Out' at Expert Level", "Tackle high-entropy vectors"],
+                                                    color: "bg-rose-500 text-rose-400",
+                                                    progress: 25,
+                                                    icon: AlertTriangle
+                                                },
+                                                {
+                                                    label: "Strengthen",
+                                                    status: "Proficient",
+                                                    items: ["Bridge Intermediate to Expert gap", "Stabilize operational thresholds"],
+                                                    color: "bg-amber-500 text-amber-400",
+                                                    progress: 62,
+                                                    icon: Zap
+                                                },
+                                                {
+                                                    label: "Maintain",
+                                                    status: "Mastered",
+                                                    items: ["Perfect Score on Simple difficulty", "Stable Intermediate performance"],
+                                                    color: "bg-emerald-500 text-emerald-400",
+                                                    progress: 98,
+                                                    icon: CheckCircle2
+                                                }
+                                            ]}
+                                        />
+                                    </div>
                                 </div>
                             </div>
                         )}
@@ -380,38 +383,40 @@ export function ExamReportLayout({ data, loading }: ExamReportLayoutProps) {
                         {/* COMPLEXITY LADDER TAB */}
                         {activeTab === 'complexity' && (
                             <div className="grid grid-cols-1 lg:grid-cols-[65%_35%] gap-8 items-stretch pt-4">
-                                <div className="min-h-[500px] rounded-[2.5rem] bg-slate-900/50 border border-white/5 p-8 lg:p-12 flex items-center">
+                                <div className="rounded-[2.5rem] bg-slate-900/50 border border-white/5 p-10 lg:p-14 flex items-center shadow-xl">
                                     <DifficultyBarChart data={data.difficulty} />
                                 </div>
-                                <HeuristicPanel
-                                    title="Pressure Tolerance"
-                                    details={[
-                                        {
-                                            label: "Focus Areas",
-                                            status: "Critical",
-                                            items: ["Target 'Expert' implementation rigidity", "Address complexity drop-off"],
-                                            color: "bg-rose-500 text-rose-400",
-                                            progress: 30,
-                                            icon: AlertTriangle
-                                        },
-                                        {
-                                            label: "Strengthen",
-                                            status: "Proficient",
-                                            items: ["Shift from linear to non-linear logic", "Practice multi-variable problems"],
-                                            color: "bg-amber-500 text-amber-400",
-                                            progress: 55,
-                                            icon: Zap
-                                        },
-                                        {
-                                            label: "Maintain",
-                                            status: "Mastered",
-                                            items: ["Perfect Score on Simple difficulty", "Stable Intermediate performance"],
-                                            color: "bg-emerald-500 text-emerald-400",
-                                            progress: 100,
-                                            icon: CheckCircle2
-                                        }
-                                    ]}
-                                />
+                                <div className="flex flex-col">
+                                    <HeuristicPanel
+                                        title="Pressure Tolerance"
+                                        details={[
+                                            {
+                                                label: "Focus Areas",
+                                                status: "Critical",
+                                                items: ["Target 'Expert' implementation rigidity", "Address complexity drop-off"],
+                                                color: "bg-rose-500 text-rose-400",
+                                                progress: 30,
+                                                icon: AlertTriangle
+                                            },
+                                            {
+                                                label: "Strengthen",
+                                                status: "Proficient",
+                                                items: ["Shift from linear to non-linear logic", "Practice multi-variable problems"],
+                                                color: "bg-amber-500 text-amber-400",
+                                                progress: 55,
+                                                icon: Zap
+                                            },
+                                            {
+                                                label: "Maintain",
+                                                status: "Mastered",
+                                                items: ["Perfect Score on Simple difficulty", "Stable Intermediate performance"],
+                                                color: "bg-emerald-500 text-emerald-400",
+                                                progress: 100,
+                                                icon: CheckCircle2
+                                            }
+                                        ]}
+                                    />
+                                </div>
                             </div>
                         )}
 
