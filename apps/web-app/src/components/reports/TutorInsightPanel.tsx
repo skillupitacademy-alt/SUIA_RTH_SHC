@@ -39,8 +39,9 @@ export const TutorInsightPanel = React.memo(({ insights }: TutorInsightPanelProp
 
             setCompleted(prev => new Set(prev).add(topicId));
             toast.success(`Master Notes for ${topicName} sent to your inbox!`);
-        } catch (error: any) {
-            toast.error(error.message || "Failed to request master notes. Please try again.");
+        } catch (error: unknown) {
+            const message = error instanceof Error ? error.message : "Failed to request master notes. Please try again.";
+            toast.error(message);
         } finally {
             setRequesting(null);
         }
@@ -61,7 +62,7 @@ export const TutorInsightPanel = React.memo(({ insights }: TutorInsightPanelProp
                     <div>
                         <h3 className="text-2xl font-black text-white uppercase tracking-tighter mb-2">Adaptive Tutor Insights</h3>
                         <p className="text-slate-400 max-w-2xl text-[15px] leading-relaxed">
-                            Based on your DNA in this session, I've identified key areas that need immediate focus.
+                            Based on your DNA in this session, I have identified key areas that need immediate focus.
                             You can request <span className="text-indigo-400 font-bold">detailed master notes</span> for these topics to be sent to your inbox.
                         </p>
                     </div>

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { TokenService } from "@/modules/auth/token.service";
+
 import { AdaptiveTutorService } from "@/modules/adaptive-engine/adaptive-tutor.service";
+import { TokenService } from "@/modules/auth/token.service";
 
 export async function POST(req: NextRequest) {
   try {
@@ -11,9 +12,9 @@ export async function POST(req: NextRequest) {
     const payload = await TokenService.verifyAccessToken(token, false);
 
     const body = await req.json();
-    const { topicId } = body;
+    const { topicId } = body as { topicId?: string };
 
-    if (!topicId) {
+    if (typeof topicId !== "string" || topicId.length === 0) {
       return NextResponse.json({ error: "Topic ID is required" }, { status: 400 });
     }
 
