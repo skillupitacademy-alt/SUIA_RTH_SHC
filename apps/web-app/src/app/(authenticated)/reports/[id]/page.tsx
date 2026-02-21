@@ -98,39 +98,46 @@ export default function PremiumReportPage() {
         );
     }
 
-    // Render the Premium Layout (Handles its own loading state)
+    // Loading state
+    if (loading || isProcessing || !report) {
+        return (
+            <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center gap-4 text-slate-400">
+                <div className="animate-spin rounded-full h-12 w-12 border-2 border-slate-800 border-t-indigo-500" />
+                <p className="text-[11px] font-bold uppercase tracking-[0.3em]">Synthesizing neural diagnostics...</p>
+            </div>
+        );
+    }
+
+    // Render the Premium Layout
     return (
         <div className="min-h-screen bg-slate-950">
-            {/* Header stays static to prevent flash */}
-            {!loading && !isProcessing && report && (
-                <header className="sticky top-0 z-50 bg-slate-950/80 backdrop-blur-md h-20 px-6 md:px-12 flex items-center justify-between border-b border-slate-900">
-                    <div className="flex items-center gap-6">
-                        <Link
-                            href="/dashboard"
-                            className="p-3 rounded-2xl bg-slate-900 border border-slate-800 hover:border-indigo-500/50 transition-all text-slate-500 hover:text-indigo-400"
-                        >
-                            <ArrowLeft size={18} />
-                        </Link>
-                        <div className="h-6 w-[1px] bg-slate-800" />
-                        <div>
-                            <h1 className="text-[11px] font-black text-white uppercase tracking-[0.3em] leading-none">Neural Diagnostics</h1>
-                            <p className="text-[9px] font-bold text-slate-600 uppercase tracking-wider mt-1.5 opacity-60">
-                                Attempt Vector: {id?.toString().slice(0, 12).toUpperCase()}
-                            </p>
-                        </div>
+            <header className="sticky top-0 z-50 bg-slate-950/80 backdrop-blur-md h-20 px-6 md:px-12 flex items-center justify-between border-b border-slate-900">
+                <div className="flex items-center gap-6">
+                    <Link
+                        href="/dashboard"
+                        className="p-3 rounded-2xl bg-slate-900 border border-slate-800 hover:border-indigo-500/50 transition-all text-slate-500 hover:text-indigo-400"
+                    >
+                        <ArrowLeft size={18} />
+                    </Link>
+                    <div className="h-6 w-[1px] bg-slate-800" />
+                    <div>
+                        <h1 className="text-[11px] font-black text-white uppercase tracking-[0.3em] leading-none">Neural Diagnostics</h1>
+                        <p className="text-[9px] font-bold text-slate-600 uppercase tracking-wider mt-1.5 opacity-60">
+                            Attempt Vector: {id?.toString().slice(0, 12).toUpperCase()}
+                        </p>
                     </div>
+                </div>
 
-                    <div className="hidden md:flex items-center gap-4">
-                        <div className="px-4 py-2 rounded-xl bg-indigo-500/5 border border-indigo-500/10 text-[9px] font-black text-indigo-400/80 uppercase tracking-[0.2em]">
-                            Authenticated Command View
-                        </div>
+                <div className="hidden md:flex items-center gap-4">
+                    <div className="px-4 py-2 rounded-xl bg-indigo-500/5 border border-indigo-500/10 text-[9px] font-black text-indigo-400/80 uppercase tracking-[0.2em]">
+                        Authenticated Command View
                     </div>
-                </header>
-            )}
+                </div>
+            </header>
 
             <ExamReportLayout
                 data={report}
-                loading={loading || isProcessing}
+                loading={false}
             />
         </div>
     );

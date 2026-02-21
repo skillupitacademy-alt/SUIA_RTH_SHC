@@ -45,7 +45,7 @@ export const SkillDonutChart = React.memo(({ data }: SkillDonutChartProps) => {
                             animationDuration={1200}
                         >
                             {data.map((entry, index) => (
-                                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} cornerRadius={5} />
+                                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                             ))}
                         </Pie>
                         <Tooltip

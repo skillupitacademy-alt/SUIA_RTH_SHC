@@ -258,7 +258,7 @@ export class ReportEngine {
     const uniqueSubtopics = Array.from(subtopicMap.values()).map(s => s.name);
     
     uniqueSubtopics.forEach(subName => {
-      ['simple', 'intermediate', 'expert'].forEach(diff => {
+      (['simple', 'intermediate', 'expert'] as const).forEach(diff => {
         const matchingQuestions = exam.examQuestions.filter(eq => 
           eq.question.subtopic?.name === subName && eq.question.difficulty === diff
         );
