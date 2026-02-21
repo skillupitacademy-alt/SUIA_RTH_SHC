@@ -353,22 +353,26 @@ export class ReportEngine {
         ) v
       ),
       percentile_calc AS (
-        WITH cohort_scores AS (
-          SELECT
-            e.id,
-            am.score
-          FROM exams e
-          JOIN attempt_analytics_mv am ON am.exam_id = e.id
-          WHERE e.blueprint_id = (SELECT blueprint_id FROM exams WHERE id = ${examId})
-            AND e.status = 'completed'
-            AND e.completed_at >= NOW() - INTERVAL '30 days'
-          GROUP BY e.id, am.score
-        )
-        SELECT ROUND(
-          100.0 * SUM(CASE WHEN c.score <= (SELECT score FROM analytics) THEN 1 ELSE 0 END)
-          / NULLIF(COUNT(*), 0),
-        2) AS percentile
-        FROM cohort_scores c
+        SELECT COALESCE(
+          (
+            SELECT ROUND(
+              100.0 * SUM(CASE WHEN c.score <= (SELECT score FROM analytics) THEN 1 ELSE 0 END)
+              / NULLIF(COUNT(*), 0),
+            2)
+            FROM (
+              SELECT
+                e.id,
+                am.score
+              FROM exams e
+              JOIN attempt_analytics_mv am ON am.exam_id = e.id
+              WHERE (e.blueprint_id = (SELECT blueprint_id FROM exams WHERE id = ${examId}) OR (e.blueprint_id IS NULL AND (SELECT blueprint_id FROM exams WHERE id = ${examId}) IS NULL))
+                AND e.status = 'completed'
+                AND e.completed_at >= NOW() - INTERVAL '30 days'
+              GROUP BY e.id, am.score
+            ) c
+          ),
+          50
+        ) AS percentile
       )
       SELECT
         a.score,
@@ -422,7 +426,7 @@ export class ReportEngine {
             eq.user_answer,
             q.correct_answer,
             q.explanation,
-            eq.is_correct,
+            eq.is_correct::int as is_correct,
             (eq.response_metadata->>'timeSpentSeconds')::int as time_spent
         FROM exam_questions eq
         JOIN questions q ON q.id = eq.question_id
@@ -482,11 +486,7 @@ export class ReportEngine {
     };
 
     // Phase 1: Cache result for subsequent hits
-    try {
-        await PerformanceService.cacheReport(examId, finalReport);
-    } catch (e) {
-        ReportEngine.log.error({ examId, err: e }, 'Failed to cache report');
-    }
+    await PerformanceService.cacheReport(examId, finalReport);
 
     return finalReport;
   }

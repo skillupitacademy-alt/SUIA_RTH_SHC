@@ -35,15 +35,28 @@ export class PerformanceService {
   }
 
   static async getCachedReport<T>(examId: string): Promise<T | null> {
-    return await cacheService.get<T>(this.getCacheKey(examId));
+    try {
+      return await cacheService.get<T>(this.getCacheKey(examId));
+    } catch (err) {
+      this.log.warn({ err, examId }, 'Cache read failed, falling back to DB');
+      return null;
+    }
   }
 
   static async cacheReport<T>(examId: string, data: T) {
-    // Cache for 24 hours (86400 seconds * 1000ms)
-    await cacheService.set(this.getCacheKey(examId), data, 86400 * 1000);
+    try {
+      // Cache for 24 hours (86400 seconds * 1000ms)
+      await cacheService.set(this.getCacheKey(examId), data, 86400 * 1000);
+    } catch (err) {
+      this.log.warn({ err, examId }, 'Cache write failed, continuing without cache');
+    }
   }
 
   static async invalidateCache(examId: string) {
-    await cacheService.del(this.getCacheKey(examId));
+    try {
+      await cacheService.del(this.getCacheKey(examId));
+    } catch (err) {
+      this.log.warn({ err, examId }, 'Cache invalidate failed, continuing');
+    }
   }
 }
