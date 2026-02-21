@@ -8,6 +8,7 @@ export interface HeatmapCell {
     difficulty: string;
     accuracy: number;
     attempts: number;
+    showNoData?: boolean;
 }
 
 export interface HeatmapGridProps {
@@ -35,7 +36,7 @@ export const HeatmapGrid = React.memo(({ data }: HeatmapGridProps) => {
             <div className="flex flex-col gap-5 overflow-x-hidden">
                 {/* Header Row */}
                 <div className="flex gap-4">
-                    <div className="w-48 flex-shrink-0" /> {/* Responsive Width Hook */}
+                    <div className="w-48 flex-shrink-0" />
                     {difficulties.map(diff => (
                         <div key={diff} className="flex-1 min-w-[120px] max-w-[200px] text-center py-4 bg-slate-900/40 rounded-2xl border border-white/5 backdrop-blur-sm">
                             <span className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">{diff}</span>
@@ -60,18 +61,19 @@ export const HeatmapGrid = React.memo(({ data }: HeatmapGridProps) => {
                             </div>
                             {difficulties.map(diff => {
                                 const cell = data.find(d => d.subtopic === sub && d.difficulty === diff);
-                                const hasData = cell && cell.attempts > 0;
+                                // Core Phase 0 Logic: Force "---" if attempts < 3
+                                const hasSufficientData = cell && cell.attempts >= 3;
                                 const accuracy = cell ? cell.accuracy : 0;
 
                                 return (
                                     <div
                                         key={diff}
-                                        className={`flex-1 min-w-[120px] max-w-[200px] h-20 flex flex-col items-center justify-center rounded-2xl border transition-all duration-300 hover:brightness-125 group relative ${hasData ? getCellColor(accuracy) : 'bg-slate-900/10 text-slate-700 border-white/5 opacity-30 shadow-none'}`}
+                                        className={`flex-1 min-w-[120px] max-w-[200px] h-20 flex flex-col items-center justify-center rounded-2xl border transition-all duration-300 hover:brightness-125 group relative ${hasSufficientData ? getCellColor(accuracy) : 'bg-slate-900/10 text-slate-700 border-white/5 opacity-30 shadow-none'}`}
                                     >
                                         <span className="text-[18px] font-black tracking-tight z-10">
-                                            {hasData ? `${accuracy}%` : '---'}
+                                            {hasSufficientData ? `${accuracy}%` : '---'}
                                         </span>
-                                        {hasData && (
+                                        {cell && (
                                             <span className="text-[10px] font-black uppercase tracking-widest opacity-60 mt-1">
                                                 {cell.attempts} {cell.attempts === 1 ? 'Attempt' : 'Attempts'}
                                             </span>

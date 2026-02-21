@@ -4,6 +4,7 @@ import { and, desc, eq, sql } from "drizzle-orm";
 import { logger } from "@/lib/logger";
 
 import { AdaptiveTutorService } from "../adaptive-engine/adaptive-tutor.service";
+import { PerformanceService } from "./performance.service";
 
 export interface ActionPlanItem {
   id: string;
@@ -23,6 +24,76 @@ interface DimensionResult {
   skills?: string[];
   id?: string;
 }
+
+type CoreRow = {
+  score: number | null;
+  question_count: number | null;
+  total_time: number | null;
+  mastery: number | null;
+  readiness: number | null;
+  percentile: number | null;
+  confidence: string | null;
+  is_inconsistent: boolean | null;
+  weakest_subtopic: string | null;
+  weakest_skill: string | null;
+  weakest_difficulty: string | null;
+  time_pattern: string | null;
+  stable_count: number | null;
+  logic_count: number | null;
+  error_count: number | null;
+  expert_drop_off: boolean | null;
+  subtopics: { name: string; accuracy: number; attempts: number }[] | null;
+  skills: { name: string; accuracy: number; attempts: number }[] | null;
+  heatmap: { subtopic: string; difficulty: string; accuracy: number | null; attempts: number }[] | null;
+  difficulty: { level: string; accuracy: number | null; attempts: number }[] | null;
+};
+
+type RawQuestionRow = {
+  id: string;
+  text: string;
+  user_answer: string | null;
+  correct_answer: string | null;
+  explanation: string | null;
+  is_correct: number | null;
+  time_spent: number | null;
+};
+
+type PremiumReport = {
+  examId: string;
+  score: number;
+  mastery: number;
+  readiness: number;
+  percentile: number;
+  confidence: string;
+  isInconsistent: boolean;
+  expertDropOff: boolean;
+  timePattern: string | null;
+  weakest_difficulty: string | null;
+  totalTimeSpentSeconds: number;
+  timeEfficiency: 'FAST' | 'OPTIMAL';
+  subtopics: { name: string; accuracy: number; attempts: number; showNoData?: boolean }[];
+  skills: { name: string; accuracy: number; attempts: number }[];
+  difficulty: { level: string; accuracy: number | null; attempts: number; showNoData?: boolean }[];
+  heatmap: { subtopic: string; difficulty: string; accuracy: number | null; attempts: number; showNoData?: boolean }[];
+  timeBuckets: { stable: number; logic: number; neural: number };
+  ai: {
+    status: 'READY' | 'BORDERLINE' | 'NOT_READY';
+    actions: string[];
+    weakest_subtopic?: string;
+    weakest_skill?: string;
+    nextExamHours: number;
+  };
+  tutorInsights: Array<{ topicId: string; accuracy: number }> | string;
+  questions: {
+    id: string;
+    text: string;
+    userAnswer: string | null;
+    correctAnswer: string | null;
+    explanation: string | null;
+    isCorrect: boolean;
+    timeSpent: number;
+  }[];
+};
 
 class ActionPlanBuilder {
   static build(results: DimensionResult[]): ActionPlanItem[] {
@@ -97,10 +168,8 @@ export class ReportEngine {
             }
         });
 
-        // Use 50 as a neutral default for single user. Avoid 99 as it's misleading.
         if (cohort.length <= 1) return 50;
 
-        // Map cohort to accuracy percentages to avoid point-based bias (raw score vs correctness ratio)
         const accuracies = cohort.map(e => {
             const total = e.examQuestions?.length ?? 0;
             const correct = e.examQuestions?.filter(q => q.isCorrect === true).length ?? 0;
@@ -108,10 +177,7 @@ export class ReportEngine {
         });
 
         const lowerScores = accuracies.filter(acc => acc < myAccuracy).length;
-        // Formula: (Number of scores below / total number of scores) * 100
         const percentile = (lowerScores / cohort.length) * 100;
-
-        // Clamp to 1-99 range for premium aesthetic and avoid 0 or 100 which are statistically unlikely
         return Math.min(99, Math.max(1, Math.round(percentile)));
     } catch (e) {
         ReportEngine.log.error({ currentExamId, error: e instanceof Error ? e.message : 'unknown' }, 'Percentile failed');
@@ -160,10 +226,9 @@ export class ReportEngine {
       accuracy: r.accuracy
     }));
     
-    // Short circuit insights if no topic data
     const tutorInsights = topicAccuracyRecords.length > 0 
       ? await AdaptiveTutorService.generateInsights(exam.userId, topicAccuracyRecords)
-      : "Baseline performance data established. Proceed to further modules to generate deeper tactical insights.";
+      : "Baseline performance data established.";
 
     return {
       id: exam.id,
@@ -201,6 +266,10 @@ export class ReportEngine {
   }
 
   static async getPremiumExamReport(examId: string) {
+    // 1. Check Redis Cache First
+    const cached = await PerformanceService.getCachedReport<PremiumReport>(examId);
+    if (cached !== null) return cached;
+
     const exam = await db.query.exams.findFirst({
       where: eq(exams.id, examId),
       with: {
@@ -210,267 +279,142 @@ export class ReportEngine {
 
     if (exam === undefined || exam === null) throw new Error('Exam not found');
 
-    // Phase 0: Scientific Validation Single-Query Engine
+    // Phase 1: Materialized View Analytics Engine
     const coreMetricsRaw = await db.execute(sql`
-      WITH base_questions AS (
-        SELECT
-          eq.id,
-          eq.exam_id,
-          q.subtopic_id,
-          q.difficulty,
-          eq.is_correct::int AS is_correct,
-          (eq.response_metadata->>'timeSpentSeconds')::int AS time_spent,
-          s.name as subtopic_name,
-          sk.name as skill_name
-        FROM exam_questions eq
-        JOIN questions q ON q.id = eq.question_id
-        LEFT JOIN subtopics s ON s.id = q.subtopic_id
-        LEFT JOIN question_skills qs ON qs.question_id = q.id
-        LEFT JOIN skills sk ON sk.id = qs.skill_id
-        WHERE eq.exam_id = ${examId}
+      WITH analytics AS (
+        SELECT * FROM attempt_analytics_mv WHERE exam_id = ${examId}
       ),
-      score_cte AS (
-        SELECT AVG(is_correct) * 100 AS score,
-               COUNT(*) AS question_count,
-               SUM(time_spent) as total_time
-        FROM base_questions
+      dims AS (
+        SELECT * FROM attempt_dimension_accuracy_mv WHERE exam_id = ${examId}
       ),
-      mastery_cte AS (
-        SELECT
-          SUM(is_correct * weight)::numeric / NULLIF(SUM(weight), 0) * 100 AS mastery
-        FROM (
-          SELECT
-            is_correct,
-            CASE difficulty
-              WHEN 'simple' THEN 1
-              WHEN 'intermediate' THEN 2
-              WHEN 'expert' THEN 3
-            END AS weight
-          FROM base_questions
-        ) w
+      subtopics_agg AS (
+        SELECT JSON_AGG(r) as subtopics FROM (
+          SELECT subtopic as name, ROUND(AVG(accuracy)) as accuracy, SUM(attempts) as attempts
+          FROM dims
+          GROUP BY subtopic
+          ORDER BY accuracy DESC
+        ) r
       ),
-      mh_cte AS (
-        SELECT AVG(is_correct) * 100 AS mh_accuracy
-        FROM base_questions
-        WHERE difficulty IN ('intermediate','expert')
+      skills_agg AS (
+        SELECT JSON_AGG(r) as skills FROM (
+          SELECT skill as name, ROUND(AVG(accuracy)) as accuracy, SUM(attempts) as attempts
+          FROM dims
+          WHERE skill IS NOT NULL
+          GROUP BY skill
+          ORDER BY attempts DESC
+          LIMIT 4
+        ) r
       ),
-      readiness_cte AS (
-        SELECT ROUND(
-          0.5 * COALESCE(s.score, 0) +
-          0.3 * COALESCE(mh.mh_accuracy, 0) +
-          0.2 * 100
-        , 2) AS readiness
-        FROM score_cte s, mh_cte mh
+      heatmap_agg AS (
+        SELECT JSON_AGG(r) as heatmap FROM (
+          SELECT subtopic, level as difficulty, ROUND(accuracy) as accuracy, attempts
+          FROM dims
+        ) r
       ),
-      variance_cte AS (
-        SELECT VAR_SAMP(acc) AS variance
-        FROM (
-          SELECT subtopic_id, AVG(is_correct) AS acc
-          FROM base_questions
-          GROUP BY subtopic_id
-        ) v
-      ),
-      confidence_cte AS (
-        SELECT
-          CASE
-            WHEN s.question_count < 10 THEN 'LOW'
-            WHEN COALESCE(v.variance, 0) > 0.05 THEN 'MEDIUM'
-            WHEN NOT EXISTS (SELECT 1 FROM base_questions WHERE difficulty IN ('intermediate', 'expert')) THEN 'LOW'
-            ELSE 'HIGH'
-          END AS confidence,
-          COALESCE(v.variance, 0) > 0.15 AS is_inconsistent
-        FROM score_cte s, variance_cte v
+      difficulty_agg AS (
+        SELECT JSON_AGG(r) as difficulty FROM (
+          SELECT level, ROUND(AVG(accuracy)) as accuracy, SUM(attempts) as attempts
+          FROM dims
+          GROUP BY level
+        ) r
       ),
       root_cause_cte AS (
         -- 🥇 Primary: real weakest bucket (minimum 2 questions)
-        SELECT subtopic, skill, difficulty
+        SELECT subtopic, skill, level as difficulty
         FROM (
-          SELECT
-            subtopic_name as subtopic,
-            skill_name as skill,
-            difficulty,
-            AVG(is_correct) AS acc,
-            COUNT(*) AS qcount
-          FROM base_questions
-          GROUP BY subtopic_name, skill_name, difficulty
-          HAVING COUNT(*) >= 2
-          ORDER BY acc ASC, qcount DESC
+          SELECT subtopic, skill, level, accuracy, attempts
+          FROM dims
+          WHERE attempts >= 2
+          ORDER BY accuracy ASC, attempts DESC
           LIMIT 1
         ) primary_rc
-
         UNION ALL
-
         -- 🥈 Fallback: weakest subtopic overall (if no bucket >= 2)
         SELECT subtopic, NULL AS skill, NULL AS difficulty
         FROM (
-          SELECT
-            subtopic_name as subtopic,
-            AVG(is_correct) AS acc,
-            COUNT(*) AS qcount
-          FROM base_questions
-          GROUP BY subtopic_name
-          HAVING COUNT(*) >= 2
-          ORDER BY acc ASC, qcount DESC
+          SELECT subtopic, AVG(accuracy) as accuracy, SUM(attempts) as attempts
+          FROM dims
+          GROUP BY subtopic
+          HAVING SUM(attempts) >= 2
+          ORDER BY accuracy ASC, attempts DESC
           LIMIT 1
         ) fallback_rc
-
         UNION ALL
-
         -- 🥉 Final fallback: return NULL row if no data qualifies
         SELECT NULL, NULL, NULL
         LIMIT 1
       ),
-      time_base AS (
-        SELECT
-          is_correct,
-          time_spent,
-          PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY time_spent) OVER () AS median_time
-        FROM base_questions
+      variance_cte AS (
+        -- Calculate variance across and within dimensions 
+        SELECT 
+           VAR_SAMP(accuracy) as variance
+        FROM (
+          SELECT subtopic, AVG(accuracy) as accuracy FROM dims GROUP BY subtopic
+        ) v
       ),
-      time_counts AS (
-        SELECT
-          COUNT(*) FILTER (WHERE time_spent <= median_time AND is_correct = 0) AS fast_wrong,
-          COUNT(*) FILTER (WHERE time_spent > median_time AND is_correct = 0) AS slow_wrong,
-          COUNT(*) FILTER (WHERE time_spent > median_time AND is_correct = 1) AS slow_correct,
-          COUNT(*) FILTER (WHERE time_spent <= median_time AND is_correct = 1) AS fast_correct,
-          COUNT(*) FILTER (WHERE time_spent < 35 AND is_correct = 1) as stable_count,
-          COUNT(*) FILTER (WHERE time_spent >= 35 AND is_correct = 1) as logic_count,
-          COUNT(*) FILTER (WHERE is_correct = 0) as error_count
-        FROM time_base
-      ),
-      time_pattern_cte AS (
-        SELECT
-          CASE
-            WHEN slow_wrong >= fast_wrong AND slow_wrong >= slow_correct AND slow_wrong >= fast_correct AND slow_wrong > 0 THEN 'slow_and_wrong'
-            WHEN fast_wrong >= slow_wrong AND fast_wrong >= slow_correct AND fast_wrong >= fast_correct AND fast_wrong > 0 THEN 'fast_and_wrong'
-            WHEN slow_correct >= fast_wrong AND slow_correct >= slow_wrong AND slow_correct >= fast_correct AND slow_correct > 0 THEN 'slow_but_correct'
-            ELSE 'fast_and_correct'
-          END AS time_pattern,
-          stable_count,
-          logic_count,
-          error_count
-        FROM time_counts
-      ),
-      drop_off_cte AS (
-        SELECT
-          (COALESCE(AVG(is_correct) FILTER (WHERE difficulty = 'intermediate'), 0) - 
-           COALESCE(AVG(is_correct) FILTER (WHERE difficulty = 'expert'), 0)) * 100 AS expert_drop_off
-        FROM base_questions
-      ),
-      percentile_cte AS (
+      percentile_calc AS (
         WITH cohort_scores AS (
           SELECT
             e.id,
-            AVG(eq.is_correct::int) * 100 AS score
+            am.score
           FROM exams e
-          JOIN exam_questions eq ON eq.exam_id = e.id
+          JOIN attempt_analytics_mv am ON am.exam_id = e.id
           WHERE e.blueprint_id = (SELECT blueprint_id FROM exams WHERE id = ${examId})
             AND e.status = 'completed'
             AND e.completed_at >= NOW() - INTERVAL '30 days'
-          GROUP BY e.id
-        ),
-        current_score AS (
-          SELECT AVG(is_correct) * 100 AS score FROM base_questions
+          GROUP BY e.id, am.score
         )
         SELECT ROUND(
-          100.0 * SUM(CASE WHEN c.score <= cs.score THEN 1 ELSE 0 END)
+          100.0 * SUM(CASE WHEN c.score <= (SELECT score FROM analytics) THEN 1 ELSE 0 END)
           / NULLIF(COUNT(*), 0),
         2) AS percentile
-        FROM cohort_scores c, current_score cs
-      ),
-      subtopics_agg AS (
-          SELECT JSON_AGG(r) as subtopics FROM (
-              SELECT subtopic_name as name, ROUND(AVG(is_correct) * 100) as accuracy, COUNT(*) as attempts
-              FROM base_questions
-              GROUP BY subtopic_name
-              ORDER BY accuracy DESC
-          ) r
-      ),
-      skills_agg AS (
-          SELECT JSON_AGG(r) as skills FROM (
-              SELECT skill_name as name, ROUND(AVG(is_correct) * 100) as accuracy, COUNT(*) as attempts
-              FROM base_questions
-              WHERE skill_name IS NOT NULL
-              GROUP BY skill_name
-              ORDER BY attempts DESC
-              LIMIT 4
-          ) r
-      ),
-      heatmap_agg AS (
-          SELECT JSON_AGG(r) as heatmap FROM (
-              SELECT subtopic_name as subtopic, difficulty, ROUND(AVG(is_correct) * 100) as accuracy, COUNT(*) as attempts
-              FROM base_questions
-              GROUP BY subtopic_name, difficulty
-          ) r
-      ),
-      difficulty_agg AS (
-          SELECT JSON_AGG(r) as difficulty FROM (
-              SELECT difficulty as level, ROUND(AVG(is_correct) * 100) as accuracy, COUNT(*) as attempts
-              FROM base_questions
-              GROUP BY difficulty
-          ) r
+        FROM cohort_scores c
       )
       SELECT
-        s.score,
-        s.question_count,
-        s.total_time,
-        m.mastery,
-        r.readiness,
+        a.score,
+        a.question_count,
+        a.total_time,
+        a.mastery,
+        ROUND(COALESCE(a.score, 0) * 0.5 + COALESCE(a.mh_accuracy, 0) * 0.3 + 20, 2) as readiness,
         p.percentile,
-        c.confidence,
-        c.is_inconsistent,
+        CASE
+            WHEN a.question_count < 10 THEN 'LOW'
+            WHEN COALESCE(v.variance, 0) > 0.05 THEN 'MEDIUM'
+            WHEN NOT EXISTS (SELECT 1 FROM dims WHERE level IN ('intermediate', 'expert')) THEN 'LOW'
+            ELSE 'HIGH'
+        END AS confidence,
+        COALESCE(v.variance, 0) > 0.15 AS is_inconsistent,
         rc.subtopic AS weakest_subtopic,
         rc.skill AS weakest_skill,
         rc.difficulty AS weakest_difficulty,
-        tp.time_pattern,
-        tp.stable_count,
-        tp.logic_count,
-        tp.error_count,
-        COALESCE(do.expert_drop_off, 0) > 20 AS expert_drop_off,
+        a.time_pattern,
+        a.stable_count,
+        a.logic_count,
+        a.error_count,
+        COALESCE(
+          (SELECT AVG(accuracy) FROM dims WHERE level = 'intermediate') - 
+          (SELECT AVG(accuracy) FROM dims WHERE level = 'expert'), 0
+        ) > 20 as expert_drop_off,
         sa.subtopics,
         ska.skills,
-        ha.heatmap,
+        hl.heatmap,
         da.difficulty
-      FROM score_cte s
-      JOIN mastery_cte m ON TRUE
-      JOIN readiness_cte r ON TRUE
-      JOIN percentile_cte p ON TRUE
-      JOIN confidence_cte c ON TRUE
-      LEFT JOIN root_cause_cte rc ON TRUE
-      JOIN time_pattern_cte tp ON TRUE
-      JOIN drop_off_cte do ON TRUE
+      FROM analytics a
       CROSS JOIN subtopics_agg sa
       CROSS JOIN skills_agg ska
-      CROSS JOIN heatmap_agg ha
-      CROSS JOIN difficulty_agg da;
+      CROSS JOIN heatmap_agg hl
+      CROSS JOIN difficulty_agg da
+      CROSS JOIN root_cause_cte rc
+      CROSS JOIN variance_cte v
+      CROSS JOIN percentile_calc p;
     `);
 
-    type CoreRow = {
-      score: number | null;
-      question_count: number | null;
-      total_time: number | null;
-      mastery: number | null;
-      readiness: number | null;
-      percentile: number | null;
-      confidence: string | null;
-      is_inconsistent: boolean | null;
-      weakest_subtopic: string | null;
-      weakest_skill: string | null;
-      weakest_difficulty: string | null;
-      time_pattern: string | null;
-      stable_count: number | null;
-      logic_count: number | null;
-      error_count: number | null;
-      expert_drop_off: boolean | null;
-      subtopics: { name: string; accuracy: number; attempts: number }[] | null;
-      skills: { name: string; accuracy: number; attempts: number }[] | null;
-      heatmap: { subtopic: string; difficulty: string; accuracy: number; attempts: number }[] | null;
-      difficulty: { level: string; accuracy: number; attempts: number }[] | null;
-    };
+    if (coreMetricsRaw.rows.length === 0) {
+        throw new Error('Analytics not precomputed for this exam.');
+    }
 
     const core = coreMetricsRaw.rows[0] as CoreRow;
 
-    // Get raw questions for the audit list (this remains separate as it's a list)
     const rawQuestions = await db.execute(sql`
         SELECT 
             eq.id,
@@ -486,7 +430,7 @@ export class ReportEngine {
         ORDER BY eq.id ASC
     `);
 
-    return {
+    const finalReport = {
       examId: exam.id,
       score: Math.round(core.score ?? 0),
       mastery: Math.round(core.mastery ?? 0),
@@ -521,20 +465,12 @@ export class ReportEngine {
       },
       tutorInsights: await AdaptiveTutorService.generateInsights(
         exam.userId,
-        (core.subtopics ?? []).map(s => ({
+        (core.subtopics ?? []).map((s) => ({
           topicId: s.name,
           accuracy: s.accuracy
         }))
       ),
-      questions: rawQuestions.rows.map((q: {
-        id: string;
-        text: string;
-        user_answer: string | null;
-        correct_answer: string | null;
-        explanation: string | null;
-        is_correct: number | null;
-        time_spent: number | null;
-      }) => ({
+      questions: (rawQuestions.rows as RawQuestionRow[]).map((q) => ({
         id: q.id,
         text: q.text,
         userAnswer: q.user_answer,
@@ -544,5 +480,14 @@ export class ReportEngine {
         timeSpent: q.time_spent ?? 0
       }))
     };
+
+    // Phase 1: Cache result for subsequent hits
+    try {
+        await PerformanceService.cacheReport(examId, finalReport);
+    } catch (e) {
+        ReportEngine.log.error({ examId, err: e }, 'Failed to cache report');
+    }
+
+    return finalReport;
   }
 }

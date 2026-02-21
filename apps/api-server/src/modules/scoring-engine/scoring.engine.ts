@@ -1,13 +1,20 @@
 import { db, exams, resultsByDimension } from '@quiz/db';
 import { eq } from 'drizzle-orm';
-export const dynamic = 'force-dynamic';
 
 import { logger } from '@/lib/logger';
+
+import { PerformanceService } from '../report-engine/performance.service';
+import { ReportEngine } from '../report-engine/report.engine';
+
+export const dynamic = 'force-dynamic';
 
 export class ScoringEngine {
   private static log = logger.child({ module: 'scoring-engine' });
 
   static async calculateExamResults(examId: string) {
+    // Phase 1: Invalidate existing cache before re-computing
+    await PerformanceService.invalidateCache(examId);
+
     try {
       const exam = await db.query.exams.findFirst({
         where: eq(exams.id, examId),
@@ -163,6 +170,16 @@ export class ScoringEngine {
           status: 'completed' 
         })
         .where(eq(exams.id, examId));
+
+      // Phase 1: Refresh Materialized Views and Prime Cache (Non-blocking but awaited for consistency here)
+      try {
+        await PerformanceService.refreshAnalytics();
+        const reportData = await ReportEngine.getPremiumExamReport(examId);
+        await PerformanceService.cacheReport(examId, reportData);
+        ScoringEngine.log.info({ examId }, 'Phase 1: Analytics refreshed and cache primed');
+      } catch (e) {
+        ScoringEngine.log.error({ examId, err: e }, 'Phase 1: Failed to refresh analytics or prime cache');
+      }
 
       return finalScore;
     } catch (_error) {

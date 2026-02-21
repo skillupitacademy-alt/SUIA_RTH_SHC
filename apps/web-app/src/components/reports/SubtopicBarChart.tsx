@@ -7,9 +7,10 @@ import { cn } from "@/lib/utils";
 export interface SubtopicBarChartProps {
     data: { name: string; accuracy: number; attempts: number }[];
     weakest?: string;
+    rootCauseText?: string;
 }
 
-export const SubtopicBarChart = React.memo(({ data, weakest }: SubtopicBarChartProps) => {
+export const SubtopicBarChart = React.memo(({ data, weakest, rootCauseText }: SubtopicBarChartProps) => {
     const sortedData = useMemo(() =>
         [...data].sort((a, b) => b.accuracy - a.accuracy),
         [data]);
@@ -30,40 +31,56 @@ export const SubtopicBarChart = React.memo(({ data, weakest }: SubtopicBarChartP
             </div>
 
             <div className="space-y-12 pr-2">
-                {sortedData.map((item, idx) => (
-                    <div key={idx} className="group">
-                        <div className="flex items-baseline justify-between mb-4 px-0.5">
-                            <div className="flex items-baseline gap-3">
-                                <span className="text-[14px] font-bold text-slate-300 uppercase tracking-widest group-hover:text-white transition-colors">
-                                    {item.name}
-                                </span>
-                                <span className="text-[11px] font-black text-slate-600 uppercase tracking-tighter">
-                                    {item.attempts} {item.attempts === 1 ? 'Sample' : 'Samples'}
+                {sortedData.map((item, idx) => {
+                    const isWeakest = item.name === weakest;
+                    const showMetrics = item.attempts >= 3;
+
+                    return (
+                        <div key={idx} className="group">
+                            <div className="flex items-baseline justify-between mb-4 px-0.5">
+                                <div className="flex items-baseline gap-3">
+                                    <span className="text-[14px] font-bold text-slate-300 uppercase tracking-widest group-hover:text-white transition-colors">
+                                        {item.name}
+                                    </span>
+                                    <span className="text-[11px] font-black text-slate-600 uppercase tracking-tighter">
+                                        {item.attempts} {item.attempts === 1 ? 'Sample' : 'Samples'}
+                                    </span>
+                                </div>
+                                <span className={cn(
+                                    "text-[16px] font-black tracking-tight",
+                                    isWeakest ? "text-rose-400" : "text-indigo-400"
+                                )}>
+                                    {showMetrics ? `${item.accuracy}%` : '---'}
                                 </span>
                             </div>
-                            <span className={cn(
-                                "text-[16px] font-black tracking-tight",
-                                item.name === weakest ? "text-rose-400" : "text-indigo-400"
-                            )}>
-                                {item.accuracy}%
-                            </span>
-                        </div>
 
-                        <div className="relative h-2.5 w-full bg-slate-900/40 rounded-full overflow-hidden border border-white/5">
-                            <motion.div
-                                initial={{ width: 0 }}
-                                animate={{ width: `${item.accuracy}%` }}
-                                transition={{ duration: 1.2, delay: idx * 0.1, ease: "easeOut" }}
-                                className={cn(
-                                    "absolute top-0 left-0 h-full rounded-full transition-all duration-700",
-                                    item.name === weakest
-                                        ? "bg-gradient-to-r from-rose-600/80 to-pink-600/80 shadow-[0_0_15px_rgba(244,63,94,0.2)]"
-                                        : "bg-gradient-to-r from-indigo-600/80 to-violet-600/80 shadow-[0_0_15px_rgba(99,102,241,0.15)]"
+                            <div className="relative h-2.5 w-full bg-slate-900/40 rounded-full overflow-hidden border border-white/5">
+                                {showMetrics && (
+                                    <motion.div
+                                        initial={{ width: 0 }}
+                                        animate={{ width: `${item.accuracy}%` }}
+                                        transition={{ duration: 1.2, delay: idx * 0.1, ease: "easeOut" }}
+                                        className={cn(
+                                            "absolute top-0 left-0 h-full rounded-full transition-all duration-700",
+                                            isWeakest
+                                                ? "bg-gradient-to-r from-rose-600/80 to-pink-600/80 shadow-[0_0_15px_rgba(244,63,94,0.2)]"
+                                                : "bg-gradient-to-r from-indigo-600/80 to-violet-600/80 shadow-[0_0_15px_rgba(99,102,241,0.15)]"
+                                        )}
+                                    />
                                 )}
-                            />
+                            </div>
+
+                            {isWeakest && rootCauseText && (
+                                <div className="mt-3 flex items-center gap-2">
+                                    <div className="h-0.5 w-4 bg-rose-500/20" />
+                                    <p className="text-[11px] font-bold text-rose-400/80 uppercase tracking-tight">
+                                        {rootCauseText}
+                                    </p>
+                                </div>
+                            )}
                         </div>
-                    </div>
-                ))}
+                    );
+                })}
             </div>
         </div>
     );

@@ -17,6 +17,9 @@ export interface AIRecommendation {
     actions: string[];
     weakest_subtopic: string;
     weakest_skill: string;
+    confidence?: "HIGH" | "MEDIUM" | "LOW";
+    isInconsistent?: boolean;
+    timePattern?: 'slow_and_wrong' | 'fast_and_wrong' | 'slow_but_correct' | 'fast_and_correct';
 }
 
 export interface AIRecommendationPanelProps {
@@ -103,24 +106,56 @@ export const AIRecommendationPanel = React.memo(({ ai }: AIRecommendationPanelPr
     ];
 
     return (
-        <div className="w-full flex flex-col p-8 lg:p-10 bg-[#0a0c12]/90 border border-slate-800/60 rounded-[2.5rem] shadow-[0_30px_60px_rgba(0,0,0,0.6)] backdrop-blur-3xl relative overflow-hidden group min-h-full">
+        <div className="w-full h-full flex flex-col p-8 lg:p-10 bg-[#0a0c12]/90 border border-slate-800/60 rounded-[2.5rem] shadow-[0_30px_60px_rgba(0,0,0,0.6)] backdrop-blur-3xl relative overflow-hidden group">
             {/* Background pattern */}
             <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.01)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.01)_1px,transparent_1px)] bg-[size:24px_24px] [mask-image:radial-gradient(ellipse_at_center,black,transparent)] pointer-events-none" />
 
-            {/* Header matching image exactly */}
-            <div className="flex items-center justify-between mb-12 relative z-10">
-                <div className="flex items-center gap-4">
-                    <div className="p-2.5 bg-indigo-500/10 rounded-2xl border border-indigo-500/20 shadow-inner group-hover:border-indigo-500/40 transition-all">
-                        <BrainCircuit className="h-6 w-6 text-indigo-400" />
+            {/* Header with badges */}
+            <div className="flex flex-col gap-6 mb-12 relative z-10">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                        <div className="p-2.5 bg-indigo-500/10 rounded-2xl border border-indigo-500/20 shadow-inner group-hover:border-indigo-500/40 transition-all">
+                            <BrainCircuit className="h-6 w-6 text-indigo-400" />
+                        </div>
+                        <h3 className="text-xl font-black text-white uppercase tracking-tighter">Neural Synthesis</h3>
                     </div>
-                    <h3 className="text-xl font-black text-white uppercase tracking-tighter">Neural Synthesis</h3>
+                    <div className="flex items-center gap-3">
+                        {ai.confidence && (
+                            <div className={cn(
+                                "px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest border",
+                                ai.confidence === 'HIGH' ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400" : (ai.confidence === 'MEDIUM' ? "bg-amber-500/10 border-amber-500/20 text-amber-400" : "bg-rose-500/10 border-rose-500/20 text-rose-400")
+                            )}>
+                                CONFIDENCE: {ai.confidence}
+                            </div>
+                        )}
+                        <div className="px-4 py-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-lg">
+                            <span className="text-[12px] font-black text-emerald-400 uppercase tracking-widest leading-none flex items-center gap-2">
+                                <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                                {ai.status}
+                            </span>
+                        </div>
+                    </div>
                 </div>
-                <div className="px-4 py-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-full shadow-lg">
-                    <span className="text-[12px] font-black text-emerald-400 uppercase tracking-widest leading-none flex items-center gap-2">
-                        <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                        AI STATUS: OPTIMIZED
-                    </span>
-                </div>
+
+                {/* Secondary row for inconsistency and behavior */}
+                {(ai.isInconsistent || ai.timePattern) && (
+                    <div className="flex flex-wrap gap-2">
+                        {ai.isInconsistent && (
+                            <div className="px-3 py-1 bg-rose-500/10 border border-rose-500/20 rounded-lg flex items-center gap-2 animate-pulse">
+                                <AlertTriangle size={10} className="text-rose-400" />
+                                <span className="text-[10px] font-black text-rose-400 uppercase tracking-widest">Inconsistent Performance</span>
+                            </div>
+                        )}
+                        {ai.timePattern && (
+                            <div className="px-3 py-1 bg-amber-500/10 border border-amber-500/20 rounded-lg flex items-center gap-2">
+                                <Activity size={10} className="text-amber-400" />
+                                <span className="text-[10px] font-black text-amber-400 uppercase tracking-widest">
+                                    Behavior: {ai.timePattern.replace(/_/g, ' ')}
+                                </span>
+                            </div>
+                        )}
+                    </div>
+                )}
             </div>
 
             <h4 className="text-[12px] font-black text-slate-400 uppercase tracking-[0.3em] mb-8 border-b border-white/5 pb-4 relative z-10">Tactical Prescription</h4>
@@ -131,13 +166,13 @@ export const AIRecommendationPanel = React.memo(({ ai }: AIRecommendationPanelPr
                 ))}
             </div>
 
-            {/* Footer mirroring layout logic */}
+            {/* Footer */}
             <div className="mt-10 pt-8 border-t border-white/5 flex items-center justify-between relative z-10">
                 <div className="flex items-center gap-2 text-[12px] font-black text-slate-500 uppercase tracking-widest">
                     <Activity size={12} className="text-indigo-500/40" />
                     <span>Diagnostic Engine v9.4</span>
                 </div>
-                <span className="text-[12px] font-bold text-slate-600 italic">LOGID: SYS_{Math.random().toString(36).substring(7).toUpperCase()}</span>
+                <span className="text-[12px] font-bold text-slate-600 italic">LOGID: PR0_{Math.random().toString(36).substring(7).toUpperCase()}</span>
             </div>
         </div>
     );

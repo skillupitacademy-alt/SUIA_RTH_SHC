@@ -92,6 +92,11 @@ export interface ExamReport {
         learningUrl?: string;
         accuracy: number;
     }[];
+    confidence?: "HIGH" | "MEDIUM" | "LOW";
+    isInconsistent?: boolean;
+    expertDropOff?: boolean;
+    timePattern?: 'slow_and_wrong' | 'fast_and_wrong' | 'slow_but_correct' | 'fast_and_correct';
+    weakest_difficulty?: string;
     questions?: {
         id: string;
         text: string;
@@ -262,7 +267,14 @@ export function ExamReportLayout({ data, loading }: ExamReportLayoutProps) {
                                         <RadialKPI data={data} />
                                     </div>
                                     <div className="flex flex-col">
-                                        <AIRecommendationPanel ai={data.ai} />
+                                        <AIRecommendationPanel
+                                            ai={{
+                                                ...data.ai,
+                                                confidence: data.confidence,
+                                                isInconsistent: data.isInconsistent,
+                                                timePattern: data.timePattern
+                                            }}
+                                        />
                                     </div>
                                 </div>
 
@@ -280,7 +292,15 @@ export function ExamReportLayout({ data, loading }: ExamReportLayoutProps) {
                                 {/* Section 1: Subtopic Variance */}
                                 <div className="grid grid-cols-1 lg:grid-cols-[65%_35%] gap-10 items-stretch">
                                     <div className="rounded-[2.5rem] bg-slate-900/50 border border-white/5 p-10 lg:p-16 flex items-center shadow-xl">
-                                        <SubtopicBarChart data={data.subtopics} weakest={data.ai.weakest_subtopic} />
+                                        <SubtopicBarChart
+                                            data={data.subtopics}
+                                            weakest={data.ai.weakest_subtopic}
+                                            rootCauseText={data.ai.weakest_subtopic && data.ai.weakest_skill
+                                                ? `Root Cause: ${data.ai.weakest_skill} in ${data.ai.weakest_subtopic} (${data.weakest_difficulty || 'Expert'})`
+                                                : data.ai.weakest_subtopic
+                                                    ? `Weakest Area: ${data.ai.weakest_subtopic}`
+                                                    : undefined}
+                                        />
                                     </div>
                                     <div className="flex flex-col">
                                         <HeuristicPanel
@@ -343,7 +363,10 @@ export function ExamReportLayout({ data, loading }: ExamReportLayoutProps) {
                         {activeTab === 'complexity' && (
                             <div className="grid grid-cols-1 lg:grid-cols-[65%_35%] gap-10 items-stretch pt-6">
                                 <div className="rounded-[2.5rem] bg-slate-900/50 border border-white/5 p-10 lg:p-16 flex items-center shadow-xl">
-                                    <DifficultyBarChart data={data.difficulty} />
+                                    <DifficultyBarChart
+                                        data={data.difficulty}
+                                        expertDropOff={data.expertDropOff}
+                                    />
                                 </div>
                                 <div className="flex flex-col">
                                     <HeuristicPanel

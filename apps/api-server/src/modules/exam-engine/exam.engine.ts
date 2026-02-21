@@ -2,13 +2,15 @@ import type { examBlueprints } from '@quiz/db';
 import { db, examQuestions, exams, idempotencyKeys } from '@quiz/db';
 import { JobType } from '@quiz/types';
 import type { InferSelectModel } from 'drizzle-orm';
-import { and,eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 
 import { AnswerEvaluationEngine } from '@/modules/answer-engine/answer.engine';
 import { cacheService } from '@/modules/core/cache.service';
 import { SelectionService } from '@/modules/selection-engine/selection.service';
 import { JobOrchestrator } from '@/modules/system/job-orchestrator';
 import { JobsService } from '@/modules/system/jobs.service';
+
+import { PerformanceService } from '../report-engine/performance.service';
 
 export interface StartExamConfig {
   subjectId?: string;
@@ -284,6 +286,9 @@ export class ExamEngine {
         });
         if (existingKey) targetExamId = existingKey.examId;
     }
+
+    // Phase 1: Invalidate cache immediately on submission
+    await PerformanceService.invalidateCache(targetExamId);
 
     const fullExam = await db.query.exams.findFirst({ where: eq(exams.id, targetExamId) });
     if (!fullExam) throw new Error('Exam not found');
