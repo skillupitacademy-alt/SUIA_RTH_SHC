@@ -60,6 +60,11 @@ const AIRecommendationPanel = dynamic(() => import("./AIRecommendationPanel").th
     loading: () => <div className="h-full w-full bg-indigo-950/20 animate-pulse rounded-[2.5rem]" />
 });
 
+const TutorInsightPanel = dynamic(() => import("./TutorInsightPanel").then(mod => mod.TutorInsightPanel), {
+    ssr: false,
+    loading: () => <div className="h-[300px] w-full bg-slate-900/20 animate-pulse rounded-[3rem]" />
+});
+
 export interface ExamReport {
     score: number;
     mastery: number;
@@ -78,6 +83,15 @@ export interface ExamReport {
         weakest_subtopic: string;
         weakest_skill: string;
     };
+    tutorInsights?: {
+        topicId: string;
+        topicName: string;
+        priority: "critical" | "growth" | "stable";
+        label: string;
+        recommendation: string;
+        learningUrl?: string;
+        accuracy: number;
+    }[];
     questions?: {
         id: string;
         text: string;
@@ -242,13 +256,21 @@ export function ExamReportLayout({ data, loading }: ExamReportLayoutProps) {
                     >
                         {/* EXECUTIVE CORE TAB */}
                         {activeTab === 'summary' && (
-                            <div className="grid grid-cols-1 lg:grid-cols-[65%_35%] gap-10 items-stretch pt-6">
-                                <div className="rounded-[2.5rem] bg-slate-900/50 border border-white/5 overflow-hidden shadow-2xl relative group">
-                                    <RadialKPI data={data} />
+                            <div className="space-y-16 pt-6">
+                                <div className="grid grid-cols-1 lg:grid-cols-[65%_35%] gap-10 items-stretch">
+                                    <div className="rounded-[2.5rem] bg-slate-900/50 border border-white/5 overflow-hidden shadow-2xl relative group">
+                                        <RadialKPI data={data} />
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <AIRecommendationPanel ai={data.ai} />
+                                    </div>
                                 </div>
-                                <div className="flex flex-col">
-                                    <AIRecommendationPanel ai={data.ai} />
-                                </div>
+
+                                {data.tutorInsights && data.tutorInsights.length > 0 && (
+                                    <div className="animate-in fade-in slide-in-from-bottom-10 duration-1000 delay-300">
+                                        <TutorInsightPanel insights={data.tutorInsights} />
+                                    </div>
+                                )}
                             </div>
                         )}
 

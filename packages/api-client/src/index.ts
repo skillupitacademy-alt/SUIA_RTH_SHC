@@ -7,6 +7,7 @@ import { SearchClient } from './modules/search-client';
 import { AnalyticsClient } from './modules/analytics-client';
 import { ReportClient } from './modules/report-client';
 import { TelemetryClient } from './modules/telemetry-client';
+import { TutorClient } from './modules/tutor-client';
 
 function getApiUrl(): string {
   if (process.env.NEXT_PUBLIC_API_URL) {
@@ -41,6 +42,7 @@ export * from './modules/report-client';
 export * from './modules/search-client';
 export * from './modules/telemetry-client';
 export * from './modules/analytics-client';
+export * from './modules/tutor-client';
 export * from './types';
 
 export const apiClient = {
@@ -52,6 +54,7 @@ export const apiClient = {
   search: new SearchClient(baseClient),
   telemetry: new TelemetryClient(baseClient),
   analytics: new AnalyticsClient(baseClient),
+  tutor: new TutorClient(baseClient),
   client: baseClient,
   getAdminUrl: () => ADMIN_URL,
 };

@@ -359,6 +359,10 @@ export class ReportEngine {
         weakest_skill: weakestSkill?.name,
         nextExamHours: scorePercentage >= 80 ? 12 : 48
       },
+      tutorInsights: await AdaptiveTutorService.generateInsights(exam.userId, topicResults.map(tr => ({
+        topicId: tr.dimensionId!,
+        accuracy: tr.accuracy
+      }))),
       questions: exam.examQuestions.map(eq => ({
         id: eq.id,
         text: eq.question.questionText,
