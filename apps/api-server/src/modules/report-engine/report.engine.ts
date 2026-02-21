@@ -42,7 +42,7 @@ type CoreRow = {
   logic_count: number | null;
   error_count: number | null;
   expert_drop_off: boolean | null;
-  subtopics: { name: string; accuracy: number; attempts: number }[] | null;
+  subtopics: { topicId: string; name: string; accuracy: number; attempts: number }[] | null;
   skills: { name: string; accuracy: number; attempts: number }[] | null;
   heatmap: { subtopic: string; difficulty: string; accuracy: number | null; attempts: number }[] | null;
   difficulty: { level: string; accuracy: number | null; attempts: number }[] | null;
@@ -289,9 +289,9 @@ export class ReportEngine {
         ),
         subtopics_agg AS (
             SELECT JSON_AGG(r) as subtopics FROM (
-            SELECT subtopic as name, ROUND(AVG(accuracy)) as accuracy, SUM(attempts) as attempts
+            SELECT topic_id as "topicId", subtopic as name, ROUND(AVG(accuracy)) as accuracy, SUM(attempts) as attempts
             FROM dims
-            GROUP BY subtopic
+            GROUP BY topic_id, subtopic
             ORDER BY accuracy DESC
             ) r
         ),
@@ -487,13 +487,24 @@ export class ReportEngine {
         weakest_skill: core.weakest_skill ?? undefined,
         nextExamHours: (core.score ?? 0) >= 80 ? 12 : 48
       },
-      tutorInsights: await AdaptiveTutorService.generateInsights(
-        exam.userId,
-        (core.subtopics ?? []).map((s) => ({
-          topicId: s.name,
-          accuracy: s.accuracy
-        }))
-      ),
+      tutorInsights: await (async () => {
+        // Fallback: derive topic accuracy by subtopic name (IDs not present in MV payload)
+        const topicAgg = (core.subtopics ?? []).reduce((acc, curr) => {
+          const key = curr.name ?? '';
+          if (key.length === 0) return acc;
+          if (acc[key] === undefined) acc[key] = { topicId: key, total: 0, count: 0 };
+          acc[key].total += curr.accuracy;
+          acc[key].count += 1;
+          return acc;
+        }, {} as Record<string, { topicId: string, total: number, count: number }>);
+
+        const records = Object.values(topicAgg).map(t => ({
+          topicId: t.topicId,
+          accuracy: t.total / t.count
+        }));
+
+        return AdaptiveTutorService.generateInsights(exam.userId, records);
+      })(),
       questions: (rawQuestions.rows as RawQuestionRow[]).map((q) => ({
         id: q.id,
         text: q.text,

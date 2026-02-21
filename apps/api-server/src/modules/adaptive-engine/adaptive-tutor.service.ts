@@ -34,19 +34,39 @@ export class AdaptiveTutorService {
     const focusTopics = topicAccuracyRecords.filter((t) => t.accuracy < 80);
     if (focusTopics.length === 0) return [];
 
-    const topicIds = focusTopics.map((t) => t.topicId);
-    const topicDetails = await db.query.topics.findMany({
-      where: inArray(topics.id, topicIds),
-    });
-    const detailsMap = new Map<string, TopicDetail>(
+    // Support both UUID topic IDs and legacy name-based identifiers.
+    const isUuid = (value: string) =>
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
+
+    const idKeys = focusTopics.map((t) => t.topicId).filter(isUuid);
+    const nameKeys = focusTopics.map((t) => t.topicId).filter((id) => !isUuid(id));
+
+    const topicDetails: TopicDetail[] = [
+      ...(idKeys.length > 0
+        ? ((await db.query.topics.findMany({ where: inArray(topics.id, idKeys) })) as TopicDetail[])
+        : []),
+      ...(nameKeys.length > 0
+        ? ((await db.query.topics.findMany({ where: inArray(topics.name, nameKeys) })) as TopicDetail[])
+        : []),
+    ];
+
+    const detailsById = new Map<string, TopicDetail>(
       topicDetails.map((d) => [d.id, d as TopicDetail]),
+    );
+    const detailsByName = new Map<string, TopicDetail>(
+      topicDetails
+        .filter((d) => typeof d.name === "string" && d.name.length > 0)
+        .map((d) => [d.name as string, d as TopicDetail]),
     );
 
     const insights: TutorInsight[] = [];
 
     for (const record of focusTopics) {
       const pastAccuracy = historicalMap.get(record.topicId) ?? 0;
-      const details = detailsMap.get(record.topicId);
+      const details =
+        detailsById.get(record.topicId) ??
+        detailsByName.get(record.topicId) ??
+        null;
 
       let priority: TutorInsight["priority"] = "growth";
       let label = "Keep Practicing";

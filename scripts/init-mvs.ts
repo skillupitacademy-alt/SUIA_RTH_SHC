@@ -90,6 +90,8 @@ async function main() {
         CREATE MATERIALIZED VIEW IF NOT EXISTS attempt_dimension_accuracy_mv AS
         SELECT
           eq.exam_id,
+          q.topic_id,
+          q.subtopic_id,
           s.name as subtopic,
           sk.name as skill,
           q.difficulty as level,
@@ -103,12 +105,12 @@ async function main() {
         LEFT JOIN subtopics s ON s.id = q.subtopic_id
         LEFT JOIN question_skills qs ON qs.question_id = q.id
         LEFT JOIN skills sk ON sk.id = qs.skill_id
-        GROUP BY eq.exam_id, s.name, sk.name, q.difficulty;
+        GROUP BY eq.exam_id, q.topic_id, q.subtopic_id, s.name, sk.name, q.difficulty;
       `
     },
     {
       name: "INDEX: idx_attempt_dim_accuracy_unique",
-      sql: `CREATE UNIQUE INDEX IF NOT EXISTS idx_attempt_dim_accuracy_unique ON attempt_dimension_accuracy_mv (exam_id, COALESCE(subtopic, ''), COALESCE(skill, ''), level);`
+      sql: `CREATE UNIQUE INDEX IF NOT EXISTS idx_attempt_dim_accuracy_unique ON attempt_dimension_accuracy_mv (exam_id, topic_id, COALESCE(subtopic_id, '00000000-0000-0000-0000-000000000000'::uuid), COALESCE(skill, ''), level);`
     }
   ];
 
