@@ -9,11 +9,11 @@ export interface SkillDonutChartProps {
 }
 
 export const SkillDonutChart = React.memo(({ data }: SkillDonutChartProps) => {
-    // Subject Breakdown colors from image: Cyan, Green, Yellow
+    // Subject Breakdown colors matching the premium palette
     const COLORS = ['#22d3ee', '#34d399', '#facc15', '#818cf8', '#f472b6'];
 
-    // Calculate total average to show in center like the image
-    const totalAccuracy = data.length > 0
+    // Calculate total average to show in center (Mastery)
+    const averageAccuracy = data.length > 0
         ? Math.round(data.reduce((acc, curr) => acc + curr.accuracy, 0) / data.length)
         : 0;
 
@@ -59,8 +59,8 @@ export const SkillDonutChart = React.memo(({ data }: SkillDonutChartProps) => {
                                 if (active && payload && payload.length) {
                                     return (
                                         <div className="bg-[#0f172a]/95 backdrop-blur-xl border border-white/10 p-4 rounded-2xl shadow-2xl">
-                                            <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-1">{payload[0].payload.name}</p>
-                                            <p className="text-2xl font-black text-white">{payload[0].value}%</p>
+                                            <p className="text-[12px] font-black text-indigo-400 uppercase tracking-widest mb-1">{payload[0].payload.name}</p>
+                                            <p className="text-2xl font-black text-white">{payload[0].value}% Accuracy</p>
                                         </div>
                                     );
                                 }
@@ -70,18 +70,17 @@ export const SkillDonutChart = React.memo(({ data }: SkillDonutChartProps) => {
                     </PieChart>
                 </ResponsiveContainer>
 
-                {/* Legend percentages inside segments (simulated with absolute positioning or just central) */}
                 <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-10">
                     <div className="flex flex-col items-center">
                         <span className="text-6xl font-black text-white tracking-tighter drop-shadow-[0_0_15px_rgba(255,255,255,0.1)]">
-                            {totalAccuracy}%
+                            {averageAccuracy}%
                         </span>
-                        <span className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mt-1">Total</span>
+                        <span className="text-[13px] font-bold text-slate-500 uppercase tracking-widest mt-1">Mastery</span>
                     </div>
                 </div>
             </div>
 
-            {/* Horizontal Legend matching image */}
+            {/* Legend with improved legibility */}
             <div className="flex flex-wrap items-center justify-center gap-6 mt-8">
                 {data.map((skill, i) => (
                     <div key={skill.name} className="flex items-center gap-2.5">
@@ -89,7 +88,7 @@ export const SkillDonutChart = React.memo(({ data }: SkillDonutChartProps) => {
                             className="h-2.5 w-2.5 rounded-full shadow-[0_0_8px_rgba(255,255,255,0.2)]"
                             style={{ backgroundColor: COLORS[i % COLORS.length] }}
                         />
-                        <span className="text-[11px] font-bold text-slate-400 tracking-tight">{skill.name}</span>
+                        <span className="text-[13px] font-bold text-slate-400 tracking-tight">{skill.name}</span>
                     </div>
                 ))}
             </div>

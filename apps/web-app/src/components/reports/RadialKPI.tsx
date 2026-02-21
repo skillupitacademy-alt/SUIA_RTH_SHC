@@ -50,11 +50,11 @@ export const RadialKPI = React.memo(({ data }: RadialKPIProps) => {
             <div className="absolute bottom-0 left-0 w-64 h-64 bg-violet-500/5 blur-[120px] rounded-full pointer-events-none" />
 
             {/* Header section matching image */}
-            <div className="flex items-center justify-between mb-2 relative z-20">
-                <h3 className="text-xl font-bold text-white tracking-tight">KPI Chart</h3>
+            <div className="flex items-center justify-between mb-4 relative z-20">
+                <h3 className="text-xl font-bold text-white tracking-tight">Executive Summary</h3>
                 <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-900/50 border border-white/5 rounded-xl cursor-default hover:bg-slate-800/80 transition-colors">
                     <Calendar size={14} className="text-slate-400" />
-                    <span className="text-[11px] font-bold text-slate-300">Performance</span>
+                    <span className="text-[13px] font-bold text-slate-200">Session Metrics</span>
                     <ChevronDown size={14} className="text-slate-500" />
                 </div>
             </div>
@@ -63,26 +63,26 @@ export const RadialKPI = React.memo(({ data }: RadialKPIProps) => {
                 {/* Labels at top/bottom of rings matching image */}
                 <div className="absolute inset-0 z-10 pointer-events-none flex flex-col items-center justify-between py-6">
                     <div className="flex flex-col items-center">
-                        <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-0.5">Score</span>
-                        <span className="text-sm font-black text-cyan-400 tracking-tighter">{data.score}%</span>
+                        <span className="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Score</span>
+                        <span className="text-[16px] font-black text-cyan-400 tracking-tighter">{data.score}%</span>
                     </div>
                     <div className="flex flex-col items-center mb-12">
-                        <span className="text-[9px] font-black text-amber-500/80 uppercase tracking-widest mb-0.5">Top 1%</span>
-                        <span className="text-[10px] font-bold text-amber-500/40">99th Percentile</span>
+                        <span className="text-[11px] font-black text-amber-500/80 uppercase tracking-widest mb-0.5">Global Rank</span>
+                        <span className="text-[14px] font-bold text-amber-500/80">{data.percentile}th Percentile</span>
                     </div>
                 </div>
 
                 <div className="absolute inset-0 z-10 pointer-events-none flex flex-col items-center justify-center pt-24">
                     <div className="flex flex-col items-center">
-                        <span className="text-[10px] font-black text-emerald-400 uppercase tracking-widest mb-0.5">Mastery</span>
-                        <span className="text-xs font-bold text-emerald-400/60 uppercase">{getMasteryLabel(data.mastery)}</span>
+                        <span className="text-[11px] font-black text-emerald-400 uppercase tracking-widest mb-0.5">Synthesis</span>
+                        <span className="text-[13px] font-bold text-emerald-300 uppercase">{getMasteryLabel(data.mastery)}</span>
                     </div>
                 </div>
 
                 <div className="absolute inset-0 z-10 pointer-events-none flex flex-col items-center justify-end pb-12">
                     <div className="flex flex-col items-center">
-                        <span className="text-sm font-black text-emerald-400 tracking-tighter">{formatTime(data.totalTimeSpentSeconds)}</span>
-                        <span className="text-[9px] font-black text-emerald-400/40 uppercase tracking-widest">Fast</span>
+                        <span className="text-[16px] font-black text-emerald-400 tracking-tighter">{formatTime(data.totalTimeSpentSeconds)}</span>
+                        <span className="text-[11px] font-black text-emerald-400/60 uppercase tracking-widest">Efficiency</span>
                     </div>
                 </div>
 
@@ -92,12 +92,12 @@ export const RadialKPI = React.memo(({ data }: RadialKPIProps) => {
                         {/* Glow Filter behind center text */}
                         <div className="absolute inset-0 bg-white/5 blur-3xl rounded-full" />
                         <div className="flex flex-col items-center relative gap-0.5">
-                            <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Score</span>
+                            <span className="text-[13px] font-black text-slate-400 uppercase tracking-[0.3em]">Readiness</span>
                             <span className="text-6xl font-black text-white tracking-tighter drop-shadow-[0_0_20px_rgba(255,255,255,0.2)]">
-                                {data.score}%
+                                {data.readiness}%
                             </span>
-                            <div className="mt-2 p-2 bg-white/5 rounded-xl border border-white/5">
-                                <Activity size={16} className="text-slate-400" />
+                            <div className="mt-3 p-2 bg-white/10 rounded-xl border border-white/10">
+                                <Activity size={18} className="text-slate-300" />
                             </div>
                         </div>
                     </div>

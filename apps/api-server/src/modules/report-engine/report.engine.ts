@@ -80,37 +80,42 @@ export class ReportEngine {
     };
   }
 
-  private static async calculatePercentile(examId: string, blueprintId: string | null, _score: number): Promise<number> {
+  private static async calculatePercentile(currentExamId: string, blueprintId: string | null, myAccuracy: number): Promise<number> {
     try {
         let whereClause = eq(exams.status, 'completed');
-        
-        if (blueprintId !== undefined && blueprintId !== null) {
+        if (blueprintId !== null && blueprintId !== undefined) {
             whereClause = and(eq(exams.status, 'completed'), eq(exams.blueprintId, blueprintId))!;
         }
 
-        const allExams = await db.query.exams.findMany({
+        const cohort = await db.query.exams.findMany({
             where: whereClause,
-            columns: {
-                totalScore: true,
-                id: true
+            columns: { id: true, totalScore: true },
+            with: {
+                examQuestions: {
+                    columns: { isCorrect: true }
+                }
             }
         });
 
-        if (allExams.length <= 1) return 99;
+        // Use 50 as a neutral default for single user. Avoid 99 as it's misleading.
+        if (cohort.length <= 1) return 50;
 
-        const currentExamWithType = allExams.find(e => e.id === examId);
-        const myScore = (currentExamWithType !== undefined && currentExamWithType !== null && currentExamWithType.totalScore !== null) ? currentExamWithType.totalScore : 0;
+        // Map cohort to accuracy percentages to avoid point-based bias (raw score vs correctness ratio)
+        const accuracies = cohort.map(e => {
+            const total = e.examQuestions?.length ?? 0;
+            const correct = e.examQuestions?.filter(q => q.isCorrect === true).length ?? 0;
+            return total > 0 ? (correct / total) * 100 : 0;
+        });
 
-        const lowerScores = allExams.filter(e => (e.totalScore !== null ? e.totalScore : 0) < myScore).length;
-        const percentile = Math.round((lowerScores / allExams.length) * 100);
+        const lowerScores = accuracies.filter(acc => acc < myAccuracy).length;
+        // Formula: (Number of scores below / total number of scores) * 100
+        const percentile = (lowerScores / cohort.length) * 100;
 
-        return Math.max(1, percentile);
+        // Clamp to 1-99 range for premium aesthetic and avoid 0 or 100 which are statistically unlikely
+        return Math.min(99, Math.max(1, Math.round(percentile)));
     } catch (e) {
-        ReportEngine.log.error(
-          { examId, blueprintId, error: e instanceof Error ? e.message : 'unknown error' },
-          'Percentile calculation failed',
-        );
-        return 50; 
+        ReportEngine.log.error({ currentExamId, error: e instanceof Error ? e.message : 'unknown' }, 'Percentile failed');
+        return 50;
     }
   }
 
@@ -145,7 +150,7 @@ export class ReportEngine {
         timeTaken = `${diffMins}m ${diffSecs}s`;
     }
 
-    const percentile = await ReportEngine.calculatePercentile(exam.id, exam.blueprintId, correctAnswers);
+    const percentile = await ReportEngine.calculatePercentile(exam.id, exam.blueprintId, scorePercentage);
     const includeCorrect = options.includeCorrectAnswers === true;
     const actionPlan = ActionPlanBuilder.build(results);
 
@@ -154,7 +159,11 @@ export class ReportEngine {
       topicId: r.dimensionId!,
       accuracy: r.accuracy
     }));
-    const tutorInsights = await AdaptiveTutorService.generateInsights(exam.userId, topicAccuracyRecords);
+    
+    // Short circuit insights if no topic data
+    const tutorInsights = topicAccuracyRecords.length > 0 
+      ? await AdaptiveTutorService.generateInsights(exam.userId, topicAccuracyRecords)
+      : "Baseline performance data established. Proceed to further modules to generate deeper tactical insights.";
 
     return {
       id: exam.id,
@@ -162,7 +171,7 @@ export class ReportEngine {
       status: exam.status,
       score: correctAnswers,
       total: totalQuestions,
-      percentage: scorePercentage,
+      percentage: Math.round(scorePercentage),
       statusLabel: scorePercentage >= 70 ? 'passed' : 'failed',
       completedAt: exam.completedAt,
       timeTaken,
@@ -197,11 +206,7 @@ export class ReportEngine {
       with: {
         examQuestions: {
           with: {
-            question: {
-              with: {
-                subtopic: true
-              }
-            },
+            question: { with: { subtopic: true } },
           }
         },
         blueprint: true,
@@ -216,15 +221,25 @@ export class ReportEngine {
 
     const totalQuestions = exam.examQuestions.length;
     const correctAnswers = exam.examQuestions.filter(eq => eq.isCorrect === true).length;
-    const scorePercentage = Math.round(totalQuestions > 0 ? (correctAnswers / totalQuestions) * 100 : 0);
+    const scorePercentage = totalQuestions > 0 ? (correctAnswers / totalQuestions) * 100 : 0;
 
+    // 1. Weighted Mastery Logic: Use total counts instead of unweighted topic averages
     const topicResults = results.filter(r => r.dimensionType === 'topic');
-    const mastery = Math.round(topicResults.length > 0 
-      ? topicResults.reduce((acc, curr) => acc + curr.accuracy, 0) / topicResults.length 
-      : scorePercentage);
+    let totalAttempts = 0;
+    let totalCorrectFromTopics = 0;
+    topicResults.forEach(r => {
+        // Reconstruct attempts from accuracy and score (score is usually the count of correct answers in this context)
+        const attempts = r.accuracy > 0 ? (r.score / (r.accuracy / 100)) : 0;
+        totalAttempts += attempts;
+        totalCorrectFromTopics += r.score;
+    });
+    const weightedMastery = totalAttempts > 0 ? (totalCorrectFromTopics / totalAttempts) * 100 : scorePercentage;
 
-    const readiness = Math.round((scorePercentage * 0.4) + (mastery * 0.4) + (20));
+    // 2. Clamped Readiness Formula
+    const rawReadiness = (scorePercentage * 0.4) + (weightedMastery * 0.4) + 20;
+    const readiness = Math.min(100, Math.max(0, Math.round(rawReadiness)));
 
+    // 3. Subtopic Aggregation (Using ID for reliability)
     const subtopicMap = new Map<string, { total: number; correct: number; name: string }>();
     exam.examQuestions.forEach(eq => {
       const sub = eq.question.subtopic;
@@ -237,58 +252,72 @@ export class ReportEngine {
 
     const subtopicsList = Array.from(subtopicMap.values()).map(s => ({
       name: s.name,
-      accuracy: Math.round((s.correct / s.total) * 100)
+      accuracy: Math.round((s.correct / s.total) * 100),
+      attempts: s.total
     })).sort((a, b) => b.accuracy - a.accuracy);
 
-    const diffMap = { simple: { t: 0, c: 0 }, intermediate: { t: 0, c: 0 }, expert: { t: 0, c: 0 } };
-    exam.examQuestions.forEach(eq => {
-      const d = eq.question.difficulty as 'simple' | 'intermediate' | 'expert';
-      if (diffMap[d] !== undefined) {
-        diffMap[d].t++;
-        if (eq.isCorrect === true) diffMap[d].c++;
-      }
+    // 4. Heatmap Full Coverage Logic
+    const difficultyLevels = ['simple', 'intermediate', 'expert'] as const;
+    const heatmapList: { subtopic: string; difficulty: string; accuracy: number; attempts: number }[] = [];
+    
+    subtopicMap.forEach((subData, _subId) => {
+      difficultyLevels.forEach(diff => {
+        const matchingQuestions = exam.examQuestions.filter(eq => 
+          eq.question.subtopicId === _subId && eq.question.difficulty === diff
+        );
+        heatmapList.push({
+          subtopic: subData.name,
+          difficulty: diff,
+          accuracy: matchingQuestions.length > 0 
+            ? Math.round((matchingQuestions.filter(q => q.isCorrect === true).length / matchingQuestions.length) * 100) 
+            : 0,
+          attempts: matchingQuestions.length
+        });
+      });
     });
 
-    const difficultyList = (['simple', 'intermediate', 'expert'] as const).map(level => ({
-      level,
-      accuracy: diffMap[level].t > 0 ? Math.round((diffMap[level].c / diffMap[level].t) * 100) : 0
-    }));
-
-    const heatmapList: { subtopic: string; difficulty: 'simple' | 'intermediate' | 'expert'; accuracy: number }[] = [];
-    const uniqueSubtopics = Array.from(subtopicMap.values()).map(s => s.name);
-    
-    uniqueSubtopics.forEach(subName => {
-      (['simple', 'intermediate', 'expert'] as const).forEach(diff => {
-        const matchingQuestions = exam.examQuestions.filter(eq => 
-          eq.question.subtopic?.name === subName && eq.question.difficulty === diff
-        );
-        if (matchingQuestions.length > 0) {
-          const correct = matchingQuestions.filter(q => q.isCorrect === true).length;
-          heatmapList.push({
-            subtopic: subName,
-            difficulty: diff,
-            accuracy: Math.round((correct / matchingQuestions.length) * 100)
-          });
-        }
-      });
+    // 5. Time Spent Categories for WOW Donut
+    const timeBuckets = { stable: 0, logic: 0, neural: 0 };
+    exam.examQuestions.forEach(eq => {
+        const time = (eq.responseMetadata as Record<string, unknown>)?.timeSpentSeconds as number || 0;
+      if (eq.isCorrect === true) {
+        if (time < 35) timeBuckets.stable++; // Quick/Stable
+        else timeBuckets.logic++; // Logic synthesis
+      } else {
+        timeBuckets.neural++; // Neural friction/Error
+      }
     });
 
     const skillResults = results.filter(r => r.dimensionType === 'skill');
     const skillsList = Array.from(
-      new Map(skillResults.map(r => [r.name, { name: r.name ?? 'Unknown', accuracy: r.accuracy }])).values()
-    ).filter(s => s.name !== 'Unknown');
+      new Map(
+        skillResults.map(r => {
+          const attemptsRaw = (r as { attempts?: unknown }).attempts;
+          const attempts = typeof attemptsRaw === 'number' && !Number.isNaN(attemptsRaw) ? attemptsRaw : 0;
+          const name = r.name ?? 'Unknown';
+          return [name, { name, accuracy: r.accuracy, attempts }];
+        })
+      ).values()
+    )
+      .filter(s => s.name !== 'Unknown')
+      .sort((a, b) => b.attempts - a.attempts) // Prioritize skills with more data
+      .slice(0, 4); // Strictly limit to 4 as per design requirement
 
-    const weakestSubtopic = subtopicsList.length > 0 ? subtopicsList[subtopicsList.length - 1] : null;
+    // 6. Impact-Based Guards (Ignore single-attempt noise for weakest picks)
+    const significantSubtopics = subtopicsList.filter(s => s.attempts !== undefined && s.attempts >= 1); // For small exams, 1 is okay, but we prioritize accuracy
+    const weakestSubtopic = significantSubtopics.length > 0 ? significantSubtopics.sort((a, b) => a.accuracy - b.accuracy)[0] : null;
     const weakestSkill = skillsList.length > 0 ? skillsList.sort((a, b) => a.accuracy - b.accuracy)[0] : null;
 
     const actions: string[] = [];
-    if (weakestSubtopic !== null && weakestSubtopic.accuracy < 60) {
+    if (weakestSubtopic && weakestSubtopic.accuracy < 60) {
       actions.push(`Review foundational logic for ${weakestSubtopic.name}`);
     }
-    if (weakestSkill !== null && weakestSkill.accuracy < 60) {
+    if (weakestSkill && weakestSkill.accuracy < 60) {
       actions.push(`Focus on ${weakestSkill.name} tactical drills`);
     }
-    if (difficultyList[1].accuracy < 50) {
+    
+    const intermediateAccuracy = heatmapList.filter(h => h.difficulty === 'intermediate').reduce((acc, curr) => acc + curr.accuracy, 0) / (subtopicMap.size || 1);
+    if (intermediateAccuracy < 50) {
       actions.push("Stabilize intermediate difficulty mastery before moving to expert");
     }
     if (scorePercentage < 70) {
@@ -301,24 +330,27 @@ export class ReportEngine {
     const totalTimeSpentSeconds = exam.examQuestions.reduce((acc, eq) => 
       acc + ((eq.responseMetadata as Record<string, unknown>)?.timeSpentSeconds as number || 0), 0);
     
-    // Simple efficiency logic: if average time per question < 30s, it's 'FAST'
-    const avgTimePerQuestion = totalQuestions > 0 ? totalTimeSpentSeconds / totalQuestions : 0;
-    const timeEfficiency = avgTimePerQuestion < 30 ? 'FAST' : (avgTimePerQuestion < 60 ? 'OPTIMAL' : 'SLOW');
-
-    const percentile = await ReportEngine.calculatePercentile(exam.id, exam.blueprintId, correctAnswers);
+    const percentile = await ReportEngine.calculatePercentile(exam.id, exam.blueprintId, scorePercentage);
 
     return {
       examId: exam.id,
-      score: scorePercentage,
-      mastery,
+      score: Math.round(scorePercentage),
+      mastery: Math.round(weightedMastery),
       readiness,
       percentile,
       totalTimeSpentSeconds,
-      timeEfficiency,
+      timeEfficiency: (scorePercentage > 80 && totalTimeSpentSeconds < (totalQuestions * 40)) ? 'FAST' : 'OPTIMAL',
       subtopics: subtopicsList,
       skills: skillsList,
-      difficulty: difficultyList,
+      difficulty: difficultyLevels.map(level => {
+          const matching = exam.examQuestions.filter(q => q.question.difficulty === level);
+          return {
+              level,
+              accuracy: matching.length > 0 ? Math.round((matching.filter(q => q.isCorrect === true).length / matching.length) * 100) : 0
+          };
+      }),
       heatmap: heatmapList,
+      timeBuckets,
       ai: {
         status: scorePercentage >= 80 ? 'READY' : (scorePercentage >= 60 ? 'BORDERLINE' : 'NOT_READY'),
         actions: actions.slice(0, 4),

@@ -8,34 +8,22 @@ export interface TimeSpentDonutProps {
     data: {
         totalSeconds: number;
         questions: { isCorrect: boolean; timeSpent: number }[];
+        timeBuckets?: { stable: number; logic: number; neural: number };
     };
 }
 
 export const TimeSpentDonut = React.memo(({ data }: TimeSpentDonutProps) => {
-    // Breakdown logic for "WOW" diagnostic effect
-    // 1. Stable Processing: Correct & < 45s
-    // 2. Logic Synthesis: Correct & >= 45s
-    // 3. Neural Friction: Incorrect
+    // Breakdown logic: preferring server-side binned data for precision
+    const buckets = data.timeBuckets || {
+        stable: data.questions.filter(q => q.isCorrect && q.timeSpent < 45).length,
+        logic: data.questions.filter(q => q.isCorrect && q.timeSpent >= 45).length,
+        neural: data.questions.filter(q => !q.isCorrect).length
+    };
 
     const breakdown = [
-        {
-            name: "Stable Processing",
-            value: data.questions.filter(q => q.isCorrect && q.timeSpent < 45).length,
-            color: '#3b82f6', // Blue
-            label: "Study"
-        },
-        {
-            name: "Logic Synthesis",
-            value: data.questions.filter(q => q.isCorrect && q.timeSpent >= 45).length,
-            color: '#10b981', // Green
-            label: "Practice"
-        },
-        {
-            name: "Neural Friction",
-            value: data.questions.filter(q => !q.isCorrect).length,
-            color: '#a855f7', // Purple
-            label: "Review"
-        }
+        { name: "Stable Processing", value: buckets.stable, color: '#3b82f6', label: "Study" },
+        { name: "Logic Synthesis", value: buckets.logic, color: '#10b981', label: "Practice" },
+        { name: "Neural Friction", value: buckets.neural, color: '#a855f7', label: "Review" }
     ].filter(b => b.value > 0);
 
     const formatTotalTime = (seconds: number) => {
@@ -89,7 +77,7 @@ export const TimeSpentDonut = React.memo(({ data }: TimeSpentDonutProps) => {
                                 if (active && payload && payload.length) {
                                     return (
                                         <div className="bg-[#0f172a]/95 backdrop-blur-xl border border-white/10 p-4 rounded-2xl shadow-2xl">
-                                            <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-1">{payload[0].payload.name}</p>
+                                            <p className="text-[12px] font-black text-indigo-400 uppercase tracking-widest mb-1">{payload[0].payload.name}</p>
                                             <p className="text-2xl font-black text-white">{payload[0].value} Questions</p>
                                         </div>
                                     );
@@ -105,20 +93,19 @@ export const TimeSpentDonut = React.memo(({ data }: TimeSpentDonutProps) => {
                         <span className="text-4xl font-black text-white tracking-tighter drop-shadow-[0_0_15px_rgba(255,255,255,0.1)]">
                             {formatTotalTime(data.totalSeconds)}
                         </span>
-                        <span className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mt-1">Total</span>
+                        <span className="text-[13px] font-bold text-slate-500 uppercase tracking-widest mt-1">Total</span>
                     </div>
                 </div>
             </div>
 
-            {/* Legend matching image labels: Study, Practice, Review */}
             <div className="flex flex-wrap items-center justify-center gap-8 mt-8">
-            {breakdown.map((item) => (
-                <div key={item.name} className="flex items-center gap-2.5">
-                    <div
-                        className="h-2.5 w-2.5 rounded-full"
-                        style={{ backgroundColor: item.color }}
+                {breakdown.map((item) => (
+                    <div key={item.name} className="flex items-center gap-2.5">
+                        <div
+                            className="h-2.5 w-2.5 rounded-full"
+                            style={{ backgroundColor: item.color }}
                         />
-                        <span className="text-[11px] font-bold text-slate-400 tracking-tight">{item.label}</span>
+                        <span className="text-[13px] font-bold text-slate-400 tracking-tight">{item.label}</span>
                     </div>
                 ))}
             </div>

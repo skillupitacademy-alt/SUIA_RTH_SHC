@@ -67,6 +67,7 @@ export interface ExamReport {
     percentile: number;
     totalTimeSpentSeconds: number;
     timeEfficiency: 'FAST' | 'OPTIMAL' | 'SLOW';
+    timeBuckets?: { stable: number; logic: number; neural: number };
     subtopics: { name: string; accuracy: number }[];
     skills: { name: string; accuracy: number }[];
     difficulty: { level: string; accuracy: number }[];
@@ -111,7 +112,7 @@ const TabButton = ({ active, onClick, icon: Icon, label }: { active: boolean, on
             />
         )}
         <Icon size={18} className={cn("relative z-10 transition-colors", active ? "text-white" : "text-slate-500 group-hover:text-slate-300")} />
-        <span className={cn("relative z-10 text-[11px] font-black uppercase tracking-[0.2em] transition-colors", active ? "text-white" : "text-slate-500 group-hover:text-slate-300")}>
+        <span className={cn("relative z-10 text-[14px] font-black uppercase tracking-[0.2em] transition-colors", active ? "text-white" : "text-slate-500 group-hover:text-slate-300")}>
             {label}
         </span>
     </button>
@@ -139,17 +140,17 @@ const HeuristicPanel = ({
                         <div className="p-2.5 bg-indigo-500/10 rounded-2xl border border-indigo-500/20 shadow-inner group-hover:border-indigo-500/40 transition-all">
                             <BrainCircuit className="h-6 w-6 text-indigo-400" />
                         </div>
-                        <h3 className="text-xl font-black text-white uppercase tracking-tighter">{title}</h3>
+                        <h3 className="text-xl font-black text-white uppercase tracking-tighter">Neural Synthesis</h3>
                     </div>
                     <div className="px-4 py-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-full shadow-lg">
-                        <span className="text-[9px] font-black text-emerald-400 uppercase tracking-widest leading-none flex items-center gap-2">
+                        <span className="text-[12px] font-black text-emerald-400 uppercase tracking-widest leading-none flex items-center gap-2">
                             <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
                             AI STATUS: OPTIMIZED
                         </span>
                     </div>
                 </div>
 
-                <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mb-8 border-b border-white/5 pb-4">Tactical Prescription</h4>
+                <h4 className="text-[12px] font-black text-slate-400 uppercase tracking-[0.3em] mb-8 border-b border-white/5 pb-4">{title}</h4>
 
                 <div className="space-y-5 flex-grow overflow-y-auto scrollbar-hide pr-1">
                     {details.map((tier, idx) => (
@@ -157,14 +158,14 @@ const HeuristicPanel = ({
                             <div className="flex items-center justify-between mb-4 relative z-10">
                                 <div className="flex items-center gap-3">
                                     <div className={cn("p-2 rounded-xl border border-white/5", tier.color.replace('bg-', 'text-').split(' ')[0])}>
-                                        <tier.icon className="h-3.5 w-3.5" />
+                                        <tier.icon className="h-4 w-4" />
                                     </div>
                                     <div>
-                                        <span className="text-[10px] font-black text-white uppercase tracking-widest">{tier.label}</span>
-                                        <span className={cn("text-[9px] font-bold ml-2", tier.color.replace('bg-', 'text-').split(' ')[0])}>({tier.status})</span>
+                                        <span className="text-[13px] font-black text-white uppercase tracking-widest">{tier.label}</span>
+                                        <span className={cn("text-[11px] font-bold ml-2", tier.color.replace('bg-', 'text-').split(' ')[0])}>({tier.status})</span>
                                     </div>
                                 </div>
-                                <div className="h-1.5 w-20 bg-slate-800/50 rounded-full overflow-hidden p-[1px] border border-white/5">
+                                <div className="h-1.5 w-24 bg-slate-800/50 rounded-full overflow-hidden p-[1px] border border-white/5">
                                     <motion.div
                                         initial={{ width: 0 }}
                                         animate={{ width: `${tier.progress}%` }}
@@ -177,8 +178,8 @@ const HeuristicPanel = ({
                             <ul className="space-y-2 relative z-10">
                                 {tier.items.map((item, i) => (
                                     <li key={i} className="flex items-start gap-2 group/item">
-                                        <div className={cn("h-1 w-1 rounded-full mt-1.5 shrink-0", tier.color.split(' ')[0])} />
-                                        <span className="text-[10px] text-slate-400 font-medium leading-relaxed group-hover/item:text-slate-200 transition-colors">
+                                        <div className={cn("h-2 w-2 rounded-full mt-1.5 shrink-0", tier.color.split(' ')[0])} />
+                                        <span className="text-[13px] text-slate-300 font-medium leading-relaxed group-hover/item:text-slate-100 transition-colors">
                                             {item}
                                         </span>
                                     </li>
@@ -188,13 +189,13 @@ const HeuristicPanel = ({
                     ))}
                 </div>
 
-                <div className="mt-8 pt-6 border-t border-white/5 opacity-40">
-                    <div className="flex items-center justify-between text-[8px] font-black text-slate-600 uppercase tracking-[0.3em]">
+                <div className="mt-8 pt-6 border-t border-white/5 opacity-60">
+                    <div className="flex items-center justify-between text-[11px] font-black text-slate-500 uppercase tracking-[0.3em]">
                         <div className="flex items-center gap-2">
-                            <Activity size={10} className="text-indigo-400" />
+                            <Activity size={12} className="text-indigo-400" />
                             <span>Diagnostic Logs v9.4</span>
                         </div>
-                        <span className="italic">SYS_{Math.random().toString(36).substring(7).toUpperCase()}</span>
+                        <span className="italic font-bold">SYS_{Math.random().toString(36).substring(7).toUpperCase()}</span>
                     </div>
                 </div>
             </div>
@@ -210,7 +211,7 @@ export function ExamReportLayout({ data, loading }: ExamReportLayoutProps) {
             <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-6">
                 <ZLoader />
                 <motion.p
-                    className="mt-8 text-[11px] font-black text-slate-500 tracking-[0.4em] uppercase"
+                    className="mt-8 text-[14px] font-black text-slate-400 tracking-[0.4em] uppercase"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: [0, 1, 0] }}
                     transition={{ duration: 2, repeat: Infinity }}
@@ -256,17 +257,17 @@ export function ExamReportLayout({ data, loading }: ExamReportLayoutProps) {
                         {activeTab === 'performance' && (
                             <div className="space-y-12 pt-4">
                                 {/* Section 1: Subtopic Variance */}
-                                <div className="grid grid-cols-1 lg:grid-cols-[65%_35%] gap-8">
+                                <div className="grid grid-cols-1 lg:grid-cols-[65%_35%] gap-8 items-stretch">
                                     <div className="min-h-[450px] rounded-[2.5rem] bg-slate-900/50 border border-white/5 p-8 lg:p-12 flex items-center">
                                         <SubtopicBarChart data={data.subtopics} weakest={data.ai.weakest_subtopic} />
                                     </div>
                                     <HeuristicPanel
-                                        title="Tactical Prescription"
+                                        title="Domain Disparity"
                                         details={[
                                             {
                                                 label: "Focus Areas",
                                                 status: "Critical",
-                                                items: [`Review ${data.ai.weakest_subtopic} logic`, "Practice dynamic integration"],
+                                                items: [`Review ${data.ai.weakest_subtopic || 'foundational'} logic`, "Practice dynamic integration"],
                                                 color: "bg-rose-500 text-rose-400",
                                                 progress: 35,
                                                 icon: AlertTriangle
@@ -292,56 +293,59 @@ export function ExamReportLayout({ data, loading }: ExamReportLayoutProps) {
                                 </div>
 
                                 {/* Section 2: Skill & Time Matrix */}
-                                <div className="grid grid-cols-1 lg:grid-cols-[65%_35%] gap-8">
+                                <div className="grid grid-cols-1 lg:grid-cols-[65%_35%] gap-8 items-stretch">
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                        <div className="h-[550px]">
+                                        <div className="h-[600px]">
                                             <SkillDonutChart data={data.skills} />
                                         </div>
-                                        <div className="h-[550px]">
+                                        <div className="h-[600px]">
                                             <TimeSpentDonut data={{
                                                 totalSeconds: data.totalTimeSpentSeconds,
-                                                questions: data.questions || []
+                                                questions: data.questions || [],
+                                                timeBuckets: data.timeBuckets
                                             }} />
                                         </div>
                                     </div>
-                                    <HeuristicPanel
-                                        title="Tactical Prescription"
-                                        details={[
-                                            {
-                                                label: "Focus Areas",
-                                                status: "Critical",
-                                                items: [`Reduce friction in ${data.ai.weakest_skill}`, "Minimize 'Review' cycle time"],
-                                                color: "bg-rose-500 text-rose-400",
-                                                progress: 42,
-                                                icon: AlertTriangle
-                                            },
-                                            {
-                                                label: "Strengthen",
-                                                status: "Proficient",
-                                                items: ["Stabilize high-friction nodes", "Optimize logic-branch speed"],
-                                                color: "bg-amber-500 text-amber-400",
-                                                progress: 58,
-                                                icon: Zap
-                                            },
-                                            {
-                                                label: "Maintain",
-                                                status: "Mastered",
-                                                items: ["Stable Study zone processing", "Flow-state neural baseline"],
-                                                color: "bg-emerald-500 text-emerald-400",
-                                                progress: 95,
-                                                icon: CheckCircle2
-                                            }
-                                        ]}
-                                    />
+                                    <div className="h-[600px]">
+                                        <HeuristicPanel
+                                            title="Spatio-Temporal Correlation"
+                                            details={[
+                                                {
+                                                    label: "Focus Areas",
+                                                    status: "Critical",
+                                                    items: [`Reduce friction in ${data.ai.weakest_skill || 'reasoning'}`, "Minimize 'Review' cycle time"],
+                                                    color: "bg-rose-500 text-rose-400",
+                                                    progress: 42,
+                                                    icon: AlertTriangle
+                                                },
+                                                {
+                                                    label: "Strengthen",
+                                                    status: "Proficient",
+                                                    items: ["Stabilize high-friction nodes", "Optimize logic-branch speed"],
+                                                    color: "bg-amber-500 text-amber-400",
+                                                    progress: 58,
+                                                    icon: Zap
+                                                },
+                                                {
+                                                    label: "Maintain",
+                                                    status: "Mastered",
+                                                    items: ["Stable Study zone processing", "Flow-state neural baseline"],
+                                                    color: "bg-emerald-500 text-emerald-400",
+                                                    progress: 95,
+                                                    icon: CheckCircle2
+                                                }
+                                            ]}
+                                        />
+                                    </div>
                                 </div>
 
                                 {/* Section 3: Heatmap Projection */}
-                                <div className="grid grid-cols-1 lg:grid-cols-[65%_35%] gap-8">
+                                <div className="grid grid-cols-1 lg:grid-cols-[65%_35%] gap-8 items-stretch">
                                     <div className="min-h-[500px] rounded-[2.5rem] bg-slate-900/50 border border-white/5 p-8 lg:p-12">
                                         <HeatmapGrid data={data.heatmap} />
                                     </div>
                                     <HeuristicPanel
-                                        title="Tactical Prescription"
+                                        title="Cognitive Load Analysis"
                                         details={[
                                             {
                                                 label: "Focus Areas",
@@ -380,12 +384,12 @@ export function ExamReportLayout({ data, loading }: ExamReportLayoutProps) {
                                     <DifficultyBarChart data={data.difficulty} />
                                 </div>
                                 <HeuristicPanel
-                                    title="Tactical Prescription"
+                                    title="Pressure Tolerance"
                                     details={[
                                         {
                                             label: "Focus Areas",
                                             status: "Critical",
-                                            items: ["Target 'Expert' implementation rigidity", "Address 45% complexity drop-off"],
+                                            items: ["Target 'Expert' implementation rigidity", "Address complexity drop-off"],
                                             color: "bg-rose-500 text-rose-400",
                                             progress: 30,
                                             icon: AlertTriangle
@@ -413,20 +417,20 @@ export function ExamReportLayout({ data, loading }: ExamReportLayoutProps) {
 
                         {/* RAW AUDIT TAB */}
                         {activeTab === 'audit' && (
-                            <div className="max-w-4xl mx-auto space-y-6 pt-4">
-                                <div className="p-8 lg:p-12 bg-slate-950 rounded-[3rem] border border-white/5 mb-12 flex items-center justify-between">
+                            <div className="w-full space-y-6 pt-4">
+                                <div className="p-8 lg:p-12 bg-slate-950 rounded-[3rem] border border-white/5 mb-12 flex items-center justify-between shadow-2xl">
                                     <div>
-                                        <h2 className="text-3xl font-black text-white uppercase tracking-tighter">Raw Audit</h2>
-                                        <p className="text-slate-500 font-bold uppercase text-[10px] tracking-[0.3em] mt-2">Vector Diagnostic Log</p>
+                                        <h2 className="text-4xl font-black text-white uppercase tracking-tighter">Raw Audit</h2>
+                                        <p className="text-slate-400 font-bold uppercase text-[14px] tracking-[0.3em] mt-2">Vector Diagnostic Log</p>
                                     </div>
-                                    <div className="flex gap-4">
-                                        <div className="flex flex-col items-center px-6 border-r border-slate-800">
-                                            <span className="text-2xl font-black text-indigo-400">{data.questions?.filter(q => q.isCorrect).length}</span>
-                                            <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest mt-1">Hits</span>
+                                    <div className="flex gap-8">
+                                        <div className="flex flex-col items-center px-8 border-r border-slate-800">
+                                            <span className="text-4xl font-black text-indigo-400">{data.questions?.filter(q => q.isCorrect).length}</span>
+                                            <span className="text-[13px] font-black text-slate-500 uppercase tracking-widest mt-1">Hits</span>
                                         </div>
-                                        <div className="flex flex-col items-center px-6">
-                                            <span className="text-2xl font-black text-rose-500">{data.questions?.filter(q => !q.isCorrect).length}</span>
-                                            <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest mt-1">Misses</span>
+                                        <div className="flex flex-col items-center px-8">
+                                            <span className="text-4xl font-black text-rose-500">{data.questions?.filter(q => !q.isCorrect).length}</span>
+                                            <span className="text-[13px] font-black text-slate-500 uppercase tracking-widest mt-1">Misses</span>
                                         </div>
                                     </div>
                                 </div>
@@ -439,41 +443,41 @@ export function ExamReportLayout({ data, loading }: ExamReportLayoutProps) {
                                         transition={{ delay: idx * 0.05 }}
                                         className="p-8 rounded-[2.5rem] bg-slate-900/40 border border-white/5 hover:border-indigo-500/20 transition-all group"
                                     >
-                                        <div className="flex items-start justify-between gap-6">
-                                            <div className="flex gap-6">
+                                        <div className="flex items-start justify-between gap-8">
+                                            <div className="flex gap-8">
                                                 <div className={cn(
-                                                    "h-12 w-12 rounded-2xl flex items-center justify-center shrink-0 font-black text-sm",
+                                                    "h-14 w-14 rounded-2xl flex items-center justify-center shrink-0 font-black text-lg",
                                                     q.isCorrect ? "bg-indigo-600/10 text-indigo-400" : "bg-rose-500/10 text-rose-500"
                                                 )}>
                                                     {(idx + 1).toString().padStart(2, '0')}
                                                 </div>
-                                                <div className="space-y-4">
-                                                    <h4 className="text-lg font-bold text-slate-200 leading-relaxed max-w-2xl">{q.text}</h4>
-                                                    <div className="flex flex-wrap gap-4 pt-4">
-                                                        <div className="flex flex-col gap-1">
-                                                            <span className="text-[9px] font-black uppercase text-slate-600 tracking-widest">Your Pulse</span>
-                                                            <div className={cn("text-xs font-bold", q.isCorrect ? "text-indigo-400" : "text-rose-500")}>
+                                                <div className="space-y-5">
+                                                    <h4 className="text-2xl font-bold text-slate-200 leading-snug max-w-4xl">{q.text}</h4>
+                                                    <div className="flex flex-wrap gap-8 pt-4">
+                                                        <div className="flex flex-col gap-1.5">
+                                                            <span className="text-[13px] font-black uppercase text-slate-500 tracking-widest">User Pulse</span>
+                                                            <div className={cn("text-[15px] font-bold", q.isCorrect ? "text-indigo-400" : "text-rose-400")}>
                                                                 {q.userAnswer || "No Data"}
                                                             </div>
                                                         </div>
                                                         {!q.isCorrect && q.correctAnswer && (
-                                                            <div className="flex flex-col gap-1 ml-4 border-l border-slate-800 pl-4">
-                                                                <span className="text-[9px] font-black uppercase text-slate-600 tracking-widest">Target Sync</span>
-                                                                <div className="text-xs font-bold text-indigo-400">{q.correctAnswer}</div>
+                                                            <div className="flex flex-col gap-1.5 ml-6 border-l border-slate-800 pl-6">
+                                                                <span className="text-[13px] font-black uppercase text-slate-500 tracking-widest">Target Sync</span>
+                                                                <div className="text-[15px] font-bold text-indigo-400">{q.correctAnswer}</div>
                                                             </div>
                                                         )}
                                                     </div>
                                                     {q.explanation && (
-                                                        <div className="mt-6 p-6 rounded-2xl bg-indigo-500/5 border border-indigo-500/10 text-slate-400 text-xs leading-relaxed italic">
+                                                        <div className="mt-8 p-8 rounded-3xl bg-indigo-500/[0.03] border border-indigo-500/10 text-slate-300 text-[15px] leading-relaxed italic">
                                                             {q.explanation}
                                                         </div>
                                                     )}
                                                 </div>
                                             </div>
                                             {q.isCorrect ? (
-                                                <CheckCircle2 size={24} className="text-indigo-500 opacity-20 group-hover:opacity-100 transition-opacity" />
+                                                <CheckCircle2 size={28} className="text-indigo-500 opacity-20 group-hover:opacity-100 transition-opacity" />
                                             ) : (
-                                                <XCircle size={24} className="text-rose-500 opacity-20 group-hover:opacity-100 transition-opacity" />
+                                                <XCircle size={28} className="text-rose-500 opacity-20 group-hover:opacity-100 transition-opacity" />
                                             )}
                                         </div>
                                     </motion.div>

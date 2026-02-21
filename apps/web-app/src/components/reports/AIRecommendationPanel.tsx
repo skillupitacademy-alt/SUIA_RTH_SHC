@@ -45,8 +45,8 @@ const DiagnosticTier = ({
                     <Icon className={cn("h-4 w-4", color.replace('bg-', 'text-').split(' ')[0])} />
                 </div>
                 <div>
-                    <span className="text-[11px] font-black text-white uppercase tracking-[0.15em]">{title}</span>
-                    <span className={cn("text-[9px] font-bold ml-2 tracking-tight", color.replace('bg-', 'text-').split(' ')[0])}>({status})</span>
+                    <span className="text-[13px] font-black text-white uppercase tracking-[0.15em]">{title}</span>
+                    <span className={cn("text-[11px] font-bold ml-2 tracking-tight", color.replace('bg-', 'text-').split(' ')[0])}>({status})</span>
                 </div>
             </div>
             {/* Progress Bar matching image */}
@@ -63,8 +63,8 @@ const DiagnosticTier = ({
         <ul className="space-y-2 relative z-10">
             {items.map((item, i) => (
                 <li key={i} className="flex items-start gap-2.5 group/item">
-                    <div className={cn("h-1 w-1 rounded-full mt-1.5 shrink-0 transition-transform group-hover/item:scale-150", color.split(' ')[0])} />
-                    <span className="text-[11px] text-slate-400 font-medium leading-relaxed group-hover/item:text-slate-200 transition-colors">
+                    <div className={cn("h-1.5 w-1.5 rounded-full mt-1.5 shrink-0 transition-transform group-hover/item:scale-150", color.split(' ')[0])} />
+                    <span className="text-[13px] text-slate-300 font-medium leading-relaxed group-hover/item:text-slate-100 transition-colors">
                         {item}
                     </span>
                 </li>
@@ -82,7 +82,7 @@ export const AIRecommendationPanel = React.memo(({ ai }: AIRecommendationPanelPr
             color: "bg-rose-500 text-rose-400",
             icon: AlertTriangle,
             progress: 35,
-            items: ai.actions.filter((_, i) => i === 0).concat([`Targeting: ${ai.weakest_subtopic}`])
+            items: ai.actions.length > 0 ? [ai.actions[0], `Targeting: ${ai.weakest_subtopic}`] : [`Targeting: ${ai.weakest_subtopic}`]
         },
         {
             title: "Strengthen",
@@ -90,7 +90,7 @@ export const AIRecommendationPanel = React.memo(({ ai }: AIRecommendationPanelPr
             color: "bg-amber-500 text-amber-400",
             icon: Zap,
             progress: 65,
-            items: ai.actions.filter((_, i) => i === 1).concat([`Optimization: ${ai.weakest_skill}`])
+            items: ai.actions.length > 1 ? [ai.actions[1], `Optimization: ${ai.weakest_skill}`] : [`Optimization: ${ai.weakest_skill}`]
         },
         {
             title: "Maintain",
@@ -116,14 +116,14 @@ export const AIRecommendationPanel = React.memo(({ ai }: AIRecommendationPanelPr
                     <h3 className="text-xl font-black text-white uppercase tracking-tighter">Neural Synthesis</h3>
                 </div>
                 <div className="px-4 py-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-full shadow-lg">
-                    <span className="text-[9px] font-black text-emerald-400 uppercase tracking-widest leading-none flex items-center gap-2">
+                    <span className="text-[12px] font-black text-emerald-400 uppercase tracking-widest leading-none flex items-center gap-2">
                         <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
                         AI STATUS: OPTIMIZED
                     </span>
                 </div>
             </div>
 
-            <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mb-8 border-b border-white/5 pb-4 relative z-10">Tactical Prescription</h4>
+            <h4 className="text-[12px] font-black text-slate-400 uppercase tracking-[0.3em] mb-8 border-b border-white/5 pb-4 relative z-10">Tactical Prescription</h4>
 
             <div className="space-y-5 flex-grow relative z-10 scrollbar-hide overflow-y-auto pr-1">
                 {tiers.map((tier, idx) => (
@@ -133,11 +133,11 @@ export const AIRecommendationPanel = React.memo(({ ai }: AIRecommendationPanelPr
 
             {/* Footer mirroring layout logic */}
             <div className="mt-8 pt-6 border-t border-white/5 flex items-center justify-between relative z-10">
-                <div className="flex items-center gap-2 text-[9px] font-black text-slate-600 uppercase tracking-widest">
+                <div className="flex items-center gap-2 text-[12px] font-black text-slate-500 uppercase tracking-widest">
                     <Activity size={12} className="text-indigo-500/40" />
                     <span>Diagnostic Engine v9.4</span>
                 </div>
-                <span className="text-[9px] font-bold text-slate-700 italic">LOGID: SYS_{Math.random().toString(36).substring(7).toUpperCase()}</span>
+                <span className="text-[12px] font-bold text-slate-600 italic">LOGID: SYS_{Math.random().toString(36).substring(7).toUpperCase()}</span>
             </div>
         </div>
     );
