@@ -1,8 +1,5 @@
 'use client';
 
-import { Sidebar } from "@/components/dashboard/Sidebar";
-import { MobileNav } from "@/components/dashboard/MobileNav";
-import { AuthGuard } from "@/components/auth/AuthGuard";
 import { FileText, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { useDashboardStore } from "@/store/dashboard-store";
@@ -16,50 +13,45 @@ export default function ReportsPage() {
     }, [fetchDashboard]);
 
     return (
-        <AuthGuard>
-            <div className="flex min-h-[calc(100vh-64px)]">
-                <Sidebar />
-                <main className="flex-1 md:ml-64 p-6 md:p-10 space-y-10">
-                    <div className="flex flex-col gap-4">
-                        <div className="h-14 w-14 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
-                            <FileText size={32} />
-                        </div>
-                        <h1 className="text-3xl font-black tracking-tight">Assessment Reports</h1>
-                        <p className="text-muted-foreground max-w-2xl">
-                            Review your detailed performance analysis for all completed assessments.
-                        </p>
-                    </div>
-
-                    <div className="grid gap-6">
-                        {data?.recentActivity?.filter(a => a.status === 'completed').length === 0 ? (
-                            <div className="p-20 text-center border-2 border-dashed rounded-[2.5rem] bg-muted/5 text-muted-foreground">
-                                <p className="font-bold">No completed assessment reports found.</p>
-                                <p className="text-sm">Complete a quiz to see your detailed breakdown.</p>
-                            </div>
-                        ) : (
-                            data?.recentActivity?.filter(a => a.status === 'completed').map((report) => (
-                                <div key={report.id} className="p-6 rounded-[2rem] border bg-muted/10 hover:bg-muted/30 transition-all group flex items-center justify-between">
-                                    <div className="flex flex-col gap-1">
-                                        <div className="flex items-center gap-2">
-                                            <span className="text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full bg-green-100 text-green-700">COMPLETED</span>
-                                            <span className="text-[10px] font-bold text-muted-foreground uppercase">{report.relativeTime}</span>
-                                        </div>
-                                        <h3 className="text-lg font-bold">{report.title}</h3>
-                                        <p className="text-sm text-muted-foreground font-medium">Final Score: {report.score}%</p>
-                                    </div>
-                                    <Link
-                                        href={`/reports/active-report?examId=${report.id}`}
-                                        className="h-12 w-12 rounded-full bg-background border flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-all shadow-sm"
-                                    >
-                                        <ArrowRight size={20} />
-                                    </Link>
-                                </div>
-                            ))
-                        )}
-                    </div>
-                </main>
-                <MobileNav />
+        <div className="space-y-12">
+            <div className="flex flex-col gap-3">
+                <div className="h-14 w-14 rounded-2xl bg-pink-100/50 flex items-center justify-center text-pink-600">
+                    <FileText size={32} />
+                </div>
+                <h2 className="text-[10px] font-black uppercase text-pink-600 tracking-[0.4em]">Evaluation Repository</h2>
+                <h1 className="text-4xl font-black tracking-tight text-slate-900 uppercase">Assessment Reports</h1>
+                <p className="text-slate-500 font-bold uppercase text-[11px] tracking-widest mt-1 max-w-2xl leading-relaxed">
+                    Review your detailed performance analysis for all completed assessments.
+                </p>
             </div>
-        </AuthGuard>
+
+            <div className="grid gap-6">
+                {data?.recentActivity?.filter(a => a.status === 'completed').length === 0 ? (
+                    <div className="p-20 text-center border-2 border-dashed border-slate-200 rounded-[2.5rem] bg-slate-50/10 text-slate-400">
+                        <p className="font-black uppercase tracking-widest text-sm">No completed assessment reports found.</p>
+                        <p className="text-[10px] uppercase font-bold tracking-widest mt-2">Complete a quiz to see your detailed breakdown.</p>
+                    </div>
+                ) : (
+                    data?.recentActivity?.filter(a => a.status === 'completed').map((report) => (
+                        <div key={report.id} className="p-8 rounded-[2.5rem] border border-slate-200 bg-white hover:border-pink-500/20 transition-all group flex items-center justify-between shadow-sm">
+                            <div className="flex flex-col gap-2">
+                                <div className="flex items-center gap-3">
+                                    <span className="text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-full bg-green-50 text-green-700 border border-green-100">COMPLETED</span>
+                                    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{report.relativeTime}</span>
+                                </div>
+                                <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight">{report.title}</h3>
+                                <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Final Mastery Score: <span className="text-pink-600 font-black">{report.score}%</span></p>
+                            </div>
+                            <Link
+                                href={`/reports/active-report?examId=${report.id}`}
+                                className="h-14 w-14 rounded-3xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-primary group-hover:text-white group-hover:shadow-lg group-hover:shadow-primary/20 group-hover:border-none transition-all duration-300"
+                            >
+                                <ArrowRight size={24} />
+                            </Link>
+                        </div>
+                    ))
+                )}
+            </div>
+        </div>
     );
 }

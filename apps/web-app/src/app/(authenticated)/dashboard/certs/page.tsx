@@ -1,39 +1,33 @@
 'use client';
 
-import { Sidebar } from "@/components/dashboard/Sidebar";
-import { MobileNav } from "@/components/dashboard/MobileNav";
-import { AuthGuard } from "@/components/auth/AuthGuard";
 import { Award, Clock } from "lucide-react";
 
 export default function CertificationsPage() {
     return (
-        <AuthGuard>
-            <div className="flex min-h-[calc(100vh-64px)]">
-                <Sidebar />
-                <main className="flex-1 md:ml-64 p-6 md:p-10 space-y-10">
-                    <div className="flex flex-col gap-4">
-                        <div className="h-14 w-14 rounded-2xl bg-secondary/10 flex items-center justify-center text-secondary">
-                            <Award size={32} />
-                        </div>
-                        <h1 className="text-3xl font-black tracking-tight">Certifications</h1>
-                        <p className="text-muted-foreground max-w-2xl">
-                            Validate your expertise with industry-recognized certifications.
-                            Complete your learning paths to unlock certification exams.
-                        </p>
-                    </div>
-
-                    <div className="p-8 border-2 border-dashed rounded-[2.5rem] bg-muted/5 flex flex-col items-center justify-center text-center gap-4 py-20">
-                        <div className="animate-pulse flex flex-col items-center gap-2">
-                            <Clock size={40} className="text-muted-foreground" />
-                            <h3 className="text-xl font-bold text-muted-foreground">Coming Soon</h3>
-                        </div>
-                        <p className="text-sm text-muted-foreground max-w-xs">
-                            The Certification Engine is being calibrated for maximum precision.
-                        </p>
-                    </div>
-                </main>
-                <MobileNav />
+        <div className="space-y-12">
+            <div className="flex flex-col gap-3">
+                <div className="h-14 w-14 rounded-2xl bg-indigo-100/50 flex items-center justify-center text-indigo-600">
+                    <Award size={32} />
+                </div>
+                <h2 className="text-[10px] font-black uppercase text-indigo-600 tracking-[0.4em]">Credential Ledger</h2>
+                <h1 className="text-4xl font-black tracking-tight text-slate-900 uppercase">Certifications</h1>
+                <p className="text-slate-500 font-bold uppercase text-[11px] tracking-widest mt-1 max-w-2xl leading-relaxed">
+                    Validate your expertise with industry-recognized certifications.
+                    Complete your learning paths to unlock certification exams.
+                </p>
             </div>
-        </AuthGuard>
+
+            <div className="p-12 border-2 border-dashed border-slate-100 rounded-[3rem] bg-slate-50/10 flex flex-col items-center justify-center text-center gap-6 py-24">
+                <div className="flex flex-col items-center gap-3">
+                    <div className="p-4 rounded-3xl bg-white shadow-sm border border-slate-100">
+                        <Clock size={32} className="text-slate-300 animate-pulse" />
+                    </div>
+                    <h3 className="text-xl font-black text-slate-400 uppercase tracking-tight mt-2">Engine Calibrating</h3>
+                </div>
+                <p className="text-[10px] uppercase font-black tracking-[0.2em] text-slate-400 max-w-xs leading-relaxed">
+                    The Certification Engine is being calibrated for maximum precision. Resource unlocking in progress.
+                </p>
+            </div>
+        </div>
     );
 }

@@ -5,6 +5,7 @@ import { LayoutDashboard, LogIn, UserPlus, LogOut, User } from 'lucide-react';
 import { useAuth } from '@/context/auth-context';
 import { useRouter, usePathname } from 'next/navigation';
 import { BellNotification } from '@/components/inbox/BellNotification';
+import { cn } from '@/lib/utils';
 
 export function Header() {
     const auth = useAuth();
@@ -21,18 +22,24 @@ export function Header() {
     };
 
     const isAuthPage = pathname === '/login' || pathname === '/signup';
+    const isDashboard = pathname.startsWith('/dashboard');
 
     return (
         <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-            <div className="container flex h-14 items-center justify-between px-6 mx-auto">
+            <div className={cn(
+                "container flex h-14 items-center justify-between px-6 mx-auto transition-all duration-300",
+                isDashboard && "md:pl-72" // Offset for sidebar + some breathing room
+            )}>
                 <div className="flex items-center gap-6 md:gap-8">
-                    <Link href="/" className="flex items-center space-x-2">
-                        <span className="inline-block font-bold text-xl text-primary font-mono tracking-tighter">
-                            QUIZ<span className="text-foreground">PLATFORM</span>
-                        </span>
-                    </Link>
+                    {!isDashboard && (
+                        <Link href="/" className="flex items-center space-x-2">
+                            <span className="inline-block font-bold text-xl text-primary font-mono tracking-tighter">
+                                QUIZ<span className="text-foreground">PLATFORM</span>
+                            </span>
+                        </Link>
+                    )}
                     <nav className="flex gap-6">
-                        {isAuthenticated && !loading && !isAuthPage && (
+                        {isAuthenticated && !loading && !isAuthPage && !isDashboard && (
                             <Link
                                 href="/dashboard"
                                 className="flex items-center text-sm font-medium text-muted-foreground hover:text-primary transition-colors"
@@ -42,6 +49,11 @@ export function Header() {
                                 <LayoutDashboard size={18} className="mr-2" />
                                 Dashboard
                             </Link>
+                        )}
+                        {isDashboard && (
+                            <h2 className="text-sm font-black uppercase tracking-[0.2em] text-slate-400 hidden md:block">
+                                Infrastructure Portal
+                            </h2>
                         )}
                     </nav>
                 </div>
