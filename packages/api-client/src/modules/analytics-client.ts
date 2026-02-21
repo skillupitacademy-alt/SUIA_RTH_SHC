@@ -15,6 +15,7 @@ export interface TutorInsight {
   confidence: 'low' | 'medium' | 'high';
   sampleSize: number;
   expectedOutcome: string;
+  dataNotes?: { label: string; value: string }[];
 }
 
 export interface ScoreHistoryResponse {

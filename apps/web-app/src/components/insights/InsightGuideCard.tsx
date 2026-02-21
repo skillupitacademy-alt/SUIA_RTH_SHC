@@ -30,6 +30,7 @@ export function InsightGuideCard(props: InsightGuideCardProps) {
     const sampleSize = props.insight?.sampleSize || props.sampleSize;
     const lastUpdated = props.lastUpdated;
     const expectedOutcome = props.insight?.expectedOutcome || props.expectedOutcome;
+    const dataNotes = props.insight?.dataNotes || [];
 
     const confidenceColors = {
         low: "bg-rose-100 text-rose-600 border-rose-200",
@@ -127,6 +128,23 @@ export function InsightGuideCard(props: InsightGuideCardProps) {
                     </div>
                 </div>
             </div>
+
+            {dataNotes.length > 0 && (
+                <div className="border-t border-slate-100 bg-slate-50/70 px-6 py-5">
+                    <div className="flex items-center gap-2 mb-3">
+                        <span className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-500">Data Notes</span>
+                        <span className="text-[10px] font-bold text-slate-400">Transparency for analysts</span>
+                    </div>
+                    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                        {dataNotes.map((note: { label: string; value: string }, idx: number) => (
+                            <div key={idx} className="rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
+                                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mb-1">{note.label}</p>
+                                <p className="text-[11px] font-semibold text-slate-700 leading-snug">{note.value}</p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

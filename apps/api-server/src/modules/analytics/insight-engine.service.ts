@@ -14,6 +14,7 @@ export interface DynamicInsight {
   confidence: 'low' | 'medium' | 'high';
   sampleSize: number;
   expectedOutcome: string;
+  dataNotes: { label: string; value: string }[];
 }
 
 export class InsightEngineService {
@@ -75,6 +76,14 @@ export class InsightEngineService {
     }
     nextSteps.push(latestScore < 50 ? "Review foundational concepts before attempting another exam." : "Challenge yourself with a higher difficulty tier.");
 
+    const dataNotes = [
+      { label: "Scope", value: `${sampleSize} completed exams from ${dates[0] ?? "N/A"} to ${dates[dates.length - 1] ?? "N/A"}` },
+      { label: "Metric", value: "total_score per exam (0–100)" },
+      { label: "Volatility", value: `${Math.round(variance)}% std dev of scores in window` },
+      { label: "Zeros", value: `${zeroCount} zero-score/abandoned runs included` },
+      { label: "Trend", value: scores.length >= 2 ? `${latestScore - scores[scores.length - 2]} pts vs previous exam` : "Not enough data for trend" },
+    ];
+
     return {
       title: `${userName}'s Performance Report`,
       measures: "The reliability of your exam outcomes over time.",
@@ -86,7 +95,8 @@ export class InsightEngineService {
       sampleSize,
       expectedOutcome: variance > 20 
         ? "Expect a 15% reduction in score variance if you finish every session started."
-        : "Expect stabilization at your peak performance level within 5 more sessions."
+        : "Expect stabilization at your peak performance level within 5 more sessions.",
+      dataNotes,
     };
   }
 
@@ -98,7 +108,7 @@ export class InsightEngineService {
     data: { dates: string[]; accuracy: number[] },
     performanceData?: { scores: number[] }
   ): DynamicInsight {
-    const { accuracy } = data;
+    const { accuracy, dates } = data;
     const sampleSize = accuracy.length;
     
     let confidence: 'low' | 'medium' | 'high' = 'low';
@@ -108,6 +118,9 @@ export class InsightEngineService {
     const latestAccuracy = accuracy[accuracy.length - 1] ?? 0;
     const prevAccuracy = accuracy[accuracy.length - 2] ?? 0;
     const averageAccuracy = accuracy.length > 0 ? accuracy.reduce((a, b) => a + b, 0) / accuracy.length : 0;
+    const variance = accuracy.length > 1
+      ? Math.sqrt(accuracy.reduce((sq, n) => sq + Math.pow(n - averageAccuracy, 2), 0) / (accuracy.length - 1))
+      : 0;
 
     const signals: InsightSignal[] = [];
     const nextSteps: string[] = [];
@@ -144,6 +157,14 @@ export class InsightEngineService {
     }
     nextSteps.push("Review questions where you spent more than 45 seconds but still got it wrong.");
 
+    const dataNotes = [
+      { label: "Scope", value: `${sampleSize} day(s) from ${dates[0] ?? "N/A"} to ${dates[dates.length - 1] ?? "N/A"}` },
+      { label: "Metric", value: "Daily average of results_by_dimension.accuracy (0–100)" },
+      { label: "Volatility", value: `${Math.round(variance)}% std dev of daily accuracy` },
+      { label: "Trend", value: sampleSize >= 2 ? `${latestAccuracy - prevAccuracy} pts vs prior day` : "Not enough data for trend" },
+      { label: "Data quality", value: "Excludes rows with null accuracy; groups by exam day" },
+    ];
+
     return {
       title: `${userName}'s Strategic Mastery`,
       measures: "Your internal knowledge density across all attempted dimensions.",
@@ -155,7 +176,8 @@ export class InsightEngineService {
       sampleSize,
       expectedOutcome: latestAccuracy > averageAccuracy
         ? "Expect a new 'Knowledge Baseline' to be established if you maintain this accuracy for 2 more days."
-        : "Expect foundational stabilization if questions from today's session are re-reviewed immediately."
+        : "Expect foundational stabilization if questions from today's session are re-reviewed immediately.",
+      dataNotes,
     };
   }
 }
