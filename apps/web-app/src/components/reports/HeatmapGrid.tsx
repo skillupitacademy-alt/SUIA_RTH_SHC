@@ -7,6 +7,7 @@ export interface HeatmapCell {
     subtopic: string;
     difficulty: string;
     accuracy: number;
+    attempts: number;
 }
 
 export interface HeatmapGridProps {
@@ -31,13 +32,13 @@ export const HeatmapGrid = React.memo(({ data }: HeatmapGridProps) => {
                 <p className="text-2xl font-black text-white tracking-tighter uppercase">Neural Accuracy Heatmap</p>
             </div>
 
-            <div className="flex flex-col gap-5">
+            <div className="flex flex-col gap-5 overflow-x-hidden">
                 {/* Header Row */}
-                <div className="flex gap-6">
-                    <div className="w-64 flex-shrink-0" /> {/* Corner spacer expanded */}
+                <div className="flex gap-4">
+                    <div className="w-48 flex-shrink-0" /> {/* Responsive Width Hook */}
                     {difficulties.map(diff => (
-                        <div key={diff} className="flex-1 text-center py-4 bg-slate-900/40 rounded-2xl border border-white/5 backdrop-blur-sm">
-                            <span className="text-[12px] font-black text-slate-300 uppercase tracking-[0.2em]">{diff} Level</span>
+                        <div key={diff} className="flex-1 min-w-[120px] max-w-[200px] text-center py-4 bg-slate-900/40 rounded-2xl border border-white/5 backdrop-blur-sm">
+                            <span className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">{diff}</span>
                         </div>
                     ))}
                 </div>
@@ -47,27 +48,33 @@ export const HeatmapGrid = React.memo(({ data }: HeatmapGridProps) => {
                     {subtopics.map((sub, idx) => (
                         <motion.div
                             key={sub}
-                            className="flex gap-6"
+                            className="flex gap-4"
                             initial={{ opacity: 0, x: -10 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ delay: idx * 0.05 }}
                         >
-                            <div className="w-64 flex-shrink-0 flex items-start pt-4 pr-10 border-r border-slate-800/60">
-                                <span className="text-[13px] font-bold text-slate-200 uppercase tracking-widest leading-relaxed text-left">
+                            <div className="w-48 flex-shrink-0 flex items-start pt-4 border-r border-slate-800/60 pr-6">
+                                <span className="text-[12px] font-bold text-slate-300 uppercase tracking-widest leading-tight text-left">
                                     {sub}
                                 </span>
                             </div>
                             {difficulties.map(diff => {
                                 const cell = data.find(d => d.subtopic === sub && d.difficulty === diff);
+                                const hasData = cell && cell.attempts > 0;
                                 const accuracy = cell ? cell.accuracy : 0;
+
                                 return (
                                     <div
                                         key={diff}
-                                        className={`flex-1 h-16 flex items-center justify-center rounded-2xl border backdrop-blur-sm transition-all duration-300 hover:brightness-125 group relative ${cell ? getCellColor(accuracy) : 'bg-slate-900/10 text-slate-800 border-white/5 opacity-20'}`}
+                                        className={`flex-1 min-w-[120px] max-w-[200px] h-20 flex flex-col items-center justify-center rounded-2xl border transition-all duration-300 hover:brightness-125 group relative ${hasData ? getCellColor(accuracy) : 'bg-slate-900/10 text-slate-700 border-white/5 opacity-30 shadow-none'}`}
                                     >
-                                        <span className="text-[16px] font-black tracking-tight z-10 transition-transform group-hover:scale-110">{cell ? `${accuracy}%` : '--'}</span>
-                                        {cell && (
-                                            <div className="absolute inset-x-5 bottom-3 h-0.5 bg-current opacity-25 rounded-full" />
+                                        <span className="text-[18px] font-black tracking-tight z-10">
+                                            {hasData ? `${accuracy}%` : '---'}
+                                        </span>
+                                        {hasData && (
+                                            <span className="text-[10px] font-black uppercase tracking-widest opacity-60 mt-1">
+                                                {cell.attempts} {cell.attempts === 1 ? 'Attempt' : 'Attempts'}
+                                            </span>
                                         )}
                                     </div>
                                 );
@@ -77,15 +84,16 @@ export const HeatmapGrid = React.memo(({ data }: HeatmapGridProps) => {
                 </div>
             </div>
 
-            <div className="mt-6 flex items-center justify-center gap-12 border-t border-slate-800 pt-10">
+            {/* Legend with matching logic */}
+            <div className="mt-6 flex items-center justify-center gap-10 border-t border-slate-800 pt-10">
                 {[
                     { label: 'Mastery', color: 'bg-emerald-500' },
                     { label: 'Advancing', color: 'bg-indigo-500' },
                     { label: 'Growth', color: 'bg-amber-500' },
                     { label: 'Critical', color: 'bg-rose-500' }
                 ].map(leg => (
-                    <div key={leg.label} className="flex items-center gap-3 text-[12px] font-black text-slate-400 uppercase tracking-[0.2em]">
-                        <div className={`h-2.5 w-2.5 rounded-full shadow-[0_0_10px_currentColor] opacity-60 ${leg.color}`} />
+                    <div key={leg.label} className="flex items-center gap-3 text-[11px] font-black text-slate-500 uppercase tracking-[0.2em]">
+                        <div className={`h-2 w-2 rounded-full shadow-[0_0_8px_currentColor] opacity-50 ${leg.color}`} />
                         {leg.label}
                     </div>
                 ))}

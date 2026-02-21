@@ -346,7 +346,8 @@ export class ReportEngine {
           const matching = exam.examQuestions.filter(q => q.question.difficulty === level);
           return {
               level,
-              accuracy: matching.length > 0 ? Math.round((matching.filter(q => q.isCorrect === true).length / matching.length) * 100) : 0
+              accuracy: matching.length > 0 ? Math.round((matching.filter(q => q.isCorrect === true).length / matching.length) * 100) : 0,
+              attempts: matching.length
           };
       }),
       heatmap: heatmapList,

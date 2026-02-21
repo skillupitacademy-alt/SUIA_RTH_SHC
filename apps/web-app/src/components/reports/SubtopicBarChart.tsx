@@ -2,9 +2,10 @@
 
 import React, { useMemo } from 'react';
 import { motion } from "framer-motion";
+import { cn } from "@/lib/utils";
 
 export interface SubtopicBarChartProps {
-    data: { name: string; accuracy: number }[];
+    data: { name: string; accuracy: number; attempts: number }[];
     weakest?: string;
 }
 
@@ -23,7 +24,7 @@ export const SubtopicBarChart = React.memo(({ data, weakest }: SubtopicBarChartP
                 {weakest && (
                     <div className="px-5 py-2 rounded-full bg-rose-500/10 border border-rose-500/20 flex items-center gap-3">
                         <div className="h-2 w-2 rounded-full bg-rose-500 animate-pulse" />
-                        <span className="text-[11px] font-black text-rose-400 uppercase tracking-widest">Priority Target: {weakest}</span>
+                        <span className="text-[11px] font-black text-rose-400 uppercase tracking-widest leading-none">Priority Target: {weakest}</span>
                     </div>
                 )}
             </div>
@@ -32,9 +33,14 @@ export const SubtopicBarChart = React.memo(({ data, weakest }: SubtopicBarChartP
                 {sortedData.map((item, idx) => (
                     <div key={idx} className="group">
                         <div className="flex items-baseline justify-between mb-4 px-0.5">
-                            <span className="text-[14px] font-bold text-slate-300 uppercase tracking-widest group-hover:text-white transition-colors">
-                                {item.name}
-                            </span>
+                            <div className="flex items-baseline gap-3">
+                                <span className="text-[14px] font-bold text-slate-300 uppercase tracking-widest group-hover:text-white transition-colors">
+                                    {item.name}
+                                </span>
+                                <span className="text-[11px] font-black text-slate-600 uppercase tracking-tighter">
+                                    {item.attempts} {item.attempts === 1 ? 'Sample' : 'Samples'}
+                                </span>
+                            </div>
                             <span className={cn(
                                 "text-[16px] font-black tracking-tight",
                                 item.name === weakest ? "text-rose-400" : "text-indigo-400"
@@ -62,9 +68,5 @@ export const SubtopicBarChart = React.memo(({ data, weakest }: SubtopicBarChartP
         </div>
     );
 });
-
-function cn(...classes: Array<string | false | null | undefined>) {
-    return classes.filter(Boolean).join(' ');
-}
 
 SubtopicBarChart.displayName = "SubtopicBarChart";

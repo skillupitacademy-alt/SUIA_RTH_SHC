@@ -32,10 +32,10 @@ export const RadialKPI = React.memo(({ data }: RadialKPIProps) => {
     };
 
     const rings = [
-        { key: "score", value: data.score, color: "url(#cyanLinear)" },
-        { key: "mastery", value: data.mastery, color: "url(#emeraldLinear)" },
-        { key: "rank", value: data.percentile, color: "url(#amberLinear)" },
-        { key: "time", value: data.timeEfficiency === 'FAST' ? 95 : (data.timeEfficiency === 'OPTIMAL' ? 75 : 45), color: "url(#violetLinear)" },
+        { key: "score", value: data.score, fill: "url(#cyanLinear)" },
+        { key: "mastery", value: data.mastery, fill: "url(#emeraldLinear)" },
+        { key: "rank", value: data.percentile, fill: "url(#amberLinear)" },
+        { key: "time", value: data.timeEfficiency === 'FAST' ? 95 : (data.timeEfficiency === 'OPTIMAL' ? 75 : 45), fill: "url(#violetLinear)" },
     ];
 
     return (
@@ -53,10 +53,10 @@ export const RadialKPI = React.memo(({ data }: RadialKPIProps) => {
             </div>
 
             <div className="relative flex-grow flex flex-col items-center justify-center">
-                {/* Stats Grid Overlay - Replacing Colliding Absolute Stacks */}
-                <div className="absolute inset-0 z-10 pointer-events-none grid grid-cols-2 gap-4 p-4">
+                {/* Stats Grid Overlay - Fixed Quadrants */}
+                <div className="absolute inset-0 z-10 pointer-events-none grid grid-cols-2 grid-rows-2 gap-4 p-6">
                     {/* Top Left: Score */}
-                    <div className="flex flex-col items-start justify-start">
+                    <div className="flex flex-col items-start justify-start p-2">
                         <div className="flex items-center gap-2 mb-1">
                             <Target size={14} className="text-cyan-400" />
                             <span className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Score</span>
@@ -65,7 +65,7 @@ export const RadialKPI = React.memo(({ data }: RadialKPIProps) => {
                     </div>
 
                     {/* Top Right: Mastery */}
-                    <div className="flex flex-col items-end justify-start">
+                    <div className="flex flex-col items-end justify-start p-2">
                         <div className="flex items-center gap-2 mb-1">
                             <span className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Synthesis</span>
                             <Activity size={14} className="text-emerald-400" />
@@ -74,7 +74,7 @@ export const RadialKPI = React.memo(({ data }: RadialKPIProps) => {
                     </div>
 
                     {/* Bottom Left: Rank */}
-                    <div className="flex flex-col items-start justify-end">
+                    <div className="flex flex-col items-start justify-end p-2">
                         <div className="flex items-center gap-2 mb-1">
                             <Trophy size={14} className="text-amber-400" />
                             <span className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Global Rank</span>
@@ -83,7 +83,7 @@ export const RadialKPI = React.memo(({ data }: RadialKPIProps) => {
                     </div>
 
                     {/* Bottom Right: Time */}
-                    <div className="flex flex-col items-end justify-end">
+                    <div className="flex flex-col items-end justify-end p-2">
                         <div className="flex items-center gap-2 mb-1">
                             <span className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Efficiency</span>
                             <Timer size={14} className="text-violet-400" />
@@ -98,7 +98,7 @@ export const RadialKPI = React.memo(({ data }: RadialKPIProps) => {
                         <span className="text-[13px] font-black text-slate-500 uppercase tracking-[0.4em] mb-2">Readiness</span>
                         <div className="relative">
                             <div className="absolute inset-0 bg-white/5 blur-3xl rounded-full" />
-                            <span className="text-7xl font-black text-white tracking-tighter drop-shadow-[0_0_25px_rgba(255,255,255,0.2)]">
+                            <span className="text-7xl font-black text-white tracking-tighter drop-shadow-[0_0_20px_rgba(255,255,255,0.15)]">
                                 {data.readiness}%
                             </span>
                         </div>
@@ -109,14 +109,14 @@ export const RadialKPI = React.memo(({ data }: RadialKPIProps) => {
                     </div>
                 </div>
 
-                {/* Main Radial Chart - Scaled down for white space */}
-                <div className="w-[440px] h-[440px] flex items-center justify-center relative">
+                {/* Main Radial Chart - Scaled down slightly more for collision safety */}
+                <div className="w-[410px] h-[410px] flex items-center justify-center relative">
                     <ResponsiveContainer width="100%" height="100%">
                         <RadialBarChart
                             cx="50%"
                             cy="50%"
-                            innerRadius="40%"
-                            outerRadius="100%"
+                            innerRadius="35%"
+                            outerRadius="85%"
                             startAngle={90}
                             endAngle={450}
                             barSize={12}
@@ -140,7 +140,7 @@ export const RadialKPI = React.memo(({ data }: RadialKPIProps) => {
                                     <stop offset="100%" stopColor="#a78bfa" />
                                 </linearGradient>
                                 <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
-                                    <feGaussianBlur stdDeviation="5" result="blur" />
+                                    <feGaussianBlur stdDeviation="3" result="blur" />
                                     <feComposite in="SourceGraphic" in2="blur" operator="over" />
                                 </filter>
                             </defs>
