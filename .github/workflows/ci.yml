@@ -13,16 +13,29 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Read pnpm version from package.json
+        id: pnpm_version
+        run: echo "version=$(node -p \"require('./package.json').packageManager.split('@')[1]\")" >> $GITHUB_OUTPUT
+
       - name: Setup PNPM
         uses: pnpm/action-setup@v4
         with:
-          version: 9.15.4
+          version: ${{ steps.pnpm_version.outputs.version }}
 
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: "pnpm"
+
+      - name: Guard pnpm version matches packageManager
+        run: |
+          REQUIRED=${{ steps.pnpm_version.outputs.version }}
+          ACTUAL=$(pnpm -v)
+          if [ "$REQUIRED" != "$ACTUAL" ]; then
+            echo "pnpm version mismatch: required $REQUIRED, got $ACTUAL"
+            exit 1
+          fi
 
       - name: Install
         run: pnpm install --frozen-lockfile
@@ -46,16 +59,29 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Read pnpm version from package.json
+        id: pnpm_version
+        run: echo "version=$(node -p \"require('./package.json').packageManager.split('@')[1]\")" >> $GITHUB_OUTPUT
+
       - name: Setup PNPM
         uses: pnpm/action-setup@v4
         with:
-          version: 9.15.4
+          version: ${{ steps.pnpm_version.outputs.version }}
 
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: "pnpm"
+
+      - name: Guard pnpm version matches packageManager
+        run: |
+          REQUIRED=${{ steps.pnpm_version.outputs.version }}
+          ACTUAL=$(pnpm -v)
+          if [ "$REQUIRED" != "$ACTUAL" ]; then
+            echo "pnpm version mismatch: required $REQUIRED, got $ACTUAL"
+            exit 1
+          fi
 
       - name: Install
         run: pnpm install --frozen-lockfile

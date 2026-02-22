@@ -13,8 +13,7 @@
         "vitest.setup.ts"
     ],
     "parserOptions": {
-        "project": "./tsconfig.json",
-        "tsconfigRootDir": "D:/onlinewebsites/quiz-platform/apps/web-app"
+        "project": "./tsconfig.json"
     },
     "overrides": [
         {
