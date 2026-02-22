@@ -30,3 +30,7 @@ Use this before pushing or triggering CI to keep the workflow green.
    - `git status` is clean; no untracked or unstaged changes.
 
 If you bump pnpm or Node later, update `package.json` (and the workflow if Node changes). Otherwise, the pipeline should stay green.
+
+## Optional: Pause Vercel deploys while CI stabilizes
+- In Vercel project settings → Deployments → Ignored Build Step, choose “Don’t build anything” (or a custom step that exits 0) to skip deploys on push.
+- Revert to “Automatic” when ready to resume deployments.
