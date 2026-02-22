@@ -51,7 +51,7 @@ export class AuthClient {
   }
 
   async resetPassword(token: string, newPassword: string) {
-    return this.client.post('/auth/reset-password', { token, newPassword });
+    return this.client.post('/auth/reset-password', { token, password: newPassword });
   }
 
   async heartbeat() {
