@@ -17,6 +17,8 @@ export const SkillDonutChart = React.memo(({ data }: SkillDonutChartProps) => {
     const averageAccuracy = data.length > 0
         ? Math.round(data.reduce((acc, curr) => acc + curr.accuracy, 0) / data.length)
         : 0;
+    const centerDigits = `${averageAccuracy}`.length;
+    const centerFontClass = centerDigits >= 3 ? "text-5xl" : "text-6xl";
 
     return (
         <div className="w-full h-full flex flex-col p-8 bg-[#0d111a] rounded-[2.5rem] border border-white/5 shadow-2xl relative overflow-hidden group">
@@ -73,7 +75,7 @@ export const SkillDonutChart = React.memo(({ data }: SkillDonutChartProps) => {
 
                 <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-10">
                     <div className="flex flex-col items-center">
-                        <span className="text-6xl font-black text-white tracking-tighter drop-shadow-[0_0_15px_rgba(255,255,255,0.1)]">
+                        <span className={`${centerFontClass} font-black text-white tracking-tighter drop-shadow-[0_0_15px_rgba(255,255,255,0.1)] leading-none`}>
                             {averageAccuracy}%
                         </span>
                         <span className="text-[13px] font-bold text-slate-500 uppercase tracking-widest mt-1">TOTAL</span>
