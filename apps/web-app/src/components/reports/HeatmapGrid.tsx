@@ -76,8 +76,8 @@ export const HeatmapGrid = React.memo(({ data }: HeatmapGridProps) => {
                                             {hasSufficientData ? `${accuracy}%` : '---'}
                                         </span>
                                         {cell && (
-                                            <span className="text-[10px] font-black uppercase tracking-widest opacity-60 mt-1">
-                                                {cell.attempts} {cell.attempts === 1 ? 'Attempt' : 'Attempts'}
+                                            <span className="text-[10px] font-black opacity-60 mt-1 whitespace-nowrap">
+                                                {cell.showNoData ? '' : `${Math.round((accuracy / 100) * (cell.attempts ?? 0))} / ${cell.attempts ?? 0} correct`}
                                             </span>
                                         )}
                                     </div>

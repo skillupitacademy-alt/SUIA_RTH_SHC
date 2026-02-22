@@ -16,17 +16,28 @@ export interface TimeSpentDonutProps {
 export const TimeSpentDonut = React.memo(({ data }: TimeSpentDonutProps) => {
     // Breakdown logic: preferring server-side binned data for precision
     const buckets = data.timeBuckets || {
-        stable: data.questions.filter(q => q.isCorrect && q.timeSpent < 45).length,
-        logic: data.questions.filter(q => q.isCorrect && q.timeSpent >= 45).length,
-        neural: data.questions.filter(q => !q.isCorrect).length
+        stable: data.questions.filter(q => q.isCorrect && q.timeSpent < 45).reduce((s, q) => s + q.timeSpent, 0),
+        logic: data.questions.filter(q => q.isCorrect && q.timeSpent >= 45).reduce((s, q) => s + q.timeSpent, 0),
+        neural: data.questions.filter(q => !q.isCorrect).reduce((s, q) => s + q.timeSpent, 0)
     };
 
-    const breakdown = [
+    let breakdown = [
         { name: "Stable Processing", value: buckets.stable, color: '#3b82f6', label: "Study" },
         { name: "Logic Synthesis", value: buckets.logic, color: '#10b981', label: "Practice" },
         { name: "Neural Friction", value: buckets.neural, color: '#a855f7', label: "Review" }
     ].filter(b => b.value > 0);
 
+    // Fallback: if no bucket has value but total time exists, show a neutral slice
+    if (breakdown.length === 0 && data.totalSeconds > 0) {
+        breakdown = [{ name: "Total", value: data.totalSeconds, color: '#64748b', label: "Total Time" }];
+    }
+
+    // If still empty (no time at all), show an empty donut with label
+    let showEmptyState = false;
+    if (breakdown.length === 0) {
+        showEmptyState = true;
+        breakdown = [{ name: "No data", value: 1, color: '#1f2937', label: "No time recorded" }];
+    }
 
     const formatTotalTime = (seconds: number) => {
         const m = Math.floor(seconds / 60);
@@ -80,7 +91,7 @@ export const TimeSpentDonut = React.memo(({ data }: TimeSpentDonutProps) => {
                                     return (
                                         <div className="bg-[#0f172a]/95 backdrop-blur-xl border border-white/10 p-4 rounded-2xl shadow-2xl">
                                             <p className="text-[12px] font-black text-indigo-400 uppercase tracking-widest mb-1">{payload[0].payload.name}</p>
-                                            <p className="text-2xl font-black text-white">{payload[0].value} Questions</p>
+                                            <p className="text-2xl font-black text-white">{formatTotalTime(Number(payload[0].value))}</p>
                                         </div>
                                     );
                                 }
