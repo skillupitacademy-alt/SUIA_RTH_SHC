@@ -33,9 +33,7 @@ export const TimeSpentDonut = React.memo(({ data }: TimeSpentDonutProps) => {
     }
 
     // If still empty (no time at all), show an empty donut with label
-    let showEmptyState = false;
     if (breakdown.length === 0) {
-        showEmptyState = true;
         breakdown = [{ name: "No data", value: 1, color: '#1f2937', label: "No time recorded" }];
     }
 
