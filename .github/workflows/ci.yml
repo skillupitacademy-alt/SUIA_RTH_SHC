@@ -101,3 +101,25 @@ jobs:
 
       - name: E2E Smoke (placeholder)
         run: pnpm e2e:smoke || true
+
+  deploy:
+    needs: [quality-gates, e2e-smoke]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    env:
+      HOOK_WEB: ${{ secrets.VERCEL_DEPLOY_HOOK_WEB_APP }}
+      HOOK_ADMIN: ${{ secrets.VERCEL_DEPLOY_HOOK_ADMIN_APP }}
+      HOOK_API: ${{ secrets.VERCEL_DEPLOY_HOOK_API_SERVER }}
+    steps:
+      - name: Trigger Vercel deploy hooks (web, admin, api)
+        run: |
+          for name in WEB ADMIN API; do
+            url_var="HOOK_${name}"
+            url="${!url_var}"
+            if [ -z "$url" ]; then
+              echo "Missing deploy hook for $name (expected env $url_var)"
+              exit 1
+            fi
+            echo "Triggering $name deploy..."
+            curl -X POST "$url"
+          done
