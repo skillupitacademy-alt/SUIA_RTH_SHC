@@ -47,7 +47,7 @@ export class AuthClient {
   }
 
   async validateResetToken(token: string) {
-    return this.client.get<{ valid: boolean }>(`/auth/reset-password?token=${token}`);
+    return this.client.get<{ valid: boolean }>(`/auth/reset-password?_token=${token}`);
   }
 
   async resetPassword(token: string, newPassword: string) {

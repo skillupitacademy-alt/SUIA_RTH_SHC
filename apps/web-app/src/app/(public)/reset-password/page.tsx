@@ -7,7 +7,7 @@ import { Suspense } from "react";
 
 function ResetPasswordContent() {
     const searchParams = useSearchParams();
-    const token = searchParams.get('token') || '';
+    const token = searchParams.get('_token') || '';
 
     return (
         <div className="flex min-h-[calc(100vh-64px)] overflow-hidden">

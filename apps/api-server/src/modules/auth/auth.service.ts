@@ -391,7 +391,7 @@ export class AuthService {
     const resetToken = await db.query.passwordResetTokens.findFirst({
       where: and(
         eq(passwordResetTokens.token, _token),
-        gt(passwordResetTokens.expiresAt, sql`now()`)
+        gt(passwordResetTokens.expiresAt, new Date())
       )
     });
 
