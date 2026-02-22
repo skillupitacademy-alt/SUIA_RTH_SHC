@@ -42,6 +42,9 @@ type CoreRow = {
   stable_count: number | null;
   logic_count: number | null;
   error_count: number | null;
+  stable_time_sec: number | null;
+  logic_time_sec: number | null;
+  neural_time_sec: number | null;
   expert_drop_off: boolean | null;
   subtopics: { topicId: string; name: string; accuracy: number; attempts: number }[] | null;
   skills: { name: string; accuracy: number; attempts: number }[] | null;
@@ -411,6 +414,9 @@ export class ReportEngine {
             a.stable_count,
             a.logic_count,
             a.error_count,
+            a.stable_time_sec,
+            a.logic_time_sec,
+            a.neural_time_sec,
             COALESCE(
             (SELECT AVG(accuracy) FROM dims WHERE level = 'intermediate') - 
             (SELECT AVG(accuracy) FROM dims WHERE level = 'expert'), 0
@@ -481,9 +487,9 @@ export class ReportEngine {
       difficulty: (core.difficulty ?? []).map(d => ({ ...d, showNoData: d.attempts < 1 })),
       heatmap: (core.heatmap ?? []).map(h => ({ ...h, showNoData: h.attempts < 1 })),
       timeBuckets: {
-        stable: core.stable_count ?? 0,
-        logic: core.logic_count ?? 0,
-        neural: core.error_count ?? 0
+        stable: core.stable_time_sec ?? 0,
+        logic: core.logic_time_sec ?? 0,
+        neural: core.neural_time_sec ?? 0
       },
       ai: {
         status: (core.score === null) ? 'DATA_INSUFFICIENT' : ((core.score ?? 0) >= 80 ? 'READY' : ((core.score ?? 0) >= 60 ? 'BORDERLINE' : 'NOT_READY')),

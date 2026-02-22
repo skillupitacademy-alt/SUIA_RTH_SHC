@@ -75,7 +75,10 @@ async function main() {
           COUNT(*) FILTER (WHERE bm.time_sec <= m.m_time AND bm.outcome = 1) AS fast_correct,
           COUNT(*) FILTER (WHERE bm.time_sec < 35 AND bm.outcome = 1) as stable_count,
           COUNT(*) FILTER (WHERE bm.time_sec >= 35 AND bm.outcome = 1) as logic_count,
-          COUNT(*) FILTER (WHERE bm.outcome = 0) as error_count
+          COUNT(*) FILTER (WHERE bm.outcome = 0) as error_count,
+          SUM(bm.time_sec) FILTER (WHERE bm.time_sec < 35 AND bm.outcome = 1) as stable_time_sec,
+          SUM(bm.time_sec) FILTER (WHERE bm.time_sec >= 35 AND bm.outcome = 1) as logic_time_sec,
+          SUM(bm.time_sec) FILTER (WHERE bm.outcome = 0) as neural_time_sec
         FROM base_metrics bm
         JOIN medians m ON m.exam_id = bm.exam_id
         GROUP BY bm.exam_id;
