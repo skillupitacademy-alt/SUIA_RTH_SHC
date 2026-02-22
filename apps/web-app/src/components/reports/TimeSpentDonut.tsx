@@ -57,7 +57,7 @@ export const TimeSpentDonut = React.memo(({ data }: TimeSpentDonutProps) => {
                 <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                         <defs>
-                            <filter id="timeGlow" x="-50%" y="-50%" width="200%" height="200%">
+                            <filter id="timeGlow_TSD" x="-50%" y="-50%" width="200%" height="200%">
                                 <feGaussianBlur stdDeviation="6" result="blur" />
                                 <feComposite in="SourceGraphic" in2="blur" operator="over" />
                             </filter>
@@ -71,14 +71,15 @@ export const TimeSpentDonut = React.memo(({ data }: TimeSpentDonutProps) => {
                             paddingAngle={4}
                             dataKey="value"
                             stroke="none"
-                            isAnimationActive={false}
+                            isAnimationActive={true}
+                            animationDuration={600}
                             cornerRadius={4}
                         >
                             {breakdown.map((entry, index) => (
                                 <Cell
                                     key={`cell-${index}`}
                                     fill={entry.color}
-                                    filter="url(#timeGlow)"
+                                    filter="url(#timeGlow_TSD)"
                                     className="outline-none"
                                 />
                             ))}

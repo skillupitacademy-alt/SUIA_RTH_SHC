@@ -31,7 +31,7 @@ export const SkillDonutChart = React.memo(({ data }: SkillDonutChartProps) => {
                 <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                         <defs>
-                            <filter id="segmentGlow" x="-50%" y="-50%" width="200%" height="200%">
+                            <filter id="segmentGlow_SDC" x="-50%" y="-50%" width="200%" height="200%">
                                 <feGaussianBlur stdDeviation="8" result="blur" />
                                 <feComposite in="SourceGraphic" in2="blur" operator="over" />
                             </filter>
@@ -52,7 +52,7 @@ export const SkillDonutChart = React.memo(({ data }: SkillDonutChartProps) => {
                                 <Cell
                                     key={`cell-${index}`}
                                     fill={COLORS[index % COLORS.length]}
-                                    filter="url(#segmentGlow)"
+                                    filter="url(#segmentGlow_SDC)"
                                     className="hover:opacity-80 transition-opacity outline-none"
                                 />
                             ))}

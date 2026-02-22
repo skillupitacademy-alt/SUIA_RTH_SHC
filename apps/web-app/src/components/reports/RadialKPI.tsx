@@ -149,7 +149,7 @@ export const RadialKPI = React.memo(({ data }: RadialKPIProps) => {
                                     <stop offset="0%" stopColor="#8b5cf6" />
                                     <stop offset="100%" stopColor="#a78bfa" />
                                 </linearGradient>
-                                <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+                                <filter id="glow_RKPI" x="-50%" y="-50%" width="200%" height="200%">
                                     <feGaussianBlur stdDeviation="3.5" result="blur" />
                                     <feComposite in="SourceGraphic" in2="blur" operator="over" />
                                 </filter>
@@ -164,7 +164,7 @@ export const RadialKPI = React.memo(({ data }: RadialKPIProps) => {
                                 fill="url(#violetLinear)"
                                 cornerRadius={20}
                                 background={{ fill: 'rgba(255,255,255,0.02)' }}
-                                filter="url(#glow)"
+                                filter="url(#glow_RKPI)"
                             />
 
                             {/* Middle Ring 1: Rank */}
@@ -175,7 +175,7 @@ export const RadialKPI = React.memo(({ data }: RadialKPIProps) => {
                                 fill="url(#amberLinear)"
                                 cornerRadius={20}
                                 background={{ fill: 'rgba(255,255,255,0.02)' }}
-                                filter="url(#glow)"
+                                filter="url(#glow_RKPI)"
                             />
 
                             {/* Middle Ring 2: Mastery */}
@@ -186,7 +186,7 @@ export const RadialKPI = React.memo(({ data }: RadialKPIProps) => {
                                 fill="url(#emeraldLinear)"
                                 cornerRadius={20}
                                 background={{ fill: 'rgba(255,255,255,0.02)' }}
-                                filter="url(#glow)"
+                                filter="url(#glow_RKPI)"
                             />
 
                             {/* Outer Ring: Score */}
@@ -197,7 +197,7 @@ export const RadialKPI = React.memo(({ data }: RadialKPIProps) => {
                                 fill="url(#cyanLinear)"
                                 cornerRadius={20}
                                 background={{ fill: 'rgba(255,255,255,0.02)' }}
-                                filter="url(#glow)"
+                                filter="url(#glow_RKPI)"
                             />
                         </RadialBarChart>
                     </ResponsiveContainer>
