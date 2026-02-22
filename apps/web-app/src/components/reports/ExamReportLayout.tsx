@@ -11,8 +11,7 @@ import {
     CheckCircle2,
     XCircle,
     AlertTriangle,
-    Zap,
-    Activity
+    Zap
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -168,9 +167,9 @@ const HeuristicPanel = ({
                         <div className="p-2.5 bg-indigo-500/10 rounded-2xl border border-indigo-500/20 shadow-inner group-hover:border-indigo-500/40 transition-all">
                             <BrainCircuit className="h-6 w-6 text-indigo-400" />
                         </div>
-                        <h3 className="text-xl font-black text-white uppercase tracking-tighter">Neural Synthesis</h3>
+                        <h3 className="text-xl font-black text-white uppercase tracking-tighter">Tactical Prescription</h3>
                     </div>
-                    <div className="px-4 py-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-full shadow-lg">
+                    <div className="px-4 py-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-lg">
                         <span className="text-[12px] font-black text-emerald-400 uppercase tracking-widest leading-none flex items-center gap-2">
                             <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
                             AI STATUS: OPTIMIZED
@@ -218,12 +217,11 @@ const HeuristicPanel = ({
                 </div>
 
                 <div className="mt-10 pt-8 border-t border-white/5">
-                    <div className="flex items-center justify-between text-[11px] font-black text-slate-500 uppercase tracking-[0.3em]">
+                    <div className="flex items-center justify-between text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">
                         <div className="flex items-center gap-2">
-                            <Activity size={12} className="text-indigo-400" />
-                            <span>Diagnostic Logs v9.4</span>
+                            <span>DIAGNOSTIC LOGS V9.4</span>
                         </div>
-                        <span className="italic font-bold">SYS_{Math.random().toString(36).substring(7).toUpperCase()}</span>
+                        <span className="text-[10px] font-black text-slate-700">SYS_5DNJLE</span>
                     </div>
                 </div>
             </div>
