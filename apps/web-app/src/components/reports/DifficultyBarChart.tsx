@@ -44,7 +44,7 @@ export const DifficultyBarChart = React.memo(({ data, expertDropOff }: Difficult
     };
 
     return (
-        <div className="w-full h-full flex flex-col space-y-12">
+        <div className="w-full h-full flex flex-col space-y-12 pb-16 relative">
             <div>
                 <h3 className="text-[12px] font-black text-slate-500 uppercase tracking-[0.3em] mb-3">Complexity Threshold</h3>
                 <p className="text-2xl font-black text-white uppercase tracking-tighter">Difficulty Matrix Diagnostic</p>
@@ -123,6 +123,7 @@ export const DifficultyBarChart = React.memo(({ data, expertDropOff }: Difficult
 
             <MethodologyDisclaimer
                 text="QUANTUM WEIGHTING: THRESHOLD ANALYSIS (EXPERT [2.0], INTERMEDIATE [1.5], SIMPLE [1.0]) IDENTIFIES SPECIFIC CONCEPTUAL RIGIDITY COLLAPSES."
+                className="absolute bottom-0 left-0 max-w-[80%]"
             />
         </div>
     );

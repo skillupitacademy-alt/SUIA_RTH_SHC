@@ -29,7 +29,7 @@ export const HeatmapGrid = React.memo(({ data }: HeatmapGridProps) => {
     };
 
     return (
-        <div className="w-full flex flex-col space-y-10">
+        <div className="w-full flex flex-col space-y-10 pb-16 relative">
             <div className="border-b border-slate-800 pb-6 mb-2">
                 <h3 className="text-[12px] font-black text-indigo-400 uppercase tracking-[0.3em] mb-2">Matrix Analysis</h3>
                 <p className="text-2xl font-black text-white tracking-tighter uppercase">Neural Accuracy Heatmap</p>
@@ -105,6 +105,7 @@ export const HeatmapGrid = React.memo(({ data }: HeatmapGridProps) => {
 
             <MethodologyDisclaimer
                 text="NEURAL PROJECTION: MAPS CROSS-FUNCTIONAL PERFORMANCE DENSITY. MATRIX SATURATION CORRELATES WITH THE CONFIDENCE DEPTH OF UNDERLYING ACCURACY DATA."
+                className="absolute bottom-0 left-0 max-w-[80%]"
             />
         </div>
     );

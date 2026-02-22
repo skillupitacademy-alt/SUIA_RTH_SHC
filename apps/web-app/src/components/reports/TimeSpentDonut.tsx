@@ -27,6 +27,7 @@ export const TimeSpentDonut = React.memo(({ data }: TimeSpentDonutProps) => {
         { name: "Neural Friction", value: buckets.neural, color: '#a855f7', label: "Review" }
     ].filter(b => b.value > 0);
 
+
     const formatTotalTime = (seconds: number) => {
         const m = Math.floor(seconds / 60);
         const s = seconds % 60;
@@ -94,7 +95,10 @@ export const TimeSpentDonut = React.memo(({ data }: TimeSpentDonutProps) => {
                         <span className="text-4xl font-black text-white tracking-tighter drop-shadow-[0_0_15px_rgba(255,255,255,0.1)]">
                             {formatTotalTime(data.totalSeconds)}
                         </span>
-                        <span className="text-[13px] font-bold text-slate-500 uppercase tracking-widest mt-1">Total</span>
+                        <div className="flex items-center gap-2 mt-1">
+                            <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">TOTAL</span>
+                        </div>
+
                     </div>
                 </div>
             </div>
@@ -113,6 +117,7 @@ export const TimeSpentDonut = React.memo(({ data }: TimeSpentDonutProps) => {
 
             <MethodologyDisclaimer
                 text="TEMPORAL ANALYSIS: CATEGORIZES COGNITIVE LOAD INTO STABLE (FAST), LOGIC (DELIBERATE), AND NEURAL FRICTION (CORRECTION) PHASES."
+                className="absolute bottom-6 left-8 max-w-[80%]"
             />
         </div>
     );

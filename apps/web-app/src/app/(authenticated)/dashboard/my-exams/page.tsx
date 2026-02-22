@@ -2,7 +2,7 @@
 
 import { useDashboardStore } from "@/store/dashboard-store";
 import { useEffect, useState } from "react";
-import { BookOpen, Calendar, ArrowRight, ChevronLeft, Activity } from "lucide-react";
+import { BookOpen, Calendar, ArrowRight, ChevronLeft } from "lucide-react";
 import Link from "next/link";
 import { ProgressChart } from "@/components/dashboard/ProgressChart";
 import { StackedBarBreakdown } from "@/components/dashboard/StackedBarBreakdown";
@@ -68,8 +68,8 @@ export default function MyExamsPage() {
                     <ChevronLeft size={22} className="text-slate-600" />
                 </Link>
                 <div>
-                    <h1 className="text-3xl md:text-4xl font-black tracking-tight text-[#1A1A1A] characters-tight uppercase leading-none">My Assessments</h1>
-                    <p className="text-slate-500 font-bold uppercase text-[11px] tracking-widest mt-2 leading-relaxed opacity-70">Longitudinal performance history and vector diagnostics.</p>
+                    <h1 className="text-3xl md:text-4xl font-black tracking-tight text-[#1A1A1A] characters-tight uppercase leading-none">My Quizzes</h1>
+                    <p className="text-slate-500 font-bold uppercase text-[11px] tracking-widest mt-2 leading-relaxed opacity-70">Detailed history of your completed assessments.</p>
                 </div>
             </div>
 
@@ -78,7 +78,7 @@ export default function MyExamsPage() {
                 <div className="flex flex-col gap-6 p-8 rounded-[2.5rem] bg-white border border-slate-200 shadow-sm relative overflow-hidden group">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                            <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-600">
+                            <div className="p-2 rounded-xl bg-rose-500/10 text-rose-600">
                                 <Filter size={18} />
                             </div>
                             <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Filter Console</span>
@@ -87,7 +87,7 @@ export default function MyExamsPage() {
                             <button
                                 onClick={() => setView('table')}
                                 className={cn("px-4 py-2 rounded-xl transition-all flex items-center gap-2 text-[10px] font-black uppercase tracking-widest",
-                                    view === 'table' ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/20" : "text-slate-400 hover:text-slate-600")}
+                                    view === 'table' ? "bg-rose-500 text-white shadow-lg shadow-rose-500/20" : "text-slate-400 hover:text-slate-600")}
                             >
                                 <List size={14} />
                                 List
@@ -95,7 +95,7 @@ export default function MyExamsPage() {
                             <button
                                 onClick={() => setView('trends')}
                                 className={cn("px-4 py-2 rounded-xl transition-all flex items-center gap-2 text-[10px] font-black uppercase tracking-widest",
-                                    view === 'trends' ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/20" : "text-slate-400 hover:text-slate-600")}
+                                    view === 'trends' ? "bg-rose-500 text-white shadow-lg shadow-rose-500/20" : "text-slate-400 hover:text-slate-600")}
                             >
                                 <TrendingUp size={14} />
                                 Trends
@@ -103,10 +103,10 @@ export default function MyExamsPage() {
                             <button
                                 onClick={() => setView('breakdowns')}
                                 className={cn("px-4 py-2 rounded-xl transition-all flex items-center gap-2 text-[10px] font-black uppercase tracking-widest",
-                                    view === 'breakdowns' ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/20" : "text-slate-400 hover:text-slate-600")}
+                                    view === 'breakdowns' ? "bg-rose-500 text-white shadow-lg shadow-rose-500/20" : "text-slate-400 hover:text-slate-600")}
                             >
                                 <BarChart2 size={14} />
-                                Diagnostics
+                                Stats
                             </button>
                         </div>
                     </div>
@@ -124,7 +124,7 @@ export default function MyExamsPage() {
                             loading={loading}
                             onChange={handleRangeChange}
                             placeholder="Select Range"
-                            icon={<Clock className="w-3.5 h-3.5 text-indigo-500" />}
+                            icon={<Clock className="w-3.5 h-3.5 text-rose-500" />}
                         />
                         <SelectField
                             label="Domain"
@@ -133,7 +133,7 @@ export default function MyExamsPage() {
                             loading={metadataLoading}
                             onChange={(id: string) => setFilter('domain', id || 'all')}
                             placeholder="All Domains"
-                            icon={<Layers className="w-3.5 h-3.5 text-indigo-500" />}
+                            icon={<Layers className="w-3.5 h-3.5 text-rose-500" />}
                         />
                         <SelectField
                             label="Subject"
@@ -142,7 +142,7 @@ export default function MyExamsPage() {
                             loading={metadataLoading}
                             onChange={(id: string) => setFilter('subject', id || 'all')}
                             placeholder="All Subjects"
-                            icon={<BookIcon className="w-3.5 h-3.5 text-indigo-500" />}
+                            icon={<BookIcon className="w-3.5 h-3.5 text-rose-500" />}
                         />
                         <SelectField
                             label="Topic"
@@ -151,23 +151,23 @@ export default function MyExamsPage() {
                             loading={metadataLoading}
                             onChange={(id: string) => setFilter('topic', id || 'all')}
                             placeholder="All Topics"
-                            icon={<Hash className="w-3.5 h-3.5 text-indigo-500" />}
+                            icon={<Hash className="w-3.5 h-3.5 text-rose-500" />}
                         />
                     </div>
                 </div>
 
                 {loading ? (
                     <div className="flex flex-col items-center justify-center p-20 bg-white border border-slate-100 rounded-[2.5rem]">
-                        <ZLoader text="Analyzing history..." />
+                        <ZLoader text="Loading quizzes..." />
                     </div>
                 ) : activities.length === 0 ? (
                     <div className="p-20 text-center border-2 border-dashed border-slate-100 rounded-[3rem] bg-slate-50/10">
                         <div className="mx-auto w-20 h-20 rounded-[2rem] bg-white shadow-sm flex items-center justify-center mb-6 border border-slate-100">
-                            <BookOpen size={40} className="text-indigo-500/20" />
+                            <BookOpen size={40} className="text-rose-500/20" />
                         </div>
-                        <h3 className="text-2xl font-black text-slate-800 uppercase tracking-tight">No History Found</h3>
+                        <h3 className="text-2xl font-black text-slate-800 uppercase tracking-tight">No Quizzes Found</h3>
                         <p className="text-slate-500 mt-2 max-w-sm mx-auto font-bold uppercase text-[10px] tracking-widest leading-relaxed">
-                            Launch your first evaluation to start building your profile.
+                            Launch your first quiz to start building your profile.
                         </p>
                     </div>
                 ) : (
@@ -179,12 +179,12 @@ export default function MyExamsPage() {
                                         <Link
                                             key={activity.id}
                                             href={`/reports/${activity.id}`}
-                                            className="p-6 rounded-[2.5rem] border border-slate-200 bg-white hover:border-indigo-500/30 hover:shadow-2xl hover:shadow-slate-200/40 transition-all group relative"
+                                            className="p-6 rounded-[2.5rem] border border-slate-200 bg-white hover:border-rose-500/30 hover:shadow-2xl hover:shadow-slate-200/40 transition-all group relative"
                                         >
                                             <div className="flex items-center justify-between">
                                                 <div className="flex items-center gap-6">
-                                                    <div className="w-16 h-16 rounded-3xl bg-slate-50 flex items-center justify-center text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white transition-all duration-500">
-                                                        <Activity size={28} className={cn(activity.status !== 'completed' && "animate-pulse")} />
+                                                    <div className="w-16 h-16 rounded-3xl bg-slate-50 flex items-center justify-center text-rose-600 group-hover:bg-rose-500 group-hover:text-white transition-all duration-500">
+                                                        <BookOpen size={28} className={cn(activity.status !== 'completed' && "animate-pulse")} />
                                                     </div>
                                                     <div>
                                                         <h4 className="text-xl md:text-2xl font-black text-slate-800 tracking-tight uppercase leading-none">{activity.title}</h4>
@@ -208,7 +208,7 @@ export default function MyExamsPage() {
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <div className="h-12 w-12 rounded-[1.25rem] bg-slate-50 text-slate-400 flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-white group-hover:shadow-lg group-hover:shadow-indigo-600/20 group-hover:border-none transition-all duration-300 border border-slate-100">
+                                                <div className="h-12 w-12 rounded-[1.25rem] bg-slate-50 text-slate-400 flex items-center justify-center group-hover:bg-rose-500 group-hover:text-white group-hover:shadow-lg group-hover:shadow-rose-500/20 group-hover:border-none transition-all duration-300 border border-slate-100">
                                                     <ArrowRight size={20} />
                                                 </div>
                                             </div>

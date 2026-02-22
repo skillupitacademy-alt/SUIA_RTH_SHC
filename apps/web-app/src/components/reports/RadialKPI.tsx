@@ -206,6 +206,7 @@ export const RadialKPI = React.memo(({ data }: RadialKPIProps) => {
 
             <MethodologyDisclaimer
                 text="READINESS INDEX: HIGH-PRECISION METRIC SYNTHESIZED FROM RAW SCORE (50%), HISTORICAL TOPIC MASTERY (30%), AND PERFORMANCE CONSISTENCY VARIANCE (20%)."
+                className="absolute bottom-8 left-10 lg:bottom-10 lg:left-10 max-w-[70%]"
             />
         </div>
     );

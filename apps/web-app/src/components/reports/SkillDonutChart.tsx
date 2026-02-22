@@ -76,7 +76,7 @@ export const SkillDonutChart = React.memo(({ data }: SkillDonutChartProps) => {
                         <span className="text-6xl font-black text-white tracking-tighter drop-shadow-[0_0_15px_rgba(255,255,255,0.1)]">
                             {averageAccuracy}%
                         </span>
-                        <span className="text-[13px] font-bold text-slate-500 uppercase tracking-widest mt-1">Mastery</span>
+                        <span className="text-[13px] font-bold text-slate-500 uppercase tracking-widest mt-1">TOTAL</span>
                     </div>
                 </div>
             </div>
@@ -96,6 +96,7 @@ export const SkillDonutChart = React.memo(({ data }: SkillDonutChartProps) => {
 
             <MethodologyDisclaimer
                 text="DOMAIN DISTRIBUTION: PROPORTIONAL REPRESENTATION OF ACTIVE SUBJECT AREAS BASED ON TOTAL ASSESSMENT BLUEPRINT VOLUME."
+                className="absolute bottom-8 left-8 max-w-[80%]"
             />
         </div>
     );

@@ -17,7 +17,7 @@ export const SubtopicBarChart = React.memo(({ data, weakest, rootCauseText }: Su
         [data]);
 
     return (
-        <div className="w-full flex flex-col space-y-10">
+        <div className="w-full flex flex-col space-y-10 pb-12 relative min-h-full">
             <div className="flex items-center justify-between border-b border-slate-800 pb-8 mb-4">
                 <div>
                     <h3 className="text-[12px] font-black text-indigo-400 uppercase tracking-[0.3em] mb-3">Diagnostic Sweep</h3>
@@ -87,6 +87,7 @@ export const SubtopicBarChart = React.memo(({ data, weakest, rootCauseText }: Su
 
             <MethodologyDisclaimer
                 text="DIAGNOSTIC SWEEP: PROFILE CAPTURES THE RAW SUCCESS RATE PER VECTOR ATTEMPT. DATA STABILITY INCREASES WITH CUMULATIVE SAMPLE VOLUME."
+                className="absolute bottom-0 left-0 max-w-[90%]"
             />
         </div>
     );

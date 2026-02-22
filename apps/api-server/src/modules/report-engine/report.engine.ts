@@ -5,6 +5,7 @@ import { logger } from "@/lib/logger";
 
 import { AdaptiveTutorService } from "../adaptive-engine/adaptive-tutor.service";
 import { PerformanceService } from "./performance.service";
+import { ReportInterpreter } from "./report-interpreter.service";
 
 export interface ActionPlanItem {
   id: string;
@@ -58,7 +59,7 @@ type RawQuestionRow = {
   time_spent: number | null;
 };
 
-type PremiumReport = {
+export type PremiumReport = {
   examId: string;
   score: number;
   mastery: number;
@@ -93,6 +94,15 @@ type PremiumReport = {
     isCorrect: boolean;
     timeSpent: number;
   }[];
+  interpreter?: {
+    kpi: string[];
+    subtopics: string[];
+    skills: string[];
+    heatmap: string[];
+    difficulty: string[];
+    time: string[];
+    meta: string[];
+  };
 };
 
 class ActionPlanBuilder {
@@ -526,6 +536,9 @@ export class ReportEngine {
         timeSpent: q.time_spent ?? 0
       }))
     };
+
+    // 2. Synthesize Deterministic Interpretation
+    finalReport.interpreter = ReportInterpreter.interpret(finalReport);
 
     // Phase 1: Cache result for subsequent hits
     await PerformanceService.cacheReport(examId, finalReport);

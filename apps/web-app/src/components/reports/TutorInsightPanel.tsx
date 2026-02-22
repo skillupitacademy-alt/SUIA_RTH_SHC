@@ -162,7 +162,7 @@ export const TutorInsightPanel = React.memo(({ insights }: TutorInsightPanelProp
             </div>
 
             <MethodologyDisclaimer
-                className="mt-10"
+                className="absolute bottom-8 left-14 max-w-[80%]"
                 text="TUTOR INSIGHTS: DERIVED FROM CROSS-REFERENCE OF HISTORICAL STRESS-PERFORMANCE CURVES AND RECENT TOPIC FLUENCY DATA NODES."
             />
         </div>

@@ -118,21 +118,13 @@ export const AIRecommendationPanel = React.memo(({ ai }: AIRecommendationPanelPr
                         <div className="p-2.5 bg-indigo-500/10 rounded-2xl border border-indigo-500/20 shadow-inner group-hover:border-indigo-500/40 transition-all">
                             <BrainCircuit className="h-6 w-6 text-indigo-400" />
                         </div>
-                        <h3 className="text-xl font-black text-white uppercase tracking-tighter">Neural Synthesis</h3>
+                        <h3 className="text-xl font-black text-white uppercase tracking-tighter">Tactical Prescription</h3>
                     </div>
                     <div className="flex items-center gap-3">
-                        {ai.confidence && (
-                            <div className={cn(
-                                "px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest border",
-                                ai.confidence === 'HIGH' ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400" : (ai.confidence === 'MEDIUM' ? "bg-amber-500/10 border-amber-500/20 text-amber-400" : "bg-rose-500/10 border-rose-500/20 text-rose-400")
-                            )}>
-                                CONFIDENCE: {ai.confidence}
-                            </div>
-                        )}
                         <div className="px-4 py-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-lg">
                             <span className="text-[12px] font-black text-emerald-400 uppercase tracking-widest leading-none flex items-center gap-2">
                                 <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                                {ai.status}
+                                AI STATUS: {ai.status === 'READY' ? 'OPTIMIZED' : ai.status}
                             </span>
                         </div>
                     </div>
@@ -169,15 +161,14 @@ export const AIRecommendationPanel = React.memo(({ ai }: AIRecommendationPanelPr
 
             {/* Footer */}
             <div className="mt-10 pt-8 border-t border-white/5 flex items-center justify-between relative z-10">
-                <div className="flex items-center gap-2 text-[12px] font-black text-slate-500 uppercase tracking-widest">
-                    <Activity size={12} className="text-indigo-500/40" />
-                    <span>Diagnostic Engine v9.4</span>
+                <div className="flex items-center gap-2 text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">
+                    <span>DIAGNOSTIC LOGS V9.4</span>
                 </div>
-                <span className="text-[12px] font-bold text-slate-600 italic">LOGID: PR0_{Math.random().toString(36).substring(7).toUpperCase()}</span>
+                <span className="text-[10px] font-black text-slate-700 uppercase tracking-[0.3em]">SYS_5J2AL8</span>
             </div>
 
             <MethodologyDisclaimer
-                className="mt-8"
+                className="absolute bottom-6 left-10 max-w-[80%]"
                 text="ADAPTIVE AI: REMEDIATION ENGINE FILTERS PERSISTENCE DIPS VS. COGNITIVE-LOAD OUTLIERS. PRESCRIPTIONS ARE UPDATED DYNAMICALLY AFTER EACH ASSESSMENT VECTOR."
             />
         </div>

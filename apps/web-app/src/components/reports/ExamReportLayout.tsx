@@ -17,6 +17,7 @@ import {
 import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ZLoader } from "@quiz/ui";
+import { AnalysisNarrative } from "./AnalysisNarrative";
 
 // Multi-ring radial KPI
 const RadialKPI = dynamic(() => import("./RadialKPI").then(mod => mod.RadialKPI), {
@@ -106,6 +107,15 @@ export interface ExamReport {
         isCorrect: boolean;
         timeSpent: number;
     }[];
+    interpreter?: {
+        kpi: string[];
+        subtopics: string[];
+        skills: string[];
+        heatmap: string[];
+        difficulty: string[];
+        time: string[];
+        meta: string[];
+    };
 }
 
 export interface ExamReportLayoutProps {
@@ -283,6 +293,16 @@ export function ExamReportLayout({ data, loading }: ExamReportLayoutProps) {
                                         <TutorInsightPanel insights={data.tutorInsights} />
                                     </div>
                                 )}
+
+                                {data.interpreter?.meta && data.interpreter.meta.length > 0 && (
+                                    <div className="animate-in fade-in slide-in-from-bottom-5 duration-1000 delay-500">
+                                        <AnalysisNarrative
+                                            title="Executive Synopsis"
+                                            bullets={data.interpreter.meta}
+                                            type="insight"
+                                        />
+                                    </div>
+                                )}
                             </div>
                         )}
 
@@ -314,6 +334,15 @@ export function ExamReportLayout({ data, loading }: ExamReportLayoutProps) {
                                     </div>
                                 </div>
 
+                                {data.interpreter?.subtopics && data.interpreter.subtopics.length > 0 && (
+                                    <div className="animate-in fade-in slide-in-from-bottom-5 duration-700">
+                                        <AnalysisNarrative
+                                            title="Vector Logic Interpretation"
+                                            bullets={data.interpreter.subtopics}
+                                        />
+                                    </div>
+                                )}
+
                                 {/* Section 2: Skill & Time Matrix */}
                                 <div className="grid grid-cols-1 lg:grid-cols-[65%_35%] gap-10 items-stretch">
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-stretch">
@@ -340,6 +369,23 @@ export function ExamReportLayout({ data, loading }: ExamReportLayoutProps) {
                                     </div>
                                 </div>
 
+                                {((data.interpreter?.skills && data.interpreter.skills.length > 0) || (data.interpreter?.time && data.interpreter.time.length > 0)) && (
+                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 animate-in fade-in slide-in-from-bottom-5 duration-700">
+                                        {data.interpreter?.skills && data.interpreter.skills.length > 0 && (
+                                            <AnalysisNarrative
+                                                title="Cognitive Node Interpretation"
+                                                bullets={data.interpreter.skills}
+                                            />
+                                        )}
+                                        {data.interpreter?.time && data.interpreter.time.length > 0 && (
+                                            <AnalysisNarrative
+                                                title="Temporal Spend Analysis"
+                                                bullets={data.interpreter.time}
+                                            />
+                                        )}
+                                    </div>
+                                )}
+
                                 {/* Section 3: Heatmap Projection */}
                                 <div className="grid grid-cols-1 lg:grid-cols-[65%_35%] gap-10 items-stretch">
                                     <div className="rounded-[2.5rem] bg-slate-900/50 border border-white/5 p-10 lg:p-16 shadow-xl">
@@ -361,24 +407,43 @@ export function ExamReportLayout({ data, loading }: ExamReportLayoutProps) {
 
                         {/* COMPLEXITY LADDER TAB */}
                         {activeTab === 'complexity' && (
-                            <div className="grid grid-cols-1 lg:grid-cols-[65%_35%] gap-10 items-stretch pt-6">
-                                <div className="rounded-[2.5rem] bg-slate-900/50 border border-white/5 p-10 lg:p-16 flex items-center shadow-xl">
-                                    <DifficultyBarChart
-                                        data={data.difficulty}
-                                        expertDropOff={data.expertDropOff}
-                                    />
+                            <>
+                                <div className="grid grid-cols-1 lg:grid-cols-[65%_35%] gap-10 items-stretch pt-6">
+                                    <div className="rounded-[2.5rem] bg-slate-900/50 border border-white/5 p-10 lg:p-16 flex items-center shadow-xl">
+                                        <DifficultyBarChart
+                                            data={data.difficulty}
+                                            expertDropOff={data.expertDropOff}
+                                        />
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <HeuristicPanel
+                                            title="Pressure Tolerance"
+                                            details={[
+                                                { label: "Focus Areas", status: "Critical", items: ["Target 'Expert' implementation rigidity", "Address complexity drop-off"], color: "bg-rose-500 text-rose-400", progress: 30, icon: AlertTriangle },
+                                                { label: "Strengthen", status: "Proficient", items: ["Shift from linear to non-linear logic", "Practice multi-variable problems"], color: "bg-amber-500 text-amber-400", progress: 55, icon: Zap },
+                                                { label: "Maintain", status: "Mastered", items: ["Perfect Score on Simple difficulty", "Stable Intermediate performance"], color: "bg-emerald-500 text-emerald-400", progress: 100, icon: CheckCircle2 }
+                                            ]}
+                                        />
+                                    </div>
                                 </div>
-                                <div className="flex flex-col">
-                                    <HeuristicPanel
-                                        title="Pressure Tolerance"
-                                        details={[
-                                            { label: "Focus Areas", status: "Critical", items: ["Target 'Expert' implementation rigidity", "Address complexity drop-off"], color: "bg-rose-500 text-rose-400", progress: 30, icon: AlertTriangle },
-                                            { label: "Strengthen", status: "Proficient", items: ["Shift from linear to non-linear logic", "Practice multi-variable problems"], color: "bg-amber-500 text-amber-400", progress: 55, icon: Zap },
-                                            { label: "Maintain", status: "Mastered", items: ["Perfect Score on Simple difficulty", "Stable Intermediate performance"], color: "bg-emerald-500 text-emerald-400", progress: 100, icon: CheckCircle2 }
-                                        ]}
-                                    />
-                                </div>
-                            </div>
+
+                                {((data.interpreter?.difficulty && data.interpreter.difficulty.length > 0) || (data.interpreter?.heatmap && data.interpreter.heatmap.length > 0)) && (
+                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 animate-in fade-in slide-in-from-bottom-5 duration-700">
+                                        {data.interpreter?.heatmap && data.interpreter.heatmap.length > 0 && (
+                                            <AnalysisNarrative
+                                                title="Spatio-Visual Depth Matrix"
+                                                bullets={data.interpreter.heatmap}
+                                            />
+                                        )}
+                                        {data.interpreter?.difficulty && data.interpreter.difficulty.length > 0 && (
+                                            <AnalysisNarrative
+                                                title="Load Vector Stability"
+                                                bullets={data.interpreter.difficulty}
+                                            />
+                                        )}
+                                    </div>
+                                )}
+                            </>
                         )}
 
                         {/* RAW AUDIT TAB */}
@@ -453,6 +518,6 @@ export function ExamReportLayout({ data, loading }: ExamReportLayoutProps) {
                     </motion.div>
                 </AnimatePresence>
             </div>
-        </div>
+        </div >
     );
 }
