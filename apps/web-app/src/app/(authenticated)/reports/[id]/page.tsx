@@ -7,6 +7,7 @@ import { ExamReportLayout, ExamReport } from "@/components/reports/ExamReportLay
 import { ArrowLeft, RefreshCw } from "lucide-react";
 import Link from "next/link";
 import { clientLogger } from '@/utils/clientLogger';
+import { ReportDownloadButton } from "@/components/reports/ReportDownloadButton";
 
 export default function PremiumReportPage() {
     const { id } = useParams();
@@ -167,11 +168,8 @@ export default function PremiumReportPage() {
                     </div>
                 </div>
 
-                <div className="hidden lg:flex items-center gap-6">
-                    <div className="flex flex-col items-end">
-                        <span className="text-[9px] font-black text-indigo-400 uppercase tracking-[0.3em]">Synapse Link</span>
-                        <span className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mt-1">Status: Operational</span>
-                    </div>
+                <div className="hidden lg:flex items-center gap-8">
+                    <ReportDownloadButton attemptId={id as string} />
                     <div className="h-8 w-[1px] bg-slate-800" />
                     <button
                         onClick={() => window.location.reload()}

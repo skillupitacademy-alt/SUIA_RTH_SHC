@@ -177,6 +177,17 @@ export class ScoringEngine {
         const reportData = await ReportEngine.getPremiumExamReport(examId);
         await PerformanceService.cacheReport(examId, reportData);
         ScoringEngine.log.info({ examId }, 'Phase 1: Analytics refreshed and cache primed');
+
+        // Trigger PDF Generation (Background)
+        const apiBase = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3002/api';
+        fetch(`${apiBase}/generate-report`, {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'x-internal-key': process.env.INTERNAL_API_KEY ?? 'secret'
+          },
+          body: JSON.stringify({ attemptId: examId })
+        }).catch(err => ScoringEngine.log.error({ examId, err }, 'Failed to trigger background PDF generation'));
       } catch (e) {
         ScoringEngine.log.error({ examId, err: e }, 'Phase 1: Failed to refresh analytics or prime cache');
       }

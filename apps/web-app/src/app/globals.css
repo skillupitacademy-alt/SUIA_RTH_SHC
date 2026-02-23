@@ -93,3 +93,80 @@ body {
     scroll-behavior: auto !important;
   }
 }
+@media print {
+  @page {
+    margin: 0;
+    size: auto;
+  }
+
+  body {
+    background: white !important;
+    color: black !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  .pdf-container {
+    padding: 0;
+    margin: 0;
+    width: 297mm; /* Default landscape A4 */
+    background: white;
+  }
+
+  .pdf-page {
+    margin: 0;
+    padding: 20mm;
+    box-sizing: border-box;
+    page-break-after: always;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Landscape A4: 297mm x 210mm */
+  .pdf-page.landscape {
+    width: 297mm;
+    height: 209mm; /* 210mm minus small buffer */
+  }
+
+  /* Portrait A4: 210mm x 297mm */
+  .pdf-page.portrait {
+    width: 210mm;
+    height: 296mm;
+  }
+
+  table {
+    page-break-inside: auto;
+  }
+
+  tr {
+    page-break-inside: avoid;
+    page-break-after: auto;
+  }
+
+  thead {
+    display: table-header-group;
+  }
+
+  tfoot {
+    display: table-footer-group;
+  }
+}
+
+/* Helper for browser preview */
+.pdf-preview-mode {
+  background: #f0f2f5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  padding: 40px;
+}
+
+.pdf-preview-mode .pdf-page {
+  background: white;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}

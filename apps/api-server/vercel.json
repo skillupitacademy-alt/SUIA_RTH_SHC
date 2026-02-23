@@ -1,0 +1,23 @@
+{
+    "crons": [
+        {
+            "path": "/api/cron/pdf-health",
+            "schedule": "*/15 * * * *"
+        },
+        {
+            "path": "/api/cron/cleanup-reports",
+            "schedule": "0 0 * * *"
+        }
+    ],
+    "headers": [
+        {
+            "source": "/api/generate-report",
+            "headers": [
+                {
+                    "key": "Service-Worker-Allowed",
+                    "value": "/"
+                }
+            ]
+        }
+    ]
+}

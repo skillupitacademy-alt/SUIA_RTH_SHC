@@ -49,6 +49,11 @@ Insights are sliced across four primary axes:
 *   **Data Axis**: `topics.weight` vs. `question_skills` coverage.
 *   **Use Case**: System health auditing for Content Managers.
 
+### F. High-Fidelity PDF Analytic Report
+*   **Goal**: Provide a professional, multi-page downloadable summary for users and admins.
+*   **Features**: Scalable PDF generation using `puppeteer-core`, stored in Vercel Blob/Cloudflare R2.
+*   **Structure**: 7-page report including Executive Summary, Subject Breakdown, Complexity Ladder, and Question Audit.
+
 ---
 
 ## 3. Weighted Scoring Logic

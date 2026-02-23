@@ -71,6 +71,20 @@
       "when": 1771543426209,
       "tag": "0009_magenta_omega_sentinel",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1771823119214,
+      "tag": "0010_keen_ironclad",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1771836766244,
+      "tag": "0011_deep_peter_quill",
+      "breakpoints": true
     }
   ]
 }

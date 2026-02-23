@@ -38,3 +38,6 @@ build_error_cache.log
 playwright-report
 playwright-artifacts
 test-results
+
+.vercel
+.env*.local

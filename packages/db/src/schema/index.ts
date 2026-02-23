@@ -7,3 +7,4 @@ export * from './notification';
 export * from './question';
 export * from './relations';
 export * from './tutor';
+export * from './reports';

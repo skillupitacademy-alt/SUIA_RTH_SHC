@@ -96,3 +96,22 @@ The tables that power the Radar Charts and Proficiency Reports.
 2.  **Mapping** (`skills` -> `question_skills`) builds the **Report Content**.
 3.  **Execution** (`exam_questions`) builds the **Report Data**.
 4.  **Analysis** (`results_by_dimension`) builds the **Report Visualization**.
+
+---
+
+## 6. Report Persistence & Storage (Post-Analysis)
+The tables that handle the high-fidelity output for long-term storage and export.
+
+### `reports`
+*   **Purpose**: Tracks the lifecycle and physical location of generated PDF reports.
+*   **Importance**: Enables high-fidelity report retrieval without re-running Puppeteer.
+*   **Key Columns**:
+    - `storage_provider`: (blob/r2) Defines where the file is physically stored.
+    - `file_ref`: The direct URL or storage key for the PDF asset.
+    - `status`: (pending/generating/ready/failed) Manages the background generation state.
+
+### `background_jobs`
+*   **Purpose**: Manages the queue for asynchronous scoring and PDF generation.
+*   **Key Columns**:
+    - `type`: Identifies the task (e.g., `PDF_GEN`, `EXAM_SCORING`).
+    - `status`: (pending/processing/completed/failed) For real-time UI tracking.

@@ -66,6 +66,7 @@ const TutorInsightPanel = dynamic(() => import("./TutorInsightPanel").then(mod =
 });
 
 export interface ExamReport {
+    examId: string;
     score: number;
     mastery: number;
     readiness: number;
@@ -105,6 +106,7 @@ export interface ExamReport {
         explanation?: string;
         isCorrect: boolean;
         timeSpent: number;
+        difficulty?: string;
     }[];
     interpreter?: {
         kpi: string[];

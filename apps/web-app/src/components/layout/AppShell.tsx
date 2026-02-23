@@ -12,7 +12,7 @@ interface AppShellProps {
 export function AppShell({ children }: AppShellProps) {
     const pathname = usePathname();
     const isHome = pathname === '/';
-    const isReportPage = pathname.startsWith('/reports/') && pathname !== '/reports/active-report';
+    const isReportPage = (pathname.startsWith('/reports/') || pathname.startsWith('/report/')) && pathname !== '/reports/active-report';
 
     return (
         <div className="relative flex min-h-screen flex-col">

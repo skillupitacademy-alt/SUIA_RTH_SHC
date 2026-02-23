@@ -74,7 +74,9 @@ erDiagram
     exam_blueprints ||--o{ exams : "defines"
     exams ||--o{ exam_questions : "contains"
     exams ||--o{ results_by_dimension : "has_scores"
+    exams ||--o{ reports : "has_pdf"
     questions ||--o{ exam_questions : "used_in"
+    users ||--o{ background_jobs : "triggers"
 ```
 
 ```
@@ -86,9 +88,11 @@ Physical location: `packages/db/src/schema/`
 | :--- | :--- | :--- |
 | **`auth.ts`** | `users`, `sessions`, `roles`, `audit_logs` | Identity & Security |
 | **`domain.ts`** | `domains`, `subjects`, `topics`, `skills` | Curriculum Structure |
-| **`exam.ts`** | `exams`, `exam_blueprints`, `results` | Runtime & Analytics |
+| **`exam.ts`** | `exams`, `exam_blueprints`, `results_by_dimension` | Runtime & Analytics |
 | **`question.ts`** | `questions`, `question_options` | Content Bank |
-| **`enums.ts`** | (Enums) | Shared constants (QuestionType, UserRole) |
+| **`reports.ts`** | `reports` | PDF Generation & Storage |
+| **`jobs.ts`** | `background_jobs` | Async Tasks & Scopes |
+| **`enums.ts`** | (Enums) | Shared constants |
 
 ### Schema Coverage for Admin Dashboard
 
