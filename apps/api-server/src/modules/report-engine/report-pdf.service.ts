@@ -36,11 +36,11 @@ export class ReportPdfService {
 
       const options = {
         args: isDev ? [] : chromium.args,
-        defaultViewport: chromium.defaultViewport,
+        defaultViewport: { width: 1280, height: 720 },
         executablePath: isDev 
           ? "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe" 
           : await chromium.executablePath(),
-        headless: chromium.headless,
+        headless: isDev ? true : (chromium as any).headless,
       };
 
       globalBrowser = (await puppeteer.launch(options)) as unknown as Browser;

@@ -224,7 +224,7 @@ export class ReportEngine {
     });
 
     const totalQuestions = exam.examQuestions.length;
-    const correctAnswers = exam.examQuestions.filter(eq => eq.isCorrect === true).length;
+    const correctAnswers = exam.examQuestions.filter(item => item.isCorrect === true).length;
     const scorePercentage = totalQuestions > 0 ? (correctAnswers / totalQuestions) * 100 : 0;
 
     let timeTaken = "00m 00s";
@@ -273,13 +273,13 @@ export class ReportEngine {
         } as DimensionResult);
         return acc;
       }, {} as Record<string, DimensionResult[]>),
-      questions: exam.examQuestions.map(eq => ({
-        text: eq.question.questionText,
-        userAnswer: eq.userAnswer,
-        correctAnswer: includeCorrect ? eq.question.correctAnswer : undefined,
-        explanation: includeCorrect ? eq.question.explanation : undefined,
-        isCorrect: eq.isCorrect,
-        timeSpent: (eq.responseMetadata as Record<string, unknown>)?.timeSpentSeconds as number || 0,
+      questions: exam.examQuestions.map(item => ({
+        text: item.question.questionText,
+        userAnswer: item.userAnswer,
+        correctAnswer: includeCorrect ? item.question.correctAnswer : undefined,
+        explanation: includeCorrect ? item.question.explanation : undefined,
+        isCorrect: item.isCorrect,
+        timeSpent: (item.responseMetadata as Record<string, unknown>)?.timeSpentSeconds as number || 0,
       }))
     };
   }
@@ -448,17 +448,17 @@ export class ReportEngine {
     let coreMetricsRaw = await runCoreQuery();
 
     // Lazy Refresh: If the primary row is empty (MV not refreshed for this attempt)
-    const hasData = (row: Partial<CoreRow> | undefined) =>
+    const hasData = (row: any) =>
       row !== undefined && row !== null && row.score !== null;
 
     if (coreMetricsRaw.rows.length === 0 || !hasData(coreMetricsRaw.rows[0])) {
-        ReportEngine.log.info({ examId }, 'Analytic row missing in MV, triggering lazy refresh');
-        await PerformanceService.refreshAnalytics();
-        coreMetricsRaw = await runCoreQuery();
+      ReportEngine.log.info({ examId }, 'Analytic row missing in MV, triggering lazy refresh');
+      await PerformanceService.refreshAnalytics();
+      coreMetricsRaw = await runCoreQuery();
     }
 
     if (coreMetricsRaw.rows.length === 0 || !hasData(coreMetricsRaw.rows[0])) {
-        throw new Error('Analytics not precomputed for this exam even after refresh.');
+      throw new Error('Analytics not precomputed for this exam even after refresh.');
     }
 
     const core = coreMetricsRaw.rows[0] as CoreRow;
