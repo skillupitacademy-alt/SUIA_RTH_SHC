@@ -15,6 +15,11 @@ export default function PremiumReportPage() {
     const [loading, setLoading] = useState(true);
     const [isProcessing, setIsProcessing] = useState(false);
     const [errorMsg, setErrorMsg] = useState<string | null>(null);
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     useEffect(() => {
         let isMounted = true;
@@ -67,6 +72,9 @@ export default function PremiumReportPage() {
         fetchReport();
         return () => { isMounted = false; };
     }, [id]);
+
+    // Handle SSR / Hydration guard
+    if (!mounted) return null;
 
     // Handle Error State
     if (errorMsg) {
