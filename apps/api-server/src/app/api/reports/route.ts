@@ -11,9 +11,10 @@ import { ReportEngine } from '@/modules/report-engine/report.engine';
  * GET /api/reports
  */
 export async function GET(_req: NextRequest) {
+  const { searchParams } = new URL(_req.url);
+  const id = searchParams.get('id');
+
   try {
-    const { searchParams } = new URL(_req.url);
-    const id = searchParams.get('id');
 
     const _token = TokenService.getAccessToken(_req, { scope: 'user' });
     if (_token === undefined || _token === null || _token === '') return NextResponse.json({ _error: 'Unauthorized', scope: 'user' }, { status: 401 });
@@ -63,14 +64,30 @@ export async function GET(_req: NextRequest) {
     const report = await ReportEngine.getUserPerformance(_payload.userId);
     return NextResponse.json(report);
   } catch (_error: unknown) {
-    const errorMessage = _error instanceof Error ? _error.message : 'Failed to generate report';
+    const error = _error instanceof Error ? _error : new Error(String(_error));
+    const errorMessage = error.message;
 
-    // Handle specific processing delay errors from ReportEngine without crashing the route
-    if (errorMessage.includes('Analytics not precomputed')) {
+    // 1. Auth & Authorization errors should return appropriate status codes
+    if (errorMessage.includes('Unauthorized') || errorMessage.includes('token') || errorMessage.includes('claim')) {
+      return NextResponse.json({ _error: errorMessage }, { status: 401 });
+    }
+    
+    if (errorMessage.includes('FORBIDDEN') || errorMessage.includes('belong')) {
+      return NextResponse.json({ _error: errorMessage }, { status: 403 });
+    }
+
+    // 2. Handle specific processing delay errors from ReportEngine
+    if (errorMessage.includes('Analytics not precomputed') || errorMessage.includes('Score is null')) {
       return NextResponse.json({ status: 'processing', message: 'Finalizing analytics matrix...' }, { status: 202 });
     }
 
-    return NextResponse.json({ _error: errorMessage }, { status: 500 });
+    // 3. Log the actual error for debugging
+    console.error(`[ReportAPI] 500 Error for exam ${id}:`, errorMessage);
+    
+    return NextResponse.json({ 
+      _error: 'Failed to generate report', 
+      _debug: process.env.NODE_ENV === 'development' ? errorMessage : undefined 
+    }, { status: 500 });
   }
 }
 

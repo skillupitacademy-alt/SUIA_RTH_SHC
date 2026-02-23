@@ -448,13 +448,16 @@ export class ReportEngine {
     let coreMetricsRaw = await runCoreQuery();
 
     // Lazy Refresh: If the primary row is empty (MV not refreshed for this attempt)
-    if (coreMetricsRaw.rows.length === 0 || (coreMetricsRaw.rows[0] as CoreRow).score === null) {
+    const hasData = (row: Partial<CoreRow> | undefined) =>
+      row !== undefined && row !== null && row.score !== null;
+
+    if (coreMetricsRaw.rows.length === 0 || !hasData(coreMetricsRaw.rows[0])) {
         ReportEngine.log.info({ examId }, 'Analytic row missing in MV, triggering lazy refresh');
         await PerformanceService.refreshAnalytics();
         coreMetricsRaw = await runCoreQuery();
     }
 
-    if (coreMetricsRaw.rows.length === 0 || (coreMetricsRaw.rows[0] as CoreRow).score === null) {
+    if (coreMetricsRaw.rows.length === 0 || !hasData(coreMetricsRaw.rows[0])) {
         throw new Error('Analytics not precomputed for this exam even after refresh.');
     }
 
