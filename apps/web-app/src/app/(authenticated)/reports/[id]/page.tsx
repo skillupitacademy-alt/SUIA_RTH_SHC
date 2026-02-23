@@ -131,14 +131,14 @@ export default function PremiumReportPage() {
                             </div>
                             {report.lineage && (
                                 <div className="flex items-center gap-2.5">
-                                    <div className="flex items-center gap-2.5 overflow-hidden">
+                                    <div className="flex items-center gap-2.5">
                                         {report.lineage.domain && (
-                                            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] whitespace-nowrap opacity-60">{report.lineage.domain}</span>
+                                            <span className="text-sm font-bold text-slate-500 uppercase tracking-[0.2em] whitespace-nowrap opacity-60">{report.lineage.domain}</span>
                                         )}
                                         {report.lineage.subject && (
                                             <>
                                                 <div className="h-1 w-1 rounded-full bg-slate-800" />
-                                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] whitespace-nowrap">{report.lineage.subject}</span>
+                                                <span className="text-sm font-bold text-slate-400 uppercase tracking-[0.2em] whitespace-nowrap">{report.lineage.subject}</span>
                                             </>
                                         )}
                                     </div>
@@ -147,7 +147,7 @@ export default function PremiumReportPage() {
                         </div>
 
                         <div className="flex items-baseline gap-6">
-                            <h1 className="text-2xl md:text-3xl font-black text-white tracking-tighter uppercase leading-none drop-shadow-sm">
+                            <h1 className="text-4xl md:text-5xl font-black text-white tracking-tighter uppercase leading-none drop-shadow-sm">
                                 {report.lineage?.topic || "Diagnostic Attempt"}
                             </h1>
                             <div className="flex items-center gap-3">
