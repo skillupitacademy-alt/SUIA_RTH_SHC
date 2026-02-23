@@ -17,7 +17,7 @@
         }
     ],
     "functions": {
-        "api/*": {
+        "api/**": {
             "includeFiles": "node_modules/@sparticuz/chromium/bin/**"
         }
     }
