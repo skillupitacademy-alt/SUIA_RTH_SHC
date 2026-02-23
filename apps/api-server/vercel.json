@@ -15,10 +15,5 @@
                 }
             ]
         }
-    ],
-    "functions": {
-        "app/api/**": {
-            "includeFiles": "node_modules/@sparticuz/chromium/bin/**"
-        }
-    }
+    ]
 }
