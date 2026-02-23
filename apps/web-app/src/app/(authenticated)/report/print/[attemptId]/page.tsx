@@ -102,6 +102,7 @@ export default async function PrintReportPage({
             <div className="p-20 text-center">
                 <h1 className="text-2xl font-bold text-red-600">Failed to render report for print</h1>
                 <p className="text-slate-500 mt-4">Correlation ID: {attemptId}</p>
+                <div id="pdf-error-signal" data-pdf-ready="false" className="hidden" />
             </div>
         );
     }

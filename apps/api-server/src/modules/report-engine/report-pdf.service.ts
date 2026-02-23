@@ -71,10 +71,19 @@ export class ReportPdfService {
       
       const start = Date.now();
 
-      await page.goto(url, { waitUntil: "networkidle0", timeout: 30000 });
+      // Hook console logs for debugging
+      page.on('console', msg => logger.info({ text: msg.text() }, "[ReportPdfService] Page Console"));
+
+      await page.goto(url, { waitUntil: "networkidle0", timeout: 45000 });
 
       // Wait for our custom signal
-      await page.waitForSelector('[data-pdf-ready="true"]', { timeout: 15000 });
+      try {
+        await page.waitForSelector('[data-pdf-ready="true"]', { timeout: 30000 });
+      } catch (err) {
+        const content = await page.content();
+        const hasErrorBlock = content.includes("Failed to render report");
+        throw new Error(`PDF Ready signal not found within 30s. ${hasErrorBlock ? "Page showed 'Failed to render'." : "Page might still be loading or 404."} URL: ${url}`);
+      }
 
       // Generate PDF
       const buffer = await page.pdf({
