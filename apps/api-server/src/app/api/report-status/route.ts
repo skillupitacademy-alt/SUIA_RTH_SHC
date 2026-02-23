@@ -47,7 +47,10 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    return NextResponse.json({ status: report.status });
+    return NextResponse.json({ 
+      status: report.status,
+      error: report.status === "failed" ? report.errorStage : undefined
+    });
 
   } catch (error: unknown) {
     logger.error({ err: error }, "[ReportStatus] API Error");
