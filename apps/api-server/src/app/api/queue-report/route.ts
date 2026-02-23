@@ -44,12 +44,25 @@ export async function POST(req: NextRequest) {
         columns: { userId: true, status: true }
       });
 
-      if (!exam || exam.userId !== userId) {
-        return NextResponse.json({ error: "Unauthorized or not found" }, { status: 403 });
+      if (!exam) {
+        return NextResponse.json(
+          { error: "Exam not found", reason: "not_found", attemptId },
+          { status: 404 }
+        );
+      }
+
+      if (exam.userId !== userId) {
+        return NextResponse.json(
+          { error: "Exam does not belong to this user", reason: "ownership_mismatch", attemptId },
+          { status: 403 }
+        );
       }
 
       if (exam.status !== "completed") {
-        return NextResponse.json({ error: "Exam is not completed" }, { status: 400 });
+        return NextResponse.json(
+          { error: "Exam is not completed", reason: "not_completed", attemptId },
+          { status: 400 }
+        );
       }
     }
 
