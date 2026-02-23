@@ -16,10 +16,24 @@ export async function GET(_req: NextRequest) {
 
   try {
 
-    const _token = TokenService.getAccessToken(_req, { scope: 'user' });
-    if (_token === undefined || _token === null || _token === '') return NextResponse.json({ _error: 'Unauthorized', scope: 'user' }, { status: 401 });
+    const internalKey = _req.headers.get('x-internal-key');
+    const isInternal = internalKey !== null && internalKey === process.env.INTERNAL_API_KEY;
 
-    const _payload = await TokenService.verifyAccessToken(_token, false);
+    let _payload: { userId: string };
+
+    if (isInternal) {
+      if (!id) return NextResponse.json({ _error: 'Missing id for internal bypass' }, { status: 400 });
+      const exam = await db.query.exams.findFirst({
+        where: eq(exams.id, id),
+        columns: { userId: true }
+      });
+      if (!exam) return NextResponse.json({ _error: 'Exam not found' }, { status: 404 });
+      _payload = { userId: exam.userId };
+    } else {
+      const _token = TokenService.getAccessToken(_req, { scope: 'user' });
+      if (_token === undefined || _token === null || _token === '') return NextResponse.json({ _error: 'Unauthorized', scope: 'user' }, { status: 401 });
+      _payload = await TokenService.verifyAccessToken(_token, false);
+    }
 
     if (id !== null && id !== '') {
        const type = searchParams.get('type');
