@@ -2,7 +2,8 @@
 const nextConfig = {
     transpilePackages: ['@quiz/api-client', '@quiz/db', '@quiz/ui', 'lucide-react'],
     outputFileTracingIncludes: {
-        '/api/generate-report': ['./node_modules/@sparticuz/chromium/bin/**/*'],
+        '/api/generate-report': ['../../node_modules/@sparticuz/chromium/bin/**/*'],
+        '/api/cron/pdf-health': ['../../node_modules/@sparticuz/chromium/bin/**/*'],
     },
     async headers() {
         return [
@@ -24,7 +25,7 @@ const nextConfig = {
                         key: 'Content-Security-Policy-Report-Only',
                         value: [
                             "default-src 'self'",
-                            "script-src 'self'",
+                            "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
                             "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
                             "img-src 'self' data: blob: https://images.unsplash.com " + (process.env.NEXT_PUBLIC_WEB_APP_URL || ""),
                             "font-src 'self' https://fonts.gstatic.com",
