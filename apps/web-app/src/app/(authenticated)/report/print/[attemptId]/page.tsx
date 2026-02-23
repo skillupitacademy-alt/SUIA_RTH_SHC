@@ -12,7 +12,8 @@ import {
 } from "@/components/reports/print/PrintPages";
 
 async function getReportData(attemptId: string, internalKey?: string): Promise<ExamReport> {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
+    const rawApiUrl = process.env.NEXT_PUBLIC_API_URL || "https://api.realtutorialhub.com/api";
+    const apiUrl = rawApiUrl.replace(/\/api$/, "").replace(/\/$/, "");
 
     const headers: Record<string, string> = {
         "Content-Type": "application/json",
