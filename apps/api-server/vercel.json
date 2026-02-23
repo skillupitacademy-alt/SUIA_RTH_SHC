@@ -3,17 +3,22 @@
         {
             "path": "/api/cron/cleanup-reports",
             "schedule": "0 0 * * *"
+        },
+        {
+            "path": "/api/cron/pdf-health",
+            "schedule": "*/10 * * * *"
         }
     ],
-    "headers": [
-        {
-            "source": "/api/generate-report",
-            "headers": [
-                {
-                    "key": "Service-Worker-Allowed",
-                    "value": "/"
-                }
-            ]
+    "functions": {
+        "src/app/api/generate-report/route.ts": {
+            "maxDuration": 60,
+            "memory": 2048,
+            "includeFiles": "../../node_modules/@sparticuz/chromium/bin/**"
+        },
+        "src/app/api/cron/pdf-health/route.ts": {
+            "maxDuration": 60,
+            "memory": 2048,
+            "includeFiles": "../../node_modules/@sparticuz/chromium/bin/**"
         }
-    ]
+    }
 }

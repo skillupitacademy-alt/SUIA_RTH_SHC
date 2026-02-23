@@ -1,10 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     transpilePackages: ['@quiz/api-client', '@quiz/db', '@quiz/ui', 'lucide-react'],
-    outputFileTracingIncludes: {
-        '/api/generate-report': ['../../node_modules/@sparticuz/chromium/bin/**/*'],
-        '/api/cron/pdf-health': ['../../node_modules/@sparticuz/chromium/bin/**/*'],
-    },
     serverExternalPackages: ['@sparticuz/chromium', 'puppeteer-core'],
     async headers() {
         return [

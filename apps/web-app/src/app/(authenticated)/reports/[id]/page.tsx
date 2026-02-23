@@ -3,11 +3,17 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { apiClient } from "@quiz/api-client";
-import { ExamReportLayout, ExamReport } from "@/components/reports/ExamReportLayout";
+import { type ExamReport } from "@/components/reports/ExamReportLayout";
 import { ArrowLeft, RefreshCw } from "lucide-react";
 import Link from "next/link";
 import { clientLogger } from '@/utils/clientLogger';
 import { ReportDownloadButton } from "@/components/reports/ReportDownloadButton";
+import dynamic from "next/dynamic";
+
+const ExamReportLayout = dynamic(
+    () => import("@/components/reports/ExamReportLayout").then((mod) => mod.ExamReportLayout),
+    { ssr: false }
+);
 
 export default function PremiumReportPage() {
     const { id } = useParams();
