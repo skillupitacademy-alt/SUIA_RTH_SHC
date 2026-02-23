@@ -13,12 +13,18 @@
         "src/app/api/generate-report/route.ts": {
             "maxDuration": 60,
             "memory": 2048,
-            "includeFiles": "../../node_modules/@sparticuz/chromium/bin/**"
+            "includeFiles": [
+                "../../node_modules/@sparticuz/chromium/bin/**",
+                "node_modules/@sparticuz/chromium/bin/**"
+            ]
         },
         "src/app/api/cron/pdf-health/route.ts": {
             "maxDuration": 60,
             "memory": 2048,
-            "includeFiles": "../../node_modules/@sparticuz/chromium/bin/**"
+            "includeFiles": [
+                "../../node_modules/@sparticuz/chromium/bin/**",
+                "node_modules/@sparticuz/chromium/bin/**"
+            ]
         }
     }
 }
