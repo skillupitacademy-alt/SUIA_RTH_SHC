@@ -64,6 +64,12 @@ export async function GET(_req: NextRequest) {
     return NextResponse.json(report);
   } catch (_error: unknown) {
     const errorMessage = _error instanceof Error ? _error.message : 'Failed to generate report';
+
+    // Handle specific processing delay errors from ReportEngine without crashing the route
+    if (errorMessage.includes('Analytics not precomputed')) {
+      return NextResponse.json({ status: 'processing', message: 'Finalizing analytics matrix...' }, { status: 202 });
+    }
+
     return NextResponse.json({ _error: errorMessage }, { status: 500 });
   }
 }

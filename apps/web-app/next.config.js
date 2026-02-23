@@ -4,9 +4,11 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({
     enabled: process.env.ANALYZE === 'true'
 });
 
+const apiUrlClean = (process.env.NEXT_PUBLIC_API_URL || "https://api.realtutorialhub.com").replace(/\/api$/, "").replace(/\/$/, "");
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-    transpilePackages: ['@quiz/api-client', '@quiz/db'],
+    transpilePackages: ['@quiz/api-client', '@quiz/db', '@quiz/ui', 'lucide-react'],
     async headers() {
         return [
             {
@@ -51,7 +53,7 @@ const nextConfig = {
                             "form-action 'self'",
                             "object-src 'none'",
                             "manifest-src 'self'",
-                            `report-uri ${process.env.NEXT_PUBLIC_API_URL || "https://api.realtutorialhub.com"}/api/security/report`,
+                            `report-uri ${apiUrlClean}/api/security/report`,
                         ].join('; '),
                     },
                 ],

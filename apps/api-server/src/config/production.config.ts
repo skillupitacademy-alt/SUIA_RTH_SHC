@@ -21,7 +21,7 @@ export const config = {
     cookieSettings: {
       httpOnly: false,
       secure: true,
-      sameSite: 'lax' as const,
+      sameSite: 'none' as const,
       domain: (() => {
         const raw = process.env.COOKIE_DOMAIN;
         return raw === undefined || raw === null || raw === '' ? undefined : raw;
