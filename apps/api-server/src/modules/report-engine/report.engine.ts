@@ -1,4 +1,4 @@
-import { db, exams, resultsByDimension } from "@quiz/db";
+import { db, examQuestions, exams, resultsByDimension } from "@quiz/db";
 import { and, desc, eq, sql } from "drizzle-orm";
 
 import { logger } from "@/lib/logger";
@@ -75,7 +75,7 @@ export type PremiumReport = {
   weakest_difficulty: string | null;
   totalTimeSpentSeconds: number;
   timeEfficiency: 'FAST' | 'OPTIMAL';
-  subtopics: { name: string; accuracy: number; attempts: number; showNoData?: boolean }[];
+  subtopics: { name: string; accuracy: number; attempts: number; showNoData?: boolean; topicId?: string }[];
   skills: { name: string; accuracy: number; attempts: number }[];
   difficulty: { level: string; accuracy: number | null; attempts: number; showNoData?: boolean }[];
   heatmap: { subtopic: string; difficulty: string; accuracy: number | null; attempts: number; showNoData?: boolean }[];
@@ -181,9 +181,9 @@ export class ReportEngine {
             where: whereClause,
             columns: { id: true, totalScore: true },
             with: {
-                examQuestions: {
-                    columns: { isCorrect: true }
-                }
+               examQuestions: {
+                  columns: { isCorrect: true }
+               }
             }
         });
 
@@ -465,10 +465,36 @@ export class ReportEngine {
       where: eq(resultsByDimension.examId, examId),
     });
 
+    // Robust Fallback: If results_by_dimension lacks names, fetch from hierarchy
+    const hierarchyFallback = await db.query.examQuestions.findFirst({
+        where: eq(examQuestions.examId, examId),
+        with: {
+            question: {
+                with: {
+                    topic: {
+                        with: {
+                            subject: {
+                                with: {
+                                    domain: true
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    });
+
     const lineage = {
-      domain: lineageData.find(r => r.dimensionType === 'domain')?.name ?? undefined,
-      subject: lineageData.find(r => r.dimensionType === 'subject')?.name ?? undefined,
-      topic: lineageData.find(r => r.dimensionType === 'topic')?.name ?? undefined,
+      domain: lineageData.find(r => r.dimensionType === 'domain')?.name
+        ?? hierarchyFallback?.question?.topic?.subject?.domain?.name
+        ?? undefined,
+      subject: lineageData.find(r => r.dimensionType === 'subject')?.name
+        ?? hierarchyFallback?.question?.topic?.subject?.name
+        ?? undefined,
+      topic: lineageData.find(r => r.dimensionType === 'topic')?.name
+        ?? hierarchyFallback?.question?.topic?.name
+        ?? undefined,
     };
 
     const rawQuestions = await db.execute(sql`

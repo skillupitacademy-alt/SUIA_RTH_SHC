@@ -31,7 +31,7 @@ export class PerformanceService {
   }
 
   static getCacheKey(examId: string) {
-    return `attempt:${examId}:core`;
+    return `attempt:${examId}:core:v3`;
   }
 
   static async getCachedReport<T>(examId: string): Promise<T | null> {
