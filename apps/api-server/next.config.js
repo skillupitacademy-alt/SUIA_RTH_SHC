@@ -5,6 +5,7 @@ const nextConfig = {
         '/api/generate-report': ['../../node_modules/@sparticuz/chromium/bin/**/*'],
         '/api/cron/pdf-health': ['../../node_modules/@sparticuz/chromium/bin/**/*'],
     },
+    serverExternalPackages: ['@sparticuz/chromium', 'puppeteer-core'],
     async headers() {
         return [
             {
