@@ -11,31 +11,50 @@ import {
     QuestionAuditPage
 } from "@/components/reports/print/PrintPages";
 
-async function getReportData(attemptId: string): Promise<ExamReport> {
+async function getReportData(attemptId: string, internalKey?: string): Promise<ExamReport> {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
-    const cookieStore = await cookies();
-    const allCookies = cookieStore.getAll().map(c => `${c.name}=${c.value}`).join("; ");
+
+    const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+    };
+
+    if (internalKey) {
+        headers["x-internal-key"] = internalKey;
+    } else {
+        const cookieStore = await cookies();
+        headers["Cookie"] = cookieStore.getAll().map(c => `${c.name}=${c.value}`).join("; ");
+    }
 
     const res = await fetch(`${apiUrl}/api/reports?id=${attemptId}&type=premium`, {
-        headers: {
-            Cookie: allCookies,
-        },
+        headers,
         next: { revalidate: 0 },
     });
 
     if (!res.ok) {
         if (res.status === 404) notFound();
-        throw new Error(`Failed to fetch report data: ${res.statusText}`);
+        const body = await res.text();
+        throw new Error(`Failed to fetch report data (${res.status}): ${body}`);
     }
 
     return res.json();
 }
 
-export default async function PrintReportPage({ params }: { params: { attemptId: string } }) {
+/**
+ * PRINT REPORT PAGE
+ * Optimized for Puppeteer PDF generation
+ */
+export default async function PrintReportPage({
+    params,
+    searchParams
+}: {
+    params: { attemptId: string },
+    searchParams: { internalKey?: string }
+}) {
     const { attemptId } = params;
+    const { internalKey } = searchParams;
 
     try {
-        const data = await getReportData(attemptId);
+        const data = await getReportData(attemptId, internalKey);
 
         return (
             <div className="pdf-container">

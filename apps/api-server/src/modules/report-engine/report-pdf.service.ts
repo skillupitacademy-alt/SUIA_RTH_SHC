@@ -36,8 +36,9 @@ export class ReportPdfService {
     const page = await browser.newPage();
     
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_WEB_APP_URL ?? "http://localhost:3001"; // Web app URL (shared canonical)
-      const url = `${baseUrl}/report/print/${attemptId}`;
+      const internalKey = process.env.INTERNAL_API_KEY ?? "secret";
+      const baseUrl = process.env.NEXT_PUBLIC_WEB_APP_URL ?? "http://localhost:3001";
+      const url = `${baseUrl}/report/print/${attemptId}?internalKey=${internalKey}`;
 
       logger.info({ attemptId, url }, "[ReportPdfService] Navigating to print route");
 
