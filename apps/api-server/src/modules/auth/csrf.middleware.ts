@@ -25,9 +25,10 @@ export async function csrfProtection(_request: NextRequest) {
 
   const cookieToken = _request.cookies.get('csrfToken')?.value;
   const headerToken = _request.headers.get('x-csrf-token');
+  const internalKey = _request.headers.get('x-internal-key');
+  const isValidInternal = internalKey !== null && internalKey === process.env.INTERNAL_API_KEY;
 
-
-  if (cookieToken === undefined || headerToken === null || cookieToken !== headerToken) {
+  if (!isValidInternal && (cookieToken === undefined || headerToken === null || cookieToken !== headerToken)) {
     // SECURITY UPGRADE: JWT Fallback
     // If the CSRF check fails, check if the _request has a valid Authorization header.
     // In a multi-port/multi-domain local setup, cookies are often lost or blocked.

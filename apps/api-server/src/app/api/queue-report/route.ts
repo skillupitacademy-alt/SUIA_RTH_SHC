@@ -17,25 +17,42 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Missing attemptId" }, { status: 400 });
     }
 
-    // 1. Ownership Validation
-    const token = TokenService.getAccessToken(req, { scope: "user" });
-    if (token == null || token === "") return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    // 1. Auth Validation (User Token or Internal Key)
+    const internalKey = req.headers.get("x-internal-key");
+    const isInternal = internalKey !== null && internalKey === process.env.INTERNAL_API_KEY;
     
-    const payload = await TokenService.verifyAccessToken(token, false);
-    const userId = payload.userId;
+    let userId: string;
 
-    const exam = await db.query.exams.findFirst({
-      where: eq(exams.id, attemptId),
-      columns: { userId: true, status: true }
-    });
+    if (isInternal) {
+      // For internal tests, we need to know WHICH user we're acting as if it's not provided
+      // But usually, we just fetch the exam and use its owner
+      const examMatch = await db.query.exams.findFirst({
+        where: eq(exams.id, attemptId),
+        columns: { userId: true, status: true }
+      });
+      if (!examMatch) return NextResponse.json({ error: "Exam not found" }, { status: 404 });
+      userId = examMatch.userId;
+    } else {
+      const token = TokenService.getAccessToken(req, { scope: "user" });
+      if (token == null || token === "") return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      
+      const payload = await TokenService.verifyAccessToken(token, false);
+      userId = payload.userId;
 
-    if (!exam || exam.userId !== userId) {
-      return NextResponse.json({ error: "Unauthorized or not found" }, { status: 403 });
+      const exam = await db.query.exams.findFirst({
+        where: eq(exams.id, attemptId),
+        columns: { userId: true, status: true }
+      });
+
+      if (!exam || exam.userId !== userId) {
+        return NextResponse.json({ error: "Unauthorized or not found" }, { status: 403 });
+      }
+
+      if (exam.status !== "completed") {
+        return NextResponse.json({ error: "Exam is not completed" }, { status: 400 });
+      }
     }
 
-    if (exam.status !== "completed") {
-      return NextResponse.json({ error: "Exam is not completed" }, { status: 400 });
-    }
 
     // 2. State Machine Init
     await ReportRepository.createReportIfNotExists({ attemptId, userId, status: "pending" });

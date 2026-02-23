@@ -14,12 +14,19 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Missing attemptId" }, { status: 400 });
     }
 
-    // 1. Ownership Validation
-    const token = TokenService.getAccessToken(req, { scope: "user" });
-    if (token == null || token === "") return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    // 1. Auth Validation (User Token or Internal Key)
+    const internalKey = req.headers.get("x-internal-key");
+    const isInternal = internalKey !== null && internalKey === process.env.INTERNAL_API_KEY;
     
-    const payload = await TokenService.verifyAccessToken(token, false);
-    const userId = payload.userId;
+    let userId: string | undefined;
+
+    if (!isInternal) {
+      const token = TokenService.getAccessToken(req, { scope: "user" });
+      if (token == null || token === "") return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      
+      const payload = await TokenService.verifyAccessToken(token, false);
+      userId = payload.userId;
+    }
 
     const report = await ReportRepository.getReportByAttempt(attemptId);
 
@@ -27,7 +34,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ status: "not_found" }, { status: 404 });
     }
 
-    if (report.userId !== userId) {
+    if (!isInternal && report.userId !== userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
 
