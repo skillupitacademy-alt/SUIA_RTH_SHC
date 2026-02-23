@@ -60,8 +60,15 @@ export default async function middleware(_request: NextRequest) {
     }
 
     const _token = TokenService.getAccessToken(_request, { scope });
+    const internalKey = _request.headers.get('x-internal-key');
+    const authHeader = _request.headers.get('authorization');
+    
+    const isValidInternalKey = internalKey !== null && internalKey === process.env.INTERNAL_API_KEY;
+    const isValidCronAuth = authHeader !== null && process.env.CRON_SECRET !== undefined && authHeader === `Bearer ${process.env.CRON_SECRET}`;
+    
+    const isSystemBypass = isValidInternalKey || isValidCronAuth;
 
-    if (_token === undefined || _token === null || _token === '') {
+    if (!isSystemBypass && (_token === undefined || _token === null || _token === '')) {
       const response = NextResponse.json(
         { _error: 'Authentication required', scope },
         { status: 401 }
@@ -69,10 +76,11 @@ export default async function middleware(_request: NextRequest) {
       return corsMiddleware(_request, response);
     }
 
-    try {
-      // In middleware, we just want to ensure it's a valid, unexpired _token with THE CORRECT AUDIENCE.
-      const isAdmin = scope === 'admin' || scope === 'infrastructure';
-      const _payload = await TokenService.verifyAccessToken(_token, { isAdmin, audience: expectedAudience });
+    if (!isSystemBypass) {
+      try {
+        // In middleware, we just want to ensure it's a valid, unexpired _token with THE CORRECT AUDIENCE.
+        const isAdmin = scope === 'admin' || scope === 'infrastructure';
+        const _payload = await TokenService.verifyAccessToken(_token!, { isAdmin, audience: expectedAudience });
 
       // 4.2 Central RBAC Enforcement (P0-SEC-002)
       const isInfraRoute = pathname.startsWith('/api/admin') && portalIdentity === 'infrastructure';
@@ -95,13 +103,14 @@ export default async function middleware(_request: NextRequest) {
           return corsMiddleware(_request, response);
         }
       }
-    } catch (_error: unknown) {
-      const errorMessage = _error instanceof Error ? _error.message : 'Authentication failed';
-      const response = NextResponse.json(
-        { _error: 'Invalid or expired _token', message: errorMessage },
-        { status: 401 }
-      );
-      return corsMiddleware(_request, response);
+      } catch (_error: unknown) {
+        const errorMessage = _error instanceof Error ? _error.message : 'Authentication failed';
+        const response = NextResponse.json(
+          { _error: 'Invalid or expired _token', message: errorMessage },
+          { status: 401 }
+        );
+        return corsMiddleware(_request, response);
+      }
     }
   }
 
