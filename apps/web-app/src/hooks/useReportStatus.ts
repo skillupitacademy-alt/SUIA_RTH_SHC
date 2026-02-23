@@ -15,7 +15,9 @@ export function useReportStatus(attemptId: string) {
   const checkStatus = useCallback(async () => {
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
-      const res = await fetch(`${apiUrl}/report-status?attemptId=${attemptId}`);
+      const res = await fetch(`${apiUrl}/report-status?attemptId=${attemptId}`, {
+        credentials: "include",
+      });
       
       if (!res.ok && res.status !== 404) {
         throw new Error("Failed to check report status");
@@ -61,6 +63,7 @@ export function useReportStatus(attemptId: string) {
       const res = await fetch(`${apiUrl}/queue-report`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ attemptId })
       });
 
