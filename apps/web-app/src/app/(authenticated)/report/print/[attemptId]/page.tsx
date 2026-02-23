@@ -10,6 +10,7 @@ import {
     AppendixCoverPage,
     QuestionAuditPage
 } from "@/components/reports/print/PrintPages";
+import { PdfReadySignal } from "@/components/reports/print/PdfReadySignal";
 
 async function getReportData(attemptId: string, internalKey?: string): Promise<ExamReport> {
     const rawApiUrl = process.env.NEXT_PUBLIC_API_URL || "https://api.realtutorialhub.com/api";
@@ -44,13 +45,12 @@ async function getReportData(attemptId: string, internalKey?: string): Promise<E
  * PRINT REPORT PAGE
  * Optimized for Puppeteer PDF generation
  */
-export default async function PrintReportPage({
-    params,
-    searchParams
-}: {
-    params: { attemptId: string },
-    searchParams: { internalKey?: string }
+export default async function PrintReportPage(props: {
+    params: Promise<{ attemptId: string }>,
+    searchParams: Promise<{ internalKey?: string }>
 }) {
+    const params = await props.params;
+    const searchParams = await props.searchParams;
     const { attemptId } = params;
     const { internalKey } = searchParams;
 
@@ -92,8 +92,8 @@ export default async function PrintReportPage({
                 {/* Page 7+: Question Audit (Portrait) */}
                 <QuestionAuditPage data={data} />
 
-                {/* Signal for Puppeteer */}
-                <div id="pdf-ready-signal" data-pdf-ready="true" className="hidden" />
+                {/* Signal for Puppeteer (Client side delayed) */}
+                <PdfReadySignal />
             </div>
         );
     } catch (error) {
