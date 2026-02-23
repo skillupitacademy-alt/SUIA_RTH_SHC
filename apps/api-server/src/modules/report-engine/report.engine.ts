@@ -88,6 +88,12 @@ export type PremiumReport = {
     nextExamHours: number;
   };
   tutorInsights: Array<{ topicId: string; accuracy: number }> | string;
+  lineage?: {
+    domain?: string;
+    subject?: string;
+    topic?: string;
+  };
+  completedAt?: string;
   questions: {
     id: string;
     text: string;
@@ -454,6 +460,17 @@ export class ReportEngine {
 
     const core = coreMetricsRaw.rows[0] as CoreRow;
 
+    // Fetch Lineage and Completion Date
+    const lineageData = await db.query.resultsByDimension.findMany({
+      where: eq(resultsByDimension.examId, examId),
+    });
+
+    const lineage = {
+      domain: lineageData.find(r => r.dimensionType === 'domain')?.name ?? undefined,
+      subject: lineageData.find(r => r.dimensionType === 'subject')?.name ?? undefined,
+      topic: lineageData.find(r => r.dimensionType === 'topic')?.name ?? undefined,
+    };
+
     const rawQuestions = await db.execute(sql`
         SELECT 
             eq.id,
@@ -471,6 +488,8 @@ export class ReportEngine {
 
     const finalReport: PremiumReport = {
       examId: exam.id,
+      completedAt: exam.completedAt ? exam.completedAt.toISOString() : undefined,
+      lineage,
       score: Math.round(core.score ?? 0),
       mastery: Math.round(core.mastery ?? 0),
       readiness: Math.round(core.readiness ?? 0),
@@ -480,16 +499,16 @@ export class ReportEngine {
       expertDropOff: core.expert_drop_off ?? false,
       timePattern: core.time_pattern ?? null,
       weakest_difficulty: core.weakest_difficulty ?? null,
-      totalTimeSpentSeconds: core.total_time ?? 0,
+      totalTimeSpentSeconds: Number(core.total_time ?? 0),
       timeEfficiency: ((core.score ?? 0) > 80 && (core.total_time ?? 0) < ((core.question_count ?? 0) * 40)) ? 'FAST' : 'OPTIMAL',
       subtopics: core.subtopics ?? [],
       skills: core.skills ?? [],
       difficulty: (core.difficulty ?? []).map(d => ({ ...d, showNoData: d.attempts < 1 })),
       heatmap: (core.heatmap ?? []).map(h => ({ ...h, showNoData: h.attempts < 1 })),
       timeBuckets: {
-        stable: core.stable_time_sec ?? 0,
-        logic: core.logic_time_sec ?? 0,
-        neural: core.neural_time_sec ?? 0
+        stable: Number(core.stable_time_sec ?? 0),
+        logic: Number(core.logic_time_sec ?? 0),
+        neural: Number(core.neural_time_sec ?? 0)
       },
       ai: {
         status: (core.score === null) ? 'DATA_INSUFFICIENT' : ((core.score ?? 0) >= 80 ? 'READY' : ((core.score ?? 0) >= 60 ? 'BORDERLINE' : 'NOT_READY')),
@@ -539,7 +558,7 @@ export class ReportEngine {
         correctAnswer: q.correct_answer,
         explanation: q.explanation,
         isCorrect: q.is_correct === 1,
-        timeSpent: q.time_spent ?? 0
+        timeSpent: Number(q.time_spent ?? 0)
       }))
     };
 

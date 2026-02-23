@@ -115,6 +115,12 @@ export interface ExamReport {
         time: string[];
         meta: string[];
     };
+    lineage?: {
+        domain?: string;
+        subject?: string;
+        topic?: string;
+    };
+    completedAt?: string;
 }
 
 export interface ExamReportLayoutProps {
@@ -231,6 +237,14 @@ const HeuristicPanel = ({
 
 export function ExamReportLayout({ data, loading }: ExamReportLayoutProps) {
     const [activeTab, setActiveTab] = React.useState<TabType>('summary');
+
+    // Pre-calculate Audit Stats for the 5 Data Pods
+    const totalQuestions = data.questions?.length || 0;
+    const auditHits = data.questions?.filter(q => q.isCorrect).length || 0;
+    const auditMisses = totalQuestions - auditHits;
+    const auditAccuracy = totalQuestions > 0 ? Math.round((auditHits / totalQuestions) * 100) : 0;
+    const auditAvgLatency = totalQuestions > 0 ? Math.round(data.totalTimeSpentSeconds / totalQuestions) : 0;
+
 
     if (loading) {
         return (
@@ -447,19 +461,31 @@ export function ExamReportLayout({ data, loading }: ExamReportLayoutProps) {
                         {/* RAW AUDIT TAB */}
                         {activeTab === 'audit' && (
                             <div className="w-full space-y-6 pt-4">
-                                <div className="p-8 lg:p-12 bg-slate-950 rounded-[3rem] border border-white/5 mb-12 flex items-center justify-between shadow-2xl">
+                                <div className="p-8 lg:p-12 bg-slate-950 rounded-[3rem] border border-white/5 mb-12 flex flex-col lg:flex-row lg:items-center justify-between gap-10 shadow-2xl">
                                     <div>
                                         <h2 className="text-4xl font-black text-white uppercase tracking-tighter">Raw Audit</h2>
                                         <p className="text-slate-400 font-bold uppercase text-[14px] tracking-[0.3em] mt-2">Vector Diagnostic Log</p>
                                     </div>
-                                    <div className="flex gap-8">
-                                        <div className="flex flex-col items-center px-8 border-r border-slate-800">
-                                            <span className="text-4xl font-black text-indigo-400">{data.questions?.filter(q => q.isCorrect).length}</span>
-                                            <span className="text-[13px] font-black text-slate-500 uppercase tracking-widest mt-1">Hits</span>
+                                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-y-8 gap-x-4 lg:gap-x-0 lg:divide-x lg:divide-slate-800">
+                                        <div className="flex flex-col items-center px-6 lg:px-10">
+                                            <span className="text-4xl font-black text-slate-300">{totalQuestions}</span>
+                                            <span className="text-[13px] font-black text-slate-500 uppercase tracking-widest mt-1 whitespace-nowrap">Total Depth</span>
                                         </div>
-                                        <div className="flex flex-col items-center px-8">
-                                            <span className="text-4xl font-black text-rose-500">{data.questions?.filter(q => !q.isCorrect).length}</span>
-                                            <span className="text-[13px] font-black text-slate-500 uppercase tracking-widest mt-1">Misses</span>
+                                        <div className="flex flex-col items-center px-6 lg:px-10">
+                                            <span className="text-4xl font-black text-indigo-400">{auditAccuracy}%</span>
+                                            <span className="text-[13px] font-black text-slate-500 uppercase tracking-widest mt-1 whitespace-nowrap">Accuracy Sync</span>
+                                        </div>
+                                        <div className="flex flex-col items-center px-6 lg:px-10">
+                                            <span className="text-4xl font-black text-emerald-500">{auditHits}</span>
+                                            <span className="text-[13px] font-black text-slate-500 uppercase tracking-widest mt-1 whitespace-nowrap">Hits</span>
+                                        </div>
+                                        <div className="flex flex-col items-center px-6 lg:px-10">
+                                            <span className="text-4xl font-black text-rose-500">{auditMisses}</span>
+                                            <span className="text-[13px] font-black text-slate-500 uppercase tracking-widest mt-1 whitespace-nowrap">Misses</span>
+                                        </div>
+                                        <div className="flex flex-col items-center px-6 lg:px-10 border-t md:border-t-0 pt-4 md:pt-0 col-span-2 md:col-span-1 border-slate-800/10 lg:border-t-0">
+                                            <span className="text-4xl font-black text-amber-500">{auditAvgLatency}s</span>
+                                            <span className="text-[13px] font-black text-slate-500 uppercase tracking-widest mt-1 whitespace-nowrap">Avg Latency</span>
                                         </div>
                                     </div>
                                 </div>

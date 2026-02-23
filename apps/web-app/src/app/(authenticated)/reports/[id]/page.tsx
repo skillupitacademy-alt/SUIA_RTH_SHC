@@ -111,27 +111,74 @@ export default function PremiumReportPage() {
     // Render the Premium Layout
     return (
         <div className="min-h-screen bg-slate-950">
-            <header className="sticky top-0 z-50 bg-slate-950/80 backdrop-blur-md h-20 px-6 md:px-12 flex items-center justify-between border-b border-slate-900">
-                <div className="flex items-center gap-6">
+            {/* COMMAND HUB HEADER */}
+            <header className="sticky top-0 z-50 bg-[#020617]/80 backdrop-blur-xl h-28 px-8 md:px-16 flex items-center justify-between border-b border-white/[0.03] shadow-2xl">
+                <div className="flex items-center gap-10">
                     <Link
                         href="/dashboard"
-                        className="p-3 rounded-2xl bg-slate-900 border border-slate-800 hover:border-indigo-500/50 transition-all text-slate-500 hover:text-indigo-400"
+                        className="group relative p-4 rounded-2xl bg-slate-900/50 border border-white/5 hover:border-indigo-500/50 transition-all duration-500 overflow-hidden"
                     >
-                        <ArrowLeft size={18} />
+                        <div className="absolute inset-0 bg-indigo-500/0 group-hover:bg-indigo-500/5 transition-colors" />
+                        <ArrowLeft size={20} className="relative z-10 text-slate-500 group-hover:text-indigo-400 group-hover:-translate-x-1 transition-all" />
                     </Link>
-                    <div className="h-6 w-[1px] bg-slate-800" />
+
+                    <div className="h-12 w-[1px] bg-gradient-to-b from-transparent via-slate-800 to-transparent" />
+
                     <div>
-                        <h1 className="text-[11px] font-black text-white uppercase tracking-[0.3em] leading-none">Neural Diagnostics</h1>
-                        <p className="text-[9px] font-bold text-slate-600 uppercase tracking-wider mt-1.5 opacity-60">
-                            Attempt Vector: {id?.toString().slice(0, 12).toUpperCase()}
-                        </p>
+                        <div className="flex items-center gap-3 mb-2">
+                            <div className="flex items-center gap-2 px-2.5 py-1 rounded-md bg-indigo-500/10 border border-indigo-500/20">
+                                <span className="text-[10px] font-black text-indigo-400 uppercase tracking-widest leading-none">Neural Diagnostics</span>
+                            </div>
+                            {report.lineage && (
+                                <div className="flex items-center gap-2.5">
+                                    <div className="flex items-center gap-2.5 overflow-hidden">
+                                        {report.lineage.domain && (
+                                            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] whitespace-nowrap opacity-60">{report.lineage.domain}</span>
+                                        )}
+                                        {report.lineage.subject && (
+                                            <>
+                                                <div className="h-1 w-1 rounded-full bg-slate-800" />
+                                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] whitespace-nowrap">{report.lineage.subject}</span>
+                                            </>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="flex items-baseline gap-6">
+                            <h1 className="text-2xl md:text-3xl font-black text-white tracking-tighter uppercase leading-none drop-shadow-sm">
+                                {report.lineage?.topic || "Diagnostic Attempt"}
+                            </h1>
+                            <div className="flex items-center gap-3">
+                                {report.completedAt && (
+                                    <div className="px-3 py-1 rounded-full bg-slate-900/80 border border-white/[0.05] flex items-center gap-2">
+                                        <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+                                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                                            {new Date(report.completedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                                        </span>
+                                    </div>
+                                )}
+                                <span className="text-[10px] font-bold text-slate-700 uppercase tracking-widest border-l border-slate-800 pl-3">
+                                    Vector: {id?.toString().slice(0, 8).toUpperCase()}
+                                </span>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <div className="hidden md:flex items-center gap-4">
-                    <div className="px-4 py-2 rounded-xl bg-indigo-500/5 border border-indigo-500/10 text-[9px] font-black text-indigo-400/80 uppercase tracking-[0.2em]">
-                        Authenticated Command View
+                <div className="hidden lg:flex items-center gap-6">
+                    <div className="flex flex-col items-end">
+                        <span className="text-[9px] font-black text-indigo-400 uppercase tracking-[0.3em]">Synapse Link</span>
+                        <span className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mt-1">Status: Operational</span>
                     </div>
+                    <div className="h-8 w-[1px] bg-slate-800" />
+                    <button
+                        onClick={() => window.location.reload()}
+                        className="p-3.5 rounded-2xl bg-slate-900 border border-slate-800 text-slate-500 hover:text-indigo-400 hover:border-indigo-500/50 transition-all"
+                    >
+                        <RefreshCw size={18} />
+                    </button>
                 </div>
             </header>
 
