@@ -14,12 +14,24 @@ export interface TimeSpentDonutProps {
 }
 
 export const TimeSpentDonut = React.memo(({ data }: TimeSpentDonutProps) => {
+    const [mounted, setMounted] = React.useState(false);
+
+    React.useEffect(() => {
+        setMounted(true);
+    }, []);
+
     // Breakdown logic: preferring server-side binned data for precision
-    const buckets = data.timeBuckets || {
-        stable: data.questions.filter(q => q.isCorrect && q.timeSpent < 45).reduce((s, q) => s + q.timeSpent, 0),
-        logic: data.questions.filter(q => q.isCorrect && q.timeSpent >= 45).reduce((s, q) => s + q.timeSpent, 0),
-        neural: data.questions.filter(q => !q.isCorrect).reduce((s, q) => s + q.timeSpent, 0)
-    };
+    const buckets = data.timeBuckets
+        ? {
+            stable: Number(data.timeBuckets.stable ?? 0),
+            logic: Number(data.timeBuckets.logic ?? 0),
+            neural: Number(data.timeBuckets.neural ?? 0)
+        }
+        : {
+            stable: data.questions.filter(q => q.isCorrect && q.timeSpent < 45).reduce((s, q) => s + q.timeSpent, 0),
+            logic: data.questions.filter(q => q.isCorrect && q.timeSpent >= 45).reduce((s, q) => s + q.timeSpent, 0),
+            neural: data.questions.filter(q => !q.isCorrect).reduce((s, q) => s + q.timeSpent, 0)
+        };
 
     let breakdown = [
         { name: "Stable Processing", value: buckets.stable, color: '#3b82f6', label: "Study" },
@@ -55,11 +67,14 @@ export const TimeSpentDonut = React.memo(({ data }: TimeSpentDonutProps) => {
 
             <div className="relative h-[300px]">
                 <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
+                    <PieChart key={mounted ? 'mounted' : 'unmounted'}>
                         <defs>
                             <filter id="timeGlow_TSD" x="-50%" y="-50%" width="200%" height="200%">
-                                <feGaussianBlur stdDeviation="6" result="blur" />
-                                <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                                <feGaussianBlur stdDeviation="5" result="blur" />
+                                <feMerge>
+                                    <feMergeNode in="blur" />
+                                    <feMergeNode in="SourceGraphic" />
+                                </feMerge>
                             </filter>
                         </defs>
                         <Pie

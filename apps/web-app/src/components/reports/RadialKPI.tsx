@@ -21,6 +21,12 @@ export interface RadialKPIProps {
 }
 
 export const RadialKPI = React.memo(({ data }: RadialKPIProps) => {
+    const [mounted, setMounted] = React.useState(false);
+
+    React.useEffect(() => {
+        setMounted(true);
+    }, []);
+
     const getMasteryLabel = (val: number) => {
         if (val >= 90) return "Expert";
         if (val >= 75) return "Advanced";
@@ -123,6 +129,7 @@ export const RadialKPI = React.memo(({ data }: RadialKPIProps) => {
                 <div className="w-[430px] h-[430px] flex items-center justify-center relative">
                     <ResponsiveContainer width="100%" height="100%">
                         <RadialBarChart
+                            key={mounted ? 'mounted' : 'unmounted'}
                             cx="50%"
                             cy="50%"
                             innerRadius="30%"
@@ -151,7 +158,10 @@ export const RadialKPI = React.memo(({ data }: RadialKPIProps) => {
                                 </linearGradient>
                                 <filter id="glow_RKPI" x="-50%" y="-50%" width="200%" height="200%">
                                     <feGaussianBlur stdDeviation="3.5" result="blur" />
-                                    <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                                    <feMerge>
+                                        <feMergeNode in="blur" />
+                                        <feMergeNode in="SourceGraphic" />
+                                    </feMerge>
                                 </filter>
                             </defs>
                             <PolarAngleAxis type="number" domain={[0, 100]} tick={false} />

@@ -10,6 +10,12 @@ export interface SkillDonutChartProps {
 }
 
 export const SkillDonutChart = React.memo(({ data }: SkillDonutChartProps) => {
+    const [mounted, setMounted] = React.useState(false);
+
+    React.useEffect(() => {
+        setMounted(true);
+    }, []);
+
     // Subject Breakdown colors matching the premium palette
     const COLORS = ['#22d3ee', '#34d399', '#facc15', '#818cf8', '#f472b6'];
 
@@ -29,11 +35,14 @@ export const SkillDonutChart = React.memo(({ data }: SkillDonutChartProps) => {
 
             <div className="relative h-[300px]">
                 <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
+                    <PieChart key={mounted ? 'mounted' : 'unmounted'}>
                         <defs>
                             <filter id="segmentGlow_SDC" x="-50%" y="-50%" width="200%" height="200%">
-                                <feGaussianBlur stdDeviation="8" result="blur" />
-                                <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                                <feGaussianBlur stdDeviation="5" result="blur" />
+                                <feMerge>
+                                    <feMergeNode in="blur" />
+                                    <feMergeNode in="SourceGraphic" />
+                                </feMerge>
                             </filter>
                         </defs>
                         <Pie
