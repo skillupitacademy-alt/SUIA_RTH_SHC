@@ -14,19 +14,43 @@ export class ReportPdfService {
     try {
       const isDev = process.env.NODE_ENV === "development";
       
+      // Vercel Monorepo Hardening: Search for binaries in root or local node_modules
+      if (!isDev) {
+        const fs = await import("fs");
+        const path = await import("path");
+        const possiblePaths = [
+          "/var/task/node_modules/@sparticuz/chromium/bin",
+          path.join(process.cwd(), "node_modules/@sparticuz/chromium/bin"),
+          path.join(process.cwd(), "../../node_modules/@sparticuz/chromium/bin"),
+        ];
+
+        for (const p of possiblePaths) {
+          if (fs.existsSync(p)) {
+            logger.info({ path: p }, "[ReportPdfService] Found binaries at path");
+            // @ts-ignore
+            chromium.setBinPath?.(p);
+            break;
+          }
+        }
+      }
+
       const options = {
         args: isDev ? [] : chromium.args,
-        defaultViewport: { width: 1280, height: 720 },
+        defaultViewport: chromium.defaultViewport,
         executablePath: isDev 
-          ? "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe" // Local path for windows
+          ? "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe" 
           : await chromium.executablePath(),
-        headless: true,
+        headless: chromium.headless,
       };
 
       globalBrowser = (await puppeteer.launch(options)) as unknown as Browser;
       return globalBrowser;
-    } catch (error) {
-      logger.error({ err: error }, "[ReportPdfService] Failed to launch browser");
+    } catch (error: any) {
+      logger.error({ 
+        err: error.message, 
+        cwd: process.cwd(),
+        stack: error.stack 
+      }, "[ReportPdfService] Failed to launch browser");
       throw error;
     }
   }
