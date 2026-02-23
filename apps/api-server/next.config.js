@@ -1,10 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     transpilePackages: ['@quiz/api-client', '@quiz/db', '@quiz/ui', 'lucide-react'],
-    experimental: {
-        outputFileTracingIncludes: {
-            '/api/generate-report': ['./node_modules/@sparticuz/chromium/bin/**/*'],
-        },
+    outputFileTracingIncludes: {
+        '/api/generate-report': ['./node_modules/@sparticuz/chromium/bin/**/*'],
     },
     async headers() {
         return [
