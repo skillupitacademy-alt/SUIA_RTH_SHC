@@ -12,6 +12,12 @@ export function useReportStatus(attemptId: string) {
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  const getCsrfToken = () => {
+    if (typeof document === "undefined") return null;
+    const match = document.cookie.match(/(?:^|; )csrfToken=([^;]+)/);
+    return match ? decodeURIComponent(match[1]) : null;
+  };
+
   const checkStatus = useCallback(async () => {
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
@@ -62,7 +68,10 @@ export function useReportStatus(attemptId: string) {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
       const res = await fetch(`${apiUrl}/queue-report`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(getCsrfToken() ? { "x-csrf-token": getCsrfToken() as string } : {})
+        },
         credentials: "include",
         body: JSON.stringify({ attemptId })
       });
