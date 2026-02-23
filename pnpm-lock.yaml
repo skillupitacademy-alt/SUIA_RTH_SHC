@@ -14,6 +14,9 @@ importers:
       '@next/bundle-analyzer':
         specifier: ^16.1.6
         version: 16.1.6
+      '@types/ws':
+        specifier: ^8.18.1
+        version: 8.18.1
       drizzle-kit:
         specifier: ^0.31.8
         version: 0.31.8
@@ -32,6 +35,9 @@ importers:
       typescript:
         specifier: ^5.7.2
         version: 5.9.3
+      ws:
+        specifier: ^8.19.0
+        version: 8.19.0
     devDependencies:
       '@playwright/test':
         specifier: ^1.49.1
@@ -2297,6 +2303,9 @@ packages:
 
   '@types/use-sync-external-store@0.0.6':
     resolution: {integrity: sha512-zFDAD+tlpf2r4asuHEj0XH6pY6i0g5NeAHPn+15wk3BV6JA69eERFXC1gyGThDkVa1zCyKr5jox1+2LbV/AMLg==}
+
+  '@types/ws@8.18.1':
+    resolution: {integrity: sha512-ThVF6DCVhA8kUGy+aazFQ4kXQ7E1Ty7A3ypFOe0IcJV8O/M511G99AW24irKrW56Wt44yG9+ij8FaqoBGkuBXg==}
 
   '@types/yauzl@2.10.3':
     resolution: {integrity: sha512-oJoftv0LSuaDZE3Le4DbKX+KS9G36NzOeSap90UIK0yMA/NhKJhqlSGtNDORNRaIbQfzjXDrQa0ytJ6mNRGz/Q==}
@@ -7816,6 +7825,10 @@ snapshots:
 
   '@types/use-sync-external-store@0.0.6': {}
 
+  '@types/ws@8.18.1':
+    dependencies:
+      '@types/node': 25.0.10
+
   '@types/yauzl@2.10.3':
     dependencies:
       '@types/node': 25.0.10
@@ -9355,7 +9368,7 @@ snapshots:
       '@petamoriken/float16': 3.9.3
       debug: 4.4.3
       env-paths: 3.0.0
-      semver: 7.7.3
+      semver: 7.7.4
       shell-quote: 1.8.3
       which: 4.0.0
     transitivePeerDependencies:
