@@ -40,7 +40,7 @@ export function ReportDownloadButton({ attemptId, className }: ReportDownloadBut
             <button
                 onClick={handleDownload}
                 className={cn(
-                    "flex items-center gap-3 px-8 py-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl font-black uppercase tracking-widest transition-all shadow-lg shadow-indigo-600/20 active:scale-95 group",
+                    "flex items-center gap-3 px-6 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold uppercase tracking-widest transition-all shadow-lg shadow-indigo-600/20 active:scale-95 group text-[11px]",
                     className
                 )}
             >
@@ -56,7 +56,7 @@ export function ReportDownloadButton({ attemptId, className }: ReportDownloadBut
                 {isSoftTimeout ? (
                     <button
                         onClick={() => triggerGeneration({ force: true })}
-                        className="flex items-center gap-3 px-8 py-4 bg-indigo-600/20 border border-indigo-500/40 text-indigo-400 rounded-2xl font-black uppercase tracking-widest hover:bg-indigo-600/30 transition-all shadow-lg"
+                        className="flex items-center gap-3 px-6 py-2.5 bg-indigo-600/10 border border-indigo-500/20 text-indigo-400 rounded-xl font-bold uppercase tracking-widest hover:bg-indigo-600/20 transition-all shadow-lg text-[11px]"
                     >
                         <RefreshCw className="w-5 h-5 animate-spin" />
                         Retry Now
@@ -64,7 +64,7 @@ export function ReportDownloadButton({ attemptId, className }: ReportDownloadBut
                 ) : (
                     <button
                         disabled
-                        className="flex items-center gap-3 px-8 py-4 bg-slate-800 text-slate-400 rounded-2xl font-black uppercase tracking-widest cursor-wait"
+                        className="flex items-center gap-3 px-6 py-2.5 bg-slate-800 text-slate-400 rounded-xl font-bold uppercase tracking-widest cursor-wait text-[11px]"
                     >
                         <Loader2 className="w-5 h-5 animate-spin" />
                         Analyzing Matrix...
@@ -82,7 +82,7 @@ export function ReportDownloadButton({ attemptId, className }: ReportDownloadBut
             <button
                 onClick={() => triggerGeneration({ force: true })}
                 className={cn(
-                    "flex items-center gap-3 px-8 py-4 bg-rose-600/10 border border-rose-500/20 hover:bg-rose-600/20 text-rose-500 rounded-2xl font-black uppercase tracking-widest transition-all",
+                    "flex items-center gap-3 px-6 py-2.5 bg-rose-600/10 border border-rose-500/20 hover:bg-rose-600/20 text-rose-500 rounded-xl font-bold uppercase tracking-widest transition-all text-[11px]",
                     className
                 )}
             >
@@ -96,7 +96,7 @@ export function ReportDownloadButton({ attemptId, className }: ReportDownloadBut
         <button
             onClick={() => triggerGeneration()}
             className={cn(
-                "flex items-center gap-3 px-8 py-4 bg-indigo-600/10 border border-indigo-500/20 hover:bg-indigo-600/20 text-indigo-400 rounded-2xl font-black uppercase tracking-widest transition-all",
+                "flex items-center gap-3 px-6 py-2.5 bg-indigo-600/10 border border-indigo-500/20 hover:bg-indigo-600/20 text-indigo-400 rounded-xl font-bold uppercase tracking-widest transition-all text-[11px]",
                 className
             )}
         >
@@ -105,3 +105,4 @@ export function ReportDownloadButton({ attemptId, className }: ReportDownloadBut
         </button>
     );
 }
+

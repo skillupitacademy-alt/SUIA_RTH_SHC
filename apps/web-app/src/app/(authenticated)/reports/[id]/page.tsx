@@ -127,7 +127,7 @@ export default function PremiumReportPage() {
     return (
         <div className="min-h-screen bg-slate-950">
             {/* COMMAND HUB HEADER */}
-            <header className="sticky top-0 z-50 bg-[#020617]/80 backdrop-blur-xl h-28 px-8 md:px-16 flex items-center justify-between border-b border-white/[0.03] shadow-2xl">
+            <header className="sticky top-0 z-50 bg-[#020617]/80 backdrop-blur-xl py-5 px-8 md:px-16 flex items-center justify-between border-b border-white/[0.03] shadow-2xl">
                 <div className="flex items-center gap-10">
                     <Link
                         href="/dashboard"
@@ -161,20 +161,20 @@ export default function PremiumReportPage() {
                             )}
                         </div>
 
-                        <div className="flex items-baseline gap-6">
-                            <h1 className="text-4xl md:text-5xl font-black text-white tracking-tighter uppercase leading-none drop-shadow-sm">
+                        <div className="flex flex-col md:flex-row md:items-center gap-4 md:gap-8">
+                            <h1 className="text-2xl md:text-3xl font-black text-white tracking-tight uppercase leading-none drop-shadow-sm">
                                 {report.lineage?.topic || "Diagnostic Attempt"}
                             </h1>
-                            <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-4">
                                 {report.completedAt && (
                                     <div className="px-3 py-1 rounded-full bg-slate-900/80 border border-white/[0.05] flex items-center gap-2">
                                         <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
-                                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest whitespace-nowrap">
                                             {new Date(report.completedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                                         </span>
                                     </div>
                                 )}
-                                <span className="text-[10px] font-bold text-slate-700 uppercase tracking-widest border-l border-slate-800 pl-3">
+                                <span className="text-[10px] font-bold text-slate-700 uppercase tracking-widest border-l border-slate-800 pl-4 whitespace-nowrap">
                                     Vector: {id?.toString().slice(0, 8).toUpperCase()}
                                 </span>
                             </div>
