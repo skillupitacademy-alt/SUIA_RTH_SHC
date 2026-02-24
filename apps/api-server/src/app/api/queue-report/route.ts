@@ -1,6 +1,6 @@
 import { db, exams } from "@quiz/db";
 import { eq } from "drizzle-orm";
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, waitUntil } from "next/server";
 
 import { logger } from "@/lib/logger";
 import { TokenService } from "@/modules/auth/token.service";
@@ -26,8 +26,9 @@ export async function POST(req: NextRequest) {
     }
 
     // 1. Auth Validation (User Token or Internal Key)
-    const internalKey = req.headers.get("x-internal-key");
-    const isInternal = internalKey !== null && internalKey === process.env.INTERNAL_API_KEY;
+    const internalKeyHeader = req.headers.get("x-internal-key") ?? "";
+    const internalSecret = process.env.INTERNAL_API_KEY ?? "secret";
+    const isInternal = internalKeyHeader !== "" && internalSecret !== "" && internalKeyHeader === internalSecret;
     
     let userId: string;
 
@@ -86,14 +87,22 @@ export async function POST(req: NextRequest) {
 
     const generateUrl = `${apiBase}/generate-report`;
     
-    fetch(generateUrl, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-internal-key": process.env.INTERNAL_API_KEY ?? "secret"
-      },
-      body: JSON.stringify({ attemptId, force })
-    }).catch(err => logger.error({ err, attemptId }, "[QueueReport] Background trigger failed"));
+    // Use waitUntil to ensure the background task survives the Vercel function lifecycle
+    // This solves the "Client network socket disconnected" error in production
+    waitUntil(
+      fetch(generateUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-internal-key": process.env.INTERNAL_API_KEY ?? "secret"
+        },
+        body: JSON.stringify({ attemptId, force }),
+        // @ts-expect-error - AbortSignal.timeout is a newer standard
+        signal: AbortSignal.timeout(30000) // 30s timeout for the trigger handshake
+      }).catch(err => {
+        logger.error({ err, attemptId, url: generateUrl }, "[QueueReport] Background trigger failed");
+      })
+    );
 
     return NextResponse.json({ status: "queued", attemptId });
 
