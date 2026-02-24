@@ -2,6 +2,7 @@ import chromium from "@sparticuz/chromium";
 import puppeteer, { Browser } from "puppeteer-core";
 
 import { logger } from "@/lib/logger";
+import { ReportEngine } from "./report.engine";
 
 let globalBrowser: Browser | null = null;
 
@@ -66,6 +67,28 @@ export class ReportPdfService {
       const internalKey = process.env.INTERNAL_API_KEY ?? "secret";
       const baseUrl = process.env.NEXT_PUBLIC_WEB_APP_URL ?? "http://localhost:3001";
       const url = `${baseUrl}/report/print/${attemptId}?internalKey=${internalKey}`;
+
+      logger.info({ attemptId, url }, "[ReportPdfService] Fetching report data locally for interception");
+      
+      // 1. Fetch data locally to bypass network
+      const reportData = await ReportEngine.getPremiumExamReport(attemptId);
+
+      // 2. Set up interception
+      await page.setRequestInterception(true);
+      page.on('request', (request) => {
+        const reqUrl = request.url();
+        // Match both local and production API calls
+        if (reqUrl.includes('/api/reports') && reqUrl.includes(attemptId)) {
+          logger.info({ reqUrl }, "[ReportPdfService] Intercepting data request, providing local copy");
+          request.respond({
+            status: 200,
+            contentType: 'application/json',
+            body: JSON.stringify(reportData),
+          });
+        } else {
+          request.continue();
+        }
+      });
 
       logger.info({ attemptId, url }, "[ReportPdfService] Navigating to print route");
 
