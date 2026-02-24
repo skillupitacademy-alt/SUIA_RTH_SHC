@@ -25,30 +25,33 @@ interface DiagnosticTierProps {
 }
 
 const DiagnosticTier = ({ title, status, color, icon: Icon, progress, items }: DiagnosticTierProps) => (
-    <div className="p-4 bg-slate-900/40 rounded-[1.5rem] border border-white/5 relative overflow-hidden">
-        <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-3">
-                <div className={cn("p-2 rounded-lg border", color.replace('bg-', 'border-').replace('/10', '/20'))}>
-                    <Icon className={cn("h-3.5 w-3.5", color.replace('bg-', 'text-').split(' ')[0])} />
+    <div className="p-6 bg-slate-900/40 rounded-[2rem] border border-white/5 relative overflow-hidden group/tier hover:bg-slate-900/60 transition-all duration-300">
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.01)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.01)_1px,transparent_1px)] bg-[size:24px_24px] [mask-image:radial-gradient(ellipse_at_center,black,transparent)] pointer-events-none" />
+        <div className="flex items-center justify-between mb-5 relative z-10">
+            <div className="flex items-center gap-4">
+                <div className={cn("p-2.5 rounded-xl border border-white/5 shadow-inner", color.replace('bg-', 'text-').split(' ')[0])}>
+                    <Icon className="h-4 w-4" />
                 </div>
                 <div>
-                    <span className="text-[11px] font-black text-white uppercase tracking-widest">{title}</span>
-                    <span className={cn("text-[9px] font-bold ml-2", color.replace('bg-', 'text-').split(' ')[0])}>({status})</span>
+                    <span className="text-[13px] font-black text-white uppercase tracking-widest">{title}</span>
+                    <span className={cn("text-[11px] font-bold ml-2", color.replace('bg-', 'text-').split(' ')[0])}>({status})</span>
                 </div>
             </div>
-            {/* Rigid non-animated progress bar */}
-            <div className="h-1 w-16 bg-slate-800/50 rounded-full overflow-hidden border border-white/5">
+            {/* Rigid non-animated progress bar matching web thickness */}
+            <div className="h-1.5 w-24 bg-slate-800/50 rounded-full overflow-hidden p-[1px] border border-white/5">
                 <div
-                    className={cn("h-full rounded-full", color.split(' ')[0])}
+                    className={cn("h-full rounded-full shadow-[0_0_10px_rgba(0,0,0,0.5)]", color.split(' ')[0])}
                     style={{ width: `${progress}%` }}
                 />
             </div>
         </div>
-        <ul className="space-y-1.5 px-1">
+        <ul className="space-y-3 relative z-10">
             {items.map((item, i) => (
-                <li key={i} className="flex items-start gap-2">
-                    <div className={cn("h-1 w-1 rounded-full mt-1.5 shrink-0", color.split(' ')[0])} />
-                    <span className="text-[11px] text-slate-300 font-medium leading-tight">{item}</span>
+                <li key={i} className="flex items-start gap-3 group/item">
+                    <div className={cn("h-1.5 w-1.5 rounded-full mt-2 shrink-0 shadow-sm", color.split(' ')[0])} />
+                    <span className="text-[13px] text-slate-300 font-medium leading-relaxed">
+                        {item}
+                    </span>
                 </li>
             ))}
         </ul>
@@ -58,15 +61,16 @@ const DiagnosticTier = ({ title, status, color, icon: Icon, progress, items }: D
 type AIData = {
     actions: string[];
     weakest_subtopic: string;
-    weakest_skill: string;
+    weakest_skill?: string;
     status: string;
 };
 
 type TacticalPrescriptionProps = {
     data: { ai?: AIData };
+    title?: string;
 };
 
-export function TacticalPrescriptionPrintPanel({ data }: TacticalPrescriptionProps) {
+export function TacticalPrescriptionPrintPanel({ data, title }: TacticalPrescriptionProps) {
     if (!data.ai) return null;
     const ai = data.ai;
 
@@ -85,36 +89,58 @@ export function TacticalPrescriptionPrintPanel({ data }: TacticalPrescriptionPro
             color: "bg-amber-500 text-amber-400",
             icon: Zap,
             progress: 65,
-            items: ai.actions.length > 1 ? [ai.actions[1], `Optimization: ${ai.weakest_skill}`] : [`Optimization: ${ai.weakest_skill}`]
+            items: ai.actions.length > 1
+                ? [ai.actions[1], `Optimization: ${ai.weakest_skill || ai.weakest_subtopic}`]
+                : [`Optimization: ${ai.weakest_skill || ai.weakest_subtopic}`]
         },
         {
             title: "Maintain",
             status: "Mastered",
             color: "bg-emerald-500 text-emerald-400",
             icon: CheckCircle2,
-            progress: 90,
+            progress: 95,
             items: ai.actions.length > 2 ? ai.actions.slice(2, 4) : ["Maintain current neural baseline stability"]
         }
     ];
 
     return (
-        <div className="pdf-panel w-full h-full p-8 flex flex-col">
-            <div className="flex items-center gap-3 mb-6">
-                <div className="p-2 bg-indigo-500/10 rounded-xl border border-indigo-500/20">
-                    <BrainCircuit className="h-5 w-5 text-indigo-400" />
+        <div className="pdf-panel w-full h-full p-8 lg:p-10 flex flex-col bg-[#0a0c12]/90 border border-slate-800/60 rounded-[2.5rem] shadow-[0_30px_60px_rgba(0,0,0,0.6)] backdrop-blur-3xl relative overflow-hidden group">
+            <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.01)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.01)_1px,transparent_1px)] bg-[size:24px_24px] [mask-image:radial-gradient(ellipse_at_center,black,transparent)] pointer-events-none" />
+
+            <div className="relative z-10 flex flex-col h-full">
+                <div className="flex items-center justify-between mb-10">
+                    <div className="flex items-center gap-4">
+                        <div className="p-2.5 bg-indigo-500/10 rounded-2xl border border-indigo-500/20 shadow-inner group-hover:border-indigo-500/40 transition-all">
+                            <BrainCircuit className="h-6 w-6 text-indigo-400" />
+                        </div>
+                        <h3 className="text-xl font-black text-white uppercase tracking-tighter">Tactical Prescription</h3>
+                    </div>
+                    <div className="px-4 py-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-lg">
+                        <span className="text-[12px] font-black text-emerald-400 uppercase tracking-widest leading-none flex items-center gap-2">
+                            <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                            AI STATUS: {ai.status === 'READY' ? 'OPTIMIZED' : ai.status}
+                        </span>
+                    </div>
                 </div>
-                <h3 className="text-lg font-black text-white uppercase tracking-tighter">Tactical Prescription</h3>
-            </div>
 
-            <div className="space-y-4 flex-grow">
-                {tiers.map((tier, idx) => (
-                    <DiagnosticTier key={idx} {...tier} />
-                ))}
-            </div>
+                <h4 className="text-[12px] font-black text-slate-400 uppercase tracking-[0.3em] mb-8 border-b border-white/5 pb-4">
+                    {title || "Diagnostic Matrix"}
+                </h4>
 
-            <div className="mt-6 pt-6 border-t border-white/5 flex items-center justify-between opacity-50">
-                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">DIAGNOSTIC LOGS V9.4</span>
-                <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest leading-none">AI STATUS: {ai.status}</span>
+                <div className="space-y-6 flex-grow overflow-visible">
+                    {tiers.map((tier, idx) => (
+                        <DiagnosticTier key={idx} {...tier} />
+                    ))}
+                </div>
+
+                <div className="mt-10 pt-8 border-t border-white/5">
+                    <div className="flex items-center justify-between text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">
+                        <div className="flex items-center gap-2">
+                            <span>DIAGNOSTIC LOGS V9.4</span>
+                        </div>
+                        <span className="text-[10px] font-black text-slate-700">SYS_5DNJLE</span>
+                    </div>
+                </div>
             </div>
         </div>
     );
@@ -175,41 +201,42 @@ export function HeatmapMatrixPrint({ data }: { data: HeatmapRow[] }) {
 
     return (
         <div className="w-full flex flex-col space-y-6">
-            <div className="flex gap-3 px-6">
+            <div className="flex gap-4 px-6 mb-2">
                 <div className="w-48 flex-shrink-0" />
                 {difficulties.map(diff => (
-                    <div key={diff} className="flex-1 text-center py-2.5 bg-slate-900/60 rounded-xl border border-white/5">
-                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{diff}</span>
+                    <div key={diff} className="flex-1 min-w-[120px] max-w-[200px] text-center py-4 bg-slate-900/40 rounded-2xl border border-white/5 backdrop-blur-sm">
+                        <span className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">{diff}</span>
                     </div>
                 ))}
             </div>
 
-            <div className="space-y-2.5">
+            <div className="space-y-4">
                 {subtopics.slice(0, 7).map((sub) => ( // Clamp to visible space
-                    <div key={sub} className="flex gap-3">
-                        <div className="w-48 flex-shrink-0 flex items-center pr-6 overflow-hidden">
-                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-tight truncate">
+                    <div key={sub} className="flex gap-4">
+                        <div className="w-48 flex-shrink-0 flex items-start pt-4 border-r border-slate-800/60 pr-6 overflow-hidden">
+                            <span className="text-[12px] font-bold text-slate-300 uppercase tracking-widest leading-tight text-left truncate">
                                 {sub}
                             </span>
                         </div>
                         {difficulties.map(diff => {
                             const cell = data.find(d => d.subtopic === sub && d.difficulty === diff);
+                            // Show data as soon as we have at least 1 attempt
+                            const hasSufficientData = !!cell && (cell.attempts ?? 0) >= 1;
                             const accuracy = cell ? Math.round(Number(cell.accuracy ?? 0)) : 0;
-                            const hasData = !!cell && (cell.attempts ?? 0) > 0;
 
                             return (
                                 <div
                                     key={diff}
                                     className={cn(
-                                        "heat-pill flex-1",
-                                        hasData ? getCellColor(accuracy) : "bg-slate-900/10 text-slate-700 border-white/5"
+                                        "flex-1 min-w-[120px] max-w-[200px] h-20 flex flex-col items-center justify-center rounded-2xl border transition-all duration-300 relative",
+                                        hasSufficientData ? getCellColor(accuracy) : "bg-slate-900/10 text-slate-700 border-white/5"
                                     )}
                                 >
-                                    <span className="text-[14px] font-black tracking-tighter">
-                                        {hasData ? `${accuracy}%` : '---'}
+                                    <span className="text-[18px] font-black tracking-tight z-10">
+                                        {hasSufficientData ? `${accuracy}%` : '---'}
                                     </span>
-                                    {hasData && (
-                                        <span className="text-[8px] font-black opacity-40 uppercase tracking-widest">
+                                    {hasSufficientData && (
+                                        <span className="text-[9px] font-black opacity-40 uppercase tracking-widest mt-1">
                                             {cell.attempts} VECTORS
                                         </span>
                                     )}

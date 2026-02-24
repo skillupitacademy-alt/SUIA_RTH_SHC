@@ -1,4 +1,5 @@
 import { db, exams } from "@quiz/db";
+import { ReportJSON } from "@quiz/types/report";
 import { eq } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -11,6 +12,7 @@ import { cacheService } from "@/modules/core/cache.service";
 import { PerformanceService } from "@/modules/report-engine/performance.service";
 import { ReportPdfService } from "@/modules/report-engine/report-pdf.service";
 import { ReportRepository } from "@/modules/report-engine/report-repository";
+import { ReportJobService } from "@/services/reports/ReportJobService";
 
 export const runtime = "nodejs"; // Required for Puppeteer
 
@@ -56,7 +58,7 @@ export async function POST(req: NextRequest) {
     
     const exam = await db.query.exams.findFirst({
       where: eq(exams.id, attemptId),
-      columns: { userId: true, status: true }
+      columns: { userId: true, status: true, reportMaterialized: true }
     });
 
     if (!exam || exam.userId !== userId) {
@@ -90,6 +92,20 @@ export async function POST(req: NextRequest) {
     if (!force && report?.status === "ready" && report.fileRef != null && report.fileRef !== "") {
       const url = await getDownloadUrl(report.fileRef);
       return NextResponse.json({ url, cached: true });
+    }
+
+    // 3.5 Hierarchical Depth Check
+    const materialized = exam.reportMaterialized as ReportJSON | null;
+    const depth = materialized?.meta?.depth ?? 1;
+
+    if (depth > 1) {
+      logger.info({ attemptId, depth }, "[GenerateReport] Hierarchical depth detected, queueing job");
+      const jobId = await ReportJobService.createJob(attemptId, userId);
+      return NextResponse.json({ 
+        status: "queued", 
+        jobId, 
+        message: "Hierarchical report generation initiated. This may take a few minutes." 
+      }, { status: 202 });
     }
 
     // 4. Redis Locking (Prevent duplicate runs)

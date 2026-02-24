@@ -13,6 +13,9 @@ import {
     HeatmapMatrixPrint
 } from "./PrintComponents";
 
+// Import shared types
+import type { QuestionItem } from "@quiz/types";
+
 const RadialKPI = dynamic(() => import("../RadialKPI").then(mod => mod.RadialKPI), { ssr: false });
 const SubtopicBarChart = dynamic(() => import("../SubtopicBarChart").then(mod => mod.SubtopicBarChart), { ssr: false });
 const SkillDonutChart = dynamic(() => import("../SkillDonutChart").then(mod => mod.SkillDonutChart), { ssr: false });
@@ -21,13 +24,46 @@ const TimeSpentDonut = dynamic(() => import("../TimeSpentDonut").then(mod => mod
 /* ─── Tokens ─── */
 const T = REPORT_LAYOUT;
 
+/**
+ * TopicUnitData is the payload for a single 5-page Atomic Unit.
+ * It is derived from a TopicDataset but structured for the UI components.
+ */
+export interface TopicUnitData {
+    id?: string;
+    examId?: string;
+    name?: string;
+    score: number;
+    mastery: number;
+    readiness: number;
+    percentile: number;
+    totalTimeSpentSeconds: number;
+    timeEfficiency: 'FAST' | 'OPTIMAL' | 'SLOW';
+    timeBuckets?: { stable: number; logic: number; neural: number };
+    subtopics: { name: string; accuracy: number; attempts: number }[];
+    skills: { name: string; accuracy: number; attempts: number }[];
+    difficulty: { level: string; accuracy: number; attempts: number }[];
+    heatmap: { subtopic: string; difficulty: string; accuracy: number; attempts: number }[];
+    ai: {
+        status: "READY" | "BORDERLINE" | "NOT_READY";
+        actions: string[];
+        weakest_subtopic: string;
+        weakest_skill?: string;
+    };
+    lineage?: {
+        domain?: string;
+        subject?: string;
+        topic?: string;
+    };
+    questions?: ExamReport["questions"];
+    completedAt?: string;
+    candidateName?: string;
+}
+
 interface PageProps {
-    data: ExamReport;
+    data: TopicUnitData;
     page: number;
     total: number;
 }
-
-type QuestionRow = NonNullable<ExamReport["questions"]>[number];
 
 /* ────────────────────────────────────────────── */
 /*  PAGE 01 : Executive Summary                  */
@@ -37,14 +73,25 @@ export function ExecutiveSummaryPage({ data, page, total }: PageProps) {
         <div className="h-full flex flex-col">
             <header className="pdf-header flex justify-between items-start border-b border-slate-800 pb-4 mb-6">
                 <div>
-                    <h1 className="report-heading">{data.lineage?.topic || "Diagnostic Intelligence"}</h1>
+                    {data.lineage && (
+                        <div className="flex items-center gap-2 mb-2 opacity-60">
+                            <span className="text-[10px] font-black text-indigo-400 uppercase tracking-[0.2em]">{data.lineage.domain || "Diagnostic"}</span>
+                            {data.lineage.subject && (
+                                <>
+                                    <div className="h-1 w-1 rounded-full bg-slate-700 mx-1" />
+                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">{data.lineage.subject}</span>
+                                </>
+                            )}
+                        </div>
+                    )}
+                    <h1 className="report-heading">{data.lineage?.topic || data.name}</h1>
                     <p className="report-subheading mt-1">Executive Analysis : {data.candidateName || "Intelligence Assets"}</p>
                 </div>
                 <div className="text-right">
                     <p className={T.typography.label} style={{ color: 'rgb(129,140,248)' }}>
                         {data.completedAt ? new Date(data.completedAt).toLocaleDateString() : 'N/A'}
                     </p>
-                    <p className="report-subheading mt-0.5">Ref: {data.examId.slice(0, 12)}</p>
+                    <p className="report-subheading mt-0.5">Ref: {(data.id || data.examId || "REPORT").slice(0, 12)}</p>
                 </div>
             </header>
 
@@ -59,19 +106,15 @@ export function ExecutiveSummaryPage({ data, page, total }: PageProps) {
                             </ChartCard>
                         }
                         right={
-                            <ReportCard className="p-0">
-                                <TacticalPrescriptionPrintPanel data={data} />
-                            </ReportCard>
+                            <TacticalPrescriptionPrintPanel data={data} title="Executive Core" />
                         }
                     />
                 </div>
 
-                {data.interpreter?.skills && (
-                    <InterpretationCard
-                        title="Readiness Index Synopsis"
-                        bullets={data.interpreter.skills.slice(0, 2)}
-                    />
-                )}
+                <InterpretationCard
+                    title="Readiness Index Synopsis"
+                    bullets={data.ai.actions.slice(0, 2)}
+                />
             </div>
 
             <PdfFooter page={page.toString().padStart(2, '0')} total={total.toString().padStart(2, '0')} label="Proprietary Diagnostic Asset" />
@@ -85,7 +128,7 @@ export function ExecutiveSummaryPage({ data, page, total }: PageProps) {
 export function SubtopicAccuracyPage({ data, page, total }: PageProps) {
     return (
         <div className="h-full flex flex-col">
-            <SectionHeader title="Subtopic Precision Matrix" label="Diagnostic Sweep V4" />
+            <SectionHeader title="Subtopic Precision Matrix" label="Diagnostic Sweep V4" data={data} />
 
             <div className="flex-1 flex flex-col" style={{ gap: T.grid.sectionGap }}>
                 <div className="flex-1">
@@ -102,12 +145,7 @@ export function SubtopicAccuracyPage({ data, page, total }: PageProps) {
                             </ChartCard>
                         }
                         right={
-                            <ReportCard>
-                                <h3 className={T.typography.label} style={{ color: 'rgb(129,140,248)', marginBottom: 16 }}>Precision Analysis</h3>
-                                <p className={cn(T.typography.body, "flex-1")}>
-                                    Performance across {data.subtopics.length} vectors indicates {data.score > 80 ? "strong structural mastery" : "variable concept retention"} in the {data.lineage?.subject || 'Diagnostic'} domain. High‑frequency variance detected in {data.ai.weakest_subtopic}.
-                                </p>
-                            </ReportCard>
+                            <TacticalPrescriptionPrintPanel data={data} title="Domain Disparity" />
                         }
                     />
                 </div>
@@ -129,7 +167,7 @@ export function SubtopicAccuracyPage({ data, page, total }: PageProps) {
 export function SubjectBreakdownPage({ data, page, total }: PageProps) {
     return (
         <div className="h-full flex flex-col">
-            <SectionHeader title="Velocity & Neural Patterns" label="Temporal Spend Analysis" />
+            <SectionHeader title="Velocity & Neural Patterns" label="Temporal Spend Analysis" data={data} />
 
             <div className="flex-1 flex flex-col" style={{ gap: T.grid.sectionGap }}>
                 <div className="flex-1">
@@ -153,9 +191,7 @@ export function SubjectBreakdownPage({ data, page, total }: PageProps) {
                             </div>
                         }
                         right={
-                            <ReportCard className="p-0">
-                                <TacticalPrescriptionPrintPanel data={data} />
-                            </ReportCard>
+                            <TacticalPrescriptionPrintPanel data={data} title="Spatio-Temporal Correlation" />
                         }
                     />
                 </div>
@@ -163,11 +199,11 @@ export function SubjectBreakdownPage({ data, page, total }: PageProps) {
                 <div className="grid grid-cols-2" style={{ gap: T.grid.sectionGap }}>
                     <InterpretationCard
                         title="Cognitive Node Interpretation"
-                        bullets={data.interpreter?.skills?.slice(2, 4) || ["Stabilize high‑friction nodes", "Optimize logic‑branch speed"]}
+                        bullets={data.ai.actions.slice(0, 2)}
                     />
                     <InterpretationCard
                         title="Temporal Spend Analysis"
-                        bullets={data.interpreter?.time?.slice(0, 2) || ["Steady pacing on expert vectors", "Logic verification latency noted"]}
+                        bullets={["Steady pacing on expert vectors", "Logic verification latency noted"]}
                     />
                 </div>
             </div>
@@ -183,7 +219,7 @@ export function SubjectBreakdownPage({ data, page, total }: PageProps) {
 export function NeuralHeatmapPage({ data, page, total }: PageProps) {
     return (
         <div className="h-full flex flex-col">
-            <SectionHeader title="Cognitive Heatmap" label="Phase 21 Granular Mastery" />
+            <SectionHeader title="Cognitive Heatmap" label="Phase 21 Granular Mastery" data={data} />
 
             <div className="flex-1 flex flex-col overflow-hidden" style={{ gap: T.grid.sectionGap }}>
                 <div className="flex-1">
@@ -194,9 +230,7 @@ export function NeuralHeatmapPage({ data, page, total }: PageProps) {
                             </ReportCard>
                         }
                         right={
-                            <ReportCard className="p-0">
-                                <TacticalPrescriptionPrintPanel data={data} />
-                            </ReportCard>
+                            <TacticalPrescriptionPrintPanel data={data} title="Cognitive Load Analysis" />
                         }
                     />
                 </div>
@@ -218,7 +252,7 @@ export function NeuralHeatmapPage({ data, page, total }: PageProps) {
 export function ComplexityLadderPage({ data, page, total }: PageProps) {
     return (
         <div className="h-full flex flex-col">
-            <SectionHeader title="Complexity Scrutiny" label="Spatio‑Visual Depth Matrix" />
+            <SectionHeader title="Complexity Scrutiny" label="Spatio‑Visual Depth Matrix" data={data} />
 
             <div className="flex-1 flex flex-col" style={{ gap: T.grid.sectionGap }}>
                 <div className="flex-1">
@@ -255,9 +289,7 @@ export function ComplexityLadderPage({ data, page, total }: PageProps) {
                             </ReportCard>
                         }
                         right={
-                            <ReportCard className="p-0">
-                                <TacticalPrescriptionPrintPanel data={data} />
-                            </ReportCard>
+                            <TacticalPrescriptionPrintPanel data={data} title="Pressure Tolerance" />
                         }
                     />
                 </div>
@@ -301,7 +333,12 @@ export function AppendixCoverPage({ page, total }: { page: number; total: number
 /* ────────────────────────────────────────────── */
 /*  PAGE 07+ : Question Registry (Card Layout)   */
 /* ────────────────────────────────────────────── */
-export function QuestionAuditPage({ questions, page, total, offset }: { questions: QuestionRow[]; page: number; total: number; offset: number }) {
+export function QuestionAuditPage({ questions, data, page, total, offset }: { questions: QuestionItem[]; data: TopicUnitData; page: number; total: number; offset: number }) {
+    const totalQuestions = data.questions?.length || 0;
+    const correctCount = data.questions?.filter(q => q.isCorrect).length || 0;
+    const auditAccuracy = totalQuestions > 0 ? Math.round((correctCount / totalQuestions) * 100) : 0;
+    const auditAvgLatency = totalQuestions > 0 ? Math.round(data.totalTimeSpentSeconds / totalQuestions) : 0;
+
     return (
         <div className="h-full flex flex-col">
             <header className="flex justify-between items-end border-b border-slate-800 pb-4 mb-6">
@@ -311,6 +348,38 @@ export function QuestionAuditPage({ questions, page, total, offset }: { question
                 </div>
                 <span className="report-subheading">Exhibit {page} / {total}</span>
             </header>
+
+            {offset === 0 && (
+                <div className="p-8 bg-slate-950 rounded-[2rem] border border-white/5 mb-8 flex items-center justify-between gap-6 shadow-2xl relative overflow-hidden">
+                    <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.01)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.01)_1px,transparent_1px)] bg-[size:24px_24px] [mask-image:radial-gradient(ellipse_at_center,black,transparent)] pointer-events-none" />
+                    <div className="relative z-10 flex flex-col">
+                        <h2 className="text-2xl font-black text-white uppercase tracking-tighter">Raw Audit</h2>
+                        <p className="text-slate-400 font-bold uppercase text-[10px] tracking-[0.3em] mt-1">Vector Diagnostic Log</p>
+                    </div>
+                    <div className="relative z-10 grid grid-cols-5 gap-x-8 divide-x divide-slate-800">
+                        <div className="flex flex-col items-center px-4">
+                            <span className="text-2xl font-black text-slate-300">{totalQuestions}</span>
+                            <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest mt-1 whitespace-nowrap">Depth</span>
+                        </div>
+                        <div className="flex flex-col items-center px-8 border-l border-slate-800">
+                            <span className="text-2xl font-black text-indigo-400">{auditAccuracy}%</span>
+                            <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest mt-1 whitespace-nowrap">Sync</span>
+                        </div>
+                        <div className="flex flex-col items-center px-8 border-l border-slate-800">
+                            <span className="text-2xl font-black text-emerald-500">{correctCount}</span>
+                            <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest mt-1 whitespace-nowrap">Hits</span>
+                        </div>
+                        <div className="flex flex-col items-center px-8 border-l border-slate-800">
+                            <span className="text-2xl font-black text-rose-500">{totalQuestions - correctCount}</span>
+                            <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest mt-1 whitespace-nowrap">Miss</span>
+                        </div>
+                        <div className="flex flex-col items-center px-8 border-l border-slate-800">
+                            <span className="text-2xl font-black text-amber-500">{auditAvgLatency}s</span>
+                            <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest mt-1 whitespace-nowrap">Lat.</span>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             <div className="flex-1">
                 <div className="space-y-4">
@@ -352,10 +421,23 @@ export function QuestionAuditPage({ questions, page, total, offset }: { question
 
 /* ─── Shared Subcomponents ─── */
 
-function SectionHeader({ title, label }: { title: string; label: string }) {
+function SectionHeader({ title, label, data }: { title: string; label: string; data?: TopicUnitData }) {
     return (
         <header className="mb-6 pb-4 border-b border-slate-800 flex justify-between items-end">
-            <h2 className="report-heading">{title}</h2>
+            <div>
+                {data?.lineage && (
+                    <div className="flex items-center gap-2 mb-1.5 opacity-50">
+                        <span className="text-[9px] font-black text-indigo-400 uppercase tracking-[0.2em]">{data.lineage.domain}</span>
+                        {data.lineage.subject && (
+                            <>
+                                <div className="h-0.5 w-0.5 rounded-full bg-slate-700" />
+                                <span className="text-[9px] font-black text-slate-500 uppercase tracking-[0.2em]">{data.lineage.subject}</span>
+                            </>
+                        )}
+                    </div>
+                )}
+                <h2 className="report-heading">{title}</h2>
+            </div>
             <span className="report-subheading">{label}</span>
         </header>
     );

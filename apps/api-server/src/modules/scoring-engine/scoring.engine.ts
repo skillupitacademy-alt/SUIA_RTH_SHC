@@ -174,6 +174,10 @@ export class ScoringEngine {
       // Phase 1: Refresh Materialized Views and Prime Cache (Non-blocking but awaited for consistency here)
       try {
         await PerformanceService.refreshAnalytics();
+
+        // Hierarchical Materialization (Phase 1 of Roadmap)
+        const { ReportMaterializer } = await import('../../services/reports/ReportMaterializer');
+        await ReportMaterializer.materialize(examId);
         const reportData = await ReportEngine.getPremiumExamReport(examId);
         await PerformanceService.cacheReport(examId, reportData);
         ScoringEngine.log.info({ examId }, 'Phase 1: Analytics refreshed and cache primed');

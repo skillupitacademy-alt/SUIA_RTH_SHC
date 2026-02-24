@@ -5,6 +5,7 @@ import { domains, subjects, topics } from "./domain";
 import { questions } from "./question";
 
 export const examStatusEnum = pgEnum("exam_status", ["started", "processing", "completed", "abandoned", "failed"]);
+export const reportJobStatusEnum = pgEnum("report_job_status", ["queued", "processing", "completed", "failed"]);
 
 export const examBlueprints = pgTable("exam_blueprints", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -38,6 +39,7 @@ export const exams = pgTable("exams", {
   startedAt: timestamp("started_at").notNull().defaultNow(),
   lastAnsweredAt: timestamp("last_answered_at"),
   completedAt: timestamp("completed_at"),
+  reportMaterialized: jsonb("report_materialized"),
 }, (t) => ({
   idx_exams_user_id_status: index("idx_exams_user_id_status").on(t.userId, t.status),
   idx_exams_dashboard_opt: index("idx_exams_dashboard_opt").on(t.userId, t.status, desc(t.completedAt)),
@@ -59,6 +61,27 @@ export const examQuestions = pgTable("exam_questions", {
   unq_exam_question: uniqueIndex("unq_exam_question").on(t.examId, t.questionId),
   unq_exam_order: uniqueIndex("unq_exam_order").on(t.examId, t.order),
   idx_exam_questions_exam_order: index("idx_exam_questions_exam_order").on(t.examId, t.order),
+}));
+
+export const reportJobs = pgTable("report_jobs", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  examId: uuid("exam_id")
+    .notNull()
+    .references(() => exams.id, { onDelete: "cascade" }),
+  status: reportJobStatusEnum("status").notNull().default("queued"),
+  progress: integer("progress").notNull().default(0),
+  pdfUrl: text("pdf_url"),
+  retryCount: integer("retry_count").notNull().default(0),
+  maxRetries: integer("max_retries").notNull().default(3),
+  errorMessage: text("error_message"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+}, (t) => ({
+  idx_report_jobs_exam_id: index("idx_report_jobs_exam_id").on(t.examId),
+  idx_report_jobs_status: index("idx_report_jobs_status").on(t.status),
 }));
 
 export const idempotencyKeys = pgTable("idempotency_keys", {
@@ -105,6 +128,18 @@ export const examsRelations = relations(exams, ({ one, many }) => ({
   }),
   examQuestions: many(examQuestions),
   dimensions: many(resultsByDimension),
+  reportJobs: many(reportJobs),
+}));
+
+export const reportJobsRelations = relations(reportJobs, ({ one }) => ({
+  user: one(users, {
+    fields: [reportJobs.userId],
+    references: [users.id],
+  }),
+  exam: one(exams, {
+    fields: [reportJobs.examId],
+    references: [exams.id],
+  }),
 }));
 
 export const examQuestionsRelations = relations(examQuestions, ({ one }) => ({

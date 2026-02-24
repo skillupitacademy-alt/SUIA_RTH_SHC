@@ -13,6 +13,7 @@ import {
 } from "@/components/reports/print/PrintPages";
 import { PdfReadySignal } from "@/components/reports/print/PdfReadySignal";
 import { PdfPage, chunkRows } from "@/components/reports/print/PrintToolkit";
+import type { QuestionItem, ReportJSON, TopicDataset } from "@quiz/types";
 
 async function fetchReportData(attemptId: string, internalKey?: string): Promise<ExamReport> {
     const rawApiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3002/api";
@@ -38,14 +39,21 @@ async function fetchReportData(attemptId: string, internalKey?: string): Promise
     return res.json();
 }
 
+type Params = { attemptId: string };
+type SearchParams = {
+    internalKey?: string;
+    nodeId?: string;
+    nodeType?: "domain" | "subject" | "topic";
+};
+
 export default function PrintReportPage(props: {
-    params: Promise<{ attemptId: string }>,
-    searchParams: Promise<{ internalKey?: string }>
+    params: Promise<Params>,
+    searchParams: Promise<SearchParams>
 }) {
-    const params = use(props.params);
-    const searchParams = use(props.searchParams);
+    const params = use<Params>(props.params as unknown as Promise<Params>);
+    const searchParams = use<SearchParams>(props.searchParams as unknown as Promise<SearchParams>);
     const { attemptId } = params;
-    const { internalKey } = searchParams;
+    const { internalKey, nodeId, nodeType } = searchParams;
 
     const [data, setData] = useState<ExamReport | null>(null);
     const [error, setError] = useState<string | null>(null);
@@ -77,35 +85,81 @@ export default function PrintReportPage(props: {
         );
     }
 
-    // Appendix Chunking (8 rows per page for portrait stability)
-    const appendixChunks = chunkRows(data.questions || [], 5);
+    // 1. Determine the dataset to render
+    // If no nodeId/nodeType provided, we assume the root (single level) or we wrap the first topic
+    // For Phase 3, the orchestrator will explicitly hit this with nodeId/nodeType
+
+    let activeTopic: TopicUnitData | TopicDataset | ExamReport = data;
+
+    // If we have hierarchical data in the response, use it
+    const materialized = (data as { reportMaterialized?: ReportJSON }).reportMaterialized;
+
+    if (materialized && nodeId && nodeType === "topic") {
+        const topicDs = materialized.datasets.topics[nodeId];
+        if (topicDs) {
+            const questionBank = materialized.appendix?.questionBank ?? [];
+            const topicQuestions: QuestionItem[] = questionBank.filter((q) => {
+                const meta = q as QuestionItem & { subtopicName?: string; topicId?: string };
+                const matchesTopic = meta.topicId === nodeId;
+                const matchesHeatmap = topicDs.heatmap.some((h) => h.subtopic === (meta.subtopicName ?? ""));
+                return matchesTopic || matchesHeatmap;
+            }) as QuestionItem[];
+
+            activeTopic = {
+                ...topicDs,
+                examId: data.examId,
+                completedAt: data.completedAt,
+                candidateName: data.candidateName,
+                questions: topicQuestions
+            };
+        }
+    }
+
+    // Normalize data shape for print components (TopicUnitData compatible)
+    const topicData = {
+        ...activeTopic,
+        id: activeTopic.id || activeTopic.topicId || data.examId || attemptId,
+        name: activeTopic.name || data.lineage?.topic || data.lineage?.subject || "Report"
+    };
+
+    const normalizedQuestions: QuestionItem[] = ((topicData as { questions?: QuestionItem[] }).questions || []).map((q) => ({
+        ...q,
+        correctAnswer: q.correctAnswer ?? null,
+        userAnswer: q.userAnswer ?? null,
+        explanation: q.explanation ?? null,
+        timeSpent: q.timeSpent ?? 0,
+        difficulty: q.difficulty ?? "STD"
+    }));
+
+    // Appendix Chunking (5 rows per page for portrait stability)
+    const appendixChunks = chunkRows<QuestionItem>(normalizedQuestions, 5);
     const totalPages = 6 + appendixChunks.length;
 
     return (
         <div className="pdf-container bg-slate-950">
             {/* Page 1: Executive Summary */}
             <PdfPage orientation="landscape">
-                <ExecutiveSummaryPage data={data} page={1} total={totalPages} />
+                <ExecutiveSummaryPage data={topicData} page={1} total={totalPages} />
             </PdfPage>
 
             {/* Page 2: Subtopic Accuracy */}
             <PdfPage orientation="landscape">
-                <SubtopicAccuracyPage data={data} page={2} total={totalPages} />
+                <SubtopicAccuracyPage data={topicData} page={2} total={totalPages} />
             </PdfPage>
 
             {/* Page 3: Temporal Patterns */}
             <PdfPage orientation="landscape">
-                <SubjectBreakdownPage data={data} page={3} total={totalPages} />
+                <SubjectBreakdownPage data={topicData} page={3} total={totalPages} />
             </PdfPage>
 
             {/* Page 4: Neural Heatmap */}
             <PdfPage orientation="landscape">
-                <NeuralHeatmapPage data={data} page={4} total={totalPages} />
+                <NeuralHeatmapPage data={topicData} page={4} total={totalPages} />
             </PdfPage>
 
             {/* Page 5: Complexity Ladder */}
             <PdfPage orientation="landscape">
-                <ComplexityLadderPage data={data} page={5} total={totalPages} />
+                <ComplexityLadderPage data={topicData} page={5} total={totalPages} />
             </PdfPage>
 
             {/* Page 6: Appendix Cover */}
@@ -118,9 +172,10 @@ export default function PrintReportPage(props: {
                 <PdfPage key={i} orientation="landscape">
                     <QuestionAuditPage
                         questions={chunk}
+                        data={topicData}
                         page={7 + i}
                         total={totalPages}
-                        offset={i * 8}
+                        offset={i * 5}
                     />
                 </PdfPage>
             ))}

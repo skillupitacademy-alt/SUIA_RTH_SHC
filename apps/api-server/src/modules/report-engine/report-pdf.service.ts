@@ -19,9 +19,9 @@ export class ReportPdfService {
 
   /**
    * Core PDF Generation Logic
-   * Used by both the API routes and the Health Check Cron
+   * Supports optional nodeId/nodeType for hierarchical segment rendering.
    */
-  static async generate(attemptId: string): Promise<PdfGenerationResult> {
+  static async generate(attemptId: string, nodeId?: string, nodeType?: string): Promise<PdfGenerationResult> {
     const internalEnv = process.env.INTERNAL_API_KEY;
     const internalKey = internalEnv !== undefined && internalEnv !== "" ? internalEnv : "secret";
 
@@ -70,7 +70,10 @@ export class ReportPdfService {
         deviceScaleFactor: 2
       });
 
-      const url = `${webAppUrl}/report/print/${attemptId}?internalKey=${internalKey}`;
+      let url = `${webAppUrl}/report/print/${attemptId}?internalKey=${internalKey}`;
+      if (nodeId !== undefined && nodeType !== undefined) {
+        url += `&nodeId=${nodeId}&nodeType=${nodeType}`;
+      }
       
       // 1. Emulate High-Quality Agent
       await page.setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36");
@@ -83,7 +86,19 @@ export class ReportPdfService {
       logger.info({ attemptId, url }, "[ReportPdfService] Fetching report data locally for interception");
       
       // 3. Fetch data locally to bypass network
-      const reportData = await ReportEngine.getPremiumExamReport(attemptId);
+      // We fetch the exam directly to get the materialized JSON
+      const exam = await db.query.exams.findFirst({
+        where: eq(exams.id, attemptId),
+        columns: { reportMaterialized: true }
+      });
+      
+      type ReportData = Awaited<ReturnType<typeof ReportEngine.getPremiumExamReport>> & { reportMaterialized?: unknown };
+      const reportData: ReportData = await ReportEngine.getPremiumExamReport(attemptId);
+      
+      // Merge materialized data into reportData for the frontend scoping logic
+      if (exam?.reportMaterialized !== undefined) {
+        reportData.reportMaterialized = exam.reportMaterialized;
+      }
 
       // 4. Set up interception with blocking for speed
       await page.setRequestInterception(true);
@@ -160,6 +175,14 @@ export class ReportPdfService {
     } finally {
       await browser.close();
     }
+  }
+
+  /**
+   * Helper specifically for rendering a hierarchical segment
+   */
+  static async renderSegment(attemptId: string, nodeId: string, nodeType: string): Promise<Buffer> {
+    const { buffer } = await this.generate(attemptId, nodeId, nodeType);
+    return buffer;
   }
 
   /**
