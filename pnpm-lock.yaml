@@ -126,9 +126,6 @@ importers:
       eslint-config-next:
         specifier: 15.2.0
         version: 15.2.0(eslint@8.57.1)(typescript@5.9.3)
-      isomorphic-dompurify:
-        specifier: 3.0.0-rc.2
-        version: 3.0.0-rc.2
       lucide-react:
         specifier: ^0.563.0
         version: 0.563.0(react@19.2.4)
@@ -380,9 +377,6 @@ importers:
       framer-motion:
         specifier: ^12.34.3
         version: 12.34.3(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
-      isomorphic-dompurify:
-        specifier: 3.0.0-rc.2
-        version: 3.0.0-rc.2
       lucide-react:
         specifier: ^0.563.0
         version: 0.563.0(react@19.2.4)
@@ -493,9 +487,9 @@ importers:
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
-      isomorphic-dompurify:
-        specifier: 3.0.0-rc.2
-        version: 3.0.0-rc.2
+      dompurify:
+        specifier: ^3.3.1
+        version: 3.3.1
       lucide-react:
         specifier: ^0.474.0
         version: 0.474.0(react@19.2.4)
@@ -4024,10 +4018,6 @@ packages:
   isexe@3.1.1:
     resolution: {integrity: sha512-LpB/54B+/2J5hqQ7imZHfdU31OlgQqx7ZicVlkm9kzg9/w8GKLEcFfJl/t7DCEDueOyBAD6zCCwTO6Fzs0NoEQ==}
     engines: {node: '>=16'}
-
-  isomorphic-dompurify@3.0.0-rc.2:
-    resolution: {integrity: sha512-krCa8psVRnfeJxZnCk+USqMKvcDOkQCGbAeFXQwaJiIcRFOGp9GDa2h06QzVIdVbM+onpro2Vg4uLe2RHI1McA==}
-    engines: {node: ^20.19.0 || ^22.12.0 || >=24.0.0}
 
   istanbul-lib-coverage@3.2.2:
     resolution: {integrity: sha512-O8dpsF+r0WV/8MNRKfnmrtCWhuKjxrq2w+jpzBL5UZKTi2LeVWnWOmWRxFlesJONmc+wLAGvKQZEOanko0LFTg==}
@@ -9740,15 +9730,6 @@ snapshots:
 
   isexe@3.1.1:
     optional: true
-
-  isomorphic-dompurify@3.0.0-rc.2:
-    dependencies:
-      dompurify: 3.3.1
-      jsdom: 28.1.0
-    transitivePeerDependencies:
-      - '@noble/hashes'
-      - canvas
-      - supports-color
 
   istanbul-lib-coverage@3.2.2: {}
 

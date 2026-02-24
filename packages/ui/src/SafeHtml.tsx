@@ -1,5 +1,7 @@
+'use client';
+
 import React from 'react';
-import DOMPurify from 'isomorphic-dompurify';
+import DOMPurify from 'dompurify';
 
 interface SafeHtmlProps {
     html: string;
@@ -10,8 +12,16 @@ interface SafeHtmlProps {
  * SafeHtml component that sanitizes HTML content using DOMPurify.
  * This is the preferred way to render any user-generated or external HTML content.
  * It explicitly blocks javascript: URLs and dangerous tags/attributes.
+ * 
+ * Note: Uses client-only DOMPurify (not isomorphic-dompurify) to avoid
+ * pulling jsdom into the SSR bundle, which causes ESM/CJS conflicts on Vercel.
  */
 export function SafeHtml({ html, className }: SafeHtmlProps) {
+    if (typeof window === 'undefined') {
+        // Server-side fallback: return empty div (content rendered on client hydration)
+        return <div className={className} />;
+    }
+
     const clean = DOMPurify.sanitize(html, {
         ALLOWED_TAGS: [
             'b', 'i', 'strong', 'em', 'p', 'br', 'ul', 'ol', 'li',
@@ -31,3 +41,4 @@ export function SafeHtml({ html, className }: SafeHtmlProps) {
         />
     );
 }
+
