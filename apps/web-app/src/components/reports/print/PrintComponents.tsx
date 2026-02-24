@@ -22,35 +22,34 @@ interface DiagnosticTierProps {
     icon: LucideIcon;
     progress: number;
     items: string[];
-    dense?: boolean;
 }
 
-const DiagnosticTier = ({ title, status, color, icon: Icon, progress, items, dense }: DiagnosticTierProps) => (
-    <div className={cn("p-6 bg-slate-900/40 rounded-[2rem] border border-white/5 relative overflow-hidden group/tier hover:bg-slate-900/60 transition-all duration-300", dense && "p-4 rounded-3xl")}>
+const DiagnosticTier = ({ title, status, color, icon: Icon, progress, items }: DiagnosticTierProps) => (
+    <div className="p-6 bg-slate-900/40 rounded-[2rem] border border-white/5 relative overflow-hidden group/tier hover:bg-slate-900/60 transition-all duration-300">
         <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.01)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.01)_1px,transparent_1px)] bg-[size:24px_24px] [mask-image:radial-gradient(ellipse_at_center,black,transparent)] pointer-events-none" />
-        <div className={cn("flex items-center justify-between mb-5 relative z-10", dense && "mb-3")}>
+        <div className="flex items-center justify-between mb-5 relative z-10">
             <div className="flex items-center gap-4">
-                <div className={cn("p-2.5 rounded-xl border border-white/5 shadow-inner", color.replace('bg-', 'text-').split(' ')[0], dense && "p-1.5")}>
-                    <Icon className={cn("h-4 w-4", dense && "h-3 w-3")} />
+                <div className={cn("p-2.5 rounded-xl border border-white/5 shadow-inner", color.replace('bg-', 'text-').split(' ')[0])}>
+                    <Icon className="h-4 w-4" />
                 </div>
                 <div>
-                    <span className={cn("text-[13px] font-black text-white uppercase tracking-widest", dense && "text-[11px]")}>{title}</span>
-                    <span className={cn("text-[11px] font-bold ml-2", color.replace('bg-', 'text-').split(' ')[0], dense && "text-[9px] font-black")}>({status})</span>
+                    <span className="text-[13px] font-black text-white uppercase tracking-widest">{title}</span>
+                    <span className={cn("text-[11px] font-bold ml-2", color.replace('bg-', 'text-').split(' ')[0])}>({status})</span>
                 </div>
             </div>
             {/* Rigid non-animated progress bar matching web thickness */}
-            <div className={cn("h-1.5 w-24 bg-slate-800/50 rounded-full overflow-hidden p-[1px] border border-white/5", dense && "w-16 h-1")}>
+            <div className="h-1.5 w-24 bg-slate-800/50 rounded-full overflow-hidden p-[1px] border border-white/5">
                 <div
                     className={cn("h-full rounded-full shadow-[0_0_10px_rgba(0,0,0,0.5)]", color.split(' ')[0])}
                     style={{ width: `${progress}%` }}
                 />
             </div>
         </div>
-        <ul className={cn("space-y-3 relative z-10", dense && "space-y-1.5")}>
+        <ul className="space-y-3 relative z-10">
             {items.map((item, i) => (
                 <li key={i} className="flex items-start gap-3 group/item">
-                    <div className={cn("h-1.5 w-1.5 rounded-full mt-2 shrink-0 shadow-sm", color.split(' ')[0], dense && "h-1 w-1 mt-1.5")} />
-                    <span className={cn("text-[13px] text-slate-300 font-medium leading-relaxed", dense && "text-[11px]")}>
+                    <div className={cn("h-1.5 w-1.5 rounded-full mt-2 shrink-0 shadow-sm", color.split(' ')[0])} />
+                    <span className="text-[13px] text-slate-300 font-medium leading-relaxed">
                         {item}
                     </span>
                 </li>
@@ -69,10 +68,9 @@ type AIData = {
 type TacticalPrescriptionProps = {
     data: { ai?: AIData };
     title?: string;
-    dense?: boolean;
 };
 
-export function TacticalPrescriptionPrintPanel({ data, title, dense }: TacticalPrescriptionProps) {
+export function TacticalPrescriptionPrintPanel({ data, title }: TacticalPrescriptionProps) {
     if (!data.ai) return null;
     const ai = data.ai;
 
@@ -106,36 +104,36 @@ export function TacticalPrescriptionPrintPanel({ data, title, dense }: TacticalP
     ];
 
     return (
-        <div className={cn("pdf-panel w-full h-full p-8 lg:p-10 flex flex-col bg-[#0a0c12]/90 border border-slate-800/60 rounded-[2.5rem] shadow-[0_30px_60px_rgba(0,0,0,0.6)] backdrop-blur-3xl relative overflow-hidden group", dense && "p-6 lg:p-6 rounded-[2rem]")}>
+        <div className="pdf-panel w-full h-full p-8 lg:p-10 flex flex-col bg-[#0a0c12]/90 border border-slate-800/60 rounded-[2.5rem] shadow-[0_30px_60px_rgba(0,0,0,0.6)] backdrop-blur-3xl relative overflow-hidden group">
             <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.01)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.01)_1px,transparent_1px)] bg-[size:24px_24px] [mask-image:radial-gradient(ellipse_at_center,black,transparent)] pointer-events-none" />
 
             <div className="relative z-10 flex flex-col h-full">
-                <div className={cn("flex items-center justify-between mb-10", dense && "mb-6")}>
+                <div className="flex items-center justify-between mb-10">
                     <div className="flex items-center gap-4">
-                        <div className={cn("p-2.5 bg-indigo-500/10 rounded-2xl border border-indigo-500/20 shadow-inner group-hover:border-indigo-500/40 transition-all", dense && "p-1.5 rounded-xl")}>
-                            <BrainCircuit className={cn("h-6 w-6 text-indigo-400", dense && "h-4 w-4")} />
+                        <div className="p-2.5 bg-indigo-500/10 rounded-2xl border border-indigo-500/20 shadow-inner group-hover:border-indigo-500/40 transition-all">
+                            <BrainCircuit className="h-6 w-6 text-indigo-400" />
                         </div>
-                        <h3 className={cn("text-xl font-black text-white uppercase tracking-tighter", dense && "text-base")}>Tactical Prescription</h3>
+                        <h3 className="text-xl font-black text-white uppercase tracking-tighter">Tactical Prescription</h3>
                     </div>
-                    <div className={cn("px-4 py-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-lg", dense && "px-2 py-1")}>
-                        <span className={cn("text-[12px] font-black text-emerald-400 uppercase tracking-widest leading-none flex items-center gap-2", dense && "text-[9px]")}>
+                    <div className="px-4 py-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-lg">
+                        <span className="text-[12px] font-black text-emerald-400 uppercase tracking-widest leading-none flex items-center gap-2">
                             <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
                             AI STATUS: {ai.status === 'READY' ? 'OPTIMIZED' : ai.status}
                         </span>
                     </div>
                 </div>
 
-                <h4 className={cn("text-[12px] font-black text-slate-400 uppercase tracking-[0.3em] mb-8 border-b border-white/5 pb-4", dense && "text-[9px] mb-4 pb-2")}>
+                <h4 className="text-[12px] font-black text-slate-400 uppercase tracking-[0.3em] mb-8 border-b border-white/5 pb-4">
                     {title || "Diagnostic Matrix"}
                 </h4>
 
-                <div className={cn("space-y-6 flex-grow overflow-visible", dense && "space-y-3")}>
+                <div className="space-y-6 flex-grow overflow-visible">
                     {tiers.map((tier, idx) => (
-                        <DiagnosticTier key={idx} {...tier} dense={dense} />
+                        <DiagnosticTier key={idx} {...tier} />
                     ))}
                 </div>
 
-                <div className={cn("mt-10 pt-8 border-t border-white/5", dense && "mt-4 pt-4")}>
+                <div className="mt-10 pt-8 border-t border-white/5">
                     <div className="flex items-center justify-between text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">
                         <div className="flex items-center gap-2">
                             <span>DIAGNOSTIC LOGS V9.4</span>

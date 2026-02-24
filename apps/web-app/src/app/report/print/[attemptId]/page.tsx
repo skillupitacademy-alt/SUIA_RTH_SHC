@@ -165,51 +165,35 @@ export default function PrintReportPage(props: {
         });
     };
 
-    const toTopicUnitData = (src: unknown): TopicUnitData => {
-        const source = src as Record<string, unknown>;
-
+    const toTopicUnitData = (src: any): TopicUnitData => {
         // Map subtopics strictly to {name, accuracy, attempts}
-        const rawSubtopics = (source.subtopics ??
-            (data.subtopics as unknown) ??
-            []) as Array<{
-                name?: string;
-                subtopic?: string;
-                accuracy?: number;
-                attempts?: number;
-                attempted?: number;
-            }>;
-
-        const subtopics = rawSubtopics.map((s) => ({
+        const subtopics = (src.subtopics ?? data.subtopics ?? []).map((s: any) => ({
             name: s.name ?? s.subtopic ?? "Subtopic",
             accuracy: s.accuracy ?? 0,
             attempts: s.attempts ?? s.attempted ?? 0
         }));
 
-        const questions: QuestionItem[] = normalizeQuestions(source.questions ?? data.questions);
+        const questions: QuestionItem[] = normalizeQuestions(src.questions ?? data.questions);
 
         return {
-            id: (source.id as string | undefined) ?? data.examId ?? attemptId,
-            name: (source.name as string | undefined) ?? data.lineage?.topic ?? data.lineage?.subject ?? "Topic Analysis",
-            score: (source.score as number | undefined) ?? (source.accuracy as number | undefined) ?? data.score ?? 0,
-            mastery: (source.mastery as number | undefined) ?? (source.accuracy as number | undefined) ?? data.mastery ?? 0,
-            readiness: (source.readiness as number | undefined) ?? data.readiness ?? (source.accuracy as number | undefined) ?? 0,
-            percentile: (source.percentile as number | undefined) ?? data.percentile ?? 0,
-            totalTimeSpentSeconds: (source.totalTimeSpentSeconds as number | undefined) ?? data.totalTimeSpentSeconds ?? 0,
-            timeEfficiency: (source.timeEfficiency as TopicUnitData["timeEfficiency"] | undefined) ?? data.timeEfficiency ?? "OPTIMAL",
-            timeBuckets: (source.timeBuckets as TopicUnitData["timeBuckets"] | undefined) ?? data.timeBuckets,
+            id: src.id ?? data.examId ?? attemptId,
+            name: src.name ?? data.lineage?.topic ?? data.lineage?.subject ?? "Topic Analysis",
+            score: src.score ?? src.accuracy ?? data.score,
+            mastery: src.mastery ?? src.accuracy ?? data.mastery,
+            readiness: src.readiness ?? data.readiness ?? src.accuracy ?? 0,
+            percentile: src.percentile ?? data.percentile ?? 0,
+            totalTimeSpentSeconds: src.totalTimeSpentSeconds ?? data.totalTimeSpentSeconds ?? 0,
+            timeEfficiency: src.timeEfficiency ?? data.timeEfficiency ?? "OPTIMAL",
+            timeBuckets: src.timeBuckets ?? data.timeBuckets,
             subtopics,
-            skills: (source.skills as TopicUnitData["skills"] | undefined) ?? data.skills ?? [],
-            difficulty: (source.difficulty as TopicUnitData["difficulty"] | undefined) ?? data.difficulty ?? [],
-            heatmap: (source.heatmap as TopicUnitData["heatmap"] | undefined) ?? data.heatmap ?? [],
-            ai: (source.ai as TopicUnitData["ai"] | undefined) ?? data.ai ?? {
-                status: "DATA_INSUFFICIENT",
-                actions: [],
-                weakest_subtopic: "",
-            },
-            lineage: (source.lineage as TopicUnitData["lineage"] | undefined) ?? data.lineage,
+            skills: src.skills ?? data.skills ?? [],
+            difficulty: src.difficulty ?? data.difficulty ?? [],
+            heatmap: src.heatmap ?? data.heatmap ?? [],
+            ai: src.ai ?? data.ai,
+            lineage: src.lineage ?? data.lineage,
             questions,
-            completedAt: (source.completedAt as string | undefined) ?? data.completedAt,
-            candidateName: (source.candidateName as string | undefined) ?? data.candidateName
+            completedAt: src.completedAt ?? data.completedAt,
+            candidateName: src.candidateName ?? data.candidateName
         };
     };
 
@@ -227,11 +211,6 @@ export default function PrintReportPage(props: {
     const localPages = 6 + appendixChunks.length;
     const finalGlobalTotal = globalTotal || localPages;
     const getPageNum = (localIdx: number) => startPage + localIdx;
-    const topicLayout: "pillar" | "bar" | "grid" | "heatmap" =
-        topicData.subtopics.length <= 3 ? "pillar"
-            : topicData.subtopics.length <= 8 ? "bar"
-                : topicData.subtopics.length <= 20 ? "grid"
-                    : "heatmap";
 
     return (
         <div className="pdf-container bg-slate-950">
@@ -242,12 +221,7 @@ export default function PrintReportPage(props: {
 
             {/* Page 2: Subtopic Accuracy */}
             <PdfPage orientation="landscape">
-                <SubtopicAccuracyPage
-                    data={topicData}
-                    page={getPageNum(2)}
-                    total={finalGlobalTotal}
-                    layout={topicLayout}
-                />
+                <SubtopicAccuracyPage data={topicData} page={getPageNum(2)} total={finalGlobalTotal} />
             </PdfPage>
 
             {/* Page 3: Temporal Patterns */}
