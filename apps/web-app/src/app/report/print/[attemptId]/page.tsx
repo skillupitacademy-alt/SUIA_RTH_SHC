@@ -52,6 +52,22 @@ export default function PrintReportPage(props: {
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
+        // Force the browser to use "screen" media colors instead of stripping them for print
+        // This ensures gradients and backgrounds stay vibrant in the PDF
+        const style = document.createElement('style');
+        style.innerHTML = `
+            @media print {
+                body {
+                    -webkit-print-color-adjust: exact !important;
+                    print-color-adjust: exact !important;
+                }
+            }
+            .pdf-page {
+                background-color: white !important;
+            }
+        `;
+        document.head.appendChild(style);
+
         fetchReportData(attemptId, internalKey)
             .then(setData)
             .catch(err => setError(err instanceof Error ? err.message : "Report loading failed"));

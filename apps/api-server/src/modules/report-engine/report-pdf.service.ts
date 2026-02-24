@@ -133,9 +133,13 @@ export class ReportPdfService {
         }
       }
 
+      // 5. Force "screen" media to keep colors vibrant and force Landscape
+      await page.emulateMediaType('screen');
+
       // Generate PDF
       const buffer = await page.pdf({
         format: "A4",
+        landscape: true,
         printBackground: true,
         preferCSSPageSize: true,
         displayHeaderFooter: false,
