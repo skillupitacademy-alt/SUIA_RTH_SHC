@@ -133,15 +133,16 @@ export class ReportPdfService {
         }
       }
 
-      // 5. Force "screen" media to keep colors vibrant and force Landscape
+      // 5. Force "screen" media and wait for fonts to prevent layout shifts
       await page.emulateMediaType('screen');
+      await page.evaluateHandle('document.fonts.ready');
 
       // Generate PDF
       const buffer = await page.pdf({
         format: "A4",
         landscape: true,
         printBackground: true,
-        preferCSSPageSize: true,
+        preferCSSPageSize: true, // Respect our physical 297x210mm grid
         displayHeaderFooter: false,
         margin: { top: 0, right: 0, bottom: 0, left: 0 }
       });

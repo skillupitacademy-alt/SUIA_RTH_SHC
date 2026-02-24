@@ -7,6 +7,11 @@ interface PageProps {
     data: ExamReport;
 }
 
+/* 
+ * Each page is wrapped in a flex-col h-full. 
+ * Parent .pdf-page provides the rigid 210mm height.
+ */
+
 export function ExecutiveSummaryPage({ data }: PageProps) {
     return (
         <div className="h-full flex flex-col justify-between">
@@ -25,9 +30,9 @@ export function ExecutiveSummaryPage({ data }: PageProps) {
                 <section className="grid grid-cols-2 gap-16">
                     <div className="space-y-12">
                         <div>
-                            <h2 className="text-sm font-black uppercase tracking-[0.3em] text-slate-400 mb-4">Core Performance</h2>
+                            <h2 className="text-sm font-black uppercase tracking-[0.3em] text-slate-400 mb-4 text-left">Core Performance</h2>
                             <div className="flex items-baseline gap-4">
-                                <span className="text-9xl font-black leading-none">{data.score}%</span>
+                                <span className="text-9xl font-black">{data.score}%</span>
                                 <span className="text-2xl font-bold text-slate-400 uppercase">Mastery</span>
                             </div>
                         </div>
@@ -35,7 +40,7 @@ export function ExecutiveSummaryPage({ data }: PageProps) {
                         <div className="grid grid-cols-2 gap-8">
                             <div className="border-l-4 border-slate-200 pl-6">
                                 <p className="text-xs font-black uppercase tracking-widest text-slate-500 mb-1">Status</p>
-                                <p className="text-2xl font-black uppercase">{data.ai?.status || 'Unknown'}</p>
+                                <p className="text-2xl font-black uppercase">{data.ai?.status || 'READY'}</p>
                             </div>
                             <div className="border-l-4 border-slate-200 pl-6">
                                 <p className="text-xs font-black uppercase tracking-widest text-slate-500 mb-1">Readiness</p>
@@ -44,7 +49,7 @@ export function ExecutiveSummaryPage({ data }: PageProps) {
                         </div>
                     </div>
 
-                    <div className="bg-slate-50 p-10 rounded-3xl border-2 border-slate-100 h-fit">
+                    <div className="bg-slate-50 p-10 rounded-3xl border-2 border-slate-100">
                         <h3 className="text-sm font-black uppercase tracking-widest mb-6">Strategic Insights</h3>
                         <ul className="space-y-4">
                             {data.ai?.actions?.slice(0, 4).map((action, i) => (
@@ -52,7 +57,7 @@ export function ExecutiveSummaryPage({ data }: PageProps) {
                                     <span className="font-black text-slate-300">0{i + 1}</span>
                                     {action}
                                 </li>
-                            ))}
+                            )) || <li className="text-slate-400">Baseline diagnostic complete.</li>}
                         </ul>
                     </div>
                 </section>
@@ -71,13 +76,13 @@ export function SubtopicAccuracyPage({ data }: PageProps) {
         <div className="h-full flex flex-col justify-between">
             <div>
                 <h2 className="text-4xl font-black uppercase tracking-tighter mb-12">Subtopic Distribution</h2>
-                <div className="grid grid-cols-1 gap-4">
+                <div className="grid grid-cols-1 gap-6">
                     {data.subtopics.map((st, i) => (
                         <div key={i} className="flex items-center gap-6">
-                            <div className="w-48 text-xs font-black uppercase tracking-widest text-slate-600 truncate">{st.name}</div>
-                            <div className="flex-1 h-8 bg-slate-100 rounded-lg overflow-hidden relative">
+                            <div className="w-64 text-xs font-black uppercase tracking-widest text-slate-600 truncate text-left">{st.name}</div>
+                            <div className="flex-1 h-10 bg-slate-100 rounded-lg overflow-hidden relative border border-slate-200">
                                 <div
-                                    className="h-full bg-black transition-none"
+                                    className="h-full bg-black"
                                     style={{ width: `${st.accuracy}%` }}
                                 />
                                 <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-black text-slate-400">
@@ -102,35 +107,33 @@ export function SubjectBreakdownPage({ data }: PageProps) {
             <div>
                 <h2 className="text-4xl font-black uppercase tracking-tighter mb-12">Temporal Analytics</h2>
                 <div className="grid grid-cols-2 gap-20">
-                    <div className="space-y-8">
+                    <div className="space-y-12">
                         <div>
-                            <h3 className="text-xs font-black uppercase tracking-[0.3em] text-slate-400 mb-6">Efficiency Pulse</h3>
+                            <h3 className="text-xs font-black uppercase tracking-[0.3em] text-slate-400 mb-8 text-left">Efficiency Pulse</h3>
                             <div className="flex items-baseline gap-4">
-                                <span className="text-7xl font-black">{Math.round(data.totalTimeSpentSeconds / 60)}</span>
+                                <span className="text-8xl font-black">{Math.round(data.totalTimeSpentSeconds / 60)}</span>
                                 <span className="text-xl font-bold uppercase tracking-widest text-slate-400">Minutes</span>
                             </div>
                         </div>
-                        <div className="space-y-4">
-                            <div className="flex justify-between border-b border-slate-100 pb-2">
-                                <span className="text-[10px] font-black uppercase text-slate-500">Fast Count</span>
-                                <span className="text-sm font-black">{data.timeBuckets?.stable || 0}</span>
-                            </div>
-                            <div className="flex justify-between border-b border-slate-100 pb-2">
-                                <span className="text-[10px] font-black uppercase text-slate-500">Optimal Count</span>
-                                <span className="text-sm font-black">{data.timeBuckets?.logic || 0}</span>
-                            </div>
-                            <div className="flex justify-between border-b border-slate-100 pb-2">
-                                <span className="text-[10px] font-black uppercase text-slate-500">Extended Count</span>
-                                <span className="text-sm font-black">{data.timeBuckets?.neural || 0}</span>
-                            </div>
+                        <div className="space-y-6">
+                            {[
+                                { label: 'Fast Count', val: data.timeBuckets?.stable || 0 },
+                                { label: 'Optimal Count', val: data.timeBuckets?.logic || 0 },
+                                { label: 'Extended Count', val: data.timeBuckets?.neural || 0 }
+                            ].map((item, i) => (
+                                <div key={i} className="flex justify-between border-b-2 border-slate-100 pb-3">
+                                    <span className="text-xs font-black uppercase text-slate-500">{item.label}</span>
+                                    <span className="text-lg font-black">{item.val}</span>
+                                </div>
+                            ))}
                         </div>
                     </div>
 
-                    <div className="bg-slate-900 text-white p-12 rounded-[3rem]">
-                        <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-indigo-400 mb-8 text-center">Velocity Pattern</h3>
+                    <div className="bg-slate-900 text-white p-14 rounded-[3rem] flex flex-col justify-center border-4 border-indigo-900/20">
+                        <h3 className="text-[10px] font-black uppercase tracking-[0.6em] text-indigo-400 mb-10 text-center">Velocity Pattern</h3>
                         <div className="text-center">
-                            <p className="text-5xl font-black uppercase mb-4">{data.timeEfficiency}</p>
-                            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest leading-relaxed">
+                            <p className="text-6xl font-black uppercase mb-6">{data.timeEfficiency || 'OPTIMAL'}</p>
+                            <p className="text-sm font-bold text-slate-400 uppercase tracking-[0.1em] leading-relaxed max-w-xs mx-auto">
                                 {data.timePattern || "Standard response pattern observed across all difficulty vectors."}
                             </p>
                         </div>
@@ -149,31 +152,31 @@ export function NeuralHeatmapPage({ data }: PageProps) {
     return (
         <div className="h-full flex flex-col justify-between">
             <div>
-                <h2 className="text-4xl font-black uppercase tracking-tighter mb-12">Cognitive Heatmap</h2>
-                <div className="border border-slate-200 rounded-3xl overflow-hidden">
-                    <table className="w-full text-left">
-                        <thead className="bg-slate-50 border-b border-slate-200">
+                <h2 className="text-4xl font-black uppercase tracking-tighter mb-10">Cognitive Heatmap</h2>
+                <div className="border-4 border-slate-100 rounded-[2rem] overflow-hidden">
+                    <table className="w-full text-left border-collapse">
+                        <thead className="bg-slate-50 border-b-2 border-slate-200">
                             <tr>
-                                <th className="p-6 text-[10px] font-black uppercase tracking-widest">Subtopic</th>
-                                <th className="p-6 text-[10px] font-black uppercase tracking-widest text-center">Novice</th>
-                                <th className="p-6 text-[10px] font-black uppercase tracking-widest text-center">Intermediate</th>
-                                <th className="p-6 text-[10px] font-black uppercase tracking-widest text-center">Expert</th>
+                                <th className="p-6 text-xs font-black uppercase tracking-widest text-slate-400">Subtopic</th>
+                                {['Novice', 'Intermediate', 'Expert'].map(l => (
+                                    <th key={l} className="p-6 text-xs font-black uppercase tracking-widest text-center text-slate-400">{l}</th>
+                                ))}
                             </tr>
                         </thead>
                         <tbody>
-                            {data.subtopics.slice(0, 8).map((st, i) => (
+                            {data.subtopics.slice(0, 7).map((st, i) => (
                                 <tr key={i} className="border-b border-slate-100">
-                                    <td className="p-6 text-xs font-black uppercase tracking-widest">{st.name}</td>
+                                    <td className="p-6 text-xs font-black uppercase tracking-widest bg-slate-50/50">{st.name}</td>
                                     {['Novice', 'Intermediate', 'Expert'].map(level => {
                                         const cell = data.heatmap.find(h => h.subtopic === st.name && h.difficulty === level);
                                         const accuracy = cell?.accuracy || 0;
                                         return (
-                                            <td key={level} className="p-2 text-center">
+                                            <td key={level} className="p-2">
                                                 <div className={cn(
-                                                    "w-full h-12 rounded-lg flex items-center justify-center text-[10px] font-black",
-                                                    accuracy >= 80 ? "bg-black text-white" :
-                                                        accuracy >= 50 ? "bg-slate-400 text-white" :
-                                                            accuracy > 0 ? "bg-slate-200 text-black" : "bg-slate-50 text-slate-300"
+                                                    "h-14 rounded-xl flex items-center justify-center text-xs font-black transition-none border-2",
+                                                    accuracy >= 80 ? "bg-black text-white border-black" :
+                                                        accuracy >= 50 ? "bg-slate-300 text-white border-slate-300" :
+                                                            accuracy > 0 ? "bg-slate-100 text-black border-slate-200" : "bg-white text-slate-200 border-slate-50"
                                                 )}>
                                                     {accuracy > 0 ? `${accuracy}%` : '-'}
                                                 </div>
@@ -198,18 +201,15 @@ export function ComplexityLadderPage({ data }: PageProps) {
     return (
         <div className="h-full flex flex-col justify-between">
             <div>
-                <h2 className="text-4xl font-black uppercase tracking-tighter mb-12">Complexity Matrix</h2>
-                <div className="grid grid-cols-3 gap-12">
+                <h2 className="text-4xl font-black uppercase tracking-tighter mb-16">Complexity Matrix</h2>
+                <div className="grid grid-cols-3 gap-16 px-10">
                     {data.difficulty.map((d, i) => (
-                        <div key={i} className="space-y-6">
-                            <div className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-400">{d.level}</div>
-                            <div className="flex items-baseline gap-2">
-                                <span className="text-7xl font-black">{d.accuracy || 0}%</span>
+                        <div key={i} className="text-center space-y-8">
+                            <div className="text-xs font-black uppercase tracking-[0.5em] text-slate-400">{d.level}</div>
+                            <div className="flex flex-col items-center">
+                                <span className="text-8xl font-black leading-tight border-b-8 border-black">{d.accuracy || 0}%</span>
                             </div>
-                            <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
-                                <div className="h-full bg-black" style={{ width: `${d.accuracy || 0}%` }} />
-                            </div>
-                            <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
                                 Sample size: {d.attempts} challenges
                             </div>
                         </div>
@@ -225,67 +225,71 @@ export function ComplexityLadderPage({ data }: PageProps) {
 }
 
 export function AppendixCoverPage({ data }: PageProps) {
-    void data; // data unused on cover, retained for consistent signature
+    void data;
     return (
-        <div className="h-full flex flex-col justify-center items-center text-center">
-            <div className="w-24 h-[1px] bg-slate-200 mb-12" />
-            <h2 className="text-8xl font-black uppercase tracking-tighter mb-4">Appendix</h2>
-            <p className="text-xl font-bold uppercase tracking-[0.5em] text-slate-400 mb-12">Raw Audit Log</p>
-            <div className="w-24 h-[1px] bg-slate-200" />
-
-            <div className="absolute bottom-20 left-20 right-20 flex justify-between items-end text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">
+        <div className="h-full flex flex-col justify-between items-center py-20">
+            <div />
+            <div className="text-center relative">
+                <div className="w-32 h-1 bg-black mx-auto mb-16" />
+                <h2 className="text-[10rem] font-black uppercase tracking-tighter leading-none mb-6">Appendix</h2>
+                <p className="text-2xl font-bold uppercase tracking-[0.8em] text-slate-400">Raw Audit Log</p>
+                <div className="w-32 h-1 bg-black mx-auto mt-16" />
+            </div>
+            <footer className="w-full flex justify-between items-end text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 border-t border-slate-100 pt-8">
                 <div>Neural Diagnostic Evidence</div>
                 <div>Page 06 / 07</div>
-            </div>
+            </footer>
         </div>
     );
 }
 
 export function QuestionAuditPage({ data }: PageProps) {
-    // Audit table in portrait, needs auto pagination.
-    // Puppeteer handles page breaks naturally if we use the right CSS.
+    /* 
+     * Uniformity: Audit log is now LANDSCAPE to match Section 1.
+     * Prevents orientation crash and gives more room for text.
+     */
     return (
-        <div className="pdf-page portrait">
-            <h2 className="text-2xl font-black uppercase tracking-tighter mb-8 border-b-2 border-slate-200 pb-4">Challenge Registry</h2>
+        <div className="pdf-page landscape">
+            <h2 className="text-3xl font-black uppercase tracking-tighter mb-10 border-b-4 border-black pb-4">Challenge Registry</h2>
             <table className="w-full text-left">
-                <thead className="border-b-2 border-black">
+                <thead className="border-b-2 border-slate-300">
                     <tr>
-                        <th className="py-4 pr-4 text-[9px] font-black uppercase tracking-widest w-12">#</th>
-                        <th className="py-4 pr-4 text-[9px] font-black uppercase tracking-widest">Question Segment</th>
-                        <th className="py-4 pr-4 text-[9px] font-black uppercase tracking-widest text-center w-24">Vector</th>
-                        <th className="py-4 text-[9px] font-black uppercase tracking-widest text-right w-20">Time</th>
+                        <th className="py-4 pr-6 text-xs font-black uppercase tracking-widest w-16 text-slate-400">#</th>
+                        <th className="py-4 pr-6 text-xs font-black uppercase tracking-widest text-slate-400">Question Segment</th>
+                        <th className="py-4 pr-6 text-xs font-black uppercase tracking-widest text-center w-32 text-slate-400">Vector</th>
+                        <th className="py-4 text-xs font-black uppercase tracking-widest text-right w-24 text-slate-400">Time</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {(data.questions || []).map((q, i) => (
+                    {(data.questions || []).slice(0, 10).map((q, i) => (
                         <tr key={i} className="border-b border-slate-100 align-top">
-                            <td className="py-6 pr-4 text-[9px] font-black text-slate-300">{(i + 1).toString().padStart(2, '0')}</td>
-                            <td className="py-6 pr-4">
-                                <div className="text-[11px] font-bold text-slate-800 leading-relaxed mb-2">{q.text}</div>
-                                <div className="flex gap-4">
+                            <td className="py-6 pr-6 text-xs font-black text-slate-200">{(i + 1).toString().padStart(2, '0')}</td>
+                            <td className="py-6 pr-6">
+                                <div className="text-sm font-bold text-slate-900 leading-relaxed mb-3 text-left">{q.text}</div>
+                                <div className="flex gap-6 items-center">
                                     <div className={cn(
-                                        "px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest",
+                                        "px-3 py-1 rounded text-[10px] font-black uppercase tracking-widest",
                                         q.isCorrect ? "bg-black text-white" : "bg-slate-200 text-slate-500"
                                     )}>
                                         {q.isCorrect ? 'VALID' : 'INVALID'}
                                     </div>
-                                    <div className="text-[8px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">
-                                        Answer: {q.userAnswer || 'SKIP'}
+                                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                                        Answer: <span className="text-slate-600">{q.userAnswer || 'NO RESPONSE'}</span>
                                     </div>
                                 </div>
                             </td>
-                            <td className="py-6 pr-4 text-center">
-                                <span className="text-[9px] font-black uppercase text-slate-500 tracking-widest">{q.difficulty || 'STD'}</span>
+                            <td className="py-6 pr-6 text-center">
+                                <span className="text-[10px] font-black uppercase text-slate-500 tracking-[0.2em]">{q.difficulty || 'STD'}</span>
                             </td>
                             <td className="py-6 text-right">
-                                <span className="text-[9px] font-black">{q.timeSpent || 0}s</span>
+                                <span className="text-xs font-black text-slate-900">{q.timeSpent || 0}s</span>
                             </td>
                         </tr>
                     ))}
                 </tbody>
             </table>
 
-            <footer className="absolute bottom-10 left-10 right-10 flex justify-between items-end text-[8px] font-black uppercase tracking-[0.3em] text-slate-300">
+            <footer className="absolute bottom-10 left-20 right-20 flex justify-between items-end text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">
                 <div>End of Document — Challenge Registry</div>
                 <div>Page 07 / 07</div>
             </footer>

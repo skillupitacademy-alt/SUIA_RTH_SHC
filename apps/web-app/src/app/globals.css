@@ -8,66 +8,14 @@
   .glass-morphism {
     @apply bg-white/70 backdrop-blur-[16px] border border-white/20;
   }
-
-  .pink-glow {
-    box-shadow: 0 0 20px rgba(255, 45, 85, 0.2), 0 0 40px rgba(255, 45, 85, 0.1);
-  }
-
-  .pink-glow-border {
-    @apply border-[#FF2D55] ring-4 ring-[#FF2D55]/10;
-    box-shadow: 0 0 15px rgba(255, 45, 85, 0.3);
-  }
-
-  .text-shadow-pink {
-    text-shadow: 0 0 10px rgba(255, 45, 85, 0.5);
-  }
 }
 
 :root {
-  /* Default Theme A */
   --primary: 337 90% 63%;
-  /* #F54A8D */
-  --primary-foreground: 0 0% 100%;
-
   --secondary: 223 74% 29%;
-  /* #133382 */
-  --secondary-foreground: 0 0% 100%;
-
   --background: 0 0% 100%;
   --foreground: 222 47% 11%;
-
-  --muted: 210 40% 96%;
-  --muted-foreground: 215 18% 30%;
-  /* Darkened for WCAG AA on light muted backgrounds */
-
-  --accent: 337 90% 63%;
-  --accent-foreground: 0 0% 100%;
-
-  --border: 214 28% 82%;
-  --input: 214 28% 82%;
-  --ring: 337 90% 63%;
-
   --radius: 0.5rem;
-}
-
-.theme-b {
-  --primary: 198 84% 15%;
-  /* #063347 */
-  --primary-foreground: 0 0% 100%;
-
-  --secondary: 16 88% 53%;
-  /* #F0561D */
-  --secondary-foreground: 0 0% 100%;
-
-  --accent: 16 88% 53%;
-  --accent-foreground: 0 0% 100%;
-
-  --ring: 198 84% 15%;
-}
-
-html {
-  font-size: 15px;
-  /* Platform-standard accessible high-density scaling */
 }
 
 body {
@@ -76,97 +24,76 @@ body {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
-.theme-transitioning,
-.theme-transitioning body,
-.theme-transitioning * {
-  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease, fill 0.3s ease, stroke 0.3s ease !important;
-}
+/* 
+ * ==========================================
+ * NUCLEAR PDF ENGINE (FIXED GRID SYSTEM)
+ * ==========================================
+ */
 
-/* Respect OS-level reduced motion preference */
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
-}
+/* 1. Global Print Behavior */
 @media print {
   @page {
     margin: 0;
-    size: auto;
+    size: A4 landscape;
   }
 
   body {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
     background: white !important;
-    color: black !important;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
-  }
-
-  .no-print {
-    display: none !important;
-  }
-
-  .pdf-container {
-    padding: 0;
-    margin: 0;
-    width: 297mm; /* Default landscape A4 */
-    background: white;
-  }
-
-  .pdf-page {
-    margin: 0;
-    padding: 20mm;
-    box-sizing: border-box;
-    page-break-after: always;
-    position: relative;
-    overflow: hidden;
-  }
-
-  /* Landscape A4: 297mm x 210mm */
-  .pdf-page.landscape {
-    width: 297mm;
-    height: 209mm; /* 210mm minus small buffer */
-  }
-
-  /* Portrait A4: 210mm x 297mm */
-  .pdf-page.portrait {
-    width: 210mm;
-    height: 296mm;
-  }
-
-  table {
-    page-break-inside: auto;
-  }
-
-  tr {
-    page-break-inside: avoid;
-    page-break-after: auto;
-  }
-
-  thead {
-    display: table-header-group;
-  }
-
-  tfoot {
-    display: table-footer-group;
   }
 }
 
-/* Helper for browser preview */
-.pdf-preview-mode {
-  background: #f0f2f5;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 20px;
-  padding: 40px;
-}
-
-.pdf-preview-mode .pdf-page {
+/* 2. Rigid Page Containers - Prevents Overlapping */
+.pdf-container {
+  width: 297mm;
   background: white;
-  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  margin: 0;
+  padding: 0;
+}
+
+.pdf-page {
+  /* physical A4 Landscape constraints */
+  width: 297mm !important;
+  height: 210mm !important;
+
+  /* layout locking */
+  position: relative !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+  padding: 20mm !important;
+
+  /* page break enforcement */
+  break-after: page !important;
+  page-break-after: always !important;
+
+  /* color fidelity */
+  background-color: white !important;
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
+}
+
+/* 3. Hide all non-report noise automatically */
+[class*="modal"],
+[class*="overlay"],
+[id*="session-expired"],
+[class*="SessionExpired"],
+.no-print {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+}
+
+/* 4. Table stability */
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+thead {
+  display: table-header-group;
+}
+
+tr {
+  page-break-inside: avoid;
 }
