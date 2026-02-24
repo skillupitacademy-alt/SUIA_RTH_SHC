@@ -2,6 +2,7 @@ import chromium from "@sparticuz/chromium";
 import puppeteer, { Browser } from "puppeteer-core";
 
 import { logger } from "@/lib/logger";
+
 import { ReportEngine } from "./report.engine";
 
 let globalBrowser: Browser | null = null;
@@ -80,35 +81,49 @@ export class ReportPdfService {
         // Match both local and production API calls
         if (reqUrl.includes('/api/reports') && reqUrl.includes(attemptId)) {
           logger.info({ reqUrl }, "[ReportPdfService] Intercepting data request, providing local copy");
-          request.respond({
+          void request.respond({
             status: 200,
             contentType: 'application/json',
             body: JSON.stringify(reportData),
           });
         } else {
-          request.continue();
+          void request.continue();
         }
       });
 
       logger.info({ attemptId, url }, "[ReportPdfService] Navigating to print route");
 
-      // Set cookie if needed, but for now we might rely on the route being public with an internal token
-      // or we can set the cookie from the current request if we are calling from the user session.
-      
       const start = Date.now();
 
       // Hook console logs for debugging
-      page.on('console', msg => logger.info({ text: msg.text() }, "[ReportPdfService] Page Console"));
+      page.on('console', msg => {
+        const text = msg.text();
+        if (text.includes("PdfReadySignal") || text.includes("error") || text.includes("Fetch")) {
+           logger.info({ text }, "[ReportPdfService] Page Console");
+        }
+      });
 
-      await page.goto(url, { waitUntil: "networkidle0", timeout: 60000 });
+      // Navigate
+      // Navigate with a faster strategy
+      await page.goto(url, { waitUntil: "domcontentloaded", timeout: 35000 });
 
-      // Wait for our custom signal
+      // Wait for our custom signal with a aggressive fallback
       try {
-        await page.waitForSelector('[data-pdf-ready="true"]', { timeout: 60000 });
+        logger.info({ attemptId }, "[ReportPdfService] Waiting for data-pdf-ready signal...");
+        // This selector check is very lightweight
+        await page.waitForSelector('[data-pdf-ready="true"]', { timeout: 25000 });
       } catch (_err) {
         const content = await page.content();
         const hasErrorBlock = content.includes("Failed to render report");
-        throw new Error(`PDF Ready signal not found within 30s. ${hasErrorBlock ? "Page showed 'Failed to render'." : "Page might still be loading or 404."} URL: ${url}`);
+        const hasReadySignal = content.includes('data-pdf-ready="true"');
+        
+        if (hasReadySignal) {
+           logger.info({ attemptId }, "[ReportPdfService] Signal present in HTML. Proceeding.");
+        } else if (hasErrorBlock) {
+           throw new Error(`Page explicitly failed: ${url}`);
+        } else {
+           logger.warn({ attemptId }, "[ReportPdfService] Signal timeout, but proceeding with PDF capture anyway to beat 60s limit.");
+        }
       }
 
       // Generate PDF

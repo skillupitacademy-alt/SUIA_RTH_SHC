@@ -9,7 +9,7 @@ export function PdfReadySignal() {
         // Give time for hydration and chart rendering
         const timer = setTimeout(() => {
             setReady(true);
-        }, 5000); // 5 seconds is usually enough for these charts
+        }, 2500); // 2.5s is sufficient for hydration + entry animations
 
         return () => clearTimeout(timer);
     }, []);
