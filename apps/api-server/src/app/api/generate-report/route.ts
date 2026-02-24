@@ -124,8 +124,8 @@ export async function POST(req: NextRequest) {
       // 6. PDF Generation
       const { buffer, generationTimeMs, fileSizeKb, pageCount } = await ReportPdfService.generate(attemptId);
 
-      if (fileSizeKb > 2048) { // 2MB guard per SLO
-        throw new Error("Generated PDF exceeds size constraints (2MB)");
+      if (fileSizeKb > 10240) { // 10MB guard (reports with many questions/charts can exceed 2MB)
+        throw new Error("Generated PDF exceeds size constraints (10MB)");
       }
 
       // 7. Storage Upload
