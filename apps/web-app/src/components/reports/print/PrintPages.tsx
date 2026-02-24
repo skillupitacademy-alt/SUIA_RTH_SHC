@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import React from "react";
-import { ExamReport } from "@/components/reports/ExamReportLayout";
+// import { ExamReport } from "@/components/reports/ExamReportLayout";
 import { cn } from "@/lib/utils";
 import { REPORT_LAYOUT } from "@/lib/reportLayoutTokens";
 import { FixedChartWrapper, PdfGridTwoColumn } from "./PrintToolkit";
@@ -55,6 +55,36 @@ export interface TopicUnitData {
         topic?: string;
     };
     questions?: import("@quiz/types").QuestionItem[];
+    completedAt?: string;
+    candidateName?: string;
+}
+
+export interface SubjectUnitData {
+    id: string;
+    name: string;
+    topicAccuracies: {
+        topicId: string;
+        topicName: string;
+        accuracy: number;
+    }[];
+    strengths: string[];
+    weaknesses: string[];
+    lineage: {
+        domain: string;
+    };
+    completedAt?: string;
+    candidateName?: string;
+}
+
+export interface DomainUnitData {
+    id: string;
+    name: string;
+    subjectAccuracies: {
+        subjectId: string;
+        subjectName: string;
+        accuracy: number;
+    }[];
+    overallAccuracy: number;
     completedAt?: string;
     candidateName?: string;
 }
@@ -449,5 +479,175 @@ function PdfFooter({ page, total, label }: { page: string; total: string; label:
             <div>{label}</div>
             <div>Page {page} / {total}</div>
         </footer>
+    );
+}
+
+/* ────────────────────────────────────────────── */
+/*  SUMMARY HELPERS                              */
+/* ────────────────────────────────────────────── */
+
+function SummaryBarChart({ data, label }: { data: { name: string; accuracy: number }[], label: string }) {
+    const sorted = [...data].sort((a, b) => b.accuracy - a.accuracy);
+
+    return (
+        <div className="w-full flex flex-col h-full bg-slate-900/20 rounded-3xl p-8 border border-slate-800/30">
+            <div className="border-b border-slate-800 pb-6 mb-8 flex justify-between items-end">
+                <div>
+                    <h3 className="text-[10px] font-black text-indigo-400 uppercase tracking-[0.3em] mb-2">Comparative Intelligence</h3>
+                    <p className="text-2xl font-black text-white uppercase tracking-tighter">{label}</p>
+                </div>
+                <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-3 py-1 bg-slate-800/50 rounded-full border border-white/5">
+                    N-Vector Analysis
+                </div>
+            </div>
+
+            <div className="flex-1 space-y-6 overflow-hidden">
+                {sorted.map((item, idx) => (
+                    <div key={idx} className="group">
+                        <div className="flex justify-between items-baseline mb-2 px-1">
+                            <span className="text-[12px] font-bold text-slate-300 uppercase tracking-widest group-hover:text-white transition-colors truncate max-w-[70%]">
+                                {item.name}
+                            </span>
+                            <span className="text-[14px] font-black text-indigo-400">
+                                {item.accuracy}%
+                            </span>
+                        </div>
+                        <div className="relative h-2 w-full bg-slate-950 rounded-full overflow-hidden border border-white/5">
+                            <div
+                                className="absolute h-full bg-gradient-to-r from-indigo-600 to-violet-600 shadow-[0_0_10px_rgba(99,102,241,0.2)]"
+                                style={{ width: `${item.accuracy}%` }}
+                            />
+                        </div>
+                    </div>
+                ))}
+            </div>
+
+            <div className="mt-8 pt-4 border-t border-slate-800/50">
+                <p className="text-[9px] font-black text-slate-600 uppercase tracking-widest leading-loose">
+                    THE CUMULATIVE ACCURACY COEFFICIENT IS CALCULATED ACROSS ALL SUB-VECTORS.
+                    STABILITY OF THIS METRIC IS PROPORTIONAL TO SAMPLE DENSITY.
+                </p>
+            </div>
+        </div>
+    );
+}
+
+function VectorSummaryCard({ title, items, colorClass }: { title: string, items: string[], colorClass: string }) {
+    return (
+        <ReportCard className="flex-1">
+            <h3 className={`text-[10px] font-black uppercase tracking-[0.3em] mb-6 ${colorClass}`}>{title}</h3>
+            <div className="space-y-4">
+                {items.length > 0 ? items.map((item, i) => (
+                    <div key={i} className="flex gap-4 items-start group">
+                        <div className={`h-1.5 w-1.5 rounded-full mt-1.5 shrink-0 transition-all ${colorClass.replace('text-', 'bg-')} group-hover:scale-125`} />
+                        <p className="text-[13px] font-semibold text-slate-300 tracking-tight leading-snug group-hover:text-white transition-colors">{item}</p>
+                    </div>
+                )) : (
+                    <p className="text-[11px] font-bold text-slate-600 uppercase tracking-widest italic">Insufficient Data Point</p>
+                )}
+            </div>
+        </ReportCard>
+    );
+}
+
+/* ────────────────────────────────────────────── */
+/*  SUBJECT SUMMARY PAGE                         */
+/* ────────────────────────────────────────────── */
+
+export function SubjectSummaryPage({ data, page, total }: { data: SubjectUnitData, page: number, total: number }) {
+    return (
+        <div className="h-full flex flex-col">
+            <header className="pdf-header flex justify-between items-start border-b border-slate-800 pb-4 mb-8">
+                <div>
+                    <div className="flex items-center gap-2 mb-2 opacity-60">
+                        <span className="text-[10px] font-black text-indigo-400 uppercase tracking-[0.2em]">{data.lineage.domain}</span>
+                    </div>
+                    <h1 className="report-heading">{data.name}</h1>
+                    <p className="report-subheading mt-1">Subject Strategy Overview : {data.candidateName || "Intelligence Assets"}</p>
+                </div>
+                <div className="text-right">
+                    <p className={T.typography.label} style={{ color: 'rgb(129,140,248)' }}>
+                        {data.completedAt ? new Date(data.completedAt).toLocaleDateString() : 'N/A'}
+                    </p>
+                    <p className="report-subheading mt-0.5">Ref: {data.id.slice(0, 12)}</p>
+                </div>
+            </header>
+
+            <div className="flex-1 min-h-0">
+                <PdfGridTwoColumn
+                    left={
+                        <SummaryBarChart
+                            label="Topic Performance Benchmarks"
+                            data={data.topicAccuracies.map(t => ({ name: t.topicName, accuracy: t.accuracy }))}
+                        />
+                    }
+                    right={
+                        <div className="flex flex-col h-full gap-6">
+                            <VectorSummaryCard
+                                title="Subject-Level Strengths"
+                                items={data.strengths}
+                                colorClass="text-emerald-400"
+                            />
+                            <VectorSummaryCard
+                                title="Critical Subject Weaknesses"
+                                items={data.weaknesses}
+                                colorClass="text-rose-400"
+                            />
+                        </div>
+                    }
+                />
+            </div>
+
+            <footer className="pdf-footer mt-8 pt-4 border-t border-slate-800/50 flex justify-between items-center opacity-40">
+                <span className="text-[9px] font-black tracking-[0.4em] text-slate-500 uppercase">Neural Intelligence System • Phase 4 Output</span>
+                <span className="text-[11px] font-black tracking-[0.2em] text-indigo-400">PAGE {page} / {total}</span>
+            </footer>
+        </div>
+    );
+}
+
+/* ────────────────────────────────────────────── */
+/*  DOMAIN OVERVIEW PAGE                         */
+/* ────────────────────────────────────────────── */
+
+export function DomainOverviewPage({ data, page, total }: { data: DomainUnitData, page: number, total: number }) {
+    return (
+        <div className="h-full flex flex-col">
+            <header className="pdf-header flex justify-between items-start border-b border-slate-800 pb-4 mb-8 text-center">
+                <div className="w-full">
+                    <h1 className="report-heading text-6xl tracking-[-0.04em] mb-2">{data.name}</h1>
+                    <p className="report-subheading text-[11px] tracking-[0.4em] opacity-40">Intelligence Aggregator : {data.candidateName || "Intelligence Assets"}</p>
+                </div>
+            </header>
+
+            <div className="flex-1 flex flex-col items-center justify-center space-y-12">
+                <div className="relative group">
+                    <div className="absolute inset-0 bg-indigo-500/20 blur-[100px] rounded-full group-hover:bg-indigo-500/30 transition-all duration-1000" />
+                    <div className="relative bg-slate-900/60 border border-white/5 rounded-[4rem] p-16 flex flex-col items-center shadow-2xl backdrop-blur-xl">
+                        <span className="text-[12px] font-black text-indigo-400 uppercase tracking-[0.5em] mb-4">Domain Composite Accuracy</span>
+                        <div className="text-9xl font-black text-white tracking-tighter tabular-nums flex items-start">
+                            <span>{data.overallAccuracy}</span>
+                            <span className="text-3xl text-indigo-500/50 mt-6 ml-2">%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="w-full max-w-4xl h-80">
+                    <SummaryBarChart
+                        label="Subject Comparative Analysis"
+                        data={data.subjectAccuracies.map(s => ({ name: s.subjectName, accuracy: s.accuracy }))}
+                    />
+                </div>
+            </div>
+
+            <footer className="pdf-footer mt-12 pt-6 border-t border-slate-800/50 flex justify-between items-center opacity-40">
+                <div className="flex items-center gap-6">
+                    <span className="text-[9px] font-black tracking-[0.4em] text-slate-500 uppercase">Reference: {data.id.slice(0, 16)}</span>
+                    <div className="h-1 w-1 rounded-full bg-slate-800" />
+                    <span className="text-[9px] font-black tracking-[0.4em] text-slate-500 uppercase">{data.completedAt ? new Date(data.completedAt).toISOString() : 'TIMESTAMP_PENDING'}</span>
+                </div>
+                <span className="text-[11px] font-black tracking-[0.2em] text-indigo-400 font-mono">PAGE {page} / {total}</span>
+            </footer>
+        </div>
     );
 }
