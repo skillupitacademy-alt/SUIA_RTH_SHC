@@ -11,7 +11,7 @@ interface ReportDownloadButtonProps {
 }
 
 export function ReportDownloadButton({ attemptId, className }: ReportDownloadButtonProps) {
-    const { status, downloadUrl, error, triggerGeneration } = useReportStatus(attemptId);
+    const { status, downloadUrl, error, triggerGeneration, cooldown } = useReportStatus(attemptId);
     const [secondsElapsed, setSecondsElapsed] = useState(0);
 
     useEffect(() => {
@@ -74,6 +74,21 @@ export function ReportDownloadButton({ attemptId, className }: ReportDownloadBut
                     {isSoftTimeout ? "Server timed out. Tap to force retry." : "Synthesizing PDF Report"}
                 </span>
             </div>
+        );
+    }
+
+    if (cooldown > 0) {
+        return (
+            <button
+                disabled
+                className={cn(
+                    "flex items-center gap-3 px-6 py-2.5 bg-slate-900 border border-slate-800 text-slate-500 rounded-xl font-bold uppercase tracking-widest transition-all text-[11px] cursor-not-allowed opacity-80",
+                    className
+                )}
+            >
+                <RefreshCw size={18} className="animate-spin-slow opacity-20" />
+                Next Report in {cooldown}s
+            </button>
         );
     }
 

@@ -4,6 +4,7 @@ import { after, NextRequest, NextResponse } from "next/server";
 
 import { logger } from "@/lib/logger";
 import { TokenService } from "@/modules/auth/token.service";
+import { cacheService } from "@/modules/core/cache.service";
 import { ReportRepository } from "@/modules/report-engine/report-repository";
 
 export const runtime = "nodejs";
@@ -73,7 +74,17 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // 2. State Machine Init
+    // 2. Proactive Rate Limit check (3 per min)
+    const { count, ttlRem } = await cacheService.increment(`ratelimit:pdf:${userId}`, 60000);
+    if (count > 3) {
+      return NextResponse.json({ 
+        error: "Rate limit exceeded", 
+        retryAfter: ttlRem,
+        message: `Limit reached. Next report available in ${ttlRem} seconds.`
+      }, { status: 429 });
+    }
+
+    // 3. State Machine Init
     await ReportRepository.createReportIfNotExists({ attemptId, userId, status: "pending" });
 
     // 3. Fire-and-forget Generation Trigger (Internal API call)

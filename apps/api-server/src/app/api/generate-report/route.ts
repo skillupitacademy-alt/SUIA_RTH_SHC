@@ -68,9 +68,13 @@ export async function POST(req: NextRequest) {
     }
 
     // 2. Rate Limiting (3 per min)
-    const { count = 0 } = await cacheService.increment(`ratelimit:pdf:${userId}`, 60000);
-    if (count !== null && count > 3) {
-      return NextResponse.json({ error: "Rate limit exceeded. Please wait a minute." }, { status: 429 });
+    const { count, ttlRem } = await cacheService.increment(`ratelimit:pdf:${userId}`, 60000);
+    if (count > 3) {
+      return NextResponse.json({ 
+        error: "Rate limit exceeded", 
+        retryAfter: ttlRem,
+        message: `Next report available in ${ttlRem} seconds.`
+      }, { status: 429 });
     }
 
     // 3. Idempotency Check

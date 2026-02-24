@@ -11,6 +11,7 @@ export function useReportStatus(attemptId: string) {
   const [status, setStatus] = useState<ReportStatus>("pending");
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [cooldown, setCooldown] = useState<number>(0);
 
   const checkStatus = useCallback(async () => {
     if (!attemptId) return;
@@ -52,13 +53,19 @@ export function useReportStatus(attemptId: string) {
     };
   }, [attemptId, status, checkStatus]);
 
+  // Cooldown timer logic
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const timer = setInterval(() => {
+      setCooldown(prev => Math.max(0, prev - 1));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [cooldown]);
+
   const triggerGeneration = async (options?: { force?: boolean }) => {
-    if (!attemptId) return;
+    if (!attemptId || cooldown > 0) return;
     
     try {
-      setStatus("generating");
-      setError(null);
-
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
       const res = await fetch(`${apiUrl}/queue-report`, {
         method: 'POST',
@@ -67,8 +74,17 @@ export function useReportStatus(attemptId: string) {
         credentials: "include",
       });
 
-      if (!res.ok) throw new Error("Failed to queue report generation");
+      if (!res.ok) {
+        if (res.status === 429) {
+          const data = await res.json();
+          setCooldown(data.retryAfter || 60);
+          return; // Don't change status to failed, just set cooldown
+        }
+        throw new Error("Failed to queue report generation");
+      }
       
+      setStatus("generating");
+      setError(null);
       checkStatus();
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Failed to queue report generation";
@@ -77,5 +93,5 @@ export function useReportStatus(attemptId: string) {
     }
   };
 
-  return { status, downloadUrl, error, triggerGeneration, checkStatus };
+  return { status, downloadUrl, error, triggerGeneration, checkStatus, cooldown };
 }

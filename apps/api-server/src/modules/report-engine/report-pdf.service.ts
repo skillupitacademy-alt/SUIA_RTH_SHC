@@ -27,6 +27,11 @@ export class ReportPdfService {
 
     const apiBaseEnv = process.env.NEXT_PUBLIC_API_URL;
     const apiBase = apiBaseEnv !== undefined && apiBaseEnv !== "" ? apiBaseEnv : "http://localhost:3000/api";
+    
+    // Direct to the Web App for printing, not the API subdomain
+    const webAppUrlEnv = process.env.NEXT_PUBLIC_WEB_APP_URL;
+    const webAppUrl = webAppUrlEnv !== undefined && webAppUrlEnv !== "" ? webAppUrlEnv : apiBase.replace('/api', '').replace('api.', 'quiz.');
+    
     const start = Date.now();
     
     // 1. Resolve browser binary path
@@ -65,7 +70,7 @@ export class ReportPdfService {
         deviceScaleFactor: 2
       });
 
-      const url = `${apiBase.replace('/api', '')}/reports/print/${attemptId}`;
+      const url = `${webAppUrl}/report/print/${attemptId}?internalKey=${internalKey}`;
       
       // 1. Emulate High-Quality Agent
       await page.setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36");
