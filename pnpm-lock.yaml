@@ -344,6 +344,9 @@ importers:
       '@quiz/api-client':
         specifier: workspace:*
         version: link:../../packages/api-client
+      '@quiz/types':
+        specifier: workspace:*
+        version: link:../../packages/types
       '@quiz/ui':
         specifier: workspace:*
         version: link:../../packages/ui
