@@ -38,43 +38,50 @@ body {
   print-color-adjust: exact !important;
 }
 
-/* 1. Rigid Physical Grid (A4 Landscape) */
+/* 1. Rigid Physical Grid (A4 Landscape @ 96dpi) */
 .pdf-container {
-  width: 297mm;
+  width: 1123px;
   margin: 0 auto;
-  background: #f8fafc;
-  /* Subtle background in browser, clean in PDF */
+  background: #0B1220;
+  /* Dark background match */
 }
 
 .pdf-page {
-  width: 297mm !important;
-  height: 210mm !important;
-  padding: 12mm !important;
+  width: 1123px !important;
+  height: 794px !important;
+  padding: 40px !important;
   margin-bottom: 0 !important;
   overflow: hidden !important;
   position: relative !important;
-  background: #ffffff !important;
-  color: #000000 !important;
+  background: #0B1220 !important;
+  color: #ffffff !important;
   box-sizing: border-box !important;
 
   /* Page break enforcement */
   page-break-after: always !important;
   break-after: page !important;
-
-  /* Box shadow for web preview only (ignored in PDF) */
-  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.1);
 }
 
-/* 2. Modal/Overlay Eraser (Universal) */
-.no-print,
-nav,
-header:not(.pdf-header),
-footer:not(.pdf-footer),
-[data-modal],
-.modal,
-.overlay,
-.backdrop,
-[id*="session-expired"] {
+.pdf-page.portrait {
+  width: 794px !important;
+  height: 1123px !important;
+}
+
+/* Stable Typography for Appendix */
+.appendix-table tr {
+  height: 64px !important;
+}
+
+/* 2. Modal/Overlay Eraser (Scoped to PDF context) */
+.pdf-container .no-print,
+.pdf-container nav,
+.pdf-container header:not(.pdf-header),
+.pdf-container footer:not(.pdf-footer),
+.pdf-container [data-modal],
+.pdf-container .modal,
+.pdf-container .overlay,
+.pdf-container .backdrop,
+.pdf-container [id*="session-expired"] {
   display: none !important;
   visibility: hidden !important;
   opacity: 0 !important;
@@ -96,7 +103,7 @@ tr {
 
 @page {
   margin: 0;
-  size: A4 landscape;
+  size: 1123px 794px landscape;
 }
 
 @media print {
