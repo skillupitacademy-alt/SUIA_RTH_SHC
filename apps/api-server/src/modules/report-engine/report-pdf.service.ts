@@ -31,15 +31,18 @@ export class ReportPdfService {
     
     // 1. Resolve browser binary path
     let executablePath: string;
-    try {
-      executablePath = await chromium.executablePath();
-    } catch (_err) {
+    const isWindows = process.platform === "win32";
+
+    if (isWindows) {
       // Fallback for local dev if chromium is not installed via sparticuz
       executablePath = "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe";
+    } else {
+      // In production (Vercel/Linux), we MUST use sparticuz
+      executablePath = await chromium.executablePath();
     }
 
     const browser = await puppeteer.launch({
-      args: chromium.args,
+      args: isWindows ? [] : chromium.args,
       defaultViewport: {
         width: 1440,
         height: 900,
@@ -49,7 +52,7 @@ export class ReportPdfService {
         isLandscape: true
       },
       executablePath,
-      headless: ((chromium as unknown as { headless?: boolean }).headless ?? true),
+      headless: isWindows ? true : ((chromium as unknown as { headless?: boolean }).headless ?? true),
     });
 
     try {
@@ -112,7 +115,7 @@ export class ReportPdfService {
         }
       });
 
-      // Navigate with timeout
+      // Faster logic: DomContentLoaded only, 20s cap
       await page.goto(url, { waitUntil: "domcontentloaded", timeout: 20000 });
 
       // Signal wait with aggressive timeout (15s)
@@ -139,7 +142,7 @@ export class ReportPdfService {
       const generationTimeMs = Date.now() - start;
       const fileSizeKb = Math.round(pdfBuffer.length / 1024);
       
-      // Estimate page count
+      // Attempt to count pages (rough estimate or use puppeteer if possible)
       const pageCount = 7; 
 
       return {
@@ -174,7 +177,6 @@ export class ReportPdfService {
     const storageUrl = await uploadReport(buffer, exam.userId, attemptId);
 
     // 4. Update Status (Fallback for legacy scripts)
-    // Most modern flows use ReportRepository directly
     const { ReportRepository } = await import("./report-repository");
     await ReportRepository.updateReportSuccess(attemptId, {
       fileRef: storageUrl,

@@ -78,7 +78,7 @@ export default function PrintReportPage(props: {
     }
 
     // Appendix Chunking (8 rows per page for portrait stability)
-    const appendixChunks = chunkRows(data.questions || [], 8);
+    const appendixChunks = chunkRows(data.questions || [], 5);
     const totalPages = 6 + appendixChunks.length;
 
     return (

@@ -1,10 +1,11 @@
 "use client";
 
 import React from "react";
+import { REPORT_LAYOUT } from "@/lib/reportLayoutTokens";
 
 /**
- * PDF PAGE MODEL (A4 Landscape @ 96dpi)
- * Dimensions: 1123px x 794px
+ * PDF PAGE MODEL
+ * Consumes REPORT_LAYOUT tokens for dimensions, ensuring Web ⇄ PDF parity.
  */
 interface PdfPageProps {
     children: React.ReactNode;
@@ -12,14 +13,14 @@ interface PdfPageProps {
 }
 
 export function PdfPage({ children, orientation = "landscape" }: PdfPageProps) {
-    const isLandscape = orientation === "landscape";
+    const dim = orientation === "landscape" ? REPORT_LAYOUT.page.landscape : REPORT_LAYOUT.page.portrait;
     return (
         <div
             className={`pdf-page ${orientation} relative flex flex-col bg-[#0B1220] text-slate-100 overflow-hidden select-none`}
             style={{
-                width: isLandscape ? 1123 : 794,
-                height: isLandscape ? 794 : 1123,
-                padding: "40px",
+                width: dim.width,
+                height: dim.height,
+                padding: dim.padding,
                 boxSizing: "border-box",
                 pageBreakAfter: "always",
                 breakAfter: "page",
@@ -32,6 +33,7 @@ export function PdfPage({ children, orientation = "landscape" }: PdfPageProps) {
 
 /**
  * STABLE TWO-COLUMN GRID
+ * Default ratios come from REPORT_LAYOUT.grid tokens.
  */
 interface PdfGridTwoColumnProps {
     left: React.ReactNode;
@@ -44,9 +46,9 @@ interface PdfGridTwoColumnProps {
 export function PdfGridTwoColumn({
     left,
     right,
-    leftRatio = 2,
-    rightRatio = 1,
-    gap = 32
+    leftRatio = REPORT_LAYOUT.grid.mainRatio.left,
+    rightRatio = REPORT_LAYOUT.grid.mainRatio.right,
+    gap = REPORT_LAYOUT.grid.gap,
 }: PdfGridTwoColumnProps) {
     return (
         <div
@@ -56,18 +58,18 @@ export function PdfGridTwoColumn({
                 gap: `${gap}px`,
                 height: "100%",
                 width: "100%",
-                overflow: "hidden"
+                overflow: "hidden",
             }}
         >
-            <div style={{ overflow: "hidden", height: "100%" }}>{left}</div>
-            <div style={{ overflow: "hidden", height: "100%" }}>{right}</div>
+            <div style={{ overflow: "hidden", height: "100%" }} className="min-h-0">{left}</div>
+            <div style={{ overflow: "hidden", height: "100%" }} className="min-h-0">{right}</div>
         </div>
     );
 }
 
 /**
  * FIXED CHART WRAPPER
- * Locks dimensions to prevent Recharts/ECharts from resizing during capture.
+ * Uses chart-print-lock class from globals.css to force SVG/Canvas sizing.
  */
 interface FixedChartWrapperProps {
     width?: number | string;
@@ -77,18 +79,18 @@ interface FixedChartWrapperProps {
 
 export function FixedChartWrapper({
     width = "100%",
-    height = 420,
-    children
+    height = REPORT_LAYOUT.chart.large,
+    children,
 }: FixedChartWrapperProps) {
     return (
         <div
+            className="chart-print-lock"
             style={{
                 width: typeof width === "number" ? `${width}px` : width,
                 height: typeof height === "number" ? `${height}px` : height,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                position: "relative"
+                display: "block",
+                position: "relative",
+                overflow: "hidden",
             }}
         >
             <div style={{ width: "100%", height: "100%" }}>
@@ -101,8 +103,9 @@ export function FixedChartWrapper({
 /**
  * UTILITY: CHUNK DATA
  */
-export function chunkRows<T>(rows: T[], size: number): T[][] {
+export function chunkRows<T>(rows: T[], size: number = REPORT_LAYOUT.appendix.cardsPerPage): T[][] {
     const chunks: T[][] = [];
+    if (!rows) return chunks;
     for (let i = 0; i < rows.length; i += size) {
         chunks.push(rows.slice(i, i + size));
     }

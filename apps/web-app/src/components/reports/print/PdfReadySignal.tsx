@@ -4,8 +4,8 @@ import { useEffect, useState } from "react";
 
 /**
  * PdfReadySignal - Emits a signal for Puppeteer to capture the PDF.
- * Includes "Modal Scrub" defense to hide any UI noise (modals, backdrops)
- * that might have accidentally triggered during the render cycle.
+ * Includes "Modal Scrub" defense, Font Readiness, and Paint Buffer
+ * to ensure all charts and typography are fully resolved before capture.
  */
 export function PdfReadySignal() {
     const [ready, setReady] = useState(false);
@@ -38,15 +38,25 @@ export function PdfReadySignal() {
             document.documentElement.style.overflow = "hidden";
         };
 
-        // Give time for hydration and chart rendering
+        // Give time for hydration + chart rendering + font loading
         const timer = setTimeout(async () => {
             scrubUi();
 
-            // 3. Layout Settle Timeout
-            await new Promise(r => setTimeout(r, 200));
+            // 3. Wait for all fonts to be fully loaded and rendered
+            try {
+                const fontsReady = (document as Document & { fonts?: FontFaceSet }).fonts?.ready;
+                if (fontsReady) {
+                    await fontsReady;
+                }
+            } catch {
+                // Fallback: fonts.ready not available, proceed anyway
+            }
+
+            // 4. Paint Buffer — let charts + SVGs complete their final paint cycle
+            await new Promise(r => setTimeout(r, 1200));
 
             setReady(true);
-        }, 3000); // 3s total wait for stability
+        }, 4000); // 4s total wait for chart hydration + render stability
 
         return () => clearTimeout(timer);
     }, []);
