@@ -1,10 +1,13 @@
+const path = require('path');
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     transpilePackages: ['@quiz/api-client', '@quiz/db', '@quiz/ui', 'lucide-react'],
     serverExternalPackages: ['@sparticuz/chromium', 'puppeteer-core'],
+    outputFileTracingRoot: path.join(__dirname, '../../'),
     outputFileTracingIncludes: {
-        '/api/generate-report': ['./node_modules/@sparticuz/chromium/**/*'],
-        '/api/cron/pdf-health': ['./node_modules/@sparticuz/chromium/**/*'],
+        '/api/generate-report': ['../../node_modules/@sparticuz/chromium/**/*'],
+        '/api/cron/pdf-health': ['../../node_modules/@sparticuz/chromium/**/*'],
     },
     async headers() {
         return [
