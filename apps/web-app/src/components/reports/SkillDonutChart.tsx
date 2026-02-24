@@ -7,9 +7,10 @@ import { MethodologyDisclaimer } from './MethodologyDisclaimer';
 
 export interface SkillDonutChartProps {
     data: { name: string; accuracy: number }[];
+    suppressAnimation?: boolean;
 }
 
-export const SkillDonutChart = React.memo(({ data }: SkillDonutChartProps) => {
+export const SkillDonutChart = React.memo(({ data, suppressAnimation }: SkillDonutChartProps) => {
     const [mounted, setMounted] = React.useState(false);
 
     React.useEffect(() => {
@@ -54,7 +55,8 @@ export const SkillDonutChart = React.memo(({ data }: SkillDonutChartProps) => {
                             paddingAngle={4}
                             dataKey="accuracy"
                             stroke="none"
-                            animationDuration={1500}
+                            isAnimationActive={!suppressAnimation}
+                            animationDuration={suppressAnimation ? 0 : 1500}
                             cornerRadius={4}
                         >
                             {data.map((entry, index) => (

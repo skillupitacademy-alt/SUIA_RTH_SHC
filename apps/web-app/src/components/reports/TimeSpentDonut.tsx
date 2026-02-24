@@ -11,9 +11,10 @@ export interface TimeSpentDonutProps {
         questions: { isCorrect: boolean; timeSpent: number }[];
         timeBuckets?: { stable: number; logic: number; neural: number };
     };
+    suppressAnimation?: boolean;
 }
 
-export const TimeSpentDonut = React.memo(({ data }: TimeSpentDonutProps) => {
+export const TimeSpentDonut = React.memo(({ data, suppressAnimation }: TimeSpentDonutProps) => {
     const [mounted, setMounted] = React.useState(false);
 
     React.useEffect(() => {
@@ -86,8 +87,8 @@ export const TimeSpentDonut = React.memo(({ data }: TimeSpentDonutProps) => {
                             paddingAngle={4}
                             dataKey="value"
                             stroke="none"
-                            isAnimationActive={true}
-                            animationDuration={600}
+                            isAnimationActive={!suppressAnimation}
+                            animationDuration={suppressAnimation ? 0 : 600}
                             cornerRadius={4}
                         >
                             {breakdown.map((entry, index) => (

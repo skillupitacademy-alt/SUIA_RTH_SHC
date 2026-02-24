@@ -1,4 +1,4 @@
-import { db, examQuestions, exams, resultsByDimension } from "@quiz/db";
+import { db, examQuestions, exams, resultsByDimension, userProfiles } from "@quiz/db";
 import { and, desc, eq, sql } from "drizzle-orm";
 
 import { logger } from "@/lib/logger";
@@ -94,6 +94,7 @@ export type PremiumReport = {
     topic?: string;
   };
   completedAt?: string;
+  candidateName?: string;
   questions: {
     id: string;
     text: string;
@@ -533,7 +534,11 @@ export class ReportEngine {
       subtopics: core.subtopics ?? [],
       skills: core.skills ?? [],
       difficulty: (core.difficulty ?? []).map(d => ({ ...d, showNoData: d.attempts < 1 })),
-      heatmap: (core.heatmap ?? []).map(h => ({ ...h, showNoData: h.attempts < 1 })),
+      heatmap: (core.heatmap ?? []).map(h => ({ 
+        ...h, 
+        difficulty: (h.difficulty.toLowerCase() === 'simple' ? 'Novice' : h.difficulty.charAt(0).toUpperCase() + h.difficulty.slice(1).toLowerCase()),
+        showNoData: h.attempts < 1 
+      })),
       timeBuckets: {
         stable: Number(core.stable_time_sec ?? 0),
         logic: Number(core.logic_time_sec ?? 0),
@@ -588,7 +593,11 @@ export class ReportEngine {
         explanation: q.explanation,
         isCorrect: q.is_correct === 1,
         timeSpent: Number(q.time_spent ?? 0)
-      }))
+      })),
+      candidateName: (await db.query.userProfiles.findFirst({
+        where: eq(userProfiles.userId, exam.userId),
+        columns: { name: true }
+      }))?.name ?? "Strategic Officer"
     };
 
     // 2. Synthesize Deterministic Interpretation

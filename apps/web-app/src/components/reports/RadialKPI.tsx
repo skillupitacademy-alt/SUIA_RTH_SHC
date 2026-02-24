@@ -18,9 +18,10 @@ export interface RadialKPIProps {
         totalTimeSpentSeconds: number;
         timeEfficiency: 'FAST' | 'OPTIMAL' | 'SLOW';
     };
+    suppressAnimation?: boolean;
 }
 
-export const RadialKPI = React.memo(({ data }: RadialKPIProps) => {
+export const RadialKPI = React.memo(({ data, suppressAnimation }: RadialKPIProps) => {
     const [mounted, setMounted] = React.useState(false);
 
     React.useEffect(() => {
@@ -118,15 +119,17 @@ export const RadialKPI = React.memo(({ data }: RadialKPIProps) => {
                                 {data.readiness}%
                             </span>
                         </div>
-                        <div className="mt-4 px-4 py-1.5 bg-white/5 rounded-full border border-white/10 flex items-center gap-2">
-                            <Activity size={14} className="text-indigo-400" />
-                            <span className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">AI Matrix Active</span>
-                        </div>
+                        {!suppressAnimation && (
+                            <div className="mt-4 px-4 py-1.5 bg-white/5 rounded-full border border-white/10 flex items-center gap-2">
+                                <Activity size={14} className="text-indigo-400" />
+                                <span className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">AI Matrix Active</span>
+                            </div>
+                        )}
                     </div>
                 </div>
 
                 {/* Main Radial Chart - Layered Rings */}
-                <div className="w-[430px] h-[430px] flex items-center justify-center relative">
+                <div className="w-full h-full max-w-[400px] max-h-[400px] flex items-center justify-center relative">
                     <ResponsiveContainer width="100%" height="100%">
                         <RadialBarChart
                             key={mounted ? 'mounted' : 'unmounted'}
@@ -175,6 +178,7 @@ export const RadialKPI = React.memo(({ data }: RadialKPIProps) => {
                                 cornerRadius={20}
                                 background={{ fill: 'rgba(255,255,255,0.02)' }}
                                 filter="url(#glow_RKPI)"
+                                isAnimationActive={!suppressAnimation}
                             />
 
                             {/* Middle Ring 1: Rank */}
@@ -186,6 +190,7 @@ export const RadialKPI = React.memo(({ data }: RadialKPIProps) => {
                                 cornerRadius={20}
                                 background={{ fill: 'rgba(255,255,255,0.02)' }}
                                 filter="url(#glow_RKPI)"
+                                isAnimationActive={!suppressAnimation}
                             />
 
                             {/* Middle Ring 2: Mastery */}
@@ -197,6 +202,7 @@ export const RadialKPI = React.memo(({ data }: RadialKPIProps) => {
                                 cornerRadius={20}
                                 background={{ fill: 'rgba(255,255,255,0.02)' }}
                                 filter="url(#glow_RKPI)"
+                                isAnimationActive={!suppressAnimation}
                             />
 
                             {/* Outer Ring: Score */}
@@ -208,6 +214,7 @@ export const RadialKPI = React.memo(({ data }: RadialKPIProps) => {
                                 cornerRadius={20}
                                 background={{ fill: 'rgba(255,255,255,0.02)' }}
                                 filter="url(#glow_RKPI)"
+                                isAnimationActive={!suppressAnimation}
                             />
                         </RadialBarChart>
                     </ResponsiveContainer>

@@ -123,6 +123,7 @@ export interface ExamReport {
         topic?: string;
     };
     completedAt?: string;
+    candidateName?: string;
 }
 
 export interface ExamReportLayoutProps {

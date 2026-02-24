@@ -9,9 +9,10 @@ export interface SubtopicBarChartProps {
     data: { name: string; accuracy: number; attempts: number }[];
     weakest?: string;
     rootCauseText?: string;
+    suppressAnimation?: boolean;
 }
 
-export const SubtopicBarChart = React.memo(({ data, weakest, rootCauseText }: SubtopicBarChartProps) => {
+export const SubtopicBarChart = React.memo(({ data, weakest, rootCauseText, suppressAnimation }: SubtopicBarChartProps) => {
     const sortedData = useMemo(() =>
         [...data].sort((a, b) => b.accuracy - a.accuracy),
         [data]);
@@ -59,9 +60,9 @@ export const SubtopicBarChart = React.memo(({ data, weakest, rootCauseText }: Su
                             <div className="relative h-2.5 w-full bg-slate-900/40 rounded-full overflow-hidden border border-white/5">
                                 {showMetrics && (
                                     <motion.div
-                                        initial={{ width: 0 }}
+                                        initial={suppressAnimation ? { width: `${item.accuracy}%` } : { width: 0 }}
                                         animate={{ width: `${item.accuracy}%` }}
-                                        transition={{ duration: 1.2, delay: idx * 0.1, ease: "easeOut" }}
+                                        transition={suppressAnimation ? { duration: 0 } : { duration: 1.2, delay: idx * 0.1, ease: "easeOut" }}
                                         className={cn(
                                             "absolute top-0 left-0 h-full rounded-full transition-all duration-700",
                                             isWeakest

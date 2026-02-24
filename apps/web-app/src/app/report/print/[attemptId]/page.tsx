@@ -113,9 +113,9 @@ export default function PrintReportPage(props: {
                 <AppendixCoverPage page={6} total={totalPages} />
             </PdfPage>
 
-            {/* Page 7+: Chunked Appendix Registry (Portrait) */}
+            {/* Page 7+: Chunked Appendix Registry (Landscape) */}
             {appendixChunks.map((chunk, i) => (
-                <PdfPage key={i} orientation="portrait">
+                <PdfPage key={i} orientation="landscape">
                     <QuestionAuditPage
                         questions={chunk}
                         page={7 + i}

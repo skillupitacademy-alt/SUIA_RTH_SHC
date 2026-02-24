@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 import { FixedChartWrapper, PdfGridTwoColumn } from "./PrintToolkit";
 
 // Lazy load charts to avoid SSR issues in PDF generation, 
-// using ssr: true because Puppeteer IS the browser, but we want zero animations.
+// using ssr: false because Puppeteer IS the browser, but we want zero animations.
 const RadialKPI = dynamic(() => import("../RadialKPI").then(mod => mod.RadialKPI), { ssr: false });
 const SubtopicBarChart = dynamic(() => import("../SubtopicBarChart").then(mod => mod.SubtopicBarChart), { ssr: false });
 const SkillDonutChart = dynamic(() => import("../SkillDonutChart").then(mod => mod.SkillDonutChart), { ssr: false });
@@ -28,8 +28,12 @@ export function ExecutiveSummaryPage({ data, page, total }: PageProps) {
         <div className="h-full flex flex-col">
             <header className="pdf-header flex justify-between items-start border-b-2 border-slate-800 pb-6 mb-8">
                 <div>
-                    <h1 className="text-4xl font-black uppercase tracking-tighter text-white">Diagnostic Intelligence</h1>
-                    <p className="text-sm font-bold uppercase tracking-[0.2em] text-slate-500 mt-1">Executive Analytics Summary</p>
+                    <h1 className="text-4xl font-black uppercase tracking-tighter text-white">
+                        {data.lineage?.topic || "Diagnostic Intelligence"}
+                    </h1>
+                    <p className="text-sm font-bold uppercase tracking-[0.2em] text-slate-500 mt-1">
+                        Executive Analysis: {data.candidateName || "Intelligence Assets"}
+                    </p>
                 </div>
                 <div className="text-right">
                     <p className="text-lg font-black uppercase tracking-widest text-indigo-400">
@@ -45,7 +49,7 @@ export function ExecutiveSummaryPage({ data, page, total }: PageProps) {
                     rightRatio={1}
                     left={
                         <FixedChartWrapper height={460}>
-                            <RadialKPI data={data} />
+                            <RadialKPI data={data} suppressAnimation={true} />
                         </FixedChartWrapper>
                     }
                     right={
@@ -87,7 +91,11 @@ export function SubtopicAccuracyPage({ data, page, total }: PageProps) {
                     rightRatio={1}
                     left={
                         <FixedChartWrapper height={420}>
-                            <SubtopicBarChart data={data.subtopics} weakest={data.ai.weakest_subtopic} />
+                            <SubtopicBarChart
+                                data={data.subtopics}
+                                weakest={data.ai.weakest_subtopic}
+                                suppressAnimation={true}
+                            />
                         </FixedChartWrapper>
                     }
                     right={
@@ -110,15 +118,15 @@ export function SubtopicAccuracyPage({ data, page, total }: PageProps) {
  */
 export function SubjectBreakdownPage({ data, page, total }: PageProps) {
     return (
-        <div className="h-full flex flex-col">
-            <h2 className="text-2xl font-black uppercase tracking-tighter text-white mb-8 pb-3 border-b border-slate-800">Velocity & Neural Patterns</h2>
+        <div className="h-full flex flex-col pt-6">
+            <h2 className="text-2xl font-black uppercase tracking-tighter text-white mb-10 pb-3 border-b border-slate-800">Velocity & Neural Patterns</h2>
             <div className="flex-1">
                 <PdfGridTwoColumn
                     leftRatio={1}
                     rightRatio={1}
                     left={
                         <FixedChartWrapper height={380}>
-                            <SkillDonutChart data={data.skills} />
+                            <SkillDonutChart data={data.skills} suppressAnimation={true} />
                         </FixedChartWrapper>
                     }
                     right={
@@ -127,7 +135,7 @@ export function SubjectBreakdownPage({ data, page, total }: PageProps) {
                                 totalSeconds: data.totalTimeSpentSeconds,
                                 questions: data.questions || [],
                                 timeBuckets: data.timeBuckets
-                            }} />
+                            }} suppressAnimation={true} />
                         </FixedChartWrapper>
                     }
                 />
@@ -160,15 +168,18 @@ export function NeuralHeatmapPage({ data, page, total }: PageProps) {
                                 <tr key={i} className="border-b border-slate-800/50">
                                     <td className="p-4 text-[10px] font-black uppercase text-slate-300">{st.name}</td>
                                     {['Novice', 'Intermediate', 'Expert'].map(level => {
-                                        const cell = data.heatmap?.find(h => h.subtopic === st.name && h.difficulty === level);
+                                        const cell = data.heatmap?.find(h =>
+                                            h.subtopic === st.name &&
+                                            h.difficulty.toLowerCase() === level.toLowerCase()
+                                        );
                                         const acc = cell?.accuracy || 0;
                                         return (
                                             <td key={level} className="p-2">
                                                 <div className={cn(
-                                                    "h-10 rounded-xl flex items-center justify-center text-[10px] font-black",
+                                                    "h-10 rounded-xl flex items-center justify-center text-[10px] font-black transition-all",
                                                     acc >= 80 ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/20" :
                                                         acc >= 50 ? "bg-slate-700 text-slate-300" :
-                                                            acc > 0 ? "bg-slate-800 text-slate-500 border border-slate-700" : "bg-transparent text-slate-800"
+                                                            acc > 0 ? "bg-slate-800 text-slate-500 border border-slate-700" : "bg-transparent text-slate-700/30"
                                                 )}>
                                                     {acc > 0 ? `${acc}%` : '-'}
                                                 </div>
