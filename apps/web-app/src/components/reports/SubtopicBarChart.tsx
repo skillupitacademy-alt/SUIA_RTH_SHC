@@ -10,15 +10,16 @@ export interface SubtopicBarChartProps {
     weakest?: string;
     rootCauseText?: string;
     suppressAnimation?: boolean;
+    dense?: boolean;
 }
 
-export const SubtopicBarChart = React.memo(({ data, weakest, rootCauseText, suppressAnimation }: SubtopicBarChartProps) => {
+export const SubtopicBarChart = React.memo(({ data, weakest, rootCauseText, suppressAnimation, dense }: SubtopicBarChartProps) => {
     const sortedData = useMemo(() =>
         [...data].sort((a, b) => b.accuracy - a.accuracy),
         [data]);
 
     return (
-        <div className="w-full flex flex-col space-y-10 pb-12 relative min-h-full">
+        <div className={cn("w-full flex flex-col space-y-10 pb-12 relative min-h-full", dense && "space-y-6 pb-6")}>
             <div className="flex items-center justify-between border-b border-slate-800 pb-8 mb-4">
                 <div>
                     <h3 className="text-[12px] font-black text-indigo-400 uppercase tracking-[0.3em] mb-3">Diagnostic Sweep</h3>

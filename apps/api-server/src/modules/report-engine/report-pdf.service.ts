@@ -155,7 +155,7 @@ export class ReportPdfService {
         buffer: pdfBuffer as Buffer,
         generationTimeMs: Date.now() - start,
         fileSizeKb: Math.round(pdfBuffer.length / 1024),
-        pageCount: totalPages || 1
+        pageCount: totalPages ?? 1
       };
 
     } finally {

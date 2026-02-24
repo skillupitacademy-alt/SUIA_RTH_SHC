@@ -16,15 +16,6 @@ export async function GET(_req: NextRequest) {
 
     const _payload = await TokenService.verifyAccessToken(_token, false);
     
-    // DIAGNOSTIC: Log userId from token to trace empty dashboard issue
-    console.log('[DASHBOARD_DEBUG]', {
-      userId: _payload.userId,
-      email: _payload.email,
-      roles: _payload.roles,
-      aud: _payload.aud,
-      timestamp: new Date().toISOString()
-    });
-    
     // 1. Rate Limiting (Hardening)
     const { allowed, remaining } = CacheManager.checkRateLimit(_payload.userId, 60);
     if (allowed === false) {

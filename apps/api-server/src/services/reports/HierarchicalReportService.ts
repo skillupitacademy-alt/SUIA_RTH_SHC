@@ -6,9 +6,9 @@ import { PDFDocument } from "pdf-lib";
 import { logger } from "@/lib/logger";
 import { uploadReport } from "@/lib/storage/upload-report";
 
+import { REPORT_ENGINE_CONFIG } from "../../modules/report-engine/report-engine.config";
 import { ReportPdfService } from "../../modules/report-engine/report-pdf.service";
 import { ReportRepository } from "../../modules/report-engine/report-repository";
-import { REPORT_ENGINE_CONFIG } from "../../modules/report-engine/report-engine.config";
 import { ReportJobService } from "./ReportJobService";
 
 export class HierarchicalReportService {
@@ -40,17 +40,20 @@ export class HierarchicalReportService {
             // 2. DFS Traversal to collect nodes
             const nodes = this.collectNodes(report);
             
-            // --- Phase 5 Guardrails ---
-            const pageEstimate = nodes.reduce((acc, node) => {
+            // --- Phase 5 Guardrails & Pagination Alignment ---
+            const appendixPages = Math.ceil((report.appendix?.questionBank?.length ?? 0) / 5);
+            const contentPages = nodes.reduce((acc, node) => {
                 if (node.type === 'domain') return acc + REPORT_ENGINE_CONFIG.PAGES_PER_DOMAIN_OVERVIEW;
                 if (node.type === 'subject') return acc + REPORT_ENGINE_CONFIG.PAGES_PER_SUBJECT_SUMMARY;
                 return acc + REPORT_ENGINE_CONFIG.PAGES_PER_TOPIC;
             }, 0);
 
-            this.log.info({ jobId, nodeCount: nodes.length, pageEstimate }, "Hierarchy validated");
+            const totalPageEstimate = contentPages + appendixPages;
 
-            if (pageEstimate > REPORT_ENGINE_CONFIG.MAX_TOTAL_PAGES_ESTIMATE) {
-                throw new Error(`Report exceeds safety limit: ${pageEstimate} estimated pages (Limit: ${REPORT_ENGINE_CONFIG.MAX_TOTAL_PAGES_ESTIMATE})`);
+            this.log.info({ jobId, nodeCount: nodes.length, contentPages, appendixPages, totalPageEstimate }, "Hierarchy validated");
+
+            if (totalPageEstimate > REPORT_ENGINE_CONFIG.MAX_TOTAL_PAGES_ESTIMATE) {
+                throw new Error(`Report exceeds safety limit: ${totalPageEstimate} estimated pages (Limit: ${REPORT_ENGINE_CONFIG.MAX_TOTAL_PAGES_ESTIMATE})`);
             }
             
             if (nodes.length > REPORT_ENGINE_CONFIG.MAX_HIERARCHY_NODES) {
@@ -73,7 +76,7 @@ export class HierarchicalReportService {
                     node.id, 
                     node.type, 
                     currentPageOffset, 
-                    pageEstimate
+                    totalPageEstimate
                 );
                 buffers.push(buffer);
 
@@ -98,7 +101,7 @@ export class HierarchicalReportService {
                 fileRef: pdfUrl,
                 generationTimeMs: Date.now() - job.createdAt.getTime(),
                 fileSizeKb: Math.round(mergedBuffer.length / 1024),
-                pageCount: pageEstimate
+                pageCount: totalPageEstimate
             });
 
             await ReportJobService.updateProgress(jobId, 100, "completed");

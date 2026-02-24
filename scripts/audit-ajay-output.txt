@@ -1,0 +1,181 @@
+=== EXAM_BLUEPRINTS COLUMNS ===
+[
+  {
+    "column_name": "id",
+    "data_type": "uuid",
+    "is_nullable": "NO"
+  },
+  {
+    "column_name": "name",
+    "data_type": "text",
+    "is_nullable": "NO"
+  },
+  {
+    "column_name": "description",
+    "data_type": "text",
+    "is_nullable": "YES"
+  },
+  {
+    "column_name": "domain_ids",
+    "data_type": "ARRAY",
+    "is_nullable": "YES"
+  },
+  {
+    "column_name": "subject_ids",
+    "data_type": "ARRAY",
+    "is_nullable": "YES"
+  },
+  {
+    "column_name": "topic_ids",
+    "data_type": "ARRAY",
+    "is_nullable": "YES"
+  },
+  {
+    "column_name": "total_questions",
+    "data_type": "integer",
+    "is_nullable": "NO"
+  },
+  {
+    "column_name": "time_limit",
+    "data_type": "integer",
+    "is_nullable": "YES"
+  },
+  {
+    "column_name": "difficulty_distribution",
+    "data_type": "jsonb",
+    "is_nullable": "NO"
+  },
+  {
+    "column_name": "created_at",
+    "data_type": "timestamp without time zone",
+    "is_nullable": "NO"
+  },
+  {
+    "column_name": "subtopic_ids",
+    "data_type": "ARRAY",
+    "is_nullable": "YES"
+  },
+  {
+    "column_name": "question_ids",
+    "data_type": "ARRAY",
+    "is_nullable": "YES"
+  }
+]
+
+=== RESULTS_BY_DIMENSION COLUMNS ===
+[
+  {
+    "column_name": "id",
+    "data_type": "uuid",
+    "is_nullable": "NO"
+  },
+  {
+    "column_name": "exam_id",
+    "data_type": "uuid",
+    "is_nullable": "NO"
+  },
+  {
+    "column_name": "dimension_type",
+    "data_type": "text",
+    "is_nullable": "NO"
+  },
+  {
+    "column_name": "dimension_id",
+    "data_type": "text",
+    "is_nullable": "YES"
+  },
+  {
+    "column_name": "score",
+    "data_type": "integer",
+    "is_nullable": "NO"
+  },
+  {
+    "column_name": "accuracy",
+    "data_type": "integer",
+    "is_nullable": "NO"
+  },
+  {
+    "column_name": "created_at",
+    "data_type": "timestamp without time zone",
+    "is_nullable": "NO"
+  },
+  {
+    "column_name": "name",
+    "data_type": "text",
+    "is_nullable": "YES"
+  }
+]
+
+=== EXAMS COLUMNS ===
+[
+  {
+    "column_name": "id",
+    "data_type": "uuid",
+    "is_nullable": "NO"
+  },
+  {
+    "column_name": "user_id",
+    "data_type": "uuid",
+    "is_nullable": "NO"
+  },
+  {
+    "column_name": "blueprint_id",
+    "data_type": "uuid",
+    "is_nullable": "YES"
+  },
+  {
+    "column_name": "status",
+    "data_type": "USER-DEFINED",
+    "is_nullable": "NO"
+  },
+  {
+    "column_name": "total_score",
+    "data_type": "integer",
+    "is_nullable": "YES"
+  },
+  {
+    "column_name": "started_at",
+    "data_type": "timestamp without time zone",
+    "is_nullable": "NO"
+  },
+  {
+    "column_name": "completed_at",
+    "data_type": "timestamp without time zone",
+    "is_nullable": "YES"
+  },
+  {
+    "column_name": "duration_seconds",
+    "data_type": "integer",
+    "is_nullable": "YES"
+  },
+  {
+    "column_name": "last_answered_at",
+    "data_type": "timestamp without time zone",
+    "is_nullable": "YES"
+  }
+]
+
+=== RAW SQL TEST ===
+SUCCESS: [
+  {
+    "id": "f7e45738-e2dd-46f3-9529-f532fb439e84",
+    "status": "completed",
+    "total_score": 100,
+    "completed_at": "2026-02-23T23:06:01.544Z",
+    "blueprint_name": null
+  },
+  {
+    "id": "6bfd54eb-7a05-413b-8b50-9e8b42e51f8c",
+    "status": "completed",
+    "total_score": 100,
+    "completed_at": "2026-02-22T11:22:04.498Z",
+    "blueprint_name": null
+  },
+  {
+    "id": "dd042892-0a02-47fc-9216-f547b477ee9e",
+    "status": "completed",
+    "total_score": 100,
+    "completed_at": "2026-02-21T16:18:00.376Z",
+    "blueprint_name": null
+  }
+]

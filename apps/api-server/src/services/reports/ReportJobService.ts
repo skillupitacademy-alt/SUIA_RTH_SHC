@@ -1,5 +1,5 @@
 import { db, reportJobs } from "@quiz/db";
-import { asc, eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 
 import { logger } from "@/lib/logger";
 
@@ -47,22 +47,27 @@ export class ReportJobService {
     }
 
     /**
-     * Poll for the next available queued job
+     * Poll for the next available queued job using SKIP LOCKED for atomic safety
      */
     static async getNextJob(): Promise<typeof reportJobs.$inferSelect | null> {
-        const job = await db.query.reportJobs.findFirst({
-            where: eq(reportJobs.status, "queued"),
-            orderBy: [asc(reportJobs.createdAt)]
-        });
+        const result = await db.execute(sql`
+            UPDATE report_jobs
+            SET status = 'processing', updated_at = NOW()
+            WHERE id = (
+                SELECT id
+                FROM report_jobs
+                WHERE status = 'queued'
+                ORDER BY created_at ASC
+                LIMIT 1
+                FOR UPDATE SKIP LOCKED
+            )
+            RETURNING *;
+        `);
 
-        if (!job) return null;
-
-        // Atomically mark as processing
-        await db.update(reportJobs)
-            .set({ status: "processing", updatedAt: new Date() })
-            .where(eq(reportJobs.id, job.id));
-
-        return { ...job, status: "processing" };
+        if (result.rows.length === 0) return null;
+        
+        // Drizzle execute returns raw rows, we cast to the inferred type
+        return result.rows[0] as unknown as typeof reportJobs.$inferSelect;
     }
 
     /**
@@ -91,29 +96,45 @@ export class ReportJobService {
     }
     /**
      * Recovery: Reset jobs stuck in 'processing' for too long
+     * Uses atomic SQL to prevent race conditions and handle retry limits
      */
-    static async resetStaleJobs(ageMinutes = 10): Promise<number> {
-        const threshold = new Date(Date.now() - ageMinutes * 60 * 1000);
-        
-        const staleJobs = await db.query.reportJobs.findMany({
-            where: (jobs, { and, eq, lt }) => and(
-                eq(jobs.status, "processing"),
-                lt(jobs.updatedAt, threshold)
-            )
-        });
+    static async resetStaleJobs(ageMinutes = 30): Promise<number> {
+        this.log.debug({ ageMinutes }, "Checking for stale jobs");
 
-        if (staleJobs.length === 0) return 0;
+        // 1. Mark jobs that exceeded retries as failed
+        const failResult = await db.execute(sql`
+            UPDATE report_jobs
+            SET 
+                status = 'failed', 
+                error_message = 'Job timed out and exceeded maximum retries',
+                updated_at = NOW()
+            WHERE status = 'processing'
+              AND updated_at < NOW() - INTERVAL '${ageMinutes} minutes'
+              AND retry_count >= max_retries
+            RETURNING id;
+        `);
 
-        this.log.warn({ count: staleJobs.length }, "Resetting stale processing jobs to queued");
-
-        let count = 0;
-        for (const job of staleJobs) {
-            await db.update(reportJobs)
-                .set({ status: "queued", updatedAt: new Date() })
-                .where(eq(reportJobs.id, job.id));
-            count++;
+        if (failResult.rows.length > 0) {
+            this.log.error({ count: failResult.rows.length }, "Marked stale jobs as failed (max retries reached)");
         }
 
-        return count;
+        // 2. Reset jobs within retry limits back to queued
+        const resetResult = await db.execute(sql`
+            UPDATE report_jobs
+            SET 
+                status = 'queued', 
+                retry_count = retry_count + 1,
+                updated_at = NOW()
+            WHERE status = 'processing'
+              AND updated_at < NOW() - INTERVAL '${ageMinutes} minutes'
+              AND retry_count < max_retries
+            RETURNING id;
+        `);
+
+        if (resetResult.rows.length > 0) {
+            this.log.warn({ count: resetResult.rows.length }, "Reset stale processing jobs to queued for retry");
+        }
+
+        return failResult.rows.length + resetResult.rows.length;
     }
 }
