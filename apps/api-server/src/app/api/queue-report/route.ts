@@ -1,6 +1,6 @@
 import { db, exams } from "@quiz/db";
 import { eq } from "drizzle-orm";
-import { NextRequest, NextResponse, waitUntil } from "next/server";
+import { after, NextRequest, NextResponse } from "next/server";
 
 import { logger } from "@/lib/logger";
 import { TokenService } from "@/modules/auth/token.service";
@@ -87,22 +87,23 @@ export async function POST(req: NextRequest) {
 
     const generateUrl = `${apiBase}/generate-report`;
     
-    // Use waitUntil to ensure the background task survives the Vercel function lifecycle
-    // This solves the "Client network socket disconnected" error in production
-    waitUntil(
-      fetch(generateUrl, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-internal-key": process.env.INTERNAL_API_KEY ?? "secret"
-        },
-        body: JSON.stringify({ attemptId, force }),
-        // @ts-expect-error - AbortSignal.timeout is a newer standard
-        signal: AbortSignal.timeout(30000) // 30s timeout for the trigger handshake
-      }).catch(err => {
+    // Use after() as the replacement for waitUntil in this environment
+    // to ensure the background task survives the Vercel function lifecycle
+    after(async () => {
+      try {
+        await fetch(generateUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-internal-key": process.env.INTERNAL_API_KEY ?? "secret"
+          },
+          body: JSON.stringify({ attemptId, force }),
+          signal: AbortSignal.timeout(30000)
+        });
+      } catch (err) {
         logger.error({ err, attemptId, url: generateUrl }, "[QueueReport] Background trigger failed");
-      })
-    );
+      }
+    });
 
     return NextResponse.json({ status: "queued", attemptId });
 
