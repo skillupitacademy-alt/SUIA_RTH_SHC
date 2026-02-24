@@ -69,12 +69,20 @@ export class ReportPdfService {
       const baseUrl = process.env.NEXT_PUBLIC_WEB_APP_URL ?? "http://localhost:3001";
       const url = `${baseUrl}/report/print/${attemptId}?internalKey=${internalKey}`;
 
+      // 1. Set Identity to bypass basic bot detectors
+      await page.setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36");
+      
+      // 2. Set Extra Headers so the INITIAL page load bypasses the WAF Rule
+      await page.setExtraHTTPHeaders({
+        "x-internal-key": internalKey
+      });
+
       logger.info({ attemptId, url }, "[ReportPdfService] Fetching report data locally for interception");
       
-      // 1. Fetch data locally to bypass network
+      // 3. Fetch data locally to bypass network
       const reportData = await ReportEngine.getPremiumExamReport(attemptId);
 
-      // 2. Set up interception
+      // 4. Set up interception
       await page.setRequestInterception(true);
       page.on('request', (request) => {
         const reqUrl = request.url();
@@ -103,7 +111,6 @@ export class ReportPdfService {
         }
       });
 
-      // Navigate
       // Navigate with a faster strategy
       await page.goto(url, { waitUntil: "domcontentloaded", timeout: 35000 });
 

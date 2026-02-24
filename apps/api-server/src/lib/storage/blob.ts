@@ -16,8 +16,20 @@ export const blobStorage: StorageProvider = {
   },
 
   async getDownloadUrl(fileRef) {
-    // Vercel Blob URLs are public
-    return fileRef;
+    // Return our secure proxy URL instead of the direct private blob URL
+    // We extract the attemptId from the fileRef URL
+    try {
+      const url = new URL(fileRef);
+      const pathParts = url.pathname.split("/");
+      const fileName = pathParts[pathParts.length - 1];
+      const attemptId = fileName.split(".")[0];
+
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "https://api.realtutorialhub.com/api";
+      return `${apiUrl}/reports/download?attemptId=${attemptId}`;
+    } catch (_error) {
+      // Fallback to original if URL parsing fails
+      return fileRef;
+    }
   },
 
   async delete(fileRef) {
