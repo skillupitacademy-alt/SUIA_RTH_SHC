@@ -1,82 +1,70 @@
+import { db, exams } from "@quiz/db";
 import chromium from "@sparticuz/chromium";
-import puppeteer, { Browser } from "puppeteer-core";
+import { eq } from "drizzle-orm";
+import puppeteer from "puppeteer-core";
 
 import { logger } from "@/lib/logger";
 
 import { ReportEngine } from "./report.engine";
 
-let globalBrowser: Browser | null = null;
+export interface PdfGenerationResult {
+  buffer: Buffer;
+  generationTimeMs: number;
+  fileSizeKb: number;
+  pageCount: number;
+}
 
 export class ReportPdfService {
-  private static async getBrowser(): Promise<Browser> {
-    if (globalBrowser && globalBrowser.isConnected()) {
-      return globalBrowser;
-    }
+  private static readonly log = logger.child({ module: 'report-pdf-service' });
 
-    try {
-      const isDev = process.env.NODE_ENV === "development";
-      let binPath: string | undefined;
+  /**
+   * Core PDF Generation Logic
+   * Used by both the API routes and the Health Check Cron
+   */
+  static async generate(attemptId: string): Promise<PdfGenerationResult> {
+    const internalEnv = process.env.INTERNAL_API_KEY;
+    const internalKey = internalEnv !== undefined && internalEnv !== "" ? internalEnv : "secret";
 
-      // Vercel Monorepo Hardening: Search for binaries in root or local node_modules
-      if (!isDev) {
-        const fs = await import("fs");
-        const path = await import("path");
-        
-        const possiblePaths = [
-          "/var/task/node_modules/@sparticuz/chromium/bin",
-          "/var/task/apps/api-server/node_modules/@sparticuz/chromium/bin",
-          path.join(process.cwd(), "node_modules/@sparticuz/chromium/bin"),
-          path.join(process.cwd(), "../../node_modules/@sparticuz/chromium/bin"),
-        ];
-
-        for (const p of possiblePaths) {
-          if (fs.existsSync(p)) {
-            logger.info({ path: p }, "[ReportPdfService] Found binaries at path");
-            binPath = p;
-            break;
-          }
-        }
-
-        if (binPath === undefined) {
-          logger.warn("[ReportPdfService] No explicit binaries found in known paths. Falling back to default.");
-        }
-      }
-
-      const chromiumHeadless = (chromium as unknown as { headless?: boolean }).headless;
-      const headlessFlag = typeof chromiumHeadless === "boolean" ? chromiumHeadless : true;
-
-      const options = {
-        args: isDev ? [] : chromium.args,
-        defaultViewport: { width: 1280, height: 720 },
-        executablePath: isDev
-          ? "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
-          : await chromium.executablePath(binPath),
-        headless: isDev ? true : headlessFlag,
-      };
-
-      globalBrowser = (await puppeteer.launch(options)) as unknown as Browser;
-      return globalBrowser;
-    } catch (_error: unknown) {
-      const err = _error instanceof Error ? _error : new Error('Unknown error');
-      logger.error({ 
-        err: err.message, 
-        cwd: process.cwd(),
-        stack: err.stack 
-      }, "[ReportPdfService] Failed to launch browser");
-      throw err;
-    }
-  }
-
-  static async generate(attemptId: string) {
-    const browser = await this.getBrowser();
-    const page = await browser.newPage();
+    const apiBaseEnv = process.env.NEXT_PUBLIC_API_URL;
+    const apiBase = apiBaseEnv !== undefined && apiBaseEnv !== "" ? apiBaseEnv : "http://localhost:3000/api";
+    const start = Date.now();
     
+    // 1. Resolve browser binary path
+    let executablePath: string;
     try {
-      const internalKey = process.env.INTERNAL_API_KEY ?? "secret";
-      const baseUrl = process.env.NEXT_PUBLIC_WEB_APP_URL ?? "http://localhost:3001";
-      const url = `${baseUrl}/report/print/${attemptId}?internalKey=${internalKey}`;
+      executablePath = await chromium.executablePath();
+    } catch (_err) {
+      // Fallback for local dev if chromium is not installed via sparticuz
+      executablePath = "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe";
+    }
 
-      // 1. Set Identity to bypass basic bot detectors
+    const browser = await puppeteer.launch({
+      args: chromium.args,
+      defaultViewport: {
+        width: 1440,
+        height: 900,
+        deviceScaleFactor: 2,
+        isMobile: false,
+        hasTouch: false,
+        isLandscape: true
+      },
+      executablePath,
+      headless: ((chromium as unknown as { headless?: boolean }).headless ?? true),
+    });
+
+    try {
+      const page = await browser.newPage();
+      
+      // Ensure specific landscape dimensions for pixel perfection
+      await page.setViewport({
+        width: 1440,
+        height: 900,
+        deviceScaleFactor: 2
+      });
+
+      const url = `${apiBase.replace('/api', '')}/reports/print/${attemptId}`;
+      
+      // 1. Emulate High-Quality Agent
       await page.setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36");
       
       // 2. Set Extra Headers so the INITIAL page load bypasses the WAF Rule
@@ -95,8 +83,8 @@ export class ReportPdfService {
         const reqUrl = request.url();
         // Block trackers/analytics
         if (reqUrl.includes('analytics') || reqUrl.includes('track') || reqUrl.includes('sentry') || reqUrl.includes('cloudflare')) {
-           void request.abort();
-           return;
+          void request.abort();
+          return;
         }
 
         // Intercept data request
@@ -107,6 +95,7 @@ export class ReportPdfService {
             contentType: 'application/json',
             body: JSON.stringify(reportData),
           });
+          return;
         }
 
         // Default: allow the request to continue
@@ -114,8 +103,7 @@ export class ReportPdfService {
       });
 
       logger.info({ attemptId }, "[ReportPdfService] Navigating to print route");
-      const start = Date.now();
-
+      
       // Hook console logs
       page.on('console', msg => {
         const text = msg.text();
@@ -124,7 +112,7 @@ export class ReportPdfService {
         }
       });
 
-      // Faster logic: DomContentLoaded only, 20s cap
+      // Navigate with timeout
       await page.goto(url, { waitUntil: "domcontentloaded", timeout: 20000 });
 
       // Signal wait with aggressive timeout (15s)
@@ -138,32 +126,63 @@ export class ReportPdfService {
       await page.emulateMediaType('screen');
       await page.evaluateHandle('document.fonts.ready');
 
-      // Generate PDF
-      const buffer = await page.pdf({
-        format: "A4",
-        landscape: true,
+      // 6. Generate PDF with exact landscape specifications
+      const pdfBuffer = await page.pdf({
         printBackground: true,
-        preferCSSPageSize: true, // Respect our physical 297x210mm grid
-        displayHeaderFooter: false,
+        width: '1440px',
+        height: '900px',
+        landscape: true,
+        preferCSSPageSize: true,
         margin: { top: 0, right: 0, bottom: 0, left: 0 }
       });
 
       const generationTimeMs = Date.now() - start;
-      const fileSizeKb = Math.round(buffer.length / 1024);
-
-      // Simple page count check (approximate or using browser if needed)
-      // page.pdf doesn't return page count easily, we'd need another library or more complex logic.
-      // For now, we'll return a placeholder or estimate.
-      const pageCount = 7; // Fixed minimum for our layout
+      const fileSizeKb = Math.round(pdfBuffer.length / 1024);
+      
+      // Estimate page count
+      const pageCount = 7; 
 
       return {
-        buffer: Buffer.from(buffer),
+        buffer: pdfBuffer as Buffer,
         generationTimeMs,
         fileSizeKb,
         pageCount
       };
+
     } finally {
-      await page.close();
+      await browser.close();
     }
+  }
+
+  /**
+   * Complete generation + upload + DB sync flow
+   */
+  static async generateAndUpload(attemptId: string): Promise<string> {
+    // 1. Get Exam Data (to get userId)
+    const exam = await db.query.exams.findFirst({
+      where: eq(exams.id, attemptId),
+      columns: { userId: true }
+    });
+
+    if (!exam) throw new Error(`Exam not found: ${attemptId}`);
+
+    // 2. Generate
+    const { buffer, fileSizeKb, generationTimeMs, pageCount } = await this.generate(attemptId);
+    
+    // 3. Upload
+    const { uploadReport } = await import("@/lib/storage/upload-report");
+    const storageUrl = await uploadReport(buffer, exam.userId, attemptId);
+
+    // 4. Update Status (Fallback for legacy scripts)
+    // Most modern flows use ReportRepository directly
+    const { ReportRepository } = await import("./report-repository");
+    await ReportRepository.updateReportSuccess(attemptId, {
+      fileRef: storageUrl,
+      generationTimeMs,
+      fileSizeKb,
+      pageCount
+    });
+
+    return storageUrl;
   }
 }
