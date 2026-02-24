@@ -44,7 +44,7 @@ export interface TopicUnitData {
     difficulty: { level: string; accuracy: number; attempts: number }[];
     heatmap: { subtopic: string; difficulty: string; accuracy: number; attempts: number }[];
     ai: {
-        status: "READY" | "BORDERLINE" | "NOT_READY";
+        status: "READY" | "BORDERLINE" | "NOT_READY" | "DATA_INSUFFICIENT";
         actions: string[];
         weakest_subtopic: string;
         weakest_skill?: string;
@@ -89,10 +89,13 @@ export interface DomainUnitData {
     candidateName?: string;
 }
 
+type TopicLayout = "pillar" | "bar" | "grid" | "heatmap";
+
 interface PageProps {
     data: TopicUnitData;
     page: number;
     total: number;
+    layout?: TopicLayout;
 }
 
 /* ────────────────────────────────────────────── */
@@ -155,7 +158,8 @@ export function ExecutiveSummaryPage({ data, page, total }: PageProps) {
 /* ────────────────────────────────────────────── */
 /*  PAGE 02 : Subtopic Accuracy                  */
 /* ────────────────────────────────────────────── */
-export function SubtopicAccuracyPage({ data, page, total }: PageProps) {
+export function SubtopicAccuracyPage({ data, page, total, layout }: PageProps) {
+    const isDense = layout === "heatmap" || data.subtopics.length > 10;
     return (
         <div className="h-full flex flex-col">
             <SectionHeader title="Subtopic Precision Matrix" label="Diagnostic Sweep V4" data={data} />
@@ -165,17 +169,18 @@ export function SubtopicAccuracyPage({ data, page, total }: PageProps) {
                     <PdfGridTwoColumn
                         left={
                             <ChartCard>
-                                <FixedChartWrapper height={440}>
+                                <FixedChartWrapper height={isDense ? 480 : 440}>
                                     <SubtopicBarChart
                                         data={data.subtopics}
                                         weakest={data.ai.weakest_subtopic}
                                         suppressAnimation={true}
+                                        dense={isDense}
                                     />
                                 </FixedChartWrapper>
                             </ChartCard>
                         }
                         right={
-                            <TacticalPrescriptionPrintPanel data={data} title="Domain Disparity" />
+                            <TacticalPrescriptionPrintPanel data={data} title="Domain Disparity" dense={isDense} />
                         }
                     />
                 </div>
@@ -501,18 +506,21 @@ function SummaryBarChart({ data, label }: { data: { name: string; accuracy: numb
                 </div>
             </div>
 
-            <div className="flex-1 space-y-6 overflow-hidden">
+            <div className={cn("flex-1 space-y-6 overflow-hidden", data.length > 10 && "space-y-3")}>
                 {sorted.map((item, idx) => (
                     <div key={idx} className="group">
-                        <div className="flex justify-between items-baseline mb-2 px-1">
-                            <span className="text-[12px] font-bold text-slate-300 uppercase tracking-widest group-hover:text-white transition-colors truncate max-w-[70%]">
+                        <div className={cn("flex justify-between items-baseline mb-2 px-1", data.length > 10 && "mb-1")}>
+                            <span className={cn(
+                                "text-[12px] font-bold text-slate-300 uppercase tracking-widest group-hover:text-white transition-colors truncate max-w-[70%]",
+                                data.length > 10 && "text-[10px]"
+                            )}>
                                 {item.name}
                             </span>
-                            <span className="text-[14px] font-black text-indigo-400">
+                            <span className={cn("text-[14px] font-black text-indigo-400", data.length > 10 && "text-[12px]")}>
                                 {item.accuracy}%
                             </span>
                         </div>
-                        <div className="relative h-2 w-full bg-slate-950 rounded-full overflow-hidden border border-white/5">
+                        <div className={cn("relative h-2 w-full bg-slate-950 rounded-full overflow-hidden border border-white/5", data.length > 10 && "h-1.5")}>
                             <div
                                 className="absolute h-full bg-gradient-to-r from-indigo-600 to-violet-600 shadow-[0_0_10px_rgba(99,102,241,0.2)]"
                                 style={{ width: `${item.accuracy}%` }}
