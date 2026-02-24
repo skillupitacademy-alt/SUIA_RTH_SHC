@@ -35,7 +35,7 @@ async function getReportData(attemptId: string, internalKey?: string): Promise<E
     if (!res.ok) {
         if (res.status === 404) notFound();
         const body = await res.text();
-        throw new Error(`Failed to fetch report data (${res.status}): ${body}`);
+        throw new Error(`Fetch failed (${res.status}) at ${apiUrl}/api/reports. Body: ${body.slice(0, 100)}`);
     }
 
     return res.json();
@@ -96,12 +96,16 @@ export default async function PrintReportPage(props: {
                 <PdfReadySignal />
             </div>
         );
-    } catch (error) {
+    } catch (error: any) {
         console.error("Print report error:", error);
         return (
             <div className="p-20 text-center">
                 <h1 className="text-2xl font-bold text-red-600">Failed to render report for print</h1>
-                <p className="text-slate-500 mt-4">Correlation ID: {attemptId}</p>
+                <p className="text-slate-500 mt-4 font-mono text-sm max-w-2xl mx-auto">
+                    ID: {attemptId}<br />
+                    Error: {error?.message || "Unknown error"}<br />
+                    API: {process.env.NEXT_PUBLIC_API_URL || "fallback"}
+                </p>
                 <div id="pdf-error-signal" data-pdf-ready="false" className="hidden" />
             </div>
         );

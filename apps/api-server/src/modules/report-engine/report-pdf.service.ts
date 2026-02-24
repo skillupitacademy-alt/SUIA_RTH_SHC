@@ -74,11 +74,11 @@ export class ReportPdfService {
       // Hook console logs for debugging
       page.on('console', msg => logger.info({ text: msg.text() }, "[ReportPdfService] Page Console"));
 
-      await page.goto(url, { waitUntil: "networkidle0", timeout: 45000 });
+      await page.goto(url, { waitUntil: "networkidle0", timeout: 60000 });
 
       // Wait for our custom signal
       try {
-        await page.waitForSelector('[data-pdf-ready="true"]', { timeout: 30000 });
+        await page.waitForSelector('[data-pdf-ready="true"]', { timeout: 60000 });
       } catch (err) {
         const content = await page.content();
         const hasErrorBlock = content.includes("Failed to render report");
