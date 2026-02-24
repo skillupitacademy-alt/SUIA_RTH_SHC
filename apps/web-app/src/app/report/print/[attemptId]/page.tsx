@@ -18,7 +18,7 @@ import {
 } from "@/components/reports/print/PrintPages";
 import { PdfReadySignal } from "@/components/reports/print/PdfReadySignal";
 import { PdfPage, chunkRows } from "@/components/reports/print/PrintToolkit";
-import type { QuestionItem, ReportJSON, TopicDataset } from "@quiz/types";
+import type { QuestionItem, ReportJSON, SubjectDataset, TopicDataset } from "@quiz/types";
 
 async function fetchReportData(attemptId: string, internalKey?: string): Promise<ExamReport> {
     const rawApiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3002/api";
@@ -49,6 +49,8 @@ type SearchParams = {
     internalKey?: string;
     nodeId?: string;
     nodeType?: "domain" | "subject" | "topic";
+    pageOffset?: string;
+    totalPages?: string;
 };
 
 export default function PrintReportPage(props: {
@@ -59,6 +61,10 @@ export default function PrintReportPage(props: {
     const searchParams = use<SearchParams>(props.searchParams as unknown as Promise<SearchParams>);
     const { attemptId } = params;
     const { internalKey, nodeId, nodeType } = searchParams;
+
+    // --- Global Page Context (Phase 5) ---
+    const startPage = Number(searchParams.pageOffset) || 0;
+    const globalTotal = Number(searchParams.totalPages) || 0;
 
     const [data, setData] = useState<ExamReport | null>(null);
     const [error, setError] = useState<string | null>(null);
@@ -90,14 +96,8 @@ export default function PrintReportPage(props: {
         );
     }
 
-    // 1. Determine the dataset to render
-    // If no nodeId/nodeType provided, we assume the root (single level) or we wrap the first topic
-    // For Phase 3, the orchestrator will explicitly hit this with nodeId/nodeType
-
-    // Build topic-scoped questions if materialized data is present
-    const materialized = (data as { reportMaterialized?: ReportJSON }).reportMaterialized;
-
     // --- High-Level Node Bypass (Phase 4) ---
+    const materialized = (data as { reportMaterialized?: ReportJSON }).reportMaterialized;
     if (materialized && nodeId) {
         if (nodeType === "domain" && (materialized.datasets.domain.domainId === nodeId || nodeId === "root")) {
             const domainDs = materialized.datasets.domain;
@@ -113,7 +113,7 @@ export default function PrintReportPage(props: {
             return (
                 <div className="pdf-container bg-slate-950">
                     <PdfPage orientation="landscape">
-                        <DomainOverviewPage data={domainData} page={1} total={1} />
+                        <DomainOverviewPage data={domainData} page={startPage + 1} total={globalTotal} />
                     </PdfPage>
                     <PdfReadySignal />
                 </div>
@@ -121,7 +121,8 @@ export default function PrintReportPage(props: {
         }
 
         if (nodeType === "subject") {
-            const subjectDs = materialized.datasets.subjects[nodeId];
+            const subjectList = Object.values(materialized.datasets.subjects ?? {}) as SubjectDataset[];
+            const subjectDs = subjectList.find((s) => s.subjectId === nodeId);
             if (subjectDs) {
                 const subjectData: SubjectUnitData = {
                     id: subjectDs.subjectId,
@@ -137,7 +138,7 @@ export default function PrintReportPage(props: {
                 return (
                     <div className="pdf-container bg-slate-950">
                         <PdfPage orientation="landscape">
-                            <SubjectSummaryPage data={subjectData} page={1} total={1} />
+                            <SubjectSummaryPage data={subjectData} page={startPage + 1} total={globalTotal} />
                         </PdfPage>
                         <PdfReadySignal />
                     </div>
@@ -146,38 +147,24 @@ export default function PrintReportPage(props: {
         }
     }
 
+    // Helper to coerce any source into TopicUnitData shape
     const normalizeQuestions = (qs: unknown): QuestionItem[] => {
         const arr = Array.isArray(qs) ? qs : [];
         return arr.map((q) => {
-            const item = q as Partial<QuestionItem>;
+            const item = q as Partial<QuestionItem> & { is_correct?: number };
             return {
                 id: item.id ?? "",
                 text: item.text ?? "",
                 userAnswer: item.userAnswer ?? null,
                 correctAnswer: item.correctAnswer ?? "",
                 explanation: item.explanation ?? "",
-                isCorrect: !!item.isCorrect,
+                isCorrect: item.isCorrect ?? (item.is_correct === 1),
                 timeSpent: item.timeSpent ?? 0,
                 difficulty: item.difficulty ?? "STD",
             };
         });
     };
 
-    let topicQuestions: QuestionItem[] = normalizeQuestions(data.questions);
-
-    if (materialized && nodeId && nodeType === "topic") {
-        const topicDs = materialized.datasets.topics[nodeId];
-        if (topicDs) {
-            const questionBank = materialized.appendix?.questionBank ?? [];
-            topicQuestions = normalizeQuestions(questionBank.filter((q: any) => {
-                const matchesTopic = q.topicId === nodeId;
-                const matchesHeatmap = topicDs.heatmap.some((h) => h.subtopic === (q.subtopicName ?? ""));
-                return matchesTopic || matchesHeatmap;
-            }));
-        }
-    }
-
-    // Helper to coerce any source into TopicUnitData shape
     const toTopicUnitData = (src: any): TopicUnitData => {
         // Map subtopics strictly to {name, accuracy, attempts}
         const subtopics = (src.subtopics ?? data.subtopics ?? []).map((s: any) => ({
@@ -186,22 +173,13 @@ export default function PrintReportPage(props: {
             attempts: s.attempts ?? s.attempted ?? 0
         }));
 
-        const difficulty =
-            src.difficulty ??
-                src.difficultySplit
-                ? [
-                    { level: "Simple", accuracy: src.difficultySplit?.easy ?? 0, attempts: 0 },
-                    { level: "Intermediate", accuracy: src.difficultySplit?.medium ?? 0, attempts: 0 },
-                    { level: "Expert", accuracy: src.difficultySplit?.hard ?? 0, attempts: 0 },
-                ]
-                : data.difficulty ?? [];
+        const questions: QuestionItem[] = normalizeQuestions(src.questions ?? data.questions);
 
         return {
-            id: src.id ?? src.topicId ?? data.examId ?? attemptId,
-            examId: src.examId ?? data.examId,
-            name: src.name ?? data.lineage?.topic ?? data.lineage?.subject ?? "Report",
-            score: src.score ?? src.accuracy ?? data.score ?? 0,
-            mastery: src.mastery ?? src.accuracy ?? data.mastery ?? 0,
+            id: src.id ?? data.examId ?? attemptId,
+            name: src.name ?? data.lineage?.topic ?? data.lineage?.subject ?? "Topic Analysis",
+            score: src.score ?? src.accuracy ?? data.score,
+            mastery: src.mastery ?? src.accuracy ?? data.mastery,
             readiness: src.readiness ?? data.readiness ?? src.accuracy ?? 0,
             percentile: src.percentile ?? data.percentile ?? 0,
             totalTimeSpentSeconds: src.totalTimeSpentSeconds ?? data.totalTimeSpentSeconds ?? 0,
@@ -209,64 +187,61 @@ export default function PrintReportPage(props: {
             timeBuckets: src.timeBuckets ?? data.timeBuckets,
             subtopics,
             skills: src.skills ?? data.skills ?? [],
-            difficulty,
+            difficulty: src.difficulty ?? data.difficulty ?? [],
             heatmap: src.heatmap ?? data.heatmap ?? [],
-            ai: src.ai ?? data.ai ?? { status: "READY", actions: [], weakest_subtopic: "", weakest_skill: "" },
-            lineage: src.lineage ?? {
-                domain: data.lineage?.domain ?? "Domain",
-                subject: data.lineage?.subject ?? "Subject",
-                topic: src.name ?? data.lineage?.topic ?? "Topic"
-            },
-            questions: normalizeQuestions(src.questions),
-            completedAt: data.completedAt,
-            candidateName: data.candidateName
+            ai: src.ai ?? data.ai,
+            lineage: src.lineage ?? data.lineage,
+            questions,
+            completedAt: src.completedAt ?? data.completedAt,
+            candidateName: src.candidateName ?? data.candidateName
         };
     };
 
-    let topicData: TopicUnitData = toTopicUnitData({ ...data, questions: data.questions });
-    if (materialized && nodeId && nodeType === "topic") {
-        const topicDs = materialized.datasets.topics[nodeId];
-        if (topicDs) {
-            topicData = toTopicUnitData({ ...topicDs, questions: topicQuestions });
-        }
-    }
+    // 2. Determine the dataset to render
+    const topicList = materialized ? Object.values(materialized.datasets.topics ?? {}) as TopicDataset[] : [];
+    const topicDs = topicList.find((t) => t.topicId === nodeId);
+    const topicData = toTopicUnitData(topicDs || data);
 
     const normalizedQuestions: QuestionItem[] = topicData.questions || [];
 
     // Appendix Chunking (5 rows per page for portrait stability)
     const appendixChunks = chunkRows<QuestionItem>(normalizedQuestions, 5);
-    const totalPages = 6 + appendixChunks.length;
+
+    // Final Page Context Calculation
+    const localPages = 6 + appendixChunks.length;
+    const finalGlobalTotal = globalTotal || localPages;
+    const getPageNum = (localIdx: number) => startPage + localIdx;
 
     return (
         <div className="pdf-container bg-slate-950">
             {/* Page 1: Executive Summary */}
             <PdfPage orientation="landscape">
-                <ExecutiveSummaryPage data={topicData} page={1} total={totalPages} />
+                <ExecutiveSummaryPage data={topicData} page={getPageNum(1)} total={finalGlobalTotal} />
             </PdfPage>
 
             {/* Page 2: Subtopic Accuracy */}
             <PdfPage orientation="landscape">
-                <SubtopicAccuracyPage data={topicData} page={2} total={totalPages} />
+                <SubtopicAccuracyPage data={topicData} page={getPageNum(2)} total={finalGlobalTotal} />
             </PdfPage>
 
             {/* Page 3: Temporal Patterns */}
             <PdfPage orientation="landscape">
-                <SubjectBreakdownPage data={topicData} page={3} total={totalPages} />
+                <SubjectBreakdownPage data={topicData} page={getPageNum(3)} total={finalGlobalTotal} />
             </PdfPage>
 
             {/* Page 4: Neural Heatmap */}
             <PdfPage orientation="landscape">
-                <NeuralHeatmapPage data={topicData} page={4} total={totalPages} />
+                <NeuralHeatmapPage data={topicData} page={getPageNum(4)} total={finalGlobalTotal} />
             </PdfPage>
 
             {/* Page 5: Complexity Ladder */}
             <PdfPage orientation="landscape">
-                <ComplexityLadderPage data={topicData} page={5} total={totalPages} />
+                <ComplexityLadderPage data={topicData} page={getPageNum(5)} total={finalGlobalTotal} />
             </PdfPage>
 
             {/* Page 6: Appendix Cover */}
             <PdfPage orientation="landscape">
-                <AppendixCoverPage page={6} total={totalPages} />
+                <AppendixCoverPage page={getPageNum(6)} total={finalGlobalTotal} />
             </PdfPage>
 
             {/* Page 7+: Chunked Appendix Registry (Landscape) */}
@@ -275,14 +250,13 @@ export default function PrintReportPage(props: {
                     <QuestionAuditPage
                         questions={chunk}
                         data={topicData}
-                        page={7 + i}
-                        total={totalPages}
+                        page={getPageNum(7 + i)}
+                        total={finalGlobalTotal}
                         offset={i * 5}
                     />
                 </PdfPage>
             ))}
 
-            {/* Final Render Signal */}
             <PdfReadySignal />
         </div>
     );

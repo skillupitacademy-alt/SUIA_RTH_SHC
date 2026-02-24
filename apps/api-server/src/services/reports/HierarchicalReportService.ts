@@ -8,6 +8,7 @@ import { uploadReport } from "@/lib/storage/upload-report";
 
 import { ReportPdfService } from "../../modules/report-engine/report-pdf.service";
 import { ReportRepository } from "../../modules/report-engine/report-repository";
+import { REPORT_ENGINE_CONFIG } from "../../modules/report-engine/report-engine.config";
 import { ReportJobService } from "./ReportJobService";
 
 export class HierarchicalReportService {
@@ -38,19 +39,48 @@ export class HierarchicalReportService {
 
             // 2. DFS Traversal to collect nodes
             const nodes = this.collectNodes(report);
-            this.log.info({ jobId, nodeCount: nodes.length }, "Collected hierarchy nodes for rendering");
+            
+            // --- Phase 5 Guardrails ---
+            const pageEstimate = nodes.reduce((acc, node) => {
+                if (node.type === 'domain') return acc + REPORT_ENGINE_CONFIG.PAGES_PER_DOMAIN_OVERVIEW;
+                if (node.type === 'subject') return acc + REPORT_ENGINE_CONFIG.PAGES_PER_SUBJECT_SUMMARY;
+                return acc + REPORT_ENGINE_CONFIG.PAGES_PER_TOPIC;
+            }, 0);
+
+            this.log.info({ jobId, nodeCount: nodes.length, pageEstimate }, "Hierarchy validated");
+
+            if (pageEstimate > REPORT_ENGINE_CONFIG.MAX_TOTAL_PAGES_ESTIMATE) {
+                throw new Error(`Report exceeds safety limit: ${pageEstimate} estimated pages (Limit: ${REPORT_ENGINE_CONFIG.MAX_TOTAL_PAGES_ESTIMATE})`);
+            }
+            
+            if (nodes.length > REPORT_ENGINE_CONFIG.MAX_HIERARCHY_NODES) {
+                throw new Error(`Report exceeds node limit: ${nodes.length} nodes (Limit: ${REPORT_ENGINE_CONFIG.MAX_HIERARCHY_NODES})`);
+            }
 
             // 3. Render Segments
             const buffers: Buffer[] = [];
+            let currentPageOffset = 0;
+
             for (let i = 0; i < nodes.length; i++) {
                 const node = nodes[i];
                 const progress = Math.round(10 + (i / nodes.length) * 70);
                 
                 await ReportJobService.updateProgress(jobId, progress, "processing");
-                this.log.debug({ jobId, nodeId: node.id, nodeType: node.type }, "Rendering segment");
+                this.log.info({ jobId, offset: currentPageOffset, type: node.type }, "Rendering segment");
 
-                const buffer = await ReportPdfService.renderSegment(job.examId, node.id, node.type);
+                const buffer = await ReportPdfService.renderSegment(
+                    job.examId, 
+                    node.id, 
+                    node.type, 
+                    currentPageOffset, 
+                    pageEstimate
+                );
                 buffers.push(buffer);
+
+                // Increment offset for next node
+                if (node.type === 'domain') currentPageOffset += REPORT_ENGINE_CONFIG.PAGES_PER_DOMAIN_OVERVIEW;
+                else if (node.type === 'subject') currentPageOffset += REPORT_ENGINE_CONFIG.PAGES_PER_SUBJECT_SUMMARY;
+                else currentPageOffset += REPORT_ENGINE_CONFIG.PAGES_PER_TOPIC;
             }
 
             // 4. Merge PDFs
@@ -63,17 +93,19 @@ export class HierarchicalReportService {
             this.log.info({ jobId }, "Uploading final merged report");
             const pdfUrl = await uploadReport(mergedBuffer, exam.userId, job.examId);
 
-            // Update Report Success (for legacy compatibility and readiness state)
+            // Update Report Success
             await ReportRepository.updateReportSuccess(job.examId, {
                 fileRef: pdfUrl,
                 generationTimeMs: Date.now() - job.createdAt.getTime(),
                 fileSizeKb: Math.round(mergedBuffer.length / 1024),
-                pageCount: nodes.length * 6 // Rough estimate (each node is ~6 pages)
+                pageCount: pageEstimate
             });
 
             await ReportJobService.updateProgress(jobId, 100, "completed");
+            
+            // Cleanup and Final State Check
             await db.update(exams).set({ 
-                // Any additional metadata updates could go here
+                status: 'completed'
             }).where(eq(exams.id, job.examId));
 
         } catch (error: unknown) {
