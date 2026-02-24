@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 
 export type ReportStatus = "pending" | "generating" | "ready" | "failed" | "not_found";
 
@@ -8,10 +8,13 @@ interface ReportStatusResponse {
 }
 
 export function useReportStatus(attemptId: string) {
-  const [status, setStatus] = useState<ReportStatus>("pending");
+  // Start with "not_found" to avoid false spinner flash on initial load
+  const [status, setStatus] = useState<ReportStatus>("not_found");
+  const [loading, setLoading] = useState(true);
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [cooldown, setCooldown] = useState<number>(0);
+  const initialCheckDone = useRef(false);
 
   const checkStatus = useCallback(async () => {
     if (!attemptId) return;
@@ -35,13 +38,21 @@ export function useReportStatus(attemptId: string) {
       const message = err instanceof Error ? err.message : "Failed to check report status";
       setError(message);
       setStatus("failed");
+    } finally {
+      setLoading(false);
+      initialCheckDone.current = true;
     }
   }, [attemptId]);
 
+  // Initial check on mount
   useEffect(() => {
     if (!attemptId) return;
-
     checkStatus();
+  }, [attemptId, checkStatus]);
+
+  // Polling: only start after initial check is done and status warrants it
+  useEffect(() => {
+    if (!attemptId || !initialCheckDone.current) return;
 
     let interval: NodeJS.Timeout | null = null;
     if (status === "pending" || status === "generating") {
@@ -93,5 +104,5 @@ export function useReportStatus(attemptId: string) {
     }
   };
 
-  return { status, downloadUrl, error, triggerGeneration, checkStatus, cooldown };
+  return { status, loading, downloadUrl, error, triggerGeneration, checkStatus, cooldown };
 }
