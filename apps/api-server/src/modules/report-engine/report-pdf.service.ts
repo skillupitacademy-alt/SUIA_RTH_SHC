@@ -82,55 +82,49 @@ export class ReportPdfService {
       // 3. Fetch data locally to bypass network
       const reportData = await ReportEngine.getPremiumExamReport(attemptId);
 
-      // 4. Set up interception
+      // 4. Set up interception with blocking for speed
       await page.setRequestInterception(true);
       page.on('request', (request) => {
         const reqUrl = request.url();
-        // Match both local and production API calls
+        // Block trackers/analytics
+        if (reqUrl.includes('analytics') || reqUrl.includes('track') || reqUrl.includes('sentry') || reqUrl.includes('cloudflare')) {
+           void request.abort();
+           return;
+        }
+
+        // Intercept data request
         if (reqUrl.includes('/api/reports') && reqUrl.includes(attemptId)) {
-          logger.info({ reqUrl }, "[ReportPdfService] Intercepting data request, providing local copy");
+          logger.info({ reqUrl }, "[ReportPdfService] Providing local data");
           void request.respond({
             status: 200,
             contentType: 'application/json',
             body: JSON.stringify(reportData),
           });
-        } else {
-          void request.continue();
         }
+
+        // Default: allow the request to continue
+        void request.continue();
       });
 
-      logger.info({ attemptId, url }, "[ReportPdfService] Navigating to print route");
-
+      logger.info({ attemptId }, "[ReportPdfService] Navigating to print route");
       const start = Date.now();
 
-      // Hook console logs for debugging
+      // Hook console logs
       page.on('console', msg => {
         const text = msg.text();
-        if (text.includes("PdfReadySignal") || text.includes("error") || text.includes("Fetch")) {
+        if (text.includes("PdfReadySignal") || text.includes("error")) {
            logger.info({ text }, "[ReportPdfService] Page Console");
         }
       });
 
-      // Navigate with a faster strategy
-      await page.goto(url, { waitUntil: "domcontentloaded", timeout: 35000 });
+      // Faster logic: DomContentLoaded only, 20s cap
+      await page.goto(url, { waitUntil: "domcontentloaded", timeout: 20000 });
 
-      // Wait for our custom signal with a aggressive fallback
+      // Signal wait with aggressive timeout (15s)
       try {
-        logger.info({ attemptId }, "[ReportPdfService] Waiting for data-pdf-ready signal...");
-        // This selector check is very lightweight
-        await page.waitForSelector('[data-pdf-ready="true"]', { timeout: 25000 });
+        await page.waitForSelector('[data-pdf-ready="true"]', { timeout: 15000 });
       } catch (_err) {
-        const content = await page.content();
-        const hasErrorBlock = content.includes("Failed to render report");
-        const hasReadySignal = content.includes('data-pdf-ready="true"');
-        
-        if (hasReadySignal) {
-           logger.info({ attemptId }, "[ReportPdfService] Signal present in HTML. Proceeding.");
-        } else if (hasErrorBlock) {
-           throw new Error(`Page explicitly failed: ${url}`);
-        } else {
-           logger.warn({ attemptId }, "[ReportPdfService] Signal timeout, but proceeding with PDF capture anyway to beat 60s limit.");
-        }
+        logger.warn({ attemptId }, "[ReportPdfService] Signal timeout, forcing snap.");
       }
 
       // 5. Force "screen" media and wait for fonts to prevent layout shifts

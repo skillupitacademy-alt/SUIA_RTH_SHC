@@ -39,12 +39,28 @@ export async function GET(req: NextRequest) {
     }
 
     // 2. Return Status + URL if ready
-    if (report.status === "ready" && report.fileRef != null && report.fileRef !== "") {
-      const url = await getDownloadUrl(report.fileRef);
+    const hasFile = typeof report.fileRef === "string" && report.fileRef.trim() !== "";
+    if (report.status === "ready" && hasFile) {
+      const url = await getDownloadUrl(report.fileRef as string);
       return NextResponse.json(
         { status: "ready", url },
         { headers: { "Cache-Control": "public, max-age=3600, immutable" } }
       );
+    }
+
+    // 3. Stall Detection (generating for > 3 mins)
+    if (report.status === "generating") {
+      const updatedAt =
+        report.updatedAt !== null && report.updatedAt !== undefined
+          ? new Date(report.updatedAt).getTime()
+          : 0;
+      const now = Date.now();
+      if (now - updatedAt > 3 * 60 * 1000) {
+        return NextResponse.json({ 
+          status: "failed", 
+          error: "Generation stalled. Please retry." 
+        });
+      }
     }
 
     return NextResponse.json({ 

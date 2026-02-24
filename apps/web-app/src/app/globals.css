@@ -26,71 +26,90 @@ body {
 
 /* 
  * ==========================================
- * BRIEFLY'S NUCLEAR PDF ENGINE (FIXED GRID)
+ * HIGH-FIDELITY PDF GRID SYSTEM
  * ==========================================
+ * These styles are OUTSIDE of @media print because Puppeteer
+ * emulates 'screen' to keep colors vibrant. 
  */
 
-@media print {
-  @page {
-    margin: 0;
-    size: A4 landscape;
-  }
+/* Force exact colors for all view modes */
+* {
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
+}
 
-  /* Force exact colors on every single element */
+/* 1. Rigid Physical Grid (A4 Landscape) */
+.pdf-container {
+  width: 297mm;
+  margin: 0 auto;
+  background: #f8fafc;
+  /* Subtle background in browser, clean in PDF */
+}
+
+.pdf-page {
+  width: 297mm !important;
+  height: 210mm !important;
+  padding: 12mm !important;
+  margin-bottom: 0 !important;
+  overflow: hidden !important;
+  position: relative !important;
+  background: #ffffff !important;
+  color: #000000 !important;
+  box-sizing: border-box !important;
+
+  /* Page break enforcement */
+  page-break-after: always !important;
+  break-after: page !important;
+
+  /* Box shadow for web preview only (ignored in PDF) */
+  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.1);
+}
+
+/* 2. Modal/Overlay Eraser (Universal) */
+.no-print,
+nav,
+header:not(.pdf-header),
+footer:not(.pdf-footer),
+[data-modal],
+.modal,
+.overlay,
+.backdrop,
+[id*="session-expired"] {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+}
+
+/* 3. Table Fixes */
+table {
+  width: 100% !important;
+  border-collapse: collapse !important;
+}
+
+thead {
+  display: table-header-group !important;
+}
+
+tr {
+  page-break-inside: avoid !important;
+}
+
+@page {
+  margin: 0;
+  size: A4 landscape;
+}
+
+@media print {
   * {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
-    color-adjust: exact !important;
   }
 
-  body {
-    background: white !important;
-    margin: 0 !important;
-    padding: 0 !important;
-  }
-
-  /* Hide all non-report UI */
-  .no-print,
-  nav,
-  header:not(.pdf-header),
-  footer:not(.pdf-footer),
-  [data-modal],
-  .modal,
-  .overlay,
-  .backdrop,
-  [id*="session-expired"] {
-    display: none !important;
-    visibility: hidden !important;
-    opacity: 0 !important;
-  }
-
-  /* Fixed Physical Frame: 297mm x 210mm */
-  .pdf-page {
-    width: 297mm !important;
-    height: 210mm !important;
-    padding: 12mm !important;
-    /* As per brief */
-    margin: 0 !important;
-    overflow: hidden !important;
-    position: relative !important;
-    background: #fff !important;
-    color: #000 !important;
-    box-sizing: border-box !important;
-    page-break-after: always !important;
-    break-after: page !important;
-  }
-
-  /* Table stability for auto-pagination */
-  table {
+  .pdf-container {
     width: 100% !important;
-    border-collapse: collapse !important;
   }
 
-  thead {
-    display: table-header-group !important;
-  }
-
-  tr {
-    page-break-inside: avoid !important;
+  .pdf-page {
+    box-shadow: none !important;
   }
 }

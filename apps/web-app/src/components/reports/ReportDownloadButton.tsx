@@ -26,7 +26,8 @@ export function ReportDownloadButton({ attemptId, className }: ReportDownloadBut
         };
     }, [status]);
 
-    const isSoftTimeout = secondsElapsed > 12;
+    // If spinning for > 20s, allow the user to retry manually
+    const isSoftTimeout = secondsElapsed > 20;
 
     const handleDownload = () => {
         if (downloadUrl) {
@@ -52,15 +53,25 @@ export function ReportDownloadButton({ attemptId, className }: ReportDownloadBut
     if (status === "generating" || status === "pending") {
         return (
             <div className={cn("flex flex-col items-center gap-3", className)}>
-                <button
-                    disabled
-                    className="flex items-center gap-3 px-8 py-4 bg-slate-800 text-slate-400 rounded-2xl font-black uppercase tracking-widest cursor-wait"
-                >
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                    {isSoftTimeout ? "Finalizing Assets..." : "Analyzing Matrix..."}
-                </button>
-                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest animate-pulse">
-                    {isSoftTimeout ? "High-fidelity render in progress" : "Synthesizing PDF Report"}
+                {isSoftTimeout ? (
+                    <button
+                        onClick={() => triggerGeneration({ force: true })}
+                        className="flex items-center gap-3 px-8 py-4 bg-indigo-600/20 border border-indigo-500/40 text-indigo-400 rounded-2xl font-black uppercase tracking-widest hover:bg-indigo-600/30 transition-all shadow-lg"
+                    >
+                        <RefreshCw className="w-5 h-5 animate-spin" />
+                        Retry Now
+                    </button>
+                ) : (
+                    <button
+                        disabled
+                        className="flex items-center gap-3 px-8 py-4 bg-slate-800 text-slate-400 rounded-2xl font-black uppercase tracking-widest cursor-wait"
+                    >
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                        Analyzing Matrix...
+                    </button>
+                )}
+                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest animate-pulse text-center">
+                    {isSoftTimeout ? "Server timed out. Tap to force retry." : "Synthesizing PDF Report"}
                 </span>
             </div>
         );
@@ -69,22 +80,21 @@ export function ReportDownloadButton({ attemptId, className }: ReportDownloadBut
     if (status === "failed" || error) {
         return (
             <button
-                onClick={triggerGeneration}
+                onClick={() => triggerGeneration({ force: true })}
                 className={cn(
                     "flex items-center gap-3 px-8 py-4 bg-rose-600/10 border border-rose-500/20 hover:bg-rose-600/20 text-rose-500 rounded-2xl font-black uppercase tracking-widest transition-all",
                     className
                 )}
             >
                 <AlertCircle size={18} />
-                {error ? "Retry Generation" : "Generation Failed"}
+                {error || "Generation Failed"}
             </button>
         );
     }
 
-    // Not found or default
     return (
         <button
-            onClick={triggerGeneration}
+            onClick={() => triggerGeneration()}
             className={cn(
                 "flex items-center gap-3 px-8 py-4 bg-indigo-600/10 border border-indigo-500/20 hover:bg-indigo-600/20 text-indigo-400 rounded-2xl font-black uppercase tracking-widest transition-all",
                 className

@@ -10,8 +10,9 @@ export const runtime = "nodejs";
 
 export async function POST(req: NextRequest) {
   try {
-    const body = (await req.json()) as { attemptId?: string };
+    const body = (await req.json()) as { attemptId?: string; force?: boolean };
     const attemptId = body?.attemptId ?? "";
+    const force = body?.force === true;
 
     if (attemptId === "") {
       return NextResponse.json({ error: "Missing attemptId" }, { status: 400 });
@@ -24,8 +25,6 @@ export async function POST(req: NextRequest) {
     let userId: string;
 
     if (isInternal) {
-      // For internal tests, we need to know WHICH user we're acting as if it's not provided
-      // But usually, we just fetch the exam and use its owner
       const examMatch = await db.query.exams.findFirst({
         where: eq(exams.id, attemptId),
         columns: { userId: true, status: true }
@@ -66,7 +65,6 @@ export async function POST(req: NextRequest) {
       }
     }
 
-
     // 2. State Machine Init
     await ReportRepository.createReportIfNotExists({ attemptId, userId, status: "pending" });
 
@@ -74,14 +72,13 @@ export async function POST(req: NextRequest) {
     const apiBase = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3002/api";
     const generateUrl = `${apiBase}/generate-report`;
     
-    // We don't await this
     fetch(generateUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "x-internal-key": process.env.INTERNAL_API_KEY ?? "secret"
       },
-      body: JSON.stringify({ attemptId })
+      body: JSON.stringify({ attemptId, force })
     }).catch(err => logger.error({ err, attemptId }, "[QueueReport] Background trigger failed"));
 
     return NextResponse.json({ status: "queued", attemptId });

@@ -65,8 +65,9 @@ export async function POST(req: NextRequest) {
     }
 
     // 3. Idempotency Check
+    const force = (body as { force?: boolean })?.force === true;
     const report = await ReportRepository.getReportByAttempt(attemptId);
-    if (report?.status === "ready" && report.fileRef != null && report.fileRef !== "") {
+    if (!force && report?.status === "ready" && report.fileRef != null && report.fileRef !== "") {
       const url = await getDownloadUrl(report.fileRef);
       return NextResponse.json({ url, cached: true });
     }

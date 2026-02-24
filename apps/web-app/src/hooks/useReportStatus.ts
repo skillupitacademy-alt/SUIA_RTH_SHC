@@ -12,13 +12,8 @@ export function useReportStatus(attemptId: string) {
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const getCsrfToken = () => {
-    if (typeof document === "undefined") return null;
-    const match = document.cookie.match(/(?:^|; )csrfToken=([^;]+)/);
-    return match ? decodeURIComponent(match[1]) : null;
-  };
-
   const checkStatus = useCallback(async () => {
+    if (!attemptId) return;
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
       const res = await fetch(`${apiUrl}/report-status?attemptId=${attemptId}`, {
@@ -45,12 +40,9 @@ export function useReportStatus(attemptId: string) {
   useEffect(() => {
     if (!attemptId) return;
 
-    // Initial check
     checkStatus();
 
-    // Polling while generating or pending
     let interval: NodeJS.Timeout | null = null;
-    
     if (status === "pending" || status === "generating") {
       interval = setInterval(checkStatus, 5000);
     }
@@ -60,25 +52,21 @@ export function useReportStatus(attemptId: string) {
     };
   }, [attemptId, status, checkStatus]);
 
-  const triggerGeneration = async () => {
+  const triggerGeneration = async (options?: { force?: boolean }) => {
+    if (!attemptId) return;
+    
     try {
       setStatus("generating");
       setError(null);
-      
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
-      const res = await fetch(`${apiUrl}/queue-report`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(getCsrfToken() ? { "x-csrf-token": getCsrfToken() as string } : {})
-        },
-        credentials: "include",
-        body: JSON.stringify({ attemptId })
+
+      const res = await fetch('/api/queue-report', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ attemptId, force: options?.force })
       });
 
       if (!res.ok) throw new Error("Failed to queue report generation");
       
-      // Force an immediate poll
       checkStatus();
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Failed to queue report generation";
