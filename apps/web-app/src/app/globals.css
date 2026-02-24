@@ -26,74 +26,71 @@ body {
 
 /* 
  * ==========================================
- * NUCLEAR PDF ENGINE (FIXED GRID SYSTEM)
+ * BRIEFLY'S NUCLEAR PDF ENGINE (FIXED GRID)
  * ==========================================
  */
 
-/* 1. Global Print Behavior */
 @media print {
   @page {
     margin: 0;
     size: A4 landscape;
   }
 
-  body {
+  /* Force exact colors on every single element */
+  * {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
-    background: white !important;
+    color-adjust: exact !important;
   }
-}
 
-/* 2. Rigid Page Containers - Prevents Overlapping */
-.pdf-container {
-  width: 297mm;
-  background: white;
-  margin: 0;
-  padding: 0;
-}
+  body {
+    background: white !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
 
-.pdf-page {
-  /* physical A4 Landscape constraints */
-  width: 297mm !important;
-  height: 210mm !important;
+  /* Hide all non-report UI */
+  .no-print,
+  nav,
+  header:not(.pdf-header),
+  footer:not(.pdf-footer),
+  [data-modal],
+  .modal,
+  .overlay,
+  .backdrop,
+  [id*="session-expired"] {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+  }
 
-  /* layout locking */
-  position: relative !important;
-  overflow: hidden !important;
-  box-sizing: border-box !important;
-  padding: 20mm !important;
+  /* Fixed Physical Frame: 297mm x 210mm */
+  .pdf-page {
+    width: 297mm !important;
+    height: 210mm !important;
+    padding: 12mm !important;
+    /* As per brief */
+    margin: 0 !important;
+    overflow: hidden !important;
+    position: relative !important;
+    background: #fff !important;
+    color: #000 !important;
+    box-sizing: border-box !important;
+    page-break-after: always !important;
+    break-after: page !important;
+  }
 
-  /* page break enforcement */
-  break-after: page !important;
-  page-break-after: always !important;
+  /* Table stability for auto-pagination */
+  table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+  }
 
-  /* color fidelity */
-  background-color: white !important;
-  -webkit-print-color-adjust: exact !important;
-  print-color-adjust: exact !important;
-}
+  thead {
+    display: table-header-group !important;
+  }
 
-/* 3. Hide all non-report noise automatically */
-[class*="modal"],
-[class*="overlay"],
-[id*="session-expired"],
-[class*="SessionExpired"],
-.no-print {
-  display: none !important;
-  visibility: hidden !important;
-  opacity: 0 !important;
-}
-
-/* 4. Table stability */
-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-thead {
-  display: table-header-group;
-}
-
-tr {
-  page-break-inside: avoid;
+  tr {
+    page-break-inside: avoid !important;
+  }
 }
