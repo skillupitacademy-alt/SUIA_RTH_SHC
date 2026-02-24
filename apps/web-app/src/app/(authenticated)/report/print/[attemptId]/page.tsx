@@ -1,5 +1,6 @@
-import { cookies } from "next/headers";
-import { notFound } from "next/navigation";
+"use client";
+
+import { useEffect, useState } from "react";
 import { ExamReport } from "@/components/reports/ExamReportLayout";
 import {
     ExecutiveSummaryPage,
@@ -11,109 +12,109 @@ import {
     QuestionAuditPage
 } from "@/components/reports/print/PrintPages";
 import { PdfReadySignal } from "@/components/reports/print/PdfReadySignal";
+import { use } from "react";
 
-async function getReportData(attemptId: string, internalKey?: string): Promise<ExamReport> {
+async function fetchReportData(attemptId: string, internalKey?: string): Promise<ExamReport> {
     const rawApiUrl = process.env.NEXT_PUBLIC_API_URL || "https://api.realtutorialhub.com/api";
     const apiUrl = rawApiUrl.replace(/\/api$/, "").replace(/\/$/, "");
 
     const headers: Record<string, string> = {
         "Content-Type": "application/json",
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
-        "Accept": "application/json, text/plain, */*",
-        "Accept-Language": "en-US,en;q=0.9",
-        "Cache-Control": "no-cache",
-        "Pragma": "no-cache",
     };
 
     if (internalKey) {
         headers["x-internal-key"] = internalKey;
-    } else {
-        const cookieStore = await cookies();
-        headers["Cookie"] = cookieStore.getAll().map(c => `${c.name}=${c.value}`).join("; ");
     }
 
+    // This fetch WILL be intercepted by Puppeteer because it's running in the browser!
     const res = await fetch(`${apiUrl}/api/reports?id=${attemptId}&type=premium`, {
         headers,
-        next: { revalidate: 0 },
     });
 
     if (!res.ok) {
-        if (res.status === 404) notFound();
         const body = await res.text();
-        throw new Error(`Fetch failed (${res.status}) at ${apiUrl}/api/reports. Body: ${body.slice(0, 100)}`);
+        throw new Error(`Fetch failed (${res.status}): ${body.slice(0, 100)}`);
     }
 
     return res.json();
 }
 
-/**
- * PRINT REPORT PAGE
- * Optimized for Puppeteer PDF generation
- */
-export default async function PrintReportPage(props: {
+export default function PrintReportPage(props: {
     params: Promise<{ attemptId: string }>,
     searchParams: Promise<{ internalKey?: string }>
 }) {
-    const params = await props.params;
-    const searchParams = await props.searchParams;
+    const params = use(props.params);
+    const searchParams = use(props.searchParams);
     const { attemptId } = params;
     const { internalKey } = searchParams;
 
-    try {
-        const data = await getReportData(attemptId, internalKey);
+    const [data, setData] = useState<ExamReport | null>(null);
+    const [error, setError] = useState<string | null>(null);
 
-        return (
-            <div className="pdf-container">
-                {/* Page 1: Executive Summary (Landscape) */}
-                <section className="pdf-page landscape">
-                    <ExecutiveSummaryPage data={data} />
-                </section>
+    useEffect(() => {
+        fetchReportData(attemptId, internalKey)
+            .then(setData)
+            .catch(err => setError(err instanceof Error ? err.message : "Report loading failed"));
+    }, [attemptId, internalKey]);
 
-                {/* Page 2: Subtopic Accuracy (Landscape) */}
-                <section className="pdf-page landscape">
-                    <SubtopicAccuracyPage data={data} />
-                </section>
-
-                {/* Page 3: Subject Breakdown (Landscape) */}
-                <section className="pdf-page landscape">
-                    <SubjectBreakdownPage data={data} />
-                </section>
-
-                {/* Page 4: Neural Heatmap (Landscape) */}
-                <section className="pdf-page landscape">
-                    <NeuralHeatmapPage data={data} />
-                </section>
-
-                {/* Page 5: Complexity Ladder (Landscape) */}
-                <section className="pdf-page landscape">
-                    <ComplexityLadderPage data={data} />
-                </section>
-
-                {/* Page 6: Appendix Cover (Landscape) */}
-                <section className="pdf-page landscape">
-                    <AppendixCoverPage data={data} />
-                </section>
-
-                {/* Page 7+: Question Audit (Portrait) */}
-                <QuestionAuditPage data={data} />
-
-                {/* Signal for Puppeteer (Client side delayed) */}
-                <PdfReadySignal />
-            </div>
-        );
-    } catch (error: unknown) {
-        const message = error instanceof Error ? error.message : "Unknown error";
-        console.error("Print report error:", error);
+    if (error) {
         return (
             <div className="p-20 text-center">
                 <h1 className="text-2xl font-bold text-red-600">Failed to render report for print</h1>
                 <p className="text-slate-500 mt-4 font-mono text-sm max-w-2xl mx-auto">
                     ID: {attemptId}<br />
-                    Error: {message}<br />
-                    API: {process.env.NEXT_PUBLIC_API_URL || "fallback"}
+                    Error: {error}
                 </p>
                 <div id="pdf-error-signal" data-pdf-ready="false" className="hidden" />
             </div>
         );
     }
+
+    if (!data) {
+        return (
+            <div className="p-20 text-center">
+                <p className="text-slate-400 animate-pulse">Loading report data for PDF generation...</p>
+            </div>
+        );
+    }
+
+    return (
+        <div className="pdf-container">
+            {/* Page 1: Executive Summary (Landscape) */}
+            <section className="pdf-page landscape">
+                <ExecutiveSummaryPage data={data} />
+            </section>
+
+            {/* Page 2: Subtopic Accuracy (Landscape) */}
+            <section className="pdf-page landscape">
+                <SubtopicAccuracyPage data={data} />
+            </section>
+
+            {/* Page 3: Subject Breakdown (Landscape) */}
+            <section className="pdf-page landscape">
+                <SubjectBreakdownPage data={data} />
+            </section>
+
+            {/* Page 4: Neural Heatmap (Landscape) */}
+            <section className="pdf-page landscape">
+                <NeuralHeatmapPage data={data} />
+            </section>
+
+            {/* Page 5: Complexity Ladder (Landscape) */}
+            <section className="pdf-page landscape">
+                <ComplexityLadderPage data={data} />
+            </section>
+
+            {/* Page 6: Appendix Cover (Landscape) */}
+            <section className="pdf-page landscape">
+                <AppendixCoverPage data={data} />
+            </section>
+
+            {/* Page 7+: Question Audit (Portrait) */}
+            <QuestionAuditPage data={data} />
+
+            {/* Signal for Puppeteer (Client side delayed) */}
+            <PdfReadySignal />
+        </div>
+    );
 }
