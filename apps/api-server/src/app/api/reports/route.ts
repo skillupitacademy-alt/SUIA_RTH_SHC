@@ -12,7 +12,8 @@ import { ReportEngine } from '@/modules/report-engine/report.engine';
  */
 export async function GET(_req: NextRequest) {
   const { searchParams } = new URL(_req.url);
-  const id = searchParams.get('id');
+  const idParam = searchParams.get('id');
+  const id = idParam === null ? null : idParam.trim();
 
   try {
 
@@ -22,7 +23,7 @@ export async function GET(_req: NextRequest) {
     let _payload: { userId: string };
 
     if (isInternal) {
-      if (!id) return NextResponse.json({ _error: 'Missing id for internal bypass' }, { status: 400 });
+      if (id === null || id === '') return NextResponse.json({ _error: 'Missing id for internal bypass' }, { status: 400 });
       const exam = await db.query.exams.findFirst({
         where: eq(exams.id, id),
         columns: { userId: true }

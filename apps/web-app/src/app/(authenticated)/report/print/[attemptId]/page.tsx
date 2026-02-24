@@ -18,6 +18,7 @@ async function getReportData(attemptId: string, internalKey?: string): Promise<E
 
     const headers: Record<string, string> = {
         "Content-Type": "application/json",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36",
     };
 
     if (internalKey) {
@@ -96,14 +97,15 @@ export default async function PrintReportPage(props: {
                 <PdfReadySignal />
             </div>
         );
-    } catch (error: any) {
+    } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : "Unknown error";
         console.error("Print report error:", error);
         return (
             <div className="p-20 text-center">
                 <h1 className="text-2xl font-bold text-red-600">Failed to render report for print</h1>
                 <p className="text-slate-500 mt-4 font-mono text-sm max-w-2xl mx-auto">
                     ID: {attemptId}<br />
-                    Error: {error?.message || "Unknown error"}<br />
+                    Error: {message}<br />
                     API: {process.env.NEXT_PUBLIC_API_URL || "fallback"}
                 </p>
                 <div id="pdf-error-signal" data-pdf-ready="false" className="hidden" />

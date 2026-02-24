@@ -27,12 +27,14 @@ export class ReportPdfService {
         for (const p of possiblePaths) {
           if (fs.existsSync(p)) {
             logger.info({ path: p }, "[ReportPdfService] Found binaries at path");
-            // @ts-ignore
+            // @ts-expect-error setBinPath is available at runtime to override binary path
             chromium.setBinPath?.(p);
             break;
           }
         }
       }
+
+      const headlessFlag = (chromium as unknown as { headless?: boolean }).headless ?? true;
 
       const options = {
         args: isDev ? [] : chromium.args,
@@ -40,18 +42,19 @@ export class ReportPdfService {
         executablePath: isDev 
           ? "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe" 
           : await chromium.executablePath(),
-        headless: isDev ? true : (chromium as any).headless,
+        headless: isDev ? true : headlessFlag,
       };
 
       globalBrowser = (await puppeteer.launch(options)) as unknown as Browser;
       return globalBrowser;
-    } catch (error: any) {
+    } catch (_error: unknown) {
+      const err = _error instanceof Error ? _error : new Error('Unknown error');
       logger.error({ 
-        err: error.message, 
+        err: err.message, 
         cwd: process.cwd(),
-        stack: error.stack 
+        stack: err.stack 
       }, "[ReportPdfService] Failed to launch browser");
-      throw error;
+      throw err;
     }
   }
 
@@ -79,7 +82,7 @@ export class ReportPdfService {
       // Wait for our custom signal
       try {
         await page.waitForSelector('[data-pdf-ready="true"]', { timeout: 60000 });
-      } catch (err) {
+      } catch (_err) {
         const content = await page.content();
         const hasErrorBlock = content.includes("Failed to render report");
         throw new Error(`PDF Ready signal not found within 30s. ${hasErrorBlock ? "Page showed 'Failed to render'." : "Page might still be loading or 404."} URL: ${url}`);
