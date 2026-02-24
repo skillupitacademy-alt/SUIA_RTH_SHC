@@ -16,8 +16,16 @@ export const runtime = "nodejs"; // Required for Puppeteer
 
 export async function POST(req: NextRequest) {
   try {
-    const body = (await req.json()) as { attemptId?: string };
-    const attemptId = body?.attemptId ?? "";
+    const { searchParams } = new URL(req.url);
+    const raw = await req.json().catch(() => ({} as unknown));
+    const body = typeof raw === "object" && raw !== null ? (raw as Record<string, unknown>) : {};
+
+    const attemptFromBody = typeof body.attemptId === "string" ? body.attemptId : "";
+    const attemptFromParams = searchParams.get("id") ?? searchParams.get("attemptId") ?? "";
+    const attemptId = (attemptFromBody || attemptFromParams).trim();
+
+    const isTrue = (val: unknown) => val === true || val === "true";
+    const force = isTrue(body.force) || searchParams.get("force") === "true";
 
     if (attemptId === "") {
       return NextResponse.json({ error: "Missing attemptId" }, { status: 400 });
@@ -66,7 +74,7 @@ export async function POST(req: NextRequest) {
     }
 
     // 3. Idempotency Check
-    const force = (body as { force?: boolean })?.force === true;
+    // force is already extracted from body/params above
     
     if (force) {
       logger.info({ attemptId }, "[GenerateReport] Forced regeneration: Invalidating analytics cache");

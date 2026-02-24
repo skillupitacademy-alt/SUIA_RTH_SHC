@@ -13,10 +13,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const body = (await req.json()) as { attemptId?: string };
-    const attemptId = body.attemptId ?? "";
+    const { searchParams } = new URL(req.url);
+    const raw = await req.json().catch(() => ({} as unknown));
+    const body = typeof raw === "object" && raw !== null ? (raw as Record<string, unknown>) : {};
 
-    if (attemptId.trim() === "") {
+    const attemptFromBody = typeof body.attemptId === "string" ? body.attemptId : "";
+    const attemptFromParams = searchParams.get("id") ?? searchParams.get("attemptId") ?? "";
+    const attemptId = (attemptFromBody || attemptFromParams).trim();
+
+    if (attemptId === "") {
       return NextResponse.json({ error: "Missing attemptId" }, { status: 400 });
     }
 

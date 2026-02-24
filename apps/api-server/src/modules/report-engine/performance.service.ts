@@ -15,18 +15,11 @@ export class PerformanceService {
   static async refreshAnalytics() {
     try {
       this.log.info('Refreshing materialized views...');
-      // Concurrent refresh allows reads while updating (requires unique index)
-      await db.execute(sql`REFRESH MATERIALIZED VIEW CONCURRENTLY attempt_analytics_mv`);
-      await db.execute(sql`REFRESH MATERIALIZED VIEW CONCURRENTLY attempt_dimension_accuracy_mv`);
+      await db.execute(sql`REFRESH MATERIALIZED VIEW attempt_analytics_mv`);
+      await db.execute(sql`REFRESH MATERIALIZED VIEW attempt_dimension_accuracy_mv`);
       this.log.info('Materialized views refreshed successfully.');
     } catch (e) {
-      this.log.error({ err: e }, 'Concurrent refresh failed, attempting standard refresh');
-      try {
-        await db.execute(sql`REFRESH MATERIALIZED VIEW attempt_analytics_mv`);
-        await db.execute(sql`REFRESH MATERIALIZED VIEW attempt_dimension_accuracy_mv`);
-      } catch (err2) {
-        this.log.error({ err: err2 }, 'Materialized view refresh failed completely');
-      }
+      this.log.error({ err: e }, 'Materialized view refresh failed completely');
     }
   }
 
