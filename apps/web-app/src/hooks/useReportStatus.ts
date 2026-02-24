@@ -59,10 +59,12 @@ export function useReportStatus(attemptId: string) {
       setStatus("generating");
       setError(null);
 
-      const res = await fetch('/api/queue-report', {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
+      const res = await fetch(`${apiUrl}/queue-report`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ attemptId, force: options?.force })
+        body: JSON.stringify({ attemptId, force: options?.force }),
+        credentials: "include",
       });
 
       if (!res.ok) throw new Error("Failed to queue report generation");

@@ -4,7 +4,7 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({
     enabled: process.env.ANALYZE === 'true'
 });
 
-const apiUrlClean = (process.env.NEXT_PUBLIC_API_URL || "https://api.realtutorialhub.com").replace(/\/api$/, "").replace(/\/$/, "");
+const apiUrlClean = (process.env.NEXT_PUBLIC_API_URL || "https://api.realtutorialhub.com").replace(/\/api\/?$/, "").replace(/\/$/, "");
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
