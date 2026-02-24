@@ -9,7 +9,8 @@ import {
     NeuralHeatmapPage,
     ComplexityLadderPage,
     AppendixCoverPage,
-    QuestionAuditPage
+    QuestionAuditPage,
+    TopicUnitData
 } from "@/components/reports/print/PrintPages";
 import { PdfReadySignal } from "@/components/reports/print/PdfReadySignal";
 import { PdfPage, chunkRows } from "@/components/reports/print/PrintToolkit";
@@ -89,40 +90,9 @@ export default function PrintReportPage(props: {
     // If no nodeId/nodeType provided, we assume the root (single level) or we wrap the first topic
     // For Phase 3, the orchestrator will explicitly hit this with nodeId/nodeType
 
-    let activeTopic: TopicUnitData | TopicDataset | ExamReport = data;
-
-    // If we have hierarchical data in the response, use it
+    // Build topic-scoped questions if materialized data is present
     const materialized = (data as { reportMaterialized?: ReportJSON }).reportMaterialized;
-
-    if (materialized && nodeId && nodeType === "topic") {
-        const topicDs = materialized.datasets.topics[nodeId];
-        if (topicDs) {
-            const questionBank = materialized.appendix?.questionBank ?? [];
-            const topicQuestions: QuestionItem[] = questionBank.filter((q) => {
-                const meta = q as QuestionItem & { subtopicName?: string; topicId?: string };
-                const matchesTopic = meta.topicId === nodeId;
-                const matchesHeatmap = topicDs.heatmap.some((h) => h.subtopic === (meta.subtopicName ?? ""));
-                return matchesTopic || matchesHeatmap;
-            }) as QuestionItem[];
-
-            activeTopic = {
-                ...topicDs,
-                examId: data.examId,
-                completedAt: data.completedAt,
-                candidateName: data.candidateName,
-                questions: topicQuestions
-            };
-        }
-    }
-
-    // Normalize data shape for print components (TopicUnitData compatible)
-    const topicData = {
-        ...activeTopic,
-        id: activeTopic.id || activeTopic.topicId || data.examId || attemptId,
-        name: activeTopic.name || data.lineage?.topic || data.lineage?.subject || "Report"
-    };
-
-    const normalizedQuestions: QuestionItem[] = ((topicData as { questions?: QuestionItem[] }).questions || []).map((q) => ({
+    let topicQuestions: QuestionItem[] = (data.questions || []).map((q) => ({
         ...q,
         correctAnswer: q.correctAnswer ?? null,
         userAnswer: q.userAnswer ?? null,
@@ -130,6 +100,88 @@ export default function PrintReportPage(props: {
         timeSpent: q.timeSpent ?? 0,
         difficulty: q.difficulty ?? "STD"
     }));
+
+    if (materialized && nodeId && nodeType === "topic") {
+        const topicDs = materialized.datasets.topics[nodeId];
+        if (topicDs) {
+            const questionBank = materialized.appendix?.questionBank ?? [];
+            topicQuestions = questionBank.filter((q) => {
+                const meta = q as QuestionItem & { subtopicName?: string; topicId?: string };
+                const matchesTopic = meta.topicId === nodeId;
+                const matchesHeatmap = topicDs.heatmap.some((h) => h.subtopic === (meta.subtopicName ?? ""));
+                return matchesTopic || matchesHeatmap;
+            }) as QuestionItem[];
+        }
+    }
+
+    // Helper to coerce any source into TopicUnitData shape
+    const toTopicUnitData = (
+        src: Partial<TopicUnitData> &
+            Partial<ExamReport> &
+            Partial<TopicDataset> & { questions?: any[] }
+    ): TopicUnitData => {
+        const subtopics = (src.subtopics ?? data.subtopics ?? []).map((s: any) => ({
+            name: s.name ?? s.subtopic ?? "Subtopic",
+            accuracy: s.accuracy ?? 0,
+            attempts: s.attempts ?? s.attempted ?? 0
+        }));
+
+        const difficulty =
+            src.difficulty ??
+            (src as TopicDataset).difficultySplit
+                ? [
+                    { level: "Simple", accuracy: (src as TopicDataset).difficultySplit?.easy ?? 0, attempts: 0 },
+                    { level: "Intermediate", accuracy: (src as TopicDataset).difficultySplit?.medium ?? 0, attempts: 0 },
+                    { level: "Expert", accuracy: (src as TopicDataset).difficultySplit?.hard ?? 0, attempts: 0 },
+                ]
+                : data.difficulty ?? [];
+
+        const questionsNormalized: QuestionItem[] = (src.questions as any[] | undefined)?.map((q) => ({
+            ...q,
+            correctAnswer: q?.correctAnswer ?? "",
+            userAnswer: q?.userAnswer ?? null,
+            explanation: q?.explanation ?? "",
+            timeSpent: q?.timeSpent ?? 0,
+            difficulty: q?.difficulty ?? "STD"
+        })) ?? [];
+
+        return {
+            id: src.id ?? (src as TopicDataset).topicId ?? data.examId ?? attemptId,
+            examId: src.examId ?? data.examId,
+            name: src.name ?? data.lineage?.topic ?? data.lineage?.subject ?? "Report",
+            score: (src as TopicUnitData).score ?? (src as TopicDataset).accuracy ?? data.score ?? 0,
+            mastery: src.mastery ?? (src as TopicDataset).accuracy ?? data.mastery ?? 0,
+            readiness: src.readiness ?? data.readiness ?? (src as TopicDataset).accuracy ?? 0,
+            percentile: src.percentile ?? data.percentile ?? 0,
+            totalTimeSpentSeconds: src.totalTimeSpentSeconds ?? data.totalTimeSpentSeconds ?? 0,
+            timeEfficiency: src.timeEfficiency ?? data.timeEfficiency ?? "OPTIMAL",
+            timeBuckets: src.timeBuckets ?? data.timeBuckets,
+            subtopics,
+            skills: src.skills ?? data.skills ?? [],
+            difficulty,
+            heatmap: src.heatmap ?? data.heatmap ?? [],
+            ai: src.ai ?? data.ai ?? { status: "READY", actions: [], weakest_subtopic: "", weakest_skill: "" },
+            lineage: src.lineage ?? {
+                domain: data.lineage?.domain ?? "Domain",
+                subject: data.lineage?.subject ?? "Subject",
+                topic: src.name ?? data.lineage?.topic ?? "Topic"
+            },
+            questions: questionsNormalized as any,
+            completedAt: data.completedAt,
+            candidateName: data.candidateName
+        };
+    };
+
+    let topicData: TopicUnitData = toTopicUnitData({ ...(data as any), questions: data.questions as any[] });
+
+    if (materialized && nodeId && nodeType === "topic") {
+        const topicDs = materialized.datasets.topics[nodeId];
+        if (topicDs) {
+            topicData = toTopicUnitData({ ...(topicDs as any), questions: topicQuestions as any[] });
+        }
+    }
+
+    const normalizedQuestions: QuestionItem[] = topicData.questions || [];
 
     // Appendix Chunking (5 rows per page for portrait stability)
     const appendixChunks = chunkRows<QuestionItem>(normalizedQuestions, 5);

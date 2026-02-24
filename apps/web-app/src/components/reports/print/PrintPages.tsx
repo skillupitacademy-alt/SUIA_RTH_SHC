@@ -54,7 +54,7 @@ export interface TopicUnitData {
         subject?: string;
         topic?: string;
     };
-    questions?: ExamReport["questions"];
+    questions?: import("@quiz/types").QuestionItem[];
     completedAt?: string;
     candidateName?: string;
 }

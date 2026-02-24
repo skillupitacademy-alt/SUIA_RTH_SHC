@@ -84,8 +84,36 @@ export class ReportJobService {
      * Get job status
      */
     static async getJobStatus(jobId: string): Promise<ReportJob | null> {
-        return db.query.reportJobs.findFirst({
+        const result = await db.query.reportJobs.findFirst({
             where: eq(reportJobs.id, jobId)
         });
+        return result ?? null;
+    }
+    /**
+     * Recovery: Reset jobs stuck in 'processing' for too long
+     */
+    static async resetStaleJobs(ageMinutes = 10): Promise<number> {
+        const threshold = new Date(Date.now() - ageMinutes * 60 * 1000);
+        
+        const staleJobs = await db.query.reportJobs.findMany({
+            where: (jobs, { and, eq, lt }) => and(
+                eq(jobs.status, "processing"),
+                lt(jobs.updatedAt, threshold)
+            )
+        });
+
+        if (staleJobs.length === 0) return 0;
+
+        this.log.warn({ count: staleJobs.length }, "Resetting stale processing jobs to queued");
+
+        let count = 0;
+        for (const job of staleJobs) {
+            await db.update(reportJobs)
+                .set({ status: "queued", updatedAt: new Date() })
+                .where(eq(reportJobs.id, job.id));
+            count++;
+        }
+
+        return count;
     }
 }

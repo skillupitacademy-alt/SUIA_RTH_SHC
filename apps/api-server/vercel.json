@@ -7,6 +7,10 @@
         {
             "path": "/api/cron/pdf-health",
             "schedule": "0 1 * * *"
+        },
+        {
+            "path": "/api/cron/process-report-jobs",
+            "schedule": "* * * * *"
         }
     ],
     "functions": {
@@ -16,6 +20,11 @@
             "includeFiles": "../../node_modules/@sparticuz/chromium/bin/**"
         },
         "src/app/api/cron/pdf-health/route.ts": {
+            "maxDuration": 60,
+            "memory": 2048,
+            "includeFiles": "../../node_modules/@sparticuz/chromium/bin/**"
+        },
+        "src/app/api/cron/process-report-jobs/route.ts": {
             "maxDuration": 60,
             "memory": 2048,
             "includeFiles": "../../node_modules/@sparticuz/chromium/bin/**"

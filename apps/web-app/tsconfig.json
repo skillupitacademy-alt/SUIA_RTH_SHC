@@ -34,6 +34,12 @@
       ],
       "@quiz/db/*": [
         "../../packages/db/src/*"
+      ],
+      "@quiz/types": [
+        "../../packages/types/src/index.ts"
+      ],
+      "@quiz/types/*": [
+        "../../packages/types/src/*"
       ]
     },
     "jsx": "preserve",

@@ -16,6 +16,7 @@
   "dependencies": {
     "@next/bundle-analyzer": "^16.1.6",
     "@quiz/api-client": "workspace:*",
+    "@quiz/types": "workspace:*",
     "@quiz/ui": "workspace:*",
     "@types/node": "^20",
     "@types/react": "^19.0.0",
