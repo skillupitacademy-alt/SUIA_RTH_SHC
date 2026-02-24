@@ -2,6 +2,10 @@
 const nextConfig = {
     transpilePackages: ['@quiz/api-client', '@quiz/db', '@quiz/ui', 'lucide-react'],
     serverExternalPackages: ['@sparticuz/chromium', 'puppeteer-core'],
+    outputFileTracingIncludes: {
+        '/api/generate-report': ['./node_modules/@sparticuz/chromium/**/*'],
+        '/api/cron/pdf-health': ['./node_modules/@sparticuz/chromium/**/*'],
+    },
     async headers() {
         return [
             {
