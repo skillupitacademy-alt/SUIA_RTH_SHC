@@ -8,6 +8,7 @@ import { getDownloadUrl } from "@/lib/storage/get-download-url";
 import { uploadReport } from "@/lib/storage/upload-report";
 import { TokenService } from "@/modules/auth/token.service";
 import { cacheService } from "@/modules/core/cache.service";
+import { PerformanceService } from "@/modules/report-engine/performance.service";
 import { ReportPdfService } from "@/modules/report-engine/report-pdf.service";
 import { ReportRepository } from "@/modules/report-engine/report-repository";
 
@@ -66,6 +67,13 @@ export async function POST(req: NextRequest) {
 
     // 3. Idempotency Check
     const force = (body as { force?: boolean })?.force === true;
+    
+    if (force) {
+      logger.info({ attemptId }, "[GenerateReport] Forced regeneration: Invalidating analytics cache");
+      await PerformanceService.invalidateCache(attemptId);
+      await PerformanceService.refreshAnalytics(); // Refresh MVs to ensure fresh data for PDF
+    }
+
     const report = await ReportRepository.getReportByAttempt(attemptId);
     if (!force && report?.status === "ready" && report.fileRef != null && report.fileRef !== "") {
       const url = await getDownloadUrl(report.fileRef);
