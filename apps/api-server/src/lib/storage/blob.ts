@@ -8,7 +8,7 @@ export const blobStorage: StorageProvider = {
     const key = `reports/${userId}/${attemptId}.pdf`;
 
     const { url } = await put(key, buffer, {
-      access: "public",
+      access: "private",
       contentType: "application/pdf",
     });
 
