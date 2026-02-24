@@ -69,7 +69,14 @@ export async function POST(req: NextRequest) {
     await ReportRepository.createReportIfNotExists({ attemptId, userId, status: "pending" });
 
     // 3. Fire-and-forget Generation Trigger (Internal API call)
-    const apiBase = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3002/api";
+    let apiBase = process.env.NEXT_PUBLIC_API_URL ?? "";
+    
+    if (apiBase === "" || apiBase.includes("localhost")) {
+      // derive from request if possible to avoid DNS loops or missing ENVs
+      const url = new URL(req.url);
+      apiBase = `${url.protocol}//${url.host}/api`;
+    }
+
     const generateUrl = `${apiBase}/generate-report`;
     
     fetch(generateUrl, {

@@ -15,13 +15,16 @@ export class ReportPdfService {
 
     try {
       const isDev = process.env.NODE_ENV === "development";
-      
+      let binPath: string | undefined;
+
       // Vercel Monorepo Hardening: Search for binaries in root or local node_modules
       if (!isDev) {
         const fs = await import("fs");
         const path = await import("path");
+        
         const possiblePaths = [
           "/var/task/node_modules/@sparticuz/chromium/bin",
+          "/var/task/apps/api-server/node_modules/@sparticuz/chromium/bin",
           path.join(process.cwd(), "node_modules/@sparticuz/chromium/bin"),
           path.join(process.cwd(), "../../node_modules/@sparticuz/chromium/bin"),
         ];
@@ -29,21 +32,25 @@ export class ReportPdfService {
         for (const p of possiblePaths) {
           if (fs.existsSync(p)) {
             logger.info({ path: p }, "[ReportPdfService] Found binaries at path");
-            // @ts-expect-error setBinPath is available at runtime to override binary path
-            chromium.setBinPath?.(p);
+            binPath = p;
             break;
           }
         }
+
+        if (binPath === undefined) {
+          logger.warn("[ReportPdfService] No explicit binaries found in known paths. Falling back to default.");
+        }
       }
 
-      const headlessFlag = (chromium as unknown as { headless?: boolean }).headless ?? true;
+      const chromiumHeadless = (chromium as unknown as { headless?: boolean }).headless;
+      const headlessFlag = typeof chromiumHeadless === "boolean" ? chromiumHeadless : true;
 
       const options = {
         args: isDev ? [] : chromium.args,
         defaultViewport: { width: 1280, height: 720 },
-        executablePath: isDev 
-          ? "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe" 
-          : await chromium.executablePath(),
+        executablePath: isDev
+          ? "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
+          : await chromium.executablePath(binPath),
         headless: isDev ? true : headlessFlag,
       };
 
