@@ -49,7 +49,7 @@ export async function GET(req: NextRequest) {
         const url = await getDownloadUrl(report.fileRef as string);
         return NextResponse.json(
           { status: "ready", url },
-          { headers: { "Cache-Control": "public, max-age=3600, immutable" } }
+          { headers: { "Cache-Control": "no-store" } }
         );
       } else {
         // File missing from storage (e.g. background deletion)
