@@ -2,6 +2,12 @@ import { db, reports } from "../src";
 import { inArray } from "drizzle-orm";
 import * as dotenv from "dotenv";
 import * as path from "path";
+import ws from "ws";
+
+// Polyfill WebSocket for Neon serverless in Node environment
+if (!global.WebSocket) {
+  (global as any).WebSocket = ws;
+}
 
 // Load environment variables from the root of the db package
 dotenv.config({ path: path.join(__dirname, "../.env") });
