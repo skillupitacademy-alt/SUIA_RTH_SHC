@@ -42,9 +42,22 @@ body {
   background: #0B1220;
 }
 
+/* BRUTE-FORCE ANIMATION LOCKDOWN */
+.pdf-root * {
+  animation: none !important;
+  transition: none !important;
+  transition-property: none !important;
+}
+
+.pdf-root {
+  width: 1123px;
+  margin: 0 auto;
+  background: #0B1220;
+}
+
 .pdf-page {
   width: 1123px !important;
-  height: 794px !important;
+  min-height: 794px !important;
   padding: 32px !important;
   margin-bottom: 0 !important;
   overflow: hidden !important;
@@ -122,7 +135,7 @@ body {
 }
 
 .chart-print-lock canvas,
-.chart-print-lock svg {
+.chart-print-lock .recharts-surface {
   width: 100% !important;
   height: 100% !important;
   max-width: 100% !important;

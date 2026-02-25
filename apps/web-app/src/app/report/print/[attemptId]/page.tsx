@@ -85,21 +85,25 @@ export default function PrintReportPage(props: {
 
     if (error) {
         return (
-            <div className="p-20 text-center bg-[#0B1220] min-h-screen text-white">
-                <h1 className="text-2xl font-bold text-rose-500">Render Process Terminated</h1>
-                <p className="text-slate-500 mt-4 font-mono text-xs max-w-2xl mx-auto">
-                    ID: {attemptId}<br />
-                    ERR: {error}
-                </p>
-                <div id="pdf-error-signal" data-pdf-ready="false" className="hidden" />
+            <div className="pdf-root">
+                <div className="p-20 text-center bg-[#0B1220] min-h-screen text-white">
+                    <h1 className="text-2xl font-bold text-rose-500">Render Process Terminated</h1>
+                    <p className="text-slate-500 mt-4 font-mono text-xs max-w-2xl mx-auto">
+                        ID: {attemptId}<br />
+                        ERR: {error}
+                    </p>
+                    <div id="pdf-error-signal" data-pdf-ready="false" className="hidden" />
+                </div>
             </div>
         );
     }
 
     if (!data) {
         return (
-            <div className="p-20 text-center bg-[#0B1220] min-h-screen flex items-center justify-center">
-                <p className="text-indigo-500 font-black uppercase tracking-[.5em] animate-pulse">Initializing Neural Export...</p>
+            <div className="pdf-root">
+                <div className="p-20 text-center bg-[#0B1220] min-h-screen flex items-center justify-center">
+                    <p className="text-indigo-500 font-black uppercase tracking-[.5em] animate-pulse">Initializing Neural Export...</p>
+                </div>
             </div>
         );
     }
@@ -119,11 +123,13 @@ export default function PrintReportPage(props: {
             };
 
             return (
-                <div className="pdf-container bg-slate-950">
-                    <PdfPage orientation="landscape">
-                        <DomainOverviewPage data={domainData} page={startPage + 1} total={globalTotal} />
-                    </PdfPage>
-                    <PdfReadySignal />
+                <div className="pdf-root">
+                    <div className="pdf-container bg-slate-950">
+                        <PdfPage orientation="landscape">
+                            <DomainOverviewPage data={domainData} page={startPage + 1} total={globalTotal} />
+                        </PdfPage>
+                        <PdfReadySignal />
+                    </div>
                 </div>
             );
         }
@@ -144,11 +150,13 @@ export default function PrintReportPage(props: {
                 };
 
                 return (
-                    <div className="pdf-container bg-slate-950">
-                        <PdfPage orientation="landscape">
-                            <SubjectSummaryPage data={subjectData} page={startPage + 1} total={globalTotal} />
-                        </PdfPage>
-                        <PdfReadySignal />
+                    <div className="pdf-root">
+                        <div className="pdf-container bg-slate-950">
+                            <PdfPage orientation="landscape">
+                                <SubjectSummaryPage data={subjectData} page={startPage + 1} total={globalTotal} />
+                            </PdfPage>
+                            <PdfReadySignal />
+                        </div>
                     </div>
                 );
             }
@@ -242,56 +250,58 @@ export default function PrintReportPage(props: {
                     : "heatmap";
 
     return (
-        <div className="pdf-container bg-slate-950">
-            {/* Page 1: Executive Summary */}
-            <PdfPage orientation="landscape">
-                <ExecutiveSummaryPage data={topicData} page={getPageNum(1)} total={finalGlobalTotal} />
-            </PdfPage>
+        <div className="pdf-root">
+            <div className="pdf-container bg-slate-950">
+                {/* Page 1: Executive Summary */}
+                <PdfPage orientation="landscape">
+                    <ExecutiveSummaryPage data={topicData} page={getPageNum(1)} total={finalGlobalTotal} />
+                </PdfPage>
 
-            {/* Page 2: Subtopic Accuracy */}
-            <PdfPage orientation="landscape">
-                <SubtopicAccuracyPage
-                    data={topicData}
-                    page={getPageNum(2)}
-                    total={finalGlobalTotal}
-                    layout={topicLayout}
-                />
-            </PdfPage>
-
-            {/* Page 3: Temporal Patterns */}
-            <PdfPage orientation="landscape">
-                <SubjectBreakdownPage data={topicData} page={getPageNum(3)} total={finalGlobalTotal} />
-            </PdfPage>
-
-            {/* Page 4: Neural Heatmap */}
-            <PdfPage orientation="landscape">
-                <NeuralHeatmapPage data={topicData} page={getPageNum(4)} total={finalGlobalTotal} />
-            </PdfPage>
-
-            {/* Page 5: Complexity Ladder */}
-            <PdfPage orientation="landscape">
-                <ComplexityLadderPage data={topicData} page={getPageNum(5)} total={finalGlobalTotal} />
-            </PdfPage>
-
-            {/* Page 6: Appendix Cover */}
-            <PdfPage orientation="landscape">
-                <AppendixCoverPage page={getPageNum(6)} total={finalGlobalTotal} />
-            </PdfPage>
-
-            {/* Page 7+: Chunked Appendix Registry (Landscape) */}
-            {appendixChunks.map((chunk, i) => (
-                <PdfPage key={i} orientation="landscape">
-                    <QuestionAuditPage
-                        questions={chunk}
+                {/* Page 2: Subtopic Accuracy */}
+                <PdfPage orientation="landscape">
+                    <SubtopicAccuracyPage
                         data={topicData}
-                        page={getPageNum(7 + i)}
+                        page={getPageNum(2)}
                         total={finalGlobalTotal}
-                        offset={i * 5}
+                        layout={topicLayout}
                     />
                 </PdfPage>
-            ))}
 
-            <PdfReadySignal />
+                {/* Page 3: Temporal Patterns */}
+                <PdfPage orientation="landscape">
+                    <SubjectBreakdownPage data={topicData} page={getPageNum(3)} total={finalGlobalTotal} />
+                </PdfPage>
+
+                {/* Page 4: Neural Heatmap */}
+                <PdfPage orientation="landscape">
+                    <NeuralHeatmapPage data={topicData} page={getPageNum(4)} total={finalGlobalTotal} />
+                </PdfPage>
+
+                {/* Page 5: Complexity Ladder */}
+                <PdfPage orientation="landscape">
+                    <ComplexityLadderPage data={topicData} page={getPageNum(5)} total={finalGlobalTotal} />
+                </PdfPage>
+
+                {/* Page 6: Appendix Cover */}
+                <PdfPage orientation="landscape">
+                    <AppendixCoverPage page={getPageNum(6)} total={finalGlobalTotal} />
+                </PdfPage>
+
+                {/* Page 7+: Chunked Appendix Registry (Landscape) */}
+                {appendixChunks.map((chunk, i) => (
+                    <PdfPage key={i} orientation="landscape">
+                        <QuestionAuditPage
+                            questions={chunk}
+                            data={topicData}
+                            page={getPageNum(7 + i)}
+                            total={finalGlobalTotal}
+                            offset={i * 5}
+                        />
+                    </PdfPage>
+                ))}
+
+                <PdfReadySignal />
+            </div>
         </div>
     );
 }

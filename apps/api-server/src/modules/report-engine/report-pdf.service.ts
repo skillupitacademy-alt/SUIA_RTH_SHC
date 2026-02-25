@@ -61,8 +61,8 @@ export class ReportPdfService {
       browser = await puppeteer.connect({
         browserWSEndpoint: browserlessUrl as string,
         defaultViewport: {
-          width: 1440,
-          height: 900,
+          width: 1123,
+          height: 794,
           deviceScaleFactor: 2,
           isMobile: false,
           hasTouch: false,
@@ -80,8 +80,8 @@ export class ReportPdfService {
       browser = await puppeteer.launch({
         args: isWindows ? [] : chromium.args,
         defaultViewport: {
-          width: 1440,
-          height: 900,
+          width: 1123,
+          height: 794,
           deviceScaleFactor: 2,
           isMobile: false,
           hasTouch: false,
@@ -97,8 +97,8 @@ export class ReportPdfService {
 
       // Ensure specific landscape dimensions for pixel perfection
       await page.setViewport({
-        width: 1440,
-        height: 900,
+        width: 1123,
+        height: 794,
         deviceScaleFactor: 2,
       });
 
@@ -144,13 +144,10 @@ export class ReportPdfService {
 
       // 5. Navigate and Wait
       logger.info({ attemptId, url }, "[ReportPdfService] Navigating to print view");
-      await page.goto(url, { waitUntil: "domcontentloaded", timeout: 30000 });
+      await page.goto(url, { waitUntil: "networkidle0", timeout: 45000 });
 
-      try {
-        await page.waitForSelector("[data-pdf-ready=\"true\"]", { timeout: 15000 });
-      } catch (_err) {
-        logger.warn({ attemptId }, "[ReportPdfService] Signal timeout, forcing snap.");
-      }
+      logger.info({ attemptId }, "[ReportPdfService] Waiting for Neural Signal [data-pdf-ready=\"true\"]");
+      await page.waitForSelector('[data-pdf-ready="true"]', { timeout: 0 });
 
       await page.emulateMediaType("screen");
       await page.evaluateHandle("document.fonts.ready");

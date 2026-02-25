@@ -56,7 +56,7 @@ export const RadialKPI = React.memo(({ data, suppressAnimation }: RadialKPIProps
             <div className="absolute bottom-0 left-0 w-64 h-64 bg-violet-500/5 blur-[120px] rounded-full pointer-events-none" />
 
             {/* Corner Stat Grid - FIXED POSITIONING */}
-            <div className="absolute inset-x-8 inset-y-24 lg:inset-x-10 lg:inset-y-28 z-30 pointer-events-none">
+            <div className="absolute inset-x-12 inset-y-28 lg:inset-x-12 lg:inset-y-28 z-30 pointer-events-none">
                 <div className="w-full h-full flex flex-col justify-between">
                     <div className="flex justify-between">
                         {/* Top Left: Score */}
@@ -115,7 +115,7 @@ export const RadialKPI = React.memo(({ data, suppressAnimation }: RadialKPIProps
                         <span className="text-[13px] font-black text-slate-500 uppercase tracking-[0.4em] mb-2">Readiness</span>
                         <div className="relative">
                             <div className="absolute inset-0 bg-white/5 blur-3xl rounded-full" />
-                            <span className={`${data.readiness >= 100 ? 'text-5xl' : 'text-7xl'} font-black text-white ${data.readiness >= 100 ? 'tracking-normal' : 'tracking-tighter'} drop-shadow-[0_0_15px_rgba(255,255,255,0.15)]`}>
+                            <span className={`${data.readiness >= 100 ? 'text-6xl' : 'text-7xl'} font-black text-white ${data.readiness >= 100 ? 'tracking-tighter' : 'tracking-tighter'} drop-shadow-[0_0_15px_rgba(255,255,255,0.15)]`}>
                                 {data.readiness}%
                             </span>
                         </div>
