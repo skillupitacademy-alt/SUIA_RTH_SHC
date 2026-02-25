@@ -40,31 +40,54 @@ export class ReportPdfService {
     
     const start = Date.now();
     
-    // 1. Resolve browser binary path
-    let executablePath: string;
+    // 1. Resolve browser binary path or remote connection
+    let browser;
     const isWindows = process.platform === "win32";
+    const browserlessApiEnv = process.env.BROWSERLESS_API_KEY;
+    const browserlessUrlEnv = process.env.BROWSERLESS_URL;
+    
+    // Construct URL from API Key if provided, otherwise use explicit URL
+    const browserlessUrl = browserlessApiEnv !== undefined && browserlessApiEnv !== "" 
+      ? `wss://chrome.browserless.io?token=${browserlessApiEnv}`
+      : browserlessUrlEnv;
 
-    if (isWindows) {
-      // Fallback for local dev if chromium is not installed via sparticuz
-      executablePath = "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe";
+    if (browserlessUrl !== undefined && browserlessUrl !== "") {
+      logger.info({ attemptId }, "[ReportPdfService] Connecting to remote browserless instance");
+      browser = await puppeteer.connect({
+        browserWSEndpoint: browserlessUrl,
+        defaultViewport: {
+          width: 1440,
+          height: 900,
+          deviceScaleFactor: 2,
+          isMobile: false,
+          hasTouch: false,
+          isLandscape: true
+        }
+      });
     } else {
-      // In production (Vercel/Linux), we MUST use sparticuz
-      executablePath = await chromium.executablePath();
-    }
+      let executablePath: string;
+      if (isWindows) {
+        // Fallback for local dev if chromium is not installed via sparticuz
+        executablePath = "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe";
+      } else {
+        // In production (Vercel/Linux), we MUST use sparticuz
+        executablePath = await chromium.executablePath();
+      }
 
-    const browser = await puppeteer.launch({
-      args: isWindows ? [] : chromium.args,
-      defaultViewport: {
-        width: 1440,
-        height: 900,
-        deviceScaleFactor: 2,
-        isMobile: false,
-        hasTouch: false,
-        isLandscape: true
-      },
-      executablePath,
-      headless: isWindows ? true : ((chromium as unknown as { headless?: boolean }).headless ?? true),
-    });
+      browser = await puppeteer.launch({
+        args: isWindows ? [] : chromium.args,
+        defaultViewport: {
+          width: 1440,
+          height: 900,
+          deviceScaleFactor: 2,
+          isMobile: false,
+          hasTouch: false,
+          isLandscape: true
+        },
+        executablePath,
+        headless: isWindows ? true : ((chromium as unknown as { headless?: boolean }).headless ?? true),
+      });
+    }
 
     try {
       const page = await browser.newPage();

@@ -70,140 +70,153 @@ export function ReportGenerationModal({
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-sm"
+                className="fixed inset-0 z-[100] flex flex-col bg-[#020617]"
             >
-                <motion.div
-                    initial={{ scale: 0.9, y: 20, opacity: 0 }}
-                    animate={{ scale: 1, y: 0, opacity: 1 }}
-                    exit={{ scale: 0.9, y: 20, opacity: 0 }}
-                    className="relative w-full max-w-xl bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-2xl p-8"
-                >
-                    {/* Decorative background pulse */}
-                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-64 bg-indigo-600/10 blur-[120px] pointer-events-none" />
+                {/* Immersive Background Texture */}
+                <div className="absolute inset-0 opacity-20 pointer-events-none overflow-hidden">
+                    <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-indigo-600/20 blur-[120px] rounded-full" />
+                    <div className="absolute bottom-[-10%] right-[-10%] w-[30%] h-[50%] bg-blue-600/10 blur-[120px] rounded-full" />
+                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(2,6,23,0.8)_100%)]" />
+                </div>
 
-                    {/* Header */}
-                    <div className="relative mb-8 text-center">
-                        <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-indigo-600/10 border border-indigo-500/20 mb-6 group">
-                            {isReady ? (
-                                <FileText className="w-8 h-8 text-indigo-400 group-hover:scale-110 transition-transform" />
-                            ) : isFailed ? (
-                                <AlertCircle className="w-8 h-8 text-rose-500" />
-                            ) : (
-                                <Loader2 className="w-8 h-8 text-indigo-400 animate-spin" />
-                            )}
+                <div className="relative flex-1 flex flex-col items-center justify-center p-6 md:p-12 overflow-y-auto">
+                    <motion.div
+                        initial={{ y: 20, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        className="w-full max-w-2xl mx-auto"
+                    >
+                        {/* Header Section */}
+                        <div className="text-center mb-16">
+                            <motion.div
+                                initial={{ scale: 0.8 }}
+                                animate={{ scale: 1 }}
+                                className="inline-flex items-center justify-center w-24 h-24 rounded-3xl bg-indigo-600/10 border border-indigo-500/20 mb-8 backdrop-blur-xl"
+                            >
+                                {isReady ? (
+                                    <FileText className="w-12 h-12 text-indigo-400" />
+                                ) : isFailed ? (
+                                    <AlertCircle className="w-12 h-12 text-rose-500" />
+                                ) : (
+                                    <Loader2 className="w-12 h-12 text-indigo-400 animate-spin" />
+                                )}
+                            </motion.div>
+
+                            <h2 className="text-4xl md:text-5xl font-extrabold text-white tracking-tight mb-4 uppercase italic">
+                                {isReady ? "Analysis Complete" : isFailed ? "System Fault" : "Neural Pipeline"}
+                            </h2>
+                            <p className="text-slate-400 text-lg md:text-xl max-w-lg mx-auto font-medium leading-relaxed">
+                                {isReady
+                                    ? "Your high-fidelity diagnostic report has been synthesized and is prepared for download."
+                                    : isFailed
+                                        ? "A critical error occurred during the synthesis process. The pipeline has been halted."
+                                        : "Executing deep-layer synthesis of your examination performance data..."
+                                }
+                            </p>
                         </div>
-                        <h2 className="text-2xl font-bold text-white tracking-tight">
-                            {isReady ? "Report Complete" : isFailed ? "Generation Failed" : "Synthesizing Report"}
-                        </h2>
-                        <p className="text-slate-400 mt-2 text-sm max-w-sm mx-auto">
-                            {isReady
-                                ? "Your high-fidelity neural diagnostic report has been generated and is ready for download."
-                                : isFailed
-                                    ? "An error occurred during the synthesis process. Please try again or contact support."
-                                    : "We are processing your exam data through our diagnostic pipeline to generate your deep insight report."
-                            }
-                        </p>
-                    </div>
 
-                    {/* Progress Timeline */}
-                    {!isFailed && (
-                        <div className="relative space-y-6 mb-10">
-                            {STAGES.map((s, idx) => {
-                                const isActive = idx === currentStageIndex;
-                                const isCompleted = idx < currentStageIndex || isReady;
+                        {/* Progress Timeline - Large Scale */}
+                        {!isFailed && (
+                            <div className="relative space-y-12 mb-16 px-4 md:px-12">
+                                {STAGES.map((s, idx) => {
+                                    const isActive = idx === currentStageIndex;
+                                    const isCompleted = idx < currentStageIndex || isReady;
 
-                                return (
-                                    <div key={s.id} className="relative flex items-start gap-4">
-                                        {/* Vertical connector line */}
-                                        {idx < STAGES.length - 1 && (
-                                            <div className={cn(
-                                                "absolute left-[11px] top-6 w-[2px] h-10",
-                                                isCompleted ? "bg-indigo-600" : "bg-slate-800"
-                                            )} />
-                                        )}
-
-                                        <div className="z-10 mt-1">
-                                            {isCompleted ? (
-                                                <CheckCircle2 className="w-6 h-6 text-indigo-500" />
-                                            ) : isActive ? (
-                                                <div className="relative">
-                                                    <Circle className="w-6 h-6 text-indigo-400 animate-pulse" />
-                                                    <div className="absolute inset-0 bg-indigo-500/20 blur-md rounded-full animate-pulse" />
-                                                </div>
-                                            ) : (
-                                                <Circle className="w-6 h-6 text-slate-700" />
+                                    return (
+                                        <div key={s.id} className="relative flex items-center gap-8">
+                                            {/* Vertical connector line */}
+                                            {idx < STAGES.length - 1 && (
+                                                <div className={cn(
+                                                    "absolute left-[15px] top-10 w-[2px] h-16",
+                                                    isCompleted ? "bg-indigo-600" : "bg-slate-800"
+                                                )} />
                                             )}
-                                        </div>
 
-                                        <div className="flex-1">
-                                            <div className={cn(
-                                                "text-sm font-bold uppercase tracking-widest",
-                                                isActive ? "text-white" : isCompleted ? "text-slate-300" : "text-slate-600"
-                                            )}>
-                                                {s.label}
+                                            <div className="z-10 bg-[#020617] p-1">
+                                                {isCompleted ? (
+                                                    <CheckCircle2 className="w-8 h-8 text-indigo-500" />
+                                                ) : isActive ? (
+                                                    <div className="relative">
+                                                        <Circle className="w-8 h-8 text-indigo-400 animate-pulse" />
+                                                        <div className="absolute inset-0 bg-indigo-500/30 blur-xl rounded-full animate-pulse" />
+                                                    </div>
+                                                ) : (
+                                                    <Circle className="w-8 h-8 text-slate-800" />
+                                                )}
                                             </div>
-                                            {isActive && (
-                                                <motion.p
-                                                    initial={{ opacity: 0, x: -10 }}
-                                                    animate={{ opacity: 1, x: 0 }}
-                                                    className="text-xs text-indigo-400 font-medium mt-1"
-                                                >
-                                                    {s.description}
-                                                </motion.p>
-                                            )}
+
+                                            <div className="flex-1">
+                                                <div className={cn(
+                                                    "text-lg font-black uppercase tracking-[0.2em]",
+                                                    isActive ? "text-white" : isCompleted ? "text-slate-400" : "text-slate-700"
+                                                )}>
+                                                    {s.label}
+                                                </div>
+                                                {isActive && (
+                                                    <motion.p
+                                                        initial={{ opacity: 0, y: 5 }}
+                                                        animate={{ opacity: 1, y: 0 }}
+                                                        className="text-sm text-indigo-400 font-semibold mt-1"
+                                                    >
+                                                        {s.description}
+                                                    </motion.p>
+                                                )}
+                                            </div>
                                         </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    )}
-
-                    {/* Failure State */}
-                    {isFailed && (
-                        <div className="bg-rose-600/5 border border-rose-500/10 rounded-2xl p-4 mb-8">
-                            <div className="flex gap-3">
-                                <XCircle className="w-5 h-5 text-rose-500 shrink-0 mt-0.5" />
-                                <div>
-                                    <div className="text-sm font-bold text-rose-500 uppercase tracking-widest">Error Details</div>
-                                    <p className="text-[13px] text-rose-400/80 mt-1 leading-relaxed">
-                                        {error || "An unexpected system error occurred while generating the PDF buffer. Please check your connection and try again."}
-                                    </p>
-                                </div>
+                                    );
+                                })}
                             </div>
-                        </div>
-                    )}
-
-                    {/* Footer Actions */}
-                    <div className="flex flex-col gap-3">
-                        {isReady ? (
-                            <button
-                                onClick={handleDownload}
-                                className="flex items-center justify-center gap-3 w-full py-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl font-bold uppercase tracking-widest transition-all shadow-xl shadow-indigo-600/20 active:scale-95 group"
-                            >
-                                <Download className="w-5 h-5 group-hover:bounce" />
-                                Download Report
-                            </button>
-                        ) : isFailed ? (
-                            <button
-                                onClick={onClose}
-                                className="flex items-center justify-center gap-3 w-full py-4 bg-slate-800 hover:bg-slate-700 text-white rounded-2xl font-bold uppercase tracking-widest transition-all"
-                            >
-                                Close & Retry
-                            </button>
-                        ) : (
-                            <button
-                                onClick={onClose}
-                                className="flex items-center justify-center gap-3 w-full py-4 bg-slate-800/50 hover:bg-slate-800 text-slate-400 rounded-2xl font-bold uppercase tracking-widest transition-all"
-                            >
-                                Continue in Background
-                            </button>
                         )}
 
-                        <p className="text-[10px] text-center text-slate-600 font-medium uppercase tracking-[0.2em] mt-2">
-                            Neural Diagnostic Pipeline v4.0 • Secured by R2
-                        </p>
-                    </div>
-                </motion.div>
+                        {/* Error Context */}
+                        {isFailed && (
+                            <div className="bg-rose-600/5 border border-rose-500/10 rounded-3xl p-8 mb-12 backdrop-blur-xl">
+                                <div className="flex gap-6">
+                                    <XCircle className="w-8 h-8 text-rose-500 shrink-0 mt-1" />
+                                    <div>
+                                        <div className="text-xl font-black text-rose-500 uppercase tracking-widest mb-2">Diagnostic Error</div>
+                                        <p className="text-lg text-rose-400/80 leading-relaxed font-medium">
+                                            {error || "An internal timeout occurred during PDF buffer allocation. High-memory usage detected."}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Action Region */}
+                        <div className="flex flex-col gap-6 w-full max-w-md mx-auto">
+                            {isReady ? (
+                                <button
+                                    onClick={handleDownload}
+                                    className="flex items-center justify-center gap-4 w-full py-6 bg-indigo-600 hover:bg-indigo-500 text-white rounded-3xl font-black uppercase tracking-[0.2em] transition-all shadow-2xl shadow-indigo-600/30 active:scale-95 group text-lg"
+                                >
+                                    <Download className="w-6 h-6 group-hover:bounce" />
+                                    Download Result
+                                </button>
+                            ) : isFailed ? (
+                                <button
+                                    onClick={onClose}
+                                    className="flex items-center justify-center gap-4 w-full py-6 bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-3xl font-black uppercase tracking-[0.2em] transition-all text-lg"
+                                >
+                                    Abort & Recovery
+                                </button>
+                            ) : (
+                                <button
+                                    onClick={onClose}
+                                    className="flex items-center justify-center gap-4 w-full py-6 bg-indigo-600/5 hover:bg-indigo-600/10 text-indigo-400 border border-indigo-500/10 rounded-3xl font-black uppercase tracking-[0.2em] transition-all text-lg"
+                                >
+                                    Return to Hub
+                                </button>
+                            )}
+
+                            <div className="flex flex-col items-center gap-2 mt-8">
+                                <div className="h-px w-24 bg-gradient-to-r from-transparent via-slate-700 to-transparent" />
+                                <p className="text-xs text-slate-600 font-extrabold uppercase tracking-[0.4em]">
+                                    Neural Architecture v4.2 • Secured by R2
+                                </p>
+                            </div>
+                        </div>
+                    </motion.div>
+                </div>
             </motion.div>
         </AnimatePresence>
     );
