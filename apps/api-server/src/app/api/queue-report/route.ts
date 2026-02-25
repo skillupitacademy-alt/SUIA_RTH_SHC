@@ -93,9 +93,11 @@ export async function POST(req: NextRequest) {
     // 3. Concurrency Guard with Stale-Job Recovery
     const existingReport = await ReportRepository.getReportByAttempt(attemptId);
     if (existingReport && (existingReport.status === "pending" || existingReport.status === "generating")) {
-      const updatedAt = existingReport.updatedAt ? new Date(existingReport.updatedAt).getTime() : 0;
+      const updatedAt = existingReport.updatedAt instanceof Date
+        ? existingReport.updatedAt.getTime()
+        : new Date(existingReport.updatedAt ?? 0).getTime();
       const staleDuration = Date.now() - updatedAt;
-      const STALE_THRESHOLD_MS = 2 * 60 * 1000; // 2 minutes
+      const STALE_THRESHOLD_MS = 30 * 1000; // 30 seconds
 
       if (staleDuration < STALE_THRESHOLD_MS) {
         // Genuinely in-flight — don't duplicate
