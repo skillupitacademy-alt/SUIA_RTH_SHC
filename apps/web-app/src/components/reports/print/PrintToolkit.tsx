@@ -82,7 +82,7 @@ interface FixedChartWrapperProps {
 export function FixedChartWrapper({
     width = "100%",
     height = REPORT_LAYOUT.chart.large,
-    maxWidth = 620,
+    maxWidth = "none",
     children,
 }: FixedChartWrapperProps) {
     return (

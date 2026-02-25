@@ -8,7 +8,7 @@
  */
 export const REPORT_LAYOUT = {
     page: {
-        landscape: { width: 1440, height: 1024, padding: 32 },
+        landscape: { width: 1440, height: 1020, padding: 32 },
         portrait: { width: 1024, height: 1440, padding: 32 },
     },
 
@@ -30,7 +30,7 @@ export const REPORT_LAYOUT = {
 
     grid: {
         /** Primary two-column: chart (wide) + panel (narrow) */
-        mainRatio: { left: 1.3, right: 1 },
+        mainRatio: { left: 1.2, right: 1 },
         /** Standard gap between grid columns */
         gap: 32,
         /** Gap between stacked sections */

@@ -139,7 +139,7 @@ export function ExecutiveSummaryPage({ data, page, total }: PageProps) {
                             </ChartCard>
                         }
                         right={
-                            <TacticalPrescriptionPrintPanel data={data} title="Executive Core" />
+                            <TacticalPrescriptionPrintPanel data={data} title="Executive Core" dense={true} />
                         }
                     />
                 </div>
@@ -180,7 +180,7 @@ export function SubtopicAccuracyPage({ data, page, total, layout }: PageProps) {
                             </ChartCard>
                         }
                         right={
-                            <TacticalPrescriptionPrintPanel data={data} title="Domain Disparity" dense={isDense} />
+                            <TacticalPrescriptionPrintPanel data={data} title="Domain Disparity" dense={true} />
                         }
                     />
                 </div>
@@ -226,7 +226,7 @@ export function SubjectBreakdownPage({ data, page, total }: PageProps) {
                             </div>
                         }
                         right={
-                            <TacticalPrescriptionPrintPanel data={data} title="Spatio-Temporal Correlation" />
+                            <TacticalPrescriptionPrintPanel data={data} title="Spatio-Temporal Correlation" dense={true} />
                         }
                     />
                 </div>
@@ -265,7 +265,7 @@ export function NeuralHeatmapPage({ data, page, total }: PageProps) {
                             </ReportCard>
                         }
                         right={
-                            <TacticalPrescriptionPrintPanel data={data} title="Cognitive Load Analysis" />
+                            <TacticalPrescriptionPrintPanel data={data} title="Cognitive Load Analysis" dense={true} />
                         }
                     />
                 </div>
@@ -324,7 +324,7 @@ export function ComplexityLadderPage({ data, page, total }: PageProps) {
                             </ReportCard>
                         }
                         right={
-                            <TacticalPrescriptionPrintPanel data={data} title="Pressure Tolerance" />
+                            <TacticalPrescriptionPrintPanel data={data} title="Pressure Tolerance" dense={true} />
                         }
                     />
                 </div>
