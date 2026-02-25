@@ -90,11 +90,22 @@ export async function POST(req: NextRequest) {
       }, { status: 429 });
     }
 
-    // 3. Concurrency Guard: Check for duplicate in-flight jobs
+    // 3. Concurrency Guard with Stale-Job Recovery
     const existingReport = await ReportRepository.getReportByAttempt(attemptId);
     if (existingReport && (existingReport.status === "pending" || existingReport.status === "generating")) {
-      logger.info({ attemptId, status: existingReport.status }, "[QueueReport] Duplicate job ignored");
-      return NextResponse.json({ status: "queued", attemptId, message: "Generation already in progress" });
+      const updatedAt = existingReport.updatedAt ? new Date(existingReport.updatedAt).getTime() : 0;
+      const staleDuration = Date.now() - updatedAt;
+      const STALE_THRESHOLD_MS = 2 * 60 * 1000; // 2 minutes
+
+      if (staleDuration < STALE_THRESHOLD_MS) {
+        // Genuinely in-flight — don't duplicate
+        logger.info({ attemptId, status: existingReport.status, staleDuration }, "[QueueReport] Duplicate job ignored");
+        return NextResponse.json({ status: "queued", attemptId, message: "Generation already in progress" });
+      }
+
+      // Stale job detected — reset and allow re-trigger below
+      logger.warn({ attemptId, status: existingReport.status, staleDuration }, "[QueueReport] Stale job detected, resetting to pending");
+      await ReportRepository.updateReportStatus(attemptId, "pending", undefined);
     }
 
     // 4. State Machine Init
