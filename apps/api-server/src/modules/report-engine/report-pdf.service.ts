@@ -154,8 +154,7 @@ export class ReportPdfService {
 
       const pdfBuffer = await page.pdf({
         printBackground: true,
-        width: "1440px",
-        height: "1020px",
+        preferCSSPageSize: true,
         landscape: true,
         margin: { top: 0, right: 0, bottom: 0, left: 0 },
       });

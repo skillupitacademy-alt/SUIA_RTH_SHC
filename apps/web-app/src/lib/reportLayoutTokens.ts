@@ -14,7 +14,7 @@ export const REPORT_LAYOUT = {
 
     chart: {
         /** Full-page hero chart (RadialKPI, SubtopicBar) */
-        large: 720,
+        large: 600,
         /** Mid-size chart (SkillDonut, TimeDonut) */
         medium: 280,
     },
@@ -30,9 +30,9 @@ export const REPORT_LAYOUT = {
 
     grid: {
         /** Primary two-column: chart (wide) + panel (narrow) */
-        mainRatio: { left: 1.65, right: 1 },
+        mainRatio: { left: 1.3, right: 1 },
         /** Standard gap between grid columns */
-        gap: 48,
+        gap: 32,
         /** Gap between stacked sections */
         sectionGap: 24,
     },

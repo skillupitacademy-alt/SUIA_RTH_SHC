@@ -14,9 +14,10 @@ interface PdfPageProps {
 
 export function PdfPage({ children, orientation = "landscape" }: PdfPageProps) {
     const dim = orientation === "landscape" ? REPORT_LAYOUT.page.landscape : REPORT_LAYOUT.page.portrait;
+    const debug = process.env.NEXT_PUBLIC_DEBUG_PDF_BORDERS === "true";
     return (
         <div
-            className={`pdf-page ${orientation} relative flex flex-col bg-[#0B1220] text-slate-100 overflow-hidden select-none`}
+            className={`pdf-page ${orientation} relative flex flex-col bg-[#0B1220] text-slate-100 overflow-hidden select-none ${debug ? "pdf-debug-border" : ""}`}
             style={{
                 width: dim.width,
                 height: dim.height,
@@ -74,12 +75,14 @@ export function PdfGridTwoColumn({
 interface FixedChartWrapperProps {
     width?: number | string;
     height?: number | string;
+    maxWidth?: number | string;
     children: React.ReactNode;
 }
 
 export function FixedChartWrapper({
     width = "100%",
     height = REPORT_LAYOUT.chart.large,
+    maxWidth = 620,
     children,
 }: FixedChartWrapperProps) {
     return (
@@ -88,6 +91,7 @@ export function FixedChartWrapper({
             style={{
                 width: typeof width === "number" ? `${width}px` : width,
                 height: typeof height === "number" ? `${height}px` : height,
+                maxWidth: typeof maxWidth === "number" ? `${maxWidth}px` : maxWidth,
                 display: "block",
                 position: "relative",
                 overflow: "hidden",
