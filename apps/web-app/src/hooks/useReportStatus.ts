@@ -35,7 +35,20 @@ export function useReportStatus(attemptId: string) {
       setStage(data.stage ?? null);
       
       if (data.status === "ready" && data.url) {
-        setDownloadUrl(data.url);
+        // Liveness Check: Verify the report file actually exists in storage
+        try {
+          const livenessRes = await fetch(data.url, { method: 'HEAD' });
+          if (livenessRes.ok) {
+            setDownloadUrl(data.url);
+          } else {
+            // File missing in storage: Revert to not_found to allow re-generation
+            setStatus("not_found");
+            setDownloadUrl(null);
+          }
+        } catch {
+          // Fallback if HEAD request fails (CORS or network) - assume ready to avoid false negatives
+          setDownloadUrl(data.url);
+        }
       }
 
       // Exponential backoff logic

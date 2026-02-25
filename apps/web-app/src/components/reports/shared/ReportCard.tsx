@@ -20,7 +20,7 @@ export function ReportCard({
     return (
         <div
             className={cn(
-                "bg-slate-900/40 border border-slate-800/50 rounded-3xl p-8 h-full flex flex-col max-w-none",
+                "bg-slate-900/40 border border-slate-800/50 rounded-3xl p-8 h-full flex flex-col w-full max-w-none",
                 className
             )}
             style={height ? { height, minHeight: height } : undefined}

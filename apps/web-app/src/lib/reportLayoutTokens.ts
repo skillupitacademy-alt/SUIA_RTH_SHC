@@ -14,7 +14,7 @@ export const REPORT_LAYOUT = {
 
     chart: {
         /** Full-page hero chart (RadialKPI, SubtopicBar) */
-        large: 640,
+        large: 720,
         /** Mid-size chart (SkillDonut, TimeDonut) */
         medium: 280,
     },

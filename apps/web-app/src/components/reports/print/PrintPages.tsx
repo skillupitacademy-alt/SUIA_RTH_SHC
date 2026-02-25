@@ -103,7 +103,7 @@ interface PageProps {
 /* ────────────────────────────────────────────── */
 export function ExecutiveSummaryPage({ data, page, total }: PageProps) {
     return (
-        <div className="h-full flex flex-col">
+        <div className="h-full w-full flex flex-col">
             <header className="pdf-header flex justify-between items-start border-b border-slate-800 pb-4 mb-6">
                 <div>
                     {data.lineage && (
@@ -161,7 +161,7 @@ export function ExecutiveSummaryPage({ data, page, total }: PageProps) {
 export function SubtopicAccuracyPage({ data, page, total, layout }: PageProps) {
     const isDense = layout === "heatmap" || data.subtopics.length > 10;
     return (
-        <div className="h-full flex flex-col">
+        <div className="h-full w-full flex flex-col">
             <SectionHeader title="Subtopic Precision Matrix" label="Diagnostic Sweep V4" data={data} />
 
             <div className="flex-1 flex flex-col" style={{ gap: T.grid.sectionGap }}>
@@ -201,7 +201,7 @@ export function SubtopicAccuracyPage({ data, page, total, layout }: PageProps) {
 /* ────────────────────────────────────────────── */
 export function SubjectBreakdownPage({ data, page, total }: PageProps) {
     return (
-        <div className="h-full flex flex-col">
+        <div className="h-full w-full flex flex-col">
             <SectionHeader title="Velocity & Neural Patterns" label="Temporal Spend Analysis" data={data} />
 
             <div className="flex-1 flex flex-col" style={{ gap: T.grid.sectionGap }}>
@@ -253,7 +253,7 @@ export function SubjectBreakdownPage({ data, page, total }: PageProps) {
 /* ────────────────────────────────────────────── */
 export function NeuralHeatmapPage({ data, page, total }: PageProps) {
     return (
-        <div className="h-full flex flex-col">
+        <div className="h-full w-full flex flex-col">
             <SectionHeader title="Cognitive Heatmap" label="Phase 21 Granular Mastery" data={data} />
 
             <div className="flex-1 flex flex-col overflow-hidden" style={{ gap: T.grid.sectionGap }}>
@@ -286,7 +286,7 @@ export function NeuralHeatmapPage({ data, page, total }: PageProps) {
 /* ────────────────────────────────────────────── */
 export function ComplexityLadderPage({ data, page, total }: PageProps) {
     return (
-        <div className="h-full flex flex-col">
+        <div className="h-full w-full flex flex-col">
             <SectionHeader title="Complexity Scrutiny" label="Spatio‑Visual Depth Matrix" data={data} />
 
             <div className="flex-1 flex flex-col" style={{ gap: T.grid.sectionGap }}>
@@ -375,7 +375,7 @@ export function QuestionAuditPage({ questions, data, page, total, offset }: { qu
     const auditAvgLatency = totalQuestions > 0 ? Math.round(data.totalTimeSpentSeconds / totalQuestions) : 0;
 
     return (
-        <div className="h-full flex flex-col">
+        <div className="h-full w-full flex flex-col">
             <header className="flex justify-between items-end border-b border-slate-800 pb-4 mb-6">
                 <div>
                     <h2 className="report-heading" style={{ fontSize: 18 }}>Registry : Log {page < 10 ? `0${page}` : page}</h2>
@@ -564,7 +564,7 @@ function VectorSummaryCard({ title, items, colorClass }: { title: string, items:
 
 export function SubjectSummaryPage({ data, page, total }: { data: SubjectUnitData, page: number, total: number }) {
     return (
-        <div className="h-full flex flex-col">
+        <div className="h-full w-full flex flex-col">
             <header className="pdf-header flex justify-between items-start border-b border-slate-800 pb-4 mb-8">
                 <div>
                     <div className="flex items-center gap-2 mb-2 opacity-60">
@@ -620,7 +620,7 @@ export function SubjectSummaryPage({ data, page, total }: { data: SubjectUnitDat
 
 export function DomainOverviewPage({ data, page, total }: { data: DomainUnitData, page: number, total: number }) {
     return (
-        <div className="h-full flex flex-col">
+        <div className="h-full w-full flex flex-col">
             <header className="pdf-header flex justify-between items-start border-b border-slate-800 pb-4 mb-8 text-center">
                 <div className="w-full">
                     <h1 className="report-heading text-6xl tracking-[-0.04em] mb-2">{data.name}</h1>

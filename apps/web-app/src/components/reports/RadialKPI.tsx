@@ -129,7 +129,7 @@ export const RadialKPI = React.memo(({ data, suppressAnimation }: RadialKPIProps
                 </div>
 
                 {/* Main Radial Chart - Layered Rings */}
-                <div className="w-full h-full max-w-[400px] max-h-[400px] flex items-center justify-center relative">
+                <div className="w-full h-full flex items-center justify-center relative">
                     <ResponsiveContainer width="100%" height="100%">
                         <RadialBarChart
                             key={mounted ? 'mounted' : 'unmounted'}

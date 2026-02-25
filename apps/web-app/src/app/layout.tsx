@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { SecurityMuzzle } from "@/components/auth/SecurityMuzzle";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
+import { GlobalNavigationLoader } from "@/components/layout/GlobalNavigationLoader";
 
 export const metadata: Metadata = {
     title: "Quiz Platform",
@@ -18,6 +19,7 @@ export default function RootLayout({
             <body>
                 <ThemeProvider>
                     <SecurityMuzzle />
+                    <GlobalNavigationLoader />
                     {children}
                     <div id="modal-root" />
                 </ThemeProvider>
