@@ -37,7 +37,7 @@ body {
 }
 
 .pdf-container {
-  width: 1123px;
+  width: 1440px;
   margin: 0 auto;
   background: #0B1220;
 }
@@ -50,14 +50,14 @@ body {
 }
 
 .pdf-root {
-  width: 1123px;
+  width: 1440px;
   margin: 0 auto;
   background: #0B1220;
 }
 
 .pdf-page {
-  width: 1123px !important;
-  min-height: 794px !important;
+  width: 1440px !important;
+  min-height: 1024px !important;
   padding: 32px !important;
   margin-bottom: 0 !important;
   overflow: hidden !important;
@@ -92,7 +92,7 @@ body {
 
 @page {
   margin: 0;
-  size: 1123px 794px landscape;
+  size: 1440px 1024px landscape;
 }
 
 @media print {

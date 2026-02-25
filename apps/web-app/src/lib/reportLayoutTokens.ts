@@ -8,13 +8,13 @@
  */
 export const REPORT_LAYOUT = {
     page: {
-        landscape: { width: 1123, height: 794, padding: 32 },
-        portrait: { width: 794, height: 1123, padding: 32 },
+        landscape: { width: 1440, height: 1024, padding: 32 },
+        portrait: { width: 1024, height: 1440, padding: 32 },
     },
 
     chart: {
         /** Full-page hero chart (RadialKPI, SubtopicBar) */
-        large: 520,
+        large: 640,
         /** Mid-size chart (SkillDonut, TimeDonut) */
         medium: 280,
     },
