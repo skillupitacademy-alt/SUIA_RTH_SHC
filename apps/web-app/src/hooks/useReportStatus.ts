@@ -4,16 +4,18 @@ export type ReportStatus = "pending" | "generating" | "ready" | "failed" | "not_
 
 interface ReportStatusResponse {
   status: ReportStatus;
+  stage?: string;
   url?: string;
 }
 
 export function useReportStatus(attemptId: string) {
-  // Start with "not_found" to avoid false spinner flash on initial load
   const [status, setStatus] = useState<ReportStatus>("not_found");
+  const [stage, setStage] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [cooldown, setCooldown] = useState<number>(0);
+  const [pollInterval, setPollInterval] = useState(1000); // Start with 1s polling
   const initialCheckDone = useRef(false);
 
   const checkStatus = useCallback(async () => {
@@ -30,10 +32,19 @@ export function useReportStatus(attemptId: string) {
 
       const data: ReportStatusResponse = await res.json();
       setStatus(data.status);
+      setStage(data.stage ?? null);
       
       if (data.status === "ready" && data.url) {
         setDownloadUrl(data.url);
       }
+
+      // Exponential backoff logic
+      if (data.status === "generating" || data.status === "pending") {
+        setPollInterval(prev => Math.min(prev * 1.2, 3000)); // Cap at 3s
+      } else {
+        setPollInterval(1000); // Reset on success/failure
+      }
+
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Failed to check report status";
       setError(message);
@@ -56,13 +67,13 @@ export function useReportStatus(attemptId: string) {
 
     let interval: NodeJS.Timeout | null = null;
     if (status === "pending" || status === "generating") {
-      interval = setInterval(checkStatus, 5000);
+      interval = setInterval(checkStatus, pollInterval);
     }
 
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [attemptId, status, checkStatus]);
+  }, [attemptId, status, checkStatus, pollInterval]);
 
   // Cooldown timer logic
   useEffect(() => {
@@ -83,6 +94,7 @@ export function useReportStatus(attemptId: string) {
         .split('; ')
         .find(row => row.startsWith('csrfToken='))
         ?.split('=')[1] ?? '';
+
       const res = await fetch(`${apiUrl}/queue-report`, {
         method: 'POST',
         headers: { 
@@ -97,13 +109,15 @@ export function useReportStatus(attemptId: string) {
         if (res.status === 429) {
           const data = await res.json();
           setCooldown(data.retryAfter || 60);
-          return; // Don't change status to failed, just set cooldown
+          return;
         }
         throw new Error("Failed to queue report generation");
       }
       
       setStatus("generating");
+      setStage("queued");
       setError(null);
+      setPollInterval(1000); // Start polling immediately
       checkStatus();
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Failed to queue report generation";
@@ -112,5 +126,5 @@ export function useReportStatus(attemptId: string) {
     }
   };
 
-  return { status, loading, downloadUrl, error, triggerGeneration, checkStatus, cooldown };
+  return { status, stage, loading, downloadUrl, error, triggerGeneration, checkStatus, cooldown };
 }

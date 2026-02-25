@@ -5,6 +5,7 @@ import {
     ArrowRight,
     BarChart3,
     Cpu,
+    FileText,
     GraduationCap,
     LayoutDashboard,
     Radio,
@@ -100,6 +101,15 @@ const dashboardCards = [
         color: "text-rose-500",
         bg: "bg-rose-500/5",
         border: "hover:border-rose-500/30"
+    },
+    {
+        title: "Report Pipeline",
+        description: "PDF Generation & Health",
+        icon: <FileText size={24} />,
+        href: "/reports",
+        color: "text-orange-500",
+        bg: "bg-orange-500/5",
+        border: "hover:border-orange-500/30"
     }
 ];
 

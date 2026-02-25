@@ -65,6 +65,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({ 
       status: report.status,
+      stage: report.status === "generating" ? report.errorStage : undefined,
       error: report.status === "failed" ? report.errorStage : undefined
     });
 

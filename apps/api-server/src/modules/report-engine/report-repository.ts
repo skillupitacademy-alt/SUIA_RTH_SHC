@@ -1,5 +1,5 @@
-import { db, reports } from '@quiz/db';
-import { eq } from 'drizzle-orm';
+import { db, reports } from "@quiz/db";
+import { and, avg, count, desc, eq, type SQL } from "drizzle-orm";
 
 export interface CreateReportInput {
   attemptId: string;
@@ -39,12 +39,16 @@ export class ReportRepository {
     return newReport;
   }
 
-  static async updateReportStatus(attemptId: string, status: 'pending' | 'generating' | 'ready' | 'failed', errorStage?: string) {
+  static async updateReportStatus(
+    attemptId: string, 
+    status: 'pending' | 'generating' | 'ready' | 'failed', 
+    stageOrError?: string
+  ) {
     const [updated] = await db
       .update(reports)
       .set({ 
         status, 
-        errorStage: errorStage ?? null,
+        errorStage: stageOrError ?? null,
         updatedAt: new Date() 
       })
       .where(eq(reports.attemptId, attemptId))
@@ -69,5 +73,56 @@ export class ReportRepository {
       .returning();
     
     return updated;
+  }
+
+  static async listReports(filters: {
+    status?: string;
+    userId?: string;
+    limit?: number;
+    offset?: number;
+  } = {}) {
+    const conditions: SQL[] = [];
+
+    if (filters.status !== undefined && filters.status.length > 0) {
+      conditions.push(eq(reports.status, filters.status as 'pending' | 'generating' | 'ready' | 'failed'));
+    }
+    if (filters.userId !== undefined && filters.userId.length > 0) {
+      conditions.push(eq(reports.userId, filters.userId));
+    }
+
+    const limit = filters.limit ?? 50;
+    const offset = filters.offset ?? 0;
+
+    const rows = await db
+      .select()
+      .from(reports)
+      .where(conditions.length > 0 ? and(...conditions) : undefined)
+      .orderBy(desc(reports.updatedAt))
+      .limit(limit)
+      .offset(offset);
+
+    return rows;
+  }
+
+  static async getReportStats() {
+    const statusCounts = await db
+      .select({
+        status: reports.status,
+        total: count(),
+      })
+      .from(reports)
+      .groupBy(reports.status);
+
+    const avgGen = await db
+      .select({
+        avgMs: avg(reports.generationTimeMs),
+      })
+      .from(reports)
+      .where(eq(reports.status, 'ready'));
+
+    return {
+      byStatus: Object.fromEntries(statusCounts.map(r => [r.status, Number(r.total)])),
+      avgGenerationTimeMs: avgGen[0]?.avgMs !== null ? Math.round(Number(avgGen[0]?.avgMs ?? 0)) : null,
+    };
   }
 }

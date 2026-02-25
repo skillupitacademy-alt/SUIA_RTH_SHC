@@ -3,8 +3,11 @@ import { eq } from "drizzle-orm";
 import { after, NextRequest, NextResponse } from "next/server";
 
 import { logger } from "@/lib/logger";
+import { metrics } from "@/lib/metrics";
+import { uploadReport } from "@/lib/storage/upload-report";
 import { TokenService } from "@/modules/auth/token.service";
 import { cacheService } from "@/modules/core/cache.service";
+import { ReportPdfService } from "@/modules/report-engine/report-pdf.service";
 import { ReportRepository } from "@/modules/report-engine/report-repository";
 
 export const runtime = "nodejs";
@@ -19,17 +22,20 @@ export async function POST(req: NextRequest) {
     const attemptFromParams = searchParams.get("id") ?? searchParams.get("attemptId") ?? "";
     const attemptId = (attemptFromBody || attemptFromParams).trim();
 
-    const isTrue = (val: unknown) => val === true || val === "true";
-    const force = isTrue(body.force) || searchParams.get("force") === "true";
-
     if (attemptId === "") {
       return NextResponse.json({ error: "Missing attemptId" }, { status: 400 });
     }
 
     // 1. Auth Validation (User Token or Internal Key)
     const internalKeyHeader = req.headers.get("x-internal-key") ?? "";
-    const internalSecret = process.env.INTERNAL_API_KEY ?? "secret";
-    const isInternal = internalKeyHeader !== "" && internalSecret !== "" && internalKeyHeader === internalSecret;
+    const internalSecret = process.env.INTERNAL_API_KEY;
+    
+    if (typeof internalSecret !== "string" || internalSecret.length === 0) {
+      logger.error("[QueueReport] INTERNAL_API_KEY is not configured in environment");
+      return NextResponse.json({ error: "System configuration error" }, { status: 500 });
+    }
+
+    const isInternal = internalKeyHeader === internalSecret;
     
     let userId: string;
 
@@ -84,35 +90,59 @@ export async function POST(req: NextRequest) {
       }, { status: 429 });
     }
 
-    // 3. State Machine Init
-    await ReportRepository.createReportIfNotExists({ attemptId, userId, status: "pending" });
-
-    // 3. Fire-and-forget Generation Trigger (Internal API call)
-    let apiBase = process.env.NEXT_PUBLIC_API_URL ?? "";
-    
-    if (apiBase === "" || apiBase.includes("localhost")) {
-      // derive from request if possible to avoid DNS loops or missing ENVs
-      const url = new URL(req.url);
-      apiBase = `${url.protocol}//${url.host}/api`;
+    // 3. Concurrency Guard: Check for duplicate in-flight jobs
+    const existingReport = await ReportRepository.getReportByAttempt(attemptId);
+    if (existingReport && (existingReport.status === "pending" || existingReport.status === "generating")) {
+      logger.info({ attemptId, status: existingReport.status }, "[QueueReport] Duplicate job ignored");
+      return NextResponse.json({ status: "queued", attemptId, message: "Generation already in progress" });
     }
 
-    const generateUrl = `${apiBase}/generate-report`;
-    
-    // Use after() as the replacement for waitUntil in this environment
-    // to ensure the background task survives the Vercel function lifecycle
+    // 4. State Machine Init
+    await ReportRepository.createReportIfNotExists({ attemptId, userId, status: "pending" });
+
+    // 5. Direct inline generation inside after() — no fragile internal HTTP call
     after(async () => {
       try {
-        await fetch(generateUrl, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "x-internal-key": process.env.INTERNAL_API_KEY ?? "secret"
-          },
-          body: JSON.stringify({ attemptId, force }),
-          signal: AbortSignal.timeout(30000)
+        const startTime = Date.now();
+        logger.info({ attemptId }, "[QueueReport] Starting direct PDF generation");
+        
+        // Stage 1: Rendering
+        await ReportRepository.updateReportStatus(attemptId, "generating", "rendering");
+        const { buffer, generationTimeMs, fileSizeKb, pageCount } = 
+          await ReportPdfService.generate(attemptId);
+        
+        const renderDuration = Date.now() - startTime;
+        metrics.timing("report.render_duration", renderDuration, { attemptId });
+
+        // Stage 2: Uploading
+        await ReportRepository.updateReportStatus(attemptId, "generating", "uploading");
+        const uploadStart = Date.now();
+        const fileRef = await uploadReport(buffer, userId, attemptId);
+        const uploadDuration = Date.now() - uploadStart;
+        metrics.timing("report.upload_duration", uploadDuration, { attemptId });
+
+        await ReportRepository.updateReportSuccess(attemptId, {
+          fileRef,
+          generationTimeMs,
+          fileSizeKb,
+          pageCount
         });
+
+        const totalDuration = Date.now() - startTime;
+        metrics.timing("report.total_duration", totalDuration, { attemptId, fileSizeKb });
+
+        logger.info({ 
+          attemptId, 
+          fileSizeKb, 
+          generationTimeMs, 
+          renderDuration, 
+          uploadDuration,
+          totalDuration 
+        }, "[QueueReport] PDF generation successful");
       } catch (err) {
-        logger.error({ err, attemptId, url: generateUrl }, "[QueueReport] Background trigger failed");
+        logger.error({ err, attemptId }, "[QueueReport] Background generation failed");
+        const msg = err instanceof Error ? err.message : "Unknown error";
+        await ReportRepository.updateReportStatus(attemptId, "failed", msg).catch(() => {});
       }
     });
 
