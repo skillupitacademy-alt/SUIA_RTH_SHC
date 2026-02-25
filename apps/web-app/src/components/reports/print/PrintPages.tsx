@@ -104,7 +104,7 @@ interface PageProps {
 export function ExecutiveSummaryPage({ data, page, total }: PageProps) {
     return (
         <div className="h-full w-full flex flex-col">
-            <header className="pdf-header flex justify-between items-start border-b border-slate-800 pb-4 mb-6">
+            <header className="pdf-header flex justify-between items-start border-b border-slate-800 pb-3 mb-5">
                 <div>
                     {data.lineage && (
                         <div className="flex items-center gap-2 mb-2 opacity-60">
@@ -169,7 +169,7 @@ export function SubtopicAccuracyPage({ data, page, total, layout }: PageProps) {
                     <PdfGridTwoColumn
                         left={
                             <ChartCard>
-                                <FixedChartWrapper height={isDense ? 480 : 440}>
+                                <FixedChartWrapper height={isDense ? 440 : 420}>
                                     <SubtopicBarChart
                                         data={data.subtopics}
                                         weakest={data.ai.weakest_subtopic}
@@ -210,12 +210,12 @@ export function SubjectBreakdownPage({ data, page, total }: PageProps) {
                         left={
                             <div className="h-full flex flex-col" style={{ gap: T.grid.sectionGap }}>
                                 <ChartCard className="flex-1">
-                                    <div style={{ width: T.chart.medium, height: T.chart.medium }} className="mx-auto">
+                                    <div style={{ width: T.chart.medium - 20, height: T.chart.medium - 20 }} className="mx-auto">
                                         <SkillDonutChart data={data.skills} suppressAnimation={true} />
                                     </div>
                                 </ChartCard>
                                 <ChartCard className="flex-1">
-                                    <div style={{ width: T.chart.medium, height: T.chart.medium }} className="mx-auto">
+                                    <div style={{ width: T.chart.medium - 20, height: T.chart.medium - 20 }} className="mx-auto">
                                         <TimeSpentDonut data={{
                                             totalSeconds: data.totalTimeSpentSeconds,
                                             questions: data.questions || [],
@@ -294,8 +294,8 @@ export function ComplexityLadderPage({ data, page, total }: PageProps) {
                     <PdfGridTwoColumn
                         left={
                             <ReportCard>
-                                <h3 className={T.typography.label} style={{ color: 'rgb(129,140,248)', marginBottom: 32 }}>Scaling Accuracy Coefficients</h3>
-                                <div className="space-y-8 flex-1 flex flex-col justify-center">
+                                <h3 className={T.typography.label} style={{ color: 'rgb(129,140,248)', marginBottom: 24 }}>Scaling Accuracy Coefficients</h3>
+                                <div className="space-y-6 flex-1 flex flex-col justify-center">
                                     {data.difficulty.map((d, i) => {
                                         const barColor = d.accuracy >= 80
                                             ? "from-emerald-500 to-cyan-400"
@@ -458,7 +458,7 @@ export function QuestionAuditPage({ questions, data, page, total, offset }: { qu
 
 function SectionHeader({ title, label, data }: { title: string; label: string; data?: TopicUnitData }) {
     return (
-        <header className="mb-6 pb-4 border-b border-slate-800 flex justify-between items-end">
+        <header className="mb-5 pb-3 border-b border-slate-800 flex justify-between items-end">
             <div>
                 {data?.lineage && (
                     <div className="flex items-center gap-2 mb-1.5 opacity-50">
