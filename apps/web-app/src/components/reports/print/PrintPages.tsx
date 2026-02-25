@@ -394,23 +394,23 @@ export function QuestionAuditPage({ questions, data, page, total, offset }: { qu
                     <div className="relative z-10 grid grid-cols-5 gap-x-8 divide-x divide-slate-800">
                         <div className="flex flex-col items-center px-4">
                             <span className="text-2xl font-black text-slate-300">{totalQuestions}</span>
-                            <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest mt-1 whitespace-nowrap">Depth</span>
+                            <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest mt-1 whitespace-nowrap">Total Depth</span>
                         </div>
-                        <div className="flex flex-col items-center px-8 border-l border-slate-800">
+                        <div className="flex flex-col items-center px-6 border-l border-slate-800">
                             <span className="text-2xl font-black text-indigo-400">{auditAccuracy}%</span>
-                            <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest mt-1 whitespace-nowrap">Sync</span>
+                            <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest mt-1 whitespace-nowrap">Accuracy Sync</span>
                         </div>
                         <div className="flex flex-col items-center px-8 border-l border-slate-800">
                             <span className="text-2xl font-black text-emerald-500">{correctCount}</span>
                             <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest mt-1 whitespace-nowrap">Hits</span>
                         </div>
-                        <div className="flex flex-col items-center px-8 border-l border-slate-800">
+                        <div className="flex flex-col items-center px-6 border-l border-slate-800">
                             <span className="text-2xl font-black text-rose-500">{totalQuestions - correctCount}</span>
-                            <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest mt-1 whitespace-nowrap">Miss</span>
+                            <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest mt-1 whitespace-nowrap">Misses</span>
                         </div>
-                        <div className="flex flex-col items-center px-8 border-l border-slate-800">
+                        <div className="flex flex-col items-center px-6 border-l border-slate-800">
                             <span className="text-2xl font-black text-amber-500">{auditAvgLatency}s</span>
-                            <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest mt-1 whitespace-nowrap">Lat.</span>
+                            <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest mt-1 whitespace-nowrap">Avg Latency</span>
                         </div>
                     </div>
                 </div>

@@ -61,8 +61,8 @@ export class ReportPdfService {
       browser = await puppeteer.connect({
         browserWSEndpoint: browserlessUrl as string,
         defaultViewport: {
-          width: 1440,
-          height: 1020,
+          width: 1920,
+          height: 1080,
           deviceScaleFactor: 2,
           isMobile: false,
           hasTouch: false,
@@ -80,8 +80,8 @@ export class ReportPdfService {
       browser = await puppeteer.launch({
         args: isWindows ? [] : chromium.args,
         defaultViewport: {
-          width: 1440,
-          height: 1020,
+          width: 1920,
+          height: 1080,
           deviceScaleFactor: 2,
           isMobile: false,
           hasTouch: false,
@@ -97,8 +97,8 @@ export class ReportPdfService {
 
       // Ensure specific landscape dimensions for pixel perfection
       await page.setViewport({
-        width: 1440,
-        height: 1020,
+        width: 1920,
+        height: 1080,
         deviceScaleFactor: 2,
       });
 

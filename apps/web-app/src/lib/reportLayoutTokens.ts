@@ -8,8 +8,8 @@
  */
 export const REPORT_LAYOUT = {
     page: {
-        landscape: { width: 1440, height: 1020, padding: 32 },
-        portrait: { width: 1024, height: 1440, padding: 32 },
+        landscape: { width: 1920, height: 1080, padding: 48 },
+        portrait: { width: 1080, height: 1920, padding: 48 },
     },
 
     chart: {
