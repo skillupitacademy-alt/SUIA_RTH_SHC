@@ -41,11 +41,21 @@ export async function GET(req: NextRequest) {
     // 2. Return Status + URL if ready
     const hasFile = typeof report.fileRef === "string" && report.fileRef.trim() !== "";
     if (report.status === "ready" && hasFile) {
-      const url = await getDownloadUrl(report.fileRef as string);
-      return NextResponse.json(
-        { status: "ready", url },
-        { headers: { "Cache-Control": "public, max-age=3600, immutable" } }
-      );
+      // Self-Healing Liveness Check: Verify the file actually exists in storage
+      const { storage } = await import("@/lib/storage");
+      const exists = await storage.exists(report.fileRef as string);
+
+      if (exists) {
+        const url = await getDownloadUrl(report.fileRef as string);
+        return NextResponse.json(
+          { status: "ready", url },
+          { headers: { "Cache-Control": "public, max-age=3600, immutable" } }
+        );
+      } else {
+        // File missing from storage (e.g. background deletion)
+        // Return 404/not_found to trigger frontal re-generation UI
+        return NextResponse.json({ status: "not_found" }, { status: 404 });
+      }
     }
 
     // 3. Stall Detection (generating for > 3 mins)

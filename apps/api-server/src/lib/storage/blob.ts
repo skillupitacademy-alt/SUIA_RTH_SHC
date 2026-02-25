@@ -17,6 +17,16 @@ export const blobStorage: StorageProvider = {
     return url;
   },
 
+  async exists(fileRef) {
+    try {
+      const { head } = await import("@vercel/blob");
+      await head(fileRef);
+      return true;
+    } catch {
+      return false;
+    }
+  },
+
   async getDownloadUrl(fileRef) {
     // Return our secure proxy URL instead of the direct private blob URL
     try {

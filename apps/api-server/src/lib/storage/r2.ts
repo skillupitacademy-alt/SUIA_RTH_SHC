@@ -1,4 +1,4 @@
-import { DeleteObjectCommand, GetObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { DeleteObjectCommand, GetObjectCommand, HeadObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { getSignedUrl as sign } from "@aws-sdk/s3-request-presigner";
 
 import { StorageProvider } from "./types";
@@ -29,6 +29,20 @@ export const r2Storage: StorageProvider = {
 
     // Return the key for R2, as we use signed URLs for access
     return key;
+  },
+
+  async exists(fileRef) {
+    try {
+      await r2.send(
+        new HeadObjectCommand({
+          Bucket: BUCKET,
+          Key: fileRef,
+        })
+      );
+      return true;
+    } catch {
+      return false;
+    }
   },
 
   async getDownloadUrl(fileRef) {
