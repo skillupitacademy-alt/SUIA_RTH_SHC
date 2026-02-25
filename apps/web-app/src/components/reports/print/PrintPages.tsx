@@ -104,7 +104,7 @@ interface PageProps {
 export function ExecutiveSummaryPage({ data, page, total }: PageProps) {
     return (
         <div className="h-full w-full flex flex-col">
-            <header className="pdf-header flex justify-between items-start border-b border-slate-800 pb-4 mb-6">
+            <header className="pdf-header flex justify-between items-start border-b border-slate-800 pb-4 mb-3">
                 <div>
                     {data.lineage && (
                         <div className="flex items-center gap-2 mb-2 opacity-60">
@@ -458,7 +458,7 @@ export function QuestionAuditPage({ questions, data, page, total, offset }: { qu
 
 function SectionHeader({ title, label, data }: { title: string; label: string; data?: TopicUnitData }) {
     return (
-        <header className="mb-6 pb-4 border-b border-slate-800 flex justify-between items-end">
+        <header className="mb-3 pb-4 border-b border-slate-800 flex justify-between items-end">
             <div>
                 {data?.lineage && (
                     <div className="flex items-center gap-2 mb-1.5 opacity-50">
@@ -480,7 +480,7 @@ function SectionHeader({ title, label, data }: { title: string; label: string; d
 
 function PdfFooter({ page, total, label }: { page: string; total: string; label: string }) {
     return (
-        <footer className="pdf-footer flex justify-between items-end report-subheading border-t border-slate-800 pt-4 mt-auto">
+        <footer className="pdf-footer flex justify-between items-end report-subheading border-t border-slate-800 pt-2 mt-auto">
             <div>{label}</div>
             <div>Page {page} / {total}</div>
         </footer>

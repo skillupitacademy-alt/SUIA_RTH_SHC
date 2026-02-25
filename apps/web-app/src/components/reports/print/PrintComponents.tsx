@@ -50,7 +50,7 @@ const DiagnosticTier = ({ title, status, color, icon: Icon, progress, items, den
             {items.map((item, i) => (
                 <li key={i} className="flex items-start gap-3 group/item">
                     <div className={cn("h-1.5 w-1.5 rounded-full mt-2 shrink-0 shadow-sm", color.split(' ')[0], dense && "h-1 w-1 mt-1.5")} />
-                    <span className={cn("text-[13px] text-slate-300 font-medium leading-relaxed", dense && "text-[11px]")}>
+                    <span className={cn("text-[13px] text-slate-300 font-medium leading-relaxed", dense && "text-[11px] line-clamp-1")}>
                         {item}
                     </span>
                 </li>
@@ -157,7 +157,7 @@ export function InterpretationCard({ title, bullets }: { title: string, bullets:
 
     return (
         <div className="interpretation-card h-full">
-            <div className="flex items-center gap-2.5 mb-4">
+            <div className="flex items-center gap-2.5 mb-2">
                 <div className="p-1.5 bg-indigo-500/10 rounded-lg border border-indigo-500/10 text-indigo-400">
                     <Terminal size={14} />
                 </div>
@@ -165,7 +165,7 @@ export function InterpretationCard({ title, bullets }: { title: string, bullets:
                     {title}
                 </h4>
             </div>
-            <ul className="space-y-2.5">
+            <ul className="space-y-1.5">
                 {bullets.map((bullet, idx) => (
                     <li key={idx} className="flex items-start gap-3">
                         <div className="mt-1.5 h-1 w-1 rounded-full shrink-0 bg-indigo-500/40" />

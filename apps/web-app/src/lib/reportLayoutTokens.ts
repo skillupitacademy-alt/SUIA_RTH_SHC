@@ -32,9 +32,9 @@ export const REPORT_LAYOUT = {
         /** Primary two-column: chart (wide) + panel (narrow) */
         mainRatio: { left: 1.2, right: 1 },
         /** Standard gap between grid columns */
-        gap: 32,
+        gap: 24,
         /** Gap between stacked sections */
-        sectionGap: 24,
+        sectionGap: 12,
     },
 
     appendix: {
