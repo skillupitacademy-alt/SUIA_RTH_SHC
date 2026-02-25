@@ -62,7 +62,7 @@ export class ReportPdfService {
         browserWSEndpoint: browserlessUrl as string,
         defaultViewport: {
           width: 1440,
-          height: 1024,
+          height: 1020,
           deviceScaleFactor: 2,
           isMobile: false,
           hasTouch: false,
@@ -81,7 +81,7 @@ export class ReportPdfService {
         args: isWindows ? [] : chromium.args,
         defaultViewport: {
           width: 1440,
-          height: 1024,
+          height: 1020,
           deviceScaleFactor: 2,
           isMobile: false,
           hasTouch: false,
@@ -98,7 +98,7 @@ export class ReportPdfService {
       // Ensure specific landscape dimensions for pixel perfection
       await page.setViewport({
         width: 1440,
-        height: 1024,
+        height: 1020,
         deviceScaleFactor: 2,
       });
 
@@ -154,8 +154,8 @@ export class ReportPdfService {
 
       const pdfBuffer = await page.pdf({
         printBackground: true,
-        width: "1123px",
-        height: "794px",
+        width: "1440px",
+        height: "1020px",
         landscape: true,
         margin: { top: 0, right: 0, bottom: 0, left: 0 },
       });

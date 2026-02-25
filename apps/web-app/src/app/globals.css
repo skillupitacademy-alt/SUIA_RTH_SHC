@@ -37,7 +37,7 @@ body {
 }
 
 .pdf-container {
-  width: 100%;
+  width: 1440px;
   margin: 0 auto;
   background: #0B1220;
 }
@@ -50,14 +50,14 @@ body {
 }
 
 .pdf-root {
-  width: 100%;
+  width: 1440px;
   margin: 0 auto;
   background: #0B1220;
 }
 
 .pdf-page {
-  width: 100% !important;
-  min-height: 1024px !important;
+  width: 1440px !important;
+  min-height: 1019px !important;
   padding: 32px !important;
   margin-bottom: 0 !important;
   overflow: hidden !important;
@@ -71,8 +71,8 @@ body {
 }
 
 .pdf-page.portrait {
-  width: 794px !important;
-  height: 1123px !important;
+  width: 1019px !important;
+  height: 1440px !important;
 }
 
 /* Modal/Overlay Eraser */
