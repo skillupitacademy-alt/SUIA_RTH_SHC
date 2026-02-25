@@ -7,6 +7,7 @@ import {
     CheckCircle2,
     Zap,
     Terminal,
+    Activity,
     LucideIcon
 } from 'lucide-react';
 import { cn } from "@/lib/utils";
@@ -66,44 +67,66 @@ type AIData = {
     status: string;
 };
 
-type TacticalPrescriptionProps = {
-    data: { ai?: AIData };
-    title?: string;
-    dense?: boolean;
+type TierOverride = {
+    label: string;
+    status: string;
+    items: string[];
+    color: string;
+    progress: number;
 };
 
-export function TacticalPrescriptionPrintPanel({ data, title, dense }: TacticalPrescriptionProps) {
+type TacticalPrescriptionProps = {
+    data: { ai?: AIData; timePattern?: string; isInconsistent?: boolean };
+    title?: string;
+    dense?: boolean;
+    tierOverrides?: TierOverride[];
+    behaviorBadge?: string;
+};
+
+export function TacticalPrescriptionPrintPanel({ data, title, dense, tierOverrides, behaviorBadge }: TacticalPrescriptionProps) {
     if (!data.ai) return null;
     const ai = data.ai;
 
-    const tiers = [
-        {
-            title: "Focus Areas",
-            status: "Critical",
-            color: "bg-rose-500 text-rose-400",
-            icon: AlertTriangle,
-            progress: 35,
-            items: ai.actions.length > 0 ? [ai.actions[0], `Targeting: ${ai.weakest_subtopic}`] : [`Targeting: ${ai.weakest_subtopic}`]
-        },
-        {
-            title: "Strengthen",
-            status: "Proficient",
-            color: "bg-amber-500 text-amber-400",
-            icon: Zap,
-            progress: 65,
-            items: ai.actions.length > 1
-                ? [ai.actions[1], `Optimization: ${ai.weakest_skill || ai.weakest_subtopic}`]
-                : [`Optimization: ${ai.weakest_skill || ai.weakest_subtopic}`]
-        },
-        {
-            title: "Maintain",
-            status: "Mastered",
-            color: "bg-emerald-500 text-emerald-400",
-            icon: CheckCircle2,
-            progress: 95,
-            items: ai.actions.length > 2 ? ai.actions.slice(2, 4) : ["Maintain current neural baseline stability"]
-        }
-    ];
+    const tiers = tierOverrides
+        ? tierOverrides.map((t) => ({
+            title: t.label,
+            status: t.status,
+            color: t.color,
+            icon: t.label === "Focus Areas" ? AlertTriangle : t.label === "Strengthen" ? Zap : CheckCircle2,
+            progress: t.progress,
+            items: t.items,
+        }))
+        : [
+            {
+                title: "Focus Areas",
+                status: "Critical",
+                color: "bg-rose-500 text-rose-400",
+                icon: AlertTriangle,
+                progress: 35,
+                items: ai.actions.length > 0 ? [ai.actions[0], `Targeting: ${ai.weakest_subtopic}`] : [`Targeting: ${ai.weakest_subtopic}`]
+            },
+            {
+                title: "Strengthen",
+                status: "Proficient",
+                color: "bg-amber-500 text-amber-400",
+                icon: Zap,
+                progress: 65,
+                items: ai.actions.length > 1
+                    ? [ai.actions[1], `Optimization: ${ai.weakest_skill || ai.weakest_subtopic}`]
+                    : [`Optimization: ${ai.weakest_skill || ai.weakest_subtopic}`]
+            },
+            {
+                title: "Maintain",
+                status: "Mastered",
+                color: "bg-emerald-500 text-emerald-400",
+                icon: CheckCircle2,
+                progress: 95,
+                items: ai.actions.length > 2 ? ai.actions.slice(2, 4) : ["Maintain current neural baseline stability"]
+            }
+        ];
+
+    // Resolve behavior badge from prop or data
+    const resolvedBehavior = behaviorBadge || (data.timePattern ? data.timePattern.replace(/_/g, ' ') : undefined);
 
     return (
         <div className={cn("pdf-panel w-full h-full p-8 lg:p-10 flex flex-col bg-[#0a0c12]/90 border border-slate-800/60 rounded-[2.5rem] shadow-[0_30px_60px_rgba(0,0,0,0.6)] backdrop-blur-3xl relative overflow-hidden group", dense && "p-6 lg:p-6 rounded-[2rem]")}>
@@ -119,11 +142,31 @@ export function TacticalPrescriptionPrintPanel({ data, title, dense }: TacticalP
                     </div>
                     <div className={cn("px-4 py-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-lg", dense && "px-2 py-1")}>
                         <span className={cn("text-[12px] font-black text-emerald-400 uppercase tracking-widest leading-none flex items-center gap-2", dense && "text-[9px]")}>
-                            <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                            <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
                             AI STATUS: {ai.status === 'READY' ? 'OPTIMIZED' : ai.status}
                         </span>
                     </div>
                 </div>
+
+                {/* Behavior / Inconsistency badges */}
+                {(resolvedBehavior || data.isInconsistent) && (
+                    <div className={cn("flex flex-wrap gap-2 mb-4", dense && "mb-2")}>
+                        {data.isInconsistent && (
+                            <div className="px-3 py-1 bg-rose-500/10 border border-rose-500/20 rounded-lg flex items-center gap-2">
+                                <AlertTriangle size={10} className="text-rose-400" />
+                                <span className="text-[10px] font-black text-rose-400 uppercase tracking-widest">Inconsistent Performance</span>
+                            </div>
+                        )}
+                        {resolvedBehavior && (
+                            <div className="px-3 py-1 bg-amber-500/10 border border-amber-500/20 rounded-lg flex items-center gap-2">
+                                <Activity size={10} className="text-amber-400" />
+                                <span className="text-[10px] font-black text-amber-400 uppercase tracking-widest">
+                                    Behavior: {resolvedBehavior}
+                                </span>
+                            </div>
+                        )}
+                    </div>
+                )}
 
                 <h4 className={cn("text-[12px] font-black text-slate-400 uppercase tracking-[0.3em] mb-8 border-b border-white/5 pb-4", dense && "text-[9px] mb-4 pb-2")}>
                     {title || "Diagnostic Matrix"}
@@ -248,6 +291,25 @@ export function HeatmapMatrixPrint({ data }: { data: HeatmapRow[] }) {
                     </div>
                 ))}
             </div>
+
+            {/* Legend matching web */}
+            <div className="flex items-center justify-center gap-8 mt-6 pt-4 border-t border-white/5">
+                {[
+                    { label: "Mastery", color: "bg-emerald-500" },
+                    { label: "Advancing", color: "bg-indigo-500" },
+                    { label: "Growth", color: "bg-amber-500" },
+                    { label: "Critical", color: "bg-rose-500" },
+                ].map((item) => (
+                    <div key={item.label} className="flex items-center gap-2">
+                        <div className={cn("h-2 w-2 rounded-full", item.color)} />
+                        <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">{item.label}</span>
+                    </div>
+                ))}
+            </div>
+            <p className="text-[8px] text-slate-600 mt-3 flex items-center gap-1.5">
+                <span className="opacity-50">ⓘ</span>
+                NEURAL PROJECTION MAPS CROSS-FUNCTIONAL PERFORMANCE DENSITY. MATRIX SATURATION CORRELATES WITH THE CONFIDENCE DEPTH OF UNDERLYING ACCURACY DATA.
+            </p>
         </div>
     );
 }

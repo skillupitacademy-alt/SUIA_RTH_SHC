@@ -17,7 +17,7 @@ import {
     DomainUnitData
 } from "@/components/reports/print/PrintPages";
 import { PdfReadySignal } from "@/components/reports/print/PdfReadySignal";
-import { PdfPage, chunkRows } from "@/components/reports/print/PrintToolkit";
+import { PdfPage } from "@/components/reports/print/PrintToolkit";
 import type { QuestionItem, ReportJSON, SubjectDataset, TopicDataset } from "@quiz/types";
 
 async function fetchReportData(attemptId: string, internalKey?: string): Promise<ExamReport> {
@@ -225,7 +225,9 @@ export default function PrintReportPage(props: {
             lineage: (source.lineage as TopicUnitData["lineage"] | undefined) ?? data.lineage,
             questions,
             completedAt: (source.completedAt as string | undefined) ?? data.completedAt,
-            candidateName: (source.candidateName as string | undefined) ?? data.candidateName
+            candidateName: (source.candidateName as string | undefined) ?? data.candidateName,
+            timePattern: (source.timePattern as string | undefined) ?? data.timePattern,
+            isInconsistent: (source.isInconsistent as boolean | undefined) ?? data.isInconsistent,
         };
     };
 
@@ -234,13 +236,9 @@ export default function PrintReportPage(props: {
     const topicDs = topicList.find((t) => t.topicId === nodeId);
     const topicData = toTopicUnitData(topicDs || data);
 
-    const normalizedQuestions: QuestionItem[] = topicData.questions || [];
 
-    // Appendix Chunking (5 rows per page for portrait stability)
-    const appendixChunks = chunkRows<QuestionItem>(normalizedQuestions, 5);
-
-    // Final Page Context Calculation
-    const localPages = 6 + appendixChunks.length;
+    // Final Page Context Calculation (5 analysis + 1 appendix cover + 1 audit stats)
+    const localPages = 7;
     const finalGlobalTotal = globalTotal || localPages;
     const getPageNum = (localIdx: number) => startPage + localIdx;
     const topicLayout: "pillar" | "bar" | "grid" | "heatmap" =
@@ -287,18 +285,14 @@ export default function PrintReportPage(props: {
                     <AppendixCoverPage page={getPageNum(6)} total={finalGlobalTotal} />
                 </PdfPage>
 
-                {/* Page 7+: Chunked Appendix Registry (Landscape) */}
-                {appendixChunks.map((chunk, i) => (
-                    <PdfPage key={i} orientation="landscape">
-                        <QuestionAuditPage
-                            questions={chunk}
-                            data={topicData}
-                            page={getPageNum(7 + i)}
-                            total={finalGlobalTotal}
-                            offset={i * 5}
-                        />
-                    </PdfPage>
-                ))}
+                {/* Page 7: Audit Statistical Summary (stats only, no Q&A cards) */}
+                <PdfPage orientation="landscape">
+                    <QuestionAuditPage
+                        data={topicData}
+                        page={getPageNum(7)}
+                        total={finalGlobalTotal}
+                    />
+                </PdfPage>
 
                 <PdfReadySignal />
             </div>

@@ -57,6 +57,8 @@ export interface TopicUnitData {
     questions?: import("@quiz/types").QuestionItem[];
     completedAt?: string;
     candidateName?: string;
+    timePattern?: string;
+    isInconsistent?: boolean;
 }
 
 export interface SubjectUnitData {
@@ -139,7 +141,11 @@ export function ExecutiveSummaryPage({ data, page, total }: PageProps) {
                             </ChartCard>
                         }
                         right={
-                            <TacticalPrescriptionPrintPanel data={data} title="Executive Core" dense={true} />
+                            <TacticalPrescriptionPrintPanel
+                                data={{ ai: data.ai, timePattern: data.timePattern, isInconsistent: data.isInconsistent }}
+                                title="Tactical Prescription"
+                                dense={true}
+                            />
                         }
                     />
                 </div>
@@ -180,7 +186,16 @@ export function SubtopicAccuracyPage({ data, page, total, layout }: PageProps) {
                             </ChartCard>
                         }
                         right={
-                            <TacticalPrescriptionPrintPanel data={data} title="Domain Disparity" dense={true} />
+                            <TacticalPrescriptionPrintPanel
+                                data={data}
+                                title="Domain Disparity"
+                                dense={true}
+                                tierOverrides={[
+                                    { label: "Focus Areas", status: "Critical", items: [`Review ${data.ai.weakest_subtopic || 'foundational'} logic`, "Practice dynamic integration"], color: "bg-rose-500 text-rose-400", progress: 35 },
+                                    { label: "Strengthen", status: "Proficient", items: ["Deepen ML model context", "Improve physics section timing"], color: "bg-amber-500 text-amber-400", progress: 65 },
+                                    { label: "Maintain", status: "Mastered", items: ["Stable neural baseline stability", "Continue daily vector drills"], color: "bg-emerald-500 text-emerald-400", progress: 95 }
+                                ]}
+                            />
                         }
                     />
                 </div>
@@ -226,7 +241,16 @@ export function SubjectBreakdownPage({ data, page, total }: PageProps) {
                             </div>
                         }
                         right={
-                            <TacticalPrescriptionPrintPanel data={data} title="Spatio-Temporal Correlation" dense={true} />
+                            <TacticalPrescriptionPrintPanel
+                                data={data}
+                                title="Spatio-Temporal Correlation"
+                                dense={true}
+                                tierOverrides={[
+                                    { label: "Focus Areas", status: "Critical", items: [`Reduce friction in ${data.ai.weakest_skill || 'reasoning'}`, "Minimize 'Review' cycle time"], color: "bg-rose-500 text-rose-400", progress: 42 },
+                                    { label: "Strengthen", status: "Proficient", items: ["Stabilize high-friction nodes", "Optimize logic-branch speed"], color: "bg-amber-500 text-amber-400", progress: 58 },
+                                    { label: "Maintain", status: "Mastered", items: ["Stable Study zone processing", "Flow-state neural baseline"], color: "bg-emerald-500 text-emerald-400", progress: 95 }
+                                ]}
+                            />
                         }
                     />
                 </div>
@@ -265,7 +289,16 @@ export function NeuralHeatmapPage({ data, page, total }: PageProps) {
                             </ReportCard>
                         }
                         right={
-                            <TacticalPrescriptionPrintPanel data={data} title="Cognitive Load Analysis" dense={true} />
+                            <TacticalPrescriptionPrintPanel
+                                data={data}
+                                title="Cognitive Load Analysis"
+                                dense={true}
+                                tierOverrides={[
+                                    { label: "Focus Areas", status: "Critical", items: ["Eliminate 'Red Out' at Expert Level", "Tackle high-entropy vectors"], color: "bg-rose-500 text-rose-400", progress: 25 },
+                                    { label: "Strengthen", status: "Proficient", items: ["Bridge Intermediate to Expert gap", "Stabilize operational thresholds"], color: "bg-amber-500 text-amber-400", progress: 62 },
+                                    { label: "Maintain", status: "Mastered", items: ["Perfect Score on Simple difficulty", "Stable Intermediate performance"], color: "bg-emerald-500 text-emerald-400", progress: 98 }
+                                ]}
+                            />
                         }
                     />
                 </div>
@@ -294,7 +327,7 @@ export function ComplexityLadderPage({ data, page, total }: PageProps) {
                     <PdfGridTwoColumn
                         left={
                             <ReportCard>
-                                <h3 className={T.typography.label} style={{ color: 'rgb(129,140,248)', marginBottom: 32 }}>Scaling Accuracy Coefficients</h3>
+                                <h3 className={T.typography.label} style={{ color: 'rgb(129,140,248)', marginBottom: 32 }}>Difficulty Matrix Diagnostic</h3>
                                 <div className="space-y-8 flex-1 flex flex-col justify-center">
                                     {data.difficulty.map((d, i) => {
                                         const barColor = d.accuracy >= 80
@@ -305,11 +338,11 @@ export function ComplexityLadderPage({ data, page, total }: PageProps) {
                                         return (
                                             <div key={i}>
                                                 <div className="flex justify-between items-end mb-3">
-                                                    <span className={T.typography.label}>{d.level}</span>
                                                     <div className="flex items-baseline gap-2">
-                                                        <span className={T.typography.metric}>{d.accuracy}%</span>
-                                                        <span className={T.typography.label}>{d.attempts} inst.</span>
+                                                        <span className={T.typography.label}>{d.level} Level</span>
+                                                        <span className="text-[10px] font-bold text-slate-500">{d.attempts} Questions</span>
                                                     </div>
+                                                    <span className={T.typography.metric}>{d.accuracy}% Accuracy</span>
                                                 </div>
                                                 <div className="h-3 bg-slate-800 rounded-full overflow-hidden border border-white/5">
                                                     <div
@@ -324,7 +357,16 @@ export function ComplexityLadderPage({ data, page, total }: PageProps) {
                             </ReportCard>
                         }
                         right={
-                            <TacticalPrescriptionPrintPanel data={data} title="Pressure Tolerance" dense={true} />
+                            <TacticalPrescriptionPrintPanel
+                                data={data}
+                                title="Pressure Tolerance"
+                                dense={true}
+                                tierOverrides={[
+                                    { label: "Focus Areas", status: "Critical", items: ["Target 'Expert' implementation rigidity", "Address complexity drop-off"], color: "bg-rose-500 text-rose-400", progress: 30 },
+                                    { label: "Strengthen", status: "Proficient", items: ["Shift from linear to non-linear logic", "Practice multi-variable problems"], color: "bg-amber-500 text-amber-400", progress: 55 },
+                                    { label: "Maintain", status: "Mastered", items: ["Perfect Score on Simple difficulty", "Stable Intermediate performance"], color: "bg-emerald-500 text-emerald-400", progress: 100 }
+                                ]}
+                            />
                         }
                     />
                 </div>
@@ -368,85 +410,126 @@ export function AppendixCoverPage({ page, total }: { page: number; total: number
 /* ────────────────────────────────────────────── */
 /*  PAGE 07+ : Question Registry (Card Layout)   */
 /* ────────────────────────────────────────────── */
-export function QuestionAuditPage({ questions, data, page, total, offset }: { questions: QuestionItem[]; data: TopicUnitData; page: number; total: number; offset: number }) {
+export function QuestionAuditPage({ data, page, total }: { questions?: QuestionItem[]; data: TopicUnitData; page: number; total: number; offset?: number }) {
     const totalQuestions = data.questions?.length || 0;
     const correctCount = data.questions?.filter(q => q.isCorrect).length || 0;
     const auditAccuracy = totalQuestions > 0 ? Math.round((correctCount / totalQuestions) * 100) : 0;
     const auditAvgLatency = totalQuestions > 0 ? Math.round(data.totalTimeSpentSeconds / totalQuestions) : 0;
 
+    // Per-difficulty breakdown for statistical table
+    const difficultyStats = data.difficulty.map(d => ({
+        level: d.level,
+        attempts: d.attempts,
+        accuracy: d.accuracy,
+    }));
+
+    // Per-subtopic accuracy summary
+    const subtopicStats = data.subtopics.slice(0, 10).map(s => ({
+        name: s.name,
+        accuracy: s.accuracy,
+        attempts: s.attempts,
+    }));
+
     return (
         <div className="h-full w-full flex flex-col">
             <header className="flex justify-between items-end border-b border-slate-800 pb-4 mb-6">
                 <div>
-                    <h2 className="report-heading" style={{ fontSize: 18 }}>Registry : Log {page < 10 ? `0${page}` : page}</h2>
+                    <h2 className="report-heading" style={{ fontSize: 18 }}>Audit Statistical Summary</h2>
                     <p className="report-subheading mt-1">Evidence Node</p>
                 </div>
                 <span className="report-subheading">Exhibit {page} / {total}</span>
             </header>
 
-            {offset === 0 && (
-                <div className="p-8 bg-slate-950 rounded-[2rem] border border-white/5 mb-8 flex items-center justify-between gap-6 shadow-2xl relative overflow-hidden">
-                    <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.01)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.01)_1px,transparent_1px)] bg-[size:24px_24px] [mask-image:radial-gradient(ellipse_at_center,black,transparent)] pointer-events-none" />
-                    <div className="relative z-10 flex flex-col">
-                        <h2 className="text-2xl font-black text-white uppercase tracking-tighter">Raw Audit</h2>
-                        <p className="text-slate-400 font-bold uppercase text-[10px] tracking-[0.3em] mt-1">Vector Diagnostic Log</p>
+            {/* Raw Audit Stats Banner */}
+            <div className="p-8 bg-slate-950 rounded-[2rem] border border-white/5 mb-8 flex items-center justify-between gap-6 shadow-2xl relative overflow-hidden">
+                <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.01)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.01)_1px,transparent_1px)] bg-[size:24px_24px] [mask-image:radial-gradient(ellipse_at_center,black,transparent)] pointer-events-none" />
+                <div className="relative z-10 flex flex-col">
+                    <h2 className="text-2xl font-black text-white uppercase tracking-tighter">Raw Audit</h2>
+                    <p className="text-slate-400 font-bold uppercase text-[10px] tracking-[0.3em] mt-1">Vector Diagnostic Log</p>
+                </div>
+                <div className="relative z-10 grid grid-cols-5 gap-x-8 divide-x divide-slate-800">
+                    <div className="flex flex-col items-center px-4">
+                        <span className="text-2xl font-black text-slate-300">{totalQuestions}</span>
+                        <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest mt-1 whitespace-nowrap">Total Depth</span>
                     </div>
-                    <div className="relative z-10 grid grid-cols-5 gap-x-8 divide-x divide-slate-800">
-                        <div className="flex flex-col items-center px-4">
-                            <span className="text-2xl font-black text-slate-300">{totalQuestions}</span>
-                            <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest mt-1 whitespace-nowrap">Total Depth</span>
-                        </div>
-                        <div className="flex flex-col items-center px-6 border-l border-slate-800">
-                            <span className="text-2xl font-black text-indigo-400">{auditAccuracy}%</span>
-                            <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest mt-1 whitespace-nowrap">Accuracy Sync</span>
-                        </div>
-                        <div className="flex flex-col items-center px-8 border-l border-slate-800">
-                            <span className="text-2xl font-black text-emerald-500">{correctCount}</span>
-                            <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest mt-1 whitespace-nowrap">Hits</span>
-                        </div>
-                        <div className="flex flex-col items-center px-6 border-l border-slate-800">
-                            <span className="text-2xl font-black text-rose-500">{totalQuestions - correctCount}</span>
-                            <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest mt-1 whitespace-nowrap">Misses</span>
-                        </div>
-                        <div className="flex flex-col items-center px-6 border-l border-slate-800">
-                            <span className="text-2xl font-black text-amber-500">{auditAvgLatency}s</span>
-                            <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest mt-1 whitespace-nowrap">Avg Latency</span>
-                        </div>
+                    <div className="flex flex-col items-center px-6 border-l border-slate-800">
+                        <span className="text-2xl font-black text-indigo-400">{auditAccuracy}%</span>
+                        <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest mt-1 whitespace-nowrap">Accuracy Sync</span>
+                    </div>
+                    <div className="flex flex-col items-center px-8 border-l border-slate-800">
+                        <span className="text-2xl font-black text-emerald-500">{correctCount}</span>
+                        <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest mt-1 whitespace-nowrap">Hits</span>
+                    </div>
+                    <div className="flex flex-col items-center px-6 border-l border-slate-800">
+                        <span className="text-2xl font-black text-rose-500">{totalQuestions - correctCount}</span>
+                        <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest mt-1 whitespace-nowrap">Misses</span>
+                    </div>
+                    <div className="flex flex-col items-center px-6 border-l border-slate-800">
+                        <span className="text-2xl font-black text-amber-500">{auditAvgLatency}s</span>
+                        <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest mt-1 whitespace-nowrap">Avg Latency</span>
                     </div>
                 </div>
-            )}
+            </div>
 
-            <div className="flex-1">
-                <div className="space-y-4">
-                    {questions.map((q, i) => (
-                        <div key={i} className="bg-slate-900/40 border border-slate-800/50 rounded-2xl p-5">
-                            <div className="flex gap-4">
-                                <div className="text-indigo-400 font-black text-xs tabular-nums pt-0.5">
-                                    {(offset + i + 1).toString().padStart(2, '0')}
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                    <p className="text-xs font-bold text-white leading-snug max-w-none">{q.text}</p>
-
-                                    <div className="mt-3 text-[10px] font-black uppercase tracking-widest text-indigo-300">User Pulse</div>
-                                    <p className="text-xs text-slate-300 mt-1">{q.userAnswer || 'NO_RESPONSE'}</p>
-
-                                    <div className="mt-4 flex justify-between items-center text-[10px] border-t border-white/5 pt-3">
-                                        <span className={cn(
-                                            "font-black uppercase tracking-widest",
-                                            q.isCorrect ? "text-emerald-400" : "text-rose-400"
-                                        )}>
-                                            {q.isCorrect ? 'VALID' : 'INVALID'}
-                                        </span>
-                                        <div className="flex gap-4">
-                                            <span className="font-black text-slate-500 uppercase tracking-widest">{q.difficulty || 'STD'}</span>
-                                            <span className="font-black text-slate-500">{q.timeSpent || 0}s</span>
+            {/* Statistical Tables (replaces individual Q&A cards) */}
+            <div className="flex-1 grid grid-cols-2" style={{ gap: T.grid.sectionGap }}>
+                {/* Difficulty Breakdown */}
+                <ReportCard>
+                    <h3 className={T.typography.label} style={{ color: 'rgb(129,140,248)', marginBottom: 16 }}>Performance By Difficulty</h3>
+                    <div className="space-y-4">
+                        {difficultyStats.map((d, i) => {
+                            const barColor = d.accuracy >= 80
+                                ? "from-emerald-500 to-cyan-400"
+                                : d.accuracy >= 50
+                                    ? "from-indigo-500 to-cyan-400"
+                                    : "from-rose-500 to-amber-400";
+                            return (
+                                <div key={i}>
+                                    <div className="flex justify-between items-end mb-2">
+                                        <span className={T.typography.label}>{d.level}</span>
+                                        <div className="flex items-baseline gap-3">
+                                            <span className="text-[10px] font-bold text-slate-500">{d.attempts} Q</span>
+                                            <span className={T.typography.metric}>{d.accuracy}%</span>
                                         </div>
                                     </div>
+                                    <div className="h-2.5 bg-slate-800 rounded-full overflow-hidden border border-white/5">
+                                        <div
+                                            className={cn("h-full rounded-full bg-gradient-to-r", barColor)}
+                                            style={{ width: `${d.accuracy}%` }}
+                                        />
+                                    </div>
                                 </div>
+                            );
+                        })}
+                    </div>
+                </ReportCard>
+
+                {/* Subtopic Accuracy Grid */}
+                <ReportCard>
+                    <h3 className={T.typography.label} style={{ color: 'rgb(129,140,248)', marginBottom: 16 }}>Subtopic Accuracy Index</h3>
+                    <div className="space-y-3">
+                        {subtopicStats.map((s, i) => (
+                            <div key={i} className="flex items-center gap-3">
+                                <span className="text-[10px] font-black text-slate-400 tabular-nums w-5">{(i + 1).toString().padStart(2, '0')}</span>
+                                <div className="flex-1 min-w-0">
+                                    <div className="flex justify-between items-center mb-1">
+                                        <span className="text-[11px] font-bold text-slate-300 truncate">{s.name}</span>
+                                        <span className={cn("text-[11px] font-black ml-2", s.accuracy >= 80 ? "text-emerald-400" : s.accuracy >= 50 ? "text-indigo-400" : "text-rose-400")}>
+                                            {s.accuracy}%
+                                        </span>
+                                    </div>
+                                    <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                                        <div
+                                            className={cn("h-full rounded-full", s.accuracy >= 80 ? "bg-emerald-500" : s.accuracy >= 50 ? "bg-indigo-500" : "bg-rose-500")}
+                                            style={{ width: `${s.accuracy}%` }}
+                                        />
+                                    </div>
+                                </div>
+                                <span className="text-[9px] font-bold text-slate-600 w-8 text-right">{s.attempts}Q</span>
                             </div>
-                        </div>
-                    ))}
-                </div>
+                        ))}
+                    </div>
+                </ReportCard>
             </div>
 
             <PdfFooter page={page.toString().padStart(2, '0')} total={total.toString().padStart(2, '0')} label="Audit Evidence Log" />
