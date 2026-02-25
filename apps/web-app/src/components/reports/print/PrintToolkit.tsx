@@ -62,8 +62,8 @@ export function PdfGridTwoColumn({
                 overflow: "hidden",
             }}
         >
-            <div style={{ overflow: "hidden", height: "100%", minWidth: 0 }} className="min-h-0">{left}</div>
-            <div style={{ overflow: "hidden", height: "100%", minWidth: 0 }} className="min-h-0">{right}</div>
+            <div style={{ overflow: "hidden", height: "100%" }} className="min-h-0">{left}</div>
+            <div style={{ overflow: "hidden", height: "100%" }} className="min-h-0">{right}</div>
         </div>
     );
 }
@@ -82,7 +82,7 @@ interface FixedChartWrapperProps {
 export function FixedChartWrapper({
     width = "100%",
     height = REPORT_LAYOUT.chart.large,
-    maxWidth = 600,
+    maxWidth = 620,
     children,
 }: FixedChartWrapperProps) {
     return (
