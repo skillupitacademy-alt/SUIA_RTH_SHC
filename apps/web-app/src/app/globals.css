@@ -5,6 +5,7 @@
   font-display: swap;
   src: url('/fonts/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuLyfMZg.ttf') format('truetype');
 }
+
 @font-face {
   font-family: 'Inter';
   font-style: normal;
@@ -12,6 +13,7 @@
   font-display: swap;
   src: url('/fonts/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuGKYMZg.ttf') format('truetype');
 }
+
 @font-face {
   font-family: 'Inter';
   font-style: normal;
@@ -19,6 +21,7 @@
   font-display: swap;
   src: url('/fonts/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuFuYMZg.ttf') format('truetype');
 }
+
 @font-face {
   font-family: 'Inter';
   font-style: normal;
@@ -26,6 +29,7 @@
   font-display: swap;
   src: url('/fonts/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuDyYMZg.ttf') format('truetype');
 }
+
 @font-face {
   font-family: 'Inter';
   font-style: normal;
@@ -33,6 +37,7 @@
   font-display: swap;
   src: url('/fonts/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuBWYMZg.ttf') format('truetype');
 }
+
 @font-face {
   font-family: 'Outfit';
   font-style: normal;
@@ -40,6 +45,7 @@
   font-display: swap;
   src: url('/fonts/QGYyz_MVcBeNP4NjuGObqx1XmO1I4TC1C4E.ttf') format('truetype');
 }
+
 @font-face {
   font-family: 'Outfit';
   font-style: normal;
@@ -47,6 +53,7 @@
   font-display: swap;
   src: url('/fonts/QGYyz_MVcBeNP4NjuGObqx1XmO1I4e6yC4E.ttf') format('truetype');
 }
+
 @font-face {
   font-family: 'Outfit';
   font-style: normal;
@@ -54,6 +61,7 @@
   font-display: swap;
   src: url('/fonts/QGYyz_MVcBeNP4NjuGObqx1XmO1I4deyC4E.ttf') format('truetype');
 }
+
 @font-face {
   font-family: 'Outfit';
   font-style: normal;
@@ -61,6 +69,7 @@
   font-display: swap;
   src: url('/fonts/QGYyz_MVcBeNP4NjuGObqx1XmO1I4bCyC4E.ttf') format('truetype');
 }
+
 @font-face {
   font-family: 'Outfit';
   font-style: normal;
@@ -126,7 +135,8 @@ body {
 
 .pdf-page {
   width: 1920px !important;
-  min-height: 1080px !important;
+  height: 1080px !important;
+  max-height: 1080px !important;
   padding: 48px !important;
   margin-bottom: 0 !important;
   overflow: hidden !important;
@@ -165,7 +175,7 @@ body {
 
 @page {
   margin: 0;
-  size: 1440px 1024px landscape;
+  size: 1920px 1080px landscape;
 }
 
 @media print {

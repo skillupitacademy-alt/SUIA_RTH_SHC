@@ -49,12 +49,12 @@ export const REPORT_LAYOUT = {
 
     typography: {
         /** Page section heading */
-        heading: "text-xl font-black uppercase tracking-tighter text-white",
+        heading: "text-lg font-black uppercase tracking-tighter text-white",
         /** Small label / metadata */
         label: "text-[10px] font-black uppercase tracking-widest text-slate-600",
         /** Body / paragraph */
         body: "text-xs text-slate-400 leading-relaxed font-medium",
         /** Large numeric display */
-        metric: "text-5xl font-black text-white tracking-tighter tabular-nums",
+        metric: "text-2xl font-black text-white tracking-tighter tabular-nums",
     },
 } as const;
