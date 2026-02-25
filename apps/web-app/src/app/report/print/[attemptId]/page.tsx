@@ -70,6 +70,14 @@ export default function PrintReportPage(props: {
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
+        // Data Injection Pattern: Check if data was injected by the PDF service
+        const injectedData = (window as unknown as { __REPORT_DATA__?: ExamReport }).__REPORT_DATA__;
+        if (injectedData) {
+            console.log("[PrintPage] Consuming injected report data");
+            setData(injectedData);
+            return;
+        }
+
         fetchReportData(attemptId, internalKey)
             .then(setData)
             .catch(err => setError(err instanceof Error ? err.message : "Report loading failed"));

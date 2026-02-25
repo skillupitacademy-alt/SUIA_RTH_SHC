@@ -13,6 +13,8 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+import { createPortal } from "react-dom";
+
 interface ReportGenerationModalProps {
     isOpen: boolean;
     onClose: () => void;
@@ -40,6 +42,11 @@ export function ReportGenerationModal({
 }: ReportGenerationModalProps) {
     // Use a local stage tracker to handle smooth transitions especially for the "ready" state
     const [currentStageIndex, setCurrentStageIndex] = useState(0);
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     useEffect(() => {
         if (status === "ready") {
@@ -53,7 +60,7 @@ export function ReportGenerationModal({
         }
     }, [stage, status]);
 
-    if (!isOpen) return null;
+    if (!isOpen || !mounted) return null;
 
     const isFailed = status === "failed" || !!error;
     const isReady = status === "ready";
@@ -64,13 +71,13 @@ export function ReportGenerationModal({
         }
     };
 
-    return (
+    const modalContent = (
         <AnimatePresence>
             <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="fixed inset-0 z-[100] flex flex-col bg-[#020617]"
+                className="fixed inset-0 z-[9999] flex flex-col bg-[#020617]"
             >
                 {/* Immersive Background Texture */}
                 <div className="absolute inset-0 opacity-20 pointer-events-none overflow-hidden">
@@ -220,4 +227,7 @@ export function ReportGenerationModal({
             </motion.div>
         </AnimatePresence>
     );
+
+    const target = typeof document !== "undefined" ? document.getElementById("modal-root") : null;
+    return target ? createPortal(modalContent, target) : null;
 }

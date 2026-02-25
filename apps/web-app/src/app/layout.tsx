@@ -19,6 +19,7 @@ export default function RootLayout({
                 <ThemeProvider>
                     <SecurityMuzzle />
                     {children}
+                    <div id="modal-root" />
                 </ThemeProvider>
             </body>
         </html>
