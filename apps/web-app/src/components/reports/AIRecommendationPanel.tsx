@@ -25,6 +25,7 @@ export interface AIRecommendation {
 
 export interface AIRecommendationPanelProps {
     ai: AIRecommendation;
+    layout?: 'vertical' | 'horizontal';
 }
 
 const DiagnosticTier = ({
@@ -77,7 +78,7 @@ const DiagnosticTier = ({
     </div>
 );
 
-export const AIRecommendationPanel = React.memo(({ ai }: AIRecommendationPanelProps) => {
+export const AIRecommendationPanel = React.memo(({ ai, layout = 'vertical' }: AIRecommendationPanelProps) => {
     // Generate tiers based on the AI status and provided actions
     const tiers = [
         {
@@ -153,7 +154,10 @@ export const AIRecommendationPanel = React.memo(({ ai }: AIRecommendationPanelPr
 
             <h4 className="text-[12px] font-black text-slate-400 uppercase tracking-[0.3em] mb-8 border-b border-white/5 pb-4 relative z-10">Tactical Prescription</h4>
 
-            <div className="space-y-6 flex-grow relative z-10">
+            <div className={cn(
+                "relative z-10 flex-grow",
+                layout === 'horizontal' ? "grid grid-cols-1 md:grid-cols-3 gap-6" : "space-y-6"
+            )}>
                 {tiers.map((tier, idx) => (
                     <DiagnosticTier key={idx} {...tier} />
                 ))}

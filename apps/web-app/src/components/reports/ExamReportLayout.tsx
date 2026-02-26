@@ -157,10 +157,12 @@ const TabButton = ({ active, onClick, icon: Icon, label }: { active: boolean, on
 
 const HeuristicPanel = ({
     title,
-    details = []
+    details = [],
+    horizontal
 }: {
     title: string,
-    details?: { label: string, status: string, items: string[], color: string, progress: number, icon: LucideIcon }[]
+    details?: { label: string, status: string, items: string[], color: string, progress: number, icon: LucideIcon }[],
+    horizontal?: boolean
 }) => {
     return (
         <motion.div
@@ -188,7 +190,10 @@ const HeuristicPanel = ({
 
                 <h4 className="text-[12px] font-black text-slate-400 uppercase tracking-[0.3em] mb-8 border-b border-white/5 pb-4">{title}</h4>
 
-                <div className="space-y-6 flex-grow overflow-visible">
+                <div className={cn(
+                    "flex-grow overflow-visible",
+                    horizontal ? "grid grid-cols-1 md:grid-cols-3 gap-6" : "space-y-6"
+                )}>
                     {details.map((tier, idx) => (
                         <div key={idx} className="p-6 bg-slate-900/40 rounded-[2rem] border border-white/5 relative overflow-hidden group/tier hover:bg-slate-900/60 transition-all duration-300">
                             <div className="flex items-center justify-between mb-5 relative z-10">
@@ -287,8 +292,8 @@ export function ExamReportLayout({ data, loading }: ExamReportLayoutProps) {
                         {/* EXECUTIVE CORE TAB */}
                         {activeTab === 'summary' && (
                             <div className="space-y-16 pt-6">
-                                <div className="grid grid-cols-1 lg:grid-cols-[65%_35%] gap-10 items-stretch">
-                                    <div className="rounded-[2.5rem] bg-slate-900/50 border border-white/5 overflow-hidden shadow-2xl relative group">
+                                <div className="flex flex-col gap-10">
+                                    <div className="mx-auto w-full lg:max-w-4xl rounded-[2.5rem] bg-slate-900/50 border border-white/5 overflow-hidden shadow-2xl relative group">
                                         <RadialKPI data={data} />
                                     </div>
                                     <div className="flex flex-col">
@@ -299,6 +304,7 @@ export function ExamReportLayout({ data, loading }: ExamReportLayoutProps) {
                                                 isInconsistent: data.isInconsistent,
                                                 timePattern: data.timePattern
                                             }}
+                                            layout="horizontal"
                                         />
                                     </div>
                                 </div>
@@ -325,7 +331,7 @@ export function ExamReportLayout({ data, loading }: ExamReportLayoutProps) {
                         {activeTab === 'performance' && (
                             <div className="space-y-16 pt-6">
                                 {/* Section 1: Subtopic Variance */}
-                                <div className="grid grid-cols-1 lg:grid-cols-[65%_35%] gap-10 items-stretch">
+                                <div className="flex flex-col gap-10">
                                     <div className="rounded-[2.5rem] bg-slate-900/50 border border-white/5 p-10 lg:p-16 flex items-center shadow-xl">
                                         <SubtopicBarChart
                                             data={data.subtopics}
@@ -345,6 +351,7 @@ export function ExamReportLayout({ data, loading }: ExamReportLayoutProps) {
                                                 { label: "Strengthen", status: "Proficient", items: ["Deepen ML model context", "Improve physics section timing"], color: "bg-amber-500 text-amber-400", progress: 65, icon: Zap },
                                                 { label: "Maintain", status: "Mastered", items: ["Stable neural baseline stability", "Continue daily vector drills"], color: "bg-emerald-500 text-emerald-400", progress: 95, icon: CheckCircle2 }
                                             ]}
+                                            horizontal
                                         />
                                     </div>
                                 </div>
@@ -359,7 +366,7 @@ export function ExamReportLayout({ data, loading }: ExamReportLayoutProps) {
                                 )}
 
                                 {/* Section 2: Skill & Time Matrix */}
-                                <div className="grid grid-cols-1 lg:grid-cols-[65%_35%] gap-10 items-stretch">
+                                <div className="flex flex-col gap-10">
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-stretch">
                                         <div className="flex flex-col">
                                             <SkillDonutChart data={data.skills} />
@@ -380,6 +387,7 @@ export function ExamReportLayout({ data, loading }: ExamReportLayoutProps) {
                                                 { label: "Strengthen", status: "Proficient", items: ["Stabilize high-friction nodes", "Optimize logic-branch speed"], color: "bg-amber-500 text-amber-400", progress: 58, icon: Zap },
                                                 { label: "Maintain", status: "Mastered", items: ["Stable Study zone processing", "Flow-state neural baseline"], color: "bg-emerald-500 text-emerald-400", progress: 95, icon: CheckCircle2 }
                                             ]}
+                                            horizontal
                                         />
                                     </div>
                                 </div>
@@ -402,8 +410,8 @@ export function ExamReportLayout({ data, loading }: ExamReportLayoutProps) {
                                 )}
 
                                 {/* Section 3: Heatmap Projection */}
-                                <div className="grid grid-cols-1 lg:grid-cols-[65%_35%] gap-10 items-stretch">
-                                    <div className="rounded-[2.5rem] bg-slate-900/50 border border-white/5 p-10 lg:p-16 shadow-xl">
+                                <div className="flex flex-col gap-10">
+                                    <div className="rounded-[2.5rem] bg-slate-900/50 border border-white/5 p-10 lg:p-16 shadow-xl leading-[0]">
                                         <HeatmapGrid data={data.heatmap} />
                                     </div>
                                     <div className="flex flex-col">
@@ -414,6 +422,7 @@ export function ExamReportLayout({ data, loading }: ExamReportLayoutProps) {
                                                 { label: "Strengthen", status: "Proficient", items: ["Bridge Intermediate to Expert gap", "Stabilize operational thresholds"], color: "bg-amber-500 text-amber-400", progress: 62, icon: Zap },
                                                 { label: "Maintain", status: "Mastered", items: ["Perfect Score on Simple difficulty", "Stable Intermediate performance"], color: "bg-emerald-500 text-emerald-400", progress: 98, icon: CheckCircle2 }
                                             ]}
+                                            horizontal
                                         />
                                     </div>
                                 </div>
@@ -423,8 +432,8 @@ export function ExamReportLayout({ data, loading }: ExamReportLayoutProps) {
                         {/* COMPLEXITY LADDER TAB */}
                         {activeTab === 'complexity' && (
                             <>
-                                <div className="grid grid-cols-1 lg:grid-cols-[65%_35%] gap-10 items-stretch pt-6">
-                                    <div className="rounded-[2.5rem] bg-slate-900/50 border border-white/5 p-10 lg:p-16 flex items-center shadow-xl">
+                                <div className="flex flex-col gap-10 pt-6">
+                                    <div className="rounded-[2.5rem] bg-slate-900/50 border border-white/5 p-10 lg:p-16 flex items-center shadow-xl leading-[0]">
                                         <DifficultyBarChart
                                             data={data.difficulty}
                                             expertDropOff={data.expertDropOff}
@@ -438,6 +447,7 @@ export function ExamReportLayout({ data, loading }: ExamReportLayoutProps) {
                                                 { label: "Strengthen", status: "Proficient", items: ["Shift from linear to non-linear logic", "Practice multi-variable problems"], color: "bg-amber-500 text-amber-400", progress: 55, icon: Zap },
                                                 { label: "Maintain", status: "Mastered", items: ["Perfect Score on Simple difficulty", "Stable Intermediate performance"], color: "bg-emerald-500 text-emerald-400", progress: 100, icon: CheckCircle2 }
                                             ]}
+                                            horizontal
                                         />
                                     </div>
                                 </div>
