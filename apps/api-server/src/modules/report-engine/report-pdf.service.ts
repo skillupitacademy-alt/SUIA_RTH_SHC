@@ -72,13 +72,28 @@ export class ReportPdfService {
     } else {
       let executablePath: string;
       if (isWindows) {
-        executablePath = "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe";
+        const paths = [
+          "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+          "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe",
+          process.env.CHROME_PATH
+        ].filter(Boolean) as string[];
+        
+        const fs = await import("fs");
+        const executableCandidate = paths.find((p) => fs.existsSync(p)) ?? paths[0];
+
+        if (executableCandidate && fs.existsSync(executableCandidate)) {
+          executablePath = executableCandidate;
+        } else {
+          logger.warn({ executableCandidate, attemptId }, "[ReportPdfService] Target Chrome binary not found at primary path");
+          executablePath = await chromium.executablePath();
+        }
       } else {
         executablePath = await chromium.executablePath();
       }
 
+      logger.info({ attemptId, isWindows, executablePath }, "[ReportPdfService] Launching local browser instance");
       browser = await puppeteer.launch({
-        args: isWindows ? [] : chromium.args,
+        args: isWindows ? ["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage"] : chromium.args,
         defaultViewport: {
           width: 1920,
           height: 1080,
@@ -144,10 +159,20 @@ export class ReportPdfService {
 
       // 5. Navigate and Wait
       logger.info({ attemptId, url }, "[ReportPdfService] Navigating to print view");
-      await page.goto(url, { waitUntil: "networkidle0", timeout: 45000 });
+      try {
+        await page.goto(url, { waitUntil: "networkidle0", timeout: 60000 });
+      } catch (gotoErr) {
+        logger.error({ attemptId, url, err: gotoErr }, "[ReportPdfService] Navigation failed or timed out");
+        throw new Error(`Navigation Fault: Check if ${webAppUrl} is accessible.`);
+      }
 
       logger.info({ attemptId }, "[ReportPdfService] Waiting for Neural Signal [data-pdf-ready=\"true\"]");
-      await page.waitForSelector('[data-pdf-ready="true"]', { timeout: 0 });
+      try {
+        await page.waitForSelector('[data-pdf-ready="true"]', { timeout: 30000 });
+      } catch (selectorErr) {
+        logger.error({ attemptId, err: selectorErr }, "[ReportPdfService] Signal timeout - possible hydration delay");
+        throw new Error("Synthesis Timeout: The report engine failed to emit a ready signal within 30s.");
+      }
 
       await page.emulateMediaType("screen");
       await page.evaluateHandle("document.fonts.ready");

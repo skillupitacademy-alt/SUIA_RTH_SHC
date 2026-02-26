@@ -30,11 +30,13 @@ export function useReportStatus(attemptId: string) {
         throw new Error("Failed to check report status");
       }
 
-      const data: ReportStatusResponse = await res.json();
+      const data: ReportStatusResponse & { error?: string } = await res.json();
       setStatus(data.status);
       setStage(data.stage ?? null);
       
-      if (data.status === "ready" && data.url) {
+      if (data.status === "failed") {
+        setError(data.error ?? "Generation failed");
+      } else if (data.status === "ready" && data.url) {
         setDownloadUrl(data.url);
       }
 

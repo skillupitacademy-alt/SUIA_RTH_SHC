@@ -68,6 +68,7 @@ export default function PrintReportPage(props: {
 
     const [data, setData] = useState<ExamReport | null>(null);
     const [error, setError] = useState<string | null>(null);
+    const [scale, setScale] = useState(1);
 
     useEffect(() => {
         // Data Injection Pattern: Check if data was injected by the PDF service
@@ -82,6 +83,23 @@ export default function PrintReportPage(props: {
             .then(setData)
             .catch(err => setError(err instanceof Error ? err.message : "Report loading failed"));
     }, [attemptId, internalKey]);
+
+    useEffect(() => {
+        const calculateScale = () => {
+            const targetWidth = 1920;
+            const screenWidth = window.innerWidth;
+            if (screenWidth < targetWidth) {
+                // Scale to fit width with some breathing room
+                setScale((screenWidth - 48) / targetWidth);
+            } else {
+                setScale(1);
+            }
+        };
+
+        calculateScale();
+        window.addEventListener("resize", calculateScale);
+        return () => window.removeEventListener("resize", calculateScale);
+    }, []);
 
     if (error) {
         return (
@@ -246,25 +264,6 @@ export default function PrintReportPage(props: {
             : topicData.subtopics.length <= 8 ? "bar"
                 : topicData.subtopics.length <= 20 ? "grid"
                     : "heatmap";
-
-    // --- Responsive Scaling (Phase 6) ---
-    const [scale, setScale] = useState(1);
-    useEffect(() => {
-        const calculateScale = () => {
-            const targetWidth = 1920;
-            const screenWidth = window.innerWidth;
-            if (screenWidth < targetWidth) {
-                // Scale to fit width with some breathing room
-                setScale((screenWidth - 48) / targetWidth);
-            } else {
-                setScale(1);
-            }
-        };
-
-        calculateScale();
-        window.addEventListener("resize", calculateScale);
-        return () => window.removeEventListener("resize", calculateScale);
-    }, []);
 
     return (
         <div className="pdf-root" style={{ height: scale < 1 ? 'auto' : '100%' }}>
