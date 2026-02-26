@@ -10,9 +10,10 @@ import { REPORT_LAYOUT } from "@/lib/reportLayoutTokens";
 interface PdfPageProps {
     children: React.ReactNode;
     orientation?: "landscape" | "portrait";
+    autoScale?: boolean;
 }
 
-export function PdfPage({ children, orientation = "landscape" }: PdfPageProps) {
+export function PdfPage({ children, orientation = "landscape", autoScale = false }: PdfPageProps) {
     const dim = orientation === "landscape" ? REPORT_LAYOUT.page.landscape : REPORT_LAYOUT.page.portrait;
     const debug = process.env.NEXT_PUBLIC_DEBUG_PDF_BORDERS === "true";
     return (
@@ -25,6 +26,7 @@ export function PdfPage({ children, orientation = "landscape" }: PdfPageProps) {
                 boxSizing: "border-box",
                 pageBreakAfter: "always",
                 breakAfter: "page",
+                transformOrigin: autoScale ? "top left" : undefined,
             }}
         >
             {children}

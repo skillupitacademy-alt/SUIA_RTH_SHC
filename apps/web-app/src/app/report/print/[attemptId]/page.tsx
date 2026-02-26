@@ -247,16 +247,43 @@ export default function PrintReportPage(props: {
                 : topicData.subtopics.length <= 20 ? "grid"
                     : "heatmap";
 
+    // --- Responsive Scaling (Phase 6) ---
+    const [scale, setScale] = useState(1);
+    useEffect(() => {
+        const calculateScale = () => {
+            const targetWidth = 1920;
+            const screenWidth = window.innerWidth;
+            if (screenWidth < targetWidth) {
+                // Scale to fit width with some breathing room
+                setScale((screenWidth - 48) / targetWidth);
+            } else {
+                setScale(1);
+            }
+        };
+
+        calculateScale();
+        window.addEventListener("resize", calculateScale);
+        return () => window.removeEventListener("resize", calculateScale);
+    }, []);
+
     return (
-        <div className="pdf-root">
-            <div className="pdf-container bg-slate-950">
+        <div className="pdf-root" style={{ height: scale < 1 ? 'auto' : '100%' }}>
+            <div
+                className="pdf-container bg-slate-950 flex flex-col items-center"
+                style={{
+                    transform: `scale(${scale})`,
+                    transformOrigin: "top left",
+                    width: scale < 1 ? '1920px' : '100%',
+                    marginBottom: scale < 1 ? `-${(1 - scale) * 100}%` : 0 // Counteract scale pull for layout
+                }}
+            >
                 {/* Page 1: Executive Summary */}
-                <PdfPage orientation="landscape">
+                <PdfPage orientation="landscape" autoScale={scale < 1}>
                     <ExecutiveSummaryPage data={topicData} page={getPageNum(1)} total={finalGlobalTotal} />
                 </PdfPage>
 
                 {/* Page 2: Subtopic Accuracy */}
-                <PdfPage orientation="landscape">
+                <PdfPage orientation="landscape" autoScale={scale < 1}>
                     <SubtopicAccuracyPage
                         data={topicData}
                         page={getPageNum(2)}
@@ -266,27 +293,27 @@ export default function PrintReportPage(props: {
                 </PdfPage>
 
                 {/* Page 3: Temporal Patterns */}
-                <PdfPage orientation="landscape">
+                <PdfPage orientation="landscape" autoScale={scale < 1}>
                     <SubjectBreakdownPage data={topicData} page={getPageNum(3)} total={finalGlobalTotal} />
                 </PdfPage>
 
                 {/* Page 4: Neural Heatmap */}
-                <PdfPage orientation="landscape">
+                <PdfPage orientation="landscape" autoScale={scale < 1}>
                     <NeuralHeatmapPage data={topicData} page={getPageNum(4)} total={finalGlobalTotal} />
                 </PdfPage>
 
                 {/* Page 5: Complexity Ladder */}
-                <PdfPage orientation="landscape">
+                <PdfPage orientation="landscape" autoScale={scale < 1}>
                     <ComplexityLadderPage data={topicData} page={getPageNum(5)} total={finalGlobalTotal} />
                 </PdfPage>
 
                 {/* Page 6: Appendix Cover */}
-                <PdfPage orientation="landscape">
+                <PdfPage orientation="landscape" autoScale={scale < 1}>
                     <AppendixCoverPage page={getPageNum(6)} total={finalGlobalTotal} />
                 </PdfPage>
 
                 {/* Page 7: Audit Statistical Summary (stats only, no Q&A cards) */}
-                <PdfPage orientation="landscape">
+                <PdfPage orientation="landscape" autoScale={scale < 1}>
                     <QuestionAuditPage
                         data={topicData}
                         page={getPageNum(7)}
@@ -296,6 +323,10 @@ export default function PrintReportPage(props: {
 
                 <PdfReadySignal />
             </div>
+            {/* Added spacing to prevent clipping after scale */}
+            {scale < 1 && (
+                <div style={{ height: (1080 * 7 * (1 - scale)) + 200 }} />
+            )}
         </div>
     );
 }
