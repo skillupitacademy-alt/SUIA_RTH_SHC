@@ -36,14 +36,16 @@ export function ReportDownloadButton({ attemptId, className }: ReportDownloadBut
 
     const handleDownload = () => {
         if (downloadUrl) {
-            // Robust anchor download trigger to bypass popup blockers
-            const link = document.createElement("a");
-            link.href = downloadUrl;
-            link.download = `Insight_Report_${attemptId.slice(0, 8)}.pdf`;
-            link.target = "_blank";
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+            // High-reliability iframe download trigger
+            const frameId = "pdf-download-frame";
+            let frame = document.getElementById(frameId) as HTMLIFrameElement;
+            if (!frame) {
+                frame = document.createElement("iframe");
+                frame.id = frameId;
+                frame.style.display = "none";
+                document.body.appendChild(frame);
+            }
+            frame.src = downloadUrl;
             setShowNotification(false);
         }
     };
