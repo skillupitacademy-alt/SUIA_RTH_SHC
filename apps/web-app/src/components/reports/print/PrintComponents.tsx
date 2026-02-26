@@ -81,9 +81,10 @@ type TacticalPrescriptionProps = {
     dense?: boolean;
     tierOverrides?: TierOverride[];
     behaviorBadge?: string;
+    layout?: 'vertical' | 'horizontal';
 };
 
-export function TacticalPrescriptionPrintPanel({ data, title, dense, tierOverrides, behaviorBadge }: TacticalPrescriptionProps) {
+export function TacticalPrescriptionPrintPanel({ data, title, dense, tierOverrides, behaviorBadge, layout = 'vertical' }: TacticalPrescriptionProps) {
     if (!data.ai) return null;
     const ai = data.ai;
 
@@ -129,7 +130,7 @@ export function TacticalPrescriptionPrintPanel({ data, title, dense, tierOverrid
     const resolvedBehavior = behaviorBadge || (data.timePattern ? data.timePattern.replace(/_/g, ' ') : undefined);
 
     return (
-        <div className={cn("pdf-panel w-full h-full p-5 lg:p-6 flex flex-col bg-[#0a0c12]/90 border border-slate-800/60 rounded-[2rem] shadow-[0_30px_60px_rgba(0,0,0,0.6)] backdrop-blur-3xl relative overflow-hidden group")}>
+        <div className={cn("pdf-panel w-full p-5 lg:p-6 flex flex-col bg-[#0a0c12]/90 border border-slate-800/60 rounded-[2rem] shadow-[0_30px_60px_rgba(0,0,0,0.6)] backdrop-blur-3xl relative overflow-hidden group", layout === 'vertical' && "h-full")}>
             <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.01)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.01)_1px,transparent_1px)] bg-[size:24px_24px] [mask-image:radial-gradient(ellipse_at_center,black,transparent)] pointer-events-none" />
 
             <div className="relative z-10 flex flex-col h-full">
@@ -172,7 +173,10 @@ export function TacticalPrescriptionPrintPanel({ data, title, dense, tierOverrid
                     {title || "Diagnostic Matrix"}
                 </h4>
 
-                <div className={cn("space-y-6 flex-grow overflow-visible", dense && "space-y-3")}>
+                <div className={cn(
+                    "flex-grow overflow-visible",
+                    layout === 'horizontal' ? "grid grid-cols-3 gap-6" : (dense ? "space-y-3" : "space-y-6")
+                )}>
                     {tiers.map((tier, idx) => (
                         <DiagnosticTier key={idx} {...tier} dense={dense} />
                     ))}

@@ -131,18 +131,16 @@ export function ExecutiveSummaryPage({ data, page, total }: PageProps) {
             </header>
 
             <div className="flex-1 flex flex-col justify-between" style={{ gap: T.grid.gap }}>
-                <PdfGridTwoColumn
-                    left={
+                <div className="flex flex-col gap-6">
+                    <div className="mx-auto w-full max-w-[850px]">
                         <ChartCard>
                             <FixedChartWrapper height={T.chart.large}>
                                 <RadialKPI data={data} suppressAnimation={true} />
                             </FixedChartWrapper>
                         </ChartCard>
-                    }
-                    right={
-                        <TacticalPrescriptionPrintPanel data={data} />
-                    }
-                />
+                    </div>
+                    <TacticalPrescriptionPrintPanel data={data} layout="horizontal" />
+                </div>
 
                 <InterpretationCard
                     title="Readiness Index Synopsis"
@@ -165,32 +163,27 @@ export function SubtopicAccuracyPage({ data, page, total, layout }: PageProps) {
             <SectionHeader title="Subtopic Precision Matrix" label="Diagnostic Sweep V4" data={data} />
 
             <div className="flex-1 flex flex-col justify-between" style={{ gap: T.grid.sectionGap }}>
-                <div className="flex-1">
-                    <PdfGridTwoColumn
-                        left={
-                            <ChartCard>
-                                <FixedChartWrapper height={isDense ? 480 : 440}>
-                                    <SubtopicBarChart
-                                        data={data.subtopics}
-                                        weakest={data.ai.weakest_subtopic}
-                                        suppressAnimation={true}
-                                        dense={isDense}
-                                    />
-                                </FixedChartWrapper>
-                            </ChartCard>
-                        }
-                        right={
-                            <TacticalPrescriptionPrintPanel
-                                data={data}
-                                title="Domain Disparity"
-                                dense={true}
-                                tierOverrides={[
-                                    { label: "Focus Areas", status: "Critical", items: [`Review ${data.ai.weakest_subtopic || 'foundational'} logic`, "Practice dynamic integration"], color: "bg-rose-500 text-rose-400", progress: 35 },
-                                    { label: "Strengthen", status: "Proficient", items: ["Deepen ML model context", "Improve physics section timing"], color: "bg-amber-500 text-amber-400", progress: 65 },
-                                    { label: "Maintain", status: "Mastered", items: ["Stable neural baseline stability", "Continue daily vector drills"], color: "bg-emerald-500 text-emerald-400", progress: 95 }
-                                ]}
+                <div className="flex-1 flex flex-col gap-6">
+                    <ChartCard>
+                        <FixedChartWrapper height={isDense ? 480 : 440}>
+                            <SubtopicBarChart
+                                data={data.subtopics}
+                                weakest={data.ai.weakest_subtopic}
+                                suppressAnimation={true}
+                                dense={isDense}
                             />
-                        }
+                        </FixedChartWrapper>
+                    </ChartCard>
+                    <TacticalPrescriptionPrintPanel
+                        data={data}
+                        title="Domain Disparity"
+                        dense={true}
+                        layout="horizontal"
+                        tierOverrides={[
+                            { label: "Focus Areas", status: "Critical", items: [`Review ${data.ai.weakest_subtopic || 'foundational'} logic`, "Practice dynamic integration"], color: "bg-rose-500 text-rose-400", progress: 35 },
+                            { label: "Strengthen", status: "Proficient", items: ["Deepen ML model context", "Improve physics section timing"], color: "bg-amber-500 text-amber-400", progress: 65 },
+                            { label: "Maintain", status: "Mastered", items: ["Stable neural baseline stability", "Continue daily vector drills"], color: "bg-emerald-500 text-emerald-400", progress: 95 }
+                        ]}
                     />
                 </div>
 
@@ -214,38 +207,33 @@ export function SubjectBreakdownPage({ data, page, total }: PageProps) {
             <SectionHeader title="Velocity & Neural Patterns" label="Temporal Spend Analysis" data={data} />
 
             <div className="flex-1 flex flex-col justify-between" style={{ gap: T.grid.sectionGap }}>
-                <div className="flex-1">
-                    <PdfGridTwoColumn
-                        left={
-                            <div className="h-full flex flex-col" style={{ gap: T.grid.sectionGap }}>
-                                <ChartCard className="flex-1">
-                                    <div style={{ width: T.chart.medium, height: T.chart.medium }} className="mx-auto">
-                                        <SkillDonutChart data={data.skills} suppressAnimation={true} />
-                                    </div>
-                                </ChartCard>
-                                <ChartCard className="flex-1">
-                                    <div style={{ width: T.chart.medium, height: T.chart.medium }} className="mx-auto">
-                                        <TimeSpentDonut data={{
-                                            totalSeconds: data.totalTimeSpentSeconds,
-                                            questions: data.questions || [],
-                                            timeBuckets: data.timeBuckets
-                                        }} suppressAnimation={true} />
-                                    </div>
-                                </ChartCard>
+                <div className="flex-1 flex flex-col gap-6">
+                    <div className="grid grid-cols-2 gap-6 items-stretch">
+                        <ChartCard className="flex-1">
+                            <div style={{ width: T.chart.medium, height: T.chart.medium }} className="mx-auto">
+                                <SkillDonutChart data={data.skills} suppressAnimation={true} />
                             </div>
-                        }
-                        right={
-                            <TacticalPrescriptionPrintPanel
-                                data={data}
-                                title="Spatio-Temporal Correlation"
-                                dense={true}
-                                tierOverrides={[
-                                    { label: "Focus Areas", status: "Critical", items: [`Reduce friction in ${data.ai.weakest_skill || 'reasoning'}`, "Minimize 'Review' cycle time"], color: "bg-rose-500 text-rose-400", progress: 42 },
-                                    { label: "Strengthen", status: "Proficient", items: ["Stabilize high-friction nodes", "Optimize logic-branch speed"], color: "bg-amber-500 text-amber-400", progress: 58 },
-                                    { label: "Maintain", status: "Mastered", items: ["Stable Study zone processing", "Flow-state neural baseline"], color: "bg-emerald-500 text-emerald-400", progress: 95 }
-                                ]}
-                            />
-                        }
+                        </ChartCard>
+                        <ChartCard className="flex-1">
+                            <div style={{ width: T.chart.medium, height: T.chart.medium }} className="mx-auto">
+                                <TimeSpentDonut data={{
+                                    totalSeconds: data.totalTimeSpentSeconds,
+                                    questions: data.questions || [],
+                                    timeBuckets: data.timeBuckets
+                                }} suppressAnimation={true} />
+                            </div>
+                        </ChartCard>
+                    </div>
+                    <TacticalPrescriptionPrintPanel
+                        data={data}
+                        title="Spatio-Temporal Correlation"
+                        dense={true}
+                        layout="horizontal"
+                        tierOverrides={[
+                            { label: "Focus Areas", status: "Critical", items: [`Reduce friction in ${data.ai.weakest_skill || 'reasoning'}`, "Minimize 'Review' cycle time"], color: "bg-rose-500 text-rose-400", progress: 42 },
+                            { label: "Strengthen", status: "Proficient", items: ["Stabilize high-friction nodes", "Optimize logic-branch speed"], color: "bg-amber-500 text-amber-400", progress: 58 },
+                            { label: "Maintain", status: "Mastered", items: ["Stable Study zone processing", "Flow-state neural baseline"], color: "bg-emerald-500 text-emerald-400", progress: 95 }
+                        ]}
                     />
                 </div>
 
@@ -275,25 +263,20 @@ export function NeuralHeatmapPage({ data, page, total }: PageProps) {
             <SectionHeader title="Cognitive Heatmap" label="Phase 21 Granular Mastery" data={data} />
 
             <div className="flex-1 flex flex-col overflow-hidden justify-between" style={{ gap: T.grid.sectionGap }}>
-                <div className="flex-1">
-                    <PdfGridTwoColumn
-                        left={
-                            <ReportCard>
-                                <HeatmapMatrixPrint data={data.heatmap || []} />
-                            </ReportCard>
-                        }
-                        right={
-                            <TacticalPrescriptionPrintPanel
-                                data={data}
-                                title="Cognitive Load Analysis"
-                                dense={true}
-                                tierOverrides={[
-                                    { label: "Focus Areas", status: "Critical", items: ["Eliminate 'Red Out' at Expert Level", "Tackle high-entropy vectors"], color: "bg-rose-500 text-rose-400", progress: 25 },
-                                    { label: "Strengthen", status: "Proficient", items: ["Bridge Intermediate to Expert gap", "Stabilize operational thresholds"], color: "bg-amber-500 text-amber-400", progress: 62 },
-                                    { label: "Maintain", status: "Mastered", items: ["Perfect Score on Simple difficulty", "Stable Intermediate performance"], color: "bg-emerald-500 text-emerald-400", progress: 98 }
-                                ]}
-                            />
-                        }
+                <div className="flex flex-col gap-6">
+                    <ReportCard>
+                        <HeatmapMatrixPrint data={data.heatmap || []} />
+                    </ReportCard>
+                    <TacticalPrescriptionPrintPanel
+                        data={data}
+                        title="Cognitive Load Analysis"
+                        dense={true}
+                        layout="horizontal"
+                        tierOverrides={[
+                            { label: "Focus Areas", status: "Critical", items: ["Eliminate 'Red Out' at Expert Level", "Tackle high-entropy vectors"], color: "bg-rose-500 text-rose-400", progress: 25 },
+                            { label: "Strengthen", status: "Proficient", items: ["Bridge Intermediate to Expert gap", "Stabilize operational thresholds"], color: "bg-amber-500 text-amber-400", progress: 62 },
+                            { label: "Maintain", status: "Mastered", items: ["Perfect Score on Simple difficulty", "Stable Intermediate performance"], color: "bg-emerald-500 text-emerald-400", progress: 98 }
+                        ]}
                     />
                 </div>
 
@@ -317,51 +300,46 @@ export function ComplexityLadderPage({ data, page, total }: PageProps) {
             <SectionHeader title="Complexity Scrutiny" label="Spatio‑Visual Depth Matrix" data={data} />
 
             <div className="flex-1 flex flex-col justify-between" style={{ gap: T.grid.sectionGap }}>
-                <div className="flex-1">
-                    <PdfGridTwoColumn
-                        left={
-                            <ReportCard>
-                                <h3 className={T.typography.label} style={{ color: 'rgb(129,140,248)', marginBottom: 32 }}>Difficulty Matrix Diagnostic</h3>
-                                <div className="space-y-8 flex-1 flex flex-col justify-center">
-                                    {data.difficulty.map((d, i) => {
-                                        const barColor = d.accuracy >= 80
-                                            ? "from-emerald-500 to-cyan-400"
-                                            : d.accuracy >= 50
-                                                ? "from-indigo-500 to-cyan-400"
-                                                : "from-rose-500 to-amber-400";
-                                        return (
-                                            <div key={i}>
-                                                <div className="flex justify-between items-end mb-3">
-                                                    <div className="flex items-baseline gap-2">
-                                                        <span className={T.typography.label}>{d.level} Level</span>
-                                                        <span className="text-[10px] font-bold text-slate-500">{d.attempts} Questions</span>
-                                                    </div>
-                                                    <span className={T.typography.metric}>{d.accuracy}% Accuracy</span>
-                                                </div>
-                                                <div className="h-3 bg-slate-800 rounded-full overflow-hidden border border-white/5">
-                                                    <div
-                                                        className={cn("h-full rounded-full bg-gradient-to-r", barColor)}
-                                                        style={{ width: `${d.accuracy}%` }}
-                                                    />
-                                                </div>
+                <div className="flex flex-col gap-6">
+                    <ReportCard>
+                        <h3 className={T.typography.label} style={{ color: 'rgb(129,140,248)', marginBottom: 32 }}>Difficulty Matrix Diagnostic</h3>
+                        <div className="space-y-8 flex-1 flex flex-col justify-center">
+                            {data.difficulty.map((d, i) => {
+                                const barColor = d.accuracy >= 80
+                                    ? "from-emerald-500 to-cyan-400"
+                                    : d.accuracy >= 50
+                                        ? "from-indigo-500 to-cyan-400"
+                                        : "from-rose-500 to-amber-400";
+                                return (
+                                    <div key={i}>
+                                        <div className="flex justify-between items-end mb-3">
+                                            <div className="flex items-baseline gap-2">
+                                                <span className={T.typography.label}>{d.level} Level</span>
+                                                <span className="text-[10px] font-bold text-slate-500">{d.attempts} Questions</span>
                                             </div>
-                                        );
-                                    })}
-                                </div>
-                            </ReportCard>
-                        }
-                        right={
-                            <TacticalPrescriptionPrintPanel
-                                data={data}
-                                title="Pressure Tolerance"
-                                dense={true}
-                                tierOverrides={[
-                                    { label: "Focus Areas", status: "Critical", items: ["Target 'Expert' implementation rigidity", "Address complexity drop-off"], color: "bg-rose-500 text-rose-400", progress: 30 },
-                                    { label: "Strengthen", status: "Proficient", items: ["Shift from linear to non-linear logic", "Practice multi-variable problems"], color: "bg-amber-500 text-amber-400", progress: 55 },
-                                    { label: "Maintain", status: "Mastered", items: ["Perfect Score on Simple difficulty", "Stable Intermediate performance"], color: "bg-emerald-500 text-emerald-400", progress: 100 }
-                                ]}
-                            />
-                        }
+                                            <span className={T.typography.metric}>{d.accuracy}% Accuracy</span>
+                                        </div>
+                                        <div className="h-3 bg-slate-800 rounded-full overflow-hidden border border-white/5">
+                                            <div
+                                                className={cn("h-full rounded-full bg-gradient-to-r", barColor)}
+                                                style={{ width: `${d.accuracy}%` }}
+                                            />
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </ReportCard>
+                    <TacticalPrescriptionPrintPanel
+                        data={data}
+                        title="Pressure Tolerance"
+                        dense={true}
+                        layout="horizontal"
+                        tierOverrides={[
+                            { label: "Focus Areas", status: "Critical", items: ["Target 'Expert' implementation rigidity", "Address complexity drop-off"], color: "bg-rose-500 text-rose-400", progress: 30 },
+                            { label: "Strengthen", status: "Proficient", items: ["Shift from linear to non-linear logic", "Practice multi-variable problems"], color: "bg-amber-500 text-amber-400", progress: 55 },
+                            { label: "Maintain", status: "Mastered", items: ["Perfect Score on Simple difficulty", "Stable Intermediate performance"], color: "bg-emerald-500 text-emerald-400", progress: 100 }
+                        ]}
                     />
                 </div>
 
