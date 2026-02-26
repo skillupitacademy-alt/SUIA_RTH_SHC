@@ -44,13 +44,18 @@ export const DifficultyBarChart = React.memo(({ data, expertDropOff }: Difficult
     };
 
     return (
-        <div className="w-full h-full flex flex-col space-y-12 pb-16 relative">
-            <div>
-                <h3 className="text-[12px] font-black text-slate-500 uppercase tracking-[0.3em] mb-3">Complexity Threshold</h3>
-                <p className="text-2xl font-black text-white uppercase tracking-tighter">Difficulty Matrix Diagnostic</p>
+        <div className="w-full h-full flex flex-col bg-[#0d111a] rounded-[2.5rem] p-8 lg:p-10 border border-white/5 shadow-2xl relative overflow-hidden group">
+            {/* Background Glows */}
+            <div className="absolute top-0 right-0 w-64 h-64 bg-rose-500/5 blur-[120px] rounded-full pointer-events-none" />
+
+            <div className="flex items-center justify-between border-b border-slate-800/60 pb-8 mb-8 relative z-20">
+                <div>
+                    <h3 className="text-[12px] font-black text-indigo-400 uppercase tracking-[0.3em] mb-2">Complexity Threshold</h3>
+                    <p className="text-2xl font-black text-white uppercase tracking-tighter">Difficulty Matrix Diagnostic</p>
+                </div>
             </div>
 
-            <div className="flex flex-col gap-12 flex-grow justify-center">
+            <div className="flex flex-col gap-10 flex-grow justify-center relative z-20 overflow-y-auto scrollbar-hide">
                 {data.map((item, idx) => {
                     const style = getLevelStyle(item.level);
                     const isHard = item.level.toLowerCase().includes('expert');

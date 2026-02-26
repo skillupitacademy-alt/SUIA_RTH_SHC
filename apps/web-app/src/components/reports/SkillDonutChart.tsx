@@ -28,9 +28,12 @@ export const SkillDonutChart = React.memo(({ data, suppressAnimation }: SkillDon
     const centerFontClass = centerDigits >= 3 ? "text-5xl" : "text-6xl";
 
     return (
-        <div className="w-full h-full flex flex-col p-8 bg-[#0d111a] rounded-[2.5rem] border border-white/5 shadow-2xl relative overflow-hidden group">
-            <div className="flex items-center justify-between mb-8">
-                <h3 className="text-xl font-bold text-white tracking-tight">Subject Breakdown</h3>
+        <div className="w-full h-full flex flex-col p-8 lg:p-10 bg-[#0d111a] rounded-[2.5rem] border border-white/5 shadow-2xl relative overflow-hidden group">
+            <div className="flex items-center justify-between border-b border-slate-800/60 pb-8 mb-8 relative z-20">
+                <div>
+                    <h3 className="text-[12px] font-black text-indigo-400 uppercase tracking-[0.3em] mb-2">Cognitive Distribution</h3>
+                    <p className="text-2xl font-black text-white tracking-tighter uppercase">Subject Breakdown</p>
+                </div>
                 <MoreHorizontal className="text-slate-600 hover:text-slate-400 cursor-pointer transition-colors" size={20} />
             </div>
 

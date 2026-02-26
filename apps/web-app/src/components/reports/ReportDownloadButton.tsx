@@ -105,25 +105,16 @@ export function ReportDownloadButton({ attemptId, className }: ReportDownloadBut
                     {/* Visual Pulse Nudge */}
                     <div className="absolute inset-0 bg-indigo-500/30 blur-xl rounded-xl animate-pulse" />
 
-                    <div className="flex items-center gap-2">
-                        <button
-                            onClick={handleDownload}
-                            className={cn(
-                                "relative flex items-center gap-3 px-6 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold uppercase tracking-widest transition-all shadow-lg active:scale-95 group text-[11px]",
-                                className
-                            )}
-                        >
-                            <FileText className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                            Download Insight PDF
-                        </button>
-                        <button
-                            onClick={() => handleTrigger({ force: true })}
-                            title="Force Re-generate (Clears Cache)"
-                            className="p-2.5 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-indigo-400 rounded-xl transition-all border border-slate-700/50"
-                        >
-                            <RefreshCw className="w-4 h-4" />
-                        </button>
-                    </div>
+                    <button
+                        onClick={handleDownload}
+                        className={cn(
+                            "relative flex items-center gap-3 px-8 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold uppercase tracking-widest transition-all shadow-lg shadow-indigo-600/20 active:scale-95 group text-[11px]",
+                            className
+                        )}
+                    >
+                        <FileText className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                        Download Insight PDF
+                    </button>
                 </div>
             ) : (status === "generating" || status === "pending") ? (
                 <button

@@ -55,9 +55,12 @@ export const RadialKPI = React.memo(({ data, suppressAnimation }: RadialKPIProps
             <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/5 blur-[120px] rounded-full pointer-events-none" />
             <div className="absolute bottom-0 left-0 w-64 h-64 bg-violet-500/5 blur-[120px] rounded-full pointer-events-none" />
 
-            {/* Container 1: Header */}
-            <div className="flex items-center justify-between mb-4 relative z-20">
-                <h3 className="text-xl font-bold text-white tracking-tight uppercase">Executive Summary</h3>
+            {/* Container 1: Header - Standardized to match other charts */}
+            <div className="flex items-center justify-between border-b border-slate-800/60 pb-8 mb-8 relative z-20">
+                <div>
+                    <h3 className="text-[12px] font-black text-indigo-400 uppercase tracking-[0.3em] mb-2">Executive Summary</h3>
+                    <p className="text-2xl font-black text-white tracking-tighter uppercase">Readiness Diagnostic</p>
+                </div>
                 <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-900/50 border border-white/5 rounded-xl cursor-default">
                     <Calendar size={14} className="text-slate-400" />
                     <span className="text-[13px] font-bold text-slate-300">Session Metrics</span>
@@ -65,19 +68,19 @@ export const RadialKPI = React.memo(({ data, suppressAnimation }: RadialKPIProps
             </div>
 
             {/* Container 2: Body (Infographic Stage) */}
-            <div className="relative flex-grow flex flex-col items-center justify-center min-h-0">
-                {/* Center Core Content */}
+            <div className="relative flex-grow flex flex-col items-center justify-center min-h-0 relative z-20">
+                {/* Center Core Content - Repositioned to sit on the edges of the rings */}
                 <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 flex flex-col items-center justify-center z-20 pointer-events-none">
                     <div className="relative flex flex-col items-center">
-                        <span className="text-[13px] font-black text-slate-500 uppercase tracking-[0.4em] mb-2">Readiness</span>
+                        <span className="text-[13px] font-black text-slate-500 uppercase tracking-[0.4em] mb-2 -translate-y-[135px]">Readiness</span>
                         <div className="relative">
                             <div className="absolute inset-0 bg-white/5 blur-3xl rounded-full" />
-                            <span className={`${data.readiness >= 100 ? 'text-6xl' : 'text-7xl'} font-black text-white ${data.readiness >= 100 ? 'tracking-tighter' : 'tracking-tighter'} drop-shadow-[0_0_15px_rgba(255,255,255,0.15)]`}>
+                            <span className={`${data.readiness >= 100 ? 'text-6xl' : 'text-7xl'} font-black text-white tracking-tighter drop-shadow-[0_0_15px_rgba(255,255,255,0.15)]`}>
                                 {data.readiness}%
                             </span>
                         </div>
                         {!suppressAnimation && (
-                            <div className="mt-4 px-4 py-1.5 bg-white/5 rounded-full border border-white/10 flex items-center gap-2">
+                            <div className="mt-4 px-4 py-1.5 bg-white/5 rounded-full border border-white/10 flex items-center gap-2 translate-y-[135px]">
                                 <Activity size={14} className="text-indigo-400" />
                                 <span className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">AI Matrix Active</span>
                             </div>

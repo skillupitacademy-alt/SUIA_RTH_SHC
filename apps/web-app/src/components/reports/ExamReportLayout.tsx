@@ -291,9 +291,9 @@ export function ExamReportLayout({ data, loading }: ExamReportLayoutProps) {
                     >
                         {/* EXECUTIVE CORE TAB */}
                         {activeTab === 'summary' && (
-                            <div className="space-y-16 pt-6">
+                            <div className="space-y-16 pt-6 animate-in fade-in duration-700">
                                 <div className="flex flex-col gap-10">
-                                    <div className="mx-auto w-full lg:max-w-4xl h-[520px] relative">
+                                    <div className="w-full h-[580px] relative">
                                         <RadialKPI data={data} />
                                     </div>
                                     <div className="flex flex-col">
@@ -332,7 +332,7 @@ export function ExamReportLayout({ data, loading }: ExamReportLayoutProps) {
                             <div className="space-y-16 pt-6">
                                 {/* Section 1: Subtopic Variance */}
                                 <div className="flex flex-col gap-10">
-                                    <div className="rounded-[2.5rem] bg-slate-900/50 border border-white/5 p-10 lg:p-16 flex items-center shadow-xl h-[520px]">
+                                    <div className="w-full h-[580px] relative">
                                         <SubtopicBarChart
                                             data={data.subtopics}
                                             weakest={data.ai.weakest_subtopic}
@@ -367,7 +367,7 @@ export function ExamReportLayout({ data, loading }: ExamReportLayoutProps) {
 
                                 {/* Section 2: Skill & Time Matrix */}
                                 <div className="flex flex-col gap-10">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-stretch h-[520px]">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-stretch h-[580px]">
                                         <div className="flex flex-col">
                                             <SkillDonutChart data={data.skills} />
                                         </div>
@@ -411,7 +411,7 @@ export function ExamReportLayout({ data, loading }: ExamReportLayoutProps) {
 
                                 {/* Section 3: Heatmap Projection */}
                                 <div className="flex flex-col gap-10">
-                                    <div className="rounded-[2.5rem] bg-slate-900/50 border border-white/5 p-10 lg:p-16 shadow-xl h-[520px]">
+                                    <div className="w-full h-[580px] relative">
                                         <HeatmapGrid data={data.heatmap} />
                                     </div>
                                     <div className="flex flex-col">
@@ -431,9 +431,9 @@ export function ExamReportLayout({ data, loading }: ExamReportLayoutProps) {
 
                         {/* COMPLEXITY LADDER TAB */}
                         {activeTab === 'complexity' && (
-                            <>
-                                <div className="flex flex-col gap-10 pt-6">
-                                    <div className="rounded-[2.5rem] bg-slate-900/50 border border-white/5 p-10 lg:p-16 flex items-center shadow-xl h-[520px]">
+                            <div className="space-y-16 pt-6 animate-in fade-in duration-700">
+                                <div className="flex flex-col gap-10">
+                                    <div className="w-full h-[580px] relative">
                                         <DifficultyBarChart
                                             data={data.difficulty}
                                             expertDropOff={data.expertDropOff}
@@ -468,7 +468,7 @@ export function ExamReportLayout({ data, loading }: ExamReportLayoutProps) {
                                         )}
                                     </div>
                                 )}
-                            </>
+                            </div>
                         )}
 
                         {/* RAW AUDIT TAB */}

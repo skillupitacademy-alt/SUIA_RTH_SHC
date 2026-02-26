@@ -19,11 +19,14 @@ export const SubtopicBarChart = React.memo(({ data, weakest, rootCauseText, supp
         [data]);
 
     return (
-        <div className={cn("w-full flex flex-col space-y-10 pb-12 relative min-h-full", dense && "space-y-6 pb-6")}>
-            <div className="flex items-center justify-between border-b border-slate-800 pb-8 mb-4">
+        <div className={cn("w-full h-full flex flex-col bg-[#0d111a] rounded-[2.5rem] p-8 lg:p-10 border border-white/5 shadow-2xl relative overflow-hidden group", dense && "p-6")}>
+            {/* Background Glows */}
+            <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/5 blur-[120px] rounded-full pointer-events-none" />
+
+            <div className="flex items-center justify-between border-b border-slate-800/60 pb-8 mb-8 relative z-20">
                 <div>
-                    <h3 className="text-[12px] font-black text-indigo-400 uppercase tracking-[0.3em] mb-3">Diagnostic Sweep</h3>
-                    <p className="text-3xl font-black text-white uppercase tracking-tighter">Subtopic Accuracy Profile</p>
+                    <h3 className="text-[12px] font-black text-indigo-400 uppercase tracking-[0.3em] mb-2">Diagnostic Sweep</h3>
+                    <p className="text-2xl font-black text-white uppercase tracking-tighter">Subtopic Accuracy Profile</p>
                 </div>
                 {weakest && (
                     <div className="px-5 py-2 rounded-full bg-rose-500/10 border border-rose-500/20 flex items-center gap-3">
@@ -33,7 +36,7 @@ export const SubtopicBarChart = React.memo(({ data, weakest, rootCauseText, supp
                 )}
             </div>
 
-            <div className="space-y-12 pr-2">
+            <div className="flex-grow space-y-8 pr-2 relative z-20 overflow-y-auto scrollbar-hide">
                 {sortedData.map((item, idx) => {
                     const isWeakest = item.name === weakest;
                     // Show data as soon as we have at least 1 attempt

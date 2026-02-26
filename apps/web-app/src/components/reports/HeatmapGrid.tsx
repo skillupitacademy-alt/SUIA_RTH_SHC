@@ -30,14 +30,14 @@ export const HeatmapGrid = React.memo(({ data }: HeatmapGridProps) => {
 
     return (
         <div className="w-full h-full flex flex-col bg-[#0d111a] rounded-[2.5rem] p-8 lg:p-10 border border-white/5 shadow-2xl relative overflow-hidden group">
-            <div className="flex items-center justify-between mb-8 relative z-20">
+            <div className="flex items-center justify-between border-b border-slate-800/60 pb-8 mb-8 relative z-20">
                 <div>
                     <h3 className="text-[12px] font-black text-indigo-400 uppercase tracking-[0.3em] mb-2">Matrix Analysis</h3>
                     <p className="text-2xl font-black text-white tracking-tighter uppercase">Neural Accuracy Heatmap</p>
                 </div>
             </div>
 
-            <div className="flex-grow flex flex-col gap-5 overflow-x-hidden relative z-20">
+            <div className="flex-grow flex flex-col gap-6 overflow-y-auto scrollbar-hide relative z-20">
                 {/* Header Row */}
                 <div className="flex gap-4">
                     <div className="w-48 flex-shrink-0" />
