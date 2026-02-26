@@ -67,7 +67,16 @@ export function ReportGenerationModal({
 
     const handleDownload = () => {
         if (downloadUrl) {
-            window.open(downloadUrl, "_blank");
+            // High-reliability iframe download trigger
+            const frameId = "pdf-download-frame";
+            let frame = document.getElementById(frameId) as HTMLIFrameElement;
+            if (!frame) {
+                frame = document.createElement("iframe");
+                frame.id = frameId;
+                frame.style.display = "none";
+                document.body.appendChild(frame);
+            }
+            frame.src = downloadUrl;
         }
     };
 
