@@ -94,23 +94,27 @@ export const SkillDonutChart = React.memo(({ data, suppressAnimation }: SkillDon
                 </div>
             </div>
 
-            {/* Legend with improved legibility */}
-            <div className="flex flex-wrap items-center justify-center gap-6 mt-8">
-                {data.map((skill, i) => (
-                    <div key={skill.name} className="flex items-center gap-2.5">
-                        <div
-                            className="h-2.5 w-2.5 rounded-full shadow-[0_0_8px_rgba(255,255,255,0.2)]"
-                            style={{ backgroundColor: COLORS[i % COLORS.length] }}
-                        />
-                        <span className="text-[13px] font-bold text-slate-400 tracking-tight">{skill.name}</span>
-                    </div>
-                ))}
-            </div>
+            <div className="mt-auto pt-8 border-t border-white/5 space-y-6">
+                {/* Legend with improved legibility */}
+                <div className="flex flex-wrap items-center justify-center gap-6">
+                    {data.map((skill, i) => (
+                        <div key={skill.name} className="flex items-center gap-2.5">
+                            <div
+                                className="h-2.5 w-2.5 rounded-full shadow-[0_0_8px_rgba(255,255,255,0.2)]"
+                                style={{ backgroundColor: COLORS[i % COLORS.length] }}
+                            />
+                            <span className="text-[13px] font-bold text-slate-400 tracking-tight">{skill.name}</span>
+                        </div>
+                    ))}
+                </div>
 
-            <MethodologyDisclaimer
-                text="DOMAIN DISTRIBUTION: PROPORTIONAL REPRESENTATION OF ACTIVE SUBJECT AREAS BASED ON TOTAL ASSESSMENT BLUEPRINT VOLUME."
-                className="absolute bottom-8 left-8 max-w-[80%]"
-            />
+                <div className="relative z-20">
+                    <MethodologyDisclaimer
+                        text="DOMAIN DISTRIBUTION: PROPORTIONAL REPRESENTATION OF ACTIVE SUBJECT AREAS BASED ON TOTAL ASSESSMENT BLUEPRINT VOLUME."
+                        className="max-w-none text-center"
+                    />
+                </div>
+            </div>
         </div>
     );
 });

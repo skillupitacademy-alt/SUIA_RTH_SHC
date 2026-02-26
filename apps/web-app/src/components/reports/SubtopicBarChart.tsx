@@ -87,10 +87,12 @@ export const SubtopicBarChart = React.memo(({ data, weakest, rootCauseText, supp
                 })}
             </div>
 
-            <MethodologyDisclaimer
-                text="DIAGNOSTIC SWEEP: PROFILE CAPTURES THE RAW SUCCESS RATE PER VECTOR ATTEMPT. DATA STABILITY INCREASES WITH CUMULATIVE SAMPLE VOLUME."
-                className="absolute bottom-0 left-0 max-w-[90%]"
-            />
+            <div className="mt-auto pt-8 border-t border-white/5 relative z-20">
+                <MethodologyDisclaimer
+                    text="DIAGNOSTIC SWEEP: PROFILE CAPTURES THE RAW SUCCESS RATE PER VECTOR ATTEMPT. DATA STABILITY INCREASES WITH CUMULATIVE SAMPLE VOLUME."
+                    className="max-w-none text-center"
+                />
+            </div>
         </div>
     );
 });

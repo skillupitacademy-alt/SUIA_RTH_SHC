@@ -129,22 +129,26 @@ export const TimeSpentDonut = React.memo(({ data, suppressAnimation }: TimeSpent
                 </div>
             </div>
 
-            <div className="flex flex-wrap items-center justify-center gap-8 mt-8">
-                {breakdown.map((item) => (
-                    <div key={item.name} className="flex items-center gap-2.5">
-                        <div
-                            className="h-2.5 w-2.5 rounded-full"
-                            style={{ backgroundColor: item.color }}
-                        />
-                        <span className="text-[13px] font-bold text-slate-400 tracking-tight">{item.label}</span>
-                    </div>
-                ))}
-            </div>
+            <div className="mt-auto pt-8 border-t border-white/5 space-y-6">
+                <div className="flex flex-wrap items-center justify-center gap-8">
+                    {breakdown.map((item) => (
+                        <div key={item.name} className="flex items-center gap-2.5">
+                            <div
+                                className="h-2.5 w-2.5 rounded-full"
+                                style={{ backgroundColor: item.color }}
+                            />
+                            <span className="text-[13px] font-bold text-slate-400 tracking-tight">{item.label}</span>
+                        </div>
+                    ))}
+                </div>
 
-            <MethodologyDisclaimer
-                text="TEMPORAL ANALYSIS: CATEGORIZES COGNITIVE LOAD INTO STABLE (FAST), LOGIC (DELIBERATE), AND NEURAL FRICTION (CORRECTION) PHASES."
-                className="absolute bottom-6 left-8 max-w-[80%]"
-            />
+                <div className="relative z-20">
+                    <MethodologyDisclaimer
+                        text="TEMPORAL ANALYSIS: CATEGORIZES COGNITIVE LOAD INTO STABLE (FAST), LOGIC (DELIBERATE), AND NEURAL FRICTION (CORRECTION) PHASES."
+                        className="max-w-none text-center"
+                    />
+                </div>
+            </div>
         </div>
     );
 });

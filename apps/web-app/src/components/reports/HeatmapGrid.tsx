@@ -29,13 +29,15 @@ export const HeatmapGrid = React.memo(({ data }: HeatmapGridProps) => {
     };
 
     return (
-        <div className="w-full flex flex-col space-y-10 pb-16 relative">
-            <div className="border-b border-slate-800 pb-6 mb-2">
-                <h3 className="text-[12px] font-black text-indigo-400 uppercase tracking-[0.3em] mb-2">Matrix Analysis</h3>
-                <p className="text-2xl font-black text-white tracking-tighter uppercase">Neural Accuracy Heatmap</p>
+        <div className="w-full h-full flex flex-col bg-[#0d111a] rounded-[2.5rem] p-8 lg:p-10 border border-white/5 shadow-2xl relative overflow-hidden group">
+            <div className="flex items-center justify-between mb-8 relative z-20">
+                <div>
+                    <h3 className="text-[12px] font-black text-indigo-400 uppercase tracking-[0.3em] mb-2">Matrix Analysis</h3>
+                    <p className="text-2xl font-black text-white tracking-tighter uppercase">Neural Accuracy Heatmap</p>
+                </div>
             </div>
 
-            <div className="flex flex-col gap-5 overflow-x-hidden">
+            <div className="flex-grow flex flex-col gap-5 overflow-x-hidden relative z-20">
                 {/* Header Row */}
                 <div className="flex gap-4">
                     <div className="w-48 flex-shrink-0" />
@@ -88,25 +90,30 @@ export const HeatmapGrid = React.memo(({ data }: HeatmapGridProps) => {
                 </div>
             </div>
 
-            {/* Legend with matching logic */}
-            <div className="mt-6 flex items-center justify-center gap-10 border-t border-slate-800 pt-10">
-                {[
-                    { label: 'Mastery', color: 'bg-emerald-500' },
-                    { label: 'Advancing', color: 'bg-indigo-500' },
-                    { label: 'Growth', color: 'bg-amber-500' },
-                    { label: 'Critical', color: 'bg-rose-500' }
-                ].map(leg => (
-                    <div key={leg.label} className="flex items-center gap-3 text-[11px] font-black text-slate-500 uppercase tracking-[0.2em]">
-                        <div className={`h-2 w-2 rounded-full shadow-[0_0_8px_currentColor] opacity-50 ${leg.color}`} />
-                        {leg.label}
-                    </div>
-                ))}
-            </div>
+            {/* Footer Zone */}
+            <div className="mt-auto pt-8 border-t border-white/5 space-y-6 relative z-20">
+                {/* Legend with matching logic */}
+                <div className="flex items-center justify-center gap-10">
+                    {[
+                        { label: 'Mastery', color: 'bg-emerald-500' },
+                        { label: 'Advancing', color: 'bg-indigo-500' },
+                        { label: 'Growth', color: 'bg-amber-500' },
+                        { label: 'Critical', color: 'bg-rose-500' }
+                    ].map(leg => (
+                        <div key={leg.label} className="flex items-center gap-3 text-[11px] font-black text-slate-500 uppercase tracking-[0.2em]">
+                            <div className={`h-2 w-2 rounded-full shadow-[0_0_8px_currentColor] opacity-50 ${leg.color}`} />
+                            {leg.label}
+                        </div>
+                    ))}
+                </div>
 
-            <MethodologyDisclaimer
-                text="NEURAL PROJECTION: MAPS CROSS-FUNCTIONAL PERFORMANCE DENSITY. MATRIX SATURATION CORRELATES WITH THE CONFIDENCE DEPTH OF UNDERLYING ACCURACY DATA."
-                className="absolute bottom-0 left-0 max-w-[80%]"
-            />
+                <div className="relative z-20">
+                    <MethodologyDisclaimer
+                        text="NEURAL PROJECTION: MAPS CROSS-FUNCTIONAL PERFORMANCE DENSITY. MATRIX SATURATION CORRELATES WITH THE CONFIDENCE DEPTH OF UNDERLYING ACCURACY DATA."
+                        className="max-w-none text-center"
+                    />
+                </div>
+            </div>
         </div>
     );
 });

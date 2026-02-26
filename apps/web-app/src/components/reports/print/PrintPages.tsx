@@ -132,12 +132,8 @@ export function ExecutiveSummaryPage({ data, page, total }: PageProps) {
 
             <div className="flex-1 flex flex-col justify-between" style={{ gap: T.grid.gap }}>
                 <div className="flex flex-col gap-6">
-                    <div className="mx-auto w-full max-w-[850px]">
-                        <ChartCard>
-                            <FixedChartWrapper height={T.chart.large}>
-                                <RadialKPI data={data} suppressAnimation={true} />
-                            </FixedChartWrapper>
-                        </ChartCard>
+                    <div className="mx-auto w-full max-w-[850px] relative h-[520px]">
+                        <RadialKPI data={data} suppressAnimation={true} />
                     </div>
                     <TacticalPrescriptionPrintPanel data={data} layout="horizontal" />
                 </div>

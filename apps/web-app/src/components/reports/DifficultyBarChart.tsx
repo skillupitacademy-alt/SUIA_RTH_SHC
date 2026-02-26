@@ -121,10 +121,12 @@ export const DifficultyBarChart = React.memo(({ data, expertDropOff }: Difficult
                 </div>
             </div>
 
-            <MethodologyDisclaimer
-                text="QUANTUM WEIGHTING: THRESHOLD ANALYSIS (EXPERT [2.0], INTERMEDIATE [1.5], SIMPLE [1.0]) IDENTIFIES SPECIFIC CONCEPTUAL RIGIDITY COLLAPSES."
-                className="absolute bottom-0 left-0 max-w-[80%]"
-            />
+            <div className="mt-auto pt-8 border-t border-slate-800 relative z-20">
+                <MethodologyDisclaimer
+                    text="QUANTUM WEIGHTING: THRESHOLD ANALYSIS (EXPERT [2.0], INTERMEDIATE [1.5], SIMPLE [1.0]) IDENTIFIES SPECIFIC CONCEPTUAL RIGIDITY COLLAPSES."
+                    className="max-w-none text-center"
+                />
+            </div>
         </div>
     );
 });
