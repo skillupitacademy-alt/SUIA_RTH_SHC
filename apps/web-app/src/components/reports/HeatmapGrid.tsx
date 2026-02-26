@@ -72,14 +72,14 @@ export const HeatmapGrid = React.memo(({ data }: HeatmapGridProps) => {
                                 return (
                                     <div
                                         key={diff}
-                                        className={`flex-1 min-w-[120px] max-w-[200px] h-20 flex flex-col items-center justify-center rounded-2xl border transition-all duration-300 hover:brightness-125 group relative ${hasSufficientData ? getCellColor(accuracy) : 'bg-slate-900/10 text-slate-500 border-white/5 shadow-none'}`}
+                                        className={`flex-1 min-w-[120px] max-w-[200px] h-20 flex flex-col items-center justify-center gap-1 rounded-2xl border transition-all duration-300 hover:brightness-125 group relative ${hasSufficientData ? getCellColor(accuracy) : 'bg-slate-900/10 text-slate-500 border-white/5 shadow-none'}`}
                                     >
-                                        <span className="text-[18px] font-black tracking-tight z-10">
+                                        <span className="text-[20px] font-black tracking-tighter leading-none z-10">
                                             {hasSufficientData ? `${accuracy}%` : '---'}
                                         </span>
-                                        {cell && (
-                                            <span className="text-[10px] font-black opacity-60 mt-1 whitespace-nowrap">
-                                                {cell.showNoData ? '' : `${Math.round((accuracy / 100) * (cell.attempts ?? 0))} / ${cell.attempts ?? 0} correct`}
+                                        {cell && !cell.showNoData && hasSufficientData && (
+                                            <span className="text-[10px] font-bold opacity-40 uppercase tracking-widest leading-none">
+                                                {Math.round((accuracy / 100) * (cell.attempts ?? 0))} / {cell.attempts ?? 0} Correct
                                             </span>
                                         )}
                                     </div>

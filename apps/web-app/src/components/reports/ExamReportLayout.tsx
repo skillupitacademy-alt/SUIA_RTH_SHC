@@ -411,7 +411,7 @@ export function ExamReportLayout({ data, loading }: ExamReportLayoutProps) {
 
                                 {/* Section 3: Heatmap Projection */}
                                 <div className="flex flex-col gap-10">
-                                    <div className="rounded-[2.5rem] bg-slate-900/50 border border-white/5 p-10 lg:p-16 shadow-xl leading-[0] h-[520px]">
+                                    <div className="rounded-[2.5rem] bg-slate-900/50 border border-white/5 p-10 lg:p-16 shadow-xl h-[520px]">
                                         <HeatmapGrid data={data.heatmap} />
                                     </div>
                                     <div className="flex flex-col">
@@ -433,7 +433,7 @@ export function ExamReportLayout({ data, loading }: ExamReportLayoutProps) {
                         {activeTab === 'complexity' && (
                             <>
                                 <div className="flex flex-col gap-10 pt-6">
-                                    <div className="rounded-[2.5rem] bg-slate-900/50 border border-white/5 p-10 lg:p-16 flex items-center shadow-xl leading-[0] h-[520px]">
+                                    <div className="rounded-[2.5rem] bg-slate-900/50 border border-white/5 p-10 lg:p-16 flex items-center shadow-xl h-[520px]">
                                         <DifficultyBarChart
                                             data={data.difficulty}
                                             expertDropOff={data.expertDropOff}
