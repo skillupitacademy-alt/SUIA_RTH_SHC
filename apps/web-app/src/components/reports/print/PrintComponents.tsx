@@ -129,11 +129,11 @@ export function TacticalPrescriptionPrintPanel({ data, title, dense, tierOverrid
     const resolvedBehavior = behaviorBadge || (data.timePattern ? data.timePattern.replace(/_/g, ' ') : undefined);
 
     return (
-        <div className={cn("pdf-panel w-full h-full p-6 lg:p-8 flex flex-col bg-[#0a0c12]/90 border border-slate-800/60 rounded-[2rem] shadow-[0_30px_60px_rgba(0,0,0,0.6)] backdrop-blur-3xl relative overflow-hidden group", dense && "p-5 rounded-[2rem]")}>
+        <div className={cn("pdf-panel w-full h-full p-5 lg:p-6 flex flex-col bg-[#0a0c12]/90 border border-slate-800/60 rounded-[2rem] shadow-[0_30px_60px_rgba(0,0,0,0.6)] backdrop-blur-3xl relative overflow-hidden group")}>
             <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.01)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.01)_1px,transparent_1px)] bg-[size:24px_24px] [mask-image:radial-gradient(ellipse_at_center,black,transparent)] pointer-events-none" />
 
             <div className="relative z-10 flex flex-col h-full">
-                <div className={cn("flex items-center justify-between mb-10", dense && "mb-6")}>
+                <div className={cn("flex items-center justify-between mb-6", dense && "mb-4")}>
                     <div className="flex items-center gap-4">
                         <div className={cn("p-2.5 bg-indigo-500/10 rounded-2xl border border-indigo-500/20 shadow-inner group-hover:border-indigo-500/40 transition-all", dense && "p-1.5 rounded-xl")}>
                             <BrainCircuit className={cn("h-6 w-6 text-indigo-400", dense && "h-4 w-4")} />
@@ -168,7 +168,7 @@ export function TacticalPrescriptionPrintPanel({ data, title, dense, tierOverrid
                     </div>
                 )}
 
-                <h4 className={cn("text-[12px] font-black text-slate-400 uppercase tracking-[0.3em] mb-8 border-b border-white/5 pb-4", dense && "text-[9px] mb-4 pb-2")}>
+                <h4 className={cn("text-[12px] font-black text-slate-400 uppercase tracking-[0.3em] mb-4 border-b border-white/5 pb-4", dense && "text-[9px] mb-2 pb-2")}>
                     {title || "Diagnostic Matrix"}
                 </h4>
 
@@ -178,7 +178,7 @@ export function TacticalPrescriptionPrintPanel({ data, title, dense, tierOverrid
                     ))}
                 </div>
 
-                <div className={cn("mt-10 pt-8 border-t border-white/5", dense && "mt-4 pt-4")}>
+                <div className={cn("mt-6 pt-4 border-t border-white/5", dense && "mt-2 pt-2")}>
                     <div className="flex items-center justify-between text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">
                         <div className="flex items-center gap-2">
                             <span>DIAGNOSTIC LOGS V9.4</span>

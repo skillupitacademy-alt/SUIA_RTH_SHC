@@ -136,10 +136,10 @@ export const RadialKPI = React.memo(({ data, suppressAnimation }: RadialKPIProps
                             cx="50%"
                             cy="50%"
                             innerRadius="30%"
-                            outerRadius="95%"
+                            outerRadius="80%"
                             startAngle={90}
                             endAngle={450}
-                            barSize={12}
+                            barSize={10}
                             data={radialData}
                         >
                             <defs>
@@ -172,8 +172,8 @@ export const RadialKPI = React.memo(({ data, suppressAnimation }: RadialKPIProps
                             {/* Inner Ring: Time Efficiency */}
                             <AnyRadialBar
                                 dataKey="time"
-                                innerRadius="40%"
-                                outerRadius="40%"
+                                innerRadius="35%"
+                                outerRadius="35%"
                                 fill="url(#violetLinear)"
                                 cornerRadius={20}
                                 background={{ fill: 'rgba(255,255,255,0.02)' }}
@@ -184,8 +184,8 @@ export const RadialKPI = React.memo(({ data, suppressAnimation }: RadialKPIProps
                             {/* Middle Ring 1: Rank */}
                             <AnyRadialBar
                                 dataKey="rank"
-                                innerRadius="55%"
-                                outerRadius="55%"
+                                innerRadius="50%"
+                                outerRadius="50%"
                                 fill="url(#amberLinear)"
                                 cornerRadius={20}
                                 background={{ fill: 'rgba(255,255,255,0.02)' }}
@@ -196,8 +196,8 @@ export const RadialKPI = React.memo(({ data, suppressAnimation }: RadialKPIProps
                             {/* Middle Ring 2: Mastery */}
                             <AnyRadialBar
                                 dataKey="mastery"
-                                innerRadius="70%"
-                                outerRadius="70%"
+                                innerRadius="65%"
+                                outerRadius="65%"
                                 fill="url(#emeraldLinear)"
                                 cornerRadius={20}
                                 background={{ fill: 'rgba(255,255,255,0.02)' }}
@@ -208,8 +208,8 @@ export const RadialKPI = React.memo(({ data, suppressAnimation }: RadialKPIProps
                             {/* Outer Ring: Score */}
                             <AnyRadialBar
                                 dataKey="score"
-                                innerRadius="85%"
-                                outerRadius="85%"
+                                innerRadius="80%"
+                                outerRadius="80%"
                                 fill="url(#cyanLinear)"
                                 cornerRadius={20}
                                 background={{ fill: 'rgba(255,255,255,0.02)' }}
