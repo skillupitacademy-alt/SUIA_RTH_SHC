@@ -21,6 +21,7 @@ export async function POST(req: NextRequest) {
     const attemptFromBody = typeof body.attemptId === "string" ? body.attemptId : "";
     const attemptFromParams = searchParams.get("id") ?? searchParams.get("attemptId") ?? "";
     const attemptId = (attemptFromBody || attemptFromParams).trim();
+    const force = body.force === true || searchParams.get("force") === "true";
 
     if (attemptId === "") {
       return NextResponse.json({ error: "Missing attemptId" }, { status: 400 });
@@ -99,7 +100,7 @@ export async function POST(req: NextRequest) {
       const staleDuration = Date.now() - updatedAt;
       const STALE_THRESHOLD_MS = 30 * 1000; // 30 seconds
 
-      if (staleDuration < STALE_THRESHOLD_MS) {
+      if (staleDuration < STALE_THRESHOLD_MS && !force) {
         // Genuinely in-flight — don't duplicate
         logger.info({ attemptId, status: existingReport.status, staleDuration }, "[QueueReport] Duplicate job ignored");
         return NextResponse.json({ status: "queued", attemptId, message: "Generation already in progress" });

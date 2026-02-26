@@ -102,7 +102,7 @@ export class ReportPdfService {
         deviceScaleFactor: 2,
       });
 
-      let url = `${webAppUrl}/report/print/${attemptId}?internalKey=${internalKey}`;
+      let url = `${webAppUrl}/report/print/${attemptId}?internalKey=${internalKey}&cache_bust=${Date.now()}`;
       if (nodeId !== undefined && nodeType !== undefined) {
         url += `&nodeId=${nodeId}&nodeType=${nodeType}`;
       }
