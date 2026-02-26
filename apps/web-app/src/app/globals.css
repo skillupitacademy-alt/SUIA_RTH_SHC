@@ -137,8 +137,9 @@ body {
   width: 1920px !important;
   height: 1080px !important;
   max-height: 1080px !important;
-  padding: 48px !important;
-  margin-bottom: 0 !important;
+  padding: 32px !important;
+  /* Tightened from 48px to reduce squeezing */
+  margin: 0 !important;
   overflow: hidden !important;
   position: relative !important;
   background: #0B1220 !important;
@@ -179,6 +180,20 @@ body {
 }
 
 @media print {
+
+  body,
+  html {
+    width: 1920px !important;
+    height: 1080px !important;
+    background: #0B1220 !important;
+    overflow: hidden !important;
+  }
+
+  .pdf-root {
+    width: 1920px !important;
+    background: #0B1220 !important;
+  }
+
   * {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;

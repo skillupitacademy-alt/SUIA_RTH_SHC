@@ -8,33 +8,33 @@
  */
 export const REPORT_LAYOUT = {
     page: {
-        landscape: { width: 1920, height: 1080, padding: 48 },
-        portrait: { width: 1080, height: 1920, padding: 48 },
+        landscape: { width: 1920, height: 1080, padding: 32 },
+        portrait: { width: 1080, height: 1920, padding: 32 },
     },
 
     chart: {
         /** Full-page hero chart (RadialKPI, SubtopicBar) */
-        large: 600,
+        large: 640,
         /** Mid-size chart (SkillDonut, TimeDonut) */
-        medium: 280,
+        medium: 320,
     },
 
     card: {
         /** Right-rail tactical panel minimum height */
-        tactical: 420,
+        tactical: 440,
         /** Bottom interpretation band height */
         interpretation: 140,
         /** Complexity ladder chart area */
-        complexity: 360,
+        complexity: 400,
     },
 
     grid: {
-        /** Primary two-column: chart (wide) + panel (narrow) */
-        mainRatio: { left: 1.2, right: 1 },
+        /** Balanced columns to prevent clipping on 1920px canvas */
+        mainRatio: { left: 1, right: 1 },
         /** Standard gap between grid columns */
-        gap: 24,
+        gap: 32,
         /** Gap between stacked sections */
-        sectionGap: 12,
+        sectionGap: 24,
     },
 
     appendix: {

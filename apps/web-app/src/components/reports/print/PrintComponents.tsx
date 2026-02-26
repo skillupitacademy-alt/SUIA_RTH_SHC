@@ -129,7 +129,7 @@ export function TacticalPrescriptionPrintPanel({ data, title, dense, tierOverrid
     const resolvedBehavior = behaviorBadge || (data.timePattern ? data.timePattern.replace(/_/g, ' ') : undefined);
 
     return (
-        <div className={cn("pdf-panel w-full h-full p-8 lg:p-10 flex flex-col bg-[#0a0c12]/90 border border-slate-800/60 rounded-[2.5rem] shadow-[0_30px_60px_rgba(0,0,0,0.6)] backdrop-blur-3xl relative overflow-hidden group", dense && "p-6 lg:p-6 rounded-[2rem]")}>
+        <div className={cn("pdf-panel w-full h-full p-6 lg:p-8 flex flex-col bg-[#0a0c12]/90 border border-slate-800/60 rounded-[2rem] shadow-[0_30px_60px_rgba(0,0,0,0.6)] backdrop-blur-3xl relative overflow-hidden group", dense && "p-5 rounded-[2rem]")}>
             <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.01)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.01)_1px,transparent_1px)] bg-[size:24px_24px] [mask-image:radial-gradient(ellipse_at_center,black,transparent)] pointer-events-none" />
 
             <div className="relative z-10 flex flex-col h-full">
@@ -245,9 +245,9 @@ export function HeatmapMatrixPrint({ data }: { data: HeatmapRow[] }) {
     };
 
     return (
-        <div className="w-full flex flex-col space-y-6">
+        <div className="w-full flex-1 flex flex-col space-y-6">
             <div className="flex gap-4 px-6 mb-2">
-                <div className="w-48 flex-shrink-0" />
+                <div className="w-72 flex-shrink-0" />
                 {difficulties.map(diff => (
                     <div key={diff} className="flex-1 min-w-[120px] max-w-[200px] text-center py-4 bg-slate-900/40 rounded-2xl border border-white/5 backdrop-blur-sm">
                         <span className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">{diff}</span>
@@ -255,11 +255,11 @@ export function HeatmapMatrixPrint({ data }: { data: HeatmapRow[] }) {
                 ))}
             </div>
 
-            <div className="space-y-4">
-                {subtopics.slice(0, 7).map((sub) => ( // Clamp to visible space
+            <div className="flex-1 space-y-4">
+                {subtopics.slice(0, 8).map((sub) => ( // Expanded slice for 1080p
                     <div key={sub} className="flex gap-4">
-                        <div className="w-48 flex-shrink-0 flex items-start pt-4 border-r border-slate-800/60 pr-6 overflow-hidden">
-                            <span className="text-[12px] font-bold text-slate-300 uppercase tracking-widest leading-tight text-left truncate">
+                        <div className="w-72 flex-shrink-0 flex items-start pt-4 border-r border-slate-800/60 pr-6 overflow-hidden">
+                            <span className="text-[12px] font-bold text-slate-300 uppercase tracking-widest leading-tight text-left">
                                 {sub}
                             </span>
                         </div>

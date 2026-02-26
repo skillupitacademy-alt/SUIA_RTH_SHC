@@ -130,29 +130,23 @@ export function ExecutiveSummaryPage({ data, page, total }: PageProps) {
                 </div>
             </header>
 
-            <div className="flex-1 flex flex-col" style={{ gap: T.grid.sectionGap }}>
-                <div className="flex-1">
-                    <PdfGridTwoColumn
-                        left={
-                            <ChartCard>
-                                <FixedChartWrapper height={T.chart.large}>
-                                    <RadialKPI data={data} suppressAnimation={true} />
-                                </FixedChartWrapper>
-                            </ChartCard>
-                        }
-                        right={
-                            <TacticalPrescriptionPrintPanel
-                                data={{ ai: data.ai, timePattern: data.timePattern, isInconsistent: data.isInconsistent }}
-                                title="Tactical Prescription"
-                                dense={true}
-                            />
-                        }
-                    />
-                </div>
+            <div className="flex-1 flex flex-col justify-between" style={{ gap: T.grid.gap }}>
+                <PdfGridTwoColumn
+                    left={
+                        <ChartCard>
+                            <FixedChartWrapper height={T.chart.large}>
+                                <RadialKPI data={data} suppressAnimation={true} />
+                            </FixedChartWrapper>
+                        </ChartCard>
+                    }
+                    right={
+                        <TacticalPrescriptionPrintPanel data={data} />
+                    }
+                />
 
                 <InterpretationCard
                     title="Readiness Index Synopsis"
-                    bullets={data.ai.actions.slice(0, 2)}
+                    bullets={data.ai?.actions.slice(0, 2) || ["Maintain current performance baseline", "Expand into Expert-level edge cases"]}
                 />
             </div>
 
@@ -167,10 +161,10 @@ export function ExecutiveSummaryPage({ data, page, total }: PageProps) {
 export function SubtopicAccuracyPage({ data, page, total, layout }: PageProps) {
     const isDense = layout === "heatmap" || data.subtopics.length > 10;
     return (
-        <div className="h-full w-full flex flex-col">
+        <div className="h-full w-full flex flex-col justify-between">
             <SectionHeader title="Subtopic Precision Matrix" label="Diagnostic Sweep V4" data={data} />
 
-            <div className="flex-1 flex flex-col" style={{ gap: T.grid.sectionGap }}>
+            <div className="flex-1 flex flex-col justify-between" style={{ gap: T.grid.sectionGap }}>
                 <div className="flex-1">
                     <PdfGridTwoColumn
                         left={
@@ -216,10 +210,10 @@ export function SubtopicAccuracyPage({ data, page, total, layout }: PageProps) {
 /* ────────────────────────────────────────────── */
 export function SubjectBreakdownPage({ data, page, total }: PageProps) {
     return (
-        <div className="h-full w-full flex flex-col">
+        <div className="h-full w-full flex flex-col justify-between">
             <SectionHeader title="Velocity & Neural Patterns" label="Temporal Spend Analysis" data={data} />
 
-            <div className="flex-1 flex flex-col" style={{ gap: T.grid.sectionGap }}>
+            <div className="flex-1 flex flex-col justify-between" style={{ gap: T.grid.sectionGap }}>
                 <div className="flex-1">
                     <PdfGridTwoColumn
                         left={
@@ -277,10 +271,10 @@ export function SubjectBreakdownPage({ data, page, total }: PageProps) {
 /* ────────────────────────────────────────────── */
 export function NeuralHeatmapPage({ data, page, total }: PageProps) {
     return (
-        <div className="h-full w-full flex flex-col">
+        <div className="h-full w-full flex flex-col justify-between">
             <SectionHeader title="Cognitive Heatmap" label="Phase 21 Granular Mastery" data={data} />
 
-            <div className="flex-1 flex flex-col overflow-hidden" style={{ gap: T.grid.sectionGap }}>
+            <div className="flex-1 flex flex-col overflow-hidden justify-between" style={{ gap: T.grid.sectionGap }}>
                 <div className="flex-1">
                     <PdfGridTwoColumn
                         left={
@@ -319,10 +313,10 @@ export function NeuralHeatmapPage({ data, page, total }: PageProps) {
 /* ────────────────────────────────────────────── */
 export function ComplexityLadderPage({ data, page, total }: PageProps) {
     return (
-        <div className="h-full w-full flex flex-col">
+        <div className="h-full w-full flex flex-col justify-between">
             <SectionHeader title="Complexity Scrutiny" label="Spatio‑Visual Depth Matrix" data={data} />
 
-            <div className="flex-1 flex flex-col" style={{ gap: T.grid.sectionGap }}>
+            <div className="flex-1 flex flex-col justify-between" style={{ gap: T.grid.sectionGap }}>
                 <div className="flex-1">
                     <PdfGridTwoColumn
                         left={
@@ -541,22 +535,26 @@ export function QuestionAuditPage({ data, page, total }: { questions?: QuestionI
 
 function SectionHeader({ title, label, data }: { title: string; label: string; data?: TopicUnitData }) {
     return (
-        <header className="mb-3 pb-4 border-b border-slate-800 flex justify-between items-end">
+        <header className="mb-4 pb-4 border-b border-slate-800/60 flex justify-between items-end">
             <div>
                 {data?.lineage && (
-                    <div className="flex items-center gap-2 mb-1.5 opacity-50">
-                        <span className="text-[9px] font-black text-indigo-400 uppercase tracking-[0.2em]">{data.lineage.domain}</span>
+                    <div className="flex items-center gap-2 mb-2 opacity-80">
+                        <span className="px-2 py-0.5 bg-indigo-500/10 rounded-md text-[9px] font-black text-indigo-400 uppercase tracking-widest border border-indigo-500/20">Neural Diagnostics</span>
+                        <span className="text-[9px] font-black text-slate-500 uppercase tracking-[0.2em]">{data.lineage.domain}</span>
                         {data.lineage.subject && (
                             <>
-                                <div className="h-0.5 w-0.5 rounded-full bg-slate-700" />
-                                <span className="text-[9px] font-black text-slate-500 uppercase tracking-[0.2em]">{data.lineage.subject}</span>
+                                <div className="h-1 w-1 rounded-full bg-slate-800" />
+                                <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">{data.lineage.subject}</span>
                             </>
                         )}
                     </div>
                 )}
-                <h2 className="report-heading">{title}</h2>
+                <h2 className="text-4xl font-black text-white uppercase tracking-tighter leading-none">{title}</h2>
             </div>
-            <span className="report-subheading">{label}</span>
+            <div className="text-right">
+                <span className="report-subheading block mb-1">{label}</span>
+                {data?.id && <span className="text-[9px] font-mono text-slate-600">VECTOR: {data.id.slice(0, 8).toUpperCase()}</span>}
+            </div>
         </header>
     );
 }
