@@ -184,13 +184,6 @@ export default function PremiumReportPage() {
 
                 <div className="hidden lg:flex items-center gap-8">
                     <ReportDownloadButton attemptId={id as string} />
-                    <div className="h-8 w-[1px] bg-slate-800" />
-                    <button
-                        onClick={() => window.location.reload()}
-                        className="p-3.5 rounded-2xl bg-slate-900 border border-slate-800 text-slate-500 hover:text-indigo-400 hover:border-indigo-500/50 transition-all"
-                    >
-                        <RefreshCw size={18} />
-                    </button>
                 </div>
             </header>
 
