@@ -1,7 +1,7 @@
 'use client';
-/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { apiClient } from '@quiz/api-client';
+import { recordClientMetric } from '@quiz/observability';
 import { ZLoader } from '@quiz/ui';
 import { TrendingUp, UserCheck, Users } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -9,19 +9,43 @@ import { useEffect, useState } from 'react';
 import { clientLogger } from '@/utils/clientLogger';
 
 export function UserAnalyticsPanel() {
-    const [stats, setStats] = useState<any>(null);
+    type UserMetrics = {
+        total?: number;
+        verified?: number;
+        newToday?: number;
+        lockedCount?: number;
+    };
+    const [stats, setStats] = useState<UserMetrics | null>(null);
+    const [error, setError] = useState<string | null>(null);
+    const hasError = typeof error === 'string' && error.length > 0;
 
     useEffect(() => {
         const fetch = async () => {
             try {
+                setError(null);
                 const data = await apiClient.admin.getUserMetrics();
-                setStats(data);
+                const typed = data as UserMetrics | null;
+                setStats(typed);
+                const total = typed?.total ?? 0;
+                if (typed === null || total === 0) {
+                    void recordClientMetric('admin.ui.users.empty', 1);
+                }
             } catch (err) {
                 clientLogger.error('Failed to fetch user metrics', { error: err instanceof Error ? err.message : 'unknown' });
+                setError('Unable to load user metrics.');
+                void recordClientMetric('admin.ui.users.fetch_error', 1);
             }
         };
         void fetch();
     }, []);
+
+    if (hasError) {
+        return (
+            <div className="p-12 flex items-center justify-center bg-white border border-rose-100 rounded-[2rem] text-rose-600 text-sm font-semibold">
+                {error}
+            </div>
+        );
+    }
 
     if (stats === null) {
         return (
@@ -71,23 +95,35 @@ export function UserAnalyticsPanel() {
             <div className="grid grid-cols-2 gap-3">
                 <div className="p-4 rounded-[1.25rem] bg-muted/20 border border-muted-foreground/5 text-center">
                     <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">New Today</p>
-                    <p className="text-xl font-black text-[#1A1A1A]">+{stats.newToday}</p>
+                    <p className="text-xl font-black text-[#1A1A1A]">+{Number(stats?.newToday ?? 0)}</p>
                 </div>
                 <div className="p-4 rounded-[1.25rem] bg-red-500/5 border border-red-500/10 text-center">
                     <p className="text-[10px] font-bold text-red-500 uppercase tracking-widest mb-1">Locked Accounts</p>
-                    <p className="text-xl font-black text-red-600">{stats.lockedCount}</p>
+                    <p className="text-xl font-black text-red-600">{Number(stats?.lockedCount ?? 0)}</p>
                 </div>
             </div>
 
             <div className="mt-8 pt-8 border-t border-muted-foreground/10">
                 <div className="flex items-center justify-between text-[11px] font-black uppercase tracking-widest">
                     <span className="text-muted-foreground">Verification Rate</span>
-                    <span className="text-[#FF4B91]">{Math.round((stats.verified / stats.total) * 100)}%</span>
+                    <span className="text-[#FF4B91]">
+                        {(() => {
+                            const total = stats?.total ?? 0;
+                            const verified = stats?.verified ?? 0;
+                            return total > 0 ? Math.round((verified / total) * 100) : 0;
+                        })()}%
+                    </span>
                 </div>
                 <div className="mt-3 h-2 w-full bg-muted rounded-full overflow-hidden">
                     <div
                         className="h-full bg-gradient-to-r from-[#FF4B91] to-[#FF8E9E]"
-                        style={{ width: `${(stats.verified / stats.total) * 100}%` }}
+                        style={{
+                            width: `${(() => {
+                                const total = stats?.total ?? 0;
+                                const verified = stats?.verified ?? 0;
+                                return total > 0 ? (verified / total) * 100 : 0;
+                            })()}%`
+                        }}
                     />
                 </div>
             </div>

@@ -9,7 +9,7 @@ async function main() {
   await client.connect();
   const examId = '0a38074c-2113-4527-bc15-1cbfc1836cea';
 
-  console.log(`Checking exams table for: ${examId}...`);
+  scriptLogger.info(`Checking exams table for: ${examId}...`);
 
   const rows = await client.query(`
     SELECT status, total_score, score_percentage, completed_at, started_at
@@ -17,9 +17,10 @@ async function main() {
     WHERE id = $1
   `, [examId]);
   
-  console.log("Exam Summary Details:", JSON.stringify(rows.rows[0], null, 2));
+  scriptLogger.info("Exam Summary Details:", JSON.stringify(rows.rows[0], null, 2));
 
   await client.end();
 }
 
-main().catch(console.error);
+main().catch(scriptLogger.error);
+

@@ -1,5 +1,4 @@
 'use client';
-/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { apiClient } from '@quiz/api-client';
 import { Activity, Lock, ShieldAlert, ShieldCheck } from 'lucide-react';
@@ -8,21 +7,38 @@ import { useEffect, useState } from 'react';
 import { clientLogger } from '@/utils/clientLogger';
 
 export function SecurityHealthPanel() {
-    const [stats, setStats] = useState<any>(null);
+    type SecurityMetrics = {
+        threatLevel?: 'LOW' | 'MEDIUM' | 'HIGH';
+        successfulLogins?: number;
+        failedLogins?: number;
+    };
+    const [stats, setStats] = useState<SecurityMetrics | null>(null);
+    const [error, setError] = useState<string | null>(null);
+    const hasError = typeof error === 'string' && error.length > 0;
 
     useEffect(() => {
         const fetch = async () => {
             try {
+                setError(null);
                 const data = await apiClient.admin.getSecurityMetrics();
-                setStats(data);
+                setStats(data as SecurityMetrics);
             } catch (err) {
                 clientLogger.error('Failed to fetch security metrics', { error: err instanceof Error ? err.message : 'unknown' });
+                setError('Unable to load security metrics.');
             }
         };
         void fetch();
         const interval = setInterval(() => { void fetch(); }, 60000); // Poll every minute
         return () => clearInterval(interval);
     }, []);
+
+    if (hasError) {
+        return (
+            <div className="p-8 rounded-[2rem] border border-rose-100 bg-white text-rose-600 text-sm font-semibold">
+                {error}
+            </div>
+        );
+    }
 
     if (stats === null) return null;
 

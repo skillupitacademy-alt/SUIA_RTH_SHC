@@ -5,7 +5,9 @@ import { ArrowRight, Play, BookOpen, Activity, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { apiClient } from "@quiz/api-client";
+import { recordCounter, recordTimer } from "@quiz/observability";
 import { cn } from "@/lib/utils";
+import { clientLogger } from "@/utils/clientLogger";
 
 import { useAuthStore } from "@/store/auth-store";
 import { useDashboardStore } from "@/store/dashboard-store";
@@ -44,12 +46,18 @@ export default function DashboardPage() {
                     <button
                         onClick={async () => {
                             if (isStarting) return;
+                            const start = Date.now();
                             try {
                                 setIsStarting(true);
+                                recordCounter('web.ui.dashboard.start_exam_click', 1);
                                 const res = await apiClient.quiz.startAdaptiveExam();
+                                const duration = Date.now() - start;
+                                recordTimer('web.ui.dashboard.start_exam_time', duration);
+                                recordCounter('web.ui.dashboard.start_exam_success', 1);
                                 router.push(`/exam/${res.examId}`);
                             } catch (err) {
-                                console.error('Failed to start adaptive exam', err);
+                                clientLogger.error('Failed to start adaptive exam', { error: err instanceof Error ? err.message : 'unknown' });
+                                recordCounter('web.ui.dashboard.start_exam_error', 1);
                                 alert('Failed to start adaptive exam. Please try again.');
                             } finally {
                                 setIsStarting(false);

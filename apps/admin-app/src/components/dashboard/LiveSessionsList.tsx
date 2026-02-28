@@ -1,17 +1,27 @@
 'use client';
-/* eslint-disable @typescript-eslint/no-explicit-any, react-hooks/exhaustive-deps */
 
 import { apiClient } from '@quiz/api-client';
+import { recordCounter } from '@quiz/observability';
 import { ZLoader, ZPagination } from '@quiz/ui';
 import { formatDistanceToNow } from 'date-fns';
 import { Clock, Globe, Users } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { clientLogger } from '@/utils/clientLogger';
 
 export function LiveSessionsList() {
-    const [sessions, setSessions] = useState<any[]>([]);
-    const [meta, setMeta] = useState<any>({ page: 1, totalPages: 1, total: 0 });
+    type AdminLiveSession = {
+        id: string;
+        user?: { profile?: { name?: string }; email?: string };
+        isAdmin?: boolean;
+        lastActiveAt?: string;
+        expiresAt?: string;
+        status?: 'active' | 'idle';
+    };
+    type SessionMeta = { page: number; totalPages: number; total: number };
+
+    const [sessions, setSessions] = useState<AdminLiveSession[]>([]);
+    const [meta, setMeta] = useState<SessionMeta>({ page: 1, totalPages: 1, total: 0 });
     const [page, setPage] = useState(1);
     const [pageSize, setPageSize] = useState(10);
     const [isLoading, setIsLoading] = useState(true);
@@ -24,28 +34,52 @@ export function LiveSessionsList() {
         return () => clearTimeout(timer);
     }, [searchQuery]);
 
-    const fetchSessions = async (p: number) => {
+    const fetchSessions = useCallback(async (p: number, size: number, query: string) => {
         try {
-            const data = await apiClient.admin.getLiveSessions(p, pageSize, debouncedSearch || undefined);
-            const sessionsData = Array.isArray(data.sessions) ? data.sessions : [];
+            const search = query.trim();
+            const data = await apiClient.admin.getLiveSessions(p, size, search === '' ? undefined : search);
+            const sessionsRaw = (data as { sessions?: unknown }).sessions;
+            const sessionsData: AdminLiveSession[] = Array.isArray(sessionsRaw)
+                ? sessionsRaw.map((s) => {
+                    const session = s as Record<string, unknown>;
+                    return {
+                        id: String(session.id ?? crypto.randomUUID()),
+                        user: (session.user ?? undefined) as AdminLiveSession["user"],
+                        isAdmin: Boolean(session.isAdmin),
+                        lastActiveAt: typeof session.lastActiveAt === 'string' ? session.lastActiveAt : undefined,
+                        expiresAt: typeof session.expiresAt === 'string' ? session.expiresAt : undefined,
+                        status: (session.status as AdminLiveSession['status']) ?? 'active'
+                    };
+                })
+                : [];
             setSessions(sessionsData);
-            setMeta({
-                page: data.page ?? 1,
-                totalPages: data.totalPages ?? 1,
-                total: data.total ?? sessionsData.length ?? 0
-            });
+            const rawPage = (data as { page?: unknown }).page;
+            const rawTotalPages = (data as { totalPages?: unknown }).totalPages;
+            const rawTotal = (data as { total?: unknown }).total;
+            const finalMeta = {
+                page: typeof rawPage === 'number' && Number.isFinite(rawPage) ? rawPage : 1,
+                totalPages: typeof rawTotalPages === 'number' && Number.isFinite(rawTotalPages) ? rawTotalPages : 1,
+                total: typeof rawTotal === 'number' && Number.isFinite(rawTotal) ? rawTotal : sessionsData.length
+            };
+            setMeta(finalMeta);
+
+            if (sessionsData.length === 0) {
+                recordCounter('admin.ui.sessions.empty', 1);
+            } else {
+                recordCounter('admin.ui.sessions.fetch_success', 1, { count: sessionsData.length, total: finalMeta.total });
+            }
         } catch (err) {
+            recordCounter('admin.ui.sessions.fetch_error', 1, { reason: err instanceof Error ? err.message : 'unknown' });
             clientLogger.error('Failed to fetch live sessions', { error: err instanceof Error ? err.message : 'unknown' });
         } finally {
             setIsLoading(false);
         }
-    };
-
+    }, []);
     useEffect(() => {
-        void fetchSessions(page);
-        const interval = setInterval(() => { void fetchSessions(page); }, 30000); // Poll every 30s
+        void fetchSessions(page, pageSize, debouncedSearch);
+        const interval = setInterval(() => { void fetchSessions(page, pageSize, debouncedSearch); }, 30000);
         return () => clearInterval(interval);
-    }, [page, pageSize, debouncedSearch]);
+    }, [debouncedSearch, fetchSessions, page, pageSize]);
 
     if (isLoading && sessions.length === 0) {
         return (
@@ -107,13 +141,13 @@ export function LiveSessionsList() {
                                         <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Last Seen</p>
                                         <div className="flex items-center gap-2 justify-end text-sm font-bold text-[#1A1A1A]">
                                             <Clock size={14} className="text-[#FF4B91]" />
-                                            {(session.lastActiveAt ?? null) !== null ? formatDistanceToNow(new Date(session.lastActiveAt), { addSuffix: true }) : 'N/A'}
+                                            {(session.lastActiveAt ?? null) !== null ? formatDistanceToNow(new Date(session.lastActiveAt as string), { addSuffix: true }) : 'N/A'}
                                         </div>
                                     </div>
                                     <div className="w-px h-10 bg-muted-foreground/10" />
                                     <div className="space-y-1">
                                         <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Expiry</p>
-                                        <p className="text-sm font-bold text-[#1A1A1A]">{(session.expiresAt ?? null) !== null ? new Date(session.expiresAt).toLocaleDateString([], { month: 'short', day: 'numeric' }) : 'N/A'}</p>
+                                        <p className="text-sm font-bold text-[#1A1A1A]">{(session.expiresAt ?? null) !== null ? new Date(session.expiresAt as string).toLocaleDateString([], { month: 'short', day: 'numeric' }) : 'N/A'}</p>
                                     </div>
                                     <div className="w-px h-10 bg-muted-foreground/10" />
                                     <div className="space-y-1">

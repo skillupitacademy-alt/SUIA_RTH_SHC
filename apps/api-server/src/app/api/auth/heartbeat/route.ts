@@ -3,11 +3,12 @@ import { eq } from 'drizzle-orm';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
+import { withLogging } from '@/lib/withLogging';
 import { TokenService } from '@/modules/auth/token.service';
 
 export const dynamic = 'force-dynamic';
 
-export async function POST(_req: NextRequest) {
+async function handler(_req: NextRequest) {
   try {
     const _token = TokenService.getAccessToken(_req);
     if (typeof _token !== 'string' || _token.trim() === '') {
@@ -16,7 +17,6 @@ export async function POST(_req: NextRequest) {
 
     const _payload = await TokenService.verifyAccessToken(_token, false);
     
-    // Update last active
     await db.update(users)
       .set({ lastActiveAt: new Date() })
       .where(eq(users.id, _payload.userId));
@@ -27,3 +27,5 @@ export async function POST(_req: NextRequest) {
     return NextResponse.json({ _error: message }, { status: 401 });
   }
 }
+
+export const POST = withLogging(handler, { component: 'auth', operation: 'heartbeat' });

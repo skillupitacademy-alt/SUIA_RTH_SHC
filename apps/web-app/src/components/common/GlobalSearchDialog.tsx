@@ -21,13 +21,20 @@ export function GlobalSearchDialog() {
     const [query, setQuery] = React.useState("");
     const [results, setResults] = React.useState<SearchResult[]>([]);
     const [loading, setLoading] = React.useState(false);
+    const [error, setError] = React.useState<string | null>(null);
     const router = useRouter();
     const { setTheme } = useTheme();
+
+    const runCommand = React.useCallback((command: () => unknown) => {
+        setOpen(false);
+        command();
+    }, []);
 
     // Debounce Logic
     React.useEffect(() => {
         if (!query || query.length < 2) {
             setResults([]);
+            setError(null);
             return;
         }
 
@@ -38,8 +45,10 @@ export function GlobalSearchDialog() {
                 const { apiClient } = await import('@quiz/api-client');
                 const data = await apiClient.search.searchGlobal(query);
                 setResults(data);
+                setError(null);
             } catch (error) {
                 clientLogger.error('Global search failed', { error: error instanceof Error ? error.message : 'unknown' });
+                setError('Search is unavailable right now. Please try again.');
             } finally {
                 setLoading(false);
             }
@@ -66,13 +75,7 @@ export function GlobalSearchDialog() {
         };
         document.addEventListener("keydown", down);
         return () => document.removeEventListener("keydown", down);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [open, results, router]);
-
-    const runCommand = React.useCallback((command: () => unknown) => {
-        setOpen(false);
-        command();
-    }, []);
+    }, [open, results, router, runCommand]);
 
     if (!open) return null;
 
@@ -104,7 +107,13 @@ export function GlobalSearchDialog() {
                     <Command.List className="max-h-[300px] overflow-y-auto overflow-x-hidden p-2">
                         {loading && <Command.Loading>Searching...</Command.Loading>}
 
-                        {!loading && results.length === 0 && query.length >= 2 && (
+                        {!loading && error && (
+                            <Command.Empty className="py-6 text-center text-sm text-red-500">
+                                {error}
+                            </Command.Empty>
+                        )}
+
+                        {!loading && !error && results.length === 0 && query.length >= 2 && (
                             <Command.Empty className="py-6 text-center text-sm text-muted-foreground">
                                 No results found.
                             </Command.Empty>

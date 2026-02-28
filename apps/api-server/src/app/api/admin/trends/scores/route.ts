@@ -1,14 +1,15 @@
+import { METRICS } from '@quiz/observability';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
-import { logger } from '@/lib/logger';
+import { recordCounter, recordTimer } from '@/lib/metrics';
+import { withLogging } from '@/lib/withLogging';
 import { TrendsService } from '@/modules/metrics/trends.service';
 
 export const dynamic = 'force-dynamic';
 
-const log = logger.child({ module: 'admin:trends:scores' });
-
-export async function GET(_request: NextRequest) {
+async function handler(_request: NextRequest) {
+  const start = Date.now();
   try {
     const { searchParams } = new URL(_request.url);
     const userId = searchParams.get('userId') ?? undefined;
@@ -19,13 +20,26 @@ export async function GET(_request: NextRequest) {
     }
 
     const scores = await TrendsService.getScoreTrends({ userId, range });
-    return NextResponse.json({ scores });
+    const durationMs = Date.now() - start;
+    
+    recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.trends.scores.success', 1, { range });
+    recordTimer(METRICS.ADMIN.DASHBOARD_LOAD + '.trends.scores.duration', durationMs, { outcome: 'success', range });
+    
+    return NextResponse.json({ scores }, {
+        headers: { 'X-Duration-Ms': durationMs.toString() }
+    });
   } catch (_error: unknown) {
     const message = _error instanceof Error ? _error.message : 'Unknown error';
-    log.error({ error: message }, 'Trends Scores API failed');
+    const durationMs = Date.now() - start;
+    
+    recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.trends.scores.failure', 1);
+    recordTimer(METRICS.ADMIN.DASHBOARD_LOAD + '.trends.scores.duration', durationMs, { outcome: 'failure' });
+    
     return NextResponse.json(
       { _error: 'Failed to fetch score trends', message },
       { status: 500 }
     );
   }
 }
+
+export const GET = withLogging(handler, { component: 'admin', operation: 'get_score_trends' });

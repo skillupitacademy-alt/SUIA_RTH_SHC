@@ -35,17 +35,13 @@ export class FetchClient {
     // Server-side (Next.js) cookie forwarding: include the incoming request cookies
     if (isServer && headers.cookie === undefined) {
       try {
-        // eslint-disable-next-line @typescript-eslint/no-var-requires
-        const { cookies } = require('next/headers');
+        const { cookies } = await import('next/headers');
         const cookieHeader = cookies().toString();
         if (cookieHeader) {
           headers.cookie = cookieHeader;
-        } else {
-        // silent
         }
       } catch {
         // If next/headers is not available, skip; client-side will handle cookies via browser
-        // silent
       }
     }
 
@@ -80,6 +76,12 @@ export class FetchClient {
     }
 
     if (!response.ok) {
+      // Capture request id for correlation even on error
+      if (typeof window !== 'undefined') {
+        const rid = response.headers.get('x-request-id');
+        if (rid) sessionStorage.setItem('last_request_id', rid);
+      }
+
       // PATIENT CLIENT: Handle 401/403 with Auto-Refresh & Single-Flight Retry
       if ((response.status === 401 || response.status === 403) && !options._isRetry && endpoint !== '/auth/refresh') {
         try {
@@ -92,24 +94,19 @@ export class FetchClient {
           globalRefreshPromise = null; // Clear lock after success
 
           // 2. RETRY: Fire the original request again
-          // silent retry
           return this.request<TResponse>(endpoint, { ...options, _isRetry: true });
 
         } catch (refreshErr) {
           globalRefreshPromise = null; // Clear lock on failure
           // silent refresh failure
-          // Fall through to existing error/redirect logic below
         }
       }
 
       if (response.status === 401 || response.status === 403) {
         if (typeof window !== 'undefined') {
-          // Dispatch cancelable event to allow Apps to show Modal instead of hard redirect
           const event = new CustomEvent('auth:unauthorized', { cancelable: true });
           const shouldRedirect = window.dispatchEvent(event);
 
-          // 2. Redirect Fallback with "Redirect Once" guard
-          // Only redirect if the event wasn't prevented (i.e., no Modal handling it)
           const currentPath = window.location.pathname;
           const search = window.location.search;
           const isLoginPage = currentPath === '/login';
@@ -117,24 +114,34 @@ export class FetchClient {
 
           if (shouldRedirect && !isLoginPage && !isAlreadyRedirecting) {
             (window as any).__authRedirecting = true;
-            // silent redirect log
-            
             const redirectUrl = encodeURIComponent(currentPath + search);
             const reason = response.status === 401 ? 'session_expired' : 'unauthorized';
             window.location.href = `/login?redirect=${redirectUrl}&reason=${reason}`;
           }
         }
       }
-      // Clone response to read body twice if needed (though we only read once here)
-      const errorBody = await response.json().catch(() => ({ message: 'Unknown error' }));
       
-      // Extraction Priority: 1. Explicit message, 2. Global _error, 3. First issue message, 4. Status code fallback
+      const errorBody = await response.json().catch(() => ({ message: 'Unknown error' }));
       const errorMessage = errorBody.message || 
                           errorBody.error || 
                           errorBody._error || 
                           (errorBody.issues && errorBody.issues.length > 0 ? errorBody.issues[0].message : null) || 
                           `API Error: ${response.status}`;
       throw new Error(errorMessage);
+    }
+
+    // Capture request id and performance metrics for correlation
+    if (typeof window !== 'undefined') {
+      const rid = response.headers.get('x-request-id');
+      if (rid) sessionStorage.setItem('last_request_id', rid);
+
+      const duration = response.headers.get('x-duration-ms');
+      if (duration) {
+        const url_path = new URL(url, window.location.origin).pathname;
+        if (process.env.NODE_ENV === 'development') {
+            console.debug(`[Perf] ${options.method || 'GET'} ${url_path} - ${duration}ms`);
+        }
+      }
     }
 
     return response.json() as Promise<TResponse>;
@@ -172,4 +179,3 @@ export class FetchClient {
     return this.request<TResponse>(endpoint, { ...options, method: 'DELETE' });
   }
 }
-

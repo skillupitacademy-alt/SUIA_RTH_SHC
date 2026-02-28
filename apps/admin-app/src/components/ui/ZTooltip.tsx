@@ -1,7 +1,6 @@
 'use client';
-/* eslint-disable react-hooks/exhaustive-deps */
 
-import { useEffect,useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
 import { cn } from '@/lib/utils';
@@ -21,7 +20,7 @@ export function ZTooltip({ content, children, side = 'bottom', className, delay 
     const triggerRef = useRef<HTMLButtonElement>(null);
     const timeoutRef = useRef<NodeJS.Timeout>(null);
 
-    const updatePosition = () => {
+    const updatePosition = useCallback(() => {
         if (followCursor) return; // Skip static calculation if following cursor
         if (triggerRef.current) {
             const rect = triggerRef.current.getBoundingClientRect();
@@ -49,7 +48,7 @@ export function ZTooltip({ content, children, side = 'bottom', className, delay 
             }
             setCoords({ top, left });
         }
-    };
+    }, [followCursor, side]);
 
     const handleMouseEnter = (e: React.MouseEvent<HTMLButtonElement>) => {
         if (followCursor) {
@@ -82,7 +81,11 @@ export function ZTooltip({ content, children, side = 'bottom', className, delay 
             window.removeEventListener('scroll', updatePosition, true);
             window.removeEventListener('resize', updatePosition);
         };
-    }, [isVisible, followCursor]);
+    }, [isVisible, followCursor, updatePosition]);
+
+    useEffect(() => () => {
+        if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    }, []);
 
     // Calculate dynamic offsets for cursor mode
     const cursorOffset = 16;

@@ -1,16 +1,18 @@
-export const runtime = 'nodejs';
-
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 
+import { recordCounter } from '@/lib/metrics';
+import { withLogging } from '@/lib/withLogging';
 import { AdminAuthService } from '@/modules/auth/admin-auth.service';
+
+export const runtime = 'nodejs';
 
 const loginSchema = z.object({
   email: z.string().email(),
   password: z.string().min(1)
 });
 
-export async function POST(_req: Request) {
+async function handler(_req: Request) {
   try {
     const body = await _req.json();
     const { email, password } = loginSchema.parse(body);
@@ -21,7 +23,6 @@ export async function POST(_req: Request) {
     
     const result = await AdminAuthService.login(email, password, ip, audience);
 
-    // Set Cookies
     const rawDomain = process.env.COOKIE_DOMAIN;
     const cookieDomain = rawDomain === undefined || rawDomain === null || rawDomain === '' ? undefined : rawDomain;
 
@@ -38,16 +39,14 @@ export async function POST(_req: Request) {
         expiresAt: result.expiresAt,
     });
 
-    // Sync settings with unified student/admin login for maximum stability
     const cookieOptions = {
         httpOnly: true,
-        secure: true, // Always true for cross-domain stability in live env
+        secure: true,
         sameSite: 'none' as const,
         path: '/',
         domain: cookieDomain,
     };
 
-    // Set HttpOnly cookies with Tier Isolation
     const accessTokenName = audience === 'infra' ? 'infra_accessToken' : 'admin_accessToken';
     const refreshTokenName = audience === 'infra' ? 'infra_refreshToken' : 'admin_refreshToken';
 
@@ -58,23 +57,27 @@ export async function POST(_req: Request) {
 
     response.cookies.set(refreshTokenName, result.refreshToken, {
         ...cookieOptions,
-        maxAge: 24 * 60 * 60, // 24 hours
+        maxAge: 24 * 60 * 60,
     });
 
-    // SECURITY: Ensure CSRF token is issued upon administrative login
     const { setCsrfToken } = await import('@/modules/auth/csrf.middleware');
     setCsrfToken(response);
+
+    recordCounter('admin.auth.login', 1, { outcome: 'success', audience });
 
     return response;
 
   } catch (_error: unknown) {
+    recordCounter('admin.auth.login', 1, { outcome: 'failure' });
+
     if (_error instanceof z.ZodError) {
       return NextResponse.json({ _error: 'Invalid input' }, { status: 400 });
     }
     
-    // Return 401 for all auth failures to prevent enumeration, unless it's a specific logic _error
     const message = _error instanceof Error ? _error.message : 'Authentication failed';
     const status = message.includes('Locked') ? 403 : 401;
     return NextResponse.json({ _error: message }, { status });
   }
 }
+
+export const POST = withLogging(handler, { component: 'admin-auth', operation: 'login' });

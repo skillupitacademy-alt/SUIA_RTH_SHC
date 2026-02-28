@@ -18,15 +18,16 @@ async function main() {
   const rbd = await sql_client('SELECT count(*) FROM results_by_dimension');
   const ex = await sql_client('SELECT count(*) FROM exams');
   
-  console.log("DATA_TOTALS:");
-  console.log("QUESTIONS:" + q[0].count);
-  console.log("SKILLS:" + s[0].count);
-  console.log("TOPICS:" + t[0].count);
-  console.log("DOMAINS:" + d[0].count);
-  console.log("SUBTOPICS:" + st[0].count);
-  console.log("BLUEPRINTS:" + eb[0].count);
-  console.log("RESULTS_DIM:" + rbd[0].count);
-  console.log("EXAMS:" + ex[0].count);
+  scriptLogger.info("DATA_TOTALS:");
+  scriptLogger.info("QUESTIONS:" + q[0].count);
+  scriptLogger.info("SKILLS:" + s[0].count);
+  scriptLogger.info("TOPICS:" + t[0].count);
+  scriptLogger.info("DOMAINS:" + d[0].count);
+  scriptLogger.info("SUBTOPICS:" + st[0].count);
+  scriptLogger.info("BLUEPRINTS:" + eb[0].count);
+  scriptLogger.info("RESULTS_DIM:" + rbd[0].count);
+  scriptLogger.info("EXAMS:" + ex[0].count);
 }
 
-main().catch(console.error);
+main().catch(scriptLogger.error);
+

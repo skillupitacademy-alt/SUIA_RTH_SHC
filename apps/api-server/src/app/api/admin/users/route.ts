@@ -2,6 +2,8 @@ import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
 import { logger } from '@/lib/logger';
+import { recordCounter, recordTimer } from '@/lib/metrics';
+import { withLogging } from '@/lib/withLogging';
 import { AdminEngine } from '@/modules/admin-engine/admin.engine';
 import { _verifyAdmin } from '@/modules/auth/rbac.service';
 import { TokenService } from '@/modules/auth/token.service';
@@ -10,7 +12,8 @@ export const dynamic = 'force-dynamic';
 
 const log = logger.child({ module: 'admin:users' });
 
-export async function GET(_req: NextRequest) {
+async function handler(_req: NextRequest) {
+    const start = Date.now();
   try {
     const _token = TokenService.getAccessToken(_req, { scope: 'admin' });
     if (_token === null || _token === undefined || _token.trim() === '') {
@@ -33,10 +36,15 @@ export async function GET(_req: NextRequest) {
     const xStatus = searchParams.get('xStatus') ?? undefined;
 
     const data = await AdminEngine.getUsers(page, limit, status, { search, role, isBlocked, isVerified, status: xStatus });
+    recordCounter('admin.api.users.get.success', 1);
+    recordTimer('admin.api.users.get.duration', Date.now() - start, { outcome: 'success' });
     return NextResponse.json(data);
   } catch (_error: unknown) {
     const message = _error instanceof Error ? _error.message : 'Internal Server Error';
     log.error({ error: message }, 'ADMIN_USERS failed');
+    recordCounter('admin.api.users.get.failure', 1, { reason: 'internal_error' });
     return NextResponse.json({ _error: 'Internal Server Error' }, { status: 500 });
   }
 }
+
+export const GET = withLogging(handler, { component: 'admin', operation: 'get_users' });

@@ -6,6 +6,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useAuthStore } from '@/store/auth-store';
 import { useJobStore } from '@/store/job-store';
+import { clientLogger } from '@/utils/clientLogger';
 import { safeGet, safeSet } from '@/utils/safeLocalStorage';
 
 const POLL_INTERVAL = 5000; // 5 seconds
@@ -15,6 +16,7 @@ export function useJobTracker() {
     const { user, isAuthenticated, initialized } = useAuthStore();
     const { jobs, setJobs, updateJob, removeJob, setPolling, isPolling } = useJobStore();
     const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
     const pollTimerRef = useRef<NodeJS.Timeout | null>(null);
 
     // 1. Load active job IDs from localStorage for the current user
@@ -77,8 +79,9 @@ export function useJobTracker() {
                 pollTimerRef.current = null;
                 setPolling(false);
             }
-        } catch {
-            // Silently fail polling
+        } catch (err) {
+            clientLogger.error('Job status polling failed', { error: err instanceof Error ? err.message : 'unknown' });
+            setError('Unable to refresh job status.');
         }
     }, [isAuthenticated, user?.id, getStoredJobIds, saveStoredJobIds, setJobs, setPolling]);
 
@@ -110,6 +113,7 @@ export function useJobTracker() {
         
         setIsLoading(true);
         try {
+            setError(null);
             const { job } = await apiClient.admin.createJob(type, payload);
             const currentIds = getStoredJobIds();
             const newIds = [...new Set([...currentIds, job.id])];
@@ -123,6 +127,10 @@ export function useJobTracker() {
             }
             
             return job;
+        } catch (err) {
+            clientLogger.error('Failed to start job', { error: err instanceof Error ? err.message : 'unknown' });
+            setError('Unable to start job.');
+            throw err;
         } finally {
             setIsLoading(false);
         }
@@ -144,6 +152,7 @@ export function useJobTracker() {
     return {
         jobs,
         isLoading,
+        error,
         startJob,
         clearJob,
         clearAll,

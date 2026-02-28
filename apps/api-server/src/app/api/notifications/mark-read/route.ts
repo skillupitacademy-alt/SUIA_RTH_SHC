@@ -1,12 +1,16 @@
 import { db, notifications } from "@quiz/db";
+import { METRICS } from "@quiz/observability";
 import { and, eq } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 
+import { recordCounter, recordTimer } from "@/lib/metrics";
+import { withLogging } from "@/lib/withLogging";
 import { TokenService } from "@/modules/auth/token.service";
 
 export const dynamic = "force-dynamic";
 
-export async function PATCH(req: NextRequest) {
+async function handler(req: NextRequest) {
+  const start = Date.now();
   try {
     const token = TokenService.getAccessToken(req, { scope: "user" });
     if (typeof token !== "string" || token.length === 0) {
@@ -27,6 +31,10 @@ export async function PATCH(req: NextRequest) {
         .update(notifications)
         .set({ isRead: true, readAt: new Date() })
         .where(and(eq(notifications.userId, payload.userId), eq(notifications.isRead, false)));
+      
+      recordCounter(METRICS.NOTIFICATIONS.MARK_READ, 1, { type: 'bulk', outcome: 'success' });
+      recordTimer(METRICS.NOTIFICATIONS.MARK_READ + '.duration', Date.now() - start, { type: 'bulk', outcome: 'success' });
+      
       return NextResponse.json({ success: true });
     }
 
@@ -39,9 +47,16 @@ export async function PATCH(req: NextRequest) {
       .set({ isRead: true, readAt: new Date() })
       .where(and(eq(notifications.id, notificationId), eq(notifications.userId, payload.userId)));
 
+    recordCounter(METRICS.NOTIFICATIONS.MARK_READ, 1, { type: 'single', outcome: 'success' });
+    recordTimer(METRICS.NOTIFICATIONS.MARK_READ + '.duration', Date.now() - start, { type: 'single', outcome: 'success' });
+
     return NextResponse.json({ success: true });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Internal Server Error";
+    recordCounter(METRICS.NOTIFICATIONS.MARK_READ, 1, { outcome: 'failure' });
+    recordTimer(METRICS.NOTIFICATIONS.MARK_READ + '.duration', Date.now() - start, { outcome: 'failure' });
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
+
+export const PATCH = withLogging(handler, { component: 'notifications', operation: 'mark_as_read' });

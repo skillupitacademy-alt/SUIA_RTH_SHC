@@ -1,7 +1,11 @@
 "use client";
 
 import { apiClient, ItemDifficultyResponse } from "@quiz/api-client";
+import type { EChartsOption } from "echarts";
+import type { CallbackDataParams } from "echarts/types/dist/shared";
 import { useEffect, useState } from "react";
+
+import { clientLogger } from "@/utils/clientLogger";
 
 import BaseChart from "./BaseChart";
 
@@ -20,7 +24,7 @@ export default function AdminItemDifficultyChart() {
                 const res = await apiClient.analytics.getAdminItemDifficulty();
                 setData(res);
             } catch (err: unknown) {
-                console.error("Failed to load item difficulty", err);
+                clientLogger.error("Failed to load item difficulty", { error: err instanceof Error ? err.message : "unknown" });
                 setForbidden(true);
             } finally {
                 setLoading(false);
@@ -48,10 +52,9 @@ export default function AdminItemDifficultyChart() {
         );
     }
 
-    // Truncate IDs for Y-axis visual
-    const truncatedIds = data.ids.map(id => "..." + id.slice(-8));
+    const truncatedIds = data.ids.map((id) => "..." + id.slice(-8));
 
-    const option = {
+    const option: EChartsOption = {
         tooltip: {
             trigger: "item",
             backgroundColor: "rgba(255, 255, 255, 0.95)",
@@ -59,8 +62,7 @@ export default function AdminItemDifficultyChart() {
             textStyle: { color: "#1E293B" },
             padding: [10, 15],
             extraCssText: "box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); border-radius: 8px;",
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            formatter: (params: any) => {
+            formatter: (params: CallbackDataParams) => {
                 const index = params.dataIndex;
                 const fullId = data.ids[index];
                 const accuracy = data.accuracy[index];
@@ -87,25 +89,25 @@ export default function AdminItemDifficultyChart() {
             top: 30,
             right: 30,
             bottom: 20,
-            left: 100, // Space for Y-axis labels
+            left: 100,
         },
         xAxis: {
-            type: "value",
+            type: "value" as const,
             max: 100,
             axisLabel: { color: "#64748B", fontSize: 11 },
             splitLine: { lineStyle: { type: "dashed", color: "#F1F5F9" } },
         },
         yAxis: {
-            type: "category",
+            type: "category" as const,
             data: truncatedIds,
             axisLabel: {
                 color: "#64748B",
                 fontSize: 11,
-                fontFamily: "monospace"
+                fontFamily: "monospace",
             },
             axisLine: { show: false },
             axisTick: { show: false },
-            inverse: true, // Show lowest accuracy (hardest) at top
+            inverse: true,
         },
         series: [
             {
@@ -115,17 +117,16 @@ export default function AdminItemDifficultyChart() {
                 barMaxWidth: 20,
                 itemStyle: {
                     borderRadius: [0, 4, 4, 0],
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    color: (params: any) => {
-                        const value = params.value as number;
-                        if (value < 40) return "#ef4444";  // 🔴 Red — broken / needs review
-                        if (value < 70) return "#f59e0b";  // 🟡 Amber — moderate difficulty
-                        return "#22c55e";                   // 🟢 Green — acceptable
+                    color: (params: CallbackDataParams) => {
+                        const value = Number(params.value);
+                        if (value < 40) return "#ef4444";
+                        if (value < 70) return "#f59e0b";
+                        return "#22c55e";
                     },
                 },
             },
         ],
-    };
+    } as unknown as EChartsOption;
 
     return (
         <div className="w-full bg-white p-6 rounded-2xl shadow-sm border border-slate-100">

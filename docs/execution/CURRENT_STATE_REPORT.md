@@ -105,7 +105,7 @@
 ### Phase 19: Environmental Unification & Absolute Zero (Batch 184)
 - **Standardization**: Unified monorepo URLs behind `NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_ADMIN_URL`, and `NEXT_PUBLIC_WEB_APP_URL`.
 - **Cleanup**: Purged 100% of hardcoded production URLs and legacy aliases (`ADMIN_UI_URL`, `API_URL`, etc.).
-- **Security**: Refactored `next.config.js` to dynamically generate CSP whitelists based on active environment variables.
+- **Security**: Refactored `next.config.mjs` to dynamically generate CSP whitelists based on active environment variables.
 - **Zero-Tolerance**: Resolved all remaining `exhaustive-deps`, `no-explicit-any`, and `no-unused-vars` warnings in `@quiz/admin-app`.
 - **Verification**: Confirmed system-wide stability with `pnpm lint:all`, `pnpm typecheck:all`, and `pnpm build:all` (Exit Code 0).
 - **Single-Pane Orchestration**: Consolidated the AI Prompt and JSON Editor into a single-pane workspace, removing the dual-terminal visual redundancy.

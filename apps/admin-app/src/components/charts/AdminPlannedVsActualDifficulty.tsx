@@ -1,8 +1,11 @@
 "use client";
 
 import { apiClient, type DifficultyVarianceResponse } from "@quiz/api-client";
+import type { EChartsOption } from "echarts";
 import { Info, Target } from "lucide-react";
 import React, { useEffect, useState } from "react";
+
+import { clientLogger } from "@/utils/clientLogger";
 
 import BaseChart from "./BaseChart";
 
@@ -16,7 +19,7 @@ export default function AdminPlannedVsActualDifficulty() {
                 const res = await apiClient.analytics.getAdminPlannedVsActualDifficulty();
                 setData(res);
             } catch (err: unknown) {
-                console.error("Failed to fetch difficulty variance", err);
+                clientLogger.error("Failed to fetch difficulty variance", { error: err instanceof Error ? err.message : "unknown" });
             } finally {
                 setLoading(false);
             }
@@ -47,7 +50,7 @@ export default function AdminPlannedVsActualDifficulty() {
         seriesName: string;
     };
 
-    const option = {
+    const option: EChartsOption = {
         tooltip: {
             trigger: 'axis',
             axisPointer: { type: 'shadow' },
@@ -86,14 +89,14 @@ export default function AdminPlannedVsActualDifficulty() {
             containLabel: true
         },
         xAxis: {
-            type: 'category',
+            type: 'category' as const,
             data: labels,
             axisLine: { show: false },
             axisTick: { show: false },
             axisLabel: { color: '#475569', fontWeight: 'bold', fontSize: 11 }
         },
         yAxis: {
-            type: 'value',
+            type: 'value' as const,
             max: 100,
             splitLine: { lineStyle: { type: 'dashed', color: '#F1F5F9' } },
             axisLabel: { color: '#94A3B8', fontSize: 10, formatter: '{value}%' }
@@ -116,7 +119,7 @@ export default function AdminPlannedVsActualDifficulty() {
                 emphasis: { itemStyle: { color: '#4F46E5' } }
             }
         ]
-    };
+    } as unknown as EChartsOption;
 
     // Calculate Variance Insight
     const maxVarianceIdx = actual.reduce((max, curr, idx) =>

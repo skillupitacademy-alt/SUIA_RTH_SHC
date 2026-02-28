@@ -2,18 +2,18 @@ import { db, exams } from "@quiz/db";
 import { desc, eq } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 
-import { logger } from "@/lib/logger";
+import { recordCounter, recordTimer } from "@/lib/metrics";
+import { withLogging } from "@/lib/withLogging";
 import { ReportPdfService } from "@/modules/report-engine/report-pdf.service";
 
 export const runtime = "nodejs";
 
-export async function GET(req: NextRequest) {
-  // Simple cron auth check (Vercel provides this header)
+async function handler(req: NextRequest) {
+  const start = Date.now();
   const cronAuth = req.headers.get("Authorization") ?? "";
   const isVercelCron =
     process.env.CRON_SECRET != null && cronAuth === `Bearer ${process.env.CRON_SECRET}`;
 
-  // Also allow internal key for local testing
   const internalKey = req.headers.get("x-internal-key") ?? "";
   const isInternal =
     process.env.INTERNAL_API_KEY != null
@@ -25,7 +25,6 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    // 1. Find a completed exam to test with
     const testExam = await db.query.exams.findFirst({
       where: eq(exams.status, "completed"),
       orderBy: [desc(exams.completedAt)]
@@ -35,36 +34,27 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ message: "No completed exams to test with" });
     }
 
-    const start = Date.now();
-    
-    // 2. Perform test generation
-    const { buffer: _buf, fileSizeKb, pageCount } = await ReportPdfService.generate(testExam.id);
-    const duration = Date.now() - start;
+    const { fileSizeKb, pageCount } = await ReportPdfService.generate(testExam.id);
 
-    // 3. Validate
-    if (fileSizeKb < 50) { // Should be at least 50KB for a 7-page report
+    if (fileSizeKb < 50) { 
       throw new Error(`PDF Health Check Failed: Size too small (${fileSizeKb}KB)`);
     }
 
-    logger.info({ 
-      duration, 
-      fileSizeKb, 
-      pageCount,
-      attemptId: testExam.id 
-    }, "[PDF Health Check] Success");
-
+    recordCounter('cron.pdf_health.success', 1, { fileSizeKb, pageCount });
+    recordTimer('cron.pdf_health.duration', Date.now() - start, { outcome: 'success' });
     return NextResponse.json({ 
       status: "healthy",
-      duration,
       fileSizeKb,
       pageCount
     });
 
   } catch (error: unknown) {
-    logger.error({ err: error }, "[PDF Health Check] FAILED");
+    recordCounter('cron.pdf_health.failure', 1);
     return NextResponse.json({ 
       status: "unhealthy", 
       error: error instanceof Error ? error.message : "Unknown error" 
     }, { status: 500 });
   }
 }
+
+export const GET = withLogging(handler, { component: 'system', operation: 'cron_pdf_health' });

@@ -1,5 +1,6 @@
 "use client";
 
+import type { EChartsOption } from "echarts";
 import dynamic from "next/dynamic";
 import { useMemo } from "react";
 
@@ -14,8 +15,7 @@ const ReactECharts = dynamic(() => import("echarts-for-react"), {
 });
 
 interface BaseChartProps {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    option: any;
+    option: EChartsOption;
     height?: number | string;
     loading?: boolean;
     className?: string;

@@ -1,7 +1,10 @@
+import { METRICS } from "@quiz/observability";
 import { type NextRequest } from "next/server";
 
-import { sql } from "@/lib/db";
+import { sqlReplica } from "@/lib/db";
+import { recordCounter, recordTimer } from "@/lib/metrics";
 import { redis } from "@/lib/redis";
+import { withLogging } from "@/lib/withLogging";
 import { CACHE_KEYS, CACHE_TTL } from "@/modules/analytics/analytics.constants";
 import { TokenService } from "@/modules/auth/token.service";
 
@@ -12,9 +15,9 @@ interface DifficultyRow {
   accuracy: number;
 }
 
-export async function GET(req: NextRequest) {
+async function handler(req: NextRequest) {
+  const start = Date.now();
   try {
-    // 1. Identity Verification
     const token = TokenService.getAccessToken(req, { scope: "user" });
     if (token === undefined || token === null || token === "") {
       return Response.json({ error: "Authentication required" }, { status: 401 });
@@ -25,18 +28,16 @@ export async function GET(req: NextRequest) {
 
     const CACHE_KEY = CACHE_KEYS.ANALYTICS.USER(userId, "difficulty-accuracy");
 
-    // 2. Redis Cache
     try {
       const cachedData = await redis.get(CACHE_KEY);
       if (cachedData !== null) {
         return Response.json(cachedData);
       }
-    } catch (_redisError) {
-      // Ignore cache errors and fall back to DB
+    } catch (__redisError) {
+      // Ignored
     }
 
-    // 3. SQL Query: Latest accuracy per difficulty
-    const rows = (await sql`
+    const rows = (await sqlReplica`
       SELECT DISTINCT ON (r.name)
         r.name AS difficulty,
         r.accuracy
@@ -47,7 +48,6 @@ export async function GET(req: NextRequest) {
       ORDER BY r.name, r.created_at DESC;
     `) as DifficultyRow[];
 
-    // 4. Transform for ECharts with Fixed Order
     const labels = ["simple", "intermediate", "expert"];
     const accuracy = labels.map((label) => {
       const match = rows.find((r) => r.difficulty.toLowerCase() === label);
@@ -56,19 +56,28 @@ export async function GET(req: NextRequest) {
 
     const result = { labels, accuracy };
 
-    // 5. Cache result
     try {
       await redis.set(CACHE_KEY, result, { ex: CACHE_TTL.USER_PERSONAL });
-    } catch (_redisError) {
-      // Ignore cache set failures
+    } catch (__redisError) {
+      // Ignored
     }
 
-    return Response.json(result);
+    const durationMs = Date.now() - start;
+    recordCounter(METRICS.ANALYTICS.DIFFICULTY_ACCURACY, 1, { outcome: 'success' });
+    recordTimer(METRICS.ANALYTICS.DIFFICULTY_ACCURACY + '.duration', durationMs, { outcome: 'success' });
+    return Response.json(result, {
+      headers: { 'X-Duration-Ms': durationMs.toString() }
+    });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Internal Server Error";
+    const durationMs = Date.now() - start;
+    recordCounter(METRICS.ANALYTICS.DIFFICULTY_ACCURACY, 1, { outcome: 'failure' });
+    recordTimer(METRICS.ANALYTICS.DIFFICULTY_ACCURACY + '.duration', durationMs, { outcome: 'failure' });
     return Response.json(
       { error: "Failed to fetch difficulty accuracy", message },
       { status: 500 }
     );
   }
 }
+
+export const GET = withLogging(handler, { component: 'analytics', operation: 'get_difficulty_accuracy' });

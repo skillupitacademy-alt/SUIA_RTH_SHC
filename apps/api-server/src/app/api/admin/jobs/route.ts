@@ -1,7 +1,10 @@
+import { METRICS } from '@quiz/observability';
 import { JobStatus, JobType } from '@quiz/types';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
+import { recordCounter, recordTimer } from '@/lib/metrics';
+import { withLogging } from '@/lib/withLogging';
 import { TokenService } from '@/modules/auth/token.service';
 import { JobOrchestrator } from '@/modules/system/job-orchestrator';
 import { JobsService } from '@/modules/system/jobs.service';
@@ -9,14 +12,15 @@ import { jobSchema } from '@/schemas/admin.schemas';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET(_req: NextRequest) {
+async function getHandler(_req: NextRequest) {
+  const start = Date.now();
   try {
     const _token = TokenService.getAccessToken(_req, { scope: 'admin' });
     if (_token === null || _token === undefined || _token.trim() === '') {
         return NextResponse.json({ _error: 'Unauthorized' }, { status: 401 });
     }
 
-    const _payload = await TokenService.verifyAccessToken(_token, true);
+    await TokenService.verifyAccessToken(_token, true);
     
     const { searchParams } = new URL(_req.url);
     const status = searchParams.get('status') as JobStatus | undefined;
@@ -29,14 +33,24 @@ export async function GET(_req: NextRequest) {
       offset
     });
 
-    return NextResponse.json({ items, total });
+    const durationMs = Date.now() - start;
+    recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.jobs.list.success', 1);
+    recordTimer(METRICS.ADMIN.DASHBOARD_LOAD + '.jobs.list.duration', durationMs, { outcome: 'success' });
+
+    return NextResponse.json({ items, total }, {
+      headers: { 'X-Duration-Ms': durationMs.toString() }
+    });
   } catch (_error: unknown) {
+    const durationMs = Date.now() - start;
     const _message = _error instanceof Error ? _error.message : 'Internal Server Error';
+    recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.jobs.list.failure', 1);
+    recordTimer(METRICS.ADMIN.DASHBOARD_LOAD + '.jobs.list.duration', durationMs, { outcome: 'failure' });
     return NextResponse.json({ _error: _message }, { status: 500 });
   }
 }
 
-export async function POST(_req: NextRequest) {
+async function postHandler(_req: NextRequest) {
+  const start = Date.now();
   try {
     const _token = TokenService.getAccessToken(_req, { scope: 'admin' });
     if (_token === null || _token === undefined || _token.trim() === '') {
@@ -56,13 +70,11 @@ export async function POST(_req: NextRequest) {
         return NextResponse.json({ _error: 'Job type is required' }, { status: 400 });
     }
 
-    // Payload size guard: ~100 KB
     const rawBodySize = JSON.stringify(_body).length;
     if (rawBodySize > 100_000) {
         return NextResponse.json({ _error: 'Payload too large (max 100KB)' }, { status: 413 });
     }
 
-    // Rate Limit Check (Max 20 active jobs per user for admin - increased from 5)
     const activeCount = await JobsService.getActiveJobCount(_payload.userId);
     if (activeCount >= 20) {
         return NextResponse.json({ 
@@ -76,20 +88,30 @@ export async function POST(_req: NextRequest) {
       payload: _body.payload,
     });
 
-    // Dispatch for execution
     if (_body.type === JobType.MOCK_JOB) {
         const allowMock = process.env.ALLOW_MOCK_JOBS === 'true' || process.env.NODE_ENV !== 'production';
         if (allowMock) {
             void JobsService.simulateJob(_job.id, _payload.userId);
         }
     } else {
-        // Phase 10 & 11: Unified Orchestration
         void JobOrchestrator.runJob(_job.id, _payload.userId);
     }
 
-    return NextResponse.json({ job: _job });
+    const durationMs = Date.now() - start;
+    recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.jobs.create.success', 1);
+    recordTimer(METRICS.ADMIN.DASHBOARD_LOAD + '.jobs.create.duration', durationMs, { outcome: 'success' });
+
+    return NextResponse.json({ job: _job }, {
+      headers: { 'X-Duration-Ms': durationMs.toString() }
+    });
   } catch (_error: unknown) {
+    const durationMs = Date.now() - start;
     const _message = _error instanceof Error ? _error.message : 'Internal Server Error';
+    recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.jobs.create.failure', 1);
+    recordTimer(METRICS.ADMIN.DASHBOARD_LOAD + '.jobs.create.duration', durationMs, { outcome: 'failure' });
     return NextResponse.json({ _error: _message }, { status: 500 });
   }
 }
+
+export const GET = withLogging(getHandler, { component: 'admin', operation: 'list_jobs' });
+export const POST = withLogging(postHandler, { component: 'admin', operation: 'create_job' });

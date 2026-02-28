@@ -1,5 +1,4 @@
 'use client';
-/* eslint-disable @typescript-eslint/no-unused-vars */
 
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
@@ -23,11 +22,10 @@ import { ExitConfirmationDialog } from '@/components/ui/ExitConfirmationDialog';
 import { useSessionManager } from '@/hooks/useSessionManager';
 import { useExamBackup, getFilteredBackup } from '@/hooks/useExamBackup';
 import { clientLogger } from '@/utils/clientLogger';
+import { SyncManager } from '@/lib/sync-manager';
+
 
 type QuizQuestion = QuizState['questions'][number];
-
-// Detailed Question Status
-type QuestionStatus = 'current' | 'answered' | 'flagged' | 'unvisited';
 
 interface HUDState extends QuizState {
     currentIndex: number;
@@ -63,6 +61,10 @@ export default function ActiveExamPage() {
             }
 
             try {
+                // Phase 6 Armor: Launch Jitter
+                // If a million users start at the exact same minute, we spread their initial ping over 2 seconds.
+                await new Promise(resolve => setTimeout(resolve, Math.random() * 2000));
+
                 const data = await apiClient.quiz.getQuizState(examId);
 
                 // Status Gating (P0 Requirement)
@@ -147,9 +149,36 @@ export default function ActiveExamPage() {
         return () => window.removeEventListener('beforeunload', handleBeforeUnload);
     }, [isExamActive, state?.currentIndex, state?.localAnswers, examId]);
 
+    // Phase 5 Resilience: Background Sync Loop
+    useEffect(() => {
+        if (!isExamActive) return;
+
+        const sync = async () => {
+            await SyncManager.syncAll(async (item) => {
+                return apiClient.quiz.submitAnswer(item.examId, item.questionId, item.answer, {
+                    idempotencyKey: item.idempotencyKey
+                });
+            });
+        };
+
+        // Phase 6 Armor: Polling Jitter
+        // spread the 10s window so not everyone pings the server at the same second.
+        const initialDelay = Math.random() * 10000;
+        const timeout = setTimeout(() => {
+            sync();
+            const interval = setInterval(sync, 10000);
+            return () => clearInterval(interval);
+        }, initialDelay);
+
+        return () => clearTimeout(timeout);
+    }, [isExamActive]);
+
     // 3. Handlers
     const handleSelectOption = async (questionId: string, optionId: string) => {
         if (!state) return;
+
+        // Generate a stable idempotency key for this answer
+        const idempotencyKey = `${examId}:${questionId}:${Date.now()}`;
 
         // Optimistic Update
         setState(prev => prev ? ({
@@ -158,11 +187,26 @@ export default function ActiveExamPage() {
         }) : null);
 
         try {
-            // Persistence (No raw fetch - using apiClient)
-            await apiClient.quiz.submitAnswer(examId, questionId, optionId);
+            // Phase 5 Resilience: Save to persistent local storage FIRST
+            await SyncManager.saveAnswer({
+                examId,
+                questionId,
+                answer: optionId,
+                idempotencyKey
+            });
+
+            // Attempt immediate persistence
+            await apiClient.quiz.submitAnswer(examId, questionId, optionId, {
+                idempotencyKey
+            });
+
+            // If successful, remove from sync queue
+            await SyncManager.removeAnswer(idempotencyKey);
         } catch (err) {
-            clientLogger.error('Critical: Failed to persist answer', { error: err instanceof Error ? err.message : 'unknown' });
-            // In a real premium app, we might show a "Sync Error" toast here
+            clientLogger.warn('Network issue detected. Answer queued for background sync.', {
+                error: err instanceof Error ? err.message : 'unknown'
+            });
+            // We don't throw; the background loop will pick it up
         }
     };
 

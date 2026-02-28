@@ -1,7 +1,11 @@
 "use client";
 
 import { apiClient, DiscriminationResponse } from "@quiz/api-client";
+import type { EChartsOption } from "echarts";
+import type { CallbackDataParams } from "echarts/types/dist/shared";
 import { useEffect, useState } from "react";
+
+import { clientLogger } from "@/utils/clientLogger";
 
 import BaseChart from "./BaseChart";
 
@@ -16,7 +20,7 @@ export default function AdminDiscriminationScatter() {
                 const res = await apiClient.analytics.getAdminDiscrimination();
                 setPoints(res.points);
             } catch (err: unknown) {
-                console.error("Failed to load discrimination data", err);
+                clientLogger.error("Failed to load discrimination data", { error: err instanceof Error ? err.message : "unknown" });
                 const error = err as Error;
                 if (error.message?.includes("Forbidden") || error.message?.includes("403")) {
                     setForbidden(true);
@@ -49,16 +53,15 @@ export default function AdminDiscriminationScatter() {
 
     const scatterData = points.map((p) => [p.bottom * 100, p.top * 100, p.id]);
 
-    const option = {
+    const option: EChartsOption = {
         tooltip: {
             backgroundColor: "rgba(255, 255, 255, 0.95)",
             borderColor: "#E2E8F0",
             textStyle: { color: "#1E293B" },
             padding: [10, 15],
             extraCssText: "box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); border-radius: 8px;",
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            formatter: (params: any) => {
-                const [bottom, top, id] = params.value;
+            formatter: (params: CallbackDataParams) => {
+                const [bottom, top, id] = params.value as [number, number, string];
                 const discrimination = top - bottom;
 
                 let quality = "Average";
@@ -101,7 +104,7 @@ export default function AdminDiscriminationScatter() {
             left: 60,
         },
         xAxis: {
-            type: "value",
+            type: "value" as const,
             name: "Bottom Performers Accuracy (%)",
             nameLocation: "middle",
             nameGap: 30,
@@ -111,7 +114,7 @@ export default function AdminDiscriminationScatter() {
             splitLine: { lineStyle: { type: "dashed", color: "#F1F5F9" } },
         },
         yAxis: {
-            type: "value",
+            type: "value" as const,
             name: "Top Performers Accuracy (%)",
             nameLocation: "middle",
             nameGap: 40,
@@ -128,10 +131,9 @@ export default function AdminDiscriminationScatter() {
                 itemStyle: {
                     shadowBlur: 10,
                     shadowColor: "rgba(0, 0, 0, 0.1)",
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    color: (params: any) => {
-                        const bottom = params.value[0];
-                        const top = params.value[1];
+                    color: (params: CallbackDataParams) => {
+                        const bottom = (params.value as number[])[0];
+                        const top = (params.value as number[])[1];
                         const diff = top - bottom;
 
                         if (diff < 0) return "#ef4444"; // broken (red)
@@ -158,7 +160,7 @@ export default function AdminDiscriminationScatter() {
                 },
             },
         ],
-    };
+    } as unknown as EChartsOption;
 
     return (
         <div className="w-full bg-white p-6 rounded-2xl shadow-sm border border-slate-100">

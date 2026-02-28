@@ -24,7 +24,8 @@ async function main() {
         output += "Available Domains: " + allDomains.map(d => d.name).join(", ");
     }
     fs.writeFileSync("subjects_check.txt", output);
-    console.log("Check complete. See subjects_check.txt");
+    scriptLogger.info("Check complete. See subjects_check.txt");
 }
 
-main().catch(console.error).then(() => process.exit(0));
+main().catch(scriptLogger.error).then(() => process.exit(0));
+

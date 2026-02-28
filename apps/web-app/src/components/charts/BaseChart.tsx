@@ -2,6 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { useMemo } from "react";
+import type { EChartsOption } from "echarts";
 
 /**
  * BaseChart Wrapper Component
@@ -17,8 +18,7 @@ const ReactECharts = dynamic(() => import("echarts-for-react"), {
 });
 
 interface BaseChartProps {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    option: any;
+    option: EChartsOption;
     height?: number | string;
     loading?: boolean;
     className?: string;

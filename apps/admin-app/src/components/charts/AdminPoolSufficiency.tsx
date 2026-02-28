@@ -1,8 +1,12 @@
 "use client";
 
 import { apiClient, type PoolSufficiencyResponse } from "@quiz/api-client";
+import type { EChartsOption } from "echarts";
+import type { CallbackDataParams } from "echarts/types/dist/shared";
 import { AlertTriangle, CheckCircle2, Database, Inbox } from "lucide-react";
 import React, { useEffect, useState } from "react";
+
+import { clientLogger } from "@/utils/clientLogger";
 
 import BaseChart from "./BaseChart";
 
@@ -16,7 +20,7 @@ export default function AdminPoolSufficiency() {
                 const res = await apiClient.analytics.getAdminPoolSufficiency();
                 setData(res);
             } catch (err: unknown) {
-                console.error("Failed to fetch pool sufficiency", err);
+                clientLogger.error("Failed to fetch pool sufficiency", { error: err instanceof Error ? err.message : "unknown" });
             } finally {
                 setLoading(false);
             }
@@ -49,14 +53,13 @@ export default function AdminPoolSufficiency() {
 
     const status = getStatus(percent);
 
-    const option = {
+    const option: EChartsOption = {
         tooltip: {
-            trigger: 'item',
+            trigger: 'item' as const,
             backgroundColor: 'rgba(15, 23, 42, 0.95)',
             borderColor: 'rgba(255, 255, 255, 0.1)',
             textStyle: { color: '#fff', fontSize: 12 },
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            formatter: (params: any) => {
+            formatter: (params: CallbackDataParams) => {
                 return `<div class="p-2">
                     <div class="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-1">Pool Status</div>
                     <div class="text-lg font-black">${params.value}% Optimized</div>
@@ -108,7 +111,7 @@ export default function AdminPoolSufficiency() {
                 data: [{ value: percent, name: 'OPTIMIZED' }]
             }
         ]
-    };
+    } as unknown as EChartsOption;
 
     return (
         <div className="w-full bg-white p-12 rounded-[2.5rem] shadow-xl shadow-slate-200/20 border border-slate-200 flex flex-col min-h-[780px] group hover:-translate-y-1 transition-all duration-300">

@@ -1,9 +1,7 @@
 'use client';
 
-// eslint-disable-next-line simple-import-sort/imports
-import { useEffect, useState } from 'react';
-// eslint-disable-next-line simple-import-sort/imports
 import { Check, Clock, FileText, List, Plus, Trash2 } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
 
 import { cn } from '@/lib/utils';
 
@@ -24,22 +22,23 @@ interface QuestionEditorProps {
     onCancel?: () => void;
 }
 
-export function QuestionEditor({ onSubmit, loading, initialData, onCancel }: QuestionEditorProps) {
-    const baseOptions = [
-        { id: '1', text: '', isCorrect: false },
-        { id: '2', text: '', isCorrect: false },
-        { id: '3', text: '', isCorrect: false },
-        { id: '4', text: '', isCorrect: false },
-    ];
+const BASE_OPTIONS = [
+    { id: '1', text: '', isCorrect: false },
+    { id: '2', text: '', isCorrect: false },
+    { id: '3', text: '', isCorrect: false },
+    { id: '4', text: '', isCorrect: false },
+];
 
-    const buildState = (seed?: Partial<QuestionFormData>): QuestionFormData => {
+export function QuestionEditor({ onSubmit, loading, initialData, onCancel }: QuestionEditorProps) {
+
+    const buildState = React.useCallback((seed?: Partial<QuestionFormData>): QuestionFormData => {
         const normalizedOptions =
             (seed?.options != null && seed.options.length > 0)
                 ? seed.options.map(o => ({
                     ...o,
                     id: (o.id != null && o.id !== '') ? o.id : crypto.randomUUID(),
                 }))
-                : baseOptions;
+                : BASE_OPTIONS;
 
         return {
             text: seed?.text ?? '',
@@ -50,15 +49,14 @@ export function QuestionEditor({ onSubmit, loading, initialData, onCancel }: Que
             estimatedTime: seed?.estimatedTime ?? 60,
             mappingType: seed?.mappingType ?? 'conceptual',
         };
-    };
+    }, []);
 
     const [data, setData] = useState<QuestionFormData>(buildState(initialData));
 
     // Keep form in sync when initialData arrives/changes (e.g., after async fetch)
     useEffect(() => {
         setData(buildState(initialData));
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [initialData]);
+    }, [buildState, initialData]);
 
     const addOption = () => {
         setData(prev => ({

@@ -1,7 +1,6 @@
 'use client';
 
 import { Shield, Tag, Play, Activity, Check } from 'lucide-react';
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { cn } from '@/lib/utils';
 
 interface AssessmentSummaryProps {
@@ -66,6 +65,9 @@ export function AssessmentSummary({
                                 <div className="flex items-center gap-2 text-muted-foreground">
                                     <Tag size={12} className="text-[#FF2D55]" />
                                     <span className="text-[10px] font-black font-inter uppercase tracking-[0.2em] opacity-40">Target Subjects</span>
+                                    <span className="px-2 py-1 bg-gray-900 text-white text-[10px] font-black rounded-lg border border-gray-200/40">
+                                        {subjectsCount} subj / {topicsCount} topics
+                                    </span>
                                 </div>
                                 <div className="flex flex-wrap gap-2 min-h-[1.2rem]">
                                     {selectedSubjects.length > 0 ? (

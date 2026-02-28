@@ -1,83 +1,86 @@
+import { METRICS } from "@quiz/observability";
 import { type NextRequest, NextResponse } from "next/server";
 
-import { sql } from "@/lib/db";
+import { sqlReplica } from "@/lib/db";
+import { recordCounter, recordTimer } from "@/lib/metrics";
 import { redis } from "@/lib/redis";
-import { CACHE_KEYS, CACHE_TTL } from "@/modules/analytics/analytics.constants";
+import { withLogging } from "@/lib/withLogging";
 import { TokenService } from "@/modules/auth/token.service";
+import { ResilienceService } from "@/modules/core/resilience.service";
 
 export const dynamic = "force-dynamic";
 
-// Standard TTL used via ANALYTICS_CACHE.ADMIN_GLOBAL (3600s)
-
 interface ItemDifficultyRow {
+  topic_name: string;
   question_id: string;
-  attempt_count: number;
-  accuracy_percent: number;
+  p_value: number;
 }
 
-export async function GET(req: NextRequest) {
+async function handler(req: NextRequest) {
+  const start = Date.now();
   try {
-    // 1. Identity & Role Verification (RBAC)
+    const analyticsEnabled = await ResilienceService.isFeatureEnabled('analytics');
+    if (analyticsEnabled === false) {
+      return NextResponse.json(ResilienceService.getBusyPayload('analytics'), { status: 503 });
+    }
+
     const token = TokenService.getAccessToken(req, { scope: "admin" });
-    if (token === undefined || token === null || token === "") {
-      return NextResponse.json({ error: "Authentication required" }, { status: 401 });
+    const payload = await TokenService.verifyAccessToken(token as string, true) as {
+      isAdmin?: boolean;
+      roles?: string[];
+    } | null;
+    const isAdmin = payload?.isAdmin === true;
+    const roles = Array.isArray(payload?.roles) ? payload.roles : [];
+
+    if (!isAdmin && !roles.includes('ADMIN')) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    const payload = await TokenService.verifyAccessToken(token, true);
-    
-    // Explicitly check role (TokenPayload has roles string array)
-    const hasAdminRole = payload.roles.some((role: string) => role === "ADMIN" || role === "SUPER_ADMIN" || role === "admin");
-    
-    if (!hasAdminRole && payload.isAdmin !== true) {
-      return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
-    }
-
-    // 2. Try Redis Cache
+    const CACHE_KEY = "analytics:admin:item-difficulty";
     try {
-      const cachedData = await redis.get(CACHE_KEYS.ANALYTICS.ADMIN("item-difficulty"));
-      if (cachedData !== null) {
-        return NextResponse.json(cachedData);
-      }
-    } catch (redisError) {
-      console.error("[Redis Error]:", redisError);
+      const cached = await redis.get(CACHE_KEY);
+      if (cached !== null && cached !== undefined) return NextResponse.json(cached);
+    } catch (_e) {
+      // cache optional; proceed on miss or failure
     }
 
-    // 3. Query Materialized View (Top 20 Hardest Questions, min 5 attempts)
-    const rows = (await sql`
-      SELECT question_id, attempt_count, accuracy_percent
-      FROM mv_item_difficulty
-      WHERE attempt_count >= 5
-      ORDER BY accuracy_percent ASC
-      LIMIT 20
+    const rows = (await sqlReplica`
+      SELECT t.name as topic_name, idm.question_id, idm.p_value
+      FROM mv_item_difficulty_metrics idm
+      JOIN questions q ON q.id = idm.question_id
+      JOIN topics t ON t.id = q.topic_id
+      ORDER BY idm.p_value DESC
+      LIMIT 100;
     `) as ItemDifficultyRow[];
 
-    // 4. Transform for ECharts
     const result = {
-      ids: rows.map(r => r.question_id),
-      accuracy: rows.map(r => Number(r.accuracy_percent)),
-      attempts: rows.map(r => Number(r.attempt_count))
+      topics: Array.from(new Set(rows.map(r => r.topic_name))),
+      items: rows.map(r => ({
+        id: r.question_id,
+        difficulty: Number(r.p_value),
+        topic: r.topic_name
+      }))
     };
 
-    // 5. Cache (Fire-and-forget)
     try {
-      if (rows.length > 0) {
-        await redis.set(
-          CACHE_KEYS.ANALYTICS.ADMIN("item-difficulty"), 
-          result, 
-          { ex: CACHE_TTL.ADMIN_GLOBAL }
-        );
-      }
-    } catch (redisError) {
-      console.error("[Redis Cache Error]:", redisError);
+      await redis.set(CACHE_KEY, result, { ex: 3600 });
+    } catch (_e) {
+      // cache store is best-effort
     }
 
-    return NextResponse.json(result);
+    const durationMs = Date.now() - start;
+    recordTimer(METRICS.ADMIN.DASHBOARD_LOAD + '.item_difficulty', durationMs, { outcome: 'success' });
+    recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.item_difficulty.count', 1, { outcome: 'success' });
+    return NextResponse.json(result, {
+      headers: { 'X-Duration-Ms': durationMs.toString() }
+    });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Internal Server Error";
-    console.error("[Admin Item Difficulty Error]:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch item difficulty", message },
-      { status: 500 }
-    );
+    const durationMs = Date.now() - start;
+    recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.item_difficulty.count', 1, { outcome: 'failure' });
+    recordTimer(METRICS.ADMIN.DASHBOARD_LOAD + '.item_difficulty.duration', durationMs, { outcome: 'failure' });
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
+
+export const GET = withLogging(handler, { component: 'analytics', operation: 'get_item_difficulty' });

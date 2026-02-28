@@ -1,8 +1,11 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import type { EChartsOption } from "echarts";
 import { apiClient, ScoreHistoryResponse } from "@quiz/api-client";
+import { recordCounter } from "@quiz/observability";
 import BaseChart from "./BaseChart";
+import { clientLogger } from "@/utils/clientLogger";
 
 interface ScoreHistoryChartProps {
     onDataFetched?: (data: ScoreHistoryResponse) => void;
@@ -11,6 +14,7 @@ interface ScoreHistoryChartProps {
 export default function ScoreHistoryChart({ onDataFetched }: ScoreHistoryChartProps) {
     const [data, setData] = useState<ScoreHistoryResponse | null>(null);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
     const [goal, setGoal] = useState<number>(75);
 
     useEffect(() => {
@@ -19,8 +23,14 @@ export default function ScoreHistoryChart({ onDataFetched }: ScoreHistoryChartPr
                 const response = await apiClient.analytics.getUserScoreHistory();
                 setData(response);
                 if (onDataFetched) onDataFetched(response);
+                if (!response || response.dates.length === 0) {
+                    recordCounter('web.ui.score_history.empty', 1);
+                }
             } catch (error) {
-                console.error("Failed to fetch score history:", error);
+                const message = error instanceof Error ? error.message : "Failed to fetch score history";
+                setError(message);
+                clientLogger.error("Failed to fetch score history", { error: message });
+                recordCounter('web.ui.score_history.fetch_error', 1);
             } finally {
                 setLoading(false);
             }
@@ -60,6 +70,15 @@ export default function ScoreHistoryChart({ onDataFetched }: ScoreHistoryChartPr
         };
     }, [data]);
 
+    if (error) {
+        return (
+            <div className="h-[300px] w-full flex flex-col items-center justify-center bg-red-50 rounded-xl border border-red-100 text-red-600">
+                <p className="font-semibold">Unable to load score history</p>
+                <span className="text-xs text-red-500">{error}</span>
+            </div>
+        );
+    }
+
     // Empty State
     if (!loading && (!data || data.dates.length === 0)) {
         return (
@@ -87,7 +106,7 @@ export default function ScoreHistoryChart({ onDataFetched }: ScoreHistoryChartPr
             containLabel: true,
         },
         xAxis: {
-            type: "category",
+            type: "category" as const,
             data: data?.dates || [],
             boundaryGap: false,
             axisLine: { show: false },
@@ -153,7 +172,7 @@ export default function ScoreHistoryChart({ onDataFetched }: ScoreHistoryChartPr
                 },
             },
         ],
-    };
+    } as unknown as EChartsOption;
 
     return (
         <div className="w-full bg-white p-6 rounded-2xl shadow-sm border border-slate-100">

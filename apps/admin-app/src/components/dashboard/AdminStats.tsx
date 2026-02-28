@@ -1,5 +1,4 @@
 'use client';
-/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { apiClient } from '@quiz/api-client';
 import { FileCheck, LucideIcon, ShieldAlert, Users, Zap } from 'lucide-react';
@@ -35,13 +34,19 @@ export function MetricCard({ label, value, icon: Icon, subValue, variant = 'defa
 }
 
 export function AdminMetricsGrid() {
-    const [metrics, setMetrics] = useState<any>(null);
+    type MetricResponse = {
+        totalUsers?: number;
+        liveUsers?: number;
+        totalExams?: number;
+        totalQuestions?: number;
+    };
+    const [metrics, setMetrics] = useState<MetricResponse | null>(null);
 
     useEffect(() => {
         const fetchMetrics = async () => {
             try {
                 const data = await apiClient.admin.getMetrics();
-                setMetrics(data);
+                setMetrics(data as MetricResponse);
             } catch (err) {
                 clientLogger.error("Failed to fetch admin metrics", { error: err instanceof Error ? err.message : 'unknown' });
             }

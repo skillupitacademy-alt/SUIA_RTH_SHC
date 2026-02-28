@@ -1,0 +1,23 @@
+{
+    "title": "API Health - Golden Signals",
+    "panels": [
+        {
+            "title": "p95 Latency",
+            "type": "graph",
+            "targets": [
+                {
+                    "expr": "histogram_quantile(0.95, sum(rate(quiz_api_server_http_request_duration_ms_bucket[5m])) by (le, route))"
+                }
+            ]
+        },
+        {
+            "title": "Error Rate by Endpoint",
+            "type": "graph",
+            "targets": [
+                {
+                    "expr": "sum(rate(quiz_api_server_http_requests_total{outcome=\"failure\"}[5m])) by (route) / sum(rate(quiz_api_server_http_requests_total[5m])) by (route)"
+                }
+            ]
+        }
+    ]
+}

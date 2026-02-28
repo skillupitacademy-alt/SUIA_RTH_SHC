@@ -1,9 +1,14 @@
 "use client";
 
 import { apiClient, ScoreHistogramResponse } from "@quiz/api-client";
+import type { EChartsOption } from "echarts";
 import { useEffect, useState } from "react";
 
+import { clientLogger } from "@/utils/clientLogger";
+
 import BaseChart from "./BaseChart";
+
+type HistogramFormatterParams = { name: string; value: number };
 
 export default function AdminScoreHistogram() {
     const [data, setData] = useState<ScoreHistogramResponse>({
@@ -19,7 +24,7 @@ export default function AdminScoreHistogram() {
                 const res = await apiClient.analytics.getAdminScoreHistogram();
                 setData(res);
             } catch (err: unknown) {
-                console.error("Failed to load score histogram", err);
+                clientLogger.error("Failed to load score histogram", { error: err instanceof Error ? err.message : 'unknown' });
                 setForbidden(true);
             } finally {
                 setLoading(false);
@@ -55,16 +60,15 @@ export default function AdminScoreHistogram() {
     );
     const meanScore = totalStudents ? weightedSum / totalStudents : 0;
 
-    const option = {
+    const option: EChartsOption = {
         tooltip: {
-            trigger: "axis",
+            trigger: "axis" as const,
             backgroundColor: "rgba(255, 255, 255, 0.95)",
             borderColor: "#E2E8F0",
             textStyle: { color: "#1E293B" },
             padding: [10, 15],
             extraCssText: "box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); border-radius: 8px;",
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            formatter: (params: any) => {
+            formatter: (params: HistogramFormatterParams[]) => {
                 const p = params[0];
                 return `
           <div class="font-bold mb-1 text-slate-800">Score Range: ${p.name}</div>
@@ -82,13 +86,13 @@ export default function AdminScoreHistogram() {
             left: 50,
         },
         xAxis: {
-            type: "category",
+            type: "category" as const,
             data: data.bins.map((_, i) => `${i * 10}-${(i + 1) * 10}`),
             axisLabel: { color: "#64748B", fontSize: 11 },
             axisLine: { lineStyle: { color: "#E2E8F0" } },
         },
         yAxis: {
-            type: "value",
+            type: "value" as const,
             name: "Students",
             nameTextStyle: { color: "#64748B", fontSize: 11, padding: [0, 0, 10, 0] },
             axisLabel: { color: "#64748B", fontSize: 11 },
@@ -139,7 +143,7 @@ export default function AdminScoreHistogram() {
                 },
             },
         ],
-    };
+    } as unknown as EChartsOption;
 
     return (
         <div className="w-full bg-white p-6 rounded-2xl shadow-sm border border-slate-100">

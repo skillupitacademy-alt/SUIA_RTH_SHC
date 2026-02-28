@@ -40,6 +40,9 @@
       ],
       "@quiz/types/*": [
         "../../packages/types/src/*"
+      ],
+      "@quiz/observability": [
+        "../../packages/observability/src/index.ts"
       ]
     },
     "jsx": "preserve",
@@ -47,7 +50,7 @@
       "bcryptjs"
     ],
     "typeRoots": [
-      "../../types",
+      "../../packages/types/src/globals",
       "../../node_modules/@types"
     ]
   },
@@ -56,12 +59,11 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    "../../types/**/*.d.ts"
+    "../../packages/types/src/globals/**/*.d.ts"
   ],
   "exclude": [
     "node_modules",
     "*.config.js",
-    "*.config.mjs",
-    "*.config.ts"
+    "*.config.mjs"
   ]
 }

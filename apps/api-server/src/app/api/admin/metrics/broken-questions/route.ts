@@ -2,6 +2,8 @@ import { db } from "@quiz/db";
 import { sql } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 
+import { recordCounter, recordTimer } from "@/lib/metrics";
+import { withLogging } from "@/lib/withLogging";
 import { TokenService } from "@/modules/auth/token.service";
 
 export const dynamic = "force-dynamic";
@@ -25,7 +27,8 @@ type BrokenRow = {
   last_edited_at: string | null;
 };
 
-export async function GET(req: NextRequest) {
+async function handler(req: NextRequest) {
+  const start = Date.now();
   try {
     const token = TokenService.getAccessToken(req, { scope: "admin" });
     if (token === null || token === undefined || token.length === 0) {
@@ -33,7 +36,6 @@ export async function GET(req: NextRequest) {
     }
     const payload = await TokenService.verifyAccessToken(token, true);
     
-    // Explicitly check role
     const hasAdminRole = Array.isArray(payload.roles) && payload.roles.some(
       (role: string) => role.toUpperCase() === "ADMIN" || role.toUpperCase() === "SUPER_ADMIN"
     );
@@ -43,12 +45,8 @@ export async function GET(req: NextRequest) {
     }
 
     const { searchParams } = new URL(req.url);
-    const limitParam = searchParams.get("limit");
-    const floorParam = searchParams.get("floor");
-    const limitParsed = limitParam !== null ? parseInt(limitParam, 10) : NaN;
-    const floorParsed = floorParam !== null ? parseInt(floorParam, 10) : NaN;
-    const limit = Number.isFinite(limitParsed) && limitParsed > 0 ? limitParsed : 10;
-    const floor = Number.isFinite(floorParsed) && floorParsed > 0 ? floorParsed : 10;
+    const limit = parseInt(searchParams.get("limit") ?? "10", 10);
+    const floor = parseInt(searchParams.get("floor") ?? "10", 10);
 
     const query = sql`
       WITH difficulty_medians AS (
@@ -93,20 +91,17 @@ export async function GET(req: NextRequest) {
       LIMIT 100
     `;
 
-    const result = await db.execute(query);
-    const rows = result.rows as BrokenRow[];
+    const resultList = await db.execute(query);
+    const rows = resultList.rows as BrokenRow[];
 
-    // Scoring and filtering in JS
     const scored = rows.map(row => {
       const accuracy = typeof row.accuracy === "number" ? row.accuracy : 0;
       const discrimination = typeof row.discrimination === "number" ? row.discrimination : 0;
-      
       const hardFlag = accuracy < ACC_THRESHOLD ? 1 : 0;
       const discrimFlag = discrimination < DISCRIM_THRESHOLD ? 1 : 0;
       
       let timeFlag = 0;
       let timeNote = undefined;
-      // Safety checks for time anomaly
       if (typeof row.p95_time === 'number' && typeof row.difficulty_median === 'number' && row.difficulty_median > 0) {
         if (row.p95_time > TIME_MULTIPLIER * row.difficulty_median) {
             timeFlag = 1;
@@ -119,15 +114,8 @@ export async function GET(req: NextRequest) {
           timeNote = `Potential Guessing: p05 ${row.p05_time.toFixed(1)}s`;
       }
 
-      // Skip anomaly currently not tracked in schema, so skipFlag = 0
-      const skipFlag = 0;
-
-      let score = (0.5 * hardFlag) + (0.3 * discrimFlag) + (0.1 * timeFlag) + (0.1 * skipFlag);
-      
-      // severity boost floor for low attempts to prevent noise
-      if (row.attempts < ATTEMPT_CAP) {
-        score = Math.min(score, 0.6);
-      }
+      const score = (0.5 * hardFlag) + (0.3 * discrimFlag) + (0.1 * timeFlag);
+      const finalScore = row.attempts < ATTEMPT_CAP ? Math.min(score, 0.6) : score;
 
       return {
         questionId: row.question_id,
@@ -135,29 +123,26 @@ export async function GET(req: NextRequest) {
         accuracy: accuracy,
         discrimination: discrimination,
         attempts: row.attempts,
-        brokenScore: score,
+        brokenScore: finalScore,
         timeNote,
         difficulty: row.difficulty,
         lastEditedAt: row.last_edited_at,
-        flags: {
-            hard: !!hardFlag,
-            discrim: !!discrimFlag,
-            time: !!timeFlag,
-            skip: !!skipFlag
-        }
+        flags: { hard: !!hardFlag, discrim: !!discrimFlag, time: !!timeFlag, skip: false }
       };
     });
 
-    // Ranking: highest brokenScore first, tie-break with lowest accuracy
-    scored.sort((a, b) => b.brokenScore - a.brokenScore || a.accuracy - b.accuracy);
-    
-    return NextResponse.json(scored.slice(0, limit));
+    const durationMs = Date.now() - start;
+    recordCounter('admin.api.metrics.broken_questions.count', 1, { outcome: 'success', limit, floor });
+    recordTimer('admin.api.metrics.broken_questions.duration', durationMs, { outcome: 'success' });
 
+    return NextResponse.json(scored.slice(0, limit), {
+      headers: { 'X-Duration-Ms': durationMs.toString() }
+    });
   } catch (error: unknown) {
-    console.error("[Broken Questions API Error]:", error);
-    return NextResponse.json({ 
-      error: "Internal Server Error", 
-      message: error instanceof Error ? error.message : "Unexpected error" 
-    }, { status: 500 });
+    const message = error instanceof Error ? error.message : "Internal Server Error";
+    recordCounter('admin.api.metrics.broken_questions.count', 1, { outcome: 'failure' });
+    return NextResponse.json({ error: "Internal Server Error", message }, { status: 500 });
   }
 }
+
+export const GET = withLogging(handler, { component: 'admin', operation: 'get_broken_questions_metrics' });

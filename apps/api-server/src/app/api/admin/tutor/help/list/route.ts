@@ -1,16 +1,16 @@
 import { db, tutorHelpRequests } from "@quiz/db";
+import { METRICS } from "@quiz/observability";
 import { eq, sql } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 
+import { recordCounter, recordTimer } from "@/lib/metrics";
+import { withLogging } from "@/lib/withLogging";
 import { TokenService } from "@/modules/auth/token.service";
 
 export const dynamic = "force-dynamic";
 
-/**
- * GET /api/admin/tutor/help/list
- * List help requests for admin review.
- */
-export async function GET(req: NextRequest) {
+async function getHandler(req: NextRequest) {
+  const start = Date.now();
   try {
     const token = TokenService.getAccessToken(req, { scope: "admin" });
     if (typeof token !== "string" || token.length === 0) {
@@ -21,8 +21,10 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const statusParam = searchParams.get("status");
     const status = typeof statusParam === "string" && statusParam.trim().length > 0 ? statusParam.trim() : "pending";
-    const limit = Number(searchParams.get("limit") ?? 20);
-    const offset = Number(searchParams.get("offset") ?? 0);
+    const limitRaw = Number(searchParams.get("limit") ?? 20);
+    const offsetRaw = Number(searchParams.get("offset") ?? 0);
+    const limit = Number.isFinite(limitRaw) && limitRaw > 0 ? Math.min(limitRaw, 200) : 20;
+    const offset = Number.isFinite(offsetRaw) && offsetRaw >= 0 ? offsetRaw : 0;
 
     const list = await db.execute(sql`
       SELECT 
@@ -45,7 +47,6 @@ export async function GET(req: NextRequest) {
       LIMIT ${limit} OFFSET ${offset}
     `);
 
-    // Get total count for pagination
     const countResult = await db.execute(sql`
       SELECT COUNT(*)::int as count FROM tutor_help_requests WHERE status = ${status}
     `);
@@ -53,21 +54,27 @@ export async function GET(req: NextRequest) {
     const total =
       countResult.rows.length > 0 && typeof countResult.rows[0].count === "number" ? countResult.rows[0].count : 0;
 
+    const durationMs = Date.now() - start;
+    recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.tutor.help.list.success', 1);
+    recordTimer(METRICS.ADMIN.DASHBOARD_LOAD + '.tutor.help.list.duration', durationMs, { outcome: 'success' });
+
     return NextResponse.json({
       requests: list.rows,
       total,
+    }, {
+      headers: { 'X-Duration-Ms': durationMs.toString() }
     });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Internal Server Error";
+    const durationMs = Date.now() - start;
+    recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.tutor.help.list.failure', 1);
+    recordTimer(METRICS.ADMIN.DASHBOARD_LOAD + '.tutor.help.list.duration', durationMs, { outcome: 'failure' });
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
 
-/**
- * PATCH /api/admin/tutor/help/status
- * Update the status of a help request.
- */
-export async function PATCH(req: NextRequest) {
+async function patchHandler(req: NextRequest) {
+  const start = Date.now();
   try {
     const token = TokenService.getAccessToken(req, { scope: "admin" });
     if (typeof token !== "string" || token.length === 0) {
@@ -75,7 +82,7 @@ export async function PATCH(req: NextRequest) {
     }
     await TokenService.verifyAccessToken(token, true);
 
-    const body = await req.json();
+    const body = await req.json().catch(() => ({}));
     const requestId: string | undefined =
       typeof body?.requestId === "string" && body.requestId.trim().length > 0 ? body.requestId.trim() : undefined;
     const statusRaw: string | undefined =
@@ -99,9 +106,21 @@ export async function PATCH(req: NextRequest) {
 
     await db.update(tutorHelpRequests).set(updateShape).where(eq(tutorHelpRequests.id, requestId));
 
-    return NextResponse.json({ success: true });
+    const durationMs = Date.now() - start;
+    recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.tutor.help.update.success', 1, { status: statusRaw });
+    recordTimer(METRICS.ADMIN.DASHBOARD_LOAD + '.tutor.help.update.duration', durationMs, { outcome: 'success', status: statusRaw });
+
+    return NextResponse.json({ success: true }, {
+        headers: { 'X-Duration-Ms': durationMs.toString() }
+    });
   } catch (error: unknown) {
+    const durationMs = Date.now() - start;
+    recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.tutor.help.update.failure', 1);
+    recordTimer(METRICS.ADMIN.DASHBOARD_LOAD + '.tutor.help.update.duration', durationMs, { outcome: 'failure' });
     const message = error instanceof Error ? error.message : "Internal Server Error";
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
+
+export const GET = withLogging(getHandler, { component: 'admin', operation: 'list_help_requests' });
+export const PATCH = withLogging(patchHandler, { component: 'admin', operation: 'update_help_status' });

@@ -1,12 +1,13 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
+import { withLogging } from '@/lib/withLogging';
 import { TokenService } from '@/modules/auth/token.service';
 import { ExamBlueprintService } from '@/services/exams/ExamBlueprintService';
 
 export const dynamic = 'force-dynamic';
 
-export async function POST(_req: NextRequest) {
+async function handler(_req: NextRequest) {
   try {
     const _token = TokenService.getAccessToken(_req, { scope: 'user' });
     if (typeof _token !== 'string' || _token.trim() === '') {
@@ -29,3 +30,5 @@ export async function POST(_req: NextRequest) {
     return NextResponse.json({ _error: message }, { status: 400 });
   }
 }
+
+export const POST = withLogging(handler, { component: 'quiz', operation: 'count_available_questions' });

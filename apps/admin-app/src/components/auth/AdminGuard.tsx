@@ -1,5 +1,4 @@
 'use client';
-/* eslint-disable react-hooks/exhaustive-deps */
 
 import { apiClient } from '@quiz/api-client';
 import { ZLoader } from '@quiz/ui';
@@ -83,7 +82,7 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
 
         window.addEventListener('auth:unauthorized', handleUnauthorized);
         return () => window.removeEventListener('auth:unauthorized', handleUnauthorized);
-    }, [isAuthenticated, user, initialized, router, logout, pathname, isLocked]);
+    }, [expiresAt, initialized, isAuthenticated, isLocked, login, logout, pathname, router, user]);
 
 
     // Bypass guard for login page

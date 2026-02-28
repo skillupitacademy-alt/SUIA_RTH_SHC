@@ -66,7 +66,7 @@
 - [ ] **Access Control**: Block `/api/migrate` from public internet.
 - [ ] **Caching**: Aggressive `s-maxage` for static/public data.
 > **🤖 AI Prompt**:  
-> "Generate a Cloudflare specific `next.config.js` configuration. Set up security headers (HSTS, CSP) and configure `stale-while-revalidate` caching strategy for Dashboard APIs."
+> "Generate a Cloudflare specific `next.config.mjs` configuration. Set up security headers (HSTS, CSP) and configure `stale-while-revalidate` caching strategy for Dashboard APIs."
 
 **✅ Phase 2 Acceptance Criteria**:
 - Submit returns 202 instantly (<500ms).

@@ -28,25 +28,61 @@ const schema = {
 type Schema = typeof schema;
 type DbClient = ReturnType<typeof drizzle<Schema>>;
 
-// Create a lazy-initialized database client
-let dbInstance: DbClient | null = null;
+// Create lazy-initialized database clients for Read/Write splitting
+let primaryDbInstance: DbClient | null = null;
+let replicaDbInstance: DbClient | null = null;
 
-export const getDb = (): DbClient => {
-    if (!dbInstance) {
+export const getDb = (type: 'primary' | 'replica' = 'primary'): DbClient => {
+    // 1. Check if we should use the replica
+    if (type === 'replica' && process.env.DATABASE_URL_REPLICA) {
+        if (!replicaDbInstance) {
+            const pool = new Pool({ 
+                connectionString: process.env.DATABASE_URL_REPLICA,
+                max: 10,
+                idleTimeoutMillis: 30000,
+            });
+            replicaDbInstance = drizzle(pool, { schema });
+        }
+        return replicaDbInstance;
+    }
+
+    // 2. Fallback to Primary
+    if (!primaryDbInstance) {
         const databaseUrl = process.env.DATABASE_URL;
         if (!databaseUrl) {
             throw new Error('DATABASE_URL environment variable is required');
         }
-        const pool = new Pool({ connectionString: databaseUrl });
-        dbInstance = drizzle(pool, { schema });
+
+        const pool = new Pool({ 
+            connectionString: databaseUrl,
+            max: 15, // Higher limit for primary writes
+            idleTimeoutMillis: 30000,
+            connectionTimeoutMillis: 2000,
+        });
+
+        primaryDbInstance = drizzle(pool, { schema });
     }
-    return dbInstance!;
+    return primaryDbInstance!;
 }
 
-// Proxy the db export with full schema type information
+/**
+ * Main database export. Defaults to Primary.
+ * For scaling millions of users, use dbReplica for SELECT queries.
+ */
 export const db = new Proxy({} as DbClient, {
     get: (target, prop) => {
-        const instance = getDb();
+        const instance = getDb('primary');
+        return (instance as any)[prop];
+    }
+});
+
+/**
+ * Replica database export. Use for heavy GET/SELECT operations.
+ * Falls back to Primary if NO REPLICA is configured.
+ */
+export const dbReplica = new Proxy({} as DbClient, {
+    get: (target, prop) => {
+        const instance = getDb('replica');
         return (instance as any)[prop];
     }
 });

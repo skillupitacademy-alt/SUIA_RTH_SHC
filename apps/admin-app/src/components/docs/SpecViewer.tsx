@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import React from 'react';
 
 import { ADMIN_SPEC_DATA, CORE_SPEC_DATA, UX_SPEC_DATA } from '@/lib/governance-inventory';
@@ -8,7 +7,6 @@ interface SpecViewerProps {
 }
 
 export function SpecViewer({ type }: SpecViewerProps) {
-    const data = type === 'admin' ? ADMIN_SPEC_DATA : type === 'core' ? CORE_SPEC_DATA : UX_SPEC_DATA;
     const title = type === 'admin' ? 'Admin Platform Spec' : type === 'core' ? 'Core Platform Spec' : 'UX Baseline Standards';
     const subtitle = type === 'admin' ? '(The Governance Terminal)' : type === 'core' ? '(The Logic Layer)' : '(The Design System)';
 

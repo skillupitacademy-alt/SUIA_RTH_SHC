@@ -1,13 +1,13 @@
 'use client';
 
 import { useDashboardStore } from "@/store/dashboard-store";
+import { recordCounter } from "@quiz/observability";
 import { useEffect, useState } from "react";
-import { BookOpen, Calendar, ArrowRight, ChevronLeft } from "lucide-react";
+import { BookOpen, Calendar, ArrowRight, ChevronLeft, Clock, Layers, Hash, BookOpen as BookIcon, Filter, List, TrendingUp, BarChart2 } from "lucide-react";
 import Link from "next/link";
 import { ProgressChart } from "@/components/dashboard/ProgressChart";
 import { StackedBarBreakdown } from "@/components/dashboard/StackedBarBreakdown";
 import { cn } from "@/lib/utils";
-import { Filter, BarChart2, List, TrendingUp, Hash, Layers, BookOpen as BookIcon, Clock } from 'lucide-react';
 import { SelectField, ZLoader, ZPagination } from '@quiz/ui';
 
 export default function MyExamsPage() {
@@ -39,6 +39,7 @@ export default function MyExamsPage() {
     const handleRangeChange = (newRange: string) => {
         if (newRange === '90d') return; // Strictly enforced contract
         setRange(newRange);
+        recordCounter('web.ui.my_exams.range_change', 1, { range: newRange });
         fetchPerformanceTrend(newRange);
         fetchPerformanceBreakdown(newRange);
     };

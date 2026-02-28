@@ -1,5 +1,9 @@
 import { db, questions, questionSkills } from '@quiz/db';
+import { JobType } from '@quiz/types';
 import { and, desc, eq, inArray,sql } from 'drizzle-orm';
+
+import { queueService } from '../core/queue.service';
+import { SemanticSearchService } from '../intelligence/semantic-search.service';
 
 export interface QuestionOption {
   id: string;
@@ -100,6 +104,13 @@ export class AdminQuestionEngine {
   }
 
   static async createQuestion(data: CreateQuestionInput) {
+    // Phase 7: Conceptual Duplicate Detection
+    // This prevents adding questions that are conceptually identical (even if wording differs)
+    const isDuplicate = await SemanticSearchService.isDuplicate(data.questionText);
+    if (isDuplicate) {
+        throw new Error('CONCEPTUAL_DUPLICATE: A question with this meaning already exists. Please review existing content.');
+    }
+
     return await db.transaction(async (tx) => {
         const [newQuestion] = await tx.insert(questions).values({
             topicId: data.topicId,
@@ -120,6 +131,17 @@ export class AdminQuestionEngine {
                 skillId: sid
             })));
         }
+
+        // Phase 7: Semantic Indexing (Background Job)
+        // Fire-and-forget indexing to keep creation fast
+        void queueService.enqueue(JobType.SEMANTIC_INDEXING, {
+            questionId: newQuestion.id,
+            text: newQuestion.questionText,
+            metadata: {
+                topicId: newQuestion.topicId,
+                difficulty: newQuestion.difficulty
+            }
+        });
 
         return newQuestion;
     });

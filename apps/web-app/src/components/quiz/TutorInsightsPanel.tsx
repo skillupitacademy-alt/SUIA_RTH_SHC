@@ -21,14 +21,21 @@ interface TutorInsightsPanelProps {
 
 export function TutorInsightsPanel({ insights }: TutorInsightsPanelProps) {
     const [requestedTopics, setRequestedTopics] = useState<Record<string, 'idle' | 'loading' | 'success' | 'error'>>({});
+    const [errorMessages, setErrorMessages] = useState<Record<string, string>>({});
 
     const handleRequestNotes = async (topicId: string) => {
         setRequestedTopics(prev => ({ ...prev, [topicId]: 'loading' }));
         try {
             await apiClient.quiz.requestMasterNotes(topicId);
             setRequestedTopics(prev => ({ ...prev, [topicId]: 'success' }));
+            setErrorMessages(prev => {
+                const next = { ...prev };
+                delete next[topicId];
+                return next;
+            });
         } catch {
             setRequestedTopics(prev => ({ ...prev, [topicId]: 'error' }));
+            setErrorMessages(prev => ({ ...prev, [topicId]: 'Unable to send master notes right now. Please try again.' }));
         }
     };
 
@@ -100,6 +107,9 @@ export function TutorInsightsPanel({ insights }: TutorInsightsPanelProps) {
                                     </>
                                 )}
                             </button>
+                            {requestedTopics[insight.topicId] === 'error' && (
+                                <p className="text-xs text-red-500 text-center font-medium">{errorMessages[insight.topicId]}</p>
+                            )}
                         </div>
                     </div>
                 ))}

@@ -1,58 +1,44 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
-import { logger } from '@/lib/logger';
-import type { BlueprintInsert } from '@/modules/admin-engine/admin.engine';
+import { withLogging } from '@/lib/withLogging';
 import { AdminEngine } from '@/modules/admin-engine/admin.engine';
 import { TokenService } from '@/modules/auth/token.service';
 
 export const dynamic = 'force-dynamic';
 
-const log = logger.child({ module: 'admin:blueprints:id' });
-
 async function _verifyAdmin(_req: NextRequest) {
     const _token = TokenService.getAccessToken(_req, { scope: 'admin' });
     if (_token === null || _token === undefined || _token.trim() === '') {
-        return { _error: 'Unauthorized', scope: 'admin', status: 401 };
+        throw new Error('Unauthorized');
     }
-
-    try {
-        const _payload = await TokenService.verifyAccessToken(_token, true);
-        return { userId: _payload.userId };
-    } catch (_err) {
-        return { _error: 'Unauthorized', status: 401 };
-    }
+    return await TokenService.verifyAccessToken(_token, true);
 }
 
-export async function PATCH(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+async function patchHandler(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
-    const auth = await _verifyAdmin(_req);
-    if (auth._error !== undefined) return NextResponse.json({ _error: auth._error, scope: auth.scope }, { status: auth.status });
-
     try {
-        const body = await _req.json() as Partial<BlueprintInsert>;
-        // AdminEngine.updateBlueprint(id, data) - 2 args
+        await _verifyAdmin(_req);
+        const body = await _req.json();
         const result = await AdminEngine.updateBlueprint(id, body);
         return NextResponse.json(result);
     } catch (_error: unknown) {
         const message = _error instanceof Error ? _error.message : 'Internal Server Error';
-        log.error({ id, error: message }, 'ADMIN_BLUEPRINT_PATCH failed');
         return NextResponse.json({ _error: message }, { status: 500 });
     }
 }
 
-export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+async function deleteHandler(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
-    const auth = await _verifyAdmin(_req);
-    if (auth._error !== undefined) return NextResponse.json({ _error: auth._error, scope: auth.scope }, { status: auth.status });
-
     try {
-        // AdminEngine.deleteBlueprint(id) - 1 arg
+        await _verifyAdmin(_req);
         const result = await AdminEngine.deleteBlueprint(id);
         return NextResponse.json(result);
     } catch (_error: unknown) {
         const message = _error instanceof Error ? _error.message : 'Internal Server Error';
-        log.error({ id, error: message }, 'ADMIN_BLUEPRINT_DELETE failed');
         return NextResponse.json({ _error: message }, { status: 500 });
     }
 }
+
+export const PATCH = withLogging(patchHandler, { component: 'admin', operation: 'update_blueprint' });
+export const DELETE = withLogging(deleteHandler, { component: 'admin', operation: 'delete_blueprint' });

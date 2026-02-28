@@ -2,6 +2,7 @@ import { JobStatus, JobType } from '@quiz/types';
 
 import { logger } from '@/lib/logger';
 import { AnalyticsService } from '@/modules/analytics/analytics.service';
+import { resilienceManager } from '@/modules/core/resilience.manager';
 import { ScoringEngine } from '@/modules/scoring-engine/scoring.engine';
 import { JobsService } from '@/modules/system/jobs.service';
 import { TutorService } from '@/modules/tutor/tutor.service';
@@ -26,6 +27,16 @@ export class JobOrchestrator {
             return;
         }
 
+        // Phase 4 Resilience: Drop non-priority jobs during high load
+        if (resilienceManager.isHighLoad() && job.type === JobType.ANALYTICS_REFRESH) {
+            this.log.warn({ jobId, type: job.type }, '[Resilience] Dropping non-critical job due to high load');
+            // We keep it pending to be picked up later or just fail it
+            await JobsService.updateJobStatus(jobId, JobStatus.FAILED, {
+                error: 'System under heavy load. Analytics refresh deferred.'
+            });
+            return;
+        }
+
         try {
             // 1. Mark as processing
             await JobsService.updateJobStatus(jobId, JobStatus.PROCESSING);
@@ -37,6 +48,9 @@ export class JobOrchestrator {
                     break;
                 case JobType.ANALYTICS_REFRESH:
                     await this.handleAnalyticsRefresh(jobId);
+                    break;
+                case JobType.SEMANTIC_INDEXING:
+                    await this.handleSemanticIndexing(jobId, job.payload as { questionId: string; text: string; metadata?: Record<string, unknown> });
                     break;
                 case JobType.MOCK_JOB:
                     await JobsService.simulateJob(jobId, userId);
@@ -93,5 +107,22 @@ export class JobOrchestrator {
             );
             throw err;
         }
+    }
+
+    private static async handleSemanticIndexing(jobId: string, payload: { questionId: string; text: string; metadata?: Record<string, unknown> }): Promise<void> {
+        if (!payload.questionId || !payload.text) throw new Error('Missing questionId or text in semantic indexing payload');
+
+        this.log.info({ questionId: payload.questionId }, 'Starting semantic indexing');
+        
+        // Import dynamically to avoid potentially heavy modules and circular deps
+        const { SemanticSearchService } = await import('@/modules/intelligence/semantic-search.service');
+        
+        await SemanticSearchService.indexQuestion(payload.questionId, payload.text, payload.metadata || {});
+
+        await JobsService.updateJobStatus(jobId, JobStatus.COMPLETED, {
+            result: {
+                indexedAt: new Date().toISOString()
+            }
+        });
     }
 }

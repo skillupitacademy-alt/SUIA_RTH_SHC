@@ -3,6 +3,8 @@ import { LRUCache } from 'lru-cache';
 
 import { logger } from '@/lib/logger';
 
+export type CacheValue = string | number | boolean | bigint | symbol | Record<string, unknown> | Array<unknown>;
+
 interface _CacheOptions {
   ttl?: number;
   maxSize?: number;
@@ -13,8 +15,7 @@ const REDIS_COOLDOWN_MS = 60000; // 60s cooldown on failure
 
 export class CacheService {
   private static instance: CacheService;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private cache: LRUCache<string, any>;
+  private cache: LRUCache<string, CacheValue>;
   private redis: Redis | null = null;
   private isDebug: boolean;
   private redisDeadUntil: number = 0;
@@ -99,7 +100,7 @@ export class CacheService {
     return JSON.stringify(dataObj, Object.keys(dataObj as Record<string, unknown>).sort());
   }
 
-  public async get<T>(key: string): Promise<T | null> {
+  public async get<T extends CacheValue>(key: string): Promise<T | null> {
     try {
       const value = this.cache.get(key) as T | undefined;
       
@@ -125,7 +126,7 @@ export class CacheService {
     }
   }
 
-  public async set(key: string, value: unknown, ttl?: number): Promise<void> {
+  public async set(key: string, value: CacheValue, ttl?: number): Promise<void> {
     try {
       this.cache.set(key, value, { ttl });
       if (this.isDebug === true) {
@@ -229,10 +230,12 @@ export class CacheService {
     }
 
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      let infoResponse: any = null;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const client = this.redis as any;
+      let infoResponse: unknown = null;
+      const client = this.redis as {
+        info?: (section?: string) => Promise<unknown>;
+        execute?: (args: [string, ...Array<string | number>]) => Promise<unknown>;
+        dbsize?: () => Promise<number>;
+      };
 
       // 1. Try standard .info() first (supported by Upstash SDK)
       if (typeof client.info === 'function') {
@@ -260,13 +263,14 @@ export class CacheService {
         if (memMatch) memory = memMatch[1].trim();
         if (memBytesMatch) memoryBytes = parseInt(memBytesMatch[1], 10);
       } else if (infoResponse !== null && typeof infoResponse === 'object') {
-        // Handle case where info() might return a parsed object/array
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const infoObj = infoResponse as Record<string, any>;
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-        memory = infoObj.used_memory_human ?? infoObj.used_memory_rss_human ?? '0B';
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
-        memoryBytes = parseInt(infoObj.used_memory ?? infoObj.used_memory_rss ?? '0', 10);
+        const infoObj = infoResponse as Record<string, unknown>;
+        const memoryHuman = infoObj.used_memory_human ?? infoObj.used_memory_rss_human;
+        const memoryBytesRaw = infoObj.used_memory ?? infoObj.used_memory_rss;
+
+        if (typeof memoryHuman === 'string') memory = memoryHuman;
+        if (typeof memoryBytesRaw === 'string' || typeof memoryBytesRaw === 'number') {
+          memoryBytes = Number(memoryBytesRaw);
+        }
       }
 
       return {
@@ -279,10 +283,8 @@ export class CacheService {
     } catch (_error) {
       logger.error({ 
         err: _error instanceof Error ? _error.message : 'Unknown Fault',
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        hasInfo: typeof (this.redis as any).info === 'function',
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        hasExecute: typeof (this.redis as any).execute === 'function'
+        hasInfo: typeof (this.redis as { info?: unknown }).info === 'function',
+        hasExecute: typeof (this.redis as { execute?: unknown }).execute === 'function'
       }, '[Cache] Error getting Redis usage details');
       
       return { configured: true, keys: 0, memory: 'Connected', memoryBytes: 0 };

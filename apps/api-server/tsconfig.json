@@ -28,6 +28,9 @@
             ],
             "@quiz/types/*": [
                 "../../packages/types/src/*"
+            ],
+            "@quiz/observability": [
+                "../../packages/observability/src/index.ts"
             ]
         }
     },

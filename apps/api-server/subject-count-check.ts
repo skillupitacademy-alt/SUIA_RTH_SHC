@@ -1,9 +1,10 @@
-/* eslint-disable no-console */
 import { envPath } from '@quiz/config/envPaths';
 import { db, domains, subjects } from '@quiz/db';
 import dotenv from 'dotenv';
 import { sql } from 'drizzle-orm';
 import { writeFileSync } from 'fs';
+
+import { scriptLogger } from '../../scripts/logger';
 
 dotenv.config({ path: envPath('packages/db/.env') });
 
@@ -18,19 +19,19 @@ async function checkCounts() {
             .leftJoin(subjects, sql`${domains.id} = ${subjects.domainId}`)
             .groupBy(domains.name);
 
-        console.log("--- SUBJECT COUNTS BY DOMAIN ---");
+        scriptLogger.info("--- SUBJECT COUNTS BY DOMAIN ---");
         counts.forEach(c => {
-            console.log(`${c.domainName}: ${c.subjectCount} subjects`);
+            scriptLogger.info(`${c.domainName}: ${c.subjectCount} subjects`);
         });
 
         // Write to file for reliable reading
         writeFileSync('subject-counts.json', JSON.stringify(counts, null, 2));
     } catch (e) {
-        console.error("Count query failed:", e);
+        scriptLogger.error("Count query failed", e instanceof Error ? e.message : e);
     }
 }
 
 void checkCounts().catch((e) => {
-    console.error(e);
+    scriptLogger.error("Unexpected failure", e instanceof Error ? e.message : e);
     process.exit(1);
 });

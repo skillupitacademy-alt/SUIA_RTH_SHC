@@ -5,6 +5,7 @@ import { BookOpen, Calendar, CheckCircle2, Clock, MessageSquare, User, X } from 
 import { useCallback, useEffect, useState } from "react";
 
 import { cn } from "@/lib/utils";
+import { clientLogger } from "@/utils/clientLogger";
 
 type HelpRequest = {
     id: string;
@@ -22,6 +23,8 @@ export function HelpRequestManager() {
     const [status, setStatus] = useState("pending");
     const [loading, setLoading] = useState(true);
     const [updating, setUpdating] = useState<string | null>(null);
+    const [error, setError] = useState<string | null>(null);
+    const hasError = typeof error === "string" && error.length > 0;
     const isUpdating = typeof updating === "string" && updating.length > 0;
     const [adminNote, setAdminNote] = useState("");
     const [activePrompt, setActivePrompt] = useState<{ id: string; status: string } | null>(null);
@@ -30,14 +33,18 @@ export function HelpRequestManager() {
 
     const fetchRequests = useCallback(async () => {
         setLoading(true);
+        setError(null);
         try {
-            const res = await fetch(`/api/admin/tutor/help/list?status=${status}`);
-            if (res.ok) {
-                const data = await res.json();
-                setRequests(data.requests);
+            const res = await fetch(`/api/admin/tutor/help/list?status=${status}`, { credentials: "include" });
+            if (!res.ok) {
+                const body = await res.text();
+                throw new Error(`Fetch failed (${res.status}) ${body}`);
             }
+            const data = await res.json();
+            setRequests(data.requests);
         } catch (err) {
-            console.error("Failed to fetch help requests", err);
+            clientLogger.error("Failed to fetch help requests", { error: err instanceof Error ? err.message : "unknown" });
+            setError("Unable to load tutor help requests right now.");
         } finally {
             setLoading(false);
         }
@@ -53,15 +60,20 @@ export function HelpRequestManager() {
             const res = await fetch('/api/admin/tutor/help/list', {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ requestId, status: nextStatus, note })
+                body: JSON.stringify({ requestId, status: nextStatus, note }),
+                credentials: "include",
             });
-            if (res.ok) {
-                setRequests(requests.filter(r => r.id !== requestId));
-                setActivePrompt(null);
-                setAdminNote("");
+            if (!res.ok) {
+                const body = await res.text();
+                throw new Error(`Update failed (${res.status}) ${body}`);
             }
+            setRequests(requests.filter(r => r.id !== requestId));
+            setActivePrompt(null);
+            setAdminNote("");
+            setError(null);
         } catch (err) {
-            console.error("Failed to update status", err);
+            clientLogger.error("Failed to update request status", { error: err instanceof Error ? err.message : "unknown" });
+            setError("Failed to update request status. Please retry.");
         } finally {
             setUpdating(null);
         }
@@ -139,6 +151,12 @@ export function HelpRequestManager() {
                     {requests.length} Requests Found
                 </p>
             </div>
+
+            {hasError ? (
+                <div className="p-3 rounded-xl bg-rose-50 border border-rose-100 text-rose-600 text-sm font-semibold">
+                    {error}
+                </div>
+            ) : null}
 
             {loading ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

@@ -1,7 +1,10 @@
+import { METRICS } from "@quiz/observability";
 import { type NextRequest, NextResponse } from "next/server";
 
-import { sql } from "@/lib/db";
+import { sqlReplica } from "@/lib/db";
+import { recordCounter, recordTimer } from "@/lib/metrics";
 import { redis } from "@/lib/redis";
+import { withLogging } from "@/lib/withLogging";
 import { CACHE_KEYS, CACHE_TTL } from "@/modules/analytics/analytics.constants";
 import { TokenService } from "@/modules/auth/token.service";
 
@@ -36,9 +39,9 @@ interface TreeNode {
   children?: TreeNode[];
 }
 
-export async function GET(req: NextRequest) {
+async function handler(req: NextRequest) {
+  const start = Date.now();
   try {
-    // 1. Auth — extract userId from token (never from params)
     const token = TokenService.getAccessToken(req, { scope: "user" });
     if (token === undefined || token === null || token === "") {
       return NextResponse.json({ error: "Authentication required" }, { status: 401 });
@@ -47,19 +50,17 @@ export async function GET(req: NextRequest) {
     const payload = await TokenService.verifyAccessToken(token, false);
     const userId = payload.userId;
 
-    // 2. Redis Cache
     const CACHE_KEY = CACHE_KEYS.ANALYTICS.USER(userId, "weakness-tree");
     try {
       const cachedData = await redis.get(CACHE_KEY);
       if (cachedData !== null) {
         return NextResponse.json(cachedData);
       }
-    } catch (redisError) {
-      console.error("[Redis Error]:", redisError);
+    } catch (__redisError) {
+      // Ignored
     }
 
-    // 3. Query — latest accuracy per dimension for this user
-    const dimensions = (await sql`
+    const dimensions = (await sqlReplica`
       SELECT DISTINCT ON (r.dimension_type, r.dimension_id)
         r.dimension_type,
         r.dimension_id,
@@ -76,8 +77,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json([]);
     }
 
-    // 4. Get hierarchy mappings (topic → domain, skill → topic → domain)
-    const topicHierarchy = (await sql`
+    const topicHierarchy = (await sqlReplica`
       SELECT t.id AS topic_id, t.name AS topic_name,
              d.id AS domain_id, d.name AS domain_name
       FROM topics t
@@ -85,7 +85,7 @@ export async function GET(req: NextRequest) {
       JOIN domains d ON d.id = s.domain_id
     `) as HierarchyRow[];
 
-    const skillHierarchy = (await sql`
+    const skillHierarchy = (await sqlReplica`
       SELECT sk.id AS skill_id, sk.name AS skill_name,
              t.id AS topic_id, t.name AS topic_name,
              d.id AS domain_id, d.name AS domain_name
@@ -96,7 +96,6 @@ export async function GET(req: NextRequest) {
       JOIN domains d ON d.id = s.domain_id
     `) as SkillHierarchyRow[];
 
-    // 5. Build lookup maps
     const topicToDomain = new Map<string, { domainId: string; domainName: string }>();
     for (const row of topicHierarchy) {
       topicToDomain.set(row.topic_id, { domainId: row.domain_id, domainName: row.domain_name });
@@ -112,7 +111,6 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    // 6. Build tree: Domain → Topic → Skill with weakness = 100 - accuracy
     const domainMap = new Map<string, { name: string; topics: Map<string, { name: string; skills: TreeNode[] }> }>();
 
     for (const dim of dimensions) {
@@ -120,7 +118,6 @@ export async function GET(req: NextRequest) {
       const weakness = 100 - Number(dim.accuracy);
 
       if (dim.dimension_type === "domain") {
-        // Ensure domain node exists
         if (!domainMap.has(dim.dimension_id)) {
           domainMap.set(dim.dimension_id, { name: dim.name ?? "Unknown Domain", topics: new Map() });
         }
@@ -161,7 +158,6 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    // 7. Convert Map → JSON tree
     const tree: TreeNode[] = [];
     for (const [, domain] of domainMap) {
       const topicNodes: TreeNode[] = [];
@@ -169,7 +165,6 @@ export async function GET(req: NextRequest) {
         if (topic.skills.length > 0) {
           topicNodes.push({ name: topic.name, children: topic.skills });
         } else {
-          // Topic with no skills — show as leaf with its own weakness
           const topicDim = dimensions.find(
             d => d.dimension_type === "topic" && d.name === topic.name
           );
@@ -184,22 +179,30 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    // 8. Cache
     try {
       if (tree.length > 0) {
         await redis.set(CACHE_KEY, tree, { ex: CACHE_TTL.USER_PERSONAL });
       }
-    } catch (redisError) {
-      console.error("[Redis Cache Error]:", redisError);
+    } catch (__redisError) {
+      // Ignored
     }
 
-    return NextResponse.json(tree);
+    const durationMs = Date.now() - start;
+    recordCounter(METRICS.ANALYTICS.WEAKNESS_TREE, 1, { outcome: 'success' });
+    recordTimer(METRICS.ANALYTICS.WEAKNESS_TREE + '.duration', durationMs, { outcome: 'success' });
+    return NextResponse.json(tree, {
+      headers: { 'X-Duration-Ms': durationMs.toString() }
+    });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Internal Server Error";
-    console.error("[User Weakness Tree Error]:", error);
+    const durationMs = Date.now() - start;
+    recordCounter(METRICS.ANALYTICS.WEAKNESS_TREE, 1, { outcome: 'failure' });
+    recordTimer(METRICS.ANALYTICS.WEAKNESS_TREE + '.duration', durationMs, { outcome: 'failure' });
     return NextResponse.json(
       { error: "Failed to fetch weakness tree", message },
       { status: 500 }
     );
   }
 }
+
+export const GET = withLogging(handler, { component: 'analytics', operation: 'get_weakness_tree' });

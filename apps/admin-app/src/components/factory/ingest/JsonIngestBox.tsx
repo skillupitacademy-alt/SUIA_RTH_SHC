@@ -2,7 +2,6 @@ import { AlertTriangle, CheckCircle2, FileJson, Import, Trash2, Zap } from 'luci
 import { useRouter } from 'next/navigation';
 import React, { useRef, useState } from 'react';
 
-/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { useFactory } from '@/context/FactoryContext';
 import { cn } from '@/lib/utils';
 
@@ -11,7 +10,6 @@ export function JsonIngestBox() {
         ingestRawJson,
         isIngesting,
         validationErrors,
-        stagedQuestions,
         lastHealingReport,
         blueprint
     } = useFactory();

@@ -1,7 +1,6 @@
 'use client';
-/* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { BarChart3, Binary, BrainCircuit, Calculator,Minus, Plus } from 'lucide-react';
+import { BarChart3, Binary, BrainCircuit, Calculator, Minus, Plus } from 'lucide-react';
 import React from 'react';
 
 import { cn } from '@/lib/utils';
@@ -29,7 +28,7 @@ export function DistributionMatrix({ counts, onChange }: DistributionMatrixProps
         value: number;
         field: keyof typeof counts;
         color: string;
-        icon: any;
+        icon: React.ComponentType<{ size?: number; className?: string }>;
     }) => (
         <div className="bg-white border border-slate-200 rounded-2xl p-5 flex flex-col gap-4 hover:border-[#FF4B91]/20 hover:shadow-xl hover:shadow-[#FF4B91]/5 transition-all relative overflow-hidden group">
             {/* Background Icon Watermark */}

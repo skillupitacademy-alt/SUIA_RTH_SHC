@@ -1,25 +1,29 @@
+import { METRICS } from '@quiz/observability';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
-import { logger } from '@/lib/logger';
+import { recordCounter, recordTimer } from '@/lib/metrics';
+import { withLogging } from '@/lib/withLogging';
 import { AuthService } from '@/modules/auth/auth.service';
 import { setCsrfToken } from '@/modules/auth/csrf.middleware';
 import { loginSchema } from '@/schemas/auth.schemas';
 
 export const dynamic = 'force-dynamic';
 
-const log = logger.child({ module: 'auth:login' });
-
-export async function POST(req: NextRequest) {
+async function handler(req: NextRequest) {
+  const start = Date.now();
   try {
     const rawBody = await req.json();
     const parsed = loginSchema.safeParse(rawBody);
     if (!parsed.success) {
+      recordCounter(METRICS.AUTH.FAILURE, 1, { reason: 'invalid_payload' });
       return NextResponse.json({ _error: 'Invalid payload', issues: parsed.error.issues }, { status: 400 });
     }
     const { email, password } = parsed.data;
 
     const { _user, accessToken, refreshToken, isAdmin } = await AuthService.login(email, password);
+
+    recordCounter(METRICS.AUTH.LOGIN, 1, { role: isAdmin ? 'admin' : 'user' });
 
     const onboarded = Boolean(
       (_user.profile?.professionalStatus !== undefined && _user.profile?.professionalStatus !== null && _user.profile?.professionalStatus !== '') && 
@@ -37,26 +41,24 @@ export async function POST(req: NextRequest) {
 
     const response = NextResponse.json({
       user,
-      expiresAt: null, // client uses cookie lifetime; keeps shape consistent with AuthClient expectations
+      expiresAt: null,
     });
 
     const rawDomain = process.env.COOKIE_DOMAIN;
     const cookieDomain = rawDomain === undefined || rawDomain === null || rawDomain === '' ? undefined : rawDomain;
 
-    // Set HttpOnly cookies for Access Token
     const accessTokenCookieName = isAdmin === true ? 'admin_accessToken' : 'accessToken';
     response.cookies.set(accessTokenCookieName, accessToken, {
       httpOnly: true,
-      secure: true, // Always true for cross-domain stability
-      sameSite: 'none', // Needed for cross-subdomain (api.<->quiz/admin)
-      maxAge: 15 * 60, // 15 minutes
+      secure: true,
+      sameSite: 'none',
+      maxAge: 15 * 60,
       path: '/',
       domain: cookieDomain,
     });
 
-    // Set HttpOnly cookies for Refresh Token
     const refreshCookieName = isAdmin === true ? 'admin_refreshToken' : 'refreshToken';
-    const refreshMaxAge = isAdmin === true ? 24 * 60 * 60 : 7 * 24 * 60 * 60; // 24h for admin, 7d for user
+    const refreshMaxAge = isAdmin === true ? 24 * 60 * 60 : 7 * 24 * 60 * 60;
     response.cookies.set(refreshCookieName, refreshToken, {
       httpOnly: true,
       secure: true,
@@ -68,9 +70,17 @@ export async function POST(req: NextRequest) {
 
     setCsrfToken(response);
 
+    const end = Date.now();
+    const durationMs = end - start;
+    recordTimer(METRICS.AUTH.LOGIN + '.duration', durationMs);
+    
+    response.headers.set('X-Duration-Ms', durationMs.toString());
+
     return response;
-  } catch (error) {
-    log.error({ error: error instanceof Error ? error.message : 'unknown error' }, 'AUTH_LOGIN failed');
+  } catch (_error) {
+    recordCounter(METRICS.AUTH.FAILURE, 1, { reason: 'credentials_invalid' });
     return NextResponse.json({ _error: 'Invalid credentials' }, { status: 401 });
   }
 }
+
+export const POST = withLogging(handler, { component: 'auth', operation: 'login' });

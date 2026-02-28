@@ -1,5 +1,6 @@
 'use client';
 
+import { recordCounter } from '@quiz/observability';
 import {
     AlertTriangle,
     CheckCircle2,
@@ -11,8 +12,8 @@ import {
 } from 'lucide-react';
 import React, { useCallback, useEffect, useState } from 'react';
 
-import { cn } from '@/lib/utils';
-import { formatTimeAgo } from '@/lib/utils';
+import { cn, formatTimeAgo } from '@/lib/utils';
+import { clientLogger } from '@/utils/clientLogger';
 
 interface ReportRow {
     id: string;
@@ -43,6 +44,8 @@ export function AdminReportPipelineCard() {
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState<string>('');
     const [retrying, setRetrying] = useState<string | null>(null);
+    const [error, setError] = useState<string | null>(null);
+    const hasError = typeof error === 'string' && error.length > 0;
 
     const apiBase = process.env.NEXT_PUBLIC_API_URL ?? '';
     const internalKey = process.env.INTERNAL_API_KEY ?? '';
@@ -50,6 +53,7 @@ export function AdminReportPipelineCard() {
     const fetchReports = useCallback(async () => {
         try {
             setLoading(true);
+            setError(null);
             const url = new URL(`${apiBase}/admin/reports`);
             if (filter.length > 0) url.searchParams.set('status', filter);
             url.searchParams.set('limit', '20');
@@ -59,13 +63,24 @@ export function AdminReportPipelineCard() {
                 credentials: 'include',
             });
 
-            if (res.ok) {
-                const data = await res.json();
-                setReports(data.reports ?? []);
-                setStats(data.stats ?? null);
+            if (!res.ok) {
+                const body = await res.text();
+                throw new Error(`Fetch failed (${res.status}) ${body}`);
             }
-        } catch {
-            // Silent fail — admin can retry manually
+
+            const data = await res.json();
+            setReports(data.reports ?? []);
+            setStats(data.stats ?? null);
+
+            if ((data.reports ?? []).length === 0) {
+                recordCounter('admin.ui.reports.pipeline.empty', 1);
+            } else {
+                recordCounter('admin.ui.reports.pipeline.fetch_success', 1, { count: data.reports.length });
+            }
+        } catch (err) {
+            recordCounter('admin.ui.reports.pipeline.fetch_error', 1, { reason: err instanceof Error ? err.message : 'unknown' });
+            clientLogger.error('Failed to fetch report pipeline data', { error: err instanceof Error ? err.message : 'unknown' });
+            setError('Unable to load report pipeline data. Please retry.');
         } finally {
             setLoading(false);
         }
@@ -78,17 +93,25 @@ export function AdminReportPipelineCard() {
     const handleRetry = async (attemptId: string) => {
         try {
             setRetrying(attemptId);
-            await fetch(`${apiBase}/admin/reports/${attemptId}/retry`, {
+            const res = await fetch(`${apiBase}/admin/reports/${attemptId}/retry`, {
                 method: 'POST',
                 headers: { 'x-internal-key': internalKey },
                 credentials: 'include',
             });
+            if (!res.ok) {
+                const body = await res.text();
+                throw new Error(`Retry failed (${res.status}) ${body}`);
+            }
+            recordCounter('admin.ui.reports.pipeline.retry_success', 1, { attemptId });
             // Refresh after short delay
             setTimeout(() => {
                 void fetchReports();
                 setRetrying(null);
             }, 1500);
-        } catch {
+        } catch (err) {
+            recordCounter('admin.ui.reports.pipeline.retry_error', 1, { attemptId, reason: err instanceof Error ? err.message : 'unknown' });
+            clientLogger.error('Failed to retry report generation', { error: err instanceof Error ? err.message : 'unknown' });
+            setError('Retry failed. Please check logs and try again.');
             setRetrying(null);
         }
     };
@@ -157,6 +180,11 @@ export function AdminReportPipelineCard() {
             </div>
 
             {/* Reports Table */}
+            {hasError ? (
+                <div className="p-3 rounded-xl bg-rose-50 border border-rose-100 text-rose-600 text-sm font-semibold">
+                    {error}
+                </div>
+            ) : null}
             <div className="overflow-x-auto rounded-2xl border border-slate-100">
                 <table className="w-full text-left">
                     <thead>

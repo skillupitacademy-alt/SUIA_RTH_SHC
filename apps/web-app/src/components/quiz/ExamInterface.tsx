@@ -17,6 +17,7 @@ import { useSessionManager } from '@/hooks/useSessionManager';
 import { cn } from '@/lib/utils';
 import { useQuizStore } from '@/store/quiz-store';
 import { clientLogger } from '@/utils/clientLogger';
+import { recordClientMetric, METRICS } from '@quiz/observability';
 
 type RemoteQuestion = {
     questionId: string;
@@ -96,17 +97,17 @@ export function ExamInterface() {
                 // Format: examId:questionId:optionIndex
                 const idempotencyKey = `${examId}:${questionId}:${optionIndex}`;
 
-            await withRetry(() =>
-                apiClient.quiz.submitAnswer(examId, questionId, option, {
-                    idempotencyKey
-                })
-            );
-        } catch (err) {
-            clientLogger.error('Failed to save answer after retries', { error: err instanceof Error ? err.message : 'unknown' });
-            // We keep optimistic UI, but maybe show a subtle indicator
+                await withRetry(() =>
+                    apiClient.quiz.submitAnswer(examId, questionId, option, {
+                        idempotencyKey
+                    })
+                );
+            } catch (err) {
+                clientLogger.error('Failed to save answer after retries', { error: err instanceof Error ? err.message : 'unknown' });
+                // We keep optimistic UI, but maybe show a subtle indicator
+            }
         }
-    }
-};
+    };
 
     useEffect(() => {
         const initExam = async () => {
@@ -175,8 +176,14 @@ export function ExamInterface() {
                     }
                 });
 
+                if (mappedQuestions.length === 0) {
+                    recordClientMetric('ui.exam.empty_questions', 1, { examId: examIdParam });
+                    setError("No questions found for this session.");
+                }
+
             } catch (err) {
                 clientLogger.error('Failed to load exam session', { error: err instanceof Error ? err.message : 'unknown' });
+                recordClientMetric('ui.exam.load_failure', 1, { examId: examIdParam });
                 router.push('/quiz/new');
             } finally {
                 setIsLoading(false);
@@ -237,6 +244,7 @@ export function ExamInterface() {
                 })
             );
 
+            await recordClientMetric(METRICS.EXAM.SUBMIT, 1, { examId });
             clearBackup(examId);
             finishQuiz();
             router.push(`/reports/active-report?examId=${examId}`);

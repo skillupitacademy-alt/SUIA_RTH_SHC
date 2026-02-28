@@ -17,9 +17,9 @@ export function NotesViewer({ topicId, topicName, onClose }: NotesViewerProps) {
     useEffect(() => {
         async function fetchNotesUrl() {
             try {
-                const res = await fetch(`/api/tutor/notes/view?topicId=${topicId}`);
+                const res = await fetch(`/api/tutor/notes/view?topicId=${topicId}`, { credentials: "include" });
                 if (!res.ok) {
-                    const data = await res.json();
+                    const data = await res.json().catch(() => ({}));
                     throw new Error(data.error || "Failed to load notes");
                 }
                 const data = await res.json();

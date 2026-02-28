@@ -1,41 +1,42 @@
-# Observability Runbook
+# Observability Runbook — Phase 1 Optimized
 
-Goals
-- Detect failures early, reduce MTTR, and provide auditability.
+## Goals
+- Detect failures early, reduce MTTR, and provide high-precision auditability.
+- 100% coverage of "Golden Transactions" for hyper-scale monitoring.
 
-Signals
-- Logs: structured JSON with request id and user id.
-- Metrics: latency, error rate, throughput, saturation.
-- Traces: distributed tracing across gateway, services, DB.
+## Active Signals
+1.  **Logs**: Structured JSON with `requestId`, `sessionId`, and `userId`. Redacted PII via `scrubPII`.
+2.  **Metrics**: Dual-format (dot & underscore) metrics exported to Sentry and ready for Prometheus/Grafana.
+3.  **Traces**: Standardized `X-Request-ID` propagation across all API boundaries.
+4.  **Security**: `SecurityMuzzle` active in production to silence noise and protect secrets.
 
-Core dashboards
-- API health: p50/p95/p99 latency, error rate by endpoint.
-- Session health: active sessions, autosave rate, submit rate.
-- Scoring pipeline: queue depth, worker lag.
-- Admin health: dashboard query latency, error rate.
+## Golden Transactions & SLO Targets
+| Transaction | Metric Key | Target (p95+) |
+| :--- | :--- | :--- |
+| **Login** | `auth.login` | < 500ms (p99.9) |
+| **Start Exam** | `quiz.api.start` | < 800ms (p99.95) |
+| **Submit Exam** | `quiz.api.submit` | < 1000ms (p99.99) |
+| **View Scorecard** | `reports.api.view` | < 600ms (p99.9) |
+| **Admin Dashboard** | `admin.api.dashboard_load` | < 2000ms (p99.5) |
 
-Alerts
-- Error rate > 1% for 5 minutes.
-- Launch p95 > 500ms for 10 minutes.
-- Autosave failure rate > 0.5%.
-- Scoring queue lag > 2 minutes.
+## Core Dashboards
+- **Enterprise Dashboard**: Stored in `packages/observability/monitoring/dashboards/golden-transactions.json`.
+- **Latency Panels**: Tracking p50, p95, and p99.9 for all core routes.
+- **Error Rates**: Tracking total failure rate vs success rate (Target: < 0.1%).
 
-Minimal instrumentation (what to add first)
-- Add requestId to every API response header.
-- Log: method, path, status, latencyMs, userId, examId.
-- Emit counters for launch, autosave, submit, score.
-- Emit timers for launch, autosave, submit.
+## Alerting Policy
+- **High Error Rate**: Alert if API error rate > 1% over 5m.
+- **SLO Violation**: Alert if p99 latency exceeds the targets above.
+- **Scoring Lag**: Alert if queue lag > 2 minutes (Metric: `scoring_queue_lag_seconds`).
+- **Autosave Reliability**: Alert if autosave failure rate > 0.5%.
 
-Incident steps
-1) Identify affected endpoints and region.
-2) Roll back recent deployments if needed.
-3) Drain queue or scale workers.
-4) Communicate status to stakeholders.
+## Incident Triage Steps
+1) **Identify**: Check the `X-Request-ID` from the failing response.
+2) **Correlate**: Search Sentry or logs for the specific `requestId`.
+3) **Isolate**: Check "Latency by Route" to see if a specific third-party (Redis/DB) is the bottleneck.
+4) **Recover**: Roll back if a deployment spike is detected; clear caches via `/api/admin/clear-cache` if needed.
 
-Logging standards
-- Redact PII.
-- Include tenant id, user id, request id.
-
-SLOs
-- 99.95% for exam endpoints.
-- 99.9% for admin endpoints.
+## Standards
+- All new routes MUST be wrapped with `withLogging`.
+- Standardized Response Header: `X-Duration-Ms`.
+- No PII in logs or metric tags.

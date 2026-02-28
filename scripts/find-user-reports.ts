@@ -14,7 +14,7 @@ async function run() {
     });
 
     if (!user) {
-      console.log('User not found');
+      scriptLogger.info('User not found');
       return;
     }
 
@@ -24,11 +24,12 @@ async function run() {
       orderBy: (r, { desc }) => [desc(r.updatedAt)]
     });
 
-    console.log(JSON.stringify(userReports, null, 2));
+    scriptLogger.info(JSON.stringify(userReports, null, 2));
   } catch (e) {
-    console.error(e);
+    scriptLogger.error(e);
   }
   process.exit(0);
 }
 
 run();
+

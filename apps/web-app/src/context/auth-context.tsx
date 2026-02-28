@@ -1,8 +1,7 @@
 'use client';
-/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars, react-hooks/exhaustive-deps */
 
 import { apiClient } from '@quiz/api-client';
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 
 import { useAuthStore } from '@/store/auth-store';
 import { clientLogger } from '@/utils/clientLogger';
@@ -32,7 +31,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const { user, isAuthenticated, login, logout: storeLogout } = useAuthStore();
     const [loading, setLoading] = useState(true);
 
-    const handleLogout = async () => {
+    const handleLogout = useCallback(async () => {
         try {
             await apiClient.auth.logout();
         } catch (err) {
@@ -41,7 +40,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             storeLogout();
             localStorage.removeItem('quiz-platform-auth');
         }
-    };
+    }, [storeLogout]);
 
     useEffect(() => {
         const initAuth = async () => {
@@ -59,7 +58,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                     // If session returns successfully but without a user, we are logged out
                     handleLogout();
                 }
-            } catch (error) {
+            } catch {
                 // If session is invalid, try refresh logic
                 try {
                     const refreshResponse = await apiClient.auth.refresh();
@@ -74,7 +73,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                     } else {
                         handleLogout();
                     }
-                } catch (refreshError) {
+                } catch {
                     handleLogout();
                 }
             } finally {
@@ -98,10 +97,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return () => {
             window.removeEventListener('auth:unauthorized', handleUnauthorized);
             if (process.env.NODE_ENV !== 'production') {
-                delete (window as any).__E2E_IS_AUTHENTICATED__;
+                delete window.__E2E_IS_AUTHENTICATED__;
             }
         };
-    }, [login, storeLogout]);
+    }, [handleLogout, login, storeLogout]);
 
     return (
         <AuthContext.Provider value={{ user, loading, login, logout: handleLogout, isAuthenticated }}>

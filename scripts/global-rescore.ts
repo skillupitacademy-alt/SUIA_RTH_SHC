@@ -8,11 +8,11 @@ async function main() {
   });
   await client.connect();
 
-  console.log("🚀 Starting Analytical Repair: Global Rescoring...");
+  scriptLogger.info("🚀 Starting Analytical Repair: Global Rescoring...");
 
   try {
     // 1. Transactional Backfill of is_correct based on answer matching
-    console.log("- Analyzing historical response patterns...");
+    scriptLogger.info("- Analyzing historical response patterns...");
     const updateResult = await client.query(`
       WITH scored_data AS (
         SELECT 
@@ -32,19 +32,20 @@ async function main() {
       WHERE exam_questions.id = scored_data.id;
     `);
     
-    console.log(`- Successfully rescored ${updateResult.rowCount} questions.`);
+    scriptLogger.info(`- Successfully rescored ${updateResult.rowCount} questions.`);
 
     // 2. Refresh Materialized Views
-    console.log("- Triggering Materialized View refresh...");
+    scriptLogger.info("- Triggering Materialized View refresh...");
     await client.query(`REFRESH MATERIALIZED VIEW attempt_analytics_mv`);
     await client.query(`REFRESH MATERIALIZED VIEW attempt_dimension_accuracy_mv`);
     
-    console.log("✅ Global Rescore & View Synchronization Complete.");
+    scriptLogger.info("✅ Global Rescore & View Synchronization Complete.");
   } catch (err: any) {
-    console.error("❌ Analytical repair failed:", err.message);
+    scriptLogger.error("❌ Analytical repair failed:", err.message);
   } finally {
     await client.end();
   }
 }
 
-main().catch(console.error);
+main().catch(scriptLogger.error);
+

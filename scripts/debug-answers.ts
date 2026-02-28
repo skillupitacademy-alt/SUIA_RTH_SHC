@@ -9,7 +9,7 @@ async function main() {
   await client.connect();
   const examId = '0a38074c-2113-4527-bc15-1cbfc1836cea';
 
-  console.log(`Inspecting answers for Exam: ${examId}...`);
+  scriptLogger.info(`Inspecting answers for Exam: ${examId}...`);
 
   const questions = await client.query(`
     SELECT 
@@ -21,10 +21,11 @@ async function main() {
   `, [examId]);
 
   questions.rows.forEach((row, i) => {
-    console.log(`Q${i+1}: User: [${row.user_answer}] | Correct: [${row.correct_answer}] | Match: ${row.user_answer === row.correct_answer}`);
+    scriptLogger.info(`Q${i+1}: User: [${row.user_answer}] | Correct: [${row.correct_answer}] | Match: ${row.user_answer === row.correct_answer}`);
   });
 
   await client.end();
 }
 
-main().catch(console.error);
+main().catch(scriptLogger.error);
+

@@ -3,12 +3,15 @@
 import { apiClient, DifficultyAccuracyResponse } from "@quiz/api-client";
 import { BarChart3, TrendingUp, ShieldCheck, AlertCircle } from "lucide-react";
 import { useEffect, useState } from "react";
+import type { EChartsOption } from "echarts";
 
 import BaseChart from "./BaseChart";
+import { clientLogger } from "@/utils/clientLogger";
 
 export default function PersonalDifficultySplit() {
     const [data, setData] = useState<DifficultyAccuracyResponse | null>(null);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         async function fetchData() {
@@ -16,7 +19,9 @@ export default function PersonalDifficultySplit() {
                 const res = await apiClient.analytics.getUserDifficultyAccuracy();
                 setData(res);
             } catch (err: unknown) {
-                console.error("Failed to fetch difficulty accuracy", err);
+                const message = err instanceof Error ? err.message : "Failed to fetch difficulty accuracy";
+                setError(message);
+                clientLogger.error("Failed to fetch difficulty accuracy", { error: message });
             } finally {
                 setLoading(false);
             }
@@ -26,6 +31,16 @@ export default function PersonalDifficultySplit() {
     }, []);
 
     const isEmpty = !loading && (!data || data.accuracy.every(v => v === 0));
+
+    if (error) {
+        return (
+            <div className="flex flex-col items-center justify-center h-[350px] text-sm text-red-600 bg-red-50 rounded-2xl border border-red-100">
+                <BarChart3 className="w-8 h-8 mb-2 opacity-50 text-red-500" />
+                <p className="font-semibold">Unable to load difficulty accuracy</p>
+                <span className="text-xs text-red-500">{error}</span>
+            </div>
+        );
+    }
 
     if (isEmpty) {
         return (
@@ -47,8 +62,6 @@ export default function PersonalDifficultySplit() {
         expert: accuracy[2] > 65
     };
 
-    type ChartParam = { name: string; value: number };
-
     const option = {
         tooltip: {
             backgroundColor: "rgba(255, 255, 255, 0.95)",
@@ -56,7 +69,7 @@ export default function PersonalDifficultySplit() {
             textStyle: { color: "#1E293B" },
             padding: [10, 15],
             extraCssText: "box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); border-radius: 12px;",
-            formatter: (params: ChartParam) => {
+            formatter: (params: { value: number; name: string }) => {
                 const val = params.value;
                 const label = params.name;
                 const isReady = (label === 'simple' && val > 75) || (label === 'intermediate' && val > 70) || (label === 'expert' && val > 65);
@@ -80,7 +93,7 @@ export default function PersonalDifficultySplit() {
             containLabel: true
         },
         xAxis: {
-            type: 'category',
+            type: 'category' as const,
             data: labels,
             axisLine: { lineStyle: { color: "#E2E8F0" } },
             axisTick: { show: false },
@@ -93,22 +106,22 @@ export default function PersonalDifficultySplit() {
             }
         },
         yAxis: {
-            type: 'value',
+            type: 'value' as const,
             max: 100,
             minInterval: 20,
             splitLine: {
                 lineStyle: { type: 'dashed', color: '#F1F5F9' }
             },
-            axisLabel: { color: '#94A3B8', fontSize: 10, fontWeight: 'bold' }
+            axisLabel: { color: '#94A3B8', fontSize: 10, fontWeight: 'bold' as const }
         },
         series: [
             {
                 data: accuracy,
-                type: 'bar',
+                type: 'bar' as const,
                 barWidth: '35%',
                 itemStyle: {
                     borderRadius: [4, 4, 0, 0],
-                    color: (params: ChartParam) => {
+                    color: (params: { value: number }) => {
                         const val = params.value;
                         if (val > 75) return "#10b981"; // Emerald
                         if (val > 50) return "#6366f1"; // Indigo
@@ -122,7 +135,7 @@ export default function PersonalDifficultySplit() {
                 }
             }
         ]
-    };
+    } as unknown as EChartsOption;
 
     return (
         <div className="w-full bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col h-full">

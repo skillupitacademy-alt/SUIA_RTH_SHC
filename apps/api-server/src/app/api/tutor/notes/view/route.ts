@@ -1,17 +1,17 @@
 import { db, notesAccessLogs, topics, userRecommendations } from "@quiz/db";
+import { METRICS } from "@quiz/observability";
 import { and, eq } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 
+import { recordCounter, recordTimer } from "@/lib/metrics";
+import { withLogging } from "@/lib/withLogging";
 import { TokenService } from "@/modules/auth/token.service";
 import { TutorSecurityService } from "@/modules/tutor/tutor.security";
 
 export const dynamic = "force-dynamic";
 
-/**
- * GET /api/tutor/notes/view?topicId=...
- * Authenticated endpoint to retrieve secure notes link for a topic.
- */
-export async function GET(req: NextRequest) {
+async function handler(req: NextRequest) {
+  const start = Date.now();
   try {
     const token = TokenService.getAccessToken(req, { scope: "user" });
     if (typeof token !== "string" || token.length === 0) {
@@ -26,7 +26,6 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "topicId is required" }, { status: 400 });
     }
 
-    // 1. Verify recommendation exists for this user/topic
     const recommendation = await db.query.userRecommendations.findFirst({
       where: and(
         eq(userRecommendations.userId, payload.userId),
@@ -38,7 +37,6 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "No recommendation found for this topic" }, { status: 403 });
     }
 
-    // 2. Fetch topic notes path
     const topic = await db.query.topics.findFirst({
       where: eq(topics.id, topicId),
       columns: { detailedNotesPath: true, notesAssetId: true },
@@ -56,21 +54,29 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Notes not available for this topic" }, { status: 404 });
     }
 
-    // 3. Log access
     await db.insert(notesAccessLogs).values({
       userId: payload.userId,
       topicId: topicId,
       deliveredVia: "web_viewer",
     });
 
-    // 4. Generate Expiring Signed Gateway URL (Valid for 1 hour)
     const expires = Math.floor(Date.now() / 1000) + 3600;
     const signatureParams = TutorSecurityService.signNotesUrl(topicId, expires);
     const signedUrl = `/api/tutor/notes/download?topicId=${topicId}&${signatureParams}`;
 
-    return NextResponse.json({ url: signedUrl });
+    const durationMs = Date.now() - start;
+    recordCounter(METRICS.TUTOR.NOTES_VIEW, 1, { outcome: 'success', topicId });
+    recordTimer(METRICS.TUTOR.NOTES_VIEW + '.duration', durationMs, { outcome: 'success' });
+
+    return NextResponse.json({ url: signedUrl }, {
+      headers: { 'X-Duration-Ms': durationMs.toString() }
+    });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Internal Server Error";
+    recordCounter(METRICS.TUTOR.NOTES_VIEW, 1, { outcome: 'failure' });
+    recordTimer(METRICS.TUTOR.NOTES_VIEW + '.duration', Date.now() - start, { outcome: 'failure' });
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
+
+export const GET = withLogging(handler, { component: 'tutor', operation: 'view_notes' });

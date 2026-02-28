@@ -7,11 +7,11 @@ async function main() {
     ssl: { rejectUnauthorized: false }
   });
   await client.connect();
-  console.log("🚀 Starting Global Exam Score Synchronization...");
+  scriptLogger.info("🚀 Starting Global Exam Score Synchronization...");
 
   try {
     // 1. Update exams.total_score based on exam_questions.is_correct
-    console.log("- Syncing exams.total_score...");
+    scriptLogger.info("- Syncing exams.total_score...");
     const updateExamsResult = await client.query(`
       WITH score_calc AS (
         SELECT 
@@ -30,7 +30,7 @@ async function main() {
       WHERE exams.id = sc.exam_id
       AND exams.status = 'completed';
     `);
-    console.log(`  ✅ Updated ${updateExamsResult.rowCount} exams.`);
+    scriptLogger.info(`  ✅ Updated ${updateExamsResult.rowCount} exams.`);
 
     // 2. Re-populate results_by_dimension for all completed exams
     // This is more complex because it involves topics/subjects hierarchies.
@@ -38,7 +38,7 @@ async function main() {
     // The PREMIUM report uses its own engine which might hit MVs or results_by_dimension.
     
     // Let's check if results_by_dimension needs backfilling
-    console.log("- Checking for missing results_by_dimension entries...");
+    scriptLogger.info("- Checking for missing results_by_dimension entries...");
     const missingResults = await client.query(`
       SELECT count(*) 
       FROM exams e
@@ -46,22 +46,23 @@ async function main() {
       WHERE e.status = 'completed'
       AND rbd.id IS NULL;
     `);
-    console.log(`  📊 Found ${missingResults.rows[0].count} exams without dimension results.`);
+    scriptLogger.info(`  📊 Found ${missingResults.rows[0].count} exams without dimension results.`);
 
     if (parseInt(missingResults.rows[0].count) > 0) {
-      console.log("- (Optimization) Refreshing Materialized Views is usually enough for the Premium Report...");
-      console.log("- Refreshing MVs one more time to be safe...");
+      scriptLogger.info("- (Optimization) Refreshing Materialized Views is usually enough for the Premium Report...");
+      scriptLogger.info("- Refreshing MVs one more time to be safe...");
       await client.query(`REFRESH MATERIALIZED VIEW attempt_analytics_mv`);
       await client.query(`REFRESH MATERIALIZED VIEW attempt_dimension_accuracy_mv`);
-      console.log("  ✅ MVs Refreshed.");
+      scriptLogger.info("  ✅ MVs Refreshed.");
     }
 
-    console.log("🚀 Global Synchronization Complete.");
+    scriptLogger.info("🚀 Global Synchronization Complete.");
   } catch (err: any) {
-    console.error("❌ Error during synchronization:", err.message);
+    scriptLogger.error("❌ Error during synchronization:", err.message);
   } finally {
     await client.end();
   }
 }
 
-main().catch(console.error);
+main().catch(scriptLogger.error);
+

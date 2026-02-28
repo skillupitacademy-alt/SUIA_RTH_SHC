@@ -1,0 +1,29 @@
+groups:
+  - name: QuizPlatformAlerts
+    rules:
+      - alert: HighErrorRate
+        expr: sum(rate(http_requests_total{status=~"5.."}[5m])) / sum(rate(http_requests_total[5m])) > 0.05
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High HTTP 5xx error rate detected"
+          description: "Endpoint {{ $labels.route }} is experiencing > 5% error rate."
+
+      - alert: ExtremeLatency
+        expr: histogram_quantile(0.99, sum(rate(http_request_duration_ms_bucket[5m])) by (le, route)) > 2000
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "P99 Latency > 2s"
+          description: "Endpoint {{ $labels.route }} is slower than 2s for 99% of requests."
+
+      - alert: HighExamAbandonment
+        expr: rate(exam_abandoned_total[10m]) / rate(exam_started_total[10m]) > 0.3
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High Exam Abandonment Rate"
+          description: "More than 30% of exams are being abandoned in the last 10 minutes."

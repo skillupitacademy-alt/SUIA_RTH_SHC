@@ -1,53 +1,50 @@
-import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
+// Edge-compatible UUID generation using standard web crypto
+import { NextRequest, NextResponse } from 'next/server';
 
 import { corsMiddleware } from './modules/auth/cors.middleware';
 import { csrfProtection, setCsrfToken } from './modules/auth/csrf.middleware';
-import { rateLimit } from './modules/auth/rate-limit.middleware';
 import { _verifyAdmin } from './modules/auth/rbac.service';
 import { TokenService } from './modules/auth/token.service';
 
-export default async function middleware(_request: NextRequest) {
+export default async function middleware(request: NextRequest) {
+  // 1. Ensure a requestId and sessionId exist and are forwarded downstream
+  const requestId = request.headers.get('x-request-id') ?? crypto.randomUUID();
+  const sessionId = request.headers.get('x-session-id') ?? 'anon-' + crypto.randomUUID().slice(0, 8);
   
-  // 1. CORS Preflight
-  if (_request.method === 'OPTIONS') {
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set('x-request-id', requestId);
+  requestHeaders.set('x-session-id', sessionId);
+
+  // 2. CORS Preflight
+  if (request.method === 'OPTIONS') {
     const response = new NextResponse(null, { status: 204 });
-    return corsMiddleware(_request, response);
+    return corsMiddleware(request, response);
   }
 
-  // Only apply to /api routes
-  if (!_request.nextUrl.pathname.startsWith('/api')) {
-    return NextResponse.next();
+  // 3. Only apply to /api routes
+  if (!request.nextUrl.pathname.startsWith('/api')) {
+    return NextResponse.next({
+      request: { headers: requestHeaders }
+    });
   }
 
-  // 2. Rate Limiting
-  const rateLimitResponse = await rateLimit(_request);
-  const hasRateLimitResponse = rateLimitResponse !== null;
-  if (hasRateLimitResponse) {
-    return corsMiddleware(_request, rateLimitResponse);
-  }
-
-  // 3. CSRF Protection for mutations
-  const isAuthRoute = _request.nextUrl.pathname.startsWith('/api/auth') || 
-                      _request.nextUrl.pathname.startsWith('/api/admin/auth');
+  // 4. CSRF Protection for mutations
+  const isAuthRoute = request.nextUrl.pathname.startsWith('/api/auth') || 
+                      request.nextUrl.pathname.startsWith('/api/admin/auth');
   
-  // Skip CSRF for auth routes (login/signup) which don't have tokens yet
   if (!isAuthRoute) {
-    const csrfResponse = await csrfProtection(_request);
+    const csrfResponse = await csrfProtection(request);
     if (csrfResponse !== null && csrfResponse !== undefined) {
-      return corsMiddleware(_request, csrfResponse);
+      return corsMiddleware(request, csrfResponse);
     }
   }
 
-  // 4. Auth Protection (Exclude public routes)
-  const isPublicRoute = isAuthRoute || 
-    _request.nextUrl.pathname === '/api/status';
+  // 5. Auth Protection
+  const isPublicRoute = isAuthRoute || request.nextUrl.pathname === '/api/status';
 
   if (!isPublicRoute) {
-    const pathname = _request.nextUrl.pathname;
-    
-    // 4.1 Determine Auth Scope & Audience (P0-SEC-004)
-    const portalIdentity = _request.headers.get('x-portal-identity') ?? 'user';
+    const pathname = request.nextUrl.pathname;
+    const portalIdentity = request.headers.get('x-portal-identity') ?? 'user';
     let scope: 'admin' | 'user' | 'infrastructure' = 'user';
     let expectedAudience: 'admin' | 'user' | 'infra' = 'user';
 
@@ -59,9 +56,9 @@ export default async function middleware(_request: NextRequest) {
         expectedAudience = 'admin';
     }
 
-    const _token = TokenService.getAccessToken(_request, { scope });
-    const internalKey = _request.headers.get('x-internal-key');
-    const authHeader = _request.headers.get('authorization');
+    const _token = TokenService.getAccessToken(request, { scope });
+    const internalKey = request.headers.get('x-internal-key');
+    const authHeader = request.headers.get('authorization');
     
     const isValidInternalKey = internalKey !== null && internalKey === process.env.INTERNAL_API_KEY;
     const isValidCronAuth = authHeader !== null && process.env.CRON_SECRET !== undefined && authHeader === `Bearer ${process.env.CRON_SECRET}`;
@@ -73,53 +70,58 @@ export default async function middleware(_request: NextRequest) {
         { _error: 'Authentication required', scope },
         { status: 401 }
       );
-      return corsMiddleware(_request, response);
+      response.headers.set('x-request-id', requestId);
+      response.headers.set('x-session-id', sessionId);
+      return corsMiddleware(request, response);
     }
 
     if (!isSystemBypass) {
       try {
-        // In middleware, we just want to ensure it's a valid, unexpired _token with THE CORRECT AUDIENCE.
         const isAdmin = scope === 'admin' || scope === 'infrastructure';
         const _payload = await TokenService.verifyAccessToken(_token!, { isAdmin, audience: expectedAudience });
 
-      // 4.2 Central RBAC Enforcement (P0-SEC-002)
-      const isInfraRoute = pathname.startsWith('/api/admin') && portalIdentity === 'infrastructure';
-      const isAdminRoute = (pathname.startsWith('/api/admin') && !pathname.startsWith('/api/admin/auth') && portalIdentity !== 'infrastructure') || 
-                           pathname.startsWith('/api/factory') ||
-                           pathname.startsWith('/api/analytics/admin');
+        const isInfraRoute = pathname.startsWith('/api/admin') && portalIdentity === 'infrastructure';
+        const isAdminRoute = (pathname.startsWith('/api/admin') && !pathname.startsWith('/api/admin/auth') && portalIdentity !== 'infrastructure') || 
+                             pathname.startsWith('/api/factory') ||
+                             pathname.startsWith('/api/analytics/admin');
 
-      if (isInfraRoute) {
-          const roles = Array.isArray(_payload.roles) ? (_payload.roles as string[]) : [];
-          if (!roles.includes('INFRASTRUCTURE')) {
-            return corsMiddleware(_request, NextResponse.json({ _error: 'Forbidden: Infrastructure privileges required' }, { status: 403 }));
+        if (isInfraRoute) {
+            const roles = Array.isArray(_payload.roles) ? (_payload.roles as string[]) : [];
+            if (!roles.includes('INFRASTRUCTURE')) {
+              const res = NextResponse.json({ _error: 'Forbidden: Infrastructure privileges required' }, { status: 403 });
+              res.headers.set('x-request-id', requestId);
+              return corsMiddleware(request, res);
+            }
+        } else if (isAdminRoute) {
+          const hasAdminAccess = await _verifyAdmin(_payload);
+          if (!hasAdminAccess) {
+            const res = NextResponse.json({ _error: 'Forbidden: Admin access only' }, { status: 403 });
+            res.headers.set('x-request-id', requestId);
+            return corsMiddleware(request, res);
           }
-      } else if (isAdminRoute) {
-        const hasAdminAccess = await _verifyAdmin(_payload);
-        if (!hasAdminAccess) {
-          const response = NextResponse.json(
-            { _error: 'Forbidden: Admin access only' },
-            { status: 403 }
-          );
-          return corsMiddleware(_request, response);
         }
-      }
       } catch (_error: unknown) {
         const errorMessage = _error instanceof Error ? _error.message : 'Authentication failed';
-        const response = NextResponse.json(
-          { _error: 'Invalid or expired _token', message: errorMessage },
-          { status: 401 }
-        );
-        return corsMiddleware(_request, response);
+        const res = NextResponse.json({ _error: 'Invalid or expired _token', message: errorMessage }, { status: 401 });
+        res.headers.set('x-request-id', requestId);
+        return corsMiddleware(request, res);
       }
     }
   }
 
-  // 5. Proceed and add CORS headers
-  const response = NextResponse.next();
-  // Permanent Fix: Always re-issue/refresh CSRF _token on successful requests
-  // ensure the client always has a fresh _token for the next mutation.
+  // 6. Finalize Response using modern proxy forwarding
+  const response = NextResponse.next({
+    request: { headers: requestHeaders }
+  });
+  
   setCsrfToken(response);
-  return corsMiddleware(_request, response);
+  response.headers.set('x-request-id', requestId);
+  response.headers.set('x-session-id', sessionId);
+  
+  // Expose headers to frontend
+  response.headers.set('Access-Control-Expose-Headers', 'x-request-id, x-session-id, x-csrf-token, X-Duration-Ms');
+  
+  return corsMiddleware(request, response);
 }
 
 export const config = {

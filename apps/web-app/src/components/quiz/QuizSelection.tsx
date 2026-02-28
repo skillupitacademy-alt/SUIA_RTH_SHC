@@ -20,6 +20,7 @@ import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/store/auth-store';
 import { apiClient, Domain, DomainHierarchy, QuestionCounts, Subject, Topic, Subtopic } from '@quiz/api-client';
 import { clientLogger } from '@/utils/clientLogger';
+import { recordClientMetric, METRICS } from '@quiz/observability';
 
 // Map icons to domain IDs (fallback/static mapping for aesthetics)
 const ICON_MAP: Record<string, typeof Code> = {
@@ -67,8 +68,14 @@ export function QuizSelection() {
             try {
                 const data = await apiClient.quiz.getDomains();
                 setDomains(data);
+                setError(null);
+                if (data.length === 0) {
+                    recordClientMetric('ui.selection.empty_domains', 1);
+                }
             } catch (err) {
                 clientLogger.error('Failed to load domains', { error: err instanceof Error ? err.message : 'unknown' });
+                setError("Unable to load available domains. Please retry or check your connection.");
+                recordClientMetric('ui.selection.fetch_error', 1, { stage: 'domains' });
             } finally {
                 setLoading(false);
             }
@@ -88,8 +95,14 @@ export function QuizSelection() {
             try {
                 const hierarchy = await apiClient.quiz.getDomainHierarchy(selectedDomain);
                 setFullHierarchy(hierarchy);
+                setError(null);
+                if (!hierarchy.subjects || hierarchy.subjects.length === 0) {
+                    recordClientMetric('ui.selection.empty_hierarchy', 1, { domainId: selectedDomain });
+                }
             } catch (err) {
                 clientLogger.error('Failed to fetch domain hierarchy', { error: err instanceof Error ? err.message : 'unknown' });
+                setError("We couldn't load topics for this domain. Please retry.");
+                recordClientMetric('ui.selection.fetch_error', 1, { stage: 'hierarchy', domainId: selectedDomain });
             } finally {
                 setFetchingHierarchy(false);
             }
@@ -112,8 +125,16 @@ export function QuizSelection() {
                     subtopicIds: selectedSubtopics,
                 });
                 setAvailableCounts(counts);
+                setError(null);
+                if (!counts.isReady) {
+                    recordClientMetric('ui.selection.insufficient_content', 1, {
+                        domainId: selectedDomain,
+                        total: counts.total.toString()
+                    });
+                }
             } catch (err) {
                 clientLogger.error('Failed to fetch counts', { error: err instanceof Error ? err.message : 'unknown' });
+                setError("Question availability check failed. Please adjust filters or retry.");
             }
         };
         fetchCounts();
@@ -169,6 +190,7 @@ export function QuizSelection() {
                 idempotencyKey: crypto.randomUUID()
             });
 
+            await recordClientMetric(METRICS.EXAM.START, 1, { domainId: selectedDomain });
             router.push(`/quiz/active-session?examId=${exam.examId}`);
         } catch (err: unknown) {
             clientLogger.error('Failed to start exam', { error: err instanceof Error ? err.message : 'unknown' });
@@ -189,6 +211,11 @@ export function QuizSelection() {
 
     return (
         <div className="w-full space-y-24">
+            {error && (
+                <div className="p-4 rounded-2xl border border-red-200 bg-red-50 text-red-700 font-semibold text-sm">
+                    {error}
+                </div>
+            )}
             {/* Step 1: Domain Selection */}
             <section className="space-y-12">
                 <div className="flex items-center gap-6">

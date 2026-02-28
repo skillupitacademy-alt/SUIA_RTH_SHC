@@ -1,4 +1,5 @@
 'use client';
+'use client';
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -6,6 +7,8 @@ import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useAuthStore } from '@/store/auth-store';
 import { useRouter } from 'next/navigation';
 import { apiClient } from '@quiz/api-client';
+import { recordClientMetric, METRICS } from '@quiz/observability';
+
 
 export function LoginForm() {
     const [showPassword, setShowPassword] = useState(false);
@@ -40,6 +43,7 @@ export function LoginForm() {
             const { user } = await apiClient.auth.login(email, password);
             if (!user) throw new Error("Login succeeded but no user data was returned.");
             login({ ...user, onboarded: user.onboarded ?? false });
+            await recordClientMetric(METRICS.AUTH.LOGIN, 1, { method: 'email', outcome: 'success' });
             router.push('/dashboard');
         } catch (err: unknown) {
             setError(toErrorMessage(err));

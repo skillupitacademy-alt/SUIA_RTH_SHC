@@ -13,7 +13,8 @@ export default defineConfig({
   testIgnore: ['**/src/**', '**/__tests__/**', '**/node_modules/**'],
   timeout: 30 * 1000,
   expect: { timeout: 10 * 1000 },
-  reporter: [['list']],
+  outputDir: 'tests/.playwright/results',
+  reporter: [['list'], ['html', { outputFolder: 'tests/.playwright/report', open: 'never' }]],
   fullyParallel: false,
   use: {
     baseURL: process.env.NEXT_PUBLIC_WEB_APP_URL || process.env.NEXT_PUBLIC_ADMIN_URL || 'http://localhost:3000',

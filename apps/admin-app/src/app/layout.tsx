@@ -1,9 +1,12 @@
 import "./globals.css";
 
+import { Analytics } from "@vercel/analytics/react";
 import type { Metadata } from "next";
 
 import { SecurityMuzzle } from "@/components/auth/SecurityMuzzle";
+import { ErrorBoundary } from "@/components/layout/ErrorBoundary";
 import { FetchCredentialsProvider } from "@/components/providers/FetchCredentialsProvider";
+import { MonitoringProvider } from "@/components/providers/MonitoringProvider";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 
 export const metadata: Metadata = {
@@ -19,11 +22,16 @@ export default function RootLayout({
     return (
         <html lang="en" suppressHydrationWarning>
             <body>
-                <ThemeProvider>
-                    <FetchCredentialsProvider />
-                    <SecurityMuzzle />
-                    {children}
-                </ThemeProvider>
+                <MonitoringProvider>
+                    <ErrorBoundary>
+                        <ThemeProvider>
+                            <FetchCredentialsProvider />
+                            <SecurityMuzzle />
+                            {children}
+                            <Analytics />
+                        </ThemeProvider>
+                    </ErrorBoundary>
+                </MonitoringProvider>
             </body>
         </html>
     );

@@ -1,6 +1,7 @@
 'use client';
 
 import { apiClient } from '@quiz/api-client';
+import { recordCounter } from '@quiz/observability';
 import { ZLoader } from '@quiz/ui';
 import {
     Activity,
@@ -85,7 +86,14 @@ export const HierarchyReports: React.FC = () => {
             })) : [];
             setReportData(normalizedData);
             setViewStack([{ level: 'domain', data: normalizedData, title: 'Global Domains' }]);
+
+            if (normalizedData.length === 0) {
+                recordCounter('admin.ui.reports.hierarchy.empty', 1);
+            } else {
+                recordCounter('admin.ui.reports.hierarchy.fetch_success', 1, { count: normalizedData.length });
+            }
         } catch (error) {
+            recordCounter('admin.ui.reports.hierarchy.fetch_error', 1, { reason: error instanceof Error ? error.message : 'unknown' });
             clientLogger.error('Failed to fetch hierarchy report', { error: error instanceof Error ? error.message : 'unknown' });
         } finally {
             setLoading(false);
@@ -113,6 +121,7 @@ export const HierarchyReports: React.FC = () => {
         }
 
         setViewStack([...viewStack, { level: nextLevel, data: nextData, title, parentName: item.name }]);
+        recordCounter('admin.ui.reports.hierarchy.drill_down', 1, { from: currentView.level, to: nextLevel, name: item.name });
         setSearchQuery('');
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };

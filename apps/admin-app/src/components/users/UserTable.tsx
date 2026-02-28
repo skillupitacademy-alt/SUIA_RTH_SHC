@@ -1,12 +1,12 @@
 'use client';
-/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars, react-hooks/exhaustive-deps */
 
 import { apiClient } from '@quiz/api-client';
+import { recordCounter } from '@quiz/observability';
 import { ZLoader, ZPagination } from '@quiz/ui';
 import { formatDistanceToNow } from 'date-fns';
 import { Calendar, CheckCircle, Lock, Mail, Shield, User } from 'lucide-react';
 import Image from 'next/image';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { ErrorBanner } from '@/components/layout/ErrorBanner';
 import { clientLogger } from '@/utils/clientLogger';
@@ -50,16 +50,14 @@ export function UserTable() {
     const [editingUser, setEditingUser] = useState<UserData | null>(null);
     const [isSaving, setIsSaving] = useState(false);
     const [newPassword, setNewPassword] = useState('');
-    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [filterRole, setFilterRole] = useState('ALL');
     const [filterBlocked, setFilterBlocked] = useState('ALL');
     const [filterVerified, setFilterVerified] = useState('ALL');
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const [isActionLoading, setIsActionLoading] = useState(false);
-    const [isPageLoading, setIsPageLoading] = useState(false);
 
-    const fetchUsers = async () => {
+    const fetchUsers = useCallback(async () => {
         setIsLoading(true);
         try {
             const serverFilters: UserFilters = {};
@@ -77,7 +75,7 @@ export function UserTable() {
             if (filterVerified === 'VERIFIED') serverFilters.isVerified = true;
             if (filterVerified === 'UNVERIFIED') serverFilters.isVerified = false;
 
-            const [activeData, _deletedData] = await Promise.all([
+            const [activeData] = await Promise.all([
                 apiClient.admin.getUsers(page, pageSize, 'active', serverFilters),
                 apiClient.admin.getUsers(1, 10, 'deleted')
             ]);
@@ -85,25 +83,35 @@ export function UserTable() {
             setUsers(activeData.users);
             setTotalPages(activeData.totalPages);
             setTotalCount(activeData.total ?? activeData.users.length);
+
+            if (activeData.users.length === 0) {
+                recordCounter('admin.ui.users.empty', 1, { filterRole });
+            } else {
+                recordCounter('admin.ui.users.fetch_success', 1, { count: activeData.users.length });
+            }
         } catch (error) {
+            recordCounter('admin.ui.users.fetch_error', 1, { reason: error instanceof Error ? error.message : 'unknown' });
             clientLogger.error('Failed to fetch users', { error: error instanceof Error ? error.message : 'unknown' });
             setErrorMessage('Connection Error: Unable to sync user accounts at this time.');
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [filterBlocked, filterRole, filterVerified, page, pageSize, searchQuery]);
 
     useEffect(() => {
         void fetchUsers();
-    }, [page, pageSize, filterRole, filterBlocked, filterVerified]);
+    }, [fetchUsers]);
 
     useEffect(() => {
         const timer = setTimeout(() => {
-            if (page === 1) void fetchUsers();
-            else setPage(1);
+            if (page === 1) {
+                void fetchUsers();
+            } else {
+                setPage(1);
+            }
         }, 500);
         return () => clearTimeout(timer);
-    }, [searchQuery]);
+    }, [fetchUsers, page, searchQuery]);
 
     const handleSaveUser = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -118,27 +126,13 @@ export function UserTable() {
             if (newPassword !== '') payload.password = newPassword;
 
             await apiClient.admin.updateUser(editingUser.id, payload);
+            recordCounter('admin.ui.users.update_success', 1, { userId: editingUser.id });
             await fetchUsers();
             handleCloseEdit();
         } catch (error) {
+            recordCounter('admin.ui.users.update_error', 1, { userId: editingUser?.id, reason: error instanceof Error ? error.message : 'unknown' });
             clientLogger.error('Failed to update user', { error: error instanceof Error ? error.message : 'unknown' });
             setErrorMessage('Update Failed: Unable to save changes to this user account.');
-        } finally {
-            setIsSaving(false);
-        }
-    };
-
-    const handleDeleteUser = async () => {
-        if (editingUser === null) return;
-        setIsSaving(true);
-        try {
-            await apiClient.admin.deleteUser(editingUser.id);
-            await fetchUsers();
-            handleCloseEdit();
-            setShowDeleteConfirm(false);
-        } catch (error) {
-            clientLogger.error('Failed to delete user', { error: error instanceof Error ? error.message : 'unknown' });
-            setErrorMessage('Action Rejected: This user cannot be terminated from the system.');
         } finally {
             setIsSaving(false);
         }
@@ -149,11 +143,13 @@ export function UserTable() {
         const currentRoles = editingUser.userRoles ?? [];
         const hasAdmin = currentRoles.some(r => r.role.name === 'ADMIN');
         if (isAdmin && !hasAdmin) {
+            recordCounter('admin.ui.users.role_change', 1, { userId: editingUser.id, role: 'ADMIN', action: 'add' });
             setEditingUser({
                 ...editingUser,
                 userRoles: [...currentRoles, { role: { name: 'ADMIN' } }]
             });
         } else if (!isAdmin && hasAdmin) {
+            recordCounter('admin.ui.users.role_change', 1, { userId: editingUser.id, role: 'ADMIN', action: 'remove' });
             setEditingUser({
                 ...editingUser,
                 userRoles: currentRoles.filter(r => r.role.name !== 'ADMIN')
@@ -505,18 +501,15 @@ export function UserTable() {
             }
 
             {
-                isActionLoading ? <div className="fixed inset-0 z-[300] bg-white/20 backdrop-blur-[2px] flex items-center justify-center animate-in fade-in duration-200">
-                    <div className="bg-white p-8 rounded-3xl shadow-2xl border border-primary/10 flex flex-col items-center gap-4">
-                        <ZLoader size="md" text="Accessing Identity..." />
+                isActionLoading ? (
+                    <div className="fixed inset-0 z-[300] bg-white/20 backdrop-blur-[2px] flex items-center justify-center animate-in fade-in duration-200">
+                        <div className="bg-white p-8 rounded-3xl shadow-2xl border border-primary/10 flex flex-col items-center gap-4">
+                            <ZLoader size="md" text="Accessing Identity..." />
+                        </div>
                     </div>
-                </div> : null
+                ) : null
             }
 
-            {
-                isPageLoading ? <div className="fixed inset-0 z-[300] bg-black/5 backdrop-blur-[1px] flex items-center justify-center animate-in fade-in duration-200">
-                    <ZLoader text="Syncing Matrix..." />
-                </div> : null
-            }
         </div >
     );
 }

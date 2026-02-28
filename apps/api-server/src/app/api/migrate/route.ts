@@ -4,10 +4,13 @@ import { migrate } from 'drizzle-orm/neon-serverless/migrator';
 import { type NextRequest, NextResponse } from 'next/server';
 import path from 'path';
 
+import { recordCounter, recordTimer } from "@/lib/metrics";
+import { withLogging } from "@/lib/withLogging";
 import { _verifyAdmin } from '@/modules/auth/rbac.service';
 import { TokenService } from '@/modules/auth/token.service';
 
-export async function GET(_request: NextRequest) {
+async function handler(_request: NextRequest) {
+  const start = Date.now();
   try {
     // 1. Check for Internal Migration Secret (P0-SEC-001)
     const MIGRATION_SECRET = process.env.MIGRATION_SECRET;
@@ -55,12 +58,17 @@ export async function GET(_request: NextRequest) {
     
     await migrate(db, { migrationsFolder });
 
+    recordCounter('system.api.migrate.success', 1);
+    recordTimer('system.api.migrate.duration', Date.now() - start, { outcome: 'success' });
     return NextResponse.json({ 
       success: true, 
       message: 'Migrations completed successfully!' 
     });
   } catch (_error: unknown) {
     const errorMessage = _error instanceof Error ? _error.message : 'Failed to perform migration';
+    recordCounter('system.api.migrate.failure', 1, { reason: 'internal_error' });
     return NextResponse.json({ _error: errorMessage }, { status: 500 });
   }
 }
+
+export const GET = withLogging(handler, { component: 'system', operation: 'database_migration' });

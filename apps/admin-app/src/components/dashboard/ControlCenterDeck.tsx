@@ -19,20 +19,32 @@ interface SummaryData {
 export function ControlCenterDeck() {
     const [stats, setStats] = useState<SummaryData | null>(null);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const hasError = typeof error === 'string' && error.length > 0;
 
     useEffect(() => {
         const fetch = async () => {
             try {
+                setError(null);
                 const data = await apiClient.admin.getPerformanceAnalytics();
                 setStats(data.summary);
             } catch (err) {
                 clientLogger.error("Failed to fetch control center stats", { error: err instanceof Error ? err.message : 'unknown' });
+                setError('Unable to load performance analytics.');
             } finally {
                 setLoading(false);
             }
         };
         void fetch();
     }, []);
+
+    if (hasError) {
+        return (
+            <div className="p-8 rounded-[2rem] border border-rose-100 bg-white text-rose-600 text-sm font-semibold">
+                {error}
+            </div>
+        );
+    }
 
     if (loading || stats === null) {
         return (

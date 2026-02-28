@@ -293,7 +293,7 @@ export function ExamReportLayout({ data, loading }: ExamReportLayoutProps) {
                         {activeTab === 'summary' && (
                             <div className="space-y-16 pt-6 animate-in fade-in duration-700">
                                 <div className="flex flex-col gap-10">
-                                    <div className="w-full h-[580px] relative">
+                                    <div className="w-full min-h-[580px] lg:h-[580px] relative">
                                         <RadialKPI data={data} />
                                     </div>
                                     <div className="flex flex-col">
@@ -332,7 +332,7 @@ export function ExamReportLayout({ data, loading }: ExamReportLayoutProps) {
                             <div className="space-y-16 pt-6">
                                 {/* Section 1: Subtopic Variance */}
                                 <div className="flex flex-col gap-10">
-                                    <div className="w-full h-[580px] relative">
+                                    <div className="w-full min-h-[580px] lg:h-[580px] relative">
                                         <SubtopicBarChart
                                             data={data.subtopics}
                                             weakest={data.ai.weakest_subtopic}
@@ -367,7 +367,7 @@ export function ExamReportLayout({ data, loading }: ExamReportLayoutProps) {
 
                                 {/* Section 2: Skill & Time Matrix */}
                                 <div className="flex flex-col gap-10">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-stretch h-[580px]">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-stretch min-h-[580px] lg:h-[580px]">
                                         <div className="flex flex-col">
                                             <SkillDonutChart data={data.skills} />
                                         </div>
@@ -411,7 +411,7 @@ export function ExamReportLayout({ data, loading }: ExamReportLayoutProps) {
 
                                 {/* Section 3: Heatmap Projection */}
                                 <div className="flex flex-col gap-10">
-                                    <div className="w-full h-[580px] relative">
+                                    <div className="w-full min-h-[580px] lg:h-[580px] relative">
                                         <HeatmapGrid data={data.heatmap} />
                                     </div>
                                     <div className="flex flex-col">
@@ -433,7 +433,7 @@ export function ExamReportLayout({ data, loading }: ExamReportLayoutProps) {
                         {activeTab === 'complexity' && (
                             <div className="space-y-16 pt-6 animate-in fade-in duration-700">
                                 <div className="flex flex-col gap-10">
-                                    <div className="w-full h-[580px] relative">
+                                    <div className="w-full min-h-[580px] lg:h-[580px] relative">
                                         <DifficultyBarChart
                                             data={data.difficulty}
                                             expertDropOff={data.expertDropOff}

@@ -1,59 +1,71 @@
+export type Status = 'active' | 'inactive' | 'draft';
+export type Difficulty = 'simple' | 'intermediate' | 'expert';
+export type SkillCategory = 'technical' | 'cognitive' | 'process';
+export type MappingType = 'conceptual' | 'technical' | 'practical';
+
 export interface Domain {
     id: string;
     name: string;
-    slug?: string;
-    description?: string;
-    icon?: string;
-    status?: string;
+    description?: string | null;
+    category?: string | null;
+    status: Status;
     createdAt?: string;
     updatedAt?: string;
+    [key: string]: unknown;
 }
 
 export interface Subject {
     id: string;
     name: string;
     domainId: string;
-    slug?: string;
-    description?: string;
-    icon?: string;
-    orderIndex?: number;
-    status?: string;
+    description?: string | null;
+    order?: number;
+    orderIndex?: number; // alias used in UI
+    status: Status;
     createdAt?: string;
     updatedAt?: string;
+    [key: string]: unknown;
 }
 
 export interface Topic {
     id: string;
     name: string;
     subjectId: string;
-    slug?: string;
-    description?: string;
-    orderIndex?: number;
+    description?: string | null;
+    complexityLevel: number;
+    weight: number;
+    learningUrl?: string | null;
+    detailedNotesPath?: string | null;
+    status: Status;
+    // optional derived fields for UI convenience
     complexity?: 'beginner' | 'intermediate' | 'advanced';
-    complexityLevel?: string;
-    weight?: number;
-    status?: string;
+    orderIndex?: number;
     createdAt?: string;
     updatedAt?: string;
+    [key: string]: unknown;
 }
 
 export interface Subtopic {
     id: string;
     name: string;
     topicId: string;
-    slug?: string;
-    description?: string;
+    description?: string | null;
+    depthLevel?: number;
     orderIndex?: number;
-    status?: string;
+    status?: Status; // UI may supply, though DB does not store
     createdAt?: string;
     updatedAt?: string;
+    [key: string]: unknown;
 }
 
 export interface Skill {
     id: string;
     name: string;
-    description?: string;
-    category?: string;
+    description?: string | null;
+    category?: SkillCategory;
+    mappingType?: MappingType;
+    weight?: number;
     createdAt?: string;
     updatedAt?: string;
+    [key: string]: unknown;
 }

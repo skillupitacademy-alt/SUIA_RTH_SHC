@@ -1,10 +1,9 @@
 'use client';
-/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars, react-hooks/exhaustive-deps */
 
 import { apiClient } from '@quiz/api-client';
 import { ZLoader, ZPagination } from '@quiz/ui';
 import { Check, Globe, Plus, Trash2, X } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { HierarchyFactoryWizard } from '@/components/content/HierarchyFactoryWizard';
 import { ErrorBanner } from '@/components/layout/ErrorBanner';
@@ -18,13 +17,22 @@ import {
 } from "@/components/ui/alert-dialog";
 import { ZPortalModal } from '@/components/ui/ZPortalModal';
 import { cn } from '@/lib/utils';
+import type { DomainSummary } from '@/types/review';
 import { clientLogger } from '@/utils/clientLogger';
 
+import type { Domain, Status } from '../../types/domain';
 import { DomainReviewCard } from './DomainReviewCard';
 import { HierarchySearchBar } from './HierarchySearchBar';
 
+type DomainForm = {
+    name: string;
+    category: string;
+    description: string;
+    status: 'active' | 'inactive';
+};
+
 export function DomainTable() {
-    const [data, setData] = useState<any[]>([]);
+    const [data, setData] = useState<Domain[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [page, setPage] = useState(1);
     const [pageSize, setPageSize] = useState(20);
@@ -36,17 +44,16 @@ export function DomainTable() {
 
     // Batch Operation State
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-    const [isBatchDeleting, setIsBatchDeleting] = useState(false);
 
     // Modal states
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-    const [currentDomain, setCurrentDomain] = useState<any>(null);
+    const [currentDomain, setCurrentDomain] = useState<Domain | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isFactoryOpen, setIsFactoryOpen] = useState(false);
 
     // Form states
-    const [formData, setFormData] = useState({
+    const [formData, setFormData] = useState<DomainForm>({
         name: '',
         category: '',
         description: '',
@@ -58,11 +65,22 @@ export function DomainTable() {
         return () => clearTimeout(timer);
     }, [searchQuery]);
 
-    const fetchDomains = async () => {
+    const fetchDomains = useCallback(async () => {
         setIsLoading(true);
         try {
             const response = await apiClient.admin.getDomains(page, pageSize, debouncedSearch || undefined);
-            setData(response.data);
+            const domains: Domain[] = Array.isArray(response.data)
+                ? response.data.map((d) => ({
+                    id: String(d.id),
+                    name: d.name ?? '',
+                    description: d.description ?? null,
+                    category: d.category ?? null,
+                    status: ((d as { status?: Status }).status) ?? 'active',
+                    createdAt: d.createdAt ?? undefined,
+                    updatedAt: d.updatedAt ?? undefined,
+                }))
+                : [];
+            setData(domains);
             setTotalPages(response.totalPages);
             setTotalCount(response.total ?? response.data.length);
             setSelectedIds(new Set()); // Reset selection on refresh
@@ -72,11 +90,11 @@ export function DomainTable() {
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [debouncedSearch, page, pageSize]);
 
     useEffect(() => {
         void fetchDomains();
-    }, [page, pageSize, debouncedSearch]);
+    }, [fetchDomains]);
 
     // --- SELECTION LOGIC ---
     const handleSelect = (id: string, selected: boolean) => {
@@ -99,42 +117,24 @@ export function DomainTable() {
         }
     };
 
-    const handleBatchDelete = async () => {
-        if (selectedIds.size === 0) return;
-
-        // If single item selected, use standard delete flow for better UX (optional, but consistent)
-        if (selectedIds.size === 1) {
-            const id = Array.from(selectedIds)[0];
-            const item = data.find(d => d.id === id);
-            if (item != null) {
-                setCurrentDomain(item);
-                setIsDeleteOpen(true);
-                return;
-            }
-        }
-
-        setIsBatchDeleting(true);
-        try {
-            await apiClient.admin.batchDeleteDomains(Array.from(selectedIds));
-            setSelectedIds(new Set());
-            void fetchDomains();
-        } catch (error) {
-            clientLogger.error('Batch delete failed', { error: error instanceof Error ? error.message : 'unknown' });
-            setErrorMessage('Batch Deletion Failed: Some domains could not be removed (they may have dependencies).');
-        } finally {
-            setIsBatchDeleting(false);
-        }
-    };
-
     // --- FORM LOGIC ---
-    const handleOpenForm = (domain: { name: string; category?: string; description?: string; status?: string } | null = null) => {
+    const handleOpenForm = (domain: Domain | DomainSummary | null = null) => {
         if (domain != null) {
-            setCurrentDomain(domain as any);
-            setFormData({
+            const normalized: Domain = {
+                id: domain.id,
                 name: domain.name,
-                category: domain.category ?? '',
-                description: domain.description ?? '',
-                status: (domain.status as 'active' | 'inactive') ?? 'active'
+                description: domain.description ?? null,
+                category: (domain as Domain).category ?? null,
+                status: (((domain as Domain).status ?? (domain as DomainSummary).status) as Status) ?? 'active',
+                createdAt: domain.createdAt,
+                updatedAt: (domain as Domain).updatedAt
+            };
+            setCurrentDomain(normalized);
+            setFormData({
+                name: normalized.name,
+                category: normalized.category ?? '',
+                description: normalized.description ?? '',
+                status: normalized.status === 'inactive' ? 'inactive' : 'active'
             });
         } else {
             setCurrentDomain(null);
@@ -164,7 +164,7 @@ export function DomainTable() {
         e.preventDefault();
         setIsSubmitting(true);
         try {
-            const payload: any = {
+            const payload = {
                 ...formData,
                 slug: formData.name || 'domain',
                 icon: formData.category || 'default',
@@ -319,11 +319,11 @@ export function DomainTable() {
                                     <div className="space-y-2">
                                         <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500 pl-1">Status</p>
                                         <div className="flex bg-white p-1.5 rounded-xl border border-slate-200">
-                                            {['active', 'inactive'].map((status) => (
+                                            {(['active', 'inactive'] as const).map((status) => (
                                                 <button
                                                     key={status}
                                                     type="button"
-                                                    onClick={() => setFormData({ ...formData, status: status as any })}
+                                                    onClick={() => setFormData({ ...formData, status })}
                                                     className={`flex-1 py-2.5 px-4 rounded-lg text-xs font-black uppercase tracking-wider transition-all ${formData.status === status
                                                         ? 'bg-[#1A1A1A] text-white shadow-sm'
                                                         : 'text-slate-500 hover:text-slate-600'
@@ -443,17 +443,36 @@ export function DomainTable() {
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 gap-4">
-                        {data.map((domain, index) => (
-                            <DomainReviewCard
-                                key={domain.id}
-                                domain={domain}
-                                index={index + (page - 1) * 20}
-                                isSelected={selectedIds.has(domain.id)}
-                                onSelect={handleSelect}
-                                onDeleteRequest={(d) => { setCurrentDomain(d); setIsDeleteOpen(true); }}
-                                onEditRequest={(d) => handleOpenForm(d)}
-                            />
-                        ))}
+                        {data.map((domain, index) => {
+                            const domainSummary: DomainSummary = {
+                                id: domain.id,
+                                name: domain.name,
+                                description: domain.description ?? undefined,
+                                category: domain.category ?? undefined,
+                                status: (((domain as Domain).status ?? (domain as DomainSummary).status) as Status) === 'inactive' ? 'inactive' : 'active',
+                                createdAt: domain.createdAt,
+                                subjectsCount: (domain as unknown as { subjectsCount?: number }).subjectsCount,
+                                subjects: (domain as unknown as { subjects?: DomainSummary['subjects'] }).subjects
+                            };
+
+                            return (
+                                <DomainReviewCard
+                                    key={domain.id}
+                                    domain={domainSummary}
+                                    index={index + (page - 1) * 20}
+                                    isSelected={selectedIds.has(domain.id)}
+                                    onSelect={handleSelect}
+                                    onDeleteRequest={(d) => { setCurrentDomain({
+                                        id: d.id,
+                                        name: d.name,
+                                        description: d.description ?? null,
+                                        category: d.category ?? null,
+                                        status: (d.status as Status) ?? 'active'
+                                    }); setIsDeleteOpen(true); }}
+                                    onEditRequest={(d) => handleOpenForm(d)}
+                                />
+                            );
+                        })}
                         {data.length === 0 && (
                             <div className="text-center py-20 opacity-50">
                                 <Globe className="w-16 h-16 mx-auto mb-4 text-slate-400" />

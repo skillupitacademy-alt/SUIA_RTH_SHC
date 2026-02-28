@@ -1,8 +1,11 @@
 import { type NextRequest, NextResponse } from 'next/server';
-export const dynamic = 'force-dynamic';
+
+import { withLogging } from '@/lib/withLogging';
 import { DomainService } from '@/modules/domain/domain.service';
 
-export async function GET(_req: NextRequest) {
+export const dynamic = 'force-dynamic';
+
+async function handler(_req: NextRequest) {
   try {
     const { searchParams } = new URL(_req.url);
     const id = searchParams.get('id');
@@ -20,7 +23,9 @@ export async function GET(_req: NextRequest) {
   }
 }
 
-export async function POST(_req: NextRequest) {
+export const GET = withLogging(handler, { component: 'core', operation: 'get_domains' });
+
+async function postHandler(_req: NextRequest) {
   try {
     const data = await _req.json();
     const domain = await DomainService.createDomain(data);
@@ -30,3 +35,5 @@ export async function POST(_req: NextRequest) {
     return NextResponse.json({ _error: errorMessage }, { status: 400 });
   }
 }
+
+export const POST = withLogging(postHandler, { component: 'core', operation: 'create_domain' });

@@ -9,7 +9,7 @@ async function main() {
   await client.connect();
   const examId = '0a38074c-2113-4527-bc15-1cbfc1836cea';
 
-  console.log(`🚀 Rescoring Exam: ${examId}...`);
+  scriptLogger.info(`🚀 Rescoring Exam: ${examId}...`);
 
   try {
     // 1. Fetch the user answers and correct answers
@@ -24,7 +24,7 @@ async function main() {
       WHERE eq.exam_id = $1
     `, [examId]);
 
-    console.log(`- Found ${questions.rows.length} questions to rescore.`);
+    scriptLogger.info(`- Found ${questions.rows.length} questions to rescore.`);
 
     let correctCount = 0;
     for (const row of questions.rows) {
@@ -40,19 +40,20 @@ async function main() {
     }
 
     const scorePercentage = (correctCount / questions.rows.length) * 100;
-    console.log(`- Rescoring complete: ${correctCount}/${questions.rows.length} correct (${scorePercentage}%).`);
+    scriptLogger.info(`- Rescoring complete: ${correctCount}/${questions.rows.length} correct (${scorePercentage}%).`);
 
     // 2. Refresh the Materialized Views
-    console.log("- Refreshing Materialized Views...");
+    scriptLogger.info("- Refreshing Materialized Views...");
     await client.query(`REFRESH MATERIALIZED VIEW attempt_analytics_mv`);
     await client.query(`REFRESH MATERIALIZED VIEW attempt_dimension_accuracy_mv`);
 
-    console.log("✅ Exam rescored and analytical views refreshed.");
+    scriptLogger.info("✅ Exam rescored and analytical views refreshed.");
   } catch (err: any) {
-    console.error("❌ Rescoring failed:", err.message);
+    scriptLogger.error("❌ Rescoring failed:", err.message);
   } finally {
     await client.end();
   }
 }
 
-main().catch(console.error);
+main().catch(scriptLogger.error);
+

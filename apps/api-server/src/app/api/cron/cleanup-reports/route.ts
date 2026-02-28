@@ -2,10 +2,12 @@ import { db, reports } from "@quiz/db";
 import { and, desc, eq, inArray, lt } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 
-import { logger } from "@/lib/logger";
+import { recordCounter, recordTimer } from "@/lib/metrics";
 import { storage } from "@/lib/storage";
+import { withLogging } from "@/lib/withLogging";
 
-export async function GET(req: NextRequest) {
+async function handler(req: NextRequest) {
+  const start = Date.now();
   const cronAuth = req.headers.get("Authorization") ?? "";
   const isVercelCron =
     process.env.CRON_SECRET != null && cronAuth === `Bearer ${process.env.CRON_SECRET}`;
@@ -23,7 +25,6 @@ export async function GET(req: NextRequest) {
   try {
     let deletedCount = 0;
 
-    // 1. Cleanup failed/pending reports older than 24h
     const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
     const staleReports = await db.query.reports.findMany({
       where: and(
@@ -37,24 +38,21 @@ export async function GET(req: NextRequest) {
       deletedCount++;
     }
 
-    // 2. Keep only last 3 reports per user (Retention Policy)
-    // This is more complex, we'll do it per user found in the reports table
     const distinctUsers = await db.selectDistinct({ userId: reports.userId }).from(reports);
 
     for (const { userId } of distinctUsers) {
       const userReports = await db.query.reports.findMany({
         where: eq(reports.userId, userId),
         orderBy: [desc(reports.createdAt)],
-        offset: 3 // Skip the first 3 (latest)
+        offset: 3 
       });
 
       for (const oldReport of userReports) {
-        // Delete from storage if possible
         if (oldReport.fileRef !== null && oldReport.fileRef !== undefined && oldReport.fileRef !== "" && typeof storage.delete === "function") {
           try {
             await storage.delete(oldReport.fileRef);
-          } catch (e: unknown) {
-            logger.error({ err: e, fileRef: oldReport.fileRef }, "[Cleanup] Failed to delete from storage");
+          } catch (_e: unknown) {
+            // we let withLogging handle the error context, but this is a inner loop
           }
         }
         
@@ -63,12 +61,15 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    logger.info({ deletedCount }, "[Cleanup Cron] Completed");
+    recordCounter('cron.cleanup_reports.success', 1, { deletedCount });
+    recordTimer('cron.cleanup_reports.duration', Date.now() - start, { outcome: 'success' });
     return NextResponse.json({ status: "success", deletedCount });
 
   } catch (error: unknown) {
-    logger.error({ err: error }, "[Cleanup Cron] API Error");
+    recordCounter('cron.cleanup_reports.failure', 1);
     const message = error instanceof Error ? error.message : "Internal Server Error";
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
+
+export const GET = withLogging(handler, { component: 'system', operation: 'cron_cleanup_reports' });

@@ -1,7 +1,9 @@
+import { METRICS } from '@quiz/observability';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
-import { logger } from '@/lib/logger';
+import { recordCounter, recordTimer } from '@/lib/metrics';
+import { withLogging } from '@/lib/withLogging';
 import type { CreateQuestionInput } from '@/modules/admin-engine/admin.engine';
 import { AdminEngine } from '@/modules/admin-engine/admin.engine';
 import { _verifyAdmin } from '@/modules/auth/rbac.service';
@@ -18,9 +20,8 @@ type BulkQuestionBody = {
   questions: CreateQuestionInput[];
 };
 
-const log = logger.child({ module: 'admin:questions:bulk' });
-
-export async function POST(_req: NextRequest) {
+async function handler(_req: NextRequest) {
+  const start = Date.now();
   try {
     const _token = TokenService.getAccessToken(_req, { scope: 'admin' });
     if (_token === null || _token === undefined || _token.trim() === '') {
@@ -45,16 +46,25 @@ export async function POST(_req: NextRequest) {
         { topicId, subtopicId, skillId, skillIds }, 
         _payload.userId
     );
+
+    const durationMs = Date.now() - start;
+    recordCounter(METRICS.ADMIN.BULK_UPLOAD, 1, { outcome: 'success', count: result.length });
+    recordTimer(METRICS.ADMIN.BULK_UPLOAD + '.duration', durationMs, { outcome: 'success' });
     
     return NextResponse.json({ 
         success: true, 
         count: result.length,
         message: `Successfully uploaded ${result.length} questions` 
+    }, {
+        headers: { 'X-Duration-Ms': durationMs.toString() }
     });
   } catch (_error: unknown) {
     const message = _error instanceof Error ? _error.message : 'Internal Server Error';
-    log.error({ error: message }, 'ADMIN_QUESTIONS_BULK failed');
+    const durationMs = Date.now() - start;
+    recordCounter(METRICS.ADMIN.BULK_UPLOAD, 1, { outcome: 'failure' });
+    recordTimer(METRICS.ADMIN.BULK_UPLOAD + '.duration', durationMs, { outcome: 'failure' });
     return NextResponse.json({ _error: message }, { status: 500 });
   }
 }
 
+export const POST = withLogging(handler, { component: 'admin', operation: 'bulk_upload_questions' });

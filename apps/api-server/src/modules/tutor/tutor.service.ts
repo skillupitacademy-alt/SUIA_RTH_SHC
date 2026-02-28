@@ -2,6 +2,7 @@ import { backgroundJobs, db, exams, notesDeliveryLocks, notifications, resultsBy
 import { and, eq, gte, sql } from "drizzle-orm";
 
 import { cacheService } from "@/modules/core/cache.service";
+import { ResilienceService } from "@/modules/core/resilience.service";
 
 type RecommendationLevel = "revise" | "practice";
 
@@ -11,6 +12,12 @@ export class TutorService {
    */
   static async processExamResults(examId: string): Promise<void> {
     try {
+      // Phase 6 Resilience: Circuit Breaker
+      // If the system is under extreme load, shed the load of non-critical AI analysis
+      if (!(await ResilienceService.isFeatureEnabled('ai_tutor'))) {
+        return;
+      }
+
       const exam = await db.query.exams.findFirst({
         where: eq(exams.id, examId),
         columns: { userId: true },

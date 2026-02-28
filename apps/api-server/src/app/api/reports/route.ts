@@ -1,17 +1,23 @@
 import { db, exams } from '@quiz/db';
+import { METRICS } from '@quiz/observability';
 import { eq } from 'drizzle-orm';
 import { type NextRequest, NextResponse } from 'next/server';
 
+import { logger } from '@/lib/logger';
+import { recordCounter, recordTimer } from '@/lib/metrics';
+import { withLogging } from '@/lib/withLogging';
 import { TokenService } from '@/modules/auth/token.service';
 import { ReportEngine } from '@/modules/report-engine/report.engine';
 
 export const dynamic = 'force-dynamic';
+const log = logger.child({ module: 'reports:list' });
 
 /**
  * GET USER REPORTS
  * GET /api/reports
  */
-export async function GET(req: NextRequest) {
+async function handler(req: NextRequest) {
+  const start = Date.now();
   try {
     const { searchParams } = new URL(req.url);
     
@@ -88,16 +94,31 @@ export async function GET(req: NextRequest) {
     if (id !== '') {
       if (type === 'premium') {
         const report = await ReportEngine.getPremiumExamReport(id);
-        return NextResponse.json(report);
+        const durationMs = Date.now() - start;
+        recordCounter(METRICS.REPORTS.VIEW, 1, { outcome: 'success', type: 'premium' });
+        recordTimer(METRICS.REPORTS.VIEW + '.duration', durationMs, { outcome: 'success', type: 'premium' });
+        return NextResponse.json(report, {
+          headers: { 'X-Duration-Ms': durationMs.toString() }
+        });
       }
 
       const report = await ReportEngine.getExamReport(id, { includeCorrectAnswers: false });
-      return NextResponse.json(report);
+      const durationMs = Date.now() - start;
+      recordCounter(METRICS.REPORTS.VIEW, 1, { outcome: 'success', type: 'standard' });
+      recordTimer(METRICS.REPORTS.VIEW + '.duration', durationMs, { outcome: 'success', type: 'standard' });
+      return NextResponse.json(report, {
+        headers: { 'X-Duration-Ms': durationMs.toString() }
+      });
     }
 
     // Default: General user performance
     const report = await ReportEngine.getUserPerformance(userId);
-    return NextResponse.json(report);
+    const durationMs = Date.now() - start;
+    recordCounter(METRICS.REPORTS.LIST, 1, { outcome: 'success' });
+    recordTimer(METRICS.REPORTS.LIST + '.duration', durationMs, { outcome: 'success' });
+    return NextResponse.json(report, {
+      headers: { 'X-Duration-Ms': durationMs.toString() }
+    });
 
   } catch (err: unknown) {
     const error = err instanceof Error ? err : new Error(String(err));
@@ -119,11 +140,15 @@ export async function GET(req: NextRequest) {
       }, { status: 202 });
     }
 
-    console.error(`[ReportsAPI] 500 Error:`, { message, url: req.url });
-    
+    log.error({ err: error, url: req.url }, "[ReportsAPI] 500 Error");
+    const durationMs = Date.now() - start;
+    recordCounter(METRICS.REPORTS.VIEW, 1, { outcome: 'failure' });
+    recordTimer(METRICS.REPORTS.VIEW + '.duration', durationMs, { outcome: 'failure' });
     return NextResponse.json({ 
       error: 'Infrastucture error during report generation', 
       debug: process.env.NODE_ENV === 'development' ? message : undefined 
     }, { status: 500 });
   }
 }
+
+export const GET = withLogging(handler, { component: 'reports', operation: 'get_reports' });

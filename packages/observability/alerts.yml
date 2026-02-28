@@ -1,0 +1,40 @@
+# Prometheus Alerting definitions for @quiz Platform
+# SLOs and SLAs for key operational metrics
+
+groups:
+  - name: QuizPlatformAlerts
+    rules:
+      - alert: HighApiLatency
+        expr: histogram_quantile(0.95, sum(rate(api_request_duration_ms_bucket[5m])) by (le, route)) > 1500
+        for: 2m
+        labels:
+          severity: warning
+          component: api-server
+        annotations:
+          summary: "High API Latency on route {{ $labels.route }}"
+          description: "p95 latency is > 1.5s for the last 2 minutes."
+
+      - alert: HighErrorRate
+        expr: sum(rate(api_requests_total{outcome="failure"}[5m])) / sum(rate(api_requests_total[5m])) > 0.05
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "API Error rate > 5%"
+
+      - alert: ExamFailureSpike
+        expr: rate(quiz_api_submit_total{outcome="failure"}[10m]) > 0.5
+        for: 5m
+        labels:
+          severity: critical
+          tier: P0
+        annotations:
+          summary: "High rate of exam submission failures"
+
+      - alert: PIILeakWarning
+        expr: rate(metrics_sanitization_redacted_total[5m]) > 10
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High rate of PII redaction detected in metrics sink"

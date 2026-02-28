@@ -10,12 +10,12 @@ dotenv.config({ path: path.join(__dirname, '../packages/db/.env') });
 const databaseUrl = process.env.DATABASE_URL;
 
 if (!databaseUrl) {
-  console.error("❌ DATABASE_URL is not defined in packages/db/.env");
+  scriptLogger.error("❌ DATABASE_URL is not defined in packages/db/.env");
   process.exit(1);
 }
 
 async function main() {
-  console.log("🚀 Starting Safe Schema Migration (Direct Neon)...");
+  scriptLogger.info("🚀 Starting Safe Schema Migration (Direct Neon)...");
   
   const sql_client = neon(databaseUrl!);
   const db = drizzle(sql_client);
@@ -29,9 +29,9 @@ async function main() {
         WHEN duplicate_object THEN null;
       END $$;
     `);
-    console.log("✅ Enum 'mapping_type' processed.");
+    scriptLogger.info("✅ Enum 'mapping_type' processed.");
   } catch (e) {
-    console.error("⚠️ Error with mapping_type enum:", e);
+    scriptLogger.error("⚠️ Error with mapping_type enum:", e);
   }
 
   // 2. Safe Enum Creation: skill_category
@@ -43,18 +43,18 @@ async function main() {
         WHEN duplicate_object THEN null;
       END $$;
     `);
-    console.log("✅ Enum 'skill_category' processed.");
+    scriptLogger.info("✅ Enum 'skill_category' processed.");
   } catch (e) {
-    console.error("⚠️ Error with skill_category enum:", e);
+    scriptLogger.error("⚠️ Error with skill_category enum:", e);
   }
 
   // 3. Add Columns to 'users'
   try {
     await db.execute(sql`ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "last_active_at" timestamp DEFAULT now()`);
     await db.execute(sql`ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "deleted_at" timestamp`);
-    console.log("✅ Added users columns.");
+    scriptLogger.info("✅ Added users columns.");
   } catch (e) {
-    console.error("⚠️ Error adding users columns:", e);
+    scriptLogger.error("⚠️ Error adding users columns:", e);
   }
 
   // 4. Add Columns/Alters to 'skills'
@@ -62,24 +62,25 @@ async function main() {
     await db.execute(sql`ALTER TABLE "skills" ADD COLUMN IF NOT EXISTS "weight" integer DEFAULT 1 NOT NULL`);
     await db.execute(sql`ALTER TABLE "skills" ADD COLUMN IF NOT EXISTS "category" "skill_category"`);
     await db.execute(sql`ALTER TABLE "skills" ADD COLUMN IF NOT EXISTS "mapping_type" "mapping_type"`);
-    console.log("✅ Processed skills columns.");
+    scriptLogger.info("✅ Processed skills columns.");
   } catch (e) {
-    console.error("⚠️ Error processing skills columns:", e);
+    scriptLogger.error("⚠️ Error processing skills columns:", e);
   }
 
   // 5. Add questions mapping_type - THE CRITICAL ONE
   try {
     await db.execute(sql`ALTER TABLE "questions" ADD COLUMN IF NOT EXISTS "mapping_type" "mapping_type"`);
-    console.log("✅ Added questions.mapping_type.");
+    scriptLogger.info("✅ Added questions.mapping_type.");
   } catch (e) {
-    console.error("⚠️ Error adding questions.mapping_type:", e);
+    scriptLogger.error("⚠️ Error adding questions.mapping_type:", e);
   }
 
-  console.log("🏁 Migration Fix Complete.");
+  scriptLogger.info("🏁 Migration Fix Complete.");
   process.exit(0);
 }
 
 main().catch((err) => {
-  console.error("❌ Migration failed:", err);
+  scriptLogger.error("❌ Migration failed:", err);
   process.exit(1);
 });
+

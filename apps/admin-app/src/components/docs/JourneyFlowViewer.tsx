@@ -13,16 +13,23 @@ interface JourneyFlowViewerProps {
 export function JourneyFlowViewer({ path }: JourneyFlowViewerProps) {
     const [content, setContent] = useState<string>('');
     const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         const fetchContent = async () => {
             setIsLoading(true);
+            setError(null);
             try {
-                const response = await fetch(`/api/admin/docs?path=${encodeURIComponent(path)}`);
+                const response = await fetch(`/api/admin/docs?path=${encodeURIComponent(path)}`, { credentials: 'include' });
+                if (!response.ok) {
+                    const body = await response.text();
+                    throw new Error(`Fetch failed (${response.status}) ${body}`);
+                }
                 const data = await response.json();
-                setContent(data.content);
+                setContent(data.content ?? '');
             } catch (error) {
                 clientLogger.error('Failed to fetch journey content', { error: error instanceof Error ? error.message : 'unknown' });
+                setError('Failed to load the journey intelligence file.');
                 setContent('# Error\nFailed to load the journey intelligence file.');
             } finally {
                 setIsLoading(false);
@@ -36,6 +43,14 @@ export function JourneyFlowViewer({ path }: JourneyFlowViewerProps) {
         return (
             <div className="flex flex-col items-center justify-center py-40 gap-6">
                 <ZLoader size="lg" text="Optimizing Journey Map..." />
+            </div>
+        );
+    }
+
+    if (typeof error === 'string' && error.length > 0) {
+        return (
+            <div className="flex flex-col items-center justify-center py-20 gap-4 text-rose-600 bg-white rounded-[2.5rem] border border-rose-100">
+                <p className="text-sm font-semibold">{error}</p>
             </div>
         );
     }

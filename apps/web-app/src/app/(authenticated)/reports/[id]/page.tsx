@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { apiClient } from "@quiz/api-client";
+import { recordCounter } from "@quiz/observability";
 import { type ExamReport } from "@/components/reports/ExamReportLayout";
 import { ArrowLeft, RefreshCw } from "lucide-react";
 import Link from "next/link";
@@ -52,6 +53,7 @@ export default function PremiumReportPage() {
                             setErrorMsg("Analytics synthesis is taking longer than expected.");
                             setLoading(false);
                             setIsProcessing(false);
+                            recordCounter('web.ui.report.fetch_timeout', 1, { examId: id as string });
                         }
                     }
                     return;
@@ -61,13 +63,14 @@ export default function PremiumReportPage() {
                     setReport(data as ExamReport);
                     setIsProcessing(false);
                     setLoading(false);
+                    recordCounter('web.ui.report.fetch_success', 1, { examId: id as string });
                 }
             } catch (err) {
                 clientLogger.error('Failed to fetch premium report', {
                     examId: id,
                     error: err instanceof Error ? err.message : 'unknown'
                 });
-
+                recordCounter('web.ui.report.fetch_error', 1, { examId: id as string });
                 if (isMounted) {
                     setErrorMsg("Unable to retrieve neural diagnostics.");
                     setLoading(false);
@@ -138,6 +141,7 @@ export default function PremiumReportPage() {
                     </Link>
 
                     <div className="h-12 w-[1px] bg-gradient-to-b from-transparent via-slate-800 to-transparent" />
+                    <div className="h-12 w-[1px] bg-gradient-to-b from-transparent via-slate-800 to-transparent" />
 
                     <div>
                         <div className="flex items-center gap-3 mb-2">
@@ -183,6 +187,16 @@ export default function PremiumReportPage() {
                 </div>
 
                 <div className="hidden lg:flex items-center gap-8">
+                    <button
+                        onClick={() => window.location.reload()}
+                        className="p-4 rounded-xl bg-slate-900/50 border border-white/5 hover:border-indigo-500/50 text-slate-500 hover:text-indigo-400 transition-all active:scale-95 group"
+                        title="Sync Neural Data"
+                    >
+                        <RefreshCw size={18} className="group-hover:rotate-180 transition-transform duration-700" />
+                    </button>
+
+                    <div className="h-8 w-[1px] bg-slate-800/50" />
+
                     <ReportDownloadButton attemptId={id as string} />
                 </div>
             </header>

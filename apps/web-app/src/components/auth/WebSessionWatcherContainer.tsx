@@ -15,11 +15,18 @@ export function WebSessionWatcherContainer() {
     const router = useRouter();
 
     const handleRefresh = async () => {
-        const response = await apiClient.auth.refresh();
-        if (response && response.expiresAt && user) {
-            login(user, response.expiresAt);
-        } else {
-            throw new Error("Refresh failed");
+        try {
+            const response = await apiClient.auth.refresh();
+            if (response && response.expiresAt && user) {
+                login(user, response.expiresAt);
+            } else {
+                throw new Error("Refresh failed");
+            }
+        } catch (err: unknown) {
+            const message = err instanceof Error ? err.message : "Refresh failed";
+            clientLogger.error('Session refresh failed', { error: message });
+            // Bubble up so SessionWatcher can trigger logout flow
+            throw err;
         }
     };
 

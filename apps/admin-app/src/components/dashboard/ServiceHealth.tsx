@@ -1,5 +1,7 @@
 'use client';
+
 import { apiClient } from '@quiz/api-client';
+import { recordCounter } from '@quiz/observability';
 import type { LucideIcon } from 'lucide-react';
 import { AlertCircle, CheckCircle2, Cloud, Database, Mail, RefreshCw, Server } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -20,7 +22,6 @@ interface ServiceData {
     resend: ServiceMetric;
     cloudflare: ServiceMetric;
 }
-
 export function ServiceHealth() {
     const [data, setData] = useState<ServiceData | null>(null);
     const [loading, setLoading] = useState(true);
@@ -32,8 +33,10 @@ export function ServiceHealth() {
             const res = await apiClient.admin.getSystemUsage();
             setData(res);
             setError(null);
+            recordCounter('admin.ui.system.health_success', 1);
         } catch (err: unknown) {
             const msg = err instanceof Error ? err.message : 'Unknown system fault';
+            recordCounter('admin.ui.system.health_error', 1, { reason: msg });
             clientLogger.error('Failed to fetch system usage', { error: msg });
             setError('Failed to load system health.');
         } finally {

@@ -1,12 +1,16 @@
 import { db } from "@quiz/db";
+import { METRICS } from "@quiz/observability";
 import { sql } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 
+import { recordCounter, recordTimer } from "@/lib/metrics";
+import { withLogging } from "@/lib/withLogging";
 import { TokenService } from "@/modules/auth/token.service";
 
 export const dynamic = "force-dynamic";
 
-export async function GET(req: NextRequest) {
+async function handler(req: NextRequest) {
+  const start = Date.now();
   try {
     const token = TokenService.getAccessToken(req, { scope: "user" });
     if (typeof token !== "string" || token.length === 0) {
@@ -59,9 +63,16 @@ export async function GET(req: NextRequest) {
       weakSubareas: (r.subareas as string[] | null) || [],
     }));
 
+    recordCounter(METRICS.RECOMMENDATIONS.FETCH, 1, { view: 'explain', outcome: 'success' });
+    recordTimer(METRICS.RECOMMENDATIONS.FETCH + '.duration', Date.now() - start, { view: 'explain', outcome: 'success' });
+
     return NextResponse.json(formatted);
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Internal Server Error";
+    recordCounter(METRICS.RECOMMENDATIONS.FETCH, 1, { view: 'explain', outcome: 'failure' });
+    recordTimer(METRICS.RECOMMENDATIONS.FETCH + '.duration', Date.now() - start, { view: 'explain', outcome: 'failure' });
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
+
+export const GET = withLogging(handler, { component: 'recommendations', operation: 'get_explanation' });

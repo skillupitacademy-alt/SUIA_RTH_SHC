@@ -1,0 +1,121 @@
+{
+    "title": "Quiz Platform - SLO & Golden Transactions",
+    "panels": [
+        {
+            "title": "SLO: Login Latency (p99.9)",
+            "type": "chart",
+            "targets": [
+                {
+                    "expr": "histogram_quantile(0.999, sum(rate(auth_login_duration_ms_bucket[5m])) by (le))",
+                    "legendFormat": "Login p99.9"
+                },
+                {
+                    "expr": "500",
+                    "legendFormat": "SLO Target"
+                }
+            ]
+        },
+        {
+            "title": "SLO: Start Exam Latency (p99.95)",
+            "type": "chart",
+            "targets": [
+                {
+                    "expr": "histogram_quantile(0.9995, sum(rate(quiz_api_start_duration_ms_bucket[5m])) by (le))",
+                    "legendFormat": "Start Exam p99.95"
+                },
+                {
+                    "expr": "800",
+                    "legendFormat": "SLO Target"
+                }
+            ]
+        },
+        {
+            "title": "SLO: Submit Exam Latency (p99.99)",
+            "type": "chart",
+            "targets": [
+                {
+                    "expr": "histogram_quantile(0.9999, sum(rate(quiz_api_submit_duration_ms_bucket[5m])) by (le))",
+                    "legendFormat": "Submit Exam p99.99"
+                },
+                {
+                    "expr": "1000",
+                    "legendFormat": "SLO Target"
+                }
+            ]
+        },
+        {
+            "title": "SLO: View Scorecard Latency (p99.9)",
+            "type": "chart",
+            "targets": [
+                {
+                    "expr": "histogram_quantile(0.999, sum(rate(quiz_api_score_duration_ms_bucket[5m])) by (le))",
+                    "legendFormat": "View Scorecard p99.9"
+                },
+                {
+                    "expr": "600",
+                    "legendFormat": "SLO Target"
+                }
+            ]
+        },
+        {
+            "title": "Golden Transaction: Error Rates",
+            "type": "graph",
+            "targets": [
+                {
+                    "expr": "sum by (operation) (rate(api_requests_total{outcome=\"failure\"}[5m])) / sum by (operation) (rate(api_requests_total[5m])) * 100",
+                    "legendFormat": "{{operation}} error %"
+                }
+            ]
+        },
+        {
+            "title": "API Health: Error Rate",
+            "type": "graph",
+            "targets": [
+                {
+                    "expr": "sum(rate(http_requests_total{outcome='failure'}[5m])) / sum(rate(http_requests_total[5m]))"
+                }
+            ]
+        },
+        {
+            "title": "API Latency: p95 by Operation",
+            "type": "graph",
+            "targets": [
+                {
+                    "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_ms_bucket[5m])) by (le, operation))"
+                }
+            ]
+        },
+        {
+            "title": "Session Health: Pulse",
+            "type": "stat",
+            "targets": [
+                {
+                    "expr": "sum(rate(auth_login_heartbeat_total{outcome='success'}[5m]))"
+                }
+            ]
+        },
+        {
+            "title": "Scoring Pipeline: Success vs Failure",
+            "type": "graph",
+            "targets": [
+                {
+                    "expr": "sum(rate(quiz_api_score_total{outcome='success'}[5m]))",
+                    "legendFormat": "Success"
+                },
+                {
+                    "expr": "sum(rate(quiz_api_score_total{outcome='failure'}[5m]))",
+                    "legendFormat": "Failure"
+                }
+            ]
+        },
+        {
+            "title": "Queue Health: Scoring Lag",
+            "type": "gauge",
+            "targets": [
+                {
+                    "expr": "scoring_queue_lag_seconds"
+                }
+            ]
+        }
+    ]
+}

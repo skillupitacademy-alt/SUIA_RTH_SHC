@@ -3,12 +3,15 @@
 import { apiClient } from "@quiz/api-client";
 import { Timer, Zap, Hourglass, HelpCircle } from "lucide-react";
 import { useEffect, useState } from "react";
+import type { EChartsOption } from "echarts";
 
 import BaseChart from "./BaseChart";
+import { clientLogger } from "@/utils/clientLogger";
 
 export default function PersonalTimeBoxplot() {
     const [data, setData] = useState<number[]>([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         async function fetchData() {
@@ -16,7 +19,9 @@ export default function PersonalTimeBoxplot() {
                 const res = await apiClient.analytics.getUserTimeBoxplot();
                 setData(res.data || []);
             } catch (err: unknown) {
-                console.error("Failed to fetch timing data", err);
+                const message = err instanceof Error ? err.message : "Failed to fetch timing data";
+                setError(message);
+                clientLogger.error("Failed to fetch timing data", { error: message });
                 setData([]);
             } finally {
                 setLoading(false);
@@ -27,6 +32,16 @@ export default function PersonalTimeBoxplot() {
     }, []);
 
     const isEmpty = !loading && data.length === 0;
+
+    if (error) {
+        return (
+            <div className="flex flex-col items-center justify-center h-[300px] text-sm text-red-600 bg-red-50 rounded-2xl border border-red-100">
+                <Timer className="w-8 h-8 mb-2 opacity-60 text-red-500" />
+                <p className="font-semibold">Unable to load pacing data</p>
+                <span className="text-xs text-red-500">{error}</span>
+            </div>
+        );
+    }
 
     if (isEmpty) {
         return (
@@ -123,7 +138,7 @@ export default function PersonalTimeBoxplot() {
                 },
             },
         ],
-    };
+    } as unknown as EChartsOption;
 
     // Interpretation logic
     const isGuessingIdx = medianVal < 5;

@@ -4,7 +4,7 @@ import { count, eq } from 'drizzle-orm';
 const TARGET_EMAIL = 'ajayshah@gmail.com';
 
 async function audit() {
-  console.log('--- Deep Audit: User Report Pipeline ---');
+  scriptLogger.info('--- Deep Audit: User Report Pipeline ---');
   
   // 1. Get User
   const user = await db.query.users.findFirst({
@@ -12,11 +12,11 @@ async function audit() {
   });
 
   if (!user) {
-    console.error(`User ${TARGET_EMAIL} not found`);
+    scriptLogger.error(`User ${TARGET_EMAIL} not found`);
     process.exit(1);
   }
 
-  console.log(`Auditing User: ${user.email} (${user.id})`);
+  scriptLogger.info(`Auditing User: ${user.email} (${user.id})`);
 
   // 2. Status Summary
   const statusCounts = await db.select({
@@ -27,7 +27,7 @@ async function audit() {
   .where(eq(reports.userId, user.id))
   .groupBy(reports.status);
   
-  console.log('\nStatus Breakdown:');
+  scriptLogger.info('\nStatus Breakdown:');
   console.table(statusCounts);
   
   // 3. Recent Failures
@@ -38,9 +38,9 @@ async function audit() {
   });
   
   if (failures.length > 0) {
-    console.log('\nRecent Failures:');
+    scriptLogger.info('\nRecent Failures:');
     failures.forEach(f => {
-      console.log(`- ${f.attemptId}: ${f.errorStage || 'Unknown error'}`);
+      scriptLogger.info(`- ${f.attemptId}: ${f.errorStage || 'Unknown error'}`);
     });
   }
 
@@ -56,9 +56,9 @@ async function audit() {
   });
 
   if (stalled.length > 0) {
-    console.log('\nStalled Generations (>5 mins):');
+    scriptLogger.info('\nStalled Generations (>5 mins):');
     stalled.forEach(s => {
-      console.log(`- ${s.attemptId} (Last updated: ${s.updatedAt})`);
+      scriptLogger.info(`- ${s.attemptId} (Last updated: ${s.updatedAt})`);
     });
   }
 
@@ -66,6 +66,7 @@ async function audit() {
 }
 
 audit().catch(err => {
-  console.error(err);
+  scriptLogger.error(err);
   process.exit(1);
 });
+

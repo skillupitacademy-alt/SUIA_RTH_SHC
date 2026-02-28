@@ -1,15 +1,13 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
-import { logger } from '@/lib/logger';
+import { withLogging } from '@/lib/withLogging';
 import { AdminEngine } from '@/modules/admin-engine/admin.engine';
 import { _verifyAdmin } from '@/modules/auth/rbac.service';
 import { TokenService } from '@/modules/auth/token.service';
 import { domainSchema } from '@/schemas/hierarchy.schemas';
 
-const log = logger.child({ module: 'admin:domains:id' });
-
-export async function PATCH(
+async function patchHandler(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -36,12 +34,11 @@ export async function PATCH(
     return NextResponse.json(result);
   } catch (_error: unknown) {
     const message = _error instanceof Error ? _error.message : 'Internal Server Error';
-    log.error({ error: message }, 'ADMIN_DOMAIN_PATCH failed');
     return NextResponse.json({ _error: message }, { status: 500 });
   }
 }
 
-export async function DELETE(
+async function deleteHandler(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -61,7 +58,9 @@ export async function DELETE(
     return NextResponse.json(result);
   } catch (_error: unknown) {
     const message = _error instanceof Error ? _error.message : 'Internal Server Error';
-    log.error({ error: message }, 'ADMIN_DOMAIN_DELETE failed');
     return NextResponse.json({ _error: message }, { status: 500 });
   }
 }
+
+export const PATCH = withLogging(patchHandler, { component: 'admin', operation: 'update_domain' });
+export const DELETE = withLogging(deleteHandler, { component: 'admin', operation: 'delete_domain' });

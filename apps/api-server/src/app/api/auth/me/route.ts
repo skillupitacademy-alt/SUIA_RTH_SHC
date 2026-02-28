@@ -3,11 +3,12 @@ import { eq } from 'drizzle-orm';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
+import { withLogging } from '@/lib/withLogging';
 import { TokenService } from '@/modules/auth/token.service';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET(_req: NextRequest) {
+async function handler(_req: NextRequest) {
   try {
     const _token = TokenService.getAccessToken(_req);
     if (typeof _token !== 'string' || _token.trim() === '') {
@@ -51,3 +52,5 @@ export async function GET(_req: NextRequest) {
     return NextResponse.json({ _error: message }, { status: 401 });
   }
 }
+
+export const GET = withLogging(handler, { component: 'auth', operation: 'me' });

@@ -4,6 +4,7 @@ import { apiClient } from '@quiz/api-client';
 import { ExternalLink, FileText, MoreHorizontal } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
+import { ErrorBanner } from '@/components/layout/ErrorBanner';
 import { clientLogger } from '@/utils/clientLogger';
 
 interface ContentItem {
@@ -16,14 +17,19 @@ interface ContentItem {
 export function ContentManager() {
     const [content, setContent] = useState<ContentItem[]>([]);
     const [loading, setLoading] = useState(true);
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
     useEffect(() => {
         const fetchContent = async () => {
             try {
                 const data = await apiClient.admin.getQuestions();
-                setContent(data.questions as ContentItem[]);
+                const questions = Array.isArray(data.questions) ? data.questions : [];
+                setContent(questions as ContentItem[]);
+                setErrorMessage(null);
             } catch (err) {
-                clientLogger.error('Failed to fetch admin content', { error: err instanceof Error ? err.message : 'unknown' });
+                const message = err instanceof Error ? err.message : 'unknown';
+                clientLogger.error('Failed to fetch admin content', { error: message });
+                setErrorMessage('Unable to load repository assets. Please retry or check your connection.');
             } finally {
                 setLoading(false);
             }
@@ -37,6 +43,11 @@ export function ContentManager() {
                 <h3 className="text-xl font-black tracking-tight">Enterprise Asset Repository</h3>
                 <button className="text-xs font-bold text-primary hover:underline uppercase tracking-widest">Repository Index</button>
             </div>
+            {errorMessage != null ? (
+                <div className="px-8 pt-4">
+                    <ErrorBanner message={errorMessage} onClose={() => setErrorMessage(null)} />
+                </div>
+            ) : null}
             <div className="overflow-x-auto">
                 <table className="w-full text-left">
                     <thead>

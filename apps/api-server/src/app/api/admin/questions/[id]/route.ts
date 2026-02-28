@@ -3,36 +3,25 @@ import { eq } from 'drizzle-orm';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
-import { logger } from '@/lib/logger';
-import type { CreateQuestionInput } from '@/modules/admin-engine/admin.engine';
+import { withLogging } from '@/lib/withLogging';
 import { AdminEngine } from '@/modules/admin-engine/admin.engine';
 import { TokenService } from '@/modules/auth/token.service';
 import { questionSchema } from '@/schemas/admin.schemas';
 
 export const dynamic = 'force-dynamic';
 
-const log = logger.child({ module: 'admin:questions:id' });
-
 async function _verifyAdmin(_req: NextRequest) {
     const _token = TokenService.getAccessToken(_req, { scope: 'admin' });
     if (_token === null || _token === undefined || _token.trim() === '') {
-        return { _error: 'Unauthorized', scope: 'admin', status: 401 };
+        throw new Error('Unauthorized');
     }
-
-    try {
-        const _payload = await TokenService.verifyAccessToken(_token, true);
-        return { userId: _payload.userId };
-    } catch (_err) {
-        return { _error: 'Unauthorized', status: 401 };
-    }
+    return await TokenService.verifyAccessToken(_token, true);
 }
 
-export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+async function getHandler(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
-    const auth = await _verifyAdmin(_req);
-    if (auth._error !== undefined) return NextResponse.json({ _error: auth._error }, { status: auth.status });
-
     try {
+        await _verifyAdmin(_req);
         const question = await db.query.questions.findFirst({
             where: eq(questions.id, id),
             with: {
@@ -56,18 +45,15 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
         return NextResponse.json(question);
     } catch (_error: unknown) {
         const message = _error instanceof Error ? _error.message : 'Internal Server Error';
-        log.error({ id, error: message }, 'ADMIN_QUESTION_GET failed');
         return NextResponse.json({ _error: message }, { status: 500 });
     }
 }
 
-export async function PATCH(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+async function patchHandler(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
-    const auth = await _verifyAdmin(_req);
-    if (auth._error !== undefined) return NextResponse.json({ _error: auth._error }, { status: auth.status });
-
     try {
-        const rawBody = await _req.json() as Partial<CreateQuestionInput>;
+        const auth = await _verifyAdmin(_req);
+        const rawBody = await _req.json();
         const parsed = questionSchema.partial().safeParse(rawBody);
         if (!parsed.success) {
           return NextResponse.json({ _error: 'Invalid payload', issues: parsed.error.issues }, { status: 400 });
@@ -76,22 +62,22 @@ export async function PATCH(_req: NextRequest, { params }: { params: Promise<{ i
         return NextResponse.json(result);
     } catch (_error: unknown) {
         const message = _error instanceof Error ? _error.message : 'Internal Server Error';
-        log.error({ id, error: message }, 'ADMIN_QUESTION_PATCH failed');
         return NextResponse.json({ _error: message }, { status: 500 });
     }
 }
 
-export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+async function deleteHandler(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
-    const auth = await _verifyAdmin(_req);
-    if (auth._error !== undefined) return NextResponse.json({ _error: auth._error }, { status: auth.status });
-
     try {
+        const auth = await _verifyAdmin(_req);
         const result = await AdminEngine.deleteQuestion(id, auth.userId!);
         return NextResponse.json(result);
     } catch (_error: unknown) {
         const message = _error instanceof Error ? _error.message : 'Internal Server Error';
-        log.error({ id, error: message }, 'ADMIN_QUESTION_DELETE failed');
         return NextResponse.json({ _error: message }, { status: 500 });
     }
 }
+
+export const GET = withLogging(getHandler, { component: 'admin', operation: 'get_question' });
+export const PATCH = withLogging(patchHandler, { component: 'admin', operation: 'update_question' });
+export const DELETE = withLogging(deleteHandler, { component: 'admin', operation: 'delete_question' });

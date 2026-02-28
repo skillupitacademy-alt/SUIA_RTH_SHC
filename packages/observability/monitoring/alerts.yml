@@ -1,0 +1,80 @@
+groups:
+  - name: quiz-platform-slos
+    rules:
+      - alert: LaunchLatencyHigh
+        expr: histogram_quantile(0.95, sum(rate(quiz_api_start_duration_ms_bucket[10m])) by (le)) > 500
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Launch Latency p95 High"
+          description: "p95 latency for launching exams is > 500ms over 10m."
+
+      - alert: LoginLatencyHigh
+        expr: histogram_quantile(0.999, sum(rate(auth_login_duration_ms_bucket[5m])) by (le)) > 500
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Login SLO Violation"
+          description: "p99.9 latency for Login is > 500ms (SLO target: 500ms)."
+
+      - alert: StartExamLatencyHigh
+        expr: histogram_quantile(0.9995, sum(rate(quiz_api_start_duration_ms_bucket[5m])) by (le)) > 800
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Start Exam SLO Violation"
+          description: "p99.95 latency for Start Exam is > 800ms (SLO target: 800ms)."
+
+      - alert: SubmitExamLatencyHigh
+        expr: histogram_quantile(0.9999, sum(rate(quiz_api_submit_duration_ms_bucket[5m])) by (le)) > 1000
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Submit Exam SLO Violation"
+          description: "p99.99 latency for Submit Exam is > 1000ms (SLO target: 1000ms)."
+
+      - alert: ViewScorecardLatencyHigh
+        expr: histogram_quantile(0.999, sum(rate(quiz_api_score_duration_ms_bucket[5m])) by (le)) > 600
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "View Scorecard SLO Violation"
+          description: "p99.9 latency for View Scorecard is > 600ms (SLO target: 600ms)."
+
+      - alert: AdminDashboardLatencyHigh
+        expr: histogram_quantile(0.995, sum(rate(admin_api_dashboard_load_duration_ms_bucket[5m])) by (le)) > 2000
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Admin Dashboard SLO Violation"
+          description: "p99.5 latency for Admin Dashboard is > 2000ms (SLO target: 2000ms)."
+
+      - alert: HighAPIErrorRate
+        expr: |
+          sum by (operation) (rate(api_requests_total{outcome="failure"}[5m])) 
+          / 
+          sum by (operation) (rate(api_requests_total[5m])) > 0.01
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "API Error Rate High (>1%)"
+          description: "Operation {{ $labels.operation }} has an error rate > 1% over the last 5 minutes."
+
+      - alert: AutosaveFailureRateHigh
+        expr: |
+          sum(rate(quiz_api_answer_total{outcome="failure"}[5m]))
+          /
+          sum(rate(quiz_api_answer_total[5m])) > 0.005
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Autosave Failure Rate High (>0.5%)"
+          description: "Quiz answer/autosave failure rate is > 0.5%."

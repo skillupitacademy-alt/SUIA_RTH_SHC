@@ -9,6 +9,7 @@ import { getDownloadUrl } from "@/lib/storage/get-download-url";
 import { uploadReport } from "@/lib/storage/upload-report";
 import { TokenService } from "@/modules/auth/token.service";
 import { cacheService } from "@/modules/core/cache.service";
+import { resilienceManager } from "@/modules/core/resilience.manager";
 import { PerformanceService } from "@/modules/report-engine/performance.service";
 import { ReportPdfService } from "@/modules/report-engine/report-pdf.service";
 import { ReportRepository } from "@/modules/report-engine/report-repository";
@@ -16,7 +17,20 @@ import { ReportJobService } from "@/services/reports/ReportJobService";
 
 export const runtime = "nodejs"; // Required for Puppeteer
 
-export async function POST(req: NextRequest) {
+import { METRICS } from "@quiz/observability";
+
+import { recordCounter, recordTimer } from "@/lib/metrics";
+import { withLogging } from "@/lib/withLogging";
+
+async function handler(req: NextRequest) {
+  const start = Date.now();
+  if (resilienceManager.isHighLoad()) {
+    recordCounter(METRICS.REPORTS.FAILURES, 1, { reason: 'high_load' });
+    return NextResponse.json({ 
+        error: "Service unavailable", 
+        message: "PDF generation is temporarily disabled due to extreme system load. Please try again in a few minutes." 
+    }, { status: 503 });
+  }
   try {
     const { searchParams } = new URL(req.url);
     const raw = await req.json().catch(() => ({} as unknown));
@@ -33,7 +47,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Missing attemptId" }, { status: 400 });
     }
 
-    // 1. Ownership/System Validation
     const internalKey = req.headers.get("x-internal-key") ?? "";
     const isInternal =
       process.env.INTERNAL_API_KEY != null
@@ -69,9 +82,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Exam is not completed" }, { status: 400 });
     }
 
-    // 2. Rate Limiting (3 per min)
     const { count, ttlRem } = await cacheService.increment(`ratelimit:pdf:${userId}`, 60000);
     if (count > 3) {
+      recordCounter(METRICS.REPORTS.FAILURES, 1, { reason: 'rate_limit' });
       return NextResponse.json({ 
         error: "Rate limit exceeded", 
         retryAfter: ttlRem,
@@ -79,28 +92,26 @@ export async function POST(req: NextRequest) {
       }, { status: 429 });
     }
 
-    // 3. Idempotency Check
-    // force is already extracted from body/params above
-    
     if (force) {
       logger.info({ attemptId }, "[GenerateReport] Forced regeneration: Invalidating analytics cache");
       await PerformanceService.invalidateCache(attemptId);
-      await PerformanceService.refreshAnalytics(); // Refresh MVs to ensure fresh data for PDF
+      await PerformanceService.refreshAnalytics(); 
     }
 
     const report = await ReportRepository.getReportByAttempt(attemptId);
     if (!force && report?.status === "ready" && report.fileRef != null && report.fileRef !== "") {
       const url = await getDownloadUrl(report.fileRef);
+      recordCounter(METRICS.REPORTS.PDF_GEN, 1, { outcome: 'success', cached: 'true' });
       return NextResponse.json({ url, cached: true });
     }
 
-    // 3.5 Hierarchical Depth Check
     const materialized = exam.reportMaterialized as ReportJSON | null;
     const depth = materialized?.meta?.depth ?? 1;
 
     if (depth > 1) {
       logger.info({ attemptId, depth }, "[GenerateReport] Hierarchical depth detected, queueing job");
       const jobId = await ReportJobService.createJob(attemptId, userId);
+      recordCounter(METRICS.REPORTS.PDF_GEN, 1, { outcome: 'queued' });
       return NextResponse.json({ 
         status: "queued", 
         jobId, 
@@ -108,7 +119,6 @@ export async function POST(req: NextRequest) {
       }, { status: 202 });
     }
 
-    // 4. Redis Locking (Prevent duplicate runs)
     const lockKey = `lock:pdf:${attemptId}`;
     const acquired = await redis.set(lockKey, "1", { nx: true, ex: 120 });
     
@@ -117,21 +127,17 @@ export async function POST(req: NextRequest) {
     }
 
     try {
-      // 5. State Machine: pending -> generating
       await ReportRepository.createReportIfNotExists({ attemptId, userId: userId, status: "generating" });
       await ReportRepository.updateReportStatus(attemptId, "generating");
 
-      // 6. PDF Generation
       const { buffer, generationTimeMs, fileSizeKb, pageCount } = await ReportPdfService.generate(attemptId);
 
-      if (fileSizeKb > 10240) { // 10MB guard (reports with many questions/charts can exceed 2MB)
+      if (fileSizeKb > 10240) { 
         throw new Error("Generated PDF exceeds size constraints (10MB)");
       }
 
-      // 7. Storage Upload
       const fileRef = await uploadReport(buffer, userId, attemptId);
 
-      // 8. Success Update
       await ReportRepository.updateReportSuccess(attemptId, {
         fileRef,
         generationTimeMs,
@@ -140,21 +146,26 @@ export async function POST(req: NextRequest) {
       });
 
       const url = await getDownloadUrl(fileRef);
+      recordCounter(METRICS.REPORTS.PDF_GEN, 1, { outcome: 'success', cached: 'false' });
+      recordTimer(METRICS.REPORTS.PDF_GEN + '.duration', Date.now() - start, { outcome: 'success' });
       return NextResponse.json({ url, cached: false });
 
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : "Unknown error";
       logger.error({ err: error, attemptId }, "[GenerateReport] Generation failed");
       await ReportRepository.updateReportStatus(attemptId, "failed", message);
+      recordCounter(METRICS.REPORTS.FAILURES, 1, { reason: 'generation_failed' });
       return NextResponse.json({ error: "Failed to generate report", message }, { status: 500 });
     } finally {
-      // 9. Release Lock
       await redis.del(lockKey);
     }
 
   } catch (error: unknown) {
     logger.error({ err: error }, "[GenerateReport] API Error");
     const message = error instanceof Error ? error.message : "Internal Server Error";
+    recordCounter(METRICS.REPORTS.FAILURES, 1, { reason: 'internal_error' });
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
+
+export const POST = withLogging(handler, { component: 'reports', operation: 'generate_pdf' });

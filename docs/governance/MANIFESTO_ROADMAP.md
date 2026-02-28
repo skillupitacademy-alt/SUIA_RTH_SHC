@@ -820,12 +820,16 @@ pnpm --filter @quiz/admin-app add -D @next/bundle-analyzer
 pnpm --filter @quiz/web-app add -D @next/bundle-analyzer
 ```
 
-**Update `next.config.js`**:
+**Update `next.config.mjs`**:
 ```js
-const withBundleAnalyzer = require('@next/bundle-analyzer')({
+import bundleAnalyzer from '@next/bundle-analyzer';
+import nextConfig from './next.config.base.js'; // or your existing config export
+
+const withBundleAnalyzer = bundleAnalyzer({
   enabled: process.env.ANALYZE === 'true',
 });
-module.exports = withBundleAnalyzer(nextConfig);
+
+export default withBundleAnalyzer(nextConfig);
 ```
 
 **Run**: `ANALYZE=true pnpm --filter @quiz/admin-app build`

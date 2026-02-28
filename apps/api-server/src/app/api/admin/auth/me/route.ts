@@ -1,19 +1,21 @@
-import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
-export const dynamic = 'force-dynamic';
 import { db, users } from '@quiz/db';
+import { METRICS } from '@quiz/observability';
 import { eq } from 'drizzle-orm';
+import { NextRequest, NextResponse } from 'next/server';
 
+import { recordCounter, recordTimer } from '@/lib/metrics';
+import { withLogging } from '@/lib/withLogging';
 import { TokenService } from '@/modules/auth/token.service';
 
-export async function GET(_req: NextRequest) {
+export const dynamic = 'force-dynamic';
+
+async function handler(_req: NextRequest) {
+  const start = Date.now();
   try {
-    // Detect Portal Tier
     const portalIdentity = _req.headers.get('x-portal-identity') ?? 'admin';
     const scope = portalIdentity === 'infrastructure' ? 'infrastructure' : 'admin';
     const audience = portalIdentity === 'infrastructure' ? 'infra' : 'admin';
 
-    // Strictly use Scoped Access
     const _token = TokenService.getAccessToken(_req, { scope });
     if (_token === null || _token === undefined || _token.trim() === '') {
         return NextResponse.json({ _error: 'Unauthorized', scope }, { status: 401 });
@@ -39,6 +41,10 @@ export async function GET(_req: NextRequest) {
         return NextResponse.json({ _error: 'Forbidden: Admin access only' }, { status: 403 });
     }
 
+    const durationMs = Date.now() - start;
+    recordCounter(METRICS.AUTH.LOGIN + '.me', 1, { outcome: 'success', scope });
+    recordTimer(METRICS.AUTH.LOGIN + '.me.duration', durationMs);
+
     return NextResponse.json({
       user: {
         id: _user.id,
@@ -51,6 +57,9 @@ export async function GET(_req: NextRequest) {
     });
   } catch (_error: unknown) {
     const message = _error instanceof Error ? _error.message : 'Unauthorized';
+    recordCounter(METRICS.AUTH.LOGIN + '.me', 1, { outcome: 'failure' });
     return NextResponse.json({ _error: message }, { status: 401 });
   }
 }
+
+export const GET = withLogging(handler, { component: 'admin-auth', operation: 'get_me' });

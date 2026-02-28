@@ -19,7 +19,7 @@ interface SkillMapping {
 }
 
 async function runEnrichment(mappings: SkillMapping[], mode: 'dry-run' | 'commit') {
-  console.log(`\n🚀 SKILL ENRICHMENT TOOL - MODE: ${mode.toUpperCase()}\n`);
+  scriptLogger.info(`\n🚀 SKILL ENRICHMENT TOOL - MODE: ${mode.toUpperCase()}\n`);
   
   const report: any[] = [];
 
@@ -130,12 +130,13 @@ if (require.main === module) {
 
   runEnrichment(sampleMappings, mode)
     .then(report => {
-        console.log("\n--- ENRICHMENT REPORT ---\n");
-        console.log(JSON.stringify(report, null, 2));
+        scriptLogger.info("\n--- ENRICHMENT REPORT ---\n");
+        scriptLogger.info(JSON.stringify(report, null, 2));
         process.exit(0);
     })
     .catch(err => {
-        console.error(err);
+        scriptLogger.error(err);
         process.exit(1);
     });
 }
+

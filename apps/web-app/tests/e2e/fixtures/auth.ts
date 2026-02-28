@@ -64,9 +64,7 @@ async function getAuthDetail(page: Page): Promise<AuthCheckResult> {
   const globalResult = await page.evaluate(() => {
     const diagnostic = (window as { __E2E_IS_AUTHENTICATED__?: () => boolean }).__E2E_IS_AUTHENTICATED__;
     if (typeof diagnostic === 'function') {
-      const result = diagnostic();
-      console.log(`[E2E Debug] Global Diagnostic: ${result}`);
-      return result;
+      return diagnostic();
     }
     return null;
   });
@@ -84,11 +82,9 @@ async function getAuthDetail(page: Page): Promise<AuthCheckResult> {
   );
   
   if (foundCookies.length > 0) {
-    const cookieInfo = foundCookies.map(c => `${c.name} (domain: ${c.domain})`).join(', ');
-    console.log(`[E2E Debug] Found Cookies: ${cookieInfo}`);
     return { 
       isAuthenticated: true, 
-      reason: `Found cookies: ${cookieInfo}` 
+      reason: `Found cookies: ${foundCookies.length}` 
     };
   }
 
@@ -96,18 +92,15 @@ async function getAuthDetail(page: Page): Promise<AuthCheckResult> {
     try {
       const raw = localStorage.getItem('quiz-platform-auth');
       if (!raw) {
-        console.log('[E2E Debug] No base key in localStorage');
         return { ok: false, msg: 'No such key in localStorage' };
       }
       const auth = JSON.parse(raw);
       const isAuthed = auth?.state?.isAuthenticated === true;
-      console.log(`[E2E Debug] LocalStorage auth state: ${isAuthed}`);
       if (isAuthed) {
         return { ok: true, msg: 'Store isAuthenticated is true' };
       }
       return { ok: false, msg: `Store isAuthenticated is ${auth?.state?.isAuthenticated}` };
     } catch (e) {
-      console.error(`[E2E Debug] Storage parse error: ${e}`);
       return { ok: false, msg: `Storage parse error: ${e}` };
     }
   });

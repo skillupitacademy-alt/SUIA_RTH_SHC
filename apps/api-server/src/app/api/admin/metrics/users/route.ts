@@ -1,38 +1,40 @@
+import { METRICS } from '@quiz/observability';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
-import { logger } from '@/lib/logger';
+import { recordCounter, recordTimer } from '@/lib/metrics';
+import { withLogging } from '@/lib/withLogging';
 import { AdminEngine } from '@/modules/admin-engine/admin.engine';
 import { TokenService } from '@/modules/auth/token.service';
 
 export const dynamic = 'force-dynamic';
 
-const log = logger.child({ module: 'admin:metrics:users' });
-
 async function _verifyAdmin(_req: NextRequest) {
     const _token = TokenService.getAccessToken(_req, { scope: 'admin' });
     if (_token === null || _token === undefined || _token.trim() === '') {
-        return { _error: 'Unauthorized', scope: 'admin', status: 401 };
+        throw new Error('Unauthorized');
     }
-
-    try {
-        const _payload = await TokenService.verifyAccessToken(_token, true);
-        return { userId: _payload.userId };
-    } catch {
-        return { _error: 'Unauthorized', status: 401 };
-    }
+    return await TokenService.verifyAccessToken(_token, true);
 }
 
-export async function GET(_req: NextRequest) {
-    const auth = await _verifyAdmin(_req);
-    if (auth._error !== undefined) return NextResponse.json({ _error: auth._error, scope: auth.scope }, { status: auth.status });
-
+async function handler(_req: NextRequest) {
+    const start = Date.now();
     try {
+        await _verifyAdmin(_req);
         const data = await AdminEngine.getAccountMetrics();
-        return NextResponse.json(data);
+        const durationMs = Date.now() - start;
+        recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.users', 1, { outcome: 'success' });
+        recordTimer(METRICS.ADMIN.DASHBOARD_LOAD + '.users.duration', durationMs, { outcome: 'success' });
+        return NextResponse.json(data, {
+            headers: { 'X-Duration-Ms': durationMs.toString() }
+        });
     } catch (_error: unknown) {
         const message = _error instanceof Error ? _error.message : 'Internal Server Error';
-        log.error({ error: message }, 'ADMIN_METRICS_USERS failed');
-        return NextResponse.json({ _error: 'Internal Server Error' }, { status: 500 });
+        const durationMs = Date.now() - start;
+        recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.users', 1, { outcome: 'failure' });
+        recordTimer(METRICS.ADMIN.DASHBOARD_LOAD + '.users.duration', durationMs, { outcome: 'failure' });
+        return NextResponse.json({ _error: message }, { status: 500 });
     }
 }
+
+export const GET = withLogging(handler, { component: 'admin', operation: 'get_user_metrics' });

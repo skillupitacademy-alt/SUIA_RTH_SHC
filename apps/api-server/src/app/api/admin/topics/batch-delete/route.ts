@@ -2,6 +2,8 @@ import type { NextRequest} from 'next/server';
 import { NextResponse } from 'next/server';
 
 import { logger } from '@/lib/logger';
+import { recordCounter, recordTimer } from '@/lib/metrics';
+import { withLogging } from '@/lib/withLogging';
 import { AdminEngine } from '@/modules/admin-engine/admin.engine';
 import { TokenService } from '@/modules/auth/token.service';
 
@@ -25,7 +27,8 @@ async function _verifyAdmin(_req: NextRequest) {
     }
 }
 
-export async function POST(_req: NextRequest) {
+async function handler(_req: NextRequest) {
+    const start = Date.now();
     const auth = await _verifyAdmin(_req);
     if (auth._error !== undefined) return NextResponse.json({ _error: auth._error, scope: auth.scope }, { status: auth.status });
 
@@ -36,10 +39,15 @@ export async function POST(_req: NextRequest) {
         }
 
         const result = await AdminEngine.deleteTopicsBatch(ids, auth.userId!);
+        recordCounter('admin.api.topics.batch_delete.success', 1);
+        recordTimer('admin.api.topics.batch_delete.duration', Date.now() - start);
         return NextResponse.json(result);
     } catch (_error: unknown) {
         const message = _error instanceof Error ? _error.message : 'Internal Server Error';
         log.error({ error: message }, 'ADMIN_TOPICS_BATCH_DELETE failed');
+        recordCounter('admin.api.topics.batch_delete.failure', 1, { reason: 'internal_error' });
         return NextResponse.json({ _error: message }, { status: 500 });
     }
 }
+
+export const POST = withLogging(handler, { component: 'admin', operation: 'batch_delete_topics' });

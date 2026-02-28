@@ -1,10 +1,9 @@
 'use client';
-/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars, react-hooks/exhaustive-deps */
 
 import { apiClient } from '@quiz/api-client';
 import { ZLoader, ZPagination } from '@quiz/ui';
-import { BookOpen, Check, Edit2, Hash, Layers, Plus, Sparkles, Trash, Trash2 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { BookOpen, Check, Edit2, Hash, Plus, Sparkles, Trash, Trash2 } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { SelectField } from '@/components/entry/SelectionFields';
 import { ErrorBanner } from '@/components/layout/ErrorBanner';
@@ -58,13 +57,13 @@ export function TopicTable() {
 
     // Modal states
     const [isFormOpen, setIsFormOpen] = useState(false);
-    const [isDeleteOpen, setIsDeleteOpen] = useState(false); const [isFactoryOpen, setIsFactoryOpen] = useState(false);
+    const [isDeleteOpen, setIsDeleteOpen] = useState(false);
     const [currentTopic, setCurrentTopic] = useState<Topic | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isBatchDeleting, setIsBatchDeleting] = useState(false);
 
     // Selection State
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-    const [isBatchDeleting, setIsBatchDeleting] = useState(false);
 
     // Form states
     const [formData, setFormData] = useState({
@@ -90,15 +89,15 @@ export function TopicTable() {
         return () => clearTimeout(timer);
     }, [searchQuery]);
 
-    const fetchTopics = async () => {
+    const fetchTopics = useCallback(async () => {
         setIsLoading(true);
         try {
             const response = await apiClient.admin.getTopics(page, pageSize, debouncedSearch || undefined);
-            const mapped = response.data.map((topic: any) => ({
+            const mapped = response.data.map((topic: Topic) => ({
                 ...topic,
                 learningUrl: topic.learningUrl ?? '',
                 detailedNotesPath: topic.detailedNotesPath ?? '',
-            })) as Topic[];
+            }));
             setData(mapped);
             setTotalPages(response.totalPages);
             setTotalCount(response.total ?? response.data.length);
@@ -109,11 +108,11 @@ export function TopicTable() {
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [debouncedSearch, page, pageSize]);
 
     useEffect(() => {
         void fetchTopics();
-    }, [page, pageSize, debouncedSearch]);
+    }, [fetchTopics]);
 
     const handleOpenForm = (topic: Topic | null = null) => {
         if (topic != null) {
@@ -178,11 +177,11 @@ export function TopicTable() {
         }
         setIsSubmitting(true);
         try {
-            const payload: any = {
+            const payload = {
                 ...formData,
                 slug: formData.name || 'topic',
                 orderIndex: formData.weight ?? 0,
-                complexity: formData.complexityLevel ?? 0
+                complexityLevel: formData.complexityLevel ?? 0
             };
             if (currentTopic !== null) {
                 await apiClient.admin.updateTopic(currentTopic.id, payload);
@@ -263,24 +262,15 @@ export function TopicTable() {
                     onSelectAll={() => toggleSelectAll()}
                     selectAllChecked={selectedIds.size === data.length && data.length > 0}
                     leftIcon={<Hash size={18} />}
-                    actions={(
-                        <>
-                            <button
-                                onClick={() => setIsFactoryOpen(true)}
-                                className="px-6 py-3 rounded-2xl bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest hover:bg-black transition-all flex items-center gap-2 shadow-xl shadow-black/10"
-                            >
-                                <Layers size={14} />
-                                Hierarchy Factory
-                            </button>
-                            <button
-                                onClick={() => handleOpenForm()}
-                                className="px-6 py-3 rounded-2xl bg-[#FF4B91] text-white text-[10px] font-black uppercase tracking-widest hover:bg-[#FF3B81] transition-all flex items-center gap-2 shadow-xl shadow-[#FF4B91]/20"
-                            >
-                                <Plus size={14} />
-                                Create Topic
-                            </button>
-                        </>
-                    )}
+                    actions={
+                        <button
+                            onClick={() => handleOpenForm()}
+                            className="px-6 py-3 rounded-2xl bg-[#FF4B91] text-white text-[10px] font-black uppercase tracking-widest hover:bg-[#FF3B81] transition-all flex items-center gap-2 shadow-xl shadow-[#FF4B91]/20"
+                        >
+                            <Plus size={14} />
+                            Create Topic
+                        </button>
+                    }
                 />
 
                 <div className="mt-6 rounded-[2.5rem] border border-primary/10 bg-white/50 backdrop-blur-sm overflow-hidden shadow-xl">
@@ -445,7 +435,7 @@ export function TopicTable() {
                                     <SelectField
                                         label="Parent Domain"
                                         value={formData.domainId}
-                                        options={domains?.map((d: any) => ({ id: d.id, name: d.name })) ?? []}
+                                        options={domains?.map((d) => ({ id: d.id, name: d.name })) ?? []}
                                         onChange={handleDomainChange}
                                         placeholder="Select Domain"
                                         loading={domainsHook.loading}
@@ -455,7 +445,7 @@ export function TopicTable() {
                                     <SelectField
                                         label="Parent Subject"
                                         value={formData.subjectId}
-                                        options={subjects?.map((s: any) => ({ id: s.id, name: s.name })) ?? []}
+                                        options={subjects?.map((s) => ({ id: s.id, name: s.name })) ?? []}
                                         onChange={(val: string) => setFormData({ ...formData, subjectId: val })}
                                         placeholder="Select Subject"
                                         loading={subjectsHook.loading}

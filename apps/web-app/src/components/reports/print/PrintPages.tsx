@@ -165,7 +165,6 @@ export function SubtopicAccuracyPage({ data, page, total, layout }: PageProps) {
                             <SubtopicBarChart
                                 data={data.subtopics}
                                 weakest={data.ai.weakest_subtopic}
-                                suppressAnimation={true}
                                 dense={isDense}
                             />
                         </FixedChartWrapper>

@@ -1,6 +1,5 @@
 ﻿'use client';
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { apiClient } from '@quiz/api-client';
 import { ZLoader } from '@quiz/ui';
 import { AlertTriangle, CheckCircle2, Eye, EyeOff, Lock, ShieldCheck } from 'lucide-react';
@@ -49,6 +48,10 @@ function ResetPasswordForm() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (token === null || token === '') {
+            setError('Reset token is missing.');
+            return;
+        }
         if (newPassword !== confirmPassword) {
             setError('Passwords do not match.');
             return;
@@ -58,7 +61,7 @@ function ResetPasswordForm() {
         setError('');
 
         try {
-            await apiClient.auth.resetPassword(token!, newPassword);
+            await apiClient.auth.resetPassword(token, newPassword);
             setIsSuccess(true);
             setTimeout(() => router.push('/login'), 5000); // Redirect after 5s
         } catch (err: unknown) {
@@ -199,4 +202,3 @@ export default function ResetPasswordPage() {
         </Suspense>
     );
 }
-

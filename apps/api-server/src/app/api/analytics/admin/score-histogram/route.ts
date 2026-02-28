@@ -1,9 +1,13 @@
+import { METRICS } from "@quiz/observability";
 import { type NextRequest, NextResponse } from "next/server";
 
-import { sql } from "@/lib/db";
+import { sqlReplica } from "@/lib/db";
+import { recordCounter, recordTimer } from "@/lib/metrics";
 import { redis } from "@/lib/redis";
+import { withLogging } from "@/lib/withLogging";
 import { CACHE_KEYS, CACHE_TTL } from "@/modules/analytics/analytics.constants";
 import { TokenService } from "@/modules/auth/token.service";
+import { ResilienceService } from "@/modules/core/resilience.service";
 
 export const dynamic = "force-dynamic";
 
@@ -12,9 +16,13 @@ interface ScoreDistributionRow {
   student_count: number;
 }
 
-export async function GET(req: NextRequest) {
+async function handler(req: NextRequest) {
+  const start = Date.now();
   try {
-    // 1. Identity & Role Verification (RBAC)
+    if (!(await ResilienceService.isFeatureEnabled('analytics'))) {
+      return NextResponse.json(ResilienceService.getBusyPayload('analytics'), { status: 503 });
+    }
+
     const token = TokenService.getAccessToken(req, { scope: "admin" });
     if (token === undefined || token === null || token === "") {
       return NextResponse.json({ error: "Authentication required" }, { status: 401 });
@@ -22,7 +30,6 @@ export async function GET(req: NextRequest) {
 
     const payload = await TokenService.verifyAccessToken(token, true);
     
-    // Explicitly check role (TokenPayload has roles string array)
     const hasAdminRole = Array.isArray(payload.roles) && payload.roles.some(
       (role: string) => role === "ADMIN" || role === "SUPER_ADMIN" || role === "admin"
     );
@@ -33,28 +40,24 @@ export async function GET(req: NextRequest) {
 
     const CACHE_KEY = CACHE_KEYS.ANALYTICS.ADMIN("score-histogram");
 
-    // 2. Redis Cache-Aside
     try {
       const cachedData = await redis.get(CACHE_KEY);
       if (cachedData !== null) {
         return NextResponse.json(cachedData);
       }
-    } catch (redisError) {
-      console.error("[Redis Error]:", redisError);
+    } catch (__redisError) {
+      // Ignored
     }
 
-    // 3. Query Materialized View
-    const rows = (await sql`
+    const rows = (await sqlReplica`
       SELECT score_bucket, student_count
       FROM mv_score_distribution
       ORDER BY score_bucket
     `) as ScoreDistributionRow[];
 
-    // 4. Normalize to 10 buckets (0-100 / increments of 10)
-    // We ensure every bucket exists to prevent chart misalignment
     const counts = new Array(10).fill(0);
     for (const row of rows) {
-      const bucketIdx = Math.min(row.score_bucket, 9); // Limit to index 9
+      const bucketIdx = Math.min(row.score_bucket, 9);
       counts[bucketIdx] += Number(row.student_count);
     }
 
@@ -63,22 +66,30 @@ export async function GET(req: NextRequest) {
       counts: counts,
     };
 
-    // 5. Cache in Redis
     try {
       if (rows.length > 0) {
         await redis.set(CACHE_KEY, result, { ex: CACHE_TTL.ADMIN_GLOBAL });
       }
-    } catch (redisError) {
-      console.error("[Redis Cache Error]:", redisError);
+    } catch (__redisError) {
+      // Ignored
     }
 
-    return NextResponse.json(result);
+    const durationMs = Date.now() - start;
+    recordTimer(METRICS.ADMIN.DASHBOARD_LOAD + '.score_histogram', durationMs, { outcome: 'success' });
+    recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.score_histogram.count', 1, { outcome: 'success' });
+    return NextResponse.json(result, {
+      headers: { 'X-Duration-Ms': durationMs.toString() }
+    });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "An unknown error occurred";
-    console.error("[Score Histogram Error]:", error);
+    const durationMs = Date.now() - start;
+    recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.score_histogram.count', 1, { outcome: 'failure' });
+    recordTimer(METRICS.ADMIN.DASHBOARD_LOAD + '.score_histogram.duration', durationMs, { outcome: 'failure' });
     return NextResponse.json(
       { error: "Internal Server Error", message },
       { status: 500 }
     );
   }
 }
+
+export const GET = withLogging(handler, { component: 'analytics', operation: 'get_score_histogram' });

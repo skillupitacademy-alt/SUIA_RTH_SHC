@@ -1,57 +1,49 @@
 'use client';
 
+import { initSecurityMuzzle } from '@quiz/observability';
 import { useEffect } from 'react';
 
 /**
- * SECURITY MUZZLE: CSP Console Filter
- * Prevents Content Security Policy (Report-Only) noise from cluttering the browser console.
- * It intercepts console methods and suppresses messages related to CSP violations
- * while the system is in AUDIT MODE.
+ * SECURITY MUZZLE: Global Log Guardian (Admin Terminal)
  */
 
 export function SecurityMuzzle() {
     useEffect(() => {
-        // Only engage in client-side browser environment
-        if (typeof window === 'undefined') return;
+        if (process.env.NODE_ENV !== 'production') return;
 
-        const originalWarn = console.warn;
-        const originalInfo = console.info;
+        // Activate core suppression
+        initSecurityMuzzle();
+
         const originalError = console.error;
+        const originalWarn = console.warn;
 
-        const isCspNoise = (args: unknown[]) => {
-            const msg = args.join(' ');
-            return (
-                msg.includes('Content Security Policy') ||
-                msg.includes('violates the following Content Security Policy directive') ||
-                msg.includes('upgrade-insecure-requests')
-            );
+        const scrub = (msg: unknown) => {
+            if (typeof msg !== 'string') return msg;
+            return msg
+                .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, '[redacted]')
+                .replace(/bearer\s+[A-Z0-9._-]+/gi, 'bearer [redacted]')
+                .replace(/(x-internal-key|x-api-key|token|password|secret)=[^&\s]+/gi, '$1=[redacted]');
         };
 
         console.warn = (...args: unknown[]) => {
-            if (isCspNoise(args)) return;
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            originalWarn.apply(console, args as any[]);
+            const first = args[0];
+            const msg = typeof first === 'string' ? first : String(first ?? '');
+            if (msg.includes('Content Security Policy') || msg.includes('CSP')) return;
+            originalWarn(...args.map(scrub));
         };
 
-        console.info = (...args: unknown[]) => {
-            if (isCspNoise(args)) return;
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            originalInfo.apply(console, args as any[]);
-        };
-
-        // Browsers often log CSP violations as "errors", though next.js might catch them
         console.error = (...args: unknown[]) => {
-            if (isCspNoise(args)) return;
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            originalError.apply(console, args as any[]);
+            const first = args[0];
+            const msg = typeof first === 'string' ? first : String(first ?? '');
+            if (msg.includes('Content Security Policy') || msg.includes('CSP')) return;
+            originalError(...args.map(scrub));
         };
 
         return () => {
-            console.warn = originalWarn;
-            console.info = originalInfo;
             console.error = originalError;
+            console.warn = originalWarn;
         };
     }, []);
 
-    return null; // Transparent utility component
+    return null;
 }

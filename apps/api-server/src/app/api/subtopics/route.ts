@@ -1,8 +1,11 @@
 import { type NextRequest, NextResponse } from 'next/server';
-export const dynamic = 'force-dynamic';
+
+import { withLogging } from '@/lib/withLogging';
 import { TopicService } from '@/modules/domain/domain.service';
 
-export async function GET(_req: NextRequest) {
+export const dynamic = 'force-dynamic';
+
+async function handler(_req: NextRequest) {
   try {
     const { searchParams } = new URL(_req.url);
     const topicId = searchParams.get('topicId');
@@ -18,3 +21,5 @@ export async function GET(_req: NextRequest) {
     return NextResponse.json({ _error: errorMessage }, { status: 500 });
   }
 }
+
+export const GET = withLogging(handler, { component: 'core', operation: 'get_subtopics' });

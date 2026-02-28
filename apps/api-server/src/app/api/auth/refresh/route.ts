@@ -1,6 +1,7 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
+import { withLogging } from '@/lib/withLogging';
 import { AuthService } from '@/modules/auth/auth.service';
 import { TokenService } from '@/modules/auth/token.service';
 
@@ -10,9 +11,8 @@ interface RefreshRequest {
   examId?: string;
 }
 
-export async function POST(_req: NextRequest) {
+async function handler(_req: NextRequest) {
   try {
-    // Detect Portal Tier
     const portalIdentity = _req.headers.get('x-portal-identity') ?? 'user';
     const audience = portalIdentity === 'infrastructure' ? 'infra' : portalIdentity === 'admin' ? 'admin' : 'user';
 
@@ -30,44 +30,35 @@ export async function POST(_req: NextRequest) {
 
     const ip = _req.headers.get('x-forwarded-for') ?? '0.0.0.0';
     
-    // Phase 3: Extract examId for grace window extension
-    let examId: string | undefined;
-    try {
-      const body = (await _req.json()) as RefreshRequest;
-      examId = body?.examId;
-    } catch {
-      // Body might be empty, ignore
-    }
+    const body = await _req.json().catch(() => ({})) as RefreshRequest;
+    const examId = typeof body?.examId === 'string' && body.examId !== '' ? body.examId : undefined;
 
     const { accessToken, refreshToken: newRefreshToken } = await AuthService.refresh(tokenToUse, ip, examId, audience);
     const expiresAt = TokenService.getExpiration(accessToken);
 
-    // Calculate dynamic maxAge for cookie based on token expiration
-    let maxAge = 15 * 60; // 15m default
+    let maxAge = 15 * 60; 
     if (expiresAt !== null) {
         const expTime = new Date(expiresAt).getTime();
         const now = Date.now();
         maxAge = Math.ceil((expTime - now) / 1000);
     }
-    if (maxAge < 0) maxAge = 15 * 60; // Fallback
+    if (maxAge < 0) maxAge = 15 * 60; 
 
     const response = NextResponse.json({ success: true, expiresAt });
 
     const rawDomain = process.env.COOKIE_DOMAIN;
     const cookieDomain = rawDomain === undefined || rawDomain === null || rawDomain === '' ? undefined : rawDomain;
 
-    // Re-issue Access Token Cookie with Tier Isolation
     const accessTokenCookieName = portalIdentity === 'infrastructure' ? 'infra_accessToken' : portalIdentity === 'admin' ? 'admin_accessToken' : 'accessToken';
     response.cookies.set(accessTokenCookieName, accessToken, {
       httpOnly: true,
       secure: true,
       sameSite: 'none',
-      maxAge: maxAge, // Dynamic MaxAge
+      maxAge: maxAge, 
       path: '/',
       domain: cookieDomain,
     });
 
-    // Rotate Refresh Token Cookie
     response.cookies.set(cookieName, newRefreshToken, {
       httpOnly: true,
       secure: true,
@@ -83,3 +74,5 @@ export async function POST(_req: NextRequest) {
     return NextResponse.json({ _error: message }, { status: 401 });
   }
 }
+
+export const POST = withLogging(handler, { component: 'auth', operation: 'refresh_tokens' });

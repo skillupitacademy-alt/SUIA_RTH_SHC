@@ -1,9 +1,13 @@
 "use client";
 
 import { apiClient, TopicPerformanceResponse } from "@quiz/api-client";
+import type { EChartsOption } from "echarts";
 import { useEffect, useState } from "react";
 
 import BaseChart from "./BaseChart";
+import { clientLogger } from "@/utils/clientLogger";
+
+type HeatmapFormatterParams = { value: [number, number, number] };
 
 export default function TopicPerformanceHeatmap() {
     const [data, setData] = useState<TopicPerformanceResponse>({
@@ -19,7 +23,7 @@ export default function TopicPerformanceHeatmap() {
                 const res = await apiClient.analytics.getUserTopicPerformance();
                 setData(res);
             } catch (err: unknown) {
-                console.error("Failed to load topic performance", err);
+                clientLogger.error("Failed to load topic performance", { error: err instanceof Error ? err.message : 'unknown' });
                 setError(true);
             } finally {
                 setLoading(false);
@@ -57,7 +61,7 @@ export default function TopicPerformanceHeatmap() {
     // Build single-row heatmap matrix: [topicIndex, 0, accuracy]
     const heatmapData = sortedTopics.map((_, i) => [i, 0, sortedAccuracy[i]]);
 
-    const option = {
+    const option: EChartsOption = {
         tooltip: {
             position: "top",
             backgroundColor: "rgba(255, 255, 255, 0.95)",
@@ -65,8 +69,7 @@ export default function TopicPerformanceHeatmap() {
             textStyle: { color: "#1E293B" },
             padding: [10, 15],
             extraCssText: "box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); border-radius: 8px;",
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            formatter: (params: any) => {
+            formatter: (params: HeatmapFormatterParams) => {
                 const topicIdx = params.value[0];
                 const accuracy = params.value[2];
                 const topic = sortedTopics[topicIdx];
@@ -89,15 +92,15 @@ export default function TopicPerformanceHeatmap() {
             left: 40,
         },
         xAxis: {
-            type: "category",
+            type: "category" as const,
             data: sortedTopics,
             axisLabel: {
                 color: "#94A3B8",
                 fontSize: 10,
-                fontWeight: "bold",
+                fontWeight: "bold" as const,
                 rotate: 35,
                 interval: 0,
-                overflow: "truncate",
+                overflow: "truncate" as const,
                 width: 100,
                 margin: 20
             },
@@ -133,8 +136,7 @@ export default function TopicPerformanceHeatmap() {
                 data: heatmapData,
                 label: {
                     show: true,
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    formatter: (params: any) => `${params.value[2]}%`,
+                    formatter: (params: HeatmapFormatterParams) => `${params.value[2]}%`,
                     color: "#fff",
                     fontWeight: "black",
                     fontSize: 12,
@@ -151,7 +153,7 @@ export default function TopicPerformanceHeatmap() {
                 },
             },
         ],
-    };
+    } as unknown as EChartsOption;
 
     return (
         <div className="w-full bg-white p-6 rounded-2xl shadow-sm border border-slate-100">

@@ -1,18 +1,21 @@
+import { METRICS } from '@quiz/observability';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
-import { logger } from '@/lib/logger';
+import { recordCounter, recordTimer } from '@/lib/metrics';
+import { withLogging } from '@/lib/withLogging';
 import { AdminEngine } from '@/modules/admin-engine/admin.engine';
 import { verifyAdminOrInfraToken } from '@/modules/auth/admin-audience.util';
 import { publishSchema } from '@/schemas/admin.schemas';
 
 export const dynamic = 'force-dynamic';
 
-const log = logger.child({ module: 'admin:approve' });
-
 type ApproveBody = { id: string };
+type VerifyResult =
+    | { userId: string; scope: string }
+    | { _error: string; status: number; scope?: string };
 
-async function _verifyAdmin(_req: NextRequest) {
+async function _verifyAdmin(_req: NextRequest): Promise<VerifyResult> {
     try {
         const { payload, audience } = await verifyAdminOrInfraToken(_req);
         return { userId: payload.userId, scope: audience };
@@ -21,24 +24,36 @@ async function _verifyAdmin(_req: NextRequest) {
     }
 }
 
-export async function POST(_req: NextRequest) {
+async function handler(_req: NextRequest) {
+    const start = Date.now();
     const auth = await _verifyAdmin(_req);
-    if (auth._error !== undefined) return NextResponse.json({ _error: auth._error, scope: auth.scope }, { status: auth.status });
+    if ('_error' in auth) {
+        return NextResponse.json({ _error: auth._error, scope: auth.scope }, { status: auth.status });
+    }
 
     try {
-        const rawBody = await _req.json() as ApproveBody;
+        const rawBody = await _req.json() as unknown;
         const parsed = publishSchema.safeParse(rawBody);
         if (!parsed.success) {
             return NextResponse.json({ _error: 'Invalid payload', issues: parsed.error.issues }, { status: 400 });
         }
-        const body = parsed.data;
-        // AdminEngine has publishQuestion, but not approveQuestion. 
-        // Mapping both to publishQuestion as they serve the same intent (activating content)
-        const result = await AdminEngine.publishQuestion(body.id, auth.userId!);
-        return NextResponse.json(result);
+        const body = parsed.data as ApproveBody;
+        const result = await AdminEngine.publishQuestion(body.id, auth.userId);
+        
+        const durationMs = Date.now() - start;
+        recordCounter(METRICS.ADMIN.PUBLISH, 1, { action: 'approve', outcome: 'success' });
+        recordTimer(METRICS.ADMIN.PUBLISH + '.duration', durationMs, { action: 'approve', outcome: 'success' });
+        
+        return NextResponse.json(result, {
+            headers: { 'X-Duration-Ms': durationMs.toString() }
+        });
     } catch (_error: unknown) {
         const message = _error instanceof Error ? _error.message : 'Internal Server Error';
-        log.error({ error: message }, 'ADMIN_APPROVE failed');
+        const durationMs = Date.now() - start;
+        recordCounter(METRICS.ADMIN.PUBLISH, 1, { action: 'approve', outcome: 'failure' });
+        recordTimer(METRICS.ADMIN.PUBLISH + '.duration', durationMs, { action: 'approve', outcome: 'failure' });
         return NextResponse.json({ _error: message }, { status: 500 });
     }
 }
+
+export const POST = withLogging(handler, { component: 'admin', operation: 'approve_question' });

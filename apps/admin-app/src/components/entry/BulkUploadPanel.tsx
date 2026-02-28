@@ -6,6 +6,7 @@ import { AlertCircle, Check, Copy, FileJson, Sparkles, Trash2, Upload } from 'lu
 import { useState } from 'react';
 
 import { cn } from '@/lib/utils';
+import { clientLogger } from '@/utils/clientLogger';
 
 interface BulkUploadPanelProps {
     topicId: string;
@@ -78,12 +79,14 @@ export function BulkUploadPanel({ topicId, subtopicId, skillIds, onSuccess, onEr
                     setQuestions(validated);
                 } catch (err: unknown) {
                     const msg = err instanceof Error ? err.message : 'Unknown parsing error';
+                    clientLogger.error('Bulk upload parse failed', { error: msg });
                     onError(`Parsing Error: ${msg}`);
                     setFile(null);
                 }
             };
             reader.readAsText(selectedFile);
         } catch {
+            clientLogger.error('Bulk upload failed to read file');
             onError('Failed to read file.');
         }
     };
@@ -112,6 +115,7 @@ export function BulkUploadPanel({ topicId, subtopicId, skillIds, onSuccess, onEr
             setFile(null);
         } catch (err: unknown) {
             const msg = err instanceof Error ? err.message : 'Bulk upload failed.';
+            clientLogger.error('Bulk upload request failed', { error: msg });
             onError(msg);
         } finally {
             setIsUploading(false);

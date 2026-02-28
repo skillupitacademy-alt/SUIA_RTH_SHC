@@ -1,5 +1,6 @@
 'use client';
 
+import { recordCounter } from "@quiz/observability";
 import { ZLoader } from "@quiz/ui";
 import {
     AlertTriangle,
@@ -14,6 +15,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { cn } from "@/lib/utils";
+import { clientLogger } from "@/utils/clientLogger";
 
 interface BrokenQuestion {
     questionId: string;
@@ -36,28 +38,38 @@ interface BrokenQuestion {
 export function BrokenQuestionsRepairStation() {
     const [questions, setQuestions] = useState<BrokenQuestion[]>([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
     const hasToasted = useRef(false);
 
     const fetchData = useCallback(async () => {
         try {
             const apiBase = process.env.NEXT_PUBLIC_API_URL ?? "";
+            setError(null);
             const res = await fetch(`${apiBase}/api/admin/metrics/broken-questions?limit=10&floor=10`, { credentials: "include" });
-            if (res.ok) {
-                const data = await res.json();
-                setQuestions(data);
+            if (!res.ok) {
+                const body = await res.text();
+                throw new Error(`Fetch failed (${res.status}) ${body}`);
+            }
+            const data = await res.json();
+            setQuestions(data);
 
-                if (data.length === 0 && !hasToasted.current) {
+            if (data.length === 0) {
+                recordCounter('admin.ui.intelligence.broken_questions.empty', 1);
+                if (!hasToasted.current) {
                     toast.success("SYSTEM_NORMALIZED", {
                         description: "No content anomalies detected in the current window.",
                         duration: 5000,
                     });
                     hasToasted.current = true;
-                } else if (data.length > 0) {
-                    hasToasted.current = false;
                 }
+            } else {
+                recordCounter('admin.ui.intelligence.broken_questions.fetch_success', 1, { count: data.length });
+                hasToasted.current = false;
             }
         } catch (err) {
-            console.error('Failed to fetch broken questions', err);
+            recordCounter('admin.ui.intelligence.broken_questions.fetch_error', 1, { reason: err instanceof Error ? err.message : 'unknown' });
+            clientLogger.error('Failed to fetch broken questions', { error: err instanceof Error ? err.message : 'unknown' });
+            setError("Unable to load broken question metrics.");
         } finally {
             setLoading(false);
         }
@@ -71,6 +83,14 @@ export function BrokenQuestionsRepairStation() {
         return (
             <div className="flex h-64 items-center justify-center bg-white rounded-[2.5rem] border border-slate-200">
                 <ZLoader size="md" text="Scanning content health..." />
+            </div>
+        );
+    }
+
+    if (typeof error === "string" && error.length > 0) {
+        return (
+            <div className="flex h-64 items-center justify-center bg-white rounded-[2.5rem] border border-rose-100 text-rose-600 text-sm font-semibold">
+                {error}
             </div>
         );
     }

@@ -1,14 +1,21 @@
 "use client";
 
 import { apiClient, WeaknessTreeNode } from "@quiz/api-client";
+import type { EChartsOption } from "echarts";
 import { useEffect, useState } from "react";
 
 import BaseChart from "./BaseChart";
+import { clientLogger } from "@/utils/clientLogger";
+
+type TreemapFormatterParams = {
+    name: string;
+    value?: number;
+};
 
 export default function WeaknessTreeChart() {
     const [data, setData] = useState<WeaknessTreeNode[]>([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         async function fetchData() {
@@ -16,8 +23,9 @@ export default function WeaknessTreeChart() {
                 const res = await apiClient.analytics.getUserWeaknessTree();
                 setData(res);
             } catch (err: unknown) {
-                console.error("Failed to load weakness tree", err);
-                setError(true);
+                const message = err instanceof Error ? err.message : "Failed to load weakness tree";
+                clientLogger.error("Failed to load weakness tree", { error: message });
+                setError(message);
             } finally {
                 setLoading(false);
             }
@@ -28,8 +36,9 @@ export default function WeaknessTreeChart() {
 
     if (error) {
         return (
-            <div className="flex items-center justify-center h-[400px] text-sm text-red-500 bg-red-50 rounded-xl border border-red-100">
-                Unable to load weakness analysis
+            <div className="flex flex-col items-center justify-center h-[400px] text-sm text-red-600 bg-red-50 rounded-xl border border-red-100">
+                <p className="font-semibold">Unable to load weakness analysis</p>
+                <span className="text-xs text-red-500">{error}</span>
             </div>
         );
     }
@@ -44,15 +53,14 @@ export default function WeaknessTreeChart() {
         );
     }
 
-    const option = {
+    const option: EChartsOption = {
         tooltip: {
             backgroundColor: "rgba(255, 255, 255, 0.95)",
             borderColor: "#E2E8F0",
             textStyle: { color: "#1E293B" },
             padding: [10, 15],
             extraCssText: "box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); border-radius: 8px;",
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            formatter: (info: any) => {
+            formatter: (info: TreemapFormatterParams) => {
                 const value = info.value as number;
                 if (value === undefined || value === null || isNaN(value)) {
                     return `<div class="font-bold text-slate-800">${info.name}</div>
@@ -70,16 +78,16 @@ export default function WeaknessTreeChart() {
             <div class="font-bold" style="color:${color}">${accuracy}%</div>
           </div>
           <div class="flex items-center gap-2 mb-1">
-            <div class="text-xs text-slate-500">Weakness:</div>
-            <div class="font-bold text-slate-700">${value}</div>
-          </div>
+          <div class="text-xs text-slate-500">Weakness:</div>
+          <div class="font-bold text-slate-700">${value}</div>
+        </div>
           <div class="text-xs mt-1 px-2 py-0.5 rounded-full inline-block" style="background:${color}20; color:${color}">${label}</div>
         `;
             },
         },
         series: [
             {
-                type: "treemap",
+                type: "treemap" as const,
                 data: data,
                 roam: false,
                 nodeClick: "zoomToNode",
@@ -131,8 +139,7 @@ export default function WeaknessTreeChart() {
                             color: "#fff",
                             fontWeight: "bold",
                             fontSize: 10,
-                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                            formatter: (params: any) => {
+                            formatter: (params: TreemapFormatterParams) => {
                                 const val = params.value as number;
                                 return `${params.name}\n${100 - val}%`;
                             },
@@ -146,7 +153,7 @@ export default function WeaknessTreeChart() {
                 colorMappingBy: "value",
             },
         ],
-    };
+    } as unknown as EChartsOption;
 
     return (
         <div className="w-full bg-white p-6 rounded-2xl shadow-sm border border-slate-100 h-full flex flex-col">

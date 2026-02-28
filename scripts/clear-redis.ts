@@ -11,7 +11,7 @@ async function clearRedis() {
   const token = process.env.UPSTASH_REDIS_REST_TOKEN;
 
   if (!url || !token) {
-    console.error("❌ Redis credentials not found in .env");
+    scriptLogger.error("❌ Redis credentials not found in .env");
     process.exit(1);
   }
 
@@ -21,12 +21,13 @@ async function clearRedis() {
   });
 
   try {
-    console.log("🧹 Clearing Redis cache...");
+    scriptLogger.info("🧹 Clearing Redis cache...");
     await redis.flushdb();
-    console.log("✅ Redis cache cleared successfully!");
+    scriptLogger.info("✅ Redis cache cleared successfully!");
   } catch (error) {
-    console.error("❌ Failed to clear Redis cache:", error);
+    scriptLogger.error("❌ Failed to clear Redis cache:", error);
   }
 }
 
 clearRedis();
+

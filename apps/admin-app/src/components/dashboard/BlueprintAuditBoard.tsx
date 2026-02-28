@@ -1,26 +1,50 @@
 'use client';
-/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { apiClient } from '@quiz/api-client';
+import { recordClientMetric } from '@quiz/observability';
 import { CheckCircle2, ClipboardCheck, FileText } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import { clientLogger } from '@/utils/clientLogger';
 
 export function BlueprintAuditBoard() {
-    const [stats, setStats] = useState<any>(null);
+    type BlueprintMetrics = {
+        total?: number;
+        complianceRate?: string;
+        standardDistribution?: string;
+        avgQuestions?: number;
+    };
+    const [stats, setStats] = useState<BlueprintMetrics | null>(null);
+    const [error, setError] = useState<string | null>(null);
+    const hasError = typeof error === 'string' && error.length > 0;
 
     useEffect(() => {
         const fetch = async () => {
             try {
+                setError(null);
                 const data = await apiClient.admin.getBlueprintMetrics();
-                setStats(data);
+                const typed = data as BlueprintMetrics | null;
+                setStats(typed);
+                const total = typed?.total ?? 0;
+                if (typed === null || total === 0) {
+                    void recordClientMetric('admin.ui.blueprints.empty', 1);
+                }
             } catch (err) {
                 clientLogger.error('Failed to fetch blueprint metrics', { error: err instanceof Error ? err.message : 'unknown' });
+                setError('Unable to load blueprint metrics.');
+                void recordClientMetric('admin.ui.blueprints.fetch_error', 1);
             }
         };
         void fetch();
     }, []);
+
+    if (hasError) {
+        return (
+            <div className="p-8 rounded-[2rem] border border-rose-100 bg-white text-rose-600 text-sm font-semibold">
+                {error}
+            </div>
+        );
+    }
 
     if (stats === null) return null;
 

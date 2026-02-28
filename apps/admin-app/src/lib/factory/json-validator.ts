@@ -1,4 +1,3 @@
-/* eslint-disable no-useless-escape */
 import { GeneratedQuestion, ValidationResult } from '@/types/factory';
 
 interface ValidationStats {
@@ -25,7 +24,7 @@ export const JsonValidator = {
         keysToHeal.forEach(key => {
             // Regex matches "key": " ... " where the end is followed by structural markers
             // We use a stricter lookahead to ensure the comma isn't just part of the text
-            const regex = new RegExp(`("${key}"\\s*:\\s*")([\\s\\S]*?)("\\s*(?=[}\\]]|,\\s*(?:\\r?\\n|"[^"]+"\\s*:|}|\])))`, 'g');
+            const regex = new RegExp(`("${key}"\\s*:\\s*")([\\s\\S]*?)("\\s*(?=(?:}|])|,\\s*(?:\\r?\\n|"[^"]+"\\s*:|}|])))`, 'g');
             healed = healed.replace(regex, (match: string, prefix: string, content: string, suffix: string) => {
                 // Safeguard: If the captured content contains another key, it's a boundary violation
                 const hasAnotherKey = /"[a-zA-Z0-9_]+"\s*:/.test(content);
@@ -44,7 +43,7 @@ export const JsonValidator = {
         });
 
         // 2. Specialized Repair for arrays (specifically the options array)
-        healed = healed.replace(/("options"\s*:\s*\[)([\s\S]*?)(\]\s*(?=[,}\]]))/, (match: string, prefix: string, content: string, suffix: string) => {
+        healed = healed.replace(/("options"\s*:\s*\[)([\s\S]*?)(\]\s*(?=[,}]))/, (match: string, prefix: string, content: string, suffix: string) => {
             // Split by comma followed by a quote to identify individual items
             const items = content.split(/,(?=\s*")/);
             const repairedItems = items.map(item => {
@@ -79,7 +78,7 @@ export const JsonValidator = {
         }
 
         // 4. Convert single quotes to double quotes for keys/values
-        healed = healed.replace(/([{,\[:])\s*'([^']*)'\s*([,\]}])/g, (match, p1, p2, p3) => {
+        healed = healed.replace(/([{,:[])\s*'([^']*)'\s*([,\]}])/g, (match, p1, p2, p3) => {
             return `${p1}"${p2}"${p3}`;
         });
 

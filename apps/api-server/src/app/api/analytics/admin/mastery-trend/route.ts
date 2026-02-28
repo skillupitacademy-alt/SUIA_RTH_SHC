@@ -1,52 +1,74 @@
+import { METRICS } from "@quiz/observability";
+import { type NextRequest, NextResponse } from "next/server";
 
-import { sql } from "@/lib/db";
+import { sqlReplica } from "@/lib/db";
+import { recordCounter, recordTimer } from "@/lib/metrics";
 import { redis } from "@/lib/redis";
+import { withLogging } from "@/lib/withLogging";
 import { CACHE_KEYS, CACHE_TTL } from "@/modules/analytics/analytics.constants";
+import { TokenService } from "@/modules/auth/token.service";
+import { ResilienceService } from "@/modules/core/resilience.service";
 
 export const dynamic = "force-dynamic";
-
-// Standard TTL used via ANALYTICS_CACHE.ADMIN_GLOBAL
 
 interface MasteryTrendRow {
   exam_date: Date;
   avg_accuracy: number;
 }
 
-export async function GET() {
+async function handler(req: NextRequest) {
+  const start = Date.now();
   try {
-    // 1. Try Redis GET
-    try {
-      const cachedData = await redis.get(CACHE_KEYS.ANALYTICS.ADMIN("mastery-trend"));
-      if (cachedData !== null) return Response.json(cachedData);
-    } catch (redisError) {
-      console.error("[Redis Error]:", redisError);
+    if (!(await ResilienceService.isFeatureEnabled('analytics'))) {
+      return NextResponse.json(ResilienceService.getBusyPayload('analytics'), { status: 503 });
     }
 
-    // 2. Query Materialized View (Admin)
-    const rows = (await sql`
+    const token = TokenService.getAccessToken(req, { scope: "admin" });
+    if (token === undefined || token === null || token === "") {
+      return NextResponse.json({ error: "Authentication required" }, { status: 401 });
+    }
+
+    await TokenService.verifyAccessToken(token, true);
+
+    try {
+      const cachedData = await redis.get(CACHE_KEYS.ANALYTICS.ADMIN("mastery-trend"));
+      if (cachedData !== null) return NextResponse.json(cachedData);
+    } catch (__redisError) {
+      // Ignored
+    }
+
+    const rows = (await sqlReplica`
       SELECT exam_date, avg_accuracy
       FROM mv_mastery_trend
       ORDER BY exam_date ASC
     `) as MasteryTrendRow[];
 
-    // 3. Transform for ECharts
     const result = {
       dates: rows.map((r) => new Date(r.exam_date).toLocaleDateString()),
       accuracy: rows.map((r) => Math.round(Number(r.avg_accuracy))),
     };
 
-    // 4. Cache
     try {
       if (rows.length > 0) {
         await redis.set(CACHE_KEYS.ANALYTICS.ADMIN("mastery-trend"), result, { ex: CACHE_TTL.ADMIN_GLOBAL });
       }
-    } catch (redisError) {
-      console.error("[Redis Cache Error]:", redisError);
+    } catch (__redisError) {
+      // Ignored
     }
 
-    return Response.json(result);
+    const durationMs = Date.now() - start;
+    recordTimer(METRICS.ADMIN.DASHBOARD_LOAD + '.mastery_trend', durationMs, { outcome: 'success' });
+    recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.mastery_trend.count', 1, { outcome: 'success' });
+    return NextResponse.json(result, {
+      headers: { 'X-Duration-Ms': durationMs.toString() }
+    });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Internal Server Error";
-    return Response.json({ error: "Failed to fetch admin mastery trend", message }, { status: 500 });
+    const durationMs = Date.now() - start;
+    recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.mastery_trend.count', 1, { outcome: 'failure' });
+    recordTimer(METRICS.ADMIN.DASHBOARD_LOAD + '.mastery_trend.duration', durationMs, { outcome: 'failure' });
+    return NextResponse.json({ error: "Failed to fetch admin mastery trend", message }, { status: 500 });
   }
 }
+
+export const GET = withLogging(handler, { component: 'analytics', operation: 'get_admin_mastery_trend' });

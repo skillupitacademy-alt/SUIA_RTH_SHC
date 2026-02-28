@@ -1,14 +1,18 @@
 import { db, exams } from "@quiz/db";
+import { METRICS } from "@quiz/observability";
 import { eq } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 
-import { logger } from "@/lib/logger";
+import { recordCounter, recordTimer } from "@/lib/metrics";
+import { getDownloadUrl } from "@/lib/storage/get-download-url";
+import { withLogging } from "@/lib/withLogging";
 import { TokenService } from "@/modules/auth/token.service";
 import { ReportRepository } from "@/modules/report-engine/report-repository";
 
 export const runtime = "nodejs";
 
-export async function GET(req: NextRequest) {
+async function handler(req: NextRequest) {
+  const startTime = Date.now();
   try {
     const { searchParams } = new URL(req.url);
     const attemptId = searchParams.get("attemptId");
@@ -65,39 +69,24 @@ export async function GET(req: NextRequest) {
     }
 
     // 4. Generate a temporary read-only URL for the private blob
-    // This allows the browser to download it without us having to buffer the whole file
-    // Vercel Blob 'getDownloadUrl' with a token will return the actual accessible URL
-    logger.info({ attemptId }, "[ReportDownload] Generating signed URL for private blob");
-    
-    // Note: In Vercel Blob, if the store is private, we can use the head/get methods 
-    // or just rely on the token. For a direct browser download, 
-    // the cleanest way is a redirect to the actual signed URL.
-    
-    // Using simple fetch and stream approach if signed URL is complex,
-    // but vercel-blob's getDownloadUrl handles this.
-    // However, for private blobs, we often just fetch it.
-    
-    const blobResponse = await fetch(report.fileRef, {
-      headers: {
-        Authorization: `Bearer ${process.env.BLOB_READ_WRITE_TOKEN ?? ""}`,
-      },
-    });
-
-    if (!blobResponse.ok) {
-      throw new Error(`Failed to fetch from storage: ${blobResponse.statusText}`);
+    const downloadUrl = await getDownloadUrl(report.fileRef);
+    if (!downloadUrl) {
+      return NextResponse.json({ error: "Download unavailable" }, { status: 502 });
     }
 
-    const blob = await blobResponse.blob();
+    const durationMs = Date.now() - startTime;
+    recordCounter(METRICS.REPORTS.DOWNLOAD, 1, { outcome: "success" });
+    recordTimer(METRICS.REPORTS.DOWNLOAD + '.duration', durationMs, { outcome: "success" });
 
-    return new NextResponse(blob, {
-      headers: {
-        "Content-Type": "application/pdf",
-        "Content-Disposition": `attachment; filename="Report-${attemptId}.pdf"`,
-      },
+    return NextResponse.redirect(downloadUrl, {
+      headers: { 'X-Duration-Ms': durationMs.toString() }
     });
-
   } catch (error) {
-    logger.error({ err: error }, "[ReportDownload] Error");
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    const message = error instanceof Error ? error.message : "Internal Server Error";
+    recordCounter(METRICS.REPORTS.DOWNLOAD, 1, { outcome: "failure" });
+    recordTimer(METRICS.REPORTS.DOWNLOAD + '.duration', Date.now() - startTime, { outcome: "failure" });
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
+
+export const GET = withLogging(handler, { component: "reports", operation: "download_report" });

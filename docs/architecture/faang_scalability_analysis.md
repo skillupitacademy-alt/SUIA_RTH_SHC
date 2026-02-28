@@ -1,8 +1,8 @@
-# FAANG/MAANG Scalability & Engineering Maturity Plan
+ï»¿# FAANG/MAANG Scalability & Engineering Maturity Plan
 
 ## 1. Executive Snapshot
-- Current level: **Level 2 – Secure MVP** (good for ~10k–50k users).
-- Target: **Level 5 – Internet scale** (millions of concurrent exam sessions).
+- Current level: **Level 2 â€“ Secure MVP** (good for ~10kâ€“50k users).
+- Target: **Level 5 â€“ Internet scale** (millions of concurrent exam sessions).
 - Core posture: strong auth/RBAC/CSRF, deterministic question selection, idempotent start/submit. Missing: async processing, distributed infra, observability, CI/CD, DR/compliance.
 
 ## 2. Principle Audit (S.O.L.I.D / KISS / DRY / YAGNI)
@@ -42,27 +42,27 @@
 - Compliance/ops: Backups/PITR, DR runbook, PII scrubbing, a11y/i18n groundwork.
 
 ## 5. Phase Plan (do in order)
-### Phase 1 – Engineering Hygiene (1–2 weeks)
+### Phase 1 â€“ Engineering Hygiene (1â€“2 weeks)
 - Add CI (lint+typecheck+tests) and pre-commit hooks.
 - Introduce Jest/Vitest; write critical-path tests (auth, idempotency, selection, scoring maths).
 - Add pino/winston structured logger with request-id.
 - Enforce env validation (Redis/SQS required in prod).
 
-### Phase 2 – Scale Foundations (2–3 weeks)
+### Phase 2 â€“ Scale Foundations (2â€“3 weeks)
 - Redis required for rate-limit/cache/session keys; remove local-only fallback in prod.
 - Queue + worker for scoring; submit returns 202 + status URL; add `/api/quiz/status/[id]` with Redis cache.
 - CDN/WAF/API gateway in front; block `/api/migrate`; per-route rate limits.
 - Connection hygiene: pool sizing, 3s timeouts, body size limits.
 - Observability MVP: OTEL traces, metrics (RPS/latency/errors), health endpoints.
 
-### Phase 3 – Data & Delivery (3–4 weeks)
+### Phase 3 â€“ Data & Delivery (3â€“4 weeks)
 - Postgres read replica + PgBouncer; route reporting reads to replica.
 - Object storage for exports/assets; signed URLs.
 - Backups/PITR tests; DR playbook; DLQ alerting.
 - Compression (gzip/brotli), HTTP/2+, CDN caching for static/assets.
 - Frontend perf: code-splitting, image optimization, polling with backoff, offline-friendly autosave retry.
 
-### Phase 4 – Advanced Resilience & Growth (ongoing)
+### Phase 4 â€“ Advanced Resilience & Growth (ongoing)
 - Partitioning/sharding plan for exams/results by tenant/time.
 - Feature flags + canary deploys.
 - Security headers (HSTS, CSP, XFO), secrets manager, PII scrubber.
@@ -92,7 +92,7 @@ You are a staff-level platform architect. Audit the repo for FAANG-scale readine
 ## 10. "Billions of Users" Master Roadmap (detailed prompts)
 Strategy: Hygiene ? Async ? Distributed ? Global. Use these ready-to-run prompts to execute each step.
 
-### Phase 1 – Engineering Hygiene
+### Phase 1 â€“ Engineering Hygiene
 - Husky & lint-staged (Conventional Commits):
   - "Configure Husky and lint-staged in root package.json. Run `tsc --noEmit` and eslint on staged files pre-commit; enforce Conventional Commits message format."
 - Testing pyramid (Vitest):
@@ -100,15 +100,15 @@ Strategy: Hygiene ? Async ? Distributed ? Global. Use these ready-to-run prompts
 - Containerization (Docker + compose):
   - "Write a multi-stage Dockerfile for api-server using node:20-alpine, pnpm workspaces, strict .dockerignore, cached layers. Create docker-compose with API + Postgres + Redis for local dev."
 
-### Phase 2 – Decoupling & Async
+### Phase 2 â€“ Decoupling & Async
 - BullMQ queues:
   - "Implement QueueService (BullMQ) with email-queue and scoring-queue; worker entry processes jobs concurrently; submitExam enqueues instead of inline."
 - Global rate limiting (Redis):
   - "Refactor middleware.ts to sliding-window Redis limiter; different limits for authenticated vs anonymous; shared across replicas."
 - Edge caching/CDN:
-  - "Update next.config.js/headers for Cache-Control s-maxage; add stale-while-revalidate for dashboard GETs."
+  - "Update next.config.mjs/headers for Cache-Control s-maxage; add stale-while-revalidate for dashboard GETs."
 
-### Phase 3 – Data at Scale
+### Phase 3 â€“ Data at Scale
 - Connection pooling:
   - "Adjust drizzle config to use PgBouncer; separate transaction vs session ports; add graceful timeouts."
 - Read replicas (RW split):
@@ -116,7 +116,7 @@ Strategy: Hygiene ? Async ? Distributed ? Global. Use these ready-to-run prompts
 - Partitioning:
   - "Generate SQL migration to partition exam_questions by created_at (monthly); explain index/unique impacts."
 
-### Phase 4 – Operational Excellence
+### Phase 4 â€“ Operational Excellence
 - Observability:
   - "Add OpenTelemetry to api-server; trace HTTP, DB, Redis; export to local Jaeger."
 - Zero-downtime deploys:
@@ -124,7 +124,7 @@ Strategy: Hygiene ? Async ? Distributed ? Global. Use these ready-to-run prompts
 - Feature flags:
   - "Implement typed FeatureFlag service on Redis; toggle NewScoringEngine per user or globally without redeploy."
 
-### Phase 5 – Global Scale & Compliance
+### Phase 5 â€“ Global Scale & Compliance
 - DR / Multi-region:
   - "Design DR with Postgres WAL shipping to standby region; script failover from primary outage."
 - Audit/compliance:
@@ -133,3 +133,4 @@ Strategy: Hygiene ? Async ? Distributed ? Global. Use these ready-to-run prompts
   - "Add next-i18next with locales/en|es|fr; extract strings from QuizSelectionConsole into translation keys."
 
 Use these prompts as execution guides; keep phase order to control risk.
+

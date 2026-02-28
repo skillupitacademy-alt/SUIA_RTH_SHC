@@ -1,6 +1,7 @@
 'use client';
 
 import { apiClient } from '@quiz/api-client';
+import { recordCounter } from '@quiz/observability';
 import { ZLoader } from '@quiz/ui';
 import {
     Activity,
@@ -64,20 +65,30 @@ export function ContentReadinessBoard() {
         initialData: undefined
     });
     const [blueprintModal, setBlueprintModal] = useState({ isOpen: false, domainId: '', domainName: '' });
+    const [error, setError] = useState<string | null>(null);
+    const hasError = typeof error === 'string' && error.length > 0;
 
-    const fetch = async () => {
+    const fetchData = async () => {
         try {
+            setError(null);
             const data = await apiClient.admin.getContentHealthReport();
             setDomains(data);
+            if (data.length === 0) {
+                recordCounter('admin.ui.content.empty', 1);
+            } else {
+                recordCounter('admin.ui.content.fetch_success', 1, { count: data.length });
+            }
         } catch (err) {
+            recordCounter('admin.ui.content.fetch_error', 1, { reason: err instanceof Error ? err.message : 'unknown' });
             clientLogger.error('Failed to fetch content health', { error: err instanceof Error ? err.message : 'unknown' });
+            setError('Unable to load content health report.');
         } finally {
             setIsLoading(false);
         }
     };
 
     useEffect(() => {
-        void fetch();
+        void fetchData();
     }, []);
 
     const openHealWizard = (nodeType: string, node: HierarchyNode | DomainHealth | Record<string, unknown>, domainId: string, domainName?: string) => {
@@ -115,6 +126,7 @@ export function ContentReadinessBoard() {
         }
 
         setFactoryModal({ isOpen: true, initialData: template });
+        recordCounter('admin.ui.content.open_wizard', 1, { type: nodeType, domainId });
     };
 
     const toggleNode = (id: string) => {
@@ -126,6 +138,14 @@ export function ContentReadinessBoard() {
             <ZLoader size="lg" text="Syncing Content Health_" />
         </div>
     );
+
+    if (hasError) {
+        return (
+            <div className="p-12 rounded-[2rem] border border-rose-100 bg-white text-rose-600 text-sm font-semibold">
+                {error}
+            </div>
+        );
+    }
 
     const filteredDomains = domains.filter((d) =>
         d.domainName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -335,7 +355,7 @@ export function ContentReadinessBoard() {
                 isOpen={factoryModal.isOpen}
                 initialData={factoryModal.initialData}
                 onClose={() => setFactoryModal({ isOpen: false, initialData: undefined })}
-                onSuccess={() => { void fetch(); }}
+                onSuccess={() => { void fetchData(); }}
             />
 
             <BlueprintFactoryWizard
@@ -343,7 +363,7 @@ export function ContentReadinessBoard() {
                 domainId={blueprintModal.domainId}
                 domainName={blueprintModal.domainName}
                 onClose={() => setBlueprintModal({ ...blueprintModal, isOpen: false })}
-                onSuccess={() => { void fetch(); }}
+                onSuccess={() => { void fetchData(); }}
             />
         </div>
     );

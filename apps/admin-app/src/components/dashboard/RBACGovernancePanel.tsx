@@ -1,26 +1,45 @@
 'use client';
-/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { apiClient } from '@quiz/api-client';
+import { recordCounter } from '@quiz/observability';
 import { Key, Shield, UserCog } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import { clientLogger } from '@/utils/clientLogger';
 
 export function RBACGovernancePanel() {
-    const [roles, setRoles] = useState<any[]>([]);
+    type RoleMetrics = { role: string; count: number };
+    const [roles, setRoles] = useState<RoleMetrics[]>([]);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         const fetch = async () => {
             try {
+                setError(null);
                 const data = await apiClient.admin.getRBACMetrics();
-                setRoles(Array.isArray(data) ? data : []);
+                const normalizedData = Array.isArray(data) ? data as RoleMetrics[] : [];
+                setRoles(normalizedData);
+                if (normalizedData.length === 0) {
+                    recordCounter('admin.ui.rbac.empty', 1);
+                } else {
+                    recordCounter('admin.ui.rbac.fetch_success', 1, { count: normalizedData.length });
+                }
             } catch (err) {
+                recordCounter('admin.ui.rbac.fetch_error', 1, { reason: err instanceof Error ? err.message : 'unknown' });
                 clientLogger.error('Failed to fetch RBAC metrics', { error: err instanceof Error ? err.message : 'unknown' });
+                setError('Unable to load RBAC metrics.');
             }
         };
         void fetch();
     }, []);
+
+    if (typeof error === 'string' && error.length > 0) {
+        return (
+            <div className="p-8 rounded-[2rem] border border-rose-100 bg-white text-rose-600 text-sm font-semibold">
+                {error}
+            </div>
+        );
+    }
 
     if (roles.length === 0) return null;
 

@@ -1,7 +1,9 @@
+import { METRICS } from '@quiz/observability';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
-import { logger } from '@/lib/logger';
+import { recordCounter, recordTimer } from '@/lib/metrics';
+import { withLogging } from '@/lib/withLogging';
 import { AuthService } from '@/modules/auth/auth.service';
 
 export const dynamic = 'force-dynamic';
@@ -10,26 +12,26 @@ interface ForgotPasswordRequest {
   email?: string;
 }
 
-export async function POST(_req: NextRequest) {
+async function handler(_req: NextRequest) {
+  const start = Date.now();
   try {
     const { email } = (await _req.json()) as ForgotPasswordRequest;
     
-    // Validate inputs
     if (typeof email !== 'string' || email.trim() === '' || !email.includes('@')) {
-        // We still return 200 to be perfectly neutral, but we don't proceed
         return NextResponse.json({ success: true });
     }
 
     const ip = _req.headers.get('x-forwarded-for') ?? '0.0.0.0';
     await AuthService.forgotPassword(email, ip);
 
-    // Per contract: Always return 200 OK (even if email does not exist)
+    recordCounter(METRICS.AUTH.FAILURE, 1, { operation: 'forgot_password', outcome: 'success' });
+    recordTimer(METRICS.AUTH.FAILURE + '.forgot_password.duration', Date.now() - start, { outcome: 'success' });
+
     return NextResponse.json({ success: true });
   } catch (_error: unknown) {
-    // Return success to be neutral even on internal errors if we want strict non-disclosure,
-    // but typically server errors can be 500 if they don't leak account status.
-    // Given the contract "Always return 200 OK", we stay strict.
-    logger.error({ err: _error }, 'ForgotPassword.Error');
+    recordCounter(METRICS.AUTH.FAILURE, 1, { operation: 'forgot_password', outcome: 'failure' });
     return NextResponse.json({ success: true });
   }
 }
+
+export const POST = withLogging(handler, { component: 'auth', operation: 'forgot_password' });

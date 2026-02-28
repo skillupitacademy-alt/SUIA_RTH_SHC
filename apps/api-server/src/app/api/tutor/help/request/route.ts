@@ -1,18 +1,18 @@
 import { db, notifications, topics, tutorHelpRequests, userRecommendations } from "@quiz/db";
+import { METRICS } from "@quiz/observability";
 import { and, desc, eq, sql } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 
+import { recordCounter, recordTimer } from "@/lib/metrics";
+import { withLogging } from "@/lib/withLogging";
 import { TokenService } from "@/modules/auth/token.service";
 
 export const dynamic = "force-dynamic";
 
 const HELP_REQUEST_COOLDOWN_HOURS = 12;
 
-/**
- * POST /api/tutor/help/request
- * Allows a student to request live help for a specific topic.
- */
-export async function POST(req: NextRequest) {
+async function handler(req: NextRequest) {
+  const start = Date.now();
   try {
     const token = TokenService.getAccessToken(req, { scope: "user" });
     if (typeof token !== "string" || token.length === 0) {
@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
     }
     const payload = await TokenService.verifyAccessToken(token, false);
 
-    const body = await req.json();
+    const body = (await req.json().catch(() => ({}))) as { topicId?: unknown; priority?: unknown };
     const topicId: string = typeof body?.topicId === "string" ? body.topicId.trim() : "";
     const priorityRaw: string = typeof body?.priority === "string" ? body.priority.trim() : "low";
     const allowedPriority = ["low", "medium", "high"] as const;
@@ -32,7 +32,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "topicId is required" }, { status: 400 });
     }
 
-    // 1. Check if a request already exists/pending or was recently requested (Cooldown)
     const recentRequest = await db.query.tutorHelpRequests.findFirst({
       where: and(
         eq(tutorHelpRequests.userId, payload.userId),
@@ -53,7 +52,6 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // 2. Optional: Verify they have a recommendation for this topic (to prevent spam)
     const reco = await db.query.userRecommendations.findFirst({
       where: and(
         eq(userRecommendations.userId, payload.userId),
@@ -66,7 +64,6 @@ export async function POST(req: NextRequest) {
         ? (reco?.metadata as { accuracy?: number }).accuracy
         : undefined;
 
-    // 3. Create help request
     await db.insert(tutorHelpRequests).values({
       userId: payload.userId,
       topicId,
@@ -74,7 +71,6 @@ export async function POST(req: NextRequest) {
       priority: typeof accuracy === "number" && accuracy < 50 ? "high" : priority,
     });
 
-    // 4. Send notification to student
     const topic = await db.query.topics.findFirst({
         where: eq(topics.id, topicId),
         columns: { name: true }
@@ -88,9 +84,19 @@ export async function POST(req: NextRequest) {
       message: `We've received your request for help with ${topicName}. A tutor will review your progress soon.`,
     });
 
-    return NextResponse.json({ success: true, message: "Help request submitted successfully" });
+    const durationMs = Date.now() - start;
+    recordCounter(METRICS.TUTOR.HELP_REQUEST, 1, { outcome: 'success', topicId });
+    recordTimer(METRICS.TUTOR.HELP_REQUEST + '.duration', durationMs, { outcome: 'success' });
+
+    return NextResponse.json({ success: true, message: "Help request submitted successfully" }, {
+      headers: { 'X-Duration-Ms': durationMs.toString() }
+    });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Internal Server Error";
+    recordCounter(METRICS.TUTOR.HELP_REQUEST, 1, { outcome: 'failure' });
+    recordTimer(METRICS.TUTOR.HELP_REQUEST + '.duration', Date.now() - start, { outcome: 'failure' });
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
+
+export const POST = withLogging(handler, { component: 'tutor', operation: 'request_help' });

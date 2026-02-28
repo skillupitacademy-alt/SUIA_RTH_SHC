@@ -3,7 +3,7 @@ import { sql, eq } from 'drizzle-orm';
 import * as domainSchema from '../packages/db/src/schema/domain';
 
 async function verifyTrinity() {
-  console.log('🧪 VERIFYING REPORTING TRINITY (W/C/M)');
+  scriptLogger.info('🧪 VERIFYING REPORTING TRINITY (W/C/M)');
 
   // 1. Setup metadata-rich skill
   const [skill] = await db.insert(skills).values({
@@ -12,7 +12,7 @@ async function verifyTrinity() {
     category: 'cognitive',
     mappingType: 'practical'
   }).returning();
-  console.log(`✅ Created Skill: ${skill.name} [W: 10, C: cognitive, M: practical]`);
+  scriptLogger.info(`✅ Created Skill: ${skill.name} [W: 10, C: cognitive, M: practical]`);
 
   // 2. Setup Hierarchy
   const [domain] = await db.insert(domainSchema.domains).values({ name: 'TRINITY_DOMAIN_' + Date.now() }).returning();
@@ -30,17 +30,18 @@ async function verifyTrinity() {
     correctAnswer: 'Yes',
     status: 'active'
   }).returning();
-  console.log(`✅ Created Question with Mapping Type: ${question.mappingType}`);
+  scriptLogger.info(`✅ Created Question with Mapping Type: ${question.mappingType}`);
 
   // 4. Link Skill to Question
   await db.insert(questionSkills).values({
     questionId: question.id,
     skillId: skill.id
   });
-  console.log(`✅ Linked Skill to Question`);
+  scriptLogger.info(`✅ Linked Skill to Question`);
 
-  console.log('\n🚀 ALL SCHEMA/BACKEND DIMENSIONS VERIFIED');
+  scriptLogger.info('\n🚀 ALL SCHEMA/BACKEND DIMENSIONS VERIFIED');
   process.exit(0);
 }
 
-verifyTrinity().catch(console.error);
+verifyTrinity().catch(scriptLogger.error);
+

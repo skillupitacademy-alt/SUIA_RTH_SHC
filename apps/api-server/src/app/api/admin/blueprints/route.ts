@@ -1,7 +1,9 @@
+import { METRICS } from '@quiz/observability';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
-import { logger } from '@/lib/logger';
+import { recordCounter, recordTimer } from '@/lib/metrics';
+import { withLogging } from '@/lib/withLogging';
 import type { BlueprintInsert } from '@/modules/admin-engine/admin.engine';
 import { AdminEngine } from '@/modules/admin-engine/admin.engine';
 import { TokenService } from '@/modules/auth/token.service';
@@ -23,11 +25,10 @@ async function _verifyAdmin(_req: NextRequest) {
     }
 }
 
-const log = logger.child({ module: 'admin:blueprints' });
-
-export async function GET(_req: NextRequest) {
+async function getHandler(_req: NextRequest) {
+    const start = Date.now();
     const auth = await _verifyAdmin(_req);
-    if (auth._error !== undefined) return NextResponse.json({ _error: auth._error, scope: auth.scope }, { status: auth.status });
+    if ('_error' in auth && auth._error !== undefined) return NextResponse.json({ _error: auth._error, scope: auth.scope }, { status: auth.status });
 
     try {
         const searchParams = _req.nextUrl.searchParams;
@@ -36,17 +37,27 @@ export async function GET(_req: NextRequest) {
         const search = searchParams.get('search') ?? undefined;
 
         const data = await AdminEngine.getBlueprints(page, limit, { search });
-        return NextResponse.json(data);
+        
+        const durationMs = Date.now() - start;
+        recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.blueprints.get.success', 1);
+        recordTimer(METRICS.ADMIN.DASHBOARD_LOAD + '.blueprints.get.duration', durationMs, { outcome: 'success' });
+
+        return NextResponse.json(data, {
+            headers: { 'X-Duration-Ms': durationMs.toString() }
+        });
     } catch (_error: unknown) {
         const message = _error instanceof Error ? _error.message : 'Internal Server Error';
-        log.error({ error: message }, 'ADMIN_BLUEPRINTS_GET failed');
+        const durationMs = Date.now() - start;
+        recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.blueprints.get.failure', 1);
+        recordTimer(METRICS.ADMIN.DASHBOARD_LOAD + '.blueprints.get.duration', durationMs, { outcome: 'failure' });
         return NextResponse.json({ _error: message }, { status: 500 });
     }
 }
 
-export async function POST(_req: NextRequest) {
+async function postHandler(_req: NextRequest) {
+    const start = Date.now();
     const auth = await _verifyAdmin(_req);
-    if (auth._error !== undefined) return NextResponse.json({ _error: auth._error, scope: auth.scope }, { status: auth.status });
+    if ('_error' in auth && auth._error !== undefined) return NextResponse.json({ _error: auth._error, scope: auth.scope }, { status: auth.status });
 
     try {
         const rawBody = await _req.json() as BlueprintInsert;
@@ -55,12 +66,23 @@ export async function POST(_req: NextRequest) {
             return NextResponse.json({ _error: 'Invalid payload', issues: parsed.error.issues }, { status: 400 });
         }
 
-        // AdminEngine.createBlueprint(data) - only 1 arg
         const result = await AdminEngine.createBlueprint(parsed.data);
-        return NextResponse.json(result);
+        
+        const durationMs = Date.now() - start;
+        recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.blueprints.create.success', 1);
+        recordTimer(METRICS.ADMIN.DASHBOARD_LOAD + '.blueprints.create.duration', durationMs, { outcome: 'success' });
+
+        return NextResponse.json(result, {
+            headers: { 'X-Duration-Ms': durationMs.toString() }
+        });
     } catch (_error: unknown) {
         const message = _error instanceof Error ? _error.message : 'Internal Server Error';
-        log.error({ error: message }, 'ADMIN_BLUEPRINTS_POST failed');
+        const durationMs = Date.now() - start;
+        recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.blueprints.create.failure', 1);
+        recordTimer(METRICS.ADMIN.DASHBOARD_LOAD + '.blueprints.create.duration', durationMs, { outcome: 'failure' });
         return NextResponse.json({ _error: message }, { status: 500 });
     }
 }
+
+export const GET = withLogging(getHandler, { component: 'admin', operation: 'get_blueprints' });
+export const POST = withLogging(postHandler, { component: 'admin', operation: 'create_blueprint' });

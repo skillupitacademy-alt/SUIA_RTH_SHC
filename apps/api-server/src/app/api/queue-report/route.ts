@@ -1,10 +1,12 @@
 import { db, exams } from "@quiz/db";
+import { METRICS } from "@quiz/observability";
 import { eq } from "drizzle-orm";
 import { after, NextRequest, NextResponse } from "next/server";
 
 import { logger } from "@/lib/logger";
-import { metrics } from "@/lib/metrics";
+import { recordCounter, recordTimer } from "@/lib/metrics";
 import { uploadReport } from "@/lib/storage/upload-report";
+import { withLogging } from "@/lib/withLogging";
 import { TokenService } from "@/modules/auth/token.service";
 import { cacheService } from "@/modules/core/cache.service";
 import { ReportPdfService } from "@/modules/report-engine/report-pdf.service";
@@ -12,7 +14,7 @@ import { ReportRepository } from "@/modules/report-engine/report-repository";
 
 export const runtime = "nodejs";
 
-export async function POST(req: NextRequest) {
+async function handler(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const raw = await req.json().catch(() => ({} as unknown));
@@ -126,14 +128,14 @@ export async function POST(req: NextRequest) {
           await ReportPdfService.generate(attemptId);
         
         const renderDuration = Date.now() - startTime;
-        metrics.timing("report.render_duration", renderDuration, { attemptId });
+        recordTimer("reports.api.render.duration", renderDuration, { route: "/api/queue-report", outcome: "success" });
 
         // Stage 2: Uploading
         await ReportRepository.updateReportStatus(attemptId, "generating", "uploading");
         const uploadStart = Date.now();
         const fileRef = await uploadReport(buffer, userId, attemptId);
         const uploadDuration = Date.now() - uploadStart;
-        metrics.timing("report.upload_duration", uploadDuration, { attemptId });
+        recordTimer("reports.api.upload.duration", uploadDuration, { route: "/api/queue-report", outcome: "success" });
 
         await ReportRepository.updateReportSuccess(attemptId, {
           fileRef,
@@ -143,7 +145,8 @@ export async function POST(req: NextRequest) {
         });
 
         const totalDuration = Date.now() - startTime;
-        metrics.timing("report.total_duration", totalDuration, { attemptId, fileSizeKb });
+        recordTimer("reports.api.total.duration", totalDuration, { route: "/api/queue-report", outcome: "success", fileSizeKb });
+        recordCounter("reports.api.queue.count", 1, { route: "/api/queue-report", outcome: "success" });
 
         logger.info({ 
           attemptId, 
@@ -155,6 +158,7 @@ export async function POST(req: NextRequest) {
         }, "[QueueReport] PDF generation successful");
       } catch (err) {
         logger.error({ err, attemptId }, "[QueueReport] Background generation failed");
+        recordCounter("reports.api.queue.count", 1, { route: "/api/queue-report", outcome: "failure" });
         const msg = err instanceof Error ? err.message : "Unknown error";
         await ReportRepository.updateReportStatus(attemptId, "failed", msg).catch(() => {});
       }
@@ -165,6 +169,9 @@ export async function POST(req: NextRequest) {
   } catch (error: unknown) {
     logger.error({ err: error }, "[QueueReport] API Error");
     const message = error instanceof Error ? error.message : "Internal Server Error";
+    recordCounter(METRICS.REPORTS.FAILURES, 1, { reason: 'internal_error' });
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
+
+export const POST = withLogging(handler, { component: 'reports', operation: 'queue_report' });

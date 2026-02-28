@@ -3,6 +3,8 @@ import { and, eq, lt, or } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 
 import { logger } from "@/lib/logger";
+import { recordCounter } from "@/lib/metrics";
+import { withLogging } from "@/lib/withLogging";
 
 export const runtime = "nodejs";
 
@@ -11,7 +13,7 @@ export const runtime = "nodejs";
  * Operational cleanup endpoint to mark reports stuck in 'generating' for > 5 mins
  * as 'failed' so the user can retry.
  */
-export async function POST(req: NextRequest) {
+async function postHandler(req: NextRequest) {
   try {
     // 1. Security: Internal API Key Required
     const internalKeyHeader = req.headers.get("x-internal-key") ?? "";
@@ -52,6 +54,7 @@ export async function POST(req: NextRequest) {
       reports: stuckReports.map(r => r.attemptId)
     }, "[Sweeper] Stuck reports cleaned up");
 
+    recordCounter('system.api.sweep.success', 1);
     return NextResponse.json({
       success: true,
       cleanedUpCount: stuckReports.length,
@@ -59,12 +62,11 @@ export async function POST(req: NextRequest) {
     });
   } catch (error) {
     logger.error({ err: error }, "[Sweeper] API Error");
+    recordCounter('system.api.sweep.failure', 1, { reason: 'internal_error' });
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
 
-// Support GET for manual testing/easier cron triggering if needed 
-// (though POST is safer for state changes)
-export async function GET(req: NextRequest) {
-  return POST(req);
-}
+export const POST = withLogging(postHandler, { component: 'system', operation: 'sweep_stuck_reports' });
+
+export const GET = withLogging(postHandler, { component: 'system', operation: 'sweep_stuck_reports_trigger' });

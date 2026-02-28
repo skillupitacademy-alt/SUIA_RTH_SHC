@@ -3,6 +3,8 @@ import { inArray, sql } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 
 import { logger } from "@/lib/logger";
+import { recordCounter, recordTimer } from "@/lib/metrics";
+import { withLogging } from "@/lib/withLogging";
 import { verifyAdminOrInfraToken } from "@/modules/auth/admin-audience.util";
 
 // Define strict types locally to ensure safety without circular deps
@@ -29,7 +31,8 @@ interface SavePayload {
   skillId?: string;
 }
 
-export async function POST(req: NextRequest) {
+async function handler(req: NextRequest) {
+  const start = Date.now();
   try {
     // 1. Defense-in-Depth Admin Check (P0-SEC-002)
     try {
@@ -117,6 +120,8 @@ export async function POST(req: NextRequest) {
         }
     });
 
+    recordCounter('factory.api.save.success', 1, { topicId });
+    recordTimer('factory.api.save.duration', Date.now() - start, { outcome: 'success' });
     return NextResponse.json({
       success: true,
       insertedCount: checkQuestions.length,
@@ -124,9 +129,13 @@ export async function POST(req: NextRequest) {
     });
   } catch (error: unknown) {
     logger.error({ err: error }, "Factory Save Error");
+    recordCounter('factory.api.save.failure', 1, { reason: 'internal_error' });
+    recordTimer('factory.api.save.duration', Date.now() - start, { outcome: 'failure' });
     return NextResponse.json(
       { _error: error instanceof Error ? error.message : "Access denied" },
       { status: 403 }
     );
   }
 }
+
+export const POST = withLogging(handler, { component: 'factory', operation: 'save_questions' });

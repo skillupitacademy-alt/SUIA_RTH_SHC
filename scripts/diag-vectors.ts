@@ -23,11 +23,11 @@ async function run() {
     });
 
     if (!user) {
-      console.log('User not found');
+      scriptLogger.info('User not found');
       return;
     }
 
-    console.log(`--- Diagnostics for User: ${user.email} ---`);
+    scriptLogger.info(`--- Diagnostics for User: ${user.email} ---`);
 
     for (const vectorId of VECTOR_IDS) {
       // Find exam starting with this ID
@@ -39,7 +39,7 @@ async function run() {
       });
 
       if (!examMatch) {
-         console.log(`Vector ${vectorId}: Exam ID not found`);
+         scriptLogger.info(`Vector ${vectorId}: Exam ID not found`);
          continue;
       }
 
@@ -48,18 +48,19 @@ async function run() {
         where: eq(reports.attemptId, examMatch.id)
       });
 
-      console.log(`Vector ${vectorId} (Attempt: ${examMatch.id}):`);
-      console.log(`  Exam Status: ${examMatch.status}`);
-      console.log(`  Report Status: ${report ? report.status : 'Not Queued'}`);
+      scriptLogger.info(`Vector ${vectorId} (Attempt: ${examMatch.id}):`);
+      scriptLogger.info(`  Exam Status: ${examMatch.status}`);
+      scriptLogger.info(`  Report Status: ${report ? report.status : 'Not Queued'}`);
       if (report?.errorStage) {
-          console.log(`  Error: ${report.errorStage}`);
+          scriptLogger.info(`  Error: ${report.errorStage}`);
       }
-      console.log('---');
+      scriptLogger.info('---');
     }
   } catch (e) {
-    console.error(e);
+    scriptLogger.error(e);
   }
   process.exit(0);
 }
 
 run();
+

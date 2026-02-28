@@ -2,9 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { Brain, ChevronDown, ChevronUp, ExternalLink, Sparkles, Zap, AlertCircle, FileText, MessagesSquare, CheckCircle2 } from "lucide-react";
+import { recordCounter } from "@quiz/observability";
 import { cn } from "@/lib/utils";
 import { TopicProgressChart } from "./TopicProgressChart";
 import { NotesViewer } from "./NotesViewer";
+import { clientLogger } from "@/utils/clientLogger";
 
 interface Recommendation {
     topicId: string;
@@ -20,6 +22,7 @@ interface Recommendation {
 export function TutorInsightCard() {
     const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
     const [expandedTopic, setExpandedTopic] = useState<string | null>(null);
     const [viewingNotes, setViewingNotes] = useState<{ id: string; name: string } | null>(null);
     const [requestingHelp, setRequestingHelp] = useState<string | null>(null);
@@ -28,13 +31,24 @@ export function TutorInsightCard() {
     useEffect(() => {
         async function fetchRecommendations() {
             try {
-                const res = await fetch("/api/recommendations/explain");
-                if (res.ok) {
-                    const data = await res.json();
-                    setRecommendations(data);
+                const res = await fetch("/api/recommendations/explain", { credentials: "include" });
+                if (!res.ok) {
+                    const data = await res.json().catch(() => ({}));
+                    throw new Error(data.error ?? `Request failed (${res.status})`);
                 }
+                const data = await res.json();
+                setRecommendations(data);
+                if (!data || data.length === 0) {
+                    recordCounter('web.ui.tutor.recommendations.empty', 1);
+                } else {
+                    recordCounter('web.ui.tutor.recommendations.load', 1);
+                }
+                setError(null);
             } catch (err) {
-                console.error("Failed to fetch recommendations", err);
+                const msg = err instanceof Error ? err.message : "Failed to load tutor insights";
+                setError(msg);
+                clientLogger.error("Failed to fetch recommendations", { error: msg });
+                recordCounter('web.ui.tutor.recommendations.fetch_error', 1);
             } finally {
                 setLoading(false);
             }
@@ -44,21 +58,32 @@ export function TutorInsightCard() {
 
     const toggleExpand = (topicId: string) => {
         setExpandedTopic(expandedTopic === topicId ? null : topicId);
+        if (expandedTopic !== topicId) {
+            recordCounter('web.ui.tutor.recommendation.expand', 1, { topicId });
+        }
     };
 
     const handleRequestHelp = async (topicId: string) => {
         setRequestingHelp(topicId);
+        recordCounter('web.ui.tutor.help_request.click', 1, { topicId });
         try {
             const res = await fetch("/api/tutor/help/request", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ topicId }),
+                credentials: "include",
             });
-            if (res.ok) {
-                setRequestedTopics(prev => new Set(prev).add(topicId));
+            if (!res.ok) {
+                const data = await res.json().catch(() => ({}));
+                throw new Error(data.error ?? `Help request failed (${res.status})`);
             }
+            recordCounter('web.ui.tutor.help_request.success', 1, { topicId });
+            setRequestedTopics(prev => new Set(prev).add(topicId));
         } catch (err) {
-            console.error("Failed to request help", err);
+            const msg = err instanceof Error ? err.message : "Unable to request help right now";
+            clientLogger.error("Failed to request help", { error: msg });
+            recordCounter('web.ui.tutor.help_request.error', 1, { topicId });
+            setError(msg);
         } finally {
             setRequestingHelp(null);
         }
@@ -80,6 +105,11 @@ export function TutorInsightCard() {
 
     return (
         <>
+            {error && (
+                <div className="mb-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
+                    {error}
+                </div>
+            )}
             <div className="bg-white border border-slate-200 rounded-[2rem] p-8 shadow-sm hover:shadow-xl hover:border-orange-500/20 transition-all duration-500 overflow-hidden relative group">
                 {/* Decorative Glow */}
                 <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/5 rounded-full blur-3xl -mr-16 -mt-16 group-hover:bg-orange-500/10 transition-colors duration-500" />

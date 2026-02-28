@@ -1,13 +1,15 @@
+import { METRICS } from "@quiz/observability";
 import { type NextRequest, NextResponse } from "next/server";
 
-import { sql } from "@/lib/db";
+import { sqlReplica } from "@/lib/db";
+import { recordCounter, recordTimer } from "@/lib/metrics";
 import { redis } from "@/lib/redis";
+import { withLogging } from "@/lib/withLogging";
 import { CACHE_KEYS, CACHE_TTL } from "@/modules/analytics/analytics.constants";
 import { TokenService } from "@/modules/auth/token.service";
+import { ResilienceService } from "@/modules/core/resilience.service";
 
 export const dynamic = "force-dynamic";
-
-// Standard TTL used via ANALYTICS_CACHE.ADMIN_GLOBAL (3600s)
 
 interface TopicSkillRow {
   topic: string;
@@ -15,9 +17,13 @@ interface TopicSkillRow {
   question_count: number;
 }
 
-export async function GET(req: NextRequest) {
+async function handler(req: NextRequest) {
+  const start = Date.now();
   try {
-    // 1. Identity & Role Verification (RBAC)
+    if (!(await ResilienceService.isFeatureEnabled('analytics'))) {
+      return NextResponse.json(ResilienceService.getBusyPayload('analytics'), { status: 503 });
+    }
+
     const token = TokenService.getAccessToken(req, { scope: "admin" });
     if (token === undefined || token === null || token === "") {
       return NextResponse.json({ error: "Authentication required" }, { status: 401 });
@@ -25,7 +31,6 @@ export async function GET(req: NextRequest) {
 
     const payload = await TokenService.verifyAccessToken(token, true);
     
-    // Explicitly check role (TokenPayload has roles string array)
     const hasAdminRole = Array.isArray(payload.roles) && payload.roles.some(
       (role: string) => role === "ADMIN" || role === "SUPER_ADMIN" || role === "admin"
     );
@@ -34,29 +39,21 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
     }
 
-    // 2. Try Redis Cache
     try {
       const cachedData = await redis.get(CACHE_KEYS.ANALYTICS.ADMIN("topic-skill-heatmap"));
       if (cachedData !== null) {
         return NextResponse.json(cachedData);
       }
-    } catch (redisError) {
-      console.error("[Redis Error]:", redisError);
+    } catch (__redisError) {
+      // Ignored
     }
 
-    // 3. Query Materialized View
-    // Ensure we only get rows with data to keep the matrix sparse if possible, 
-    // or dense if we want full coverage. For heatmap, sparse is usually fine.
-    const rows = (await sql`
+    const rows = (await sqlReplica`
       SELECT topic, skill, question_count
       FROM mv_topic_skill_matrix
       ORDER BY topic ASC, skill ASC
     `) as TopicSkillRow[];
-
-    // 4. Transform for ECharts Heatmap
-    // ECharts expects: { x: categories, y: categories, data: [[xIndex, yIndex, value], ...] }
     
-    // Extract unique sorted topics (X-axis) and skills (Y-axis)
     const topics = Array.from(new Set(rows.map(r => r.topic))).sort();
     const skills = Array.from(new Set(rows.map(r => r.skill))).sort();
 
@@ -64,9 +61,9 @@ export async function GET(req: NextRequest) {
     const skillMap = new Map(skills.map((s, i) => [s, i]));
 
     const matrix: [number, number, number][] = rows.map(r => [
-      topicMap.get(r.topic) ?? 0, // X-axis index
-      skillMap.get(r.skill) ?? 0, // Y-axis index
-      Number(r.question_count)    // Value
+      topicMap.get(r.topic) ?? 0,
+      skillMap.get(r.skill) ?? 0,
+      Number(r.question_count)
     ]);
 
     const result = {
@@ -75,7 +72,6 @@ export async function GET(req: NextRequest) {
       matrix
     };
 
-    // 5. Cache (Fire-and-forget)
     try {
       if (rows.length > 0) {
         await redis.set(
@@ -84,17 +80,26 @@ export async function GET(req: NextRequest) {
           { ex: CACHE_TTL.ADMIN_GLOBAL }
         );
       }
-    } catch (redisError) {
-      console.error("[Redis Cache Error]:", redisError);
+    } catch (__redisError) {
+      // Ignored
     }
 
-    return NextResponse.json(result);
+    const durationMs = Date.now() - start;
+    recordTimer(METRICS.ADMIN.DASHBOARD_LOAD + '.topic_skill_heatmap', durationMs, { outcome: 'success' });
+    recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.topic_skill_heatmap.count', 1, { outcome: 'success' });
+    return NextResponse.json(result, {
+      headers: { 'X-Duration-Ms': durationMs.toString() }
+    });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Internal Server Error";
-    console.error("[Admin Heatmap Error]:", error);
+    const durationMs = Date.now() - start;
+    recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.topic_skill_heatmap.count', 1, { outcome: 'failure' });
+    recordTimer(METRICS.ADMIN.DASHBOARD_LOAD + '.topic_skill_heatmap.duration', durationMs, { outcome: 'failure' });
     return NextResponse.json(
       { error: "Failed to fetch topic-skill heatmap", message },
       { status: 500 }
     );
   }
 }
+
+export const GET = withLogging(handler, { component: 'analytics', operation: 'get_topic_skill_heatmap' });

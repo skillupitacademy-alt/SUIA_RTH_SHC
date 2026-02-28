@@ -1,7 +1,7 @@
 'use client';
-/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { apiClient } from '@quiz/api-client';
+import { recordClientMetric } from '@quiz/observability';
 import { ZLoader } from '@quiz/ui';
 import { Activity, CheckCircle2, Clock, Globe, XCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -10,19 +10,43 @@ import { ZTooltip } from '@/components/ui/ZTooltip';
 import { clientLogger } from '@/utils/clientLogger';
 
 export function ExamActivityBoard() {
-    const [stats, setStats] = useState<any>(null);
+    type ExamActivity = {
+        started?: number;
+        completed?: number;
+        abandoned?: number;
+        avgCompletionTimeMinutes?: number;
+        byDomain?: { name?: string; count?: number }[];
+    };
+    const [stats, setStats] = useState<ExamActivity | null>(null);
+    const [error, setError] = useState<string | null>(null);
+    const hasError = typeof error === 'string' && error.length > 0;
 
     useEffect(() => {
         const fetch = async () => {
             try {
+                setError(null);
                 const data = await apiClient.admin.getExamActivity();
-                setStats(data);
+                const typed = data as ExamActivity | null;
+                setStats(typed);
+                if (typed === null || Object.keys(typed).length === 0) {
+                    void recordClientMetric('admin.ui.exams.empty', 1);
+                }
             } catch (err) {
                 clientLogger.error('Failed to fetch exam activity', { error: err instanceof Error ? err.message : 'unknown' });
+                setError('Unable to load exam activity metrics.');
+                void recordClientMetric('admin.ui.exams.fetch_error', 1);
             }
         };
         void fetch();
     }, []);
+
+    if (hasError) {
+        return (
+            <div className="p-12 flex items-center justify-center bg-white border border-rose-100 rounded-[2rem] text-rose-600 text-sm font-semibold">
+                {error}
+            </div>
+        );
+    }
 
     if (stats === null) {
         return (
@@ -93,7 +117,7 @@ export function ExamActivityBoard() {
                     Activity by Domain
                 </h4>
                 <div className="space-y-3">
-                    {Array.isArray(stats.byDomain) && stats.byDomain.map((d: any) => (
+                    {Array.isArray(stats.byDomain) && stats.byDomain.map((d) => (
                         <div key={d.name} className="flex items-center justify-between p-4 rounded-2xl bg-slate-50/50 border border-slate-100 hover:border-slate-200 transition-colors">
                             <div className="flex items-center gap-3">
                                 <div className="w-1.5 h-1.5 rounded-full bg-slate-300" />

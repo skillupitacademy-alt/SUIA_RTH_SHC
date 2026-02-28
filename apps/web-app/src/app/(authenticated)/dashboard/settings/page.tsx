@@ -1,6 +1,7 @@
 'use client';
 
 import { useAuthStore } from "@/store/auth-store";
+import { recordCounter } from "@quiz/observability";
 import { User, Mail, Shield, LogOut, CheckCircle2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
@@ -9,6 +10,7 @@ export default function SettingsPage() {
     const router = useRouter();
 
     const handleLogout = () => {
+        recordCounter('web.ui.settings.logout', 1);
         logout();
         router.push('/');
     };

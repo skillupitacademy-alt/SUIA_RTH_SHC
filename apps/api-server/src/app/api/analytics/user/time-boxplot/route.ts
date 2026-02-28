@@ -1,7 +1,10 @@
+import { METRICS } from "@quiz/observability";
 import { type NextRequest, NextResponse } from "next/server";
 
-import { sql } from "@/lib/db";
+import { sqlReplica } from "@/lib/db";
+import { recordCounter, recordTimer } from "@/lib/metrics";
 import { redis } from "@/lib/redis";
+import { withLogging } from "@/lib/withLogging";
 import { CACHE_KEYS, CACHE_TTL } from "@/modules/analytics/analytics.constants";
 import { TokenService } from "@/modules/auth/token.service";
 
@@ -15,9 +18,9 @@ interface BoxplotStats {
   max: number;
 }
 
-export async function GET(req: NextRequest) {
+async function handler(req: NextRequest) {
+  const start = Date.now();
   try {
-    // 1. Identity Verification
     const token = TokenService.getAccessToken(req, { scope: "user" });
     if (token === undefined || token === null || token === "") {
       return NextResponse.json({ error: "Authentication required" }, { status: 401 });
@@ -28,19 +31,16 @@ export async function GET(req: NextRequest) {
 
     const CACHE_KEY = CACHE_KEYS.ANALYTICS.USER(userId, "time-boxplot");
 
-    // 2. Redis Cache
     try {
       const cachedData = await redis.get(CACHE_KEY);
       if (cachedData !== null) {
         return NextResponse.json(cachedData);
       }
-    } catch (redisError) {
-      console.error("[Redis Error]:", redisError);
+    } catch (__redisError) {
+      // Ignored
     }
 
-    // 3. SQL Query for Percentiles
-    // Using timeTakenSeconds as specified, but with a fallback to timeSpentSeconds if data exists
-    const [stats] = (await sql`
+    const [stats] = (await sqlReplica`
       WITH user_times AS (
         SELECT
           COALESCE(
@@ -62,7 +62,6 @@ export async function GET(req: NextRequest) {
       WHERE time_sec IS NOT NULL;
     `) as [BoxplotStats | undefined];
 
-    // 4. Transform for ECharts
     const result = {
       data: stats && stats.min !== null
         ? [
@@ -75,22 +74,30 @@ export async function GET(req: NextRequest) {
         : []
     };
 
-    // 5. Cache result
     try {
       if (result.data.length > 0) {
         await redis.set(CACHE_KEY, result, { ex: CACHE_TTL.USER_PERSONAL });
       }
-    } catch (redisError) {
-      console.error("[Redis Cache Error]:", redisError);
+    } catch (__redisError) {
+      // Ignored
     }
 
-    return NextResponse.json(result);
+    const durationMs = Date.now() - start;
+    recordCounter(METRICS.ANALYTICS.TIME_BOXPLOT, 1, { outcome: 'success' });
+    recordTimer(METRICS.ANALYTICS.TIME_BOXPLOT + '.duration', durationMs, { outcome: 'success' });
+    return NextResponse.json(result, {
+      headers: { 'X-Duration-Ms': durationMs.toString() }
+    });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Internal Server Error";
-    console.error("[Time Boxplot API Error]:", error);
+    const durationMs = Date.now() - start;
+    recordCounter(METRICS.ANALYTICS.TIME_BOXPLOT, 1, { outcome: 'failure' });
+    recordTimer(METRICS.ANALYTICS.TIME_BOXPLOT + '.duration', durationMs, { outcome: 'failure' });
     return NextResponse.json(
       { error: "Failed to fetch time distribution", message },
       { status: 500 }
     );
   }
 }
+
+export const GET = withLogging(handler, { component: 'analytics', operation: 'get_time_boxplot' });

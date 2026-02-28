@@ -3,7 +3,7 @@ import { sql } from "drizzle-orm";
 
 import { logger } from "@/lib/logger";
 
-import { cacheService } from "../core/cache.service";
+import { cacheService, type CacheValue } from "../core/cache.service";
 
 export class PerformanceService {
   private static log = logger.child({ module: 'performance-service' });
@@ -27,7 +27,7 @@ export class PerformanceService {
     return `attempt:${examId}:core:v4`;
   }
 
-  static async getCachedReport<T>(examId: string): Promise<T | null> {
+  static async getCachedReport<T extends CacheValue>(examId: string): Promise<T | null> {
     try {
       return await cacheService.get<T>(this.getCacheKey(examId));
     } catch (err) {
@@ -36,7 +36,7 @@ export class PerformanceService {
     }
   }
 
-  static async cacheReport<T>(examId: string, data: T) {
+  static async cacheReport<T extends CacheValue>(examId: string, data: T) {
     try {
       // Cache for 24 hours (86400 seconds * 1000ms)
       await cacheService.set(this.getCacheKey(examId), data, 86400 * 1000);

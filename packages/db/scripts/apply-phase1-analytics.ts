@@ -1,4 +1,3 @@
-
 import { Pool } from '@neondatabase/serverless';
 import * as dotenv from 'dotenv';
 import path from 'path';
@@ -9,18 +8,18 @@ dotenv.config({ path: path.join(__dirname, '../.env') });
 const DATABASE_URL = process.env.DATABASE_URL;
 
 if (!DATABASE_URL) {
-  console.error('❌ DATABASE_URL environment variable is not set');
+  console.error('ERROR: DATABASE_URL environment variable is not set');
   process.exit(1);
 }
 
 async function runPhase1() {
   const pool = new Pool({ connectionString: DATABASE_URL });
-  
-  console.log('🚀 Starting Phase 1 — Database Analytics Layer');
+
+  console.log('Starting Phase 1 - Database Analytics Layer');
 
   const steps = [
     {
-      name: 'Step 2 — Prerequisite Indexes',
+      name: 'Step 2 - Prerequisite Indexes',
       sql: [
         'CREATE INDEX IF NOT EXISTS idx_exam_questions_question_id ON exam_questions(question_id);',
         'CREATE INDEX IF NOT EXISTS idx_exam_questions_exam_id ON exam_questions(exam_id);',
@@ -30,7 +29,7 @@ async function runPhase1() {
       ]
     },
     {
-      name: 'Step 3 — Phase-1A Materialized Views',
+      name: 'Step 3 - Phase-1A Materialized Views',
       sql: [
         `CREATE MATERIALIZED VIEW IF NOT EXISTS mv_score_distribution AS
         SELECT
@@ -90,7 +89,7 @@ async function runPhase1() {
       ]
     },
     {
-      name: 'Step 4 — Phase-1B Materialized Views',
+      name: 'Step 4 - Phase-1B Materialized Views',
       sql: [
         `CREATE MATERIALIZED VIEW IF NOT EXISTS mv_question_hierarchy AS
         SELECT
@@ -184,7 +183,7 @@ async function runPhase1() {
       ]
     },
     {
-      name: 'Step 5 — Create UNIQUE INDEXES',
+      name: 'Step 5 - Create UNIQUE INDEXES',
       sql: [
         'CREATE UNIQUE INDEX IF NOT EXISTS mv_question_hierarchy_pk ON mv_question_hierarchy(domain_id, subject_id, topic_id, subtopic_id);',
         'CREATE UNIQUE INDEX IF NOT EXISTS mv_topic_skill_matrix_pk ON mv_topic_skill_matrix(topic_id, skill_id);',
@@ -199,7 +198,7 @@ async function runPhase1() {
       ]
     },
     {
-      name: 'Step 6 — Initial Refresh',
+      name: 'Step 6 - Initial Refresh',
       sql: [
         'REFRESH MATERIALIZED VIEW mv_score_distribution;',
         'REFRESH MATERIALIZED VIEW mv_time_boxplot;',
@@ -219,23 +218,22 @@ async function runPhase1() {
 
   try {
     for (const step of steps) {
-      console.log(\`\\n--- \${step.name} ---\`);
+      console.log(`\n--- ${step.name} ---`);
       for (const query of step.sql) {
         try {
           await pool.query(query);
-          console.log(\`✅ Executed query successfuly\`);
+          console.log('OK Executed query successfully');
         } catch (err: any) {
-          if (err.message.includes('already exists')) {
-            console.log(\`ℹ️ \${err.message}\`);
+          if (typeof err.message === 'string' && err.message.includes('already exists')) {
+            console.log(`INFO ${err.message}`);
           } else {
-            console.error(\`❌ Error executing query: \${err.message}\`);
-            // Continue if unique index already exists (some versions of PG don't support IF NOT EXISTS for UNIQUE INDEX on MV as easily or I might have missed something)
+            console.error(`ERROR executing query: ${err.message}`);
           }
         }
       }
     }
 
-    console.log('\n--- Step 7 — Validation Queries ---');
+    console.log('\n--- Step 7 - Validation Queries ---');
     const validations = [
       { name: 'Score Distribution', query: 'SELECT * FROM mv_score_distribution LIMIT 5;' },
       { name: 'Question Hierarchy', query: 'SELECT * FROM mv_question_hierarchy LIMIT 5;' },
@@ -245,14 +243,14 @@ async function runPhase1() {
 
     for (const validation of validations) {
       const res = await pool.query(validation.query);
-      console.log(\`\\n📊 \${validation.name}:\`);
+      console.log(`\nVALIDATION: ${validation.name}:`);
       console.table(res.rows);
     }
 
-    console.log('\n✅ Phase 1 completed successfully.');
+    console.log('\nPhase 1 completed successfully.');
 
   } catch (error: any) {
-    console.error('\n❌ Phase 1 execution failed:', error.message);
+    console.error('\nERROR: Phase 1 execution failed:', error?.message ?? error);
   } finally {
     await pool.end();
   }

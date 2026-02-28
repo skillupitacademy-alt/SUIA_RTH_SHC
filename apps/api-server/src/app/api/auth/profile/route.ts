@@ -3,6 +3,7 @@ import { eq } from 'drizzle-orm';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
+import { withLogging } from '@/lib/withLogging';
 import { TokenService } from '@/modules/auth/token.service';
 
 export const dynamic = 'force-dynamic';
@@ -14,7 +15,7 @@ interface ProfileUpdateBody {
   bio?: string;
 }
 
-export async function GET(_req: NextRequest) {
+async function getHandler(_req: NextRequest) {
   try {
     const _token = TokenService.getAccessToken(_req, { scope: 'user' });
     if (typeof _token !== 'string' || _token.trim() === '') {
@@ -37,13 +38,13 @@ export async function GET(_req: NextRequest) {
   }
 }
 
-export async function PATCH(_req: NextRequest) {
+async function patchHandler(_req: NextRequest) {
   try {
     const _token = TokenService.getAccessToken(_req, { scope: 'user' });
     if (_token === undefined || _token === null || _token === '') return NextResponse.json({ _error: 'Unauthorized', scope: 'user' }, { status: 401 });
 
     const _payload = await TokenService.verifyAccessToken(_token, false);
-    const body = (await _req.json()) as ProfileUpdateBody;
+    const body = await _req.json().catch(() => ({})) as ProfileUpdateBody;
 
     const [updated] = await db.update(userProfiles)
       .set({ ...body, updatedAt: new Date() })
@@ -54,10 +55,9 @@ export async function PATCH(_req: NextRequest) {
         return NextResponse.json(updated);
     }
 
-    // Fallback: Create profile if it doesn't exist
     const [inserted] = await db.insert(userProfiles).values({
         userId: _payload.userId,
-        name: 'User', // Default name
+        name: 'User', 
         ...body
     }).returning();
 
@@ -68,7 +68,6 @@ export async function PATCH(_req: NextRequest) {
   }
 }
 
-// Support POST as an alias for PATCH for environments that block PATCH
-export async function POST(_req: NextRequest) {
-  return PATCH(_req);
-}
+export const GET = withLogging(getHandler, { component: 'auth', operation: 'get_profile' });
+export const PATCH = withLogging(patchHandler, { component: 'auth', operation: 'update_profile' });
+export const POST = withLogging(patchHandler, { component: 'auth', operation: 'update_profile_alias' });

@@ -3,7 +3,7 @@
 import { apiClient } from '@quiz/api-client';
 import { ZLoader, ZPagination } from '@quiz/ui';
 import { BookOpen, Check, Plus, Trash2, X } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { HierarchyFactoryWizard } from '@/components/content/HierarchyFactoryWizard';
 import { SelectField } from '@/components/entry/SelectionFields';
@@ -21,16 +21,18 @@ import { useDomains } from '@/hooks/useAdminHierarchy';
 import { cn } from '@/lib/utils';
 import { clientLogger } from '@/utils/clientLogger';
 
+import type { Domain } from '../../types/domain';
 import { HierarchySearchBar } from './HierarchySearchBar';
 import { SubjectReviewCard } from './SubjectReviewCard';
-
-interface SubjectItem {
+type SubjectItem = {
     id: string;
     name: string;
     domainId: string;
-    description?: string;
-    status?: string;
+    description?: string | null;
+    status?: 'active' | 'inactive' | 'draft';
     order?: number;
+    orderIndex?: number;
+    domain?: { name?: string; id?: string; domainId?: string };
     stats?: {
         total: number;
         isReady: boolean;
@@ -38,7 +40,9 @@ interface SubjectItem {
         intermediate: number;
         expert: number;
     };
-}
+    createdAt?: string;
+    updatedAt?: string;
+};
 
 export function SubjectTable() {
     const [data, setData] = useState<SubjectItem[]>([]);
@@ -79,12 +83,20 @@ export function SubjectTable() {
         return () => clearTimeout(timer);
     }, [searchQuery]);
 
-    const fetchSubjects = async () => {
+    const fetchSubjects = useCallback(async () => {
         setIsLoading(true);
         try {
             const response = await apiClient.admin.getSubjects(page, pageSize, debouncedSearch || undefined);
-            const mapped = response.data.map((s) => ({
-                ...s,
+            const mapped: SubjectItem[] = (Array.isArray(response.data) ? response.data : []).map((s) => ({
+                id: String(s.id),
+                name: s.name ?? '',
+                domainId: s.domainId ?? '',
+                description: s.description ?? null,
+                status: ((s as { status?: SubjectItem['status'] }).status) ?? 'active',
+                order: (s as { order?: number }).order ?? (s as { orderIndex?: number }).orderIndex ?? 0,
+                orderIndex: (s as { orderIndex?: number }).orderIndex,
+                createdAt: (s as { createdAt?: string }).createdAt,
+                domain: (s as { domain?: { name?: string } }).domain,
                 stats: {
                     total: 0,
                     isReady: false,
@@ -93,7 +105,7 @@ export function SubjectTable() {
                     expert: 0,
                     ...(s as { stats?: SubjectItem['stats'] }).stats
                 }
-            })) as SubjectItem[];
+            }));
             setData(mapped);
             setTotalPages(response.totalPages);
             setTotalCount(response.total ?? response.data.length);
@@ -104,11 +116,11 @@ export function SubjectTable() {
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [debouncedSearch, page, pageSize]);
 
     useEffect(() => {
         void fetchSubjects();
-    }, [page, pageSize, debouncedSearch]); // eslint-disable-line react-hooks/exhaustive-deps
+    }, [fetchSubjects]);
 
     // --- SELECTION LOGIC ---
     const handleSelect = (id: string, selected: boolean) => {
@@ -130,7 +142,7 @@ export function SubjectTable() {
         }
     };
 
-    const handleBatchDelete = async () => { // Make sure this is called by the UI
+    const handleBatchDelete = useCallback(async () => {
         if (selectedIds.size === 0) return;
 
         try {
@@ -143,7 +155,7 @@ export function SubjectTable() {
             clientLogger.error('Batch delete subjects failed', { error: error instanceof Error ? error.message : 'unknown' });
             setErrorMessage('Batch Deletion Failed: Some subjects could not be removed.');
         }
-    };
+    }, [fetchSubjects, selectedIds]);
 
     // --- FORM LOGIC ---
     const handleOpenForm = (subject: SubjectItem | null = null) => {
@@ -161,22 +173,11 @@ export function SubjectTable() {
             setCurrentSubject(null);
             setFormData({
                 name: '',
-                domainId: domains[0]?.id || '',
+                domainId: '',
                 description: '',
                 status: 'active',
                 order: 0
             });
-            setIsFactoryOpen(true); // Default to Factory for new subjects? Or form? Let's check original code. 
-            // Original code opened Factory for new subjects logic. 
-            // "handleOpenForm" logic in original: if (!subject) setIsFactoryOpen(true). 
-            // I should respect that or unify. Let's direct "Add Subject" to factory wizard as per previous behavior, 
-            // OR keep the manual form available. 
-            // The "Add Subject" button in original invoked factory wizard? No, lines 331: onClick={() => handleOpenForm()} -> line 86 setIsFactoryOpen(true).
-            // So YES, the original behavior for "Add Subject" was opening the Wizard.
-            // But wait, line 149 shows "Standard Edit Form".
-            // Let's allow manual creation if they want, but original preferred wizard. 
-            // I will default "Add Subject" to OPENING THE FORM manually in this improved version, 
-            // but keep the Factory button available separately like in TopicTable.
             setIsFormOpen(true);
         }
     };
@@ -323,7 +324,7 @@ export function SubjectTable() {
                                         <SelectField
                                             label="Parent Domain"
                                             value={formData.domainId}
-                                            options={(domains ?? []).map((d: { id: string, name: string }) => ({ id: d.id, name: d.name }))}
+                                            options={(domains ?? []).map((d: Domain) => ({ id: d.id, name: d.name }))}
                                             loading={domainsHook.loading}
                                             onChange={(val: string) => setFormData({ ...formData, domainId: val })}
                                             placeholder="Select Domain"
@@ -493,17 +494,36 @@ export function SubjectTable() {
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 gap-4">
-                        {data.map((subject, index) => (
-                            <SubjectReviewCard
-                                key={subject.id}
-                                subject={subject}
-                                index={index + (page - 1) * 20}
-                                isSelected={selectedIds.has(subject.id)}
-                                onSelect={handleSelect}
-                                onDeleteRequest={(d) => { setCurrentSubject(d); setIsDeleteOpen(true); }}
-                                onEditRequest={(d) => handleOpenForm(d)}
-                            />
-                        ))}
+                        {data.map((subject, index) => {
+                            const normalized = {
+                                id: subject.id,
+                                name: subject.name,
+                                domainId: subject.domainId,
+                                status: subject.status ?? 'active',
+                                description: subject.description ?? undefined,
+                                createdAt: subject.createdAt,
+                                domain: subject.domain
+                            };
+                            return (
+                                <SubjectReviewCard
+                                    key={subject.id}
+                                    subject={normalized}
+                                    index={index + (page - 1) * pageSize}
+                                    isSelected={selectedIds.has(subject.id)}
+                                    onSelect={handleSelect}
+                                    onDeleteRequest={(d) => { setCurrentSubject({
+                                        ...subject,
+                                        status: (d.status as SubjectItem['status']) ?? 'active',
+                                        description: d.description ?? null
+                                    }); setIsDeleteOpen(true); }}
+                                    onEditRequest={(d) => handleOpenForm({
+                                        ...subject,
+                                        status: (d.status as SubjectItem['status']) ?? 'active',
+                                        description: d.description ?? null
+                                    })}
+                                />
+                            );
+                        })}
                         {data.length === 0 && (
                             <div className="text-center py-20 opacity-50">
                                 <BookOpen className="w-16 h-16 mx-auto mb-4 text-slate-400" />

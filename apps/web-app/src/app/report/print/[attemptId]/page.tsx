@@ -74,7 +74,6 @@ export default function PrintReportPage(props: {
         // Data Injection Pattern: Check if data was injected by the PDF service
         const injectedData = (window as unknown as { __REPORT_DATA__?: ExamReport }).__REPORT_DATA__;
         if (injectedData) {
-            console.log("[PrintPage] Consuming injected report data");
             setData(injectedData);
             return;
         }

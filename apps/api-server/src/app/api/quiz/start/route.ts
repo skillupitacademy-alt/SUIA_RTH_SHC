@@ -1,14 +1,18 @@
+import { METRICS } from '@quiz/observability';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
 import { logger } from '@/lib/logger';
+import { recordCounter, recordTimer } from '@/lib/metrics';
+import { withLogging } from '@/lib/withLogging';
 import { TokenService } from '@/modules/auth/token.service';
 import { ExamEngine } from '@/modules/exam-engine/exam.engine';
 import { startQuizSchema } from '@/schemas/quiz.schemas';
 
 export const dynamic = 'force-dynamic';
 
-export async function POST(_req: NextRequest) {
+async function handler(_req: NextRequest) {
+  const startTime = Date.now();
   try {
     const _token = TokenService.getAccessToken(_req, { scope: 'user' });
     if (typeof _token !== 'string' || _token.trim() === '') {
@@ -37,13 +41,27 @@ export async function POST(_req: NextRequest) {
       config
     );
 
-    return NextResponse.json(examData);
+    const durationMs = Date.now() - startTime;
+    recordCounter(METRICS.EXAM.START, 1, { outcome: 'success' });
+    recordTimer(METRICS.EXAM.START + '.duration', durationMs, { outcome: 'success' });
+
+    return NextResponse.json(examData, {
+      headers: { 'X-Duration-Ms': durationMs.toString() }
+    });
   } catch (_error: unknown) {
     const message = _error instanceof Error ? _error.message : 'Bad request';
     logger.error({ err: _error, route: '/api/quiz/start' }, '[QUIZ_START] Error');
-    return NextResponse.json({ _error: message }, { status: 400 });
+    const durationMs = Date.now() - startTime;
+    recordCounter(METRICS.EXAM.START, 1, { outcome: 'failure' });
+    recordTimer(METRICS.EXAM.START + '.duration', durationMs, { outcome: 'failure' });
+    return NextResponse.json({ _error: message }, { 
+      status: 400,
+      headers: { 'X-Duration-Ms': durationMs.toString() }
+    });
   }
 }
+
+export const POST = withLogging(handler, { component: 'quiz', operation: 'start_exam' });
 
 type StartQuizConfig = {
     questionCount?: number;

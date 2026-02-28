@@ -1,6 +1,7 @@
 'use client';
 
 import { apiClient } from '@quiz/api-client';
+import { recordClientMetric } from '@quiz/observability';
 import { ZLoader } from '@quiz/ui';
 import { BarChart2, Target } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -52,25 +53,45 @@ export function PerformanceAnalyticsBoard() {
     const [growth, setGrowth] = useState<GrowthMetric[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [range, setRange] = useState<TimeRange>('7d');
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         const fetch = async () => {
             setIsLoading(true);
             try {
+                setError(null);
                 const [perfData, growthData] = await Promise.all([
                     apiClient.admin.getPerformanceAnalytics(range),
                     apiClient.admin.getGrowthMetrics()
                 ]);
-                setPerf(perfData);
-                setGrowth(growthData);
+                const typedPerf = perfData as PerformanceData | null;
+                const typedGrowth = Array.isArray(growthData) ? (growthData as GrowthMetric[]) : [];
+                setPerf(typedPerf);
+                setGrowth(typedGrowth);
+                if (
+                    typedPerf === null ||
+                    ((typedPerf.domains?.length ?? 0) === 0 && (typedPerf.difficulty?.length ?? 0) === 0)
+                ) {
+                    void recordClientMetric('admin.ui.performance.empty', 1, { range });
+                }
             } catch (err) {
                 clientLogger.error('Failed to fetch performance analytics', { error: err instanceof Error ? err.message : 'unknown' });
+                setError('Unable to load performance analytics.');
+                void recordClientMetric('admin.ui.performance.fetch_error', 1, { range });
             } finally {
                 setIsLoading(false);
             }
         };
         void fetch();
     }, [range]);
+
+    if (typeof error === 'string' && error.length > 0) {
+        return (
+            <div className="p-8 rounded-[2rem] border border-rose-100 bg-white text-rose-600 text-sm font-semibold">
+                {error}
+            </div>
+        );
+    }
 
     if (isLoading === true || perf === null) {
         return (

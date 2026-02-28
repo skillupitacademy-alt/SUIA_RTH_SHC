@@ -1,5 +1,4 @@
 'use client';
-/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 
 import React, { createContext, ReactNode, useContext, useState } from 'react';
 import { toast } from 'sonner';
@@ -65,8 +64,8 @@ export function FactoryProvider({ children }: { children: ReactNode }) {
                     setSourceCode(saved.sourceCode as string);
                 }
             }
-        } catch (e) {
-            clientLogger.error("[Persistence] HYDRATION FAILED", { error: e instanceof Error ? e.message : 'unknown' });
+        } catch (err) {
+            clientLogger.error("[Persistence] HYDRATION FAILED", { error: err instanceof Error ? err.message : 'unknown' });
         } finally {
             setIsInitialized(true);
         }
@@ -90,8 +89,8 @@ export function FactoryProvider({ children }: { children: ReactNode }) {
             try {
                 const state = { blueprint, stagedQuestions, sourceCode };
                 safeSet(STORAGE_KEY, state);
-            } catch (e) {
-                clientLogger.error("Failed to persist factory state", { error: e instanceof Error ? e.message : 'unknown' });
+            } catch (err) {
+                clientLogger.error("Failed to persist factory state", { error: err instanceof Error ? err.message : 'unknown' });
             }
         }, 500); // Debounce to avoid thrashing storage
         return () => clearTimeout(timeout);
@@ -120,8 +119,9 @@ export function FactoryProvider({ children }: { children: ReactNode }) {
                 toast.error("Validation failed. Please check errors.");
                 return false;
             }
-        } catch (e) {
+        } catch (err) {
             toast.error("Critical parsing error.");
+            clientLogger.error("Critical parsing error in ingestRawJson", { error: err instanceof Error ? err.message : 'unknown' });
             return false;
         } finally {
             setIsIngesting(false);

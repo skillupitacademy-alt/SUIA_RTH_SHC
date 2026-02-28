@@ -1,42 +1,32 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
-import { logger } from '@/lib/logger';
+import { withLogging } from '@/lib/withLogging';
 import { AdminEngine } from '@/modules/admin-engine/admin.engine';
 import { TokenService } from '@/modules/auth/token.service';
 
 export const dynamic = 'force-dynamic';
 
-const log = logger.child({ module: 'admin:logs' });
-
 async function _verifyAdmin(_req: NextRequest) {
     const _token = TokenService.getAccessToken(_req, { scope: 'admin' });
     if (_token === null || _token === undefined || _token.trim() === '') {
-        return { _error: 'Unauthorized', scope: 'admin', status: 401 };
+        throw new Error('Unauthorized');
     }
-
-    try {
-        const _payload = await TokenService.verifyAccessToken(_token, true);
-        return { userId: _payload.userId };
-    } catch {
-        return { _error: 'Unauthorized', status: 401 };
-    }
+    return await TokenService.verifyAccessToken(_token, true);
 }
 
-export async function GET(_req: NextRequest) {
-    const auth = await _verifyAdmin(_req);
-    if (auth._error !== undefined) return NextResponse.json({ _error: auth._error, scope: auth.scope }, { status: auth.status });
-
+async function handler(_req: NextRequest) {
     try {
+        await _verifyAdmin(_req);
         const searchParams = _req.nextUrl.searchParams;
         const limit = parseInt(searchParams.get('limit') ?? '50');
         
-        // Correct method is getRecentAuditLogs
         const data = await AdminEngine.getRecentAuditLogs(limit);
         return NextResponse.json(data);
     } catch (_error: unknown) {
         const message = _error instanceof Error ? _error.message : 'Internal Server Error';
-        log.error({ error: message }, 'ADMIN_LOGS_GET failed');
-        return NextResponse.json({ _error: 'Internal Server Error' }, { status: 500 });
+        return NextResponse.json({ _error: message }, { status: 500 });
     }
 }
+
+export const GET = withLogging(handler, { component: 'admin', operation: 'get_audit_logs' });

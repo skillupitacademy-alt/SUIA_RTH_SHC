@@ -1,5 +1,5 @@
-/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/ban-ts-comment */
 import { apiClient } from '@quiz/api-client';
+import { recordCounter, recordTimer } from '@quiz/observability';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
@@ -83,18 +83,27 @@ export const useDashboardStore = create<DashboardState>()(
 
             fetchDashboard: async (range = '7d', page = 1, limit = 6) => {
                 set({ loading: true, error: null });
+                const start = Date.now();
                 try {
-                    const data = await apiClient.dashboard.getDashboard(range, page, limit) as DashboardData; 
+                    const data = await apiClient.dashboard.getDashboard(range, page, limit) as DashboardData;
+                    const duration = Date.now() - start;
+                    recordTimer('web.ui.dashboard.load_time', duration);
+                    recordCounter('web.ui.dashboard.load_success', 1);
+                    if (!data || data.recentActivity.length === 0) {
+                        recordCounter('web.ui.dashboard.empty', 1);
+                    }
                     set({ data, loading: false });
                 } catch (err: unknown) {
                     const message = err instanceof Error ? err.message : 'Failed to load dashboard';
+                    recordCounter('web.ui.dashboard.load_error', 1);
                     set({ error: message, loading: false });
                 }
             },
 
             fetchPerformanceTrend: async (range = '7d') => {
+                set({ error: null });
                 try {
-                    const trendData = await apiClient.dashboard.getTrend(range) as { 
+                    const trendData = await apiClient.dashboard.getTrend(range) as {
                         performanceTrend: Array<{ score: number; date: string }>;
                         deltaPct?: number | null;
                         currentAvg?: number;
@@ -112,7 +121,9 @@ export const useDashboardStore = create<DashboardState>()(
                         } : null
                     }));
                 } catch (err: unknown) {
-                    clientLogger.error('Failed to fetch performance trend', { error: err instanceof Error ? err.message : 'unknown' });
+                    const message = err instanceof Error ? err.message : 'Failed to load trend';
+                    clientLogger.error('Failed to fetch performance trend', { error: message });
+                    set({ error: message });
                 }
             },
 
@@ -120,7 +131,7 @@ export const useDashboardStore = create<DashboardState>()(
                 // Prevent over-fetching if already loaded
                 if (get().drilldownMetadata) return;
 
-                set({ metadataLoading: true });
+                set({ metadataLoading: true, error: null });
                 try {
                     const metadata = await apiClient.dashboard.getPerformanceBreakdownMetadata() as DrilldownMetadata;
                     set({ 
@@ -128,12 +139,14 @@ export const useDashboardStore = create<DashboardState>()(
                         metadataLoading: false 
                     });
                 } catch (err: unknown) {
-                    clientLogger.error('Failed to fetch drilldown metadata', { error: err instanceof Error ? err.message : 'unknown' });
-                    set({ metadataLoading: false });
+                    const message = err instanceof Error ? err.message : 'Failed to load drilldown metadata';
+                    clientLogger.error('Failed to fetch drilldown metadata', { error: message });
+                    set({ metadataLoading: false, error: message });
                 }
             },
 
             fetchPerformanceBreakdown: async (range = '28d') => {
+                set({ error: null });
                 try {
                     const breakdownData = await apiClient.dashboard.getPerformanceBreakdown(range) as { breakdown: DashboardData['drilldownBreakdown'] };
                     set((state) => ({
@@ -143,7 +156,9 @@ export const useDashboardStore = create<DashboardState>()(
                         } : null
                     }));
                 } catch (err: unknown) {
-                    clientLogger.error('Failed to fetch drilldown analytics', { error: err instanceof Error ? err.message : 'unknown' });
+                    const message = err instanceof Error ? err.message : 'Failed to load drilldown analytics';
+                    clientLogger.error('Failed to fetch drilldown analytics', { error: message });
+                    set({ error: message });
                 }
             }
         }),

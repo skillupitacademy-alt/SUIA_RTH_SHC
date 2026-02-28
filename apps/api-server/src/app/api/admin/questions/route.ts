@@ -1,7 +1,10 @@
+import { METRICS } from '@quiz/observability';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
 import { logger } from '@/lib/logger';
+import { recordCounter, recordTimer } from '@/lib/metrics';
+import { withLogging } from '@/lib/withLogging';
 import type { CreateQuestionInput } from '@/modules/admin-engine/admin.engine';
 import { AdminEngine } from '@/modules/admin-engine/admin.engine';
 import { _verifyAdmin } from '@/modules/auth/rbac.service';
@@ -12,7 +15,8 @@ export const dynamic = 'force-dynamic';
 
 const log = logger.child({ module: 'admin:questions' });
 
-export async function GET(_req: NextRequest) {
+async function getHandler(_req: NextRequest) {
+    const start = Date.now();
   try {
     const _token = TokenService.getAccessToken(_req, { scope: 'admin' });
     if (_token === null || _token === undefined || _token.trim() === '') {
@@ -41,15 +45,24 @@ export async function GET(_req: NextRequest) {
     };
 
     const data = await AdminEngine.getQuestions(page, limit, filters);
-    return NextResponse.json(data);
+    const durationMs = Date.now() - start;
+    recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.questions.get.success', 1);
+    recordTimer(METRICS.ADMIN.DASHBOARD_LOAD + '.questions.get.duration', durationMs, { outcome: 'success' });
+    return NextResponse.json(data, {
+      headers: { 'X-Duration-Ms': durationMs.toString() }
+    });
   } catch (_error: unknown) {
     const message = _error instanceof Error ? _error.message : 'Internal Server Error';
+    const durationMs = Date.now() - start;
     log.error({ error: message }, 'ADMIN_QUESTIONS failed');
+    recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.questions.get.failure', 1, { reason: 'internal_error' });
+    recordTimer(METRICS.ADMIN.DASHBOARD_LOAD + '.questions.get.duration', durationMs, { outcome: 'failure' });
     return NextResponse.json({ _error: message }, { status: 500 });
   }
 }
 
-export async function POST(_req: NextRequest) {
+async function postHandler(_req: NextRequest) {
+    const start = Date.now();
   try {
     const _token = TokenService.getAccessToken(_req, { scope: 'admin' });
     if (_token === null || _token === undefined || _token.trim() === '') {
@@ -65,11 +78,21 @@ export async function POST(_req: NextRequest) {
 
     const result = await AdminEngine.createQuestion(parsed.data, _payload.userId);
     
-    return NextResponse.json(result);
+    const durationMs = Date.now() - start;
+    recordCounter(METRICS.ADMIN.PUBLISH, 1, { action: 'create', outcome: 'success' });
+    recordTimer(METRICS.ADMIN.PUBLISH + '.duration', durationMs, { action: 'create', outcome: 'success' });
+    
+    return NextResponse.json(result, {
+      headers: { 'X-Duration-Ms': durationMs.toString() }
+    });
   } catch (_error: unknown) {
     const message = _error instanceof Error ? _error.message : 'Internal Server Error';
     log.error({ error: message }, 'ADMIN_QUESTIONS_POST failed');
+    recordCounter(METRICS.ADMIN.PUBLISH, 1, { action: 'create', outcome: 'failure' });
     return NextResponse.json({ _error: message }, { status: 500 });
   }
 }
+
+export const GET = withLogging(getHandler, { component: 'admin', operation: 'get_questions' });
+export const POST = withLogging(postHandler, { component: 'admin', operation: 'create_question' });
 

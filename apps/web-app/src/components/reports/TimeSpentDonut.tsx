@@ -57,11 +57,11 @@ export const TimeSpentDonut = React.memo(({ data, suppressAnimation }: TimeSpent
     };
 
     return (
-        <div className="w-full h-full flex flex-col p-8 lg:p-10 bg-[#0d111a] rounded-[2.5rem] border border-white/5 shadow-2xl relative overflow-hidden group">
-            <div className="flex items-center justify-between border-b border-slate-800/60 pb-8 mb-8 relative z-20">
+        <div className="w-full h-full flex flex-col p-8 py-[30px] lg:p-10 lg:py-[30px] bg-[#0d111a] rounded-[2.5rem] border border-white/5 shadow-2xl relative overflow-hidden group">
+            <div className="flex items-center justify-between border-b border-slate-800/60 pb-5 mb-5 relative z-20">
                 <div>
-                    <h3 className="text-[12px] font-black text-indigo-400 uppercase tracking-[0.3em] mb-2">Temporal Metrics</h3>
-                    <p className="text-2xl font-black text-white tracking-tighter uppercase">Time Distribution</p>
+                    <h3 className="text-[12px] font-black text-indigo-400 uppercase tracking-[0.3em] mb-1">Temporal Metrics</h3>
+                    <p className="text-2xl font-black text-white tracking-tighter uppercase leading-tight">Time Distribution</p>
                 </div>
                 <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-900/50 border border-white/5 rounded-xl cursor-default">
                     <Clock size={14} className="text-indigo-400" />
@@ -69,7 +69,7 @@ export const TimeSpentDonut = React.memo(({ data, suppressAnimation }: TimeSpent
                 </div>
             </div>
 
-            <div className="relative h-[300px]">
+            <div className="relative flex-grow min-h-[300px]">
                 <ResponsiveContainer width="100%" height="100%">
                     <PieChart key={mounted ? 'mounted' : 'unmounted'}>
                         <defs>
@@ -132,7 +132,7 @@ export const TimeSpentDonut = React.memo(({ data, suppressAnimation }: TimeSpent
                 </div>
             </div>
 
-            <div className="mt-auto pt-8 border-t border-white/5 space-y-6">
+            <div className="mt-auto pt-5 border-t border-white/5 space-y-6">
                 <div className="flex flex-wrap items-center justify-center gap-8">
                     {breakdown.map((item) => (
                         <div key={item.name} className="flex items-center gap-2.5">

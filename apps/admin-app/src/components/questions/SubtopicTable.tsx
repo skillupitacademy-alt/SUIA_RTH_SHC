@@ -1,22 +1,50 @@
 'use client';
-/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars, react-hooks/exhaustive-deps */
 
 import { apiClient } from '@quiz/api-client';
 import { ZPagination } from '@quiz/ui';
 import { Check, Edit2, GitBranch, Layers, Plus, Trash, Trash2, X } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
+import { HierarchyFactoryWizard } from '@/components/content/HierarchyFactoryWizard';
 import { ErrorBanner } from '@/components/layout/ErrorBanner';
 import { ZPortalModal } from '@/components/ui/ZPortalModal';
 import { useDomains, useSubjects, useTopics } from '@/hooks/useAdminHierarchy';
 import { cn } from '@/lib/utils';
 import { clientLogger } from '@/utils/clientLogger';
 
+import type { Domain } from '../../types/domain';
 import { HierarchySearchBar } from './HierarchySearchBar';
 
+type SubtopicRow = {
+    id: string;
+    name: string;
+    topicId: string;
+    description?: string | null;
+    status?: 'active' | 'inactive' | 'draft';
+    order?: number;
+    depthLevel?: number;
+    topic?: {
+        id?: string;
+        name?: string;
+        subjectId?: string;
+        domainId?: string;
+        subject?: { id?: string; name?: string; domainId?: string; domain?: Domain };
+    };
+};
+
+type SubtopicForm = {
+    name: string;
+    topicId: string;
+    description: string;
+    status: 'active' | 'inactive';
+    domainId: string;
+    subjectId: string;
+    order: number;
+    depthLevel: number;
+};
+
 export function SubtopicTable() {
-    const [data, setData] = useState<any[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
+    const [data, setData] = useState<SubtopicRow[]>([]);
     const [page, setPage] = useState(1);
     const [pageSize, setPageSize] = useState(20);
     const [totalPages, setTotalPages] = useState(1);
@@ -28,20 +56,19 @@ export function SubtopicTable() {
 
     // Modal states
     const [isFormOpen, setIsFormOpen] = useState(false);
-    const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-    const [isFactoryOpen, setIsFactoryOpen] = useState(false);
-    const [currentSubtopic, setCurrentSubtopic] = useState<any>(null);
+    const [currentSubtopic, setCurrentSubtopic] = useState<SubtopicRow | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isFactoryOpen, setIsFactoryOpen] = useState(false);
 
     // Selection State
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
     const [isBatchDeleting, setIsBatchDeleting] = useState(false);
 
-    const [formData, setFormData] = useState({
+    const [formData, setFormData] = useState<SubtopicForm>({
         name: '',
         topicId: '',
         description: '',
-        status: 'active' as 'active' | 'inactive',
+        status: 'active',
         domainId: '',   // For cascading
         subjectId: '',   // For cascading
         order: 0,
@@ -62,27 +89,36 @@ export function SubtopicTable() {
         return () => clearTimeout(timer);
     }, [searchQuery]);
 
-    const fetchSubtopics = async () => {
-        setIsLoading(true);
+    const fetchSubtopics = useCallback(async () => {
         try {
             const response = await apiClient.admin.getSubtopics(page, pageSize, debouncedSearch || undefined);
-            setData(Array.isArray(response.data) ? response.data : []);
+            const mapped: SubtopicRow[] = Array.isArray(response.data)
+                ? response.data.map((s) => ({
+                    id: String((s as { id?: string }).id ?? crypto.randomUUID()),
+                    name: (s as { name?: string }).name ?? '',
+                    topicId: (s as { topicId?: string }).topicId ?? '',
+                    description: (s as { description?: string | null }).description ?? null,
+                    status: (s as { status?: string }).status as SubtopicRow['status'] ?? 'active',
+                    order: (s as { order?: number }).order ?? (s as { orderIndex?: number }).orderIndex ?? 0,
+                    depthLevel: (s as { depthLevel?: number }).depthLevel ?? 0,
+                    topic: (s as { topic?: SubtopicRow['topic'] }).topic
+                }))
+                : [];
+            setData(mapped);
             setTotalPages(response.totalPages);
-            setTotalCount(response.total ?? (Array.isArray(response.data) ? response.data.length : 0));
+            setTotalCount(response.total ?? mapped.length);
             setSelectedIds(new Set());
         } catch (error) {
             clientLogger.error('Failed to fetch subtopics', { error: error instanceof Error ? error.message : 'unknown' });
             setErrorMessage('Connection Error: Unable to load subtopics at this time.');
-        } finally {
-            setIsLoading(false);
         }
-    };
+    }, [debouncedSearch, page, pageSize]);
 
     useEffect(() => {
         void fetchSubtopics();
-    }, [page, pageSize, debouncedSearch]);
+    }, [fetchSubtopics]);
 
-    const handleOpenForm = (subtopic: any = null) => {
+    const handleOpenForm = (subtopic: SubtopicRow | null = null) => {
         if (subtopic != null) {
             setCurrentSubtopic(subtopic);
 
@@ -116,7 +152,7 @@ export function SubtopicTable() {
                 order: 0,
                 depthLevel: 1
             });
-            setIsFactoryOpen(true); // Open factory for new subtopic
+            setIsFormOpen(true);
         }
     };
 
@@ -152,7 +188,7 @@ export function SubtopicTable() {
         }
         setIsSubmitting(true);
         try {
-            const payload: any = {
+            const payload = {
                 ...formData,
                 slug: formData.name || 'subtopic',
                 orderIndex: formData.order ?? 0
@@ -172,13 +208,10 @@ export function SubtopicTable() {
         }
     };
 
-    const handleDelete = async () => {
-        if (currentSubtopic === null) return;
+    const deleteSubtopic = async (id: string) => {
         setIsSubmitting(true);
         try {
-            await apiClient.admin.deleteSubtopic(currentSubtopic.id);
-            setIsDeleteOpen(false);
-            setCurrentSubtopic(null);
+            await apiClient.admin.deleteSubtopic(id);
             void fetchSubtopics();
         } catch (error) {
             clientLogger.error('Failed to delete subtopic', { error: error instanceof Error ? error.message : 'unknown' });
@@ -187,6 +220,21 @@ export function SubtopicTable() {
             setIsSubmitting(false);
         }
     };
+
+    const handleBatchDelete = useCallback(async () => {
+        if (selectedIds.size === 0) return;
+        setIsBatchDeleting(true);
+        try {
+            await apiClient.admin.batchDeleteSubtopics(Array.from(selectedIds));
+            setSelectedIds(new Set());
+            void fetchSubtopics();
+        } catch (error) {
+            clientLogger.error('Failed to batch delete subtopics', { error: error instanceof Error ? error.message : 'unknown' });
+            setErrorMessage('Batch Deletion Failed: Some subtopics may have dependencies.');
+        } finally {
+            setIsBatchDeleting(false);
+        }
+    }, [fetchSubtopics, selectedIds]);
 
     // --- SELECTION ENGINE ---
     const toggleSelect = (id: string, selected: boolean) => {
@@ -204,27 +252,22 @@ export function SubtopicTable() {
         }
     };
 
-    const handleBatchDelete = async () => {
-        setIsBatchDeleting(true);
-        try {
-            await apiClient.admin.batchDeleteSubtopics(Array.from(selectedIds));
-            setSelectedIds(new Set());
-            setIsDeleteOpen(false);
-            void fetchSubtopics();
-        } catch (error: any) {
-            setErrorMessage(`Batch Deletion Failed: ${error.message}`);
-        } finally {
-            setIsBatchDeleting(false);
-        }
-    };
-
     return (
         <div className="space-y-6 flex flex-col min-h-[800px]">
             <div className="flex-1 space-y-6">
                 {errorMessage !== null ? <ErrorBanner message={errorMessage} onClose={() => setErrorMessage(null)} /> : null}
 
+                <HierarchyFactoryWizard
+                    isOpen={isFactoryOpen}
+                    onClose={() => setIsFactoryOpen(false)}
+                    initialData={(formData.topicId !== '' && formData.subjectId !== '' && formData.domainId !== '')
+                        ? { target: 'subtopic', domainId: formData.domainId, subjectId: formData.subjectId, topicId: formData.topicId }
+                        : { target: 'subtopic' }}
+                    onSuccess={() => { setIsFactoryOpen(false); void fetchSubtopics(); }}
+                />
+
                 {/* Modalized Form */}
-                <ZPortalModal isOpen={isFormOpen === true && currentSubtopic !== null} zIndex={100}>
+                <ZPortalModal isOpen={isFormOpen} zIndex={100}>
                     <div className="h-full min-h-0 flex flex-col bg-white animate-in slide-in-from-right duration-300">
                         {/* Header Strip */}
                         <div className="px-12 py-6 border-b border-primary/5 flex items-center justify-between bg-white sticky top-0 z-20">
@@ -463,7 +506,7 @@ export function SubtopicTable() {
                                         </td>
                                         <td className="p-6">
                                             <span className={cn("px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border", item.status === 'active' ? "bg-green-50 text-green-600 border-green-100" : "bg-slate-100 text-slate-400 border-slate-200")}>
-                                                {item.status != null && item.status !== '' ? item.status : 'Active'}
+                                                {item.status ?? 'Active'}
                                             </span>
                                         </td>
                                         <td className="p-6 text-right">
@@ -471,7 +514,7 @@ export function SubtopicTable() {
                                                 <button onClick={() => handleOpenForm(item)} className="p-2.5 rounded-xl bg-slate-50 hover:bg-teal-500 text-slate-400 hover:text-white transition-all border border-slate-100">
                                                     <Edit2 size={16} />
                                                 </button>
-                                                <button onClick={() => { setCurrentSubtopic(item); setIsDeleteOpen(true); }} className="p-2.5 rounded-xl bg-slate-50 hover:bg-red-500 text-slate-400 hover:text-white transition-all border border-slate-100">
+                                                <button onClick={() => { void deleteSubtopic(item.id); }} className="p-2.5 rounded-xl bg-slate-50 hover:bg-red-500 text-slate-400 hover:text-white transition-all border border-slate-100">
                                                     <Trash2 size={16} />
                                                 </button>
                                             </div>
@@ -512,7 +555,7 @@ export function SubtopicTable() {
 
                         <div className="flex items-center gap-3">
                             <button
-                                onClick={() => { setCurrentSubtopic(null); setIsDeleteOpen(true); }}
+                                onClick={() => { void handleBatchDelete(); }}
                                 disabled={isBatchDeleting}
                                 className="flex items-center gap-3 px-6 py-3 rounded-2xl bg-rose-500/10 hover:bg-rose-500 text-rose-500 hover:text-white transition-all group disabled:opacity-50"
                             >

@@ -45,6 +45,15 @@
             "@quiz/ui": [
                 "./packages/ui/src/index.ts"
             ],
+            "@quiz/types": [
+                "./packages/types/src/index.ts"
+            ],
+            "@quiz/types/*": [
+                "./packages/types/src/*"
+            ],
+            "@quiz/observability": [
+                "./packages/observability/src/index.ts"
+            ],
             "@/*": [
                 "./apps/web-app/src/*",
                 "./apps/admin-app/src/*",
@@ -56,7 +65,7 @@
             ]
         },
         "typeRoots": [
-            "./types",
+            "./packages/types/src/globals",
             "./node_modules/@types"
         ],
         "noEmit": true
@@ -70,7 +79,7 @@
         "**/*.config.mjs"
     ],
     "include": [
-        "types/**/*.d.ts",
+        "packages/types/src/globals/**/*.d.ts",
         "apps",
         "packages",
         "tests"

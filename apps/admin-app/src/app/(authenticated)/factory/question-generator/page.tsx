@@ -1,5 +1,4 @@
 'use client';
-/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { Check, Copy, RefreshCcw, ShieldCheck } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';

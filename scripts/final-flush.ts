@@ -3,10 +3,11 @@ import { PerformanceService } from "../apps/api-server/src/modules/report-engine
 
 async function main() {
   const examId = '0a38074c-2113-4527-bc15-1cbfc1836cea';
-  console.log(`Final Cache Flush for ${examId}...`);
+  scriptLogger.info(`Final Cache Flush for ${examId}...`);
   await PerformanceService.invalidateCache(examId);
-  console.log("✅ Flush complete.");
+  scriptLogger.info("✅ Flush complete.");
   process.exit(0);
 }
 
-main().catch(console.error);
+main().catch(scriptLogger.error);
+

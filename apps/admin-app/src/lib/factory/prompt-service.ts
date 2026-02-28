@@ -1,4 +1,3 @@
-/* eslint-disable no-useless-escape */
 export interface FactoryBlueprint {
     sourceCode: string;
     counts: {
@@ -53,8 +52,8 @@ For each question, you must calculate and include:
 You must follow these syntax rules EXACTLY to ensure the output is machine-readable:
 1. **NO MARKDOWN**: Do not wrap output in markdown code blocks (\`\`\`json). Return raw JSON only.
 2. **STRICT ESCAPING**: All internal double quotes inside strings (especially in "codeSnippet" and "explanation") MUST be escaped with a backslash.
-   - CORRECT: "var x = \"hello\";"
-   - INCORRECT: "var x = "hello";"
+   - CORRECT: 'var x = "hello";'
+   - INCORRECT: 'var x = "hello";' (missing escaping inside JSON string)
 3. **SINGLE LINE STRINGS**: All values must be single-line strings. Use literal \\n for newlines. Do not use multi-line strings.
 4. **NO TRAILING COMMAS**: Verify that no trailing commas exist after the last item in arrays or objects.
 

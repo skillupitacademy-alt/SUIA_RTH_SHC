@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import type { EChartsOption } from "echarts";
 import { apiClient, MasteryTrendResponse } from "@quiz/api-client";
 import BaseChart from "./BaseChart";
+import { clientLogger } from "@/utils/clientLogger";
 
 interface MasteryTrendChartProps {
     onDataFetched?: (data: MasteryTrendResponse) => void;
@@ -11,6 +13,7 @@ interface MasteryTrendChartProps {
 export default function MasteryTrendChart({ onDataFetched }: MasteryTrendChartProps) {
     const [data, setData] = useState<MasteryTrendResponse | null>(null);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
     const [goal, setGoal] = useState<number>(80);
 
     useEffect(() => {
@@ -20,7 +23,9 @@ export default function MasteryTrendChart({ onDataFetched }: MasteryTrendChartPr
                 setData(response);
                 if (onDataFetched) onDataFetched(response);
             } catch (error) {
-                console.error("Failed to fetch mastery trend:", error);
+                const message = error instanceof Error ? error.message : "Failed to fetch mastery trend";
+                setError(message);
+                clientLogger.error("Failed to fetch mastery trend", { error: message });
             } finally {
                 setLoading(false);
             }
@@ -59,6 +64,15 @@ export default function MasteryTrendChart({ onDataFetched }: MasteryTrendChartPr
         };
     }, [data]);
 
+    if (error) {
+        return (
+            <div className="h-[300px] w-full flex flex-col items-center justify-center rounded-xl border border-red-100 bg-red-50 text-red-600 text-sm">
+                <p className="font-semibold">Unable to load mastery trend</p>
+                <span className="text-xs text-red-500">{error}</span>
+            </div>
+        );
+    }
+
     if (!loading && (!data || data.dates.length === 0)) {
         return (
             <div className="h-[300px] w-full flex flex-col items-center justify-center bg-slate-50 rounded-xl border border-dashed border-slate-200 text-slate-400">
@@ -68,7 +82,7 @@ export default function MasteryTrendChart({ onDataFetched }: MasteryTrendChartPr
         );
     }
 
-    const option = {
+    const option: EChartsOption = {
         tooltip: {
             trigger: "axis",
             backgroundColor: "rgba(255, 255, 255, 0.95)",
@@ -76,10 +90,11 @@ export default function MasteryTrendChart({ onDataFetched }: MasteryTrendChartPr
             textStyle: { color: "#1E293B" },
             padding: [10, 15],
             extraCssText: "box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); border-radius: 8px;",
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            formatter: (params: any) => {
-                const date = params[0].axisValue;
-                const accuracy = params[0].data;
+            formatter: (params: Array<{ axisValue: string; data: number }>) => {
+                const first = params[0];
+                if (!first) return "";
+                const date = first.axisValue;
+                const accuracy = first.data;
                 return `
           <div class="font-bold mb-1">${date}</div>
           <div class="flex items-center gap-2">
@@ -106,7 +121,7 @@ export default function MasteryTrendChart({ onDataFetched }: MasteryTrendChartPr
             axisLabel: { color: "#64748B", fontSize: 12, margin: 12 },
         },
         yAxis: {
-            type: "value",
+            type: "value" as const,
             max: 100,
             splitLine: { lineStyle: { type: "dashed", color: "#F1F5F9" } },
             axisLabel: { color: "#64748B", fontSize: 12 },
@@ -165,7 +180,7 @@ export default function MasteryTrendChart({ onDataFetched }: MasteryTrendChartPr
                 },
             },
         ],
-    };
+    } as unknown as EChartsOption;
 
     return (
         <div className="w-full bg-white p-6 rounded-2xl shadow-sm border border-slate-100">

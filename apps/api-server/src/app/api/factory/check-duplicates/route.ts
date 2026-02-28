@@ -10,11 +10,17 @@ interface DuplicateCheckPayload {
   topicId: string;
 }
 
-export async function POST(req: NextRequest) {
+import { METRICS } from "@quiz/observability";
+
+import { recordCounter, recordTimer } from "@/lib/metrics";
+import { withLogging } from "@/lib/withLogging";
+
+async function handler(req: NextRequest) {
+  const start = Date.now();
   try {
-    // 1. Defense-in-Depth Admin Check (P0-SEC-002)
     const token = TokenService.getAccessToken(req, { scope: 'admin' });
     if (token === undefined || token === null || token === '') {
+      recordCounter(METRICS.AUTH.FAILURE, 1, { scope: 'admin', reason: 'unauthorized' });
       return NextResponse.json({ _error: "Authentication required", scope: 'admin' }, { status: 401 });
     }
 
@@ -26,7 +32,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ _error: "Invalid payload" }, { status: 400 });
     }
 
-    // 1. Fetch all existing question texts for this topic
     const existingQuestions = await db
       .select({ id: questions.id, text: questions.questionText })
       .from(questions)
@@ -35,16 +40,13 @@ export async function POST(req: NextRequest) {
         eq(questions.status, "active")
       ));
 
-    // 2. Normalize helper
     const normalize = (text: string) => text.toLowerCase().trim().replace(/\s+/g, ' ');
 
-    // 3. Create Map of Normalized Text -> ID
     const existingMap = new Map<string, string>();
     existingQuestions.forEach(q => {
         existingMap.set(normalize(q.text), q.id);
     });
 
-    // 4. Check inputs
     const duplicates = checkQuestions.map((q, idx) => {
         const norm = normalize(q.questionText);
         if (existingMap.has(norm)) {
@@ -57,6 +59,8 @@ export async function POST(req: NextRequest) {
         return null;
     }).filter(Boolean);
 
+    recordCounter('factory.api.duplicate_check.success', 1, { topicId });
+    recordTimer('factory.api.duplicate_check.duration', Date.now() - start, { outcome: 'success' });
     return NextResponse.json({
       details: duplicates,
       foundCount: duplicates.length
@@ -64,9 +68,13 @@ export async function POST(req: NextRequest) {
 
   } catch (error) {
     logger.error({ err: error }, "Duplicate Check Error");
+    recordCounter('factory.api.duplicate_check.failure', 1, { reason: 'internal_error' });
+    recordTimer('factory.api.duplicate_check.duration', Date.now() - start, { outcome: 'failure' });
     return NextResponse.json(
       { _error: error instanceof Error ? error.message : "Access denied" },
       { status: 403 }
     );
   }
 }
+
+export const POST = withLogging(handler, { component: 'factory', operation: 'check_duplicates' });

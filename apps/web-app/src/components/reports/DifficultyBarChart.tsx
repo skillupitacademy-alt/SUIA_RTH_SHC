@@ -1,136 +1,100 @@
 'use client';
 
 import React from 'react';
-import { motion } from "framer-motion";
-import { AlertCircle } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { MethodologyDisclaimer } from './MethodologyDisclaimer';
 
-
-export interface DifficultyAccuracy {
-    level: string;
-    accuracy: number;
-    attempts: number;
-    showNoData?: boolean;
-}
-
 export interface DifficultyBarChartProps {
-    data: DifficultyAccuracy[];
+    data: { level: string; accuracy: number; attempts: number }[];
     expertDropOff?: boolean;
 }
 
 export const DifficultyBarChart = React.memo(({ data, expertDropOff }: DifficultyBarChartProps) => {
-    const getLevelStyle = (level: string) => {
-        const l = level.toLowerCase();
-        if (l.includes('simple') || l.includes('easy')) return {
-            gradient: "from-emerald-600 to-teal-600",
-            shadow: "shadow-[0_0_15px_rgba(16,185,129,0.3)]",
-            text: "text-emerald-400"
-        };
-        if (l.includes('inter') || l.includes('medium')) return {
-            gradient: "from-amber-600 to-orange-600",
-            shadow: "shadow-[0_0_15px_rgba(245,158,11,0.3)]",
-            text: "text-amber-400"
-        };
-        if (l.includes('expert') || l.includes('hard')) return {
-            gradient: "from-rose-600 to-pink-600",
-            shadow: "shadow-[0_0_15px_rgba(244,63,94,0.3)]",
-            text: "text-rose-400"
-        };
-        return {
-            gradient: "from-indigo-600 to-violet-600",
-            shadow: "shadow-[0_0_15px_rgba(99,102,241,0.2)]",
-            text: "text-indigo-400"
-        };
-    };
+    const sortedData = React.useMemo(() => {
+        const order = ["Simple", "Intermediate", "Expert"];
+        return [...data].sort((a, b) => order.indexOf(a.level) - order.indexOf(b.level));
+    }, [data]);
 
     return (
-        <div className="w-full h-full flex flex-col bg-[#0d111a] rounded-[2.5rem] p-8 lg:p-10 border border-white/5 shadow-2xl relative overflow-hidden group">
+        <div className="w-full h-full flex flex-col bg-[#0d111a] rounded-[2.5rem] p-8 py-[30px] lg:p-10 lg:py-[30px] border border-white/5 shadow-2xl relative overflow-hidden group">
             {/* Background Glows */}
             <div className="absolute top-0 right-0 w-64 h-64 bg-rose-500/5 blur-[120px] rounded-full pointer-events-none" />
 
-            <div className="flex items-center justify-between border-b border-slate-800/60 pb-8 mb-8 relative z-20">
+            <div className="flex items-center justify-between border-b border-slate-800/60 pb-5 mb-5 relative z-20">
                 <div>
-                    <h3 className="text-[12px] font-black text-indigo-400 uppercase tracking-[0.3em] mb-2">Complexity Threshold</h3>
-                    <p className="text-2xl font-black text-white uppercase tracking-tighter">Difficulty Matrix Diagnostic</p>
+                    <h3 className="text-[12px] font-black text-indigo-400 uppercase tracking-[0.3em] mb-1">Complexity Threshold</h3>
+                    <p className="text-2xl font-black text-white uppercase tracking-tighter leading-tight">Difficulty Matrix Diagnostic</p>
                 </div>
             </div>
 
-            <div className="flex flex-col gap-10 flex-grow justify-center relative z-20 overflow-y-auto scrollbar-hide">
-                {data.map((item, idx) => {
-                    const style = getLevelStyle(item.level);
-                    const isHard = item.level.toLowerCase().includes('expert');
-                    // Show data as soon as we have at least 1 attempt
-                    const showMetrics = item.attempts >= 1;
-
-                    return (
-                        <div key={idx} className="group relative">
-                            <div className="flex items-end justify-between mb-4 px-1">
-                                <div className="flex items-baseline gap-3">
-                                    <span className={`text-[13px] font-black uppercase tracking-[0.2em] ${style.text}`}>
-                                        {item.level} Level
-                                    </span>
-                                    <span className="text-[10px] font-black text-slate-600 uppercase tracking-widest">
-                                        {item.attempts} {item.attempts === 1 ? 'Question' : 'Questions'}
-                                    </span>
-                                </div>
-                                <div className="flex items-center gap-3">
-                                    {isHard && expertDropOff && (
-                                        <div className="flex items-center gap-2 px-2 py-0.5 bg-rose-500/10 border border-rose-500/20 rounded-md animate-pulse">
-                                            <AlertCircle size={10} className="text-rose-400" />
-                                            <span className="text-[9px] font-black text-rose-400 uppercase tracking-widest">Mastery Drop</span>
+            <div className="flex-grow min-h-0 relative z-10 py-6">
+                <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={sortedData} margin={{ top: 20, right: 30, left: 0, bottom: 0 }}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.03)" vertical={false} />
+                        <XAxis
+                            dataKey="level"
+                            axisLine={false}
+                            tickLine={false}
+                            tick={{ fill: '#64748b', fontSize: 13, fontWeight: 800 }}
+                            padding={{ left: 40, right: 40 }}
+                        />
+                        <YAxis hide domain={[0, 100]} />
+                        <Tooltip
+                            cursor={{ fill: 'rgba(255,255,255,0.02)' }}
+                            content={({ active, payload }) => {
+                                if (active && payload && payload.length) {
+                                    return (
+                                        <div className="bg-[#0f172a]/95 backdrop-blur-xl border border-white/10 p-5 rounded-2xl shadow-2xl">
+                                            <p className="text-[12px] font-black text-indigo-400 uppercase tracking-widest mb-2">{payload[0].payload.level} Gravity</p>
+                                            <div className="flex items-baseline gap-2">
+                                                <span className="text-4xl font-black text-white">{payload[0].value}%</span>
+                                                <span className="text-[11px] font-bold text-slate-500 uppercase tracking-[0.2em]">Accuracy</span>
+                                            </div>
+                                            <div className="mt-4 pt-4 border-t border-white/5">
+                                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{payload[0].payload.attempts} Diagnostic Cycles</p>
+                                            </div>
                                         </div>
-                                    )}
-                                    <span className={`text-[15px] font-black tracking-tight ${style.text}`}>
-                                        {showMetrics ? `${item.accuracy}% Accuracy` : '---'}
-                                    </span>
-                                </div>
-                            </div>
-
-                            <div className="relative h-4 w-full bg-slate-900/60 rounded-full overflow-hidden border border-white/5">
-                                {showMetrics && (
-                                    <motion.div
-                                        initial={{ width: 0 }}
-                                        animate={{ width: `${item.accuracy}%` }}
-                                        transition={{ duration: 1.5, delay: idx * 0.2, ease: "circOut" }}
-                                        className={`absolute top-0 left-0 h-full rounded-full transition-all duration-500 bg-gradient-to-r ${style.gradient} ${style.shadow}`}
-                                    />
-                                )}
-                            </div>
-                        </div>
-                    );
-                })}
+                                    );
+                                }
+                                return null;
+                            }}
+                        />
+                        <Bar
+                            dataKey="accuracy"
+                            radius={[12, 12, 4, 4]}
+                            barSize={60}
+                            isAnimationActive={true}
+                            animationDuration={1200}
+                        >
+                            {sortedData.map((entry, index) => (
+                                <Cell
+                                    key={`cell-${index}`}
+                                    fill={entry.accuracy < 50 ? '#f43f5e' : entry.accuracy < 75 ? '#6366f1' : '#10b981'}
+                                    fillOpacity={0.9}
+                                />
+                            ))}
+                        </Bar>
+                    </BarChart>
+                </ResponsiveContainer>
             </div>
 
-            <div className="pt-8 border-t border-slate-800 flex flex-col gap-6">
+            <div className="mt-auto pt-5 border-t border-white/5 space-y-6">
                 {expertDropOff && (
-                    <div className="bg-rose-500/5 border border-rose-500/10 p-4 rounded-xl flex items-center gap-4 group hover:bg-rose-500/10 transition-colors">
-                        <AlertCircle className="text-rose-400 h-5 w-5 shrink-0" />
-                        <p className="text-[13px] text-slate-400 font-medium">
-                            <span className="text-rose-400 font-bold uppercase tracking-tight mr-2">Significant Expert Drop-off detected:</span>
-                            Fundamentals are strong, but mastery collapses under high complexity. Focus on expert-tier drills.
+                    <div className="flex items-center gap-4 p-5 bg-amber-500/5 border border-amber-500/20 rounded-2xl">
+                        <div className="h-10 w-10 rounded-xl bg-amber-500/10 flex items-center justify-center shrink-0">
+                            <span className="text-amber-500 font-bold">!</span>
+                        </div>
+                        <p className="text-[12px] font-black text-amber-400 uppercase tracking-widest leading-relaxed">
+                            Vector Stability Loss: Significant performance decay detected at Expert Complexity level.
                         </p>
                     </div>
                 )}
-
-                <div className="flex items-center gap-10">
-                    {[
-                        { label: 'Entry', color: 'bg-emerald-500' },
-                        { label: 'Operational', color: 'bg-amber-500' },
-                        { label: 'Master', color: 'bg-rose-500' }
-                    ].map(tier => (
-                        <div key={tier.label} className="flex items-center gap-3">
-                            <div className={`h-2.5 w-2.5 rounded-full shadow-[0_0_8px_currentColor] opacity-50 ${tier.color}`} />
-                            <span className="text-[11px] font-black text-slate-500 uppercase tracking-widest">{tier.label}</span>
-                        </div>
-                    ))}
+                <div className="relative z-20">
+                    <MethodologyDisclaimer
+                        text="LOAD VECTOR STABILITY: MEASURES STABILITY OF LOGIC RECOVERY ACROSS INCREASING LEVELS OF PROBLEM ENTROPY."
+                        className="max-w-none text-center"
+                    />
                 </div>
-            </div>
-
-            <div className="mt-auto pt-8 border-t border-slate-800 relative z-20">
-                <MethodologyDisclaimer
-                    text="QUANTUM WEIGHTING: THRESHOLD ANALYSIS (EXPERT [2.0], INTERMEDIATE [1.5], SIMPLE [1.0]) IDENTIFIES SPECIFIC CONCEPTUAL RIGIDITY COLLAPSES."
-                    className="max-w-none text-center"
-                />
             </div>
         </div>
     );

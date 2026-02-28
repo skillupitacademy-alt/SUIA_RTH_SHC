@@ -7,14 +7,14 @@ async function main() {
     ssl: { rejectUnauthorized: false }
   });
   await client.connect();
-  console.log("🚀 Initializing Precision-Hardened Analytical Views...");
+  scriptLogger.info("🚀 Initializing Precision-Hardened Analytical Views...");
 
   try {
-    console.log("- Dropping existing views...");
+    scriptLogger.info("- Dropping existing views...");
     await client.query(`DROP MATERIALIZED VIEW IF EXISTS attempt_analytics_mv CASCADE`);
     await client.query(`DROP MATERIALIZED VIEW IF EXISTS attempt_dimension_accuracy_mv CASCADE`);
   } catch (e: any) {
-    console.warn("- Warning during drop:", e.message);
+    scriptLogger.warn("- Warning during drop:", e.message);
   }
 
   const queries = [
@@ -117,17 +117,18 @@ async function main() {
 
   for (const q of queries) {
     try {
-      console.log(`- Executing: ${q.name}...`);
+      scriptLogger.info(`- Executing: ${q.name}...`);
       await client.query(q.sql);
-      console.log(`  ✅ ${q.name} complete.`);
+      scriptLogger.info(`  ✅ ${q.name} complete.`);
     } catch (err: any) {
-      console.error(`  ❌ Failed ${q.name}:`, err.message);
+      scriptLogger.error(`  ❌ Failed ${q.name}:`, err.message);
       process.exit(1);
     }
   }
 
   await client.end();
-  console.log("✅ Analysis engine fully initialized.");
+  scriptLogger.info("✅ Analysis engine fully initialized.");
 }
 
-main().catch(console.error);
+main().catch(scriptLogger.error);
+

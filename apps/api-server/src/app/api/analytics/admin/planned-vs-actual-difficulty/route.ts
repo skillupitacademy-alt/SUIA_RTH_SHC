@@ -1,8 +1,12 @@
+import { METRICS } from "@quiz/observability";
 import { type NextRequest, NextResponse } from "next/server";
 
-import { sql } from "@/lib/db";
+import { sqlReplica } from "@/lib/db";
+import { recordCounter, recordTimer } from "@/lib/metrics";
 import { redis } from "@/lib/redis";
+import { withLogging } from "@/lib/withLogging";
 import { TokenService } from "@/modules/auth/token.service";
+import { ResilienceService } from "@/modules/core/resilience.service";
 
 export const dynamic = "force-dynamic";
 
@@ -17,9 +21,13 @@ interface ActualRow {
   actual_percent: number;
 }
 
-export async function GET(req: NextRequest) {
+async function handler(req: NextRequest) {
+  const start = Date.now();
   try {
-    // 1. RBAC Check
+    if (!(await ResilienceService.isFeatureEnabled('analytics'))) {
+      return NextResponse.json(ResilienceService.getBusyPayload('analytics'), { status: 503 });
+    }
+
     const token = TokenService.getAccessToken(req, { scope: "admin" });
     if (token === undefined || token === null || token === "") {
       return NextResponse.json({ error: "Authentication required" }, { status: 401 });
@@ -36,27 +44,21 @@ export async function GET(req: NextRequest) {
 
     const CACHE_KEY = "analytics:admin:planned-vs-actual-difficulty";
 
-    // 2. Redis Cache
     try {
       const cached = await redis.get(CACHE_KEY);
       if (cached !== null) return NextResponse.json(cached);
-    } catch (err) {
-      console.error("[Redis Error]:", err);
+    } catch (_err) {
+      // Ignored
     }
 
-    // 3. Data Extraction
-    // Get Latest Blueprint
-    const [blueprint] = (await sql`
+    const [blueprint] = (await sqlReplica`
       SELECT difficulty_distribution
       FROM exam_blueprints
       ORDER BY created_at DESC
       LIMIT 1;
     `) as [{ difficulty_distribution: BlueprintDistribution } | undefined];
 
-    // Get Actual Stats from Materialized View
-    // Note: Migration 0006 uses question_count, so we calculate percent here to be safe
-    // but the prompt asked for actual_percent, so we handle both or just follow the prompt's intent.
-    const actualRows = (await sql`
+    const actualRows = (await sqlReplica`
       WITH totals AS (
         SELECT SUM(question_count) as grand_total FROM mv_exam_difficulty_actual
       )
@@ -67,7 +69,6 @@ export async function GET(req: NextRequest) {
       GROUP BY difficulty;
     `) as ActualRow[];
 
-    // 4. Transformation
     const labels = ["simple", "intermediate", "expert"];
     const plannedMap: BlueprintDistribution | null = blueprint?.difficulty_distribution ?? null;
 
@@ -81,17 +82,25 @@ export async function GET(req: NextRequest) {
 
     const result = { labels, planned, actual };
 
-    // 5. Caching (30 min)
     try {
       await redis.set(CACHE_KEY, result, { ex: 1800 });
-    } catch (err) {
-      console.error("[Redis Cache Set Error]:", err);
+    } catch (_err) {
+      // Ignored
     }
 
-    return NextResponse.json(result);
+    const durationMs = Date.now() - start;
+    recordTimer(METRICS.ADMIN.DASHBOARD_LOAD + '.planned_vs_actual', durationMs, { outcome: 'success' });
+    recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.planned_vs_actual.count', 1, { outcome: 'success' });
+    return NextResponse.json(result, {
+      headers: { 'X-Duration-Ms': durationMs.toString() }
+    });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Internal Server Error";
-    console.error("[Difficulty Variance API Error]:", error);
+    const durationMs = Date.now() - start;
+    recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.planned_vs_actual.count', 1, { outcome: 'failure' });
+    recordTimer(METRICS.ADMIN.DASHBOARD_LOAD + '.planned_vs_actual.duration', durationMs, { outcome: 'failure' });
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
+
+export const GET = withLogging(handler, { component: 'analytics', operation: 'get_planned_vs_actual_difficulty' });

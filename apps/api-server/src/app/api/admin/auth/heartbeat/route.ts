@@ -1,28 +1,36 @@
 import { db, users } from '@quiz/db';
+import { METRICS } from '@quiz/observability';
 import { eq } from 'drizzle-orm';
-import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
+import { recordCounter, recordTimer } from '@/lib/metrics';
+import { withLogging } from '@/lib/withLogging';
 import { TokenService } from '@/modules/auth/token.service';
 
 export const dynamic = 'force-dynamic';
 
-export async function POST(_req: NextRequest) {
+async function handler(_req: NextRequest) {
+  const start = Date.now();
   try {
-    // ADMIN SCOPE Check
     const _token = TokenService.getAccessToken(_req, { scope: 'admin' });
     if (_token === null || _token === undefined || _token.trim() === '') return NextResponse.json({ _error: 'Unauthorized Admin', scope: 'admin' }, { status: 401 });
 
-    const _payload = await TokenService.verifyAccessToken(_token, true); // true = isAdmin check implicit in verify if needed, but we rely on scope extraction
+    const _payload = await TokenService.verifyAccessToken(_token, true);
     
-    // Update last active
     await db.update(users)
       .set({ lastActiveAt: new Date() })
       .where(eq(users.id, _payload.userId));
 
+    const durationMs = Date.now() - start;
+    recordCounter(METRICS.AUTH.LOGIN + '.heartbeat', 1, { outcome: 'success' });
+    recordTimer(METRICS.AUTH.LOGIN + '.heartbeat.duration', durationMs);
+
     return NextResponse.json({ status: 'ok', timestamp: new Date().toISOString(), mode: 'admin' });
   } catch (_error: unknown) {
     const message = _error instanceof Error ? _error.message : 'Unauthorized';
+    recordCounter(METRICS.AUTH.LOGIN + '.heartbeat', 1, { outcome: 'failure' });
     return NextResponse.json({ _error: message }, { status: 401 });
   }
 }
+
+export const POST = withLogging(handler, { component: 'admin-auth', operation: 'heartbeat' });

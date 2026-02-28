@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react';
 
 import { INFRA_DATA } from '@/lib/governance-inventory';
@@ -82,7 +81,7 @@ export function InfraViewer() {
                 </div>
                 <div className="bg-white border border-slate-200 rounded-[2.5rem] overflow-hidden shadow-2xl shadow-primary/5 w-full">
                     <div className="p-10 grid grid-cols-1 md:grid-cols-3 gap-8">
-                        {INFRA_DATA.envConfig.map((item: any, idx) => (
+                        {INFRA_DATA.envConfig.map((item, idx) => (
                             <div key={idx} className="p-6 rounded-[1.5rem] bg-slate-50 border border-slate-100">
                                 <div className="text-[10px] font-black text-[#FF4B91] uppercase tracking-widest mb-2">{item.Detection}</div>
                                 <div className="text-sm font-bold text-slate-600 truncate">{item.Link != null && item.Link !== '' ? item.Link : item.Status}</div>

@@ -1,5 +1,4 @@
 'use client';
-/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars, react-hooks/exhaustive-deps */
 
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useState } from 'react';
@@ -43,7 +42,6 @@ function QuizSelectionConsoleContent() {
     const [mode, setMode] = useState<'basic' | 'advanced'>('basic');
     const [loading, setLoading] = useState(false);
     const [selectionError, setSelectionError] = useState<string | null>(null);
-    const [launchError, setLaunchError] = useState<{ title: string; reason: string } | null>(null);
 
     const searchParams = useSearchParams();
     const [showInvalidLinkError, setShowInvalidLinkError] = useState(false);
@@ -133,8 +131,10 @@ function QuizSelectionConsoleContent() {
             try {
                 const data = await apiClient.quiz.getDomains();
                 setDomains(data || []);
+                setSelectionError(null);
             } catch (err) {
                 clientLogger.error('Failed to fetch domains', { error: err instanceof Error ? err.message : 'unknown' });
+                setSelectionError('Unable to load domains. Please retry in a moment.');
             } finally {
                 setLoading(false);
             }
@@ -150,8 +150,10 @@ function QuizSelectionConsoleContent() {
                 try {
                     const data = await apiClient.quiz.getSubjects(selectedDomains[0]);
                     setSubjects(data || []);
+                    setSelectionError(null);
                 } catch (err) {
                     clientLogger.error('Failed to fetch subjects', { error: err instanceof Error ? err.message : 'unknown' });
+                    setSelectionError('Unable to load subjects for this domain.');
                 } finally {
                     setLoading(false);
                 }
@@ -171,8 +173,10 @@ function QuizSelectionConsoleContent() {
                     // Fetch for the first selected subject (or could be multiple if logic permits)
                     const data = await apiClient.quiz.getTopics(selectedSubjects[0]);
                     setTopics(data || []);
+                    setSelectionError(null);
                 } catch (err) {
                     clientLogger.error('Failed to fetch topics', { error: err instanceof Error ? err.message : 'unknown' });
+                    setSelectionError('Unable to load topics for this subject.');
                 } finally {
                     setLoading(false);
                 }
@@ -191,8 +195,10 @@ function QuizSelectionConsoleContent() {
                 try {
                     const data = await apiClient.quiz.getSubtopics(selectedTopics[0]);
                     setSubtopics(data || []);
+                    setSelectionError(null);
                 } catch (err) {
                     clientLogger.error('Failed to fetch subtopics', { error: err instanceof Error ? err.message : 'unknown' });
+                    setSelectionError('Unable to load subtopics for this topic.');
                 } finally {
                     setLoading(false);
                 }
@@ -247,7 +253,7 @@ function QuizSelectionConsoleContent() {
                 setTimeout(() => setSelectionError(null), 3000);
             }
         }
-    }, [mode]);
+    }, [mode, questionCount, selectedSubjects.length, selectedSubtopics.length, selectedTopics.length, step]);
 
     const toggleDomain = (id: string) => {
         if (isLocked || isArmed) return;
@@ -360,10 +366,7 @@ function QuizSelectionConsoleContent() {
         } catch (err: unknown) {
             clientLogger.error('Launch failed', { error: err instanceof Error ? err.message : 'unknown' });
             const message = err instanceof Error ? err.message : "Launch failed. Please try again.";
-            setLaunchError({
-                title: "Couldn't start your assessment",
-                reason: message
-            });
+            setSelectionError(message);
             setIsLocked(false);
             setLoading(false);
         }

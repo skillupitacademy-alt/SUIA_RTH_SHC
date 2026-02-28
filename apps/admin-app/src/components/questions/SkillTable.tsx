@@ -1,11 +1,10 @@
 'use client';
-/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars, react-hooks/exhaustive-deps */
 
 import { apiClient } from '@quiz/api-client';
 import { ZLoader, ZPagination } from '@quiz/ui';
 import { Check, Cpu, Hash, Plus, Shield, Trash2, Zap } from 'lucide-react';
 import { X } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { HierarchyFactoryWizard } from '@/components/content/HierarchyFactoryWizard';
 import { SelectField } from '@/components/entry/SelectionFields';
@@ -20,10 +19,25 @@ import {
 } from "@/components/ui/alert-dialog";
 import { ZPortalModal } from '@/components/ui/ZPortalModal';
 import { cn } from '@/lib/utils';
+import type { Skill } from '@/types/domain';
 import { clientLogger } from '@/utils/clientLogger';
 
 import { HierarchySearchBar } from './HierarchySearchBar';
 import { SkillReviewCard } from './SkillReviewCard';
+
+type SkillRow = Skill & {
+    category?: string;
+    mappingType?: 'conceptual' | 'technical' | 'practical';
+    weight?: number;
+};
+
+type SkillForm = {
+    name: string;
+    category: string;
+    mappingType: 'conceptual' | 'technical' | 'practical';
+    weight: number;
+    description: string;
+};
 
 const SKILL_CATEGORIES: Record<string, string> = {
     problem_solving: 'Problem Solving',
@@ -42,7 +56,7 @@ const SKILL_CATEGORIES: Record<string, string> = {
 };
 
 export function SkillTable() {
-    const [data, setData] = useState<any[]>([]);
+    const [data, setData] = useState<SkillRow[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [page, setPage] = useState(1);
     const [pageSize, setPageSize] = useState(20);
@@ -60,14 +74,14 @@ export function SkillTable() {
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [isDeleteOpen, setIsDeleteOpen] = useState(false);
     const [isFactoryOpen, setIsFactoryOpen] = useState(false);
-    const [currentSkill, setCurrentSkill] = useState<any>(null);
+    const [currentSkill, setCurrentSkill] = useState<SkillRow | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     // Form states
-    const [formData, setFormData] = useState({
+    const [formData, setFormData] = useState<SkillForm>({
         name: '',
         category: 'technical',
-        mappingType: 'conceptual' as 'conceptual' | 'technical' | 'practical',
+        mappingType: 'conceptual',
         weight: 1,
         description: ''
     });
@@ -77,13 +91,25 @@ export function SkillTable() {
         return () => clearTimeout(timer);
     }, [searchQuery]);
 
-    const fetchSkills = async () => {
+    const fetchSkills = useCallback(async () => {
         setIsLoading(true);
         try {
             const response = await apiClient.admin.getSkills(page, pageSize, debouncedSearch || undefined);
-            setData(response.data);
+            const skills: SkillRow[] = Array.isArray(response.data)
+                ? (response.data as Skill[]).map((s) => ({
+                    id: String(s.id),
+                    name: s.name ?? '',
+                    description: s.description ?? '',
+                    category: (s as { category?: string }).category ?? 'technical',
+                    mappingType: (s as { mappingType?: SkillRow['mappingType'] }).mappingType ?? 'conceptual',
+                    weight: (s as { weight?: number }).weight ?? 1,
+                    createdAt: s.createdAt,
+                    updatedAt: s.updatedAt
+                }) as SkillRow)
+                : [];
+            setData(skills);
             setTotalPages(response.totalPages);
-            setTotalCount(response.total ?? response.data.length);
+            setTotalCount(response.total ?? skills.length);
             setSelectedIds(new Set());
         } catch (error) {
             clientLogger.error('Failed to fetch skills', { error: error instanceof Error ? error.message : 'unknown' });
@@ -91,11 +117,11 @@ export function SkillTable() {
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [debouncedSearch, page, pageSize]);
 
     useEffect(() => {
         void fetchSkills();
-    }, [page, pageSize, debouncedSearch]);
+    }, [fetchSkills]);
 
     // --- SELECTION LOGIC ---
     const handleSelect = (id: string, selected: boolean) => {
@@ -117,7 +143,7 @@ export function SkillTable() {
         }
     };
 
-    const handleBatchDelete = async () => {
+    const handleBatchDelete = useCallback(async () => {
         if (selectedIds.size === 0) return;
 
         setIsBatchDeleting(true);
@@ -133,18 +159,18 @@ export function SkillTable() {
         } finally {
             setIsBatchDeleting(false);
         }
-    };
+    }, [fetchSkills, selectedIds]);
 
     // --- FORM LOGIC ---
-    const handleOpenForm = (skill: any = null) => {
+    const handleOpenForm = (skill: SkillRow | null = null) => {
         if (skill != null) {
             setCurrentSkill(skill);
             setFormData({
-                name: (skill.name as string),
-                category: (skill.category as string | undefined) ?? 'technical',
-                mappingType: (skill.mappingType as 'conceptual' | 'technical' | 'practical' | undefined) ?? 'conceptual',
-                weight: (skill.weight != null && skill.weight !== 0) ? (skill.weight as number) : 1,
-                description: (skill.description as string | undefined) ?? ''
+                name: skill.name,
+                category: skill.category ?? 'technical',
+                mappingType: skill.mappingType ?? 'conceptual',
+                weight: (skill.weight != null && skill.weight !== 0) ? skill.weight : 1,
+                description: skill.description ?? ''
             });
             setIsFormOpen(true);
         } else {
@@ -156,8 +182,8 @@ export function SkillTable() {
                 weight: 1,
                 description: ''
             });
+            setIsFormOpen(true);
         }
-        setIsFormOpen(true);
     };
 
     const handleCloseForm = () => {
@@ -177,7 +203,7 @@ export function SkillTable() {
         e.preventDefault();
         setIsSubmitting(true);
         try {
-            const payload: any = { ...formData, description: formData.description ?? '' };
+            const payload: SkillForm = { ...formData, description: formData.description ?? '' };
             if (currentSkill !== null) {
                 await apiClient.admin.updateSkill(currentSkill.id, payload);
             } else {
@@ -240,11 +266,12 @@ export function SkillTable() {
                         </button>
                         <button
                             onClick={() => setIsDeleteOpen(true)}
-                            className="px-6 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-black uppercase tracking-widest shadow-lg shadow-red-600/20 transition-all active:scale-95 flex items-center gap-2"
+                            disabled={isBatchDeleting}
+                            className="px-6 py-2 rounded-xl bg-red-600 hover:bg-red-500 disabled:bg-red-400 disabled:cursor-not-allowed text-white text-xs font-black uppercase tracking-widest shadow-lg shadow-red-600/20 transition-all active:scale-95 flex items-center gap-2"
                             aria-label="Delete selected skills"
                         >
-                            <Trash2 size={14} />
-                            Delete Selection
+                            {isBatchDeleting ? <ZLoader size="xs" className="text-white" center={false} /> : <Trash2 size={14} />}
+                            {isBatchDeleting ? 'Deleting...' : 'Delete Selection'}
                         </button>
                     </div>
                 </div>
@@ -336,7 +363,7 @@ export function SkillTable() {
                                                 { id: 'practical', name: 'Practical' }
                                             ]}
                                             loading={false}
-                                            onChange={(val) => setFormData({ ...formData, mappingType: val as any })}
+                                            onChange={(val) => setFormData({ ...formData, mappingType: val as SkillForm['mappingType'] })}
                                             placeholder="Select Mapping"
                                             active={false}
                                             icon={<Cpu size={12} />}
@@ -450,17 +477,35 @@ export function SkillTable() {
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 gap-4">
-                        {data.map((skill, index) => (
-                            <SkillReviewCard
-                                key={skill.id}
-                                skill={skill}
-                                index={index + (page - 1) * 20}
-                                isSelected={selectedIds.has(skill.id)}
-                                onSelect={handleSelect}
-                                onDeleteRequest={(d) => { setCurrentSkill(d); setIsDeleteOpen(true); }}
-                                onEditRequest={(d) => handleOpenForm(d)}
-                            />
-                        ))}
+                        {data.map((skill, index) => {
+                            const normalized: SkillRow = {
+                                ...skill,
+                                category: skill.category ?? 'technical',
+                                mappingType: skill.mappingType ?? 'conceptual',
+                                weight: skill.weight ?? 1
+                            };
+                            return (
+                                <SkillReviewCard
+                                    key={skill.id}
+                                    skill={normalized}
+                                    index={index + (page - 1) * pageSize}
+                                    isSelected={selectedIds.has(skill.id)}
+                                    onSelect={handleSelect}
+                                    onDeleteRequest={(d) => { setCurrentSkill({
+                                        ...normalized,
+                                        category: d.category ?? normalized.category,
+                                        mappingType: d.mappingType ?? normalized.mappingType,
+                                        weight: d.weight ?? normalized.weight
+                                    }); setIsDeleteOpen(true); }}
+                                    onEditRequest={(d) => handleOpenForm({
+                                        ...normalized,
+                                        category: d.category ?? normalized.category,
+                                        mappingType: d.mappingType ?? normalized.mappingType,
+                                        weight: d.weight ?? normalized.weight
+                                    })}
+                                />
+                            );
+                        })}
                         {data.length === 0 && (
                             <div className="text-center py-20 opacity-50">
                                 <Shield className="w-16 h-16 mx-auto mb-4 text-slate-400" />

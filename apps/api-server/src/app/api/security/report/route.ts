@@ -3,6 +3,7 @@ import { type NextRequest, NextResponse } from 'next/server';
 import path from 'path';
 
 import { logger } from '@/lib/logger';
+import { recordCounter, recordTimer } from '@/lib/metrics';
 
 /**
  * SECURITY SINK: CSP Reporting Endpoint
@@ -26,10 +27,11 @@ interface CSPReport {
     };
 }
 
-export async function POST(req: NextRequest) {
+import { withLogging } from '@/lib/withLogging';
+
+async function handler(req: NextRequest) {
+    const start = Date.now();
     try {
-        // 1. Parse the report
-        // Browsers send application/csp-report content-type, which contains valid JSON.
         const body = await req.json() as CSPReport;
         const report = body['csp-report'];
 
@@ -37,7 +39,6 @@ export async function POST(req: NextRequest) {
             return new NextResponse(null, { status: 400 });
         }
 
-    // 2. Format the log entry
     const timestamp = new Date().toISOString();
     const logEntry = JSON.stringify({
       timestamp,
@@ -46,8 +47,6 @@ export async function POST(req: NextRequest) {
       ...report,
     });
 
-    // 3. Persistent Logging (Server-Side)
-    // We write to a dedicated security audit log for Phase B
     const logDir = path.join(process.cwd(), 'logs', 'security');
     const logFile = path.join(logDir, 'csp-audit.log');
 
@@ -57,7 +56,6 @@ export async function POST(req: NextRequest) {
 
     fs.appendFileSync(logFile, logEntry + '\n');
 
-    // 4. Trace to logger for real-time monitoring (no bodies/headers)
     logger.warn({
       route: '/api/security/report',
       method: req.method,
@@ -65,9 +63,14 @@ export async function POST(req: NextRequest) {
       blockedUri: report['blocked-uri'],
     }, '[CSP-AUDIT] Violation');
 
-    return new NextResponse(null, { status: 204 }); // Standard success for reporting endpoints
+    recordCounter('security.csp_report.count', 1, { outcome: 'success' });
+    recordTimer('security.csp_report.duration', Date.now() - start, { outcome: 'success' });
+    return new NextResponse(null, { status: 204 }); 
   } catch (err) {
+    recordCounter('security.csp_report.count', 1, { outcome: 'failure' });
     logger.error({ err, route: '/api/security/report', method: 'POST' }, '[CSP-AUDIT] Error processing report');
     return new NextResponse(null, { status: 500 });
   }
 }
+
+export const POST = withLogging(handler, { component: 'security', operation: 'csp_report' });

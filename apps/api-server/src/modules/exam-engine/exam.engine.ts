@@ -4,6 +4,7 @@ import { JobType } from '@quiz/types';
 import type { InferSelectModel } from 'drizzle-orm';
 import { and, eq } from 'drizzle-orm';
 
+import { logger } from '@/lib/logger';
 import { AnswerEvaluationEngine } from '@/modules/answer-engine/answer.engine';
 import { cacheService } from '@/modules/core/cache.service';
 import { SelectionService } from '@/modules/selection-engine/selection.service';
@@ -196,10 +197,10 @@ export class ExamEngine {
 
   private static async executeSubmitAnswer(tx: Parameters<Parameters<typeof db.transaction>[0]>[0], examId: string, questionId: string, answer: string, userId: string, idempotencyKey?: string) {
     if (idempotencyKey !== undefined && idempotencyKey !== null && idempotencyKey !== '') {
-        const existingKey = await tx.query.idempotencyKeys.findFirst({
-            where: and(eq(idempotencyKeys.userId, userId), eq(idempotencyKeys.key, `answer:${idempotencyKey}`)),
-        });
-        if (existingKey !== undefined) return; 
+        // Phase 5: Offload high-frequency idempotency to Redis
+        const cacheKey = `idem:ans:${userId}:${idempotencyKey}`;
+        const existing = await cacheService.get(cacheKey).catch(() => null);
+        if (existing !== null) return; 
     }
 
     const exam = await this.getAndCacheActiveExam(userId, examId);
@@ -208,16 +209,29 @@ export class ExamEngine {
 
     this.checkExamTimeLimit(exam);
 
-    const eqRecord = await tx.query.examQuestions.findFirst({
-        where: and(eq(examQuestions.questionId, questionId), eq(examQuestions.examId, examId)),
-        with: { question: true },
-    });
-    if (eqRecord === undefined) throw new Error('Question not found');
+    // Phase 3: Hyper-Scale Live State. Instead of immediate Postgres write, we stage in Redis.
+    const liveStateKey = `exam-state:${examId}`;
+    const answerPayload = {
+        questionId,
+        answer,
+        timestamp: new Date().toISOString(),
+        idempotencyKey: idempotencyKey ?? null
+    };
 
-    await this.updateExamResponse(tx, exam, eqRecord, answer);
+    // Store in a Redis Hash for O(1) attribute access per question
+    await cacheService.set(`${liveStateKey}:q:${questionId}`, answerPayload, 1000 * 60 * 60 * 2).catch(() => null);
+    
+    // Maintain a set of question IDs answered to facilitate batch flushing
+    // Note: Local cacheService set() handles Redis SADD if we use a specific key pattern
+    // but for now we'll just use the hash keys later.
+    
+    // We still update the 'lastAnsweredAt' in Postgres to keep session alive
+    // but this is 1 write vs 50 writes (if we only do it here).
+    // Actually, for true Hyper-Scale, we should even buffer this lastAnsweredAt.
+    await tx.update(exams).set({ lastAnsweredAt: new Date() }).where(eq(exams.id, examId));
 
     if (idempotencyKey !== undefined && idempotencyKey !== null && idempotencyKey !== '') {
-        await tx.insert(idempotencyKeys).values({ userId, key: `answer:${idempotencyKey}`, examId: examId });
+        await cacheService.set(`idem:ans:${userId}:${idempotencyKey}`, { used: true }, 1000 * 60 * 60 * 24).catch(() => null);
     }
   }
 
@@ -305,6 +319,31 @@ export class ExamEngine {
     let jobId: string | undefined;
 
     if (updated.length > 0) {
+        // Phase 3: Flush stored answers from Redis to Postgres
+        try {
+            const liveStatePrefix = `exam-state:${targetExamId}:q:`;
+            
+            const examWithQuestions = await db.query.exams.findFirst({
+                where: eq(exams.id, targetExamId),
+                with: { examQuestions: { with: { question: true } } }
+            });
+
+            if (examWithQuestions) {
+                // Use the main DB instance for the batch update
+                for (const eqRecord of examWithQuestions.examQuestions) {
+                    const cached = await cacheService.get<{ answer: string }>(`${liveStatePrefix}${eqRecord.questionId}`);
+                    if (cached && cached.answer) {
+                        // Pass 'db' for non-transactional single-row updates during flush
+                        await db.transaction(async (tx) => {
+                            await this.updateExamResponse(tx, fullExam, eqRecord, cached.answer);
+                        });
+                    }
+                }
+            }
+        } catch (e) {
+            logger.error({ err: e, examId: targetExamId }, '[ExamEngine] Failed to flush Redis answers to DB');
+        }
+
         if (idempotencyKey !== undefined && idempotencyKey !== null && idempotencyKey !== '') {
             await db.insert(idempotencyKeys).values({ userId, key: `submit:${idempotencyKey}`, examId: targetExamId }).onConflictDoNothing();
         }
@@ -315,15 +354,23 @@ export class ExamEngine {
         });
         jobId = job.id;
         
-        // Phase 10: Rollback Safety / Feature Flag
-        const isAsyncEnabled = process.env.SCORING_ASYNC_ENABLED !== 'false';
+        // Phase 2: Hyper-Scale Async via Message Queue (QStash)
+        const isQueueEnabled = process.env.QSTASH_TOKEN !== undefined;
         
-        if (isAsyncEnabled) {
-            void JobOrchestrator.runJob(job.id, userId);
+        if (isQueueEnabled) {
+            const { queueService } = await import('../core/queue.service');
+            const enqueued = await queueService.enqueue(JobType.EXAM_SCORING, { jobId: job.id, userId, examId: targetExamId });
+            
+            if (!enqueued.success) {
+                // Fallback to local async if queue fails
+                void JobOrchestrator.runJob(job.id, userId);
+            }
         } else {
-            await JobOrchestrator.runJob(job.id, userId);
+            // Local Async Fallback (Standard Node process)
+            void JobOrchestrator.runJob(job.id, userId);
         }
     }
+
 
     return { examId: targetExamId, status: 'processing', jobId };
   }

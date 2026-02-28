@@ -1,9 +1,14 @@
 "use client";
 
 import { apiClient, TopicSkillHeatmapResponse } from "@quiz/api-client";
+import type { EChartsOption } from "echarts";
 import { useEffect, useState } from "react";
 
+import { clientLogger } from "@/utils/clientLogger";
+
 import BaseChart from "./BaseChart";
+
+type HeatmapParams = { value: [number, number, number] };
 
 export default function AdminTopicSkillHeatmap() {
     const [data, setData] = useState<TopicSkillHeatmapResponse>({
@@ -20,7 +25,7 @@ export default function AdminTopicSkillHeatmap() {
                 const res = await apiClient.analytics.getAdminTopicSkillHeatmap();
                 setData(res);
             } catch (err: unknown) {
-                console.error("Failed to load topic-skill heatmap", err);
+                clientLogger.error("Failed to load topic-skill heatmap", { error: err instanceof Error ? err.message : 'unknown' });
                 setForbidden(true);
             } finally {
                 setLoading(false);
@@ -50,7 +55,7 @@ export default function AdminTopicSkillHeatmap() {
 
     const maxVal = Math.max(...data.matrix.map((m) => m[2]), 10);
 
-    const option = {
+    const option: EChartsOption = {
         tooltip: {
             position: "top",
             backgroundColor: "rgba(255, 255, 255, 0.95)",
@@ -58,8 +63,7 @@ export default function AdminTopicSkillHeatmap() {
             textStyle: { color: "#1E293B" },
             padding: [10, 15],
             extraCssText: "box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); border-radius: 8px;",
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            formatter: (params: any) => {
+            formatter: (params: HeatmapParams) => {
                 const topic = data.topics[params.value[0]];
                 const skill = data.skills[params.value[1]];
                 const count = params.value[2];
@@ -82,7 +86,7 @@ export default function AdminTopicSkillHeatmap() {
             right: "5%"
         },
         xAxis: {
-            type: "category",
+            type: "category" as const,
             data: data.topics,
             splitArea: { show: true, areaStyle: { color: ['#fff', '#f8fafc'] } },
             axisLabel: {
@@ -91,13 +95,13 @@ export default function AdminTopicSkillHeatmap() {
                 color: "#64748B",
                 fontSize: 10,
                 width: 100,
-                overflow: 'truncate'
+                overflow: 'truncate' as const
             },
             axisLine: { show: false },
             axisTick: { show: false }
         },
         yAxis: {
-            type: "category",
+            type: "category" as const,
             data: data.skills,
             splitArea: { show: true },
             axisLabel: { color: "#64748B", fontSize: 11 },
@@ -136,7 +140,7 @@ export default function AdminTopicSkillHeatmap() {
                 },
             },
         ],
-    };
+    } as unknown as EChartsOption;
 
     return (
         <div className="w-full bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
