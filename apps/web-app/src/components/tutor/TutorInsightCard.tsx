@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { TopicProgressChart } from "./TopicProgressChart";
 import { NotesViewer } from "./NotesViewer";
 import { clientLogger } from "@/utils/clientLogger";
+import { getApiBase } from "@/utils/apiBase";
 
 interface Recommendation {
     topicId: string;
@@ -20,6 +21,7 @@ interface Recommendation {
 }
 
 export function TutorInsightCard() {
+    const apiBase = getApiBase();
     const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -31,7 +33,7 @@ export function TutorInsightCard() {
     useEffect(() => {
         async function fetchRecommendations() {
             try {
-                const res = await fetch("/api/recommendations/explain", { credentials: "include" });
+                const res = await fetch(`${apiBase}/recommendations/explain`, { credentials: "include" });
                 if (!res.ok) {
                     const data = await res.json().catch(() => ({}));
                     throw new Error(data.error ?? `Request failed (${res.status})`);
@@ -54,7 +56,7 @@ export function TutorInsightCard() {
             }
         }
         fetchRecommendations();
-    }, []);
+    }, [apiBase]);
 
     const toggleExpand = (topicId: string) => {
         setExpandedTopic(expandedTopic === topicId ? null : topicId);
@@ -67,7 +69,7 @@ export function TutorInsightCard() {
         setRequestingHelp(topicId);
         recordCounter('web.ui.tutor.help_request.click', 1, { topicId });
         try {
-            const res = await fetch("/api/tutor/help/request", {
+            const res = await fetch(`${apiBase}/tutor/help/request`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ topicId }),

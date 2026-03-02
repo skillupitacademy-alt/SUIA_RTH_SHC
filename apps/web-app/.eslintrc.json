@@ -35,6 +35,15 @@
                 "@typescript-eslint/no-floating-promises": "off",
                 "@typescript-eslint/no-misused-promises": "off"
             }
+        },
+        {
+            "files": [
+                "**/__tests__/**",
+                "**/*.test.*"
+            ],
+            "parserOptions": {
+                "project": null
+            }
         }
     ],
     "plugins": [

@@ -19,7 +19,8 @@
                            "tailwind.config.ts",
                            "vitest.config.ts",
                            "vitest.setup.ts",
-                           "src/modules/**/__tests__/**/*"
+                           "src/modules/**/__tests__/**/*",
+                           "src/__test-utils__/**/*"
                        ],
     "overrides":  [
                       {

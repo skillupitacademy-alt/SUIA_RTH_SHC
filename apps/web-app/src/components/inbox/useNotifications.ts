@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useAuth } from "@/context/auth-context";
 import { clientLogger } from "@/utils/clientLogger";
+import { getApiBase } from "@/utils/apiBase";
 
 export interface Notification {
   id: string;
@@ -18,6 +19,7 @@ export interface Notification {
 export function useNotifications() {
   const auth = useAuth();
   const isAuthenticated = auth?.isAuthenticated ?? false;
+  const apiBase = getApiBase();
   
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -28,7 +30,7 @@ export function useNotifications() {
   const fetchUnreadCount = useCallback(async () => {
     if (!isAuthenticated) return;
     try {
-      const res = await fetch("/api/notifications/unread-count", { credentials: "include" });
+      const res = await fetch(`${apiBase}/notifications/unread-count`, { credentials: "include" });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
         throw new Error(data.error ?? `Failed to fetch unread (${res.status})`);
@@ -40,15 +42,15 @@ export function useNotifications() {
             clientLogger.error("Failed to fetch unread count", { error: err instanceof Error ? err.message : 'unknown' });
       setError(err instanceof Error ? err.message : "Failed to load notifications");
     }
-  }, [isAuthenticated]);
+  }, [apiBase, isAuthenticated]);
 
   const fetchNotifications = useCallback(async () => {
     if (!isAuthenticated) return;
     setLoading(true);
     try {
       const url = filterType 
-        ? `/api/notifications?limit=20&type=${filterType}`
-        : "/api/notifications?limit=20";
+        ? `${apiBase}/notifications?limit=20&type=${filterType}`
+        : `${apiBase}/notifications?limit=20`;
       const res = await fetch(url, { credentials: "include" });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
@@ -63,11 +65,11 @@ export function useNotifications() {
     } finally {
       setLoading(false);
     }
-  }, [isAuthenticated, filterType]);
+  }, [apiBase, isAuthenticated, filterType]);
 
   const markAsRead = async (id: string) => {
     try {
-      const res = await fetch("/api/notifications/mark-read", {
+      const res = await fetch(`${apiBase}/notifications/mark-read`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ notificationId: id }),
@@ -90,7 +92,7 @@ export function useNotifications() {
 
   const markAllAsRead = async () => {
     try {
-      const res = await fetch("/api/notifications/mark-read", {
+      const res = await fetch(`${apiBase}/notifications/mark-read`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ markAll: true }),
