@@ -13,7 +13,4 @@ export function initSecurityMuzzle() {
   (console as any).log = noop;
   (console as any).info = noop;
   (console as any).debug = noop;
-  
-  // Warm trace for muzzle activation
-  (console as any).warn('[OBSERVABILITY] SecurityMuzzle activated: Console log/info/debug suppressed for PII safety.');
 }
