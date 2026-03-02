@@ -1,7 +1,7 @@
-import { defineWorkspace } from 'vitest/config';
-
-export default defineWorkspace([
-  'apps/admin-app/vitest.config.ts',
+export default [
   'apps/api-server/vitest.config.ts',
   'apps/web-app/vitest.config.ts',
-]);
+  'apps/admin-app/vitest.config.ts',
+  'packages/db/vitest.config.ts',
+  'packages/api-client/vitest.config.ts',
+]

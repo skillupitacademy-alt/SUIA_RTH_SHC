@@ -1,25 +1,18 @@
-import react from '@vitejs/plugin-react';
-import tsconfigPaths from 'vite-tsconfig-paths';
-import { defineConfig } from 'vitest/config';
-
-import { resolveWorkspacePath } from '../../packages/config/envPaths';
+import { defineConfig } from 'vitest/config'
+import react from '@vitejs/plugin-react'
+import path from 'path'
 
 export default defineConfig({
-  plugins: [tsconfigPaths(), react()],
-  resolve: {
-    alias: {
-      '@tests': resolveWorkspacePath('tests'),
-    },
-  },
+  root: __dirname,
+  plugins: [react()],
   test: {
-    globals: true,
     environment: 'jsdom',
-    setupFiles: './vitest.setup.ts',
-    include: ['src/**/*.{test,spec}.{ts,tsx}', '__tests__/**/*.{ts,tsx}'],
-    passWithNoTests: true,
+    globals: true,
+    setupFiles: ['./src/test/setup.ts'],
+    include: ['src/**/*.test.{ts,tsx}'],
     coverage: {
       provider: 'v8',
-      reporter: ['text', 'lcov'],
+      reporter: ['text', 'json', 'html'],
       thresholds: {
         statements: 70,
         branches: 60,
@@ -28,4 +21,9 @@ export default defineConfig({
       },
     },
   },
-});
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src'),
+    },
+  },
+})
