@@ -58,7 +58,7 @@ const nextConfig = {
 
 module.exports = withSentryConfig(nextConfig, {
     org: "realtutorialhub",
-    project: "quiz-platform-api",
+    project: process.env.SENTRY_PROJECT || "quiz-platform",
     silent: !process.env.CI,
     widenClientFileUpload: true,
     reactComponentAnnotation: { enabled: true },
