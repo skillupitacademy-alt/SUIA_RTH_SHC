@@ -26,5 +26,9 @@
             "maxDuration": 60,
             "includeFiles": "../../node_modules/@sparticuz/chromium/bin/**"
         }
-    }
+    },
+    "framework": "nextjs",
+    "buildCommand": "pnpm --filter @quiz/api-server build",
+    "installCommand": "pnpm install --frozen-lockfile",
+    "outputDirectory": ".next"
 }
