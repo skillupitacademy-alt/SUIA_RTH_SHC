@@ -45,6 +45,7 @@
         "*.config.js",
         "*.config.mjs",
         "**/*.test.ts",
+        "src/__test-utils__",
         "vitest.config.ts",
         "vitest.setup.ts"
     ]
