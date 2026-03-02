@@ -56,14 +56,16 @@ const nextConfig = {
     },
 };
 
-module.exports = withSentryConfig(nextConfig, {
-    org: "realtutorialhub",
+const sentryConfig = {
+    org: "o4510960730308608",
     project: process.env.SENTRY_PROJECT || "quiz-platform",
-    silent: !process.env.CI,
+    silent: true,
     widenClientFileUpload: true,
     reactComponentAnnotation: { enabled: true },
     tunnelRoute: "/monitoring",
     hideSourceMaps: true,
     disableLogger: true,
     automaticVercelMonitors: true,
-});
+};
+
+module.exports = withSentryConfig(nextConfig, sentryConfig);

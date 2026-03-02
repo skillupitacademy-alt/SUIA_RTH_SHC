@@ -65,9 +65,9 @@ const nextConfig = {
 };
 
 export default withSentryConfig(withBundleAnalyzer(nextConfig), {
-    org: "realtutorialhub",
+    org: "o4510960730308608",
     project: process.env.SENTRY_PROJECT || "quiz-platform",
-    silent: !process.env.CI,
+    silent: true,
     widenClientFileUpload: true,
     reactComponentAnnotation: { enabled: true },
     tunnelRoute: "/monitoring",
