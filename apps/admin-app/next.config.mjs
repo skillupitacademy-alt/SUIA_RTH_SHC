@@ -62,7 +62,7 @@ const nextConfig = {
 };
 
 export default withSentryConfig(withBundleAnalyzer(nextConfig), {
-    org: "o4510960730308608",
+    org: "real-tutorial-hub",
     project: process.env.SENTRY_PROJECT || "quiz-platform",
     silent: true,
     widenClientFileUpload: true,
