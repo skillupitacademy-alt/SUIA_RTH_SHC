@@ -8,7 +8,11 @@
       "dependsOn": [
         "^build"
       ],
-      "outputs": []
+      "outputs": [
+        ".next/**",
+        "next-env.d.ts",
+        "dist/**"
+      ]
     },
     "lint": {
       "dependsOn": [
