@@ -45,7 +45,11 @@
         "*.config.js",
         "*.config.mjs",
         "**/*.test.ts",
+        "**/*.test.tsx",
+        "src/test",
+        "src/__tests__",
         "src/__test-utils__",
+        "**/__tests__",
         "vitest.config.ts",
         "vitest.setup.ts"
     ]
