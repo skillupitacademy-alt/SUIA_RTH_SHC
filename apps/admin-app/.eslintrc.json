@@ -82,7 +82,9 @@
         {
             "files": [
                 "**/__tests__/**",
-                "**/*.test.*"
+                "**/*.test.*",
+                "src/test/**",
+                "vitest.setup.ts"
             ],
             "parserOptions": {
                 "project": null

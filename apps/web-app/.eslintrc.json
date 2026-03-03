@@ -39,7 +39,8 @@
         {
             "files": [
                 "**/__tests__/**",
-                "**/*.test.*"
+                "**/*.test.*",
+                "src/test/**"
             ],
             "parserOptions": {
                 "project": null
