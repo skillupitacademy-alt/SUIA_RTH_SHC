@@ -4,10 +4,12 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ScoringEngine } from '@/modules/scoring-engine/scoring.engine';
 import { JobOrchestrator } from '@/modules/system/job-orchestrator';
 import { JobsService } from '@/modules/system/jobs.service';
+import { TutorService } from '@/modules/tutor/tutor.service';
 
 // Mock the services
 vi.mock('@/modules/system/jobs.service');
 vi.mock('@/modules/scoring-engine/scoring.engine');
+vi.mock('@/modules/tutor/tutor.service');
 
 describe('JobOrchestrator - handleExamScoring', () => {
     const mockJobId = 'job-123';
@@ -31,6 +33,7 @@ describe('JobOrchestrator - handleExamScoring', () => {
 
         vi.mocked(JobsService.getJob).mockResolvedValue(mockJob);
         vi.mocked(ScoringEngine.calculateExamResults).mockResolvedValue(85); // Mock return score
+        vi.mocked(TutorService.processExamResults).mockResolvedValue(undefined);
 
         // Act
         await JobOrchestrator.runJob(mockJobId, mockUserId);

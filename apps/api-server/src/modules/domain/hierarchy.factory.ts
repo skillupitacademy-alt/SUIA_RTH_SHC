@@ -59,7 +59,6 @@ export class HierarchyFactory {
       domainId = await this.resolveDomain(tx, _payload, results);
     }
     results.domainId = (domainId !== undefined && domainId !== null && domainId !== '') ? domainId : null;
-
     this.validateUpsertContext(domainId ?? null, _payload);
 
     // 1.5 Handle Batch Domains
@@ -75,7 +74,7 @@ export class HierarchyFactory {
     // 2. Resolve Subjects
     if (_payload.subjects !== undefined) {
       const dId = results.domainId;
-      if (dId === null) throw new Error('Domain context required for hierarchical operations.');
+      if (dId === null || dId === undefined) throw new Error('Domain context required for hierarchical operations.');
       for (const s of _payload.subjects) {
         await this.processSubject(tx, s, dId, results);
       }

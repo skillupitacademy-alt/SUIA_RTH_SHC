@@ -10,8 +10,20 @@ export interface ListJobsOptions {
 }
 
 export class JobsService {
+  // Test seam: optionally override db instance
+  private static _db: typeof db | undefined;
+  static withDb(fakeDb: typeof db) {
+    if (process.env.NODE_ENV === 'test') {
+      this._db = fakeDb;
+    }
+    return this;
+  }
+  private static get db() {
+    return this._db ?? db;
+  }
+
   static async createJob(dto: CreateJobDTO): Promise<Job> {
-    const [job] = await db
+    const [job] = await this.db
       .insert(backgroundJobs)
       .values({
         userId: dto.userId,
@@ -25,7 +37,7 @@ export class JobsService {
   }
 
   static async getJob(jobId: string, userId: string): Promise<Job | undefined> {
-    const job = await db.query.backgroundJobs.findFirst({
+    const job = await this.db.query.backgroundJobs.findFirst({
       where: and(
         eq(backgroundJobs.id, jobId),
         eq(backgroundJobs.userId, userId)
@@ -48,14 +60,14 @@ export class JobsService {
 
     const where = conditions.length > 0 ? and(...conditions) : undefined;
 
-    const items = await db.query.backgroundJobs.findMany({
+    const items = await this.db.query.backgroundJobs.findMany({
       where,
       orderBy: [desc(backgroundJobs.createdAt)],
       limit,
       offset,
     });
 
-    const [countResult] = await db
+    const [countResult] = await this.db
       .select({ count: sql<number>`count(*)` })
       .from(backgroundJobs)
       .where(where || sql`true`);
@@ -81,7 +93,7 @@ export class JobsService {
   }
 
   static async deleteJob(jobId: string, userId: string): Promise<void> {
-    await db
+    await this.db
       .delete(backgroundJobs)
       .where(
         and(
@@ -93,7 +105,7 @@ export class JobsService {
 
   static async getActiveJobCount(userId: string): Promise<number> {
     const activeStatuses: JobStatus[] = [JobStatus.PENDING, JobStatus.PROCESSING];
-    const results = await db
+    const results = await this.db
       .select()
       .from(backgroundJobs)
       .where(
@@ -130,7 +142,7 @@ export class JobsService {
       if (data?.error !== undefined) updateData.error = data.error;
     }
 
-    const [job] = await db
+    const [job] = await this.db
       .update(backgroundJobs)
       .set(updateData)
       .where(eq(backgroundJobs.id, jobId))

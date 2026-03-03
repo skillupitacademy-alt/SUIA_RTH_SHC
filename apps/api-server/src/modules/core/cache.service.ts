@@ -13,6 +13,10 @@ interface _CacheOptions {
 const REDIS_TIMEOUT_MS = 1000; // Increased to 1s for stable Admin checks (Upstash REST)
 const REDIS_COOLDOWN_MS = 60000; // 60s cooldown on failure
 
+type CacheDeps = {
+  redis?: Redis | null;
+};
+
 export class CacheService {
   private static instance: CacheService;
   private cache: LRUCache<string, CacheValue>;
@@ -20,7 +24,7 @@ export class CacheService {
   private isDebug: boolean;
   private redisDeadUntil: number = 0;
 
-  private constructor() {
+  private constructor(deps?: CacheDeps) {
     this.isDebug = process.env.DEBUG_CACHE === 'true';
     this.cache = new LRUCache({
       max: 500, // Bound memory usage
@@ -29,26 +33,30 @@ export class CacheService {
       updateAgeOnGet: false,
     });
 
-    // Initialize Redis if credentials exist
-    const redisUrl = process.env.UPSTASH_REDIS_REST_URL;
-    const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN;
+    // test-only injection guard
+    if (deps?.redis !== undefined && process.env.NODE_ENV === 'test') {
+      this.redis = deps.redis;
+    } else {
+      // Initialize Redis if credentials exist
+      const redisUrl = process.env.UPSTASH_REDIS_REST_URL;
+      const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN;
 
-    if (redisUrl !== undefined && redisToken !== undefined) {
-      try {
-        this.redis = new Redis({
-          url: redisUrl,
-          token: redisToken,
-        });
-        // logger.debug('[Cache] Edge-compatible Redis provider initialized (Upstash)');
-      } catch (e) {
-        logger.error({ err: e }, '[Cache] Failed to initialize Redis provider');
+      if (redisUrl !== undefined && redisToken !== undefined) {
+        try {
+          this.redis = new Redis({
+            url: redisUrl,
+            token: redisToken,
+          });
+        } catch (e) {
+          logger.error({ err: e }, '[Cache] Failed to initialize Redis provider');
+        }
       }
     }
   }
 
-  public static getInstance(): CacheService {
+  public static getInstance(deps?: CacheDeps): CacheService {
     if (CacheService.instance === undefined) {
-      CacheService.instance = new CacheService();
+      CacheService.instance = new CacheService(deps);
     }
     return CacheService.instance;
   }

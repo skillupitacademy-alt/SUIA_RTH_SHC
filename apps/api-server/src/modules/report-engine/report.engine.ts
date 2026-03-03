@@ -154,9 +154,13 @@ class ActionPlanBuilder {
 
 export class ReportEngine {
   private static log = logger.child({ module: 'report-engine' });
+  // Test seam for injected db
+  static get db(): typeof db {
+    return (ReportEngine as any)._db ?? db;
+  }
 
   static async getUserPerformance(userId: string) {
-    const userExams = await db.query.exams.findMany({
+    const userExams = await this.db.query.exams.findMany({
       where: eq(exams.userId, userId),
       orderBy: [desc(exams.completedAt)],
       with: {
@@ -166,19 +170,20 @@ export class ReportEngine {
 
     return {
       examsCompleted: userExams.length,
-      averageScore: userExams.length > 0 ? userExams.reduce((acc, curr) => acc + (curr.totalScore !== null ? curr.totalScore : 0), 0) / userExams.length : 0,
-      dimensions: userExams.flatMap(e => e.dimensions),
+      averageScore: userExams.length > 0 ? userExams.reduce((acc: number, curr: any) => acc + (curr.totalScore !== null ? curr.totalScore : 0), 0) / userExams.length : 0,
+      dimensions: userExams.flatMap((e: any) => e.dimensions),
     };
   }
 
   private static async calculatePercentile(currentExamId: string, blueprintId: string | null, myAccuracy: number): Promise<number> {
     try {
+        const dbc = ReportEngine.db;
         let whereClause = eq(exams.status, 'completed');
         if (blueprintId !== null && blueprintId !== undefined) {
             whereClause = and(eq(exams.status, 'completed'), eq(exams.blueprintId, blueprintId))!;
         }
 
-        const cohort = await db.query.exams.findMany({
+        const cohort = await dbc.query.exams.findMany({
             where: whereClause,
             columns: { id: true, totalScore: true },
             with: {
@@ -198,6 +203,7 @@ export class ReportEngine {
 
         const lowerScores = accuracies.filter(acc => acc < myAccuracy).length;
         const percentile = (lowerScores / cohort.length) * 100;
+        // Always return within 1–99 to avoid misleading perfect/zero percentiles on small cohorts.
         return Math.min(99, Math.max(1, Math.round(percentile)));
     } catch (e) {
         ReportEngine.log.error({ currentExamId, error: e instanceof Error ? e.message : 'unknown' }, 'Percentile failed');
@@ -206,7 +212,7 @@ export class ReportEngine {
   }
 
   static async getExamReport(examId: string, options: { includeCorrectAnswers?: boolean } = {}) {
-    const exam = await db.query.exams.findFirst({
+    const exam = await this.db.query.exams.findFirst({
       where: eq(exams.id, examId),
       with: {
         examQuestions: {
@@ -220,12 +226,12 @@ export class ReportEngine {
 
     if (exam === undefined || exam === null) throw new Error('Exam not found');
 
-    const results = await db.query.resultsByDimension.findMany({
+    const results = await this.db.query.resultsByDimension.findMany({
       where: eq(resultsByDimension.examId, examId),
     });
 
     const totalQuestions = exam.examQuestions.length;
-    const correctAnswers = exam.examQuestions.filter(item => item.isCorrect === true).length;
+    const correctAnswers = exam.examQuestions.filter((item: any) => item.isCorrect === true).length;
     const scorePercentage = totalQuestions > 0 ? (correctAnswers / totalQuestions) * 100 : 0;
 
     let timeTaken = "00m 00s";
@@ -274,7 +280,7 @@ export class ReportEngine {
         } as DimensionResult);
         return acc;
       }, {} as Record<string, DimensionResult[]>),
-      questions: exam.examQuestions.map(item => ({
+      questions: exam.examQuestions.map((item: any) => ({
         text: item.question.questionText,
         userAnswer: item.userAnswer,
         correctAnswer: includeCorrect ? item.question.correctAnswer : undefined,
@@ -287,10 +293,11 @@ export class ReportEngine {
 
   static async getPremiumExamReport(examId: string): Promise<PremiumReport> {
     // 1. Check Redis Cache First
+    const dbc = ReportEngine.db;
     const cached = await PerformanceService.getCachedReport<PremiumReport>(examId);
     if (cached !== null) return cached;
 
-    const exam = await db.query.exams.findFirst({
+    const exam = await dbc.query.exams.findFirst({
       where: eq(exams.id, examId),
       with: {
         blueprint: true,
@@ -300,7 +307,7 @@ export class ReportEngine {
     if (exam === undefined || exam === null) throw new Error('Exam not found');
 
     const runCoreQuery = async () => {
-        const res = await db.execute(sql`
+        const res = await dbc.execute(sql`
         WITH analytics AS (
             SELECT * FROM attempt_analytics_mv WHERE exam_id = ${examId}
         ),
@@ -450,7 +457,7 @@ export class ReportEngine {
 
     // Lazy Refresh: If the primary row is empty (MV not refreshed for this attempt)
     const hasData = (row: Partial<CoreRow> | undefined) =>
-      row !== undefined && row !== null && row.score !== null;
+      row !== undefined && row !== null;
 
     if (coreMetricsRaw.rows.length === 0 || !hasData(coreMetricsRaw.rows[0])) {
       ReportEngine.log.info({ examId }, 'Analytic row missing in MV, triggering lazy refresh');
@@ -465,12 +472,12 @@ export class ReportEngine {
     const core = coreMetricsRaw.rows[0] as CoreRow;
 
     // Fetch Lineage and Completion Date
-    const lineageData = await db.query.resultsByDimension.findMany({
+    const lineageData = await dbc.query.resultsByDimension.findMany({
       where: eq(resultsByDimension.examId, examId),
     });
 
     // Robust Fallback: If results_by_dimension lacks names, fetch from hierarchy
-    const hierarchyFallback = await db.query.examQuestions.findFirst({
+    const hierarchyFallback = await dbc.query.examQuestions.findFirst({
         where: eq(examQuestions.examId, examId),
         with: {
             question: {
@@ -490,18 +497,18 @@ export class ReportEngine {
     });
 
     const lineage = {
-      domain: lineageData.find(r => r.dimensionType === 'domain')?.name
+      domain: lineageData.find((r: any) => r.dimensionType === 'domain')?.name
         ?? hierarchyFallback?.question?.topic?.subject?.domain?.name
         ?? undefined,
-      subject: lineageData.find(r => r.dimensionType === 'subject')?.name
+      subject: lineageData.find((r: any) => r.dimensionType === 'subject')?.name
         ?? hierarchyFallback?.question?.topic?.subject?.name
         ?? undefined,
-      topic: lineageData.find(r => r.dimensionType === 'topic')?.name
+      topic: lineageData.find((r: any) => r.dimensionType === 'topic')?.name
         ?? hierarchyFallback?.question?.topic?.name
         ?? undefined,
     };
 
-    const rawQuestions = await db.execute(sql`
+    const rawQuestions = await dbc.execute(sql`
         SELECT 
             eq.id,
             q.question_text as text,
@@ -577,7 +584,7 @@ export class ReportEngine {
 
         const records = Object.values(topicAgg).map(t => ({
           topicId: t.topicId,
-          accuracy: t.count > 0 ? t.total / t.count : 0
+          accuracy: t.total / t.count
         }));
 
         // Suppress conceptual gaps for near-perfect scores, but keep contract as an array
@@ -585,7 +592,7 @@ export class ReportEngine {
 
         return AdaptiveTutorService.generateInsights(exam.userId, records);
       })(),
-      questions: (rawQuestions.rows as RawQuestionRow[]).map((q) => ({
+      questions: (rawQuestions.rows as RawQuestionRow[]).map((q: RawQuestionRow) => ({
         id: q.id,
         text: q.text,
         userAnswer: q.user_answer,
@@ -594,7 +601,7 @@ export class ReportEngine {
         isCorrect: q.is_correct === 1,
         timeSpent: Number(q.time_spent ?? 0)
       })),
-      candidateName: (await db.query.userProfiles.findFirst({
+      candidateName: (await dbc.query.userProfiles.findFirst({
         where: eq(userProfiles.userId, exam.userId),
         columns: { name: true }
       }))?.name ?? "Strategic Officer"

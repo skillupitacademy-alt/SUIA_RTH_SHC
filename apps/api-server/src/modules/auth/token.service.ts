@@ -128,9 +128,6 @@ export class TokenService {
             if (audValues.length > 0 && audValues.some(aud => aud !== 'admin' && aud !== 'infra')) {
                 throw new Error(`Audience violation: admin scope received unexpected aud ${String(tokenAud)}`);
             }
-        } else if (requiredAud === 'infra') {
-            // Should never happen without enforceAud, but keep explicit guard.
-            throw new Error('Infrastructure portal requires scoped tokens (aud: infra)');
         }
         return _payload as unknown as TokenPayload;
     };

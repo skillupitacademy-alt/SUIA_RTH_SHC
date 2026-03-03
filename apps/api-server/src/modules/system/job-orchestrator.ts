@@ -10,6 +10,12 @@ import { TutorService } from '@/modules/tutor/tutor.service';
 export class JobOrchestrator {
     private static log = logger.child({ module: 'system:job-orchestrator' });
 
+    // Test seam: allow single-iteration processing in tests without tight loop
+    static async processOnce(jobId: string, userId: string) {
+        if (process.env.NODE_ENV !== 'test') return;
+        await this.runJob(jobId, userId);
+    }
+
     /**
      * Executes a job based on its type.
      * This is intended to be called in a "fire-and-forget" manner from the API

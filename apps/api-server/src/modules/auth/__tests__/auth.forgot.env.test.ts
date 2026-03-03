@@ -1,0 +1,31 @@
+import { describe, it, expect, vi } from 'vitest'
+
+import { db } from '@quiz/db'
+import { EmailService } from '@/modules/email/EmailService'
+import { AuthService } from '../auth.service'
+
+vi.mock('@/modules/email/EmailService', () => ({
+  EmailService: {
+    sendPasswordResetEmail: vi.fn(),
+  },
+}))
+
+describe('AuthService.forgotPassword env guards', () => {
+  it('throws when admin URL env is missing for admin user', async () => {
+    ;(db.query as any) = {
+      users: {
+        findFirst: vi.fn().mockResolvedValue({
+          id: 'u1',
+          email: 'a@example.com',
+          passwordHash: 'hash',
+          userRoles: [{ role: { name: 'ADMIN' } }],
+        }),
+      },
+    }
+    ;(db.insert as any) = vi.fn().mockReturnValue({
+      values: vi.fn().mockReturnThis(),
+    })
+    process.env.NEXT_PUBLIC_ADMIN_URL = ''
+    await expect(AuthService.forgotPassword('a@example.com')).rejects.toThrow(/NEXT_PUBLIC_ADMIN_URL/)
+  })
+})

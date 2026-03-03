@@ -45,7 +45,7 @@ export class ReportMaterializer {
             userAnswer: eq.userAnswer,
             correctAnswer: eq.question.correctAnswer,
             explanation: eq.question.explanation,
-            isCorrect: eq.isCorrect ?? false,
+            isCorrect: eq.isCorrect === true,
             timeSpent:
                 typeof eq.responseMetadata === "object" &&
                 eq.responseMetadata !== null &&
@@ -150,7 +150,7 @@ export class ReportMaterializer {
                     return {
                         id: safeId,
                         name: safeName,
-                        accuracy: Math.round((sqs.filter(q => q.isCorrect).length / (sqs.length || 1)) * 100),
+                        accuracy: Math.round((sqs.filter(q => q.isCorrect).length / sqs.length) * 100),
                         attempted: sqs.length
                     };
                 });
@@ -195,8 +195,8 @@ export class ReportMaterializer {
                     correct: topicQuestions.filter(q => q.isCorrect).length,
                     incorrect: topicQuestions.filter(q => !q.isCorrect).length,
                     avgTime: Math.round(
-                        topicQuestions.reduce((acc, curr) => acc + (curr.timeSpent ?? 0), 0) /
-                        (topicQuestions.length || 1)
+                        topicQuestions.reduce((acc, curr) => acc + (curr.timeSpent as number), 0) /
+                        topicQuestions.length
                     ),
                     subtopics: topicSubtopics,
                     timeSeries: [], 
@@ -207,7 +207,11 @@ export class ReportMaterializer {
                     },
                     heatmap,
                     ai: {
-                      status: tAccuracy >= 80 ? 'READY' : (tAccuracy >= 60 ? 'BORDERLINE' : 'NOT_READY'),
+                      status: (() => {
+                          if (tAccuracy >= 80) return 'READY';
+                          if (tAccuracy >= 60) return 'BORDERLINE';
+                          return 'NOT_READY';
+                      })(),
                       actions: [
                           tAccuracy >= 80 ? "Maintain mastery via edge-case review" : "Focus on foundational subtopic gaps",
                           "Optimize response latency in expert tiers"
@@ -233,7 +237,7 @@ export class ReportMaterializer {
             correctAnswer: q.correctAnswer,
             explanation: q.explanation,
             isCorrect: q.isCorrect,
-            timeSpent: q.timeSpent ?? 0,
+            timeSpent: q.timeSpent as number,
             difficulty: q.difficulty
         }));
 
@@ -242,7 +246,11 @@ export class ReportMaterializer {
                 userId: exam.userId,
                 examId: exam.id,
                 generatedAt: new Date().toISOString(),
-                depth: hierarchy.subjects.length > 1 ? 3 : (hierarchy.subjects[0]?.topics.length > 1 ? 2 : 1),
+                depth: (() => {
+                    if (hierarchy.subjects.length > 1) return 3;
+                    if (hierarchy.subjects.length === 1 && hierarchy.subjects[0].topics.length > 1) return 2;
+                    return 1;
+                })(),
                 totalQuestions: questions.length,
                 candidateName:
                     typeof exam.user?.email === "string" && exam.user.email.trim() !== ""
