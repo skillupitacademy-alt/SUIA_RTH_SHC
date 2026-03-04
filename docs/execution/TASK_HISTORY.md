@@ -94,3 +94,7 @@
 | 2026-02-24 | PDF Synthesis & Cloud Storage (Ph 3) | COMPLETED | Implemented multi-buffer PDF merging via `pdf-lib`; Integrated Vercel Blob storage for persistent report hosting; Added background job progress tracking. |
 | 2026-02-24 | Hierarchical Summary Pages (Ph 4) | COMPLETED | Delivered `SubjectSummaryPage` and `DomainOverviewPage` templates; Implemented `page.tsx` bypass logic for immediate high-level segment rendering. |
 | 2026-02-24 | Production Guardrails & QA (Ph 5) | COMPLETED | Implemented node/page safety limits (`MAX_HIERARCHY_NODES`); Developed synchronized global page numbering across segmented PDF renders; Verified Absolute Zero build stability. |
+| 2026-02-25 | PDF Architecture Overhaul (Ph 6) | COMPLETED | Implemented live progress modal with stage-by-stage tracking; Integrated exponential backoff polling and success notifications; Fixed stuck-job recovery logic. |
+| 2026-02-26 | PDF Layout Stabilization (V31) | COMPLETED | Orchestrated 1920x1080 fixed-width containment to eliminate clipping; Calibrate layout tokens for vertical fill parity; Resolved Heatmap label truncation. |
+| 2026-02-26 | PDF Cache Invalidation & UX (V32) | COMPLETED | Delivered "Force Refresh" icon to bypass stale storage; Injected dynamic cache-busters into Puppeteer navigation; Stabilized downloads via high-reliability iframe trigger. |
+| 2026-03-04 | System Documentation & Audit | COMPLETED | Verified and finalized all PDF-related task history and execution logs for historical parity. |
