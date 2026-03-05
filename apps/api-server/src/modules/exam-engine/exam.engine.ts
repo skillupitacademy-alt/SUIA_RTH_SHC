@@ -286,8 +286,7 @@ export class ExamEngine {
 
     const fullExam = await this.examRepo.findById(targetExamId);
     if (!fullExam) throw new Error('Exam not found');
-    if (process.env.NODE_ENV !== 'test' && fullExam.userId !== userId) throw new Error('Unauthorized');
-    if (process.env.NODE_ENV === 'test' && fullExam.userId !== userId) {
+    if (fullExam.userId !== userId) {
         throw new Error('Unauthorized');
     }
 
