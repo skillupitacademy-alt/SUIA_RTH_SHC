@@ -51,6 +51,7 @@
         "src/__test-utils__",
         "**/__tests__",
         "vitest.config.ts",
-        "vitest.setup.ts"
+        "vitest.setup.ts",
+        "scripts"
     ]
 }
