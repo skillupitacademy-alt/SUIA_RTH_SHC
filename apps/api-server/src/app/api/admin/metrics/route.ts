@@ -5,7 +5,7 @@ import { forbidden, unauthorized } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
 import { recordCounter, recordTimer } from '@/lib/metrics';
 import { withLogging } from '@/lib/withLogging';
-import { AdminEngine } from '@/modules/admin-engine/admin.engine';
+import { AdminAnalyticsEngine } from "@/modules/admin-engine/admin.analytics.engine";
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
 
@@ -19,7 +19,7 @@ async function handler(_req: NextRequest) {
 
     await container.get(TokenService).verifyAccessToken(_token, true); // true for isAdmin check
     
-    const metrics = await AdminEngine.getPlatformMetrics();
+    const metrics = await AdminAnalyticsEngine.getPlatformMetrics();
     
     const durationMs = Date.now() - startTime;
     recordCounter(METRICS.ADMIN.DASHBOARD_LOAD, 1, { outcome: 'success' });

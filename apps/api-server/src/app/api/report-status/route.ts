@@ -41,7 +41,7 @@ async function getHandler(req: NextRequest) {
 
     const report = await ReportRepository.getReportByAttempt(attemptId);
 
-    if (!report) {
+    if (report === undefined || report === null) {
       return ApiResponse.success({ status: "not_found" }, 404);
     }
 

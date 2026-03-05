@@ -1,5 +1,5 @@
+import type { examQuestions, questions } from '@quiz/db';
 import type { InferSelectModel } from 'drizzle-orm';
-import type { exams, examQuestions, questions } from '@quiz/db';
 
 export interface EvaluatedAnswer {
   question: InferSelectModel<typeof questions>;

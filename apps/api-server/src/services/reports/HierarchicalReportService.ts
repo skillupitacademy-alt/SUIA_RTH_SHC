@@ -71,14 +71,14 @@ export class HierarchicalReportService {
                 await ReportJobService.updateProgress(jobId, progress, "processing");
                 this.log.info({ jobId, offset: currentPageOffset, type: node.type }, "Rendering segment");
 
-                const buffer = await ReportPdfService.renderSegment(
+                const segment = await ReportPdfService.renderSegment(
                     job.examId, 
                     node.id, 
                     node.type, 
                     currentPageOffset, 
                     totalPageEstimate
                 );
-                buffers.push(buffer);
+                buffers.push(segment.buffer);
 
                 // Increment offset for next node
                 if (node.type === 'domain') currentPageOffset += REPORT_ENGINE_CONFIG.PAGES_PER_DOMAIN_OVERVIEW;

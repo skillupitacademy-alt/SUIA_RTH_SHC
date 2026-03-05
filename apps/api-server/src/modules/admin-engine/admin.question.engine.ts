@@ -2,6 +2,9 @@ import { db, questions, questionSkills } from '@quiz/db';
 import { JobType } from '@quiz/types';
 import { and, desc, eq, inArray,sql } from 'drizzle-orm';
 
+import { AuditService } from "@/modules/auth/audit.service";
+import { container } from "@/modules/core/container";
+
 import { queueService } from '../core/queue.service';
 import { SemanticSearchService } from '../intelligence/semantic-search.service';
 
@@ -103,14 +106,13 @@ export class AdminQuestionEngine {
     };
   }
 
-  static async createQuestion(data: CreateQuestionInput) {
+  static async createQuestion(data: CreateQuestionInput, adminId: string) {
     // Phase 7: Conceptual Duplicate Detection
     // This prevents adding questions that are conceptually identical (even if wording differs)
     const isDuplicate = await SemanticSearchService.isDuplicate(data.questionText);
     if (isDuplicate) {
         throw new Error('CONCEPTUAL_DUPLICATE: A question with this meaning already exists. Please review existing content.');
     }
-
     return await db.transaction(async (tx) => {
         const [newQuestion] = await tx.insert(questions).values({
             topicId: data.topicId,
@@ -131,6 +133,11 @@ export class AdminQuestionEngine {
                 skillId: sid
             })));
         }
+        await container.get(AuditService).log({
+          userId: adminId,
+          action: 'admin_create_question',
+          metadata: { questionId: newQuestion.id }
+        });
 
         // Phase 7: Semantic Indexing (Background Job)
         // Fire-and-forget indexing to keep creation fast
@@ -147,7 +154,8 @@ export class AdminQuestionEngine {
     });
   }
 
-  static async updateQuestion(id: string, data: Partial<CreateQuestionInput>) {
+  static async updateQuestion(id: string, data: Partial<CreateQuestionInput>, adminId: string) {
+      await container.get(AuditService).log({ userId: adminId, action: 'admin_update_question', metadata: { questionId: id } });
     return await db.transaction(async (tx) => {
         const [updated] = await tx.update(questions).set({
             topicId: data.topicId,
@@ -176,24 +184,33 @@ export class AdminQuestionEngine {
     });
   }
 
-  static async deleteQuestion(id: string) {
+  static async deleteQuestion(id: string, adminId: string) {
+      await container.get(AuditService).log({ userId: adminId, action: 'admin_delete_question', metadata: { questionId: id } });
     return await db.update(questions).set({ status: 'inactive' }).where(eq(questions.id, id)).returning();
   }
 
-  static async deleteQuestionsBatch(ids: string[]) {
+  static async deleteQuestionsBatch(ids: string[], adminId: string) {
+      await container.get(AuditService).log({ userId: adminId, action: 'admin_batch_delete_questions', metadata: { count: ids.length } });
     return await db.update(questions).set({ status: 'inactive' }).where(inArray(questions.id, ids)).returning();
   }
 
-  static async publishQuestion(questionId: string) {
+  static async publishQuestion(questionId: string, adminId: string) {
+      await container.get(AuditService).log({ userId: adminId, action: 'admin_publish_question', metadata: { questionId } });
     return await db.update(questions).set({ status: 'active' }).where(eq(questions.id, questionId)).returning();
   }
 
-  static async bulkCreateQuestionsWithContext(questions: CreateQuestionInput[], context?: Record<string, unknown>, _adminId?: string) {
+  static async bulkCreateQuestionsWithContext(questions: CreateQuestionInput[], context?: Record<string, unknown>, _adminId?: string, adminId?: string) {
     // Placeholder for bulk create with context
     const results = [];
+    const actor = adminId ?? _adminId ?? 'system';
     for (const q of questions) {
-        results.push(await this.createQuestion({ ...q, ...context }));
+        results.push(await this.createQuestion({ ...q, ...context }, actor));
     }
+    await container.get(AuditService).log({
+      userId: actor,
+      action: 'admin_bulk_create_questions',
+      metadata: { count: results.length }
+    });
     return results;
   }
 }

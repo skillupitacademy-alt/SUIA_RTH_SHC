@@ -1,4 +1,4 @@
-import type { IScoringStrategy, EvaluatedAnswer, DimensionScore } from './scoring-strategy.interface';
+import type { DimensionScore,EvaluatedAnswer, IScoringStrategy } from './scoring-strategy.interface';
 
 /**
  * MasteryScoringStrategy
@@ -11,7 +11,7 @@ export class MasteryScoringStrategy implements IScoringStrategy {
 
   calculateOverallScore(answers: EvaluatedAnswer[]): number {
     if (answers.length === 0) return 0;
-    const correct = answers.filter(a => a.examQuestion.isCorrect).length;
+    const correct = answers.filter(a => a.examQuestion.isCorrect === true).length;
     const percentage = (correct / answers.length) * 100;
     
     // We still return a raw percentage as the "score" but we could also 
@@ -28,7 +28,7 @@ export class MasteryScoringStrategy implements IScoringStrategy {
       return {
         type,
         id,
-        name: data.name || id,
+        name: data.name ?? id,
         accuracy: Math.round(accuracy),
         score: Math.round(accuracy), // In Mastery, we might eventually use a different scale (1-4)
         total: data.total,

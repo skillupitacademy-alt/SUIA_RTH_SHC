@@ -6,7 +6,7 @@ import { logger } from '@/lib/logger';
 import { recordCounter, recordTimer } from '@/lib/metrics';
 import { validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 import { withLogging } from '@/lib/withLogging';
-import { AdminEngine } from '@/modules/admin-engine/admin.engine';
+import { AdminTopicEngine } from "@/modules/admin-engine/admin.topic.engine";
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
 
@@ -46,7 +46,7 @@ async function handler(_req: NextRequest) {
             return ApiResponse.error(badRequest('Invalid IDs (expected array)'));
         }
 
-        const result = await AdminEngine.deleteTopicsBatch(ids, auth.userId!);
+        const result = await AdminTopicEngine.deleteTopicsBatch(ids, auth.userId!);
         recordCounter('admin.api.topics.batch_delete.success', 1);
         recordTimer('admin.api.topics.batch_delete.duration', Date.now() - start);
         return ApiResponse.success(result);

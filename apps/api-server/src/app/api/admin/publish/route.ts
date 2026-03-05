@@ -6,7 +6,7 @@ import { ApiResponse } from '@/lib/api-response';
 import { recordCounter, recordTimer } from '@/lib/metrics';
 import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 import { withLogging } from '@/lib/withLogging';
-import { AdminEngine } from '@/modules/admin-engine/admin.engine';
+import { AdminQuestionEngine } from "@/modules/admin-engine/admin.question.engine";
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
 import { publishSchema } from '@/schemas/admin.schemas';
@@ -38,7 +38,7 @@ async function postHandler(_req: NextRequest) {
             return ApiResponse.error(badRequest('Invalid payload', 'BAD_REQUEST', parsed.error.issues));
         }
         
-        const result = await AdminEngine.publishQuestion(parsed.data.id, auth.userId!);
+        const result = await AdminQuestionEngine.publishQuestion(parsed.data.id, auth.userId!);
         
         const durationMs = Date.now() - start;
         recordCounter(METRICS.ADMIN.PUBLISH, 1, { outcome: 'success' });

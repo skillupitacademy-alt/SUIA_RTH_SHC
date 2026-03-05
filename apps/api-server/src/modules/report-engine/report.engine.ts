@@ -4,6 +4,7 @@ import { and, desc, eq, sql } from "drizzle-orm";
 import { logger } from "@/lib/logger";
 
 import { AdaptiveTutorService } from "../adaptive-engine/adaptive-tutor.service";
+import { container } from "../core/container";
 import { PerformanceService } from "./performance.service";
 import { ReportInterpreter } from "./report-interpreter.service";
 
@@ -222,17 +223,17 @@ export class ReportEngine {
 
         if (cohort.length <= 1) return 50;
 
-        const accuracies = cohort.map(e => {
+        const accuracies = cohort.map((e: { examQuestions?: { isCorrect: boolean | null }[] }) => {
             const total = e.examQuestions?.length ?? 0;
             const correct = e.examQuestions?.filter(q => q.isCorrect === true).length ?? 0;
             return total > 0 ? (correct / total) * 100 : 0;
         });
 
-        const lowerScores = accuracies.filter(acc => acc < myAccuracy).length;
+        const lowerScores = accuracies.filter((acc: number) => acc < myAccuracy).length;
         const percentile = (lowerScores / cohort.length) * 100;
         // Always return within 1–99 to avoid misleading perfect/zero percentiles on small cohorts.
         return Math.min(99, Math.max(1, Math.round(percentile)));
-    } catch (e) {
+    } catch (e: unknown) {
         this.log.error({ currentExamId, error: e instanceof Error ? e.message : 'unknown' }, 'Percentile failed');
         return 50;
     }
@@ -273,8 +274,8 @@ export class ReportEngine {
     const includeCorrect = options.includeCorrectAnswers === true;
     const actionPlan = ActionPlanBuilder.build(results);
 
-    const topicResults = results.filter(r => r.dimensionType === 'topic');
-    const topicAccuracyRecords = topicResults.map(r => ({
+    const topicResults = results.filter((r: typeof resultsByDimension.$inferSelect) => r.dimensionType === 'topic');
+    const topicAccuracyRecords = topicResults.map((r: typeof resultsByDimension.$inferSelect) => ({
       topicId: r.dimensionId!,
       accuracy: r.accuracy
     }));
@@ -504,7 +505,7 @@ export class ReportEngine {
     // Fetch analytics rows (used for lineage and empty-data guard)
     const dimensionResults = await this.dbInstance.query.resultsByDimension.findMany({
       where: eq(resultsByDimension.examId, examId),
-    });
+    }) as Array<{ dimensionType: string; name?: string }>;
 
     // Robust Fallback: If results_by_dimension lacks names, fetch from hierarchy
     const hierarchyFallback = await this.dbInstance.query.examQuestions.findFirst({
@@ -552,9 +553,10 @@ export class ReportEngine {
         WHERE eq.exam_id = ${examId}
         ORDER BY eq.id ASC
     `);
-    if (!rawQuestions.rows || rawQuestions.rows.length === 0) {
+    const questionRows = Array.isArray(rawQuestions.rows) ? rawQuestions.rows : [];
+    if (questionRows.length === 0) {
       // Only reject when we also lack analytics results and core score is absent (true missing dataset)
-      if ((dimensionResults ?? []).length === 0 && (core.score === null || core.score === undefined)) {
+      if (Array.isArray(dimensionResults) && dimensionResults.length === 0 && (core.score === null || core.score === undefined)) {
         throw new Error('rejected promise');
       }
       // If analytics present, synthesize minimal rows to keep downstream happy
@@ -585,9 +587,15 @@ export class ReportEngine {
         return AdaptiveTutorService.generateInsights(exam.userId, safeRecords);
     })();
 
+    const weakestSubtopic = typeof core.weakest_subtopic === 'string' ? core.weakest_subtopic : '';
+    const weakestSkill = typeof core.weakest_skill === 'string' ? core.weakest_skill : '';
+    const hasWeakestSubtopic = weakestSubtopic.length > 0;
+    const hasWeakestSkill = weakestSkill.length > 0;
+    const expertDropOff = core.expert_drop_off === true;
+
     const finalReport: PremiumReport = {
       examId: exam.id,
-      completedAt: exam.completedAt ? exam.completedAt.toISOString() : undefined,
+      completedAt: (exam.completedAt !== null && exam.completedAt !== undefined) ? exam.completedAt.toISOString() : undefined,
       lineage,
       score: Math.round(core.score ?? 0),
       mastery: Math.round(core.mastery ?? 0),
@@ -595,7 +603,7 @@ export class ReportEngine {
       percentile: Math.round(core.percentile ?? 50),
       confidence: core.confidence ?? 'LOW',
       isInconsistent: core.is_inconsistent ?? false,
-      expertDropOff: core.expert_drop_off ?? false,
+      expertDropOff,
       timePattern: core.time_pattern ?? null,
       weakest_difficulty: core.weakest_difficulty ?? null,
       totalTimeSpentSeconds: Number(core.total_time ?? 0),
@@ -624,16 +632,16 @@ export class ReportEngine {
             "Expand into Expert-level edge cases",
             "Final verification of neural stability"
         ] : [
-            (core.weakest_subtopic ?? '').length > 0 ? `Review foundational logic for ${core.weakest_subtopic}` : "Expand into adjacent topics",
-            (core.weakest_skill ?? '').length > 0 ? `Focus on ${core.weakest_skill} tactical drills` : "Maintain neural baseline stability",
-            (core.expert_drop_off ?? false) ? "Bridge Intermediate to Expert gap" : "Challenge higher complexity vectors"
+            hasWeakestSubtopic ? `Review foundational logic for ${weakestSubtopic}` : "Expand into adjacent topics",
+            hasWeakestSkill ? `Focus on ${weakestSkill} tactical drills` : "Maintain neural baseline stability",
+            expertDropOff ? "Bridge Intermediate to Expert gap" : "Challenge higher complexity vectors"
         ]),
-        weakest_subtopic: core.weakest_subtopic ?? undefined,
-        weakest_skill: core.weakest_skill ?? undefined,
+        weakest_subtopic: hasWeakestSubtopic ? weakestSubtopic : undefined,
+        weakest_skill: hasWeakestSkill ? weakestSkill : undefined,
         nextExamHours: (core.score ?? 0) >= 80 ? 12 : 48
       },
       tutorInsights,
-      questions: (rawQuestions.rows as RawQuestionRow[]).map((q: RawQuestionRow) => ({
+      questions: (Array.isArray(rawQuestions.rows) ? rawQuestions.rows : []).map((q: RawQuestionRow) => ({
         id: q.id,
         text: q.text,
         userAnswer: q.user_answer,
@@ -660,10 +668,12 @@ export class ReportEngine {
 
   // Static facades for legacy tests
   static getPremiumExamReport(examId: string) { return (this.getInstance() as any).getPremiumExamReport(examId); }
-  static getExamReport(examId: string) { return this.getInstance().getExamReport(examId); }
+  static getExamReport(examId: string, options?: { includeCorrectAnswers?: boolean }) {
+    return this.getInstance().getExamReport(examId, options);
+  }
   static getUserPerformance(userId: string) { return this.getInstance().getUserPerformance(userId); }
-  static calculatePercentile(score: number, cohort: { totalScore: number }[], blueprintId?: string | null) {
-    return this.getInstance().calculatePercentile(score, cohort, blueprintId);
+  static calculatePercentile(examId: string, blueprintId: string | null, myAccuracy: number) {
+    return this.getInstance().calculatePercentile(examId, blueprintId, myAccuracy);
   }
 
   static setInstance(mock: ReportEngine) {

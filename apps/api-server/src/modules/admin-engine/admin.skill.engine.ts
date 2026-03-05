@@ -1,6 +1,9 @@
 import { db, skills, topicSkills } from '@quiz/db';
 import { asc, eq, inArray, sql } from 'drizzle-orm';
 
+import { AuditService } from "@/modules/auth/audit.service";
+import { container } from "@/modules/core/container";
+
 export class AdminSkillEngine {
   static async getSkills(page: number = 1, limit: number = 20, filters?: { search?: string }) {
     const offset = (page - 1) * limit;
@@ -27,21 +30,25 @@ export class AdminSkillEngine {
     return { data, total, page, limit, totalPages };
   }
 
-  static async createSkill(data: typeof skills.$inferInsert) {
+  static async createSkill(data: typeof skills.$inferInsert, adminId: string) {
     const [newSkill] = await db.insert(skills).values(data).returning();
+    await container.get(AuditService).log({ userId: adminId, action: 'admin_create_skill', metadata: { skillId: newSkill.id } });
     return newSkill;
   }
 
-  static async updateSkill(id: string, data: Partial<typeof skills.$inferInsert>) {
+  static async updateSkill(id: string, data: Partial<typeof skills.$inferInsert>, adminId: string) {
     const [updated] = await db.update(skills).set(data).where(eq(skills.id, id)).returning();
+    await container.get(AuditService).log({ userId: adminId, action: 'admin_update_skill', metadata: { skillId: id } });
     return updated;
   }
 
-  static async deleteSkill(id: string) {
+  static async deleteSkill(id: string, adminId: string) {
+      await container.get(AuditService).log({ userId: adminId, action: 'admin_delete_skill', metadata: { skillId: id } });
     return await db.delete(skills).where(eq(skills.id, id)).returning();
   }
 
-  static async deleteSkillsBatch(ids: string[]) {
+  static async deleteSkillsBatch(ids: string[], adminId: string) {
+      await container.get(AuditService).log({ userId: adminId, action: 'admin_batch_delete_skills', metadata: { count: ids.length } });
     return await db.delete(skills).where(inArray(skills.id, ids)).returning();
   }
 
@@ -67,8 +74,9 @@ export class AdminSkillEngine {
     return res.map(rs => rs.skill);
   }
 
-  static async mapTopicToSkills(topicId: string, skillIds: string[]) {
+  static async mapTopicToSkills(topicId: string, skillIds: string[], adminId: string) {
     // Transactional sync
+      await container.get(AuditService).log({ userId: adminId, action: 'admin_map_topic_skills', metadata: { topicId, skillCount: skillIds.length } });
     return await db.transaction(async (tx) => {
         await tx.delete(topicSkills).where(eq(topicSkills.topicId, topicId));
         if (skillIds.length > 0) {

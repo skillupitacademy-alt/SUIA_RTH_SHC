@@ -16,6 +16,35 @@ export interface PdfGenerationResult {
 }
 
 export class ReportPdfService {
+  private static singleton: ReportPdfService | null = null;
+
+  static getInstance() {
+    if (this.singleton === null) this.singleton = new ReportPdfService();
+    return this.singleton;
+  }
+
+  static async generate(attemptId: string) {
+    return this.getInstance().generate(attemptId);
+  }
+
+  // Minimal renderSegment shim for compatibility with HierarchicalReportService
+  static async renderSegment(
+    attemptId: string,
+    nodeId?: string,
+    nodeType?: string,
+    pageOffset?: number,
+    totalPages?: number
+  ) {
+    const { buffer, pageCount, fileSizeKb, generationTimeMs } = await this.getInstance().generate(
+      attemptId,
+      nodeId,
+      nodeType,
+      pageOffset,
+      totalPages
+    );
+    return { buffer, pageCount, fileSizeKb, generationTimeMs };
+  }
+
   constructor(
     private readonly dbInstance = db,
     private readonly reportEngine?: ReportEngine,

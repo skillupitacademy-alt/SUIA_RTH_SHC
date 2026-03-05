@@ -48,6 +48,15 @@ export class HierarchyFactory {
     });
   }
 
+  static async atomicSeed(_payload: AtomicHierarchyPayload) {
+    return await this.atomicUpsert(_payload);
+  }
+
+  // Backward compatibility shim for routes still calling seedAtomic
+  static async seedAtomic(_payload: AtomicHierarchyPayload) {
+    return await this.atomicSeed(_payload);
+  }
+
   private static async executeAtomicUpsert(tx: Parameters<Parameters<typeof db.transaction>[0]>[0], _payload: AtomicHierarchyPayload) {
     const results = this.initResults();
 

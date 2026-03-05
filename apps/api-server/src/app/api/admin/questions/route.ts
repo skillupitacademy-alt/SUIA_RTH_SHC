@@ -7,8 +7,7 @@ import { logger } from '@/lib/logger';
 import { recordCounter, recordTimer } from '@/lib/metrics';
 import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 import { withLogging } from '@/lib/withLogging';
-import type { CreateQuestionInput } from '@/modules/admin-engine/admin.engine';
-import { AdminEngine } from '@/modules/admin-engine/admin.engine';
+import { AdminQuestionEngine, type CreateQuestionInput } from "@/modules/admin-engine/admin.question.engine";
 import { _verifyAdmin } from '@/modules/auth/rbac.service';
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
@@ -47,7 +46,7 @@ async function getHandler(_req: NextRequest) {
         search: searchParams.get('search') ?? undefined,
     };
 
-    const data = await AdminEngine.getQuestions(page, limit, filters);
+    const data = await AdminQuestionEngine.getQuestions(page, limit, filters);
     const durationMs = Date.now() - start;
     recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.questions.get.success', 1);
     recordTimer(METRICS.ADMIN.DASHBOARD_LOAD + '.questions.get.duration', durationMs, { outcome: 'success' });
@@ -83,7 +82,7 @@ async function postHandler(_req: NextRequest) {
       return ApiResponse.error(badRequest('Invalid payload', 'BAD_REQUEST', parsed.error.issues));
     }
 
-    const result = await AdminEngine.createQuestion(parsed.data, _payload.userId);
+    const result = await AdminQuestionEngine.createQuestion(parsed.data, _payload.userId);
     
     const durationMs = Date.now() - start;
     recordCounter(METRICS.ADMIN.PUBLISH, 1, { action: 'create', outcome: 'success' });
@@ -100,4 +99,3 @@ async function postHandler(_req: NextRequest) {
 
 export const GET = withLogging(getHandler, { component: 'admin', operation: 'get_questions' });
 export const POST = withLogging(postHandler, { component: 'admin', operation: 'create_question' });
-

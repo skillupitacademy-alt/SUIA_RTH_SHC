@@ -5,7 +5,7 @@ import { badRequest, internalError, unauthorized } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
 import { recordCounter, recordTimer } from '@/lib/metrics';
 import { withLogging } from '@/lib/withLogging';
-import { AdminEngine } from '@/modules/admin-engine/admin.engine';
+import { AdminQuestionEngine } from "@/modules/admin-engine/admin.question.engine";
 import { verifyAdminOrInfraToken } from '@/modules/auth/admin-audience.util';
 import { publishSchema } from '@/schemas/admin.schemas';
 
@@ -39,7 +39,7 @@ async function handler(_req: NextRequest) {
             return ApiResponse.error(badRequest('Invalid payload', 'BAD_REQUEST', parsed.error.issues), 400);
         }
         const body = parsed.data as ApproveBody;
-        const result = await AdminEngine.publishQuestion(body.id, auth.userId);
+        const result = await AdminQuestionEngine.publishQuestion(body.id, auth.userId);
         
         const durationMs = Date.now() - start;
         recordCounter(METRICS.ADMIN.PUBLISH, 1, { action: 'approve', outcome: 'success' });

@@ -7,7 +7,7 @@ import { logger } from '@/lib/logger';
 import { recordCounter, recordTimer } from '@/lib/metrics';
 import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 import { withLogging } from '@/lib/withLogging';
-import { AdminEngine } from '@/modules/admin-engine/admin.engine';
+import { AdminUserEngine } from "@/modules/admin-engine/admin.user.engine";
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
 import { updateUserSchema } from '@/schemas/admin.schemas';
@@ -83,7 +83,7 @@ async function patchHandler(
     }
     const body = parsed.data;
 
-    const result = await AdminEngine.updateUser(id, body, _payload.userId);
+    const result = await AdminUserEngine.updateUser(id, body, _payload.userId);
     recordCounter('admin.api.users.patch.success', 1, { targetUserId: id });
     recordTimer('admin.api.users.patch.duration', Date.now() - start, { outcome: 'success' });
     
@@ -106,7 +106,7 @@ async function deleteHandler(
     const { id } = await params;
     const auth = await verifyAdmin(_req);
 
-    const result = await AdminEngine.deleteUser(id, auth.userId!);
+    const result = await AdminUserEngine.deleteUser(id, auth.userId!);
     recordCounter('admin.api.users.delete.success', 1, { targetUserId: id });
     recordTimer('admin.api.users.delete.duration', Date.now() - start, { outcome: 'success' });
     return ApiResponse.success(result);

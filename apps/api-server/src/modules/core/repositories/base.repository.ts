@@ -11,11 +11,13 @@ export abstract class BaseRepository<Row, TableType extends AnyPgTable & { id: A
     const table = this.table as AnyPgTable & { id: AnyPgColumn };
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const dbAny = this.dbInstance as any;
-    if (typeof dbAny.select === 'function') {
+    const hasSelect = typeof dbAny.select === 'function';
+    if (hasSelect) {
       const results = await dbAny.select().from(table).where(eq(table.id, id));
       return results[0] as Row | undefined;
     }
-    if (dbAny?.query?.exams?.findFirst) {
+    const hasQueryFindFirst = typeof dbAny?.query?.exams?.findFirst === 'function';
+    if (hasQueryFindFirst) {
       const row = await dbAny.query.exams.findFirst({ where: eq(table.id, id) });
       return row as Row | undefined;
     }

@@ -4,7 +4,7 @@ import { internalError, unauthorized } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
 import { recordCounter, recordTimer } from '@/lib/metrics';
 import { withLogging } from '@/lib/withLogging';
-import { AdminEngine } from '@/modules/admin-engine/admin.engine';
+import { AdminAnalyticsEngine } from "@/modules/admin-engine/admin.analytics.engine";
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
 
@@ -22,7 +22,7 @@ async function handler(req: NextRequest) {
     const start = Date.now();
     try {
         await _verifyAdmin(req);
-        const data = await AdminEngine.getGrowthZones();
+        const data = await AdminAnalyticsEngine.getGrowthZones();
         const durationMs = Date.now() - start;
         
         recordCounter('admin.api.metrics.growth.count', 1, { outcome: 'success' });

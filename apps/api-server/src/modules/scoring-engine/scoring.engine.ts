@@ -4,12 +4,12 @@ import { eq } from 'drizzle-orm';
 import { logger } from '@/lib/logger';
 import { container } from '@/modules/core/container';
 
+import { ExamRepository } from '../exam-engine/repositories/exam.repository';
 import { PerformanceService } from '../report-engine/performance.service';
 import { ReportEngine } from '../report-engine/report.engine';
 import { DimensionRegistry } from './calculators/dimension.registry';
-import { ExamRepository } from '../exam-engine/repositories/exam.repository';
-import { ScoringStrategyRegistry } from './strategies/scoring-strategy.registry';
 import type { EvaluatedAnswer } from './strategies/scoring-strategy.interface';
+import { ScoringStrategyRegistry } from './strategies/scoring-strategy.registry';
 
 export const dynamic = 'force-dynamic';
 
@@ -78,7 +78,9 @@ export class ScoringEngine {
       }));
 
       // Determine strategy
-      const strategyName = (exam.blueprint as any)?.scoringStrategy || 'percentage';
+      const strategyName = typeof (exam.blueprint as { scoringStrategy?: string })?.scoringStrategy === 'string'
+        ? (exam.blueprint as { scoringStrategy?: string }).scoringStrategy!
+        : 'percentage';
       const strategy = ScoringStrategyRegistry.get(strategyName);
       this.log.info({ examId, strategy: strategy.getName() }, 'Applying scoring strategy');
 
@@ -143,12 +145,16 @@ export class ScoringEngine {
         this.log.info({ examId }, 'Phase 1: Analytics refreshed and cache primed');
 
         // Trigger PDF Generation (Background)
-        const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002/api';
+        const apiBase = (process.env.NEXT_PUBLIC_API_URL !== undefined && process.env.NEXT_PUBLIC_API_URL !== '')
+          ? process.env.NEXT_PUBLIC_API_URL
+          : 'http://localhost:3002/api';
         fetch(`${apiBase}/generate-report`, {
           method: 'POST',
           headers: { 
             'Content-Type': 'application/json',
-            'x-internal-key': process.env.INTERNAL_API_KEY || 'secret'
+            'x-internal-key': (process.env.INTERNAL_API_KEY !== undefined && process.env.INTERNAL_API_KEY !== '')
+              ? process.env.INTERNAL_API_KEY
+              : 'secret'
           },
           body: JSON.stringify({ attemptId: examId })
         }).catch(err => this.log.error({ examId, err }, 'Failed to trigger background PDF generation'));

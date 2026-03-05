@@ -4,7 +4,7 @@ import { badRequest, internalError, unauthorized } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
 import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 import { withLogging } from '@/lib/withLogging';
-import { AdminEngine } from '@/modules/admin-engine/admin.engine';
+import { AdminQuestionEngine } from "@/modules/admin-engine/admin.question.engine";
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
 import { idArraySchema } from '@/schemas/admin.schemas';
@@ -32,7 +32,7 @@ async function handler(_req: NextRequest) {
     }
     const { ids } = parsed.data;
 
-        const result = await AdminEngine.deleteQuestionsBatch(ids, auth.userId!);
+        const result = await AdminQuestionEngine.deleteQuestionsBatch(ids, auth.userId!);
         return ApiResponse.success(result);
     } catch (_error: unknown) {
         const message = _error instanceof Error ? _error.message : 'Internal Server Error';

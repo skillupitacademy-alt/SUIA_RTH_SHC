@@ -3,7 +3,7 @@ import type { NextRequest } from 'next/server';
 import { badRequest, unauthorized } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
 import { withLogging } from '@/lib/withLogging';
-import { AdminEngine } from '@/modules/admin-engine/admin.engine';
+import { AdminDomainEngine } from "@/modules/admin-engine/admin.domain.engine";
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
 
@@ -27,7 +27,7 @@ async function handler(_req: NextRequest) {
             return ApiResponse.error(badRequest('Invalid IDs'));
         }
 
-        const result = await AdminEngine.deleteDomainsBatch(ids, auth.userId!);
+        const result = await AdminDomainEngine.deleteDomainsBatch(ids, auth.userId!);
         return ApiResponse.success(result);
     } catch (_error: unknown) {
         return ApiResponse.error(_error);

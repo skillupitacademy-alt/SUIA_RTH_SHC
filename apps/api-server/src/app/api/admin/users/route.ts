@@ -5,7 +5,7 @@ import { ApiResponse } from '@/lib/api-response';
 import { logger } from '@/lib/logger';
 import { recordCounter, recordTimer } from '@/lib/metrics';
 import { withLogging } from '@/lib/withLogging';
-import { AdminEngine } from '@/modules/admin-engine/admin.engine';
+import { AdminUserEngine } from "@/modules/admin-engine/admin.user.engine";
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
 
@@ -36,7 +36,7 @@ async function getHandler(_req: NextRequest) {
     const isVerified = isVerifiedParam === 'true' ? true : isVerifiedParam === 'false' ? false : undefined;
     const xStatus = searchParams.get('xStatus') ?? undefined;
 
-    const result = await AdminEngine.getUsers(page, limit, status, { search, role, isBlocked, isVerified, status: xStatus });
+    const result = await AdminUserEngine.getUsers(page, limit, status, { search, role, isBlocked, isVerified, status: xStatus });
     const durationMs = Date.now() - start;
     recordCounter('admin.api.users.get.success', 1);
     recordTimer('admin.api.users.get.duration', durationMs, { outcome: 'success' });

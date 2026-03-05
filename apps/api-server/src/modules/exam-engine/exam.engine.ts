@@ -79,12 +79,21 @@ export class ExamEngine {
         config
       );
       const questions = selection?.questions ?? [];
-      const blueprint = selection?.blueprint ?? {
+      const blueprint = selection?.blueprint ?? ({
         id: 'transient',
-        timeLimit: questions.length || 1,
+        name: 'Transient Blueprint',
+        createdAt: new Date(),
+        description: null,
+        domains: null,
+        subjects: null,
+        topics: null,
+        subtopics: null,
+        questionIds: null,
         totalQuestions: questions.length || 1,
+        timeLimit: questions.length || 1,
+        difficultyDistribution: {},
         status: 'active'
-      } as InferSelectModel<typeof examBlueprints>;
+      } as unknown as InferSelectModel<typeof examBlueprints>);
 
       // 3. Persistence Phase (Handled by Repository Transactionally)
       const exam = await this.examRepo.createExamWithQuestions({
@@ -102,7 +111,7 @@ export class ExamEngine {
         totalQuestions: questions.length,
         durationSeconds: exam.durationSeconds,
         remainingSeconds: exam.durationSeconds,
-        firstQuestion: questions[0]
+        firstQuestion: questions.length > 0
           ? {
               id: questions[0].id,
               questionText: questions[0].questionText,
@@ -160,21 +169,18 @@ export class ExamEngine {
   }
 
   // --- Static facades for legacy tests ---
-  static startExam(userId: string, blueprintId: string, idempotencyKey?: string, options?: { includeCorrectAnswers?: boolean }) {
-    return this.getInstance().startExam(userId, blueprintId, idempotencyKey, options);
-  }
-
   static submitAnswer(
     examId: string,
     questionId: string,
     answer: string,
-    options?: { includeCorrectAnswers?: boolean }
+    userId: string,
+    idempotencyKey?: string
   ) {
-    return this.getInstance().submitAnswer(examId, questionId, answer, options);
+    return this.getInstance().submitAnswer(examId, questionId, answer, userId, idempotencyKey);
   }
 
-  static completeExam(examId: string, userId?: string, idempotencyKey?: string) {
-    return this.getInstance().completeExam(examId, userId!, idempotencyKey);
+  static completeExam(examId: string, userId: string, idempotencyKey?: string) {
+    return this.getInstance().completeExam(examId, userId, idempotencyKey);
   }
 
   static setInstance(mock: ExamEngine) {

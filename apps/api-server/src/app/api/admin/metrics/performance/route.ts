@@ -5,7 +5,7 @@ import { internalError, unauthorized } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
 import { recordCounter, recordTimer } from '@/lib/metrics';
 import { withLogging } from '@/lib/withLogging';
-import { AdminEngine } from '@/modules/admin-engine/admin.engine';
+import { AdminAnalyticsEngine } from "@/modules/admin-engine/admin.analytics.engine";
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
 
@@ -26,7 +26,7 @@ async function handler(req: NextRequest) {
         const searchParams = req.nextUrl.searchParams;
         const range = searchParams.get('range') ?? '7d';
 
-        const data = await AdminEngine.getPerformanceAnalytics(range);
+        const data = await AdminAnalyticsEngine.getPerformanceAnalytics(range);
         const durationMs = Date.now() - start;
         
         recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.performance', 1, { outcome: 'success', range });

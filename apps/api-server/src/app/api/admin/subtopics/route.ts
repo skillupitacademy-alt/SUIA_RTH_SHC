@@ -1,3 +1,4 @@
+import { subtopics } from '@quiz/db';
 import { METRICS } from '@quiz/observability';
 import type { NextRequest } from 'next/server';
 
@@ -6,12 +7,13 @@ import { ApiResponse } from '@/lib/api-response';
 import { recordCounter, recordTimer } from '@/lib/metrics';
 import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 import { withLogging } from '@/lib/withLogging';
-import type { SubtopicInsert } from '@/modules/admin-engine/admin.engine';
-import { AdminEngine } from '@/modules/admin-engine/admin.engine';
+import { AdminSubtopicEngine } from "@/modules/admin-engine/admin.subtopic.engine";
 import { _verifyAdmin } from '@/modules/auth/rbac.service';
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
 import { subtopicSchema } from '@/schemas/hierarchy.schemas';
+
+type SubtopicInsert = typeof subtopics.$inferInsert;
 
 export const dynamic = 'force-dynamic';
 
@@ -34,7 +36,7 @@ async function getHandler(_req: NextRequest) {
     const topicId = searchParams.get('topicId') ?? undefined;
     const search = searchParams.get('search') ?? undefined;
 
-    const result = await AdminEngine.getSubtopics(page, limit, { topicId, search });
+    const result = await AdminSubtopicEngine.getSubtopics(page, limit, { topicId, search });
     const durationMs = Date.now() - start;
     recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.subtopics.get.success', 1);
     recordTimer(METRICS.ADMIN.DASHBOARD_LOAD + '.subtopics.get.duration', durationMs, { outcome: 'success' });
@@ -77,7 +79,7 @@ async function postHandler(_req: NextRequest) {
       depthLevel: body.depthLevel,
     };
 
-    const result = await AdminEngine.createSubtopic(createBody, _payload.userId);
+    const result = await AdminSubtopicEngine.createSubtopic(createBody, _payload.userId);
     const durationMs = Date.now() - start;
     recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.subtopics.create.success', 1);
     recordTimer(METRICS.ADMIN.DASHBOARD_LOAD + '.subtopics.create.duration', durationMs, { outcome: 'success' });

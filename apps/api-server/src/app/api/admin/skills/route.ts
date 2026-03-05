@@ -1,3 +1,4 @@
+import { skills } from '@quiz/db';
 import { METRICS } from '@quiz/observability';
 import type { NextRequest } from 'next/server';
 
@@ -6,11 +7,12 @@ import { ApiResponse } from '@/lib/api-response';
 import { recordCounter, recordTimer } from '@/lib/metrics';
 import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 import { withLogging } from '@/lib/withLogging';
-import type { SkillInsert } from '@/modules/admin-engine/admin.engine';
-import { AdminEngine } from '@/modules/admin-engine/admin.engine';
+import { AdminSkillEngine } from "@/modules/admin-engine/admin.skill.engine";
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
 import { skillSchema } from '@/schemas/hierarchy.schemas';
+
+type SkillInsert = typeof skills.$inferInsert;
 
 export const dynamic = 'force-dynamic';
 
@@ -32,7 +34,7 @@ async function getHandler(_req: NextRequest) {
     const limit = parseInt(searchParams.get('limit') ?? '20');
     const search = searchParams.get('search') ?? undefined;
 
-    const result = await AdminEngine.getSkills(page, limit, { search });
+    const result = await AdminSkillEngine.getSkills(page, limit, { search });
     const durationMs = Date.now() - start;
     recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.skills.get.success', 1);
     recordTimer(METRICS.ADMIN.DASHBOARD_LOAD + '.skills.get.duration', durationMs, { outcome: 'success' });
@@ -74,7 +76,7 @@ async function postHandler(_req: NextRequest) {
       weight: Number.isFinite(parsedWeight) ? parsedWeight : 1,
     };
 
-    const result = await AdminEngine.createSkill(createBody, _payload.userId);
+    const result = await AdminSkillEngine.createSkill(createBody, _payload.userId);
     const durationMs = Date.now() - start;
     recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.skills.create.success', 1);
     recordTimer(METRICS.ADMIN.DASHBOARD_LOAD + '.skills.create.duration', durationMs, { outcome: 'success' });

@@ -4,7 +4,7 @@ import { badRequest, forbidden, unauthorized } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
 import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 import { withLogging } from '@/lib/withLogging';
-import { AdminEngine } from '@/modules/admin-engine/admin.engine';
+import { AdminSkillEngine } from "@/modules/admin-engine/admin.skill.engine";
 import { _verifyAdmin } from '@/modules/auth/rbac.service';
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
@@ -35,7 +35,7 @@ async function patchHandler(
       return ApiResponse.error(badRequest('Invalid payload', 'BAD_REQUEST', parsed.error.issues));
     }
     const body = parsed.data;
-    const result = await AdminEngine.updateSkill(id, body, _payload.userId);
+    const result = await AdminSkillEngine.updateSkill(id, body, _payload.userId);
     
     return ApiResponse.success(result);
   } catch (_error: unknown) {
@@ -60,7 +60,7 @@ async function deleteHandler(
       return ApiResponse.error(forbidden());
     }
 
-    const result = await AdminEngine.deleteSkill(id, _payload.userId);
+    const result = await AdminSkillEngine.deleteSkill(id, _payload.userId);
     return ApiResponse.success(result);
   } catch (_error: unknown) {
     return ApiResponse.error(_error);

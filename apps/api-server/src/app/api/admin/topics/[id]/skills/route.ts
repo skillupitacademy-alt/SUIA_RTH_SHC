@@ -3,7 +3,7 @@ import type { NextRequest } from 'next/server';
 import { forbidden, unauthorized } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
 import { withLogging } from '@/lib/withLogging';
-import { AdminEngine } from '@/modules/admin-engine/admin.engine';
+import { AdminSkillEngine } from "@/modules/admin-engine/admin.skill.engine";
 import { _verifyAdmin } from '@/modules/auth/rbac.service';
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
@@ -30,7 +30,7 @@ async function getHandler(
             return ApiResponse.error(forbidden());
         }
 
-        const data = await AdminEngine.getSkillsByTopic(id);
+        const data = await AdminSkillEngine.getSkillsByTopic(id);
         return ApiResponse.success(data);
     } catch (_error: unknown) {
         return ApiResponse.error(_error);
@@ -50,7 +50,7 @@ async function postHandler(
         }
 
         const body = await _req.json(); 
-        const result = await AdminEngine.mapTopicToSkills(id, body.skillIds, _payload.userId);
+        const result = await AdminSkillEngine.mapTopicToSkills(id, body.skillIds, _payload.userId);
         
         return ApiResponse.success(result);
     } catch (_error: unknown) {

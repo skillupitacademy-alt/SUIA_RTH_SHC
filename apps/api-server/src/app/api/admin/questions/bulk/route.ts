@@ -1,3 +1,4 @@
+import type { questions } from '@quiz/db';
 import { METRICS } from '@quiz/observability';
 import type { NextRequest } from 'next/server';
 
@@ -6,12 +7,20 @@ import { ApiResponse } from '@/lib/api-response';
 import { recordCounter, recordTimer } from '@/lib/metrics';
 import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 import { withLogging } from '@/lib/withLogging';
-import type { CreateQuestionInput } from '@/modules/admin-engine/admin.engine';
-import { AdminEngine } from '@/modules/admin-engine/admin.engine';
+import { AdminQuestionEngine } from "@/modules/admin-engine/admin.question.engine";
 import { _verifyAdmin } from '@/modules/auth/rbac.service';
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
 import { bulkQuestionSchema } from '@/schemas/admin.schemas';
+
+type CreateQuestionInput = typeof questions.$inferInsert & {
+    skillNames?: string[];
+    mappingType?: string;
+    skillWeight?: number;
+    explanation?: string;
+    codeSnippet?: string;
+    metadata?: unknown;
+};
 
 export const dynamic = 'force-dynamic';
 
@@ -50,7 +59,7 @@ async function handler(_req: NextRequest) {
     }
     const { topicId, subtopicId, skillId, skillIds, questions } = parsed.data;
 
-    const result = await AdminEngine.bulkCreateQuestionsWithContext(
+    const result = await AdminQuestionEngine.bulkCreateQuestionsWithContext(
         questions, 
         { topicId, subtopicId, skillId, skillIds }, 
         _payload.userId

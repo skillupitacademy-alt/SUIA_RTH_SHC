@@ -5,7 +5,7 @@ import { internalError, unauthorized } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
 import { recordCounter, recordTimer } from '@/lib/metrics';
 import { withLogging } from '@/lib/withLogging';
-import { AdminEngine } from '@/modules/admin-engine/admin.engine';
+import { AdminAnalyticsEngine } from "@/modules/admin-engine/admin.analytics.engine";
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
 
@@ -23,7 +23,7 @@ async function handler(_req: NextRequest) {
     const start = Date.now();
     try {
         await _verifyAdmin(_req);
-        const data = await AdminEngine.getBlueprintMetrics();
+        const data = await AdminAnalyticsEngine.getBlueprintMetrics();
         const durationMs = Date.now() - start;
         recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.blueprints', 1, { outcome: 'success' });
         recordTimer(METRICS.ADMIN.DASHBOARD_LOAD + '.blueprints.duration', durationMs, { outcome: 'success' });

@@ -6,9 +6,9 @@ import { ApiResponse } from '@/lib/api-response';
 import { recordCounter, recordTimer } from '@/lib/metrics';
 import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 import { withLogging } from '@/lib/withLogging';
-import { AdminEngine } from '@/modules/admin-engine/admin.engine';
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
+import { HierarchyFactory } from "@/modules/domain/hierarchy.factory";
 
 export const dynamic = 'force-dynamic';
 
@@ -29,7 +29,7 @@ async function handler(_req: NextRequest) {
             return ApiResponse.error(badRequest('Payload too deep or large'), 400);
         }
         const body = sanitizeJsonField(rawBody);
-        const result = await AdminEngine.atomicSeed(body);
+        const result = await HierarchyFactory.seedAtomic(body);
         
         const durationMs = Date.now() - start;
         recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.hierarchy.atomic.success', 1);

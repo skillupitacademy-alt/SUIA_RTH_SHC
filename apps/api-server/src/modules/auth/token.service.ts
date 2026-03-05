@@ -19,17 +19,17 @@ export class TokenService {
    */
   private static singleton: TokenService | null = null;
   static ACCESS_SECRET = new TextEncoder().encode(
-    process.env.JWT_SECRET && process.env.JWT_SECRET !== '' ? process.env.JWT_SECRET : 'test-access-secret'
+    (process.env.JWT_SECRET !== undefined && process.env.JWT_SECRET !== '' ? process.env.JWT_SECRET : 'test-access-secret')
   );
   static REFRESH_SECRET = new TextEncoder().encode(
-    process.env.JWT_REFRESH_SECRET && process.env.JWT_REFRESH_SECRET !== '' ? process.env.JWT_REFRESH_SECRET : 'test-refresh-secret'
+    (process.env.JWT_REFRESH_SECRET !== undefined && process.env.JWT_REFRESH_SECRET !== '' ? process.env.JWT_REFRESH_SECRET : 'test-refresh-secret')
   );
   static ADMIN_SECRET = new TextEncoder().encode(
-    process.env.ADMIN_JWT_SECRET && process.env.ADMIN_JWT_SECRET !== ''
-      ? process.env.ADMIN_JWT_SECRET
-      : process.env.JWT_SECRET && process.env.JWT_SECRET !== ''
-        ? process.env.JWT_SECRET
-        : 'test-admin-secret'
+      (process.env.ADMIN_JWT_SECRET !== undefined && process.env.ADMIN_JWT_SECRET !== '')
+        ? process.env.ADMIN_JWT_SECRET
+        : (process.env.JWT_SECRET !== undefined && process.env.JWT_SECRET !== '')
+          ? process.env.JWT_SECRET
+          : 'test-admin-secret'
   );
 
   private static getInstance(): TokenService {
@@ -220,7 +220,7 @@ export class TokenService {
   }
 
   static verifyAccessToken(_token: string, optionsOrIsAdmin?: { isAdmin?: boolean; audience?: string } | boolean) {
-    return this.getInstance().verifyAccessToken(_token, optionsOrIsAdmin as any);
+    return this.getInstance().verifyAccessToken(_token, optionsOrIsAdmin);
   }
 
   static verifyRefreshToken(_token: string, options?: { isAdmin?: boolean; audience?: string }) {

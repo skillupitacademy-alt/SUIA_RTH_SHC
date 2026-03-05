@@ -1,6 +1,9 @@
 import { db, roles,userProfiles, userRoles, users } from '@quiz/db';
 import { and, desc, eq, gt, inArray, isNotNull, isNull, or, type SQL,sql } from 'drizzle-orm';
 
+import { AuditService } from "@/modules/auth/audit.service";
+import { container } from "@/modules/core/container";
+
 export interface UpdateUserInput {
   roles?: string[];
   password?: string;
@@ -85,19 +88,22 @@ export class AdminUserEngine {
     };
   }
 
-  static async updateUser(id: string, data: UpdateUserInput) {
+  static async updateUser(id: string, data: UpdateUserInput, adminId: string) {
     const updateData: Partial<typeof users.$inferInsert> = {
         isBlocked: data.isBlocked
     };
     const [updated] = await db.update(users).set(updateData).where(eq(users.id, id)).returning();
+      await container.get(AuditService).log({ userId: adminId, action: 'admin_update_user', metadata: { targetUserId: id } });
     return updated;
   }
 
-  static async deleteUser(id: string) {
+  static async deleteUser(id: string, adminId: string) {
+      await container.get(AuditService).log({ userId: adminId, action: 'admin_delete_user', metadata: { targetUserId: id } });
     return await db.delete(users).where(eq(users.id, id)).returning();
   }
 
-  static async toggleBlockStatus(userId: string, isBlocked: boolean) {
+  static async toggleBlockStatus(userId: string, isBlocked: boolean, adminId: string) {
+      await container.get(AuditService).log({ userId: adminId, action: 'admin_toggle_block', metadata: { targetUserId: userId, isBlocked } });
     return await db.update(users).set({ isBlocked }).where(eq(users.id, userId)).returning();
   }
 

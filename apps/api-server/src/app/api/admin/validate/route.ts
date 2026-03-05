@@ -5,7 +5,7 @@ import { badRequest, forbidden, internalError } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
 import { recordCounter, recordTimer } from '@/lib/metrics';
 import { withLogging } from '@/lib/withLogging';
-import { AdminEngine } from '@/modules/admin-engine/admin.engine';
+import { AdminTopicEngine } from "@/modules/admin-engine/admin.topic.engine";
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
 import { validateTopicSchema } from '@/schemas/admin.schemas';
@@ -37,7 +37,7 @@ async function handler(_req: NextRequest) {
       return ApiResponse.error(badRequest('Invalid payload', 'BAD_REQUEST', parsed.error.issues), 400);
     }
     const { topicId } = parsed.data;
-    const result = await AdminEngine.validateTopic(topicId);
+    const result = await AdminTopicEngine.validateTopic(topicId);
     
     const durationMs = Date.now() - start;
     recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.validate.success', 1, { topicId });

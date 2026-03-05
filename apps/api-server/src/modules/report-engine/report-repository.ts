@@ -18,6 +18,36 @@ export interface UpdateReportSuccessInput {
 export class ReportRepository {
   constructor(private readonly dbInstance = db) {}
 
+  static instance = new ReportRepository();
+
+  static getReportByAttempt(attemptId: string) {
+    return this.instance.getReportByAttempt(attemptId);
+  }
+
+  static createReportIfNotExists(input: CreateReportInput) {
+    return this.instance.createReportIfNotExists(input);
+  }
+
+  static updateReportStatus(
+    attemptId: string,
+    status: 'pending' | 'generating' | 'ready' | 'failed',
+    stageOrError?: string
+  ) {
+    return this.instance.updateReportStatus(attemptId, status, stageOrError);
+  }
+
+  static updateReportSuccess(attemptId: string, data: UpdateReportSuccessInput) {
+    return this.instance.updateReportSuccess(attemptId, data);
+  }
+
+  static listReports(filters?: { status?: string; userId?: string; limit?: number; offset?: number }) {
+    return this.instance.listReports(filters);
+  }
+
+  static getReportStats() {
+    return this.instance.getReportStats();
+  }
+
   async getReportByAttempt(attemptId: string) {
     return this.dbInstance.query.reports.findFirst({
       where: eq(reports.attemptId, attemptId),

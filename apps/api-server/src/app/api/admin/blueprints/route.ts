@@ -1,3 +1,4 @@
+import type { examBlueprints } from '@quiz/db';
 import { METRICS } from '@quiz/observability';
 import type { NextRequest } from 'next/server';
 
@@ -6,11 +7,12 @@ import { ApiResponse } from '@/lib/api-response';
 import { recordCounter, recordTimer } from '@/lib/metrics';
 import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 import { withLogging } from '@/lib/withLogging';
-import type { BlueprintInsert } from '@/modules/admin-engine/admin.engine';
-import { AdminEngine } from '@/modules/admin-engine/admin.engine';
+import { AdminBlueprintEngine } from "@/modules/admin-engine/admin.blueprint.engine";
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
 import { blueprintSchema } from '@/schemas/admin.schemas';
+
+type BlueprintInsert = typeof examBlueprints.$inferInsert;
 
 export const dynamic = 'force-dynamic';
 
@@ -39,7 +41,7 @@ async function getHandler(_req: NextRequest) {
         const limit = parseInt(searchParams.get('limit') ?? '20');
         const search = searchParams.get('search') ?? undefined;
 
-        const data = await AdminEngine.getBlueprints(page, limit, { search });
+        const data = await AdminBlueprintEngine.getBlueprints(page, limit, { search });
         
         const durationMs = Date.now() - start;
         recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.blueprints.get.success', 1);
@@ -71,7 +73,7 @@ async function postHandler(_req: NextRequest) {
             return ApiResponse.error(badRequest('Invalid payload', 'BAD_REQUEST', parsed.error.issues), 400);
         }
 
-        const result = await AdminEngine.createBlueprint(parsed.data);
+        const result = await AdminBlueprintEngine.createBlueprint(parsed.data);
         
         const durationMs = Date.now() - start;
         recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.blueprints.create.success', 1);

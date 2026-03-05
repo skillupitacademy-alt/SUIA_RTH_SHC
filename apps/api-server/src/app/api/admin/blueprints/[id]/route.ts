@@ -3,7 +3,7 @@ import type { NextRequest } from 'next/server';
 import { internalError, unauthorized } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
 import { withLogging } from '@/lib/withLogging';
-import { AdminEngine } from '@/modules/admin-engine/admin.engine';
+import { AdminBlueprintEngine } from "@/modules/admin-engine/admin.blueprint.engine";
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
 
@@ -22,7 +22,7 @@ async function patchHandler(_req: NextRequest, { params }: { params: Promise<{ i
     try {
         await _verifyAdmin(_req);
         const rawBody = await _req.json().catch(() => null);
-        const result = await AdminEngine.updateBlueprint(id, rawBody ?? {});
+        const result = await AdminBlueprintEngine.updateBlueprint(id, rawBody ?? {});
         return ApiResponse.success(result);
     } catch (_error: unknown) {
         const message = _error instanceof Error ? _error.message : 'Internal Server Error';
@@ -34,7 +34,7 @@ async function deleteHandler(_req: NextRequest, { params }: { params: Promise<{ 
     const { id } = await params;
     try {
         await _verifyAdmin(_req);
-        const result = await AdminEngine.deleteBlueprint(id);
+        const result = await AdminBlueprintEngine.deleteBlueprint(id);
         return ApiResponse.success(result);
     } catch (_error: unknown) {
         const message = _error instanceof Error ? _error.message : 'Internal Server Error';

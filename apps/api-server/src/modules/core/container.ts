@@ -42,7 +42,7 @@ class DIContainer {
           const produced = (token as any)();
           this.instances.set(token, produced);
           return produced as T;
-        } catch (factoryError) {
+        } catch (_factoryError) {
           throw new Error(`Failed to instantiate ${token.name}: ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
       }

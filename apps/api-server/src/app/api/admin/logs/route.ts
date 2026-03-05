@@ -3,7 +3,7 @@ import type { NextRequest } from 'next/server';
 import { internalError, unauthorized } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
 import { withLogging } from '@/lib/withLogging';
-import { AdminEngine } from '@/modules/admin-engine/admin.engine';
+import { AdminAnalyticsEngine } from "@/modules/admin-engine/admin.analytics.engine";
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
 
@@ -23,7 +23,7 @@ async function handler(_req: NextRequest) {
         const searchParams = _req.nextUrl.searchParams;
         const limit = parseInt(searchParams.get('limit') ?? '50');
         
-        const data = await AdminEngine.getRecentAuditLogs(limit);
+        const data = await AdminAnalyticsEngine.getRecentAuditLogs(limit);
         return ApiResponse.success(data);
     } catch (_error: unknown) {
         const message = _error instanceof Error ? _error.message : 'Internal Server Error';

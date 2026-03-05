@@ -1,3 +1,4 @@
+import type { domains } from '@quiz/db';
 import { METRICS } from '@quiz/observability';
 import type { NextRequest } from 'next/server';
 
@@ -6,11 +7,12 @@ import { ApiResponse } from '@/lib/api-response';
 import { recordCounter, recordTimer } from '@/lib/metrics';
 import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 import { withLogging } from '@/lib/withLogging';
-import type { DomainInsert } from '@/modules/admin-engine/admin.engine';
-import { AdminEngine } from '@/modules/admin-engine/admin.engine';
+import { AdminDomainEngine } from "@/modules/admin-engine/admin.domain.engine";
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
 import { domainSchema } from '@/schemas/hierarchy.schemas';
+
+type DomainInsert = typeof domains.$inferInsert;
 
 export const dynamic = 'force-dynamic';
 
@@ -32,7 +34,7 @@ async function getHandler(_req: NextRequest) {
     const limit = parseInt(searchParams.get('limit') ?? '20');
     const search = searchParams.get('search') ?? undefined;
 
-    const result = await AdminEngine.getDomains(page, limit, { search });
+    const result = await AdminDomainEngine.getDomains(page, limit, { search });
     const durationMs = Date.now() - start;
     recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.domains.get.success', 1);
     recordTimer(METRICS.ADMIN.DASHBOARD_LOAD + '.domains.get.duration', durationMs, { outcome: 'success' });
@@ -71,7 +73,7 @@ async function postHandler(_req: NextRequest) {
       status: body.status,
     };
 
-    const result = await AdminEngine.createDomain(createBody, _payload.userId);
+    const result = await AdminDomainEngine.createDomain(createBody, _payload.userId);
     const durationMs = Date.now() - start;
     recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.domains.create.success', 1);
     recordTimer(METRICS.ADMIN.DASHBOARD_LOAD + '.domains.create.duration', durationMs, { outcome: 'success' });

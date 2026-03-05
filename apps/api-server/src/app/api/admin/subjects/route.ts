@@ -1,3 +1,4 @@
+import { subjects } from '@quiz/db';
 import { METRICS } from '@quiz/observability';
 import type { NextRequest } from 'next/server';
 
@@ -6,11 +7,12 @@ import { ApiResponse } from '@/lib/api-response';
 import { recordCounter, recordTimer } from '@/lib/metrics';
 import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 import { withLogging } from '@/lib/withLogging';
-import type { SubjectInsert } from '@/modules/admin-engine/admin.engine';
-import { AdminEngine } from '@/modules/admin-engine/admin.engine';
+import { AdminSubjectEngine } from "@/modules/admin-engine/admin.subject.engine";
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
 import { subjectSchema } from '@/schemas/hierarchy.schemas';
+
+type SubjectInsert = typeof subjects.$inferInsert;
 
 export const dynamic = 'force-dynamic';
 
@@ -33,7 +35,7 @@ async function getHandler(_req: NextRequest) {
     const domainId = searchParams.get('domainId') ?? undefined;
     const search = searchParams.get('search') ?? undefined;
 
-    const result = await AdminEngine.getSubjects(page, limit, { domainId, search });
+    const result = await AdminSubjectEngine.getSubjects(page, limit, { domainId, search });
     const durationMs = Date.now() - start;
     recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.subjects.get.success', 1);
     recordTimer(METRICS.ADMIN.DASHBOARD_LOAD + '.subjects.get.duration', durationMs, { outcome: 'success' });
@@ -73,7 +75,7 @@ async function postHandler(_req: NextRequest) {
       order: body.order,
     };
 
-    const result = await AdminEngine.createSubject(createBody, _payload.userId);
+    const result = await AdminSubjectEngine.createSubject(createBody, _payload.userId);
     const durationMs = Date.now() - start;
     recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.subjects.create.success', 1);
     recordTimer(METRICS.ADMIN.DASHBOARD_LOAD + '.subjects.create.duration', durationMs, { outcome: 'success' });

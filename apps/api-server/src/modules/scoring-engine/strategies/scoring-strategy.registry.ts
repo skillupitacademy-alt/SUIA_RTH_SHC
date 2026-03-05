@@ -1,8 +1,8 @@
-import { IScoringStrategy } from './scoring-strategy.interface';
-import { PercentageScoringStrategy } from './percentage-scoring.strategy';
-import { WeightedScoringStrategy } from './weighted-scoring.strategy';
 import { IRTScoringStrategy } from './irt-scoring.strategy';
 import { MasteryScoringStrategy } from './mastery-scoring.strategy';
+import { PercentageScoringStrategy } from './percentage-scoring.strategy';
+import { IScoringStrategy } from './scoring-strategy.interface';
+import { WeightedScoringStrategy } from './weighted-scoring.strategy';
 
 export class ScoringStrategyRegistry {
   private static strategies = new Map<string, IScoringStrategy>();

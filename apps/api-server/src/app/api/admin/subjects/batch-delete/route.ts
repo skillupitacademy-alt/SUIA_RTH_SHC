@@ -4,7 +4,7 @@ import { badRequest, unauthorized } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
 import { validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 import { withLogging } from '@/lib/withLogging';
-import { AdminEngine } from '@/modules/admin-engine/admin.engine';
+import { AdminSubjectEngine } from "@/modules/admin-engine/admin.subject.engine";
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
 
@@ -34,7 +34,7 @@ async function handler(_req: NextRequest) {
             return ApiResponse.error(badRequest('Invalid IDs (expected array)'));
         }
 
-        const result = await AdminEngine.deleteSubjectsBatch(ids, auth.userId!);
+        const result = await AdminSubjectEngine.deleteSubjectsBatch(ids, auth.userId!);
         return ApiResponse.success(result);
     } catch (_error: unknown) {
         return ApiResponse.error(_error);
