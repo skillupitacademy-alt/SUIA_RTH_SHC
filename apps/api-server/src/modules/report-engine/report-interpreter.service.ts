@@ -5,11 +5,12 @@ import { PremiumReport } from "./report.engine";
  * Implements strict, evidence-based narrative generation based on statistical thresholds.
  */
 export class ReportInterpreter {
+  private static singleton = new ReportInterpreter();
   
   /**
    * Synthesizes the narrative interpretation for a full report.
    */
-  static interpret(report: PremiumReport) {
+  interpret(report: PremiumReport) {
     return {
       kpi: this.interpretKPI(report),
       subtopics: this.interpretSubtopics(report),
@@ -21,7 +22,7 @@ export class ReportInterpreter {
     };
   }
 
-  private static interpretKPI(report: PremiumReport): string[] {
+  private interpretKPI(report: PremiumReport): string[] {
     const bullets: string[] = [];
     const { score, mastery, readiness, confidence, percentile } = report;
 
@@ -55,7 +56,7 @@ export class ReportInterpreter {
     return bullets;
   }
 
-  private static interpretSubtopics(report: PremiumReport): string[] {
+  private interpretSubtopics(report: PremiumReport): string[] {
     const bullets: string[] = [];
     const significant = report.subtopics.filter(s => s.attempts >= 3);
 
@@ -81,7 +82,7 @@ export class ReportInterpreter {
     return bullets;
   }
 
-  private static interpretSkills(report: PremiumReport): string[] {
+  private interpretSkills(report: PremiumReport): string[] {
     const bullets: string[] = [];
     const significant = report.skills.filter(s => s.attempts >= 3);
 
@@ -103,7 +104,7 @@ export class ReportInterpreter {
     return bullets;
   }
 
-  private static interpretHeatmap(report: PremiumReport): string[] {
+  private interpretHeatmap(report: PremiumReport): string[] {
     const bullets: string[] = [];
     const cells = report.heatmap;
 
@@ -142,7 +143,7 @@ export class ReportInterpreter {
     return bullets;
   }
 
-  private static interpretDifficulty(report: PremiumReport): string[] {
+  private interpretDifficulty(report: PremiumReport): string[] {
     const bullets: string[] = [];
     const data = report.difficulty ?? [];
 
@@ -170,7 +171,7 @@ export class ReportInterpreter {
     return bullets;
   }
 
-  private static interpretTime(report: PremiumReport): string[] {
+  private interpretTime(report: PremiumReport): string[] {
     const bullets: string[] = [];
     const { stable, logic, neural } = report.timeBuckets;
     const total = stable + logic + neural;
@@ -201,7 +202,7 @@ export class ReportInterpreter {
     return bullets;
   }
 
-  private static interpretMeta(report: PremiumReport): string[] {
+  private interpretMeta(report: PremiumReport): string[] {
     const notes: string[] = [];
 
     if (report.expertDropOff && report.score >= 80) {
@@ -219,11 +220,21 @@ export class ReportInterpreter {
     return notes;
   }
 
-  private static getOrdinalSuffix(i: number): string {
+  private getOrdinalSuffix(i: number): string {
     const j = i % 10, k = i % 100;
     if (j === 1 && k !== 11) return "st";
     if (j === 2 && k !== 12) return "nd";
     if (j === 3 && k !== 13) return "rd";
     return "th";
   }
+
+  // Static facades for legacy tests
+  static interpret(report: PremiumReport) { return this.singleton.interpret(report); }
+  static interpretKPI(report: PremiumReport) { return this.singleton.interpretKPI(report); }
+  static interpretSubtopics(report: PremiumReport) { return this.singleton.interpretSubtopics(report); }
+  static interpretSkills(report: PremiumReport) { return this.singleton.interpretSkills(report); }
+  static interpretHeatmap(report: PremiumReport) { return this.singleton.interpretHeatmap(report); }
+  static interpretDifficulty(report: PremiumReport) { return this.singleton.interpretDifficulty(report); }
+  static interpretTime(report: PremiumReport) { return this.singleton.interpretTime(report); }
+  static interpretMeta(report: PremiumReport) { return this.singleton.interpretMeta(report); }
 }

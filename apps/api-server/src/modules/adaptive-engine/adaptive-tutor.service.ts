@@ -19,10 +19,14 @@ export interface TutorInsight {
 }
 
 export class AdaptiveTutorService {
+  private static instance = new AdaptiveTutorService();
+
+  constructor(private readonly dbInstance = db) {}
+
   /**
    * Generates personalized study recommendations based on recent performance.
    */
-  static async generateInsights(
+  async generateInsights(
     userId: string,
     topicAccuracyRecords: { topicId: string; accuracy: number }[],
   ): Promise<TutorInsight[]> {
@@ -43,10 +47,10 @@ export class AdaptiveTutorService {
 
     const topicDetails: TopicDetail[] = [
       ...(idKeys.length > 0
-        ? ((await db.query.topics.findMany({ where: inArray(topics.id, idKeys) })) as TopicDetail[])
+        ? ((await this.dbInstance.query.topics.findMany({ where: inArray(topics.id, idKeys) })) as TopicDetail[])
         : []),
       ...(nameKeys.length > 0
-        ? ((await db.query.topics.findMany({ where: inArray(topics.name, nameKeys) })) as TopicDetail[])
+        ? ((await this.dbInstance.query.topics.findMany({ where: inArray(topics.name, nameKeys) })) as TopicDetail[])
         : []),
     ];
 
@@ -111,8 +115,8 @@ export class AdaptiveTutorService {
   /**
    * Dispatches master notes to the user's Inbox and triggers (future) email.
    */
-  static async requestMasterNotes(userId: string, topicId: string): Promise<boolean> {
-    const topic = await db.query.topics.findFirst({
+  async requestMasterNotes(userId: string, topicId: string): Promise<boolean> {
+    const topic = await this.dbInstance.query.topics.findFirst({
       where: eq(topics.id, topicId),
     });
 
@@ -123,12 +127,12 @@ export class AdaptiveTutorService {
     }
 
     // 0. Verify User and fetch their official registered email
-    const userResult = await db.query.users.findFirst({
+    const userResult = await this.dbInstance.query.users.findFirst({
       where: (u, { eq: eqUser }) => eqUser(u.id, userId),
     });
 
     // 1. Create Internal Notification (The Inbox message)
-    await db.insert(notifications).values({
+    await this.dbInstance.insert(notifications).values({
       userId,
       type: "notes_sent",
       title: "Master Notes Dispatched!",
@@ -143,5 +147,14 @@ export class AdaptiveTutorService {
     // 2. Logic for high-end email service would go here (e.g., Resend, SendGrid)
     // For now, we return true to indicate the notification logic handled the request.
     return true;
+  }
+
+  // --- Static facades for legacy tests ---
+  static generateInsights(userId: string, topicAccuracyRecords: { topicId: string; accuracy: number }[]) {
+    return this.instance.generateInsights(userId, topicAccuracyRecords);
+  }
+
+  static requestMasterNotes(userId: string, topicId: string) {
+    return this.instance.requestMasterNotes(userId, topicId);
   }
 }

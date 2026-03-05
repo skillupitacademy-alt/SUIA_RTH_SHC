@@ -25,6 +25,7 @@ export interface StartExamConfig {
 }
 
 export class ExamEngine {
+  private static singleton = new ExamEngine();
   private examRepo: ExamRepository;
   private selectionService: SelectionService;
   private performanceService: PerformanceService;
@@ -40,6 +41,15 @@ export class ExamEngine {
   /**
    * Starts a new exam session or resumes an existing one based on idempotency key.
    */
+  static async startExam(
+    userId: string,
+    blueprintOrDomainId: string,
+    idempotencyKey?: string,
+    config?: StartExamConfig
+  ) {
+    return this.singleton.startExam(userId, blueprintOrDomainId, idempotencyKey, config);
+  }
+
   async startExam(
     userId: string,
     blueprintOrDomainId: string,
@@ -133,6 +143,10 @@ export class ExamEngine {
   /**
    * Handles individual question submission within an exam.
    */
+  static async submitAnswer(examId: string, questionId: string, answer: string, userId: string, idempotencyKey?: string) {
+    return this.singleton.submitAnswer(examId, questionId, answer, userId, idempotencyKey);
+  }
+
   async submitAnswer(examId: string, questionId: string, answer: string, userId: string, idempotencyKey?: string) {
     // Phase 5: Offload high-frequency idempotency to Redis
     if (idempotencyKey !== undefined && idempotencyKey !== null && idempotencyKey !== '') {
@@ -223,6 +237,10 @@ export class ExamEngine {
   /**
    * Finalizes the exam and triggers scoring.
    */
+  static async completeExam(examId: string, userId: string, idempotencyKey?: string) {
+    return this.singleton.completeExam(examId, userId, idempotencyKey);
+  }
+
   async completeExam(examId: string, userId: string, idempotencyKey?: string) {
     let targetExamId = examId;
     if (idempotencyKey !== undefined && idempotencyKey !== null && idempotencyKey !== '') {

@@ -1,6 +1,8 @@
 import { getEvaluator } from './evaluators/evaluator.registry';
 
 export class AnswerEvaluationEngine {
+  private static instance = new AnswerEvaluationEngine();
+
   /**
    * Strategy-based evaluation for various question types.
    */
@@ -17,5 +19,14 @@ export class AnswerEvaluationEngine {
   calculatePartialScore(_type: string, _options: unknown, _selection: unknown): number {
     // Future implementation for Multi-Select MCQs
     return 0;
+  }
+
+  // Legacy static facades for tests
+  static evaluate(type: 'mcq' | 'code_mcq' | string, correctAnswer: string, userAnswer: string): boolean {
+    return this.instance.evaluate(type, correctAnswer, userAnswer);
+  }
+
+  static calculatePartialScore(_type: string, _options: unknown, _selection: unknown): number {
+    return this.instance.calculatePartialScore(_type, _options, _selection);
   }
 }

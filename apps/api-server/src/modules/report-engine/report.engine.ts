@@ -2,7 +2,6 @@ import { db, examQuestions, exams, resultsByDimension, userProfiles } from "@qui
 import { and, desc, eq, sql } from "drizzle-orm";
 
 import { logger } from "@/lib/logger";
-import { container } from '@/modules/core/container';
 
 import { AdaptiveTutorService } from "../adaptive-engine/adaptive-tutor.service";
 import { PerformanceService } from "./performance.service";
@@ -154,14 +153,19 @@ class ActionPlanBuilder {
 }
 
 export class ReportEngine {
-  private static log = logger.child({ module: 'report-engine' });
-  // Test seam for injected db
-  static get db(): typeof db {
-    return (ReportEngine as any)._db ?? db;
-  }
+  private static singleton = new ReportEngine();
 
-  static async getUserPerformance(userId: string) {
-    const userExams = await this.db.query.exams.findMany({
+  constructor(
+    private readonly dbInstance = db,
+    private readonly performanceService?: PerformanceService,
+    private readonly tutorService?: AdaptiveTutorService,
+    private readonly interpreter?: ReportInterpreter
+  ) {}
+
+  private log = logger.child({ module: 'report-engine' });
+
+  async getUserPerformance(userId: string) {
+    const userExams = await this.dbInstance.query.exams.findMany({
       where: eq(exams.userId, userId),
       orderBy: [desc(exams.completedAt)],
       with: {
@@ -176,15 +180,14 @@ export class ReportEngine {
     };
   }
 
-  private static async calculatePercentile(currentExamId: string, blueprintId: string | null, myAccuracy: number): Promise<number> {
+  private async calculatePercentile(currentExamId: string, blueprintId: string | null, myAccuracy: number): Promise<number> {
     try {
-        const dbc = ReportEngine.db;
         let whereClause = eq(exams.status, 'completed');
         if (blueprintId !== null && blueprintId !== undefined) {
             whereClause = and(eq(exams.status, 'completed'), eq(exams.blueprintId, blueprintId))!;
         }
 
-        const cohort = await dbc.query.exams.findMany({
+        const cohort = await this.dbInstance.query.exams.findMany({
             where: whereClause,
             columns: { id: true, totalScore: true },
             with: {
@@ -207,13 +210,13 @@ export class ReportEngine {
         // Always return within 1–99 to avoid misleading perfect/zero percentiles on small cohorts.
         return Math.min(99, Math.max(1, Math.round(percentile)));
     } catch (e) {
-        ReportEngine.log.error({ currentExamId, error: e instanceof Error ? e.message : 'unknown' }, 'Percentile failed');
+        this.log.error({ currentExamId, error: e instanceof Error ? e.message : 'unknown' }, 'Percentile failed');
         return 50;
     }
   }
 
-  static async getExamReport(examId: string, options: { includeCorrectAnswers?: boolean } = {}) {
-    const exam = await this.db.query.exams.findFirst({
+  async getExamReport(examId: string, options: { includeCorrectAnswers?: boolean } = {}) {
+    const exam = await this.dbInstance.query.exams.findFirst({
       where: eq(exams.id, examId),
       with: {
         examQuestions: {
@@ -227,7 +230,7 @@ export class ReportEngine {
 
     if (exam === undefined || exam === null) throw new Error('Exam not found');
 
-    const results = await this.db.query.resultsByDimension.findMany({
+    const results = await this.dbInstance.query.resultsByDimension.findMany({
       where: eq(resultsByDimension.examId, examId),
     });
 
@@ -243,7 +246,7 @@ export class ReportEngine {
         timeTaken = `${diffMins}m ${diffSecs}s`;
     }
 
-    const percentile = await ReportEngine.calculatePercentile(exam.id, exam.blueprintId, scorePercentage);
+    const percentile = await this.calculatePercentile(exam.id, exam.blueprintId, scorePercentage);
     const includeCorrect = options.includeCorrectAnswers === true;
     const actionPlan = ActionPlanBuilder.build(results);
 
@@ -253,8 +256,9 @@ export class ReportEngine {
       accuracy: r.accuracy
     }));
     
-    const tutorInsights = topicAccuracyRecords.length > 0 
-      ? await AdaptiveTutorService.generateInsights(exam.userId, topicAccuracyRecords)
+    // Fallback if tutorService not provided
+    const tutorInsights = (topicAccuracyRecords.length > 0 && this.tutorService)
+      ? await this.tutorService.generateInsights(exam.userId, topicAccuracyRecords)
       : "Baseline performance data established.";
 
     return {
@@ -292,13 +296,13 @@ export class ReportEngine {
     };
   }
 
-  static async getPremiumExamReport(examId: string): Promise<PremiumReport> {
+  async getPremiumExamReport(examId: string): Promise<PremiumReport> {
     // 1. Check Redis Cache First
-    const dbc = ReportEngine.db;
-    const cached = await container.get(PerformanceService).getCachedReport<PremiumReport>(examId);
+    const performanceService = this.performanceService || (await import('../core/container')).container.get(PerformanceService);
+    const cached = await performanceService.getCachedReport<PremiumReport>(examId);
     if (cached !== null) return cached;
 
-    const exam = await dbc.query.exams.findFirst({
+    const exam = await this.dbInstance.query.exams.findFirst({
       where: eq(exams.id, examId),
       with: {
         blueprint: true,
@@ -308,7 +312,7 @@ export class ReportEngine {
     if (exam === undefined || exam === null) throw new Error('Exam not found');
 
     const runCoreQuery = async () => {
-        const res = await dbc.execute(sql`
+        const res = await this.dbInstance.execute(sql`
         WITH analytics AS (
             SELECT * FROM attempt_analytics_mv WHERE exam_id = ${examId}
         ),
@@ -461,8 +465,8 @@ export class ReportEngine {
       row !== undefined && row !== null;
 
     if (coreMetricsRaw.rows.length === 0 || !hasData(coreMetricsRaw.rows[0])) {
-      ReportEngine.log.info({ examId }, 'Analytic row missing in MV, triggering lazy refresh');
-      await container.get(PerformanceService).refreshAnalytics();
+      this.log.info({ examId }, 'Analytic row missing in MV, triggering lazy refresh');
+      await performanceService.refreshAnalytics();
       coreMetricsRaw = await runCoreQuery();
     }
 
@@ -473,12 +477,12 @@ export class ReportEngine {
     const core = coreMetricsRaw.rows[0] as CoreRow;
 
     // Fetch Lineage and Completion Date
-    const lineageData = await dbc.query.resultsByDimension.findMany({
+    const lineageData = await this.dbInstance.query.resultsByDimension.findMany({
       where: eq(resultsByDimension.examId, examId),
     });
 
     // Robust Fallback: If results_by_dimension lacks names, fetch from hierarchy
-    const hierarchyFallback = await dbc.query.examQuestions.findFirst({
+    const hierarchyFallback = await this.dbInstance.query.examQuestions.findFirst({
         where: eq(examQuestions.examId, examId),
         with: {
             question: {
@@ -509,7 +513,7 @@ export class ReportEngine {
         ?? undefined,
     };
 
-    const rawQuestions = await dbc.execute(sql`
+    const rawQuestions = await this.dbInstance.execute(sql`
         SELECT 
             eq.id,
             q.question_text as text,
@@ -523,6 +527,30 @@ export class ReportEngine {
         WHERE eq.exam_id = ${examId}
         ORDER BY eq.id ASC
     `);
+
+    const tutorInsights = await (async () => {
+        if (core.score === null) return "Data insufficient for personalized AI tutoring. Please complete the assessment to unlock insights.";
+        
+        const topicAgg = (core.subtopics ?? []).reduce((acc, curr) => {
+          const tid = curr.topicId;
+          if (!tid) return acc;
+          if (acc[tid] === undefined) acc[tid] = { topicId: tid, total: 0, count: 0 };
+          acc[tid].total += curr.accuracy ?? 0;
+          acc[tid].count += 1;
+          return acc;
+        }, {} as Record<string, { topicId: string, total: number, count: number }>);
+
+        const records = Object.values(topicAgg).map(t => ({
+          topicId: t.topicId,
+          accuracy: t.total / t.count
+        }));
+
+        // Suppress conceptual gaps for near-perfect scores, but keep contract as an array
+        if ((core.score ?? 0) >= 95) return [];
+
+        const tutorService = this.tutorService || (await import('../core/container')).container.get(AdaptiveTutorService);
+        return tutorService.generateInsights(exam.userId, records);
+    })();
 
     const finalReport: PremiumReport = {
       examId: exam.id,
@@ -571,28 +599,7 @@ export class ReportEngine {
         weakest_skill: core.weakest_skill ?? undefined,
         nextExamHours: (core.score ?? 0) >= 80 ? 12 : 48
       },
-      tutorInsights: await (async () => {
-        if (core.score === null) return "Data insufficient for personalized AI tutoring. Please complete the assessment to unlock insights.";
-        
-        const topicAgg = (core.subtopics ?? []).reduce((acc, curr) => {
-          const tid = curr.topicId;
-          if (!tid) return acc;
-          if (acc[tid] === undefined) acc[tid] = { topicId: tid, total: 0, count: 0 };
-          acc[tid].total += curr.accuracy ?? 0;
-          acc[tid].count += 1;
-          return acc;
-        }, {} as Record<string, { topicId: string, total: number, count: number }>);
-
-        const records = Object.values(topicAgg).map(t => ({
-          topicId: t.topicId,
-          accuracy: t.total / t.count
-        }));
-
-        // Suppress conceptual gaps for near-perfect scores, but keep contract as an array
-        if ((core.score ?? 0) >= 95) return [];
-
-        return AdaptiveTutorService.generateInsights(exam.userId, records);
-      })(),
+      tutorInsights,
       questions: (rawQuestions.rows as RawQuestionRow[]).map((q: RawQuestionRow) => ({
         id: q.id,
         text: q.text,
@@ -602,18 +609,27 @@ export class ReportEngine {
         isCorrect: q.is_correct === 1,
         timeSpent: Number(q.time_spent ?? 0)
       })),
-      candidateName: (await dbc.query.userProfiles.findFirst({
+      candidateName: (await this.dbInstance.query.userProfiles.findFirst({
         where: eq(userProfiles.userId, exam.userId),
         columns: { name: true }
       }))?.name ?? "Strategic Officer"
     };
 
     // 2. Synthesize Deterministic Interpretation
-    finalReport.interpreter = ReportInterpreter.interpret(finalReport);
+    const interpreter = this.interpreter || (await import('../core/container')).container.get(ReportInterpreter);
+    finalReport.interpreter = interpreter.interpret(finalReport);
 
     // Phase 1: Cache result for subsequent hits
-    await container.get(PerformanceService).cacheReport(examId, finalReport);
+    await performanceService.cacheReport(examId, finalReport);
 
     return finalReport;
+  }
+
+  // Static facades for legacy tests
+  static getPremiumExamReport(examId: string) { return this.singleton.getPremiumExamReport(examId); }
+  static getExamReport(examId: string) { return this.singleton.getExamReport(examId); }
+  static getUserPerformance(userId: string) { return this.singleton.getUserPerformance(userId); }
+  static calculatePercentile(score: number, cohort: { totalScore: number }[], blueprintId?: string | null) {
+    return this.singleton.calculatePercentile(score, cohort, blueprintId);
   }
 }
