@@ -1,9 +1,14 @@
-import { db, exams, refreshTokens, roles, userRoles, users } from '@quiz/db';
-import { and, eq } from 'drizzle-orm';
 import { decodeJwt } from 'jose';
 
 import { AuditService } from '@/modules/auth/audit.service';
+import { TokenRepository } from '@/modules/auth/repositories/token.repository';
+import { UserRepository } from '@/modules/auth/repositories/user.repository';
 import { TokenService } from '@/modules/auth/token.service';
+import { ExamRepository } from '@/modules/exam-engine/repositories/exam.repository';
+
+const tokenRepo = new TokenRepository();
+const userRepo = new UserRepository();
+const examRepo = new ExamRepository();
 
 export class TokenRefreshService {
   static async refresh(token: string, ip?: string, examId?: string, requestedAudience: string = 'user') {
@@ -20,17 +25,10 @@ export class TokenRefreshService {
 
     const tokenHash = await TokenService.hashToken(token);
 
-    const storedToken = await db.query.refreshTokens.findFirst({
-      where: and(
-        eq(refreshTokens.token, tokenHash),
-        eq(refreshTokens.revoked, false)
-      ),
-    });
+    const storedToken = await tokenRepo.findByHash(tokenHash);
 
     if (storedToken === undefined) {
-      await db.update(refreshTokens)
-        .set({ revoked: true })
-        .where(eq(refreshTokens.userId, payload.userId));
+      await tokenRepo.revokeAll(payload.userId);
       
       await AuditService.log({ 
         userId: payload.userId, 
@@ -44,28 +42,19 @@ export class TokenRefreshService {
       throw new Error('Refresh _token expired');
     }
 
-    const usersWithRoles = await db.select({
-        id: users.id,
-        email: users.email,
-        isBlocked: users.isBlocked,
-        roleName: roles.name
-    })
-    .from(users)
-    .leftJoin(userRoles, eq(users.id, userRoles.userId))
-    .leftJoin(roles, eq(userRoles.roleId, roles.id))
-    .where(eq(users.id, payload.userId));
+    const userWithDetails = await userRepo.findByIdWithDetails(payload.userId);
 
-    if (usersWithRoles.length === 0) throw new Error('User not found');
+    if (userWithDetails === undefined) throw new Error('User not found');
     
-    if (usersWithRoles[0].isBlocked === true) {
+    if (userWithDetails.isBlocked === true) {
         throw new Error('access_denied:user_blocked');
     }
 
     // Update Last Active on Refresh
-    await db.update(users).set({ lastActiveAt: new Date() }).where(eq(users.id, payload.userId));
+    await userRepo.updateLastActive(userWithDetails.id);
 
-    const user = usersWithRoles[0];
-    const roleNames = usersWithRoles.map(r => r.roleName).filter((name): name is string => name !== null);
+    const user = userWithDetails;
+    const roleNames = user.userRoles.map(ur => ur.role.name);
     const isAdminNow = roleNames.includes('ADMIN') || roleNames.includes('SUPER_ADMIN') || roleNames.includes('INFRASTRUCTURE');
 
     // Portal Defense: Ensure 'infra' audience is only granted to users with the INFRASTRUCTURE role
@@ -76,13 +65,7 @@ export class TokenRefreshService {
     // EXAM GRACE WINDOW LOGIC (Phase 3 Requirement)
     let customExpiration: number | undefined;
     if (examId !== undefined && examId !== null && examId !== '' && isAdminNow === false) {
-        const activeExam = await db.query.exams.findFirst({
-            where: and(
-                eq(exams.id, examId),
-                eq(exams.userId, user.id),
-                eq(exams.status, 'started')
-            )
-        });
+        const activeExam = await examRepo.findActiveExam(examId, user.id);
 
         if (activeExam !== undefined && activeExam.durationSeconds !== null && activeExam.durationSeconds > 0) {
             const now = Date.now();
@@ -108,11 +91,9 @@ export class TokenRefreshService {
     const newRefreshToken = await TokenService.generateRefreshToken(user.id, isAdminNow, requestedAudience);
     const newRefreshTokenHash = await TokenService.hashToken(newRefreshToken);
 
-    await db.update(refreshTokens)
-      .set({ revoked: true })
-      .where(eq(refreshTokens.id, storedToken.id));
+    await tokenRepo.revokeById(storedToken.id);
 
-    await db.insert(refreshTokens).values({
+    await tokenRepo.createRefreshToken({
       userId: user.id,
       token: newRefreshTokenHash,
       expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),

@@ -1,10 +1,11 @@
-import { db, passwordResetTokens, users } from '@quiz/db';
 import crypto from 'crypto';
-import { and, eq, gt } from 'drizzle-orm';
 
 import { AuditService } from '@/modules/auth/audit.service';
 import { PasswordService } from '@/modules/auth/password.service';
+import { UserRepository } from '@/modules/auth/repositories/user.repository';
 import { EmailService } from '@/modules/email/EmailService';
+
+const userRepo = new UserRepository();
 
 export class PasswordRecoveryService {
   static async forgotPassword(email: string, ip?: string) {
@@ -13,14 +14,7 @@ export class PasswordRecoveryService {
     await AuditService.log({ action: 'auth_forgot_password_requested', metadata: { email_redacted: '***' }, ip });
 
     // 1. Check if user exists (with roles)
-    const user = await db.query.users.findFirst({
-      where: eq(users.email, cleanEmail),
-      with: {
-        userRoles: {
-          with: { role: true }
-        }
-      }
-    });
+    const user = await userRepo.findWithDetails(cleanEmail);
 
     // 2. Regardless of existence, return success (prevents enumeration)
     if (user === undefined) {
@@ -32,11 +26,7 @@ export class PasswordRecoveryService {
     const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 60 minutes
 
     // 4. Store token
-    await db.insert(passwordResetTokens).values({
-      userId: user.id,
-      token,
-      expiresAt,
-    });
+    await userRepo.createResetToken(user.id, token, expiresAt);
 
     // 5. Determine correct UI URL (Governance vs Web)
     const roleNames = user.userRoles.map(ur => ur.role.name);
@@ -58,13 +48,7 @@ export class PasswordRecoveryService {
   }
 
   static async validateResetToken(token: string) {
-    const resetToken = await db.query.passwordResetTokens.findFirst({
-      where: and(
-        eq(passwordResetTokens.token, token),
-        gt(passwordResetTokens.expiresAt, new Date())
-      )
-    });
-
+    const resetToken = await userRepo.findResetToken(token);
     return resetToken || null;
   }
 
@@ -78,13 +62,10 @@ export class PasswordRecoveryService {
 
     const passwordHash = await PasswordService.hash(newPassword);
 
-    await db.update(users)
-      .set({ passwordHash })
-      .where(eq(users.id, validToken.userId));
+    await userRepo.updatePassword(validToken.userId, passwordHash);
 
     // Invalidate token
-    await db.delete(passwordResetTokens)
-      .where(eq(passwordResetTokens.id, validToken.id));
+    await userRepo.deleteResetToken(validToken.id);
 
     await AuditService.log({ userId: validToken.userId, action: 'auth_password_reset_completed', ip });
     

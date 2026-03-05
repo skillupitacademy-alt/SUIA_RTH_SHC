@@ -1,96 +1,34 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { createContentSlice, type ContentSlice } from './quiz/content.slice';
+import { createInteractionSlice, type InteractionSlice } from './quiz/interaction.slice';
+import { createSessionSlice, type SessionSlice } from './quiz/session.slice';
+import { createTimerSlice, type TimerSlice } from './quiz/timer.slice';
+import type { Question, QuizConfig } from './quiz/types';
 
-export interface Question {
-  id: string;
-  type: 'MCQ' | 'CODE_MCQ';
-  text: string;
-  code?: string;
-  options: string[];
-  difficulty: string;
-}
+export type { Question, QuizConfig };
 
-interface QuizState {
-  isActive: boolean;
-  questions: Question[];
-  answers: Record<string, number>;
-  markedForReview: string[];
-  timeLeft: number;
-  currentQuestionIndex: number;
-  config: {
-    domain: string;
-    subjects: string[];
-    difficulty: string;
-  } | null;
-  examId: string | null;
-  isSubmitted: boolean;
+type QuizStore = SessionSlice & ContentSlice & InteractionSlice & TimerSlice & {
+  // Legacy compatibility / Aggregated actions
+  startQuiz: (questions: Question[], config: QuizConfig, duration: number) => void;
+};
 
-  // Actions
-  startQuiz: (questions: Question[], config: NonNullable<QuizState['config']>, duration: number) => void;
-  setExamId: (id: string) => void;
-  setQuestions: (questions: Question[]) => void;
-  setAnswer: (questionId: string, optionIndex: number) => void;
-  toggleReview: (questionId: string) => void;
-  updateTimer: () => void;
-  updateTimeLeft: () => void; // Alias for updateTimer
-  setTimeRemaining: (time: number) => void;
-  setCurrentIndex: (index: number) => void;
-  finishQuiz: () => void;
-}
-
-export const useQuizStore = create<QuizState>()(
+export const useQuizStore = create<QuizStore>()(
   persist(
-    (set, get) => ({
-      isActive: false,
-      questions: [],
-      answers: {},
-      markedForReview: [],
-      timeLeft: 0,
-      currentQuestionIndex: 0,
-      config: null,
-      examId: null,
-      isSubmitted: false,
+    (set, get, store) => ({
+      ...createSessionSlice(set, get, store),
+      ...createContentSlice(set, get, store),
+      ...createInteractionSlice(set, get, store),
+      ...createTimerSlice(set, get, store),
 
-      startQuiz: (questions, config, duration) => set({
-        isActive: true,
-        questions,
-        config,
-        timeLeft: duration,
-        answers: {},
-        markedForReview: [],
-        currentQuestionIndex: 0,
-        isSubmitted: false, // Reset submission state
-      }),
-
-      setExamId: (id) => set({ examId: id }),
-      
-      setQuestions: (questions) => set({ questions }),
-
-      setAnswer: (questionId, optionIndex) => set((state) => ({
-        answers: { ...state.answers, [questionId]: optionIndex }
-      })),
-
-      toggleReview: (questionId) => set((state) => ({
-        markedForReview: state.markedForReview.includes(questionId)
-          ? state.markedForReview.filter(id => id !== questionId)
-          : [...state.markedForReview, questionId]
-      })),
-
-      updateTimer: () => set((state) => ({
-        timeLeft: state.timeLeft > 0 ? state.timeLeft - 1 : 0
-      })),
-      
-      updateTimeLeft: () => get().updateTimer(),
-
-      setTimeRemaining: (time) => set({ timeLeft: time }),
-
-      setCurrentIndex: (index) => set({ currentQuestionIndex: index }),
-
-      finishQuiz: () => set({
-        isActive: false,
-        isSubmitted: true,
-        // We keep questions/answers for results page viewing, but clear session status
-      }),
+      // Unified helper for backward compatibility
+      startQuiz: (questions, config, duration) => {
+        const { startQuizSession, setQuestions, setTimeRemaining, resetInteraction } = get();
+        resetInteraction();
+        startQuizSession(config, ''); // examId will be set later by ExamEngine or caller
+        setQuestions(questions);
+        setTimeRemaining(duration);
+      },
     }),
     {
       name: 'active-quiz-session',

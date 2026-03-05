@@ -128,11 +128,11 @@ describe('AuthService', () => {
       vi.mocked(TokenService.verifyRefreshToken).mockResolvedValue({ userId: 'u1' } as any);
       vi.mocked(db.query.refreshTokens.findFirst).mockResolvedValue({ id: 's1', expiresAt: new Date(Date.now() + 100000) } as any);
       
-      vi.mocked(db.select).mockReturnValue({
-        from: vi.fn().mockReturnThis(),
-        leftJoin: vi.fn().mockReturnThis(),
-        where: vi.fn().mockReturnValue([{ id: 'u1', roleName: 'USER', isBlocked: false }]),
+      vi.mocked(db.query.users.findFirst).mockResolvedValue({ 
+        id: 'u1', email: 't@t.com', isBlocked: false,
+        userRoles: [{ role: { name: 'USER' } }]
       } as any);
+
 
       await expect(AuthService.refresh('token', 'ip', undefined, 'infra')).rejects.toThrow('Infrastructure privileges required');
     });
@@ -142,10 +142,9 @@ describe('AuthService', () => {
       vi.mocked(TokenService.verifyRefreshToken).mockResolvedValue({ userId: 'u1' } as any);
       vi.mocked(db.query.refreshTokens.findFirst).mockResolvedValue({ id: 's1', expiresAt: new Date(Date.now() + 100000) } as any);
       
-      vi.mocked(db.select).mockReturnValue({
-        from: vi.fn().mockReturnThis(),
-        leftJoin: vi.fn().mockReturnThis(),
-        where: vi.fn().mockReturnValue([{ id: 'u1', roleName: 'USER', isBlocked: false }]),
+      vi.mocked(db.query.users.findFirst).mockResolvedValue({ 
+        id: 'u1', email: 't@t.com', isBlocked: false,
+        userRoles: [{ role: { name: 'USER' } }]
       } as any);
 
       vi.mocked(db.query.exams.findFirst).mockResolvedValue({ 
