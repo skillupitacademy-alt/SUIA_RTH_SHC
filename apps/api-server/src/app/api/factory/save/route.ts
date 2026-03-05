@@ -1,9 +1,12 @@
 import { db, questions, questionSkills, skills } from "@quiz/db";
 import { inArray, sql } from "drizzle-orm";
-import { type NextRequest, NextResponse } from "next/server";
+import { type NextRequest } from "next/server";
 
+import { badRequest, unauthorized } from "@/lib/api-error";
+import { ApiResponse } from "@/lib/api-response";
 import { logger } from "@/lib/logger";
 import { recordCounter, recordTimer } from "@/lib/metrics";
+import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from "@/lib/sanitize";
 import { withLogging } from "@/lib/withLogging";
 import { verifyAdminOrInfraToken } from "@/modules/auth/admin-audience.util";
 
@@ -38,13 +41,19 @@ async function handler(req: NextRequest) {
     try {
       await verifyAdminOrInfraToken(req);
     } catch {
-      return NextResponse.json({ _error: "Authentication required", scope: 'admin' }, { status: 401 });
+      return ApiResponse.error(unauthorized("Authentication required"));
     }
 
-    const { questions: checkQuestions, topicId, subtopicId } = (await req.json()) as SavePayload;
+    const rawBody = await req.json();
+
+    if (!validateJsonDepth(rawBody) || !validateJsonSize(rawBody)) {
+      return ApiResponse.error(badRequest("Payload too deep or large"));
+    }
+
+    const { questions: checkQuestions, topicId, subtopicId } = sanitizeJsonField(rawBody) as SavePayload;
 
     if (!checkQuestions?.length || !topicId) {
-      return NextResponse.json({ _error: "Invalid payload" }, { status: 400 });
+      return ApiResponse.error(badRequest("Invalid payload"));
     }
 
     // 1. Extract all unique skill names from the payload
@@ -122,7 +131,8 @@ async function handler(req: NextRequest) {
 
     recordCounter('factory.api.save.success', 1, { topicId });
     recordTimer('factory.api.save.duration', Date.now() - start, { outcome: 'success' });
-    return NextResponse.json({
+    
+    return ApiResponse.success({
       success: true,
       insertedCount: checkQuestions.length,
       newSkillsCreated: skillsToCreate.length,
@@ -131,10 +141,7 @@ async function handler(req: NextRequest) {
     logger.error({ err: error }, "Factory Save Error");
     recordCounter('factory.api.save.failure', 1, { reason: 'internal_error' });
     recordTimer('factory.api.save.duration', Date.now() - start, { outcome: 'failure' });
-    return NextResponse.json(
-      { _error: error instanceof Error ? error.message : "Access denied" },
-      { status: 403 }
-    );
+    return ApiResponse.error(error);
   }
 }
 

@@ -1,6 +1,8 @@
 import { METRICS } from "@quiz/observability";
-import { type NextRequest, NextResponse } from "next/server";
+import { type NextRequest } from "next/server";
 
+import { unauthorized } from "@/lib/api-error";
+import { ApiResponse } from "@/lib/api-response";
 import { sqlReplica } from "@/lib/db";
 import { recordCounter, recordTimer } from "@/lib/metrics";
 import { redis } from "@/lib/redis";
@@ -39,22 +41,28 @@ interface TreeNode {
   children?: TreeNode[];
 }
 
-async function handler(req: NextRequest) {
+async function getHandler(req: NextRequest) {
   const start = Date.now();
   try {
     const token = TokenService.getAccessToken(req, { scope: "user" });
-    if (token === undefined || token === null || token === "") {
-      return NextResponse.json({ error: "Authentication required" }, { status: 401 });
+    if (token === null || token === undefined || token === "") {
+      throw unauthorized("Authentication required");
     }
 
     const payload = await TokenService.verifyAccessToken(token, false);
+    if (payload === null || payload === undefined) {
+      throw unauthorized("Authentication required");
+    }
     const userId = payload.userId;
+    if (userId === null || userId === undefined) {
+      throw unauthorized("User id missing from token");
+    }
 
     const CACHE_KEY = CACHE_KEYS.ANALYTICS.USER(userId, "weakness-tree");
     try {
       const cachedData = await redis.get(CACHE_KEY);
       if (cachedData !== null) {
-        return NextResponse.json(cachedData);
+        return ApiResponse.success(cachedData);
       }
     } catch (__redisError) {
       // Ignored
@@ -74,7 +82,7 @@ async function handler(req: NextRequest) {
     `) as DimensionRow[];
 
     if (dimensions.length === 0) {
-      return NextResponse.json([]);
+      return ApiResponse.success([]);
     }
 
     const topicHierarchy = (await sqlReplica`
@@ -190,19 +198,15 @@ async function handler(req: NextRequest) {
     const durationMs = Date.now() - start;
     recordCounter(METRICS.ANALYTICS.WEAKNESS_TREE, 1, { outcome: 'success' });
     recordTimer(METRICS.ANALYTICS.WEAKNESS_TREE + '.duration', durationMs, { outcome: 'success' });
-    return NextResponse.json(tree, {
-      headers: { 'X-Duration-Ms': durationMs.toString() }
+    return ApiResponse.success(tree, 200, {
+      'X-Duration-Ms': durationMs.toString()
     });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Internal Server Error";
     const durationMs = Date.now() - start;
     recordCounter(METRICS.ANALYTICS.WEAKNESS_TREE, 1, { outcome: 'failure' });
     recordTimer(METRICS.ANALYTICS.WEAKNESS_TREE + '.duration', durationMs, { outcome: 'failure' });
-    return NextResponse.json(
-      { error: "Failed to fetch weakness tree", message },
-      { status: 500 }
-    );
+    return ApiResponse.error(error);
   }
 }
 
-export const GET = withLogging(handler, { component: 'analytics', operation: 'get_weakness_tree' });
+export const GET = withLogging(getHandler, { component: 'analytics', operation: 'get_weakness_tree' });

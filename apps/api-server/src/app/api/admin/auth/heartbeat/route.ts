@@ -1,8 +1,10 @@
 import { db, users } from '@quiz/db';
 import { METRICS } from '@quiz/observability';
 import { eq } from 'drizzle-orm';
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
 
+import { unauthorized } from '@/lib/api-error';
+import { ApiResponse } from '@/lib/api-response';
 import { recordCounter, recordTimer } from '@/lib/metrics';
 import { withLogging } from '@/lib/withLogging';
 import { TokenService } from '@/modules/auth/token.service';
@@ -13,7 +15,7 @@ async function handler(_req: NextRequest) {
   const start = Date.now();
   try {
     const _token = TokenService.getAccessToken(_req, { scope: 'admin' });
-    if (_token === null || _token === undefined || _token.trim() === '') return NextResponse.json({ _error: 'Unauthorized Admin', scope: 'admin' }, { status: 401 });
+    if (_token === null || _token === undefined || _token.trim() === '') return ApiResponse.error(unauthorized('Unauthorized Admin'), 401);
 
     const _payload = await TokenService.verifyAccessToken(_token, true);
     
@@ -25,11 +27,11 @@ async function handler(_req: NextRequest) {
     recordCounter(METRICS.AUTH.LOGIN + '.heartbeat', 1, { outcome: 'success' });
     recordTimer(METRICS.AUTH.LOGIN + '.heartbeat.duration', durationMs);
 
-    return NextResponse.json({ status: 'ok', timestamp: new Date().toISOString(), mode: 'admin' });
+    return ApiResponse.success({ status: 'ok', timestamp: new Date().toISOString(), mode: 'admin' });
   } catch (_error: unknown) {
     const message = _error instanceof Error ? _error.message : 'Unauthorized';
     recordCounter(METRICS.AUTH.LOGIN + '.heartbeat', 1, { outcome: 'failure' });
-    return NextResponse.json({ _error: message }, { status: 401 });
+    return ApiResponse.error(unauthorized(message), 401);
   }
 }
 

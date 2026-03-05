@@ -1,8 +1,10 @@
 import { db, notesAccessLogs, topics, userRecommendations } from "@quiz/db";
 import { METRICS } from "@quiz/observability";
 import { and, eq } from "drizzle-orm";
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 
+import { badRequest, forbidden, notFound, unauthorized } from "@/lib/api-error";
+import { ApiResponse } from "@/lib/api-response";
 import { recordCounter, recordTimer } from "@/lib/metrics";
 import { withLogging } from "@/lib/withLogging";
 import { TokenService } from "@/modules/auth/token.service";
@@ -10,20 +12,23 @@ import { TutorSecurityService } from "@/modules/tutor/tutor.security";
 
 export const dynamic = "force-dynamic";
 
-async function handler(req: NextRequest) {
+async function getHandler(req: NextRequest) {
   const start = Date.now();
   try {
     const token = TokenService.getAccessToken(req, { scope: "user" });
-    if (typeof token !== "string" || token.length === 0) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (token === null || token === undefined || token === "") {
+      throw unauthorized("Unauthorized", "UNAUTHORIZED");
     }
     const payload = await TokenService.verifyAccessToken(token, false);
+    if (payload === null || payload === undefined || payload.userId === null || payload.userId === undefined) {
+      throw unauthorized("Authentication required", "UNAUTHORIZED");
+    }
 
     const { searchParams } = new URL(req.url);
     const topicId = searchParams.get("topicId")?.trim() ?? "";
 
     if (topicId.length === 0) {
-      return NextResponse.json({ error: "topicId is required" }, { status: 400 });
+      return ApiResponse.error(badRequest("topicId is required"));
     }
 
     const recommendation = await db.query.userRecommendations.findFirst({
@@ -33,8 +38,8 @@ async function handler(req: NextRequest) {
       ),
     });
 
-    if (!recommendation) {
-      return NextResponse.json({ error: "No recommendation found for this topic" }, { status: 403 });
+    if (recommendation === null || recommendation === undefined) {
+      return ApiResponse.error(forbidden("No recommendation found for this topic"));
     }
 
     const topic = await db.query.topics.findFirst({
@@ -51,7 +56,7 @@ async function handler(req: NextRequest) {
     const notesPath = notesAssetId ?? detailedNotesPath;
 
     if (notesPath === null || notesPath.length === 0) {
-      return NextResponse.json({ error: "Notes not available for this topic" }, { status: 404 });
+      return ApiResponse.error(notFound("Notes", topicId));
     }
 
     await db.insert(notesAccessLogs).values({
@@ -68,15 +73,14 @@ async function handler(req: NextRequest) {
     recordCounter(METRICS.TUTOR.NOTES_VIEW, 1, { outcome: 'success', topicId });
     recordTimer(METRICS.TUTOR.NOTES_VIEW + '.duration', durationMs, { outcome: 'success' });
 
-    return NextResponse.json({ url: signedUrl }, {
-      headers: { 'X-Duration-Ms': durationMs.toString() }
+    return ApiResponse.success({ url: signedUrl }, 200, {
+      'X-Duration-Ms': durationMs.toString()
     });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Internal Server Error";
     recordCounter(METRICS.TUTOR.NOTES_VIEW, 1, { outcome: 'failure' });
     recordTimer(METRICS.TUTOR.NOTES_VIEW + '.duration', Date.now() - start, { outcome: 'failure' });
-    return NextResponse.json({ error: message }, { status: 500 });
+    return ApiResponse.error(error);
   }
 }
 
-export const GET = withLogging(handler, { component: 'tutor', operation: 'view_notes' });
+export const GET = withLogging(getHandler, { component: 'tutor', operation: 'view_notes' });

@@ -1,6 +1,8 @@
 import { METRICS } from "@quiz/observability";
-import { type NextRequest, NextResponse } from "next/server";
+import { type NextRequest } from "next/server";
 
+import { forbidden, unauthorized } from "@/lib/api-error";
+import { ApiResponse } from "@/lib/api-response";
 import { sqlReplica } from "@/lib/db";
 import { recordCounter, recordTimer } from "@/lib/metrics";
 import { redis } from "@/lib/redis";
@@ -16,15 +18,19 @@ interface ItemDifficultyRow {
   p_value: number;
 }
 
-async function handler(req: NextRequest) {
+async function getHandler(req: NextRequest) {
   const start = Date.now();
   try {
     const analyticsEnabled = await ResilienceService.isFeatureEnabled('analytics');
     if (analyticsEnabled === false) {
-      return NextResponse.json(ResilienceService.getBusyPayload('analytics'), { status: 503 });
+      return ApiResponse.error(new Error("Analytics service is busy"), 503);
     }
 
     const token = TokenService.getAccessToken(req, { scope: "admin" });
+    if (token === undefined || token === null || token === "") {
+      throw unauthorized("Authentication required");
+    }
+
     const payload = await TokenService.verifyAccessToken(token as string, true) as {
       isAdmin?: boolean;
       roles?: string[];
@@ -33,13 +39,13 @@ async function handler(req: NextRequest) {
     const roles = Array.isArray(payload?.roles) ? payload.roles : [];
 
     if (!isAdmin && !roles.includes('ADMIN')) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      throw forbidden("Forbidden");
     }
 
     const CACHE_KEY = "analytics:admin:item-difficulty";
     try {
       const cached = await redis.get(CACHE_KEY);
-      if (cached !== null && cached !== undefined) return NextResponse.json(cached);
+      if (cached !== null && cached !== undefined) return ApiResponse.success(cached);
     } catch (_e) {
       // cache optional; proceed on miss or failure
     }
@@ -71,16 +77,15 @@ async function handler(req: NextRequest) {
     const durationMs = Date.now() - start;
     recordTimer(METRICS.ADMIN.DASHBOARD_LOAD + '.item_difficulty', durationMs, { outcome: 'success' });
     recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.item_difficulty.count', 1, { outcome: 'success' });
-    return NextResponse.json(result, {
-      headers: { 'X-Duration-Ms': durationMs.toString() }
+    return ApiResponse.success(result, 200, {
+      'X-Duration-Ms': durationMs.toString()
     });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Internal Server Error";
     const durationMs = Date.now() - start;
     recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.item_difficulty.count', 1, { outcome: 'failure' });
     recordTimer(METRICS.ADMIN.DASHBOARD_LOAD + '.item_difficulty.duration', durationMs, { outcome: 'failure' });
-    return NextResponse.json({ error: message }, { status: 500 });
+    return ApiResponse.error(error);
   }
 }
 
-export const GET = withLogging(handler, { component: 'analytics', operation: 'get_item_difficulty' });
+export const GET = withLogging(getHandler, { component: 'analytics', operation: 'get_item_difficulty' });

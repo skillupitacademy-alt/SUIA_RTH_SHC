@@ -1,12 +1,14 @@
 import { db, reports } from "@quiz/db";
 import { and, desc, eq, inArray, lt } from "drizzle-orm";
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest } from "next/server";
 
+import { unauthorized } from "@/lib/api-error";
+import { ApiResponse } from "@/lib/api-response";
 import { recordCounter, recordTimer } from "@/lib/metrics";
 import { storage } from "@/lib/storage";
 import { withLogging } from "@/lib/withLogging";
 
-async function handler(req: NextRequest) {
+async function getHandler(req: NextRequest) {
   const start = Date.now();
   const cronAuth = req.headers.get("Authorization") ?? "";
   const isVercelCron =
@@ -19,7 +21,7 @@ async function handler(req: NextRequest) {
       : internalKey === "secret";
 
   if (!isVercelCron && !isInternal && process.env.NODE_ENV === "production") {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    throw unauthorized("Unauthorized");
   }
 
   try {
@@ -62,14 +64,16 @@ async function handler(req: NextRequest) {
     }
 
     recordCounter('cron.cleanup_reports.success', 1, { deletedCount });
-    recordTimer('cron.cleanup_reports.duration', Date.now() - start, { outcome: 'success' });
-    return NextResponse.json({ status: "success", deletedCount });
+    const durationMs = Date.now() - start;
+    recordTimer('cron.cleanup_reports.duration', durationMs, { outcome: 'success' });
+    return ApiResponse.success({ status: "success", deletedCount }, 200, {
+      'X-Duration-Ms': durationMs.toString()
+    });
 
   } catch (error: unknown) {
     recordCounter('cron.cleanup_reports.failure', 1);
-    const message = error instanceof Error ? error.message : "Internal Server Error";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return ApiResponse.error(error);
   }
 }
 
-export const GET = withLogging(handler, { component: 'system', operation: 'cron_cleanup_reports' });
+export const GET = withLogging(getHandler, { component: 'system', operation: 'cron_cleanup_reports' });

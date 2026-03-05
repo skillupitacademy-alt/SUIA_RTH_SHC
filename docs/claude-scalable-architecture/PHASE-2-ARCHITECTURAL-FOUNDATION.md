@@ -2270,6 +2270,136 @@
 > **Estimated effort**: 8-12 weeks with focused development
 > **Impact**: From "functional monolith" to "well-architected, maintainable codebase ready for scale"
 
+
+---
+
+## PHASE 1 CARRY-FORWARD TASKS (Execute Before Phase 2 Main Work)
+
+> These items were identified during the Phase 1 audit as low-priority or deferred.
+> They should be addressed as a "Cleanup Sprint" at the start of Phase 2.
+
+### CF-1: Write Playwright E2E Test Files (Phase 1 Task 13)
+
+**Status**: Playwright config exists, `@playwright/test` installed. No actual test files written.
+
+**AI Prompt:**
+
+> The Playwright infrastructure is installed and configured at `playwright.config.ts`. Write E2E smoke tests for the critical user flows:
+>
+> 1. **Student Login Flow**: Navigate to `/login`, enter credentials, verify redirect to `/dashboard`
+> 2. **Exam Flow**: Start a quiz from `/quiz`, answer questions, submit, verify results page
+> 3. **Admin Login Flow**: Navigate to admin login, verify admin dashboard loads
+>
+> Place tests in `apps/web-app/tests/e2e/` and `apps/admin-app/tests/e2e/`.
+> Use the existing `_skip-placeholder.spec.ts` files as a starting point.
+
+---
+
+### CF-2: Create Comprehensive Test Database Seed Script (Phase 1 Task 14)
+
+**Status**: `packages/db/seed-enterprise.ts` exists but may not be comprehensive.
+
+**AI Prompt:**
+
+> Enhance `packages/db/seed-enterprise.ts` to create a complete, realistic test dataset:
+>
+> - 5 student users, 2 admin users, 1 teacher user
+> - 3 domains → 6 subjects → 12 topics → 24 subtopics
+> - 100 questions across different difficulties and topics
+> - 10 completed exams with scores and dimension breakdowns
+> - 5 generated PDF reports
+> - Audit log entries covering login, exam submission, and admin actions
+>
+> Add a `seed` script to `packages/db/package.json`.
+
+---
+
+### CF-3: Add Bundle Size CI Check (Phase 1 Task 23)
+
+**Status**: `@next/bundle-analyzer` installed. No CI job runs it.
+
+**AI Prompt:**
+
+> Add a `bundle-check` job to `.github/workflows/ci.yml` that:
+>
+> 1. Runs `ANALYZE=true pnpm build:all`
+> 2. Checks total JS bundle size against a budget (e.g., 500KB first-load for web-app)
+> 3. Fails if budget is exceeded
+> 4. Uploads bundle analysis report as CI artifact
+>
+> Reference the existing `@next/bundle-analyzer` dependency in the root `package.json`.
+
+---
+
+### CF-4: Vercel Preview CI Integration (Phase 1 Task 24)
+
+**Status**: Vercel creates preview URLs. No CI checks against them.
+
+**AI Prompt:**
+
+> Add a `preview-check` job to `.github/workflows/ci.yml` that:
+>
+> 1. Waits for Vercel preview deployment to complete (use `vercel` CLI or webhook)
+> 2. Runs a health check (`curl`) against the preview URL
+> 3. Reports pass/fail on the PR
+>
+> Note: This must work on GitHub Free Tier (no Vercel Checks API).
+
+---
+
+### CF-5: Add `statement_timeout` to Database Pool (Phase 1 Task 37 Enhancement)
+
+**Status**: Application-level `withTimeout()` exists. Server-side `statement_timeout` NOT set.
+
+**AI Prompt:**
+
+> Add `statement_timeout: 30000` to the PostgreSQL pool configuration in `packages/db/src/index.ts`:
+>
+> ```typescript
+> const pool = new Pool({
+>   connectionString: databaseUrl,
+>   max: 15,
+>   idleTimeoutMillis: 30000,
+>   connectionTimeoutMillis: 2000,
+>   statement_timeout: 30000, // ← ADD THIS (30s server-side timeout)
+> });
+> ```
+>
+> This is a belt-and-suspenders backup to the existing `withTimeout()` utility.
+
+---
+
+### CF-6: Apply `withTimeout` to ScoringEngine and ExamEngine Queries (Phase 1 Task 37 Enhancement)
+
+**Status**: `packages/db/src/utils/query-timeout.ts` utility exists with 4 presets. Not applied to engine queries.
+
+**AI Prompt:**
+
+> Import `withTimeout` and timeout presets from `packages/db/src/utils/query-timeout.ts`.
+>
+> Apply to these critical query paths:
+>
+> 1. `ScoringEngine.calculateExamResults` → wrap heavy aggregation queries with `REPORT_QUERY_TIMEOUT`
+> 2. `ExamEngine` start/submit operations → wrap with `STANDARD_QUERY_TIMEOUT`
+> 3. Admin analytics/reporting queries → wrap with `REPORT_QUERY_TIMEOUT`
+
+---
+
+### CF-7: Add Remaining Database Indexes (Phase 1 Task 38 Enhancement)
+
+**Status**: 26 indexes exist. 4 additional indexes identified during audit.
+
+**AI Prompt:**
+
+> Add these indexes to `packages/db/src/schema/auth.ts`:
+>
+> 1. `users.created_at` — for sorting/filtering users by registration date
+> 2. `audit_logs.action` — for filtering audit logs by action type
+> 3. `audit_logs.created_at` — for time-range queries on audit logs
+> 4. `login_attempts.user_id` — for rate limiting lookups by user
+>
+> After adding, run `pnpm drizzle-kit generate` to create the migration file (do NOT auto-run the migration).
+
 ---
 
 *Phase 3 prompts are in `PHASE-3-SCALE-PREPARATION.md`*

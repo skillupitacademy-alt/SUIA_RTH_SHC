@@ -1,8 +1,10 @@
 import type { NextRequest} from 'next/server';
-import { NextResponse } from 'next/server';
 
+import { badRequest, unauthorized } from '@/lib/api-error';
+import { ApiResponse } from '@/lib/api-response';
 import { logger } from '@/lib/logger';
 import { recordCounter, recordTimer } from '@/lib/metrics';
+import { validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 import { withLogging } from '@/lib/withLogging';
 import { AdminEngine } from '@/modules/admin-engine/admin.engine';
 import { TokenService } from '@/modules/auth/token.service';
@@ -15,38 +17,43 @@ const log = logger.child({ module: 'admin:topics:batch-delete' });
 
 async function _verifyAdmin(_req: NextRequest) {
     const _token = TokenService.getAccessToken(_req, { scope: 'admin' });
-    if (_token === null || _token === undefined || _token.trim() === '') {
-        return { _error: 'Unauthorized', scope: 'admin', status: 401 };
+    if (_token === undefined || _token === null || _token === '') {
+        return { _error: unauthorized('Unauthorized', 'UNAUTHORIZED') };
     }
 
     try {
         const _payload = await TokenService.verifyAccessToken(_token, true);
         return { userId: _payload.userId };
-    } catch {
-        return { _error: 'Unauthorized', status: 401 };
+    } catch (_error) {
+        return { _error: unauthorized('Unauthorized', 'UNAUTHORIZED') };
     }
 }
 
 async function handler(_req: NextRequest) {
     const start = Date.now();
     const auth = await _verifyAdmin(_req);
-    if (auth._error !== undefined) return NextResponse.json({ _error: auth._error, scope: auth.scope }, { status: auth.status });
+    if (auth._error !== undefined) return ApiResponse.error(auth._error);
 
     try {
-        const { ids } = await _req.json() as BatchDeleteBody;
-        if (ids === null || ids === undefined || !Array.isArray(ids)) {
-            return NextResponse.json({ _error: 'Invalid IDs' }, { status: 400 });
+        const rawBody = await _req.json();
+        if (!validateJsonDepth(rawBody) || !validateJsonSize(rawBody)) {
+          return ApiResponse.error(badRequest('Payload too deep or large'));
+        }
+
+        const { ids } = rawBody as BatchDeleteBody;
+        if (!Array.isArray(ids)) {
+            return ApiResponse.error(badRequest('Invalid IDs (expected array)'));
         }
 
         const result = await AdminEngine.deleteTopicsBatch(ids, auth.userId!);
         recordCounter('admin.api.topics.batch_delete.success', 1);
         recordTimer('admin.api.topics.batch_delete.duration', Date.now() - start);
-        return NextResponse.json(result);
+        return ApiResponse.success(result);
     } catch (_error: unknown) {
         const message = _error instanceof Error ? _error.message : 'Internal Server Error';
         log.error({ error: message }, 'ADMIN_TOPICS_BATCH_DELETE failed');
         recordCounter('admin.api.topics.batch_delete.failure', 1, { reason: 'internal_error' });
-        return NextResponse.json({ _error: message }, { status: 500 });
+        return ApiResponse.error(_error);
     }
 }
 

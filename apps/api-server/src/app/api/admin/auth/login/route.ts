@@ -1,6 +1,7 @@
-import { NextResponse } from 'next/server';
 import { z } from 'zod';
 
+import { badRequest, unauthorized } from '@/lib/api-error';
+import { ApiResponse } from '@/lib/api-response';
 import { recordCounter } from '@/lib/metrics';
 import { withLogging } from '@/lib/withLogging';
 import { AdminAuthService } from '@/modules/auth/admin-auth.service';
@@ -34,7 +35,7 @@ async function handler(_req: Request) {
         role: result.user.role ?? 'admin',
     };
 
-    const response = NextResponse.json({
+    const response = ApiResponse.success({
         user,
         expiresAt: result.expiresAt,
     });
@@ -71,12 +72,12 @@ async function handler(_req: Request) {
     recordCounter('admin.auth.login', 1, { outcome: 'failure' });
 
     if (_error instanceof z.ZodError) {
-      return NextResponse.json({ _error: 'Invalid input' }, { status: 400 });
+      return ApiResponse.error(badRequest('Invalid input'), 400);
     }
     
     const message = _error instanceof Error ? _error.message : 'Authentication failed';
     const status = message.includes('Locked') ? 403 : 401;
-    return NextResponse.json({ _error: message }, { status });
+    return ApiResponse.error(unauthorized(message), status);
   }
 }
 

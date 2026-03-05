@@ -1,6 +1,8 @@
 import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
 
+import { badRequest } from '@/lib/api-error';
+import { ApiResponse } from '@/lib/api-response';
+import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 import { withLogging } from '@/lib/withLogging';
 import { AuthService } from '@/modules/auth/auth.service';
 import { resetPasswordSchema } from '@/schemas/auth.schemas';
@@ -10,33 +12,39 @@ export const dynamic = 'force-dynamic';
 async function getHandler(_req: NextRequest) {
     const _token = _req.nextUrl.searchParams.get('_token');
     if (typeof _token !== 'string' || _token.trim() === '') {
-        return NextResponse.json({ valid: false }, { status: 400 });
+        return ApiResponse.error(badRequest('Token is required'));
     }
 
     try {
         const valid = await AuthService.validateResetToken(_token);
-        return NextResponse.json({ valid });
+        return ApiResponse.success({ valid });
     } catch {
-        return NextResponse.json({ valid: false });
+        return ApiResponse.success({ valid: false });
     }
 }
 
 async function postHandler(_req: NextRequest) {
   try {
     const rawBody = await _req.json();
-    const parsed = resetPasswordSchema.safeParse(rawBody);
+    
+    if (!validateJsonDepth(rawBody) || !validateJsonSize(rawBody)) {
+      return ApiResponse.error(badRequest('Payload too deep or large'));
+    }
+
+    const sanitizedBody = sanitizeJsonField(rawBody);
+    const parsed = resetPasswordSchema.safeParse(sanitizedBody);
+    
     if (!parsed.success) {
-        return NextResponse.json({ _error: 'Invalid payload', issues: parsed.error.issues }, { status: 400 });
+        return ApiResponse.error(badRequest('Invalid payload', 'BAD_REQUEST', parsed.error.issues));
     }
     const { token, password } = parsed.data;
 
     const ip = _req.headers.get('x-forwarded-for') ?? '0.0.0.0';
     await AuthService.resetPassword(token, password, ip);
 
-    return NextResponse.json({ success: true });
+    return ApiResponse.success({ success: true });
   } catch (_error: unknown) {
-    const message = _error instanceof Error ? _error.message : 'Error resetting password';
-    return NextResponse.json({ _error: message }, { status: 400 });
+    return ApiResponse.error(_error, 400);
   }
 }
 

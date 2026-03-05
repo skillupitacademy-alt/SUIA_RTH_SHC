@@ -1,8 +1,10 @@
 import { METRICS } from '@quiz/observability';
 import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
 
+import { badRequest, internalError, unauthorized } from '@/lib/api-error';
+import { ApiResponse } from '@/lib/api-response';
 import { recordCounter, recordTimer } from '@/lib/metrics';
+import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 import { withLogging } from '@/lib/withLogging';
 import type { BlueprintInsert } from '@/modules/admin-engine/admin.engine';
 import { AdminEngine } from '@/modules/admin-engine/admin.engine';
@@ -28,7 +30,7 @@ async function _verifyAdmin(_req: NextRequest) {
 async function getHandler(_req: NextRequest) {
     const start = Date.now();
     const auth = await _verifyAdmin(_req);
-    if ('_error' in auth && auth._error !== undefined) return NextResponse.json({ _error: auth._error, scope: auth.scope }, { status: auth.status });
+    if ('_error' in auth && auth._error !== undefined) return ApiResponse.error(unauthorized(auth._error), auth.status);
 
     try {
         const searchParams = _req.nextUrl.searchParams;
@@ -42,28 +44,30 @@ async function getHandler(_req: NextRequest) {
         recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.blueprints.get.success', 1);
         recordTimer(METRICS.ADMIN.DASHBOARD_LOAD + '.blueprints.get.duration', durationMs, { outcome: 'success' });
 
-        return NextResponse.json(data, {
-            headers: { 'X-Duration-Ms': durationMs.toString() }
-        });
+        return ApiResponse.success(data, 200, { 'X-Duration-Ms': durationMs.toString() });
     } catch (_error: unknown) {
         const message = _error instanceof Error ? _error.message : 'Internal Server Error';
         const durationMs = Date.now() - start;
         recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.blueprints.get.failure', 1);
         recordTimer(METRICS.ADMIN.DASHBOARD_LOAD + '.blueprints.get.duration', durationMs, { outcome: 'failure' });
-        return NextResponse.json({ _error: message }, { status: 500 });
+        return ApiResponse.error(internalError(message), 500);
     }
 }
 
 async function postHandler(_req: NextRequest) {
     const start = Date.now();
     const auth = await _verifyAdmin(_req);
-    if ('_error' in auth && auth._error !== undefined) return NextResponse.json({ _error: auth._error, scope: auth.scope }, { status: auth.status });
+    if ('_error' in auth && auth._error !== undefined) return ApiResponse.error(unauthorized(auth._error), auth.status);
 
     try {
-        const rawBody = await _req.json() as BlueprintInsert;
-        const parsed = blueprintSchema.safeParse(rawBody);
+        const rawBody = await _req.json().catch(() => null) as BlueprintInsert | null;
+        if (rawBody === null || !validateJsonDepth(rawBody) || !validateJsonSize(rawBody)) {
+            return ApiResponse.error(badRequest('Payload too deep or large'), 400);
+        }
+        const sanitized = sanitizeJsonField(rawBody) as BlueprintInsert;
+        const parsed = blueprintSchema.safeParse(sanitized);
         if (!parsed.success) {
-            return NextResponse.json({ _error: 'Invalid payload', issues: parsed.error.issues }, { status: 400 });
+            return ApiResponse.error(badRequest('Invalid payload', 'BAD_REQUEST', parsed.error.issues), 400);
         }
 
         const result = await AdminEngine.createBlueprint(parsed.data);
@@ -72,15 +76,13 @@ async function postHandler(_req: NextRequest) {
         recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.blueprints.create.success', 1);
         recordTimer(METRICS.ADMIN.DASHBOARD_LOAD + '.blueprints.create.duration', durationMs, { outcome: 'success' });
 
-        return NextResponse.json(result, {
-            headers: { 'X-Duration-Ms': durationMs.toString() }
-        });
+        return ApiResponse.success(result, 200, { 'X-Duration-Ms': durationMs.toString() });
     } catch (_error: unknown) {
         const message = _error instanceof Error ? _error.message : 'Internal Server Error';
         const durationMs = Date.now() - start;
         recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.blueprints.create.failure', 1);
         recordTimer(METRICS.ADMIN.DASHBOARD_LOAD + '.blueprints.create.duration', durationMs, { outcome: 'failure' });
-        return NextResponse.json({ _error: message }, { status: 500 });
+        return ApiResponse.error(internalError(message), 500);
     }
 }
 

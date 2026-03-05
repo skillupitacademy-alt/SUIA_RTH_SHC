@@ -3,6 +3,8 @@ import { METRICS } from "@quiz/observability";
 import { eq } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 
+import { notFound, unauthorized } from "@/lib/api-error";
+import { ApiResponse } from "@/lib/api-response";
 import { recordCounter, recordTimer } from "@/lib/metrics";
 import { withLogging } from "@/lib/withLogging";
 import { TutorSecurityService } from "@/modules/tutor/tutor.security";
@@ -13,7 +15,7 @@ export const dynamic = "force-dynamic";
  * GET /api/tutor/notes/download?topicId=...&expires=...&signature=...
  * Serves the actual notes file with proper Content-Disposition headers.
  */
-async function handler(req: NextRequest) {
+async function getHandler(req: NextRequest) {
   const start = Date.now();
   try {
     const { searchParams } = new URL(req.url);
@@ -22,12 +24,12 @@ async function handler(req: NextRequest) {
     const signature = searchParams.get("signature")?.trim() ?? "";
 
     if (topicId.length === 0 || expires.length === 0 || signature.length === 0) {
-      return new Response("Unauthorized: Missing security parameters", { status: 401 });
+      return ApiResponse.error(unauthorized("Missing security parameters"), 401);
     }
 
     const isValid = TutorSecurityService.verifySignature(topicId, expires, signature);
     if (!isValid) {
-      return new Response("Unauthorized: Invalid or expired link", { status: 403 });
+      return ApiResponse.error(unauthorized("Invalid or expired link"), 403);
     }
 
     const topic = await db.query.topics.findFirst({
@@ -45,7 +47,7 @@ async function handler(req: NextRequest) {
     const realPathRaw = notesAssetId ?? detailedNotesPath;
     const realPath = typeof realPathRaw === "string" ? realPathRaw : "";
     if (realPath.length === 0) {
-      return new Response("File Not Found", { status: 404 });
+      return ApiResponse.error(notFound("Notes", topicId));
     }
 
     const topicName =
@@ -58,7 +60,7 @@ async function handler(req: NextRequest) {
     if (isHttp) {
       const response = await fetch(realPath);
       if (!response.ok) {
-        return new Response("Failed to fetch asset", { status: 502 });
+        return ApiResponse.error(new Error("Failed to fetch asset"), 502);
       }
       
       const blob = await response.blob();
@@ -79,7 +81,7 @@ async function handler(req: NextRequest) {
       const response = await fetch(`${origin}${realPath}`);
       if (!response.ok) {
         recordCounter(METRICS.TUTOR.NOTES_VIEW + '.download', 1, { outcome: 'failure', reason: 'local_not_found' });
-        return new Response("Local file not found", { status: 404 });
+        return ApiResponse.error(notFound("Local file", realPath));
       }
       
       const blob = await response.blob();
@@ -104,15 +106,11 @@ async function handler(req: NextRequest) {
     return response;
 
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Internal Server Error";
     const durationMs = Date.now() - start;
     recordCounter(METRICS.TUTOR.NOTES_VIEW + '.download', 1, { outcome: 'failure' });
     recordTimer(METRICS.TUTOR.NOTES_VIEW + '.duration', durationMs, { outcome: 'failure' });
-    return new Response(message, { 
-        status: 500,
-        headers: { "X-Duration-Ms": durationMs.toString() }
-    });
+    return ApiResponse.error(error);
   }
 }
 
-export const GET = withLogging(handler, { component: 'tutor', operation: 'download_notes' });
+export const GET = withLogging(getHandler, { component: 'tutor', operation: 'download_notes' });

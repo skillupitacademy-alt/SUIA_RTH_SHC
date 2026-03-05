@@ -1,22 +1,35 @@
 import { db } from "@quiz/db";
 import { METRICS } from "@quiz/observability";
 import { sql } from "drizzle-orm";
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest } from "next/server";
 
+import { unauthorized } from "@/lib/api-error";
+import { ApiResponse } from "@/lib/api-response";
 import { recordCounter, recordTimer } from "@/lib/metrics";
 import { withLogging } from "@/lib/withLogging";
 import { TokenService } from "@/modules/auth/token.service";
 
 export const dynamic = "force-dynamic";
 
-async function handler(req: NextRequest) {
+interface RecommendationRow {
+  topic_id: string;
+  recommendation_level: string;
+  accuracy: string | null;
+  topic_name: string;
+  learning_url: string | null;
+}
+
+async function getHandler(req: NextRequest) {
   const start = Date.now();
   try {
     const token = TokenService.getAccessToken(req, { scope: "user" });
-    if (typeof token !== "string" || token.length === 0) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (token === null || token === undefined || token === "") {
+      throw unauthorized("Unauthorized");
     }
     const payload = await TokenService.verifyAccessToken(token, false);
+    if (payload === null || payload === undefined || payload.userId === null || payload.userId === undefined) {
+      throw unauthorized("Authentication required");
+    }
 
     const rows = await db.execute(sql`
       SELECT DISTINCT ON (ur.topic_id)
@@ -33,12 +46,12 @@ async function handler(req: NextRequest) {
 
     const priority: Record<string, number> = { revise: 1, practice: 2, advance: 3 };
 
-    const formatted = rows.rows
+    const formatted = (rows.rows as unknown as RecommendationRow[])
       .map((r) => ({
-        topicName: r.topic_name as string,
-        recommendationLevel: r.recommendation_level as string,
+        topicName: r.topic_name,
+        recommendationLevel: r.recommendation_level,
         accuracy: Number(r.accuracy ?? 0),
-        learningUrl: r.learning_url as string | null,
+        learningUrl: r.learning_url,
       }))
       .sort((a, b) => (priority[a.recommendationLevel] ?? 99) - (priority[b.recommendationLevel] ?? 99))
       .slice(0, 5);
@@ -47,15 +60,14 @@ async function handler(req: NextRequest) {
     recordCounter(METRICS.RECOMMENDATIONS.FETCH, 1, { outcome: 'success' });
     recordTimer(METRICS.RECOMMENDATIONS.FETCH + '.duration', durationMs);
 
-    return NextResponse.json(formatted, {
-      headers: { 'X-Duration-Ms': durationMs.toString() }
+    return ApiResponse.success(formatted, 200, {
+      'X-Duration-Ms': durationMs.toString()
     });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Internal Server Error";
     recordCounter(METRICS.RECOMMENDATIONS.FETCH, 1, { outcome: 'failure' });
     recordTimer(METRICS.RECOMMENDATIONS.FETCH + '.duration', Date.now() - start, { outcome: 'failure' });
-    return NextResponse.json({ error: message }, { status: 500 });
+    return ApiResponse.error(error);
   }
 }
 
-export const GET = withLogging(handler, { component: "analytics", operation: "get_recommendations" });
+export const GET = withLogging(getHandler, { component: "analytics", operation: "get_recommendations" });

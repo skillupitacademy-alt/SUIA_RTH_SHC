@@ -1,6 +1,8 @@
 import { METRICS } from "@quiz/observability";
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest } from "next/server";
 
+import { badRequest, unauthorized } from "@/lib/api-error";
+import { ApiResponse } from "@/lib/api-response";
 import { recordCounter, recordTimer } from "@/lib/metrics";
 import { withLogging } from "@/lib/withLogging";
 import { ReportRepository } from "@/modules/report-engine/report-repository";
@@ -11,7 +13,7 @@ export const runtime = "nodejs";
  * Admin Report Retry — Reset a failed/stuck report and re-trigger generation.
  * Protected by x-internal-key.
  */
-async function handler(
+async function postHandler(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -23,27 +25,26 @@ async function handler(
     const missingSecret = typeof internalSecret !== "string" || internalSecret.length === 0;
 
     if (missingSecret || internalKeyHeader !== internalSecret) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      throw unauthorized("Unauthorized");
     }
 
     const { id: attemptId } = await params;
 
     if (typeof attemptId !== "string" || attemptId.length === 0) {
-      return NextResponse.json({ error: "Missing attemptId" }, { status: 400 });
+      throw badRequest("Missing attemptId");
     }
 
     // Find the existing report
     const report = await ReportRepository.getReportByAttempt(attemptId);
-    if (!report) {
-      return NextResponse.json({ error: "Report not found" }, { status: 404 });
+    if (report === null || report === undefined) {
+      return ApiResponse.error(new Error("Report not found"), 404);
     }
 
     // Only retry failed or stuck reports
     if (report.status !== "failed" && report.status !== "generating" && report.status !== "pending") {
-      return NextResponse.json({ 
-        error: "Report is already ready", 
-        status: report.status 
-      }, { status: 409 });
+      return ApiResponse.error(new Error("Report is already ready"), 409, undefined, { 
+        'X-Report-Status': report.status 
+      });
     }
 
     // Reset to pending
@@ -55,20 +56,19 @@ async function handler(
 
     // ... background generation logic ...
 
-    return NextResponse.json({ 
+    return ApiResponse.success({ 
       success: true, 
       attemptId, 
       message: "Report queued for re-generation" 
-    }, {
-      headers: { 'X-Duration-Ms': durationMs.toString() }
+    }, 200, {
+      'X-Duration-Ms': durationMs.toString()
     });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Internal Server Error";
     const durationMs = Date.now() - start;
     recordCounter(METRICS.ADMIN.REPORT_RETRY, 1, { outcome: "failure" });
     recordTimer(METRICS.ADMIN.REPORT_RETRY + '.duration', durationMs, { outcome: "failure" });
-    return NextResponse.json({ error: message }, { status: 500 });
+    return ApiResponse.error(error);
   }
 }
 
-export const POST = withLogging(handler, { component: 'admin', operation: 'report_retry' });
+export const POST = withLogging(postHandler, { component: 'admin', operation: 'report_retry' });

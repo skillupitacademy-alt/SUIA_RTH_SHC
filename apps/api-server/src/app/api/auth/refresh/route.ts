@@ -1,6 +1,8 @@
 import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
 
+import { badRequest } from '@/lib/api-error';
+import { ApiResponse } from '@/lib/api-response';
+import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 import { withLogging } from '@/lib/withLogging';
 import { AuthService } from '@/modules/auth/auth.service';
 import { TokenService } from '@/modules/auth/token.service';
@@ -23,14 +25,19 @@ async function handler(_req: NextRequest) {
     const tokenToUse = portalIdentity === 'infrastructure' ? infraRefresh : portalIdentity === 'admin' ? adminRefresh : userRefresh;
     
     if (tokenToUse === undefined || tokenToUse === null || tokenToUse === '') {
-      throw new Error(`No refresh token for scope: ${portalIdentity}`);
+      return ApiResponse.error(badRequest(`No refresh token for scope: ${portalIdentity}`, 'UNAUTHORIZED'));
     }
 
     const cookieName = portalIdentity === 'infrastructure' ? 'infra_refreshToken' : portalIdentity === 'admin' ? 'admin_refreshToken' : 'refreshToken';
 
     const ip = _req.headers.get('x-forwarded-for') ?? '0.0.0.0';
     
-    const body = await _req.json().catch(() => ({})) as RefreshRequest;
+    const rawBody = await _req.json().catch(() => ({}));
+    if (!validateJsonDepth(rawBody) || !validateJsonSize(rawBody)) {
+      return ApiResponse.error(badRequest('Payload too deep or large'));
+    }
+
+    const body = sanitizeJsonField(rawBody) as RefreshRequest;
     const examId = typeof body?.examId === 'string' && body.examId !== '' ? body.examId : undefined;
 
     const { accessToken, refreshToken: newRefreshToken } = await AuthService.refresh(tokenToUse, ip, examId, audience);
@@ -44,7 +51,7 @@ async function handler(_req: NextRequest) {
     }
     if (maxAge < 0) maxAge = 15 * 60; 
 
-    const response = NextResponse.json({ success: true, expiresAt });
+    const response = ApiResponse.success({ success: true, expiresAt });
 
     const rawDomain = process.env.COOKIE_DOMAIN;
     const cookieDomain = rawDomain === undefined || rawDomain === null || rawDomain === '' ? undefined : rawDomain;
@@ -70,8 +77,7 @@ async function handler(_req: NextRequest) {
 
     return response;
   } catch (_error: unknown) {
-    const message = _error instanceof Error ? _error.message : 'Unauthorized';
-    return NextResponse.json({ _error: message }, { status: 401 });
+    return ApiResponse.error(_error, 401);
   }
 }
 

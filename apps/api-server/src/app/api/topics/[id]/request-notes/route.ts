@@ -1,6 +1,8 @@
 import { METRICS } from "@quiz/observability";
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest } from "next/server";
 
+import { notFound, unauthorized } from "@/lib/api-error";
+import { ApiResponse } from "@/lib/api-response";
 import { recordCounter, recordTimer } from "@/lib/metrics";
 import { withLogging } from "@/lib/withLogging";
 import { AdaptiveTutorService } from "@/modules/adaptive-engine/adaptive-tutor.service";
@@ -12,7 +14,7 @@ export const dynamic = "force-dynamic";
  * POST /api/topics/[id]/request-notes
  * Triggers the dispatch of master notes to the student's email and internal inbox.
  */
-async function handler(
+async function postHandler(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -21,30 +23,34 @@ async function handler(
     const { id: topicId } = await params;
 
     const token = TokenService.getAccessToken(req, { scope: "user" });
-    if (typeof token !== "string" || token.length === 0) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (token === null || token === undefined || token === "") {
+      throw unauthorized("Unauthorized");
     }
     const payload = await TokenService.verifyAccessToken(token, false);
+    if (payload === null || payload === undefined || payload.userId === null || payload.userId === undefined) {
+      throw unauthorized("Unauthorized");
+    }
 
     const success = await AdaptiveTutorService.requestMasterNotes(payload.userId, topicId);
 
-    if (!success) {
-      return NextResponse.json({ 
-        error: "Master notes not available for this topic yet." 
-      }, { status: 404 });
+    if (success !== true) {
+      throw notFound("Master notes", topicId);
     }
 
+    const durationMs = Date.now() - start;
     recordCounter(METRICS.TUTOR.HELP_REQUEST + '.success', 1, { type: 'notes' });
-    recordTimer(METRICS.TUTOR.HELP_REQUEST + '.duration', Date.now() - start, { type: 'notes' });
-    return NextResponse.json({ 
+    recordTimer(METRICS.TUTOR.HELP_REQUEST + '.duration', durationMs, { type: 'notes' });
+    
+    return ApiResponse.success({ 
       success: true,
       message: "Notes dispatched successfully. Please check your Inbox and Email." 
+    }, 200, {
+      "X-Duration-Ms": durationMs.toString()
     });
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : "Failed to dispatch notes";
-    recordCounter(METRICS.TUTOR.HELP_REQUEST + '.failure', 1, { type: 'notes', reason: 'internal_error' });
-    return NextResponse.json({ error: message }, { status: 400 });
+    recordCounter(METRICS.TUTOR.HELP_REQUEST + '.failure', 1, { type: 'notes', reason: 'error' });
+    return ApiResponse.error(err);
   }
 }
 
-export const POST = withLogging(handler, { component: 'tutor', operation: 'request_notes' });
+export const POST = withLogging(postHandler, { component: 'tutor', operation: 'request_notes' });

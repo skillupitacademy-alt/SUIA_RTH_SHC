@@ -1,8 +1,9 @@
 import { db, users } from '@quiz/db';
 import { eq } from 'drizzle-orm';
 import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
 
+import { notFound, unauthorized } from '@/lib/api-error';
+import { ApiResponse } from '@/lib/api-response';
 import { withLogging } from '@/lib/withLogging';
 import { TokenService } from '@/modules/auth/token.service';
 
@@ -12,7 +13,7 @@ async function handler(_req: NextRequest) {
   try {
     const _token = TokenService.getAccessToken(_req);
     if (typeof _token !== 'string' || _token.trim() === '') {
-      return NextResponse.json({ _error: 'Unauthorized', scope: 'user' }, { status: 401 });
+      return ApiResponse.error(unauthorized('Unauthorized', 'UNAUTHORIZED'));
     }
 
     const _payload = await TokenService.verifyAccessToken(_token, false);
@@ -28,14 +29,14 @@ async function handler(_req: NextRequest) {
       },
     });
 
-    if (!_user) return NextResponse.json({ _error: 'User not found' }, { status: 404 });
+    if (!_user) return ApiResponse.error(notFound('User', _payload.userId));
 
     const onboarded = typeof _user.profile?.professionalStatus === 'string' && 
                       _user.profile.professionalStatus !== '' && 
                       typeof _user.profile?.educationLevel === 'string' && 
                       _user.profile.educationLevel !== '';
 
-    return NextResponse.json({
+    return ApiResponse.success({
       user: {
         id: _user.id,
         email: _user.email,
@@ -48,8 +49,7 @@ async function handler(_req: NextRequest) {
       expiresAt: TokenService.getExpiration(_token),
     });
   } catch (_error: unknown) {
-    const message = _error instanceof Error ? _error.message : 'Unauthorized';
-    return NextResponse.json({ _error: message }, { status: 401 });
+    return ApiResponse.error(_error, 401);
   }
 }
 

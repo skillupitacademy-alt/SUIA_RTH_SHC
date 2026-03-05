@@ -1,9 +1,11 @@
 import { METRICS } from '@quiz/observability';
-import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
+import { type NextRequest } from 'next/server';
 
+import { badRequest, unauthorized } from '@/lib/api-error';
+import { ApiResponse } from '@/lib/api-response';
 import { logger } from '@/lib/logger';
 import { recordCounter, recordTimer } from '@/lib/metrics';
+import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 import { withLogging } from '@/lib/withLogging';
 import { TokenService } from '@/modules/auth/token.service';
 import { ExamEngine } from '@/modules/exam-engine/exam.engine';
@@ -11,31 +13,43 @@ import { startQuizSchema } from '@/schemas/quiz.schemas';
 
 export const dynamic = 'force-dynamic';
 
-async function handler(_req: NextRequest) {
+async function postHandler(req: NextRequest) {
   const startTime = Date.now();
   try {
-    const _token = TokenService.getAccessToken(_req, { scope: 'user' });
-    if (typeof _token !== 'string' || _token.trim() === '') {
-      return NextResponse.json({ _error: 'Unauthorized', scope: 'user' }, { status: 401 });
+    const token = TokenService.getAccessToken(req, { scope: 'user' });
+    if (token === null || token === undefined || token === '') {
+      throw unauthorized("Unauthorized");
     }
 
-    const _payload = await TokenService.verifyAccessToken(_token, false);
-    const rawBody = await _req.json();
-    const parsed = startQuizSchema.safeParse(rawBody);
-    if (!parsed.success) {
-      return NextResponse.json({ _error: 'Invalid payload', issues: parsed.error.issues }, { status: 400 });
+    const payload = await TokenService.verifyAccessToken(token, false);
+    if (payload === null || payload === undefined || payload.userId === null || payload.userId === undefined) {
+      throw unauthorized("Authentication required");
     }
-    const body = parsed.data;
-    const { domainId, blueprintId, ...config } = body;
+    
+    // Ingest and sanitize JSON body
+    let raw;
+    try {
+      raw = await req.json();
+      validateJsonSize(raw);
+      validateJsonDepth(raw);
+    } catch {
+      throw badRequest("Invalid payload");
+    }
+    const body = sanitizeJsonField(raw) as Record<string, unknown>;
+
+    const parsed = startQuizSchema.safeParse(body);
+    if (!parsed.success) {
+      throw badRequest("Invalid payload");
+    }
+    const { domainId, blueprintId, ...config } = parsed.data;
     const targetId = blueprintId ?? domainId;
-    const idempotencyKey = _req.headers.get('idempotency-key') ?? _req.headers.get('Idempotency-Key');
+    const idempotencyKey = req.headers.get('idempotency-key') ?? req.headers.get('Idempotency-Key');
 
     // 6. Hardening & Validation
-    const validationError = validateStartQuizRequest(idempotencyKey, targetId, config);
-    if (validationError) return validationError;
+    validateStartQuizRequest(idempotencyKey, targetId, config as StartQuizConfig);
 
     const examData = await ExamEngine.startExam(
-      _payload.userId, 
+      payload.userId, 
       targetId as string, 
       idempotencyKey as string, 
       config
@@ -45,23 +59,19 @@ async function handler(_req: NextRequest) {
     recordCounter(METRICS.EXAM.START, 1, { outcome: 'success' });
     recordTimer(METRICS.EXAM.START + '.duration', durationMs, { outcome: 'success' });
 
-    return NextResponse.json(examData, {
-      headers: { 'X-Duration-Ms': durationMs.toString() }
+    return ApiResponse.success(examData, 200, {
+      'X-Duration-Ms': durationMs.toString()
     });
-  } catch (_error: unknown) {
-    const message = _error instanceof Error ? _error.message : 'Bad request';
-    logger.error({ err: _error, route: '/api/quiz/start' }, '[QUIZ_START] Error');
+  } catch (error: unknown) {
+    logger.error({ err: error, route: '/api/quiz/start' }, '[QUIZ_START] Error');
     const durationMs = Date.now() - startTime;
     recordCounter(METRICS.EXAM.START, 1, { outcome: 'failure' });
     recordTimer(METRICS.EXAM.START + '.duration', durationMs, { outcome: 'failure' });
-    return NextResponse.json({ _error: message }, { 
-      status: 400,
-      headers: { 'X-Duration-Ms': durationMs.toString() }
-    });
+    return ApiResponse.error(error, 400, durationMs.toString());
   }
 }
 
-export const POST = withLogging(handler, { component: 'quiz', operation: 'start_exam' });
+export const POST = withLogging(postHandler, { component: 'quiz', operation: 'start_exam' });
 
 type StartQuizConfig = {
     questionCount?: number;
@@ -74,35 +84,33 @@ type StartQuizConfig = {
 
 function validateStartQuizRequest(idempotencyKey: string | null, targetId: string | undefined, config: StartQuizConfig) {
     if (typeof idempotencyKey !== 'string' || idempotencyKey.trim() === '') {
-        return NextResponse.json({ _error: 'Missing Idempotency-Key header' }, { status: 422 });
+        throw badRequest('Missing Idempotency-Key header');
     }
 
     if (config.questionCount !== undefined && (config.questionCount < 5 || config.questionCount > 50)) {
-        return NextResponse.json({ _error: 'questionCount must be between 5 and 50' }, { status: 422 });
+        throw badRequest('questionCount must be between 5 and 50');
     }
 
     const arrayFields: (keyof StartQuizConfig)[] = ['subjectIds', 'topicIds', 'subtopicIds', 'topics'];
     for (const field of arrayFields) {
         if (config[field] !== undefined) {
             const value = config[field];
-            if (!Array.isArray(value)) return NextResponse.json({ _error: `${field} must be an array` }, { status: 422 });
-            if (value.length > 20) return NextResponse.json({ _error: `${field} cannot contain more than 20 items` }, { status: 422 });
+            if (!Array.isArray(value)) throw badRequest(`${field} must be an array`);
+            if (value.length > 20) throw badRequest(`${field} cannot contain more than 20 items`);
         }
     }
 
     const allowedDifficulties = ['simple', 'intermediate', 'expert', 'mixed'];
     if (typeof config.difficulty === 'string' && config.difficulty !== '' && !allowedDifficulties.includes(config.difficulty)) {
-        return NextResponse.json({ _error: `Invalid difficulty. Allowed: ${allowedDifficulties.join(', ')}` }, { status: 422 });
+        throw badRequest(`Invalid difficulty. Allowed: ${allowedDifficulties.join(', ')}`);
     }
 
     if (typeof targetId !== 'string' || targetId.trim() === '') {
-        return NextResponse.json({ _error: 'blueprintId or domainId is required' }, { status: 422 });
+        throw badRequest('blueprintId or domainId is required');
     }
 
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
     if (!uuidRegex.test(targetId)) {
-        return NextResponse.json({ _error: 'Invalid ID format' }, { status: 422 });
+        throw badRequest('Invalid ID format');
     }
-
-    return null;
 }

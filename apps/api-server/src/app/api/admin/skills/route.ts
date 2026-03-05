@@ -1,8 +1,10 @@
 import { METRICS } from '@quiz/observability';
 import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
 
+import { badRequest, unauthorized } from '@/lib/api-error';
+import { ApiResponse } from '@/lib/api-response';
 import { recordCounter, recordTimer } from '@/lib/metrics';
+import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 import { withLogging } from '@/lib/withLogging';
 import type { SkillInsert } from '@/modules/admin-engine/admin.engine';
 import { AdminEngine } from '@/modules/admin-engine/admin.engine';
@@ -13,8 +15,8 @@ export const dynamic = 'force-dynamic';
 
 async function verifyAdmin(_req: NextRequest) {
   const _token = TokenService.getAccessToken(_req, { scope: 'admin' });
-  if (_token === null || _token === undefined || _token.trim() === '') {
-    throw new Error('Unauthorized');
+  if (_token === undefined || _token === null || _token === '') {
+    throw unauthorized('Unauthorized', 'UNAUTHORIZED');
   }
   return await TokenService.verifyAccessToken(_token, true);
 }
@@ -29,19 +31,17 @@ async function getHandler(_req: NextRequest) {
     const limit = parseInt(searchParams.get('limit') ?? '20');
     const search = searchParams.get('search') ?? undefined;
 
-    const data = await AdminEngine.getSkills(page, limit, { search });
+    const result = await AdminEngine.getSkills(page, limit, { search });
     const durationMs = Date.now() - start;
     recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.skills.get.success', 1);
     recordTimer(METRICS.ADMIN.DASHBOARD_LOAD + '.skills.get.duration', durationMs, { outcome: 'success' });
-    return NextResponse.json(data, {
-      headers: { 'X-Duration-Ms': durationMs.toString() }
-    });
+    
+    return ApiResponse.paginated(result.data, result.total, page, limit);
   } catch (_error: unknown) {
-    const message = _error instanceof Error ? _error.message : 'Internal Server Error';
     const durationMs = Date.now() - start;
     recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.skills.get.failure', 1);
     recordTimer(METRICS.ADMIN.DASHBOARD_LOAD + '.skills.get.duration', durationMs, { outcome: 'failure' });
-    return NextResponse.json({ _error: message }, { status: 500 });
+    return ApiResponse.error(_error);
   }
 }
 
@@ -51,9 +51,15 @@ async function postHandler(_req: NextRequest) {
     const _payload = await verifyAdmin(_req);
 
     const rawBody = await _req.json();
-    const parsed = skillSchema.safeParse(rawBody);
+    if (!validateJsonDepth(rawBody) || !validateJsonSize(rawBody)) {
+        return ApiResponse.error(badRequest('Payload too deep or large'));
+    }
+
+    const sanitizedBody = sanitizeJsonField(rawBody);
+    const parsed = skillSchema.safeParse(sanitizedBody);
+    
     if (!parsed.success) {
-      return NextResponse.json({ _error: 'Invalid payload', issues: parsed.error.issues }, { status: 400 });
+      return ApiResponse.error(badRequest('Invalid payload', 'BAD_REQUEST', parsed.error.issues));
     }
     const body = parsed.data as SkillInsert & { weight?: unknown };
 
@@ -72,15 +78,12 @@ async function postHandler(_req: NextRequest) {
     recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.skills.create.success', 1);
     recordTimer(METRICS.ADMIN.DASHBOARD_LOAD + '.skills.create.duration', durationMs, { outcome: 'success' });
     
-    return NextResponse.json(result, {
-      headers: { 'X-Duration-Ms': durationMs.toString() }
-    });
+    return ApiResponse.success(result, 201, { 'X-Duration-Ms': durationMs.toString() });
   } catch (_error: unknown) {
-    const message = _error instanceof Error ? _error.message : 'Internal Server Error';
     const durationMs = Date.now() - start;
     recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.skills.create.failure', 1);
     recordTimer(METRICS.ADMIN.DASHBOARD_LOAD + '.skills.create.duration', durationMs, { outcome: 'failure' });
-    return NextResponse.json({ _error: message }, { status: 500 });
+    return ApiResponse.error(_error);
   }
 }
 

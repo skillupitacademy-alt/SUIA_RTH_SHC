@@ -97,4 +97,11 @@
 | 2026-02-25 | PDF Architecture Overhaul (Ph 6) | COMPLETED | Implemented live progress modal with stage-by-stage tracking; Integrated exponential backoff polling and success notifications; Fixed stuck-job recovery logic. |
 | 2026-02-26 | PDF Layout Stabilization (V31) | COMPLETED | Orchestrated 1920x1080 fixed-width containment to eliminate clipping; Calibrate layout tokens for vertical fill parity; Resolved Heatmap label truncation. |
 | 2026-02-26 | PDF Cache Invalidation & UX (V32) | COMPLETED | Delivered "Force Refresh" icon to bypass stale storage; Injected dynamic cache-busters into Puppeteer navigation; Stabilized downloads via high-reliability iframe trigger. |
-| 2026-03-04 | System Documentation & Audit | COMPLETED | Verified and finalized all PDF-related task history and execution logs for historical parity. |
+| 2026-03-04 | Observability Compliance | COMPLETED | 100% API route instrumentation (Counters/Timers); E2E Request Tracing (X-Request-ID); Sentry ErrorBoundary & Metrics Batching. |
+| 2026-03-04 | Repository Sanitization | COMPLETED | Relocated `sql/`, `types/`, and diagnostic scripts to subdirectories; Redirected Playwright artifacts to `tests/.playwright/`; Root README minimized. |
+| 2026-03-04 | Build Resilience & CI Fix | COMPLETED | Resolved Vercel build failures by excluding test files and `src/__test-utils__` from production type-checks; Synchronized `pnpm-lock.yaml` workspace dependencies. |
+| 2026-03-04 | Architecture Phase Coverage | COMPLETED | Completed 100% cross-reference of 4-Phase Architecture (165 tasks) + specialized Scaling and Resilience blueprints against actual codebase. |
+| 2026-03-04 | Architecture Gap & Value Analysis | COMPLETED | Identified 8 critical architectural gaps (G1-G8); Documented business value for each phase to guide future decision-making. |
+| 2026-03-04 | Gap Blueprinting & AI Prompts | COMPLETED | Created 16 new files (blueprint + AI prompt per gap) covering Accessibility, i18n, Disaster Recovery, Rate Limiting, PWA, Audit Trail, SEO, and Content Versioning. |
+| 2026-03-04 | Consolidated Coverage Restoration | COMPLETED | Restored 100% line coverage for all core engines by consolidating 30+ lost iterative test files into 4 modular suites (`admin`, `core`, `security`, `infrastructure`); Established stable, tracked baseline post-rollback. |
+| 2026-03-04 | Monitoring-as-Code | COMPLETED | Formalized Prometheus alerts and Grafana dashboards in `packages/observability`. |

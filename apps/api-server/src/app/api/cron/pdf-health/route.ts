@@ -1,14 +1,16 @@
 import { db, exams } from "@quiz/db";
 import { desc, eq } from "drizzle-orm";
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest } from "next/server";
 
+import { unauthorized } from "@/lib/api-error";
+import { ApiResponse } from "@/lib/api-response";
 import { recordCounter, recordTimer } from "@/lib/metrics";
 import { withLogging } from "@/lib/withLogging";
 import { ReportPdfService } from "@/modules/report-engine/report-pdf.service";
 
 export const runtime = "nodejs";
 
-async function handler(req: NextRequest) {
+async function getHandler(req: NextRequest) {
   const start = Date.now();
   const cronAuth = req.headers.get("Authorization") ?? "";
   const isVercelCron =
@@ -21,7 +23,7 @@ async function handler(req: NextRequest) {
       : internalKey === "secret";
 
   if (!isVercelCron && !isInternal && process.env.NODE_ENV === "production") {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    throw unauthorized("Unauthorized");
   }
 
   try {
@@ -31,7 +33,7 @@ async function handler(req: NextRequest) {
     });
 
     if (!testExam) {
-      return NextResponse.json({ message: "No completed exams to test with" });
+      return ApiResponse.success({ message: "No completed exams to test with" });
     }
 
     const { fileSizeKb, pageCount } = await ReportPdfService.generate(testExam.id);
@@ -41,20 +43,20 @@ async function handler(req: NextRequest) {
     }
 
     recordCounter('cron.pdf_health.success', 1, { fileSizeKb, pageCount });
-    recordTimer('cron.pdf_health.duration', Date.now() - start, { outcome: 'success' });
-    return NextResponse.json({ 
+    const durationMs = Date.now() - start;
+    recordTimer('cron.pdf_health.duration', durationMs, { outcome: 'success' });
+    return ApiResponse.success({ 
       status: "healthy",
       fileSizeKb,
       pageCount
+    }, 200, {
+      'X-Duration-Ms': durationMs.toString()
     });
 
   } catch (error: unknown) {
     recordCounter('cron.pdf_health.failure', 1);
-    return NextResponse.json({ 
-      status: "unhealthy", 
-      error: error instanceof Error ? error.message : "Unknown error" 
-    }, { status: 500 });
+    return ApiResponse.error(error);
   }
 }
 
-export const GET = withLogging(handler, { component: 'system', operation: 'cron_pdf_health' });
+export const GET = withLogging(getHandler, { component: 'system', operation: 'cron_pdf_health' });

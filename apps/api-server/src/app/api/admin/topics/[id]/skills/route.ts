@@ -1,6 +1,7 @@
 import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
 
+import { forbidden, unauthorized } from '@/lib/api-error';
+import { ApiResponse } from '@/lib/api-response';
 import { withLogging } from '@/lib/withLogging';
 import { AdminEngine } from '@/modules/admin-engine/admin.engine';
 import { _verifyAdmin } from '@/modules/auth/rbac.service';
@@ -11,7 +12,7 @@ export const dynamic = 'force-dynamic';
 async function verifyAdmin(_req: NextRequest) {
     const _token = TokenService.getAccessToken(_req, { scope: 'admin' });
     if (_token === null || _token === undefined || _token.trim() === '') {
-        throw new Error('Unauthorized');
+        throw unauthorized('Unauthorized', 'UNAUTHORIZED');
     }
     return await TokenService.verifyAccessToken(_token, true);
 }
@@ -25,14 +26,13 @@ async function getHandler(
         const _payload = await verifyAdmin(_req);
 
         if (!(await _verifyAdmin(_payload))) {
-            return NextResponse.json({ _error: 'Forbidden' }, { status: 403 });
+            return ApiResponse.error(forbidden());
         }
 
         const data = await AdminEngine.getSkillsByTopic(id);
-        return NextResponse.json(data);
+        return ApiResponse.success(data);
     } catch (_error: unknown) {
-        const message = _error instanceof Error ? _error.message : 'Internal Server Error';
-        return NextResponse.json({ _error: message }, { status: 500 });
+        return ApiResponse.error(_error);
     }
 }
 
@@ -45,16 +45,15 @@ async function postHandler(
         const _payload = await verifyAdmin(_req);
 
         if (!(await _verifyAdmin(_payload))) {
-            return NextResponse.json({ _error: 'Forbidden' }, { status: 403 });
+            return ApiResponse.error(forbidden());
         }
 
         const body = await _req.json(); 
         const result = await AdminEngine.mapTopicToSkills(id, body.skillIds, _payload.userId);
         
-        return NextResponse.json(result);
+        return ApiResponse.success(result);
     } catch (_error: unknown) {
-        const message = _error instanceof Error ? _error.message : 'Internal Server Error';
-        return NextResponse.json({ _error: message }, { status: 500 });
+        return ApiResponse.error(_error);
     }
 }
 

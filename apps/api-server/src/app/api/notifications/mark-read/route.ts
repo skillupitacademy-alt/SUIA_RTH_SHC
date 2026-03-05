@@ -1,27 +1,40 @@
 import { db, notifications } from "@quiz/db";
 import { METRICS } from "@quiz/observability";
 import { and, eq } from "drizzle-orm";
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 
+import { badRequest, unauthorized } from "@/lib/api-error";
+import { ApiResponse } from "@/lib/api-response";
 import { recordCounter, recordTimer } from "@/lib/metrics";
+import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from "@/lib/sanitize";
 import { withLogging } from "@/lib/withLogging";
 import { TokenService } from "@/modules/auth/token.service";
 
 export const dynamic = "force-dynamic";
 
-async function handler(req: NextRequest) {
+async function patchHandler(req: NextRequest) {
   const start = Date.now();
   try {
     const token = TokenService.getAccessToken(req, { scope: "user" });
-    if (typeof token !== "string" || token.length === 0) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (token === null || token === undefined || token === "") {
+      throw unauthorized("Unauthorized", "UNAUTHORIZED");
     }
     const payload = await TokenService.verifyAccessToken(token, false);
+    if (payload === null || payload === undefined || payload.userId === null || payload.userId === undefined) {
+      throw unauthorized("Authentication required", "UNAUTHORIZED");
+    }
 
-    const body = (await req.json().catch(() => ({}))) as {
-      notificationId?: unknown;
-      markAll?: unknown;
+    const rawBody = await req.json().catch(() => ({}));
+    
+    if (!validateJsonDepth(rawBody) || !validateJsonSize(rawBody)) {
+      return ApiResponse.error(badRequest("Payload too deep or large"));
+    }
+
+    const body = sanitizeJsonField(rawBody) as {
+      notificationId?: string;
+      markAll?: boolean;
     };
+
     const notificationId =
       typeof body.notificationId === "string" && body.notificationId.length > 0 ? body.notificationId : null;
     const markAll = body.markAll === true;
@@ -35,11 +48,11 @@ async function handler(req: NextRequest) {
       recordCounter(METRICS.NOTIFICATIONS.MARK_READ, 1, { type: 'bulk', outcome: 'success' });
       recordTimer(METRICS.NOTIFICATIONS.MARK_READ + '.duration', Date.now() - start, { type: 'bulk', outcome: 'success' });
       
-      return NextResponse.json({ success: true });
+      return ApiResponse.success({ success: true });
     }
 
     if (notificationId === null) {
-      return NextResponse.json({ error: "notificationId required" }, { status: 400 });
+      return ApiResponse.error(badRequest("notificationId required"));
     }
 
     await db
@@ -50,13 +63,12 @@ async function handler(req: NextRequest) {
     recordCounter(METRICS.NOTIFICATIONS.MARK_READ, 1, { type: 'single', outcome: 'success' });
     recordTimer(METRICS.NOTIFICATIONS.MARK_READ + '.duration', Date.now() - start, { type: 'single', outcome: 'success' });
 
-    return NextResponse.json({ success: true });
+    return ApiResponse.success({ success: true });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Internal Server Error";
     recordCounter(METRICS.NOTIFICATIONS.MARK_READ, 1, { outcome: 'failure' });
     recordTimer(METRICS.NOTIFICATIONS.MARK_READ + '.duration', Date.now() - start, { outcome: 'failure' });
-    return NextResponse.json({ error: message }, { status: 500 });
+    return ApiResponse.error(error);
   }
 }
 
-export const PATCH = withLogging(handler, { component: 'notifications', operation: 'mark_as_read' });
+export const PATCH = withLogging(patchHandler, { component: 'notifications', operation: 'mark_as_read' });

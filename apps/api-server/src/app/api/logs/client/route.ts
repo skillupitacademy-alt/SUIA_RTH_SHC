@@ -1,7 +1,12 @@
-import { type NextRequest, NextResponse } from 'next/server';
+import { type NextRequest } from 'next/server';
 import { z } from 'zod';
 
+import { badRequest } from '@/lib/api-error';
+import { ApiResponse } from '@/lib/api-response';
 import { logger } from '@/lib/logger';
+import { recordCounter, recordTimer } from '@/lib/metrics';
+import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
+import { withLogging } from '@/lib/withLogging';
 
 const MAX_BODY_BYTES = 2_048;
 const RATE_LIMIT_WINDOW_MS = 60_000;
@@ -61,9 +66,6 @@ function sample(level: string): boolean {
   return process.env.NODE_ENV !== 'production';
 }
 
-import { recordCounter, recordTimer } from "@/lib/metrics";
-import { withLogging } from "@/lib/withLogging";
-
 async function handler(req: NextRequest) {
   const start = Date.now();
   const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown';
@@ -74,7 +76,7 @@ async function handler(req: NextRequest) {
   if (contentLength !== null) {
     const size = Number(contentLength);
     if (!Number.isNaN(size) && size > MAX_BODY_BYTES) {
-      return NextResponse.json({ message: 'Payload too large' }, { status: 413 });
+      return ApiResponse.error(badRequest('Payload too large'), 413);
     }
   }
 
@@ -82,22 +84,28 @@ async function handler(req: NextRequest) {
   try {
     body = await req.json();
   } catch {
-    return NextResponse.json({ message: 'Invalid JSON body' }, { status: 400 });
+    return ApiResponse.error(badRequest('Invalid JSON body'), 400);
   }
 
-  const parsed = payloadSchema.safeParse(body);
+  if (!validateJsonDepth(body) || !validateJsonSize(body)) {
+    return ApiResponse.error(badRequest('Payload too deep or large'), 400);
+  }
+
+  const sanitized = sanitizeJsonField(body);
+
+  const parsed = payloadSchema.safeParse(sanitized);
   if (!parsed.success) {
-    return NextResponse.json({ message: 'Invalid payload', issues: parsed.error.issues }, { status: 400 });
+    return ApiResponse.error(badRequest('Invalid payload', 'BAD_REQUEST', parsed.error.issues), 400);
   }
 
   const { level, message, meta, source, path } = parsed.data;
   if (!sample(level)) {
-    return NextResponse.json({ status: 'dropped' });
+    return ApiResponse.success({ status: 'dropped' });
   }
 
   const rateKey = `${ip}:${source ?? 'client'}`;
   if (rateLimited(rateKey)) {
-    return NextResponse.json({ message: 'Rate limited' }, { status: 429 });
+    return ApiResponse.error(badRequest('Rate limited'), 429);
   }
 
   const safeMessage = scrubPII(message);
@@ -121,8 +129,8 @@ async function handler(req: NextRequest) {
   const durationMs = Date.now() - start;
   recordCounter('system.api.logs.client.count', 1, { level, source: source ?? 'web-app' });
   recordTimer('system.api.logs.client.duration', durationMs, { outcome: 'success' });
-  return NextResponse.json({ status: 'ok', reqId }, {
-    headers: { 'X-Duration-Ms': durationMs.toString() }
+  return ApiResponse.success({ status: 'ok', reqId }, 200, {
+    'X-Duration-Ms': durationMs.toString()
   });
 }
 

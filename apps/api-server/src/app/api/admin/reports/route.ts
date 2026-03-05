@@ -1,6 +1,8 @@
 import { METRICS } from "@quiz/observability";
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest } from "next/server";
 
+import { unauthorized } from "@/lib/api-error";
+import { ApiResponse } from "@/lib/api-response";
 import { recordCounter, recordTimer } from "@/lib/metrics";
 import { withLogging } from "@/lib/withLogging";
 import { ReportRepository } from "@/modules/report-engine/report-repository";
@@ -20,7 +22,7 @@ async function handler(req: NextRequest) {
     const missingSecret = typeof internalSecret !== "string" || internalSecret.length === 0;
 
     if (missingSecret || internalKeyHeader !== internalSecret) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      throw unauthorized("Unauthorized");
     }
 
     const { searchParams } = new URL(req.url);
@@ -38,21 +40,20 @@ async function handler(req: NextRequest) {
     recordCounter(METRICS.REPORTS.LIST, 1, { outcome: "success" });
     recordTimer(METRICS.REPORTS.LIST + ".duration", durationMs);
 
-    return NextResponse.json(
+    return ApiResponse.success(
       {
         reports: reportsList,
         stats,
         pagination: { limit, offset, returned: reportsList.length },
       },
-      {
-        headers: { "X-Duration-Ms": durationMs.toString() },
-      }
+      200,
+      { "X-Duration-Ms": durationMs.toString() }
     );
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Internal Server Error";
+    const durationMs = Date.now() - start;
     recordCounter(METRICS.REPORTS.LIST, 1, { outcome: "failure" });
-    recordTimer(METRICS.REPORTS.LIST + ".duration", Date.now() - start, { outcome: "failure" });
-    return NextResponse.json({ error: message }, { status: 500 });
+    recordTimer(METRICS.REPORTS.LIST + ".duration", durationMs, { outcome: "failure" });
+    return ApiResponse.error(error);
   }
 }
 

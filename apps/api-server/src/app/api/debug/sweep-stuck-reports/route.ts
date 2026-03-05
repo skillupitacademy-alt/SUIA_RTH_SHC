@@ -1,7 +1,9 @@
 import { db, reports } from "@quiz/db";
 import { and, eq, lt, or } from "drizzle-orm";
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest } from "next/server";
 
+import { internalError, unauthorized } from "@/lib/api-error";
+import { ApiResponse } from "@/lib/api-response";
 import { logger } from "@/lib/logger";
 import { recordCounter } from "@/lib/metrics";
 import { withLogging } from "@/lib/withLogging";
@@ -21,7 +23,7 @@ async function postHandler(req: NextRequest) {
     const missingSecret = typeof internalSecret !== "string" || internalSecret.length === 0;
 
     if (missingSecret || internalKeyHeader !== internalSecret) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return ApiResponse.error(unauthorized("Unauthorized"), 401);
     }
 
     // 2. Configurable Threshold
@@ -55,7 +57,7 @@ async function postHandler(req: NextRequest) {
     }, "[Sweeper] Stuck reports cleaned up");
 
     recordCounter('system.api.sweep.success', 1);
-    return NextResponse.json({
+    return ApiResponse.success({
       success: true,
       cleanedUpCount: stuckReports.length,
       reports: stuckReports.map(r => r.attemptId),
@@ -63,7 +65,8 @@ async function postHandler(req: NextRequest) {
   } catch (error) {
     logger.error({ err: error }, "[Sweeper] API Error");
     recordCounter('system.api.sweep.failure', 1, { reason: 'internal_error' });
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    const message = error instanceof Error ? error.message : "Internal Server Error";
+    return ApiResponse.error(internalError(message), 500);
   }
 }
 

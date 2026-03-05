@@ -1,9 +1,12 @@
 import { db, tutorHelpRequests } from "@quiz/db";
 import { METRICS } from "@quiz/observability";
 import { eq, sql } from "drizzle-orm";
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest } from "next/server";
 
+import { badRequest, unauthorized } from "@/lib/api-error";
+import { ApiResponse } from "@/lib/api-response";
 import { recordCounter, recordTimer } from "@/lib/metrics";
+import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from "@/lib/sanitize";
 import { withLogging } from "@/lib/withLogging";
 import { TokenService } from "@/modules/auth/token.service";
 
@@ -13,10 +16,13 @@ async function getHandler(req: NextRequest) {
   const start = Date.now();
   try {
     const token = TokenService.getAccessToken(req, { scope: "admin" });
-    if (typeof token !== "string" || token.length === 0) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (token === null || token === undefined || token === "") {
+      throw unauthorized("Unauthorized");
     }
-    await TokenService.verifyAccessToken(token, true);
+    const payload = await TokenService.verifyAccessToken(token, true);
+    if (payload === null || payload === undefined) {
+      throw unauthorized("Authentication required");
+    }
 
     const { searchParams } = new URL(req.url);
     const statusParam = searchParams.get("status");
@@ -58,18 +64,17 @@ async function getHandler(req: NextRequest) {
     recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.tutor.help.list.success', 1);
     recordTimer(METRICS.ADMIN.DASHBOARD_LOAD + '.tutor.help.list.duration', durationMs, { outcome: 'success' });
 
-    return NextResponse.json({
+    return ApiResponse.success({
       requests: list.rows,
       total,
-    }, {
-      headers: { 'X-Duration-Ms': durationMs.toString() }
+    }, 200, { 
+      'X-Duration-Ms': durationMs.toString() 
     });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Internal Server Error";
     const durationMs = Date.now() - start;
     recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.tutor.help.list.failure', 1);
     recordTimer(METRICS.ADMIN.DASHBOARD_LOAD + '.tutor.help.list.duration', durationMs, { outcome: 'failure' });
-    return NextResponse.json({ error: message }, { status: 500 });
+    return ApiResponse.error(error);
   }
 }
 
@@ -77,12 +82,25 @@ async function patchHandler(req: NextRequest) {
   const start = Date.now();
   try {
     const token = TokenService.getAccessToken(req, { scope: "admin" });
-    if (typeof token !== "string" || token.length === 0) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (token === null || token === undefined || token === "") {
+      throw unauthorized("Unauthorized");
     }
-    await TokenService.verifyAccessToken(token, true);
+    const payload = await TokenService.verifyAccessToken(token, true);
+    if (payload === null || payload === undefined) {
+      throw unauthorized("Authentication required");
+    }
 
-    const body = await req.json().catch(() => ({}));
+    // Ingest and sanitize JSON body
+    let raw;
+    try {
+      raw = await req.json();
+      validateJsonSize(raw);
+      validateJsonDepth(raw);
+    } catch {
+      throw badRequest("Invalid payload");
+    }
+    const body = sanitizeJsonField(raw) as Record<string, unknown>;
+
     const requestId: string | undefined =
       typeof body?.requestId === "string" && body.requestId.trim().length > 0 ? body.requestId.trim() : undefined;
     const statusRaw: string | undefined =
@@ -91,12 +109,12 @@ async function patchHandler(req: NextRequest) {
       typeof body?.note === "string" && body.note.trim().length > 0 ? body.note.trim() : undefined;
 
     if (requestId === undefined || requestId.length === 0 || statusRaw === undefined || statusRaw.length === 0) {
-      return NextResponse.json({ error: "requestId and status are required" }, { status: 400 });
+      throw badRequest("requestId and status are required");
     }
 
     const allowedStatuses = ["pending", "scheduled", "resolved", "cancelled"];
     if (!allowedStatuses.includes(statusRaw)) {
-      return NextResponse.json({ error: "Invalid status" }, { status: 400 });
+      throw badRequest("Invalid status");
     }
 
     const updateShape: Record<string, unknown> = { status: statusRaw };
@@ -110,15 +128,14 @@ async function patchHandler(req: NextRequest) {
     recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.tutor.help.update.success', 1, { status: statusRaw });
     recordTimer(METRICS.ADMIN.DASHBOARD_LOAD + '.tutor.help.update.duration', durationMs, { outcome: 'success', status: statusRaw });
 
-    return NextResponse.json({ success: true }, {
-        headers: { 'X-Duration-Ms': durationMs.toString() }
+    return ApiResponse.success({ success: true }, 200, {
+        'X-Duration-Ms': durationMs.toString()
     });
   } catch (error: unknown) {
     const durationMs = Date.now() - start;
     recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.tutor.help.update.failure', 1);
     recordTimer(METRICS.ADMIN.DASHBOARD_LOAD + '.tutor.help.update.duration', durationMs, { outcome: 'failure' });
-    const message = error instanceof Error ? error.message : "Internal Server Error";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return ApiResponse.error(error);
   }
 }
 

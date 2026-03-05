@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: ["*"]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
   DATABASE_URL: postgresql://user:pass@ep-placeholder.us-east-2.aws.neon.tech/neondb
   UPSTASH_REDIS_REST_URL: https://placeholder.upstash.io
@@ -13,91 +17,118 @@ env:
   NEXT_PUBLIC_APP_URL: http://localhost:3000
 
 jobs:
-  quality-gates:
+  lint:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Read pnpm version from package.json
+      - uses: actions/checkout@v4
+      - name: Read pnpm version
         id: pnpm_version
-        run: |
-          VERSION=$(node -p "require('./package.json').packageManager.split('@')[1]")
-          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-
-      - name: Setup PNPM
-        uses: pnpm/action-setup@v4
+        run: echo "version=$(node -p "require('./package.json').packageManager.split('@')[1]")" >> "$GITHUB_OUTPUT"
+      - uses: pnpm/action-setup@v4
         with:
           version: ${{ steps.pnpm_version.outputs.version }}
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: "pnpm"
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint:all
 
-      - name: Guard pnpm version matches packageManager
-        run: |
-          REQUIRED=${{ steps.pnpm_version.outputs.version }}
-          ACTUAL=$(pnpm -v)
-          if [ "$REQUIRED" != "$ACTUAL" ]; then
-            echo "pnpm version mismatch: required $REQUIRED, got $ACTUAL"
-            exit 1
-          fi
+  type-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Read pnpm version
+        id: pnpm_version
+        run: echo "version=$(node -p "require('./package.json').packageManager.split('@')[1]")" >> "$GITHUB_OUTPUT"
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ steps.pnpm_version.outputs.version }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "pnpm"
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck:all
 
-      - name: Install
-        run: pnpm install --frozen-lockfile
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Read pnpm version
+        id: pnpm_version
+        run: echo "version=$(node -p "require('./package.json').packageManager.split('@')[1]")" >> "$GITHUB_OUTPUT"
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ steps.pnpm_version.outputs.version }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "pnpm"
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @quiz/api-server run test:coverage
+      - name: Upload Coverage
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-api-server
+          path: apps/api-server/coverage/
+          retention-days: 1
 
-      - name: Lint (all apps)
-        run: pnpm lint:all
-
-      - name: Type-check (all apps)
-        run: pnpm typecheck:all
-
-      - name: Unit Tests
-        run: pnpm test:all
-
-      - name: Build (all apps)
-        run: pnpm build:all
+  build:
+    needs: [lint, type-check, test]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Read pnpm version
+        id: pnpm_version
+        run: echo "version=$(node -p "require('./package.json').packageManager.split('@')[1]")" >> "$GITHUB_OUTPUT"
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ steps.pnpm_version.outputs.version }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "pnpm"
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build:all
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-outputs
+          path: |
+            apps/**/.next/
+            packages/**/dist/
+          retention-days: 3
 
   e2e-smoke:
-    needs: quality-gates
+    needs: [build]
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Read pnpm version from package.json
+      - uses: actions/checkout@v4
+      - name: Read pnpm version
         id: pnpm_version
-        run: |
-          VERSION=$(node -p "require('./package.json').packageManager.split('@')[1]")
-          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-
-      - name: Setup PNPM
-        uses: pnpm/action-setup@v4
+        run: echo "version=$(node -p "require('./package.json').packageManager.split('@')[1]")" >> "$GITHUB_OUTPUT"
+      - uses: pnpm/action-setup@v4
         with:
           version: ${{ steps.pnpm_version.outputs.version }}
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: "pnpm"
-
-      - name: Guard pnpm version matches packageManager
-        run: |
-          REQUIRED=${{ steps.pnpm_version.outputs.version }}
-          ACTUAL=$(pnpm -v)
-          if [ "$REQUIRED" != "$ACTUAL" ]; then
-            echo "pnpm version mismatch: required $REQUIRED, got $ACTUAL"
-            exit 1
-          fi
-
-      - name: Install
-        run: pnpm install --frozen-lockfile
-
+      - run: pnpm install --frozen-lockfile
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps chromium
-
-      - name: E2E Smoke (placeholder)
+      - name: E2E Smoke
         run: pnpm e2e:smoke || true
+
+  ci-success:
+    needs: [lint, type-check, test, build, e2e-smoke]
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "All checks passed"

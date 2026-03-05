@@ -1,9 +1,11 @@
 import { METRICS } from '@quiz/observability';
 import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
 
+import { badRequest } from '@/lib/api-error';
+import { ApiResponse } from '@/lib/api-response';
 import { logger } from '@/lib/logger';
 import { recordCounter, recordTimer } from '@/lib/metrics';
+import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 import { withLogging } from '@/lib/withLogging';
 import type { CreateQuestionInput } from '@/modules/admin-engine/admin.engine';
 import { AdminEngine } from '@/modules/admin-engine/admin.engine';
@@ -20,14 +22,14 @@ async function getHandler(_req: NextRequest) {
   try {
     const _token = TokenService.getAccessToken(_req, { scope: 'admin' });
     if (_token === null || _token === undefined || _token.trim() === '') {
-      return NextResponse.json({ _error: 'Unauthorized', scope: 'admin' }, { status: 401 });
+      return ApiResponse.error(badRequest('Unauthorized', 'UNAUTHORIZED'));
     }
 
     const _payload = await TokenService.verifyAccessToken(_token, true);
 
     if (!(await _verifyAdmin(_payload))) {
         log.warn({ userId: _payload.userId }, 'ADMIN_QUESTIONS forbidden (missing admin role)');
-        return NextResponse.json({ _error: 'Forbidden' }, { status: 403 });
+        return ApiResponse.error(badRequest('Forbidden', 'FORBIDDEN'));
     }
     
     const searchParams = _req.nextUrl.searchParams;
@@ -48,16 +50,14 @@ async function getHandler(_req: NextRequest) {
     const durationMs = Date.now() - start;
     recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.questions.get.success', 1);
     recordTimer(METRICS.ADMIN.DASHBOARD_LOAD + '.questions.get.duration', durationMs, { outcome: 'success' });
-    return NextResponse.json(data, {
-      headers: { 'X-Duration-Ms': durationMs.toString() }
-    });
+    return ApiResponse.success(data, 200, { 'X-Duration-Ms': durationMs.toString() });
   } catch (_error: unknown) {
     const message = _error instanceof Error ? _error.message : 'Internal Server Error';
     const durationMs = Date.now() - start;
     log.error({ error: message }, 'ADMIN_QUESTIONS failed');
     recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.questions.get.failure', 1, { reason: 'internal_error' });
     recordTimer(METRICS.ADMIN.DASHBOARD_LOAD + '.questions.get.duration', durationMs, { outcome: 'failure' });
-    return NextResponse.json({ _error: message }, { status: 500 });
+    return ApiResponse.error(message, 500);
   }
 }
 
@@ -66,14 +66,20 @@ async function postHandler(_req: NextRequest) {
   try {
     const _token = TokenService.getAccessToken(_req, { scope: 'admin' });
     if (_token === null || _token === undefined || _token.trim() === '') {
-      return NextResponse.json({ _error: 'Unauthorized', scope: 'admin' }, { status: 401 });
+      return ApiResponse.error(badRequest('Unauthorized', 'UNAUTHORIZED'));
     }
     const _payload = await TokenService.verifyAccessToken(_token, true);
 
-    const body = await _req.json() as CreateQuestionInput;
+    const rawBody = await _req.json();
+
+    if (!validateJsonDepth(rawBody) || !validateJsonSize(rawBody)) {
+      return ApiResponse.error(badRequest('Payload too deep or large'));
+    }
+
+    const body = sanitizeJsonField(rawBody) as CreateQuestionInput;
     const parsed = questionSchema.safeParse(body);
     if (!parsed.success) {
-      return NextResponse.json({ _error: 'Invalid payload', issues: parsed.error.issues }, { status: 400 });
+      return ApiResponse.error(badRequest('Invalid payload', 'BAD_REQUEST', parsed.error.issues));
     }
 
     const result = await AdminEngine.createQuestion(parsed.data, _payload.userId);
@@ -82,14 +88,12 @@ async function postHandler(_req: NextRequest) {
     recordCounter(METRICS.ADMIN.PUBLISH, 1, { action: 'create', outcome: 'success' });
     recordTimer(METRICS.ADMIN.PUBLISH + '.duration', durationMs, { action: 'create', outcome: 'success' });
     
-    return NextResponse.json(result, {
-      headers: { 'X-Duration-Ms': durationMs.toString() }
-    });
+    return ApiResponse.success(result, 200, { 'X-Duration-Ms': durationMs.toString() });
   } catch (_error: unknown) {
     const message = _error instanceof Error ? _error.message : 'Internal Server Error';
     log.error({ error: message }, 'ADMIN_QUESTIONS_POST failed');
     recordCounter(METRICS.ADMIN.PUBLISH, 1, { action: 'create', outcome: 'failure' });
-    return NextResponse.json({ _error: message }, { status: 500 });
+    return ApiResponse.error(message, 500);
   }
 }
 

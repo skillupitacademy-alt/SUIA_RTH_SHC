@@ -1,9 +1,11 @@
 import { METRICS } from '@quiz/observability';
 import { JobStatus, JobType } from '@quiz/types';
 import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
 
+import { badRequest, internalError, unauthorized } from '@/lib/api-error';
+import { ApiResponse } from '@/lib/api-response';
 import { recordCounter, recordTimer } from '@/lib/metrics';
+import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 import { withLogging } from '@/lib/withLogging';
 import { TokenService } from '@/modules/auth/token.service';
 import { JobOrchestrator } from '@/modules/system/job-orchestrator';
@@ -17,7 +19,7 @@ async function getHandler(_req: NextRequest) {
   try {
     const _token = TokenService.getAccessToken(_req, { scope: 'admin' });
     if (_token === null || _token === undefined || _token.trim() === '') {
-        return NextResponse.json({ _error: 'Unauthorized' }, { status: 401 });
+        return ApiResponse.error(unauthorized('Unauthorized'), 401);
     }
 
     await TokenService.verifyAccessToken(_token, true);
@@ -37,15 +39,13 @@ async function getHandler(_req: NextRequest) {
     recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.jobs.list.success', 1);
     recordTimer(METRICS.ADMIN.DASHBOARD_LOAD + '.jobs.list.duration', durationMs, { outcome: 'success' });
 
-    return NextResponse.json({ items, total }, {
-      headers: { 'X-Duration-Ms': durationMs.toString() }
-    });
+    return ApiResponse.success({ items, total }, 200, { 'X-Duration-Ms': durationMs.toString() });
   } catch (_error: unknown) {
     const durationMs = Date.now() - start;
     const _message = _error instanceof Error ? _error.message : 'Internal Server Error';
     recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.jobs.list.failure', 1);
     recordTimer(METRICS.ADMIN.DASHBOARD_LOAD + '.jobs.list.duration', durationMs, { outcome: 'failure' });
-    return NextResponse.json({ _error: _message }, { status: 500 });
+    return ApiResponse.error(internalError(_message), 500);
   }
 }
 
@@ -54,32 +54,34 @@ async function postHandler(_req: NextRequest) {
   try {
     const _token = TokenService.getAccessToken(_req, { scope: 'admin' });
     if (_token === null || _token === undefined || _token.trim() === '') {
-        return NextResponse.json({ _error: 'Unauthorized' }, { status: 401 });
+        return ApiResponse.error(unauthorized('Unauthorized'), 401);
     }
 
     const _payload = await TokenService.verifyAccessToken(_token, true);
-    const rawBody = await _req.json();
-    const parsed = jobSchema.safeParse(rawBody);
+    const rawBody = await _req.json().catch(() => null);
+    if (rawBody === null || !validateJsonDepth(rawBody) || !validateJsonSize(rawBody)) {
+      return ApiResponse.error(badRequest('Payload too deep or large'), 400);
+    }
+    const sanitized = sanitizeJsonField(rawBody);
+    const parsed = jobSchema.safeParse(sanitized);
     if (!parsed.success) {
-      return NextResponse.json({ _error: 'Invalid payload', issues: parsed.error.issues }, { status: 400 });
+      return ApiResponse.error(badRequest('Invalid payload', 'BAD_REQUEST', parsed.error.issues), 400);
     }
     const _body = parsed.data;
     const _type = _body.type?.trim();
 
     if (_type === undefined || _type === null || _type === '') {
-        return NextResponse.json({ _error: 'Job type is required' }, { status: 400 });
+        return ApiResponse.error(badRequest('Job type is required'), 400);
     }
 
     const rawBodySize = JSON.stringify(_body).length;
     if (rawBodySize > 100_000) {
-        return NextResponse.json({ _error: 'Payload too large (max 100KB)' }, { status: 413 });
+        return ApiResponse.error(badRequest('Payload too large (max 100KB)'), 413);
     }
 
     const activeCount = await JobsService.getActiveJobCount(_payload.userId);
     if (activeCount >= 20) {
-        return NextResponse.json({ 
-            _error: 'Rate limit exceeded: You have 20 active jobs. Please wait for them to complete.' 
-        }, { status: 429 });
+        return ApiResponse.error(badRequest('Rate limit exceeded: You have 20 active jobs. Please wait for them to complete.'), 429);
     }
 
     const _job = await JobsService.createJob({
@@ -101,15 +103,13 @@ async function postHandler(_req: NextRequest) {
     recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.jobs.create.success', 1);
     recordTimer(METRICS.ADMIN.DASHBOARD_LOAD + '.jobs.create.duration', durationMs, { outcome: 'success' });
 
-    return NextResponse.json({ job: _job }, {
-      headers: { 'X-Duration-Ms': durationMs.toString() }
-    });
+    return ApiResponse.success({ job: _job }, 200, { 'X-Duration-Ms': durationMs.toString() });
   } catch (_error: unknown) {
     const durationMs = Date.now() - start;
     const _message = _error instanceof Error ? _error.message : 'Internal Server Error';
     recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.jobs.create.failure', 1);
     recordTimer(METRICS.ADMIN.DASHBOARD_LOAD + '.jobs.create.duration', durationMs, { outcome: 'failure' });
-    return NextResponse.json({ _error: _message }, { status: 500 });
+    return ApiResponse.error(internalError(_message), 500);
   }
 }
 

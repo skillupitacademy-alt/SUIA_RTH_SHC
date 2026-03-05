@@ -1,20 +1,20 @@
-import { NextResponse } from 'next/server';
-
-export const dynamic = 'force-dynamic';
-
+import { ApiResponse } from "@/lib/api-response";
 import { recordCounter, recordTimer } from "@/lib/metrics";
 import { withLogging } from "@/lib/withLogging";
 
-async function handler() {
+export const dynamic = 'force-dynamic';
+
+async function getHandler() {
   const start = Date.now();
   recordCounter('system.api.status.check', 1);
-  recordTimer('system.api.status.duration', Date.now() - start);
-  return NextResponse.json({
+  const data = {
     status: 'online',
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV,
     version: '1.2.0'
-  });
+  };
+  recordTimer('system.api.status.duration', Date.now() - start);
+  return ApiResponse.success(data);
 }
 
-export const GET = withLogging(handler, { component: 'system', operation: 'health_check' });
+export const GET = withLogging(getHandler, { component: 'system', operation: 'health_check' });

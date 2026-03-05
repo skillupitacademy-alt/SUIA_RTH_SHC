@@ -1,0 +1,20 @@
+# Repository CODEOWNERS
+# This file defines who is responsible for specific parts of the codebase.
+
+# Default owner for everything
+* @realtutorialhub
+
+# Database schema — requires careful review
+/packages/db/src/schema/ @realtutorialhub
+
+# Auth and security — security-sensitive
+/apps/api-server/src/modules/auth/ @realtutorialhub
+
+# Application owners
+/apps/web-app/    @realtutorialhub
+/apps/admin-app/  @realtutorialhub
+/apps/api-server/ @realtutorialhub
+
+# Infrastructure owners
+/packages/db/     @realtutorialhub
+/.github/         @realtutorialhub

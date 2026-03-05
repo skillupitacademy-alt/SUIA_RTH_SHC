@@ -1,8 +1,10 @@
 import { db, users } from '@quiz/db';
 import { METRICS } from '@quiz/observability';
 import { eq } from 'drizzle-orm';
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
 
+import { forbidden, notFound, unauthorized } from '@/lib/api-error';
+import { ApiResponse } from '@/lib/api-response';
 import { recordCounter, recordTimer } from '@/lib/metrics';
 import { withLogging } from '@/lib/withLogging';
 import { TokenService } from '@/modules/auth/token.service';
@@ -18,7 +20,7 @@ async function handler(_req: NextRequest) {
 
     const _token = TokenService.getAccessToken(_req, { scope });
     if (_token === null || _token === undefined || _token.trim() === '') {
-        return NextResponse.json({ _error: 'Unauthorized', scope }, { status: 401 });
+        return ApiResponse.error(unauthorized('Unauthorized'), 401);
     }
 
     const _payload = await TokenService.verifyAccessToken(_token, { isAdmin: true, audience });
@@ -32,20 +34,20 @@ async function handler(_req: NextRequest) {
       }
     });
 
-    if (_user === null || _user === undefined) return NextResponse.json({ _error: 'User not found' }, { status: 404 });
+    if (_user === null || _user === undefined) return ApiResponse.error(notFound('User', _payload.userId));
 
     const role = _user.userRoles[0]?.role?.name?.toLowerCase() ?? 'user';
     const isAdmin = role === 'admin' || role === 'super_admin' || role === 'infrastructure';
 
     if (!isAdmin) {
-        return NextResponse.json({ _error: 'Forbidden: Admin access only' }, { status: 403 });
+        return ApiResponse.error(forbidden('Admin access only'));
     }
 
     const durationMs = Date.now() - start;
     recordCounter(METRICS.AUTH.LOGIN + '.me', 1, { outcome: 'success', scope });
     recordTimer(METRICS.AUTH.LOGIN + '.me.duration', durationMs);
 
-    return NextResponse.json({
+    return ApiResponse.success({
       user: {
         id: _user.id,
         email: _user.email,
@@ -58,7 +60,7 @@ async function handler(_req: NextRequest) {
   } catch (_error: unknown) {
     const message = _error instanceof Error ? _error.message : 'Unauthorized';
     recordCounter(METRICS.AUTH.LOGIN + '.me', 1, { outcome: 'failure' });
-    return NextResponse.json({ _error: message }, { status: 401 });
+    return ApiResponse.error(unauthorized(message), 401);
   }
 }
 

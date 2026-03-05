@@ -1,7 +1,8 @@
 import { METRICS } from '@quiz/observability';
 import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
 
+import { badRequest, internalError, unauthorized } from '@/lib/api-error';
+import { ApiResponse } from '@/lib/api-response';
 import { CacheManager } from '@/lib/cache-manager';
 import { recordCounter, recordTimer } from '@/lib/metrics';
 import { withLogging } from '@/lib/withLogging';
@@ -15,7 +16,7 @@ async function handler(_req: NextRequest) {
   try {
     const _token = TokenService.getAccessToken(_req, { scope: 'user' });
     if (typeof _token !== 'string' || _token.trim() === '') {
-      return NextResponse.json({ _error: 'Unauthorized' }, { status: 401 });
+      return ApiResponse.error(unauthorized('Unauthorized'), 401);
     }
 
     const _payload = await TokenService.verifyAccessToken(_token, false);
@@ -23,15 +24,13 @@ async function handler(_req: NextRequest) {
     const range = _req.nextUrl.searchParams.get('range') ?? '28d';
     const validRanges = ['7d', '14d', '28d', '90d'];
     if (!validRanges.includes(range)) {
-        return NextResponse.json({ _error: 'Invalid range parameter' }, { status: 400 });
+        return ApiResponse.error(badRequest('Invalid range parameter'), 400);
     }
 
     // Use specialized breakdown cache
     const cached = CacheManager.getBreakdown(_payload.userId, range);
     if (cached !== null && cached !== undefined) {
-      return NextResponse.json(cached, {
-        headers: { 'X-Cache': 'HIT', 'X-Duration-Ms': (Date.now() - start).toString() }
-      });
+      return ApiResponse.success(cached, 200, { 'X-Cache': 'HIT', 'X-Duration-Ms': (Date.now() - start).toString() });
     }
 
     const data = await DashboardEngine.getPerformanceBreakdown(_payload.userId, range);
@@ -42,13 +41,11 @@ async function handler(_req: NextRequest) {
     recordTimer(METRICS.ADMIN.DASHBOARD_LOAD + '.breakdown.duration', durationMs, { outcome: 'success', range });
     recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.breakdown.success', 1, { range });
 
-    return NextResponse.json(data, {
-        headers: { 'X-Cache': 'MISS', 'X-Duration-Ms': durationMs.toString() }
-    });
+    return ApiResponse.success(data, 200, { 'X-Cache': 'MISS', 'X-Duration-Ms': durationMs.toString() });
   } catch (_error: unknown) {
     const message = _error instanceof Error ? _error.message : 'Internal Server Error';
     recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.breakdown.failure', 1);
-    return NextResponse.json({ _error: message }, { status: 500 });
+    return ApiResponse.error(internalError(message), 500);
   }
 }
 

@@ -1,22 +1,38 @@
 import { db } from "@quiz/db";
 import { METRICS } from "@quiz/observability";
 import { sql } from "drizzle-orm";
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest } from "next/server";
 
+import { unauthorized } from "@/lib/api-error";
+import { ApiResponse } from "@/lib/api-response";
 import { recordCounter, recordTimer } from "@/lib/metrics";
 import { withLogging } from "@/lib/withLogging";
 import { TokenService } from "@/modules/auth/token.service";
 
 export const dynamic = "force-dynamic";
 
-async function handler(req: NextRequest) {
+interface RecommendationExplainRow {
+  topic_id: string;
+  topic_name: string;
+  learning_url: string | null;
+  recommendation_level: string;
+  accuracy: string | null;
+  total_questions: string | number | null;
+  mistake_count: string | number | null;
+  subareas: string[] | null;
+}
+
+async function getHandler(req: NextRequest) {
   const start = Date.now();
   try {
     const token = TokenService.getAccessToken(req, { scope: "user" });
-    if (typeof token !== "string" || token.length === 0) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (token === null || token === undefined || token === "") {
+      throw unauthorized("Unauthorized");
     }
     const payload = await TokenService.verifyAccessToken(token, false);
+    if (payload === null || payload === undefined || payload.userId === null || payload.userId === undefined) {
+      throw unauthorized("Authentication required");
+    }
 
     // SQL to get latest recommendations per topic and count mistakes from the source exam
     const rows = await db.execute(sql`
@@ -52,7 +68,7 @@ async function handler(req: NextRequest) {
       ORDER BY lr.created_at DESC
     `);
 
-    const formatted = rows.rows.map((r) => ({
+    const formatted = (rows.rows as unknown as RecommendationExplainRow[]).map((r) => ({
       topicId: r.topic_id,
       topicName: r.topic_name,
       learningUrl: r.learning_url,
@@ -60,19 +76,18 @@ async function handler(req: NextRequest) {
       accuracy: Number(r.accuracy ?? 0),
       totalQuestions: Number(r.total_questions ?? 0),
       mistakeCount: Number(r.mistake_count ?? 0),
-      weakSubareas: (r.subareas as string[] | null) || [],
+      weakSubareas: r.subareas ?? [],
     }));
 
     recordCounter(METRICS.RECOMMENDATIONS.FETCH, 1, { view: 'explain', outcome: 'success' });
     recordTimer(METRICS.RECOMMENDATIONS.FETCH + '.duration', Date.now() - start, { view: 'explain', outcome: 'success' });
 
-    return NextResponse.json(formatted);
+    return ApiResponse.success(formatted);
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Internal Server Error";
     recordCounter(METRICS.RECOMMENDATIONS.FETCH, 1, { view: 'explain', outcome: 'failure' });
     recordTimer(METRICS.RECOMMENDATIONS.FETCH + '.duration', Date.now() - start, { view: 'explain', outcome: 'failure' });
-    return NextResponse.json({ error: message }, { status: 500 });
+    return ApiResponse.error(error);
   }
 }
 
-export const GET = withLogging(handler, { component: 'recommendations', operation: 'get_explanation' });
+export const GET = withLogging(getHandler, { component: 'recommendations', operation: 'get_explanation' });

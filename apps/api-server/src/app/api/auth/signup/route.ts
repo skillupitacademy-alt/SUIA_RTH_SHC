@@ -1,7 +1,8 @@
 import { METRICS } from '@quiz/observability';
 import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
 
+import { badRequest } from '@/lib/api-error';
+import { ApiResponse } from '@/lib/api-response';
 import { recordCounter, recordTimer } from '@/lib/metrics';
 import { withLogging } from '@/lib/withLogging';
 import { AuthService } from '@/modules/auth/auth.service';
@@ -17,7 +18,7 @@ async function handler(_req: NextRequest) {
     const parsed = signupSchema.safeParse(rawBody);
     if (!parsed.success) {
       recordCounter(METRICS.AUTH.FAILURE, 1, { reason: 'invalid_payload', operation: 'signup' });
-      return NextResponse.json({ _error: 'Invalid payload', issues: parsed.error.issues }, { status: 400 });
+      return ApiResponse.error(badRequest('Invalid payload', 'BAD_REQUEST', parsed.error.issues));
     }
     const { email, password, name } = parsed.data;
 
@@ -29,7 +30,7 @@ async function handler(_req: NextRequest) {
     recordCounter(METRICS.AUTH.SIGNUP, 1, { outcome: 'success' });
     recordTimer(METRICS.AUTH.SIGNUP + '.duration', Date.now() - start, { outcome: 'success' });
 
-    const response = NextResponse.json({
+    const response = ApiResponse.success({
       message: 'User created',
       user: {
         id: _user.id, 
@@ -72,7 +73,7 @@ async function handler(_req: NextRequest) {
     const message = _error instanceof Error ? _error.message : 'Unknown error';
     recordCounter(METRICS.AUTH.FAILURE, 1, { reason: 'signup_failed', operation: 'signup' });
     recordTimer(METRICS.AUTH.SIGNUP + '.duration', Date.now() - start, { outcome: 'failure' });
-    return NextResponse.json({ _error: message }, { status: 400 });
+    return ApiResponse.error(badRequest(message));
   }
 }
 

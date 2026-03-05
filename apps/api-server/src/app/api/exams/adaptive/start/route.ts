@@ -1,5 +1,7 @@
-import { type NextRequest, NextResponse } from "next/server";
+import { type NextRequest } from "next/server";
 
+import { unauthorized } from "@/lib/api-error";
+import { ApiResponse } from "@/lib/api-response";
 import { withLogging } from "@/lib/withLogging";
 import { AdaptiveExamService } from "@/modules/adaptive-engine/adaptive-exam.service";
 import { TokenService } from "@/modules/auth/token.service";
@@ -10,27 +12,25 @@ export const dynamic = "force-dynamic";
  * Endpoint to start a fully personalized adaptive exam session.
  * Flow: Auth -> Analytics -> Blueprint -> Selection -> Session -> Result
  */
-async function handler(req: NextRequest) {
+async function postHandler(req: NextRequest) {
   try {
     const token = TokenService.getAccessToken(req, { scope: "user" });
-    if (token === undefined || token === null || token === "") {
-      return NextResponse.json({ error: "Authentication required" }, { status: 401 });
+    if (token === null || token === undefined || token === "") {
+      throw unauthorized("Authentication required");
     }
 
     const payload = await TokenService.verifyAccessToken(token, false);
+    if (payload === null || payload === undefined || payload.userId === null || payload.userId === undefined) {
+      throw unauthorized("Authentication required");
+    }
     const userId = payload.userId;
 
     const result = await AdaptiveExamService.startAdaptiveExam(userId);
 
-    return NextResponse.json(result);
+    return ApiResponse.success(result, 201);
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Internal Server Error";
-    
-    return NextResponse.json(
-      { error: "Failed to generate adaptive exam", message },
-      { status: 500 }
-    );
+    return ApiResponse.error(error);
   }
 }
 
-export const POST = withLogging(handler, { component: 'exam', operation: 'start_adaptive_exam' });
+export const POST = withLogging(postHandler, { component: 'exam', operation: 'start_adaptive_exam' });

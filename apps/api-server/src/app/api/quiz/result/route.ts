@@ -1,9 +1,10 @@
 import { db, exams } from '@quiz/db';
 import { METRICS } from '@quiz/observability';
 import { eq } from 'drizzle-orm';
-import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
+import { type NextRequest } from 'next/server';
 
+import { badRequest, forbidden, notFound, unauthorized } from '@/lib/api-error';
+import { ApiResponse } from '@/lib/api-response';
 import { recordCounter, recordTimer } from '@/lib/metrics';
 import { withLogging } from '@/lib/withLogging';
 import { TokenService } from '@/modules/auth/token.service';
@@ -11,46 +12,46 @@ import { ReportEngine } from '@/modules/report-engine/report.engine';
 
 export const dynamic = 'force-dynamic';
 
-async function handler(_req: NextRequest) {
+async function getHandler(req: NextRequest) {
   const startTime = Date.now();
   try {
-    const _token = TokenService.getAccessToken(_req, { scope: 'user' });
-    if (typeof _token !== 'string' || _token.trim() === '') {
-      return NextResponse.json({ _error: 'Unauthorized', scope: 'user' }, { status: 401 });
+    const token = TokenService.getAccessToken(req, { scope: 'user' });
+    if (token === null || token === undefined || token === '') {
+      throw unauthorized("Unauthorized");
     }
 
-    const _payload = await TokenService.verifyAccessToken(_token, false);
-    const searchParams = _req.nextUrl.searchParams;
+    const payload = await TokenService.verifyAccessToken(token, false);
+    if (payload === null || payload === undefined || payload.userId === null || payload.userId === undefined) {
+      throw unauthorized("Authentication required");
+    }
+    const searchParams = req.nextUrl.searchParams;
     const examId = searchParams.get('examId');
 
     if (typeof examId !== 'string' || examId.trim() === '') {
-      return NextResponse.json({ _error: 'Missing examId' }, { status: 400 });
+      throw badRequest('Missing examId');
     }
 
     const examCheck = await db.query.exams.findFirst({
         where: eq(exams.id, examId),
-        columns: {
-            userId: true,
-            status: true,
-        }
+        columns: { userId: true, status: true }
     });
 
-    if (!examCheck) {
-        return NextResponse.json({ _error: 'Exam session not found' }, { status: 404 });
+    if (examCheck === null || examCheck === undefined) {
+        throw notFound('Exam session not found');
     }
 
-    if (examCheck.userId !== _payload.userId) {
-      return NextResponse.json({ _error: 'Forbidden: You do not own this exam session' }, { status: 403 });
+    if (examCheck.userId !== payload.userId) {
+      throw forbidden('You do not own this exam session');
     }
 
     if (examCheck.status === 'started') {
-        return NextResponse.json({ _error: 'Exam is still in progress' }, { status: 409 });
+        return ApiResponse.error(new Error('Exam is still in progress'), 409);
     }
     if (examCheck.status === 'processing') {
-        return NextResponse.json({ 
+        return ApiResponse.success({ 
             status: 'processing',
             message: 'Results are being calculated...' 
-        }, { status: 202, headers: { 'Retry-After': '5' } });
+        }, 202, { 'Retry-After': '5' });
     }
 
     const result = await ReportEngine.getExamReport(examId, { includeCorrectAnswers: false });
@@ -59,18 +60,13 @@ async function handler(_req: NextRequest) {
     recordCounter(METRICS.QUIZ.SCORE, 1, { outcome: 'success' });
     recordTimer(METRICS.QUIZ.SCORE + '.duration', durationMs, { outcome: 'success' });
     
-    return NextResponse.json(result, {
-        headers: { 'X-Duration-Ms': durationMs.toString() }
-    });
-  } catch (_error: unknown) {
-    const message = _error instanceof Error ? _error.message : 'Unknown error';
-    recordCounter(METRICS.QUIZ.SCORE, 1, { outcome: 'failure', error: message });
-    recordTimer(METRICS.QUIZ.SCORE + '.duration', Date.now() - startTime, { outcome: 'failure' });
-    if (message.includes('_token') || message.includes('signature')) {
-        return NextResponse.json({ _error: 'Invalid _token' }, { status: 401 });
-    }
-    return NextResponse.json({ _error: message }, { status: 400 });
+    return ApiResponse.success(result, 200, { 'X-Duration-Ms': durationMs.toString() });
+  } catch (error: unknown) {
+    const durationMs = Date.now() - startTime;
+    recordCounter(METRICS.QUIZ.SCORE, 1, { outcome: 'failure' });
+    recordTimer(METRICS.QUIZ.SCORE + '.duration', durationMs, { outcome: 'failure' });
+    return ApiResponse.error(error, 400, durationMs.toString());
   }
 }
 
-export const GET = withLogging(handler, { component: 'quiz', operation: 'get_exam_result' });
+export const GET = withLogging(getHandler, { component: 'quiz', operation: 'get_exam_result' });

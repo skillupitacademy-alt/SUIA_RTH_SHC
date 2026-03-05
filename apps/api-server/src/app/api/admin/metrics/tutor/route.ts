@@ -1,8 +1,10 @@
 import { db } from "@quiz/db";
 import { METRICS } from "@quiz/observability";
 import { sql } from "drizzle-orm";
-import { NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
+import { internalError, unauthorized } from "@/lib/api-error";
+import { ApiResponse } from "@/lib/api-response";
 import { recordCounter, recordTimer } from "@/lib/metrics";
 import { withLogging } from "@/lib/withLogging";
 import { TokenService } from "@/modules/auth/token.service";
@@ -14,7 +16,7 @@ async function handler(req: NextRequest) {
   try {
     const token = TokenService.getAccessToken(req, { scope: "admin" });
     if (typeof token !== "string" || token.trim().length === 0) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return ApiResponse.error(unauthorized("Unauthorized"), 401);
     }
     await TokenService.verifyAccessToken(token, true);
 
@@ -52,20 +54,18 @@ async function handler(req: NextRequest) {
     const durationMs = Date.now() - start;
     recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.tutor', 1, { outcome: 'success' });
     recordTimer(METRICS.ADMIN.DASHBOARD_LOAD + '.tutor.duration', durationMs, { outcome: 'success' });
-    return NextResponse.json({
+    return ApiResponse.success({
       notesDemand: notesDemand.rows,
       emailHealth: emailHealth.rows,
       weakTopics: weakTopics.rows,
       helpRequests: helpRequests.rows,
-    }, {
-      headers: { 'X-Duration-Ms': durationMs.toString() }
-    });
+    }, 200, { 'X-Duration-Ms': durationMs.toString() });
   } catch (error: unknown) {
     const durationMs = Date.now() - start;
     const message = error instanceof Error ? error.message : "Internal Server Error";
     recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.tutor', 1, { outcome: 'failure' });
     recordTimer(METRICS.ADMIN.DASHBOARD_LOAD + '.tutor.duration', durationMs, { outcome: 'failure' });
-    return NextResponse.json({ error: message }, { status: 500 });
+    return ApiResponse.error(internalError(message), 500);
   }
 }
 

@@ -1,25 +1,26 @@
-import { type NextRequest, NextResponse } from 'next/server';
+import { type NextRequest } from 'next/server';
 
+import { badRequest } from '@/lib/api-error';
+import { ApiResponse } from '@/lib/api-response';
 import { withLogging } from '@/lib/withLogging';
 import { SubjectService } from '@/modules/domain/domain.service';
 
 export const dynamic = 'force-dynamic';
 
-async function handler(_req: NextRequest) {
+async function getHandler(req: NextRequest) {
   try {
-    const { searchParams } = new URL(_req.url);
+    const { searchParams } = new URL(req.url);
     const domainId = searchParams.get('domainId');
 
-    if (domainId === null || domainId === '') {
-      return NextResponse.json({ _error: 'domainId is required' }, { status: 400 });
+    if (domainId === null || domainId === undefined || domainId === '') {
+      throw badRequest('domainId is required');
     }
 
     const subjects = await SubjectService.getSubjectsByDomain(domainId);
-    return NextResponse.json(subjects);
-  } catch (_error: unknown) {
-    const errorMessage = _error instanceof Error ? _error.message : 'Failed to fetch subjects';
-    return NextResponse.json({ _error: errorMessage }, { status: 500 });
+    return ApiResponse.success(subjects);
+  } catch (error: unknown) {
+    return ApiResponse.error(error);
   }
 }
 
-export const GET = withLogging(handler, { component: 'core', operation: 'get_subjects' });
+export const GET = withLogging(getHandler, { component: 'core', operation: 'get_subjects' });

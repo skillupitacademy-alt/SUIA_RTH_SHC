@@ -60,10 +60,63 @@ export const getDb = (type: 'primary' | 'replica' = 'primary'): DbClient => {
             connectionTimeoutMillis: 2000,
         });
 
+        pool.on('error', (err) => console.error('[DB Pool Error]', err));
+        pool.on('connect', () => { if (process.env.DEBUG_DB) console.log('[DB Pool] New connection created'); });
+
         primaryDbInstance = drizzle(pool, { schema });
     }
     return primaryDbInstance!;
 }
+
+/**
+ * Returns metrics for both Primary and Replica pools.
+ */
+export const getPoolMetrics = () => {
+    const primaryPool = (primaryDbInstance as any)?.session?.client as Pool | undefined;
+    const replicaPool = (replicaDbInstance as any)?.session?.client as Pool | undefined;
+
+    const getMetrics = (pool?: Pool) => {
+        if (!pool) return null;
+        const total = pool.totalCount;
+        const idle = pool.idleCount;
+        const waiting = pool.waitingCount;
+        const max = (pool as any).options?.max || 10;
+        const utilization = total > 0 ? ((total - idle) / max) * 100 : 0;
+
+        if (utilization > 80) {
+            console.warn(`[DB Pool Warning] High utilization: ${utilization.toFixed(2)}% (${total - idle}/${max})`);
+        }
+
+        return {
+            totalConnections: total,
+            idleConnections: idle,
+            waitingRequests: waiting,
+            maxConnections: max,
+            utilizationPercent: utilization,
+        };
+    };
+
+    return {
+        primary: getMetrics(primaryPool),
+        replica: getMetrics(replicaPool),
+    };
+};
+
+/**
+ * Closes all active database pool connections.
+ */
+export const closePool = async () => {
+    const primaryPool = (primaryDbInstance as any)?.session?.client as Pool | undefined;
+    const replicaPool = (replicaDbInstance as any)?.session?.client as Pool | undefined;
+
+    await Promise.all([
+        primaryPool?.end(),
+        replicaPool?.end()
+    ]);
+
+    primaryDbInstance = null;
+    replicaDbInstance = null;
+};
 
 /**
  * Main database export. Defaults to Primary.
@@ -98,3 +151,4 @@ export * from './schema/tutor';
 export * from './schema/reports';
 
 export type { InferSelectModel, InferInsertModel } from 'drizzle-orm';
+export * from './utils/query-timeout';

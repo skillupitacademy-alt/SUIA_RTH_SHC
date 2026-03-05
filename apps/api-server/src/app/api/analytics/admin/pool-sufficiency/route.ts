@@ -1,6 +1,8 @@
 import { METRICS } from "@quiz/observability";
-import { type NextRequest, NextResponse } from "next/server";
+import { type NextRequest } from "next/server";
 
+import { forbidden, unauthorized } from "@/lib/api-error";
+import { ApiResponse } from "@/lib/api-response";
 import { sqlReplica } from "@/lib/db";
 import { recordCounter, recordTimer } from "@/lib/metrics";
 import { redis } from "@/lib/redis";
@@ -15,20 +17,25 @@ interface PoolTotalRow {
   total_available: number;
 }
 
-async function handler(req: NextRequest) {
+async function getHandler(req: NextRequest) {
   const start = Date.now();
   try {
     if (!(await ResilienceService.isFeatureEnabled('analytics'))) {
-      return NextResponse.json(ResilienceService.getBusyPayload('analytics'), { status: 503 });
+      return ApiResponse.error(new Error("Analytics service is busy"), 503);
     }
 
     const { payload } = await verifyAdminOrInfraToken(req);
+    // verifyAdminOrInfraToken might throw if no token, but let's be safe
+    if (payload === null || payload === undefined) {
+        throw unauthorized("Authentication required");
+    }
+
     const hasAdminRole = Array.isArray(payload.roles) && payload.roles.some(
         (role: string) => role === "ADMIN" || role === "SUPER_ADMIN"
     );
 
     if (!hasAdminRole && payload.isAdmin !== true) {
-        return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
+        throw forbidden("Insufficient permissions");
     }
 
     const CACHE_KEY = CACHE_KEYS.ANALYTICS.ADMIN("pool-sufficiency");
@@ -36,7 +43,7 @@ async function handler(req: NextRequest) {
     try {
         const cachedData = await redis.get(CACHE_KEY);
         if (cachedData !== null) {
-            return NextResponse.json(cachedData);
+            return ApiResponse.success(cachedData);
         }
     } catch (__redisError) {
         // Ignored
@@ -47,7 +54,7 @@ async function handler(req: NextRequest) {
       FROM mv_question_pool;
     `) as [PoolTotalRow | undefined];
 
-    const available = stats ? Number(stats.total_available) : 0;
+    const available = stats !== undefined && stats !== null ? Number(stats.total_available) : 0;
     const required = 500;
     const percent = Math.min(100, Math.floor((available / required) * 100));
 
@@ -66,19 +73,15 @@ async function handler(req: NextRequest) {
     const durationMs = Date.now() - start;
     recordTimer(METRICS.ADMIN.DASHBOARD_LOAD + '.pool_sufficiency', durationMs, { outcome: 'success' });
     recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.pool_sufficiency.count', 1, { outcome: 'success' });
-    return NextResponse.json(result, {
-        headers: { 'X-Duration-Ms': durationMs.toString() }
+    return ApiResponse.success(result, 200, {
+        'X-Duration-Ms': durationMs.toString()
     });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "An unknown error occurred";
     const durationMs = Date.now() - start;
     recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.pool_sufficiency.count', 1, { outcome: 'failure' });
     recordTimer(METRICS.ADMIN.DASHBOARD_LOAD + '.pool_sufficiency.duration', durationMs, { outcome: 'failure' });
-    return NextResponse.json(
-      { error: "Internal Server Error", message },
-      { status: 500 }
-    );
+    return ApiResponse.error(error);
   }
 }
 
-export const GET = withLogging(handler, { component: 'analytics', operation: 'get_pool_sufficiency' });
+export const GET = withLogging(getHandler, { component: 'analytics', operation: 'get_pool_sufficiency' });

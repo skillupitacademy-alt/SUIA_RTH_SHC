@@ -31,3 +31,25 @@ Please execute the following technical tasks:
 
 ## OUTPUT
 Please provide a summary of files modified and confirm that the `DATABASE_URL` format has been updated in the environment configuration documentation.
+
+---
+
+## PHASE 1 CARRY-FORWARD (from Architecture Phase 1 Audit)
+
+> These items were deferred from Phase 1 as non-blocking. Execute them when working on scaling foundations.
+
+5. **Server-Side Statement Timeout**:
+   - Add `statement_timeout: 30000` to the Pool config in `packages/db/src/index.ts`.
+   - This complements the existing application-level `withTimeout()` utility in `packages/db/src/utils/query-timeout.ts`.
+
+6. **Apply Query Timeouts to Engine Queries**:
+   - Import `withTimeout` + presets from `packages/db/src/utils/query-timeout.ts`.
+   - Wrap `ScoringEngine.calculateExamResults` queries with `REPORT_QUERY_TIMEOUT` (30s).
+   - Wrap `ExamEngine` start/submit queries with `STANDARD_QUERY_TIMEOUT` (15s).
+
+7. **Additional Database Indexes**:
+   - `users.created_at` — user registration sorting
+   - `audit_logs.action` — action type filtering
+   - `audit_logs.created_at` — time-range audit queries
+   - `login_attempts.user_id` — rate limiting lookups
+   - Run `pnpm drizzle-kit generate` after adding.

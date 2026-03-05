@@ -1,8 +1,10 @@
 import { METRICS } from '@quiz/observability';
-import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
+import { type NextRequest } from 'next/server';
 
+import { badRequest, unauthorized } from '@/lib/api-error';
+import { ApiResponse } from '@/lib/api-response';
 import { recordCounter, recordTimer } from '@/lib/metrics';
+import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 import { withLogging } from '@/lib/withLogging';
 import { TokenService } from '@/modules/auth/token.service';
 import { ExamEngine } from '@/modules/exam-engine/exam.engine';
@@ -10,51 +12,68 @@ import { answerSchema } from '@/schemas/quiz.schemas';
 
 export const dynamic = 'force-dynamic';
 
-async function handler(_req: NextRequest) {
+async function postHandler(req: NextRequest) {
   const start = Date.now();
   try {
-    const _token = TokenService.getAccessToken(_req, { scope: 'user' });
-    if (typeof _token !== 'string' || _token.trim() === '') {
-      return NextResponse.json({ _error: 'Unauthorized', scope: 'user' }, { status: 401 });
+    const token = TokenService.getAccessToken(req, { scope: 'user' });
+    if (token === null || token === undefined || token === '') {
+      throw unauthorized("Unauthorized");
     }
 
-    const _payload = await TokenService.verifyAccessToken(_token, false);
-    const rawBody = await _req.json();
-    const parsed = answerSchema.safeParse(rawBody);
+    const payload = await TokenService.verifyAccessToken(token, false);
+    if (payload === null || payload === undefined || payload.userId === null || payload.userId === undefined) {
+      throw unauthorized("Authentication required");
+    }
+    
+    // Ingest and sanitize JSON body
+    let raw;
+    try {
+      raw = await req.json();
+      validateJsonSize(raw);
+      validateJsonDepth(raw);
+    } catch {
+      throw badRequest("Invalid payload");
+    }
+    const sanitized = sanitizeJsonField(raw) as Record<string, unknown>;
+
+    const parsed = answerSchema.safeParse(sanitized);
     if (!parsed.success) {
       recordCounter(METRICS.QUIZ.ANSWER, 1, { outcome: 'invalid_payload' });
-      return NextResponse.json({ _error: 'Invalid payload', issues: parsed.error.issues }, { status: 400 });
+      throw badRequest("Invalid payload");
     }
     const body = parsed.data;
     
-    const idempotencyKey = _req.headers.get('idempotency-key') ?? _req.headers.get('Idempotency-Key');
+    const idempotencyKey = req.headers.get('idempotency-key') ?? req.headers.get('Idempotency-Key');
 
     await ExamEngine.submitAnswer(
       body.examId,
       body.questionId,
       body.answer,
-      _payload.userId,
+      payload.userId,
       idempotencyKey ?? undefined
     );
     
+    const durationMs = Date.now() - start;
     recordCounter(METRICS.QUIZ.ANSWER, 1, { outcome: 'success' });
-    recordTimer(METRICS.QUIZ.ANSWER + '.duration', Date.now() - start, { outcome: 'success' });
+    recordTimer(METRICS.QUIZ.ANSWER + '.duration', durationMs, { outcome: 'success' });
 
     // Step 1 Hardening: Sanitize response. Do NOT return isCorrect/correctAnswer.
-    return NextResponse.json({
+    return ApiResponse.success({
       success: true,
       data: {
         examId: body.examId,
         questionId: body.questionId,
         status: 'recorded'
       }
+    }, 200, {
+      'X-Duration-Ms': durationMs.toString()
     });
-  } catch (_error: unknown) {
-    const message = _error instanceof Error ? _error.message : 'Bad request';
+  } catch (error: unknown) {
+    const durationMs = Date.now() - start;
     recordCounter(METRICS.QUIZ.ANSWER, 1, { outcome: 'failure' });
-    recordTimer(METRICS.QUIZ.ANSWER + '.duration', Date.now() - start, { outcome: 'failure' });
-    return NextResponse.json({ _error: message }, { status: 400 });
+    recordTimer(METRICS.QUIZ.ANSWER + '.duration', durationMs, { outcome: 'failure' });
+    return ApiResponse.error(error, 400, durationMs.toString());
   }
 }
 
-export const POST = withLogging(handler, { component: 'quiz', operation: 'answer_question' });
+export const POST = withLogging(postHandler, { component: 'quiz', operation: 'answer_question' });

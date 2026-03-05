@@ -1,6 +1,8 @@
 import { METRICS } from "@quiz/observability";
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest } from "next/server";
 
+import { badRequest, forbidden, unauthorized } from "@/lib/api-error";
+import { ApiResponse } from "@/lib/api-response";
 import { logger } from "@/lib/logger";
 import { recordCounter, recordTimer } from "@/lib/metrics";
 import { getDownloadUrl } from "@/lib/storage/get-download-url";
@@ -8,14 +10,16 @@ import { withLogging } from "@/lib/withLogging";
 import { TokenService } from "@/modules/auth/token.service";
 import { ReportRepository } from "@/modules/report-engine/report-repository";
 
-async function handler(req: NextRequest) {
+export const dynamic = 'force-dynamic';
+
+async function getHandler(req: NextRequest) {
   const start = Date.now();
   try {
     const { searchParams } = new URL(req.url);
     const attemptId = searchParams.get("attemptId") ?? "";
 
     if (attemptId === "") {
-      return NextResponse.json({ error: "Missing attemptId" }, { status: 400 });
+      throw badRequest("Missing attemptId");
     }
 
     const internalKey = req.headers.get("x-internal-key");
@@ -26,7 +30,9 @@ async function handler(req: NextRequest) {
 
     if (!isInternal) {
       const token = TokenService.getAccessToken(req, { scope: "user" });
-      if (token == null || token === "") return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      if (token === undefined || token === null || token === "") {
+        throw unauthorized("Unauthorized");
+      }
       
       const payload = await TokenService.verifyAccessToken(token, false);
       userId = payload.userId;
@@ -35,11 +41,11 @@ async function handler(req: NextRequest) {
     const report = await ReportRepository.getReportByAttempt(attemptId);
 
     if (!report) {
-      return NextResponse.json({ status: "not_found" }, { status: 404 });
+      return ApiResponse.success({ status: "not_found" }, 404);
     }
 
     if (!isInternal && report.userId !== userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+      throw forbidden("Unauthorized");
     }
 
     const hasFile = typeof report.fileRef === "string" && report.fileRef.trim() !== "";
@@ -50,13 +56,14 @@ async function handler(req: NextRequest) {
       if (exists) {
         const url = await getDownloadUrl(report.fileRef as string);
         recordCounter(METRICS.REPORTS.VIEW, 1, { outcome: 'success', status: 'ready' });
-        return NextResponse.json(
+        return ApiResponse.success(
           { status: "ready", url },
-          { headers: { "Cache-Control": "no-store" } }
+          200,
+          { "Cache-Control": "no-store" }
         );
       } else {
         recordCounter(METRICS.REPORTS.VIEW, 1, { outcome: 'failure', reason: 'missing_storage' });
-        return NextResponse.json({ status: "not_found" }, { status: 404 });
+        return ApiResponse.success({ status: "not_found" }, 404);
       }
     }
 
@@ -68,7 +75,7 @@ async function handler(req: NextRequest) {
       const now = Date.now();
       if (now - updatedAt > 3 * 60 * 1000) {
         recordCounter(METRICS.REPORTS.FAILURES, 1, { reason: 'stalled' });
-        return NextResponse.json({ 
+        return ApiResponse.success({ 
           status: "failed", 
           error: "Generation stalled. Please retry." 
         });
@@ -76,18 +83,17 @@ async function handler(req: NextRequest) {
     }
 
     recordCounter(METRICS.REPORTS.VIEW, 1, { status: report.status });
-    return NextResponse.json({ 
+    return ApiResponse.success({ 
       status: report.status,
       stage: report.status === "generating" ? report.errorStage : undefined,
       error: report.status === "failed" ? report.errorStage : undefined
-    }, { headers: { "Cache-Control": "no-store" } });
+    }, 200, { "Cache-Control": "no-store" });
 
   } catch (error: unknown) {
     logger.error({ err: error }, "[ReportStatus] API Error");
-    const message = error instanceof Error ? error.message : "Internal Server Error";
     recordTimer(METRICS.REPORTS.VIEW + '.duration', Date.now() - start, { outcome: 'error' });
-    return NextResponse.json({ error: message }, { status: 500 });
+    return ApiResponse.error(error);
   }
 }
 
-export const GET = withLogging(handler, { component: 'reports', operation: 'get_report_status' });
+export const GET = withLogging(getHandler, { component: 'reports', operation: 'get_report_status' });

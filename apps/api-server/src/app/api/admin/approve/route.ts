@@ -1,7 +1,8 @@
 import { METRICS } from '@quiz/observability';
 import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
 
+import { badRequest, internalError, unauthorized } from '@/lib/api-error';
+import { ApiResponse } from '@/lib/api-response';
 import { recordCounter, recordTimer } from '@/lib/metrics';
 import { withLogging } from '@/lib/withLogging';
 import { AdminEngine } from '@/modules/admin-engine/admin.engine';
@@ -28,14 +29,14 @@ async function handler(_req: NextRequest) {
     const start = Date.now();
     const auth = await _verifyAdmin(_req);
     if ('_error' in auth) {
-        return NextResponse.json({ _error: auth._error, scope: auth.scope }, { status: auth.status });
+        return ApiResponse.error(unauthorized(auth._error ?? 'Unauthorized'), auth.status);
     }
 
     try {
         const rawBody = await _req.json() as unknown;
         const parsed = publishSchema.safeParse(rawBody);
         if (!parsed.success) {
-            return NextResponse.json({ _error: 'Invalid payload', issues: parsed.error.issues }, { status: 400 });
+            return ApiResponse.error(badRequest('Invalid payload', 'BAD_REQUEST', parsed.error.issues), 400);
         }
         const body = parsed.data as ApproveBody;
         const result = await AdminEngine.publishQuestion(body.id, auth.userId);
@@ -44,15 +45,13 @@ async function handler(_req: NextRequest) {
         recordCounter(METRICS.ADMIN.PUBLISH, 1, { action: 'approve', outcome: 'success' });
         recordTimer(METRICS.ADMIN.PUBLISH + '.duration', durationMs, { action: 'approve', outcome: 'success' });
         
-        return NextResponse.json(result, {
-            headers: { 'X-Duration-Ms': durationMs.toString() }
-        });
+        return ApiResponse.success(result, 200, { 'X-Duration-Ms': durationMs.toString() });
     } catch (_error: unknown) {
         const message = _error instanceof Error ? _error.message : 'Internal Server Error';
         const durationMs = Date.now() - start;
         recordCounter(METRICS.ADMIN.PUBLISH, 1, { action: 'approve', outcome: 'failure' });
         recordTimer(METRICS.ADMIN.PUBLISH + '.duration', durationMs, { action: 'approve', outcome: 'failure' });
-        return NextResponse.json({ _error: message }, { status: 500 });
+        return ApiResponse.error(internalError(message), 500);
     }
 }
 

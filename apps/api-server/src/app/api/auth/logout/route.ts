@@ -1,6 +1,6 @@
-import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
+import { type NextRequest } from 'next/server';
 
+import { ApiResponse } from '@/lib/api-response';
 import { withLogging } from '@/lib/withLogging';
 import { AuthService } from '@/modules/auth/auth.service';
 import { TokenService } from '@/modules/auth/token.service';
@@ -27,7 +27,7 @@ async function handler(_req: NextRequest) {
     // Continue clearing cookies to avoid sticky sessions
   }
 
-  const response = NextResponse.json({ message: 'Logged out' });
+  const response = ApiResponse.success({ message: 'Logged out' });
   const rawDomain = process.env.COOKIE_DOMAIN;
   const cookieDomain = rawDomain === undefined || rawDomain === null || rawDomain === '' ? undefined : rawDomain;
 

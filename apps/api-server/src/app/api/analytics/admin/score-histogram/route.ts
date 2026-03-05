@@ -1,6 +1,8 @@
 import { METRICS } from "@quiz/observability";
-import { type NextRequest, NextResponse } from "next/server";
+import { type NextRequest } from "next/server";
 
+import { forbidden, unauthorized } from "@/lib/api-error";
+import { ApiResponse } from "@/lib/api-response";
 import { sqlReplica } from "@/lib/db";
 import { recordCounter, recordTimer } from "@/lib/metrics";
 import { redis } from "@/lib/redis";
@@ -16,26 +18,29 @@ interface ScoreDistributionRow {
   student_count: number;
 }
 
-async function handler(req: NextRequest) {
+async function getHandler(req: NextRequest) {
   const start = Date.now();
   try {
     if (!(await ResilienceService.isFeatureEnabled('analytics'))) {
-      return NextResponse.json(ResilienceService.getBusyPayload('analytics'), { status: 503 });
+      return ApiResponse.error(new Error("Analytics service is busy"), 503);
     }
 
     const token = TokenService.getAccessToken(req, { scope: "admin" });
-    if (token === undefined || token === null || token === "") {
-      return NextResponse.json({ error: "Authentication required" }, { status: 401 });
+    if (token === null || token === undefined || token === "") {
+      throw unauthorized("Authentication required");
     }
 
     const payload = await TokenService.verifyAccessToken(token, true);
+    if (payload === null || payload === undefined) {
+      throw unauthorized("Authentication required");
+    }
     
     const hasAdminRole = Array.isArray(payload.roles) && payload.roles.some(
       (role: string) => role === "ADMIN" || role === "SUPER_ADMIN" || role === "admin"
     );
     
     if (!hasAdminRole && payload.isAdmin !== true) {
-      return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
+      throw forbidden("Insufficient permissions");
     }
 
     const CACHE_KEY = CACHE_KEYS.ANALYTICS.ADMIN("score-histogram");
@@ -43,7 +48,7 @@ async function handler(req: NextRequest) {
     try {
       const cachedData = await redis.get(CACHE_KEY);
       if (cachedData !== null) {
-        return NextResponse.json(cachedData);
+        return ApiResponse.success(cachedData);
       }
     } catch (__redisError) {
       // Ignored
@@ -77,19 +82,15 @@ async function handler(req: NextRequest) {
     const durationMs = Date.now() - start;
     recordTimer(METRICS.ADMIN.DASHBOARD_LOAD + '.score_histogram', durationMs, { outcome: 'success' });
     recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.score_histogram.count', 1, { outcome: 'success' });
-    return NextResponse.json(result, {
-      headers: { 'X-Duration-Ms': durationMs.toString() }
+    return ApiResponse.success(result, 200, {
+      'X-Duration-Ms': durationMs.toString()
     });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "An unknown error occurred";
     const durationMs = Date.now() - start;
     recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.score_histogram.count', 1, { outcome: 'failure' });
     recordTimer(METRICS.ADMIN.DASHBOARD_LOAD + '.score_histogram.duration', durationMs, { outcome: 'failure' });
-    return NextResponse.json(
-      { error: "Internal Server Error", message },
-      { status: 500 }
-    );
+    return ApiResponse.error(error);
   }
 }
 
-export const GET = withLogging(handler, { component: 'analytics', operation: 'get_score_histogram' });
+export const GET = withLogging(getHandler, { component: 'analytics', operation: 'get_score_histogram' });

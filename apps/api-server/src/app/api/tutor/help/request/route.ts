@@ -1,9 +1,12 @@
 import { db, notifications, topics, tutorHelpRequests, userRecommendations } from "@quiz/db";
 import { METRICS } from "@quiz/observability";
 import { and, desc, eq, sql } from "drizzle-orm";
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest } from "next/server";
 
+import { badRequest, unauthorized } from "@/lib/api-error";
+import { ApiResponse } from "@/lib/api-response";
 import { recordCounter, recordTimer } from "@/lib/metrics";
+import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from "@/lib/sanitize";
 import { withLogging } from "@/lib/withLogging";
 import { TokenService } from "@/modules/auth/token.service";
 
@@ -11,25 +14,34 @@ export const dynamic = "force-dynamic";
 
 const HELP_REQUEST_COOLDOWN_HOURS = 12;
 
-async function handler(req: NextRequest) {
+async function postHandler(req: NextRequest) {
   const start = Date.now();
   try {
     const token = TokenService.getAccessToken(req, { scope: "user" });
-    if (typeof token !== "string" || token.length === 0) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (token === null || token === undefined || token === "") {
+      throw unauthorized("Unauthorized");
     }
     const payload = await TokenService.verifyAccessToken(token, false);
+    if (payload === null || payload === undefined || payload.userId === null || payload.userId === undefined) {
+      throw unauthorized("Authentication required");
+    }
 
-    const body = (await req.json().catch(() => ({}))) as { topicId?: unknown; priority?: unknown };
-    const topicId: string = typeof body?.topicId === "string" ? body.topicId.trim() : "";
-    const priorityRaw: string = typeof body?.priority === "string" ? body.priority.trim() : "low";
+    const rawBody = await req.json().catch(() => ({}));
+    
+    if (!validateJsonDepth(rawBody) || !validateJsonSize(rawBody)) {
+      throw badRequest("Payload too deep or large");
+    }
+
+    const body = sanitizeJsonField(rawBody) as { topicId?: string; priority?: string };
+    const topicId = typeof body.topicId === "string" ? body.topicId.trim() : "";
+    const priorityRaw = typeof body.priority === "string" ? body.priority.trim() : "low";
     const allowedPriority = ["low", "medium", "high"] as const;
     const priority = allowedPriority.includes(priorityRaw as (typeof allowedPriority)[number])
       ? (priorityRaw as (typeof allowedPriority)[number])
       : "low";
 
     if (topicId.length === 0) {
-      return NextResponse.json({ error: "topicId is required" }, { status: 400 });
+      throw badRequest("topicId is required");
     }
 
     const recentRequest = await db.query.tutorHelpRequests.findFirst({
@@ -41,14 +53,11 @@ async function handler(req: NextRequest) {
       orderBy: desc(tutorHelpRequests.createdAt)
     });
 
-    if (recentRequest) {
+    if (recentRequest !== null && recentRequest !== undefined) {
       if (recentRequest.status === "pending") {
-        return NextResponse.json({ message: "Help request already pending for this topic" });
+        return ApiResponse.success({ message: "Help request already pending for this topic" });
       } else {
-        return NextResponse.json({ 
-          error: "Cooldown active", 
-          message: `You can only request live help once every ${HELP_REQUEST_COOLDOWN_HOURS} hours per topic.` 
-        }, { status: 429 });
+        return ApiResponse.error(new Error(`You can only request live help once every ${HELP_REQUEST_COOLDOWN_HOURS} hours per topic.`), 429);
       }
     }
 
@@ -59,9 +68,12 @@ async function handler(req: NextRequest) {
       ),
       columns: { metadata: true }
     });
+    
+    type RecommendationMetadata = { accuracy?: number };
+    const recoMetadata = reco?.metadata as RecommendationMetadata | undefined;
     const accuracy =
-      typeof (reco?.metadata as { accuracy?: unknown })?.accuracy === "number"
-        ? (reco?.metadata as { accuracy?: number }).accuracy
+      typeof recoMetadata?.accuracy === "number"
+        ? recoMetadata.accuracy
         : undefined;
 
     await db.insert(tutorHelpRequests).values({
@@ -88,15 +100,14 @@ async function handler(req: NextRequest) {
     recordCounter(METRICS.TUTOR.HELP_REQUEST, 1, { outcome: 'success', topicId });
     recordTimer(METRICS.TUTOR.HELP_REQUEST + '.duration', durationMs, { outcome: 'success' });
 
-    return NextResponse.json({ success: true, message: "Help request submitted successfully" }, {
-      headers: { 'X-Duration-Ms': durationMs.toString() }
+    return ApiResponse.success({ success: true, message: "Help request submitted successfully" }, 200, {
+      'X-Duration-Ms': durationMs.toString()
     });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Internal Server Error";
     recordCounter(METRICS.TUTOR.HELP_REQUEST, 1, { outcome: 'failure' });
     recordTimer(METRICS.TUTOR.HELP_REQUEST + '.duration', Date.now() - start, { outcome: 'failure' });
-    return NextResponse.json({ error: message }, { status: 500 });
+    return ApiResponse.error(error);
   }
 }
 
-export const POST = withLogging(handler, { component: 'tutor', operation: 'request_help' });
+export const POST = withLogging(postHandler, { component: 'tutor', operation: 'request_help' });

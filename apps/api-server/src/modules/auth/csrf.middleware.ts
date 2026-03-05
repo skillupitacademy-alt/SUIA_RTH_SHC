@@ -20,7 +20,7 @@ export async function csrfProtection(_request: NextRequest) {
   
 
   if (origin !== null && isAllowed === false) {
-    return NextResponse.json({ _error: 'Origin mismatch' }, { status: 403 });
+    return NextResponse.json({ error: 'CSRF validation failed', message: 'Origin mismatch' }, { status: 403 });
   }
 
   const cookieToken = _request.cookies.get('csrfToken')?.value;
@@ -29,27 +29,7 @@ export async function csrfProtection(_request: NextRequest) {
   const isValidInternal = internalKey !== null && internalKey === process.env.INTERNAL_API_KEY;
 
   if (!isValidInternal && (cookieToken === undefined || headerToken === null || cookieToken !== headerToken)) {
-    // SECURITY UPGRADE: JWT Fallback
-    // If the CSRF check fails, check if the _request has a valid Authorization header.
-    // In a multi-port/multi-domain local setup, cookies are often lost or blocked.
-    // If the JWT is valid, we can trust the identity and just re-issue the CSRF _token.
-    const authHeader = _request.headers.get('authorization');
-    if (authHeader !== null && authHeader.startsWith('Bearer ')) {
-      // We return null to allow the _request, but middleware will also add the new CSRF _token to the response
-      return null; 
-    }
-
-    // SELF-HEALING: If session is valid, issue a new _token so the client can retry immediately
-    // We only provide this helper if the _user is actually logged in (has an access _token)
-    const hasSession = _request.cookies.has('accessToken') || _request.cookies.has('admin_accessToken');
-    
-    if (hasSession === true) {
-      const response = NextResponse.json({ _error: 'CSRF _token validation failed' }, { status: 403 });
-      setCsrfToken(response);
-      return response;
-    }
-
-    return NextResponse.json({ _error: 'CSRF _token validation failed' }, { status: 403 });
+    return NextResponse.json({ error: 'CSRF validation failed', message: 'Missing or invalid CSRF token' }, { status: 403 });
   }
 
   return null;

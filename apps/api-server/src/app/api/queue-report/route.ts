@@ -1,10 +1,13 @@
 import { db, exams } from "@quiz/db";
 import { METRICS } from "@quiz/observability";
 import { eq } from "drizzle-orm";
-import { after, NextRequest, NextResponse } from "next/server";
+import { after, NextRequest } from "next/server";
 
+import { badRequest, forbidden, unauthorized } from "@/lib/api-error";
+import { ApiResponse } from "@/lib/api-response";
 import { logger } from "@/lib/logger";
 import { recordCounter, recordTimer } from "@/lib/metrics";
+import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from "@/lib/sanitize";
 import { uploadReport } from "@/lib/storage/upload-report";
 import { withLogging } from "@/lib/withLogging";
 import { TokenService } from "@/modules/auth/token.service";
@@ -14,11 +17,20 @@ import { ReportRepository } from "@/modules/report-engine/report-repository";
 
 export const runtime = "nodejs";
 
-async function handler(req: NextRequest) {
+async function postHandler(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
-    const raw = await req.json().catch(() => ({} as unknown));
-    const body = typeof raw === "object" && raw !== null ? (raw as Record<string, unknown>) : {};
+    
+    // Ingest and sanitize JSON body
+    let raw;
+    try {
+      raw = await req.json();
+      validateJsonSize(raw);
+      validateJsonDepth(raw);
+    } catch {
+      raw = {};
+    }
+    const body = sanitizeJsonField(raw) as Record<string, unknown>;
 
     const attemptFromBody = typeof body.attemptId === "string" ? body.attemptId : "";
     const attemptFromParams = searchParams.get("id") ?? searchParams.get("attemptId") ?? "";
@@ -26,7 +38,7 @@ async function handler(req: NextRequest) {
     const force = body.force === true || searchParams.get("force") === "true";
 
     if (attemptId === "") {
-      return NextResponse.json({ error: "Missing attemptId" }, { status: 400 });
+      throw badRequest("Missing attemptId");
     }
 
     // 1. Auth Validation (User Token or Internal Key)
@@ -35,7 +47,7 @@ async function handler(req: NextRequest) {
     
     if (typeof internalSecret !== "string" || internalSecret.length === 0) {
       logger.error("[QueueReport] INTERNAL_API_KEY is not configured in environment");
-      return NextResponse.json({ error: "System configuration error" }, { status: 500 });
+      return ApiResponse.error(new Error("System configuration error"), 500);
     }
 
     const isInternal = internalKeyHeader === internalSecret;
@@ -47,13 +59,16 @@ async function handler(req: NextRequest) {
         where: eq(exams.id, attemptId),
         columns: { userId: true, status: true }
       });
-      if (!examMatch) return NextResponse.json({ error: "Exam not found" }, { status: 404 });
+      if (examMatch === null || examMatch === undefined) throw badRequest("Exam not found");
       userId = examMatch.userId;
     } else {
       const token = TokenService.getAccessToken(req, { scope: "user" });
-      if (token == null || token === "") return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      if (token === null || token === undefined || token === "") throw unauthorized("Unauthorized");
       
       const payload = await TokenService.verifyAccessToken(token, false);
+      if (payload === null || payload === undefined || payload.userId === null || payload.userId === undefined) {
+        throw unauthorized("Unauthorized");
+      }
       userId = payload.userId;
 
       const exam = await db.query.exams.findFirst({
@@ -61,41 +76,31 @@ async function handler(req: NextRequest) {
         columns: { userId: true, status: true }
       });
 
-      if (!exam) {
-        return NextResponse.json(
-          { error: "Exam not found", reason: "not_found", attemptId },
-          { status: 404 }
-        );
+      if (exam === null || exam === undefined) {
+        throw badRequest("Exam not found");
       }
 
       if (exam.userId !== userId) {
-        return NextResponse.json(
-          { error: "Exam does not belong to this user", reason: "ownership_mismatch", attemptId },
-          { status: 403 }
-        );
+        throw forbidden("Exam does not belong to this user");
       }
 
       if (exam.status !== "completed") {
-        return NextResponse.json(
-          { error: "Exam is not completed", reason: "not_completed", attemptId },
-          { status: 400 }
-        );
+        throw badRequest("Exam is not completed");
       }
     }
 
     // 2. Proactive Rate Limit check (3 per min)
     const { count, ttlRem } = await cacheService.increment(`ratelimit:pdf:${userId}`, 60000);
     if (count > 3) {
-      return NextResponse.json({ 
-        error: "Rate limit exceeded", 
-        retryAfter: ttlRem,
-        message: `Limit reached. Next report available in ${ttlRem} seconds.`
-      }, { status: 429 });
+      return ApiResponse.error(new Error("Rate limit exceeded"), 429, undefined, {
+        'Retry-After': ttlRem.toString(),
+        'X-Error-Message': `Limit reached. Next report available in ${ttlRem} seconds.`
+      });
     }
 
     // 3. Concurrency Guard with Stale-Job Recovery
     const existingReport = await ReportRepository.getReportByAttempt(attemptId);
-    if (existingReport && (existingReport.status === "pending" || existingReport.status === "generating")) {
+    if (existingReport !== null && existingReport !== undefined && (existingReport.status === "pending" || existingReport.status === "generating")) {
       const updatedAt = existingReport.updatedAt instanceof Date
         ? existingReport.updatedAt.getTime()
         : new Date(existingReport.updatedAt ?? 0).getTime();
@@ -105,7 +110,7 @@ async function handler(req: NextRequest) {
       if (staleDuration < STALE_THRESHOLD_MS && !force) {
         // Genuinely in-flight — don't duplicate
         logger.info({ attemptId, status: existingReport.status, staleDuration }, "[QueueReport] Duplicate job ignored");
-        return NextResponse.json({ status: "queued", attemptId, message: "Generation already in progress" });
+        return ApiResponse.success({ status: "queued", attemptId, message: "Generation already in progress" });
       }
 
       // Stale job detected — reset and allow re-trigger below
@@ -164,14 +169,13 @@ async function handler(req: NextRequest) {
       }
     });
 
-    return NextResponse.json({ status: "queued", attemptId });
+    return ApiResponse.success({ status: "queued", attemptId });
 
   } catch (error: unknown) {
     logger.error({ err: error }, "[QueueReport] API Error");
-    const message = error instanceof Error ? error.message : "Internal Server Error";
     recordCounter(METRICS.REPORTS.FAILURES, 1, { reason: 'internal_error' });
-    return NextResponse.json({ error: message }, { status: 500 });
+    return ApiResponse.error(error);
   }
 }
 
-export const POST = withLogging(handler, { component: 'reports', operation: 'queue_report' });
+export const POST = withLogging(postHandler, { component: 'reports', operation: 'queue_report' });

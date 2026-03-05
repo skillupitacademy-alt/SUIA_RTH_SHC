@@ -1,7 +1,10 @@
-import { type NextRequest, NextResponse } from "next/server";
+import { type NextRequest } from "next/server";
 
+import { badRequest } from "@/lib/api-error";
+import { ApiResponse } from "@/lib/api-response";
 import { logger } from "@/lib/logger";
 import { recordCounter, recordTimer } from "@/lib/metrics";
+import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from "@/lib/sanitize";
 import { withLogging } from "@/lib/withLogging";
 
 const SENSITIVE_FIELDS = ['email', 'password', 'token', 'ssn', 'phone', 'secret', 'key'];
@@ -28,10 +31,15 @@ async function handler(req: NextRequest) {
   try {
     const payload = await req.json().catch(() => null);
     if (payload === null || typeof payload !== 'object') {
-      return NextResponse.json({ error: "Invalid telemetry payload" }, { status: 400 });
+      return ApiResponse.error(badRequest("Invalid telemetry payload"));
     }
 
-    const { type, event, metric, value, tags, metadata, severity, requestId, sessionId } = payload as Record<string, unknown>;
+    if (!validateJsonDepth(payload) || !validateJsonSize(payload)) {
+      return ApiResponse.error(badRequest("Payload too deep or large"));
+    }
+
+    const sanitizedPayload = sanitizeJsonField(payload) as Record<string, unknown>;
+    const { type, event, metric, value, tags, metadata, severity, requestId, sessionId } = sanitizedPayload;
 
     // 1. Handle explicit metrics from client
     if (type === 'metric' && typeof metric === 'string') {
@@ -42,7 +50,7 @@ async function handler(req: NextRequest) {
         } else {
             recordCounter(metric, val, tagObj as Record<string, string>);
         }
-        return NextResponse.json({ success: true });
+        return ApiResponse.success({ success: true });
     }
 
     // 2. Handle structured logging
@@ -62,12 +70,10 @@ async function handler(req: NextRequest) {
     recordCounter('system.api.telemetry.count', 1, { event: typeof event === 'string' ? event : 'unknown', outcome: 'success' });
     recordTimer('system.api.telemetry.duration', durationMs, { outcome: 'success' });
     
-    return NextResponse.json({ success: true }, {
-        headers: { 'X-Duration-Ms': durationMs.toString() }
-    });
+    return ApiResponse.success({ success: true }, 200, { 'X-Duration-Ms': durationMs.toString() });
   } catch (_err) {
     recordCounter('system.api.telemetry.count', 1, { outcome: 'failure' });
-    return NextResponse.json({ error: "Invalid telemetry payload" }, { status: 400 });
+    return ApiResponse.error(badRequest("Invalid telemetry payload"));
   }
 }
 

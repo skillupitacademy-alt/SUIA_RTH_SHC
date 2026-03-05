@@ -1,7 +1,8 @@
 import { METRICS } from '@quiz/observability';
 import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
 
+import { unauthorized,validationError } from '@/lib/api-error';
+import { ApiResponse } from '@/lib/api-response';
 import { recordCounter, recordTimer } from '@/lib/metrics';
 import { withLogging } from '@/lib/withLogging';
 import { AuthService } from '@/modules/auth/auth.service';
@@ -17,7 +18,7 @@ async function handler(req: NextRequest) {
     const parsed = loginSchema.safeParse(rawBody);
     if (!parsed.success) {
       recordCounter(METRICS.AUTH.FAILURE, 1, { reason: 'invalid_payload' });
-      return NextResponse.json({ _error: 'Invalid payload', issues: parsed.error.issues }, { status: 400 });
+      return ApiResponse.error(validationError(parsed.error.issues));
     }
     const { email, password } = parsed.data;
 
@@ -39,7 +40,7 @@ async function handler(req: NextRequest) {
       isAdmin
     };
 
-    const response = NextResponse.json({
+    const response = ApiResponse.success({
       user,
       expiresAt: null,
     });
@@ -79,7 +80,7 @@ async function handler(req: NextRequest) {
     return response;
   } catch (_error) {
     recordCounter(METRICS.AUTH.FAILURE, 1, { reason: 'credentials_invalid' });
-    return NextResponse.json({ _error: 'Invalid credentials' }, { status: 401 });
+    return ApiResponse.error(unauthorized('Invalid credentials'));
   }
 }
 

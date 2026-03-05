@@ -1,7 +1,9 @@
 import { db } from "@quiz/db";
 import { sql } from "drizzle-orm";
-import { NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
+import { internalError, unauthorized } from "@/lib/api-error";
+import { ApiResponse } from "@/lib/api-response";
 import { recordCounter, recordTimer } from "@/lib/metrics";
 import { withLogging } from "@/lib/withLogging";
 import { TokenService } from "@/modules/auth/token.service";
@@ -32,7 +34,7 @@ async function handler(req: NextRequest) {
   try {
     const token = TokenService.getAccessToken(req, { scope: "admin" });
     if (token === null || token === undefined || token.length === 0) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return ApiResponse.error(unauthorized("Unauthorized"), 401);
     }
     const payload = await TokenService.verifyAccessToken(token, true);
     
@@ -41,7 +43,7 @@ async function handler(req: NextRequest) {
     );
     
     if (!hasAdminRole && payload.isAdmin !== true) {
-      return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
+      return ApiResponse.error(unauthorized("Insufficient permissions"), 403);
     }
 
     const { searchParams } = new URL(req.url);
@@ -135,13 +137,11 @@ async function handler(req: NextRequest) {
     recordCounter('admin.api.metrics.broken_questions.count', 1, { outcome: 'success', limit, floor });
     recordTimer('admin.api.metrics.broken_questions.duration', durationMs, { outcome: 'success' });
 
-    return NextResponse.json(scored.slice(0, limit), {
-      headers: { 'X-Duration-Ms': durationMs.toString() }
-    });
+    return ApiResponse.success(scored.slice(0, limit), 200, { 'X-Duration-Ms': durationMs.toString() });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Internal Server Error";
     recordCounter('admin.api.metrics.broken_questions.count', 1, { outcome: 'failure' });
-    return NextResponse.json({ error: "Internal Server Error", message }, { status: 500 });
+    return ApiResponse.error(internalError(message), 500);
   }
 }
 

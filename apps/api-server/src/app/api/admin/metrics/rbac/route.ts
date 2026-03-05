@@ -1,7 +1,8 @@
 import { METRICS } from '@quiz/observability';
 import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
 
+import { internalError, unauthorized } from '@/lib/api-error';
+import { ApiResponse } from '@/lib/api-response';
 import { recordCounter, recordTimer } from '@/lib/metrics';
 import { withLogging } from '@/lib/withLogging';
 import { AdminEngine } from '@/modules/admin-engine/admin.engine';
@@ -12,7 +13,7 @@ export const dynamic = 'force-dynamic';
 async function _verifyAdmin(_req: NextRequest) {
     const _token = TokenService.getAccessToken(_req, { scope: 'admin' });
     if (_token === null || _token === undefined || _token.trim() === '') {
-        throw new Error('Unauthorized');
+        throw unauthorized('Unauthorized');
     }
     return await TokenService.verifyAccessToken(_token, true);
 }
@@ -25,15 +26,13 @@ async function handler(_req: NextRequest) {
         const durationMs = Date.now() - start;
         recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.rbac', 1, { outcome: 'success' });
         recordTimer(METRICS.ADMIN.DASHBOARD_LOAD + '.rbac.duration', durationMs, { outcome: 'success' });
-        return NextResponse.json(data, {
-            headers: { 'X-Duration-Ms': durationMs.toString() }
-        });
+        return ApiResponse.success(data, 200, { 'X-Duration-Ms': durationMs.toString() });
     } catch (_error: unknown) {
         const message = _error instanceof Error ? _error.message : 'Internal Server Error';
         const durationMs = Date.now() - start;
         recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.rbac', 1, { outcome: 'failure' });
         recordTimer(METRICS.ADMIN.DASHBOARD_LOAD + '.rbac.duration', durationMs, { outcome: 'failure' });
-        return NextResponse.json({ _error: message }, { status: 500 });
+        return ApiResponse.error(internalError(message), 500);
     }
 }
 

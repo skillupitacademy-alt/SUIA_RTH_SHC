@@ -1,8 +1,9 @@
 import { db, users } from '@quiz/db';
 import { eq } from 'drizzle-orm';
 import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
 
+import { unauthorized } from '@/lib/api-error';
+import { ApiResponse } from '@/lib/api-response';
 import { withLogging } from '@/lib/withLogging';
 import { TokenService } from '@/modules/auth/token.service';
 
@@ -12,7 +13,7 @@ async function handler(_req: NextRequest) {
   try {
     const _token = TokenService.getAccessToken(_req);
     if (typeof _token !== 'string' || _token.trim() === '') {
-      return NextResponse.json({ _error: 'Unauthorized', scope: 'user' }, { status: 401 });
+      return ApiResponse.error(unauthorized('Unauthorized', 'UNAUTHORIZED'));
     }
 
     const _payload = await TokenService.verifyAccessToken(_token, false);
@@ -21,10 +22,9 @@ async function handler(_req: NextRequest) {
       .set({ lastActiveAt: new Date() })
       .where(eq(users.id, _payload.userId));
 
-    return NextResponse.json({ status: 'ok', timestamp: new Date().toISOString() });
+    return ApiResponse.success({ status: 'ok', timestamp: new Date().toISOString() });
   } catch (_error: unknown) {
-    const message = _error instanceof Error ? _error.message : 'Unauthorized';
-    return NextResponse.json({ _error: message }, { status: 401 });
+    return ApiResponse.error(_error, 401);
   }
 }
 

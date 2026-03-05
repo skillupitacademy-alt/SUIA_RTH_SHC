@@ -1,8 +1,10 @@
 import { db, exams } from "@quiz/db";
 import { METRICS } from "@quiz/observability";
 import { eq } from "drizzle-orm";
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 
+import { badRequest, forbidden, notFound, unauthorized } from "@/lib/api-error";
+import { ApiResponse } from "@/lib/api-response";
 import { recordCounter, recordTimer } from "@/lib/metrics";
 import { getDownloadUrl } from "@/lib/storage/get-download-url";
 import { withLogging } from "@/lib/withLogging";
@@ -11,42 +13,41 @@ import { ReportRepository } from "@/modules/report-engine/report-repository";
 
 export const runtime = "nodejs";
 
-async function handler(req: NextRequest) {
+async function getHandler(req: NextRequest) {
   const startTime = Date.now();
   try {
     const { searchParams } = new URL(req.url);
     const attemptId = searchParams.get("attemptId");
 
-    if (attemptId === null || attemptId.trim() === "") {
-      return NextResponse.json({ error: "Missing attemptId" }, { status: 400 });
+    if (attemptId === null || attemptId === undefined || attemptId.trim() === "") {
+      throw badRequest("Missing attemptId");
     }
 
     // 1. Authenticate user
     const token = TokenService.getAccessToken(req, { scope: "user" }) ?? null;
+    let userId: string;
+
     if (token === null) {
       // Check for internal key as fallback for server-side checks
       const internalKey = req.headers.get("x-internal-key");
       const expectedKey = process.env.INTERNAL_API_KEY;
-      if (expectedKey === undefined || expectedKey === null || expectedKey === "") {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      if (expectedKey === undefined || expectedKey === null || expectedKey === "" || internalKey !== expectedKey) {
+        throw unauthorized("Unauthorized");
       }
-      if (internalKey !== expectedKey) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-      }
-    }
 
-    let userId: string;
-    if (token !== null) {
-      const payload = await TokenService.verifyAccessToken(token, false);
-      userId = payload.userId;
-    } else {
       // Internal bypass - get userId from exam
       const exam = await db.query.exams.findFirst({
         where: eq(exams.id, attemptId),
         columns: { userId: true },
       });
-      if (!exam) return NextResponse.json({ error: "Exam not found" }, { status: 404 });
+      if (!exam) throw notFound("Exam", attemptId);
       userId = exam.userId;
+    } else {
+      const payload = await TokenService.verifyAccessToken(token, false);
+      if (payload === null || payload === undefined || payload.userId === null || payload.userId === undefined) {
+        throw unauthorized("Unauthorized");
+      }
+      userId = payload.userId;
     }
 
     // 2. Verify ownership
@@ -55,23 +56,24 @@ async function handler(req: NextRequest) {
       columns: { userId: true },
     });
 
-    if (!exam) {
-      return NextResponse.json({ error: "Exam not found" }, { status: 404 });
+    if (exam === null || exam === undefined) {
+      throw notFound("Exam", attemptId);
     }
     if (exam.userId !== userId) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      throw forbidden("Forbidden");
     }
 
     // 3. Get file reference
     const report = await ReportRepository.getReportByAttempt(attemptId);
-    if (!report || report.fileRef === null || report.fileRef === undefined || report.fileRef === "" || report.status !== "ready") {
-      return NextResponse.json({ error: "Report not ready or not found" }, { status: 404 });
+    if (report === null || report === undefined || report.fileRef === null || report.fileRef === undefined || report.status !== "ready") {
+      throw notFound("Report ready file", attemptId);
     }
 
     // 4. Generate a temporary read-only URL for the private blob
     const downloadUrl = await getDownloadUrl(report.fileRef);
-    if (!downloadUrl) {
-      return NextResponse.json({ error: "Download unavailable" }, { status: 502 });
+    if (downloadUrl === null || downloadUrl === undefined || downloadUrl === "") {
+      recordCounter(METRICS.REPORTS.DOWNLOAD, 1, { outcome: "failure", reason: "download_url_failed" });
+      return ApiResponse.error(new Error("Download unavailable"), 502);
     }
 
     const durationMs = Date.now() - startTime;
@@ -81,12 +83,11 @@ async function handler(req: NextRequest) {
     return NextResponse.redirect(downloadUrl, {
       headers: { 'X-Duration-Ms': durationMs.toString() }
     });
-  } catch (error) {
-    const message = error instanceof Error ? error.message : "Internal Server Error";
+  } catch (error: unknown) {
     recordCounter(METRICS.REPORTS.DOWNLOAD, 1, { outcome: "failure" });
     recordTimer(METRICS.REPORTS.DOWNLOAD + '.duration', Date.now() - startTime, { outcome: "failure" });
-    return NextResponse.json({ error: message }, { status: 500 });
+    return ApiResponse.error(error);
   }
 }
 
-export const GET = withLogging(handler, { component: "reports", operation: "download_report" });
+export const GET = withLogging(getHandler, { component: "reports", operation: "download_report" });

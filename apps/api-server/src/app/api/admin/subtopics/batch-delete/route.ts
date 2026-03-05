@@ -1,6 +1,8 @@
 import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
 
+import { badRequest, unauthorized } from '@/lib/api-error';
+import { ApiResponse } from '@/lib/api-response';
+import { validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 import { withLogging } from '@/lib/withLogging';
 import { AdminEngine } from '@/modules/admin-engine/admin.engine';
 import { TokenService } from '@/modules/auth/token.service';
@@ -11,8 +13,8 @@ type BatchDeleteBody = { ids: string[] };
 
 async function _verifyAdmin(_req: NextRequest) {
     const _token = TokenService.getAccessToken(_req, { scope: 'admin' });
-    if (_token === null || _token === undefined || _token.trim() === '') {
-        throw new Error('Unauthorized');
+    if (_token === undefined || _token === null || _token === '') {
+        throw unauthorized('Unauthorized', 'UNAUTHORIZED');
     }
     return await TokenService.verifyAccessToken(_token, true);
 }
@@ -20,16 +22,21 @@ async function _verifyAdmin(_req: NextRequest) {
 async function handler(_req: NextRequest) {
     try {
         const auth = await _verifyAdmin(_req);
-        const { ids } = await _req.json() as BatchDeleteBody;
-        if (ids === null || ids === undefined || !Array.isArray(ids)) {
-            return NextResponse.json({ _error: 'Invalid IDs' }, { status: 400 });
+        const rawBody = await _req.json();
+        
+        if (!validateJsonDepth(rawBody) || !validateJsonSize(rawBody)) {
+            return ApiResponse.error(badRequest('Payload too deep or large'));
+        }
+
+        const { ids } = rawBody as BatchDeleteBody;
+        if (!Array.isArray(ids)) {
+            return ApiResponse.error(badRequest('Invalid IDs (expected array)'));
         }
 
         const result = await AdminEngine.deleteSubtopicsBatch(ids, auth.userId!);
-        return NextResponse.json(result);
+        return ApiResponse.success(result);
     } catch (_error: unknown) {
-        const message = _error instanceof Error ? _error.message : 'Internal Server Error';
-        return NextResponse.json({ _error: message }, { status: 500 });
+        return ApiResponse.error(_error);
     }
 }
 

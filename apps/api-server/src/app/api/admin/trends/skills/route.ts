@@ -1,7 +1,8 @@
 import { METRICS } from '@quiz/observability';
 import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
 
+import { badRequest, internalError } from '@/lib/api-error';
+import { ApiResponse } from '@/lib/api-response';
 import { recordCounter, recordTimer } from '@/lib/metrics';
 import { withLogging } from '@/lib/withLogging';
 import { TrendsService } from '@/modules/metrics/trends.service';
@@ -16,7 +17,7 @@ async function handler(_request: NextRequest) {
     const range = searchParams.get('range') ?? '7d';
 
     if (!['7d', '14d', '28d', '90d'].includes(range)) {
-      return NextResponse.json({ _error: 'Invalid range' }, { status: 400 });
+      return ApiResponse.error(badRequest('Invalid range'), 400);
     }
 
     const skills = await TrendsService.getSkillTrends({ userId, range });
@@ -25,9 +26,7 @@ async function handler(_request: NextRequest) {
     recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.trends.skills.success', 1, { range });
     recordTimer(METRICS.ADMIN.DASHBOARD_LOAD + '.trends.skills.duration', durationMs, { outcome: 'success', range });
     
-    return NextResponse.json({ skills }, {
-        headers: { 'X-Duration-Ms': durationMs.toString() }
-    });
+    return ApiResponse.success({ skills }, 200, { 'X-Duration-Ms': durationMs.toString() });
   } catch (_error: unknown) {
     const message = _error instanceof Error ? _error.message : 'Unknown error';
     const durationMs = Date.now() - start;
@@ -35,10 +34,7 @@ async function handler(_request: NextRequest) {
     recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.trends.skills.failure', 1);
     recordTimer(METRICS.ADMIN.DASHBOARD_LOAD + '.trends.skills.duration', durationMs, { outcome: 'failure' });
     
-    return NextResponse.json(
-      { _error: 'Failed to fetch skill trends', message },
-      { status: 500 }
-    );
+    return ApiResponse.error(internalError(`Failed to fetch skill trends: ${message}`), 500);
   }
 }
 

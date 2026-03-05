@@ -1,6 +1,7 @@
 import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
 
+import { internalError, unauthorized } from '@/lib/api-error';
+import { ApiResponse } from '@/lib/api-response';
 import { recordCounter, recordTimer } from '@/lib/metrics';
 import { withLogging } from '@/lib/withLogging';
 import { TokenService } from '@/modules/auth/token.service';
@@ -13,7 +14,7 @@ async function handler(_req: NextRequest) {
   try {
     const _token = TokenService.getAccessToken(_req, { scope: 'user' });
     if (typeof _token !== 'string' || _token.trim() === '') {
-      return NextResponse.json({ _error: 'Unauthorized' }, { status: 401 });
+      return ApiResponse.error(unauthorized('Unauthorized'), 401);
     }
 
     const _payload = await TokenService.verifyAccessToken(_token, false);
@@ -23,13 +24,11 @@ async function handler(_req: NextRequest) {
     recordTimer('dashboard.api.metadata.duration', durationMs, { outcome: 'success' });
     recordCounter('dashboard.api.metadata.count', 1, { outcome: 'success' });
 
-    return NextResponse.json(data, {
-        headers: { 'X-Duration-Ms': durationMs.toString() }
-    });
+    return ApiResponse.success(data, 200, { 'X-Duration-Ms': durationMs.toString() });
   } catch (_error: unknown) {
     const message = _error instanceof Error ? _error.message : 'Internal Server Error';
     recordCounter('dashboard.api.metadata.count', 1, { outcome: 'failure' });
-    return NextResponse.json({ _error: message }, { status: 500 });
+    return ApiResponse.error(internalError(message), 500);
   }
 }
 

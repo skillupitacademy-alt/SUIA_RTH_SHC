@@ -1,7 +1,8 @@
 import { METRICS } from '@quiz/observability';
 import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
 
+import { forbidden, unauthorized } from '@/lib/api-error';
+import { ApiResponse } from '@/lib/api-response';
 import { recordCounter, recordTimer } from '@/lib/metrics';
 import { withLogging } from '@/lib/withLogging';
 import { AdminEngine } from '@/modules/admin-engine/admin.engine';
@@ -13,7 +14,7 @@ async function handler(_req: NextRequest) {
   const startTime = Date.now();
   try {
     const _token = TokenService.getAccessToken(_req, { scope: 'admin' });
-    if (_token === null || _token === undefined || _token.trim() === '') return NextResponse.json({ _error: 'Unauthorized', scope: 'admin' }, { status: 401 });
+    if (_token === null || _token === undefined || _token.trim() === '') return ApiResponse.error(unauthorized('Unauthorized'), 401);
 
     await TokenService.verifyAccessToken(_token, true); // true for isAdmin check
     
@@ -23,14 +24,12 @@ async function handler(_req: NextRequest) {
     recordCounter(METRICS.ADMIN.DASHBOARD_LOAD, 1, { outcome: 'success' });
     recordTimer(METRICS.ADMIN.DASHBOARD_LOAD + '.duration', durationMs, { outcome: 'success' });
     
-    return NextResponse.json(metrics, {
-        headers: { 'X-Duration-Ms': durationMs.toString() }
-    });
+    return ApiResponse.success(metrics, 200, { 'X-Duration-Ms': durationMs.toString() });
   } catch (_error: unknown) {
     recordCounter(METRICS.ADMIN.DASHBOARD_LOAD, 1, { outcome: 'failure' });
     recordTimer(METRICS.ADMIN.DASHBOARD_LOAD + '.duration', Date.now() - startTime, { outcome: 'failure' });
     const message = _error instanceof Error ? _error.message : 'Unauthorized';
-    return NextResponse.json({ _error: message }, { status: 403 });
+    return ApiResponse.error(forbidden(message), 403);
   }
 }
 

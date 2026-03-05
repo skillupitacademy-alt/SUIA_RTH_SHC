@@ -1,8 +1,10 @@
 import { METRICS } from '@quiz/observability';
 import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
 
+import { badRequest, unauthorized } from '@/lib/api-error';
+import { ApiResponse } from '@/lib/api-response';
 import { recordCounter, recordTimer } from '@/lib/metrics';
+import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 import { withLogging } from '@/lib/withLogging';
 import { AdminEngine } from '@/modules/admin-engine/admin.engine';
 import { TokenService } from '@/modules/auth/token.service';
@@ -10,50 +12,44 @@ import { publishSchema } from '@/schemas/admin.schemas';
 
 export const dynamic = 'force-dynamic';
 
-type PublishBody = { id: string };
-
-async function _verifyAdmin(_req: NextRequest) {
+async function verifyAdmin(_req: NextRequest) {
     const _token = TokenService.getAccessToken(_req, { scope: 'admin' });
-    if (_token === null || _token === undefined || _token.trim() === '') {
-        return { _error: 'Unauthorized', scope: 'admin', status: 401 };
+    if (_token === undefined || _token === null || _token.trim() === '') {
+        throw unauthorized('Unauthorized', 'UNAUTHORIZED');
     }
-
-    try {
-        const _payload = await TokenService.verifyAccessToken(_token, true);
-        return { userId: _payload.userId };
-    } catch {
-        return { _error: 'Unauthorized', status: 401 };
-    }
+    return await TokenService.verifyAccessToken(_token, true);
 }
 
-async function handler(_req: NextRequest) {
+async function postHandler(_req: NextRequest) {
     const start = Date.now();
-    const auth = await _verifyAdmin(_req);
-    if (auth._error !== undefined) return NextResponse.json({ _error: auth._error, scope: auth.scope }, { status: auth.status });
-
     try {
-        const rawBody = await _req.json() as PublishBody;
-        const parsed = publishSchema.safeParse(rawBody);
-        if (!parsed.success) {
-            return NextResponse.json({ _error: 'Invalid payload', issues: parsed.error.issues }, { status: 400 });
+        const auth = await verifyAdmin(_req);
+        const rawBody = await _req.json();
+
+        if (!validateJsonDepth(rawBody) || !validateJsonSize(rawBody)) {
+          return ApiResponse.error(badRequest('Payload too deep or large'));
         }
-        const body = parsed.data;
-        const result = await AdminEngine.publishQuestion(body.id, auth.userId!);
+
+        const sanitizedBody = sanitizeJsonField(rawBody);
+        const parsed = publishSchema.safeParse(sanitizedBody);
+        
+        if (!parsed.success) {
+            return ApiResponse.error(badRequest('Invalid payload', 'BAD_REQUEST', parsed.error.issues));
+        }
+        
+        const result = await AdminEngine.publishQuestion(parsed.data.id, auth.userId!);
         
         const durationMs = Date.now() - start;
         recordCounter(METRICS.ADMIN.PUBLISH, 1, { outcome: 'success' });
         recordTimer(METRICS.ADMIN.PUBLISH + '.duration', durationMs, { outcome: 'success' });
         
-        return NextResponse.json(result, {
-            headers: { 'X-Duration-Ms': durationMs.toString() }
-        });
+        return ApiResponse.success(result, 200, { 'X-Duration-Ms': durationMs.toString() });
     } catch (_error: unknown) {
-        const message = _error instanceof Error ? _error.message : 'Internal Server Error';
         const durationMs = Date.now() - start;
         recordCounter(METRICS.ADMIN.PUBLISH, 1, { outcome: 'failure' });
         recordTimer(METRICS.ADMIN.PUBLISH + '.duration', durationMs, { outcome: 'failure' });
-        return NextResponse.json({ _error: message }, { status: 500 });
+        return ApiResponse.error(_error);
     }
 }
 
-export const POST = withLogging(handler, { component: 'admin', operation: 'publish_question' });
+export const POST = withLogging(postHandler, { component: 'admin', operation: 'publish_question' });

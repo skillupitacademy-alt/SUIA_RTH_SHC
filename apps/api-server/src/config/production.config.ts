@@ -19,7 +19,7 @@ export const config = {
       process.env.NEXT_PUBLIC_ADMIN_URL,
     ]).map((o: string | undefined) => o?.trim()).filter(Boolean) as string[],
     cookieSettings: {
-      httpOnly: false,
+      httpOnly: true,
       secure: true,
       sameSite: 'none' as const,
       domain: (() => {

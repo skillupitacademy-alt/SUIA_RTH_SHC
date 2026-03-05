@@ -1,6 +1,8 @@
 import { METRICS } from "@quiz/observability";
-import { type NextRequest, NextResponse } from "next/server";
+import { type NextRequest } from "next/server";
 
+import { unauthorized } from "@/lib/api-error";
+import { ApiResponse } from "@/lib/api-response";
 import { sqlReplica } from "@/lib/db";
 import { recordCounter, recordTimer } from "@/lib/metrics";
 import { redis } from "@/lib/redis";
@@ -16,23 +18,23 @@ interface MasteryTrendRow {
   avg_accuracy: number;
 }
 
-async function handler(req: NextRequest) {
+async function getHandler(req: NextRequest) {
   const start = Date.now();
   try {
     if (!(await ResilienceService.isFeatureEnabled('analytics'))) {
-      return NextResponse.json(ResilienceService.getBusyPayload('analytics'), { status: 503 });
+      return ApiResponse.error(new Error("Analytics service is busy"), 503);
     }
 
     const token = TokenService.getAccessToken(req, { scope: "admin" });
     if (token === undefined || token === null || token === "") {
-      return NextResponse.json({ error: "Authentication required" }, { status: 401 });
+      throw unauthorized("Authentication required");
     }
 
     await TokenService.verifyAccessToken(token, true);
 
     try {
       const cachedData = await redis.get(CACHE_KEYS.ANALYTICS.ADMIN("mastery-trend"));
-      if (cachedData !== null) return NextResponse.json(cachedData);
+      if (cachedData !== null) return ApiResponse.success(cachedData);
     } catch (__redisError) {
       // Ignored
     }
@@ -59,16 +61,15 @@ async function handler(req: NextRequest) {
     const durationMs = Date.now() - start;
     recordTimer(METRICS.ADMIN.DASHBOARD_LOAD + '.mastery_trend', durationMs, { outcome: 'success' });
     recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.mastery_trend.count', 1, { outcome: 'success' });
-    return NextResponse.json(result, {
-      headers: { 'X-Duration-Ms': durationMs.toString() }
+    return ApiResponse.success(result, 200, {
+      'X-Duration-Ms': durationMs.toString()
     });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Internal Server Error";
     const durationMs = Date.now() - start;
     recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.mastery_trend.count', 1, { outcome: 'failure' });
     recordTimer(METRICS.ADMIN.DASHBOARD_LOAD + '.mastery_trend.duration', durationMs, { outcome: 'failure' });
-    return NextResponse.json({ error: "Failed to fetch admin mastery trend", message }, { status: 500 });
+    return ApiResponse.error(error);
   }
 }
 
-export const GET = withLogging(handler, { component: 'analytics', operation: 'get_admin_mastery_trend' });
+export const GET = withLogging(getHandler, { component: 'analytics', operation: 'get_admin_mastery_trend' });

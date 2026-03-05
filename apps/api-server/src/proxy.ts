@@ -1,12 +1,13 @@
 // Edge-compatible UUID generation using standard web crypto
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 
 import { corsMiddleware } from './modules/auth/cors.middleware';
 import { csrfProtection, setCsrfToken } from './modules/auth/csrf.middleware';
 import { _verifyAdmin } from './modules/auth/rbac.service';
 import { TokenService } from './modules/auth/token.service';
 
-export default async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   // 1. Ensure a requestId and sessionId exist and are forwarded downstream
   const requestId = request.headers.get('x-request-id') ?? crypto.randomUUID();
   const sessionId = request.headers.get('x-session-id') ?? 'anon-' + crypto.randomUUID().slice(0, 8);
@@ -67,7 +68,7 @@ export default async function middleware(request: NextRequest) {
 
     if (!isSystemBypass && (_token === undefined || _token === null || _token === '')) {
       const response = NextResponse.json(
-        { _error: 'Authentication required', scope },
+        { error: 'Authentication required', scope },
         { status: 401 }
       );
       response.headers.set('x-request-id', requestId);
@@ -88,21 +89,21 @@ export default async function middleware(request: NextRequest) {
         if (isInfraRoute) {
             const roles = Array.isArray(_payload.roles) ? (_payload.roles as string[]) : [];
             if (!roles.includes('INFRASTRUCTURE')) {
-              const res = NextResponse.json({ _error: 'Forbidden: Infrastructure privileges required' }, { status: 403 });
+              const res = NextResponse.json({ error: 'Forbidden: Infrastructure privileges required' }, { status: 403 });
               res.headers.set('x-request-id', requestId);
               return corsMiddleware(request, res);
             }
         } else if (isAdminRoute) {
           const hasAdminAccess = await _verifyAdmin(_payload);
           if (!hasAdminAccess) {
-            const res = NextResponse.json({ _error: 'Forbidden: Admin access only' }, { status: 403 });
+            const res = NextResponse.json({ error: 'Forbidden: Admin access only' }, { status: 403 });
             res.headers.set('x-request-id', requestId);
             return corsMiddleware(request, res);
           }
         }
       } catch (_error: unknown) {
         const errorMessage = _error instanceof Error ? _error.message : 'Authentication failed';
-        const res = NextResponse.json({ _error: 'Invalid or expired _token', message: errorMessage }, { status: 401 });
+        const res = NextResponse.json({ error: 'Invalid or expired token', message: errorMessage }, { status: 401 });
         res.headers.set('x-request-id', requestId);
         return corsMiddleware(request, res);
       }

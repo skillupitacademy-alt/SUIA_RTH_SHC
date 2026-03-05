@@ -1,7 +1,8 @@
 import { METRICS } from '@quiz/observability';
-import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
+import { type NextRequest } from 'next/server';
 
+import { badRequest, unauthorized } from '@/lib/api-error';
+import { ApiResponse } from '@/lib/api-response';
 import { recordCounter, recordTimer } from '@/lib/metrics';
 import { withLogging } from '@/lib/withLogging';
 import { TokenService } from '@/modules/auth/token.service';
@@ -9,43 +10,46 @@ import { SessionService } from '@/modules/exam-engine/session.service';
 
 export const dynamic = 'force-dynamic';
 
-async function handler(_req: NextRequest) {
+async function getHandler(req: NextRequest) {
   const startTime = Date.now();
   try {
-    const _token = TokenService.getAccessToken(_req, { scope: 'user' });
-    if (typeof _token !== 'string' || _token.trim() === '') {
-      return NextResponse.json({ _error: 'Unauthorized', scope: 'user' }, { status: 401 });
+    const token = TokenService.getAccessToken(req, { scope: 'user' });
+    if (token === null || token === undefined || token === '') {
+      throw unauthorized("Unauthorized");
     }
 
-    const _payload = await TokenService.verifyAccessToken(_token, false);
-    const searchParams = _req.nextUrl.searchParams;
+    const payload = await TokenService.verifyAccessToken(token, false);
+    if (payload === null || payload === undefined || payload.userId === null || payload.userId === undefined) {
+      throw unauthorized("Authentication required");
+    }
+    const searchParams = req.nextUrl.searchParams;
     const examId = searchParams.get('examId');
 
     if (typeof examId !== 'string' || examId.trim() === '') {
-      return NextResponse.json({ _error: 'Missing examId' }, { status: 400 });
+      throw badRequest('Missing examId');
     }
 
     // Guardrail: Validate UUID format to prevent SQL errors
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
     if (!uuidRegex.test(examId)) {
-        return NextResponse.json({ _error: 'Invalid examId format' }, { status: 422 });
+        throw badRequest('Invalid examId format');
     }
 
-    const state = await SessionService.resumePayload(examId, _payload.userId);
+    const state = await SessionService.resumePayload(examId, payload.userId);
     
     const durationMs = Date.now() - startTime;
     recordCounter(METRICS.QUIZ.STATE, 1, { outcome: 'success' });
     recordTimer(METRICS.QUIZ.STATE + '.duration', durationMs, { outcome: 'success' });
 
-    return NextResponse.json(state, {
-        headers: { 'X-Duration-Ms': durationMs.toString() }
+    return ApiResponse.success(state, 200, {
+        'X-Duration-Ms': durationMs.toString()
     });
-  } catch (_error: unknown) {
-    const message = _error instanceof Error ? _error.message : 'Bad request';
+  } catch (error: unknown) {
+    const durationMs = Date.now() - startTime;
     recordCounter(METRICS.QUIZ.STATE, 1, { outcome: 'failure' });
-    recordTimer(METRICS.QUIZ.STATE + '.duration', Date.now() - startTime, { outcome: 'failure' });
-    return NextResponse.json({ _error: message }, { status: 400 });
+    recordTimer(METRICS.QUIZ.STATE + '.duration', durationMs, { outcome: 'failure' });
+    return ApiResponse.error(error, 400, durationMs.toString());
   }
 }
 
-export const GET = withLogging(handler, { component: 'quiz', operation: 'get_exam_state' });
+export const GET = withLogging(getHandler, { component: 'quiz', operation: 'get_exam_state' });
