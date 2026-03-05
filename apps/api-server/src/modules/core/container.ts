@@ -1,4 +1,4 @@
-export type Type<T> = new (...args: unknown[]) => T;
+export type Type<T> = new (...args: any[]) => T;
 
 /**
  * Lightweight Dependency Injection Container for managing service and repository singletons.
