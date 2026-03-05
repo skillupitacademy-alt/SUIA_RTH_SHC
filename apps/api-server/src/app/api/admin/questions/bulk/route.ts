@@ -10,6 +10,7 @@ import type { CreateQuestionInput } from '@/modules/admin-engine/admin.engine';
 import { AdminEngine } from '@/modules/admin-engine/admin.engine';
 import { _verifyAdmin } from '@/modules/auth/rbac.service';
 import { TokenService } from '@/modules/auth/token.service';
+import { container } from '@/modules/core/container';
 import { bulkQuestionSchema } from '@/schemas/admin.schemas';
 
 export const dynamic = 'force-dynamic';
@@ -25,12 +26,12 @@ type BulkQuestionBody = {
 async function handler(_req: NextRequest) {
   const start = Date.now();
   try {
-    const _token = TokenService.getAccessToken(_req, { scope: 'admin' });
+    const _token = container.get(TokenService).getAccessToken(_req, { scope: 'admin' });
     if (_token === null || _token === undefined || _token.trim() === '') {
       return ApiResponse.error(badRequest('Unauthorized', 'UNAUTHORIZED'));
     }
 
-    const _payload = await TokenService.verifyAccessToken(_token, true);
+    const _payload = await container.get(TokenService).verifyAccessToken(_token, true);
 
     if (!(await _verifyAdmin(_payload))) {
         return ApiResponse.error(badRequest('Forbidden', 'FORBIDDEN'));

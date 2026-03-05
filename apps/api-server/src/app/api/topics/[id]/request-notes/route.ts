@@ -7,6 +7,7 @@ import { recordCounter, recordTimer } from "@/lib/metrics";
 import { withLogging } from "@/lib/withLogging";
 import { AdaptiveTutorService } from "@/modules/adaptive-engine/adaptive-tutor.service";
 import { TokenService } from "@/modules/auth/token.service";
+import { container } from '@/modules/core/container';
 
 export const dynamic = "force-dynamic";
 
@@ -22,11 +23,11 @@ async function postHandler(
   try {
     const { id: topicId } = await params;
 
-    const token = TokenService.getAccessToken(req, { scope: "user" });
+    const token = container.get(TokenService).getAccessToken(req, { scope: "user" });
     if (token === null || token === undefined || token === "") {
       throw unauthorized("Unauthorized");
     }
-    const payload = await TokenService.verifyAccessToken(token, false);
+    const payload = await container.get(TokenService).verifyAccessToken(token, false);
     if (payload === null || payload === undefined || payload.userId === null || payload.userId === undefined) {
       throw unauthorized("Unauthorized");
     }

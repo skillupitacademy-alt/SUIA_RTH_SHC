@@ -9,18 +9,19 @@ import { withLogging } from '@/lib/withLogging';
 import type { BlueprintInsert } from '@/modules/admin-engine/admin.engine';
 import { AdminEngine } from '@/modules/admin-engine/admin.engine';
 import { TokenService } from '@/modules/auth/token.service';
+import { container } from '@/modules/core/container';
 import { blueprintSchema } from '@/schemas/admin.schemas';
 
 export const dynamic = 'force-dynamic';
 
 async function _verifyAdmin(_req: NextRequest) {
-    const _token = TokenService.getAccessToken(_req, { scope: 'admin' });
+    const _token = container.get(TokenService).getAccessToken(_req, { scope: 'admin' });
     if (_token === null || _token === undefined || _token.trim() === '') {
         return { _error: 'Unauthorized', scope: 'admin', status: 401 };
     }
 
     try {
-        const _payload = await TokenService.verifyAccessToken(_token, true);
+        const _payload = await container.get(TokenService).verifyAccessToken(_token, true);
         return { userId: _payload.userId };
     } catch {
         return { _error: 'Unauthorized', status: 401 };

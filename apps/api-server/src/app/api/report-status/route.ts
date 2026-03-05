@@ -8,6 +8,7 @@ import { recordCounter, recordTimer } from "@/lib/metrics";
 import { getDownloadUrl } from "@/lib/storage/get-download-url";
 import { withLogging } from "@/lib/withLogging";
 import { TokenService } from "@/modules/auth/token.service";
+import { container } from '@/modules/core/container';
 import { ReportRepository } from "@/modules/report-engine/report-repository";
 
 export const dynamic = 'force-dynamic';
@@ -29,12 +30,12 @@ async function getHandler(req: NextRequest) {
     let userId: string | undefined;
 
     if (!isInternal) {
-      const token = TokenService.getAccessToken(req, { scope: "user" });
+      const token = container.get(TokenService).getAccessToken(req, { scope: "user" });
       if (token === undefined || token === null || token === "") {
         throw unauthorized("Unauthorized");
       }
       
-      const payload = await TokenService.verifyAccessToken(token, false);
+      const payload = await container.get(TokenService).verifyAccessToken(token, false);
       userId = payload.userId;
     }
 

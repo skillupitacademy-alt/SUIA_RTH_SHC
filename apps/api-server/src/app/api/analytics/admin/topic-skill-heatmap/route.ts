@@ -9,6 +9,7 @@ import { redis } from "@/lib/redis";
 import { withLogging } from "@/lib/withLogging";
 import { CACHE_KEYS, CACHE_TTL } from "@/modules/analytics/analytics.constants";
 import { TokenService } from "@/modules/auth/token.service";
+import { container } from '@/modules/core/container';
 import { ResilienceService } from "@/modules/core/resilience.service";
 
 export const dynamic = "force-dynamic";
@@ -26,12 +27,12 @@ async function getHandler(req: NextRequest) {
       return ApiResponse.error(new Error("Analytics service is busy"), 503);
     }
 
-    const token = TokenService.getAccessToken(req, { scope: "admin" });
+    const token = container.get(TokenService).getAccessToken(req, { scope: "admin" });
     if (token === null || token === undefined || token === "") {
       throw unauthorized("Authentication required");
     }
 
-    const payload = await TokenService.verifyAccessToken(token, true);
+    const payload = await container.get(TokenService).verifyAccessToken(token, true);
     if (payload === null || payload === undefined) {
       throw unauthorized("Authentication required");
     }

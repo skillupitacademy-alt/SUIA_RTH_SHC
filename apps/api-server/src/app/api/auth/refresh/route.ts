@@ -6,6 +6,7 @@ import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sa
 import { withLogging } from '@/lib/withLogging';
 import { AuthService } from '@/modules/auth/auth.service';
 import { TokenService } from '@/modules/auth/token.service';
+import { container } from '@/modules/core/container';
 
 export const dynamic = 'force-dynamic';
 
@@ -40,8 +41,11 @@ async function handler(_req: NextRequest) {
     const body = sanitizeJsonField(rawBody) as RefreshRequest;
     const examId = typeof body?.examId === 'string' && body.examId !== '' ? body.examId : undefined;
 
-    const { accessToken, refreshToken: newRefreshToken } = await AuthService.refresh(tokenToUse, ip, examId, audience);
-    const expiresAt = TokenService.getExpiration(accessToken);
+    const authService = container.get(AuthService);
+    const tokenService = container.get(TokenService);
+
+    const { accessToken, refreshToken: newRefreshToken } = await authService.refresh(tokenToUse, ip, examId, audience);
+    const expiresAt = tokenService.getExpiration(accessToken);
 
     let maxAge = 15 * 60; 
     if (expiresAt !== null) {

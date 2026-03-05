@@ -8,16 +8,17 @@ import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sa
 import { withLogging } from '@/lib/withLogging';
 import { AdminEngine } from '@/modules/admin-engine/admin.engine';
 import { TokenService } from '@/modules/auth/token.service';
+import { container } from '@/modules/core/container';
 import { questionSchema } from '@/schemas/admin.schemas';
 
 export const dynamic = 'force-dynamic';
 
 async function _verifyAdmin(_req: NextRequest) {
-    const _token = TokenService.getAccessToken(_req, { scope: 'admin' });
+    const _token = container.get(TokenService).getAccessToken(_req, { scope: 'admin' });
     if (_token === undefined || _token === null || _token.trim() === '') {
         throw unauthorized('Unauthorized', 'UNAUTHORIZED');
     }
-    return await TokenService.verifyAccessToken(_token, true);
+    return await container.get(TokenService).verifyAccessToken(_token, true);
 }
 
 async function getHandler(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {

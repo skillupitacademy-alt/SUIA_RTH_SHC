@@ -1,6 +1,8 @@
 import { db, refreshTokens, roles, userProfiles, userRoles, users } from '@quiz/db';
 import { eq } from "drizzle-orm";
 
+import { container } from '@/modules/core/container';
+
 import { AuditService } from './audit.service';
 import { PasswordService } from './password.service';
 import { SecurityService } from './security.service';
@@ -11,8 +13,8 @@ export class AdminAuthService {
     const cleanEmail = email.trim();
 
     // 1. Check Lockout
-    if (await SecurityService.isAccountLocked(cleanEmail, ip)) {
-      await AuditService.log({ action: 'admin_login_locked', metadata: { email: cleanEmail }, ip });
+    if (await container.get(SecurityService).isAccountLocked(cleanEmail, ip)) {
+      await container.get(AuditService).log({ action: 'admin_login_locked', metadata: { email: cleanEmail }, ip });
       throw new Error('Account access restricted. Contact Governance.');
     }
 
@@ -31,18 +33,18 @@ export class AdminAuthService {
     .where(eq(users.email, cleanEmail));
     
     if (_usersWithRoles.length === 0) {
-      await SecurityService.trackLoginAttempt(ip, cleanEmail, false);
+      await container.get(SecurityService).trackLoginAttempt(ip, cleanEmail, false);
       throw new Error('Access Denied');
     }
 
     const user = _usersWithRoles[0];
 
     // 3. Validate Credentials
-    const isPasswordMatch = await PasswordService.compare(password, user.passwordHash);
+    const isPasswordMatch = await container.get(PasswordService).compare(password, user.passwordHash);
 
     if (isPasswordMatch === false) {
-      await SecurityService.trackLoginAttempt(ip, cleanEmail, false);
-      await AuditService.log({ action: 'admin_login_failed', metadata: { email: cleanEmail, reason: 'credentials' }, ip });
+      await container.get(SecurityService).trackLoginAttempt(ip, cleanEmail, false);
+      await container.get(AuditService).log({ action: 'admin_login_failed', metadata: { email: cleanEmail, reason: 'credentials' }, ip });
       throw new Error('Access Denied');
     }
 
@@ -50,23 +52,23 @@ export class AdminAuthService {
     const isAdmin = roleNames.includes('ADMIN') || roleNames.includes('SUPER_ADMIN') || roleNames.includes('INFRASTRUCTURE');
 
     if (isAdmin === false) {
-      await SecurityService.trackLoginAttempt(ip, cleanEmail, false);
-      await AuditService.log({ userId: user.id, action: 'admin_access_violation', metadata: { email: cleanEmail, role: roleNames }, ip });
+      await container.get(SecurityService).trackLoginAttempt(ip, cleanEmail, false);
+      await container.get(AuditService).log({ userId: user.id, action: 'admin_access_violation', metadata: { email: cleanEmail, role: roleNames }, ip });
       throw new Error('Unauthorized: Governance Privileges Required');
     }
 
     // Portal Defense: Ensure 'infra' audience is only granted to users with the INFRASTRUCTURE role
     if (requestedAudience === 'infra' && !roleNames.includes('INFRASTRUCTURE')) {
-        await AuditService.log({ userId: user.id, action: 'admin_audience_violation', metadata: { email: cleanEmail, requestedAud: requestedAudience }, ip });
+        await container.get(AuditService).log({ userId: user.id, action: 'admin_audience_violation', metadata: { email: cleanEmail, requestedAud: requestedAudience }, ip });
         throw new Error('Access Denied: Infrastructure privileges required for this portal');
     }
 
     // 5. Success
-    await SecurityService.trackLoginAttempt(ip, cleanEmail, true);
-    await AuditService.log({ userId: user.id, action: 'admin_login_success', ip });
+    await container.get(SecurityService).trackLoginAttempt(ip, cleanEmail, true);
+    await container.get(AuditService).log({ userId: user.id, action: 'admin_login_success', ip });
 
     // 6. Generate Admin-Scoped Tokens with Portal Identity
-    const accessToken = await TokenService.generateAccessToken({
+    const accessToken = await container.get(TokenService).generateAccessToken({
       userId: user.id,
       email: user.email,
       roles: roleNames,
@@ -74,8 +76,8 @@ export class AdminAuthService {
       aud: requestedAudience
     });
 
-    const refreshToken = await TokenService.generateRefreshToken(user.id, true, requestedAudience);
-    const refreshTokenHash = await TokenService.hashToken(refreshToken);
+    const refreshToken = await container.get(TokenService).generateRefreshToken(user.id, true, requestedAudience);
+    const refreshTokenHash = await container.get(TokenService).hashToken(refreshToken);
     const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours absolute limit
 
     await db.insert(refreshTokens).values({

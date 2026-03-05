@@ -8,6 +8,7 @@ import { recordCounter, recordTimer } from '@/lib/metrics';
 import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 import { withLogging } from '@/lib/withLogging';
 import { TokenService } from '@/modules/auth/token.service';
+import { container } from '@/modules/core/container';
 import { JobOrchestrator } from '@/modules/system/job-orchestrator';
 import { JobsService } from '@/modules/system/jobs.service';
 import { jobSchema } from '@/schemas/admin.schemas';
@@ -17,12 +18,12 @@ export const dynamic = 'force-dynamic';
 async function getHandler(_req: NextRequest) {
   const start = Date.now();
   try {
-    const _token = TokenService.getAccessToken(_req, { scope: 'admin' });
+    const _token = container.get(TokenService).getAccessToken(_req, { scope: 'admin' });
     if (_token === null || _token === undefined || _token.trim() === '') {
         return ApiResponse.error(unauthorized('Unauthorized'), 401);
     }
 
-    await TokenService.verifyAccessToken(_token, true);
+    await container.get(TokenService).verifyAccessToken(_token, true);
     
     const { searchParams } = new URL(_req.url);
     const status = searchParams.get('status') as JobStatus | undefined;
@@ -52,12 +53,12 @@ async function getHandler(_req: NextRequest) {
 async function postHandler(_req: NextRequest) {
   const start = Date.now();
   try {
-    const _token = TokenService.getAccessToken(_req, { scope: 'admin' });
+    const _token = container.get(TokenService).getAccessToken(_req, { scope: 'admin' });
     if (_token === null || _token === undefined || _token.trim() === '') {
         return ApiResponse.error(unauthorized('Unauthorized'), 401);
     }
 
-    const _payload = await TokenService.verifyAccessToken(_token, true);
+    const _payload = await container.get(TokenService).verifyAccessToken(_token, true);
     const rawBody = await _req.json().catch(() => null);
     if (rawBody === null || !validateJsonDepth(rawBody) || !validateJsonSize(rawBody)) {
       return ApiResponse.error(badRequest('Payload too deep or large'), 400);

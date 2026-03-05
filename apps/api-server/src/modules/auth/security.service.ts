@@ -4,20 +4,22 @@ import { and,eq } from 'drizzle-orm';
 const MAX_ATTEMPTS = 5;
 
 export class SecurityService {
-  static async trackLoginAttempt(ip: string, email: string, success: boolean) {
-    const _user = await db.query.users.findFirst({
+  constructor(private dbInstance = db) {}
+
+  async trackLoginAttempt(ip: string, email: string, success: boolean) {
+    const _user = await this.dbInstance.query.users.findFirst({
       where: eq(users.email, email),
     });
 
     if (_user === undefined) return;
 
     if (success === true) {
-      await db.delete(loginAttempts)
+      await this.dbInstance.delete(loginAttempts)
         .where(and(eq(loginAttempts.userId, _user.id), eq(loginAttempts.ip, ip)));
       return;
     }
 
-    const existing = await db.query.loginAttempts.findFirst({
+    const existing = await this.dbInstance.query.loginAttempts.findFirst({
       where: and(eq(loginAttempts.userId, _user.id), eq(loginAttempts.ip, ip)),
     });
 
@@ -34,7 +36,7 @@ export class SecurityService {
         ? new Date(Date.now() + lockoutMinutes * 60 * 1000) 
         : null;
 
-      await db.update(loginAttempts)
+      await this.dbInstance.update(loginAttempts)
         .set({ 
           attempts: newAttempts, 
           lockedUntil,
@@ -42,7 +44,7 @@ export class SecurityService {
         })
         .where(eq(loginAttempts.id, existing.id));
     } else {
-      await db.insert(loginAttempts).values({
+      await this.dbInstance.insert(loginAttempts).values({
         userId: _user.id,
         ip,
         attempts: 1,
@@ -50,14 +52,14 @@ export class SecurityService {
     }
   }
 
-  static async isAccountLocked(email: string, ip: string): Promise<boolean> {
-    const _user = await db.query.users.findFirst({
+  async isAccountLocked(email: string, ip: string): Promise<boolean> {
+    const _user = await this.dbInstance.query.users.findFirst({
       where: eq(users.email, email),
     });
 
     if (_user === undefined) return false;
 
-    const attempt = await db.query.loginAttempts.findFirst({
+    const attempt = await this.dbInstance.query.loginAttempts.findFirst({
       where: and(
         eq(loginAttempts.userId, _user.id),
         eq(loginAttempts.ip, ip)

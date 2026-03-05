@@ -9,6 +9,7 @@ import { logger } from '@/lib/logger';
 import { recordCounter, recordTimer } from '@/lib/metrics';
 import { withLogging } from '@/lib/withLogging';
 import { TokenService } from '@/modules/auth/token.service';
+import { container } from '@/modules/core/container';
 import { ReportEngine } from '@/modules/report-engine/report.engine';
 
 export const dynamic = 'force-dynamic';
@@ -58,12 +59,12 @@ async function getHandler(req: NextRequest) {
         return ApiResponse.success({ status: 'processing', message: 'Report is generating...' }, 202);
       }
     } else {
-      const token = TokenService.getAccessToken(req, { scope: 'user' });
+      const token = container.get(TokenService).getAccessToken(req, { scope: 'user' });
       if (token === undefined || token === null || token === '') {
         throw unauthorized('Unauthorized');
       }
       
-      const payload = await TokenService.verifyAccessToken(token, false);
+      const payload = await container.get(TokenService).verifyAccessToken(token, false);
       userId = payload.userId;
 
       if (id !== '') {

@@ -1,5 +1,7 @@
 import type { NextRequest } from 'next/server';
 
+import { container } from '@/modules/core/container';
+
 import { TokenService } from './token.service';
 
 type Audience = 'admin' | 'infra';
@@ -19,12 +21,12 @@ export function getAdminAudience(_req: NextRequest): Audience {
  */
 export async function verifyAdminOrInfraToken(_req: NextRequest, token?: string) {
   const expectedAud = getAdminAudience(_req);
-  const scopedToken = token ?? TokenService.getAccessToken(_req, { scope: 'admin' });
+  const scopedToken = token ?? container.get(TokenService).getAccessToken(_req, { scope: 'admin' });
 
   if (scopedToken === undefined || scopedToken === null || scopedToken.trim() === '') {
     throw new Error('Unauthorized');
   }
 
-  const payload = await TokenService.verifyAccessToken(scopedToken, { isAdmin: true, audience: expectedAud });
+  const payload = await container.get(TokenService).verifyAccessToken(scopedToken, { isAdmin: true, audience: expectedAud });
   return { payload, audience: expectedAud };
 }

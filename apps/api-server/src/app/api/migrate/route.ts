@@ -10,6 +10,7 @@ import { recordCounter, recordTimer } from "@/lib/metrics";
 import { withLogging } from "@/lib/withLogging";
 import { _verifyAdmin } from '@/modules/auth/rbac.service';
 import { TokenService } from '@/modules/auth/token.service';
+import { container } from '@/modules/core/container';
 
 async function getHandler(_request: NextRequest) {
   const start = Date.now();
@@ -24,10 +25,10 @@ async function getHandler(_request: NextRequest) {
       isAuthorized = true;
     } else {
       // 2. Fallback to Admin Authentication (Supports Cookie and Header)
-      const _token = TokenService.getAccessToken(_request, { scope: 'admin' });
+      const _token = container.get(TokenService).getAccessToken(_request, { scope: 'admin' });
       if (_token !== undefined && _token !== null && _token !== '') {
         try {
-          const _payload = await TokenService.verifyAccessToken(_token, true);
+          const _payload = await container.get(TokenService).verifyAccessToken(_token, true);
           isAuthorized = await _verifyAdmin(_payload);
         } catch {
           // Ignore _token errors, authorization remains false

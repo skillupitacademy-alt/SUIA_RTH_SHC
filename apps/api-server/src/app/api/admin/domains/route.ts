@@ -9,16 +9,17 @@ import { withLogging } from '@/lib/withLogging';
 import type { DomainInsert } from '@/modules/admin-engine/admin.engine';
 import { AdminEngine } from '@/modules/admin-engine/admin.engine';
 import { TokenService } from '@/modules/auth/token.service';
+import { container } from '@/modules/core/container';
 import { domainSchema } from '@/schemas/hierarchy.schemas';
 
 export const dynamic = 'force-dynamic';
 
 async function verifyAdmin(_req: NextRequest) {
-  const _token = TokenService.getAccessToken(_req, { scope: 'admin' });
+  const _token = container.get(TokenService).getAccessToken(_req, { scope: 'admin' });
   if (_token === undefined || _token === null || _token === '') {
     throw unauthorized('Unauthorized', 'UNAUTHORIZED');
   }
-  return await TokenService.verifyAccessToken(_token, true);
+  return await container.get(TokenService).verifyAccessToken(_token, true);
 }
 
 async function getHandler(_req: NextRequest) {

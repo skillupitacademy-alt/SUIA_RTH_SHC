@@ -12,6 +12,7 @@ import { uploadReport } from "@/lib/storage/upload-report";
 import { withLogging } from "@/lib/withLogging";
 import { TokenService } from "@/modules/auth/token.service";
 import { cacheService } from "@/modules/core/cache.service";
+import { container } from '@/modules/core/container';
 import { ReportPdfService } from "@/modules/report-engine/report-pdf.service";
 import { ReportRepository } from "@/modules/report-engine/report-repository";
 
@@ -62,10 +63,10 @@ async function postHandler(req: NextRequest) {
       if (examMatch === null || examMatch === undefined) throw badRequest("Exam not found");
       userId = examMatch.userId;
     } else {
-      const token = TokenService.getAccessToken(req, { scope: "user" });
+      const token = container.get(TokenService).getAccessToken(req, { scope: "user" });
       if (token === null || token === undefined || token === "") throw unauthorized("Unauthorized");
       
-      const payload = await TokenService.verifyAccessToken(token, false);
+      const payload = await container.get(TokenService).verifyAccessToken(token, false);
       if (payload === null || payload === undefined || payload.userId === null || payload.userId === undefined) {
         throw unauthorized("Unauthorized");
       }

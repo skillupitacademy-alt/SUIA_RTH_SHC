@@ -1,4 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
+import { container } from '@/modules/core/container';
 
 vi.mock('@quiz/db', () => {
   const exams = {};
@@ -17,6 +18,11 @@ vi.mock('@quiz/db', () => {
             .mockResolvedValueOnce(null),
         },
       },
+      select: vi.fn().mockReturnValue({
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockResolvedValue([{ id: 'existing-exam', userId: 'u1', status: 'started' }]),
+        }),
+      }),
       update: vi.fn().mockReturnValue({
         set: vi.fn().mockReturnValue({
           where: vi.fn().mockReturnValue({
@@ -32,17 +38,15 @@ vi.mock('@quiz/db', () => {
       transaction: vi.fn(async (cb) => cb({
         query: { exams: { findFirst: vi.fn().mockResolvedValue(null) } },
         update: vi.fn().mockReturnValue({ set: vi.fn().mockReturnValue({ where: vi.fn() }) }),
+        select: vi.fn().mockReturnValue({ from: vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue([]) }) }),
       })),
     },
     exams,
     idempotencyKeys,
     examQuestions: {},
+    eq: vi.fn(),
   };
 });
-
-vi.mock('@/modules/report-engine/performance.service', () => ({
-  PerformanceService: { invalidateCache: vi.fn().mockResolvedValue(undefined) },
-}));
 
 vi.mock('@/modules/core/cache.service', () => ({
   cacheService: {
@@ -67,7 +71,10 @@ vi.mock('@/modules/system/jobs.service', () => ({
 describe('ExamEngine completeExam tails (idempotency & flush catch)', () => {
   it('reuses existing idempotency key (lines 301-309) and returns processing', async () => {
     const { ExamEngine } = await import('../exam.engine');
-    const res = await ExamEngine.completeExam('e1', 'u1', 'dup-key');
+    const { PerformanceService } = await import('@/modules/report-engine/performance.service');
+    vi.spyOn(PerformanceService.prototype, 'invalidateCache').mockResolvedValue(undefined as any);
+    container.reset();
+    const res = await container.get(ExamEngine).completeExam('e1', 'u1', 'dup-key');
     expect(res.examId).toBe('existing-exam');
     expect(res.jobId).toBe('job-1');
     expect(res.status).toBe('processing');

@@ -10,6 +10,7 @@ import { recordCounter, recordTimer } from "@/lib/metrics";
 import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from "@/lib/sanitize";
 import { withLogging } from "@/lib/withLogging";
 import { TokenService } from "@/modules/auth/token.service";
+import { container } from '@/modules/core/container';
 
 interface DuplicateCheckPayload {
   questions: { questionText: string }[];
@@ -19,13 +20,13 @@ interface DuplicateCheckPayload {
 async function postHandler(req: NextRequest) {
   const start = Date.now();
   try {
-    const token = TokenService.getAccessToken(req, { scope: 'admin' });
+    const token = container.get(TokenService).getAccessToken(req, { scope: 'admin' });
     if (token === null || token === undefined || token === '') {
       recordCounter(METRICS.AUTH.FAILURE, 1, { scope: 'admin', reason: 'unauthorized' });
       throw unauthorized("Authentication required");
     }
 
-    const payload = await TokenService.verifyAccessToken(token, true);
+    const payload = await container.get(TokenService).verifyAccessToken(token, true);
     if (payload === null || payload === undefined) {
       recordCounter(METRICS.AUTH.FAILURE, 1, { scope: 'admin', reason: 'unauthorized' });
       throw unauthorized("Authentication required");

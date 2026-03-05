@@ -7,9 +7,13 @@ export interface Exam {
   id: string;
   userId: string;
   blueprintId: string | null;
-  status: string;
+  status: "started" | "processing" | "completed" | "abandoned" | "failed";
   durationSeconds: number | null;
   totalScore: number;
+  startedAt: Date;
+  lastAnsweredAt: Date | null;
+  completedAt: Date | null;
+  reportMaterialized: unknown;
 }
 
 export class ExamRepository extends BaseRepository<Exam, typeof exams> {
@@ -42,7 +46,7 @@ export class ExamRepository extends BaseRepository<Exam, typeof exams> {
       .where(eq(exams.id, id));
   }
 
-  async updateStatus(id: string, status: string) {
+  async updateStatus(id: string, status: "started" | "processing" | "completed" | "abandoned" | "failed") {
     return await this.dbInstance.update(exams)
       .set({ status })
       .where(and(eq(exams.id, id), eq(exams.status, 'started')))

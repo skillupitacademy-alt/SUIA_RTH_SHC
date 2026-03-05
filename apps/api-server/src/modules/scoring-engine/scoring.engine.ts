@@ -2,6 +2,7 @@ import { db, exams, resultsByDimension } from '@quiz/db';
 import { eq } from 'drizzle-orm';
 
 import { logger } from '@/lib/logger';
+import { container } from '@/modules/core/container';
 
 import { PerformanceService } from '../report-engine/performance.service';
 import { ReportEngine } from '../report-engine/report.engine';
@@ -14,7 +15,7 @@ export class ScoringEngine {
 
   static async calculateExamResults(examId: string) {
     // Phase 1: Invalidate existing cache before re-computing
-    await PerformanceService.invalidateCache(examId);
+    await container.get(PerformanceService).invalidateCache(examId);
 
     try {
       const exam = await db.query.exams.findFirst({
@@ -125,13 +126,13 @@ export class ScoringEngine {
 
       // Phase 1: Refresh Materialized Views and Prime Cache (Non-blocking but awaited for consistency here)
       try {
-        await PerformanceService.refreshAnalytics();
+        await container.get(PerformanceService).refreshAnalytics();
 
         // Hierarchical Materialization (Phase 1 of Roadmap)
         const { ReportMaterializer } = await import('../../services/reports/ReportMaterializer');
         await ReportMaterializer.materialize(examId);
         const reportData = await ReportEngine.getPremiumExamReport(examId);
-        await PerformanceService.cacheReport(examId, reportData);
+        await container.get(PerformanceService).cacheReport(examId, reportData);
         ScoringEngine.log.info({ examId }, 'Phase 1: Analytics refreshed and cache primed');
 
         // Trigger PDF Generation (Background)

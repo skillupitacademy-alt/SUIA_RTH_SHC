@@ -7,16 +7,17 @@ import { recordCounter, recordTimer } from '@/lib/metrics';
 import { withLogging } from '@/lib/withLogging';
 import { AdminEngine } from '@/modules/admin-engine/admin.engine';
 import { TokenService } from '@/modules/auth/token.service';
+import { container } from '@/modules/core/container';
 
 export const dynamic = 'force-dynamic';
 
 async function handler(_req: NextRequest) {
   const startTime = Date.now();
   try {
-    const _token = TokenService.getAccessToken(_req, { scope: 'admin' });
+    const _token = container.get(TokenService).getAccessToken(_req, { scope: 'admin' });
     if (_token === null || _token === undefined || _token.trim() === '') return ApiResponse.error(unauthorized('Unauthorized'), 401);
 
-    await TokenService.verifyAccessToken(_token, true); // true for isAdmin check
+    await container.get(TokenService).verifyAccessToken(_token, true); // true for isAdmin check
     
     const metrics = await AdminEngine.getPlatformMetrics();
     

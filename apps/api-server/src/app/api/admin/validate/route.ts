@@ -7,6 +7,7 @@ import { recordCounter, recordTimer } from '@/lib/metrics';
 import { withLogging } from '@/lib/withLogging';
 import { AdminEngine } from '@/modules/admin-engine/admin.engine';
 import { TokenService } from '@/modules/auth/token.service';
+import { container } from '@/modules/core/container';
 import { validateTopicSchema } from '@/schemas/admin.schemas';
 
 export const dynamic = 'force-dynamic';
@@ -14,10 +15,10 @@ export const dynamic = 'force-dynamic';
 type ValidateBody = { topicId: string };
 
 async function _verifyAdmin(_req: NextRequest) {
-  const _token = TokenService.getAccessToken(_req, { scope: 'admin' });
+  const _token = container.get(TokenService).getAccessToken(_req, { scope: 'admin' });
   if (_token === null || _token === undefined || _token.trim() === '') return null;
   try {
-     const _payload = await TokenService.verifyAccessToken(_token, true);
+     const _payload = await container.get(TokenService).verifyAccessToken(_token, true);
      return _payload;
   } catch {
      return null;

@@ -5,9 +5,9 @@ import { ScoringEngine } from '@/modules/scoring-engine/scoring.engine';
 import { SelectionService } from '@/modules/selection-engine/selection.service';
 import { cacheService } from '@/modules/core/cache.service';
 import { PerformanceService } from '@/modules/report-engine/performance.service';
+import { container } from '@/modules/core/container';
 
 vi.mock('@/modules/core/cache.service');
-vi.mock('@/modules/report-engine/performance.service');
 vi.mock('@quiz/db', () => ({
     db: {
         transaction: vi.fn(async (fn) => fn({ 
@@ -17,13 +17,15 @@ vi.mock('@quiz/db', () => ({
                 examBlueprints: { findFirst: vi.fn() }
             },
             insert: vi.fn().mockReturnValue({ values: vi.fn().mockReturnThis(), returning: vi.fn().mockResolvedValue([{ id: 'exam-id' }]), catch: vi.fn() }),
-            update: vi.fn().mockReturnValue({ set: vi.fn().mockReturnThis(), where: vi.fn().mockReturnThis(), returning: vi.fn().mockResolvedValue([{ id: 'exam-id' }]), catch: vi.fn() })
+            update: vi.fn().mockReturnValue({ set: vi.fn().mockReturnThis(), where: vi.fn().mockReturnThis(), returning: vi.fn().mockResolvedValue([{ id: 'exam-id' }]), catch: vi.fn() }),
+            select: vi.fn().mockReturnValue({ from: vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue([{ id: 'exam-id', userId: 'u1', status: 'started' }]) }) })
         })),
         query: {
             exams: { findFirst: vi.fn() },
             idempotencyKeys: { findFirst: vi.fn() },
             examBlueprints: { findFirst: vi.fn() }
         },
+        select: vi.fn().mockReturnValue({ from: vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue([{ id: 'exam-id', userId: 'u1', status: 'started' }]) }) }),
         update: vi.fn().mockReturnValue({ set: vi.fn().mockReturnThis(), where: vi.fn().mockReturnThis(), returning: vi.fn().mockResolvedValue([{ id: 'exam-id' }]), catch: vi.fn() })
     },
     exams: { id: 'id', status: 'status', userId: 'userId', startedAt: '2024-01-01' },
@@ -32,12 +34,14 @@ vi.mock('@quiz/db', () => ({
     examBlueprints: { id: 'bid' },
     subjects: { id: 'sid' },
     topics: { id: 'tid' },
-    subtopics: { id: 'stid' }
+    subtopics: { id: 'stid' },
+    eq: vi.fn()
 }));
 
 describe('Engines & Selection branch coverage', () => {
     beforeEach(() => {
         vi.clearAllMocks();
+        container.reset();
     });
 
     it('ExamEngine.handleRaceCondition recovery (Lines 145-187)', async () => {
@@ -48,22 +52,25 @@ describe('Engines & Selection branch coverage', () => {
             examQuestions: [{ question: { id: 'q1', type: 'mcq' }, order: 1 }]
         } as any);
 
-        const result = await (ExamEngine as any).handleRaceCondition('u1', 'idem1');
+        const result = await (container.get(ExamEngine) as any).handleRaceCondition('u1', 'idem1');
         expect(result.examId).toBe('e1');
     });
 
     it('ExamEngine.getAndCacheActiveExam session not found (Line 248)', async () => {
         vi.mocked(cacheService.get).mockResolvedValue(null);
         vi.mocked(db.query.exams.findFirst).mockResolvedValue(undefined);
-        await expect((ExamEngine as any).getAndCacheActiveExam('u1', 'e-missing')).rejects.toThrow('Session not found');
+        await expect((container.get(ExamEngine) as any).getAndCacheActiveExam('u1', 'e-missing')).rejects.toThrow('Session not found');
     });
 
     it('ExamEngine.completeExam idempotency resume (Lines 301-309)', async () => {
         vi.mocked(db.query.idempotencyKeys.findFirst).mockResolvedValue({ examId: 'e-existing' } as any);
-        // Both calls (top-level and potentially others) should resolve
-        vi.mocked(db.query.exams.findFirst).mockResolvedValue({ id: 'e-existing', status: 'completed', userId: 'u1' } as any);
-        
-        const result = await ExamEngine.completeExam('new-e', 'u1', 'submit-idem');
+        // Mock findById - called via ExamRepository which uses db.select().from().where()
+        vi.mocked(db.select).mockReturnValue({ from: vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue([{ id: 'e-existing', status: 'completed', userId: 'u1' }]) }) } as any);
+
+        vi.spyOn(PerformanceService.prototype, 'invalidateCache').mockResolvedValue(undefined as any);
+
+        const engine = container.get(ExamEngine);
+        const result = await engine.completeExam('new-e', 'u1', 'submit-idem');
         expect(result.examId).toBe('e-existing');
     });
 
@@ -78,7 +85,7 @@ describe('Engines & Selection branch coverage', () => {
         // Mock the DB lookup that happens after cache fail
         (db.query.examBlueprints as any) = { findFirst: vi.fn().mockResolvedValue({ id: 'b1' }) };
         
-        await (SelectionService as any).resolveBlueprint('u1', 'b1');
+        await (container.get(SelectionService) as any).resolveBlueprint('u1', 'b1');
         expect(cacheService.get).toHaveBeenCalled();
     });
 });

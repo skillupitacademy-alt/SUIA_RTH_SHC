@@ -7,6 +7,7 @@ import { recordCounter, recordTimer } from '@/lib/metrics';
 import { withLogging } from '@/lib/withLogging';
 import { AdminEngine } from '@/modules/admin-engine/admin.engine';
 import { TokenService } from '@/modules/auth/token.service';
+import { container } from '@/modules/core/container';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,11 +16,11 @@ const log = logger.child({ module: 'admin:users' });
 async function getHandler(_req: NextRequest) {
     const start = Date.now();
   try {
-    const _token = TokenService.getAccessToken(_req, { scope: 'admin' });
+    const _token = container.get(TokenService).getAccessToken(_req, { scope: 'admin' });
     if (_token === undefined || _token === null || _token === '') {
       throw unauthorized('Unauthorized', 'UNAUTHORIZED');
     }
-    await TokenService.verifyAccessToken(_token, true);
+    await container.get(TokenService).verifyAccessToken(_token, true);
     
     const searchParams = _req.nextUrl.searchParams;
     const page = parseInt(searchParams.get('page') ?? '1');

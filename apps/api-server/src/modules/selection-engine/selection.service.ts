@@ -2,7 +2,6 @@ import { db, examBlueprints, questions, subjects as subjectsTable, subtopics, to
 import crypto from 'crypto';
 import type { InferSelectModel } from 'drizzle-orm';
 import { and, asc, eq, gte, inArray, notInArray, or, sql } from 'drizzle-orm';
-import { performance } from 'perf_hooks';
 
 import { logger } from '@/lib/logger';
 import { cacheService } from '@/modules/core/cache.service';
@@ -30,12 +29,12 @@ interface SelectionConfig {
 }
 
 export class SelectionService {
-  private static log = logger.child({ module: 'selection-engine' });
+  private log = logger.child({ module: 'selection-engine' });
 
   /**
    * Generates a set of deterministic UUID anchors based on a seed.
    */
-  private static generateDeterministicUUIDs(seed: string, count: number): string[] {
+  private generateDeterministicUUIDs(seed: string, count: number): string[] {
     const anchors: string[] = [];
     let currentSeed = seed;
     for (let i = 0; i < count; i++) {
@@ -50,7 +49,7 @@ export class SelectionService {
   /**
    * Selection logic: Scalable, deterministic keyset sampling.
    */
-  static async composeExam(
+  async composeExam(
     userId: string, 
     blueprintOrDomainId: string, 
     idempotencyKey: string,
@@ -64,8 +63,6 @@ export class SelectionService {
       difficulty?: string 
     }
   ) {
-    const _totalSelectionStart = performance.now();
-
     // 1. Resolve Blueprint
     const blueprint = await this.resolveBlueprint(userId, blueprintOrDomainId, config);
 
@@ -80,20 +77,17 @@ export class SelectionService {
     // 3. Dynamic Selection
     const selectedQuestions = await this.executeDynamicSelection(userId, blueprintOrDomainId, idempotencyKey, criteria, blueprint);
 
-    // Performance logging disabled
-    // console.log(`[Selection] Total selection time: ${(performance.now() - _totalSelectionStart).toFixed(2)}ms | Questions: ${selectedQuestions.length}`);
-
     return { questions: selectedQuestions, blueprint };
   }
 
-  private static async resolveBlueprint(userId: string,  blueprintOrDomainId: string, config?: SelectionConfig): Promise<Blueprint> {
+  private async resolveBlueprint(userId: string,  blueprintOrDomainId: string, config?: SelectionConfig): Promise<Blueprint> {
      const blueprintCacheKey = `blueprint:${blueprintOrDomainId}`;
      let blueprint: Blueprint | null = null;
 
     try {
       blueprint = await cacheService.get(blueprintCacheKey);
     } catch (e) {
-      SelectionService.log.warn(
+      this.log.warn(
         { error: e instanceof Error ? e.message : 'unknown error' },
         'Cache lookup failed when resolving blueprint',
       );
@@ -116,7 +110,7 @@ export class SelectionService {
         try {
           await cacheService.set(blueprintCacheKey, blueprint, 1000 * 60 * 10);
         } catch (e) {
-          SelectionService.log.warn(
+          this.log.warn(
             { error: e instanceof Error ? e.message : 'unknown error' },
             'Cache storage failed when caching blueprint',
           );
@@ -150,7 +144,7 @@ export class SelectionService {
     return blueprint;
   }
 
-  private static async fetchStaticQuestions(blueprint: Blueprint) {
+  private async fetchStaticQuestions(blueprint: Blueprint) {
       const staticQuestions = await db.query.questions.findMany({
         where: and(
           inArray(questions.id, blueprint.questionIds as string[]),
@@ -165,7 +159,7 @@ export class SelectionService {
       return { questions: staticQuestions, blueprint };
   }
 
-  private static async resolveSelectionCriteria(domainId: string, config: SelectionConfig, blueprint: Blueprint): Promise<SelectionCriteria> {
+  private async resolveSelectionCriteria(domainId: string, config: SelectionConfig, blueprint: Blueprint): Promise<SelectionCriteria> {
     if (!domainId) {
        throw new Error('Selection criteria (Domain, Subject, Topic or Subtopic) required to compose an exam.');
     }
@@ -183,10 +177,31 @@ export class SelectionService {
     const finalSubjectIds = configSubjectIds ?? (subjectId !== undefined ? [subjectId] : blueprint.subjects) ?? [];
     const finalTopicIds = configTopicIds ?? legacyTopicIds ?? blueprint.topics ?? [];
     const finalSubtopicIds = subtopicIds.length > 0 ? subtopicIds : (blueprint.subtopics ?? []);
+
+    // Task 59: Apply depth-based configuration rules
+    // IF till topics -> Difficulty is Simple, 10 Questions
+    // If till Sub topics -> Difficulty is Mixed, 10 Questions
+    let autoDifficulty = difficulty;
+    let autoCount = questionCount;
+
+    const hasDifficulty = autoDifficulty !== undefined && autoDifficulty !== null && autoDifficulty !== '';
+    const hasCount = autoCount !== undefined && autoCount !== null;
+
+    if (!hasDifficulty || !hasCount) {
+        if (finalSubtopicIds.length > 0) {
+            if (!hasDifficulty) autoDifficulty = 'mixed';
+            if (!hasCount) autoCount = 10;
+        } else if (finalTopicIds.length > 0) {
+            if (!hasDifficulty) autoDifficulty = 'simple';
+            if (!hasCount) autoCount = 10;
+        }
+    }
+
+    // Final fallback to blueprint/global defaults
+    autoDifficulty = autoDifficulty ?? 'mixed';
+    autoCount = autoCount ?? blueprint.totalQuestions ?? 10;
     
     // Resolve Exclusions (Parents of selected children should not be blindly included to avoid double dipping or broad scope)
-    // Actually, in the original logic, we filtered out parents if specific children were selected.
-    
     const selectedTopicParents: string[] = finalSubtopicIds.length > 0 
         ? (await db.select({ topicId: subtopics.topicId })
                   .from(subtopics)
@@ -210,12 +225,12 @@ export class SelectionService {
         finalSubtopicIds,
         actualTopicIds,
         actualSubjectIds,
-        requestedTotal: questionCount ?? blueprint.totalQuestions ?? 10,
-        difficultyPref: difficulty ?? 'mixed'
+        requestedTotal: autoCount,
+        difficultyPref: autoDifficulty ?? 'mixed'
     };
   }
 
-  private static async executeDynamicSelection(
+  private async executeDynamicSelection(
     userId: string, 
     domainId: string,
     idempotencyKey: string,
@@ -227,8 +242,6 @@ export class SelectionService {
       const selectedIds = new Set<string>();
 
       const fetchFromPool = async (diffs: string[], count: number) => {
-        const poolCountStart = performance.now();
-        
         const subtopicCond = finalSubtopicIds.length > 0 ? inArray(questions.subtopicId, finalSubtopicIds) : null;
         const topicCond = actualTopicIds.length > 0 ? inArray(questions.topicId, actualTopicIds) : null;
         
@@ -261,8 +274,6 @@ export class SelectionService {
           .from(questions)
           .where(baseFilters);
 
-        const _pool_count_ms = performance.now() - poolCountStart;
-
         if (totalInPool === 0) return [];
 
         // 2. Deterministic Seeding
@@ -275,7 +286,6 @@ export class SelectionService {
         const masterSeed = crypto.createHash('sha256').update(seedSource).digest('hex');
 
         // 3. Jump-and-Sample Loop
-        const _sampleFetchStart = performance.now();
         const anchors = this.generateDeterministicUUIDs(masterSeed, count * 2);
         const candidates: Question[] = [];
 
@@ -306,7 +316,6 @@ export class SelectionService {
           }
         }
 
-        // console.log(`[Selection] Pool: ${diffs[0]} | Count: ${totalInPool} | pool_count_ms: ${pool_count_ms.toFixed(2)} | sample_fetch_ms: ${(performance.now() - sampleFetchStart).toFixed(2)}`);
         return candidates;
       };
 

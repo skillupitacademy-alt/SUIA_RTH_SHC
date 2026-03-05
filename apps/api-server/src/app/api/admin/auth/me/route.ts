@@ -8,6 +8,7 @@ import { ApiResponse } from '@/lib/api-response';
 import { recordCounter, recordTimer } from '@/lib/metrics';
 import { withLogging } from '@/lib/withLogging';
 import { TokenService } from '@/modules/auth/token.service';
+import { container } from '@/modules/core/container';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,12 +19,12 @@ async function handler(_req: NextRequest) {
     const scope = portalIdentity === 'infrastructure' ? 'infrastructure' : 'admin';
     const audience = portalIdentity === 'infrastructure' ? 'infra' : 'admin';
 
-    const _token = TokenService.getAccessToken(_req, { scope });
+    const _token = container.get(TokenService).getAccessToken(_req, { scope });
     if (_token === null || _token === undefined || _token.trim() === '') {
         return ApiResponse.error(unauthorized('Unauthorized'), 401);
     }
 
-    const _payload = await TokenService.verifyAccessToken(_token, { isAdmin: true, audience });
+    const _payload = await container.get(TokenService).verifyAccessToken(_token, { isAdmin: true, audience });
     const _user = await db.query.users.findFirst({
       where: eq(users.id, _payload.userId),
       with: {
@@ -55,7 +56,7 @@ async function handler(_req: NextRequest) {
         role,
         isAdmin
       },
-      expiresAt: TokenService.getExpiration(_token)
+      expiresAt: container.get(TokenService).getExpiration(_token)
     });
   } catch (_error: unknown) {
     const message = _error instanceof Error ? _error.message : 'Unauthorized';

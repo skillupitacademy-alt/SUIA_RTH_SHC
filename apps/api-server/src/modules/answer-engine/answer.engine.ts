@@ -4,7 +4,7 @@ export class AnswerEvaluationEngine {
   /**
    * Strategy-based evaluation for various question types.
    */
-  static evaluate(type: 'mcq' | 'code_mcq' | string, correctAnswer: string, userAnswer: string): boolean {
+  evaluate(type: 'mcq' | 'code_mcq' | string, correctAnswer: string, userAnswer: string): boolean {
     if (!userAnswer) return false;
 
     const evaluator = getEvaluator(type);
@@ -14,7 +14,7 @@ export class AnswerEvaluationEngine {
   /**
    * Placeholder for Partial Scoring logic. (To be refactored next)
    */
-  static calculatePartialScore(_type: string, _options: unknown, _selection: unknown): number {
+  calculatePartialScore(_type: string, _options: unknown, _selection: unknown): number {
     // Future implementation for Multi-Select MCQs
     return 0;
   }

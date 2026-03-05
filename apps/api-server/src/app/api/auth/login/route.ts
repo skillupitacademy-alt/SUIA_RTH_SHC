@@ -7,6 +7,7 @@ import { recordCounter, recordTimer } from '@/lib/metrics';
 import { withLogging } from '@/lib/withLogging';
 import { AuthService } from '@/modules/auth/auth.service';
 import { setCsrfToken } from '@/modules/auth/csrf.middleware';
+import { container } from '@/modules/core/container';
 import { loginSchema } from '@/schemas/auth.schemas';
 
 export const dynamic = 'force-dynamic';
@@ -22,7 +23,7 @@ async function handler(req: NextRequest) {
     }
     const { email, password } = parsed.data;
 
-    const { _user, accessToken, refreshToken, isAdmin } = await AuthService.login(email, password);
+    const { _user, accessToken, refreshToken, isAdmin } = await container.get(AuthService).login(email, password);
 
     recordCounter(METRICS.AUTH.LOGIN, 1, { role: isAdmin ? 'admin' : 'user' });
 

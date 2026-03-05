@@ -9,15 +9,16 @@ import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from "@/lib/sa
 import { withLogging } from "@/lib/withLogging";
 import { AdaptiveTutorService } from "@/modules/adaptive-engine/adaptive-tutor.service";
 import { TokenService } from "@/modules/auth/token.service";
+import { container } from '@/modules/core/container';
 
 async function postHandler(req: NextRequest) {
   const start = Date.now();
   try {
-    const token = TokenService.getAccessToken(req, { scope: "user" });
+    const token = container.get(TokenService).getAccessToken(req, { scope: "user" });
     if (token === null || token === undefined || token === "") {
       throw unauthorized("Unauthorized", "UNAUTHORIZED");
     }
-    const payload = await TokenService.verifyAccessToken(token, false);
+    const payload = await container.get(TokenService).verifyAccessToken(token, false);
     if (payload === null || payload === undefined || payload.userId === null || payload.userId === undefined) {
       throw unauthorized("Authentication required", "UNAUTHORIZED");
     }

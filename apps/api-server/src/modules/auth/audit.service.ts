@@ -11,11 +11,13 @@ export interface AuditLogEntry {
 }
 
 export class AuditService {
-  static async log(entry: AuditLogEntry) {
-    const auditLogger = logger.child({ module: 'auth:audit' });
+  private logInstance = logger.child({ module: 'auth:audit' });
 
+  constructor(private dbInstance = db) {}
+
+  async log(entry: AuditLogEntry) {
     try {
-      await db.insert(auditLogs).values({
+      await this.dbInstance.insert(auditLogs).values({
         userId: entry.userId,
         action: entry.action,
         ip: entry.ip,
@@ -24,7 +26,7 @@ export class AuditService {
       });
     } catch (_error: unknown) {
       // Do not block primary flows if audit logging fails.
-      auditLogger.error(
+      this.logInstance.error(
         {
           error: _error instanceof Error ? _error.message : 'unknown error',
         },

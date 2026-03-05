@@ -3,6 +3,7 @@ import { type NextRequest, NextResponse } from 'next/server';
 import { logger } from '@/lib/logger';
 import { TokenService } from '@/modules/auth/token.service';
 import { cacheService } from '@/modules/core/cache.service';
+import { container } from '@/modules/core/container';
 
 const WINDOW_MS = 15 * 60 * 1000;
 
@@ -31,12 +32,12 @@ export async function rateLimit(_request: NextRequest) {
     scope = 'user';
   }
 
-  const _token = scope ? TokenService.getAccessToken(_request, { scope }) : undefined;
+  const _token = scope ? container.get(TokenService).getAccessToken(_request, { scope }) : undefined;
   let userId: string | null = null;
   
   if (_token !== undefined && _token !== null && scope !== undefined) {
     try {
-      const _payload = await TokenService.verifyAccessToken(_token, scope === 'admin');
+      const _payload = await container.get(TokenService).verifyAccessToken(_token, scope === 'admin');
       userId = _payload.userId;
     } catch {
       // Invalid _token, ignore _user-based limit

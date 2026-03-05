@@ -1,16 +1,16 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
-import { db } from '@quiz/db';
 import { ExamEngine } from '../exam.engine';
+import { ExamRepository } from '../repositories/exam.repository';
 import { SelectionService } from '@/modules/selection-engine/selection.service';
+import { PerformanceService } from '@/modules/report-engine/performance.service';
+import { AnswerEvaluationEngine } from '@/modules/answer-engine/answer.engine';
 import { cacheService } from '@/modules/core/cache.service';
 import { JobsService } from '@/modules/system/jobs.service';
-import { AnswerEvaluationEngine } from '@/modules/answer-engine/answer.engine';
 import { JobOrchestrator } from '@/modules/system/job-orchestrator';
+import { container } from '@/modules/core/container';
 
-vi.mock('@/modules/selection-engine/selection.service');
 vi.mock('@/modules/core/cache.service');
 vi.mock('@/modules/system/jobs.service');
-vi.mock('@/modules/answer-engine/answer.engine');
 vi.mock('@/modules/system/job-orchestrator');
 vi.mock('@/lib/logger');
 
@@ -27,51 +27,31 @@ describe('ExamEngine', () => {
 
   beforeEach(() => {
     vi.resetAllMocks();
-    
-    // Ensure nested objects exist on the mocked db.query from setup.ts
-    if (!(db.query as any).idempotencyKeys) (db.query as any).idempotencyKeys = { findFirst: vi.fn() };
-    if (!(db.query as any).exams) (db.query as any).exams = { findFirst: vi.fn() };
-
-    const mockInsert = vi.fn().mockReturnValue({
-        values: vi.fn().mockReturnThis(),
-        returning: vi.fn().mockResolvedValue([{ id: 'new' }])
-    });
-    const mockUpdate = vi.fn().mockReturnValue({
-        set: vi.fn().mockReturnThis(),
-        where: vi.fn().mockReturnValue({
-            returning: vi.fn().mockResolvedValue([{ id: 'updated' }])
-        })
-    });
+    container.reset();
     (cacheService as any).set = vi.fn().mockResolvedValue(undefined);
     (cacheService as any).get = vi.fn().mockResolvedValue(null);
-
-    (db.transaction as any) = vi.fn(async (fn: any) => {
-      const tx = { query: db.query, insert: mockInsert, update: mockUpdate };
-      return fn(tx as any);
-    });
-    
-    db.insert = mockInsert as any;
-    db.update = mockUpdate as any;
   });
 
   describe('startExam', () => {
     it('resumes existing session', async () => {
-      (vi.spyOn(db.query.idempotencyKeys, 'findFirst') as any).mockResolvedValue({ examId: 'e1' } as any);
-      (vi.spyOn(db.query.exams, 'findFirst') as any).mockResolvedValue(mockExam as any);
+      vi.spyOn(ExamRepository.prototype, 'checkIdempotency').mockResolvedValue({ examId: 'e1' } as any);
+      vi.spyOn(ExamRepository.prototype, 'findByIdWithQuestions').mockResolvedValue(mockExam as any);
 
-      const result = await ExamEngine.startExam('u1', 'b1', 'idem-1');
+      const result = await container.get(ExamEngine).startExam('u1', 'b1', 'idem-1');
       expect(result.examId).toBe('e1');
     });
 
     it('creates new exam', async () => {
-      (vi.spyOn(db.query.idempotencyKeys, 'findFirst') as any).mockResolvedValue(undefined);
-      (vi.spyOn(db.query.exams, 'findFirst') as any).mockResolvedValue(undefined);
-      vi.mocked(SelectionService.composeExam).mockResolvedValue({
-        questions: [{ id: 'q1', type: 'mcq' }],
+      vi.spyOn(ExamRepository.prototype, 'checkIdempotency').mockResolvedValue(undefined as any);
+      vi.spyOn(SelectionService.prototype, 'composeExam').mockResolvedValue({
+        questions: [{ id: 'q1', type: 'mcq', questionText: 'Q?', options: {}, codeSnippet: null }],
         blueprint: { id: 'b1', timeLimit: 60 }
       } as any);
+      vi.spyOn(ExamRepository.prototype, 'createExamWithQuestions').mockResolvedValue({
+        id: 'new', status: 'started', durationSeconds: 3600
+      } as any);
 
-      const result = await ExamEngine.startExam('u1', 'b1', 'idem-2');
+      const result = await container.get(ExamEngine).startExam('u1', 'b1', 'idem-2');
       expect(result.examId).toBe('new');
     });
   });
@@ -84,39 +64,44 @@ describe('ExamEngine', () => {
         startedAt: new Date(Date.now() - 10000000).toISOString(),
         durationSeconds: 10
       };
-      (vi.spyOn(db.query.exams, 'findFirst') as any).mockResolvedValue(expiredExam as any);
+      vi.spyOn(ExamRepository.prototype, 'findByIdWithBlueprint').mockResolvedValue(expiredExam as any);
 
-      await expect(ExamEngine.submitAnswer('e1', 'q1', 'ans', 'u1')).rejects.toThrow('Time limit exceeded');
+      await expect(container.get(ExamEngine).submitAnswer('e1', 'q1', 'ans', 'u1')).rejects.toThrow('Time limit exceeded');
     });
 
     it('stages answer in Redis', async () => {
       vi.mocked(cacheService.get).mockResolvedValue(null);
-      (vi.spyOn(db.query.exams, 'findFirst') as any).mockResolvedValue(mockExam as any);
+      vi.spyOn(ExamRepository.prototype, 'findByIdWithBlueprint').mockResolvedValue(mockExam as any);
+      vi.spyOn(ExamRepository.prototype, 'updateLastAnswered').mockResolvedValue(undefined as any);
 
-      await ExamEngine.submitAnswer('e1', 'q1', 'ans', 'u1');
+      await container.get(ExamEngine).submitAnswer('e1', 'q1', 'ans', 'u1');
       expect(cacheService.set).toHaveBeenCalled();
     });
   });
 
   describe('completeExam', () => {
     it('flushes answers and creates job', async () => {
-      // completeExam calls findFirst at least twice
-      (vi.spyOn(db.query.exams, 'findFirst') as any)
-        .mockResolvedValueOnce(mockExam as any) // Status check
-        .mockResolvedValueOnce({               // Flush join
-          ...mockExam,
-          examQuestions: [{ 
-            id: 'eq1', 
-            questionId: 'q1', 
-            question: { type: 'mcq', correctAnswer: 'A' } 
-          }]
-        } as any);
+      vi.spyOn(PerformanceService.prototype, 'invalidateCache').mockResolvedValue(undefined as any);
+      vi.spyOn(ExamRepository.prototype, 'checkIdempotency').mockResolvedValue(null as any);
+      vi.spyOn(ExamRepository.prototype, 'findById').mockResolvedValue(mockExam as any);
+      vi.spyOn(ExamRepository.prototype, 'updateStatus').mockResolvedValue([{ id: 'e1' }] as any);
+      vi.spyOn(ExamRepository.prototype, 'findByIdWithQuestions').mockResolvedValue({
+        ...mockExam,
+        examQuestions: [{ 
+          id: 'eq1', 
+          questionId: 'q1', 
+          question: { type: 'mcq', correctAnswer: 'A' } 
+        }]
+      } as any);
+      vi.spyOn(ExamRepository.prototype, 'recordIdempotency').mockResolvedValue(undefined as any);
+      vi.spyOn(ExamRepository.prototype, 'updateExamQuestionResponse').mockResolvedValue(undefined as any);
+      vi.spyOn(ExamRepository.prototype, 'updateLastAnswered').mockResolvedValue(undefined as any);
+      vi.spyOn(AnswerEvaluationEngine.prototype, 'evaluate').mockReturnValue(true);
 
       vi.mocked(cacheService.get).mockResolvedValue({ answer: 'A' });
-      vi.mocked(AnswerEvaluationEngine.evaluate).mockReturnValue(true);
       vi.mocked(JobsService.createJob).mockResolvedValue({ id: 'j1' } as any);
 
-      const result = await ExamEngine.completeExam('e1', 'u1');
+      const result = await container.get(ExamEngine).completeExam('e1', 'u1');
       expect(result.jobId).toBe('j1');
     });
   });

@@ -4,33 +4,38 @@ import { AuditService } from '@/modules/auth/audit.service';
 import { TokenRepository } from '@/modules/auth/repositories/token.repository';
 import { UserRepository } from '@/modules/auth/repositories/user.repository';
 import { TokenService } from '@/modules/auth/token.service';
+import { container } from '@/modules/core/container';
 import { ExamRepository } from '@/modules/exam-engine/repositories/exam.repository';
 
-const tokenRepo = new TokenRepository();
-const userRepo = new UserRepository();
-const examRepo = new ExamRepository();
-
 export class TokenRefreshService {
-  static async refresh(token: string, ip?: string, examId?: string, requestedAudience: string = 'user') {
+  constructor(
+    private tokenRepo = container.get(TokenRepository),
+    private userRepo = container.get(UserRepository),
+    private examRepo = container.get(ExamRepository),
+    private tokenService = container.get(TokenService),
+    private auditService = container.get(AuditService)
+  ) {}
+
+  async refresh(token: string, ip?: string, examId?: string, requestedAudience: string = 'user') {
     const decoded = decodeJwt(token) as { isAdmin?: boolean; [key: string]: unknown };
     const isAdmin = decoded.isAdmin === true;
 
     let payload;
     try {
-      payload = await TokenService.verifyRefreshToken(token, { isAdmin, audience: requestedAudience });
+      payload = await this.tokenService.verifyRefreshToken(token, { isAdmin, audience: requestedAudience });
     } catch {
-      await AuditService.log({ action: 'refresh_failed', metadata: { reason: 'invalid_token' }, ip });
+      await this.auditService.log({ action: 'refresh_failed', metadata: { reason: 'invalid_token' }, ip });
       throw new Error('Invalid refresh _token');
     }
 
-    const tokenHash = await TokenService.hashToken(token);
+    const tokenHash = await this.tokenService.hashToken(token);
 
-    const storedToken = await tokenRepo.findByHash(tokenHash);
+    const storedToken = await this.tokenRepo.findByHash(tokenHash);
 
     if (storedToken === undefined) {
-      await tokenRepo.revokeAll(payload.userId);
+      await this.tokenRepo.revokeAll(payload.userId);
       
-      await AuditService.log({ 
+      await this.auditService.log({ 
         userId: payload.userId, 
         action: 'security_alert_token_reuse', 
         metadata: { ip, severity: 'critical' } 
@@ -42,7 +47,7 @@ export class TokenRefreshService {
       throw new Error('Refresh _token expired');
     }
 
-    const userWithDetails = await userRepo.findByIdWithDetails(payload.userId);
+    const userWithDetails = await this.userRepo.findByIdWithDetails(payload.userId);
 
     if (userWithDetails === undefined) throw new Error('User not found');
     
@@ -51,7 +56,7 @@ export class TokenRefreshService {
     }
 
     // Update Last Active on Refresh
-    await userRepo.updateLastActive(userWithDetails.id);
+    await this.userRepo.updateLastActive(userWithDetails.id);
 
     const user = userWithDetails;
     const roleNames = user.userRoles.map(ur => ur.role.name);
@@ -65,7 +70,7 @@ export class TokenRefreshService {
     // EXAM GRACE WINDOW LOGIC (Phase 3 Requirement)
     let customExpiration: number | undefined;
     if (examId !== undefined && examId !== null && examId !== '' && isAdminNow === false) {
-        const activeExam = await examRepo.findActiveExam(examId, user.id);
+        const activeExam = await this.examRepo.findActiveExam(examId, user.id);
 
         if (activeExam !== undefined && activeExam.durationSeconds !== null && activeExam.durationSeconds > 0) {
             const now = Date.now();
@@ -80,7 +85,7 @@ export class TokenRefreshService {
         }
     }
 
-    const newAccessToken = await TokenService.generateAccessToken({
+    const newAccessToken = await this.tokenService.generateAccessToken({
       userId: user.id,
       email: user.email,
       roles: roleNames,
@@ -88,18 +93,18 @@ export class TokenRefreshService {
       aud: requestedAudience
     }, customExpiration);
     
-    const newRefreshToken = await TokenService.generateRefreshToken(user.id, isAdminNow, requestedAudience);
-    const newRefreshTokenHash = await TokenService.hashToken(newRefreshToken);
+    const newRefreshToken = await this.tokenService.generateRefreshToken(user.id, isAdminNow, requestedAudience);
+    const newRefreshTokenHash = await this.tokenService.hashToken(newRefreshToken);
 
-    await tokenRepo.revokeById(storedToken.id);
+    await this.tokenRepo.revokeById(storedToken.id);
 
-    await tokenRepo.createRefreshToken({
+    await this.tokenRepo.createRefreshToken({
       userId: user.id,
       token: newRefreshTokenHash,
       expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
     });
 
-    await AuditService.log({ userId: user.id, action: 'refresh_success', ip });
+    await this.auditService.log({ userId: user.id, action: 'refresh_success', ip });
 
     return { accessToken: newAccessToken, refreshToken: newRefreshToken };
   }

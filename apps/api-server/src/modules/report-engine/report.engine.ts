@@ -2,6 +2,7 @@ import { db, examQuestions, exams, resultsByDimension, userProfiles } from "@qui
 import { and, desc, eq, sql } from "drizzle-orm";
 
 import { logger } from "@/lib/logger";
+import { container } from '@/modules/core/container';
 
 import { AdaptiveTutorService } from "../adaptive-engine/adaptive-tutor.service";
 import { PerformanceService } from "./performance.service";
@@ -294,7 +295,7 @@ export class ReportEngine {
   static async getPremiumExamReport(examId: string): Promise<PremiumReport> {
     // 1. Check Redis Cache First
     const dbc = ReportEngine.db;
-    const cached = await PerformanceService.getCachedReport<PremiumReport>(examId);
+    const cached = await container.get(PerformanceService).getCachedReport<PremiumReport>(examId);
     if (cached !== null) return cached;
 
     const exam = await dbc.query.exams.findFirst({
@@ -461,7 +462,7 @@ export class ReportEngine {
 
     if (coreMetricsRaw.rows.length === 0 || !hasData(coreMetricsRaw.rows[0])) {
       ReportEngine.log.info({ examId }, 'Analytic row missing in MV, triggering lazy refresh');
-      await PerformanceService.refreshAnalytics();
+      await container.get(PerformanceService).refreshAnalytics();
       coreMetricsRaw = await runCoreQuery();
     }
 
@@ -611,7 +612,7 @@ export class ReportEngine {
     finalReport.interpreter = ReportInterpreter.interpret(finalReport);
 
     // Phase 1: Cache result for subsequent hits
-    await PerformanceService.cacheReport(examId, finalReport);
+    await container.get(PerformanceService).cacheReport(examId, finalReport);
 
     return finalReport;
   }

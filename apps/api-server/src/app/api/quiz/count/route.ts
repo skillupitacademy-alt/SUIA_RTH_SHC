@@ -5,18 +5,19 @@ import { ApiResponse } from '@/lib/api-response';
 import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 import { withLogging } from '@/lib/withLogging';
 import { TokenService } from '@/modules/auth/token.service';
+import { container } from '@/modules/core/container';
 import { ExamBlueprintService } from '@/services/exams/ExamBlueprintService';
 
 export const dynamic = 'force-dynamic';
 
 async function postHandler(req: NextRequest) {
   try {
-    const token = TokenService.getAccessToken(req, { scope: 'user' });
+    const token = container.get(TokenService).getAccessToken(req, { scope: 'user' });
     if (token === null || token === undefined || token === '') {
       throw unauthorized("Unauthorized");
     }
 
-    const payload = await TokenService.verifyAccessToken(token, false);
+    const payload = await container.get(TokenService).verifyAccessToken(token, false);
     if (payload === null || payload === undefined) {
       throw unauthorized("Authentication required");
     }

@@ -10,18 +10,19 @@ import { withLogging } from "@/lib/withLogging";
 import { CACHE_KEYS, CACHE_TTL } from "@/modules/analytics/analytics.constants";
 import { InsightEngineService } from "@/modules/analytics/insight-engine.service";
 import { TokenService } from "@/modules/auth/token.service";
+import { container } from '@/modules/core/container';
 
 export const dynamic = "force-dynamic";
 
 async function getHandler(req: NextRequest) {
   const start = Date.now();
   try {
-    const token = TokenService.getAccessToken(req, { scope: "user" });
+    const token = container.get(TokenService).getAccessToken(req, { scope: "user" });
     if (token === null || token === undefined || token === "") {
       throw unauthorized("Authentication required");
     }
 
-    const payload = await TokenService.verifyAccessToken(token, false);
+    const payload = await container.get(TokenService).verifyAccessToken(token, false);
     if (payload === null || payload === undefined) {
       throw unauthorized("Authentication required");
     }

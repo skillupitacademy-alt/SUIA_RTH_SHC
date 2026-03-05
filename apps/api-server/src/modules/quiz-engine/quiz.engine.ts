@@ -2,6 +2,7 @@ import { db, exams } from '@quiz/db';
 import crypto from 'crypto';
 import { eq } from 'drizzle-orm';
 
+import { container } from '@/modules/core/container';
 import { SelectionService } from '@/modules/selection-engine/selection.service';
 
 /**
@@ -19,7 +20,7 @@ export class QuizEngine {
     const syncId = crypto.randomUUID();
     
     // 1. Leverage SelectionService to pick questions
-    const examData = await SelectionService.composeExam(
+    const examData = await container.get(SelectionService).composeExam(
         userId, 
         options.domainId ?? options.topicId ?? 'self-paced', 
         `quiz-${syncId}`,

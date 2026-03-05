@@ -2,6 +2,8 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
+import { container } from '@/modules/core/container';
+
 import { corsMiddleware } from './modules/auth/cors.middleware';
 import { csrfProtection, setCsrfToken } from './modules/auth/csrf.middleware';
 import { _verifyAdmin } from './modules/auth/rbac.service';
@@ -57,7 +59,7 @@ export async function proxy(request: NextRequest) {
         expectedAudience = 'admin';
     }
 
-    const _token = TokenService.getAccessToken(request, { scope });
+    const _token = container.get(TokenService).getAccessToken(request, { scope });
     const internalKey = request.headers.get('x-internal-key');
     const authHeader = request.headers.get('authorization');
     
@@ -79,7 +81,7 @@ export async function proxy(request: NextRequest) {
     if (!isSystemBypass) {
       try {
         const isAdmin = scope === 'admin' || scope === 'infrastructure';
-        const _payload = await TokenService.verifyAccessToken(_token!, { isAdmin, audience: expectedAudience });
+        const _payload = await container.get(TokenService).verifyAccessToken(_token!, { isAdmin, audience: expectedAudience });
 
         const isInfraRoute = pathname.startsWith('/api/admin') && portalIdentity === 'infrastructure';
         const isAdminRoute = (pathname.startsWith('/api/admin') && !pathname.startsWith('/api/admin/auth') && portalIdentity !== 'infrastructure') || 

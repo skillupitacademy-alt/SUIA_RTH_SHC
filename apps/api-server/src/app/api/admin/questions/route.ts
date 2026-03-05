@@ -11,6 +11,7 @@ import type { CreateQuestionInput } from '@/modules/admin-engine/admin.engine';
 import { AdminEngine } from '@/modules/admin-engine/admin.engine';
 import { _verifyAdmin } from '@/modules/auth/rbac.service';
 import { TokenService } from '@/modules/auth/token.service';
+import { container } from '@/modules/core/container';
 import { questionSchema } from '@/schemas/admin.schemas';
 
 export const dynamic = 'force-dynamic';
@@ -20,12 +21,12 @@ const log = logger.child({ module: 'admin:questions' });
 async function getHandler(_req: NextRequest) {
     const start = Date.now();
   try {
-    const _token = TokenService.getAccessToken(_req, { scope: 'admin' });
+    const _token = container.get(TokenService).getAccessToken(_req, { scope: 'admin' });
     if (_token === null || _token === undefined || _token.trim() === '') {
       return ApiResponse.error(badRequest('Unauthorized', 'UNAUTHORIZED'));
     }
 
-    const _payload = await TokenService.verifyAccessToken(_token, true);
+    const _payload = await container.get(TokenService).verifyAccessToken(_token, true);
 
     if (!(await _verifyAdmin(_payload))) {
         log.warn({ userId: _payload.userId }, 'ADMIN_QUESTIONS forbidden (missing admin role)');
@@ -64,11 +65,11 @@ async function getHandler(_req: NextRequest) {
 async function postHandler(_req: NextRequest) {
     const start = Date.now();
   try {
-    const _token = TokenService.getAccessToken(_req, { scope: 'admin' });
+    const _token = container.get(TokenService).getAccessToken(_req, { scope: 'admin' });
     if (_token === null || _token === undefined || _token.trim() === '') {
       return ApiResponse.error(badRequest('Unauthorized', 'UNAUTHORIZED'));
     }
-    const _payload = await TokenService.verifyAccessToken(_token, true);
+    const _payload = await container.get(TokenService).verifyAccessToken(_token, true);
 
     const rawBody = await _req.json();
 

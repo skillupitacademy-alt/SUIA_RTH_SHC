@@ -6,17 +6,18 @@ import { notFound, unauthorized } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
 import { withLogging } from '@/lib/withLogging';
 import { TokenService } from '@/modules/auth/token.service';
+import { container } from '@/modules/core/container';
 
 export const dynamic = 'force-dynamic';
 
 async function handler(_req: NextRequest) {
   try {
-    const _token = TokenService.getAccessToken(_req);
+    const _token = container.get(TokenService).getAccessToken(_req);
     if (typeof _token !== 'string' || _token.trim() === '') {
       return ApiResponse.error(unauthorized('Unauthorized', 'UNAUTHORIZED'));
     }
 
-    const _payload = await TokenService.verifyAccessToken(_token, false);
+    const _payload = await container.get(TokenService).verifyAccessToken(_token, false);
     const _user = await db.query.users.findFirst({
       where: eq(users.id, _payload.userId),
       with: {
@@ -46,7 +47,7 @@ async function handler(_req: NextRequest) {
         educationLevel: _user.profile?.educationLevel ?? null,
         roles: _user.userRoles.map((ur) => ur.role.name),
       },
-      expiresAt: TokenService.getExpiration(_token),
+      expiresAt: container.get(TokenService).getExpiration(_token),
     });
   } catch (_error: unknown) {
     return ApiResponse.error(_error, 401);

@@ -4,24 +4,28 @@ import { ApiResponse } from '@/lib/api-response';
 import { withLogging } from '@/lib/withLogging';
 import { AuthService } from '@/modules/auth/auth.service';
 import { TokenService } from '@/modules/auth/token.service';
+import { container } from '@/modules/core/container';
 
 export const dynamic = 'force-dynamic';
 
 async function handler(_req: NextRequest) {
   const ip = _req.headers.get('x-forwarded-for') ?? '0.0.0.0';
-  const _token = TokenService.getAccessToken(_req);
+  const tokenService = container.get(TokenService);
+  const authService = container.get(AuthService);
+
+  const _token = tokenService.getAccessToken(_req);
   const adminToken = _req.cookies.get('admin_accessToken')?.value;
   const infraToken = _req.cookies.get('infra_accessToken')?.value;
 
   try {
     if (typeof _token === 'string' && _token.trim() !== '') {
-      await AuthService.logout(_token, undefined, ip);
+      await authService.logout(_token, undefined, ip);
     }
     if (typeof adminToken === 'string' && adminToken.trim() !== '') {
-      await AuthService.logout(adminToken, undefined, ip);
+      await authService.logout(adminToken, undefined, ip);
     }
     if (typeof infraToken === 'string' && infraToken.trim() !== '') {
-      await AuthService.logout(infraToken, undefined, ip);
+      await authService.logout(infraToken, undefined, ip);
     }
   } catch (_err) {
     // Continue clearing cookies to avoid sticky sessions

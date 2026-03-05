@@ -6,14 +6,13 @@ import type { InferSelectModel } from 'drizzle-orm';
 import { logger } from '@/lib/logger';
 import { AnswerEvaluationEngine } from '@/modules/answer-engine/answer.engine';
 import { cacheService } from '@/modules/core/cache.service';
+import { container } from '@/modules/core/container';
 import { SelectionService } from '@/modules/selection-engine/selection.service';
 import { JobOrchestrator } from '@/modules/system/job-orchestrator';
 import { JobsService } from '@/modules/system/jobs.service';
 
 import { PerformanceService } from '../report-engine/performance.service';
 import { ExamRepository } from './repositories/exam.repository';
-
-const examRepo = new ExamRepository();
 
 export interface StartExamConfig {
   subjectId?: string;
@@ -26,10 +25,22 @@ export interface StartExamConfig {
 }
 
 export class ExamEngine {
+  private examRepo: ExamRepository;
+  private selectionService: SelectionService;
+  private performanceService: PerformanceService;
+  private answerEvaluationEngine: AnswerEvaluationEngine;
+
+  constructor() {
+    this.examRepo = container.get(ExamRepository);
+    this.selectionService = container.get(SelectionService);
+    this.performanceService = container.get(PerformanceService);
+    this.answerEvaluationEngine = container.get(AnswerEvaluationEngine);
+  }
+
   /**
    * Starts a new exam session or resumes an existing one based on idempotency key.
    */
-  static async startExam(
+  async startExam(
     userId: string,
     blueprintOrDomainId: string,
     idempotencyKey?: string,
@@ -38,7 +49,7 @@ export class ExamEngine {
     try {
       // 1. Idempotency Check
       if (idempotencyKey !== undefined && idempotencyKey !== null && idempotencyKey !== '') {
-        const existingKey = await examRepo.checkIdempotency(userId, idempotencyKey);
+        const existingKey = await this.examRepo.checkIdempotency(userId, idempotencyKey);
 
         if (existingKey) {
           return await this.resumeExamSession(existingKey.examId);
@@ -46,10 +57,10 @@ export class ExamEngine {
       }
 
       // 2. Selection Phase
-      const { questions, blueprint } = await SelectionService.composeExam(userId, blueprintOrDomainId, (idempotencyKey !== undefined && idempotencyKey !== null && idempotencyKey !== '') ? idempotencyKey : 'no-key', config);
+      const { questions, blueprint } = await this.selectionService.composeExam(userId, blueprintOrDomainId, (idempotencyKey !== undefined && idempotencyKey !== null && idempotencyKey !== '') ? idempotencyKey : 'no-key', config);
 
       // 3. Persistence Phase (Handled by Repository Transactionally)
-      const exam = await examRepo.createExamWithQuestions({
+      const exam = await this.examRepo.createExamWithQuestions({
           userId,
           blueprintId: blueprint.id === 'transient' ? null : blueprint.id,
           status: 'started',
@@ -82,8 +93,8 @@ export class ExamEngine {
     }
   }
 
-  private static async resumeExamSession(examId: string) {
-    const exam = await examRepo.findByIdWithQuestions(examId);
+  private async resumeExamSession(examId: string) {
+    const exam = await this.examRepo.findByIdWithQuestions(examId);
 
     if (exam !== undefined && exam !== null) {
       const now = Date.now();
@@ -111,8 +122,8 @@ export class ExamEngine {
     throw new Error('Exam session resolution failed');
   }
 
-  private static async handleRaceCondition(userId: string, idempotencyKey: string) {
-    const existingKey = await examRepo.checkIdempotency(userId, idempotencyKey);
+  private async handleRaceCondition(userId: string, idempotencyKey: string) {
+    const existingKey = await this.examRepo.checkIdempotency(userId, idempotencyKey);
     if (existingKey !== undefined) {
        return await this.resumeExamSession(existingKey.examId);
     }
@@ -122,7 +133,7 @@ export class ExamEngine {
   /**
    * Handles individual question submission within an exam.
    */
-  static async submitAnswer(examId: string, questionId: string, answer: string, userId: string, idempotencyKey?: string) {
+  async submitAnswer(examId: string, questionId: string, answer: string, userId: string, idempotencyKey?: string) {
     // Phase 5: Offload high-frequency idempotency to Redis
     if (idempotencyKey !== undefined && idempotencyKey !== null && idempotencyKey !== '') {
         const cacheKey = `idem:ans:${userId}:${idempotencyKey}`;
@@ -149,20 +160,20 @@ export class ExamEngine {
     await cacheService.set(`${liveStateKey}:q:${questionId}`, answerPayload, 1000 * 60 * 60 * 2).catch(() => null);
     
     // We still update the 'lastAnsweredAt' in Postgres to keep session alive
-    await examRepo.updateLastAnswered(examId);
+    await this.examRepo.updateLastAnswered(examId);
 
     if (idempotencyKey !== undefined && idempotencyKey !== null && idempotencyKey !== '') {
         await cacheService.set(`idem:ans:${userId}:${idempotencyKey}`, { used: true }, 1000 * 60 * 60 * 24).catch(() => null);
     }
   }
 
-  private static async getAndCacheActiveExam(userId: string, examId: string) {
+  private async getAndCacheActiveExam(userId: string, examId: string) {
     const cacheKey = `exam-header:${userId}:${examId}`;
     type ExamWithBlueprint = InferSelectModel<typeof exams> & { blueprint?: InferSelectModel<typeof examBlueprints> | null };
     let exam: ExamWithBlueprint | null = (await cacheService.get<ExamWithBlueprint>(cacheKey).catch(() => null)) ?? null;
 
     if (exam === null) {
-      const dbExam = await examRepo.findByIdWithBlueprint(examId);
+      const dbExam = await this.examRepo.findByIdWithBlueprint(examId);
       exam = dbExam ?? null;
       if (exam !== null) await cacheService.set(cacheKey, exam, 1000 * 60 * 2).catch(() => null);
     }
@@ -170,7 +181,7 @@ export class ExamEngine {
     return exam;
   }
 
-  private static checkExamTimeLimit(exam: InferSelectModel<typeof exams> & { blueprint?: InferSelectModel<typeof examBlueprints> | null }) {
+  private checkExamTimeLimit(exam: InferSelectModel<typeof exams> & { blueprint?: InferSelectModel<typeof examBlueprints> | null }) {
     const startTime = new Date(exam.startedAt).getTime();
     const timeElapsedSeconds = Math.floor((Date.now() - startTime) / 1000);
     const limit = (exam.blueprint?.timeLimit !== undefined && exam.blueprint?.timeLimit !== null && exam.blueprint?.timeLimit > 0) 
@@ -183,8 +194,8 @@ export class ExamEngine {
     }
   }
 
-  private static async updateExamResponse(
-    exam: InferSelectModel<typeof exams>, 
+  private async updateExamResponse(
+    exam: { id: string; lastAnsweredAt: Date | null; startedAt: Date }, 
     eqRecord: { 
         id: string; 
         responseMetadata: Record<string, unknown> | null; 
@@ -195,34 +206,34 @@ export class ExamEngine {
     }, 
     answer: string
   ) {
-    const isCorrect = AnswerEvaluationEngine.evaluate(eqRecord.question.type as "mcq" | "code_mcq", eqRecord.question.correctAnswer, answer);
+    const isCorrect = this.answerEvaluationEngine.evaluate(eqRecord.question.type as "mcq" | "code_mcq", eqRecord.question.correctAnswer, answer);
     const now = new Date();
     const lastTime = exam.lastAnsweredAt ? new Date(exam.lastAnsweredAt).getTime() : new Date(exam.startedAt).getTime();
     const existingMetadata = (eqRecord.responseMetadata as Record<string, unknown> | null) ?? {};
     const timeSpentSeconds = existingMetadata.timeSpentSeconds !== undefined ? existingMetadata.timeSpentSeconds : Math.max(0, Math.floor((now.getTime() - lastTime) / 1000));
 
-    await examRepo.updateExamQuestionResponse(eqRecord.id, { 
+    await this.examRepo.updateExamQuestionResponse(eqRecord.id, { 
         userAnswer: answer, isCorrect, 
         responseMetadata: { ...existingMetadata, timeSpentSeconds, firstAnsweredAt: existingMetadata.firstAnsweredAt ?? now.toISOString() } 
     });
 
-    await examRepo.updateLastAnswered(exam.id, now);
+    await this.examRepo.updateLastAnswered(exam.id, now);
   }
 
   /**
    * Finalizes the exam and triggers scoring.
    */
-  static async completeExam(examId: string, userId: string, idempotencyKey?: string) {
+  async completeExam(examId: string, userId: string, idempotencyKey?: string) {
     let targetExamId = examId;
     if (idempotencyKey !== undefined && idempotencyKey !== null && idempotencyKey !== '') {
-        const existingKey = await examRepo.checkIdempotency(userId, `submit:${idempotencyKey}`);
+        const existingKey = await this.examRepo.checkIdempotency(userId, `submit:${idempotencyKey}`);
         if (existingKey) targetExamId = existingKey.examId;
     }
 
     // Phase 1: Invalidate cache immediately on submission
-    await PerformanceService.invalidateCache(targetExamId);
+    await this.performanceService.invalidateCache(targetExamId);
 
-    const fullExam = await examRepo.findById(targetExamId);
+    const fullExam = await this.examRepo.findById(targetExamId);
     if (!fullExam) throw new Error('Exam not found');
     if (fullExam.userId !== userId) throw new Error('Unauthorized');
 
@@ -230,7 +241,7 @@ export class ExamEngine {
         return { examId: targetExamId, status: fullExam.status };
     }
 
-    const updated = await examRepo.updateStatus(targetExamId, 'processing');
+    const updated = await this.examRepo.updateStatus(targetExamId, 'processing');
 
     let jobId: string | undefined;
 
@@ -239,7 +250,7 @@ export class ExamEngine {
         try {
             const liveStatePrefix = `exam-state:${targetExamId}:q:`;
             
-            const examWithQuestions = await examRepo.findByIdWithQuestions(targetExamId);
+            const examWithQuestions = await this.examRepo.findByIdWithQuestions(targetExamId);
 
             if (examWithQuestions?.examQuestions) {
                 // Use the main DB instance for the batch update
@@ -266,7 +277,7 @@ export class ExamEngine {
         }
 
         if (idempotencyKey !== undefined && idempotencyKey !== null && idempotencyKey !== '') {
-            await examRepo.recordIdempotency({ userId, key: `submit:${idempotencyKey}`, examId: targetExamId });
+            await this.examRepo.recordIdempotency({ userId, key: `submit:${idempotencyKey}`, examId: targetExamId });
         }
         const job = await JobsService.createJob({
             userId,

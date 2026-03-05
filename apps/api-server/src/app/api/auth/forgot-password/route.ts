@@ -7,6 +7,7 @@ import { recordCounter, recordTimer } from '@/lib/metrics';
 import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 import { withLogging } from '@/lib/withLogging';
 import { AuthService } from '@/modules/auth/auth.service';
+import { container } from '@/modules/core/container';
 
 export const dynamic = 'force-dynamic';
 
@@ -30,7 +31,7 @@ async function handler(_req: NextRequest) {
     }
 
     const ip = _req.headers.get('x-forwarded-for') ?? '0.0.0.0';
-    await AuthService.forgotPassword(email, ip);
+    await container.get(AuthService).forgotPassword(email, ip);
 
     recordCounter(METRICS.AUTH.FAILURE, 1, { operation: 'forgot_password', outcome: 'success' });
     recordTimer(METRICS.AUTH.FAILURE + '.forgot_password.duration', Date.now() - start, { outcome: 'success' });

@@ -9,6 +9,7 @@ import { recordCounter, recordTimer } from "@/lib/metrics";
 import { getDownloadUrl } from "@/lib/storage/get-download-url";
 import { withLogging } from "@/lib/withLogging";
 import { TokenService } from "@/modules/auth/token.service";
+import { container } from '@/modules/core/container';
 import { ReportRepository } from "@/modules/report-engine/report-repository";
 
 export const runtime = "nodejs";
@@ -24,7 +25,7 @@ async function getHandler(req: NextRequest) {
     }
 
     // 1. Authenticate user
-    const token = TokenService.getAccessToken(req, { scope: "user" }) ?? null;
+    const token = container.get(TokenService).getAccessToken(req, { scope: "user" }) ?? null;
     let userId: string;
 
     if (token === null) {
@@ -43,7 +44,7 @@ async function getHandler(req: NextRequest) {
       if (!exam) throw notFound("Exam", attemptId);
       userId = exam.userId;
     } else {
-      const payload = await TokenService.verifyAccessToken(token, false);
+      const payload = await container.get(TokenService).verifyAccessToken(token, false);
       if (payload === null || payload === undefined || payload.userId === null || payload.userId === undefined) {
         throw unauthorized("Unauthorized");
       }

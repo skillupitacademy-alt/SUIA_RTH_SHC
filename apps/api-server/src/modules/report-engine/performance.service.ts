@@ -3,16 +3,16 @@ import { sql } from "drizzle-orm";
 
 import { logger } from "@/lib/logger";
 
-import { cacheService, type CacheValue } from "../core/cache.service";
+import { cacheService,type CacheValue } from "../core/cache.service";
 
 export class PerformanceService {
-  private static log = logger.child({ module: 'performance-service' });
+  private log = logger.child({ module: 'performance-service' });
 
   /**
    * Refreshes the Materialized Views for analytics.
    * This ensures that precomputed metrics stay up-to-date after an exam is submitted.
    */
-  static async refreshAnalytics() {
+  async refreshAnalytics() {
     try {
       this.log.info('Refreshing materialized views...');
       await db.execute(sql`REFRESH MATERIALIZED VIEW attempt_analytics_mv`);
@@ -23,11 +23,11 @@ export class PerformanceService {
     }
   }
 
-  static getCacheKey(examId: string) {
+  getCacheKey(examId: string) {
     return `attempt:${examId}:core:v4`;
   }
 
-  static async getCachedReport<T extends CacheValue>(examId: string): Promise<T | null> {
+  async getCachedReport<T extends CacheValue>(examId: string): Promise<T | null> {
     try {
       return await cacheService.get<T>(this.getCacheKey(examId));
     } catch (err) {
@@ -36,7 +36,7 @@ export class PerformanceService {
     }
   }
 
-  static async cacheReport<T extends CacheValue>(examId: string, data: T) {
+  async cacheReport<T extends CacheValue>(examId: string, data: T) {
     try {
       // Cache for 24 hours (86400 seconds * 1000ms)
       await cacheService.set(this.getCacheKey(examId), data, 86400 * 1000);
@@ -45,7 +45,7 @@ export class PerformanceService {
     }
   }
 
-  static async invalidateCache(examId: string) {
+  async invalidateCache(examId: string) {
     try {
       await cacheService.del(this.getCacheKey(examId));
     } catch (err) {

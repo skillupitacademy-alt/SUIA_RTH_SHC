@@ -5,6 +5,7 @@ import { ApiResponse } from '@/lib/api-response';
 import { recordCounter, recordTimer } from '@/lib/metrics';
 import { withLogging } from '@/lib/withLogging';
 import { TokenService } from '@/modules/auth/token.service';
+import { container } from '@/modules/core/container';
 import { DashboardEngine } from '@/modules/dashboard-engine/dashboard.engine';
 
 export const dynamic = 'force-dynamic';
@@ -12,12 +13,12 @@ export const dynamic = 'force-dynamic';
 async function handler(_req: NextRequest) {
   const start = Date.now();
   try {
-    const _token = TokenService.getAccessToken(_req, { scope: 'user' });
+    const _token = container.get(TokenService).getAccessToken(_req, { scope: 'user' });
     if (typeof _token !== 'string' || _token.trim() === '') {
       return ApiResponse.error(unauthorized('Unauthorized'), 401);
     }
 
-    const _payload = await TokenService.verifyAccessToken(_token, false);
+    const _payload = await container.get(TokenService).verifyAccessToken(_token, false);
     const data = await DashboardEngine.getPerformanceBreakdownMetadata(_payload.userId);
     
     const durationMs = Date.now() - start;

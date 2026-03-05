@@ -7,6 +7,7 @@ import { recordCounter, recordTimer } from '@/lib/metrics';
 import { withLogging } from '@/lib/withLogging';
 import { AuthService } from '@/modules/auth/auth.service';
 import { setCsrfToken } from '@/modules/auth/csrf.middleware';
+import { container } from '@/modules/core/container';
 import { signupSchema } from '@/schemas/auth.schemas';
 
 export const dynamic = 'force-dynamic';
@@ -22,10 +23,11 @@ async function handler(_req: NextRequest) {
     }
     const { email, password, name } = parsed.data;
 
-    const _user = await AuthService.signup(email, password, name);
+    const authService = container.get(AuthService);
+    const _user = await authService.signup(email, password, name);
 
     // Auto-login after signup
-    const { accessToken, refreshToken } = await AuthService.login(email, password);
+    const { accessToken, refreshToken } = await authService.login(email, password);
 
     recordCounter(METRICS.AUTH.SIGNUP, 1, { outcome: 'success' });
     recordTimer(METRICS.AUTH.SIGNUP + '.duration', Date.now() - start, { outcome: 'success' });

@@ -7,6 +7,7 @@ import { ApiResponse } from "@/lib/api-response";
 import { recordCounter, recordTimer } from "@/lib/metrics";
 import { withLogging } from "@/lib/withLogging";
 import { TokenService } from "@/modules/auth/token.service";
+import { container } from '@/modules/core/container';
 
 export const dynamic = "force-dynamic";
 
@@ -32,11 +33,11 @@ type BrokenRow = {
 async function handler(req: NextRequest) {
   const start = Date.now();
   try {
-    const token = TokenService.getAccessToken(req, { scope: "admin" });
+    const token = container.get(TokenService).getAccessToken(req, { scope: "admin" });
     if (token === null || token === undefined || token.length === 0) {
       return ApiResponse.error(unauthorized("Unauthorized"), 401);
     }
-    const payload = await TokenService.verifyAccessToken(token, true);
+    const payload = await container.get(TokenService).verifyAccessToken(token, true);
     
     const hasAdminRole = Array.isArray(payload.roles) && payload.roles.some(
       (role: string) => role.toUpperCase() === "ADMIN" || role.toUpperCase() === "SUPER_ADMIN"

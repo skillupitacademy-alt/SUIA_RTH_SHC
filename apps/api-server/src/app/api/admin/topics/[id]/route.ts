@@ -7,6 +7,7 @@ import { withLogging } from '@/lib/withLogging';
 import { AdminEngine } from '@/modules/admin-engine/admin.engine';
 import { _verifyAdmin } from '@/modules/auth/rbac.service';
 import { TokenService } from '@/modules/auth/token.service';
+import { container } from '@/modules/core/container';
 import { topicSchema } from '@/schemas/hierarchy.schemas';
 
 async function patchHandler(
@@ -15,12 +16,12 @@ async function patchHandler(
 ) {
   try {
     const { id } = await params;
-    const _token = TokenService.getAccessToken(_req, { scope: 'admin' });
+    const _token = container.get(TokenService).getAccessToken(_req, { scope: 'admin' });
     if (_token === undefined || _token === null || _token === '') {
       return ApiResponse.error(unauthorized('Unauthorized', 'UNAUTHORIZED'));
     }
     
-    const _payload = await TokenService.verifyAccessToken(_token, true);
+    const _payload = await container.get(TokenService).verifyAccessToken(_token, true);
 
     const rawBody = await _req.json();
     if (!validateJsonDepth(rawBody) || !validateJsonSize(rawBody)) {
@@ -48,12 +49,12 @@ async function deleteHandler(
 ) {
   try {
     const { id } = await params;
-    const _token = TokenService.getAccessToken(_req, { scope: 'admin' });
+    const _token = container.get(TokenService).getAccessToken(_req, { scope: 'admin' });
     if (_token === undefined || _token === null || _token === '') {
       return ApiResponse.error(unauthorized('Unauthorized', 'UNAUTHORIZED'));
     }
     
-    const _payload = await TokenService.verifyAccessToken(_token, true);
+    const _payload = await container.get(TokenService).verifyAccessToken(_token, true);
 
     if (!(await _verifyAdmin(_payload))) {
       return ApiResponse.error(forbidden());

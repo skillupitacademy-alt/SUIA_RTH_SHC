@@ -1,16 +1,17 @@
 import { afterEach, describe, expect, it, vi, beforeEach } from 'vitest';
-import crypto from 'crypto';
-import { db, refreshTokens, users, roles, passwordResetTokens, verificationTokens } from '@quiz/db';
-import { eq, and } from 'drizzle-orm';
-import { decodeJwt } from 'jose';
-
+import { container } from '../../core/container';
+import { UserRepository } from '../repositories/user.repository';
+import { TokenRepository } from '../repositories/token.repository';
+import { ExamRepository } from '../../exam-engine/repositories/exam.repository';
 import { AuthService } from '../auth.service';
-import { AuditService } from '../audit.service';
 import { PasswordService } from '../password.service';
 import { SecurityService } from '../security.service';
 import { TokenService } from '../token.service';
 import { EmailService } from '../../email/EmailService';
+import { AuditService } from '../audit.service';
+import { decodeJwt } from 'jose';
 
+// Standard Mocks
 vi.mock('../audit.service');
 vi.mock('../password.service');
 vi.mock('../security.service');
@@ -22,62 +23,91 @@ vi.mock('jose', () => ({
 
 describe('AuthService', () => {
   beforeEach(() => {
-    // Reset the query/insert/update/delete mocks specifically for each test
-    db.query = {
-       users: { findFirst: vi.fn() },
-       roles: { findFirst: vi.fn() },
-       refreshTokens: { findFirst: vi.fn() },
-       exams: { findFirst: vi.fn() },
-       passwordResetTokens: { findFirst: vi.fn() },
-       verificationTokens: { findFirst: vi.fn() },
-    } as any;
+    container.reset();
+    
+    // Repository Prototype Mocks - Total isolation from DB proxy
+    vi.spyOn(UserRepository.prototype, 'findByEmail').mockResolvedValue(undefined);
+    vi.spyOn(UserRepository.prototype, 'findWithDetails').mockResolvedValue(undefined);
+    vi.spyOn(UserRepository.prototype, 'findByIdWithDetails').mockResolvedValue(undefined);
+    vi.spyOn(UserRepository.prototype, 'findById').mockResolvedValue(undefined);
+    vi.spyOn(UserRepository.prototype, 'create').mockResolvedValue({ id: 'u1' } as any);
+    vi.spyOn(UserRepository.prototype, 'assignRole').mockResolvedValue(undefined as any);
+    vi.spyOn(UserRepository.prototype, 'updateLastActive').mockResolvedValue(undefined as any);
+    vi.spyOn(UserRepository.prototype, 'verifyEmail').mockResolvedValue(undefined as any);
+    vi.spyOn(UserRepository.prototype, 'deleteToken').mockResolvedValue(undefined as any);
+    vi.spyOn(UserRepository.prototype, 'createToken').mockResolvedValue(undefined as any);
+    vi.spyOn(UserRepository.prototype, 'createResetToken').mockResolvedValue(undefined as any);
+    vi.spyOn(UserRepository.prototype, 'findResetToken').mockResolvedValue(undefined);
+    vi.spyOn(UserRepository.prototype, 'updatePassword').mockResolvedValue(undefined as any);
+    vi.spyOn(UserRepository.prototype, 'deleteResetToken').mockResolvedValue(undefined as any);
+    vi.spyOn(UserRepository.prototype, 'findToken').mockResolvedValue(undefined);
+
+    vi.spyOn(TokenRepository.prototype, 'findByHash').mockResolvedValue(undefined);
+    vi.spyOn(TokenRepository.prototype, 'createRefreshToken').mockResolvedValue(undefined as any);
+    vi.spyOn(TokenRepository.prototype, 'revokeToken').mockResolvedValue(undefined as any);
+    vi.spyOn(TokenRepository.prototype, 'revokeById').mockResolvedValue(undefined as any);
+    vi.spyOn(TokenRepository.prototype, 'revokeAll').mockResolvedValue(undefined as any);
+    vi.spyOn(TokenRepository.prototype, 'touchSession').mockResolvedValue(undefined as any);
+    
+    vi.spyOn(ExamRepository.prototype, 'findActiveExam').mockResolvedValue(undefined);
+    vi.spyOn(ExamRepository.prototype, 'updateStatus').mockResolvedValue([] as any);
+
+    // Instance Prototype Mocks for Services
+    vi.spyOn(AuditService.prototype, 'log').mockResolvedValue(undefined as any);
+    vi.spyOn(PasswordService.prototype, 'hash').mockResolvedValue('hash');
+    vi.spyOn(PasswordService.prototype, 'compare').mockResolvedValue(true);
+    vi.spyOn(SecurityService.prototype, 'isAccountLocked').mockResolvedValue(false);
+    vi.spyOn(SecurityService.prototype, 'trackLoginAttempt').mockResolvedValue(undefined as any);
+    vi.spyOn(TokenService.prototype, 'generateAccessToken').mockResolvedValue('access');
+    vi.spyOn(TokenService.prototype, 'generateRefreshToken').mockResolvedValue('refresh');
+    vi.spyOn(TokenService.prototype, 'verifyRefreshToken').mockResolvedValue({ userId: 'u1' } as any);
+    vi.spyOn(TokenService.prototype, 'hashToken').mockResolvedValue('hash');
+    vi.spyOn(TokenService.prototype, 'getExpiration').mockReturnValue(new Date(Date.now() + 1000).toISOString());
   });
 
   afterEach(() => {
     vi.clearAllMocks();
+    vi.restoreAllMocks();
+    vi.unstubAllEnvs();
   });
 
   describe('signup', () => {
     it('throws if user already exists', async () => {
-      vi.mocked(db.query.users.findFirst).mockResolvedValue({ id: 'u1' } as any);
-      await expect(AuthService.signup('test@test.com', 'pw', 'Name')).rejects.toThrow('User already exists');
+      vi.spyOn(UserRepository.prototype, 'findByEmail').mockResolvedValue({ id: 'u1' } as any);
+      await expect(container.get(AuthService).signup('test@test.com', 'pw', 'Name')).rejects.toThrow('User already exists');
     });
 
     it('creates user and assigns default role if found', async () => {
-      vi.mocked(db.query.users.findFirst).mockResolvedValue(undefined);
-      vi.mocked(PasswordService.hash).mockResolvedValue('hash');
-      
-      const mockReturning = vi.fn().mockResolvedValue([{ id: 'u1', email: 't@t.com' }]);
-      const mockValues = vi.fn().mockReturnValue({ returning: mockReturning });
-      vi.mocked(db.insert).mockReturnValue({ values: mockValues } as any);
-      
-      vi.mocked(db.query.roles.findFirst).mockResolvedValue({ id: 'r1', name: 'USER' } as any);
+      vi.spyOn(UserRepository.prototype, 'findByEmail').mockResolvedValue(undefined);
+      const createSpy = vi.spyOn(UserRepository.prototype, 'create').mockResolvedValue({ id: 'u1', email: 't@t.com' } as any);
+      const roleSpy = vi.spyOn(UserRepository.prototype, 'assignRole').mockResolvedValue(undefined as any);
 
-      const user = await AuthService.signup('t@t.com', 'pw', 'Name');
+      const user = await container.get(AuthService).signup('t@t.com', 'pw', 'Name');
       expect(user.id).toBe('u1');
-      expect(db.insert).toHaveBeenCalledTimes(3); 
+      expect(createSpy).toHaveBeenCalled();
+      expect(roleSpy).toHaveBeenCalledWith('u1', 'USER');
     });
   });
 
   describe('login', () => {
     it('throws if account is locked', async () => {
-      vi.mocked(SecurityService.isAccountLocked).mockResolvedValue(true);
-      await expect(AuthService.login('t@t.com', 'pw')).rejects.toThrow('Account temporarily locked');
+      vi.spyOn(SecurityService.prototype, 'isAccountLocked').mockResolvedValue(true);
+      await expect(container.get(AuthService).login('t@t.com', 'pw')).rejects.toThrow('Account temporarily locked');
     });
 
     it('throws on invalid credentials', async () => {
-      vi.mocked(SecurityService.isAccountLocked).mockResolvedValue(false);
-      vi.mocked(db.query.users.findFirst).mockResolvedValue({ passwordHash: 'h' } as any);
-      vi.mocked(PasswordService.compare).mockResolvedValue(false);
-      await expect(AuthService.login('t@t.com', 'pw')).rejects.toThrow('Invalid credentials');
+      vi.spyOn(SecurityService.prototype, 'isAccountLocked').mockResolvedValue(false);
+      vi.spyOn(UserRepository.prototype, 'findWithDetails').mockResolvedValue({ passwordHash: 'h' } as any);
+      vi.spyOn(PasswordService.prototype, 'compare').mockResolvedValue(false);
+      await expect(container.get(AuthService).login('t@t.com', 'pw', '1.1.1.1')).rejects.toThrow('Invalid credentials');
     });
 
     it('throws if user is blocked', async () => {
-      vi.mocked(db.query.users.findFirst).mockResolvedValue({ passwordHash: 'h', isBlocked: true } as any);
-      vi.mocked(PasswordService.compare).mockResolvedValue(true);
-      vi.mocked(SecurityService.isAccountLocked).mockResolvedValue(false);
+      vi.spyOn(UserRepository.prototype, 'findWithDetails').mockResolvedValue({ id: 'u1', passwordHash: 'h', isBlocked: true } as any);
+      vi.spyOn(PasswordService.prototype, 'compare').mockResolvedValue(true);
+      vi.spyOn(SecurityService.prototype, 'isAccountLocked').mockResolvedValue(false);
 
-      await expect(AuthService.login('t@t.com', 'pw')).rejects.toThrow('Account has been blocked');
+      await expect(container.get(AuthService).login('t@t.com', 'pw', '1.1.1.1')).rejects.toThrow('Account has been blocked');
     });
 
     it('returns tokens and detects admin roles', async () => {
@@ -85,18 +115,11 @@ describe('AuthService', () => {
         id: 'u1', email: 't@t.com', passwordHash: 'h', isBlocked: false,
         userRoles: [{ role: { name: 'ADMIN' } }]
       };
-      vi.mocked(db.query.users.findFirst).mockResolvedValue(mockUser as any);
-      vi.mocked(PasswordService.compare).mockResolvedValue(true);
-      vi.mocked(SecurityService.isAccountLocked).mockResolvedValue(false);
-      vi.mocked(TokenService.generateAccessToken).mockResolvedValue('access');
-      vi.mocked(TokenService.generateRefreshToken).mockResolvedValue('refresh');
-
-      const mockWhere = vi.fn().mockResolvedValue(undefined);
-      const mockSet = vi.fn().mockReturnValue({ where: mockWhere });
-      vi.mocked(db.update).mockReturnValue({ set: mockSet } as any);
-      vi.mocked(db.insert).mockReturnValue({ values: vi.fn() } as any);
-
-      const result = await AuthService.login('t@t.com', 'pw');
+      vi.spyOn(UserRepository.prototype, 'findWithDetails').mockResolvedValue(mockUser as any);
+      vi.spyOn(PasswordService.prototype, 'compare').mockResolvedValue(true);
+      vi.spyOn(SecurityService.prototype, 'isAccountLocked').mockResolvedValue(false);
+      
+      const result = await container.get(AuthService).login('t@t.com', 'pw', '1.1.1.1');
       expect(result.isAdmin).toBe(true);
       expect(result.accessToken).toBe('access');
     });
@@ -105,99 +128,95 @@ describe('AuthService', () => {
   describe('refresh', () => {
     it('detects token reuse', async () => {
       vi.mocked(decodeJwt).mockReturnValue({ isAdmin: false });
-      vi.mocked(TokenService.verifyRefreshToken).mockResolvedValue({ userId: 'u1' } as any);
-      vi.mocked(db.query.refreshTokens.findFirst).mockResolvedValue(undefined);
+      vi.spyOn(TokenService.prototype, 'verifyRefreshToken').mockResolvedValue({ userId: 'u1' } as any);
+      vi.spyOn(TokenRepository.prototype, 'findByHash').mockResolvedValue(undefined);
 
-      const mockWhere = vi.fn().mockResolvedValue(undefined);
-      const mockSet = vi.fn().mockReturnValue({ where: mockWhere });
-      vi.mocked(db.update).mockReturnValue({ set: mockSet } as any);
-
-      await expect(AuthService.refresh('token')).rejects.toThrow('Security Alert');
+      await expect(container.get(AuthService).refresh('token')).rejects.toThrow('Security Alert');
     });
 
     it('throws if refresh token is expired according to DB', async () => {
       vi.mocked(decodeJwt).mockReturnValue({ isAdmin: false });
-      vi.mocked(TokenService.verifyRefreshToken).mockResolvedValue({ userId: 'u1' } as any);
-      vi.mocked(db.query.refreshTokens.findFirst).mockResolvedValue({ expiresAt: new Date(Date.now() - 1000) } as any);
+      vi.spyOn(TokenService.prototype, 'verifyRefreshToken').mockResolvedValue({ userId: 'u1' } as any);
+      vi.spyOn(TokenRepository.prototype, 'findByHash').mockResolvedValue({ expiresAt: new Date(Date.now() - 1000) } as any);
 
-      await expect(AuthService.refresh('token')).rejects.toThrow('Refresh _token expired');
+      await expect(container.get(AuthService).refresh('token')).rejects.toThrow('Refresh _token expired');
     });
 
     it('restricts portal access for non-infra users', async () => {
       vi.mocked(decodeJwt).mockReturnValue({ isAdmin: false });
-      vi.mocked(TokenService.verifyRefreshToken).mockResolvedValue({ userId: 'u1' } as any);
-      vi.mocked(db.query.refreshTokens.findFirst).mockResolvedValue({ id: 's1', expiresAt: new Date(Date.now() + 100000) } as any);
+      vi.spyOn(TokenService.prototype, 'verifyRefreshToken').mockResolvedValue({ userId: 'u1' } as any);
+      vi.spyOn(TokenRepository.prototype, 'findByHash').mockResolvedValue({ id: 's1', expiresAt: new Date(Date.now() + 100000) } as any);
       
-      vi.mocked(db.query.users.findFirst).mockResolvedValue({ 
+      vi.spyOn(UserRepository.prototype, 'findByIdWithDetails').mockResolvedValue({ 
         id: 'u1', email: 't@t.com', isBlocked: false,
         userRoles: [{ role: { name: 'USER' } }]
       } as any);
 
-
-      await expect(AuthService.refresh('token', 'ip', undefined, 'infra')).rejects.toThrow('Infrastructure privileges required');
+      await expect(container.get(AuthService).refresh('token', 'ip', undefined, 'infra')).rejects.toThrow('Infrastructure privileges required');
     });
 
     it('handles exam grace window correctly', async () => {
       vi.mocked(decodeJwt).mockReturnValue({ isAdmin: false });
-      vi.mocked(TokenService.verifyRefreshToken).mockResolvedValue({ userId: 'u1' } as any);
-      vi.mocked(db.query.refreshTokens.findFirst).mockResolvedValue({ id: 's1', expiresAt: new Date(Date.now() + 100000) } as any);
+      vi.spyOn(TokenService.prototype, 'verifyRefreshToken').mockResolvedValue({ userId: 'u1' } as any);
+      vi.spyOn(TokenRepository.prototype, 'findByHash').mockResolvedValue({ id: 's1', expiresAt: new Date(Date.now() + 100000) } as any);
       
-      vi.mocked(db.query.users.findFirst).mockResolvedValue({ 
+      vi.spyOn(UserRepository.prototype, 'findByIdWithDetails').mockResolvedValue({ 
         id: 'u1', email: 't@t.com', isBlocked: false,
         userRoles: [{ role: { name: 'USER' } }]
       } as any);
 
-      vi.mocked(db.query.exams.findFirst).mockResolvedValue({ 
+      vi.spyOn(ExamRepository.prototype, 'findActiveExam').mockResolvedValue({ 
         id: 'e1', userId: 'u1', status: 'started', durationSeconds: 3600, startedAt: new Date(Date.now() - 1000) 
       } as any);
 
-      vi.mocked(db.update).mockReturnValue({ set: vi.fn().mockReturnValue({ where: vi.fn() }) } as any);
-      vi.mocked(db.insert).mockReturnValue({ values: vi.fn() } as any);
+      const genSpy = vi.spyOn(TokenService.prototype, 'generateAccessToken');
 
-      await AuthService.refresh('token', 'ip', 'e1');
-      expect(TokenService.generateAccessToken).toHaveBeenCalledWith(expect.any(Object), expect.any(Number));
+      await container.get(AuthService).refresh('token', 'ip', 'e1');
+      expect(genSpy).toHaveBeenCalledWith(expect.any(Object), expect.any(Number));
     });
   });
 
   describe('logout', () => {
     it('sets user offline immediate by setting lastActiveAt to past', async () => {
-      vi.mocked(db.update).mockReturnValue({ set: vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue(undefined) }) } as any);
-      await AuthService.logout('token', 'u1');
-      expect(db.update).toHaveBeenCalledTimes(2); // token revoke + user offline
+      const revokeSpy = vi.spyOn(TokenRepository.prototype, 'revokeToken');
+      const activeSpy = vi.spyOn(UserRepository.prototype, 'updateLastActive');
+
+      await container.get(AuthService).logout('token', 'u1');
+      expect(revokeSpy).toHaveBeenCalled();
+      expect(activeSpy).toHaveBeenCalled();
     });
   });
 
   describe('verifyEmail', () => {
     it('throws if token is invalid', async () => {
-      vi.mocked(db.query.verificationTokens.findFirst).mockResolvedValue(undefined);
-      await expect(AuthService.verifyEmail('bad')).rejects.toThrow('Invalid or expired');
+      vi.spyOn(UserRepository.prototype, 'findToken').mockResolvedValue(undefined);
+      await expect(container.get(AuthService).verifyEmail('bad')).rejects.toThrow('Invalid or expired');
     });
 
     it('marks email as verified and deletes token', async () => {
-      vi.mocked(db.query.verificationTokens.findFirst).mockResolvedValue({ id: 't1', userId: 'u1', expiresAt: new Date(Date.now() + 10000) } as any);
-      vi.mocked(db.update).mockReturnValue({ set: vi.fn().mockReturnValue({ where: vi.fn() }) } as any);
-      vi.mocked(db.delete).mockReturnValue({ where: vi.fn() } as any);
+      vi.spyOn(UserRepository.prototype, 'findToken').mockResolvedValue({ id: 't1', userId: 'u1', expiresAt: new Date(Date.now() + 10000) } as any);
+      const verifySpy = vi.spyOn(UserRepository.prototype, 'verifyEmail');
+      const deleteSpy = vi.spyOn(UserRepository.prototype, 'deleteToken');
 
-      await AuthService.verifyEmail('good');
-      expect(db.update).toHaveBeenCalledWith(users);
-      expect(db.delete).toHaveBeenCalledWith(verificationTokens);
+      await container.get(AuthService).verifyEmail('good');
+      expect(verifySpy).toHaveBeenCalledWith('u1');
+      expect(deleteSpy).toHaveBeenCalledWith('t1');
     });
   });
 
   describe('forgotPassword', () => {
     it('prevents enumeration', async () => {
-      vi.mocked(db.query.users.findFirst).mockResolvedValue(undefined);
-      expect(await AuthService.forgotPassword('unknown@test.com')).toBe(true);
+      vi.spyOn(UserRepository.prototype, 'findWithDetails').mockResolvedValue(undefined);
+      expect(await container.get(AuthService).forgotPassword('unknown@test.com')).toBe(true);
     });
 
     it('chooses correct portal URL for admins', async () => {
-      process.env.NEXT_PUBLIC_ADMIN_URL = 'http://admin.com';
-      vi.mocked(db.query.users.findFirst).mockResolvedValue({ 
+      vi.stubEnv('NEXT_PUBLIC_ADMIN_URL', 'http://admin.com');
+      vi.spyOn(UserRepository.prototype, 'findWithDetails').mockResolvedValue({ 
         id: 'u1', email: 'a@a.com', userRoles: [{ role: { name: 'ADMIN' } }] 
       } as any);
-      vi.mocked(db.insert).mockReturnValue({ values: vi.fn() } as any);
 
-      await AuthService.forgotPassword('a@a.com');
+      await container.get(AuthService).forgotPassword('a@a.com');
       expect(EmailService.sendPasswordResetEmail).toHaveBeenCalledWith(
         expect.any(String),
         expect.stringContaining('http://admin.com')
@@ -205,60 +224,59 @@ describe('AuthService', () => {
     });
 
     it('throws if portal URL is missing in env', async () => {
-      const original = process.env.NEXT_PUBLIC_WEB_APP_URL;
-      delete process.env.NEXT_PUBLIC_WEB_APP_URL;
-      vi.mocked(db.query.users.findFirst).mockResolvedValue({ id: 'u1', email: 't@t.com', userRoles: [] } as any);
-      await expect(AuthService.forgotPassword('t@t.com')).rejects.toThrow('is required');
-      process.env.NEXT_PUBLIC_WEB_APP_URL = original;
+      vi.stubEnv('NEXT_PUBLIC_WEB_APP_URL', '');
+      vi.spyOn(UserRepository.prototype, 'findWithDetails').mockResolvedValue({ id: 'u1', email: 't@t.com', userRoles: [] } as any);
+      await expect(container.get(AuthService).forgotPassword('t@t.com')).rejects.toThrow('is required');
     });
   });
 
   describe('resendVerification', () => {
     it('throws if user not found', async () => {
-      vi.mocked(db.query.users.findFirst).mockResolvedValue(undefined);
-      await expect(AuthService.resendVerification('u1')).rejects.toThrow('User not found');
+      vi.spyOn(UserRepository.prototype, 'findById').mockResolvedValue(undefined);
+      await expect(container.get(AuthService).resendVerification('u1')).rejects.toThrow('User not found');
     });
 
     it('throws if already verified', async () => {
-      vi.mocked(db.query.users.findFirst).mockResolvedValue({ emailVerified: true } as any);
-      await expect(AuthService.resendVerification('u1')).rejects.toThrow('already verified');
+      vi.spyOn(UserRepository.prototype, 'findById').mockResolvedValue({ emailVerified: true } as any);
+      await expect(container.get(AuthService).resendVerification('u1')).rejects.toThrow('already verified');
     });
 
     it('inserts new token on success', async () => {
-      vi.mocked(db.query.users.findFirst).mockResolvedValue({ emailVerified: false } as any);
-      vi.mocked(db.insert).mockReturnValue({ values: vi.fn() } as any);
-      
-      const result = await AuthService.resendVerification('u1');
+      vi.spyOn(UserRepository.prototype, 'findById').mockResolvedValue({ id: 'u1', emailVerified: false } as any);
+      const tokenSpy = vi.spyOn(UserRepository.prototype, 'createToken');
+
+      const result = await container.get(AuthService).resendVerification('u1');
       expect(result).toBe(true);
-      expect(db.insert).toHaveBeenCalledWith(verificationTokens);
+      expect(tokenSpy).toHaveBeenCalled();
     });
   });
 
   describe('heartbeat', () => {
     it('updates lastActiveAt', async () => {
-      vi.mocked(db.update).mockReturnValue({ set: vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue(undefined) }) } as any);
-      const result = await AuthService.heartbeat('u1');
+      const activeSpy = vi.spyOn(UserRepository.prototype, 'updateLastActive');
+      const result = await container.get(AuthService).heartbeat('u1');
       expect(result).toBe(true);
-      expect(db.update).toHaveBeenCalledWith(users);
+      expect(activeSpy).toHaveBeenCalledWith('u1');
     });
   });
 
   describe('touchUserSession', () => {
     it('updates lastActiveAt for all active sessions of a user', async () => {
-      vi.mocked(db.update).mockReturnValue({ set: vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue(undefined) }) } as any);
-      await AuthService.touchUserSession('u1');
-      expect(db.update).toHaveBeenCalledWith(refreshTokens);
+      const touchSpy = vi.spyOn(TokenRepository.prototype, 'touchSession');
+      await container.get(AuthService).touchUserSession('u1');
+      expect(touchSpy).toHaveBeenCalledWith('u1');
     });
   });
 
   describe('resetPassword', () => {
     it('updates password on success', async () => {
-      vi.mocked(db.query.passwordResetTokens.findFirst).mockResolvedValue({ id: 't1', userId: 'u1' } as any);
-      vi.mocked(db.update).mockReturnValue({ set: vi.fn().mockReturnValue({ where: vi.fn() }) } as any);
-      vi.mocked(db.delete).mockReturnValue({ where: vi.fn() } as any);
+      vi.spyOn(UserRepository.prototype, 'findResetToken').mockResolvedValue({ id: 't1', userId: 'u1' } as any);
+      const updateSpy = vi.spyOn(UserRepository.prototype, 'updatePassword');
+      const deleteSpy = vi.spyOn(UserRepository.prototype, 'deleteResetToken');
 
-      await AuthService.resetPassword('tok', 'new-pw');
-      expect(db.update).toHaveBeenCalled();
+      await container.get(AuthService).resetPassword('tok', 'new-pw');
+      expect(updateSpy).toHaveBeenCalled();
+      expect(deleteSpy).toHaveBeenCalledWith('t1');
     });
   });
 });

@@ -14,6 +14,7 @@ import { uploadReport } from "@/lib/storage/upload-report";
 import { withLogging } from "@/lib/withLogging";
 import { TokenService } from "@/modules/auth/token.service";
 import { cacheService } from "@/modules/core/cache.service";
+import { container } from '@/modules/core/container';
 import { resilienceManager } from "@/modules/core/resilience.manager";
 import { PerformanceService } from "@/modules/report-engine/performance.service";
 import { ReportPdfService } from "@/modules/report-engine/report-pdf.service";
@@ -68,9 +69,9 @@ async function postHandler(req: NextRequest) {
       if (!examData) throw notFound("Exam", attemptId);
       userId = examData.userId;
     } else {
-      const token = TokenService.getAccessToken(req, { scope: "user" });
+      const token = container.get(TokenService).getAccessToken(req, { scope: "user" });
       if (token === null || token === undefined || token === "") throw unauthorized("Unauthorized");
-      const payload = await TokenService.verifyAccessToken(token, false);
+      const payload = await container.get(TokenService).verifyAccessToken(token, false);
       if (payload === null || payload === undefined || payload.userId === null || payload.userId === undefined) {
         throw unauthorized("Unauthorized");
       }
@@ -110,8 +111,8 @@ async function postHandler(req: NextRequest) {
 
     if (force) {
       logger.info({ attemptId }, "[GenerateReport] Forced regeneration: Invalidating analytics cache");
-      await PerformanceService.invalidateCache(attemptId);
-      await PerformanceService.refreshAnalytics(); 
+      await container.get(PerformanceService).invalidateCache(attemptId);
+      await container.get(PerformanceService).refreshAnalytics(); 
     }
 
     const report = await ReportRepository.getReportByAttempt(attemptId);

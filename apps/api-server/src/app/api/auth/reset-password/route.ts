@@ -5,6 +5,7 @@ import { ApiResponse } from '@/lib/api-response';
 import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 import { withLogging } from '@/lib/withLogging';
 import { AuthService } from '@/modules/auth/auth.service';
+import { container } from '@/modules/core/container';
 import { resetPasswordSchema } from '@/schemas/auth.schemas';
 
 export const dynamic = 'force-dynamic';
@@ -16,7 +17,7 @@ async function getHandler(_req: NextRequest) {
     }
 
     try {
-        const valid = await AuthService.validateResetToken(_token);
+        const valid = await container.get(AuthService).validateResetToken(_token);
         return ApiResponse.success({ valid });
     } catch {
         return ApiResponse.success({ valid: false });
@@ -40,7 +41,7 @@ async function postHandler(_req: NextRequest) {
     const { token, password } = parsed.data;
 
     const ip = _req.headers.get('x-forwarded-for') ?? '0.0.0.0';
-    await AuthService.resetPassword(token, password, ip);
+    await container.get(AuthService).resetPassword(token, password, ip);
 
     return ApiResponse.success({ success: true });
   } catch (_error: unknown) {

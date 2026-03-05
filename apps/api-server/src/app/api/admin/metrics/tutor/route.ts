@@ -8,17 +8,18 @@ import { ApiResponse } from "@/lib/api-response";
 import { recordCounter, recordTimer } from "@/lib/metrics";
 import { withLogging } from "@/lib/withLogging";
 import { TokenService } from "@/modules/auth/token.service";
+import { container } from '@/modules/core/container';
 
 export const dynamic = "force-dynamic";
 
 async function handler(req: NextRequest) {
   const start = Date.now();
   try {
-    const token = TokenService.getAccessToken(req, { scope: "admin" });
+    const token = container.get(TokenService).getAccessToken(req, { scope: "admin" });
     if (typeof token !== "string" || token.trim().length === 0) {
       return ApiResponse.error(unauthorized("Unauthorized"), 401);
     }
-    await TokenService.verifyAccessToken(token, true);
+    await container.get(TokenService).verifyAccessToken(token, true);
 
     const [notesDemand, emailHealth, weakTopics, helpRequests] = await Promise.all([
       db.execute(sql`

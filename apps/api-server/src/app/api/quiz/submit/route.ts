@@ -7,6 +7,7 @@ import { recordCounter, recordTimer } from '@/lib/metrics';
 import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 import { withLogging } from '@/lib/withLogging';
 import { TokenService } from '@/modules/auth/token.service';
+import { container } from '@/modules/core/container';
 import { ExamEngine } from '@/modules/exam-engine/exam.engine';
 import { submitSchema } from '@/schemas/quiz.schemas';
 
@@ -19,12 +20,12 @@ export const dynamic = 'force-dynamic';
 async function postHandler(req: NextRequest) {
   const start = Date.now();
   try {
-    const token = TokenService.getAccessToken(req, { scope: 'user' });
+    const token = container.get(TokenService).getAccessToken(req, { scope: 'user' });
     if (token === null || token === undefined || token === '') {
       throw unauthorized("Unauthorized");
     }
 
-    const payload = await TokenService.verifyAccessToken(token, false);
+    const payload = await container.get(TokenService).verifyAccessToken(token, false);
     if (payload === null || payload === undefined || payload.userId === null || payload.userId === undefined) {
       throw unauthorized("Authentication required");
     }
@@ -49,7 +50,7 @@ async function postHandler(req: NextRequest) {
     const idempotencyKey = req.headers.get('idempotency-key') ?? undefined;
     
     // Step 5 Hardening: Pass idempotency key for safe retries
-    const result = await ExamEngine.completeExam(examId, payload.userId, idempotencyKey);
+    const result = await container.get(ExamEngine).completeExam(examId, payload.userId, idempotencyKey);
     
     const durationMs = Date.now() - start;
     recordCounter(METRICS.EXAM.SUBMIT + '.success', 1);

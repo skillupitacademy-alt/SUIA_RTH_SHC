@@ -8,6 +8,7 @@ import { recordCounter, recordTimer } from "@/lib/metrics";
 import { redis } from "@/lib/redis";
 import { withLogging } from "@/lib/withLogging";
 import { TokenService } from "@/modules/auth/token.service";
+import { container } from '@/modules/core/container';
 import { ResilienceService } from "@/modules/core/resilience.service";
 
 export const dynamic = "force-dynamic";
@@ -26,12 +27,12 @@ async function getHandler(req: NextRequest) {
       return ApiResponse.error(new Error("Analytics service is busy"), 503);
     }
 
-    const token = TokenService.getAccessToken(req, { scope: "admin" });
+    const token = container.get(TokenService).getAccessToken(req, { scope: "admin" });
     if (token === undefined || token === null || token === "") {
       throw unauthorized("Authentication required");
     }
 
-    const payload = await TokenService.verifyAccessToken(token as string, true) as {
+    const payload = await container.get(TokenService).verifyAccessToken(token as string, true) as {
       isAdmin?: boolean;
       roles?: string[];
     } | null;

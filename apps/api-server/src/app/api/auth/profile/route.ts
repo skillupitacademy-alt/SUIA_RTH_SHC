@@ -7,6 +7,7 @@ import { ApiResponse } from '@/lib/api-response';
 import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 import { withLogging } from '@/lib/withLogging';
 import { TokenService } from '@/modules/auth/token.service';
+import { container } from '@/modules/core/container';
 
 export const dynamic = 'force-dynamic';
 
@@ -19,12 +20,12 @@ interface ProfileUpdateBody {
 
 async function getHandler(_req: NextRequest) {
   try {
-    const _token = TokenService.getAccessToken(_req, { scope: 'user' });
+    const _token = container.get(TokenService).getAccessToken(_req, { scope: 'user' });
     if (typeof _token !== 'string' || _token.trim() === '') {
       return ApiResponse.error(unauthorized('Unauthorized', 'UNAUTHORIZED'));
     }
 
-    const _payload = await TokenService.verifyAccessToken(_token, false);
+    const _payload = await container.get(TokenService).verifyAccessToken(_token, false);
     if (_payload === null || _payload === undefined || _payload.userId === null || _payload.userId === undefined) {
       return ApiResponse.error(unauthorized('Unauthorized', 'UNAUTHORIZED'));
     }
@@ -44,12 +45,12 @@ async function getHandler(_req: NextRequest) {
 
 async function patchHandler(_req: NextRequest) {
   try {
-    const _token = TokenService.getAccessToken(_req, { scope: 'user' });
+    const _token = container.get(TokenService).getAccessToken(_req, { scope: 'user' });
     if (_token === null || _token === undefined || _token === '') {
       return ApiResponse.error(unauthorized('Unauthorized', 'UNAUTHORIZED'));
     }
 
-    const _payload = await TokenService.verifyAccessToken(_token, false);
+    const _payload = await container.get(TokenService).verifyAccessToken(_token, false);
     if (_payload === null || _payload === undefined || _payload.userId === null || _payload.userId === undefined) {
       return ApiResponse.error(unauthorized('Unauthorized', 'UNAUTHORIZED'));
     }

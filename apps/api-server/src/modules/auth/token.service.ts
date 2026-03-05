@@ -1,7 +1,6 @@
 import { decodeJwt, type JWTPayload,jwtVerify, SignJWT } from 'jose';
 import type { NextRequest } from 'next/server';
 
-
 const ACCESS_TOKEN_EXPIRE = '15m';
 const REFRESH_TOKEN_EXPIRE = '7d';
 
@@ -14,14 +13,20 @@ export interface TokenPayload extends JWTPayload {
 }
 
 export class TokenService {
-  private static readonly ACCESS_SECRET = new TextEncoder().encode(process.env.JWT_SECRET!);
-  private static readonly REFRESH_SECRET = new TextEncoder().encode(process.env.JWT_REFRESH_SECRET!);
-  private static readonly ADMIN_SECRET = new TextEncoder().encode((process.env.ADMIN_JWT_SECRET !== undefined && process.env.ADMIN_JWT_SECRET !== null && process.env.ADMIN_JWT_SECRET !== '') ? process.env.ADMIN_JWT_SECRET : (process.env.JWT_SECRET !== undefined && process.env.JWT_SECRET !== null && process.env.JWT_SECRET !== '') ? process.env.JWT_SECRET : '');
+  private readonly ACCESS_SECRET = new TextEncoder().encode(process.env.JWT_SECRET!);
+  private readonly REFRESH_SECRET = new TextEncoder().encode(process.env.JWT_REFRESH_SECRET!);
+  private readonly ADMIN_SECRET = new TextEncoder().encode(
+    (process.env.ADMIN_JWT_SECRET !== undefined && process.env.ADMIN_JWT_SECRET !== null && process.env.ADMIN_JWT_SECRET !== '') 
+      ? process.env.ADMIN_JWT_SECRET 
+      : (process.env.JWT_SECRET !== undefined && process.env.JWT_SECRET !== null && process.env.JWT_SECRET !== '') 
+        ? process.env.JWT_SECRET 
+        : ''
+  );
 
   /**
    * Universal _token extraction: Scope-Aware
    */
-  static getAccessToken(_req: NextRequest, options?: { scope?: 'admin' | 'user' | 'infrastructure' }): string | undefined {
+  getAccessToken(_req: NextRequest, options?: { scope?: 'admin' | 'user' | 'infrastructure' }): string | undefined {
     const scope = options?.scope;
 
     // 1. Check Cookies based on scope
@@ -57,14 +62,14 @@ export class TokenService {
    * Universal SHA-256 hashing using Web Crypto API.
    * Works in both Node.js 16+ and Edge Runtime.
    */
-  static async hashToken(_token: string): Promise<string> {
+  async hashToken(_token: string): Promise<string> {
     const msgUint8 = new TextEncoder().encode(_token);
     const hashBuffer = await globalThis.crypto.subtle.digest('SHA-256', msgUint8);
     const hashArray = Array.from(new Uint8Array(hashBuffer));
     return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
   }
 
-  static async generateAccessToken(_payload: TokenPayload, customExpiration?: string | number): Promise<string> {
+  async generateAccessToken(_payload: TokenPayload, customExpiration?: string | number): Promise<string> {
     const secret = _payload.isAdmin === true ? this.ADMIN_SECRET : this.ACCESS_SECRET;
     const expiration = (customExpiration !== undefined && customExpiration !== null && customExpiration !== '') ? customExpiration : ACCESS_TOKEN_EXPIRE;
     
@@ -79,7 +84,7 @@ export class TokenService {
       .sign(secret);
   }
 
-  static async generateRefreshToken(userId: string, isAdmin: boolean = false, audience: string = 'user'): Promise<string> {
+  async generateRefreshToken(userId: string, isAdmin: boolean = false, audience: string = 'user'): Promise<string> {
     const secret = isAdmin ? this.ADMIN_SECRET : this.REFRESH_SECRET;
     return await new SignJWT({ userId, isAdmin, aud: audience })
       .setProtectedHeader({ alg: 'HS256' })
@@ -89,7 +94,7 @@ export class TokenService {
       .sign(secret);
   }
 
-  static async verifyAccessToken(_token: string, optionsOrIsAdmin?: { isAdmin?: boolean; audience?: string } | boolean): Promise<TokenPayload> {
+  async verifyAccessToken(_token: string, optionsOrIsAdmin?: { isAdmin?: boolean; audience?: string } | boolean): Promise<TokenPayload> {
     let isAdmin: boolean | undefined;
     let requiredAud: string | undefined;
 
@@ -152,7 +157,7 @@ export class TokenService {
     }
   }
 
-  static async verifyRefreshToken(_token: string, options: { isAdmin?: boolean; audience?: string } = {}): Promise<{ userId: string; isAdmin: boolean; aud?: string }> {
+  async verifyRefreshToken(_token: string, options: { isAdmin?: boolean; audience?: string } = {}): Promise<{ userId: string; isAdmin: boolean; aud?: string }> {
     const isAdmin = options.isAdmin ?? false;
     const secret = isAdmin ? this.ADMIN_SECRET : this.REFRESH_SECRET;
     const { payload: _payload } = await jwtVerify(_token, secret, {
@@ -165,7 +170,7 @@ export class TokenService {
    * Extract expiration timestamp from a _token without verifying signature.
    * Useful for informing the client about session duration.
    */
-  static getExpiration(_token: string): string | null {
+  getExpiration(_token: string): string | null {
     try {
       const decoded = decodeJwt(_token);
       if (decoded.exp !== undefined) {
@@ -177,7 +182,7 @@ export class TokenService {
     }
   }
 
-  static getExpiryISO(_payload: JWTPayload): string {
+  getExpiryISO(_payload: JWTPayload): string {
     return new Date((_payload.exp as number) * 1000).toISOString();
   }
 }
