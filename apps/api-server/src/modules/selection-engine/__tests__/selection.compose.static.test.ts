@@ -1,26 +1,34 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { db } from '@quiz/db';
+import { SelectionService } from '../selection.service';
+import { container } from '../../core/container';
 
-import { SelectionService } from '../selection.service'
+vi.mock('@quiz/db', () => ({
+    db: {
+        query: {
+            questions: { findMany: vi.fn() },
+            examBlueprints: { findFirst: vi.fn() }
+        }
+    },
+    questions: { tableName: 'questions', id: 'id', status: 'active' },
+    examBlueprints: { tableName: 'exam_blueprints', id: 'id' }
+}));
 
-describe('SelectionService.composeExam static and dynamic paths', () => {
+describe('SelectionService static composition', () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+        container.reset();
+        container.register(SelectionService, new SelectionService(db as any, {} as any));
+    });
+
   it('returns static questions when blueprint has questionIds', async () => {
-    const blueprint = { questionIds: ['q1', 'q2'] }
-    vi.spyOn(SelectionService as any, 'resolveBlueprint').mockResolvedValue(blueprint)
-    vi.spyOn(SelectionService as any, 'fetchStaticQuestions').mockResolvedValue(['q1', 'q2'])
+    const service = container.get(SelectionService);
+    const mockQuestions = [{ id: 'q1' }, { id: 'q2' }];
+    vi.mocked(db.query.examBlueprints.findFirst).mockResolvedValue({ id: 'bp1', questionIds: ['q1', 'q2'] } as any);
+    vi.mocked(db.query.questions.findMany).mockResolvedValue(mockQuestions as any);
 
-    const result = await SelectionService.composeExam('u1', 'bp1', 'idem')
-    expect(result).toEqual(['q1', 'q2'])
-  })
-
-  it('invokes dynamic selection when no static ids', async () => {
-    vi.spyOn(SelectionService as any, 'resolveBlueprint').mockResolvedValue({ questionIds: [] })
-    vi.spyOn(SelectionService as any, 'resolveSelectionCriteria').mockResolvedValue({
-      finalSubtopicIds: [], actualTopicIds: [], actualSubjectIds: [], requestedTotal: 1, difficultyPref: 'simple'
-    })
-    vi.spyOn(SelectionService as any, 'executeDynamicSelection').mockResolvedValue([{ id: 'q3' }])
-
-    const result = await SelectionService.composeExam('u1', 'bp1', 'idem')
-    expect(result.questions).toEqual([{ id: 'q3' }])
-    expect(result.blueprint).toEqual({ questionIds: [] })
-  })
-})
+    const result = await service.composeExam('u1', 'bp1', 'key1');
+    expect(result.questions).toHaveLength(2);
+    expect(db.query.questions.findMany).toHaveBeenCalled();
+  });
+});

@@ -1,35 +1,55 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { db, loginAttempts, users } from '@quiz/db';
+import { SecurityService } from '../security.service';
+import { container } from '../../core/container';
 
-import { db } from '@quiz/db'
-import { SecurityService } from '../security.service'
+vi.mock('@quiz/db', () => ({
+  db: {
+    query: {
+      users: { findFirst: vi.fn() },
+      loginAttempts: { findFirst: vi.fn() },
+    },
+    insert: vi.fn().mockReturnValue({ values: vi.fn() }),
+    update: vi.fn().mockReturnValue({ set: vi.fn().mockReturnThis(), where: vi.fn() }),
+    delete: vi.fn().mockReturnValue({ where: vi.fn() }),
+  },
+  loginAttempts: { id: 'la', userId: 'u', ip: 'ip' },
+  users: { id: 'u', email: 'e' },
+}));
 
-describe('SecurityService lockout paths', () => {
-  it('clears attempts on success and locks after threshold', async () => {
-    ;(db.query as any).users = { findFirst: vi.fn().mockResolvedValue({ id: 'u1', email: 'a@b.com' }) }
-    // success clears
-    ;(db.delete as any) = vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue(undefined) })
-    await SecurityService.trackLoginAttempt('1.1.1.1', 'a@b.com', true)
-    expect(db.delete).toHaveBeenCalled()
+describe('SecurityService Coverage', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    container.reset();
+  });
 
-    // failures accumulate
-    ;(db.query as any).loginAttempts = {
-      findFirst: vi.fn()
-        .mockResolvedValueOnce({ id: 'la1', userId: 'u1', ip: '1.1.1.1', attempts: 4 })
-        .mockResolvedValueOnce({ id: 'la1', userId: 'u1', ip: '1.1.1.1', attempts: 9 })
-        .mockResolvedValueOnce({ id: 'la1', userId: 'u1', ip: '1.1.1.1', attempts: 19, lockedUntil: new Date(Date.now() + 60000) }),
-    }
-    ;(db.update as any) = vi.fn().mockReturnValue({ set: vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue(undefined) }) })
-    await SecurityService.trackLoginAttempt('1.1.1.1', 'a@b.com', false) // 5 -> lock 15m
-    await SecurityService.trackLoginAttempt('1.1.1.1', 'a@b.com', false) // 10 -> lock 60m
+  it('trackLoginAttempt: success deletes attempts', async () => {
+    vi.mocked(db.query.users.findFirst).mockResolvedValue({ id: 'u1' } as any);
+    const service = container.get(SecurityService);
+    await service.trackLoginAttempt('1.1.1.1', 'a@b.com', true);
+    expect(db.delete).toHaveBeenCalled();
+  });
 
-    // account locked when lockedUntil in future
-    const locked = await SecurityService.isAccountLocked('a@b.com', '1.1.1.1')
-    expect(locked).toBe(true)
-  })
+  it('trackLoginAttempt: failure increments attempts and locks', async () => {
+    vi.mocked(db.query.users.findFirst).mockResolvedValue({ id: 'u1' } as any);
+    vi.mocked(db.query.loginAttempts.findFirst).mockResolvedValue({ id: 'la1', attempts: 9 } as any);
+    const service = container.get(SecurityService);
+    await service.trackLoginAttempt('1.1.1.1', 'a@b.com', false); // 10 attempts -> lock
+    expect(db.update).toHaveBeenCalled();
+  });
 
-  it('returns false if user not found in isAccountLocked (Line 58)', async () => {
-    ;(db.query as any).users = { findFirst: vi.fn().mockResolvedValue(undefined) }
-    const result = await SecurityService.isAccountLocked('none@b.com', '1.1.1.1')
-    expect(result).toBe(false)
-  })
-})
+  it('isAccountLocked: returns true if lockedUntil is in future', async () => {
+    vi.mocked(db.query.users.findFirst).mockResolvedValue({ id: 'u1' } as any);
+    vi.mocked(db.query.loginAttempts.findFirst).mockResolvedValue({ id: 'la1', lockedUntil: new Date(Date.now() + 100000) } as any);
+    const service = container.get(SecurityService);
+    const locked = await service.isAccountLocked('a@b.com', '1.1.1.1');
+    expect(locked).toBe(true);
+  });
+
+  it('isAccountLocked: returns false if user not found', async () => {
+      vi.mocked(db.query.users.findFirst).mockResolvedValue(undefined);
+      const service = container.get(SecurityService);
+      const result = await service.isAccountLocked('none@b.com', '1.1.1.1');
+      expect(result).toBe(false);
+  });
+});

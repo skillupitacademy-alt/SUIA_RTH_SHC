@@ -8,7 +8,7 @@ import { EmailService } from '@/modules/email/EmailService'
 
 describe('AuthService forgot password edge', () => {
   it('throws when reset URLs envs missing', async () => {
-    vi.spyOn(AuditService, 'log').mockResolvedValue(undefined as never)
+    vi.spyOn(AuditService.prototype, 'log').mockResolvedValue(undefined as never)
     vi.spyOn(EmailService, 'sendPasswordResetEmail').mockResolvedValue(undefined as never)
     ;(db.query as any).users = { findFirst: vi.fn().mockResolvedValue({
       id: 'u1',
@@ -23,6 +23,7 @@ describe('AuthService forgot password edge', () => {
     })
     process.env.NEXT_PUBLIC_ADMIN_URL = ''
 
-    await expect(AuthService.forgotPassword('u1@example.com')).rejects.toThrow(/NEXT_PUBLIC_ADMIN_URL/)
+    const { container } = await import('../../core/container')
+    await expect(container.get(AuthService).forgotPassword('u1@example.com')).rejects.toThrow(/NEXT_PUBLIC_ADMIN_URL/)
   })
 })

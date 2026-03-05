@@ -1,17 +1,25 @@
 import { describe, it, expect, vi } from 'vitest';
+import { db, users } from '@quiz/db';
+import { SecurityService } from '../security.service';
+import { container } from '../../core/container';
 
 vi.mock('@quiz/db', () => ({
   db: {
-    query: { users: { findFirst: vi.fn().mockResolvedValue(undefined) } },
+    query: {
+      users: { findFirst: vi.fn() },
+      loginAttempts: { findFirst: vi.fn() },
+    },
   },
-  loginAttempts: {},
-  users: {},
+  users: { id: 'u', email: 'e' },
+  loginAttempts: { id: 'la', userId: 'u', ip: 'ip' },
 }));
 
-describe('SecurityService early return (no user)', () => {
-  it('returns false when user not found (line ~45)', async () => {
-    const { SecurityService } = await import('../security.service');
-    const locked = await SecurityService.isAccountLocked('missing@example.com', '1.1.1.1');
+describe('SecurityService Early Coverage', () => {
+  it('isAccountLocked handles missing entries early', async () => {
+    vi.mocked(db.query.users.findFirst).mockResolvedValue(undefined);
+    container.reset();
+    const service = container.get(SecurityService);
+    const locked = await service.isAccountLocked('missing@example.com', '1.1.1.1');
     expect(locked).toBe(false);
   });
 });

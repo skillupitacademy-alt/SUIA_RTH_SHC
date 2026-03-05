@@ -18,10 +18,11 @@ describe('TokenService.getAccessToken', () => {
       headers: { get: () => 'Bearer headerTok' },
     }
 
-    expect(TokenService.getAccessToken(req as any, { scope: 'admin' })).toBe('adminTok')
-    expect(TokenService.getAccessToken(req as any, { scope: 'user' })).toBe('userTok')
-    expect(TokenService.getAccessToken(req as any, { scope: 'infrastructure' })).toBe('infraTok')
+    const service = new TokenService()
+    expect(service.getAccessToken(req as any, { scope: 'admin' })).toBe('adminTok')
+    expect(service.getAccessToken(req as any, { scope: 'user' })).toBe('userTok')
+    expect(service.getAccessToken(req as any, { scope: 'infrastructure' })).toBe('infraTok')
     // fallback no scope -> first cookie found (adminTok), not header
-    expect(TokenService.getAccessToken(req as any)).toBe('userTok')
+    expect(service.getAccessToken(req as any)).toBe('userTok')
   })
 })

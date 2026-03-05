@@ -1,46 +1,38 @@
-import { describe, it, expect, vi } from 'vitest';
-
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { db } from '@quiz/db';
-
 import { SelectionService } from '../selection.service';
+import { container } from '../../core/container';
 
-describe('SelectionService composeExam empty pools', () => {
-  it('throws when no questions found for mixed tiers', async () => {
-    // Mock resolveBlueprint to avoid DB noise
-    vi.spyOn(SelectionService as any, 'resolveBlueprint').mockResolvedValue({
-      id: 'b1',
-      totalQuestions: 3,
-      timeLimit: 5,
-      domains: [],
-      status: 'active',
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      createdById: 'u1',
-      subjects: [],
-      topics: [],
-      subtopics: [],
-      questionIds: [],
+const mockQueryBuilder = (result: any = []) => ({
+    from: vi.fn().mockReturnThis(),
+    where: vi.fn().mockReturnThis(),
+    then: (resolve: any) => Promise.resolve(result).then(resolve),
+} as any);
+
+vi.mock('@quiz/db', () => ({
+    db: {
+        select: vi.fn(),
+        query: { examBlueprints: { findFirst: vi.fn() } }
+    },
+    examBlueprints: { tableName: 'exam_blueprints', id: 'id' },
+    subtopics: { tableName: 'subtopics', id: 'id', topicId: 'topic_id' },
+    topics: { tableName: 'topics', id: 'id', subjectId: 'subject_id' },
+    subjects: { tableName: 'subjects' },
+    questions: { tableName: 'questions' }
+}));
+
+describe('SelectionService composition empty pools', () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+        container.reset();
+        container.register(SelectionService, new SelectionService(db as any, { get: vi.fn(), set: vi.fn() } as any));
     });
 
-    // Make resolveSelectionCriteria return no ids so domainCond branch is used
-    vi.spyOn(SelectionService as any, 'resolveSelectionCriteria').mockResolvedValue({
-      domainId: 'd1',
-      finalSubtopicIds: [],
-      actualTopicIds: [],
-      actualSubjectIds: [],
-      requestedTotal: 3,
-      difficultyPref: 'mixed',
+    it('throws if no questions found in pool', async () => {
+        vi.mocked(db.query.examBlueprints.findFirst).mockResolvedValue({ id: 'bp1' } as any);
+        vi.mocked(db.select).mockImplementation(() => mockQueryBuilder([{ count: 0 }]));
+
+        const service = container.get(SelectionService);
+        await expect(service.composeExam('u1', 'bp1', 'key1')).rejects.toThrow('No questions found');
     });
-
-    // Force count(*) to 0 so each pool is empty
-    vi.spyOn(db, 'select').mockReturnValue({
-      from: vi.fn().mockReturnValue({
-        where: vi.fn().mockResolvedValue([{ count: 0 }]),
-      }),
-    } as any);
-
-    await expect(
-      SelectionService.composeExam('u1', 'd1', 'key1')
-    ).rejects.toThrow(/No questions found/);
-  });
 });

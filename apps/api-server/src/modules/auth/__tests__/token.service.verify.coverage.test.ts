@@ -33,13 +33,15 @@ describe('TokenService verification branches', () => {
             payload: { aud: 'weird' }
         } as any);
 
-        await expect(TokenService.verifyAccessToken('tok', { audience: 'infra' }))
+        const service = new TokenService();
+        await expect(service.verifyAccessToken('tok', { audience: 'infra' }))
             .rejects.toThrow('Audience mismatch: expected infra, got weird');
     });
 
     it('handles verifyRefreshToken error (Line 164 branch - though line numbers might vary)', async () => {
         vi.mocked(jose.jwtVerify).mockRejectedValue(new Error('Invalid Compact JWS'));
-        await expect(TokenService.verifyRefreshToken('tok')).rejects.toThrow('Invalid Compact JWS');
+        const service = new TokenService();
+        await expect(service.verifyRefreshToken('tok')).rejects.toThrow('Invalid Compact JWS');
     });
 
     it('getExpiration returns null when exp is missing (Line 177)', () => {

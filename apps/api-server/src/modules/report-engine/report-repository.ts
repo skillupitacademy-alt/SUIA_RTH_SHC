@@ -16,17 +16,19 @@ export interface UpdateReportSuccessInput {
 }
 
 export class ReportRepository {
-  static async getReportByAttempt(attemptId: string) {
-    return db.query.reports.findFirst({
+  constructor(private readonly dbInstance = db) {}
+
+  async getReportByAttempt(attemptId: string) {
+    return this.dbInstance.query.reports.findFirst({
       where: eq(reports.attemptId, attemptId),
     });
   }
 
-  static async createReportIfNotExists(input: CreateReportInput) {
+  async createReportIfNotExists(input: CreateReportInput) {
     const existing = await this.getReportByAttempt(input.attemptId);
     if (existing) return existing;
 
-    const [newReport] = await db
+    const [newReport] = await this.dbInstance
       .insert(reports)
       .values({
         attemptId: input.attemptId,
@@ -39,12 +41,12 @@ export class ReportRepository {
     return newReport;
   }
 
-  static async updateReportStatus(
+  async updateReportStatus(
     attemptId: string, 
     status: 'pending' | 'generating' | 'ready' | 'failed', 
     stageOrError?: string
   ) {
-    const [updated] = await db
+    const [updated] = await this.dbInstance
       .update(reports)
       .set({ 
         status, 
@@ -57,8 +59,8 @@ export class ReportRepository {
     return updated;
   }
 
-  static async updateReportSuccess(attemptId: string, data: UpdateReportSuccessInput) {
-    const [updated] = await db
+  async updateReportSuccess(attemptId: string, data: UpdateReportSuccessInput) {
+    const [updated] = await this.dbInstance
       .update(reports)
       .set({
         status: 'ready',
@@ -75,7 +77,7 @@ export class ReportRepository {
     return updated;
   }
 
-  static async listReports(filters: {
+  async listReports(filters: {
     status?: string;
     userId?: string;
     limit?: number;
@@ -93,7 +95,7 @@ export class ReportRepository {
     const limit = filters.limit ?? 50;
     const offset = filters.offset ?? 0;
 
-    const rows = await db
+    const rows = await this.dbInstance
       .select()
       .from(reports)
       .where(conditions.length > 0 ? and(...conditions) : undefined)
@@ -104,8 +106,8 @@ export class ReportRepository {
     return rows;
   }
 
-  static async getReportStats() {
-    const statusCounts = await db
+  async getReportStats() {
+    const statusCounts = await this.dbInstance
       .select({
         status: reports.status,
         total: count(),
@@ -113,7 +115,7 @@ export class ReportRepository {
       .from(reports)
       .groupBy(reports.status);
 
-    const avgGen = await db
+    const avgGen = await this.dbInstance
       .select({
         avgMs: avg(reports.generationTimeMs),
       })

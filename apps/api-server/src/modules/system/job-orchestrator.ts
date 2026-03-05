@@ -1,6 +1,7 @@
 import { JobStatus, JobType } from '@quiz/types';
 
 import { logger } from '@/lib/logger';
+import { container } from '@/modules/core/container';
 import { AnalyticsService } from '@/modules/analytics/analytics.service';
 import { resilienceManager } from '@/modules/core/resilience.manager';
 import { ScoringEngine } from '@/modules/scoring-engine/scoring.engine';

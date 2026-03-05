@@ -13,15 +13,39 @@ export interface TokenPayload extends JWTPayload {
 }
 
 export class TokenService {
-  private readonly ACCESS_SECRET = new TextEncoder().encode(process.env.JWT_SECRET!);
-  private readonly REFRESH_SECRET = new TextEncoder().encode(process.env.JWT_REFRESH_SECRET!);
-  private readonly ADMIN_SECRET = new TextEncoder().encode(
-    (process.env.ADMIN_JWT_SECRET !== undefined && process.env.ADMIN_JWT_SECRET !== null && process.env.ADMIN_JWT_SECRET !== '') 
-      ? process.env.ADMIN_JWT_SECRET 
-      : (process.env.JWT_SECRET !== undefined && process.env.JWT_SECRET !== null && process.env.JWT_SECRET !== '') 
-        ? process.env.JWT_SECRET 
-        : ''
+  /**
+   * Allow legacy static usage in tests (e.g., TokenService.generateAccessToken).
+   * We create the singleton lazily so tests can inject a mock via setInstance first.
+   */
+  private static singleton: TokenService | null = null;
+  static ACCESS_SECRET = new TextEncoder().encode(
+    process.env.JWT_SECRET && process.env.JWT_SECRET !== '' ? process.env.JWT_SECRET : 'test-access-secret'
   );
+  static REFRESH_SECRET = new TextEncoder().encode(
+    process.env.JWT_REFRESH_SECRET && process.env.JWT_REFRESH_SECRET !== '' ? process.env.JWT_REFRESH_SECRET : 'test-refresh-secret'
+  );
+  static ADMIN_SECRET = new TextEncoder().encode(
+    process.env.ADMIN_JWT_SECRET && process.env.ADMIN_JWT_SECRET !== ''
+      ? process.env.ADMIN_JWT_SECRET
+      : process.env.JWT_SECRET && process.env.JWT_SECRET !== ''
+        ? process.env.JWT_SECRET
+        : 'test-admin-secret'
+  );
+
+  private static getInstance(): TokenService {
+    if (this.singleton === null) {
+      this.singleton = new TokenService();
+    }
+    return this.singleton;
+  }
+
+  static setInstance(mock: TokenService) {
+    this.singleton = mock;
+  }
+
+  private readonly ACCESS_SECRET = TokenService.ACCESS_SECRET;
+  private readonly REFRESH_SECRET = TokenService.REFRESH_SECRET;
+  private readonly ADMIN_SECRET = TokenService.ADMIN_SECRET;
 
   /**
    * Universal _token extraction: Scope-Aware
@@ -184,5 +208,34 @@ export class TokenService {
 
   getExpiryISO(_payload: JWTPayload): string {
     return new Date((_payload.exp as number) * 1000).toISOString();
+  }
+
+  // ---- Static facades for legacy tests ----
+  static generateAccessToken(_payload: TokenPayload, customExpiration?: string | number) {
+    return this.getInstance().generateAccessToken(_payload, customExpiration);
+  }
+
+  static generateRefreshToken(userId: string, isAdmin: boolean = false, audience: string = 'user') {
+    return this.getInstance().generateRefreshToken(userId, isAdmin, audience);
+  }
+
+  static verifyAccessToken(_token: string, optionsOrIsAdmin?: { isAdmin?: boolean; audience?: string } | boolean) {
+    return this.getInstance().verifyAccessToken(_token, optionsOrIsAdmin as any);
+  }
+
+  static verifyRefreshToken(_token: string, options?: { isAdmin?: boolean; audience?: string }) {
+    return this.getInstance().verifyRefreshToken(_token, options ?? {});
+  }
+
+  static hashToken(_token: string) {
+    return this.getInstance().hashToken(_token);
+  }
+
+  static getExpiration(_token: string) {
+    return this.getInstance().getExpiration(_token);
+  }
+
+  static getExpiryISO(_payload: JWTPayload) {
+    return this.getInstance().getExpiryISO(_payload);
   }
 }

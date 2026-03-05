@@ -1,41 +1,44 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { TokenService } from '../token.service';
+import { container } from '../../core/container';
+import type { NextRequest } from 'next/server';
 
-type AccessPayload = { userId: string; isAdmin: boolean };
-
-vi.mock('@/modules/auth/token.service', () => ({
-  TokenService: {
-    signAccessToken: vi.fn<() => Promise<string>>(),
-    verifyAccessToken: vi.fn<() => Promise<AccessPayload | null>>(),
-    signRefreshToken: vi.fn<() => Promise<string>>(),
-  },
-}));
-
-// Still skipped to defer execution.
-describe.skip('TokenService (unit)', () => {
+describe('TokenService (unit)', () => {
   beforeEach(() => {
-    vi.useRealTimers();
-    vi.clearAllMocks();
+    process.env.JWT_SECRET = 'test-secret-test-secret-test-secret-test-secret';
+    process.env.JWT_REFRESH_SECRET = 'test-refresh-secret-test-refresh-secret';
+    process.env.ADMIN_JWT_SECRET = 'test-admin-secret-test-admin-secret';
+    container.reset();
   });
 
-  it('signs access token with admin scope', async () => {
-    const { TokenService } = await import('@/modules/auth/token.service');
-    vi.mocked(TokenService.signAccessToken).mockResolvedValue('signed-admin-token');
-    const token = await TokenService.signAccessToken({ userId: 'u1' }, true);
-    expect(token).toBe('signed-admin-token');
-  });
-
-  it('verifies access token and returns payload', async () => {
-    const { TokenService } = await import('@/modules/auth/token.service');
-    const payload: AccessPayload = { userId: 'u1', isAdmin: false };
-    vi.mocked(TokenService.verifyAccessToken).mockResolvedValue(payload);
-    const res = await TokenService.verifyAccessToken('t', false);
-    expect(res?.userId).toBe('u1');
+  it('signs and verifies access token', async () => {
+    const service = container.get(TokenService);
+    const payload = { userId: 'u1', email: 'u@u.com', roles: ['USER'], aud: 'user' } as any;
+    const token = await service.generateAccessToken(payload);
+    const decoded = await service.verifyAccessToken(token);
+    expect(decoded.userId).toBe('u1');
   });
 
   it('signs refresh token', async () => {
-    const { TokenService } = await import('@/modules/auth/token.service');
-    vi.mocked(TokenService.signRefreshToken).mockResolvedValue('refresh-token');
-    const token = await TokenService.signRefreshToken({ userId: 'u1' }, false);
-    expect(token).toBe('refresh-token');
+    const service = container.get(TokenService);
+    const token = await service.generateRefreshToken('u1', false, 'user');
+    expect(token).toBeDefined();
+    const decoded = await service.verifyRefreshToken(token, { audience: 'user' });
+    expect(decoded.userId).toBe('u1');
+  });
+
+  it('hashes token', async () => {
+    const service = container.get(TokenService);
+    const hash = await service.hashToken('test-token');
+    expect(hash).toHaveLength(64); // SHA-256 hex
+  });
+
+  it('getAccessToken: extracts from Authorization header', () => {
+    const service = container.get(TokenService);
+    const mockReq = {
+      cookies: { get: () => undefined },
+      headers: { get: (name: string) => name === 'authorization' ? 'Bearer my-token' : null }
+    } as unknown as NextRequest;
+    expect(service.getAccessToken(mockReq)).toBe('my-token');
   });
 });

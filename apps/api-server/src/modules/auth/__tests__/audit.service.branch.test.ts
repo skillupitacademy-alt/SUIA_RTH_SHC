@@ -13,7 +13,8 @@ describe('AuditService catch branch', () => {
       error: vi.fn(),
     } as any);
 
-    await AuditService.log({ userId: 'u1', action: 'test' });
+    const service = new AuditService();
+    await service.log({ userId: 'u1', action: 'test' });
 
     expect(errSpy).toHaveBeenCalled();
   });

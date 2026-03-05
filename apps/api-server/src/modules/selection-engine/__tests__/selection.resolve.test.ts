@@ -1,20 +1,27 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { db } from '@quiz/db';
+import { SelectionService } from '../selection.service';
+import { container } from '../../core/container';
 
-import { db } from '@quiz/db'
+vi.mock('@quiz/db', () => ({
+    db: {
+        query: { examBlueprints: { findFirst: vi.fn() } }
+    },
+    examBlueprints: { tableName: 'exam_blueprints', id: 'id' }
+}));
 
-import { cacheService } from '@/modules/core/cache.service'
-import { SelectionService } from '@/modules/selection-engine/selection.service'
+describe('SelectionService resolveBlueprint', () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+        container.reset();
+        container.register(SelectionService, new SelectionService(db as any, { get: vi.fn(), set: vi.fn() } as any));
+    });
 
-describe('SelectionService resolveBlueprint and criteria branches', () => {
-  it('falls back to domain-based blueprint lookup when id miss', async () => {
-    vi.spyOn(cacheService, 'get').mockResolvedValue(null)
-    ;(db.query as any).examBlueprints = {
-      findFirst: vi.fn()
-        .mockResolvedValueOnce(null) // id lookup miss
-        .mockResolvedValueOnce({ id: 'bp2', domains: ['d1'], status: 'active', totalQuestions: 5, timeLimit: 5, createdAt: new Date(), updatedAt: new Date(), createdById: 'u1' })
-    }
-
-    const res = await (SelectionService as any).resolveBlueprint('u1', 'd1', {})
-    expect(res.id).toBe('bp2')
-  })
-})
+    it('resolves blueprint by ID successfully', async () => {
+        vi.mocked(db.query.examBlueprints.findFirst).mockResolvedValue({ id: 'bp1' } as any);
+        const service = container.get(SelectionService);
+        // Accessing private method via bracket notation for testing
+        const result = await (service as any).resolveBlueprint('u1', 'bp1');
+        expect(result.id).toBe('bp1');
+    });
+});

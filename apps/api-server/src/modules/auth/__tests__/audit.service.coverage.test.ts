@@ -1,23 +1,25 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { db, auditLogs } from '@quiz/db';
+import { AuditService } from '../audit.service';
+import { container } from '../../core/container';
 
-import { db } from '@quiz/db'
-import { AuditService } from '../audit.service'
+vi.mock('@quiz/db', () => ({
+  db: {
+    insert: vi.fn().mockReturnValue({ values: vi.fn() }),
+  },
+  auditLogs: { userId: 'u', action: 'a' },
+}));
 
-describe('AuditService log', () => {
-  it('writes audit log', async () => {
-    ;(db.insert as any) = vi.fn().mockReturnValue({
-      values: () => Promise.resolve(),
-    })
-    await expect(AuditService.log({ action: 'test', userId: 'u1', metadata: { a: 1 } })).resolves.not.toThrow()
-  })
+describe('AuditService Coverage', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    container.reset();
+    container.register(AuditService, new AuditService(db as any));
+  });
 
-  it('swallows errors when insert fails', async () => {
-    ;(db.insert as any) = vi.fn().mockReturnValue({ values: vi.fn().mockReturnThis(), then: vi.fn().mockRejectedValue(new Error('db fail')) })
-    await expect(AuditService.log({ action: 'fail' })).resolves.not.toThrow()
-  })
-
-  it('handles non-Error objects in catch (Line 29)', async () => {
-    ;(db.insert as any) = vi.fn().mockReturnValue({ values: vi.fn().mockReturnThis(), then: vi.fn().mockRejectedValue('string error') })
-    await expect(AuditService.log({ action: 'fail' })).resolves.not.toThrow()
-  })
-})
+  it('log: performs basic insert (Line 16)', async () => {
+    const service = container.get(AuditService);
+    await service.log({ userId: 'u1', action: 'test' });
+    expect(db.insert).toHaveBeenCalled();
+  });
+});

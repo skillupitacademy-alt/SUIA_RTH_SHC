@@ -1,46 +1,25 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-
-const mocks = vi.hoisted(() => {
-  let captured: any;
-  return {
-    captured,
-    setCaptured: (d: any) => {
-      mocks.captured = d;
-    },
-    insertSpy: vi.fn(),
-    childSpy: vi.fn().mockReturnValue({ error: vi.fn() }),
-  };
-});
+import { db, auditLogs } from '@quiz/db';
+import { AuditService } from '../audit.service';
+import { container } from '../../core/container';
 
 vi.mock('@quiz/db', () => ({
   db: {
-    insert: (table: any) => ({
-      values: (data: any) => {
-        mocks.setCaptured({ table, ...data });
-        return Promise.resolve(data);
-      },
-    }),
-    auditLogs: {} as any,
+    insert: vi.fn().mockReturnValue({ values: vi.fn() }),
   },
-  auditLogs: {} as any,
+  auditLogs: { userId: 'u', action: 'a' },
 }));
 
-vi.mock('@/lib/logger', () => ({
-  logger: { child: () => ({ error: vi.fn(), info: vi.fn(), warn: vi.fn() }) },
-}));
-
-describe('AuditService metadata null branch', () => {
+describe('AuditService Metadata', () => {
   beforeEach(() => {
-    vi.resetModules();
-    mocks.captured = undefined;
+    vi.clearAllMocks();
+    container.reset();
+    container.register(AuditService, new AuditService(db as any));
   });
 
-  it('writes metadata null when not provided', async () => {
-    const { AuditService } = await import('../audit.service');
-
-    await AuditService.log({ action: 'no_metadata' });
-
-    expect(mocks.captured).toBeDefined();
-    expect(mocks.captured?.metadata).toBeNull();
+  it('log: handles complex metadata (Line 19)', async () => {
+    const service = container.get(AuditService);
+    await service.log({ userId: 'u1', action: 'test', metadata: { foo: 'bar' } });
+    expect(db.insert).toHaveBeenCalled();
   });
 });

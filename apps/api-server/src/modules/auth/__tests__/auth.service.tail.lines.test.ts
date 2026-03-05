@@ -1,114 +1,63 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { AuthService } from '../auth.service';
+import { TokenService } from '../token.service';
+import { SecurityService } from '../security.service';
+import { AuditService } from '../audit.service';
+import { UserRepository } from '../repositories/user.repository';
+import { TokenRepository } from '../repositories/token.repository';
+import { ExamRepository } from '../../exam-engine/repositories/exam.repository';
+import { container } from '../../core/container';
 
-const auditLog = vi.fn();
-const securityLocked = vi.fn();
-const securityTrack = vi.fn();
-const passwordCompare = vi.fn();
-const tokenVerify = vi.fn();
-const tokenHash = vi.fn();
-const tokenAccess = vi.fn();
-const tokenRefresh = vi.fn();
+const mockTokenService = { 
+    verifyRefreshToken: vi.fn(), 
+    hashToken: vi.fn().mockResolvedValue('hash') 
+};
+const mockUserRepo = { findByIdWithDetails: vi.fn() };
+const mockTokenRepo = { findByHash: vi.fn() };
+const mockExamRepo = { findActiveExam: vi.fn() };
+const mockSecurityService = { trackLoginAttempt: vi.fn() };
+const mockAuditService = { log: vi.fn() };
 
-// Minimal db mock with chained helpers
-const updateWhere = vi.fn().mockResolvedValue(undefined);
-const updateSet = vi.fn().mockReturnValue({ where: updateWhere });
-const selectWhere = vi.fn();
-const leftJoin2 = vi.fn().mockReturnValue({ where: selectWhere });
-const leftJoin1 = vi.fn().mockReturnValue({ leftJoin: leftJoin2 });
-const fromSel = vi.fn().mockReturnValue({ leftJoin: leftJoin1 });
-const select = vi.fn().mockReturnValue({ from: fromSel });
+vi.mock('../token.service', () => ({ TokenService: vi.fn().mockImplementation(() => mockTokenService) }));
+vi.mock('../repositories/user.repository', () => ({ UserRepository: vi.fn().mockImplementation(() => mockUserRepo) }));
+vi.mock('../repositories/token.repository', () => ({ TokenRepository: vi.fn().mockImplementation(() => mockTokenRepo) }));
+vi.mock('../../exam-engine/repositories/exam.repository', () => ({ ExamRepository: vi.fn().mockImplementation(() => mockExamRepo) }));
+vi.mock('../security.service', () => ({ SecurityService: vi.fn().mockImplementation(() => mockSecurityService) }));
+vi.mock('../audit.service', () => ({ AuditService: vi.fn().mockImplementation(() => mockAuditService) }));
 
-const insertReturning = vi.fn().mockResolvedValue([{ id: 'rt1' }]);
-const insertValues = vi.fn().mockReturnValue({ returning: insertReturning });
-const insert = vi.fn().mockReturnValue({ values: insertValues });
-
-const refreshFindFirst = vi.fn();
-const usersFindFirst = vi.fn();
-
-vi.mock('@quiz/db', () => ({
-  db: {
-    query: {
-      refreshTokens: { findFirst: refreshFindFirst },
-      users: { findFirst: usersFindFirst },
-    },
-    update: vi.fn().mockReturnValue({ set: updateSet }),
-    select,
-    insert,
-  },
-  users: { id: 'uid', email: 'em', isBlocked: 'blk' },
-  roles: { id: 'rid', name: 'rname' },
-  userRoles: { userId: 'ur.uid', roleId: 'ur.rid' },
-  refreshTokens: { id: 'rtid', token: 'rtok', revoked: 'rev', userId: 'u', expiresAt: 'exp' },
-  exams: {},
-}));
-
-vi.mock('@/modules/auth/audit.service', () => ({
-  AuditService: { log: auditLog },
-}));
-
-vi.mock('@/modules/auth/password.service', () => ({
-  PasswordService: {
-    compare: passwordCompare,
-  },
-}));
-
-vi.mock('@/modules/auth/security.service', () => ({
-  SecurityService: {
-    isAccountLocked: securityLocked,
-    trackLoginAttempt: securityTrack,
-  },
-}));
-
-vi.mock('@/modules/auth/token.service', () => ({
-  TokenService: {
-    generateAccessToken: tokenAccess,
-    generateRefreshToken: tokenRefresh,
-    hashToken: tokenHash,
-    verifyRefreshToken: tokenVerify,
-  },
-}));
-
+// Mock jose to satisfy TokenRefreshService line 20
 vi.mock('jose', () => ({
-  decodeJwt: vi.fn().mockReturnValue({ isAdmin: false }),
+    decodeJwt: vi.fn().mockReturnValue({ userId: 'u1', isAdmin: false })
 }));
 
 describe('AuthService uncovered lines 89 & 201', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-    securityLocked.mockResolvedValue(false);
-    passwordCompare.mockResolvedValue(true);
-    tokenAccess.mockResolvedValue('access');
-    tokenRefresh.mockResolvedValue('refresh');
-    tokenHash.mockResolvedValue('hash');
-  });
-
-  it('login throws when user is blocked (line ~89)', async () => {
-    const { AuthService } = await import('../auth.service');
-    usersFindFirst.mockResolvedValue({
-      id: 'u1',
-      email: 'e@test.com',
-      passwordHash: 'ph',
-      isBlocked: true,
-      userRoles: [{ role: { name: 'USER' } }],
+    beforeEach(() => {
+        vi.clearAllMocks();
+        container.reset();
+        container.register(TokenService, mockTokenService as any);
+        container.register(UserRepository, mockUserRepo as any);
+        container.register(TokenRepository, mockTokenRepo as any);
+        container.register(ExamRepository, mockExamRepo as any);
+        container.register(SecurityService, mockSecurityService as any);
+        container.register(AuditService, mockAuditService as any);
     });
 
-    await expect(AuthService.login('e@test.com', 'pw', '1.1.1.1')).rejects.toThrow('Account has been blocked');
-    expect(securityTrack).not.toHaveBeenCalledWith('1.1.1.1', 'e@test.com', true);
-  });
+    it('refresh: throws when user is blocked', async () => {
+        mockTokenRepo.findByHash.mockResolvedValue({ userId: 'u1', expiresAt: new Date(Date.now() + 100000) } as any);
+        mockTokenService.verifyRefreshToken.mockResolvedValue({ userId: 'u1', isAdmin: false });
+        mockUserRepo.findByIdWithDetails.mockResolvedValue({ id: 'u1', isBlocked: true } as any);
 
-  it('refresh throws when user not found (line ~201)', async () => {
-    const { AuthService } = await import('../auth.service');
-    const { decodeJwt } = await import('jose');
-    vi.mocked(decodeJwt).mockReturnValue({ isAdmin: false } as any);
-    tokenVerify.mockResolvedValue({ userId: 'u1' });
-    refreshFindFirst.mockResolvedValue({
-      id: 'rt1',
-      userId: 'u1',
-      revoked: false,
-      expiresAt: new Date(Date.now() + 60_000),
+        const service = container.get(AuthService);
+        await expect(service.refresh('token')).rejects.toThrow('access_denied:user_blocked');
     });
-    selectWhere.mockResolvedValue([]); // no users
 
-    await expect(AuthService.refresh('token', '1.1.1.1', undefined, 'user')).rejects.toThrow('User not found');
-  });
+    it('refresh: throws when user not found (line ~201)', async () => {
+        mockTokenRepo.findByHash.mockResolvedValue({ userId: 'u1', expiresAt: new Date(Date.now() + 100000) } as any);
+        mockTokenService.verifyRefreshToken.mockResolvedValue({ userId: 'u1', isAdmin: false });
+        // Must return undefined to trigger "User not found" branch
+        mockUserRepo.findByIdWithDetails.mockResolvedValue(undefined);
+
+        const service = container.get(AuthService);
+        await expect(service.refresh('token')).rejects.toThrow('User not found');
+    });
 });

@@ -2,6 +2,7 @@ import { describe, it, expect, vi } from 'vitest'
 
 import { db } from '@quiz/db'
 
+import { container } from '@/modules/core/container'
 import { ScoringEngine } from '@/modules/scoring-engine/scoring.engine'
 
 describe('ScoringEngine dimension branches', () => {
@@ -33,7 +34,7 @@ describe('ScoringEngine dimension branches', () => {
     ;(db as any).insert = vi.fn().mockReturnValue({ values: vi.fn().mockReturnValue(undefined) })
     ;(db as any).update = vi.fn().mockReturnValue({ set: vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue(undefined) }) })
 
-    const score = await ScoringEngine.calculateExamResults('e1')
+    const score = await container.get(ScoringEngine).calculateExamResults('e1')
     expect(score).toBe(100)
     expect((db as any).insert).toHaveBeenCalled()
   })

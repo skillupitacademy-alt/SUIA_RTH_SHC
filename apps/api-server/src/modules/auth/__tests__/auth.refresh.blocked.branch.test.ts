@@ -1,66 +1,44 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { AuthService } from '../auth.service';
+import { TokenService } from '../token.service';
+import { UserRepository } from '../repositories/user.repository';
+import { TokenRepository } from '../repositories/token.repository';
+import { AuditService } from '../audit.service';
+import { container } from '../../core/container';
 
-const mocks = vi.hoisted(() => ({
-  findFirstToken: vi.fn(),
-  selectUser: vi.fn(),
-  update: vi.fn().mockReturnValue({ set: vi.fn().mockReturnValue({ where: vi.fn() }) }),
-  insert: vi.fn().mockReturnValue({ values: vi.fn() }),
-}));
+const mockTokenService = { 
+    verifyRefreshToken: vi.fn(),
+    hashToken: vi.fn().mockResolvedValue('hash')
+};
+const mockUserRepo = { findByIdWithDetails: vi.fn() };
+const mockTokenRepo = { findByHash: vi.fn() };
+const mockAuditService = { log: vi.fn() };
 
-vi.mock('@quiz/db', () => ({
-  db: {
-    query: {
-      refreshTokens: { findFirst: (...args: any[]) => mocks.findFirstToken(...args) },
-    },
-    select: (...args: any[]) => ({
-      from: () => ({
-        leftJoin: () => ({
-          leftJoin: () => ({
-            where: () => mocks.selectUser(...args),
-          }),
-        }),
-      }),
-    }),
-    update: () => mocks.update(),
-    insert: () => mocks.insert(),
-  },
-  users: {},
-  roles: {},
-  userRoles: {},
-  refreshTokens: {},
-  exams: {},
-}));
+vi.mock('../token.service', () => ({ TokenService: vi.fn().mockImplementation(() => mockTokenService) }));
+vi.mock('../repositories/user.repository', () => ({ UserRepository: vi.fn().mockImplementation(() => mockUserRepo) }));
+vi.mock('../repositories/token.repository', () => ({ TokenRepository: vi.fn().mockImplementation(() => mockTokenRepo) }));
+vi.mock('../audit.service', () => ({ AuditService: vi.fn().mockImplementation(() => mockAuditService) }));
 
-vi.mock('@/modules/auth/token.service', () => ({
-  TokenService: {
-    verifyRefreshToken: vi.fn().mockResolvedValue({ userId: 'u1', isAdmin: false }),
-    hashToken: vi.fn().mockResolvedValue('hash'),
-    generateAccessToken: vi.fn().mockResolvedValue('newAccess'),
-    generateRefreshToken: vi.fn().mockResolvedValue('newRefresh'),
-  },
-}));
-
-vi.mock('@/modules/auth/audit.service', () => ({
-  AuditService: { log: vi.fn() },
-}));
-
-// Ensure decodeJwt does not parse real JWT; return minimal payload so refresh path executes
 vi.mock('jose', () => ({
-  decodeJwt: () => ({ isAdmin: false, exp: Date.now() / 1000 + 3600 }),
+    decodeJwt: vi.fn().mockReturnValue({ userId: 'u1', isAdmin: false })
 }));
 
-describe('AuthService refresh blocked user branch (~162)', () => {
-  beforeEach(() => {
-    mocks.findFirstToken.mockReset();
-    mocks.selectUser.mockReset();
-  });
+describe('AuthService.refresh blocked branch', () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+        container.reset();
+        container.register(TokenService, mockTokenService as any);
+        container.register(UserRepository, mockUserRepo as any);
+        container.register(TokenRepository, mockTokenRepo as any);
+        container.register(AuditService, mockAuditService as any);
+    });
 
-  it('throws access_denied:user_blocked when user is blocked', async () => {
-    mocks.findFirstToken.mockResolvedValue({ id: 't1', expiresAt: new Date(Date.now() + 3600 * 1000), revoked: false, userId: 'u1' });
-    mocks.selectUser.mockResolvedValue([{ isBlocked: true, roleName: 'USER' }]);
+    it('refresh: throws specifically for blocked user', async () => {
+        mockTokenRepo.findByHash.mockResolvedValue({ userId: 'u1', expiresAt: new Date(Date.now() + 100000) } as any);
+        mockTokenService.verifyRefreshToken.mockResolvedValue({ userId: 'u1', isAdmin: false });
+        mockUserRepo.findByIdWithDetails.mockResolvedValue({ id: 'u1', isBlocked: true } as any);
 
-    const { AuthService } = await import('../auth.service');
-
-    await expect(AuthService.refresh('tok')).rejects.toThrow('access_denied:user_blocked');
-  });
+        const service = container.get(AuthService);
+        await expect(service.refresh('token')).rejects.toThrow('access_denied:user_blocked');
+    });
 });

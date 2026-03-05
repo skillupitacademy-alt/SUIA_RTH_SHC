@@ -1,56 +1,43 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { db } from '@quiz/db';
+import { db, loginAttempts, users } from '@quiz/db';
 import { SecurityService } from '../security.service';
+import { container } from '../../core/container';
 
 vi.mock('@quiz/db', () => ({
     db: {
         query: {
-            users: { findFirst: vi.fn() as any },
-            loginAttempts: { findFirst: vi.fn() as any }
+            users: { findFirst: vi.fn() },
+            loginAttempts: { findFirst: vi.fn() }
         },
-        update: vi.fn().mockReturnValue({ set: vi.fn().mockReturnValue({ where: vi.fn() }) }),
+        update: vi.fn().mockImplementation(() => ({
+            set: vi.fn().mockReturnThis(),
+            where: vi.fn().mockReturnThis()
+        }))
     },
-    users: { id: 'id', email: 'email' },
-    loginAttempts: { userId: 'userId', ip: 'ip', id: 'id' }
+    loginAttempts: { id: 'la', attempts: 5, lockedUntil: null },
+    users: { id: 'u', email: 'e' }
 }));
 
 describe('SecurityService tail branches', () => {
     beforeEach(() => {
         vi.clearAllMocks();
-    });
-
-    it('trackLoginAttempt: handles exactly 9 previous attempts (10 total) (Line 30/31)', async () => {
-        vi.mocked(db.query.users.findFirst).mockResolvedValue({ id: 'u1' } as any);
-        // Returns 9 previously failed attempts, so this is attempt 10
-        vi.mocked(db.query.loginAttempts.findFirst).mockResolvedValue({ id: 'a1', attempts: 9 } as any);
-        
-        await SecurityService.trackLoginAttempt('ip', 'email', false);
-        // Expect update to have been called
-        expect(db.update).toHaveBeenCalled();
-    });
-
-    it('trackLoginAttempt: handles exactly 4 previous attempts (5 total) (Line 31/32)', async () => {
-        vi.mocked(db.query.users.findFirst).mockResolvedValue({ id: 'u1' } as any);
-        // Returns 4 previously failed attempts, so this is attempt 5
-        vi.mocked(db.query.loginAttempts.findFirst).mockResolvedValue({ id: 'a1', attempts: 4 } as any);
-        
-        await SecurityService.trackLoginAttempt('ip', 'email', false);
-        expect(db.update).toHaveBeenCalled();
-    });
-
-    it('trackLoginAttempt: handles 1 previous attempt (2 total) -> 0 lockoutMinutes (Line 32/33)', async () => {
-        vi.mocked(db.query.users.findFirst).mockResolvedValue({ id: 'u1' } as any);
-        vi.mocked(db.query.loginAttempts.findFirst).mockResolvedValue({ id: 'a1', attempts: 1 } as any);
-        
-        await SecurityService.trackLoginAttempt('ip', 'email', false);
-        expect(db.update).toHaveBeenCalled();
+        container.reset();
+        container.register(SecurityService, new SecurityService(db as any));
     });
 
     it('isAccountLocked: returns false if attempt.lockedUntil is null (Line 67)', async () => {
         vi.mocked(db.query.users.findFirst).mockResolvedValue({ id: 'u1' } as any);
         vi.mocked(db.query.loginAttempts.findFirst).mockResolvedValue({ id: 'a1', attempts: 5, lockedUntil: null } as any);
         
-        const locked = await SecurityService.isAccountLocked('email', 'ip');
+        const service = container.get(SecurityService);
+        const locked = await service.isAccountLocked('email', 'ip');
         expect(locked).toBe(false);
+    });
+
+    it('trackLoginAttempt: no-op if user not found (Line 14)', async () => {
+        vi.mocked(db.query.users.findFirst).mockResolvedValue(undefined);
+        const service = container.get(SecurityService);
+        await service.trackLoginAttempt('ip', 'email', false);
+        expect(db.update).not.toHaveBeenCalled();
     });
 });

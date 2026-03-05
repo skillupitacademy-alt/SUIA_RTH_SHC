@@ -1,26 +1,27 @@
 import { describe, it, expect, vi } from 'vitest';
+import { db, loginAttempts, users } from '@quiz/db';
+import { SecurityService } from '../security.service';
+import { container } from '../../core/container';
 
-// Mock db so the guard short-circuits without hitting a real database
 vi.mock('@quiz/db', () => ({
   db: {
     query: {
-      users: {
-        findFirst: vi.fn().mockResolvedValue(undefined), // simulate no user found
-      },
-      loginAttempts: {
-        findFirst: vi.fn(),
-      },
+      users: { findFirst: vi.fn() },
+      loginAttempts: { findFirst: vi.fn() },
     },
+    insert: vi.fn().mockReturnValue({ values: vi.fn() }),
+    update: vi.fn().mockReturnValue({ set: vi.fn().mockReturnThis(), where: vi.fn() }),
+    delete: vi.fn().mockReturnValue({ where: vi.fn() }),
   },
-  loginAttempts: {},
-  users: {},
+  loginAttempts: { id: 'la', userId: 'u', ip: 'ip' },
+  users: { id: 'u', email: 'e' },
 }));
 
-import { SecurityService } from '../security.service';
-
-// covers no-origin guard (lines 29-33) and header build guard (67)
-describe('SecurityService headers/guards', () => {
-  it('returns false when account missing (no user)', async () => {
-    await expect(SecurityService.isAccountLocked('missing@example.com', '1.1.1.1')).resolves.toBe(false);
+describe('SecurityService Tail Coverage', () => {
+  it('isAccountLocked returns false for missing entries', async () => {
+    vi.mocked(db.query.users.findFirst).mockResolvedValue(undefined);
+    container.reset();
+    const service = container.get(SecurityService);
+    await expect(service.isAccountLocked('missing@example.com', '1.1.1.1')).resolves.toBe(false);
   });
 });

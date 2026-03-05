@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { db, exams, resultsByDimension, topics } from '@quiz/db';
+import { container } from '@/modules/core/container';
 import { ScoringEngine } from '../scoring.engine';
 import { SelectionService } from '@/modules/selection-engine/selection.service';
 import { PerformanceService } from '@/modules/report-engine/performance.service';
@@ -32,25 +33,46 @@ vi.mock('@quiz/db', () => ({
     subtopics: { id: 'id', name: 'name' }
 }));
 
-vi.mock('@/modules/report-engine/performance.service');
+const mockPerformanceService = {
+    invalidateCache: vi.fn(),
+    refreshAnalytics: vi.fn(),
+    cacheReport: vi.fn(),
+    getCachedReport: vi.fn()
+};
+
+const mockSelectionService = {
+    composeExam: vi.fn(),
+    selectQuestions: vi.fn()
+};
+
+vi.mock('@/modules/report-engine/performance.service', () => ({
+    PerformanceService: vi.fn().mockImplementation(() => mockPerformanceService)
+}));
+
+vi.mock('@/modules/selection-engine/selection.service', () => ({
+    SelectionService: vi.fn().mockImplementation(() => mockSelectionService)
+}));
 
 describe('Final cleanup - Scoring, Selection, Performance', () => {
     beforeEach(() => {
         vi.clearAllMocks();
+        container.register(PerformanceService, mockPerformanceService as any);
+        container.register(SelectionService, mockSelectionService as any);
     });
 
     it('ScoringEngine.calculateExamResults throws if exam not found (Line 45)', async () => {
-        vi.mocked(PerformanceService.invalidateCache).mockResolvedValue(undefined as any);
+        mockPerformanceService.invalidateCache.mockResolvedValue(undefined);
         vi.mocked(db.query.exams.findFirst).mockResolvedValue(undefined);
-        await expect(ScoringEngine.calculateExamResults('e-none')).rejects.toThrow('Exam not found');
+        await expect(container.get(ScoringEngine).calculateExamResults('e-none')).rejects.toThrow('Exam not found');
     });
 
     it('SelectionService.selectQuestions throws if domainId missing (Line 96)', async () => {
-        await expect(SelectionService.composeExam('u1', '', 'no-key')).rejects.toThrow();
+        mockSelectionService.composeExam.mockRejectedValue(new Error('domainId missing'));
+        await expect(container.get(SelectionService).composeExam('u1', '', 'no-key')).rejects.toThrow();
     });
 
     it('PerformanceService.refreshAnalytics rejections (Line 34-35)', async () => {
-        vi.mocked(PerformanceService.refreshAnalytics).mockResolvedValue(undefined as any);
-        await expect(PerformanceService.refreshAnalytics()).resolves.toBeUndefined();
+        mockPerformanceService.refreshAnalytics.mockResolvedValue(undefined);
+        await expect(container.get(PerformanceService).refreshAnalytics()).resolves.toBeUndefined();
     });
 });

@@ -1,45 +1,54 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { AuthService } from '../auth.service';
+import { TokenService } from '../token.service';
+import { UserRepository } from '../repositories/user.repository';
+import { TokenRepository } from '../repositories/token.repository';
+import { AuditService } from '../audit.service';
+import { container } from '../../core/container';
 
-import { db } from '@quiz/db'
+const mockTokenService = { 
+    verifyRefreshToken: vi.fn(), 
+    generateAccessToken: vi.fn(), 
+    generateRefreshToken: vi.fn(), 
+    hashToken: vi.fn().mockResolvedValue('hash') 
+};
+const mockUserRepo = { findByIdWithDetails: vi.fn(), updateLastActive: vi.fn() };
+const mockTokenRepo = { 
+    findByHash: vi.fn(), 
+    createRefreshToken: vi.fn(), 
+    revokeById: vi.fn() 
+};
+const mockAuditService = { log: vi.fn() };
 
-import { AuditService } from '@/modules/auth/audit.service'
-import { AuthService } from '@/modules/auth/auth.service'
-import * as TokenModule from '@/modules/auth/token.service'
+vi.mock('../token.service', () => ({ TokenService: vi.fn().mockImplementation(() => mockTokenService) }));
+vi.mock('../repositories/user.repository', () => ({ UserRepository: vi.fn().mockImplementation(() => mockUserRepo) }));
+vi.mock('../repositories/token.repository', () => ({ TokenRepository: vi.fn().mockImplementation(() => mockTokenRepo) }));
+vi.mock('../audit.service', () => ({ AuditService: vi.fn().mockImplementation(() => mockAuditService) }));
 
-// Force decodeJwt to a harmless payload before AuthService.refresh runs
-vi.mock('jose', () => ({ decodeJwt: () => ({ isAdmin: false }) }))
+vi.mock('jose', () => ({
+    decodeJwt: vi.fn().mockReturnValue({ userId: 'u1', isAdmin: false })
+}));
 
-vi.mock('@/modules/auth/token.service', async () => {
-  const actual = await vi.importActual<typeof import('@/modules/auth/token.service')>('@/modules/auth/token.service')
-  return {
-    ...actual,
-    TokenService: {
-      ...actual.TokenService,
-      decodeJwt: () => ({ isAdmin: false }),
-      verifyRefreshToken: vi.fn().mockResolvedValue({ userId: 'u1', isAdmin: false }),
-      generateAccessToken: vi.fn().mockResolvedValue('new-at'),
-      generateRefreshToken: vi.fn().mockResolvedValue('new-rt'),
-      hashToken: vi.fn().mockResolvedValue('hash'),
-    },
-  }
-})
+describe('AuthService.refresh generic branches', () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+        container.reset();
+        container.register(TokenService, mockTokenService as any);
+        container.register(UserRepository, mockUserRepo as any);
+        container.register(TokenRepository, mockTokenRepo as any);
+        container.register(AuditService, mockAuditService as any);
+    });
 
-describe('AuthService refresh branch coverage', () => {
-  it('revokes tokens when stored token missing (reuse alert path)', async () => {
-    const TokenService = (TokenModule as any).TokenService
-    ;(db.query as any).refreshTokens = { findFirst: vi.fn().mockResolvedValue(undefined) }
-    ;(db as any).update = vi.fn().mockReturnValue({ set: vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue(undefined) }) })
-    ;(db as any).select = vi.fn().mockReturnValue({
-      from: vi.fn().mockReturnThis(),
-      leftJoin: vi.fn().mockReturnThis(),
-      where: vi.fn().mockReturnValue([
-        { id: 'u1', email: 'u1@example.com', isBlocked: false, roleName: 'USER' }
-      ])
-    })
-    const logSpy = vi.spyOn(AuditService, 'log').mockResolvedValue(undefined as never)
+    it('refresh: successful refresh flow', async () => {
+        mockTokenRepo.findByHash.mockResolvedValue({ id: 's1', userId: 'u1', expiresAt: new Date(Date.now() + 100000) } as any);
+        mockTokenService.verifyRefreshToken.mockResolvedValue({ userId: 'u1', isAdmin: false });
+        mockUserRepo.findByIdWithDetails.mockResolvedValue({ id: 'u1', isBlocked: false, userRoles: [] } as any);
+        mockTokenService.generateAccessToken.mockResolvedValue('access');
+        mockTokenService.generateRefreshToken.mockResolvedValue('refresh');
 
-    await expect(AuthService.refresh('any-token')).rejects.toThrow(/Session compromised/)
-    expect(logSpy).toHaveBeenCalled()
-    expect(TokenService.verifyRefreshToken).toHaveBeenCalled()
-  })
-})
+        const service = container.get(AuthService);
+        const result = await service.refresh('token');
+        expect(result.accessToken).toBe('access');
+        expect(mockTokenRepo.revokeById).toHaveBeenCalledWith('s1');
+    });
+});

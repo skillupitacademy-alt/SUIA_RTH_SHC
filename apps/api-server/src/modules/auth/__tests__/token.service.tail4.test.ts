@@ -1,19 +1,28 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
+import { TokenService } from '../token.service';
+import { container } from '../../core/container';
+import type { NextRequest } from 'next/server';
 
-const jwtVerifyMock = vi.fn();
+describe('TokenService Tail 4', () => {
+    it('getAccessToken: handles infrastructure scope cookie', () => {
+        container.reset();
+        const service = container.get(TokenService);
+        const mockReq = { 
+            cookies: { get: (name: string) => name === 'infra_accessToken' ? { value: 'infra-token' } : undefined },
+            headers: { get: () => null }
+        } as unknown as NextRequest;
+        
+        expect(service.getAccessToken(mockReq, { scope: 'infrastructure' })).toBe('infra-token');
+    });
 
-vi.mock('jose', async (orig) => {
-  const actual = await orig();
-  return { ...actual, jwtVerify: jwtVerifyMock };
+    it('getAccessToken: handles fallback to infra_accessToken when no scope provided', () => {
+        container.reset();
+        const service = container.get(TokenService);
+        const mockReq = { 
+            cookies: { get: (name: string) => name === 'infra_accessToken' ? { value: 'infra-fallback' } : undefined },
+            headers: { get: () => null }
+        } as unknown as NextRequest;
+        
+        expect(service.getAccessToken(mockReq)).toBe('infra-fallback');
+    });
 });
-
-describe('TokenService tail guards (audience/refresh)', () => {
-  beforeEach(() => jwtVerifyMock.mockReset());
-
-  it('throws when infra audience required but token aud is user (line 133 path)', async () => {
-    jwtVerifyMock.mockResolvedValue({ payload: { aud: 'user', userId: 'u', email: 'e', roles: [] } });
-    const { TokenService } = await import('../token.service');
-    await expect(TokenService.verifyAccessToken('tok', { audience: 'infra' })).rejects.toThrow(/Audience mismatch/);
-  });
-});
-

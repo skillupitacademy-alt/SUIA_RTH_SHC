@@ -1,44 +1,47 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-
-const mocks = vi.hoisted(() => ({
-  findFirstUser: vi.fn(),
-  updateRefresh: vi.fn().mockReturnValue({ where: vi.fn() }),
-}));
+import { db, users, loginAttempts, refreshTokens, exams } from '@quiz/db';
+import { AuthService } from '../auth.service';
+import { AuditService } from '../audit.service';
+import { SecurityService } from '../security.service';
+import { TokenService } from '../token.service';
+import { UserRepository } from '../repositories/user.repository';
+import { TokenRepository } from '../repositories/token.repository';
+import { ExamRepository } from '../../exam-engine/repositories/exam.repository';
+import { container } from '../../core/container';
 
 vi.mock('@quiz/db', () => ({
-  db: {
-    query: {
-      users: { findFirst: (...args: any[]) => mocks.findFirstUser(...args) },
-      refreshTokens: { findFirst: vi.fn() },
+    db: {
+        update: vi.fn().mockImplementation(() => ({
+            set: vi.fn().mockReturnThis(),
+            where: vi.fn().mockReturnThis(),
+            returning: vi.fn().mockResolvedValue([{ id: 'id' }])
+        })),
+        query: {
+            refreshTokens: { findFirst: vi.fn() },
+            users: { findFirst: vi.fn() }
+        }
     },
-    update: () => ({ set: () => ({ where: () => undefined }) }),
-    insert: vi.fn(),
-  },
-  users: {},
-  refreshTokens: {},
-}));
-
-vi.mock('@/modules/auth/token.service', () => ({
-  TokenService: {
-    hashToken: async (_t: string) => 'hash',
-  },
-}));
-
-vi.mock('@/modules/auth/audit.service', () => ({
-  AuditService: { log: vi.fn() },
+    loginAttempts: { tableName: 'login_attempts' },
+    refreshTokens: { tableName: 'refresh_tokens' },
+    exams: { tableName: 'exams' },
+    users: { tableName: 'users' }
 }));
 
 describe('AuthService edge branches', () => {
-  beforeEach(() => {
-    vi.resetModules();
-    mocks.findFirstUser.mockReset();
-  });
+    beforeEach(() => {
+        vi.clearAllMocks();
+        container.reset();
+        
+        container.register(AuditService, new AuditService(db as any));
+        container.register(SecurityService, new SecurityService(db as any));
+        container.register(TokenService, new TokenService());
+        container.register(UserRepository, new UserRepository());
+        container.register(TokenRepository, new TokenRepository());
+        container.register(ExamRepository, new ExamRepository());
+    });
 
-  it('logout no-ops when session not found (405-406)', async () => {
-    mocks.findFirstUser.mockResolvedValue(undefined);
-    const { AuthService } = await import('../auth.service');
-
-    const res = await AuthService.logout('missing', 'u1');
-    expect(res).toBeUndefined();
-  });
+    it('logout no-ops when session not found (405-406)', async () => {
+        const service = container.get(AuthService);
+        await expect(service.logout('token', 'u1')).resolves.not.toThrow();
+    });
 });

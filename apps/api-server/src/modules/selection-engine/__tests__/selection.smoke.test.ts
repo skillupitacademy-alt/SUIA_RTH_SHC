@@ -1,8 +1,16 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { SelectionService } from '../selection.service';
+import { container } from '../../core/container';
 
-describe('SelectionService module loads', () => {
-  it('imports without error', async () => {
-    const mod = await import('../selection.service')
-    expect(mod.SelectionService).toBeDefined()
-  })
-})
+describe('SelectionService smoke', () => {
+    beforeEach(() => {
+        container.reset();
+        container.register(SelectionService, new SelectionService({} as any, {} as any));
+    });
+
+  it('instantiates correctly', () => {
+    const service = container.get(SelectionService);
+    expect(service).toBeDefined();
+    expect(service.composeExam).toBeDefined();
+  });
+});

@@ -1,15 +1,19 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 import { db } from '@quiz/db';
+import { container } from '@/modules/core/container';
+import { PerformanceService } from '@/modules/report-engine/performance.service';
 import { ScoringEngine } from '../scoring.engine';
 
+const mockPerformanceService = {
+  invalidateCache: vi.fn().mockResolvedValue(undefined),
+  refreshAnalytics: vi.fn().mockResolvedValue(undefined),
+  cacheReport: vi.fn().mockResolvedValue(undefined),
+  getCachedReport: vi.fn().mockResolvedValue(null),
+};
+
 vi.mock('@/modules/report-engine/performance.service', () => ({
-  PerformanceService: {
-    invalidateCache: vi.fn().mockResolvedValue(undefined),
-    refreshAnalytics: vi.fn().mockResolvedValue(undefined),
-    cacheReport: vi.fn().mockResolvedValue(undefined),
-    getCachedReport: vi.fn().mockResolvedValue(null),
-  },
+  PerformanceService: vi.fn().mockImplementation(() => mockPerformanceService),
 }));
 
 vi.mock('@/modules/report-engine/report.engine', () => ({
@@ -25,6 +29,11 @@ vi.mock('../../services/reports/ReportMaterializer', () => ({
 }));
 
 describe('ScoringEngine mapping/category branches', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    container.register(PerformanceService, mockPerformanceService as any);
+  });
+
   it('adds mapping_type and category dimensions when skills provide them', async () => {
     const exam = {
       id: 'exam-1',
@@ -67,7 +76,7 @@ describe('ScoringEngine mapping/category branches', () => {
     (db as any).insert = vi.fn().mockReturnValue({ values: vi.fn().mockReturnValue({ returning: vi.fn().mockResolvedValue([]) }) });
     (db as any).update = vi.fn().mockReturnValue({ set: vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue(undefined) }) });
 
-    const score = await ScoringEngine.calculateExamResults('exam-1');
+    const score = await container.get(ScoringEngine).calculateExamResults('exam-1');
     expect(score).toBe(100);
     // should have inserted results_by_dimension
     expect((db as any).insert).toHaveBeenCalled();
@@ -77,7 +86,7 @@ describe('ScoringEngine mapping/category branches', () => {
     (db.query as any).exams = { findFirst: vi.fn().mockRejectedValue(new Error('boom')) };
     (db as any).update = vi.fn().mockReturnValue({ set: vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue(undefined) }) });
 
-    await expect(ScoringEngine.calculateExamResults('bad-exam')).rejects.toThrow('boom');
+    await expect(container.get(ScoringEngine).calculateExamResults('bad-exam')).rejects.toThrow('boom');
     expect((db as any).update).toHaveBeenCalled();
   });
 });

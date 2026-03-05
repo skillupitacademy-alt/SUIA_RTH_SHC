@@ -22,13 +22,15 @@ describe('TokenService branch edges', () => {
       admin_accessToken: undefined,
     });
 
-    const token = TokenService.getAccessToken(req);
+    const service = new TokenService();
+    const token = service.getAccessToken(req);
 
     expect(token).toBe('INFRA123');
   });
 
   it('getExpiration returns null on malformed token', () => {
-    const result = TokenService.getExpiration('not-a-jwt');
+    const service = new TokenService();
+    const result = service.getExpiration('not-a-jwt');
     expect(result).toBeNull();
   });
 });

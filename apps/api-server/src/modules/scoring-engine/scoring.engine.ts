@@ -14,7 +14,7 @@ import type { EvaluatedAnswer } from './strategies/scoring-strategy.interface';
 export const dynamic = 'force-dynamic';
 
 export class ScoringEngine {
-  private static singleton = new ScoringEngine();
+  private static singleton: ScoringEngine | null = null;
   private log = logger.child({ module: 'scoring-engine' });
 
   constructor(
@@ -22,6 +22,11 @@ export class ScoringEngine {
     private readonly examRepo = container.get(ExamRepository),
     private readonly reportEngine = container.get(ReportEngine)
   ) {}
+
+  private static getInstance() {
+    if (this.singleton === null) this.singleton = new ScoringEngine();
+    return this.singleton;
+  }
 
   async calculateExamResults(examId: string) {
     // Phase 1: Invalidate existing cache before re-computing
@@ -172,6 +177,11 @@ export class ScoringEngine {
 
   // Static facade for legacy tests
   static calculateExamResults(examId: string) {
-    return this.singleton.calculateExamResults(examId);
+    return this.getInstance().calculateExamResults(examId);
+  }
+
+  // Test helper to inject mocks
+  static setInstance(mock: ScoringEngine) {
+    this.singleton = mock;
   }
 }

@@ -20,7 +20,8 @@ describe('AuthService.verifyEmail branches', () => {
       where: vi.fn().mockResolvedValue(undefined),
     })
 
-    const result = await AuthService.verifyEmail('tok')
+    const { container } = await import('../../core/container')
+    const result = await container.get(AuthService).verifyEmail('tok')
     expect(result).toBe(true)
   })
 
@@ -30,6 +31,7 @@ describe('AuthService.verifyEmail branches', () => {
         findFirst: vi.fn().mockResolvedValue(undefined),
       },
     }
-    await expect(AuthService.verifyEmail('bad')).rejects.toThrow(/Invalid or expired/)
+    const { container } = await import('../../core/container')
+    await expect(container.get(AuthService).verifyEmail('bad')).rejects.toThrow(/Invalid or expired/)
   })
 })

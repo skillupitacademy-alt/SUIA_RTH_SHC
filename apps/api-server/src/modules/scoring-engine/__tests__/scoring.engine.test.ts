@@ -1,32 +1,57 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi, beforeEach } from 'vitest';
+import { db } from '@quiz/db';
+import { container } from '@/modules/core/container';
+import { ScoringEngine } from '@/modules/scoring-engine/scoring.engine';
+import { PerformanceService } from '@/modules/report-engine/performance.service';
 
-const fixtures = {
-  questions: [
-    { id: 'q1', correctAnswer: 'a', options: ['a', 'b'], weight: 2 },
-    { id: 'q2', correctAnswer: 'b', options: ['a', 'b'], weight: 1 },
-  ] satisfies Array<{ id: string; correctAnswer: string; options: string[]; weight: number }>,
-  answers: [
-    { questionId: 'q1', answer: 'a' },
-    { questionId: 'q2', answer: 'c' },
-  ] satisfies Array<{ questionId: string; answer: string | null }>,
+const mockPerformanceService = {
+  invalidateCache: vi.fn().mockResolvedValue(undefined),
+  refreshAnalytics: vi.fn().mockResolvedValue(undefined),
+  cacheReport: vi.fn().mockResolvedValue(undefined),
 };
 
-describe.skip('ScoringEngine (unit)', () => {
-  it('calculates weighted score for correct answers', async () => {
-    const { ScoringEngine } = await import('@/modules/scoring-engine/scoring.engine');
-    const score = await ScoringEngine.calculateExamResults(
-      fixtures.answers,
-      fixtures.questions
-    );
-    expect(score.totalScore).toBeDefined();
+vi.mock('@/modules/report-engine/performance.service', () => ({
+  PerformanceService: vi.fn().mockImplementation(() => mockPerformanceService),
+}));
+
+describe('ScoringEngine (integration)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    container.register(PerformanceService, mockPerformanceService as any);
   });
 
-  it('penalizes unanswered or incorrect items', async () => {
-    const { ScoringEngine } = await import('@/modules/scoring-engine/scoring.engine');
-    const score = await ScoringEngine.calculateExamResults(
-      [{ questionId: 'q1', answer: null }],
-      fixtures.questions
-    );
-    expect(score.correctCount).toBeLessThanOrEqual(1);
+  it('calculates results for an exam by fetching from DB', async () => {
+    const exam = {
+      id: 'e1',
+      status: 'started',
+      startedAt: new Date(),
+      examQuestions: [
+        { 
+          isCorrect: true, 
+          question: { id: 'q1', topicId: 't1', difficulty: 'simple', questionSkills: [] } 
+        }
+      ],
+      blueprint: { scoringStrategy: 'percentage' }
+    };
+
+    const topic = {
+      id: 't1',
+      name: 'Topic 1',
+      subject: { id: 's1', name: 'S1', domain: { id: 'd1', name: 'D1' } },
+      topicSkills: [],
+      subtopics: []
+    };
+
+    (db.query as any).exams = { findFirst: vi.fn().mockResolvedValue(exam) };
+    (db.query as any).topics = { findMany: vi.fn().mockResolvedValue([topic]) };
+    (db as any).delete = vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue(undefined) });
+    (db as any).insert = vi.fn().mockReturnValue({ values: vi.fn().mockResolvedValue(undefined) });
+    (db as any).update = vi.fn().mockReturnValue({ set: vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue(undefined) }) });
+
+    const score = await container.get(ScoringEngine).calculateExamResults('e1');
+    
+    expect(score).toBe(100);
+    expect((db.query as any).exams.findFirst).toHaveBeenCalled();
+    expect((db as any).update).toHaveBeenCalled();
   });
 });

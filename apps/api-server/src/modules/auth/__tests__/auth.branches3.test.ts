@@ -1,84 +1,94 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { db } from '@quiz/db';
 import { AuthService } from '../auth.service';
+import { TokenService } from '../token.service';
+import { AuditService } from '../audit.service';
+import { SecurityService } from '../security.service';
+import { PasswordService } from '../password.service';
+import { UserRepository } from '../repositories/user.repository';
+import { TokenRepository } from '../repositories/token.repository';
+import { ExamRepository } from '../../exam-engine/repositories/exam.repository';
 
-vi.mock('@quiz/db', () => ({
-    db: {
-        query: {
-            users: { findFirst: vi.fn() as any },
-            roles: { findFirst: vi.fn() as any },
-            refreshTokens: { findFirst: vi.fn() as any },
-            exams: { findFirst: vi.fn() as any },
-        },
-        select: vi.fn().mockReturnValue({
-            from: vi.fn().mockReturnThis(),
-            leftJoin: vi.fn().mockReturnThis(),
-            where: vi.fn().mockResolvedValue([{ id: 'u1', email: 'e', roleName: 'USER', isBlocked: false }]),
-        }),
-        update: vi.fn().mockReturnValue({ set: vi.fn().mockReturnValue({ where: vi.fn() }) }),
-        insert: vi.fn().mockReturnValue({ values: vi.fn().mockReturnValue({ returning: vi.fn().mockResolvedValue([{ id: 'u1' }]) }) }),
-    },
-    users: { id: 'users.id', email: 'users.email', passwordHash: 'passwordHash', isBlocked: 'isBlocked', lastActiveAt: 'lastActiveAt' },
-    roles: { id: 'roles.id', name: 'roles.name' },
-    refreshTokens: { id: 'rt.id', token: 'token', revoked: 'revoked', userId: 'userId' },
-    userRoles: {},
-    exams: { id: 'exams.id', userId: 'exams.userId', status: 'exams.status' }
-}));
+// Standard mock instances
+const mockTokenService = {
+    generateAccessToken: vi.fn(),
+    generateRefreshToken: vi.fn(),
+    hashToken: vi.fn(),
+    verifyRefreshToken: vi.fn(),
+    verifyAccessToken: vi.fn(),
+    getExpiration: vi.fn(),
+};
 
-vi.mock('../token.service', () => ({
-    TokenService: {
-        generateAccessToken: vi.fn().mockResolvedValue('access'),
-        generateRefreshToken: vi.fn().mockResolvedValue('refresh'),
-        hashToken: vi.fn().mockResolvedValue('hash'),
-        verifyRefreshToken: vi.fn().mockResolvedValue({ userId: 'u1' })
-    }
-}));
+const mockAuditService = { log: vi.fn() };
+const mockSecurityService = { isAccountLocked: vi.fn(), trackLoginAttempt: vi.fn() };
+const mockPasswordService = { compare: vi.fn(), hash: vi.fn() };
+const mockUserRepo = { findByIdWithDetails: vi.fn(), updateLastActive: vi.fn(), findWithDetails: vi.fn() };
+const mockTokenRepo = { findByHash: vi.fn(), revokeAll: vi.fn(), revokeById: vi.fn(), createRefreshToken: vi.fn(), revokeToken: vi.fn(), touchSession: vi.fn() };
+const mockExamRepo = { findActiveExam: vi.fn() };
+
+vi.mock('../token.service', () => ({ TokenService: vi.fn().mockImplementation(() => mockTokenService) }));
+vi.mock('../audit.service', () => ({ AuditService: vi.fn().mockImplementation(() => mockAuditService) }));
+vi.mock('../security.service', () => ({ SecurityService: vi.fn().mockImplementation(() => mockSecurityService) }));
+vi.mock('../password.service', () => ({ PasswordService: vi.fn().mockImplementation(() => mockPasswordService) }));
+vi.mock('../repositories/user.repository', () => ({ UserRepository: vi.fn().mockImplementation(() => mockUserRepo) }));
+vi.mock('../repositories/token.repository', () => ({ TokenRepository: vi.fn().mockImplementation(() => mockTokenRepo) }));
+vi.mock('../../exam-engine/repositories/exam.repository', () => ({ ExamRepository: vi.fn().mockImplementation(() => mockExamRepo) }));
 
 vi.mock('jose', () => ({
     decodeJwt: vi.fn().mockReturnValue({ isAdmin: false, userId: 'u1' })
 }));
 
 describe('AuthService missing false-branches', () => {
-    beforeEach(() => {
+    beforeEach(async () => {
         vi.clearAllMocks();
+        const { container } = await import('../../core/container');
+        container.reset();
+        
+        container.register(TokenService, mockTokenService as any);
+        container.register(AuditService, mockAuditService as any);
+        container.register(SecurityService, mockSecurityService as any);
+        container.register(PasswordService, mockPasswordService as any);
+        container.register(UserRepository, mockUserRepo as any);
+        container.register(TokenRepository, mockTokenRepo as any);
+        container.register(ExamRepository, mockExamRepo as any);
+
+        mockTokenService.generateAccessToken.mockResolvedValue('access');
+        mockTokenService.generateRefreshToken.mockResolvedValue('refresh');
+        mockTokenService.hashToken.mockResolvedValue('hash');
+        mockTokenService.verifyRefreshToken.mockResolvedValue({ userId: 'u1', isAdmin: false });
+        mockTokenRepo.findByHash.mockResolvedValue({ id: 'rt1', expiresAt: new Date(Date.now() + 100000) } as any);
+        mockUserRepo.findByIdWithDetails.mockResolvedValue({ id: 'u1', email: 'e', userRoles: [], isBlocked: false } as any);
     });
 
     it('AuthService.refresh: examId is undefined (Line 180 skip)', async () => {
-        vi.mocked(db.query.refreshTokens.findFirst).mockResolvedValue({ id: 'rt1', expiresAt: new Date(Date.now() + 100000) } as any);
-        (db as any).where = vi.fn().mockResolvedValue([{ id: 'u1', email: 'e', roleName: 'USER', isBlocked: false }]);
-        
-        await AuthService.refresh('token', '1.1.1.1', undefined, 'user');
-        // db.query.exams.findFirst should not be called
-        expect(db.query.exams.findFirst).not.toHaveBeenCalled();
+        const { container } = await import('../../core/container');
+        await container.get(AuthService).refresh('token', '1.1.1.1', undefined, 'user');
+        expect(mockTokenService.verifyRefreshToken).toHaveBeenCalled();
+        expect(mockExamRepo.findActiveExam).not.toHaveBeenCalled();
     });
 
     it('AuthService.refresh: activeExam is undefined (Line 188 skip)', async () => {
-        vi.mocked(db.query.refreshTokens.findFirst).mockResolvedValue({ id: 'rt1', expiresAt: new Date(Date.now() + 100000) } as any);
-        (db as any).where = vi.fn().mockResolvedValue([{ id: 'u1', email: 'e', roleName: 'USER', isBlocked: false }]);
-        vi.mocked(db.query.exams.findFirst).mockResolvedValue(undefined as any);
-        
-        await AuthService.refresh('token', '1.1.1.1', 'exam-id', 'user');
+        mockExamRepo.findActiveExam.mockResolvedValue(undefined as any);
+        const { container } = await import('../../core/container');
+        await container.get(AuthService).refresh('token', '1.1.1.1', 'exam-id', 'user');
     });
 
     it('AuthService.refresh: activeExam duration is 0 (Line 188 skip)', async () => {
-        vi.mocked(db.query.refreshTokens.findFirst).mockResolvedValue({ id: 'rt1', expiresAt: new Date(Date.now() + 100000) } as any);
-        (db as any).where = vi.fn().mockResolvedValue([{ id: 'u1', email: 'e', roleName: 'USER', isBlocked: false }]);
-        vi.mocked(db.query.exams.findFirst).mockResolvedValue({ durationSeconds: 0 } as any);
-        
-        await AuthService.refresh('token', '1.1.1.1', 'exam-id', 'user');
+        mockExamRepo.findActiveExam.mockResolvedValue({ durationSeconds: 0 } as any);
+        const { container } = await import('../../core/container');
+        await container.get(AuthService).refresh('token', '1.1.1.1', 'exam-id', 'user');
     });
 
     it('AuthService.refresh: activeExam remaining time is negative (Line 194 skip)', async () => {
-        vi.mocked(db.query.refreshTokens.findFirst).mockResolvedValue({ id: 'rt1', expiresAt: new Date(Date.now() + 100000) } as any);
-        (db as any).where = vi.fn().mockResolvedValue([{ id: 'u1', email: 'e', roleName: 'USER', isBlocked: false }]);
         const oldDate = new Date(Date.now() - 10000000);
-        vi.mocked(db.query.exams.findFirst).mockResolvedValue({ durationSeconds: 60, startedAt: oldDate } as any);
-        
-        await AuthService.refresh('token', '1.1.1.1', 'exam-id', 'user');
+        mockExamRepo.findActiveExam.mockResolvedValue({ durationSeconds: 60, startedAt: oldDate } as any);
+        const { container } = await import('../../core/container');
+        await container.get(AuthService).refresh('token', '1.1.1.1', 'exam-id', 'user');
     });
 
     it('AuthService.logout: userId is undefined (Line 243 skip)', async () => {
-        await AuthService.logout('token', undefined);
-        expect(db.update).toHaveBeenCalledTimes(1); // Only for refreshTokens, not users
+        const { container } = await import('../../core/container');
+        await container.get(AuthService).logout('token', undefined);
+        expect(mockTokenRepo.revokeToken).toHaveBeenCalled();
+        expect(mockUserRepo.updateLastActive).not.toHaveBeenCalled();
     });
 });

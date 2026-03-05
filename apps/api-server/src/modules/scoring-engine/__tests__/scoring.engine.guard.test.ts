@@ -21,7 +21,8 @@ vi.mock('@quiz/db', () => ({
 
 describe('ScoringEngine early guard (line 45)', () => {
   it('throws when exam not found', async () => {
+    const { container } = await import('@/modules/core/container');
     const { ScoringEngine } = await import('../scoring.engine');
-    await expect(ScoringEngine.calculateExamResults('missing')).rejects.toThrow('Exam not found');
+    await expect(container.get(ScoringEngine).calculateExamResults('missing')).rejects.toThrow('Exam not found');
   });
 });

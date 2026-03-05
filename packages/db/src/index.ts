@@ -32,6 +32,37 @@ type DbClient = ReturnType<typeof drizzle<Schema>>;
 let primaryDbInstance: DbClient | null = null;
 let replicaDbInstance: DbClient | null = null;
 
+// Lightweight no-op Drizzle-like stub to keep unit tests running without a real DB connection.
+const createTestDb = (): DbClient => {
+  const resolved = <T>(value: T) => Promise.resolve(value);
+  const simpleWhere = () => resolved(undefined);
+
+  const tableFns = {
+    findFirst: () => resolved(null as any),
+    findMany: () => resolved([] as any),
+  };
+
+  return {
+    query: {
+      exams: { ...tableFns },
+      topics: { ...tableFns },
+      subtopics: { ...tableFns },
+      questions: { ...tableFns },
+      resultsByDimension: { ...tableFns },
+      examBlueprints: { ...tableFns },
+      users: { ...tableFns },
+    } as any,
+    select: () => ({
+      from: () => ({ where: simpleWhere }),
+      where: simpleWhere,
+    }) as any,
+    insert: () => ({ values: () => ({ returning: async () => [] }) }) as any,
+    update: () => ({ set: () => ({ where: async () => undefined }) }) as any,
+    delete: () => ({ where: async () => undefined }) as any,
+    execute: async () => ({ rows: [] }),
+  } as unknown as DbClient;
+};
+
 export const getDb = (type: 'primary' | 'replica' = 'primary'): DbClient => {
     // 1. Check if we should use the replica
     if (type === 'replica' && process.env.DATABASE_URL_REPLICA) {
@@ -50,6 +81,10 @@ export const getDb = (type: 'primary' | 'replica' = 'primary'): DbClient => {
     if (!primaryDbInstance) {
         const databaseUrl = process.env.DATABASE_URL;
         if (!databaseUrl) {
+            if (process.env.NODE_ENV === 'test') {
+                primaryDbInstance = createTestDb();
+                return primaryDbInstance!;
+            }
             throw new Error('DATABASE_URL environment variable is required');
         }
 

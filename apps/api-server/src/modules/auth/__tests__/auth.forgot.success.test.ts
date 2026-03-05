@@ -4,11 +4,7 @@ import { db } from '@quiz/db'
 import { EmailService } from '@/modules/email/EmailService'
 import { AuthService } from '../auth.service'
 
-vi.mock('@/modules/email/EmailService', () => ({
-  EmailService: {
-    sendPasswordResetEmail: vi.fn(),
-  },
-}))
+vi.mock('@/modules/email/EmailService');
 
 describe('AuthService.forgotPassword success path', () => {
   it('sends reset email when env present', async () => {
@@ -27,7 +23,9 @@ describe('AuthService.forgotPassword success path', () => {
     })
     process.env.NEXT_PUBLIC_WEB_APP_URL = 'https://app.test'
 
-    await expect(AuthService.forgotPassword('user@example.com')).resolves.toBe(true)
-    expect(EmailService.sendPasswordResetEmail).toHaveBeenCalled()
+    const emailSpy = vi.spyOn(EmailService, 'sendPasswordResetEmail').mockResolvedValue(undefined as any);
+    const { container } = await import('../../core/container')
+    await expect(container.get(AuthService).forgotPassword('user@example.com')).resolves.toBe(true)
+    expect(emailSpy).toHaveBeenCalled()
   })
 })

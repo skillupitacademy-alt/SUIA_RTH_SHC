@@ -31,6 +31,36 @@ interface SelectionConfig {
 export class SelectionService {
   private log = logger.child({ module: 'selection-engine' });
 
+  constructor(
+    private dbInstance = db,
+    private cache = cacheService
+  ) {}
+
+  private static singleton: SelectionService | null = null;
+
+  private static getInstance() {
+    if (this.singleton === null) this.singleton = new SelectionService();
+    return this.singleton;
+  }
+
+  static composeExam(
+    userId: string,
+    blueprintOrDomainId: string,
+    idempotencyKey: string,
+    config?: SelectionConfig
+  ) {
+    return this.getInstance().composeExam(userId, blueprintOrDomainId, idempotencyKey, config);
+  }
+
+  static setInstance(mock: SelectionService) {
+    this.singleton = mock;
+  }
+
+  // Expose for branch-coverage tests
+  static resolveSelectionCriteria(domainId: string, config: SelectionConfig, blueprint: Blueprint) {
+    return this.getInstance().resolveSelectionCriteria(domainId, config, blueprint);
+  }
+
   /**
    * Generates a set of deterministic UUID anchors based on a seed.
    */
@@ -85,7 +115,7 @@ export class SelectionService {
      let blueprint: Blueprint | null = null;
 
     try {
-      blueprint = await cacheService.get(blueprintCacheKey);
+      blueprint = await this.cache.get(blueprintCacheKey);
     } catch (e) {
       this.log.warn(
         { error: e instanceof Error ? e.message : 'unknown error' },
@@ -94,13 +124,13 @@ export class SelectionService {
     }
 
     if (!blueprint) {
-      const blueprintResult = await db.query.examBlueprints.findFirst({
+      const blueprintResult = await this.dbInstance.query.examBlueprints.findFirst({
         where: eq(examBlueprints.id, blueprintOrDomainId),
       });
       blueprint = blueprintResult ?? null;
 
       if (!blueprint) {
-        const blueprintResult = await db.query.examBlueprints.findFirst({
+        const blueprintResult = await this.dbInstance.query.examBlueprints.findFirst({
           where: sql`${examBlueprints.domains} @> ARRAY[${blueprintOrDomainId}]::uuid[]`,
         });
         blueprint = blueprintResult ?? null;
@@ -108,7 +138,7 @@ export class SelectionService {
 
       if (blueprint) {
         try {
-          await cacheService.set(blueprintCacheKey, blueprint, 1000 * 60 * 10);
+          await this.cache.set(blueprintCacheKey, blueprint, 1000 * 60 * 10);
         } catch (e) {
           this.log.warn(
             { error: e instanceof Error ? e.message : 'unknown error' },
@@ -145,7 +175,7 @@ export class SelectionService {
   }
 
   private async fetchStaticQuestions(blueprint: Blueprint) {
-      const staticQuestions = await db.query.questions.findMany({
+      const staticQuestions = await this.dbInstance.query.questions.findMany({
         where: and(
           inArray(questions.id, blueprint.questionIds as string[]),
           eq(questions.status, 'active')
@@ -203,7 +233,7 @@ export class SelectionService {
     
     // Resolve Exclusions (Parents of selected children should not be blindly included to avoid double dipping or broad scope)
     const selectedTopicParents: string[] = finalSubtopicIds.length > 0 
-        ? (await db.select({ topicId: subtopics.topicId })
+        ? (await this.dbInstance.select({ topicId: subtopics.topicId })
                   .from(subtopics)
                   .where(inArray(subtopics.id, finalSubtopicIds))
           ).map(r => r.topicId)
@@ -212,7 +242,7 @@ export class SelectionService {
     const actualTopicIds = finalTopicIds.filter((id: string) => !selectedTopicParents.includes(id));
     
     const selectedSubjectParents: string[] = finalTopicIds.length > 0 
-        ? (await db.select({ subjectId: topics.subjectId })
+        ? (await this.dbInstance.select({ subjectId: topics.subjectId })
                   .from(topics)
                   .where(inArray(topics.id, finalTopicIds))
           ).map(r => r.subjectId)
@@ -247,14 +277,14 @@ export class SelectionService {
         
         let subjectTopicCond = null;
         if (actualSubjectIds.length > 0) {
-            const subQuery = db.select({ id: topics.id }).from(topics).where(inArray(topics.subjectId, actualSubjectIds));
+            const subQuery = this.dbInstance.select({ id: topics.id }).from(topics).where(inArray(topics.subjectId, actualSubjectIds));
             subjectTopicCond = inArray(questions.topicId, subQuery);
         }
 
         let domainCond = null;
         if (!subtopicCond && !topicCond && !subjectTopicCond) {
-            const subjectsSubQuery = db.select({ id: subjectsTable.id }).from(subjectsTable).where(eq(subjectsTable.domainId, domainId));
-            const topicsSubQuery = db.select({ id: topics.id }).from(topics).where(inArray(topics.subjectId, subjectsSubQuery));
+            const subjectsSubQuery = this.dbInstance.select({ id: subjectsTable.id }).from(subjectsTable).where(eq(subjectsTable.domainId, domainId));
+            const topicsSubQuery = this.dbInstance.select({ id: topics.id }).from(topics).where(inArray(topics.subjectId, subjectsSubQuery));
             domainCond = inArray(questions.topicId, topicsSubQuery);
         }
 
@@ -270,7 +300,7 @@ export class SelectionService {
         );
 
         // 1. Indexed Count for sizing
-        const [{ count: totalInPool }] = await db.select({ count: sql<number>`count(*)` })
+        const [{ count: totalInPool }] = await this.dbInstance.select({ count: sql<number>`count(*)` })
           .from(questions)
           .where(baseFilters);
 
@@ -292,7 +322,7 @@ export class SelectionService {
         for (const anchor of anchors) {
           if (candidates.length >= count) break;
 
-          const [candidate] = await db.select()
+          const [candidate] = await this.dbInstance.select()
             .from(questions)
             .where(and(baseFilters, gte(questions.id, anchor), notInArray(questions.id, Array.from(selectedIds))))
             .orderBy(asc(questions.id))
@@ -303,7 +333,7 @@ export class SelectionService {
             selectedIds.add(candidate.id);
           } else {
             // Wrap-around
-            const [fallback] = await db.select()
+            const [fallback] = await this.dbInstance.select()
               .from(questions)
               .where(and(baseFilters, notInArray(questions.id, Array.from(selectedIds))))
               .orderBy(asc(questions.id))

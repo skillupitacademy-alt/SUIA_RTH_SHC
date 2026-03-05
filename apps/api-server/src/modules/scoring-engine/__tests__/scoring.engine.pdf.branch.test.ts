@@ -1,14 +1,17 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-
+import { container } from '@/modules/core/container';
+import { PerformanceService } from '@/modules/report-engine/performance.service';
 import { db } from '@quiz/db';
 import { ScoringEngine } from '../scoring.engine';
 
+const mockPerformanceService = {
+  invalidateCache: vi.fn().mockResolvedValue(undefined),
+  refreshAnalytics: vi.fn().mockResolvedValue(undefined),
+  cacheReport: vi.fn().mockResolvedValue(undefined),
+};
+
 vi.mock('@/modules/report-engine/performance.service', () => ({
-  PerformanceService: {
-    invalidateCache: vi.fn().mockResolvedValue(undefined),
-    refreshAnalytics: vi.fn().mockResolvedValue(undefined),
-    cacheReport: vi.fn().mockResolvedValue(undefined),
-  },
+  PerformanceService: vi.fn().mockImplementation(() => mockPerformanceService),
 }));
 
 vi.mock('@/modules/report-engine/report.engine', () => ({
@@ -27,6 +30,7 @@ describe('ScoringEngine PDF trigger branch', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     global.fetch = vi.fn().mockResolvedValue({ ok: true });
+    container.register(PerformanceService, mockPerformanceService as any);
   });
 
   it('logs but does not throw when fetch rejects (lines 194,209)', async () => {
@@ -50,7 +54,7 @@ describe('ScoringEngine PDF trigger branch', () => {
     // make fetch reject to hit catch block
     (global.fetch as any) = vi.fn().mockRejectedValue(new Error('pdf fail'));
 
-    await expect(ScoringEngine.calculateExamResults('ex1')).resolves.toBe(0);
+    await expect(container.get(ScoringEngine).calculateExamResults('ex1')).resolves.toBe(0);
   });
 
   it('handles scoring failure and failed status update (lines 45, 209)', async () => {
@@ -78,7 +82,7 @@ describe('ScoringEngine PDF trigger branch', () => {
       set: vi.fn().mockReturnValue({ where: whereReject }),
     });
 
-    await expect(ScoringEngine.calculateExamResults('ex2')).rejects.toBeInstanceOf(Error);
+    await expect(container.get(ScoringEngine).calculateExamResults('ex2')).rejects.toBeInstanceOf(Error);
     expect((db.query as any).topics.findMany).toHaveBeenCalled();
     expect(whereReject).toHaveBeenCalled();
   });

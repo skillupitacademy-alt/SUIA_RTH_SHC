@@ -6,6 +6,7 @@ import puppeteer from "puppeteer-core";
 import { logger } from "@/lib/logger";
 
 import { ReportEngine } from "./report.engine";
+import { ReportRepository } from "./report-repository";
 
 export interface PdfGenerationResult {
   buffer: Buffer;
@@ -15,13 +16,19 @@ export interface PdfGenerationResult {
 }
 
 export class ReportPdfService {
-  private static readonly log = logger.child({ module: "report-pdf-service" });
+  constructor(
+    private readonly dbInstance = db,
+    private readonly reportEngine?: ReportEngine,
+    private readonly reportRepository?: ReportRepository
+  ) {}
+
+  private log = logger.child({ module: "report-pdf-service" });
 
   /**
    * Core PDF Generation Logic
    * Supports optional nodeId/nodeType for hierarchical segment rendering.
    */
-  static async generate(
+  async generate(
     attemptId: string,
     nodeId?: string,
     nodeType?: string,
@@ -57,7 +64,7 @@ export class ReportPdfService {
     let browser;
 
     if (hasBrowserlessUrl) {
-      logger.info({ attemptId }, "[ReportPdfService] Connecting to remote browserless instance");
+      this.log.info({ attemptId }, "[ReportPdfService] Connecting to remote browserless instance");
       browser = await puppeteer.connect({
         browserWSEndpoint: browserlessUrl as string,
         defaultViewport: {
@@ -84,14 +91,14 @@ export class ReportPdfService {
         if (executableCandidate && fs.existsSync(executableCandidate)) {
           executablePath = executableCandidate;
         } else {
-          logger.warn({ executableCandidate, attemptId }, "[ReportPdfService] Target Chrome binary not found at primary path");
+          this.log.warn({ executableCandidate, attemptId }, "[ReportPdfService] Target Chrome binary not found at primary path");
           executablePath = await chromium.executablePath();
         }
       } else {
         executablePath = await chromium.executablePath();
       }
 
-      logger.info({ attemptId, isWindows, executablePath }, "[ReportPdfService] Launching local browser instance");
+      this.log.info({ attemptId, isWindows, executablePath }, "[ReportPdfService] Launching local browser instance");
       browser = await puppeteer.launch({
         args: isWindows ? ["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage"] : chromium.args,
         defaultViewport: {
@@ -139,38 +146,39 @@ export class ReportPdfService {
       });
 
       // 3. Fetch data locally for injection
-      const exam = await db.query.exams.findFirst({
+      const exam = await this.dbInstance.query.exams.findFirst({
         where: eq(exams.id, attemptId),
         columns: { reportMaterialized: true },
       });
 
-      type ReportData = Awaited<ReturnType<typeof ReportEngine.getPremiumExamReport>> & { reportMaterialized?: unknown };
-      const reportData: ReportData = await ReportEngine.getPremiumExamReport(attemptId);
+      const engine = this.reportEngine || (await import('../core/container')).container.get(ReportEngine);
+      type ReportData = Awaited<ReturnType<typeof engine.getPremiumExamReport>> & { reportMaterialized?: unknown };
+      const reportData: ReportData = await engine.getPremiumExamReport(attemptId);
 
       if (exam?.reportMaterialized !== undefined) {
         reportData.reportMaterialized = exam.reportMaterialized;
       }
 
       // 4. Data Injection: Push data into browser memory BEFORE navigation
-      logger.info({ attemptId }, "[ReportPdfService] Injecting report data into browser memory");
+      this.log.info({ attemptId }, "[ReportPdfService] Injecting report data into browser memory");
       await page.evaluateOnNewDocument((data: ReportData) => {
         (globalThis as { __REPORT_DATA__?: ReportData }).__REPORT_DATA__ = data;
       }, reportData);
 
       // 5. Navigate and Wait
-      logger.info({ attemptId, url }, "[ReportPdfService] Navigating to print view");
+      this.log.info({ attemptId, url }, "[ReportPdfService] Navigating to print view");
       try {
         await page.goto(url, { waitUntil: "networkidle0", timeout: 60000 });
       } catch (gotoErr) {
-        logger.error({ attemptId, url, err: gotoErr }, "[ReportPdfService] Navigation failed or timed out");
+        this.log.error({ attemptId, url, err: gotoErr }, "[ReportPdfService] Navigation failed or timed out");
         throw new Error(`Navigation Fault: Check if ${webAppUrl} is accessible.`);
       }
 
-      logger.info({ attemptId }, "[ReportPdfService] Waiting for Neural Signal [data-pdf-ready=\"true\"]");
+      this.log.info({ attemptId }, "[ReportPdfService] Waiting for Neural Signal [data-pdf-ready=\"true\"]");
       try {
         await page.waitForSelector('[data-pdf-ready="true"]', { timeout: 30000 });
       } catch (selectorErr) {
-        logger.error({ attemptId, err: selectorErr }, "[ReportPdfService] Signal timeout - possible hydration delay");
+        this.log.error({ attemptId, err: selectorErr }, "[ReportPdfService] Signal timeout - possible hydration delay");
         throw new Error("Synthesis Timeout: The report engine failed to emit a ready signal within 30s.");
       }
 
@@ -198,7 +206,7 @@ export class ReportPdfService {
   /**
    * Helper specifically for rendering a hierarchical segment
    */
-  static async renderSegment(
+  async renderSegment(
     attemptId: string,
     nodeId: string,
     nodeType: string,
@@ -212,8 +220,8 @@ export class ReportPdfService {
   /**
    * Complete generation + upload + DB sync flow
    */
-  static async generateAndUpload(attemptId: string): Promise<string> {
-    const exam = await db.query.exams.findFirst({
+  async generateAndUpload(attemptId: string): Promise<string> {
+    const exam = await this.dbInstance.query.exams.findFirst({
       where: eq(exams.id, attemptId),
       columns: { userId: true },
     });
@@ -225,8 +233,8 @@ export class ReportPdfService {
     const { uploadReport } = await import("@/lib/storage/upload-report");
     const storageUrl = await uploadReport(buffer, exam.userId, attemptId);
 
-    const { ReportRepository } = await import("./report-repository");
-    await ReportRepository.updateReportSuccess(attemptId, {
+    const repository = this.reportRepository || (await import('../core/container')).container.get(ReportRepository);
+    await repository.updateReportSuccess(attemptId, {
       fileRef: storageUrl,
       generationTimeMs,
       fileSizeKb,

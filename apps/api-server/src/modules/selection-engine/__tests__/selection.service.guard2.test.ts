@@ -1,34 +1,45 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { db } from '@quiz/db';
+import { SelectionService } from '../selection.service';
+import { container } from '../../core/container';
 
-// Minimal mocks for db/cache to avoid real calls
-vi.mock('@/modules/core/cache.service', () => ({
-  cacheService: {
-    get: vi.fn().mockResolvedValue(null),
-    set: vi.fn(),
-  },
-}));
+const mockQueryBuilder = (result: any = []) => ({
+    from: vi.fn().mockReturnThis(),
+    where: vi.fn().mockReturnThis(),
+    orderBy: vi.fn().mockReturnThis(),
+    limit: vi.fn().mockReturnThis(),
+    then: (resolve: any) => Promise.resolve(result).then(resolve),
+} as any);
 
 vi.mock('@quiz/db', () => ({
-  db: {
-    query: {
-      examBlueprints: { findFirst: vi.fn().mockResolvedValue(null) },
-      questions: { findMany: vi.fn() },
-      topics: { findMany: vi.fn() },
+    db: {
+        query: {
+            examBlueprints: { findFirst: vi.fn() },
+            questions: { findMany: vi.fn() }
+        },
+        select: vi.fn()
     },
-    select: vi.fn(() => ({ from: () => ({ where: vi.fn().mockResolvedValue([]) }) })),
-  },
-  examBlueprints: {},
-  questions: { id: 'id', status: 'status', difficulty: 'difficulty', subtopicId: 'subtopicId', topicId: 'topicId' },
-  subtopics: { id: 'id', topicId: 'topicId' },
-  topics: { id: 'id', subjectId: 'subjectId' },
-  subjects: { id: 'id', domainId: 'domainId' },
+    examBlueprints: { tableName: 'exam_blueprints', id: 'id', domains: 'domains' },
+    subjects: { tableName: 'subjects', domainId: 'domain_id' },
+    topics: { tableName: 'topics', subjectId: 'subject_id' },
+    subtopics: { tableName: 'subtopics', topicId: 'topic_id' },
+    questions: { tableName: 'questions', id: 'id', status: 'active', difficulty: 'difficulty' }
 }));
 
-describe('SelectionService guard branches', () => {
-  it('throws when domainId is missing (lines ~96,119)', async () => {
-    const { SelectionService } = await import('../selection.service');
-    await expect(
-      SelectionService.composeExam('u1', '' as any, 'idem-1', { questionCount: 1, difficulty: 'mixed' }),
-    ).rejects.toThrow(/Selection criteria/);
-  });
+describe('SelectionService Guard 2', () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+        container.reset();
+        
+        vi.mocked(db.select).mockImplementation(() => mockQueryBuilder([{ count: 1 }]));
+        container.register(SelectionService, new SelectionService(db as any, { get: vi.fn(), set: vi.fn() } as any));
+    });
+
+    it('guard: handles transient blueprint when resolution fails', async () => {
+        vi.mocked(db.query.examBlueprints.findFirst).mockResolvedValue(undefined);
+        
+        const service = container.get(SelectionService);
+        const result = await service.composeExam('u1', 'none', 'key1');
+        expect(result.blueprint.id).toBe('transient');
+    });
 });

@@ -1,18 +1,25 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { db } from '@quiz/db';
+import { SelectionService } from '../selection.service';
+import { container } from '../../core/container';
 
-import { SelectionService } from '../selection.service'
+vi.mock('@quiz/db', () => ({
+    db: {
+        query: { examBlueprints: { findFirst: vi.fn() } }
+    },
+    examBlueprints: { tableName: 'exam_blueprints', id: 'id' }
+}));
 
-describe('SelectionService.composeExam empty selection error', () => {
-  it('throws when dynamic selection returns no questions', async () => {
-    vi.spyOn(SelectionService as any, 'resolveBlueprint').mockResolvedValue({ questionIds: [] })
-    vi.spyOn(SelectionService as any, 'resolveSelectionCriteria').mockResolvedValue({
-      finalSubtopicIds: [], actualTopicIds: [], actualSubjectIds: [], requestedTotal: 1, difficultyPref: 'simple'
-    })
-    vi.spyOn(SelectionService as any, 'executeDynamicSelection').mockResolvedValue([])
+describe('SelectionService composition error', () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+        container.reset();
+        container.register(SelectionService, new SelectionService(db as any, { get: vi.fn(), set: vi.fn() } as any));
+    });
 
-    await expect(SelectionService.composeExam('u1', 'bp1', 'idem')).resolves.toEqual({
-      questions: [],
-      blueprint: { questionIds: [] },
-    })
-  })
-})
+    it('propagates database errors during resolution', async () => {
+        vi.mocked(db.query.examBlueprints.findFirst).mockRejectedValue(new Error('DB Error'));
+        const service = container.get(SelectionService);
+        await expect(service.composeExam('u1', 'bp1', 'k1')).rejects.toThrow('DB Error');
+    });
+});

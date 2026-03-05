@@ -7,20 +7,22 @@ import { AuditService } from '../audit.service'
 
 describe('AuthService.refresh edge cases', () => {
   it('rejects invalid token and logs', async () => {
-    vi.spyOn(TokenService, 'verifyRefreshToken').mockRejectedValue(new Error('bad'))
-    vi.spyOn(TokenService, 'hashToken').mockResolvedValue('hash')
-    const logSpy = vi.spyOn(AuditService, 'log').mockResolvedValue(undefined as any)
+    vi.spyOn(TokenService.prototype, 'verifyRefreshToken').mockRejectedValue(new Error('bad'))
+    vi.spyOn(TokenService.prototype, 'hashToken').mockResolvedValue('hash')
+    vi.spyOn(AuditService.prototype, 'log').mockResolvedValue(undefined as any)
 
-    await expect(AuthService.refresh('bad-token')).rejects.toThrow()
+    const { container } = await import('../../core/container')
+    await expect(container.get(AuthService).refresh('bad-token')).rejects.toThrow()
   })
 
   it('revokes tokens when hash not found', async () => {
-    vi.spyOn(TokenService, 'verifyRefreshToken').mockResolvedValue({ userId: 'u1' } as any)
-    vi.spyOn(TokenService, 'hashToken').mockResolvedValue('hash')
+    vi.spyOn(TokenService.prototype, 'verifyRefreshToken').mockResolvedValue({ userId: 'u1' } as any)
+    vi.spyOn(TokenService.prototype, 'hashToken').mockResolvedValue('hash')
     ;(db.query as any).refreshTokens = { findFirst: vi.fn().mockResolvedValue(undefined) }
     ;(db.update as any) = vi.fn().mockReturnValue({ set: vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue(undefined) }) })
-    const logSpy = vi.spyOn(AuditService, 'log').mockResolvedValue(undefined as any)
+    vi.spyOn(AuditService.prototype, 'log').mockResolvedValue(undefined as any)
 
-    await expect(AuthService.refresh('tok')).rejects.toThrow()
+    const { container } = await import('../../core/container')
+    await expect(container.get(AuthService).refresh('tok')).rejects.toThrow()
   })
 })

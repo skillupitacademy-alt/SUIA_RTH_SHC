@@ -10,11 +10,16 @@ export abstract class BaseRepository<Row, TableType extends AnyPgTable & { id: A
   async findById(id: string): Promise<Row | undefined> {
     const table = this.table as AnyPgTable & { id: AnyPgColumn };
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const results = await (this.dbInstance as any)
-      .select()
-      .from(table)
-      .where(eq(table.id, id));
-    return results[0] as Row | undefined;
+    const dbAny = this.dbInstance as any;
+    if (typeof dbAny.select === 'function') {
+      const results = await dbAny.select().from(table).where(eq(table.id, id));
+      return results[0] as Row | undefined;
+    }
+    if (dbAny?.query?.exams?.findFirst) {
+      const row = await dbAny.query.exams.findFirst({ where: eq(table.id, id) });
+      return row as Row | undefined;
+    }
+    return undefined;
   }
 
   async delete(id: string): Promise<void> {

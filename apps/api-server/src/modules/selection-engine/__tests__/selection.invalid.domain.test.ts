@@ -1,27 +1,21 @@
-import { describe, it, expect, vi } from 'vitest';
-
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { SelectionService } from '../selection.service';
+import { container } from '../../core/container';
 
-describe('SelectionService guard rails', () => {
-  it('throws when domainId is missing', async () => {
-    // bypass resolveBlueprint to avoid DB work; provide minimal stub
-    vi.spyOn(SelectionService as any, 'resolveBlueprint').mockResolvedValue({
-      id: 'b1',
-      totalQuestions: 5,
-      timeLimit: 10,
-      domains: [],
-      status: 'active',
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      createdById: 'u1',
-      subjects: [],
-      topics: [],
-      subtopics: [],
-      questionIds: [],
+describe('SelectionService invalid domain', () => {
+    beforeEach(() => {
+        container.reset();
+        const mockDb = {
+            query: {
+                examBlueprints: { findFirst: vi.fn().mockResolvedValue(null) }
+            }
+        };
+        const mockCache = { get: vi.fn().mockResolvedValue(null), set: vi.fn() };
+        container.register(SelectionService, new SelectionService(mockDb as any, mockCache as any));
     });
 
-    await expect(
-      SelectionService.composeExam('user1', '', 'key1', { questionCount: 3 })
-    ).rejects.toThrow(/Selection criteria/i);
-  });
+    it('throws if domainId is provided as empty string', async () => {
+        const service = container.get(SelectionService);
+        await expect(service.composeExam('u1', '', 'k1')).rejects.toThrow('Selection criteria');
+    });
 });

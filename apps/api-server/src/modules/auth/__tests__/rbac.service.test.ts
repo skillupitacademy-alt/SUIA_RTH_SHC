@@ -1,43 +1,56 @@
+import { db } from '@quiz/db';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-type RbacPayload = { role?: string; email?: string };
+type RbacPayload = { role?: string; email?: string; userId?: string };
 
-vi.mock('@/modules/auth/rbac.service', () => ({
-  _verifyAdmin: vi.fn<() => Promise<boolean>>(),
-}));
+const ADMIN_PAYLOAD = { role: 'admin', email: 'admin@test.com', userId: 'u1' };
+const USER_PAYLOAD = { role: 'user', email: 'user@test.com', userId: 'u2' };
 
-const ADMIN_PAYLOAD: RbacPayload = { role: 'admin', email: 'admin@test.com' };
-const USER_PAYLOAD: RbacPayload = { role: 'user', email: 'user@test.com' };
-
-describe.skip('RBAC Service (unit)', () => {
-  beforeEach(() => vi.clearAllMocks());
+describe('RBAC Service (unit)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(db.select).mockReturnValue({
+      from: vi.fn().mockReturnThis(),
+      innerJoin: vi.fn().mockReturnThis(),
+      where: vi.fn().mockReturnThis(),
+      limit: vi.fn().mockResolvedValue([{ isBlocked: false }])
+    } as any);
+  });
 
   it('returns true for admin payload', async () => {
     const { _verifyAdmin } = await import('@/modules/auth/rbac.service');
-    vi.mocked(_verifyAdmin).mockResolvedValue(true);
-
-    const ok = await _verifyAdmin(ADMIN_PAYLOAD as unknown as Record<string, unknown>);
-
-    expect(_verifyAdmin).toHaveBeenCalledWith(ADMIN_PAYLOAD);
+    const ok = await _verifyAdmin(ADMIN_PAYLOAD as any);
     expect(ok).toBe(true);
   });
 
   it('returns false for non-admin payload', async () => {
     const { _verifyAdmin } = await import('@/modules/auth/rbac.service');
-    vi.mocked(_verifyAdmin).mockResolvedValue(false);
+    // For non-admin, it hits the database check
+    vi.mocked(db.select).mockReturnValueOnce({
+        from: vi.fn().mockReturnThis(),
+        where: vi.fn().mockReturnThis(),
+        limit: vi.fn().mockResolvedValue([{ isBlocked: false }])
+    } as any) // first call (blocked check)
+    .mockReturnValueOnce({
+        from: vi.fn().mockReturnThis(),
+        innerJoin: vi.fn().mockReturnThis(),
+        where: vi.fn().mockReturnThis(),
+        limit: vi.fn().mockResolvedValue([]) // second call (role check) - fail
+    } as any);
 
-    const ok = await _verifyAdmin(USER_PAYLOAD as unknown as Record<string, unknown>);
-
-    expect(_verifyAdmin).toHaveBeenCalledWith(USER_PAYLOAD);
+    const ok = await _verifyAdmin(USER_PAYLOAD as any);
     expect(ok).toBe(false);
   });
 
-  it('guards when role is missing', async () => {
+  it('guards when user is blocked', async () => {
     const { _verifyAdmin } = await import('@/modules/auth/rbac.service');
-    vi.mocked(_verifyAdmin).mockResolvedValue(false);
+    vi.mocked(db.select).mockReturnValue({
+        from: vi.fn().mockReturnThis(),
+        where: vi.fn().mockReturnThis(),
+        limit: vi.fn().mockResolvedValue([{ isBlocked: true }])
+    } as any);
 
-    const ok = await _verifyAdmin({ email: 'no-role@test.com' } as unknown as Record<string, unknown>);
-
+    const ok = await _verifyAdmin(ADMIN_PAYLOAD as any);
     expect(ok).toBe(false);
   });
 });

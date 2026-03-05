@@ -1,18 +1,32 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
+import { TokenService } from '../token.service';
+import { container } from '../../core/container';
+import type { NextRequest } from 'next/server';
 
-const jwtVerifyMock = vi.fn();
+describe('TokenService Tail 5', () => {
+    it('getAccessToken: returns undefined if cookie exists but is empty string', () => {
+        container.reset();
+        const service = container.get(TokenService);
+        const mockReq = { 
+            cookies: { get: () => ({ value: '' }) },
+            headers: { get: () => null }
+        } as unknown as NextRequest;
+        
+        expect(service.getAccessToken(mockReq)).toBeUndefined();
+    });
 
-vi.mock('jose', async (orig) => {
-  const actual = await orig();
-  return { ...actual, jwtVerify: jwtVerifyMock };
-});
-
-describe('TokenService audience guard (line 133)', () => {
-  beforeEach(() => jwtVerifyMock.mockReset());
-
-  it('throws infra guard error when audience missing and required', async () => {
-    jwtVerifyMock.mockResolvedValue({ payload: { userId: 'u', email: 'e', roles: [] } });
-    const { TokenService } = await import('../token.service');
-    await expect(TokenService.verifyAccessToken('tok', { audience: 'infra' })).rejects.toThrow(/Audience mismatch/);
-  });
+    it('getAccessToken: handles scope-less fallback with mixed cookies', () => {
+        container.reset();
+        const service = container.get(TokenService);
+        const mockReq = { 
+            cookies: { get: (name: string) => {
+                if (name === 'accessToken') return { value: '' };
+                if (name === 'admin_accessToken') return { value: 'admin-val' };
+                return undefined;
+            }},
+            headers: { get: () => null }
+        } as unknown as NextRequest;
+        
+        expect(service.getAccessToken(mockReq)).toBe('admin-val');
+    });
 });

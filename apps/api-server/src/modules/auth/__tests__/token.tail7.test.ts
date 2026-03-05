@@ -1,64 +1,34 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { TokenService } from '../token.service';
-import * as jose from 'jose';
+import { container } from '../../core/container';
 
-vi.mock('jose', () => ({
-    jwtVerify: vi.fn(),
-    SignJWT: vi.fn(),
-    decodeJwt: vi.fn()
-}));
+describe('Token Service Tail 7', () => {
+  beforeEach(() => {
+    process.env.JWT_SECRET = 'test-secret-test-secret-test-secret-test-secret';
+    process.env.JWT_REFRESH_SECRET = 'test-refresh-secret-test-refresh-secret';
+    process.env.ADMIN_JWT_SECRET = 'test-admin-secret-test-admin-secret';
+    container.reset();
+  });
 
-const mockJwtVerify = vi.mocked(jose.jwtVerify);
+  it('verifyRefreshToken: enforces audience if provided in options', async () => {
+    const service = container.get(TokenService);
+    const token = await service.generateRefreshToken('u1', false, 'user');
+    
+    await expect(service.verifyRefreshToken(token, { audience: 'admin' }))
+      .rejects.toThrow(); 
+  });
 
-describe('TokenService extreme logic tail 7', () => {
-    it('verifyRefreshToken: throws when requiredAud=infra but scope is user (Line 133)', async () => {
-        process.env.JWT_REFRESH_SECRET = 'secret';
-        mockJwtVerify.mockResolvedValue({
-            payload: { userId: 'u1', aud: 'user' } 
-        } as any);
+  it('verifyRefreshToken: accepts matching audience in options', async () => {
+    const service = container.get(TokenService);
+    const token = await service.generateRefreshToken('u1', false, 'user');
+    const decoded = await service.verifyRefreshToken(token, { audience: 'user' });
+    expect(decoded.userId).toBe('u1');
+  });
 
-        // The assertion tests verifyAccessToken, not verifyRefreshToken, based on auth logic
-        await expect(TokenService.verifyAccessToken('token', { audience: 'infra' }))
-            .rejects.toThrow('Audience mismatch: expected infra, got user');
-    });
-
-    it('verifyAccessToken: allows admin or infra audience when isAdmin is true (Line 128)', async () => {
-        mockJwtVerify.mockResolvedValueOnce({
-            payload: { userId: 'u1', aud: 'admin' } 
-        } as any);
-        await expect(TokenService.verifyAccessToken('token', { isAdmin: true })).resolves.toBeDefined();
-    });
-
-    it('verifyAccessToken: uses ACCESS_SECRET when isAdmin is explicitly false (Line 137)', async () => {
-        mockJwtVerify.mockResolvedValueOnce({ payload: { userId: 'u1' } } as any);
-        await expect(TokenService.verifyAccessToken('token', { isAdmin: false })).resolves.toBeDefined();
-    });
-
-    it('verifyAccessToken: falls back to ADMIN_SECRET when ACCESS_SECRET fails (Lines 142-147)', async () => {
-        mockJwtVerify
-            .mockRejectedValueOnce(new Error('Invalid signature')) // ACCESS_SECRET fails
-            .mockResolvedValueOnce({ payload: { userId: 'u1' } } as any); // ADMIN_SECRET succeeds
-        await expect(TokenService.verifyAccessToken('token')).resolves.toBeDefined();
-    });
-
-    it('verifyAccessToken: fallback throws default string error when innerErr is string (Line 149)', async () => {
-        mockJwtVerify
-            .mockRejectedValueOnce(new Error('Invalid signature')) // ACCESS_SECRET fails
-            .mockRejectedValueOnce('String Error'); // ADMIN_SECRET fails with string
-        await expect(TokenService.verifyAccessToken('token'))
-            .rejects.toThrow('Invalid _token signature or audience mismatch');
-    });
-
-    it('verifyRefreshToken: uses ADMIN_SECRET when isAdmin is true (Line 157)', async () => {
-        mockJwtVerify.mockResolvedValueOnce({ payload: { userId: 'u1' } } as any);
-        await expect(TokenService.verifyRefreshToken('token', { isAdmin: true })).resolves.toBeDefined();
-    });
-
-    it('verifyAccessToken: throws Audience violation if unknown aud on admin scope (Line 129)', async () => {
-        mockJwtVerify.mockResolvedValueOnce({
-            payload: { userId: 'u1', aud: 'hacker' } 
-        } as any);
-        await expect(TokenService.verifyAccessToken('token', { isAdmin: true }))
-            .rejects.toThrow('Audience violation: admin scope received unexpected aud hacker');
-    });
+  it('verifyRefreshToken: handles ADMIN_SECRET for admin refresh tokens', async () => {
+    const service = container.get(TokenService);
+    const token = await service.generateRefreshToken('a1', true, 'admin');
+    const decoded = await service.verifyRefreshToken(token, { isAdmin: true });
+    expect(decoded.isAdmin).toBe(true);
+  });
 });

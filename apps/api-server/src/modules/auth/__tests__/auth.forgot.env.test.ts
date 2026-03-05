@@ -4,11 +4,7 @@ import { db } from '@quiz/db'
 import { EmailService } from '@/modules/email/EmailService'
 import { AuthService } from '../auth.service'
 
-vi.mock('@/modules/email/EmailService', () => ({
-  EmailService: {
-    sendPasswordResetEmail: vi.fn(),
-  },
-}))
+vi.mock('@/modules/email/EmailService');
 
 describe('AuthService.forgotPassword env guards', () => {
   it('throws when admin URL env is missing for admin user', async () => {
@@ -26,6 +22,7 @@ describe('AuthService.forgotPassword env guards', () => {
       values: vi.fn().mockReturnThis(),
     })
     process.env.NEXT_PUBLIC_ADMIN_URL = ''
-    await expect(AuthService.forgotPassword('a@example.com')).rejects.toThrow(/NEXT_PUBLIC_ADMIN_URL/)
+    const { container } = await import('../../core/container')
+    await expect(container.get(AuthService).forgotPassword('a@example.com')).rejects.toThrow(/NEXT_PUBLIC_ADMIN_URL/)
   })
 })

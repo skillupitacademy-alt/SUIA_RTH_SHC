@@ -19,7 +19,7 @@ export interface TutorInsight {
 }
 
 export class AdaptiveTutorService {
-  private static instance = new AdaptiveTutorService();
+  private static instance: AdaptiveTutorService | null = null;
 
   constructor(private readonly dbInstance = db) {}
 
@@ -150,11 +150,20 @@ export class AdaptiveTutorService {
   }
 
   // --- Static facades for legacy tests ---
+  private static getInstance() {
+    if (this.instance === null) this.instance = new AdaptiveTutorService();
+    return this.instance;
+  }
+
   static generateInsights(userId: string, topicAccuracyRecords: { topicId: string; accuracy: number }[]) {
-    return this.instance.generateInsights(userId, topicAccuracyRecords);
+    return this.getInstance().generateInsights(userId, topicAccuracyRecords);
   }
 
   static requestMasterNotes(userId: string, topicId: string) {
-    return this.instance.requestMasterNotes(userId, topicId);
+    return this.getInstance().requestMasterNotes(userId, topicId);
+  }
+
+  static setInstance(mock: AdaptiveTutorService) {
+    this.instance = mock;
   }
 }

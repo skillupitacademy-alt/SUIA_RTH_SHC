@@ -1,10 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-
-vi.mock('@/modules/selection-engine/selection.service', () => ({
-  SelectionService: {
-    composeExam: vi.fn(),
-  },
-}));
+import { SelectionService } from '../selection.service';
+import { container } from '../../core/container';
 
 const BLUEPRINT_ID = 'bp-fixed';
 const QUESTIONS = [
@@ -12,24 +8,30 @@ const QUESTIONS = [
   { id: 'q2', stem: 'What is TS?', topicId: 't-ts' },
 ];
 
-describe.skip('SelectionService (unit)', () => {
-  beforeEach(() => vi.clearAllMocks());
+describe('SelectionService (unit)', () => {
+  beforeEach(() => {
+      vi.clearAllMocks();
+      container.reset();
+      
+      const mockService = {
+          composeExam: vi.fn(),
+      };
+      container.register(SelectionService, mockService as any);
+  });
 
   it('uses user + domain + idempotency to compose repeatable exam', async () => {
-    const { SelectionService } = await import('@/modules/selection-engine/selection.service');
-    vi.mocked(SelectionService.composeExam).mockResolvedValue({
-      questions: QUESTIONS,
-      blueprint: { id: BLUEPRINT_ID, domainId: 'domain1' },
-      meta: { seed: 'key1' },
+    const service = container.get(SelectionService);
+    vi.mocked(service.composeExam).mockResolvedValue({
+      questions: QUESTIONS as any,
+      blueprint: { id: BLUEPRINT_ID, domains: ['domain1'] } as any,
     });
 
-    const result = await SelectionService.composeExam('user1', 'domain1', 'key1', { questionCount: 2 });
+    const result = await service.composeExam('user1', 'domain1', 'key1', { questionCount: 2 });
 
-    expect(SelectionService.composeExam).toHaveBeenCalledWith('user1', 'domain1', 'key1', {
+    expect(service.composeExam).toHaveBeenCalledWith('user1', 'domain1', 'key1', {
       questionCount: 2,
     });
     expect(result.blueprint.id).toBe(BLUEPRINT_ID);
     expect(result.questions).toHaveLength(2);
-    expect(result.meta?.seed).toBe('key1');
   });
 });

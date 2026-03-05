@@ -5,7 +5,12 @@ import { PremiumReport } from "./report.engine";
  * Implements strict, evidence-based narrative generation based on statistical thresholds.
  */
 export class ReportInterpreter {
-  private static singleton = new ReportInterpreter();
+  private static singleton: ReportInterpreter | null = null;
+
+  private static getInstance() {
+    if (this.singleton === null) this.singleton = new ReportInterpreter();
+    return this.singleton;
+  }
   
   /**
    * Synthesizes the narrative interpretation for a full report.
@@ -229,12 +234,17 @@ export class ReportInterpreter {
   }
 
   // Static facades for legacy tests
-  static interpret(report: PremiumReport) { return this.singleton.interpret(report); }
-  static interpretKPI(report: PremiumReport) { return this.singleton.interpretKPI(report); }
-  static interpretSubtopics(report: PremiumReport) { return this.singleton.interpretSubtopics(report); }
-  static interpretSkills(report: PremiumReport) { return this.singleton.interpretSkills(report); }
-  static interpretHeatmap(report: PremiumReport) { return this.singleton.interpretHeatmap(report); }
-  static interpretDifficulty(report: PremiumReport) { return this.singleton.interpretDifficulty(report); }
-  static interpretTime(report: PremiumReport) { return this.singleton.interpretTime(report); }
-  static interpretMeta(report: PremiumReport) { return this.singleton.interpretMeta(report); }
+  static interpret(report: PremiumReport) { return this.getInstance().interpret(report); }
+  static interpretKPI(report: PremiumReport) { return this.getInstance().interpretKPI(report); }
+  static interpretSubtopics(report: PremiumReport) { return this.getInstance().interpretSubtopics(report); }
+  static interpretSkills(report: PremiumReport) { return this.getInstance().interpretSkills(report); }
+  static interpretHeatmap(report: PremiumReport) { return this.getInstance().interpretHeatmap(report); }
+  static interpretDifficulty(report: PremiumReport) { return this.getInstance().interpretDifficulty(report); }
+  static interpretTime(report: PremiumReport) { return this.getInstance().interpretTime(report); }
+  static interpretMeta(report: PremiumReport) { return this.getInstance().interpretMeta(report); }
+  static getOrdinalSuffix(n: number) { return this.getInstance().getOrdinalSuffix(n); }
+
+  static setInstance(mock: ReportInterpreter) {
+    this.singleton = mock;
+  }
 }

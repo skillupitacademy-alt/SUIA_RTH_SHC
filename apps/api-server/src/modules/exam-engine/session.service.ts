@@ -3,6 +3,7 @@ import { db, exams } from '@quiz/db';
 import { and, eq } from 'drizzle-orm';
 
 import { logger } from '@/lib/logger';
+import { container } from '@/modules/core/container';
 import { cacheService } from '@/modules/core/cache.service';
 import { ScoringEngine } from '@/modules/scoring-engine/scoring.engine';
 
@@ -59,7 +60,7 @@ export class SessionService {
         .set({ status: 'processing' as 'started' | 'processing' | 'completed' | 'abandoned' | 'failed' })
         .where(eq(exams.id, examId));
 
-      ScoringEngine.calculateExamResults(examId).catch(_err => {
+      container.get(ScoringEngine).calculateExamResults(examId).catch(_err => {
         logger.error({ err: _err, examId }, '[SessionService] Async auto-submit scoring failed');
       });
 

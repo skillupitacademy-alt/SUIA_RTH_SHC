@@ -1,43 +1,51 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-
-const mocks = vi.hoisted(() => ({
-  findUser: vi.fn(),
-  findAttempt: vi.fn(),
-}));
+import { db, loginAttempts, users } from '@quiz/db';
+import { SecurityService } from '../security.service';
+import { container } from '../../core/container';
 
 vi.mock('@quiz/db', () => ({
   db: {
     query: {
-      users: { findFirst: (...args: any[]) => mocks.findUser(...args) },
-      loginAttempts: { findFirst: (...args: any[]) => mocks.findAttempt(...args) },
+      users: { findFirst: vi.fn() },
+      loginAttempts: { findFirst: vi.fn() },
     },
-    delete: vi.fn().mockReturnValue({ where: vi.fn() }),
-    insert: vi.fn().mockReturnValue({ values: vi.fn() }),
-    update: vi.fn().mockReturnValue({ set: vi.fn().mockReturnValue({ where: vi.fn() }) }),
+    update: vi.fn().mockReturnValue({ set: vi.fn().mockReturnThis(), where: vi.fn() }),
   },
-  loginAttempts: {},
-  users: {},
+  users: { id: 'u', email: 'e' },
+  loginAttempts: { id: 'la', userId: 'u', ip: 'ip', attempts: 0 },
 }));
 
-describe('SecurityService branches', () => {
+describe('SecurityService branch coverage', () => {
   beforeEach(() => {
-    vi.resetModules();
-    mocks.findUser.mockReset();
-    mocks.findAttempt.mockReset();
+    vi.clearAllMocks();
+    container.reset();
+    container.register(SecurityService, new SecurityService(db as any));
   });
 
-  it('trackLoginAttempt returns early when user not found', async () => {
-    mocks.findUser.mockResolvedValue(undefined);
-    const { SecurityService } = await import('../security.service');
-    const res = await SecurityService.trackLoginAttempt('1.1.1.1', 'none', false);
-    expect(res).toBeUndefined();
+  it('trackLoginAttempt: updates existing entry (Line 46)', async () => {
+    vi.mocked(db.query.users.findFirst).mockResolvedValue({ id: 'u1' } as any);
+    vi.mocked(db.query.loginAttempts.findFirst).mockResolvedValue({ id: 'la1', attempts: 1 } as any);
+    
+    const service = container.get(SecurityService);
+    await service.trackLoginAttempt('1.1.1.1', 'a@b.com', false);
+    expect(db.update).toHaveBeenCalled();
   });
 
-  it('isAccountLocked returns false when lock expired', async () => {
-    mocks.findUser.mockResolvedValue({ id: 'u1' });
-    mocks.findAttempt.mockResolvedValue({ lockedUntil: new Date(Date.now() - 1000) });
-    const { SecurityService } = await import('../security.service');
-    const locked = await SecurityService.isAccountLocked('e@example.com', '1.1.1.1');
-    expect(locked).toBe(false);
+  it('isAccountLocked: returns false if attempt.lockedUntil is null (Line 67)', async () => {
+    vi.mocked(db.query.users.findFirst).mockResolvedValue({ id: 'u1' } as any);
+    vi.mocked(db.query.loginAttempts.findFirst).mockResolvedValue({ id: 'la1', lockedUntil: null } as any);
+    
+    const service = container.get(SecurityService);
+    const result = await service.isAccountLocked('a@b.com', '1.1.1.1');
+    expect(result).toBe(false);
+  });
+
+  it('isAccountLocked: returns true if locked (Line 76)', async () => {
+    vi.mocked(db.query.users.findFirst).mockResolvedValue({ id: 'u1' } as any);
+    vi.mocked(db.query.loginAttempts.findFirst).mockResolvedValue({ id: 'la1', lockedUntil: new Date(Date.now() + 10000) } as any);
+    
+    const service = container.get(SecurityService);
+    const result = await service.isAccountLocked('a@b.com', '1.1.1.1');
+    expect(result).toBe(true);
   });
 });

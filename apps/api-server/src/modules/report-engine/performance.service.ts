@@ -6,12 +6,17 @@ import { logger } from "@/lib/logger";
 import { cacheService, type CacheValue } from "../core/cache.service";
 
 export class PerformanceService {
-  private static singleton = new PerformanceService();
+  private static singleton: PerformanceService | null = null;
 
   constructor(
     private readonly dbInstance = db,
     private readonly cache = cacheService
   ) {}
+
+  private static getInstance() {
+    if (this.singleton === null) this.singleton = new PerformanceService();
+    return this.singleton;
+  }
 
   private log = logger.child({ module: 'performance-service' });
 
@@ -61,8 +66,13 @@ export class PerformanceService {
   }
 
   // Static facades for tests
-  static refreshAnalytics() { return this.singleton.refreshAnalytics(); }
-  static getCachedReport<T extends CacheValue>(examId: string) { return this.singleton.getCachedReport<T>(examId); }
-  static cacheReport<T extends CacheValue>(examId: string, data: T) { return this.singleton.cacheReport(examId, data); }
-  static invalidateCache(examId: string) { return this.singleton.invalidateCache(examId); }
+  static refreshAnalytics() { return this.getInstance().refreshAnalytics(); }
+  static getCachedReport<T extends CacheValue>(examId: string) { return this.getInstance().getCachedReport<T>(examId); }
+  static cacheReport<T extends CacheValue>(examId: string, data: T) { return this.getInstance().cacheReport(examId, data); }
+  static invalidateCache(examId: string) { return this.getInstance().invalidateCache(examId); }
+
+  // Test helper
+  static setInstance(mock: PerformanceService) {
+    this.singleton = mock;
+  }
 }
