@@ -9,6 +9,7 @@ export abstract class BaseRepository<Row, TableType extends AnyPgTable & { id: A
 
   async findById(id: string): Promise<Row | undefined> {
     const table = this.table as AnyPgTable & { id: AnyPgColumn };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const results = await (this.dbInstance as any)
       .select()
       .from(table)
@@ -18,6 +19,7 @@ export abstract class BaseRepository<Row, TableType extends AnyPgTable & { id: A
 
   async delete(id: string): Promise<void> {
     const table = this.table as AnyPgTable & { id: AnyPgColumn };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await (this.dbInstance as any)
       .delete(table)
       .where(eq(table.id, id));
