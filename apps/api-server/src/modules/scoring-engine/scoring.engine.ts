@@ -5,6 +5,7 @@ import { logger } from '@/lib/logger';
 
 import { PerformanceService } from '../report-engine/performance.service';
 import { ReportEngine } from '../report-engine/report.engine';
+import { DimensionRegistry } from './calculators/dimension.registry';
 
 export const dynamic = 'force-dynamic';
 
@@ -66,66 +67,17 @@ export class ScoringEngine {
         const t = topicMap.get(q.topicId);
         if (t === undefined) continue;
 
-        interface SkillInfo {
-          id: string;
-          name: string;
-          weight: number | null;
-          category: string | null;
-          mappingType: string | null;
-        }
-
-        const qWithSkills = eqRecord.question as typeof eqRecord.question & { 
-          questionSkills: { skill: SkillInfo }[] 
-        };
-        
-        const skillsFromQuestion = (qWithSkills.questionSkills !== undefined && qWithSkills.questionSkills !== null) 
-          ? qWithSkills.questionSkills.map((qs: { skill: SkillInfo }) => qs.skill) 
-          : [];
-        const skillsFromTopic = t.topicSkills.map(ts => ts.skill as SkillInfo);
-        
-        // Deduplicate skills by ID
-        const skillMap = new Map<string, SkillInfo>();
-        [...skillsFromTopic, ...skillsFromQuestion].forEach(s => skillMap.set(s.id, s));
-        const questionSkillsList = Array.from(skillMap.values());
-
-        const avgWeight = questionSkillsList.length > 0 
-          ? Math.round(questionSkillsList.reduce((sum, s) => sum + (s.weight !== null ? s.weight : 1), 0) / questionSkillsList.length)
-          : 1;
-
-        const baseDims = [
-          { type: 'domain', id: t.subject.domain.id, name: t.subject.domain.name, w: avgWeight },
-          { type: 'subject', id: t.subject.id, name: t.subject.name, w: avgWeight },
-          { type: 'topic', id: t.id, name: t.name, w: avgWeight },
-          { type: 'difficulty', id: q.difficulty, name: q.difficulty.charAt(0).toUpperCase() + q.difficulty.slice(1), w: 1 },
-        ];
-
-        // Add Subtopic if present
-        if (q.subtopicId !== null && q.subtopicId !== '') {
-            const st = t.subtopics.find(s => s.id === q.subtopicId);
-            if (st !== undefined) {
-              baseDims.push({ type: 'subtopic', id: st.id, name: st.name, w: avgWeight });
-            }
-        }
-
-        // Add Skills, Categories, and Mapping Types
-        questionSkillsList.forEach(skill => {
-          const w = (skill.weight !== null && skill.weight !== undefined) ? skill.weight : 1;
-          baseDims.push({ type: 'skill', id: skill.id, name: skill.name, w });
-          
-          if (skill.category !== null && skill.category !== '') {
-            baseDims.push({ type: 'category', id: skill.category, name: skill.category.toUpperCase(), w });
-          }
-          
-          if (skill.mappingType !== null && skill.mappingType !== '') {
-            baseDims.push({ type: 'mapping_type', id: skill.mappingType, name: skill.mappingType.toUpperCase(), w });
-          }
+        const baseDims = DimensionRegistry.getAllDimensions({
+            question: q,
+            topic: t,
+            examQuestion: eqRecord
         });
 
         for (const d of baseDims) {
           const key = `${d.type}:${d.id}`;
           if (dimensions[key] === undefined) dimensions[key] = { total: 0, correct: 0, name: d.name };
-          dimensions[key].total += d.w;
-          if (eqRecord.isCorrect === true) dimensions[key].correct += d.w;
+          dimensions[key].total += d.weight;
+          if (eqRecord.isCorrect === true) dimensions[key].correct += d.weight;
         }
       }
 
