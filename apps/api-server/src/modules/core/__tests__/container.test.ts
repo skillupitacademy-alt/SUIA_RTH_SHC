@@ -90,4 +90,12 @@ describe('DIContainer', () => {
 
     expect(() => container.get(badToken as any)).toThrow('Failed to instantiate');
   });
+
+  it('uses unknown-error text when constructor throws non-Error', () => {
+    function badToken() {
+      throw 'factory-fail-string';
+    }
+
+    expect(() => container.get(badToken as any)).toThrow('Unknown error');
+  });
 });

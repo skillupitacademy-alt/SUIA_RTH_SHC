@@ -78,4 +78,17 @@ describe('TokenService remaining branch tails', () => {
       userId: 'u2',
     });
   });
+
+  it('returns undefined when no scoped cookie and empty authorization header', async () => {
+    const { TokenService } = await import('../token.service');
+    const service = new TokenService();
+
+    const req = {
+      cookies: { get: vi.fn(() => undefined) },
+      headers: { get: vi.fn(() => '') },
+    } as any;
+
+    expect(service.getAccessToken(req)).toBeUndefined();
+  });
+
 });

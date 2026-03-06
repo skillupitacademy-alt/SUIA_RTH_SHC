@@ -11,8 +11,6 @@ export class MultiSelectEvaluator implements IAnswerEvaluator {
     const correctSet = new Set(correctAnswer.split(',').map(s => s.trim().toLowerCase()));
     const userSet = new Set(userAnswer.split(',').map(s => s.trim().toLowerCase()));
 
-    if (correctSet.size === 0) return 0;
-
     let matchedCorrect = 0;
     let incorrectSelections = 0;
 

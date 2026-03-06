@@ -2,6 +2,7 @@ import { db, examBlueprints, questions, subjects,subtopics, topics } from "@quiz
 import { and, eq, inArray, or, sql } from "drizzle-orm";
 
 import { logger } from "@/lib/logger";
+import { withSpan } from "@/lib/tracer";
 import { cacheService } from "@/modules/core/cache.service";
 
 
@@ -33,7 +34,10 @@ export class ExamBlueprintService {
    * Performs resolution, fetching, randomization, and persistence.
    */
   async generateBlueprint(config: BlueprintConfiguration): Promise<string> {
-    const { domainId, subjectIds, topicIds, subtopicIds, questionCount, difficultyPreference } = config;
+    return withSpan('ExamBlueprintService.generateBlueprint', async (span) => {
+      const { domainId, subjectIds, topicIds, subtopicIds, questionCount, difficultyPreference } = config;
+      span.setAttribute('domainId', domainId);
+      span.setAttribute('questionCount', questionCount);
 
 
     // 1. Calculate Distribution based on Preference
@@ -78,6 +82,7 @@ export class ExamBlueprintService {
     }).returning();
 
     return blueprint.id;
+    });
   }
 
   /**

@@ -98,6 +98,15 @@ describe('SelectionService (Branch Coverage)', () => {
   });
 
   describe('resolveBlueprint', () => {
+    it('uses cached blueprint without hitting DB lookups', async () => {
+      vi.mocked(cacheService.get).mockResolvedValue(mockBlueprint as any);
+
+      const service = container.get(SelectionService);
+      const result = await (service as any).resolveBlueprint('u1', 'bp1', {});
+      expect(result.id).toBe('bp1');
+      expect(db.query.examBlueprints.findFirst).not.toHaveBeenCalled();
+    });
+
     it('uses transient blueprint if none found in DB', async () => {
         vi.mocked(db.query.examBlueprints.findFirst).mockResolvedValue(undefined);
         
@@ -150,6 +159,56 @@ describe('SelectionService (Branch Coverage)', () => {
         const service = container.get(SelectionService);
         const result = await service.composeExam('u1', 'bp1', 'key1', { subtopicIds: ['st1'], topicIds: ['t1'], difficulty: 'simple', questionCount: 1 });
         expect(result.questions.length).toBeGreaterThan(0);
+    });
+
+    it('auto-fills count for topic depth when difficulty is provided', async () => {
+      const selectQueue = [
+        mockQueryBuilder([]), // selectedTopicParents
+        mockQueryBuilder([{ subjectId: 's1' }]), // selectedSubjectParents
+      ];
+      vi.mocked(db.select).mockImplementation(() => selectQueue.shift() ?? mockQueryBuilder([{ count: 1 }]));
+
+      const blueprintNoSubtopics = { ...mockBlueprint, subtopics: [] };
+      const criteria = await SelectionService.resolveSelectionCriteria('d1', { topicIds: ['t1'], difficulty: 'simple' }, blueprintNoSubtopics as any);
+      expect(criteria.requestedTotal).toBe(10);
+      expect(criteria.difficultyPref).toBe('simple');
+    });
+
+    it('auto-fills count for subtopic depth when difficulty is provided', async () => {
+      const selectQueue = [
+        mockQueryBuilder([{ topicId: 't1' }]), // selectedTopicParents
+        mockQueryBuilder([]), // selectedSubjectParents
+      ];
+      vi.mocked(db.select).mockImplementation(() => selectQueue.shift() ?? mockQueryBuilder([{ count: 1 }]));
+
+      const criteria = await SelectionService.resolveSelectionCriteria('d1', { subtopicIds: ['st1'], difficulty: 'mixed' }, mockBlueprint as any);
+      expect(criteria.requestedTotal).toBe(10);
+      expect(criteria.difficultyPref).toBe('mixed');
+    });
+
+    it('auto-fills mixed difficulty for subtopic depth when difficulty is missing', async () => {
+      const selectQueue = [
+        mockQueryBuilder([{ topicId: 't1' }]), // selectedTopicParents
+        mockQueryBuilder([]), // selectedSubjectParents
+      ];
+      vi.mocked(db.select).mockImplementation(() => selectQueue.shift() ?? mockQueryBuilder([{ count: 1 }]));
+
+      const criteria = await SelectionService.resolveSelectionCriteria('d1', { subtopicIds: ['st1'] }, mockBlueprint as any);
+      expect(criteria.requestedTotal).toBe(10);
+      expect(criteria.difficultyPref).toBe('mixed');
+    });
+
+    it('keeps provided count when only difficulty is missing', async () => {
+      const selectQueue = [
+        mockQueryBuilder([]), // selectedTopicParents
+        mockQueryBuilder([{ subjectId: 's1' }]), // selectedSubjectParents
+      ];
+      vi.mocked(db.select).mockImplementation(() => selectQueue.shift() ?? mockQueryBuilder([{ count: 1 }]));
+
+      const blueprintNoSubtopics = { ...mockBlueprint, subtopics: [] };
+      const criteria = await SelectionService.resolveSelectionCriteria('d1', { topicIds: ['t1'], questionCount: 7 }, blueprintNoSubtopics as any);
+      expect(criteria.requestedTotal).toBe(7);
+      expect(criteria.difficultyPref).toBe('simple');
     });
   });
 

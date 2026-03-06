@@ -207,6 +207,22 @@ describe('Drizzle repositories', () => {
     await expect(skillRepo.mapTopicToSkills('t1', [])).resolves.toBeUndefined();
   });
 
+  it('falls back to zero total when count is missing in pagination aggregates', async () => {
+    const domainRepo = new DrizzleDomainRepository();
+    const skillRepo = new DrizzleSkillRepository();
+    const subjectRepo = new DrizzleSubjectRepository();
+    const topicRepo = new DrizzleTopicRepository();
+    const subtopicRepo = new DrizzleSubtopicRepository();
+
+    selectWhereMock.mockResolvedValue([{} as any]);
+
+    await expect(domainRepo.findAll(1, 10)).resolves.toMatchObject({ total: 0, totalPages: 1 });
+    await expect(skillRepo.findAll(1, 10)).resolves.toMatchObject({ total: 0, totalPages: 1 });
+    await expect(subjectRepo.findAll(1, 10)).resolves.toMatchObject({ total: 0, totalPages: 1 });
+    await expect(topicRepo.findAll(1, 10)).resolves.toMatchObject({ total: 0, totalPages: 1 });
+    await expect(subtopicRepo.findAll(1, 10)).resolves.toMatchObject({ total: 0, totalPages: 1 });
+  });
+
   it('covers admin user repository filter branches and mutations', async () => {
     const userRepo = new DrizzleAdminUserRepository();
 
@@ -232,6 +248,13 @@ describe('Drizzle repositories', () => {
     selectWhereMock.mockResolvedValueOnce([{ count: 1 }]);
     queryMocks.usersFindMany.mockResolvedValueOnce([{ id: 'u3', isBlocked: false, lastActiveAt: null }]);
     await expect(userRepo.findAll(1, 10, 'active', { status: 'offline' })).resolves.toMatchObject({ total: 1 });
+
+    const conditions: any[] = [];
+    (userRepo as any).applyUserStatusFilter('online', conditions);
+    (userRepo as any).applyUserStatusFilter('idle', conditions);
+    (userRepo as any).applyUserStatusFilter('offline', conditions);
+    (userRepo as any).applyUserStatusFilter('unknown', conditions);
+    expect(conditions.length).toBeGreaterThan(0);
 
     await expect(userRepo.update('u1', { isBlocked: true })).resolves.toEqual({ id: 'updated-1' });
     await expect(userRepo.delete('u1')).resolves.toEqual({ id: 'deleted-1' });

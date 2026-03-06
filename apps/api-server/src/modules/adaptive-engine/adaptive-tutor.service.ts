@@ -1,6 +1,8 @@
 import { db, notifications, topics } from "@quiz/db";
 import { eq, inArray } from "drizzle-orm";
 
+import { withSpan } from "@/lib/tracer";
+
 import { UserAnalyticsService } from "../analytics/user-analytics.service";
 
 type TopicDetail = (typeof topics)["_"]["inferSelect"] & {
@@ -30,7 +32,9 @@ export class AdaptiveTutorService {
     userId: string,
     topicAccuracyRecords: { topicId: string; accuracy: number }[],
   ): Promise<TutorInsight[]> {
-    // 1. Fetch historical analytics
+    return withSpan('AdaptiveTutorService.generateInsights', async (span) => {
+      span.setAttribute('userId', userId);
+      // 1. Fetch historical analytics
     const historical = await UserAnalyticsService.getTopicPerformance(userId);
     const historicalMap = new Map(historical.map((h) => [h.topicId, h.accuracy]));
 
@@ -110,13 +114,17 @@ export class AdaptiveTutorService {
     return insights
       .sort((a, _b) => (a.priority === "critical" ? -1 : 1))
       .slice(0, 3);
+    });
   }
 
   /**
    * Dispatches master notes to the user's Inbox and triggers (future) email.
    */
   async requestMasterNotes(userId: string, topicId: string): Promise<boolean> {
-    const topic = await this.dbInstance.query.topics.findFirst({
+    return withSpan('AdaptiveTutorService.requestMasterNotes', async (span) => {
+      span.setAttribute('userId', userId);
+      span.setAttribute('topicId', topicId);
+      const topic = await this.dbInstance.query.topics.findFirst({
       where: eq(topics.id, topicId),
     });
 
@@ -147,6 +155,7 @@ export class AdaptiveTutorService {
     // 2. Logic for high-end email service would go here (e.g., Resend, SendGrid)
     // For now, we return true to indicate the notification logic handled the request.
     return true;
+    });
   }
 
   // --- Static facades for legacy tests ---

@@ -99,4 +99,31 @@ describe('ExamEngine completeExam additional branches', () => {
     expect(res.status).toBe('processing');
     expect(cacheService.get).toHaveBeenCalled();
   }, 15000);
+
+  it('skips flush update when cached answer is empty string', async () => {
+    const examWithQuestions = {
+      ...baseExam,
+      examQuestions: [
+        { id: 'eq-empty', questionId: 'q-empty', responseMetadata: null, question: { type: 'mcq', correctAnswer: 'A' } },
+      ],
+    };
+
+    vi.spyOn(PerformanceService.prototype, 'invalidateCache').mockResolvedValue(undefined as any);
+    vi.spyOn(ExamRepository.prototype, 'checkIdempotency').mockResolvedValue(null as any);
+    vi.spyOn(ExamRepository.prototype, 'findById').mockResolvedValue(baseExam as any);
+    vi.spyOn(ExamRepository.prototype, 'updateStatus').mockResolvedValue([{ id: 'examX' }] as any);
+    vi.spyOn(ExamRepository.prototype, 'findByIdWithQuestions').mockResolvedValue(examWithQuestions as any);
+    vi.spyOn(ExamRepository.prototype, 'recordIdempotency').mockResolvedValue(undefined as any);
+    const updateResponseSpy = vi.spyOn(ExamRepository.prototype, 'updateExamQuestionResponse').mockResolvedValue(undefined as any);
+    vi.spyOn(ExamRepository.prototype, 'updateLastAnswered').mockResolvedValue(undefined as any);
+    vi.spyOn(AnswerEvaluationEngine.prototype, 'evaluate').mockReturnValue(true);
+
+    (JobsService.createJob as any) = vi.fn().mockResolvedValue({ id: 'job-empty' });
+    (JobOrchestrator.runJob as any) = vi.fn();
+    (cacheService.get as any) = vi.fn().mockResolvedValue({ answer: '' });
+
+    const res = await container.get(ExamEngine).completeExam('examX', 'u1');
+    expect(res.status).toBe('processing');
+    expect(updateResponseSpy).not.toHaveBeenCalled();
+  }, 15000);
 });

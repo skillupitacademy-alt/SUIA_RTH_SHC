@@ -147,4 +147,70 @@ describe('TrendsService', () => {
     expect(skills.some(s => s.trend === 'declining')).toBe(true);
     expect(skills.some(s => s.skillName === 'Unknown Skill')).toBe(true);
   });
+
+  it('covers summary null best/worst and period delta null deltaPct branch', async () => {
+    examsFindManyMock.mockResolvedValueOnce([
+      { totalScore: 55 },
+      { totalScore: 50 },
+      { totalScore: 40 },
+    ]);
+    examsFindManyMock.mockResolvedValueOnce([{ id: 'e1', completedAt: new Date(), totalScore: 50 }]);
+    resultsByDimensionFindManyMock.mockResolvedValueOnce([{ examId: 'e1', dimensionType: 'skill', dimensionId: 's1', name: 'Skill1', accuracy: 50 }]);
+    const summary = await TrendsService.getTrendSummary({ range: '7d' });
+    expect(summary.bestSkill).toBeNull();
+    expect(summary.worstSkill).toBeNull();
+
+    selectWhereMock
+      .mockResolvedValueOnce([]) // current window, avg null
+      .mockResolvedValueOnce([{ score: 60 }, { score: 70 }, { score: 80 }]); // previous window, enough samples total
+    const delta = await TrendsService.getPeriodDelta(undefined, '7d');
+    expect(delta?.currentAvg).toBeNull();
+    expect(delta?.deltaPct).toBeNull();
+  });
+
+  it('covers domain delta branch where current ids are missing and previous has unmatched ids', async () => {
+    selectGroupByMock
+      .mockResolvedValueOnce([{ id: null, name: 'Ignore', score: 90 }])
+      .mockResolvedValueOnce([{ id: 'd9', name: 'PrevOnly', score: 40 }]);
+
+    const domain = await TrendsService.getDomainDeltas('7d');
+    expect(domain).toEqual({});
+  });
+
+  it('covers summary pass-rate and streak break paths with mixed pass/fail ordering', async () => {
+    examsFindManyMock.mockResolvedValueOnce([
+      { totalScore: 40 }, // fail immediately -> streak stays 0
+      { totalScore: 80 },
+      { totalScore: null }, // nullish score branch for reducers/filters
+    ]);
+    examsFindManyMock.mockResolvedValueOnce([
+      { id: 'e1', completedAt: new Date(), totalScore: 70 },
+      { id: 'e2', completedAt: new Date(), totalScore: 60 },
+    ]);
+    resultsByDimensionFindManyMock.mockResolvedValueOnce([
+      { examId: 'e1', dimensionType: 'skill', dimensionId: 's1', name: 'Rise', accuracy: 90 },
+      { examId: 'e2', dimensionType: 'skill', dimensionId: 's1', name: 'Rise', accuracy: 70 },
+      { examId: 'e1', dimensionType: 'skill', dimensionId: 's2', name: 'Drop', accuracy: 40 },
+      { examId: 'e2', dimensionType: 'skill', dimensionId: 's2', name: 'Drop', accuracy: 60 },
+    ]);
+
+    const summary = await TrendsService.getTrendSummary({ range: '7d' });
+    expect(summary.avgScore).toBe(40);
+    expect(summary.passRate).toBeCloseTo(1 / 3);
+    expect(summary.currentStreak).toBe(0);
+    expect(summary.bestSkill?.name).toBe('Rise');
+    expect(summary.worstSkill?.name).toBe('Drop');
+  });
+
+  it('handles undefined totalScore during streak calculation', async () => {
+    examsFindManyMock.mockResolvedValueOnce([
+      { totalScore: undefined }, // should break streak immediately via nullish fallback
+      { totalScore: 90 },
+    ]);
+    examsFindManyMock.mockResolvedValueOnce([]);
+    resultsByDimensionFindManyMock.mockResolvedValueOnce([]);
+
+    const summary = await TrendsService.getTrendSummary({ range: '7d' });
+    expect(summary.currentStreak).toBe(0);
+  });
 });

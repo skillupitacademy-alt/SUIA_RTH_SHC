@@ -1,4 +1,6 @@
+import { METRICS } from "@quiz/observability";
 import { logger } from "@/lib/logger";
+import { recordCounter } from "@/lib/metrics";
 
 /**
  * System Features that can be throttled or disabled during high load.
@@ -24,6 +26,7 @@ export class ResilienceService {
     
     if (isSafeModeActive) {
       this.log.warn({ feature }, "[Resilience] Safe Mode ACTIVE. Throttling non-critical feature.");
+      recordCounter(METRICS.RESILIENCE.THROTTLE, 1, { feature, reason: 'safe_mode' });
       return false;
     }
 
@@ -32,6 +35,7 @@ export class ResilienceService {
     const featureEnvKey = `DISABLE_${feature.toUpperCase()}`;
     if (process.env[featureEnvKey] === 'true') {
       this.log.info({ feature }, "[Resilience] Feature specifically disabled via environment.");
+      recordCounter(METRICS.RESILIENCE.THROTTLE, 1, { feature, reason: 'env_toggle' });
       return false;
     }
 

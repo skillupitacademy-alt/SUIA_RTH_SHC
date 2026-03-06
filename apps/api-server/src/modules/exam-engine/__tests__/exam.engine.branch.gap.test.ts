@@ -179,6 +179,23 @@ describe('ExamEngine branch gap coverage', () => {
     await expect(container.get(ExamEngine).startExam('u1', 'b1')).rejects.toThrow('boom');
   });
 
+  it('startExam returns null firstQuestion when builder yields no questions', async () => {
+    vi.spyOn(ExamRepository.prototype, 'checkIdempotency').mockResolvedValue(undefined as any);
+    const { SelectionService } = await import('@/modules/selection-engine/selection.service');
+    vi.spyOn(SelectionService.prototype, 'composeExam').mockResolvedValue({
+      questions: [],
+      blueprint: { id: 'b1', timeLimit: 60 },
+    } as any);
+    vi.spyOn(ExamRepository.prototype, 'createExamWithQuestions').mockResolvedValue({
+      id: 'exam-empty',
+      status: 'started',
+      durationSeconds: 600,
+    } as any);
+
+    const result = await container.get(ExamEngine).startExam('u1', 'b1');
+    expect(result.firstQuestion).toBeNull();
+  });
+
   it('getAndCacheActiveExam backfills cache then throws on missing DB record', async () => {
     vi.spyOn(cacheService, 'get').mockResolvedValueOnce(null);
     vi.spyOn(ExamRepository.prototype, 'findByIdWithBlueprint').mockResolvedValue(null as any);
@@ -271,6 +288,29 @@ describe('ExamEngine branch gap coverage', () => {
 
     const res = await container.get(ExamEngine).completeExam('e1', 'u1');
     expect(res).toEqual({ examId: 'e1', status: 'processing', jobId: undefined });
+  });
+
+  it('completeExam swallows recordIdempotency errors (line 314 catch callback)', async () => {
+    vi.spyOn(PerformanceService.prototype, 'invalidateCache').mockResolvedValue(undefined as any);
+    vi.spyOn(ExamRepository.prototype, 'checkIdempotency').mockResolvedValue(null as any);
+    vi.spyOn(ExamRepository.prototype, 'findById').mockResolvedValue({
+      id: 'e1',
+      userId: 'u1',
+      status: 'started',
+      startedAt: new Date(),
+      lastAnsweredAt: null,
+    } as any);
+    vi.spyOn(ExamRepository.prototype, 'updateStatus').mockResolvedValue([{ id: 'e1' }] as any);
+    vi.spyOn(ExamRepository.prototype, 'findByIdWithQuestions').mockResolvedValue({ examQuestions: [] } as any);
+    vi.spyOn(ExamRepository.prototype, 'recordIdempotency').mockRejectedValue(new Error('duplicate'));
+
+    const { JobsService } = await import('@/modules/system/jobs.service');
+    const { JobOrchestrator } = await import('@/modules/system/job-orchestrator');
+    (JobsService.createJob as any) = vi.fn().mockResolvedValue({ id: 'job-2' });
+    (JobOrchestrator.runJob as any) = vi.fn();
+
+    const res = await container.get(ExamEngine).completeExam('e1', 'u1', 'idem-submit');
+    expect(res.jobId).toBe('job-2');
   });
 
   it('submitAnswer gracefully handles Redis get failure for idempotency check (.catch line 140)', async () => {

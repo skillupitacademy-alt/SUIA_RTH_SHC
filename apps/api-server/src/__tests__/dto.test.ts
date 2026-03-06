@@ -85,6 +85,62 @@ describe('Layer 66: DTO Pattern Verification', () => {
       expect(dto.options).toEqual([]);
     });
 
+    it('toQuestionDTO maps string options and object option fallbacks', () => {
+      const dto = toQuestionDTO({
+        id: 'q3',
+        questionText: 'String options',
+        type: 'mcq',
+        options: ['yes', { text: 'no' }],
+      } as any);
+
+      expect(dto?.options[0]).toEqual({ id: '1', text: 'yes', label: 'A' });
+      expect(dto?.options[1]).toEqual({ id: '2', text: 'no', label: 'B' });
+      expect(dto?.difficulty).toBe('intermediate');
+    });
+
+    it('toQuestionDTO uses empty fallbacks for missing text values', () => {
+      const dto = toQuestionDTO({
+        id: 'q4',
+        type: 'mcq',
+        options: [{}],
+      } as any);
+
+      expect(dto?.text).toBe('');
+      expect(dto?.options[0]).toEqual({ id: '1', text: '', label: 'A' });
+    });
+
+    it('toExamResultDTO handles numeric score fallback and non-finite time', () => {
+      const dto = toExamResultDTO({
+        id: 'fallback-id',
+        score: 77,
+        timeTaken: Number.NaN as any,
+        completedAt: null,
+      } as any);
+
+      expect(dto.examId).toBe('fallback-id');
+      expect(dto.overallScore).toBe(77);
+      expect(dto.timeTaken).toBe(0);
+      expect(Array.isArray(dto.dimensions)).toBe(true);
+    });
+
+    it('toExamResultDTO handles percentage fallback with mapped dimensions', () => {
+      const dto = toExamResultDTO({
+        examId: 'e-perc',
+        percentage: 42,
+        score: {
+          dimensions: [
+            { type: 'topic', name: 'T', score: 2, total: 4 },
+            { type: 'skill', name: 'S', score: 1, total: 2, percentage: 50 },
+          ],
+        },
+      } as any);
+
+      expect(dto.overallScore).toBe(42);
+      expect(dto.dimensions[0].percentage).toBe(0);
+      expect(dto.dimensions[1].percentage).toBe(50);
+      expect(dto.completedAt).toBeInstanceOf(Date);
+    });
+
     it('toExamResultDTO formats scoring appropriately', () => {
       const data = {
         examId: 'e1',
@@ -145,6 +201,19 @@ describe('Layer 66: DTO Pattern Verification', () => {
       expect(dto.dimensions[0].percentage).toBe(50);
       expect(dto.completedAt.getTime()).toBeGreaterThanOrEqual(nowBefore);
     });
+
+    it('toExamResultDTO falls back to an empty examId when both ids are absent', () => {
+      const dto = toExamResultDTO({
+        score: {
+          overallScore: 10,
+          timeTaken: 1,
+          dimensions: [],
+          completedAt: new Date('2025-01-01T00:00:00.000Z'),
+        },
+      } as any);
+
+      expect(dto.examId).toBe('');
+    });
   });
 
   describe('Admin DTOs', () => {
@@ -199,6 +268,24 @@ describe('Layer 66: DTO Pattern Verification', () => {
       expect(dto.roles).toEqual(['ADMIN', 'EDITOR']);
     });
 
+    it('toAdminUserDTO and toAdminQuestionDTO use default createdAt values', () => {
+      const u = toAdminUserDTO({
+        id: 'u-default-created',
+        email: 'u-default@example.com',
+      } as any);
+
+      const q = toAdminQuestionDTO({
+        id: 'q-default-created',
+        questionText: 'Q text',
+        type: 'mcq',
+      } as any);
+
+      expect(u.createdAt.toISOString()).toBe(new Date(0).toISOString());
+      expect(q.createdAt.toISOString()).toBe(new Date(0).toISOString());
+      expect(q.text).toBe('Q text');
+      expect(q.difficulty).toBe('intermediate');
+    });
+
     it('toAdminQuestionDTO applies safe fallbacks for optional fields', () => {
       const dto = toAdminQuestionDTO({
         id: 'q-fallback',
@@ -214,6 +301,15 @@ describe('Layer 66: DTO Pattern Verification', () => {
       expect(dto.topic).toBeUndefined();
       expect(dto.skills).toEqual([]);
       expect(dto.usageCount).toBe(0);
+    });
+
+    it('toAdminQuestionDTO falls back to empty text when both text fields are missing', () => {
+      const dto = toAdminQuestionDTO({
+        id: 'q-empty-text',
+        type: 'mcq',
+      } as any);
+
+      expect(dto.text).toBe('');
     });
   });
 });

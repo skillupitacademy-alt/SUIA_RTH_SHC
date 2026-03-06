@@ -1,17 +1,38 @@
-import { describe, it, expect } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-// Phase 5: Performance / resilience / background workers.
-// Skipped until we add concrete stress and circuit-breaker scenarios.
-describe.skip('Phase 5 - performance & resilience hardening', () => {
-  it('handles cache cooldown recovery (to be implemented)', () => {
-    expect(true).toBe(true)
+vi.mock('@/lib/logger', () => ({
+  logger: {
+    warn: vi.fn(),
+    info: vi.fn(),
+  },
+}))
+
+import { ResilienceManager } from '@/modules/core/resilience.manager'
+
+describe('Phase 5 - performance & resilience hardening', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
   })
 
-  it('backs off background jobs under high load (to be implemented)', () => {
-    expect(true).toBe(true)
+  it('backs off heavy work when high-load mode is enabled', async () => {
+    const manager = ResilienceManager.getInstance()
+    manager.setHighLoad(true)
+
+    const task = vi.fn().mockResolvedValue('ok')
+    const res = await manager.runHeavyTask('report-generation', task)
+
+    expect(res).toBeNull()
+    expect(task).not.toHaveBeenCalled()
   })
 
-  it('sustains PDF/report pipeline under timeout (to be implemented)', () => {
-    expect(true).toBe(true)
+  it('runs heavy work when high-load mode is disabled', async () => {
+    const manager = ResilienceManager.getInstance()
+    manager.setHighLoad(false)
+
+    const task = vi.fn().mockResolvedValue('ok')
+    const res = await manager.runHeavyTask('report-generation', task)
+
+    expect(res).toBe('ok')
+    expect(task).toHaveBeenCalled()
   })
 })

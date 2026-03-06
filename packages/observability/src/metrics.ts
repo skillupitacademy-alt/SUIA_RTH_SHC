@@ -67,6 +67,13 @@ export const METRICS = {
   RECOMMENDATIONS: {
     FETCH: "recommendations.api.fetch",
   },
+  CORE: {
+    SCORING: "core.scoring.calculate",
+    SELECTION: "core.selection.compose",
+  },
+  RESILIENCE: {
+    THROTTLE: "system.resilience.throttle",
+  },
   ANALYTICS: {
     DIFFICULTY_ACCURACY: "analytics.api.difficulty_accuracy",
     MASTERY_TREND: "analytics.api.mastery_trend",

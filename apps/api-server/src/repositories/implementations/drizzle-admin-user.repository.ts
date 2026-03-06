@@ -51,7 +51,7 @@ export class DrizzleAdminUserRepository extends BaseRepository<typeof users.$inf
         this.applyUserStatusFilter(filters.status, conditions);
     }
 
-    const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+    const whereClause = and(...conditions);
 
     const [countResult] = await this.dbInstance.select({ count: sql`count(*)` })
         .from(users)
@@ -130,15 +130,17 @@ export class DrizzleAdminUserRepository extends BaseRepository<typeof users.$inf
     const twoMinsAgo = new Date(now.getTime() - 2 * 60 * 1000);
     const fiveMinsAgo = new Date(now.getTime() - 5 * 60 * 1000);
 
-    if (status === 'online') {
-        conditions.push(gt(users.lastActiveAt, twoMinsAgo) as SQL);
-    } else if (status === 'idle') {
-        const five = gt(users.lastActiveAt, fiveMinsAgo);
-        const two = sql`${users.lastActiveAt} <= ${twoMinsAgo}`;
-        const combined = and(five, two);
-        if (combined !== undefined) conditions.push(combined);
-    } else if (status === 'offline') {
-        conditions.push(sql`(${users.lastActiveAt} is null or ${users.lastActiveAt} < ${fiveMinsAgo})`);
+    const statusFilter: SQL | null =
+      status === 'online'
+        ? (gt(users.lastActiveAt, twoMinsAgo) as SQL)
+        : status === 'idle'
+          ? (and(gt(users.lastActiveAt, fiveMinsAgo), sql`${users.lastActiveAt} <= ${twoMinsAgo}`) as SQL)
+          : status === 'offline'
+            ? sql`(${users.lastActiveAt} is null or ${users.lastActiveAt} < ${fiveMinsAgo})`
+            : null;
+
+    if (statusFilter) {
+      conditions.push(statusFilter);
     }
   }
 }

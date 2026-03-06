@@ -35,6 +35,16 @@ describe('LoggerService Wrapper (Task 70)', () => {
             loggerService.warn('Warning string only');
             expect(mockPino.warn).toHaveBeenCalledWith('Warning string only', undefined);
         });
+
+        it('should proxy trace calls', () => {
+            loggerService.trace({ traceId: 't1' }, 'trace %s', 'ok');
+            expect(mockPino.trace).toHaveBeenCalledWith({ traceId: 't1' }, 'trace %s', 'ok');
+        });
+
+        it('should proxy fatal calls', () => {
+            loggerService.fatal({ reason: 'panic' }, 'fatal');
+            expect(mockPino.fatal).toHaveBeenCalledWith({ reason: 'panic' }, 'fatal');
+        });
     });
 
     describe('Enhanced Error Handling', () => {

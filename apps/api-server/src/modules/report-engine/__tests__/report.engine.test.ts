@@ -1,28 +1,33 @@
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('@/modules/report-engine/report.engine', () => ({
-  ReportEngine: {
-    generateUserReport: vi.fn(),
-  },
+vi.mock('@/lib/tracer', () => ({
+  withSpan: vi.fn((_: string, fn: (span: { setAttribute: (k: string, v: string) => void }) => unknown) =>
+    fn({ setAttribute: vi.fn() })),
 }));
 
-const REPORT_FIXTURE = {
-  userId: 'u1',
-  examId: 'exam1',
-  summary: { score: 82, max: 100 },
-  breakdown: [{ topicId: 't1', correct: 8, total: 10 }],
-};
+describe('ReportEngine (unit)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
 
-describe.skip('ReportEngine (unit)', () => {
-  it('generates report with score summary and topic breakdown', async () => {
+  it('computes performance summary for user exams', async () => {
     const { ReportEngine } = await import('@/modules/report-engine/report.engine');
-    vi.mocked(ReportEngine.generateUserReport).mockResolvedValue(REPORT_FIXTURE);
+    const mockDb = {
+      query: {
+        exams: {
+          findMany: vi.fn().mockResolvedValue([
+            { totalScore: 80, dimensions: [{ id: 'd1' }] },
+            { totalScore: null, dimensions: [] },
+          ]),
+        },
+      },
+    };
 
-    const res = await ReportEngine.generateUserReport('u1', 'exam1');
+    const engine = new ReportEngine(mockDb as any);
+    const res = await engine.getUserPerformance('u1');
 
-    expect(ReportEngine.generateUserReport).toHaveBeenCalledWith('u1', 'exam1');
-    expect(res.userId).toBe('u1');
-    expect(res.summary.score).toBe(82);
-    expect(res.breakdown[0].topicId).toBe('t1');
+    expect(res.examsCompleted).toBe(2);
+    expect(res.averageScore).toBe(40);
+    expect(res.dimensions).toHaveLength(1);
   });
 });

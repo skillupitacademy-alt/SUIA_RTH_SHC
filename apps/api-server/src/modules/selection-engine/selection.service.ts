@@ -1,9 +1,12 @@
+import { METRICS } from '@quiz/observability';
 import { db, examBlueprints, questions, subjects as subjectsTable, subtopics, topics } from '@quiz/db';
 import crypto from 'crypto';
 import type { InferSelectModel } from 'drizzle-orm';
 import { and, asc, eq, gte, inArray, notInArray, or, sql } from 'drizzle-orm';
 
 import { logger } from '@/lib/logger';
+import { recordCounter, recordTimer } from '@/lib/metrics';
+import { withSpan } from '@/lib/tracer';
 import { cacheService } from '@/modules/core/cache.service';
 
 type Blueprint = InferSelectModel<typeof examBlueprints>;
@@ -93,21 +96,43 @@ export class SelectionService {
       difficulty?: string 
     }
   ) {
-    // 1. Resolve Blueprint
-    const blueprint = await this.resolveBlueprint(userId, blueprintOrDomainId, config);
+    return withSpan('SelectionService.composeExam', async (span) => {
+      const start = Date.now();
+      span.setAttribute('userId', userId);
+      span.setAttribute('blueprintOrDomainId', blueprintOrDomainId);
 
-    // 1.5 STATIC OVERRIDE: If blueprint has fixed questionIds, bypass dynamic selection
-    if (blueprint.questionIds && blueprint.questionIds.length > 0) {
-      return this.fetchStaticQuestions(blueprint);
-    }
+      try {
+        // 1. Resolve Blueprint
+        const blueprint = await this.resolveBlueprint(userId, blueprintOrDomainId, config);
 
-    // 2. Resolve Selection Criteria
-    const criteria = await this.resolveSelectionCriteria(blueprintOrDomainId!, config || {}, blueprint);
+        // 1.5 STATIC OVERRIDE: If blueprint has fixed questionIds, bypass dynamic selection
+        if (blueprint.questionIds && blueprint.questionIds.length > 0) {
+          const result = await this.fetchStaticQuestions(blueprint);
+          recordCounter(METRICS.CORE.SELECTION + '.success', 1, { type: 'static' });
+          recordTimer(METRICS.CORE.SELECTION + '.duration', Date.now() - start);
+          return result;
+        }
 
-    // 3. Dynamic Selection
-    const selectedQuestions = await this.executeDynamicSelection(userId, blueprintOrDomainId, idempotencyKey, criteria, blueprint);
+        // 2. Resolve Selection Criteria
+        const criteria = await this.resolveSelectionCriteria(blueprintOrDomainId!, config || {}, blueprint);
 
-    return { questions: selectedQuestions, blueprint };
+        // 3. Dynamic Selection
+        const selectedQuestions = await this.executeDynamicSelection(userId, blueprintOrDomainId, idempotencyKey, criteria, blueprint);
+
+        const durationMs = Date.now() - start;
+        recordCounter(METRICS.CORE.SELECTION + '.success', 1, { type: 'dynamic' });
+        recordTimer(METRICS.CORE.SELECTION + '.duration', durationMs);
+
+        return { questions: selectedQuestions, blueprint };
+      } catch (error: unknown) {
+        const durationMs = Date.now() - start;
+        recordCounter(METRICS.CORE.SELECTION + '.failure', 1, { 
+          error: error instanceof Error ? error.message : 'unknown' 
+        });
+        recordTimer(METRICS.CORE.SELECTION + '.duration', durationMs);
+        throw error;
+      }
+    });
   }
 
   private async resolveBlueprint(userId: string,  blueprintOrDomainId: string, config?: SelectionConfig): Promise<Blueprint> {
@@ -218,11 +243,10 @@ export class SelectionService {
     const hasCount = autoCount !== undefined && autoCount !== null;
 
     if (!hasDifficulty || !hasCount) {
-        if (finalSubtopicIds.length > 0) {
-            if (!hasDifficulty) autoDifficulty = 'mixed';
-            if (!hasCount) autoCount = 10;
-        } else if (finalTopicIds.length > 0) {
-            if (!hasDifficulty) autoDifficulty = 'simple';
+        const hasSubtopicDepth = finalSubtopicIds.length > 0;
+        const hasTopicDepth = finalTopicIds.length > 0;
+        if (hasSubtopicDepth || hasTopicDepth) {
+            if (!hasDifficulty) autoDifficulty = hasSubtopicDepth ? 'mixed' : 'simple';
             if (!hasCount) autoCount = 10;
         }
     }
@@ -256,7 +280,7 @@ export class SelectionService {
         actualTopicIds,
         actualSubjectIds,
         requestedTotal: autoCount,
-        difficultyPref: autoDifficulty ?? 'mixed'
+        difficultyPref: autoDifficulty
     };
   }
 
@@ -267,6 +291,10 @@ export class SelectionService {
     criteria: SelectionCriteria, 
     _blueprint: Blueprint
   ): Promise<Question[]> {
+    return withSpan('SelectionService.executeDynamicSelection', async (span) => {
+      span.setAttribute('domainId', domainId);
+      span.setAttribute('userId', userId);
+
       const { finalSubtopicIds, actualTopicIds, actualSubjectIds, requestedTotal, difficultyPref } = criteria;
       const selectedQuestions: Question[] = [];
       const selectedIds = new Set<string>();
@@ -372,5 +400,6 @@ export class SelectionService {
       }
 
       return selectedQuestions;
+    });
   }
 }

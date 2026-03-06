@@ -25,4 +25,23 @@ describe('AuthService.forgotPassword env guards', () => {
     const { container } = await import('../../core/container')
     await expect(container.get(AuthService).forgotPassword('a@example.com')).rejects.toThrow(/NEXT_PUBLIC_ADMIN_URL/)
   })
+
+  it('throws when web URL env is missing for non-admin user', async () => {
+    ;(db.query as any) = {
+      users: {
+        findFirst: vi.fn().mockResolvedValue({
+          id: 'u2',
+          email: 'u@example.com',
+          passwordHash: 'hash',
+          userRoles: [{ role: { name: 'USER' } }],
+        }),
+      },
+    }
+    ;(db.insert as any) = vi.fn().mockReturnValue({
+      values: vi.fn().mockReturnThis(),
+    })
+    process.env.NEXT_PUBLIC_WEB_APP_URL = ''
+    const { container } = await import('../../core/container')
+    await expect(container.get(AuthService).forgotPassword('u@example.com')).rejects.toThrow(/NEXT_PUBLIC_WEB_APP_URL/)
+  })
 })

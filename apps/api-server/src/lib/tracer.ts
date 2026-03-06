@@ -1,4 +1,4 @@
-import { trace, SpanStatusCode, Span } from '@opentelemetry/api';
+import { Span, SpanStatusCode, trace } from '@opentelemetry/api';
 
 /**
  * Global tracer instance for the API Server.

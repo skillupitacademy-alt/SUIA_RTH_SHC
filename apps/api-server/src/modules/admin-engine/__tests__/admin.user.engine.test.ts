@@ -19,8 +19,9 @@ describe('AdminUserEngine', () => {
         { id: 'u1', isBlocked: false, lastActiveAt: new Date(now.getTime() - 60 * 1000) },
         { id: 'u2', isBlocked: false, lastActiveAt: new Date(now.getTime() - 3 * 60 * 1000) },
         { id: 'u3', isBlocked: true, lastActiveAt: null },
+        { id: 'u4', isBlocked: false, lastActiveAt: new Date(now.getTime() - 8 * 60 * 1000) },
       ],
-      total: 3,
+      total: 4,
       page: 1,
       limit: 10,
       totalPages: 1,
@@ -33,6 +34,7 @@ describe('AdminUserEngine', () => {
     expect(list.users[0].status).toBe('online');
     expect(list.users[1].status).toBe('idle');
     expect(list.users[2].status).toBe('blocked');
+    expect(list.users[3].status).toBe('offline');
 
     await expect(engine.updateUser('u1', { isBlocked: true }, 'admin-1')).resolves.toEqual({ id: 'u1', isBlocked: true });
     await expect(engine.deleteUser('u2', 'admin-1')).resolves.toEqual({ id: 'u2' });

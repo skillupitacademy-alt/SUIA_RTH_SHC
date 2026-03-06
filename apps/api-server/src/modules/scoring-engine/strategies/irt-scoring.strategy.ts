@@ -33,7 +33,7 @@ export class IRTScoringStrategy implements IScoringStrategy {
     }
 
     // Normalize to 0-100 scale but clamp to logical bounds
-    const rawScore = totalPotential > 0 ? (abilityEstimator / totalPotential) * 100 : 0;
+    const rawScore = (abilityEstimator / totalPotential) * 100;
     return Math.min(100, Math.max(0, Math.round(rawScore)));
   }
 

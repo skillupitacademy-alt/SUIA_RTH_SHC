@@ -1,53 +1,74 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { TokenService } from '../token.service';
 import * as jose from 'jose';
 
 vi.mock('jose', async () => {
-    const actual = await vi.importActual('jose');
-    return {
-        ...actual,
-        jwtVerify: vi.fn(),
-    };
+  const actual = await vi.importActual<typeof import('jose')>('jose');
+  return {
+    ...actual,
+    jwtVerify: vi.fn(),
+    decodeJwt: vi.fn(),
+  };
 });
 
 describe('TokenService verification branches', () => {
-    it('throws audience mismatch for infra (Line 133)', async () => {
-        // To hit 133, we need enforceAud to be false (audience missing)
-        // AND requiredAud to be 'infra'.
-        // Wait, requiredAud is optionsOrIsAdmin.audience.
-        // If audience is provided, enforceAud is true.
-        // Let's re-read the code logic in the view_file.
-        // 107: const enforceAud = (requiredAud !== undefined && requiredAud !== null && requiredAud !== '');
-        // 131: else if (requiredAud === 'infra') { throw ... }
-        // This is only possible if enforceAud is false but requiredAud === 'infra'.
-        // Which is technically impossible with strict string check.
-        // UNLESS we pass something that is falsy but equals 'infra' (impossible).
-        // BUT wait, maybe the user wants us to try and hit it via optionsOrIsAdmin?
-        // Let's try passing null as audience if the type allows it (or via casting).
-        
-        // Actually, the user's prompt suggested:
-        // "mock jose.jwtVerify to return payload {aud:'weird'} then expect verifyAccessToken(audience:'infra') to throw audience mismatch"
-        // This hits line 123, not 133.
-        
-        vi.mocked(jose.jwtVerify).mockResolvedValue({
-            payload: { aud: 'weird' }
-        } as any);
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
 
-        const service = new TokenService();
-        await expect(service.verifyAccessToken('tok', { audience: 'infra' }))
-            .rejects.toThrow('Audience mismatch: expected infra, got weird');
-    });
+  it('enforces explicit audience mismatch branch', async () => {
+    vi.mocked(jose.jwtVerify).mockResolvedValue({ payload: { aud: 'weird' } } as any);
+    const service = new TokenService();
+    await expect(service.verifyAccessToken('tok', { audience: 'infra' })).rejects.toThrow(
+      'Audience mismatch: expected infra, got weird',
+    );
+  });
 
-    it('handles verifyRefreshToken error (Line 164 branch - though line numbers might vary)', async () => {
-        vi.mocked(jose.jwtVerify).mockRejectedValue(new Error('Invalid Compact JWS'));
-        const service = new TokenService();
-        await expect(service.verifyRefreshToken('tok')).rejects.toThrow('Invalid Compact JWS');
-    });
+  it('hits admin-scope audience violation branch for unknown audience', async () => {
+    vi.mocked(jose.jwtVerify).mockResolvedValue({ payload: { aud: ['partner'] } } as any);
+    const service = new TokenService();
+    await expect(service.verifyAccessToken('tok', true)).rejects.toThrow(
+      'Audience violation: admin scope received unexpected aud partner',
+    );
+  });
 
-    it('getExpiration returns null when exp is missing (Line 177)', () => {
-        // Mocking decodeJwt is tricky as it's a function.
-        // We can just pass a token that decodes to something without exp.
-        // TokenService uses jose.decodeJwt.
-        // Let's mock it.
+  it('hits fallback error wrapping branch when jwtVerify throws non-Error', async () => {
+    vi.mocked(jose.jwtVerify).mockRejectedValue('bad-jwt');
+    const service = new TokenService();
+    await expect(service.verifyAccessToken('tok')).rejects.toThrow(
+      'Invalid _token signature or audience mismatch',
+    );
+  });
+
+  it('covers no-audience payload path and refresh verify error propagation', async () => {
+    vi.mocked(jose.jwtVerify).mockResolvedValueOnce({ payload: {} } as any);
+    const service = new TokenService();
+    await expect(service.verifyAccessToken('tok', { audience: '' as any })).resolves.toEqual({});
+
+    vi.mocked(jose.jwtVerify).mockRejectedValueOnce(new Error('Invalid Compact JWS'));
+    await expect(service.verifyRefreshToken('tok')).rejects.toThrow('Invalid Compact JWS');
+  });
+
+  it('rejects explicit audience when token has no aud claim', async () => {
+    vi.mocked(jose.jwtVerify).mockResolvedValue({ payload: {} } as any);
+    const service = new TokenService();
+    await expect(service.verifyAccessToken('tok', { audience: 'user' })).rejects.toThrow('Audience mismatch');
+  });
+
+  it('accepts admin verification when no audience exists and enforcement is off', async () => {
+    vi.mocked(jose.jwtVerify).mockResolvedValue({ payload: { userId: 'admin1' } } as any);
+    const service = new TokenService();
+    await expect(service.verifyAccessToken('tok', true)).resolves.toMatchObject({ userId: 'admin1' });
+  });
+
+  it('getExpiration returns null when exp missing or decode throws', () => {
+    vi.mocked(jose.decodeJwt).mockReturnValueOnce({} as any);
+    const service = new TokenService();
+    expect(service.getExpiration('tok')).toBeNull();
+
+    vi.mocked(jose.decodeJwt).mockImplementationOnce(() => {
+      throw new Error('decode failed');
     });
+    expect(service.getExpiration('tok')).toBeNull();
+  });
 });

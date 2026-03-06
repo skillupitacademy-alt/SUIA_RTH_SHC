@@ -141,6 +141,6 @@ export function toExamResultDTO(reportRaw: ExamReportInput): ExamResultDTO {
       total: d.total,
       percentage: d.accuracy ?? d.percentage ?? 0
     })),
-    completedAt: completedAt ?? new Date()
+    completedAt
   };
 }

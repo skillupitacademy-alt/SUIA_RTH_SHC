@@ -2,6 +2,7 @@ import { db, exams } from '@quiz/db';
 import { eq } from 'drizzle-orm';
 
 import { logger } from '@/lib/logger';
+import { withSpan } from '@/lib/tracer';
 
 export type ExamStatus = 'started' | 'processing' | 'completed' | 'failed' | 'abandoned';
 
@@ -21,7 +22,11 @@ export class ExamStateMachine {
    * Transitions an exam to a new status with validation.
    */
   static async transition(examId: string, targetStatus: ExamStatus, userId?: string) {
-    const findFirst = db.query?.exams?.findFirst;
+    return withSpan('ExamStateMachine.transition', async (span) => {
+      span.setAttribute('examId', examId);
+      span.setAttribute('targetStatus', targetStatus);
+
+      const findFirst = db.query?.exams?.findFirst;
     if (typeof findFirst !== 'function') {
       this.log.warn({ examId, to: targetStatus }, 'Skipping transition: exams query mock is unavailable');
       return;
@@ -61,6 +66,7 @@ export class ExamStateMachine {
         status: targetStatus
       })
       .where(eq(exams.id, examId));
+    });
   }
 
   /**

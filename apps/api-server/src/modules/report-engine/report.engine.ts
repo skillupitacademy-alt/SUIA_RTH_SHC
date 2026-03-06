@@ -2,6 +2,7 @@ import { db, examQuestions, exams, resultsByDimension, userProfiles } from "@qui
 import { and, desc, eq, sql } from "drizzle-orm";
 
 import { logger } from "@/lib/logger";
+import { withSpan } from "@/lib/tracer";
 
 import { AdaptiveTutorService } from "../adaptive-engine/adaptive-tutor.service";
 import { container } from "../core/container";
@@ -189,23 +190,33 @@ export class ReportEngine {
   private log = logger.child({ module: 'report-engine' });
 
   async getUserPerformance(userId: string) {
-    const userExams = await this.dbInstance.query.exams.findMany({
-      where: eq(exams.userId, userId),
-      orderBy: [desc(exams.completedAt)],
-      with: {
-        dimensions: true,
-      }
-    });
+    return withSpan('ReportEngine.getUserPerformance', async (span) => {
+      span.setAttribute('userId', userId);
 
-    return {
-      examsCompleted: userExams.length,
-      averageScore: userExams.length > 0 ? userExams.reduce((acc: number, curr: any) => acc + (curr.totalScore !== null ? curr.totalScore : 0), 0) / userExams.length : 0,
-      dimensions: userExams.flatMap((e: any) => e.dimensions),
-    };
+      const userExams = await this.dbInstance.query.exams.findMany({
+        where: eq(exams.userId, userId),
+        orderBy: [desc(exams.completedAt)],
+        with: {
+          dimensions: true,
+        }
+      });
+
+      return {
+        examsCompleted: userExams.length,
+        averageScore: userExams.length > 0 ? userExams.reduce((acc: number, curr: any) => acc + (curr.totalScore !== null ? curr.totalScore : 0), 0) / userExams.length : 0,
+        dimensions: userExams.flatMap((e: any) => e.dimensions),
+      };
+    });
   }
 
   private async calculatePercentile(currentExamId: string, blueprintId: string | null, myAccuracy: number): Promise<number> {
-    try {
+    return withSpan('ReportEngine.calculatePercentile', async (span) => {
+      span.setAttribute('examId', currentExamId);
+      if (blueprintId !== null && blueprintId !== undefined && blueprintId !== '') {
+        span.setAttribute('blueprintId', blueprintId);
+      }
+      
+      try {
         let whereClause = eq(exams.status, 'completed');
         if (blueprintId !== null && blueprintId !== undefined) {
             whereClause = and(eq(exams.status, 'completed'), eq(exams.blueprintId, blueprintId))!;
@@ -237,94 +248,102 @@ export class ReportEngine {
         this.log.error({ currentExamId, error: e instanceof Error ? e.message : 'unknown' }, 'Percentile failed');
         return 50;
     }
+    });
   }
 
   async getExamReport(examId: string, options: { includeCorrectAnswers?: boolean } = {}) {
-    const exam = await this.dbInstance.query.exams.findFirst({
-      where: eq(exams.id, examId),
-      with: {
-        examQuestions: {
-          with: {
-            question: true,
-          }
-        },
-        blueprint: true,
+    return withSpan('ReportEngine.getExamReport', async (span) => {
+      span.setAttribute('examId', examId);
+
+      const exam = await this.dbInstance.query.exams.findFirst({
+        where: eq(exams.id, examId),
+        with: {
+          examQuestions: {
+            with: {
+              question: true,
+            }
+          },
+          blueprint: true,
+        }
+      });
+
+      if (exam === undefined || exam === null) throw new Error('Exam not found');
+
+      const results = await this.dbInstance.query.resultsByDimension.findMany({
+        where: eq(resultsByDimension.examId, examId),
+      });
+
+      const totalQuestions = exam.examQuestions.length;
+      const correctAnswers = exam.examQuestions.filter((item: any) => item.isCorrect === true).length;
+      const scorePercentage = totalQuestions > 0 ? (correctAnswers / totalQuestions) * 100 : 0;
+
+      let timeTaken = "00m 00s";
+      if ((exam.completedAt !== null && exam.completedAt !== undefined) && (exam.startedAt !== null && exam.startedAt !== undefined)) {
+          const diffMs = exam.completedAt.getTime() - exam.startedAt.getTime();
+          const diffMins = Math.floor(diffMs / 60000);
+          const diffSecs = Math.floor((diffMs % 60000) / 1000);
+          timeTaken = `${diffMins}m ${diffSecs}s`;
       }
+
+      const percentile = await this.calculatePercentile(exam.id, exam.blueprintId, scorePercentage);
+      const includeCorrect = options.includeCorrectAnswers === true;
+      const actionPlan = ActionPlanBuilder.build(results);
+
+      const topicResults = results.filter((r: typeof resultsByDimension.$inferSelect) => r.dimensionType === 'topic');
+      const topicAccuracyRecords = topicResults.map((r: typeof resultsByDimension.$inferSelect) => ({
+        topicId: r.dimensionId!,
+        accuracy: r.accuracy
+      }));
+      
+      // Fallback if tutorService not provided
+      const tutorInsights = (topicAccuracyRecords.length > 0)
+        ? (this.tutorService?.generateInsights
+            ? await this.tutorService.generateInsights(exam.userId, topicAccuracyRecords)
+            : await AdaptiveTutorService.generateInsights(exam.userId, topicAccuracyRecords))
+        : "Baseline performance data established.";
+
+      return {
+        id: exam.id,
+        userId: exam.userId,
+        status: exam.status,
+        score: correctAnswers,
+        total: totalQuestions,
+        percentage: Math.round(scorePercentage),
+        statusLabel: scorePercentage >= 70 ? 'passed' : 'failed',
+        completedAt: exam.completedAt,
+        timeTaken,
+        percentile,
+        blueprint: exam.blueprint,
+        actionPlan,
+        tutorInsights,
+        performance: (results as unknown as DimensionResult[]).reduce((acc: Record<string, DimensionResult[]>, r: DimensionResult) => {
+          if (acc[r.dimensionType] === undefined) acc[r.dimensionType] = [];
+          acc[r.dimensionType].push({
+            dimensionId: r.dimensionId,
+            name: r.name,
+            score: r.score,
+            accuracy: r.accuracy
+          } as DimensionResult);
+          return acc;
+        }, {} as Record<string, DimensionResult[]>),
+        questions: exam.examQuestions.map((item: any) => ({
+          text: item.question.questionText,
+          userAnswer: item.userAnswer,
+          correctAnswer: includeCorrect ? item.question.correctAnswer : undefined,
+          explanation: includeCorrect ? item.question.explanation : undefined,
+          isCorrect: item.isCorrect,
+          timeSpent: (item.responseMetadata as Record<string, unknown>)?.timeSpentSeconds as number || 0,
+        }))
+      };
     });
-
-    if (exam === undefined || exam === null) throw new Error('Exam not found');
-
-    const results = await this.dbInstance.query.resultsByDimension.findMany({
-      where: eq(resultsByDimension.examId, examId),
-    });
-
-    const totalQuestions = exam.examQuestions.length;
-    const correctAnswers = exam.examQuestions.filter((item: any) => item.isCorrect === true).length;
-    const scorePercentage = totalQuestions > 0 ? (correctAnswers / totalQuestions) * 100 : 0;
-
-    let timeTaken = "00m 00s";
-    if ((exam.completedAt !== null && exam.completedAt !== undefined) && (exam.startedAt !== null && exam.startedAt !== undefined)) {
-        const diffMs = exam.completedAt.getTime() - exam.startedAt.getTime();
-        const diffMins = Math.floor(diffMs / 60000);
-        const diffSecs = Math.floor((diffMs % 60000) / 1000);
-        timeTaken = `${diffMins}m ${diffSecs}s`;
-    }
-
-    const percentile = await this.calculatePercentile(exam.id, exam.blueprintId, scorePercentage);
-    const includeCorrect = options.includeCorrectAnswers === true;
-    const actionPlan = ActionPlanBuilder.build(results);
-
-    const topicResults = results.filter((r: typeof resultsByDimension.$inferSelect) => r.dimensionType === 'topic');
-    const topicAccuracyRecords = topicResults.map((r: typeof resultsByDimension.$inferSelect) => ({
-      topicId: r.dimensionId!,
-      accuracy: r.accuracy
-    }));
-    
-    // Fallback if tutorService not provided
-    const tutorInsights = (topicAccuracyRecords.length > 0)
-      ? (this.tutorService?.generateInsights
-          ? await this.tutorService.generateInsights(exam.userId, topicAccuracyRecords)
-          : await AdaptiveTutorService.generateInsights(exam.userId, topicAccuracyRecords))
-      : "Baseline performance data established.";
-
-    return {
-      id: exam.id,
-      userId: exam.userId,
-      status: exam.status,
-      score: correctAnswers,
-      total: totalQuestions,
-      percentage: Math.round(scorePercentage),
-      statusLabel: scorePercentage >= 70 ? 'passed' : 'failed',
-      completedAt: exam.completedAt,
-      timeTaken,
-      percentile,
-      blueprint: exam.blueprint,
-      actionPlan,
-      tutorInsights,
-      performance: (results as unknown as DimensionResult[]).reduce((acc: Record<string, DimensionResult[]>, r: DimensionResult) => {
-        if (acc[r.dimensionType] === undefined) acc[r.dimensionType] = [];
-        acc[r.dimensionType].push({
-          dimensionId: r.dimensionId,
-          name: r.name,
-          score: r.score,
-          accuracy: r.accuracy
-        } as DimensionResult);
-        return acc;
-      }, {} as Record<string, DimensionResult[]>),
-      questions: exam.examQuestions.map((item: any) => ({
-        text: item.question.questionText,
-        userAnswer: item.userAnswer,
-        correctAnswer: includeCorrect ? item.question.correctAnswer : undefined,
-        explanation: includeCorrect ? item.question.explanation : undefined,
-        isCorrect: item.isCorrect,
-        timeSpent: (item.responseMetadata as Record<string, unknown>)?.timeSpentSeconds as number || 0,
-      }))
-    };
   }
 
   async getPremiumExamReport(examId: string): Promise<PremiumReport> {
-    // 1. Check Redis Cache First
-    const performanceService = this.performanceService || (await import('../core/container')).container.get(PerformanceService);
+    return withSpan('ReportEngine.getPremiumExamReport', async (span) => {
+      span.setAttribute('examId', examId);
+      
+      // 1. Check Redis Cache First
+      const performanceService = this.performanceService || (await import('../core/container')).container.get(PerformanceService);
     const cached = await performanceService.getCachedReport<PremiumReport>(examId);
     if (cached !== null && cached !== undefined) return cached;
 
@@ -641,7 +660,7 @@ export class ReportEngine {
         nextExamHours: (core.score ?? 0) >= 80 ? 12 : 48
       },
       tutorInsights,
-      questions: (Array.isArray(rawQuestions.rows) ? rawQuestions.rows : []).map((q: RawQuestionRow) => ({
+      questions: (rawQuestions.rows as RawQuestionRow[]).map((q: RawQuestionRow) => ({
         id: q.id,
         text: q.text,
         userAnswer: q.user_answer,
@@ -664,6 +683,7 @@ export class ReportEngine {
     await performanceService.cacheReport(examId, finalReport);
 
     return finalReport;
+    });
   }
 
   // Static facades for legacy tests

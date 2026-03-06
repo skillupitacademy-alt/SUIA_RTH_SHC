@@ -141,7 +141,7 @@ describe('AdminAnalyticsEngine', () => {
   it('covers efficiency/default-mapping branches with sparse analytics rows', async () => {
     const engine = new AdminAnalyticsEngine(repository as any);
     repository.getExamActivity.mockResolvedValue({
-      statusStats: [],
+      statusStats: [{ status: 'started', count: undefined }],
       domainActivity: [{ domainName: null, count: null }],
       avgTime: null,
     });

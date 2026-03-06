@@ -28,7 +28,7 @@ export class WeightedScoringStrategy implements IScoringStrategy {
       }
     }
 
-    return totalWeight > 0 ? Math.round((earnedWeight / totalWeight) * 100) : 0;
+    return Math.round((earnedWeight / totalWeight) * 100);
   }
 
   calculateDimensionScores(answers: EvaluatedAnswer[], dimensions: Record<string, { total: number; correct: number; name?: string }>): DimensionScore[] {

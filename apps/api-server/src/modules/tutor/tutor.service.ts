@@ -1,6 +1,7 @@
 import { backgroundJobs, db, exams, notesDeliveryLocks, notifications, resultsByDimension, topics, userRecommendations } from "@quiz/db";
 import { and, eq, gte, sql } from "drizzle-orm";
 
+import { withSpan } from "@/lib/tracer";
 import { cacheService } from "@/modules/core/cache.service";
 import { ResilienceService } from "@/modules/core/resilience.service";
 
@@ -11,7 +12,9 @@ export class TutorService {
    * Process a completed exam and create recommendations, notifications, and email jobs.
    */
   static async processExamResults(examId: string): Promise<void> {
-    try {
+    return withSpan('TutorService.processExamResults', async (span) => {
+      span.setAttribute('examId', examId);
+      try {
       // Phase 6 Resilience: Circuit Breaker
       // If the system is under extreme load, shed the load of non-critical AI analysis
       if (!(await ResilienceService.isFeatureEnabled('ai_tutor'))) {
@@ -140,5 +143,6 @@ export class TutorService {
       const { LoggerService } = await import("@/modules/core/logger.service");
       container.get(LoggerService).error(error, "[TutorService] processExamResults failed");
     }
+    });
   }
 }

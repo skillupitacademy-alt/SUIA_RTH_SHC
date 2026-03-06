@@ -111,3 +111,6 @@ export function withLogging<T = unknown>(handler: RouteHandler<T>, options: LogO
         }
     };
 }
+
+// Test-only export to validate scrub behavior without changing runtime logic
+export const __test__ = { scrub };
