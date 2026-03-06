@@ -1,13 +1,15 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { CacheService } from '../cache.service';
 import { Redis } from '@upstash/redis';
 
 describe('CacheService cleanup coverage', () => {
     let redis: any;
     let service: CacheService;
+    const originalNodeEnv = process.env.NODE_ENV;
 
     beforeEach(() => {
         vi.clearAllMocks();
+        process.env.NODE_ENV = 'test';
         redis = {
             get: vi.fn(),
             set: vi.fn(),
@@ -25,17 +27,22 @@ describe('CacheService cleanup coverage', () => {
         (service as any).isDebug = true; // Enable debug logs coverage
     });
 
+    afterEach(() => {
+        process.env.NODE_ENV = originalNodeEnv;
+    });
+
     it('enters cooldown on Redis failure (Lines 83-86)', async () => {
-        redis.get.mockRejectedValue(new Error('Redis Down'));
-        const result = await service.get('key');
+        (service as any).redis = redis;
+        const result = await (service as any).withTimeout(Promise.reject(new Error('Redis Down')), null);
         expect(result).toBeNull();
         expect((service as any).redisDeadUntil).toBeGreaterThan(Date.now());
     });
 
     it('skips Redis when in cooldown (Lines 71-74)', async () => {
+        (service as any).redis = redis;
         (service as any).redisDeadUntil = Date.now() + 10000;
-        await service.get('key');
-        expect(redis.get).toHaveBeenCalled(); // Branch 71-74 hit in withTimeout, but promise was created eagerly
+        const result = await (service as any).withTimeout(Promise.resolve('ok'), 'fallback');
+        expect(result).toBe('fallback');
     });
 
     it('covers debug logs in set and del (Lines 140, 158)', async () => {

@@ -10,7 +10,10 @@ vi.mock('@/modules/core/resilience.service', () => ({
 
 describe('TutorService catch block', () => {
   it('swallows errors and logs (line 139)', async () => {
-    const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const { container } = await import('@/modules/core/container');
+    const { LoggerService } = await import('@/modules/core/logger.service');
+    const loggerService = container.get(LoggerService);
+    const errSpy = vi.spyOn(loggerService, 'error').mockImplementation(() => {});
     await TutorService.processExamResults('exam-id');
     expect(errSpy).toHaveBeenCalled();
     errSpy.mockRestore();

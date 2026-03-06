@@ -10,7 +10,8 @@ describe('CacheService branch coverage', () => {
     // force a redis instance
     const redisGet = vi.fn().mockRejectedValue(new Error('boom'))
     ;(cacheService as any).redis = { get: redisGet } as unknown as Redis
-    const spy = vi.spyOn(console, 'error').mockImplementation(() => {}) // silence possible logs
+    const { LoggerService } = await import('@/modules/core/logger.service')
+    const spy = vi.spyOn(LoggerService.prototype, 'error').mockImplementation(() => {}) // silence possible logs
 
     const res = await cacheService.get('missing-key')
     expect(res).toBeNull()

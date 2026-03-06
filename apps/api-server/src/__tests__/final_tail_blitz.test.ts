@@ -232,11 +232,13 @@ describe('Final Tail Coverage Blitz - 100% Branch Marathon', () => {
 
     describe('ResendEmailProvider (Line 29)', () => {
         it('logs success when data is present (Line 29)', async () => {
-            const spyLog = vi.spyOn(console, 'log').mockImplementation(() => {});
+            const { container } = await import('@/modules/core/container');
+            const { LoggerService } = await import('@/modules/core/logger.service');
+            const spyLog = vi.spyOn(container.get(LoggerService), 'info').mockImplementation(() => {});
             const provider = new ResendEmailProvider('key', 'from@test.com');
             
             await provider.sendEmail({ to: 'to@test.com', subject: 'Sub', html: 'Html' });
-            expect(spyLog).toHaveBeenCalledWith(expect.stringContaining('successfully via Resend'), 're1');
+            expect(spyLog).toHaveBeenCalledWith(expect.objectContaining({ emailId: 're1' }), expect.stringContaining('successfully via Resend'));
             spyLog.mockRestore();
         });
     });

@@ -805,10 +805,11 @@ describe('Ultra Final Coverage Marathon - 100% Global Blitz', () => {
             // Mock resend to return null data (no error, but no data either)
             const provider = new ResendEmailProvider('key', 'from@test.com');
             (provider as any).resend.emails.send = vi.fn().mockResolvedValueOnce({ data: null, error: null });
-            const spyLog = vi.spyOn(console, 'log').mockImplementation(() => {});
+            const { LoggerService } = await import('@/modules/core/logger.service');
+            const spyLog = vi.spyOn(LoggerService.prototype, 'info').mockImplementation(() => {});
             await provider.sendEmail({ to: 'to@test.com', subject: 'Sub', html: '<p>Test</p>' });
-            // data is null so the console.log on line 30 should NOT be called
-            expect(spyLog).not.toHaveBeenCalledWith(expect.stringContaining('successfully via Resend'), expect.anything());
+            // data is null so the logger.info on line 30 should NOT be called
+            expect(spyLog).not.toHaveBeenCalledWith(expect.anything(), expect.stringContaining('successfully via Resend'));
             spyLog.mockRestore();
         });
     });

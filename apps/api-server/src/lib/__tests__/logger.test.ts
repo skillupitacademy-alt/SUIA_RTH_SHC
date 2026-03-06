@@ -27,18 +27,20 @@ describe('Logger Infrastructure (Task 69)', () => {
       },
       redact: {
         paths: [
-          'password',
-          'token',
-          'authorization',
-          'cookie',
-          'accessToken',
-          'refreshToken',
-          '*.password',
-          '*.token',
-          '*.authorization',
-          '*.cookie',
-          '*.accessToken',
-          '*.refreshToken',
+          // Auth secrets
+          'password', 'token', 'authorization', 'cookie', 'accessToken', 'refreshToken',
+          '*.password', '*.token', '*.authorization', '*.cookie', '*.accessToken', '*.refreshToken',
+          // Personal Identifiable Information (PII)
+          'email', '*.email',
+          'phone', 'phoneNumber', '*.phone', '*.phoneNumber',
+          'address', '*.address',
+          'firstName', 'lastName', 'fullName', '*.firstName', '*.lastName', '*.fullName',
+          'ssn', '*.ssn',
+          'creditCard', 'cardNumber', 'cvv', '*.creditCard', '*.cardNumber', '*.cvv',
+          'ip', 'ipAddress', '*.ip', '*.ipAddress',
+          // Explicit nested keys used in tests
+          'user.email', 'user.password', 'user.token',
+          'metadata.ssn', 'metadata.firstName',
         ],
         censor: '[REDACTED]',
       },

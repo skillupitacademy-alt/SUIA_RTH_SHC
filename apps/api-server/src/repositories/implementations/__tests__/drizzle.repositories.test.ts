@@ -170,9 +170,11 @@ describe('Drizzle repositories', () => {
     await expect(domainRepo.updateStatus('d1', 'active')).resolves.toEqual({ id: 'updated-1' });
     await expect(domainRepo.findWithHierarchy('d1')).resolves.toEqual({ id: 'd1', subjects: [] });
 
-    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => undefined);
+    const { container } = await import('@/modules/core/container');
+    const { LoggerService } = await import('@/modules/core/logger.service');
+    const logSpy = vi.spyOn(container.get(LoggerService), 'debug').mockImplementation(() => undefined);
     await expect(domainRepo.upsertHierarchy({ name: 'Hierarchy 1' })).resolves.toBeUndefined();
-    expect(logSpy).toHaveBeenCalledWith('[DrizzleDomainRepository] Upserting hierarchy for:', 'Hierarchy 1');
+    expect(logSpy).toHaveBeenCalledWith({ hierarchyName: 'Hierarchy 1' }, '[DrizzleDomainRepository] Upserting hierarchy');
     logSpy.mockRestore();
 
     await expect(subjectRepo.create({ name: 'S' } as any)).resolves.toEqual({ id: 'new-1' });
