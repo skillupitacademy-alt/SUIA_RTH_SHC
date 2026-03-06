@@ -1,6 +1,6 @@
 import crypto from 'crypto';
-import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { z } from 'zod';
 
 import { ApiError, validationError } from './api-error';
@@ -12,14 +12,14 @@ import { runWithTrace } from './trace.context';
  * Handles: Tracing, Logging, Error Normalization, and Zod Validation
  */
 export function withApiHandler<T, S extends z.Schema>(
-  handler: (req: NextRequest, body: z.infer<S>, ...args: any[]) => Promise<T>,
+  handler: (req: NextRequest, body: z.infer<S>, ...args: unknown[]) => Promise<T>,
   options?: {
     schema?: S;
     component?: string;
     operation?: string;
   }
 ) {
-  return async (req: NextRequest, ...args: any[]): Promise<NextResponse> => {
+  return async (req: NextRequest, ...args: unknown[]): Promise<NextResponse> => {
     // 1. Extract or generate Correlation ID
     const incomingCorrelationId = req.headers.get('x-correlation-id');
     const correlationId =
@@ -62,7 +62,7 @@ export function withApiHandler<T, S extends z.Schema>(
 
         // Log unexpected internal errors
         if (apiError.status >= 500) {
-          console.error(`[API Error] ${options?.component || 'unknown'}:${options?.operation || 'unknown'}`, error);
+          console.error(`[API Error] ${options?.component ?? 'unknown'}:${options?.operation ?? 'unknown'}`, error);
         }
 
         return ApiResponse.error(apiError, apiError.status);

@@ -1,11 +1,11 @@
-import React from "react";
 import "./globals.css";
 
+import { ZErrorBoundary } from "@quiz/ui";
 import { Analytics } from "@vercel/analytics/react";
 import type { Metadata } from "next";
+import React from "react";
 
 import { SecurityMuzzle } from "@/components/auth/SecurityMuzzle";
-import { ZErrorBoundary } from "@quiz/ui";
 import { FetchCredentialsProvider } from "@/components/providers/FetchCredentialsProvider";
 import { MonitoringProvider } from "@/components/providers/MonitoringProvider";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";

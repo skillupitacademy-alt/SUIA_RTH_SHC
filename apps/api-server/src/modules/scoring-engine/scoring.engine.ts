@@ -1,5 +1,5 @@
-import { METRICS } from '@quiz/observability';
 import { db, exams, resultsByDimension } from '@quiz/db';
+import { METRICS } from '@quiz/observability';
 import { eq } from 'drizzle-orm';
 
 import { logger } from '@/lib/logger';

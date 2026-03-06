@@ -1,8 +1,8 @@
+import { db } from '@quiz/db';
 import { sql } from 'drizzle-orm';
 
 import { logger } from '@/lib/logger';
 import { recordTimer } from '@/lib/metrics';
-import { db } from '@quiz/db';
 
 import { cacheService } from './cache.service';
 
@@ -44,8 +44,6 @@ export class HealthService {
    * Performs a comprehensive readiness check (are all dependencies connected?)
    */
   static async getReadinessReport(): Promise<HealthReport> {
-    const start = Date.now();
-    
     // Parallel checks for performance
     const [dbResult, cacheResult] = await Promise.all([
       this.checkDatabase(),
