@@ -7,9 +7,7 @@
 
 ## 1.1 — TESTING INFRASTRUCTURE (Tasks 1-14)
 
-> [!IMPORTANT]
-> **STATUS**: Foundations (Vitest/Config) are implemented.
-> **CARRY-FORWARD**: Comprehensive test suites (Tasks 3-11), Playwright E2E (Task 13), and Seed Enhancement (Task 14) are moved to **Phase 2 (Cleanup Sprint)**.
+> **CARRY-FORWARD**: Comprehensive test suites (Tasks 3-11), Playwright E2E (Task 13), and Seed Enhancement (Task 14 **[OBSOLETE - REMOVED]**) are moved to **Phase 2 (Cleanup Sprint)**.
 
 ---
 
@@ -415,41 +413,10 @@
 
 ---
 
-### Task 14: Create Test Database Seed Scripts
+### Task 14: [OBSOLETE - REMOVED BY USER REQUEST]
 
-**AI Prompt:**
-
-> I need database seed scripts for testing in my Quiz Platform monorepo. The database uses Drizzle ORM with PostgreSQL (Neon). The schema is defined in `packages/db/src/schema/`.
->
-> Read ALL schema files first to understand every table, its columns, relationships, and constraints:
-> - `packages/db/src/schema/auth.ts` — users, userProfiles, roles, userRoles, sessions, refreshTokens, verificationTokens, passwordResetTokens, auditLogs, loginAttempts, revokedTokens
-> - `packages/db/src/schema/domain.ts` — domains, subjects, topics, subtopics, skills, topicSkills
-> - `packages/db/src/schema/question.ts` — questions, questionSkills
-> - `packages/db/src/schema/exam.ts` — examBlueprints, exams, examQuestions, resultsByDimension, idempotencyKeys
->
-> Create the following seed files:
->
-> **1. `packages/db/src/seed/test-seed.ts`** — Main seed orchestrator
-> - Exports `seedTestDatabase()` and `clearTestDatabase()` functions
-> - `clearTestDatabase()` should delete all data in correct order respecting foreign keys (child tables first)
-> - `seedTestDatabase()` should call individual seeders in correct dependency order
->
-> **2. `packages/db/src/seed/seed-data.ts`** — Static test data
-> - 3 test users (student, admin, inactive/banned)
-> - 2 roles (student, admin) with userRoles assignments
-> - 2 domains with full hierarchy (2 subjects each, 2 topics each, 2 subtopics each)
-> - 10 skills distributed across topics
-> - 30 questions across different topics, difficulties, and types (multiple_choice, true_false)
-> - 2 exam blueprints
-> - 2 completed exams with answers and scoring results
-> - 1 in-progress exam
->
-> **3. `packages/db/src/seed/seed-utils.ts`** — Helper utilities
-> - `hashPassword(plain)` — bcrypt hash for test passwords
-> - `generateUUID()` — deterministic UUID generation for reproducible tests
-> - `pastDate(daysAgo)` and `futureDate(daysAhead)` — date helpers
->
-> All test data should use deterministic IDs so tests can reference specific records. Use UUIDs that are human-readable in test output (e.g., `00000000-0000-0000-0000-000000000001` for first user).
+> [!NOTE]
+> This task (Enterprise Seed Scripts) has been removed from the implementation plan per user request on 2026-03-06.
 
 ---
 
@@ -1458,13 +1425,10 @@
 
 ---
 
-### Task 44: Add .env.example Documentation
+### Task 44: [OBSOLETE - REMOVED BY USER REQUEST]
 
 > [!NOTE]
-> **STATUS**: Skipped by user request to maintain repository privacy.
-> **CARRY-FORWARD**: Deferred to **last phase** or as needed for onboarding.
-
-**AI Prompt:**
+> This task (.env.example Documentation) has been removed from the implementation plan per user request on 2026-03-06 to maintain repository privacy.
 
 > I need to create comprehensive `.env.example` files for my Quiz Platform monorepo. Currently there is no documentation of required environment variables, which creates misconfiguration risk.
 >

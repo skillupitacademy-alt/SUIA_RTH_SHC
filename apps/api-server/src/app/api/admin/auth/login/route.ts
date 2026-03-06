@@ -1,9 +1,8 @@
 import { z } from 'zod';
 
-import { badRequest, unauthorized } from '@/lib/api-error';
+import { withApiHandler } from '@/lib/api-wrapper';
 import { ApiResponse } from '@/lib/api-response';
 import { recordCounter } from '@/lib/metrics';
-import { withLogging } from '@/lib/withLogging';
 import { AdminAuthService } from '@/modules/auth/admin-auth.service';
 
 export const runtime = 'nodejs';
@@ -13,72 +12,62 @@ const loginSchema = z.object({
   password: z.string().min(1)
 });
 
-async function handler(_req: Request) {
-  try {
-    const body = await _req.json();
-    const { email, password } = loginSchema.parse(body);
+async function handler(_req: Request, body: z.infer<typeof loginSchema>) {
+  const { email, password } = body;
 
-    const ip = _req.headers.get('x-forwarded-for') ?? '';
-    const portalIdentity = _req.headers.get('x-portal-identity') ?? 'admin';
-    const audience = portalIdentity === 'infrastructure' ? 'infra' : 'admin';
-    
-    const result = await AdminAuthService.login(email, password, ip, audience);
+  const ip = _req.headers.get('x-forwarded-for') ?? '';
+  const portalIdentity = _req.headers.get('x-portal-identity') ?? 'admin';
+  const audience = portalIdentity === 'infrastructure' ? 'infra' : 'admin';
+  
+  const result = await AdminAuthService.login(email, password, ip, audience);
 
-    const rawDomain = process.env.COOKIE_DOMAIN;
-    const cookieDomain = rawDomain === undefined || rawDomain === null || rawDomain === '' ? undefined : rawDomain;
+  const rawDomain = process.env.COOKIE_DOMAIN;
+  const cookieDomain = rawDomain === undefined || rawDomain === null || rawDomain === '' ? undefined : rawDomain;
 
-    const user = {
-        id: result.user.id,
-        email: result.user.email,
-        name: result.user.name,
-        isAdmin: true,
-        role: result.user.role ?? 'admin',
-    };
+  const user = {
+      id: result.user.id,
+      email: result.user.email,
+      name: result.user.name,
+      isAdmin: true,
+      role: result.user.role ?? 'admin',
+  };
 
-    const response = ApiResponse.success({
-        user,
-        expiresAt: result.expiresAt,
-    });
+  const response = ApiResponse.success({
+      user,
+      expiresAt: result.expiresAt,
+  });
 
-    const cookieOptions = {
-        httpOnly: true,
-        secure: true,
-        sameSite: 'none' as const,
-        path: '/',
-        domain: cookieDomain,
-    };
+  const cookieOptions = {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'none' as const,
+      path: '/',
+      domain: cookieDomain,
+  };
 
-    const accessTokenName = audience === 'infra' ? 'infra_accessToken' : 'admin_accessToken';
-    const refreshTokenName = audience === 'infra' ? 'infra_refreshToken' : 'admin_refreshToken';
+  const accessTokenName = audience === 'infra' ? 'infra_accessToken' : 'admin_accessToken';
+  const refreshTokenName = audience === 'infra' ? 'infra_refreshToken' : 'admin_refreshToken';
 
-    response.cookies.set(accessTokenName, result.accessToken, {
-        ...cookieOptions,
-        maxAge: 15 * 60,
-    });
+  response.cookies.set(accessTokenName, result.accessToken, {
+      ...cookieOptions,
+      maxAge: 15 * 60,
+  });
 
-    response.cookies.set(refreshTokenName, result.refreshToken, {
-        ...cookieOptions,
-        maxAge: 24 * 60 * 60,
-    });
+  response.cookies.set(refreshTokenName, result.refreshToken, {
+      ...cookieOptions,
+      maxAge: 24 * 60 * 60,
+  });
 
-    const { setCsrfToken } = await import('@/modules/auth/csrf.middleware');
-    setCsrfToken(response);
+  const { setCsrfToken } = await import('@/modules/auth/csrf.middleware');
+  setCsrfToken(response);
 
-    recordCounter('admin.auth.login', 1, { outcome: 'success', audience });
+  recordCounter('admin.auth.login', 1, { outcome: 'success', audience });
 
-    return response;
-
-  } catch (_error: unknown) {
-    recordCounter('admin.auth.login', 1, { outcome: 'failure' });
-
-    if (_error instanceof z.ZodError) {
-      return ApiResponse.error(badRequest('Invalid input'), 400);
-    }
-    
-    const message = _error instanceof Error ? _error.message : 'Authentication failed';
-    const status = message.includes('Locked') ? 403 : 401;
-    return ApiResponse.error(unauthorized(message), status);
-  }
+  return response;
 }
 
-export const POST = withLogging(handler, { component: 'admin-auth', operation: 'login' });
+export const POST = withApiHandler(handler, { 
+  schema: loginSchema,
+  component: 'admin-auth', 
+  operation: 'login' 
+});

@@ -44,5 +44,3 @@
    - Implement login and checkout flows in `apps/web-app/tests/e2e`.
    - Implement admin console flows in `apps/admin-app/tests/e2e`.
 
-3. **Enterprise Seed Script (Task 14)**:
-   - Enhance `packages/db/seed-enterprise.ts` with 100+ questions across 24 topics to provide realistic load profiles.

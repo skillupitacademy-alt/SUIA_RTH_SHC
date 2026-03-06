@@ -10,11 +10,10 @@ This registry maps the **Task IDs** from the [Master Blueprints](file:///d:/onli
 ## 🏗️ Phase 1: Foundation (Carry-Forward)
 | Task ID | Component | Prompt File |
 | :--- | :--- | :--- |
-| T1–T14 | Testing | [load_test.prompt.md](file:///d:/onlinewebsites/quiz-platform/docs/prompts/load_test.prompt.md) |
+| T1–T13 | Testing | [load_test.prompt.md](file:///d:/onlinewebsites/quiz-platform/docs/prompts/load_test.prompt.md) |
 | T37 | DB Timeouts | [safe_mode.prompt.md](file:///d:/onlinewebsites/quiz-platform/docs/prompts/safe_mode.prompt.md) |
 | T38 | DB Indexes | [sharding.prompt.md](file:///d:/onlinewebsites/quiz-platform/docs/prompts/sharding.prompt.md) |
 | T40 | CSRF Hardening | [biometric_guard.prompt.md](file:///d:/onlinewebsites/quiz-platform/docs/prompts/biometric_guard.prompt.md) |
-| T44 | .env.example | [observability_polish.prompt.md](file:///d:/onlinewebsites/quiz-platform/docs/prompts/observability_polish.prompt.md) |
 
 ## 🚀 Phase 2: Architectural Foundation
 | Task Area | Domain | Prompt File |

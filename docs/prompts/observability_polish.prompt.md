@@ -32,10 +32,3 @@
 
 ---
 
-## PHASE 1 CARRY-FORWARD (Environment Governance)
-
-> Baseline documentation tasks deferred for repository privacy.
-
-1. **Environment Variable Documentation (.env.example)**:
-   - When preparing for team onboarding, create anonymized `.env.example` files at the root and for each app.
-   - Document all `JWT_SECRET`, `UPSTASH_REDIS_URL`, and `DATABASE_URL` placeholders.
