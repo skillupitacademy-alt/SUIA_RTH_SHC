@@ -136,7 +136,9 @@ export class TutorService {
       });
     } catch (error) {
       // Do not throw to avoid breaking exam completion flow
-      console.error("[TutorService] processExamResults failed", error);
+      const { container } = await import("@/modules/core/container");
+      const { LoggerService } = await import("@/modules/core/logger.service");
+      container.get(LoggerService).error(error, "[TutorService] processExamResults failed");
     }
   }
 }

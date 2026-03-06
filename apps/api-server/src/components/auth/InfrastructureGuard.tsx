@@ -5,13 +5,10 @@ import { ZLoader } from '@quiz/ui';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect } from 'react';
 
-import { logger } from '@/lib/logger';
 import { type AuthState, useAuthStore } from '@/store/auth-store';
 
 import { InfrastructureLockScreen } from './InfrastructureLockScreen';
 import { SessionWatcher } from './SessionWatcher';
-
-const log = logger.child({ module: 'client:infrastructure-guard' });
 
 export function InfrastructureGuard({ children }: { children: React.ReactNode }) {
     const { _user, isAuthenticated, initialized, expiresAt, isLocked, isLoggingOut, login, logout, setIsLoggingOut } = useAuthStore() as AuthState;
@@ -50,7 +47,7 @@ export function InfrastructureGuard({ children }: { children: React.ReactNode })
 
         // Strict Check: Only 'infrastructure' role allowed
         if (isAuthenticated === false || (_user?.role as string) !== 'infrastructure') {
-            log.warn({ user: _user?.email }, 'Unauthorized role attempt. Redirecting to login.');
+            console.warn('[InfrastructureGuard] Unauthorized role attempt. Redirecting to login.', { user: _user?.email });
             void _router.push('/login');
             return;
         }
@@ -66,9 +63,9 @@ export function InfrastructureGuard({ children }: { children: React.ReactNode })
 
                 login(validatedUser, refreshedExpiresAt);
             } catch (_err: unknown) {
-                log.error(
+                console.error(
                     { error: _err instanceof Error ? _err.message : 'unknown error' },
-                    'Executive handshake failed',
+                    '[InfrastructureGuard] Executive handshake failed',
                 );
                 const msg = _err instanceof Error ? _err.message : '';
                 if (msg.includes('Invalid _token') || msg.includes('signature') || msg.includes('jwt') || msg === "REVOKED_ACCESS_PERMIT" || msg.includes('Unauthorized')) {
@@ -80,7 +77,7 @@ export function InfrastructureGuard({ children }: { children: React.ReactNode })
         void revalidate();
 
         const handleUnauthorized = () => {
-            log.warn('Circuit Breaker: 401 Detected. Terminating session.');
+            console.warn('[InfrastructureGuard] Circuit breaker: 401 detected. Terminating session.');
             void handleLogout();
         };
 

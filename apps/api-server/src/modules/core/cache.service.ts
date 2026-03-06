@@ -113,7 +113,7 @@ export class CacheService {
       const value = this.cache.get(key) as T | undefined;
       
       if (this.isDebug === true) {
-        // console.log(`[Cache] ${value !== undefined ? '[HIT]' : '[MISS]'}: ${key}`);
+        logger.trace(`[Cache] ${value !== undefined ? '[HIT]' : '[MISS]'}: ${key}`);
       }
       
       if (value !== undefined) return value;
@@ -138,7 +138,7 @@ export class CacheService {
     try {
       this.cache.set(key, value, { ttl });
       if (this.isDebug === true) {
-        // console.log(`[Cache] [SET]: ${key} (TTL: ${ttl ?? 'default'})`);
+        logger.trace(`[Cache] [SET]: ${key} (TTL: ${ttl ?? 'default'})`);
       }
 
       if (this.redis !== null) {
@@ -156,7 +156,7 @@ export class CacheService {
     try {
       this.cache.delete(key);
       if (this.isDebug === true) {
-        // console.log(`[Cache] [DEL]: ${key}`);
+        logger.trace(`[Cache] [DEL]: ${key}`);
       }
       
       if (this.redis !== null) {
@@ -219,7 +219,7 @@ export class CacheService {
       }
 
       if (this.isDebug === true) {
-        // console.log(`[Cache] [INCR]: ${key} -> ${count} (TTL REM: ${ttlRemSeconds}s)`);
+        logger.trace(`[Cache] [INCR]: ${key} -> ${count} (TTL REM: ${ttlRemSeconds}s)`);
       }
 
       return { count, ttlRem: ttlRemSeconds };

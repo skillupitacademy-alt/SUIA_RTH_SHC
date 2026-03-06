@@ -79,7 +79,7 @@ const emit = (metric: string, value: number, tags?: Tags) => {
     }
   } catch (e) {
     // Metrics should never crash the process
-    console.error('[MetricsSink] Sentry export failed', e);
+    logger.error({ err: e }, '[MetricsSink] Sentry export failed');
   }
 };
 

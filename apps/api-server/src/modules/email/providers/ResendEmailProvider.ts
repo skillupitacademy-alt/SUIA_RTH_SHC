@@ -1,14 +1,18 @@
 import { Resend } from 'resend';
 
+import { container } from '@/modules/core/container';
+import { LoggerService } from '@/modules/core/logger.service';
 import type { EmailOptions, IEmailProvider } from '@/modules/email/types';
 
 export class ResendEmailProvider implements IEmailProvider {
   private resend: Resend;
   private from: string;
+  private logger: LoggerService;
 
   constructor(apiKey: string, from: string) {
     this.resend = new Resend(apiKey);
     this.from = from;
+    this.logger = container.get(LoggerService);
   }
 
   async sendEmail(options: EmailOptions): Promise<void> {
@@ -21,18 +25,16 @@ export class ResendEmailProvider implements IEmailProvider {
       });
 
       if (error !== null && error !== undefined) {
-        console.error('[EmailService] Resend API returned an error:', error);
+        this.logger.error(error, '[EmailService] Resend API returned an error');
         // We log it carefully to see why it fails (likely domain verification)
         return;
       }
 
       if (data !== null && data !== undefined) {
-        console.log('[EmailService] Email sent successfully via Resend. ID:', data.id);
+        this.logger.info({ emailId: data.id }, '[EmailService] Email sent successfully via Resend.');
       }
     } catch (err: unknown) {
-      console.error('[EmailService] Unexpected fault while sending email via Resend:', 
-        err instanceof Error ? err.message : String(err)
-      );
+      this.logger.error(err, '[EmailService] Unexpected fault while sending email via Resend');
     }
   }
 

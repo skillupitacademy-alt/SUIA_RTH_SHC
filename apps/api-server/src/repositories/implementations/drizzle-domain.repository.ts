@@ -92,7 +92,9 @@ export class DrizzleDomainRepository extends BaseRepository<typeof domains.$infe
     // For Task 65, we provide the repository wrapper.
     await this.dbInstance.transaction(async (_tx) => {
         // Implementation details would go here as per Task 65 migration request
-        console.log('[DrizzleDomainRepository] Upserting hierarchy for:', hierarchy.name);
+        const { container } = await import("@/modules/core/container");
+        const { LoggerService } = await import("@/modules/core/logger.service");
+        container.get(LoggerService).debug({ hierarchyName: hierarchy.name }, '[DrizzleDomainRepository] Upserting hierarchy');
     });
   }
 }

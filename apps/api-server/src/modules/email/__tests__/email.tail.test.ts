@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { ResendEmailProvider } from '../providers/ResendEmailProvider';
+import { LoggerService } from '@/modules/core/logger.service';
 
 vi.mock('resend', () => ({
     Resend: class {
@@ -8,20 +9,17 @@ vi.mock('resend', () => ({
 }));
 
 describe('ResendEmailProvider tail coverage', () => {
-    let oldConsoleLog: any;
-    let oldConsoleError: any;
+    let errorSpy: any;
+    let infoSpy: any;
 
     beforeEach(() => {
         vi.clearAllMocks();
-        oldConsoleLog = console.log;
-        oldConsoleError = console.error;
-        console.log = vi.fn();
-        console.error = vi.fn();
+        errorSpy = vi.spyOn(LoggerService.prototype, 'error').mockImplementation(() => {});
+        infoSpy = vi.spyOn(LoggerService.prototype, 'info').mockImplementation(() => {});
     });
 
     afterEach(() => {
-        console.log = oldConsoleLog;
-        console.error = oldConsoleError;
+        vi.restoreAllMocks();
     });
 
     it('sendEmail: handles API error object (Lines 24-26)', async () => {
@@ -29,7 +27,7 @@ describe('ResendEmailProvider tail coverage', () => {
         (provider as any).resend.emails.send.mockResolvedValue({ error: { message: 'Api Error' }, data: null });
         
         await provider.sendEmail({ to: 't', subject: 's', html: 'h' });
-        expect(console.error).toHaveBeenCalledWith(expect.stringContaining('Resend API returned an error'), expect.any(Object));
+        expect(errorSpy).toHaveBeenCalledWith(expect.any(Object), expect.stringContaining('Resend API returned an error'));
     });
 
     it('sendEmail: catches unexpected throw (Line 33)', async () => {
@@ -37,7 +35,7 @@ describe('ResendEmailProvider tail coverage', () => {
         (provider as any).resend.emails.send.mockRejectedValue(new Error('Network fault'));
         
         await provider.sendEmail({ to: 't', subject: 's', html: 'h' });
-        expect(console.error).toHaveBeenCalledWith(expect.stringContaining('Unexpected fault'), 'Network fault');
+        expect(errorSpy).toHaveBeenCalledWith(expect.any(Error), expect.stringContaining('Unexpected fault'));
     });
 
     it('sendEmail: catches string throw (Line 33)', async () => {
@@ -45,6 +43,6 @@ describe('ResendEmailProvider tail coverage', () => {
         (provider as any).resend.emails.send.mockRejectedValue('String fault');
         
         await provider.sendEmail({ to: 't', subject: 's', html: 'h' });
-        expect(console.error).toHaveBeenCalledWith(expect.stringContaining('Unexpected fault'), 'String fault');
+        expect(errorSpy).toHaveBeenCalledWith('String fault', expect.stringContaining('Unexpected fault'));
     });
 });
