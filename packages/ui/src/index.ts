@@ -5,3 +5,4 @@ export * from './ThemeToggle';
 export * from './theme-store';
 export * from './ZPagination';
 export * from './SafeHtml';
+export * from './ZErrorBoundary';

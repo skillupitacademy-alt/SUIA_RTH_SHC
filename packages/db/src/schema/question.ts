@@ -28,6 +28,7 @@ export const questions = pgTable("questions", {
 }, (t) => ({
   idx_questions_selection_filter: index("idx_questions_selection_filter").on(t.topicId, t.subtopicId, t.difficulty),
   idx_questions_active_partial: index("idx_questions_active_partial").on(t.id).where(sql`${t.status} = 'active'`),
+  idx_questions_subtopic_id: index("idx_questions_subtopic_id").on(t.subtopicId),
 }));
 
 export const questionSkills = pgTable("question_skills", {

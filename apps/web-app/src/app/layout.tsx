@@ -1,9 +1,10 @@
+import React from "react";
 import type { Metadata } from "next";
 import "./globals.css";
 import { SecurityMuzzle } from "@/components/auth/SecurityMuzzle";
+import { ZErrorBoundary } from "@quiz/ui";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { Analytics } from "@vercel/analytics/react";
-import { ErrorBoundary } from "@/components/common/ErrorBoundary";
 import { GlobalNavigationLoader } from "@/components/layout/GlobalNavigationLoader";
 import { MonitoringProvider } from "@/components/providers/MonitoringProvider";
 
@@ -21,7 +22,7 @@ export default function RootLayout({
         <html lang="en" suppressHydrationWarning>
             <body>
                 <MonitoringProvider>
-                    <ErrorBoundary>
+                    <ZErrorBoundary appId="web-app" sessionIdKey="quiz_session_id" recoveryMode="reload">
                         <ThemeProvider>
                             <SecurityMuzzle />
                             <GlobalNavigationLoader />
@@ -29,7 +30,7 @@ export default function RootLayout({
                             <Analytics />
                             <div id="modal-root" />
                         </ThemeProvider>
-                    </ErrorBoundary>
+                    </ZErrorBoundary>
                 </MonitoringProvider>
             </body>
         </html>

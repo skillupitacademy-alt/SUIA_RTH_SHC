@@ -64,10 +64,6 @@
                 "./tests/*"
             ]
         },
-        "typeRoots": [
-            "./packages/types/src/globals",
-            "./node_modules/@types"
-        ],
         "noEmit": true
     },
     "exclude": [

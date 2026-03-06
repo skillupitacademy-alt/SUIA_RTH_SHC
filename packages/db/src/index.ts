@@ -93,6 +93,7 @@ export const getDb = (type: 'primary' | 'replica' = 'primary'): DbClient => {
             max: 15, // Higher limit for primary writes
             idleTimeoutMillis: 30000,
             connectionTimeoutMillis: 2000,
+            query_timeout: 10000, // 10s global query timeout (Task 37)
         });
 
         pool.on('error', (err) => console.error('[DB Pool Error]', err));

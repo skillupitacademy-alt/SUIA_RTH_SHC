@@ -43,6 +43,7 @@ export const exams = pgTable("exams", {
 }, (t) => ({
   idx_exams_user_id_status: index("idx_exams_user_id_status").on(t.userId, t.status),
   idx_exams_dashboard_opt: index("idx_exams_dashboard_opt").on(t.userId, t.status, desc(t.completedAt)),
+  idx_exams_blueprint_id: index("idx_exams_blueprint_id").on(t.blueprintId),
 }));
 
 export const examQuestions = pgTable("exam_questions", {
@@ -109,7 +110,9 @@ export const resultsByDimension = pgTable("results_by_dimension", {
   score: integer("score").notNull(),
   accuracy: integer("accuracy").notNull(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
-});
+}, (t) => ({
+  idx_results_by_dimension_exam_id: index("idx_results_by_dimension_exam_id").on(t.examId),
+}));
 
 // --- RELATIONS ---
 

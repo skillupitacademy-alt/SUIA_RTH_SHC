@@ -1,10 +1,11 @@
+import React from "react";
 import "./globals.css";
 
 import { Analytics } from "@vercel/analytics/react";
 import type { Metadata } from "next";
 
 import { SecurityMuzzle } from "@/components/auth/SecurityMuzzle";
-import { ErrorBoundary } from "@/components/layout/ErrorBoundary";
+import { ZErrorBoundary } from "@quiz/ui";
 import { FetchCredentialsProvider } from "@/components/providers/FetchCredentialsProvider";
 import { MonitoringProvider } from "@/components/providers/MonitoringProvider";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
@@ -23,14 +24,14 @@ export default function RootLayout({
         <html lang="en" suppressHydrationWarning>
             <body>
                 <MonitoringProvider>
-                    <ErrorBoundary>
+                    <ZErrorBoundary appId="admin-app" sessionIdKey="admin_session_id" recoveryMode="both">
                         <ThemeProvider>
                             <FetchCredentialsProvider />
                             <SecurityMuzzle />
                             {children}
                             <Analytics />
                         </ThemeProvider>
-                    </ErrorBoundary>
+                    </ZErrorBoundary>
                 </MonitoringProvider>
             </body>
         </html>
