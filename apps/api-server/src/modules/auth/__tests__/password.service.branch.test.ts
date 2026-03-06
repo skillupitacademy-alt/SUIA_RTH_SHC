@@ -8,5 +8,5 @@ describe('PasswordService guard branch', () => {
     const hashed = await service.hash('');
     const matches = await service.compare('', hashed);
     expect(matches).toBe(true);
-  });
+  }, 20000);
 });

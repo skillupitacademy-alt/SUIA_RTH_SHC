@@ -7,7 +7,7 @@ import { logger } from '@/lib/logger';
 import { recordCounter, recordTimer } from '@/lib/metrics';
 import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 import { withLogging } from '@/lib/withLogging';
-import { AdminQuestionEngine, type CreateQuestionInput } from "@/modules/admin-engine/admin.question.engine";
+import { AdminQuestionEngine, type CreateQuestionInput } from "@/modules/admin-engine/admin.engine";
 import { _verifyAdmin } from '@/modules/auth/rbac.service';
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
@@ -46,11 +46,15 @@ async function getHandler(_req: NextRequest) {
         search: searchParams.get('search') ?? undefined,
     };
 
-    const data = await AdminQuestionEngine.getQuestions(page, limit, filters);
+    const result = await AdminQuestionEngine.getQuestions(page, limit, filters);
+    
+    const { toAdminQuestionDTO } = await import('@/dtos/admin.dto');
+    const questionsDto = result.questions.map(toAdminQuestionDTO);
+
     const durationMs = Date.now() - start;
     recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.questions.get.success', 1);
     recordTimer(METRICS.ADMIN.DASHBOARD_LOAD + '.questions.get.duration', durationMs, { outcome: 'success' });
-    return ApiResponse.success(data, 200, { 'X-Duration-Ms': durationMs.toString() });
+    return ApiResponse.paginated(questionsDto, result.total, result.page, result.limit);
   } catch (_error: unknown) {
     const message = _error instanceof Error ? _error.message : 'Internal Server Error';
     const durationMs = Date.now() - start;

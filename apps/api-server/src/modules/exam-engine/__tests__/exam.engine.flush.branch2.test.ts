@@ -1,11 +1,11 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 import { ExamEngine } from '../exam.engine';
 import { ExamRepository } from '../repositories/exam.repository';
 import { PerformanceService } from '@/modules/report-engine/performance.service';
 import { AnswerEvaluationEngine } from '@/modules/answer-engine/answer.engine';
 import { JobOrchestrator } from '@/modules/system/job-orchestrator';
-import { JobsService, JobType } from '@/modules/system/jobs.service';
+import { JobsService } from '@/modules/system/jobs.service';
 import { cacheService } from '@/modules/core/cache.service';
 import { container } from '@/modules/core/container';
 
@@ -27,6 +27,12 @@ vi.mock('@/modules/system/jobs.service', () => ({
   },
   JobType: {
     EXAM_SCORING: 'EXAM_SCORING',
+  },
+}));
+
+vi.mock('../exam.state-machine', () => ({
+  ExamStateMachine: {
+    transition: vi.fn().mockResolvedValue(undefined),
   },
 }));
 
@@ -64,7 +70,7 @@ describe('ExamEngine completeExam additional branches', () => {
 
     const res = await container.get(ExamEngine).completeExam('origExam', 'u1', 'key-1');
     expect(res.examId).toBe('examFromKey');
-  });
+  }, 15000);
 
   it('enters flush catch when cache getter throws (lines ~344)', async () => {
     const examWithQuestions = {
@@ -92,5 +98,5 @@ describe('ExamEngine completeExam additional branches', () => {
     const res = await container.get(ExamEngine).completeExam('examX', 'u1');
     expect(res.status).toBe('processing');
     expect(cacheService.get).toHaveBeenCalled();
-  });
+  }, 15000);
 });

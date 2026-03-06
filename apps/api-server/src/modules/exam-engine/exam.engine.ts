@@ -12,6 +12,9 @@ import { JobOrchestrator } from '@/modules/system/job-orchestrator';
 import { JobsService } from '@/modules/system/jobs.service';
 
 import { PerformanceService } from '../report-engine/performance.service';
+import { AuditLoggingExamRepository } from './audit-logging.decorator';
+import { ExamBuilder } from './exam.builder';
+import { ExamStateMachine } from './exam.state-machine';
 import { ExamRepository } from './repositories/exam.repository';
 
 export interface StartExamConfig {
@@ -32,7 +35,11 @@ export class ExamEngine {
   private answerEvaluationEngine: AnswerEvaluationEngine;
 
   constructor() {
-    this.examRepo = container.get(ExamRepository);
+    const baseRepo = container.get(ExamRepository);
+    const auditedRepo = new AuditLoggingExamRepository(baseRepo);
+    container.set(ExamRepository, auditedRepo); // Share with other engines
+    
+    this.examRepo = auditedRepo;
     this.selectionService = container.get(SelectionService);
     this.performanceService = container.get(PerformanceService);
     this.answerEvaluationEngine = container.get(AnswerEvaluationEngine);
@@ -65,45 +72,18 @@ export class ExamEngine {
       // 1. Idempotency Check
       if (idempotencyKey !== undefined && idempotencyKey !== null && idempotencyKey !== '') {
         const existingKey = await this.examRepo.checkIdempotency(userId, idempotencyKey);
-
         if (existingKey) {
           return await this.resumeExamSession(existingKey.examId);
         }
       }
 
-      // 2. Selection Phase
-      const selection = await this.selectionService.composeExam(
-        userId,
-        blueprintOrDomainId,
-        (idempotencyKey !== undefined && idempotencyKey !== null && idempotencyKey !== '') ? idempotencyKey : 'no-key',
-        config
-      );
-      const questions = selection?.questions ?? [];
-      const blueprint = selection?.blueprint ?? ({
-        id: 'transient',
-        name: 'Transient Blueprint',
-        createdAt: new Date(),
-        description: null,
-        domains: null,
-        subjects: null,
-        topics: null,
-        subtopics: null,
-        questionIds: null,
-        totalQuestions: questions.length || 1,
-        timeLimit: questions.length || 1,
-        difficultyDistribution: {},
-        status: 'active'
-      } as unknown as InferSelectModel<typeof examBlueprints>);
-
-      // 3. Persistence Phase (Handled by Repository Transactionally)
-      const exam = await this.examRepo.createExamWithQuestions({
-          userId,
-          blueprintId: blueprint.id === 'transient' ? null : blueprint.id,
-          status: 'started',
-          durationSeconds: (blueprint.timeLimit !== undefined && blueprint.timeLimit !== null) ? blueprint.timeLimit * 60 : null,
-          questions: questions as { id: string }[],
-          idempotencyKey: idempotencyKey ?? undefined
-      });
+      // 2. Build using ExamBuilder (Task 63)
+      const { exam, questions } = await new ExamBuilder()
+        .forUser(userId)
+        .withBlueprint(blueprintOrDomainId)
+        .withIdempotency(idempotencyKey)
+        .withConfig(config)
+        .build();
 
       return {
         examId: exam.id,
@@ -294,6 +274,7 @@ export class ExamEngine {
         return { examId: targetExamId, status: fullExam.status };
     }
 
+    await ExamStateMachine.transition(targetExamId, 'processing', userId);
     const updated = await this.examRepo.updateStatus(targetExamId, 'processing');
 
     let jobId: string | undefined;
@@ -330,7 +311,7 @@ export class ExamEngine {
         }
 
         if (idempotencyKey !== undefined && idempotencyKey !== null && idempotencyKey !== '') {
-            await this.examRepo.recordIdempotency({ userId, key: `submit:${idempotencyKey}`, examId: targetExamId });
+            await this.examRepo.recordIdempotency({ userId, key: `submit:${idempotencyKey}`, examId: targetExamId }).catch(() => null);
         }
         const job = await JobsService.createJob({
             userId,

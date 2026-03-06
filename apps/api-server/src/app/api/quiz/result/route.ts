@@ -57,11 +57,14 @@ async function getHandler(req: NextRequest) {
 
     const result = await ReportEngine.getExamReport(examId, { includeCorrectAnswers: false });
     
+    const { toExamResultDTO } = await import('@/dtos/exam.dto');
+    const responseDto = toExamResultDTO(result);
+
     const durationMs = Date.now() - startTime;
     recordCounter(METRICS.QUIZ.SCORE, 1, { outcome: 'success' });
     recordTimer(METRICS.QUIZ.SCORE + '.duration', durationMs, { outcome: 'success' });
     
-    return ApiResponse.success(result, 200, { 'X-Duration-Ms': durationMs.toString() });
+    return ApiResponse.success(responseDto, 200, { 'X-Duration-Ms': durationMs.toString() });
   } catch (error: unknown) {
     const durationMs = Date.now() - startTime;
     recordCounter(METRICS.QUIZ.SCORE, 1, { outcome: 'failure' });

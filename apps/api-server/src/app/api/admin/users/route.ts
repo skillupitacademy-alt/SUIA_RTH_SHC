@@ -5,7 +5,7 @@ import { ApiResponse } from '@/lib/api-response';
 import { logger } from '@/lib/logger';
 import { recordCounter, recordTimer } from '@/lib/metrics';
 import { withLogging } from '@/lib/withLogging';
-import { AdminUserEngine } from "@/modules/admin-engine/admin.user.engine";
+import { AdminUserEngine } from "@/modules/admin-engine/admin.engine";
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
 
@@ -37,11 +37,15 @@ async function getHandler(_req: NextRequest) {
     const xStatus = searchParams.get('xStatus') ?? undefined;
 
     const result = await AdminUserEngine.getUsers(page, limit, status, { search, role, isBlocked, isVerified, status: xStatus });
+    
+    const { toAdminUserDTO } = await import('@/dtos/admin.dto');
+    const usersDto = result.users.map(toAdminUserDTO);
+    
     const durationMs = Date.now() - start;
     recordCounter('admin.api.users.get.success', 1);
     recordTimer('admin.api.users.get.duration', durationMs, { outcome: 'success' });
     
-    return ApiResponse.paginated(result.users, result.total, page, limit);
+    return ApiResponse.paginated(usersDto, result.total, page, limit);
   } catch (_error: unknown) {
     const durationMs = Date.now() - start;
     log.error({ error: _error }, 'ADMIN_USERS failed');

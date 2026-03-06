@@ -3,7 +3,10 @@ import { eq } from 'drizzle-orm';
 
 import { logger } from '@/lib/logger';
 import { container } from '@/modules/core/container';
+import { eventBus } from '@/modules/core/event-bus';
 
+import { ExamObserver } from '../exam-engine/exam.observer';
+import { ExamStateMachine } from '../exam-engine/exam.state-machine';
 import { ExamRepository } from '../exam-engine/repositories/exam.repository';
 import { PerformanceService } from '../report-engine/performance.service';
 import { ReportEngine } from '../report-engine/report.engine';
@@ -16,12 +19,18 @@ export const dynamic = 'force-dynamic';
 export class ScoringEngine {
   private static singleton: ScoringEngine | null = null;
   private log = logger.child({ module: 'scoring-engine' });
+  private static observerInitialized = false;
 
   constructor(
     private readonly performanceService = container.get(PerformanceService),
     private readonly examRepo = container.get(ExamRepository),
     private readonly reportEngine = container.get(ReportEngine)
-  ) {}
+  ) {
+    if (!ScoringEngine.observerInitialized) {
+        ExamObserver.init();
+        ScoringEngine.observerInitialized = true;
+    }
+  }
 
   private static getInstance() {
     if (this.singleton === null) this.singleton = new ScoringEngine();
@@ -29,7 +38,6 @@ export class ScoringEngine {
   }
 
   async calculateExamResults(examId: string) {
-    // Phase 1: Invalidate existing cache before re-computing
     await this.performanceService.invalidateCache(examId);
 
     try {
@@ -55,7 +63,6 @@ export class ScoringEngine {
 
       if (exam === undefined) throw new Error('Exam not found');
 
-      // 1. Resolve Hierarchy Data
       const topicIds = [...new Set(exam.examQuestions.map(eq => eq.question.topicId))];
       const topicData = await db.query.topics.findMany({
         where: (topics, { inArray }) => inArray(topics.id, topicIds as string[]),
@@ -68,7 +75,6 @@ export class ScoringEngine {
 
       const topicMap = new Map(topicData.map(t => [t.id, t]));
 
-      // 2. Prepare for Strategy
       const evaluatedAnswers: EvaluatedAnswer[] = exam.examQuestions.map(eq => ({
         question: eq.question,
         examQuestion: {
@@ -77,13 +83,11 @@ export class ScoringEngine {
         }
       }));
 
-      // Determine strategy
       const strategyName = typeof (exam.blueprint as { scoringStrategy?: string })?.scoringStrategy === 'string'
         ? (exam.blueprint as { scoringStrategy?: string }).scoringStrategy!
         : 'percentage';
       const strategy = ScoringStrategyRegistry.get(strategyName);
-      this.log.info({ examId, strategy: strategy.getName() }, 'Applying scoring strategy');
-
+      
       const dimensions: Record<string, { total: number; correct: number; name?: string }> = {};
 
       for (const eqRecord of exam.examQuestions) {
@@ -105,7 +109,6 @@ export class ScoringEngine {
         }
       }
 
-      // 3. Delegate to Strategy for Scores
       const resultsData = strategy.calculateDimensionScores(evaluatedAnswers, dimensions).map(ds => ({
         examId,
         dimensionType: ds.type,
@@ -115,78 +118,57 @@ export class ScoringEngine {
         accuracy: ds.accuracy,
       }));
 
-      // Clear old results if any (idempotency)
       await db.delete(resultsByDimension).where(eq(resultsByDimension.examId, examId));
 
       if (resultsData.length > 0) {
         await db.insert(resultsByDimension).values(resultsData);
       }
 
-      // 4. Update total score using strategy
       const finalScore = strategy.calculateOverallScore(evaluatedAnswers);
 
+      // Transition Status
+      await ExamStateMachine.transition(examId, 'completed');
+
+      // Update Score & Completion Metadata
       await db.update(exams)
         .set({ 
           totalScore: finalScore, 
-          completedAt: new Date(), 
-          status: 'completed' 
+          completedAt: new Date()
         })
         .where(eq(exams.id, examId));
 
-      // Phase 1: Refresh Materialized Views and Prime Cache
-      try {
-        await this.performanceService.refreshAnalytics();
-
-        // Hierarchical Materialization
-        const { ReportMaterializer } = await import('../../services/reports/ReportMaterializer');
-        await ReportMaterializer.materialize(examId);
-        const reportData = await this.reportEngine.getPremiumExamReport(examId);
-        await this.performanceService.cacheReport(examId, reportData);
-        this.log.info({ examId }, 'Phase 1: Analytics refreshed and cache primed');
-
-        // Trigger PDF Generation (Background)
-        const apiBase = (process.env.NEXT_PUBLIC_API_URL !== undefined && process.env.NEXT_PUBLIC_API_URL !== '')
-          ? process.env.NEXT_PUBLIC_API_URL
-          : 'http://localhost:3002/api';
-        fetch(`${apiBase}/generate-report`, {
-          method: 'POST',
-          headers: { 
-            'Content-Type': 'application/json',
-            'x-internal-key': (process.env.INTERNAL_API_KEY !== undefined && process.env.INTERNAL_API_KEY !== '')
-              ? process.env.INTERNAL_API_KEY
-              : 'secret'
-          },
-          body: JSON.stringify({ attemptId: examId })
-        }).catch(err => this.log.error({ examId, err }, 'Failed to trigger background PDF generation'));
-      } catch (e) {
-        this.log.error({ examId, err: e }, 'Phase 1: Failed to refresh analytics or prime cache');
-      }
+      // Task 62: Emit event instead of direct orchestration
+      eventBus.emit('EXAM_COMPLETED', {
+          examId,
+          userId: exam.userId,
+          score: finalScore
+      });
 
       return finalScore;
     } catch (_error) {
-      this.log.error(
-        { examId, error: _error instanceof Error ? _error.message : 'unknown error' },
-        'Failed to calculate results for exam',
-      );
+      this.log.error({ examId, error: _error instanceof Error ? _error.message : 'unknown error' }, 'Scoring failed');
+      
       await db.update(exams)
         .set({ status: 'failed' })
         .where(eq(exams.id, examId))
-        .catch(err => {
-          this.log.error(
-            { examId, error: err instanceof Error ? err.message : 'unknown error' },
-            'Failed to mark exam as failed after scoring error',
-          );
-        });
+        .catch(() => null);
+
+      await ExamStateMachine.transition(examId, 'failed').catch(() => null);
+      
+      eventBus.emit('EXAM_FAILED', {
+          examId,
+          userId: 'unknown', // We could resolve this if needed
+          error: _error instanceof Error ? _error.message : 'unknown error'
+      });
+      
       throw _error;
     }
   }
 
-  // Static facade for legacy tests
   static calculateExamResults(examId: string) {
     return this.getInstance().calculateExamResults(examId);
   }
 
-  // Test helper to inject mocks
   static setInstance(mock: ScoringEngine) {
     this.singleton = mock;
   }

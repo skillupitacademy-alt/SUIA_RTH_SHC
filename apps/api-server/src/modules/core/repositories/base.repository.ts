@@ -24,11 +24,13 @@ export abstract class BaseRepository<Row, TableType extends AnyPgTable & { id: A
     return undefined;
   }
 
-  async delete(id: string): Promise<void> {
+  async delete(id: string): Promise<Row | void> {
     const table = this.table as AnyPgTable & { id: AnyPgColumn };
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (this.dbInstance as any)
+    const result = await (this.dbInstance as any)
       .delete(table)
-      .where(eq(table.id, id));
+      .where(eq(table.id, id))
+      .returning();
+    return result[0] as Row | undefined;
   }
 }

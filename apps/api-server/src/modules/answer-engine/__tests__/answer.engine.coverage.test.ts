@@ -16,4 +16,9 @@ describe('AnswerEvaluationEngine', () => {
     // default branch (should behave like strict equality)
     expect(AnswerEvaluationEngine.evaluate('mcq' as any, 'a', 'a')).toBe(true)
   })
+
+  it('exposes numeric scoring via static facades', () => {
+    expect(AnswerEvaluationEngine.evaluateForScore('mcq', 'A', 'A')).toBe(1)
+    expect(AnswerEvaluationEngine.calculatePartialScore('mcq', 'A', 'B')).toBe(0)
+  })
 })

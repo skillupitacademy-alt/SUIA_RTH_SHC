@@ -3,6 +3,7 @@ import { db } from '@quiz/db';
 import { container } from '@/modules/core/container';
 import { ScoringEngine } from '@/modules/scoring-engine/scoring.engine';
 import { PerformanceService } from '@/modules/report-engine/performance.service';
+import { ExamObserver } from '@/modules/exam-engine/exam.observer';
 
 const mockPerformanceService = {
   invalidateCache: vi.fn().mockResolvedValue(undefined),
@@ -53,5 +54,15 @@ describe('ScoringEngine (integration)', () => {
     expect(score).toBe(100);
     expect((db.query as any).exams.findFirst).toHaveBeenCalled();
     expect((db as any).update).toHaveBeenCalled();
+  });
+
+  it('initializes observer only once across instances', () => {
+    (ScoringEngine as any).observerInitialized = false;
+    const initSpy = vi.spyOn(ExamObserver, 'init').mockImplementation(() => undefined);
+
+    new ScoringEngine(mockPerformanceService as any, {} as any, {} as any);
+    new ScoringEngine(mockPerformanceService as any, {} as any, {} as any);
+
+    expect(initSpy).toHaveBeenCalledTimes(1);
   });
 });

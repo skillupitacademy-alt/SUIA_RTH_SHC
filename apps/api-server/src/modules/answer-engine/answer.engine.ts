@@ -1,32 +1,43 @@
-import { getEvaluator } from './evaluators/evaluator.registry';
+import { container } from '../core/container';
+import { EvaluatorFactory } from './evaluators/evaluator.factory';
 
 export class AnswerEvaluationEngine {
   private static instance = new AnswerEvaluationEngine();
 
   /**
-   * Strategy-based evaluation for various question types.
+   * Strategy-based evaluation. Returns boolean for strict correctness (threshold > 0.8).
    */
-  evaluate(type: 'mcq' | 'code_mcq' | string, correctAnswer: string, userAnswer: string): boolean {
-    if (!userAnswer) return false;
+  evaluate(type: string, correctAnswer: string, userAnswer: string): boolean {
+    const score = this.evaluateForScore(type, correctAnswer, userAnswer);
+    return score >= 0.8; // High threshold for "Strict Correctness"
+  }
 
-    const evaluator = getEvaluator(type);
+  /**
+   * New: Returns the actual numeric score (0.0 to 1.0).
+   */
+  evaluateForScore(type: string, correctAnswer: string, userAnswer: string): number {
+    if (typeof correctAnswer !== 'string' || typeof userAnswer !== 'string' || !userAnswer) return 0;
+    const evaluator = container.get(EvaluatorFactory).getEvaluator(type);
     return evaluator.evaluate(correctAnswer, userAnswer);
   }
 
   /**
-   * Placeholder for Partial Scoring logic. (To be refactored next)
+   * Placeholder for Partial Scoring logic.
    */
-  calculatePartialScore(_type: string, _options: unknown, _selection: unknown): number {
-    // Future implementation for Multi-Select MCQs
-    return 0;
+  calculatePartialScore(type: string, correctAnswer: string, userAnswer: string): number {
+    return this.evaluateForScore(type, correctAnswer, userAnswer);
   }
 
-  // Legacy static facades for tests
-  static evaluate(type: 'mcq' | 'code_mcq' | string, correctAnswer: string, userAnswer: string): boolean {
+  // Legacy static facades
+  static evaluate(type: string, correctAnswer: string, userAnswer: string): boolean {
     return this.instance.evaluate(type, correctAnswer, userAnswer);
   }
 
-  static calculatePartialScore(_type: string, _options: unknown, _selection: unknown): number {
-    return this.instance.calculatePartialScore(_type, _options, _selection);
+  static evaluateForScore(type: string, correctAnswer: string, userAnswer: string): number {
+    return this.instance.evaluateForScore(type, correctAnswer, userAnswer);
+  }
+
+  static calculatePartialScore(type: string, correctAnswer: string, userAnswer: string): number {
+    return this.instance.calculatePartialScore(type, correctAnswer, userAnswer);
   }
 }

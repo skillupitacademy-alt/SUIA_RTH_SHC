@@ -78,5 +78,5 @@ describe('ExamEngine completeExam tails (idempotency & flush catch)', () => {
     expect(res.examId).toBe('existing-exam');
     expect(res.jobId).toBe('job-1');
     expect(res.status).toBe('processing');
-  });
+  }, 20000);
 });

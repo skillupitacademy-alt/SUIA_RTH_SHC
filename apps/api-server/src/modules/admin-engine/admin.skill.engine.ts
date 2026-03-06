@@ -1,90 +1,52 @@
-import { db, skills, topicSkills } from '@quiz/db';
-import { asc, eq, inArray, sql } from 'drizzle-orm';
+import { skills } from '@quiz/db';
 
 import { AuditService } from "@/modules/auth/audit.service";
 import { container } from "@/modules/core/container";
+import { DrizzleSkillRepository } from "@/repositories/implementations/drizzle-skill.repository";
+import { ISkillRepository } from "@/repositories/interfaces/skill.repository.interface";
 
 export class AdminSkillEngine {
-  static async getSkills(page: number = 1, limit: number = 20, filters?: { search?: string }) {
-    const offset = (page - 1) * limit;
-    let whereClause = undefined;
-    if (filters?.search !== undefined && filters?.search !== null && filters?.search.trim() !== '') {
-        whereClause = sql`${skills.name} ILIKE ${'%' + filters.search + '%'}`;
-    }
+  constructor(
+    private readonly repository: ISkillRepository = container.get(DrizzleSkillRepository),
+    private readonly auditService = container.get(AuditService)
+  ) {}
 
-    const data = await db.query.skills.findMany({
-      where: whereClause,
-      limit,
-      offset,
-      orderBy: [asc(skills.name)]
-    });
-
-    const [{ count }] = await db
-      .select({ count: sql<number>`count(*)` })
-      .from(skills)
-      .where(whereClause ?? sql`true`);
-
-    const total = Number(count ?? 0);
-    const totalPages = Math.max(1, Math.ceil(total / limit));
-
-    return { data, total, page, limit, totalPages };
+  async getSkills(page: number = 1, limit: number = 20, filters?: { search?: string }) {
+    return await this.repository.findAll(page, limit, filters);
   }
 
-  static async createSkill(data: typeof skills.$inferInsert, adminId: string) {
-    const [newSkill] = await db.insert(skills).values(data).returning();
-    await container.get(AuditService).log({ userId: adminId, action: 'admin_create_skill', metadata: { skillId: newSkill.id } });
+  async createSkill(data: typeof skills.$inferInsert, adminId: string) {
+    const newSkill = await this.repository.create(data);
+    await this.auditService.log({ userId: adminId, action: 'admin_create_skill', metadata: { skillId: newSkill.id } });
     return newSkill;
   }
 
-  static async updateSkill(id: string, data: Partial<typeof skills.$inferInsert>, adminId: string) {
-    const [updated] = await db.update(skills).set(data).where(eq(skills.id, id)).returning();
-    await container.get(AuditService).log({ userId: adminId, action: 'admin_update_skill', metadata: { skillId: id } });
+  async updateSkill(id: string, data: Partial<typeof skills.$inferInsert>, adminId: string) {
+    const updated = await this.repository.update(id, data);
+    await this.auditService.log({ userId: adminId, action: 'admin_update_skill', metadata: { skillId: id } });
     return updated;
   }
 
-  static async deleteSkill(id: string, adminId: string) {
-      await container.get(AuditService).log({ userId: adminId, action: 'admin_delete_skill', metadata: { skillId: id } });
-    return await db.delete(skills).where(eq(skills.id, id)).returning();
+  async deleteSkill(id: string, adminId: string) {
+    await this.auditService.log({ userId: adminId, action: 'admin_delete_skill', metadata: { skillId: id } });
+    return await this.repository.delete(id);
   }
 
-  static async deleteSkillsBatch(ids: string[], adminId: string) {
-      await container.get(AuditService).log({ userId: adminId, action: 'admin_batch_delete_skills', metadata: { count: ids.length } });
-    return await db.delete(skills).where(inArray(skills.id, ids)).returning();
+  async deleteSkillsBatch(ids: string[], adminId: string) {
+    await this.auditService.log({ userId: adminId, action: 'admin_batch_delete_skills', metadata: { count: ids.length } });
+    return await this.repository.deleteBatch(ids);
   }
 
-  static async getTopicSkills(page: number = 1, limit: number = 20) {
-    const offset = (page - 1) * limit;
-    return await db.query.topicSkills.findMany({
-      limit,
-      offset,
-      with: {
-        topic: true,
-        skill: true
-      }
-    });
+  async getTopicSkills(page: number = 1, limit: number = 20) {
+    return await this.repository.getTopicSkills(page, limit);
   }
 
-  static async getSkillsByTopic(topicId: string) {
-    const res = await db.query.topicSkills.findMany({
-      where: eq(topicSkills.topicId, topicId),
-      with: {
-        skill: true
-      }
-    });
-    return res.map(rs => rs.skill);
+  async getSkillsByTopic(topicId: string) {
+    return await this.repository.getSkillsByTopic(topicId);
   }
 
-  static async mapTopicToSkills(topicId: string, skillIds: string[], adminId: string) {
-    // Transactional sync
-      await container.get(AuditService).log({ userId: adminId, action: 'admin_map_topic_skills', metadata: { topicId, skillCount: skillIds.length } });
-    return await db.transaction(async (tx) => {
-        await tx.delete(topicSkills).where(eq(topicSkills.topicId, topicId));
-        if (skillIds.length > 0) {
-            await tx.insert(topicSkills).values(skillIds.map(sid => ({
-                topicId,
-                skillId: sid
-            })));
-        }
-    });
+  async mapTopicToSkills(topicId: string, skillIds: string[], adminId: string) {
+    await this.auditService.log({ userId: adminId, action: 'admin_map_topic_skills', metadata: { topicId, skillCount: skillIds.length } });
+    return await this.repository.mapTopicToSkills(topicId, skillIds);
   }
 }

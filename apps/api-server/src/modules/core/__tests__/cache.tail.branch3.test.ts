@@ -9,7 +9,7 @@ describe('CacheService tail branches extras', () => {
     (CacheService as any).instance = undefined;
     const service: any = CacheService.getInstance({ redis: mockRedis });
     // Force cache TTL negative
-    service.cache.set('k-ttl', 2, { ttl: 10 });
+    service.cache.set('k-ttl', 2, { ttl: 60000 });
     // Monkey-patch getRemainingTTL to return -1 to hit else path (lines ~215-218)
     service.cache.getRemainingTTL = vi.fn().mockReturnValue(-1);
     const res = await service.increment('k-ttl', 5000);

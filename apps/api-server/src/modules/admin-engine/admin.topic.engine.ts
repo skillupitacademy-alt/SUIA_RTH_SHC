@@ -1,70 +1,43 @@
-import { db, topics } from '@quiz/db';
-import { and, desc, eq, inArray, sql } from 'drizzle-orm';
+import { topics } from '@quiz/db';
 
 import { AuditService } from "@/modules/auth/audit.service";
 import { container } from "@/modules/core/container";
+import { DrizzleTopicRepository } from "@/repositories/implementations/drizzle-topic.repository";
+import { ITopicRepository } from "@/repositories/interfaces/topic.repository.interface";
 
 export class AdminTopicEngine {
-  static async getTopics(page: number = 1, limit: number = 20, filters?: { subjectId?: string; search?: string }) {
-    const offset = (page - 1) * limit;
-    const conditions = [];
-    if (filters?.subjectId !== undefined && filters?.subjectId !== null && filters?.subjectId !== '') {
-        conditions.push(eq(topics.subjectId, filters.subjectId));
-    }
-    if (filters?.search !== undefined && filters?.search !== null && filters?.search.trim() !== '') {
-        conditions.push(sql`${topics.name} ILIKE ${'%' + filters.search + '%'}`);
-    }
+  constructor(
+    private readonly repository: ITopicRepository = container.get(DrizzleTopicRepository),
+    private readonly auditService = container.get(AuditService)
+  ) {}
 
-    const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
-
-    const data = await db.query.topics.findMany({
-      where: whereClause,
-      limit,
-      offset,
-      orderBy: [desc(topics.createdAt)],
-      with: {
-        subject: {
-          with: {
-            domain: true,
-          }
-        }
-      }
-    });
-
-    const [{ count }] = await db
-      .select({ count: sql<number>`count(*)` })
-      .from(topics)
-      .where(whereClause ?? sql`true`);
-
-    const total = Number(count ?? 0);
-    const totalPages = Math.max(1, Math.ceil(total / limit));
-
-    return { data, total, page, limit, totalPages };
+  async getTopics(page: number = 1, limit: number = 20, filters?: { subjectId?: string; search?: string }) {
+    return await this.repository.findAll(page, limit, filters);
   }
 
-  static async createTopic(data: typeof topics.$inferInsert, adminId: string) {
-    const [newTopic] = await db.insert(topics).values(data).returning();
-    await container.get(AuditService).log({ userId: adminId, action: 'admin_create_topic', metadata: { topicId: newTopic.id } });
+  async createTopic(data: typeof topics.$inferInsert, adminId: string) {
+    const newTopic = await this.repository.create(data);
+    await this.auditService.log({ userId: adminId, action: 'admin_create_topic', metadata: { topicId: newTopic.id } });
     return newTopic;
   }
 
-  static async updateTopic(id: string, data: Partial<typeof topics.$inferInsert>, adminId: string) {
-    const [updated] = await db.update(topics).set(data).where(eq(topics.id, id)).returning();
-    await container.get(AuditService).log({ userId: adminId, action: 'admin_update_topic', metadata: { topicId: id } });
+  async updateTopic(id: string, data: Partial<typeof topics.$inferInsert>, adminId: string) {
+    const updated = await this.repository.update(id, data);
+    await this.auditService.log({ userId: adminId, action: 'admin_update_topic', metadata: { topicId: id } });
     return updated;
   }
 
-  static async deleteTopic(id: string, adminId: string) {
-      await container.get(AuditService).log({ userId: adminId, action: 'admin_delete_topic', metadata: { topicId: id } });
-    return await db.delete(topics).where(eq(topics.id, id)).returning();
+  async deleteTopic(id: string, adminId: string) {
+    await this.auditService.log({ userId: adminId, action: 'admin_delete_topic', metadata: { topicId: id } });
+    return await this.repository.delete(id);
   }
 
-  static async deleteTopicsBatch(ids: string[], adminId: string) {
-      await container.get(AuditService).log({ userId: adminId, action: 'admin_batch_delete_topics', metadata: { count: ids.length } });
-    return await db.delete(topics).where(inArray(topics.id, ids)).returning();
+  async deleteTopicsBatch(ids: string[], adminId: string) {
+    await this.auditService.log({ userId: adminId, action: 'admin_batch_delete_topics', metadata: { count: ids.length } });
+    return await this.repository.deleteBatch(ids);
   }
 
-  static async validateTopic(_topicId: string) {
+  async validateTopic(_topicId: string) {
     // Placeholder for topic validation logic
     return { valid: true, issues: [] };
   }

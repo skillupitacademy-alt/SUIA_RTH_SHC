@@ -3,10 +3,9 @@ import { queueService } from '../queue.service';
 import { ExamEngine } from '@/modules/exam-engine/exam.engine';
 import { db, exams, idempotencyKeys, examQuestions, backgroundJobs, notifications } from '@quiz/db';
 import { cacheService } from '@/modules/core/cache.service';
-import { SelectionService } from '@/modules/selection-engine/selection.service';
+import { ExamBuilder } from '@/modules/exam-engine/exam.builder';
 
 vi.mock('@/modules/core/cache.service');
-vi.mock('@/modules/selection-engine/selection.service');
 vi.mock('@quiz/db', () => ({
     db: {
         transaction: vi.fn(async (fn) => fn({ 
@@ -52,9 +51,9 @@ describe('Queue and Exam cleanup coverage', () => {
     });
 
     it('ExamEngine.startExam hits idempotency mapping (Line 39, 73)', async () => {
-        vi.mocked(SelectionService.composeExam).mockResolvedValue({
-            questions: [{ id: 'q1', questionText: 'Q1' }],
-            blueprint: { id: 'b1', timeLimit: 60 }
+        vi.spyOn(ExamBuilder.prototype, 'build').mockResolvedValue({
+            exam: { id: 'exam-id', status: 'started', durationSeconds: 3600 },
+            questions: [{ id: 'q1', questionText: 'Q1', options: [], codeSnippet: null, type: 'mcq' }]
         } as any);
 
         const result = await ExamEngine.startExam('u1', 'b1', 'idem-123');

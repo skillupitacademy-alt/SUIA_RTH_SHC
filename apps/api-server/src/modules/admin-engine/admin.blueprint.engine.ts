@@ -1,39 +1,31 @@
-import { db, examBlueprints } from '@quiz/db';
-import { desc,eq, sql } from 'drizzle-orm';
+import { examBlueprints } from "@quiz/db";
+
+import { container } from "@/modules/core/container";
+import { DrizzleBlueprintRepository } from "@/repositories/implementations/drizzle-blueprint.repository";
+import { IBlueprintRepository } from "@/repositories/interfaces/blueprint.repository.interface";
 
 export class AdminBlueprintEngine {
-  static async getBlueprints(page: number = 1, limit: number = 20, filters?: { search?: string }) {
-    const offset = (page - 1) * limit;
-    let whereClause = undefined;
-    if (filters?.search !== undefined && filters?.search !== null && filters?.search.trim() !== '') {
-        whereClause = sql`${examBlueprints.name} ILIKE ${'%' + filters.search + '%'}`;
-    }
+  constructor(
+    private readonly repository: IBlueprintRepository = container.get(DrizzleBlueprintRepository)
+  ) {}
 
-    return await db.query.examBlueprints.findMany({
-      where: whereClause,
-      limit,
-      offset,
-      orderBy: [desc(examBlueprints.createdAt)]
-    });
+  async getBlueprints(page: number = 1, limit: number = 20, filters?: { search?: string }) {
+    return await this.repository.findAll(page, limit, filters);
   }
 
-  static async createBlueprint(data: typeof examBlueprints.$inferInsert) {
-    const [newBp] = await db.insert(examBlueprints).values(data).returning();
-    return newBp;
+  async createBlueprint(data: typeof examBlueprints.$inferInsert) {
+    return await this.repository.create(data);
   }
 
-  static async updateBlueprint(id: string, data: Partial<typeof examBlueprints.$inferInsert>) {
-    const [updated] = await db.update(examBlueprints).set(data).where(eq(examBlueprints.id, id)).returning();
-    return updated;
+  async updateBlueprint(id: string, data: Partial<typeof examBlueprints.$inferInsert>) {
+    return await this.repository.update(id, data);
   }
 
-  static async deleteBlueprint(id: string) {
-    return await db.delete(examBlueprints).where(eq(examBlueprints.id, id)).returning();
+  async deleteBlueprint(id: string) {
+    return await this.repository.delete(id);
   }
 
-  static async getBlueprintById(id: string) {
-    return await db.query.examBlueprints.findFirst({
-        where: eq(examBlueprints.id, id)
-    });
+  async getBlueprintById(id: string) {
+    return await this.repository.findById(id);
   }
 }

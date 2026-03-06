@@ -8,6 +8,9 @@ export type Type<T> = new (...args: any[]) => T;
 class DIContainer {
   private instances = new Map<Type<unknown> | string, unknown>();
 
+  // Use lazy instantiation in .get() instead of constructor registration
+  // to avoid circular dependency issues at runtime.
+
   /**
    * Manually register an instance with a token or class.
    */
@@ -48,7 +51,6 @@ class DIContainer {
       }
     }
 
-    // If token is already a mock object (common in vitest), return it directly
     if (typeof token === 'object' && token !== null) {
       return token as T;
     }

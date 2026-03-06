@@ -3,7 +3,7 @@ import type { NextRequest } from 'next/server';
 import { badRequest, unauthorized } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
 import { withLogging } from '@/lib/withLogging';
-import { AdminDomainEngine } from "@/modules/admin-engine/admin.domain.engine";
+import { AdminDomainEngine } from "@/modules/admin-engine/admin.engine";
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
 

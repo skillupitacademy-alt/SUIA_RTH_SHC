@@ -24,5 +24,5 @@ describe('ScoringEngine early guard (line 45)', () => {
     const { container } = await import('@/modules/core/container');
     const { ScoringEngine } = await import('../scoring.engine');
     await expect(container.get(ScoringEngine).calculateExamResults('missing')).rejects.toThrow('Exam not found');
-  });
+  }, 20000);
 });

@@ -1,6 +1,7 @@
 import { METRICS } from '@quiz/observability';
 import type { NextRequest } from 'next/server';
 
+import { toUserSummaryDTO } from '@/dtos/auth.dto';
 import { unauthorized,validationError } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
 import { recordCounter, recordTimer } from '@/lib/metrics';
@@ -27,22 +28,10 @@ async function handler(req: NextRequest) {
 
     recordCounter(METRICS.AUTH.LOGIN, 1, { role: isAdmin ? 'admin' : 'user' });
 
-    const onboarded = Boolean(
-      (_user.profile?.professionalStatus !== undefined && _user.profile?.professionalStatus !== null && _user.profile?.professionalStatus !== '') && 
-      (_user.profile?.educationLevel !== undefined && _user.profile?.educationLevel !== null && _user.profile?.educationLevel !== '')
-    );
-
-    const user = { 
-      id: _user.id, 
-      email: _user.email,
-      name: _user.profile?.name ?? 'User',
-      onboarded,
-      role: isAdmin === true ? 'admin' : 'user',
-      isAdmin
-    };
+    const userDto = toUserSummaryDTO(_user, isAdmin);
 
     const response = ApiResponse.success({
-      user,
+      user: userDto,
       expiresAt: null,
     });
 

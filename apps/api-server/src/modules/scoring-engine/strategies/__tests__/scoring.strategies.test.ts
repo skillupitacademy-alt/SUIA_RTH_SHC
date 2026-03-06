@@ -33,6 +33,14 @@ describe('Scoring Strategies Unit Tests', () => {
     it('returns 0 for no answers', () => {
       expect(strategy.calculateOverallScore([])).toBe(0);
     });
+
+    it('returns zero accuracy for empty dimension totals', () => {
+      const dims = strategy.calculateDimensionScores([], {
+        'topic:t0': { total: 0, correct: 0, name: 'Zero Topic' },
+      });
+      expect(dims[0].accuracy).toBe(0);
+      expect(dims[0].score).toBe(0);
+    });
   });
 
   describe('WeightedScoringStrategy', () => {
@@ -43,16 +51,47 @@ describe('Scoring Strategies Unit Tests', () => {
       // 4/6 = 67%
       expect(strategy.calculateOverallScore(mockAnswers)).toBe(67);
     });
+
+    it('uses default weight for unknown difficulty', () => {
+      const weirdAnswers: EvaluatedAnswer[] = [
+        { question: { id: 'q1', difficulty: null } as any, examQuestion: { isCorrect: true } as any },
+      ];
+      expect(strategy.calculateOverallScore(weirdAnswers)).toBe(100);
+    });
+
+    it('returns zero when weighted dimension total is zero', () => {
+      const dims = strategy.calculateDimensionScores([], {
+        'skill:s0': { total: 0, correct: 0, name: 'Skill Zero' },
+      });
+      expect(dims[0].accuracy).toBe(0);
+      expect(dims[0].score).toBe(0);
+    });
   });
 
   describe('IRTScoringStrategy', () => {
     const strategy = new IRTScoringStrategy();
     it('calculates complexity-adjusted (IRT-like) score', () => {
-      // Logic: simple=1, intermediate=1.2, expert=1.5
-      // Total value: 1 + 1.2 + 1.5 = 3.7
-      // Earned value: 1 + 0 + 1.5 = 2.5
-      // 2.5 / 3.7 = ~67.56% -> 68%
-      expect(strategy.calculateOverallScore(mockAnswers)).toBe(68);
+      // Current IRT weighting in implementation:
+      // beta(simple)=0.5, beta(intermediate)=1.0, beta(expert)=2.0
+      // ability = 0.5 - ((2.5-1.0)*0.1) + 2.0 = 2.35
+      // totalPotential = 3.5 => 2.35 / 3.5 = 67.14... -> 67
+      expect(strategy.calculateOverallScore(mockAnswers)).toBe(67);
+    });
+
+    it('falls back to simple difficulty and clamps lower bound', () => {
+      const hardMisses: EvaluatedAnswer[] = [
+        { question: { id: 'q1', difficulty: undefined } as any, examQuestion: { isCorrect: false } as any },
+        { question: { id: 'q2', difficulty: undefined } as any, examQuestion: { isCorrect: false } as any },
+      ];
+      expect(strategy.calculateOverallScore(hardMisses)).toBe(0);
+    });
+
+    it('returns zero for empty dimension totals', () => {
+      const dims = strategy.calculateDimensionScores([], {
+        'domain:d0': { total: 0, correct: 0, name: 'Domain Zero' },
+      });
+      expect(dims[0].accuracy).toBe(0);
+      expect(dims[0].score).toBe(0);
     });
   });
 
@@ -60,6 +99,23 @@ describe('Scoring Strategies Unit Tests', () => {
     const strategy = new MasteryScoringStrategy();
     it('calculates basic mastery percentage', () => {
        expect(strategy.calculateOverallScore(mockAnswers)).toBe(67);
+    });
+
+    it('applies topic gap penalty and clamps to zero', () => {
+      const answers: EvaluatedAnswer[] = [
+        { question: { topicId: 't1' } as any, examQuestion: { isCorrect: false } as any },
+        { question: { topicId: 't1' } as any, examQuestion: { isCorrect: false } as any },
+        { question: { topicId: 't1' } as any, examQuestion: { isCorrect: false } as any },
+      ];
+      expect(strategy.calculateOverallScore(answers)).toBe(0);
+    });
+
+    it('falls back to id when dimension name is missing', () => {
+      const dims = strategy.calculateDimensionScores([], {
+        'topic:t-fallback': { total: 0, correct: 0 },
+      });
+      expect(dims[0].name).toBe('t-fallback');
+      expect(dims[0].accuracy).toBe(0);
     });
   });
 

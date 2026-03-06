@@ -57,6 +57,13 @@ vi.mock('@quiz/db', () => {
 });
 
 describe('ReportMaterializer subtopic fetch branch (line 75)', () => {
+  it('executes hasValue helper branches', () => {
+    const hasValue = (ReportMaterializer as any).hasValue as (value?: string | null) => boolean;
+    expect(hasValue('x')).toBe(true);
+    expect(hasValue('')).toBe(false);
+    expect(hasValue(null)).toBe(false);
+  });
+
   it('fetches subtopics when subtopicIds exist', async () => {
     const report = await ReportMaterializer.materialize('ex1');
     expect(report.hierarchy.subjects[0].topics[0].name).toBe('Topic 1');

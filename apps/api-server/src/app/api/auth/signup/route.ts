@@ -1,6 +1,7 @@
 import { METRICS } from '@quiz/observability';
 import type { NextRequest } from 'next/server';
 
+import { toUserSummaryDTO } from '@/dtos/auth.dto';
 import { badRequest } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
 import { recordCounter, recordTimer } from '@/lib/metrics';
@@ -32,16 +33,13 @@ async function handler(_req: NextRequest) {
     recordCounter(METRICS.AUTH.SIGNUP, 1, { outcome: 'success' });
     recordTimer(METRICS.AUTH.SIGNUP + '.duration', Date.now() - start, { outcome: 'success' });
 
+    // Ensure _user has profile shape for the DTO if needed
+    const userForDto = { ..._user, profile: { name } };
+    const userDto = toUserSummaryDTO(userForDto, false);
+
     const response = ApiResponse.success({
       message: 'User created',
-      user: {
-        id: _user.id, 
-        email: _user.email, 
-        name, 
-        onboarded: false,
-        role: 'user',
-        isAdmin: false
-      },
+      user: userDto,
       accessToken
     });
 

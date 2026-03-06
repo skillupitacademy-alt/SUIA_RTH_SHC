@@ -76,13 +76,12 @@ export class ReportMaterializer {
             : [];
         const subtopicMap = new Map(dbSubtopics.map(s => [s.id, s.name]));
 
-        // 3. Build Hierarchy Tree
-        const domainId = questions[0]?.domainId ?? "unknown-domain";
-        const domainName = questions[0]?.domainName ?? "Unknown Domain";
+        const { getSafeDomain, getSafeSubtopic } = await import('@/modules/core/patterns/null-objects');
+        const safeDomain = getSafeDomain(questions[0]?.domainId, questions[0]?.domainName);
 
         const hierarchy: DomainNode = {
-            id: domainId,
-            name: domainName,
+            id: safeDomain.id,
+            name: safeDomain.name,
             subjects: []
         };
 
@@ -107,8 +106,8 @@ export class ReportMaterializer {
             topics: {},
             subjects: {},
             domain: {
-                domainId,
-                name: domainName,
+                domainId: safeDomain.id,
+                name: safeDomain.name,
                 subjectAccuracies: [],
                 overallAccuracy: 0
             }
@@ -145,11 +144,11 @@ export class ReportMaterializer {
                 // Detailed Topic Dataset
                 const topicSubtopics = Array.from(new Set(topicQuestions.map(q => q.subtopicId))).map(sid => {
                     const sqs = topicQuestions.filter(q => q.subtopicId === sid);
-                    const safeId = this.hasValue(sid) ? sid : "unknown";
-                    const safeName = this.hasValue(sid) ? (subtopicMap.get(sid) ?? "Core Focus") : "Core Focus";
+                    const safeSubtopic = getSafeSubtopic(sid, subtopicMap);
+                    
                     return {
-                        id: safeId,
-                        name: safeName,
+                        id: safeSubtopic.id,
+                        name: safeSubtopic.name,
                         accuracy: Math.round((sqs.filter(q => q.isCorrect).length / sqs.length) * 100),
                         attempted: sqs.length
                     };
@@ -160,11 +159,7 @@ export class ReportMaterializer {
                 const stNames = Array.from(
                     new Set(
                         topicQuestions.map(q => {
-                            const sid = q.subtopicId;
-                            if (this.hasValue(sid)) {
-                                return subtopicMap.get(sid) ?? "Core Focus";
-                            }
-                            return "Core Focus";
+                            return getSafeSubtopic(q.subtopicId, subtopicMap).name;
                         })
                     )
                 );
@@ -172,9 +167,7 @@ export class ReportMaterializer {
                 for (const st of stNames) {
                     for (const d of diffs) {
                         const cellQs = topicQuestions.filter(q => {
-                            const sid = q.subtopicId;
-                            const label = this.hasValue(sid) ? (subtopicMap.get(sid) ?? "Core Focus") : "Core Focus";
-                            return label === st && q.difficulty === d;
+                            return getSafeSubtopic(q.subtopicId, subtopicMap).name === st && q.difficulty === d;
                         });
                         if (cellQs.length > 0) {
                             heatmap.push({
@@ -219,7 +212,7 @@ export class ReportMaterializer {
                     },
                     skills: [], 
                     lineage: {
-                      domain: domainName,
+                      domain: safeDomain.name,
                       subject: subject.name,
                       topic: topic.name
                     }

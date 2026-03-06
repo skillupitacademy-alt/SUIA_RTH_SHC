@@ -1,3 +1,3 @@
 export interface IAnswerEvaluator {
-  evaluate(correctAnswer: string, userAnswer: string): boolean;
+  evaluate(correctAnswer: string, userAnswer: string): number;
 }

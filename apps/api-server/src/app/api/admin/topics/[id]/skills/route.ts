@@ -3,7 +3,7 @@ import type { NextRequest } from 'next/server';
 import { forbidden, unauthorized } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
 import { withLogging } from '@/lib/withLogging';
-import { AdminSkillEngine } from "@/modules/admin-engine/admin.skill.engine";
+import { AdminSkillEngine } from "@/modules/admin-engine/admin.engine";
 import { _verifyAdmin } from '@/modules/auth/rbac.service';
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';

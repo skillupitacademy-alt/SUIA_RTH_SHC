@@ -7,7 +7,7 @@ import { logger } from '@/lib/logger';
 import { recordCounter, recordTimer } from '@/lib/metrics';
 import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 import { withLogging } from '@/lib/withLogging';
-import { AdminUserEngine } from "@/modules/admin-engine/admin.user.engine";
+import { AdminUserEngine } from "@/modules/admin-engine/admin.engine";
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
 import { updateUserSchema } from '@/schemas/admin.schemas';

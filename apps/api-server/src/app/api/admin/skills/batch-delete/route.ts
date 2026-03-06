@@ -4,7 +4,7 @@ import { badRequest, unauthorized } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
 import { validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 import { withLogging } from '@/lib/withLogging';
-import { AdminSkillEngine } from "@/modules/admin-engine/admin.skill.engine";
+import { AdminSkillEngine } from "@/modules/admin-engine/admin.engine";
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
 

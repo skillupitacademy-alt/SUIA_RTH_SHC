@@ -6,7 +6,7 @@ import { logger } from '@/lib/logger';
 import { recordCounter, recordTimer } from '@/lib/metrics';
 import { validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 import { withLogging } from '@/lib/withLogging';
-import { AdminTopicEngine } from "@/modules/admin-engine/admin.topic.engine";
+import { AdminTopicEngine } from "@/modules/admin-engine/admin.engine";
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
 

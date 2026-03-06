@@ -3,7 +3,7 @@ import type { NextRequest } from 'next/server';
 import { internalError, unauthorized } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
 import { withLogging } from '@/lib/withLogging';
-import { AdminBlueprintEngine } from "@/modules/admin-engine/admin.blueprint.engine";
+import { AdminBlueprintEngine } from "@/modules/admin-engine/admin.engine";
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
 

@@ -7,7 +7,7 @@ import { ApiResponse } from '@/lib/api-response';
 import { recordCounter, recordTimer } from '@/lib/metrics';
 import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 import { withLogging } from '@/lib/withLogging';
-import { AdminDomainEngine } from "@/modules/admin-engine/admin.domain.engine";
+import { AdminDomainEngine } from "@/modules/admin-engine/admin.engine";
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
 import { domainSchema } from '@/schemas/hierarchy.schemas';

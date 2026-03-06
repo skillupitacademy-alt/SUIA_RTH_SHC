@@ -8,28 +8,33 @@ export class IRTScoringStrategy implements IScoringStrategy {
   calculateOverallScore(answers: EvaluatedAnswer[]): number {
     if (answers.length === 0) return 0;
 
-    let earnedValue = 0;
-    let totalValue = 0;
+    let abilityEstimator = 0;
+    let totalPotential = 0;
 
     for (const ans of answers) {
       const difficulty = ans.question.difficulty || 'simple';
       
-      // Simplified IRT logic:
-      // Correct on hard = +++ (high gain)
-      // Wrong on easy = --- (high penalty)
-      // Values: expert=3, intermediate=2, simple=1
-      const complexity = difficulty === 'expert' ? 1.5 : (difficulty === 'intermediate' ? 1.2 : 1.0);
+      /**
+       * Refined IRT (1PL Weighting):
+       * We assign 'difficulty weights' (betas): 
+       * Simple: 0.5, Intermediate: 1.0, Expert: 2.0
+       */
+      const beta = difficulty === 'expert' ? 2.0 : (difficulty === 'intermediate' ? 1.0 : 0.5);
       
       if (ans.examQuestion.isCorrect === true) {
-        earnedValue += 1 * complexity;
+        // Correct answer on hard question gives much higher ability signal
+        abilityEstimator += beta;
       } else {
-        // Penalty for missing easy questions is higher in some IRT models, 
-        // but here we just use complexity-adjusted gain.
+        // Missing a simple question is a significant negative signal
+        // We subtract a small portion of the weight as a penalty
+        abilityEstimator -= (2.5 - beta) * 0.1;
       }
-      totalValue += 1 * complexity;
+      totalPotential += beta;
     }
 
-    return totalValue > 0 ? Math.round((earnedValue / totalValue) * 100) : 0;
+    // Normalize to 0-100 scale but clamp to logical bounds
+    const rawScore = totalPotential > 0 ? (abilityEstimator / totalPotential) * 100 : 0;
+    return Math.min(100, Math.max(0, Math.round(rawScore)));
   }
 
   calculateDimensionScores(answers: EvaluatedAnswer[], dimensions: Record<string, { total: number; correct: number; name?: string }>): DimensionScore[] {

@@ -1,259 +1,28 @@
 'use client';
 
-import { apiClient } from '@quiz/api-client';
-import {
-    Clock,
-    ChevronLeft,
-    ChevronRight,
-    CheckCircle2,
-    Flag,
-    Code
-} from 'lucide-react';
-import { useSearchParams, useRouter } from 'next/navigation';
-import { useEffect, useMemo, useState } from 'react';
+import { useExamInterfaceLogic } from '@/hooks/useExamInterfaceLogic';
 
-import { useExamBackup, getFilteredBackup } from '@/hooks/useExamBackup';
-import { useSessionManager } from '@/hooks/useSessionManager';
-import { cn } from '@/lib/utils';
-import { useQuizStore } from '@/store/quiz-store';
-import { clientLogger } from '@/utils/clientLogger';
-import { recordClientMetric, METRICS } from '@quiz/observability';
-
-type RemoteQuestion = {
-    questionId: string;
-    type?: string;
-    text: string;
-    codeSnippet?: string | null;
-    options: string[];
-    difficulty?: string;
-    userAnswer: string | null;
-};
+import { EnterpriseHeader } from './EnterpriseHeader';
+import { EnterpriseQuestionView } from './EnterpriseQuestionView';
+import { EnterpriseControls } from './EnterpriseControls';
 
 export function ExamInterface() {
-    useSessionManager();
-    const router = useRouter();
-    const searchParams = useSearchParams();
-    const examIdParam = searchParams.get('examId');
-
     const {
         questions,
         answers,
         markedForReview,
         timeLeft,
         currentQuestionIndex,
-        setAnswer,
-        toggleReview,
-        setCurrentIndex,
-        finishQuiz,
-        examId,
-        setExamId,
-        isSubmitted,
-        updateTimeLeft,
-    } = useQuizStore();
-
-    // Mapping numeric indexes to option strings for consistent backup
-    const normalizedAnswers = useMemo(() => {
-        const result: Record<string, string> = {};
-        Object.entries(answers).forEach(([qId, optIdx]) => {
-            const q = questions.find(question => question.id === qId);
-            if (q && q.options[optIdx]) {
-                result[qId] = q.options[optIdx];
-            }
-        });
-        return result;
-    }, [answers, questions]);
-
-    const { clearBackup } = useExamBackup(examId || undefined, normalizedAnswers);
-
-    const [isLoading, setIsLoading] = useState(true);
-    // isSaving removed as it was unused
-    const [error, setError] = useState<string | null>(null);
-
-    // Helper for auto-retry logic (Phase 3 Requirement)
-    const withRetry = async <T,>(fn: () => Promise<T>, retries = 3, delay = 1000): Promise<T> => {
-        try {
-            return await fn();
-        } catch (err) {
-            if (retries <= 0) throw err;
-            await new Promise(resolve => setTimeout(resolve, delay));
-            return withRetry(fn, retries - 1, delay * 2);
-        }
-    };
-
-    const question = questions[currentQuestionIndex];
-
-    const handleAnswer = async (optionIndex: number) => {
-        const currentQuestion = questions[currentQuestionIndex];
-        const questionId = currentQuestion.id;
-        const option = currentQuestion.options[optionIndex];
-
-        // Optimistic UI update
-        setAnswer(questionId, optionIndex);
-
-        // Real persistence
-        if (examId) {
-            try {
-                // Idempotency Key for specific answer choice
-                // Format: examId:questionId:optionIndex
-                const idempotencyKey = `${examId}:${questionId}:${optionIndex}`;
-
-                await withRetry(() =>
-                    apiClient.quiz.submitAnswer(examId, questionId, option, {
-                        idempotencyKey
-                    })
-                );
-            } catch (err) {
-                clientLogger.error('Failed to save answer after retries', { error: err instanceof Error ? err.message : 'unknown' });
-                // We keep optimistic UI, but maybe show a subtle indicator
-            }
-        }
-    };
-
-    useEffect(() => {
-        const initExam = async () => {
-            if (!examIdParam) {
-                router.push('/quiz/new');
-                return;
-            }
-
-            try {
-                setIsLoading(true);
-                const state = await apiClient.quiz.getQuizState(examIdParam);
-
-                // Status Gating (Phase 2 Revision)
-                if (state.status === 'completed' || state.status === 'processing' || state.status === 'failed') {
-                    router.replace(`/reports/active-report?examId=${examIdParam}`);
-                    return;
-                }
-
-                // Map Questions to store interface
-                const mappedQuestions = state.questions.map((q: RemoteQuestion) => ({
-                    id: q.questionId, // Actual question UUID
-                    type: (q.type === 'code_mcq' ? 'CODE_MCQ' : 'MCQ') as 'MCQ' | 'CODE_MCQ',
-                    text: q.text,
-                    code: q.codeSnippet || "",
-                    options: q.options,
-                    difficulty: q.difficulty || 'Intermediate'
-                }));
-
-                // Reset and Hydrate Store (Phase 2 Revision)
-                // Using startQuiz to clear old state and set initial duration
-                const defaultConfig = {
-                    domain: state.id || 'unknown',
-                    subjects: [],
-                    difficulty: 'mixed',
-                };
-                useQuizStore.getState().startQuiz(mappedQuestions, defaultConfig, state.remainingTimeSeconds || 0);
-                setExamId(state.id);
-
-                // Hydrate answers from backend
-                state.questions.forEach((q: RemoteQuestion) => {
-                    if (q.userAnswer !== null) {
-                        const idx = q.options.indexOf(q.userAnswer);
-                        if (idx !== -1) {
-                            useQuizStore.getState().setAnswer(q.questionId, idx);
-                        }
-                    }
-                });
-
-                // Calculate connection-safe starting index (first unanswered or 0)
-                const firstUnanswered = state.questions.findIndex((q: RemoteQuestion) => q.userAnswer === null);
-                setCurrentIndex(firstUnanswered !== -1 ? firstUnanswered : 0);
-
-                // Reconcile with Local Backup for UI Prefill (Phase 4 Security)
-                const localBackup = getFilteredBackup(state.id, state.questions.map((q: RemoteQuestion) => q.questionId));
-                Object.entries(localBackup).forEach(([qId, localAnswer]) => {
-                    const storeState = useQuizStore.getState();
-                    const questionInStore = storeState.questions.find(q => q.id === qId);
-
-                    // Only prefill if server-side answer is missing
-                    const serverQuestion = state.questions.find((q: RemoteQuestion) => q.questionId === qId);
-                    if (serverQuestion && serverQuestion.userAnswer === null && questionInStore) {
-                        const optionIdx = questionInStore.options.indexOf(localAnswer);
-                        if (optionIdx !== -1) {
-                            storeState.setAnswer(qId, optionIdx);
-                        }
-                    }
-                });
-
-                if (mappedQuestions.length === 0) {
-                    recordClientMetric('ui.exam.empty_questions', 1, { examId: examIdParam });
-                    setError("No questions found for this session.");
-                }
-
-            } catch (err) {
-                clientLogger.error('Failed to load exam session', { error: err instanceof Error ? err.message : 'unknown' });
-                recordClientMetric('ui.exam.load_failure', 1, { examId: examIdParam });
-                router.push('/quiz/new');
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        initExam();
-    }, [examIdParam, router, setExamId, setCurrentIndex, questions.length, examId]);
-
-    // Timer logic
-    useEffect(() => {
-        if (isLoading || isSubmitted) return;
-        const timer = setInterval(() => {
-            updateTimeLeft();
-        }, 1000);
-        return () => clearInterval(timer);
-    }, [isLoading, isSubmitted, updateTimeLeft]);
-
-    // Exit Guard logic (Logic-only, no UI changes)
-    useEffect(() => {
-        const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-            if (!isSubmitted && !isLoading && examId) {
-                e.preventDefault();
-                e.returnValue = '';
-            }
-        };
-        window.addEventListener('beforeunload', handleBeforeUnload);
-        return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-    }, [isSubmitted, isLoading, examId]);
+        isLoading,
+        isSubmitting,
+        error,
+        actions
+    } = useExamInterfaceLogic();
 
     const formatTime = (seconds: number) => {
         const min = Math.floor(seconds / 60);
         const sec = seconds % 60;
         return `${min}:${sec.toString().padStart(2, '0')}`;
-    };
-
-    const [isSubmitting, setIsSubmitting] = useState(false);
-
-    const handleFinish = async () => {
-        if (!examId || isSubmitting) return;
-
-        // Simple validation before submission
-        if (Object.keys(answers).length < questions.length) {
-            const confirmed = window.confirm(`You have only answered ${Object.keys(answers).length} of ${questions.length} questions. Finish anyway?`);
-            if (!confirmed) return;
-        }
-
-        try {
-            setIsSubmitting(true);
-            setError(null);
-
-            // Final Submission Idempotency (Phase 3)
-            const submissionKey = crypto.randomUUID();
-
-            await withRetry(() =>
-                apiClient.quiz.submitExam(examId, {
-                    idempotencyKey: submissionKey
-                })
-            );
-
-            await recordClientMetric(METRICS.EXAM.SUBMIT, 1, { examId });
-            clearBackup(examId);
-            finishQuiz();
-            router.push(`/reports/active-report?examId=${examId}`);
-        } catch (err) {
-            clientLogger.error('Failed to submit exam', { error: err instanceof Error ? err.message : 'unknown' });
-            setError("Submission failed after multiple attempts. Check your connection.");
-        } finally {
-            setIsSubmitting(false);
-        }
     };
 
     if (isLoading) {
@@ -264,185 +33,45 @@ export function ExamInterface() {
         );
     }
 
+    const question = questions[currentQuestionIndex];
     if (!question) return null;
 
     return (
         <div className="flex flex-col h-[calc(100vh-64px)] w-full overflow-hidden bg-muted/5">
-            {/* Exam Header */}
-            <header className="shrink-0 z-40 bg-background border-b px-6 py-4 flex items-center justify-between shadow-sm">
-                {error && (
-                    <div className="absolute top-20 left-1/2 -translate-x-1/2 z-50 bg-red-600 text-white px-6 py-3 rounded-full font-bold shadow-2xl animate-in slide-in-from-top-4 flex items-center gap-3">
-                        <span className="h-2 w-2 rounded-full bg-white animate-pulse" />
-                        {error}
-                        <button onClick={() => setError(null)} className="ml-2 hover:bg-white/20 rounded-full p-1" aria-label="Dismiss error message">
-                            <ChevronRight size={14} className="rotate-90" />
-                        </button>
-                    </div>
-                )}
-                <div className="flex items-center gap-6">
-                    <div>
-                        <h2 className="text-xl font-black tracking-tight uppercase text-primary">Enterprise Exam</h2>
-                        <p className="text-xs font-bold text-muted-foreground">Domain: Technical Assessment</p>
-                    </div>
-                    <div className="hidden md:flex gap-1.5">
-                        {questions.map((q, i) => (
-                            <button
-                                key={q.id}
-                                onClick={() => setCurrentIndex(i)}
-                                className={cn(
-                                    "h-8 w-8 rounded-lg text-xs font-bold transition-all border-2",
-                                    currentQuestionIndex === i ? "border-primary bg-primary/5 text-primary" :
-                                        answers[q.id] !== undefined ? "border-green-500 bg-green-500/10 text-green-600" :
-                                            markedForReview.includes(q.id) ? "border-orange-500 bg-orange-500/10 text-orange-600" :
-                                                "border-muted bg-background text-muted-foreground"
-                                )}
-                                aria-label={`Go to question ${i + 1}${answers[q.id] !== undefined ? ' (answered)' : markedForReview.includes(q.id) ? ' (marked for review)' : ''}`}
-                                aria-current={currentQuestionIndex === i ? "true" : undefined}
-                            >
-                                {i + 1}
-                            </button>
-                        ))}
-                    </div>
-                </div>
+            <EnterpriseHeader
+                error={error}
+                setError={actions.setError}
+                questions={questions}
+                currentQuestionIndex={currentQuestionIndex}
+                answers={answers}
+                markedForReview={markedForReview}
+                timeLeft={timeLeft}
+                formatTime={formatTime}
+                onSetCurrentIndex={actions.setCurrentIndex}
+                onFinish={actions.handleFinish}
+                isSubmitting={isSubmitting}
+            />
 
-                <div className="flex items-center gap-6">
-                    <div className={cn(
-                        "flex items-center gap-2 px-4 py-2 rounded-2xl border-2 transition-colors",
-                        timeLeft < 300 ? "border-red-500 text-red-500 bg-red-50" : "border-primary/20 bg-primary/5 text-primary"
-                    )}>
-                        <Clock size={16} className={timeLeft < 300 ? "animate-pulse" : ""} />
-                        <span className="font-mono font-bold text-lg">{formatTime(timeLeft)}</span>
-                    </div>
-                    <button
-                        onClick={handleFinish}
-                        disabled={isSubmitting}
-                        className="hidden sm:flex items-center gap-2 px-6 py-2 rounded-2xl bg-primary text-primary-foreground font-black shadow-lg shadow-primary/20 hover:scale-105 transition-transform active:scale-95 disabled:opacity-50"
-                        aria-label="Submit exam"
-                    >
-                        {isSubmitting ? "Submitting..." : "Submit Exam"}
-                    </button>
-                </div>
-            </header>
-
-            {/* Question Content */}
             <main className="flex-1 overflow-hidden w-full max-w-5xl mx-auto p-4 md:p-6 lg:p-8 flex flex-col">
                 <div className="bg-background border rounded-[2rem] shadow-sm flex flex-col flex-1 min-h-0 overflow-hidden">
-                    {/* Card Header (Fixed) */}
-                    <div className="shrink-0 flex items-center justify-between p-6 md:p-8 border-b">
-                        <div className="flex items-center gap-3">
-                            <span className="text-sm font-bold bg-muted px-4 py-1.5 rounded-full text-muted-foreground">
-                                Question {currentQuestionIndex + 1} of {questions.length}
-                            </span>
-                            <span className={cn(
-                                "text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full",
-                                question.difficulty === 'Simple' ? "bg-green-100 text-green-700" : "bg-orange-100 text-orange-700"
-                            )}>
-                                {question.difficulty}
-                            </span>
-                        </div>
-                        {question.type === 'CODE_MCQ' && (
-                            <div className="flex items-center gap-2 text-primary font-bold text-sm">
-                                <Code size={18} /> Code Analysis
-                            </div>
-                        )}
-                    </div>
+                    <EnterpriseQuestionView
+                        question={question}
+                        currentQuestionIndex={currentQuestionIndex}
+                        totalQuestions={questions.length}
+                        answerIndex={answers[question.id]}
+                        onAnswer={actions.setAnswer}
+                    />
 
-                    {/* Scrollable Content Area */}
-                    <div className="flex-1 min-h-0 overflow-y-auto p-6 md:p-8 space-y-8 scrollbar-thin scrollbar-thumb-primary/20 scrollbar-track-transparent hover:scrollbar-thumb-primary/40">
-                        <h1 className="text-2xl md:text-3xl font-extrabold leading-tight text-foreground/90">
-                            {question.text}
-                        </h1>
-
-                        {question.type === 'CODE_MCQ' && question.code && question.code.trim().length > 0 && (
-                            <div className="relative group">
-                                <pre className="p-6 rounded-3xl bg-[#0d1117] text-[#e6edf3] font-mono text-sm overflow-x-auto border-2 border-primary/10 shadow-inner">
-                                    <code>{question.code}</code>
-                                </pre>
-                                <div className="absolute top-4 right-4 text-[10px] font-bold text-muted-foreground tracking-widest uppercase">
-                                    TypeScript Snippet
-                                </div>
-                            </div>
-                        )}
-
-                        <div className="grid grid-cols-1 gap-4 pt-4">
-                            {question.options.map((option, i) => (
-                                <button
-                                    key={i}
-                                    onClick={() => handleAnswer(i)}
-                                    className={cn(
-                                        "flex items-center justify-between w-full p-6 rounded-2xl border-2 transition-all text-left group",
-                                        answers[question.id] === i
-                                            ? "border-primary bg-primary/5 ring-4 ring-primary/10"
-                                            : "border-muted bg-muted/5 hover:border-primary/20 hover:bg-white"
-                                    )}
-                                    aria-label={`Select option ${String.fromCharCode(65 + i)}: ${option}`}
-                                    aria-pressed={answers[question.id] === i}
-                                >
-                                    <div className="flex items-center gap-6">
-                                        <div className={cn(
-                                            "h-10 w-10 rounded-xl border-2 flex items-center justify-center font-bold transition-all",
-                                            answers[question.id] === i ? "bg-primary border-primary text-white" : "border-muted-foreground/20 group-hover:border-primary/50"
-                                        )}>
-                                            {String.fromCharCode(65 + i)}
-                                        </div>
-                                        <span className="font-semibold text-lg">{option}</span>
-                                    </div>
-                                    {answers[question.id] === i && (
-                                        <CheckCircle2 className="text-primary shrink-0" size={24} />
-                                    )}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* Controls Footer (Fixed) */}
-                    <div className="shrink-0 p-6 md:p-8 border-t flex items-center justify-between gap-4 bg-background">
-                        <div className="flex items-center gap-3">
-                            <button
-                                disabled={currentQuestionIndex === 0}
-                                onClick={() => setCurrentIndex(currentQuestionIndex - 1)}
-                                className="p-4 rounded-2xl border-2 font-bold hover:bg-muted transition-all disabled:opacity-30"
-                                aria-label="Previous question"
-                            >
-                                <ChevronLeft size={24} />
-                            </button>
-                            <button
-                                onClick={() => toggleReview(question.id)}
-                                className={cn(
-                                    "flex items-center gap-2 px-6 py-4 rounded-2xl border-2 font-bold transition-all",
-                                    markedForReview.includes(question.id) ? "bg-orange-500 border-orange-500 text-white" : "hover:bg-muted"
-                                )}
-                                aria-label={markedForReview.includes(question.id) ? "Unmark question for review" : "Mark question for review"}
-                                aria-pressed={markedForReview.includes(question.id)}
-                            >
-                                <Flag size={20} className={markedForReview.includes(question.id) ? "fill-current" : ""} />
-                                <span className="hidden sm:inline">Review later</span>
-                            </button>
-                        </div>
-
-                        <div className="flex items-center gap-3">
-                            {currentQuestionIndex < questions.length - 1 ? (
-                                <button
-                                    onClick={() => setCurrentIndex(currentQuestionIndex + 1)}
-                                    className="flex items-center gap-2 px-8 py-4 rounded-2xl bg-secondary text-primary-foreground font-black shadow-lg hover:bg-secondary/90 transition-all active:scale-95 group"
-                                    aria-label="Next question"
-                                >
-                                    Next Question
-                                    <ChevronRight size={20} className="group-hover:translate-x-1 transition-transform" />
-                                </button>
-                            ) : (
-                                <button
-                                    onClick={handleFinish}
-                                    disabled={isSubmitting}
-                                    className="flex items-center gap-2 px-8 py-4 rounded-2xl bg-green-600 text-white font-black shadow-lg hover:bg-green-700 transition-all active:scale-95 disabled:opacity-50"
-                                    aria-label="Finish attempt"
-                                >
-                                    {isSubmitting ? "Submitting..." : "Finish Attempt"}
-                                    <CheckCircle2 size={20} />
-                                </button>
-                            )}
-                        </div>
-                    </div>
+                    <EnterpriseControls
+                        currentQuestionIndex={currentQuestionIndex}
+                        totalQuestions={questions.length}
+                        questionId={question.id}
+                        isMarkedForReview={markedForReview.includes(question.id)}
+                        onSetCurrentIndex={actions.setCurrentIndex}
+                        onToggleReview={actions.toggleReview}
+                        onFinish={actions.handleFinish}
+                        isSubmitting={isSubmitting}
+                    />
                 </div>
 
                 {/* Legend */}

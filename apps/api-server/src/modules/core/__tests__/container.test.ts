@@ -9,6 +9,18 @@ class DependencyService {
   constructor(public service = container.get(MockService)) {}
 }
 
+class ThrowingCtor {
+  constructor() {
+    throw new Error('ctor-fail');
+  }
+}
+
+class ThrowingCtorAndFactory {
+  constructor() {
+    throw new Error('ctor-fail-2');
+  }
+}
+
 describe('DIContainer', () => {
   beforeEach(() => {
     container.reset();
@@ -58,5 +70,24 @@ describe('DIContainer', () => {
     const second = container.get(MockService);
     
     expect(first).not.toBe(second);
+  });
+
+  it('supports factory-function fallback when constructor throws', () => {
+    const token = (() => ({ ok: true })) as unknown as typeof ThrowingCtor;
+    const value = container.get(token as any);
+    expect(value).toEqual({ ok: true });
+  });
+
+  it('returns object token directly', () => {
+    const token = { literal: true };
+    expect(container.get(token as any)).toBe(token);
+  });
+
+  it('throws descriptive error when constructor and factory fallback both fail', () => {
+    const badToken = (() => {
+      throw new Error('factory-fail');
+    }) as unknown as typeof ThrowingCtorAndFactory;
+
+    expect(() => container.get(badToken as any)).toThrow('Failed to instantiate');
   });
 });

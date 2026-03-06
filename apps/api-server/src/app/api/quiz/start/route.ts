@@ -56,11 +56,14 @@ async function postHandler(req: NextRequest) {
       config
     );
 
+    const { toExamStartDTO } = await import('@/dtos/exam.dto');
+    const responseDto = toExamStartDTO(examData);
+
     const durationMs = Date.now() - startTime;
     recordCounter(METRICS.EXAM.START, 1, { outcome: 'success' });
     recordTimer(METRICS.EXAM.START + '.duration', durationMs, { outcome: 'success' });
 
-    return ApiResponse.success(examData, 200, {
+    return ApiResponse.success(responseDto, 200, {
       'X-Duration-Ms': durationMs.toString()
     });
   } catch (error: unknown) {

@@ -28,6 +28,21 @@ vi.mock('@quiz/db', () => ({
 }));
 
 describe('Consolidated Administration Coverage', () => {
+  const auditStub = { log: vi.fn() };
+  const domainRepoStub = { findAll: vi.fn(), create: vi.fn(), update: vi.fn(), delete: vi.fn(), deleteBatch: vi.fn(), updateStatus: vi.fn() };
+  const skillRepoStub = { findAll: vi.fn(), create: vi.fn(), update: vi.fn(), delete: vi.fn(), deleteBatch: vi.fn(), getTopicSkills: vi.fn(), getSkillsByTopic: vi.fn(), mapTopicToSkills: vi.fn() };
+  const subjectRepoStub = { findAll: vi.fn(), create: vi.fn(), update: vi.fn(), delete: vi.fn(), deleteBatch: vi.fn() };
+  const topicRepoStub = { findAll: vi.fn(), create: vi.fn(), update: vi.fn(), delete: vi.fn(), deleteBatch: vi.fn() };
+  const subtopicRepoStub = { findAll: vi.fn(), create: vi.fn(), update: vi.fn(), delete: vi.fn(), deleteBatch: vi.fn() };
+  const adminUserRepoStub = { findAll: vi.fn(), update: vi.fn(), delete: vi.fn(), toggleBlockStatus: vi.fn() };
+  const analyticsEngine = new AdminAnalyticsEngine();
+  const domainEngine = new AdminDomainEngine(domainRepoStub as any, auditStub as any);
+  const skillEngine = new AdminSkillEngine(skillRepoStub as any, auditStub as any);
+  const subjectEngine = new AdminSubjectEngine(subjectRepoStub as any, auditStub as any);
+  const subtopicEngine = new AdminSubtopicEngine(subtopicRepoStub as any, auditStub as any);
+  const topicEngine = new AdminTopicEngine(topicRepoStub as any, auditStub as any);
+  const userEngine = new AdminUserEngine(adminUserRepoStub as any, auditStub as any);
+
   beforeEach(() => {
     vi.clearAllMocks();
     // Set default returns for findMany to avoid '.map of undefined' errors
@@ -37,6 +52,12 @@ describe('Consolidated Administration Coverage', () => {
     vi.mocked(mockDb.query.topics.findMany).mockResolvedValue([]);
     vi.mocked(mockDb.query.subtopics.findMany).mockResolvedValue([]);
     vi.mocked(mockDb.query.skills.findMany).mockResolvedValue([]);
+    subjectRepoStub.findAll.mockResolvedValue({ data: [], total: 0, page: 1, limit: 10, totalPages: 0 });
+    topicRepoStub.findAll.mockResolvedValue({ data: [], total: 0, page: 1, limit: 10, totalPages: 0 });
+    subtopicRepoStub.findAll.mockResolvedValue({ data: [], total: 0, page: 1, limit: 10, totalPages: 0 });
+    domainRepoStub.findAll.mockResolvedValue({ data: [], total: 0, page: 1, limit: 10, totalPages: 0 });
+    skillRepoStub.findAll.mockResolvedValue({ data: [], total: 0, page: 1, limit: 10, totalPages: 0 });
+    adminUserRepoStub.findAll.mockResolvedValue({ users: [], total: 0, page: 1, limit: 10, totalPages: 0 });
     vi.mocked(mockDb.select).mockReturnValue({
         from: vi.fn().mockReturnValue({
             where: vi.fn().mockResolvedValue([{ count: 0 }]),
@@ -60,7 +81,7 @@ describe('Consolidated Administration Coverage', () => {
                 })
             })
         } as any);
-        const analytics = await AdminAnalyticsEngine.getEfficiencyAnalytics();
+        const analytics = await analyticsEngine.getEfficiencyAnalytics();
         expect(analytics.mastery).toBe(5);
         expect(analytics.rash).toBe(2);
     });
@@ -69,7 +90,7 @@ describe('Consolidated Administration Coverage', () => {
         vi.mocked(mockDb.execute).mockResolvedValue({ 
             rows: [{ dimensionId: 'd1', name: 'Domain 1', avgAccuracy: 85, count: 10 }] 
         } as any);
-        const report = await AdminAnalyticsEngine.getPerformanceAnalytics('7d');
+        const report = await analyticsEngine.getPerformanceAnalytics('7d');
         expect(report).toBeDefined();
     });
 
@@ -81,7 +102,7 @@ describe('Consolidated Administration Coverage', () => {
                 ]}
             ]}
         ] as any);
-        const report = await AdminAnalyticsEngine.getContentHealthReport();
+        const report = await analyticsEngine.getContentHealthReport();
         expect(report).toBeDefined();
         expect(report[0].domainName).toBe('D1');
     });
@@ -89,25 +110,28 @@ describe('Consolidated Administration Coverage', () => {
 
   describe('AdminHierarchy Engines (Split)', () => {
     it('exercises subject, topic, and subtopic list branches', async () => {
-        await AdminSubjectEngine.getSubjects(1, 10, { search: 'test' });
-        await AdminTopicEngine.getTopics(1, 10, { search: 'test' });
-        await AdminSubtopicEngine.getSubtopics(1, 10, { search: 'test' });
-        expect(mockDb.query.subjects.findMany).toHaveBeenCalled();
+        await subjectEngine.getSubjects(1, 10, { search: 'test' });
+        await topicEngine.getTopics(1, 10, { search: 'test' });
+        await subtopicEngine.getSubtopics(1, 10, { search: 'test' });
+        expect(subjectRepoStub.findAll).toHaveBeenCalledWith(1, 10, { search: 'test' });
+        expect(topicRepoStub.findAll).toHaveBeenCalledWith(1, 10, { search: 'test' });
+        expect(subtopicRepoStub.findAll).toHaveBeenCalledWith(1, 10, { search: 'test' });
     });
 
     it('covers domain and skill management branches', async () => {
-        await AdminDomainEngine.getDomains(1, 10, { search: 'test' });
-        await AdminSkillEngine.getSkills(1, 10, { search: 'test' });
-        expect(mockDb.query.domains.findMany).toHaveBeenCalled();
+        await domainEngine.getDomains(1, 10, { search: 'test' });
+        await skillEngine.getSkills(1, 10, { search: 'test' });
+        expect(domainRepoStub.findAll).toHaveBeenCalledWith(1, 10, { search: 'test' });
+        expect(skillRepoStub.findAll).toHaveBeenCalledWith(1, 10, { search: 'test' });
     });
   });
 
   describe('AdminUserEngine', () => {
     it('filters by verification and block status', async () => {
-        await AdminUserEngine.getUsers(1, 10, 'active', { isBlocked: true });
-        await AdminUserEngine.getUsers(1, 10, 'active', { isVerified: true });
-        await AdminUserEngine.getUsers(1, 10, 'deleted');
-        expect(mockDb.query.users.findMany).toHaveBeenCalledTimes(3);
+        await userEngine.getUsers(1, 10, 'active', { isBlocked: true });
+        await userEngine.getUsers(1, 10, 'active', { isVerified: true });
+        await userEngine.getUsers(1, 10, 'deleted');
+        expect(adminUserRepoStub.findAll).toHaveBeenCalledTimes(3);
     });
 
     it('exercises search and role filtering branches', async () => {
@@ -121,9 +145,9 @@ describe('Consolidated Administration Coverage', () => {
             })
         } as any);
 
-        await AdminUserEngine.getUsers(1, 10, 'active', { search: 'John' });
-        await AdminUserEngine.getUsers(1, 10, 'active', { role: 'ADMIN' });
-        expect(mockDb.query.users.findMany).toHaveBeenCalled();
+        await userEngine.getUsers(1, 10, 'active', { search: 'John' });
+        await userEngine.getUsers(1, 10, 'active', { role: 'ADMIN' });
+        expect(adminUserRepoStub.findAll).toHaveBeenCalled();
     });
   });
 });

@@ -5,7 +5,7 @@ import { badRequest, internalError, unauthorized } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
 import { recordCounter, recordTimer } from '@/lib/metrics';
 import { withLogging } from '@/lib/withLogging';
-import { AdminQuestionEngine } from "@/modules/admin-engine/admin.question.engine";
+import { AdminQuestionEngine } from "@/modules/admin-engine/admin.engine";
 import { verifyAdminOrInfraToken } from '@/modules/auth/admin-audience.util';
 import { publishSchema } from '@/schemas/admin.schemas';
 

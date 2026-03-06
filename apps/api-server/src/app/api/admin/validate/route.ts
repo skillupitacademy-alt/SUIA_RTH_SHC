@@ -5,7 +5,7 @@ import { badRequest, forbidden, internalError } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
 import { recordCounter, recordTimer } from '@/lib/metrics';
 import { withLogging } from '@/lib/withLogging';
-import { AdminTopicEngine } from "@/modules/admin-engine/admin.topic.engine";
+import { AdminTopicEngine } from "@/modules/admin-engine/admin.engine";
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
 import { validateTopicSchema } from '@/schemas/admin.schemas';
