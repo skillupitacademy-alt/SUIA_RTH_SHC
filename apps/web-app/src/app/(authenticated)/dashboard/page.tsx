@@ -29,8 +29,8 @@ export default async function DashboardPage() {
             {/* Welcome Header */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div>
-                    <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 uppercase">Dashboard Overview</h1>
-                    <p className="text-muted-foreground font-medium">Welcome back, <span className="text-pink-600 font-black">{user?.name || 'User'}</span>! Let&apos;s see your progress.</p>
+                    <h1 className="text-3xl font-extrabold tracking-tight text-slate-900">Dashboard Overview</h1>
+                    <p className="text-muted-foreground font-medium">Welcome back, <span className="text-pink-600 font-bold">{user?.name || 'User'}</span>! Let&apos;s see your progress.</p>
                 </div>
                 <DashboardHeaderActions />
             </div>
@@ -43,7 +43,7 @@ export default async function DashboardPage() {
                     <TutorInsightCard />
                 </div>
                 <div className="space-y-6">
-                    <h3 className="text-xl font-bold px-1 text-slate-900 uppercase tracking-tight">Recent Activity</h3>
+                    <h3 className="text-xl font-bold px-1 text-slate-900 tracking-tight">Recent Activity</h3>
                     <div className="space-y-4">
                         {!data?.recentActivity || data.recentActivity.length === 0 ? (
                             <div className="p-8 text-center border-2 border-slate-200 rounded-[2rem] bg-slate-50 text-slate-600">

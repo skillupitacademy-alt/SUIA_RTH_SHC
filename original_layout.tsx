@@ -7,7 +7,7 @@ import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { Analytics } from "@vercel/analytics/react";
 import { GlobalNavigationLoader } from "@/components/layout/GlobalNavigationLoader";
 import { MonitoringProvider } from "@/components/providers/MonitoringProvider";
-import { QueryProvider } from "@/components/providers/QueryProvider";
+
 export const metadata: Metadata = {
     title: "Quiz Platform",
     description: "Learn and Test your knowledge",
@@ -24,13 +24,11 @@ export default function RootLayout({
                 <MonitoringProvider>
                     <ZErrorBoundary appId="web-app" sessionIdKey="quiz_session_id" recoveryMode="reload">
                         <ThemeProvider>
-                            <QueryProvider>
-                                <SecurityMuzzle />
-                                <GlobalNavigationLoader />
-                                {children}
-                                <Analytics />
-                                <div id="modal-root" />
-                            </QueryProvider>
+                            <SecurityMuzzle />
+                            <GlobalNavigationLoader />
+                            {children}
+                            <Analytics />
+                            <div id="modal-root" />
                         </ThemeProvider>
                     </ZErrorBoundary>
                 </MonitoringProvider>

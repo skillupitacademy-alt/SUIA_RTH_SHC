@@ -1,5 +1,4 @@
 import { LucideIcon, TrendingUp, TrendingDown, Info } from 'lucide-react';
-import React from 'react';
 
 type StatsOverview = {
     avgScore: number;
@@ -21,7 +20,7 @@ interface StatCardProps {
     tooltip?: string;
 }
 
-export const StatCard = React.memo(function StatCard({ title, value, icon: Icon, trend, color, tooltip }: StatCardProps) {
+export function StatCard({ title, value, icon: Icon, trend, color, tooltip }: StatCardProps) {
     // Executive Minimal: Clean, high-contrast icon backgrounds
     const colorClasses = {
         primary: "text-pink-500 bg-pink-50",
@@ -47,7 +46,7 @@ export const StatCard = React.memo(function StatCard({ title, value, icon: Icon,
             </div>
             <div>
                 <div className="flex items-center gap-2 group">
-                    <h3 className="text-sm font-medium text-gray-600 tracking-wider">{title}</h3>
+                    <h3 className="text-sm font-medium text-gray-600 uppercase tracking-wider">{title}</h3>
                     {tooltip && (
                         <div title={tooltip} className="cursor-help opacity-40 group-hover:opacity-100 transition-opacity">
                             <Info size={14} />
@@ -58,7 +57,7 @@ export const StatCard = React.memo(function StatCard({ title, value, icon: Icon,
             </div>
         </div>
     );
-});
+}
 
 export function StatsGrid({ overview, deltaPct, healthStatus }: { overview?: StatsOverview; deltaPct?: number | null; healthStatus?: 'green' | 'yellow' | 'red' }) {
     const globalRankValue = overview?.globalRank ?? "Pending";
@@ -117,7 +116,7 @@ export function StatsGrid({ overview, deltaPct, healthStatus }: { overview?: Sta
                 color="primary"
             />
             {overview?.globalRank === null && (
-                <p className="col-span-full text-[10px] font-bold text-muted-foreground tracking-widest mt-1 text-center">
+                <p className="col-span-full text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-1 text-center">
                     Take 5 exams to see your global rank
                 </p>
             )}
