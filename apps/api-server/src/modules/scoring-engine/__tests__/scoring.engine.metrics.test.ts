@@ -24,6 +24,11 @@ vi.mock('../../exam-engine/exam.state-machine', () => ({
 }));
 
 vi.mock('@quiz/db', () => ({
+  STANDARD_QUERY_TIMEOUT: 15000,
+  QUICK_QUERY_TIMEOUT: 5000,
+  REPORT_QUERY_TIMEOUT: 30000,
+  MIGRATION_TIMEOUT: 120000,
+  withTimeout: vi.fn(async (promise: Promise<any>) => promise),
   db: {
     query: {
       exams: { findFirst: vi.fn() },
@@ -68,3 +73,5 @@ describe('ScoringEngine Metrics', () => {
     expect(recordTimer).toHaveBeenCalledWith(METRICS.CORE.SCORING + '.duration', expect.any(Number));
   });
 });
+
+

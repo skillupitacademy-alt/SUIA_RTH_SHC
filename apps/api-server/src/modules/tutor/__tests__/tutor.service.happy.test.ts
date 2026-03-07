@@ -24,6 +24,11 @@ const txUserRecFindFirst = vi.fn();
 const examsFindFirst = vi.fn();
 
 vi.mock('@quiz/db', () => ({
+  STANDARD_QUERY_TIMEOUT: 15000,
+  QUICK_QUERY_TIMEOUT: 5000,
+  REPORT_QUERY_TIMEOUT: 30000,
+  MIGRATION_TIMEOUT: 120000,
+  withTimeout: vi.fn(async (promise: Promise<any>) => promise),
   db: {
     query: {
       exams: { findFirst: examsFindFirst }
@@ -83,3 +88,5 @@ describe('TutorService processExamResults happy path', () => {
     expect(txInsert).toHaveBeenCalled(); // at least one insert (recommendations/notifications/jobs)
   });
 });
+
+

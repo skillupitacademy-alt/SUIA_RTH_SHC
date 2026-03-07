@@ -24,6 +24,11 @@ vi.mock('@quiz/db', () => {
   const insertValues = vi.fn().mockResolvedValue(undefined);
 
   return {
+    STANDARD_QUERY_TIMEOUT: 15000,
+    QUICK_QUERY_TIMEOUT: 5000,
+    REPORT_QUERY_TIMEOUT: 30000,
+    MIGRATION_TIMEOUT: 120000,
+    withTimeout: vi.fn(async (promise: Promise<any>) => promise),
     db: {
       query: {
         exams: { findFirst: vi.fn() },
@@ -63,3 +68,4 @@ describe('ScoringEngine Tracing', () => {
     expect(withSpan).toHaveBeenCalledWith('ScoringEngine.calculateExamResults', expect.any(Function));
   });
 });
+

@@ -18,6 +18,11 @@ vi.mock('../analytics/user-analytics.service', analyticsMockFactory);
 vi.mock('@/modules/analytics/user-analytics.service', analyticsMockFactory);
 
 vi.mock('@quiz/db', () => ({
+  STANDARD_QUERY_TIMEOUT: 15000,
+  QUICK_QUERY_TIMEOUT: 5000,
+  REPORT_QUERY_TIMEOUT: 30000,
+  MIGRATION_TIMEOUT: 120000,
+  withTimeout: vi.fn(async (promise: Promise<any>) => promise),
   db: {
     query: {
       topics: { findMany: (...args: any[]) => mocks.findMany(...args) },
@@ -61,3 +66,5 @@ describe('AdaptiveTutorService branch coverage', () => {
     expect(res[0].topicName).toBe('Topic'); // fallback name path
   });
 });
+
+

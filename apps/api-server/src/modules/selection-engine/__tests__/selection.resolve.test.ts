@@ -4,10 +4,15 @@ import { SelectionService } from '../selection.service';
 import { container } from '../../core/container';
 
 vi.mock('@quiz/db', () => ({
-    db: {
-        query: { examBlueprints: { findFirst: vi.fn() } }
-    },
-    examBlueprints: { tableName: 'exam_blueprints', id: 'id' }
+  STANDARD_QUERY_TIMEOUT: 15000,
+  QUICK_QUERY_TIMEOUT: 5000,
+  REPORT_QUERY_TIMEOUT: 30000,
+  MIGRATION_TIMEOUT: 120000,
+  withTimeout: vi.fn(async (promise: Promise<any>) => promise),
+  db: {
+      query: { examBlueprints: { findFirst: vi.fn() } }
+  },
+  examBlueprints: { tableName: 'exam_blueprints', id: 'id' }
 }));
 
 describe('SelectionService resolveBlueprint', () => {
@@ -25,3 +30,4 @@ describe('SelectionService resolveBlueprint', () => {
         expect(result.id).toBe('bp1');
     });
 });
+

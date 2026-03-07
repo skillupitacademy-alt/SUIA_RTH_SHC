@@ -1,4 +1,4 @@
-import { db, exams, resultsByDimension } from '@quiz/db';
+import { db, exams, REPORT_QUERY_TIMEOUT, resultsByDimension, withTimeout as dbWithTimeout } from '@quiz/db';
 import { METRICS } from '@quiz/observability';
 import { eq } from 'drizzle-orm';
 
@@ -16,6 +16,9 @@ import { ReportEngine } from '../report-engine/report.engine';
 import { DimensionRegistry } from './calculators/dimension.registry';
 import type { EvaluatedAnswer } from './strategies/scoring-strategy.interface';
 import { ScoringStrategyRegistry } from './strategies/scoring-strategy.registry';
+
+const withTimeout = dbWithTimeout ?? (async <T>(promise: Promise<T>) => promise);
+export const __withTimeout = withTimeout;
 
 export const dynamic = 'force-dynamic';
 
@@ -47,37 +50,45 @@ export class ScoringEngine {
       await this.performanceService.invalidateCache(examId);
 
       try {
-        const exam = await db.query.exams.findFirst({
-          where: eq(exams.id, examId),
-          with: {
-            blueprint: true,
-            examQuestions: {
-              with: {
-                question: {
-                  with: {
-                    questionSkills: {
-                      with: {
-                        skill: true
+        const exam = await withTimeout(
+          db.query.exams.findFirst({
+            where: eq(exams.id, examId),
+            with: {
+              blueprint: true,
+              examQuestions: {
+                with: {
+                  question: {
+                    with: {
+                      questionSkills: {
+                        with: {
+                          skill: true
+                        }
                       }
                     }
-                  }
-                },
+                  },
+                }
               }
             }
-          }
-        });
+          }),
+          REPORT_QUERY_TIMEOUT,
+          'ScoringEngine.fetchExam'
+        );
 
         if (exam === undefined) throw new Error('Exam not found');
 
         const topicIds = [...new Set(exam.examQuestions.map(eq => eq.question.topicId))];
-        const topicData = await db.query.topics.findMany({
-          where: (topics, { inArray }) => inArray(topics.id, topicIds as string[]),
-          with: {
-            subject: { with: { domain: true } },
-            topicSkills: { with: { skill: true } },
-            subtopics: true
-          }
-        });
+        const topicData = await withTimeout(
+          db.query.topics.findMany({
+            where: (topics, { inArray }) => inArray(topics.id, topicIds as string[]),
+            with: {
+              subject: { with: { domain: true } },
+              topicSkills: { with: { skill: true } },
+              subtopics: true
+            }
+          }),
+          REPORT_QUERY_TIMEOUT,
+          'ScoringEngine.fetchTopics'
+        );
 
         const topicMap = new Map(topicData.map(t => [t.id, t]));
 

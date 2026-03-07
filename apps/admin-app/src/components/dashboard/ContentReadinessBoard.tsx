@@ -1,7 +1,6 @@
 'use client';
 
-import { apiClient } from '@quiz/api-client';
-import type { AdminContentHealthReport } from '@quiz/api-client/types/admin.types';
+import { apiClient, type AdminContentHealthReport } from '@quiz/api-client';
 import { recordCounter } from '@quiz/observability';
 import { ZLoader } from '@quiz/ui';
 import {

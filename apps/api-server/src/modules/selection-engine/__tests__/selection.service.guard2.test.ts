@@ -12,6 +12,11 @@ const mockQueryBuilder = (result: any = []) => ({
 } as any);
 
 vi.mock('@quiz/db', () => ({
+  STANDARD_QUERY_TIMEOUT: 15000,
+  QUICK_QUERY_TIMEOUT: 5000,
+  REPORT_QUERY_TIMEOUT: 30000,
+  MIGRATION_TIMEOUT: 120000,
+  withTimeout: vi.fn(async (promise: Promise<any>) => promise),
     db: {
         query: {
             examBlueprints: { findFirst: vi.fn() },
@@ -43,3 +48,4 @@ describe('SelectionService Guard 2', () => {
         expect(result.blueprint.id).toBe('transient');
     });
 });
+

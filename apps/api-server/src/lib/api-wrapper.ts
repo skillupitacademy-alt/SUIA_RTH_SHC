@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/nextjs';
 import crypto from 'crypto';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
@@ -6,7 +7,6 @@ import { z } from 'zod';
 import { ApiError, validationError } from './api-error';
 import { ApiResponse } from './api-response';
 import { runWithTrace } from './trace.context';
-import * as Sentry from '@sentry/nextjs';
 
 /**
  * Enhanced API Route Handler Wrapper (Tasks 29, 35)

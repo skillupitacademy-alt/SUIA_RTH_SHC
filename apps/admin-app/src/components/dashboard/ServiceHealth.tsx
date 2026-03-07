@@ -1,7 +1,6 @@
 'use client';
 
-import { apiClient } from '@quiz/api-client';
-import type { AdminSystemUsage } from '@quiz/api-client/types/admin.types';
+import { apiClient, type AdminSystemUsage } from '@quiz/api-client';
 import { recordCounter } from '@quiz/observability';
 import type { LucideIcon } from 'lucide-react';
 import { AlertCircle, CheckCircle2, Cloud, Database, Mail, RefreshCw, Server } from 'lucide-react';

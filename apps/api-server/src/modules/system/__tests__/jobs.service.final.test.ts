@@ -19,6 +19,11 @@ const vi_set = vi.fn();
 
 // Mock @quiz/db
 vi.mock('@quiz/db', () => ({
+  STANDARD_QUERY_TIMEOUT: 15000,
+  QUICK_QUERY_TIMEOUT: 5000,
+  REPORT_QUERY_TIMEOUT: 30000,
+  MIGRATION_TIMEOUT: 120000,
+  withTimeout: vi.fn(async (promise: Promise<any>) => promise),
   backgroundJobs: {
     id: 'id',
     userId: 'userId',
@@ -262,3 +267,5 @@ describe('JobsService 100% Branch Coverage - FINAL BLITZ', () => {
      });
   });
 });
+
+

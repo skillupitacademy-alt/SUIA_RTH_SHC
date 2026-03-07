@@ -16,18 +16,23 @@ vi.mock('@/lib/logger', () => {
 });
 
 vi.mock('@quiz/db', () => ({
-    db: {
-        select: vi.fn(),
-        query: {
-            examBlueprints: { findFirst: vi.fn() },
-            questions: { findMany: vi.fn() }
-        }
-    },
-    examBlueprints: { tableName: 'exam_blueprints', id: 'id', domains: 'domains' },
-    questions: { tableName: 'questions', id: 'id', status: 'active', difficulty: 'difficulty', topicId: 'topic_id', subtopicId: 'subtopic_id' },
-    topics: { tableName: 'topics', id: 'id', subjectId: 'subject_id' },
-    subtopics: { tableName: 'subtopics', id: 'id', topicId: 'topic_id' },
-    subjects: { tableName: 'subjects', id: 'id', domainId: 'domain_id' }
+  STANDARD_QUERY_TIMEOUT: 15000,
+  QUICK_QUERY_TIMEOUT: 5000,
+  REPORT_QUERY_TIMEOUT: 30000,
+  MIGRATION_TIMEOUT: 120000,
+  withTimeout: vi.fn(async (promise: Promise<any>) => promise),
+  db: {
+      select: vi.fn(),
+      query: {
+          examBlueprints: { findFirst: vi.fn() },
+          questions: { findMany: vi.fn() }
+      }
+  },
+  examBlueprints: { tableName: 'exam_blueprints', id: 'id', domains: 'domains' },
+  questions: { tableName: 'questions', id: 'id', status: 'active', difficulty: 'difficulty', topicId: 'topic_id', subtopicId: 'subtopic_id' },
+  topics: { tableName: 'topics', id: 'id', subjectId: 'subject_id' },
+  subtopics: { tableName: 'subtopics', id: 'id', topicId: 'topic_id' },
+  subjects: { tableName: 'subjects', id: 'id', domainId: 'domain_id' }
 }));
 
 describe('SelectionService (Branch Coverage)', () => {
@@ -409,3 +414,4 @@ describe('SelectionService (Branch Coverage)', () => {
     });
   });
 });
+

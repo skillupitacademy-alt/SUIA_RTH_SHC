@@ -25,7 +25,6 @@ export class TokenService {
    * Allow legacy static usage in tests (e.g., TokenService.generateAccessToken).
    * We create the singleton lazily so tests can inject a mock via setInstance first.
    */
-  /* c8 ignore next */
   private static singleton: TokenService | null = null;
   static ACCESS_SECRET = new TextEncoder().encode(
     (process.env.JWT_SECRET !== undefined && process.env.JWT_SECRET !== '' ? process.env.JWT_SECRET : 'test-access-secret')

@@ -5,6 +5,7 @@ on:
     branches: [main, master]
   pull_request:
     branches: ["*"]
+  deployment_status:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -127,8 +128,43 @@ jobs:
       - name: E2E Smoke
         run: pnpm e2e:smoke || true
 
+  bundle-check:
+    needs: [build]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Read pnpm version
+        id: pnpm_version
+        run: echo "version=$(node -p "require('./package.json').packageManager.split('@')[1]")" >> "$GITHUB_OUTPUT"
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ steps.pnpm_version.outputs.version }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "pnpm"
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm analyze:all
+      - name: Upload Bundle Analysis
+        uses: actions/upload-artifact@v4
+        with:
+          name: bundle-analysis
+          path: |
+            apps/web-app/.next/analyze/
+            apps/admin-app/.next/analyze/
+
+  preview-check:
+    if: github.event_name == 'deployment_status' && github.event.deployment_status.state == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Health Check
+        run: |
+          curl -s --fail ${{ github.event.deployment_status.target_url }}/api/health || exit 1
+
   ci-success:
-    needs: [lint, type-check, test, build, e2e-smoke]
+    needs: [lint, type-check, test, build, e2e-smoke, bundle-check]
     runs-on: ubuntu-latest
     steps:
       - run: echo "All checks passed"

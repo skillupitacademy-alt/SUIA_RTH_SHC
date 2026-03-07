@@ -44,6 +44,12 @@ vi.mock('@quiz/db', () => ({
   userRecommendations: {},
   notesDeliveryLocks: {},
   loginAttempts: {},
+  // Task 37 Query Timeouts
+  withTimeout: vi.fn((p) => p),
+  QUICK_QUERY_TIMEOUT: 100,
+  STANDARD_QUERY_TIMEOUT: 200,
+  REPORT_QUERY_TIMEOUT: 300,
+  MIGRATION_TIMEOUT: 400,
 }))
 
 // Upstash Redis mock (constructor-compatible)

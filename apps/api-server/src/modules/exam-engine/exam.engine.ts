@@ -1,5 +1,5 @@
 import type { examBlueprints } from '@quiz/db';
-import { exams } from '@quiz/db';
+import { exams, QUICK_QUERY_TIMEOUT, STANDARD_QUERY_TIMEOUT, withTimeout as dbWithTimeout } from '@quiz/db';
 import { JobType } from '@quiz/types';
 import type { InferSelectModel } from 'drizzle-orm';
 
@@ -16,6 +16,10 @@ import { AuditLoggingExamRepository } from './audit-logging.decorator';
 import { ExamBuilder } from './exam.builder';
 import { ExamStateMachine } from './exam.state-machine';
 import { ExamRepository } from './repositories/exam.repository';
+
+const withTimeout = dbWithTimeout ?? (async <T>(promise: Promise<T>) => promise);
+// Exposed for tests to cover fallback binding
+export const __withTimeout = withTimeout;
 
 export interface StartExamConfig {
   subjectId?: string;
@@ -78,12 +82,16 @@ export class ExamEngine {
       }
 
       // 2. Build using ExamBuilder (Task 63)
-      const { exam, questions } = await new ExamBuilder()
-        .forUser(userId)
-        .withBlueprint(blueprintOrDomainId)
-        .withIdempotency(idempotencyKey)
-        .withConfig(config)
-        .build();
+      const { exam, questions } = await withTimeout(
+        new ExamBuilder()
+          .forUser(userId)
+          .withBlueprint(blueprintOrDomainId)
+          .withIdempotency(idempotencyKey)
+          .withConfig(config)
+          .build(),
+        STANDARD_QUERY_TIMEOUT,
+        'ExamEngine.startExam.build'
+      );
 
       return {
         examId: exam.id,
@@ -194,7 +202,11 @@ export class ExamEngine {
     await cacheService.set(`${liveStateKey}:q:${questionId}`, answerPayload, 1000 * 60 * 60 * 2).catch(() => null);
     
     // We still update the 'lastAnsweredAt' in Postgres to keep session alive
-    await this.examRepo.updateLastAnswered(examId);
+    await withTimeout(
+      this.examRepo.updateLastAnswered(examId),
+      QUICK_QUERY_TIMEOUT,
+      'ExamEngine.updateLastAnswered'
+    );
 
     if (idempotencyKey !== undefined && idempotencyKey !== null && idempotencyKey !== '') {
         await cacheService.set(`idem:ans:${userId}:${idempotencyKey}`, { used: true }, 1000 * 60 * 60 * 24).catch(() => null);
@@ -207,7 +219,11 @@ export class ExamEngine {
     let exam: ExamWithBlueprint | null = (await cacheService.get<ExamWithBlueprint>(cacheKey).catch(() => null)) ?? null;
 
     if (exam === null) {
-      const dbExam = await this.examRepo.findByIdWithBlueprint(examId);
+      const dbExam = await withTimeout(
+        this.examRepo.findByIdWithBlueprint(examId),
+        QUICK_QUERY_TIMEOUT,
+        'ExamEngine.fetchActiveExam'
+      );
       exam = dbExam ?? null;
       if (exam !== null) await cacheService.set(cacheKey, exam, 1000 * 60 * 2).catch(() => null);
     }
@@ -275,7 +291,11 @@ export class ExamEngine {
     }
 
     await ExamStateMachine.transition(targetExamId, 'processing', userId);
-    const updated = await this.examRepo.updateStatus(targetExamId, 'processing');
+    const updated = await withTimeout(
+      this.examRepo.updateStatus(targetExamId, 'processing'),
+      STANDARD_QUERY_TIMEOUT,
+      'ExamEngine.completeExam.updateStatus'
+    );
 
     let jobId: string | undefined;
 
@@ -284,7 +304,11 @@ export class ExamEngine {
         try {
             const liveStatePrefix = `exam-state:${targetExamId}:q:`;
             
-            const examWithQuestions = await this.examRepo.findByIdWithQuestions(targetExamId);
+            const examWithQuestions = await withTimeout(
+                this.examRepo.findByIdWithQuestions(targetExamId),
+                STANDARD_QUERY_TIMEOUT,
+                'ExamEngine.completeExam.fetchQuestions'
+            );
 
             if (examWithQuestions?.examQuestions) {
                 // Use the main DB instance for the batch update
@@ -336,7 +360,6 @@ export class ExamEngine {
             void JobOrchestrator.runJob(job.id, userId);
         }
     }
-
 
     return { examId: targetExamId, status: 'processing', jobId };
   }

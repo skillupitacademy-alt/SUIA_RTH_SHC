@@ -10,15 +10,20 @@ const mockQueryBuilder = (result: any = []) => ({
 });
 
 vi.mock('@quiz/db', () => ({
-    db: {
-        select: vi.fn(),
-        query: { examBlueprints: { findFirst: vi.fn() } }
-    },
-    subtopics: { tableName: 'subtopics', id: 'id', topicId: 'topic_id' },
-    topics: { tableName: 'topics', id: 'id', subjectId: 'subject_id' },
-    examBlueprints: { tableName: 'exam_blueprints', id: 'id' },
-    subjects: { tableName: 'subjects' },
-    questions: { tableName: 'questions' }
+  STANDARD_QUERY_TIMEOUT: 15000,
+  QUICK_QUERY_TIMEOUT: 5000,
+  REPORT_QUERY_TIMEOUT: 30000,
+  MIGRATION_TIMEOUT: 120000,
+  withTimeout: vi.fn(async (promise: Promise<any>) => promise),
+  db: {
+    select: vi.fn(),
+    query: { examBlueprints: { findFirst: vi.fn() } }
+  },
+  subtopics: { tableName: 'subtopics', id: 'id', topicId: 'topic_id' },
+  topics: { tableName: 'topics', id: 'id', subjectId: 'subject_id' },
+  examBlueprints: { tableName: 'exam_blueprints', id: 'id' },
+  subjects: { tableName: 'subjects' },
+  questions: { tableName: 'questions' }
 }));
 
 describe('SelectionService Rules', () => {
@@ -44,3 +49,4 @@ describe('SelectionService Rules', () => {
     // For now we use composeExam to trigger the path.
   });
 });
+

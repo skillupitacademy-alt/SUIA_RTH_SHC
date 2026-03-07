@@ -1,4 +1,4 @@
-import { db, examBlueprints, questions, subjects as subjectsTable, subtopics, topics } from '@quiz/db';
+import { db, examBlueprints, questions, STANDARD_QUERY_TIMEOUT, subjects as subjectsTable, subtopics, topics, withTimeout as dbWithTimeout } from '@quiz/db';
 import { METRICS } from '@quiz/observability';
 import crypto from 'crypto';
 import type { InferSelectModel } from 'drizzle-orm';
@@ -8,6 +8,8 @@ import { logger } from '@/lib/logger';
 import { recordCounter, recordTimer } from '@/lib/metrics';
 import { withSpan } from '@/lib/tracer';
 import { cacheService } from '@/modules/core/cache.service';
+
+const withTimeout = dbWithTimeout ?? (async <T>(promise: Promise<T>) => promise);
 
 type Blueprint = InferSelectModel<typeof examBlueprints>;
 type Question = InferSelectModel<typeof questions>;
@@ -149,15 +151,23 @@ export class SelectionService {
     }
 
     if (!blueprint) {
-      const blueprintResult = await this.dbInstance.query.examBlueprints.findFirst({
-        where: eq(examBlueprints.id, blueprintOrDomainId),
-      });
+      const blueprintResult = await withTimeout(
+        this.dbInstance.query.examBlueprints.findFirst({
+          where: eq(examBlueprints.id, blueprintOrDomainId),
+        }),
+        STANDARD_QUERY_TIMEOUT,
+        'SelectionService.resolveBlueprint.byId'
+      );
       blueprint = blueprintResult ?? null;
 
       if (!blueprint) {
-        const blueprintResult = await this.dbInstance.query.examBlueprints.findFirst({
-          where: sql`${examBlueprints.domains} @> ARRAY[${blueprintOrDomainId}]::uuid[]`,
-        });
+        const blueprintResult = await withTimeout(
+          this.dbInstance.query.examBlueprints.findFirst({
+            where: sql`${examBlueprints.domains} @> ARRAY[${blueprintOrDomainId}]::uuid[]`,
+          }),
+          STANDARD_QUERY_TIMEOUT,
+          'SelectionService.resolveBlueprint.byDomain'
+        );
         blueprint = blueprintResult ?? null;
       }
 
@@ -200,12 +210,16 @@ export class SelectionService {
   }
 
   private async fetchStaticQuestions(blueprint: Blueprint) {
-      const staticQuestions = await this.dbInstance.query.questions.findMany({
-        where: and(
-          inArray(questions.id, blueprint.questionIds as string[]),
-          eq(questions.status, 'active')
-        )
-      });
+      const staticQuestions = await withTimeout(
+        this.dbInstance.query.questions.findMany({
+          where: and(
+            inArray(questions.id, blueprint.questionIds as string[]),
+            eq(questions.status, 'active')
+          )
+        }),
+        STANDARD_QUERY_TIMEOUT,
+        'SelectionService.fetchStaticQuestions'
+      );
 
       if (staticQuestions.length === 0) {
         throw new Error('This static blueprint refers to questions that no longer exist or are inactive.');
@@ -257,19 +271,25 @@ export class SelectionService {
     
     // Resolve Exclusions (Parents of selected children should not be blindly included to avoid double dipping or broad scope)
     const selectedTopicParents: string[] = finalSubtopicIds.length > 0 
-        ? (await this.dbInstance.select({ topicId: subtopics.topicId })
+        ? (await withTimeout(
+                  this.dbInstance.select({ topicId: subtopics.topicId })
                   .from(subtopics)
-                  .where(inArray(subtopics.id, finalSubtopicIds))
-          ).map(r => r.topicId)
+                  .where(inArray(subtopics.id, finalSubtopicIds)),
+                  STANDARD_QUERY_TIMEOUT,
+                  'SelectionService.resolveCriteria.topicParents'
+          )).map(r => r.topicId)
         : [];
     
     const actualTopicIds = finalTopicIds.filter((id: string) => !selectedTopicParents.includes(id));
     
     const selectedSubjectParents: string[] = finalTopicIds.length > 0 
-        ? (await this.dbInstance.select({ subjectId: topics.subjectId })
+        ? (await withTimeout(
+                  this.dbInstance.select({ subjectId: topics.subjectId })
                   .from(topics)
-                  .where(inArray(topics.id, finalTopicIds))
-          ).map(r => r.subjectId)
+                  .where(inArray(topics.id, finalTopicIds)),
+                  STANDARD_QUERY_TIMEOUT,
+                  'SelectionService.resolveCriteria.subjectParents'
+          )).map(r => r.subjectId)
         : [];
     
     const actualSubjectIds = finalSubjectIds.filter((id: string) => !selectedSubjectParents.includes(id));
@@ -328,9 +348,13 @@ export class SelectionService {
         );
 
         // 1. Indexed Count for sizing
-        const [{ count: totalInPool }] = await this.dbInstance.select({ count: sql<number>`count(*)` })
-          .from(questions)
-          .where(baseFilters);
+        const [{ count: totalInPool }] = await withTimeout(
+          this.dbInstance.select({ count: sql<number>`count(*)` })
+            .from(questions)
+            .where(baseFilters),
+          STANDARD_QUERY_TIMEOUT,
+          'SelectionService.fetchFromPool.count'
+        );
 
         if (totalInPool === 0) return [];
 
@@ -350,22 +374,30 @@ export class SelectionService {
         for (const anchor of anchors) {
           if (candidates.length >= count) break;
 
-          const [candidate] = await this.dbInstance.select()
-            .from(questions)
-            .where(and(baseFilters, gte(questions.id, anchor), notInArray(questions.id, Array.from(selectedIds))))
-            .orderBy(asc(questions.id))
-            .limit(1);
+          const [candidate] = await withTimeout(
+            this.dbInstance.select()
+              .from(questions)
+              .where(and(baseFilters, gte(questions.id, anchor), notInArray(questions.id, Array.from(selectedIds))))
+              .orderBy(asc(questions.id))
+              .limit(1),
+            STANDARD_QUERY_TIMEOUT,
+            'SelectionService.fetchFromPool.anchor'
+          );
 
           if (candidate !== undefined && candidate !== null) {
             candidates.push(candidate);
             selectedIds.add(candidate.id);
           } else {
             // Wrap-around
-            const [fallback] = await this.dbInstance.select()
-              .from(questions)
-              .where(and(baseFilters, notInArray(questions.id, Array.from(selectedIds))))
-              .orderBy(asc(questions.id))
-              .limit(1);
+            const [fallback] = await withTimeout(
+              this.dbInstance.select()
+                .from(questions)
+                .where(and(baseFilters, notInArray(questions.id, Array.from(selectedIds))))
+                .orderBy(asc(questions.id))
+                .limit(1),
+              STANDARD_QUERY_TIMEOUT,
+              'SelectionService.fetchFromPool.fallback'
+            );
             
             if (fallback !== undefined && fallback !== null) {
               candidates.push(fallback);

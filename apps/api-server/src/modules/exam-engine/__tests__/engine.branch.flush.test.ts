@@ -5,6 +5,10 @@ vi.mock('@quiz/db', () => {
   const exams = {};
   const idempotencyKeys = {};
   return {
+    STANDARD_QUERY_TIMEOUT: 15000,
+    QUICK_QUERY_TIMEOUT: 5000,
+    REPORT_QUERY_TIMEOUT: 30000,
+    MIGRATION_TIMEOUT: 120000,
     db: {
       query: {
         idempotencyKeys: {
@@ -41,6 +45,7 @@ vi.mock('@quiz/db', () => {
         select: vi.fn().mockReturnValue({ from: vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue([]) }) }),
       })),
     },
+    withTimeout: vi.fn(async (promise: Promise<any>) => promise),
     exams,
     idempotencyKeys,
     examQuestions: {},
@@ -80,3 +85,4 @@ describe('ExamEngine completeExam tails (idempotency & flush catch)', () => {
     expect(res.status).toBe('processing');
   }, 20000);
 });
+

@@ -5,6 +5,7 @@ vi.mock('@quiz/db', async (importOriginal) => {
 
   return {
     ...actual,
+    withTimeout: actual.withTimeout ?? (async (promise: Promise<any>) => promise),
     db: {
       ...actual.db,
       query: {
@@ -124,3 +125,4 @@ describe('Sprint 2 Design Patterns Verification', () => {
     });
   });
 });
+

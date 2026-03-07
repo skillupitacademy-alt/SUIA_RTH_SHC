@@ -9,6 +9,11 @@ import { TEST_TOPIC, TEST_USER } from '../../__test-utils__/test-fixtures';
 
 // Mock DB & Redis
 vi.mock('@quiz/db', () => ({
+  STANDARD_QUERY_TIMEOUT: 15000,
+  QUICK_QUERY_TIMEOUT: 5000,
+  REPORT_QUERY_TIMEOUT: 30000,
+  MIGRATION_TIMEOUT: 120000,
+  withTimeout: vi.fn(async (promise: Promise<any>) => promise),
   db: mockDb,
   exams: { id: 'exams.id', status: 'exams.status', createdAt: 'exams.createdAt' },
   examQuestions: { id: 'examQuestions.id', order: 'examQuestions.order', questionId: 'examQuestions.questionId', examId: 'examQuestions.examId' },
@@ -80,3 +85,5 @@ describe('Consolidated Core Coverage', () => {
     });
   });
 });
+
+

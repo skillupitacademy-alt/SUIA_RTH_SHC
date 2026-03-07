@@ -10,6 +10,11 @@ import { AdminUserEngine } from '../admin-engine/admin.user.engine';
 
 // Mock DB globally
 vi.mock('@quiz/db', () => ({
+  STANDARD_QUERY_TIMEOUT: 15000,
+  QUICK_QUERY_TIMEOUT: 5000,
+  REPORT_QUERY_TIMEOUT: 30000,
+  MIGRATION_TIMEOUT: 120000,
+  withTimeout: vi.fn(async (promise: Promise<any>) => promise),
   db: mockDb,
   users: { id: 'users.id', email: 'users.email', isBlocked: 'users.isBlocked', emailVerified: 'users.emailVerified', deletedAt: 'users.deletedAt', createdAt: 'users.createdAt', lastActiveAt: 'users.lastActiveAt' },
   domains: { id: 'domains.id', name: 'domains.name' },
@@ -151,3 +156,5 @@ describe('Consolidated Administration Coverage', () => {
     });
   });
 });
+
+

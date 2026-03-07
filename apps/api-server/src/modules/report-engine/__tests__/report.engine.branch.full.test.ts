@@ -15,6 +15,7 @@ vi.mock('@quiz/db', async (importOriginal) => {
   const actual = await importOriginal<any>();
   return {
     ...actual,
+    withTimeout: actual.withTimeout ?? (async (promise: Promise<any>) => promise),
     dbc: { ...actual.dbc, ...dbcMock },
   };
 });
@@ -287,3 +288,4 @@ describe('ReportEngine branch coverage (action plan + tutor insights)', () => {
     expect(report.tutorInsights).toEqual([{ topicId: 't1', advice: 'practice' }]);
   });
 });
+

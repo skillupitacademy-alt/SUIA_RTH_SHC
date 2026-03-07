@@ -19,6 +19,7 @@
         "dev": "turbo run dev",
         "build": "turbo run build",
         "build:all": "turbo run build --filter=@quiz/web-app --filter=@quiz/admin-app --filter=@quiz/api-server",
+        "analyze:all": "turbo run build --filter=@quiz/web-app --filter=@quiz/admin-app --env ANALYZE=true",
         "lint": "turbo run lint -- --max-warnings=0",
         "lint:all": "turbo run lint --filter=@quiz/web-app --filter=@quiz/admin-app --filter=@quiz/api-server -- --max-warnings=0",
         "test": "turbo run test",

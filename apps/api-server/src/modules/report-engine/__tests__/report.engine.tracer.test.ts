@@ -10,6 +10,11 @@ import { db } from '@quiz/db';
 import { ReportEngine } from '../report.engine';
 
 vi.mock('@quiz/db', () => ({
+  STANDARD_QUERY_TIMEOUT: 15000,
+  QUICK_QUERY_TIMEOUT: 5000,
+  REPORT_QUERY_TIMEOUT: 30000,
+  MIGRATION_TIMEOUT: 120000,
+  withTimeout: vi.fn(async (promise: Promise<any>) => promise),
   db: {
     query: {
       exams: { findFirst: vi.fn(), findMany: vi.fn() },
@@ -41,3 +46,5 @@ describe('ReportEngine Tracing', () => {
     expect(withSpan).toHaveBeenCalledWith('ReportEngine.getExamReport', expect.any(Function));
   });
 });
+
+
