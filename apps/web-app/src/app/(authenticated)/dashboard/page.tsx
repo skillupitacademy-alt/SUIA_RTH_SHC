@@ -22,7 +22,16 @@ export default async function DashboardPage() {
         redirect('/login');
     }
 
-    const data = await fetchServerDashboard('7d', 1, 3);
+    console.log('[Dashboard] Fetching data for user:', user.id);
+    let data;
+    try {
+        data = await fetchServerDashboard('7d', 1, 3);
+        console.log('[Dashboard] Data fetched successfully:', !!data);
+    } catch (err) {
+        console.error('[Dashboard] Error fetching dashboard data:', err);
+        // Fallback or re-throw to trigger boundary
+        throw err;
+    }
 
     return (
         <div className="space-y-10">
