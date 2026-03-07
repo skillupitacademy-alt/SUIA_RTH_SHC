@@ -32,14 +32,6 @@ export default async function DashboardPage() {
 
     return (
         <div className="space-y-10">
-            {/* Debug Marker */}
-            <div className="hidden">RENDER_READY_USER_{user.id}</div>
-
-            {fetchError && (
-                <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-red-600 font-bold text-sm">
-                    Dashboard Data Error: {fetchError}
-                </div>
-            )}
             {/* Welcome Header */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div>
