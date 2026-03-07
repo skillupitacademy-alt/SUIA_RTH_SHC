@@ -8,7 +8,7 @@ export async function getServerSession() {
 
     try {
         const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002/api';
-        const res = await fetch(`${apiUrl}/auth/session`, {
+        const res = await fetch(`${apiUrl}/auth/me`, {
             headers: {
                 'Authorization': `Bearer ${accessToken}`,
                 'Cookie': cookieStore.toString()
