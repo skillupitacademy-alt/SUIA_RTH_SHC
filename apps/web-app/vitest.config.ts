@@ -24,6 +24,11 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
+      '@quiz/ui': path.resolve(__dirname, '../../packages/ui/src/index.ts'),
+      '@quiz/api-client': path.resolve(__dirname, '../../packages/api-client/src/index.ts'),
+      '@quiz/config': path.resolve(__dirname, '../../packages/config/envPaths.ts'),
+      '@quiz/types': path.resolve(__dirname, '../../packages/types/src/index.ts'),
+      '@quiz/observability': path.resolve(__dirname, '../../packages/observability/src/index.ts'),
     },
   },
 })

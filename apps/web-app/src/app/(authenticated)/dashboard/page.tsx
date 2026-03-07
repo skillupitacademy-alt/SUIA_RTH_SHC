@@ -16,10 +16,26 @@ type RecentActivity = {
 };
 
 export default async function DashboardPage() {
-    const user = await getServerSession();
+    let user;
+    let sessionError = null;
+    try {
+        user = await getServerSession();
+    } catch (err) {
+        sessionError = err instanceof Error ? err.message : 'Session fetch failed';
+    }
 
     if (!user) {
-        redirect('/login');
+        return (
+            <div className="p-10 text-center">
+                <h1 className="text-2xl font-bold text-red-600">Session Error</h1>
+                <p className="text-muted-foreground mt-2">Server-side session retrieval failed.</p>
+                {sessionError && <p className="text-xs mt-4 p-2 bg-slate-100 rounded">Error: {sessionError}</p>}
+                {!sessionError && <p className="text-xs mt-4">Session returned NULL. Token might be missing or invalid on the server.</p>}
+                <div className="mt-8">
+                    <button onClick={() => window.location.reload()} className="px-4 py-2 bg-primary text-white rounded-lg">Retry</button>
+                </div>
+            </div>
+        );
     }
 
     console.log('[Dashboard] Fetching data for user:', user.id);
