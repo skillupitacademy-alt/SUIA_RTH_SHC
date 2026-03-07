@@ -1,6 +1,7 @@
 import { db, questions, questionSkills, skills } from "@quiz/db";
 import { inArray, sql } from "drizzle-orm";
 import { type NextRequest } from "next/server";
+import { z } from "zod";
 
 import { badRequest, unauthorized } from "@/lib/api-error";
 import { ApiResponse } from "@/lib/api-response";
@@ -14,25 +15,25 @@ import { verifyAdminOrInfraToken } from "@/modules/auth/admin-audience.util";
 type Difficulty = 'simple' | 'intermediate' | 'expert';
 type MappingType = 'conceptual' | 'technical' | 'practical';
 
-interface GeneratedQuestion {
-    id?: string;
-    questionText: string;
-    codeSnippet?: string;
-    options: string[];
-    correctAnswer: string;
-    explanation: string;
-    difficulty: Difficulty;
-    depthLevel: number;
-    mappingType: MappingType;
-    skillNames: string[];
-}
+const generatedQuestionSchema = z.object({
+  id: z.string().optional(),
+  questionText: z.string().min(1),
+  codeSnippet: z.string().optional(),
+  options: z.array(z.string()).min(2),
+  correctAnswer: z.string().min(1),
+  explanation: z.string().min(1),
+  difficulty: z.enum(['simple', 'intermediate', 'expert']),
+  depthLevel: z.number().int().min(1).max(5),
+  mappingType: z.enum(['conceptual', 'technical', 'practical']),
+  skillNames: z.array(z.string()).optional(),
+});
 
-interface SavePayload {
-  questions: GeneratedQuestion[];
-  topicId: string;
-  subtopicId?: string;
-  skillId?: string;
-}
+const savePayloadSchema = z.object({
+  questions: z.array(generatedQuestionSchema).min(1),
+  topicId: z.string().uuid(),
+  subtopicId: z.string().uuid().optional(),
+  skillId: z.string().uuid().optional(),
+});
 
 async function handler(req: NextRequest) {
   const start = Date.now();
@@ -50,11 +51,14 @@ async function handler(req: NextRequest) {
       return ApiResponse.error(badRequest("Payload too deep or large"));
     }
 
-    const { questions: checkQuestions, topicId, subtopicId } = sanitizeJsonField(rawBody) as SavePayload;
+    const sanitized = sanitizeJsonField(rawBody);
+    const parsed = savePayloadSchema.safeParse(sanitized);
 
-    if (!checkQuestions?.length || !topicId) {
-      return ApiResponse.error(badRequest("Invalid payload"));
+    if (!parsed.success) {
+      return ApiResponse.error(badRequest("Invalid payload", "BAD_REQUEST", parsed.error.issues));
     }
+
+    const { questions: checkQuestions, topicId, subtopicId } = parsed.data;
 
     // 1. Extract all unique skill names from the payload
     const allSkillNames = Array.from(

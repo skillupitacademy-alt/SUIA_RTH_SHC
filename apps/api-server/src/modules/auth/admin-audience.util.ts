@@ -27,6 +27,6 @@ export async function verifyAdminOrInfraToken(_req: NextRequest, token?: string)
     throw new Error('Unauthorized');
   }
 
-  const payload = await container.get(TokenService).verifyAccessToken(scopedToken, { isAdmin: true, audience: expectedAud });
+  const payload = await container.get(TokenService).verifyAdminAccessToken(scopedToken, { audience: expectedAud });
   return { payload, audience: expectedAud };
 }

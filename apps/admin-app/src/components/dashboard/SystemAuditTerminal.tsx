@@ -1,6 +1,7 @@
 'use client';
 
 import { apiClient } from '@quiz/api-client';
+import type { AdminAuditLog } from '@quiz/api-client/types/admin.types';
 import { recordCounter } from '@quiz/observability';
 import { formatDistanceToNow } from 'date-fns';
 import { Clock, HardDrive, Terminal, User } from 'lucide-react';
@@ -26,7 +27,23 @@ export function SystemAuditTerminal() {
             try {
                 setError(null);
                 const data = await apiClient.admin.getAuditLogs();
-                const normalizedData = Array.isArray(data) ? data as AuditLog[] : [];
+                const normalizedData = Array.isArray(data)
+                    ? (data as AdminAuditLog[]).map((log) => {
+                        const metadataString = log.metadata != null ? JSON.stringify(log.metadata) : '';
+                        const userObj: AuditLog['user'] | undefined =
+                            typeof log.userId === 'string' && log.userId.trim() !== ''
+                                ? { id: log.userId }
+                                : (log as { user?: AuditLog['user'] }).user;
+                        return {
+                            id: log.id,
+                            action: log.action,
+                            createdAt: typeof log.createdAt === 'string' ? log.createdAt : undefined,
+                            ip: log.ipAddress ?? '',
+                            metadata: metadataString,
+                            user: userObj,
+                        };
+                    }) as AuditLog[]
+                    : [];
                 setLogs(normalizedData);
                 if (normalizedData.length === 0) {
                     recordCounter('admin.ui.audit.empty', 1);

@@ -13,7 +13,9 @@ export const users = pgTable("users", {
   deletedAt: timestamp("deleted_at"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
-});
+}, (t) => ({
+  idx_users_created_at: index("idx_users_created_at").on(t.createdAt),
+}));
 
 export const adaptiveLevelEnum = pgEnum("adaptive_level", ["beginner", "intermediate", "advanced"]);
 
@@ -90,6 +92,8 @@ export const auditLogs = pgTable("audit_logs", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 }, (t) => ({
   idx_audit_logs_user_id: index("idx_audit_logs_user_id").on(t.userId),
+  idx_audit_logs_action: index("idx_audit_logs_action").on(t.action),
+  idx_audit_logs_created_at: index("idx_audit_logs_created_at").on(t.createdAt),
 }));
 
 export const loginAttempts = pgTable("login_attempts", {
@@ -102,6 +106,7 @@ export const loginAttempts = pgTable("login_attempts", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 }, (t) => ({
   idx_login_attempts_ip: index("idx_login_attempts_ip").on(t.ip),
+  idx_login_attempts_user_id: index("idx_login_attempts_user_id").on(t.userId),
 }));
 
 export const revokedTokens = pgTable("revoked_tokens", {

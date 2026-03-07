@@ -133,7 +133,8 @@ describe('rate-limit.middleware (unit)', () => {
   it('uses admin scope and logs slow increments', async () => {
     const { rateLimit } = await import('@/modules/auth/rate-limit.middleware');
     h.cacheIncrement.mockResolvedValueOnce({ count: 1, ttlRem: 60 });
-    h.tokenGetAccessToken.mockReturnValue(null);
+    h.tokenGetAccessToken.mockReturnValue('admintoken');
+    h.tokenVerifyAccessToken.mockResolvedValue({ userId: 'admin-user' });
 
     const nowSpy = vi.spyOn(Date, 'now');
     nowSpy.mockReturnValueOnce(0).mockReturnValueOnce(1000);
@@ -143,7 +144,23 @@ describe('rate-limit.middleware (unit)', () => {
     expect(res).toBeNull();
     const child = h.loggerChild.mock.results[0]?.value;
     expect(child.warn).toHaveBeenCalled();
+    expect(h.tokenVerifyAccessToken).toHaveBeenCalledWith('admintoken');
     nowSpy.mockRestore();
+  });
+
+  it('extracts userId from verified token', async () => {
+    const { rateLimit } = await import('@/modules/auth/rate-limit.middleware');
+    h.cacheIncrement
+      .mockResolvedValueOnce({ count: 1, ttlRem: 60 })   // ip
+      .mockResolvedValueOnce({ count: 2, ttlRem: 50 });  // user
+    h.tokenGetAccessToken.mockReturnValue('token');
+    h.tokenVerifyAccessToken.mockResolvedValue({ userId: 'u-token' });
+
+    const res = await rateLimit(makeRequest('/api/quiz/start', { 'x-forwarded-for': '9.9.9.9' }) as any);
+
+    expect(res).toBeNull();
+    expect(h.cacheIncrement).toHaveBeenCalledTimes(2);
+    expect(h.tokenVerifyAccessToken).toHaveBeenCalledWith('token');
   });
 
   it('skips token lookup when scope is undefined', async () => {

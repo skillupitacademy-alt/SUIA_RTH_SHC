@@ -1,11 +1,12 @@
-import type { NextRequest } from 'next/server';
+import type { NextRequest } from "next/server";
 
-import { internalError, unauthorized } from '@/lib/api-error';
-import { ApiResponse } from '@/lib/api-response';
-import { withLogging } from '@/lib/withLogging';
+import { badRequest, internalError, unauthorized } from "@/lib/api-error";
+import { ApiResponse } from "@/lib/api-response";
+import { withLogging } from "@/lib/withLogging";
 import { AdminBlueprintEngine } from "@/modules/admin-engine/admin.engine";
-import { TokenService } from '@/modules/auth/token.service';
-import { container } from '@/modules/core/container';
+import { TokenService } from "@/modules/auth/token.service";
+import { container } from "@/modules/core/container";
+import { blueprintSchema } from "@/schemas/admin.schemas";
 
 export const dynamic = 'force-dynamic';
 
@@ -22,7 +23,13 @@ async function patchHandler(_req: NextRequest, { params }: { params: Promise<{ i
     try {
         await _verifyAdmin(_req);
         const rawBody = await _req.json().catch(() => null);
-        const result = await AdminBlueprintEngine.updateBlueprint(id, rawBody ?? {});
+        
+        const parsed = blueprintSchema.partial().safeParse(rawBody ?? {});
+        if (!parsed.success) {
+            return ApiResponse.error(badRequest('Invalid payload'), 400);
+        }
+
+        const result = await AdminBlueprintEngine.updateBlueprint(id, parsed.data);
         return ApiResponse.success(result);
     } catch (_error: unknown) {
         const message = _error instanceof Error ? _error.message : 'Internal Server Error';

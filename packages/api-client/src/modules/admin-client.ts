@@ -1,372 +1,247 @@
+/**
+ * @deprecated The monolithic AdminClient violates the Interface Segregation Principle.
+ * Prefer the specialized clients exported from '@quiz/api-client' instead.
+ */
 import { FetchClient } from '@quiz/api-client/core/fetch-client';
-import {
-  AdminUserProfile,
-  BackgroundJob,
-  Domain,
-  PaginatedQuestions,
-  PaginatedResponse,
-  QuestionSummary,
-  Skill,
-  Subtopic,
-  Subject,
-  Topic,
-  UserProfile,
-} from '@quiz/api-client/types';
-export interface AdminTrendSummary {
-  avgScore: number;
-  passRate: number;
-  totalExams: number;
-  bestSkill: { name: string; delta: number } | null;
-  worstSkill: { name: string; delta: number } | null;
-  currentStreak: number;
-  deltaPct?: number | null;
-  healthStatus?: 'green' | 'yellow' | 'red';
-}
-
-type DomainPayload = Pick<Domain, 'name' | 'slug' | 'description' | 'icon'>;
-type SubjectPayload = Pick<Subject, 'name' | 'domainId' | 'slug' | 'description' | 'icon' | 'orderIndex'>;
-type TopicPayload = Pick<Topic, 'name' | 'subjectId' | 'slug' | 'description' | 'orderIndex' | 'complexity'>;
-type SubtopicPayload = Pick<Subtopic, 'name' | 'topicId' | 'slug' | 'description' | 'orderIndex'>;
-type SkillPayload = Pick<Skill, 'name' | 'description' | 'category'> & { topicId?: string };
-type QuestionPayload = Omit<QuestionSummary, 'id'> & Record<string, unknown>;
-type BlueprintPayload = Record<string, unknown>;
-type UserUpdatePayload = Partial<AdminUserProfile> & Record<string, unknown>;
-type FactoryBatchPayload = { questions: QuestionSummary[]; topicId: string; subtopicId?: string };
-type LiveSession = Record<string, unknown>;
-type MetricRow = Record<string, unknown>;
+import { AnalyticsAdminClient } from './admin/analytics-admin-client';
+import { AuditAdminClient } from './admin/audit-admin-client';
+import { BlueprintAdminClient } from './admin/blueprint-admin-client';
+import { JobAdminClient } from './admin/job-admin-client';
+import { QuestionAdminClient } from './admin/question-admin-client';
+import { SessionAdminClient } from './admin/session-admin-client';
+import { UserAdminClient } from './admin/user-admin-client';
 
 export class AdminClient {
-  private client: FetchClient;
+  public questions: QuestionAdminClient;
+  public users: UserAdminClient;
+  public analytics: AnalyticsAdminClient;
+  public blueprints: BlueprintAdminClient;
+  public jobs: JobAdminClient;
+  public sessions: SessionAdminClient;
+  public audit: AuditAdminClient;
 
-  constructor(client: FetchClient) {
-    this.client = client;
+  constructor(private client: FetchClient) {
+    this.questions = new QuestionAdminClient(this.client);
+    this.users = new UserAdminClient(this.client);
+    this.analytics = new AnalyticsAdminClient(this.client);
+    this.blueprints = new BlueprintAdminClient(this.client);
+    this.jobs = new JobAdminClient(this.client);
+    this.sessions = new SessionAdminClient(this.client);
+    this.audit = new AuditAdminClient(this.client);
   }
 
-  async getDomains(page: number = 1, limit: number = 20, search?: string) {
-    const query = new URLSearchParams({ page: page.toString(), limit: limit.toString() });
-    if (search != null && search !== '') query.append('search', search);
-
-    return this.client.get<PaginatedResponse<Domain>>(`/admin/domains?${query.toString()}`);
+  // --- QUESTION & REPOSITORY DELEGATES (deprecated) ---
+  getDomains(...args: Parameters<QuestionAdminClient['getDomains']>) {
+    return this.questions.getDomains(...args);
   }
-
-  async getSubjects(page: number = 1, limit: number = 20, domainId?: string, search?: string) {
-    const query = new URLSearchParams({ page: page.toString(), limit: limit.toString() });
-    if (domainId != null && domainId !== '') query.append('domainId', domainId);
-    if (search != null && search !== '') query.append('search', search);
-    
-    return this.client.get<PaginatedResponse<Subject>>(`/admin/subjects?${query.toString()}`);
+  createDomain(...args: Parameters<QuestionAdminClient['createDomain']>) {
+    return this.questions.createDomain(...args);
   }
-
-  async getTopics(page: number = 1, limit: number = 20, subjectId?: string, search?: string) {
-    const query = new URLSearchParams({ page: page.toString(), limit: limit.toString() });
-    if (subjectId != null && subjectId !== '') query.append('subjectId', subjectId);
-    if (search != null && search !== '') query.append('search', search);
-
-    return this.client.get<PaginatedResponse<Topic>>(`/admin/topics?${query.toString()}`);
+  updateDomain(...args: Parameters<QuestionAdminClient['updateDomain']>) {
+    return this.questions.updateDomain(...args);
   }
-
-  async getSubjectsByDomain(domainId: string) {
-    return this.getSubjects(1, 100, domainId).then(res => res.data);
+  deleteDomain(...args: Parameters<QuestionAdminClient['deleteDomain']>) {
+    return this.questions.deleteDomain(...args);
   }
-
-  async getTopicsBySubject(subjectId: string) {
-    return this.getTopics(1, 100, subjectId).then(res => res.data);
+  batchDeleteDomains(...args: Parameters<QuestionAdminClient['batchDeleteDomains']>) {
+    return this.questions.batchDeleteDomains(...args);
   }
 
-  async getTopicSkills(topicId: string) {
-    return this.client.get<Skill[]>(`/admin/topics/${topicId}/skills`);
+  getSubjects(...args: Parameters<QuestionAdminClient['getSubjects']>) {
+    return this.questions.getSubjects(...args);
   }
-
-  async getSubtopics(page: number = 1, limit: number = 20, topicId?: string, search?: string) {
-    const query = new URLSearchParams({ page: page.toString(), limit: limit.toString() });
-    if (topicId != null && topicId !== '') query.append('topicId', topicId);
-    if (search != null && search !== '') query.append('search', search);
-
-    return this.client.get<PaginatedResponse<Subtopic>>(`/admin/subtopics?${query.toString()}`);
+  getSubjectsByDomain(...args: Parameters<QuestionAdminClient['getSubjectsByDomain']>) {
+    return this.questions.getSubjectsByDomain(...args);
   }
-
-  async getSkills(page: number = 1, limit: number = 20, search?: string) {
-    const query = new URLSearchParams({ page: page.toString(), limit: limit.toString() });
-    if (search != null && search !== '') query.append('search', search);
-
-    return this.client.get<PaginatedResponse<Skill>>(`/admin/skills?${query.toString()}`);
+  createSubject(...args: Parameters<QuestionAdminClient['createSubject']>) {
+    return this.questions.createSubject(...args);
   }
-
-  async getQuestions(page: number = 1, limit: number = 20, filters?: { domainId?: string; subjectId?: string; topicId?: string; subtopicId?: string; skillIds?: string[]; status?: string; search?: string }) {
-    const query = new URLSearchParams({ page: page.toString(), limit: limit.toString() });
-    if (filters?.domainId != null && filters.domainId !== '') query.append('domainId', filters.domainId);
-    if (filters?.subjectId != null && filters.subjectId !== '') query.append('subjectId', filters.subjectId);
-    if (filters?.topicId != null && filters.topicId !== '') query.append('topicId', filters.topicId);
-    if (filters?.subtopicId != null && filters.subtopicId !== '') query.append('subtopicId', filters.subtopicId);
-    if (filters?.skillIds != null && filters.skillIds.length > 0) {
-        filters.skillIds.forEach(id => query.append('skillIds', id));
-    }
-    if (filters?.status != null && filters.status !== '') query.append('status', filters.status);
-    if (filters?.search != null && filters.search !== '') query.append('search', filters.search);
-
-    return this.client.get<PaginatedQuestions>(`/admin/questions?${query.toString()}`);
+  updateSubject(...args: Parameters<QuestionAdminClient['updateSubject']>) {
+    return this.questions.updateSubject(...args);
   }
-
-  async getQuestionById(id: string) {
-    return this.client.get<QuestionSummary>(`/admin/questions/${id}`);
+  deleteSubject(...args: Parameters<QuestionAdminClient['deleteSubject']>) {
+    return this.questions.deleteSubject(...args);
   }
-
-  async createDomain(data: DomainPayload) {
-    return this.client.post<Domain, DomainPayload>('/admin/domains', data);
+  batchDeleteSubjects(...args: Parameters<QuestionAdminClient['batchDeleteSubjects']>) {
+    return this.questions.batchDeleteSubjects(...args);
   }
 
-  async updateDomain(id: string, data: Partial<DomainPayload>) {
-    return this.client.patch<Domain, Partial<DomainPayload>>(`/admin/domains/${id}`, data);
+  getTopics(...args: Parameters<QuestionAdminClient['getTopics']>) {
+    return this.questions.getTopics(...args);
   }
-
-  async deleteDomain(id: string) {
-    return this.client.delete<any>(`/admin/domains/${id}`);
+  getTopicsBySubject(...args: Parameters<QuestionAdminClient['getTopicsBySubject']>) {
+    return this.questions.getTopicsBySubject(...args);
   }
-
-  async batchDeleteDomains(ids: string[]) {
-    return this.client.post<any>('/admin/domains/batch-delete', { ids });
+  createTopic(...args: Parameters<QuestionAdminClient['createTopic']>) {
+    return this.questions.createTopic(...args);
   }
-
-  async createSubject(data: SubjectPayload) {
-    return this.client.post<Subject, SubjectPayload>('/admin/subjects', data);
+  updateTopic(...args: Parameters<QuestionAdminClient['updateTopic']>) {
+    return this.questions.updateTopic(...args);
   }
-
-  async updateSubject(id: string, data: Partial<SubjectPayload>) {
-    return this.client.patch<Subject, Partial<SubjectPayload>>(`/admin/subjects/${id}`, data);
+  deleteTopic(...args: Parameters<QuestionAdminClient['deleteTopic']>) {
+    return this.questions.deleteTopic(...args);
   }
-
-  async deleteSubject(id: string) {
-    return this.client.delete<any>(`/admin/subjects/${id}`);
+  batchDeleteTopics(...args: Parameters<QuestionAdminClient['batchDeleteTopics']>) {
+    return this.questions.batchDeleteTopics(...args);
   }
 
-  async batchDeleteSubjects(ids: string[]) {
-    return this.client.post<any>('/admin/subjects/batch-delete', { ids });
+  getSubtopics(...args: Parameters<QuestionAdminClient['getSubtopics']>) {
+    return this.questions.getSubtopics(...args);
   }
-
-  async createTopic(data: TopicPayload) {
-    return this.client.post<Topic, TopicPayload>('/admin/topics', data);
+  createSubtopic(...args: Parameters<QuestionAdminClient['createSubtopic']>) {
+    return this.questions.createSubtopic(...args);
   }
-
-  async updateTopic(id: string, data: Partial<TopicPayload>) {
-    return this.client.patch<Topic, Partial<TopicPayload>>(`/admin/topics/${id}`, data);
+  updateSubtopic(...args: Parameters<QuestionAdminClient['updateSubtopic']>) {
+    return this.questions.updateSubtopic(...args);
   }
-
-  async deleteTopic(id: string) {
-    return this.client.delete<any>(`/admin/topics/${id}`);
+  deleteSubtopic(...args: Parameters<QuestionAdminClient['deleteSubtopic']>) {
+    return this.questions.deleteSubtopic(...args);
   }
-
-  async batchDeleteTopics(ids: string[]) {
-    return this.client.post<any>('/admin/topics/batch-delete', { ids });
+  batchDeleteSubtopics(...args: Parameters<QuestionAdminClient['batchDeleteSubtopics']>) {
+    return this.questions.batchDeleteSubtopics(...args);
   }
 
-  async createSubtopic(data: SubtopicPayload) {
-    return this.client.post<Subtopic, SubtopicPayload>('/admin/subtopics', data);
+  getSkills(...args: Parameters<QuestionAdminClient['getSkills']>) {
+    return this.questions.getSkills(...args);
   }
-
-  async updateSubtopic(id: string, data: Partial<SubtopicPayload>) {
-    return this.client.patch<Subtopic, Partial<SubtopicPayload>>(`/admin/subtopics/${id}`, data);
+  getTopicSkills(...args: Parameters<QuestionAdminClient['getTopicSkills']>) {
+    return this.questions.getTopicSkills(...args);
   }
-
-  async deleteSubtopic(id: string) {
-    return this.client.delete<any>(`/admin/subtopics/${id}`);
+  createSkill(...args: Parameters<QuestionAdminClient['createSkill']>) {
+    return this.questions.createSkill(...args);
   }
-
-  async batchDeleteSubtopics(ids: string[]) {
-    return this.client.post<any>('/admin/subtopics/batch-delete', { ids });
+  updateSkill(...args: Parameters<QuestionAdminClient['updateSkill']>) {
+    return this.questions.updateSkill(...args);
   }
-
-  async createSkill(data: SkillPayload) {
-    return this.client.post<Skill, SkillPayload>('/admin/skills', data);
+  deleteSkill(...args: Parameters<QuestionAdminClient['deleteSkill']>) {
+    return this.questions.deleteSkill(...args);
   }
-
-  async updateSkill(id: string, data: Partial<SkillPayload>) {
-    return this.client.patch<Skill, Partial<SkillPayload>>(`/admin/skills/${id}`, data);
+  batchDeleteSkills(...args: Parameters<QuestionAdminClient['batchDeleteSkills']>) {
+    return this.questions.batchDeleteSkills(...args);
   }
-
-  async deleteSkill(id: string) {
-    return this.client.delete<any>(`/admin/skills/${id}`);
+  mapTopicSkills(...args: Parameters<QuestionAdminClient['mapTopicSkills']>) {
+    return this.questions.mapTopicSkills(...args);
   }
 
-  async batchDeleteSkills(ids: string[]) {
-    return this.client.post<any>('/admin/skills/batch-delete', { ids });
+  getQuestions(...args: Parameters<QuestionAdminClient['getQuestions']>) {
+    return this.questions.getQuestions(...args);
   }
-
-  async mapTopicSkills(topicId: string, skillIds: string[]) {
-    return this.client.post<any>(`/admin/topics/${topicId}/skills`, { skillIds });
+  getQuestionById(...args: Parameters<QuestionAdminClient['getQuestionById']>) {
+    return this.questions.getQuestionById(...args);
   }
-
-  async createQuestion(data: QuestionPayload) {
-    return this.client.post<QuestionSummary, QuestionPayload>('/admin/questions', data);
+  createQuestion(...args: Parameters<QuestionAdminClient['createQuestion']>) {
+    return this.questions.createQuestion(...args);
   }
-
-  async bulkCreateQuestions(data: { topicId: string; subtopicId?: string; skillId?: string; skillIds?: string[]; questions: QuestionPayload[] }) {
-    return this.client.post<{ questions: QuestionSummary[] }, typeof data>('/admin/questions/bulk', data);
+  bulkCreateQuestions(...args: Parameters<QuestionAdminClient['bulkCreateQuestions']>) {
+    return this.questions.bulkCreateQuestions(...args);
   }
-
-  async updateQuestion(id: string, data: Partial<QuestionPayload>) {
-    return this.client.patch<QuestionSummary, Partial<QuestionPayload>>(`/admin/questions/${id}`, data);
+  updateQuestion(...args: Parameters<QuestionAdminClient['updateQuestion']>) {
+    return this.questions.updateQuestion(...args);
   }
-
-  async deleteQuestion(id: string) {
-    return this.client.delete<any>(`/admin/questions/${id}`);
+  deleteQuestion(...args: Parameters<QuestionAdminClient['deleteQuestion']>) {
+    return this.questions.deleteQuestion(...args);
   }
-
-  async batchDeleteQuestions(ids: string[]) {
-    return this.client.post<any>('/admin/questions/batch-delete', { ids });
+  batchDeleteQuestions(...args: Parameters<QuestionAdminClient['batchDeleteQuestions']>) {
+    return this.questions.batchDeleteQuestions(...args);
   }
 
-  async getMetrics() {
-    return this.client.get<any>('/admin/metrics');
+  atomicSeed(...args: Parameters<QuestionAdminClient['atomicSeed']>) {
+    return this.questions.atomicSeed(...args);
   }
-
-  async getUserMetrics() {
-    return this.client.get<any>('/admin/metrics/users');
+  saveFactoryBatch(...args: Parameters<QuestionAdminClient['saveFactoryBatch']>) {
+    return this.questions.saveFactoryBatch(...args);
   }
-
-  async getSecurityMetrics() {
-    return this.client.get<any>('/admin/metrics/security');
+  checkDuplicates(...args: Parameters<QuestionAdminClient['checkDuplicates']>) {
+    return this.questions.checkDuplicates(...args);
   }
 
-  async getContentHealthReport() {
-    return this.client.get<any[]>('/admin/metrics/content');
+  // --- USER DELEGATES (deprecated) ---
+  getUsers(...args: Parameters<UserAdminClient['getUsers']>) {
+    return this.users.getUsers(...args);
   }
-
-  async getPerformanceAnalytics(range: string = '7d') {
-    return this.client.get<any>(`/admin/metrics/performance?range=${range}`);
+  updateUser(...args: Parameters<UserAdminClient['updateUser']>) {
+    return this.users.updateUser(...args);
   }
-
-  async getExamActivity() {
-    return this.client.get<any>('/admin/metrics/exams');
+  deleteUser(...args: Parameters<UserAdminClient['deleteUser']>) {
+    return this.users.deleteUser(...args);
   }
-
-  async getRBACMetrics() {
-    return this.client.get<any[]>('/admin/metrics/rbac');
+  login(...args: Parameters<UserAdminClient['login']>) {
+    return this.users.login(...args);
   }
 
-  async getBlueprintMetrics() {
-    return this.client.get<any>('/admin/metrics/blueprints');
+  // --- BLUEPRINT DELEGATES (deprecated) ---
+  getBlueprints(...args: Parameters<BlueprintAdminClient['getBlueprints']>) {
+    return this.blueprints.getBlueprints(...args);
   }
-
-  async getGrowthMetrics() {
-    return this.client.get<any[]>('/admin/metrics/growth');
+  getBlueprintById(...args: Parameters<BlueprintAdminClient['getBlueprintById']>) {
+    return this.blueprints.getBlueprintById(...args);
   }
-
-  async getAuditLogs() {
-    return this.client.get<any[]>('/admin/logs');
+  createBlueprint(...args: Parameters<BlueprintAdminClient['createBlueprint']>) {
+    return this.blueprints.createBlueprint(...args);
   }
-
-  async getLiveSessions(page: number = 1, limit: number = 10, search?: string) {
-    const query = new URLSearchParams({ page: page.toString(), limit: limit.toString() });
-    if (search != null && search !== '') query.append('search', search);
-
-    return this.client.get<{
-      sessions: LiveSession[];
-      total: number;
-      page: number;
-      limit: number;
-      totalPages: number;
-    }>(`/admin/sessions/live?${query.toString()}`);
+  updateBlueprint(...args: Parameters<BlueprintAdminClient['updateBlueprint']>) {
+    return this.blueprints.updateBlueprint(...args);
   }
-
-  async getUsers(page: number = 1, limit: number = 20, status: 'active' | 'deleted' = 'active', filters?: { search?: string; role?: string; isBlocked?: boolean; isVerified?: boolean; status?: string }) {
-    const query = new URLSearchParams({ page: page.toString(), limit: limit.toString(), status });
-    if (filters?.search != null && filters.search !== '') query.append('search', filters.search);
-    if (filters?.role != null && filters.role !== '') query.append('role', filters.role);
-    if (filters?.isBlocked !== undefined) query.append('isBlocked', filters.isBlocked ? 'true' : 'false');
-    if (filters?.isVerified !== undefined) query.append('isVerified', filters.isVerified ? 'true' : 'false');
-    if (filters?.status != null && filters.status !== '') query.append('xStatus', filters.status);
-
-    return this.client.get<{
-      users: AdminUserProfile[];
-      total: number;
-      page: number;
-      limit: number;
-      totalPages: number;
-    }>(`/admin/users?${query.toString()}`);
+  deleteBlueprint(...args: Parameters<BlueprintAdminClient['deleteBlueprint']>) {
+    return this.blueprints.deleteBlueprint(...args);
   }
 
-  async updateUser(id: string, data: UserUpdatePayload) {
-    return this.client.patch<AdminUserProfile, UserUpdatePayload>(`/admin/users/${id}`, data);
+  // --- ANALYTICS DELEGATES (deprecated) ---
+  getMetrics(...args: Parameters<AnalyticsAdminClient['getMetrics']>) {
+    return this.analytics.getMetrics(...args);
   }
-
-  async deleteUser(id: string) {
-    return this.client.delete<any>(`/admin/users/${id}`);
+  getUserMetrics(...args: Parameters<AnalyticsAdminClient['getUserMetrics']>) {
+    return this.analytics.getUserMetrics(...args);
   }
-
-  async login(email: string, password: string) {
-    return this.client.post<{ user: AdminUserProfile; accessToken: string; expiresAt: string | null }>(
-      '/admin/auth/login',
-      { email, password }
-    );
+  getSecurityMetrics(...args: Parameters<AnalyticsAdminClient['getSecurityMetrics']>) {
+    return this.analytics.getSecurityMetrics(...args);
   }
-
-  async getBlueprints(page: number = 1, limit: number = 20, search?: string) {
-    const query = new URLSearchParams({ page: page.toString(), limit: limit.toString() });
-    if (search != null && search !== '') query.append('search', search);
-
-    return this.client.get<PaginatedResponse<Record<string, unknown>>>(`/admin/blueprints?${query.toString()}`);
+  getContentHealthReport(...args: Parameters<AnalyticsAdminClient['getContentHealthReport']>) {
+    return this.analytics.getContentHealthReport(...args);
   }
-
-  async getBlueprintById(id: string) {
-    return this.client.get<Record<string, unknown>>(`/admin/blueprints/${id}`);
+  getPerformanceAnalytics(...args: Parameters<AnalyticsAdminClient['getPerformanceAnalytics']>) {
+    return this.analytics.getPerformanceAnalytics(...args);
   }
-
-  async createBlueprint(data: BlueprintPayload) {
-    return this.client.post<Record<string, unknown>, BlueprintPayload>('/admin/blueprints', data);
+  getExamActivity(...args: Parameters<AnalyticsAdminClient['getExamActivity']>) {
+    return this.analytics.getExamActivity(...args);
   }
-
-  async updateBlueprint(id: string, data: Partial<BlueprintPayload>) {
-    return this.client.patch<Record<string, unknown>, Partial<BlueprintPayload>>(`/admin/blueprints/${id}`, data);
+  getRBACMetrics(...args: Parameters<AnalyticsAdminClient['getRBACMetrics']>) {
+    return this.analytics.getRBACMetrics(...args);
   }
-
-  async deleteBlueprint(id: string) {
-    return this.client.delete<any>(`/admin/blueprints/${id}`);
+  getBlueprintMetrics(...args: Parameters<AnalyticsAdminClient['getBlueprintMetrics']>) {
+    return this.analytics.getBlueprintMetrics(...args);
   }
-
-  async atomicSeed(data: Record<string, unknown>) {
-    return this.client.post<Record<string, unknown>, Record<string, unknown>>('/admin/hierarchy/atomic', data);
+  getGrowthMetrics(...args: Parameters<AnalyticsAdminClient['getGrowthMetrics']>) {
+    return this.analytics.getGrowthMetrics(...args);
   }
-
-  async saveFactoryBatch(data: FactoryBatchPayload) {
-    return this.client.post<Record<string, unknown>, FactoryBatchPayload>('/factory/save', data);
+  getSystemUsage(...args: Parameters<AnalyticsAdminClient['getSystemUsage']>) {
+    return this.analytics.getSystemUsage(...args);
   }
-
-  async checkDuplicates(data: { questions: { questionText: string }[]; topicId: string }) {
-    return this.client.post<{ details: Array<{ id?: string; questionText: string }>; foundCount: number }>(
-      '/factory/check-duplicates',
-      data
-    );
+  getTrendSummary(...args: Parameters<AnalyticsAdminClient['getTrendSummary']>) {
+    return this.analytics.getTrendSummary(...args);
   }
-
-  async getSystemUsage() {
-    return this.client.get<any>('/admin/system/usage');
+  getScoreTrends(...args: Parameters<AnalyticsAdminClient['getScoreTrends']>) {
+    return this.analytics.getScoreTrends(...args);
   }
-
-  async getTrendSummary(params: { range?: string } = {}) {
-    const query = new URLSearchParams();
-    if (params.range != null && params.range !== '') query.append('range', params.range);
-    return this.client.get<AdminTrendSummary>(`/admin/trends/summary?${query.toString()}`);
+  getSkillTrends(...args: Parameters<AnalyticsAdminClient['getSkillTrends']>) {
+    return this.analytics.getSkillTrends(...args);
   }
 
-  async getScoreTrends(params: { userId?: string; range?: string } = {}) {
-    const query = new URLSearchParams();
-    if (params.userId != null && params.userId !== '') query.append('userId', params.userId);
-    if (params.range != null && params.range !== '') query.append('range', params.range);
-    return this.client.get<{ scores: MetricRow[] }>(`/admin/trends/scores?${query.toString()}`);
+  // --- JOB DELEGATES (deprecated) ---
+  createJob(...args: Parameters<JobAdminClient['createJob']>) {
+    return this.jobs.createJob(...args);
   }
-
-  async getSkillTrends(params: { userId?: string; range?: string } = {}) {
-    const query = new URLSearchParams();
-    if (params.userId != null && params.userId !== '') query.append('userId', params.userId);
-    if (params.range != null && params.range !== '') query.append('range', params.range);
-    return this.client.get<{ skills: MetricRow[] }>(`/admin/trends/skills?${query.toString()}`);
+  getJobById(...args: Parameters<JobAdminClient['getJobById']>) {
+    return this.jobs.getJobById(...args);
   }
 
-  async createJob(type: string, payload?: Record<string, unknown>) {
-    return this.client.post<{ job: BackgroundJob }>('/admin/jobs', { type, payload });
+  // --- SESSION DELEGATES (deprecated) ---
+  getLiveSessions(...args: Parameters<SessionAdminClient['getLiveSessions']>) {
+    return this.sessions.getLiveSessions(...args);
   }
 
-  async getJobById(id: string) {
-    return this.client.get<{ job: BackgroundJob }>(`/admin/jobs/${id}`);
+  // --- AUDIT DELEGATES (deprecated) ---
+  getAuditLogs(...args: Parameters<AuditAdminClient['getAuditLogs']>) {
+    return this.audit.getAuditLogs(...args);
   }
 }

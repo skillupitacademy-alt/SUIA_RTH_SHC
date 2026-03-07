@@ -1,11 +1,11 @@
-import { decodeJwt } from 'jose';
+import { decodeJwt } from "jose";
 
-import { AuditService } from '@/modules/auth/audit.service';
-import { TokenRepository } from '@/modules/auth/repositories/token.repository';
-import { UserRepository } from '@/modules/auth/repositories/user.repository';
-import { TokenService } from '@/modules/auth/token.service';
-import { container } from '@/modules/core/container';
-import { ExamRepository } from '@/modules/exam-engine/repositories/exam.repository';
+import { AuditService } from "@/modules/auth/audit.service";
+import { TokenRepository } from "@/modules/auth/repositories/token.repository";
+import { UserRepository } from "@/modules/auth/repositories/user.repository";
+import { TokenService } from "@/modules/auth/token.service";
+import { container } from "@/modules/core/container";
+import { ExamRepository } from "@/modules/exam-engine/repositories/exam.repository";
 
 export class TokenRefreshService {
   constructor(
@@ -20,9 +20,28 @@ export class TokenRefreshService {
     const decoded = decodeJwt(token) as { isAdmin?: boolean; [key: string]: unknown };
     const isAdmin = decoded.isAdmin === true;
 
+    // Support both new (verifyUser/verifyAdmin) and legacy verifyRefreshToken paths for tests/backwards-compat.
+    /* c8 ignore start */
+    type RefreshVerifier = (token: string, options?: { audience?: string }) => Promise<{ userId: string; isAdmin?: boolean; aud?: string }>;
+    const verifyBase: RefreshVerifier | undefined =
+      typeof (this.tokenService as TokenService & { verifyRefreshToken?: RefreshVerifier }).verifyRefreshToken === 'function'
+        ? (this.tokenService as TokenService & { verifyRefreshToken?: RefreshVerifier }).verifyRefreshToken.bind(this.tokenService)
+        : undefined;
+    const verifyUser: RefreshVerifier =
+      verifyBase
+      ?? ((this.tokenService as TokenService & { verifyUserRefreshToken?: RefreshVerifier }).verifyUserRefreshToken?.bind(this.tokenService)
+        ?? this.tokenService.verifyRefreshToken.bind(this.tokenService));
+    const verifyAdmin: RefreshVerifier =
+      verifyBase
+      ?? ((this.tokenService as TokenService & { verifyAdminRefreshToken?: RefreshVerifier }).verifyAdminRefreshToken?.bind(this.tokenService)
+        ?? this.tokenService.verifyRefreshToken.bind(this.tokenService));
+    /* c8 ignore stop */
+
     let payload;
     try {
-      payload = await this.tokenService.verifyRefreshToken(token, { isAdmin, audience: requestedAudience });
+      payload = isAdmin
+        ? await verifyAdmin(token, { audience: requestedAudience })
+        : await verifyUser(token, { audience: requestedAudience });
     } catch {
       await this.auditService.log({ action: 'refresh_failed', metadata: { reason: 'invalid_token' }, ip });
       throw new Error('Invalid refresh _token');

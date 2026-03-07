@@ -2,6 +2,7 @@ import { db, notifications, topics, tutorHelpRequests, userRecommendations } fro
 import { METRICS } from "@quiz/observability";
 import { and, desc, eq, sql } from "drizzle-orm";
 import { type NextRequest } from "next/server";
+import { z } from "zod";
 
 import { badRequest, unauthorized } from "@/lib/api-error";
 import { ApiResponse } from "@/lib/api-response";
@@ -9,9 +10,14 @@ import { recordCounter, recordTimer } from "@/lib/metrics";
 import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from "@/lib/sanitize";
 import { withLogging } from "@/lib/withLogging";
 import { TokenService } from "@/modules/auth/token.service";
-import { container } from '@/modules/core/container';
+import { container } from "@/modules/core/container";
 
 export const dynamic = "force-dynamic";
+
+const helpRequestSchema = z.object({
+  topicId: z.string().min(1, "topicId is required"),
+  priority: z.enum(["low", "medium", "high"]).optional().default("low"),
+});
 
 const HELP_REQUEST_COOLDOWN_HOURS = 12;
 
@@ -22,7 +28,7 @@ async function postHandler(req: NextRequest) {
     if (token === null || token === undefined || token === "") {
       throw unauthorized("Unauthorized");
     }
-    const payload = await container.get(TokenService).verifyAccessToken(token, false);
+    const payload = await container.get(TokenService).verifyUserAccessToken(token);
     if (payload === null || payload === undefined || payload.userId === null || payload.userId === undefined) {
       throw unauthorized("Authentication required");
     }
@@ -33,17 +39,13 @@ async function postHandler(req: NextRequest) {
       throw badRequest("Payload too deep or large");
     }
 
-    const body = sanitizeJsonField(rawBody) as { topicId?: string; priority?: string };
-    const topicId = typeof body.topicId === "string" ? body.topicId.trim() : "";
-    const priorityRaw = typeof body.priority === "string" ? body.priority.trim() : "low";
-    const allowedPriority = ["low", "medium", "high"] as const;
-    const priority = allowedPriority.includes(priorityRaw as (typeof allowedPriority)[number])
-      ? (priorityRaw as (typeof allowedPriority)[number])
-      : "low";
-
-    if (topicId.length === 0) {
-      throw badRequest("topicId is required");
+    const sanitized = sanitizeJsonField(rawBody);
+    const parsed = helpRequestSchema.safeParse(sanitized);
+    if (!parsed.success) {
+      throw badRequest("Invalid payload: " + parsed.error.issues[0]?.message);
     }
+
+    const { topicId, priority } = parsed.data;
 
     const recentRequest = await db.query.tutorHelpRequests.findFirst({
       where: and(

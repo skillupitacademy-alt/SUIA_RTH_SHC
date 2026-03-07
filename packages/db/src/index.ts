@@ -97,7 +97,12 @@ export const getDb = (type: 'primary' | 'replica' = 'primary'): DbClient => {
         });
 
         pool.on('error', (err) => console.error('[DB Pool Error]', err));
-        pool.on('connect', () => { if (process.env.DEBUG_DB) console.log('[DB Pool] New connection created'); });
+        pool.on('connect', (client) => { 
+            if (process.env.DEBUG_DB) console.log('[DB Pool] New connection created'); 
+            // Task 37: Enforce server-side timeouts
+            client.query('SET statement_timeout = 10000'); // 10s
+            client.query('SET idle_in_transaction_session_timeout = 30000'); // 30s
+        });
 
         primaryDbInstance = drizzle(pool, { schema });
     }

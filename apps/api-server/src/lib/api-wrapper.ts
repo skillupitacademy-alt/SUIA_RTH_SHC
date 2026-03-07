@@ -6,6 +6,7 @@ import { z } from 'zod';
 import { ApiError, validationError } from './api-error';
 import { ApiResponse } from './api-response';
 import { runWithTrace } from './trace.context';
+import * as Sentry from '@sentry/nextjs';
 
 /**
  * Enhanced API Route Handler Wrapper (Tasks 29, 35)
@@ -63,6 +64,8 @@ export function withApiHandler<T, S extends z.Schema>(
         // Log unexpected internal errors
         if (apiError.status >= 500) {
           console.error(`[API Error] ${options?.component ?? 'unknown'}:${options?.operation ?? 'unknown'}`, error);
+          // Task 32: Explicit Sentry Capture for visibility
+          Sentry.captureException(error);
         }
 
         return ApiResponse.error(apiError, apiError.status);

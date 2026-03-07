@@ -1,9 +1,9 @@
-import { type NextRequest, NextResponse } from 'next/server';
+import { type NextRequest, NextResponse } from "next/server";
 
-import { logger } from '@/lib/logger';
-import { TokenService } from '@/modules/auth/token.service';
-import { cacheService } from '@/modules/core/cache.service';
-import { container } from '@/modules/core/container';
+import { logger } from "@/lib/logger";
+import { TokenService } from "@/modules/auth/token.service";
+import { cacheService } from "@/modules/core/cache.service";
+import { container } from "@/modules/core/container";
 
 const WINDOW_MS = 15 * 60 * 1000;
 
@@ -31,14 +31,28 @@ export async function rateLimit(_request: NextRequest) {
   } else if (path.startsWith('/api/quiz') || path.startsWith('/api/auth') || path.startsWith('/api/reports') || path.startsWith('/api/dashboard')) {
     scope = 'user';
   }
+  const tokenService = container.get(TokenService);
 
-  const _token = scope ? container.get(TokenService).getAccessToken(_request, { scope }) : undefined;
+  const _token = scope ? tokenService.getAccessToken(_request, { scope }) : undefined;
   let userId: string | null = null;
   
   if (_token !== undefined && _token !== null && scope !== undefined) {
     try {
-      const _payload = await container.get(TokenService).verifyAccessToken(_token, scope === 'admin');
-      userId = _payload.userId;
+      type AccessVerifier = (token: string) => Promise<{ userId: string }>;
+      const verifyUser: AccessVerifier | undefined =
+        (tokenService as TokenService & { verifyUserAccessToken?: AccessVerifier }).verifyUserAccessToken?.bind(tokenService)
+        ?? tokenService.verifyAccessToken?.bind(tokenService);
+      const verifyAdmin: AccessVerifier | undefined =
+        (tokenService as TokenService & { verifyAdminAccessToken?: AccessVerifier }).verifyAdminAccessToken?.bind(tokenService)
+        ?? tokenService.verifyAccessToken?.bind(tokenService);
+
+      const verifyFn = scope === 'admin' ? verifyAdmin : verifyUser;
+
+      if (verifyFn !== undefined) {
+        const _payload = await verifyFn(_token);
+        const payloadUserId = (_payload as { userId?: string | null }).userId;
+        userId = payloadUserId ?? null;
+      }
     } catch {
       // Invalid _token, ignore _user-based limit
     }

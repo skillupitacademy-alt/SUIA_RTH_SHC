@@ -1,6 +1,7 @@
 'use client';
 
 import { apiClient } from '@quiz/api-client';
+import type { AdminContentHealthReport } from '@quiz/api-client/types/admin.types';
 import { recordCounter } from '@quiz/observability';
 import { ZLoader } from '@quiz/ui';
 import {
@@ -72,7 +73,23 @@ export function ContentReadinessBoard() {
         try {
             setError(null);
             const data = await apiClient.admin.getContentHealthReport();
-            setDomains(data);
+            const normalized: DomainHealth[] = Array.isArray(data)
+                ? (data as AdminContentHealthReport[]).map((d) => ({
+                    domainId: d.domainId,
+                    domainName: d.domainName,
+                    isReady: false,
+                    hasBlueprint: false,
+                    stats: {
+                        simple: d.stats.simple ?? 0,
+                        intermediate: d.stats.intermediate ?? 0,
+                        expert: d.stats.expert ?? 0,
+                        isReady: false,
+                        total: d.stats.total ?? 0,
+                    },
+                    subjects: d.subjects as unknown as SubjectHealth[] | undefined
+                }))
+                : [];
+            setDomains(normalized);
             if (data.length === 0) {
                 recordCounter('admin.ui.content.empty', 1);
             } else {

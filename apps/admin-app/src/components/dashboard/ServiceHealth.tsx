@@ -1,6 +1,7 @@
 'use client';
 
 import { apiClient } from '@quiz/api-client';
+import type { AdminSystemUsage } from '@quiz/api-client/types/admin.types';
 import { recordCounter } from '@quiz/observability';
 import type { LucideIcon } from 'lucide-react';
 import { AlertCircle, CheckCircle2, Cloud, Database, Mail, RefreshCw, Server } from 'lucide-react';
@@ -16,12 +17,12 @@ interface ServiceMetric {
     error?: { message: string };
 }
 
-interface ServiceData {
-    neon: ServiceMetric;
-    redis: ServiceMetric;
-    resend: ServiceMetric;
-    cloudflare: ServiceMetric;
-}
+type ServiceData = Record<string, ServiceMetric> & {
+    neon?: ServiceMetric;
+    redis?: ServiceMetric;
+    resend?: ServiceMetric;
+    cloudflare?: ServiceMetric;
+};
 export function ServiceHealth() {
     const [data, setData] = useState<ServiceData | null>(null);
     const [loading, setLoading] = useState(true);
@@ -30,8 +31,8 @@ export function ServiceHealth() {
     const fetchData = async () => {
         try {
             setLoading(true);
-            const res = await apiClient.admin.getSystemUsage();
-            setData(res);
+            const res = await apiClient.admin.getSystemUsage() as AdminSystemUsage;
+            setData(res as unknown as ServiceData);
             setError(null);
             recordCounter('admin.ui.system.health_success', 1);
         } catch (err: unknown) {

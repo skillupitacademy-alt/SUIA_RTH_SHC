@@ -2278,39 +2278,18 @@
 > These items were identified during the Phase 1 audit as low-priority or deferred.
 > They should be addressed as a "Cleanup Sprint" at the start of Phase 2.
 
-### CF-1: Write Playwright E2E Test Files (Phase 1 Task 13)
+### CF-1: [DEFERRED TO LAST PHASE] Write Playwright E2E Test Files (Phase 1 Task 13)
 
-**Status**: Playwright config exists, `@playwright/test` installed. No actual test files written.
-
-**AI Prompt:**
-
-> The Playwright infrastructure is installed and configured at `playwright.config.ts`. Write E2E smoke tests for the critical user flows:
->
-> 1. **Student Login Flow**: Navigate to `/login`, enter credentials, verify redirect to `/dashboard`
-> 2. **Exam Flow**: Start a quiz from `/quiz`, answer questions, submit, verify results page
-> 3. **Admin Login Flow**: Navigate to admin login, verify admin dashboard loads
->
-> Place tests in `apps/web-app/tests/e2e/` and `apps/admin-app/tests/e2e/`.
-> Use the existing `_skip-placeholder.spec.ts` files as a starting point.
+> [!NOTE]
+> Playwright E2E testing deferred to the **last phase** of the project per user request on 2026-03-07.
+> Infrastructure is installed (`playwright.config.ts`, `@playwright/test`). Test files to be written in last phase.
 
 ---
 
-### CF-2: Create Comprehensive Test Database Seed Script (Phase 1 Task 14)
+### CF-2: [PERMANENTLY REMOVED] Test Database Seed Script (Phase 1 Task 14)
 
-**Status**: `packages/db/seed-enterprise.ts` exists but may not be comprehensive.
-
-**AI Prompt:**
-
-> Enhance `packages/db/seed-enterprise.ts` to create a complete, realistic test dataset:
->
-> - 5 student users, 2 admin users, 1 teacher user
-> - 3 domains → 6 subjects → 12 topics → 24 subtopics
-> - 100 questions across different difficulties and topics
-> - 10 completed exams with scores and dimension breakdowns
-> - 5 generated PDF reports
-> - Audit log entries covering login, exam submission, and admin actions
->
-> Add a `seed` script to `packages/db/package.json`.
+> [!NOTE]
+> This task has been permanently removed per user request on 2026-03-07. Will not be implemented.
 
 ---
 

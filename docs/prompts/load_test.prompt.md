@@ -40,7 +40,5 @@
    - Ensure all sub-services (Scoring, selection, auth) have 90%+ coverage.
    - Reference `apps/api-server/src/__test-utils__` for mocks.
 
-2. **Playwright E2E Smoke Tests (Task 13)**:
-   - Implement login and checkout flows in `apps/web-app/tests/e2e`.
-   - Implement admin console flows in `apps/admin-app/tests/e2e`.
+2. **Playwright E2E Smoke Tests (Task 13)** — *Deferred to last phase per user request on 2026-03-07*.
 

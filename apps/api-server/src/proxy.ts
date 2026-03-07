@@ -80,8 +80,11 @@ export async function proxy(request: NextRequest) {
 
     if (!isSystemBypass) {
       try {
+        const tokenService = container.get(TokenService);
         const isAdmin = scope === 'admin' || scope === 'infrastructure';
-        const _payload = await container.get(TokenService).verifyAccessToken(_token!, { isAdmin, audience: expectedAudience });
+        const _payload = isAdmin 
+            ? await tokenService.verifyAdminAccessToken(_token!, { audience: expectedAudience })
+            : await tokenService.verifyUserAccessToken(_token!, { audience: expectedAudience });
 
         const isInfraRoute = pathname.startsWith('/api/admin') && portalIdentity === 'infrastructure';
         const isAdminRoute = (pathname.startsWith('/api/admin') && !pathname.startsWith('/api/admin/auth') && portalIdentity !== 'infrastructure') || 

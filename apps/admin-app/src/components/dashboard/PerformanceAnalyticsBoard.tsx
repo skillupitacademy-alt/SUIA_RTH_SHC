@@ -1,6 +1,7 @@
 'use client';
 
 import { apiClient } from '@quiz/api-client';
+import type { AdminMetricRow } from '@quiz/api-client/types/admin.types';
 import { recordClientMetric } from '@quiz/observability';
 import { ZLoader } from '@quiz/ui';
 import { BarChart2, Target } from 'lucide-react';
@@ -41,15 +42,11 @@ interface PerformanceData {
     efficiency: EfficiencyData; // Properly typed
 }
 
-interface GrowthMetric {
-    id: string;
-    name: string;
-    accuracy: number;
-    sampleSize: number;
-}
+import type { AdminMetricRow } from '@quiz/api-client/types/admin.types';
 
 export function PerformanceAnalyticsBoard() {
     const [perf, setPerf] = useState<PerformanceData | null>(null);
+    type GrowthMetric = { id: string; name: string; accuracy: number; sampleSize: number };
     const [growth, setGrowth] = useState<GrowthMetric[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [range, setRange] = useState<TimeRange>('7d');
@@ -65,7 +62,14 @@ export function PerformanceAnalyticsBoard() {
                     apiClient.admin.getGrowthMetrics()
                 ]);
                 const typedPerf = perfData as PerformanceData | null;
-                const typedGrowth = Array.isArray(growthData) ? (growthData as GrowthMetric[]) : [];
+                const typedGrowth = Array.isArray(growthData)
+                    ? (growthData as AdminMetricRow[]).map((g, idx) => ({
+                        id: (g as { id?: string }).id ?? g.date ?? `metric-${idx}`,
+                        name: (g as { name?: string }).name ?? g.date ?? 'Metric',
+                        accuracy: typeof g.score === 'number' ? Math.round(g.score * 100) / 100 : 0,
+                        sampleSize: typeof g.count === 'number' ? g.count : 0
+                    }))
+                    : [];
                 setPerf(typedPerf);
                 setGrowth(typedGrowth);
                 if (
@@ -200,13 +204,13 @@ export function PerformanceAnalyticsBoard() {
                         </div>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-                        {Array.isArray(growth) && growth.map((t) => (
-                            <div key={t.id} className="p-6 rounded-[2rem] bg-white border border-amber-500/20 shadow-sm text-center">
+                    {Array.isArray(growth) && growth.map((t, idx) => (
+                            <div key={t.id ?? idx.toString()} className="p-6 rounded-[2rem] bg-white border border-amber-500/20 shadow-sm text-center">
                                 <p className="alpha-terminal text-slate-600 mb-1 truncate !tracking-wide">{t.name}</p>
                                 <p className="text-2xl font-outfit font-black text-rose-600">{t.accuracy}% Accuracy</p>
                                 <p className="text-xs font-inter font-bold text-slate-400 mt-2 uppercase tracking-wide">{t.sampleSize} Results</p>
                             </div>
-                        ))}
+                    ))}
                     </div>
                 </div>
             )}

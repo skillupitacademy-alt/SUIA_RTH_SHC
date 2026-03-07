@@ -22,6 +22,9 @@ This registry maps the **Task IDs** from the [Master Blueprints](file:///d:/onli
 | Async Submissions | Scaling | [phase-2-async-prompt.md](file:///d:/onlinewebsites/quiz-platform/docs/prompts/phase-2-async-prompt.md) |
 | Dashboard QA | UI/UX | [dashboard_sanity_prompt.md](file:///d:/onlinewebsites/quiz-platform/docs/prompts/dashboard_sanity_prompt.md) |
 | Foundation | Core Logic | [phase-2-async-prompt.md](file:///d:/onlinewebsites/quiz-platform/docs/prompts/phase-2-async-prompt.md) |
+| T79–T91 Frontend Opt | Performance | [phase-2-frontend-optimization.prompt.md](file:///d:/onlinewebsites/quiz-platform/docs/prompts/phase-2-frontend-optimization.prompt.md) |
+| T92–T98 Database Opt | Data Layer | [phase-2-database-optimization.prompt.md](file:///d:/onlinewebsites/quiz-platform/docs/prompts/phase-2-database-optimization.prompt.md) |
+| CF-3/4/6/7 Carry-Forwards | Cleanup Sprint | [phase-2-carry-forwards.prompt.md](file:///d:/onlinewebsites/quiz-platform/docs/prompts/phase-2-carry-forwards.prompt.md) |
 
 ## 🛡️ Phase 3: Scale Preparation (Reliance)
 | Task Area | Domain | Prompt File |

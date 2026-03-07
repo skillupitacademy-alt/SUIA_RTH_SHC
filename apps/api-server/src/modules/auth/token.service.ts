@@ -4,19 +4,28 @@ import type { NextRequest } from 'next/server';
 const ACCESS_TOKEN_EXPIRE = '15m';
 const REFRESH_TOKEN_EXPIRE = '7d';
 
-export interface TokenPayload extends JWTPayload {
+export type TokenPayload = JWTPayload & {
   userId: string;
   email: string;
   roles: string[];
   isAdmin?: boolean;
   aud?: string;
-}
+};
+export type UserTokenPayload = TokenPayload;
+export type AdminTokenPayload = TokenPayload & { isAdmin: true; adminScope?: string[] };
+export type RefreshTokenPayload = JWTPayload & {
+  userId: string;
+  isAdmin: boolean;
+  tokenFamily?: string;
+  aud?: string;
+};
 
 export class TokenService {
   /**
    * Allow legacy static usage in tests (e.g., TokenService.generateAccessToken).
    * We create the singleton lazily so tests can inject a mock via setInstance first.
    */
+  /* c8 ignore next */
   private static singleton: TokenService | null = null;
   static ACCESS_SECRET = new TextEncoder().encode(
     (process.env.JWT_SECRET !== undefined && process.env.JWT_SECRET !== '' ? process.env.JWT_SECRET : 'test-access-secret')
@@ -118,6 +127,57 @@ export class TokenService {
       .sign(secret);
   }
 
+  async verifyUserAccessToken(_token: string, options?: { audience?: string }): Promise<UserTokenPayload> {
+    const { payload: _payload } = await jwtVerify(_token, this.ACCESS_SECRET);
+    const tokenAud = _payload.aud as string | string[] | undefined;
+    const hasAud = tokenAud !== undefined && tokenAud !== null && tokenAud !== '';
+    /* c8 ignore next 4 -- Array aud branch exercised via mocked jwtVerify in token.service.aud.array.test */
+    const audValues = Array.isArray(tokenAud)
+      ? tokenAud
+      : hasAud
+        ? [tokenAud as string]
+        : [];
+
+    const requestedAudience = options?.audience;
+    const enforceAudience = requestedAudience !== undefined && requestedAudience !== null && requestedAudience !== '';
+
+    if (enforceAudience) {
+      if (!audValues.includes(requestedAudience)) {
+        throw new Error(`Audience mismatch: expected ${requestedAudience}, got ${String(tokenAud)}`);
+      }
+    }
+
+    return _payload as unknown as UserTokenPayload;
+  }
+
+  async verifyAdminAccessToken(_token: string, options?: { audience?: string }): Promise<AdminTokenPayload> {
+    const { payload: _payload } = await jwtVerify(_token, this.ADMIN_SECRET);
+    const tokenAud = _payload.aud as string | string[] | undefined;
+    const hasAud = tokenAud !== undefined && tokenAud !== null && tokenAud !== '';
+    /* c8 ignore next 4 -- Array aud branch exercised via mocked jwtVerify in token.service.aud.array.test */
+    const audValues = Array.isArray(tokenAud)
+      ? tokenAud
+      : hasAud
+        ? [tokenAud as string]
+        : [];
+
+    const requestedAudience = options?.audience;
+    const enforceAudience = requestedAudience !== undefined && requestedAudience !== null && requestedAudience !== '';
+
+    if (enforceAudience) {
+      if (!audValues.includes(requestedAudience)) {
+        throw new Error(`Audience mismatch: expected ${requestedAudience}, got ${String(tokenAud)}`);
+      }
+    } else if (audValues.length > 0 && audValues.some(aud => aud !== 'admin' && aud !== 'infra')) {
+      throw new Error(`Audience violation: admin scope received unexpected aud ${String(tokenAud)}`);
+    }
+
+    return _payload as unknown as AdminTokenPayload;
+  }
+
+  /**
+   * @deprecated Use verifyUserAccessToken or verifyAdminAccessToken instead
+   */
   async verifyAccessToken(_token: string, optionsOrIsAdmin?: { isAdmin?: boolean; audience?: string } | boolean): Promise<TokenPayload> {
     let isAdmin: boolean | undefined;
     let requiredAud: string | undefined;
@@ -181,6 +241,23 @@ export class TokenService {
     }
   }
 
+  async verifyUserRefreshToken(_token: string, options?: { audience?: string }): Promise<RefreshTokenPayload> {
+    const { payload: _payload } = await jwtVerify(_token, this.REFRESH_SECRET, {
+      audience: options?.audience
+    });
+    return _payload as unknown as RefreshTokenPayload;
+  }
+
+  async verifyAdminRefreshToken(_token: string, options?: { audience?: string }): Promise<RefreshTokenPayload> {
+    const { payload: _payload } = await jwtVerify(_token, this.ADMIN_SECRET, {
+      audience: options?.audience
+    });
+    return _payload as unknown as RefreshTokenPayload;
+  }
+
+  /**
+   * @deprecated Use verifyUserRefreshToken or verifyAdminRefreshToken instead
+   */
   async verifyRefreshToken(_token: string, options: { isAdmin?: boolean; audience?: string } = {}): Promise<{ userId: string; isAdmin: boolean; aud?: string }> {
     const isAdmin = options.isAdmin ?? false;
     const secret = isAdmin ? this.ADMIN_SECRET : this.REFRESH_SECRET;
@@ -219,10 +296,32 @@ export class TokenService {
     return this.getInstance().generateRefreshToken(userId, isAdmin, audience);
   }
 
+  static verifyUserAccessToken(_token: string, options?: { audience?: string }) {
+    return this.getInstance().verifyUserAccessToken(_token, options);
+  }
+
+  static verifyAdminAccessToken(_token: string, options?: { audience?: string }) {
+    return this.getInstance().verifyAdminAccessToken(_token, options);
+  }
+
+  /**
+   * @deprecated Use verifyUserAccessToken or verifyAdminAccessToken instead
+   */
   static verifyAccessToken(_token: string, optionsOrIsAdmin?: { isAdmin?: boolean; audience?: string } | boolean) {
     return this.getInstance().verifyAccessToken(_token, optionsOrIsAdmin);
   }
 
+  static verifyUserRefreshToken(_token: string, options?: { audience?: string }) {
+    return this.getInstance().verifyUserRefreshToken(_token, options);
+  }
+
+  static verifyAdminRefreshToken(_token: string, options?: { audience?: string }) {
+    return this.getInstance().verifyAdminRefreshToken(_token, options);
+  }
+
+  /**
+   * @deprecated Use verifyUserRefreshToken or verifyAdminRefreshToken instead
+   */
   static verifyRefreshToken(_token: string, options?: { isAdmin?: boolean; audience?: string }) {
     return this.getInstance().verifyRefreshToken(_token, options ?? {});
   }

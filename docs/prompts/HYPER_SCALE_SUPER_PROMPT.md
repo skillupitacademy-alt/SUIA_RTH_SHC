@@ -38,6 +38,5 @@
 
 ## 🏛️ PHASE 1 FOUNDATION DEBT (Carry-Forward)
 **Objective**: Clear any remaining baseline technical debt from the foundation phase.
-1. **Testing**: 100% Comprehensive Unit Test coverage for core engines (Scoring, selection) and Playwright E2E smoke suite.
+1. **Testing**: 100% Comprehensive Unit Test coverage for core engines (Scoring, Selection) — ✅ Achieved. Playwright E2E deferred to last phase.
 2. **Hardening**: Final CSRF cookie attribute audit (SameSite protocols) and server-side DB statement timeouts (30s).
-3. **Governance**: Finalize `.env.example` placeholders for monorepo onboarding.

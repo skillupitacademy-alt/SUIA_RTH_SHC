@@ -146,3 +146,5 @@ export interface BackgroundJob {
   createdAt: string;
   updatedAt: string;
 }
+
+export * from './types/admin.types';

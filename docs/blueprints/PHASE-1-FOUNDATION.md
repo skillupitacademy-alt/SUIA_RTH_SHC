@@ -7,7 +7,7 @@
 
 ## 1.1 — TESTING INFRASTRUCTURE (Tasks 1-14)
 
-> **CARRY-FORWARD**: Comprehensive test suites (Tasks 3-11), Playwright E2E (Task 13), and Seed Enhancement (Task 14 **[OBSOLETE - REMOVED]**) are moved to **Phase 2 (Cleanup Sprint)**.
+> **CARRY-FORWARD**: Comprehensive test suites (Tasks 3-11) are moved to **Phase 2 (Cleanup Sprint)**. Playwright E2E (Task 13) is **deferred to Last Phase**. Task 14 (Seed Scripts) and Task 44 (.env.example) are **permanently removed** per user request.
 
 ---
 
@@ -373,43 +373,11 @@
 
 ---
 
-### Task 13: Add Playwright for E2E Tests
+### Task 13: [DEFERRED TO LAST PHASE]
 
-**AI Prompt:**
-
-> I need to set up Playwright for end-to-end testing in my Quiz Platform monorepo. The monorepo has two frontend apps that need E2E tests:
->
-> - `apps/web-app` — Student-facing quiz platform (exam taking, score viewing, auth)
-> - `apps/admin-app` — Admin dashboard (question management, analytics, user management)
->
-> And one API server:
-> - `apps/api-server` — Backend API
->
-> Set up Playwright at the monorepo root level:
->
-> 1. Install `@playwright/test` as a root dev dependency
-> 2. Create `playwright.config.ts` at root with:
->    - Two projects: `web-app` and `admin-app`
->    - Each project targets its respective app's local dev server URL
->    - Configure `webServer` to start both frontend apps and the API server before tests
->    - Set retries to 2 for CI, 0 for local
->    - Set timeout to 30 seconds per test
->    - Configure screenshot on failure
->    - Configure trace recording on first retry
->
-> 3. Create directory structure:
->    - `e2e/web-app/` — for student app tests
->    - `e2e/admin-app/` — for admin app tests
->    - `e2e/fixtures/` — for shared test fixtures
->
-> 4. Write these initial E2E test files (skeleton with 1-2 tests each to verify setup works):
->    - `e2e/web-app/auth.spec.ts` — Test: navigate to login page, verify login form is visible
->    - `e2e/web-app/exam-flow.spec.ts` — Test: verify exam selection page loads
->    - `e2e/admin-app/dashboard.spec.ts` — Test: navigate to admin login, verify admin login form is visible
->
-> 5. Add scripts to root `package.json`: `test:e2e` and `test:e2e:ui` (for headed mode)
->
-> Do NOT write comprehensive test scenarios yet — just set up the framework and verify it works with minimal smoke tests.
+> [!NOTE]
+> Playwright E2E testing has been deferred to the **last phase** of the project per user request on 2026-03-07.
+> The full prompt and setup instructions are preserved in `PHASE-2-ARCHITECTURAL.md` CF-1 section.
 
 ---
 
@@ -1425,47 +1393,10 @@
 
 ---
 
-### Task 44: [OBSOLETE - REMOVED BY USER REQUEST]
+### Task 44: [PERMANENTLY REMOVED]
 
 > [!NOTE]
-> This task (.env.example Documentation) has been removed from the implementation plan per user request on 2026-03-06 to maintain repository privacy.
-
-> I need to create comprehensive `.env.example` files for my Quiz Platform monorepo. Currently there is no documentation of required environment variables, which creates misconfiguration risk.
->
-> Read ALL source files that reference `process.env.*` across the entire monorepo to build a complete list of every environment variable used.
->
-> Key files to check:
-> - `packages/db/src/schema/index.ts` — Database URLs
-> - `apps/api-server/src/modules/auth/token.service.ts` — JWT secrets
-> - `apps/api-server/src/modules/config/production.config.ts` — Production config
-> - `apps/api-server/src/modules/core/cache.service.ts` — Redis config
-> - `apps/api-server/src/modules/email/email.service.ts` — Email config
-> - `apps/api-server/src/modules/system/usage.service.ts` — External service configs
-> - All `next.config.ts` files — Next.js specific vars
-> - Any files with `NEXT_PUBLIC_` variables
->
-> Create these files:
->
-> **1. Root `.env.example`** — Shared variables used by multiple packages:
-> - Group variables by category with comment headers
-> - For each variable include: name, description, example value (use placeholder like `your_xxx_here`), whether it's required or optional
-> - Categories: Database, Authentication, Redis/Cache, Email, External Services, Sentry, Feature Flags
->
-> **2. `apps/web-app/.env.example`** — Client-facing variables (`NEXT_PUBLIC_*`):
-> - API server URL
-> - Sentry DSN
-> - Any other public config
->
-> **3. `apps/admin-app/.env.example`** — Admin-specific variables:
-> - API server URL
-> - Admin Sentry DSN
->
-> **CRITICAL**: Use ONLY placeholder values. NEVER include real secrets, keys, or URLs. Use patterns like:
-> - `DATABASE_POOL_URL=postgresql://user:password@host/database?pgbouncer=true`
-> - `JWT_SECRET=your-secret-key-min-32-characters-here`
-> - `REDIS_URL=redis://default:password@host:port`
->
-> Also add a section at the top of each file explaining how to set up the local development environment.
+> This task (.env.example Documentation) has been permanently removed per user request on 2026-03-07 to maintain repository privacy. Will not be implemented.
 
 ---
 

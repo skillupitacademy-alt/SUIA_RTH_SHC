@@ -1,43 +1,37 @@
-# Secrets Rotation Policy & Procedure (Task 45)
+# Secrets Rotation Strategy
 
-This document outlines the standard operating procedure (SOP) for rotating sensitive secrets within the Quiz Platform to maintain a high security posture.
+This document outlines the standard operating procedures (SOP) for rotating critical cryptographic keys and credentials in the Quiz Platform without causing system downtime.
 
-## 1. Secrets Inventory
+## 1. JWT Secret Rotation (`JWT_SECRET`)
 
-The following categories of secrets require periodic rotation:
+The JWT secret is used to sign all user and admin session tokens. Rotating this secret immediately invalidates all active sessions.
 
-| Category | Key/Secret Name | Rotation Frequency |
-| :--- | :--- | :--- |
-| **Database** | `DATABASE_URL`, `DATABASE_URL_REPLICA` | Every 90 days or on personnel change |
-| **Authentication** | `JWT_SECRET`, `JWT_REFRESH_SECRET`, `ADMIN_JWT_SECRET` | Every 180 days |
-| **Third-Party** | `SENTRY_DSN`, `CLERK_SECRET_KEY`, `RESEND_API_KEY` | Yearly or on suspected leak |
-| **Infrastructure** | `UPSTASH_REDIS_URL`, `UPSTASH_REDIS_REST_TOKEN` | Yearly |
+**Zero-Downtime Rotation Procedure:**
+1. **Preparation**: Update the authentication service to support multiple valid secrets by utilizing a `JWT_SECRETS` JSON array or parsing comma-separated secrets in `process.env.JWT_FALLBACK_SECRETS`.
+2. **Current State**: The system uses `Secret A` for signing and verification.
+3. **Transition**: 
+   - Deploy an update adding the new `Secret B` as the primary signing key, while retaining `Secret A` as a fallback verification key.
+   - Wait for the maximum token TTL (e.g., 24 hours) to expire. All active users will naturally receive new tokens signed with `Secret B` as they refresh.
+4. **Finalization**: Deploy an update removing `Secret A` completely from the environment variables.
 
-## 2. Rotation Procedures
+## 2. Database Credential Rotation (`DATABASE_URL`)
 
-### 2.1 Database Credentials (Neon)
-1. Log in to the Neon Console.
-2. Select the relevant project and branch.
-3. Generate a new password for the database role.
-4. Update the `DATABASE_URL` in the Vercel Project Settings for all affected apps (`api-server`, `web-app`, `admin-app`).
-5. Trigger a redeploy of all apps to pick up the new secret.
+Rotating the database credentials requires coordination with the Vercel deployments and the internal Drizzle ORM clients.
 
-### 2.2 JWT Secrets
-> [!WARNING]
-> Rotating JWT secrets will immediately invalidate all active user sessions, forcing all users to log in again.
+**Zero-Downtime Rotation Procedure:**
+1. **Provisioning**: Create a new database user/password in the PostgreSQL provider (e.g., Supabase, Neon) with identical privileges. Keep the old user active.
+2. **Update Secrets**: Update the `DATABASE_URL` environment variables in Vercel to use the new credentials.
+3. **Deployment**: Trigger a rolling production deployment on Vercel. 
+4. **Observation**: Monitor the application for 10-15 minutes to verify all new serverless connections are successfully using the new credentials.
+5. **Revocation**: Delete the old database user from the PostgreSQL provider.
 
-1. Generate a new 32+ character random string (e.g., using `openssl rand -base64 32`).
-2. Update `JWT_SECRET` and `JWT_REFRESH_SECRET` in Vercel environment variables.
-3. Redeploy the `api-server`.
+## 3. Third-Party Service Credentials (Resend, Redis, etc.)
 
-### 2.3 Third-Party API Keys (Resend, Sentry)
-1. Generate a new API key in the provider's dashboard.
-2. Update the corresponding variable in Vercel.
-3. Verify the new key works by checking logs for successful operations.
-4. Revoke the old API key in the provider's dashboard.
+**Procedure:**
+1. Generate the new API key in the provider's dashboard.
+2. Update the environment variables in Vercel.
+3. Trigger a production redeployment.
+4. Once the deployment is live, immediately revoke the old API key in the provider's dashboard to prevent unauthorized fallback usage.
 
-## 3. Incident Response (Suspected Leak)
-If a secret is suspected to be compromised:
-1. **Immediately** rotate the compromised secret following the procedures above.
-2. Review audit logs (`idempotency_keys`, `login_attempts`) for any suspicious activity during the window of compromise.
-3. Document the incident and the remediation steps taken.
+## Emergency Compromise Response
+If a secret is definitively compromised, **skip the zero-downtime procedures**. Instantly revoke the secret at the provider level, push the new secrets to Vercel, and force a redeployment. This will cause a brief outage and require all users to re-authenticate, but is necessary for immediate containment.
