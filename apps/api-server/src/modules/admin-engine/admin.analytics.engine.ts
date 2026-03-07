@@ -123,8 +123,12 @@ export class AdminAnalyticsEngine {
     };
   }
 
-  async getRecentAuditLogs(limit: number = 20) {
-    return await this.repository.getAuditLogs(limit);
+  async getRecentAuditLogs(cursor: string | null = null, limit: number = 20) {
+    const result = await this.repository.getAuditLogs(cursor, limit);
+    return {
+        logs: result.data,
+        nextCursor: result.nextCursor
+    };
   }
 
   async getBlueprintMetrics() { return { total: 0, active: 0, popular: [] }; }

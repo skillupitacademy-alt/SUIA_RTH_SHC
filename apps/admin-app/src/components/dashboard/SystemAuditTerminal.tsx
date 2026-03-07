@@ -1,6 +1,6 @@
 'use client';
 
-import { apiClient, type AdminAuditLog } from '@quiz/api-client';
+import { type AdminAuditLog,apiClient } from '@quiz/api-client';
 import { recordCounter } from '@quiz/observability';
 import { formatDistanceToNow } from 'date-fns';
 import { Clock, HardDrive, Terminal, User } from 'lucide-react';

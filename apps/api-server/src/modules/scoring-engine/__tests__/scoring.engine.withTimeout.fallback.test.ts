@@ -6,5 +6,5 @@ describe('ScoringEngine withTimeout fallback import', () => {
   it('imports without db.withTimeout export', async () => {
     const mod = await import('../scoring.engine');
     expect(mod).toBeDefined();
-  });
+  }, 15000);
 });

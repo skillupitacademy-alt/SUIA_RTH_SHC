@@ -11,8 +11,14 @@ export class AdminSkillEngine {
     private readonly auditService = container.get(AuditService)
   ) {}
 
-  async getSkills(page: number = 1, limit: number = 20, filters?: { search?: string }) {
-    return await this.repository.findAll(page, limit, filters);
+  async getSkills(cursor: string | null = null, limit: number = 20, filters?: { search?: string }) {
+    const result = await this.repository.findAll(cursor, limit, filters);
+    return {
+        skills: result.data,
+        total: result.total,
+        nextCursor: result.nextCursor,
+        limit: result.limit
+    };
   }
 
   async createSkill(data: typeof skills.$inferInsert, adminId: string) {
@@ -37,8 +43,12 @@ export class AdminSkillEngine {
     return await this.repository.deleteBatch(ids);
   }
 
-  async getTopicSkills(page: number = 1, limit: number = 20) {
-    return await this.repository.getTopicSkills(page, limit);
+  async getTopicSkills(cursor: string | null = null, limit: number = 20) {
+    const result = await this.repository.getTopicSkills(cursor, limit);
+    return {
+        topicSkills: result.data,
+        nextCursor: result.nextCursor
+    };
   }
 
   async getSkillsByTopic(topicId: string) {

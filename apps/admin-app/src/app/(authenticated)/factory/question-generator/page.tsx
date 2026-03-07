@@ -1,5 +1,6 @@
 'use client';
 
+import { ZConfirmationDialog } from '@quiz/ui';
 import { Check, Copy, RefreshCcw, ShieldCheck } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 import React, { Suspense, useEffect, useState } from 'react';
@@ -10,7 +11,6 @@ import { DistributionMatrix } from '@/components/factory/blueprint/DistributionM
 import { SourceEditor } from '@/components/factory/blueprint/SourceEditor';
 import { JsonIngestBox } from '@/components/factory/ingest/JsonIngestBox';
 import { FactoryLayout } from '@/components/layout/FactoryLayout';
-import { ZConfirmationDialog } from '@/components/ui/ZConfirmationDialog';
 import { useFactory } from '@/context/FactoryContext';
 import { useAllSkills, useDomains, useSubjects, useSubtopics, useTopics } from '@/hooks/useAdminHierarchy';
 import { useJobTracker } from '@/hooks/useJobTracker';

@@ -48,7 +48,7 @@ export function OnboardingWizard() {
     });
     const [error, setError] = useState<string | null>(null);
     const router = useRouter();
-    const { completeOnboarding } = useAuthStore();
+    const completeOnboarding = useAuthStore((s) => s.completeOnboarding);
 
     const nextStep = () => setStep(s => s + 1);
     const prevStep = () => setStep(s => s - 1);

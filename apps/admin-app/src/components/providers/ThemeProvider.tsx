@@ -4,7 +4,7 @@ import { useThemeStore } from '@quiz/ui';
 import { useEffect, useState } from 'react';
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-    const { theme } = useThemeStore();
+    const theme = useThemeStore((s) => s.theme);
     const [mounted, setMounted] = useState(false);
 
     // Avoid hydration mismatch

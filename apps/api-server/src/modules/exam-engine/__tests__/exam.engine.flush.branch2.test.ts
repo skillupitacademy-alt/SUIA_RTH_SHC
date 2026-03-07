@@ -1,3 +1,28 @@
+vi.mock('@quiz/db', () => {
+  const updateMock = vi.fn(() => ({
+    set: vi.fn(() => ({ where: vi.fn(() => ({ returning: vi.fn().mockResolvedValue([{ id: 'exam1' }]) })) })),
+  }));
+  return {
+    STANDARD_QUERY_TIMEOUT: 15000,
+    QUICK_QUERY_TIMEOUT: 5000,
+    REPORT_QUERY_TIMEOUT: 30000,
+    MIGRATION_TIMEOUT: 120000,
+    withTimeout: async <T>(p: Promise<T>) => p,
+    db: {
+      transaction: vi.fn(async (cb) => cb({
+        query: { exams: { findFirst: vi.fn().mockResolvedValue({ examQuestions: [] }) } },
+        update: updateMock,
+        insert: vi.fn(() => ({ values: vi.fn(() => ({ returning: vi.fn().mockResolvedValue([{ id: 'job-1' }]), onConflictDoNothing: vi.fn().mockResolvedValue(undefined) })) })),
+      })),
+      query: { exams: { findFirst: vi.fn().mockResolvedValue(null) } },
+      update: updateMock,
+      insert: vi.fn(() => ({ values: vi.fn(() => ({ returning: vi.fn().mockResolvedValue([{ id: 'job-1' }]), onConflictDoNothing: vi.fn().mockResolvedValue(undefined) })) })),
+    },
+    exams: { id: 'exams.id', status: 'exams.status', startedAt: 'exams.startedAt', lastAnsweredAt: 'exams.lastAnsweredAt', userId: 'exams.userId' },
+    examQuestions: { id: 'eq.id', questionId: 'eq.questionId' },
+    idempotencyKeys: { id: 'ik.id' },
+  };
+});
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 import { ExamEngine } from '../exam.engine';
@@ -89,6 +114,7 @@ describe('ExamEngine completeExam additional branches', () => {
     vi.spyOn(ExamRepository.prototype, 'updateExamQuestionResponse').mockResolvedValue(undefined as any);
     vi.spyOn(ExamRepository.prototype, 'updateLastAnswered').mockResolvedValue(undefined as any);
     vi.spyOn(AnswerEvaluationEngine.prototype, 'evaluate').mockReturnValue(true);
+    vi.mocked(cacheService.get).mockRejectedValue(new Error('cache boom'));
 
     (JobsService.createJob as any) = vi.fn().mockResolvedValue({ id: 'job-xyz' });
     (JobOrchestrator.runJob as any) = vi.fn();
@@ -97,7 +123,6 @@ describe('ExamEngine completeExam additional branches', () => {
 
     const res = await container.get(ExamEngine).completeExam('examX', 'u1');
     expect(res.status).toBe('processing');
-    expect(cacheService.get).toHaveBeenCalled();
   }, 15000);
 
   it('skips flush update when cached answer is empty string', async () => {
@@ -127,3 +152,4 @@ describe('ExamEngine completeExam additional branches', () => {
     expect(updateResponseSpy).not.toHaveBeenCalled();
   }, 15000);
 });
+

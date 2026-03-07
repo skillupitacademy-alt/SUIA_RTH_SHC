@@ -21,9 +21,10 @@ async function handler(_req: NextRequest) {
     try {
         await _verifyAdmin(_req);
         const searchParams = _req.nextUrl.searchParams;
+        const cursor = searchParams.get('cursor');
         const limit = parseInt(searchParams.get('limit') ?? '50');
         
-        const data = await AdminAnalyticsEngine.getRecentAuditLogs(limit);
+        const data = await AdminAnalyticsEngine.getRecentAuditLogs(cursor, limit);
         return ApiResponse.success(data);
     } catch (_error: unknown) {
         const message = _error instanceof Error ? _error.message : 'Internal Server Error';

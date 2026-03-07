@@ -1,5 +1,5 @@
 import { auditLogs, db, domains, examQuestions, exams, questions, resultsByDimension, roles, userRoles, users } from '@quiz/db';
-import { count, desc, eq, isNotNull, sql } from 'drizzle-orm';
+import { and, count, desc, eq, isNotNull, lt, sql } from 'drizzle-orm';
 
 import { IAdminAnalyticsRepository } from '../interfaces/admin-analytics.repository.interface';
 
@@ -109,14 +109,26 @@ export class DrizzleAdminAnalyticsRepository implements IAdminAnalyticsRepositor
     `);
   }
 
-  async getAuditLogs(limit: number) {
-    return await this.dbInstance.query.auditLogs.findMany({
-      limit,
+  async getAuditLogs(cursor: string | null, limit: number) {
+    const conditions = [];
+    if (cursor !== null && cursor !== '') {
+        conditions.push(lt(auditLogs.createdAt, new Date(cursor)));
+    }
+
+    const dataRaw = await this.dbInstance.query.auditLogs.findMany({
+      where: conditions.length > 0 ? and(...conditions) : undefined,
+      limit: limit + 1,
       orderBy: [desc(auditLogs.createdAt)],
       with: {
           user: true
       }
     });
+
+    const hasNext = dataRaw.length > limit;
+    const data = hasNext ? dataRaw.slice(0, limit) : dataRaw;
+    const nextCursor = hasNext ? data[data.length - 1].createdAt.toISOString() : null;
+
+    return { data, nextCursor };
   }
 
   async getRBACMetrics() {

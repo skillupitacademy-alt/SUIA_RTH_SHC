@@ -6,7 +6,7 @@ import { useAuthStore } from '@/store/auth-store';
 export function useStrictNavigation() {
     const router = useRouter();
     const pathname = usePathname();
-    const { logout } = useAuthStore();
+    const logout = useAuthStore((s) => s.logout);
     const [showWarning, setShowWarning] = useState(false);
 
     useEffect(() => {

@@ -1,8 +1,9 @@
 "use client";
 
+import { ZConfirmationDialog } from '@quiz/ui';
 import { useCallback, useEffect, useState } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 
-import { ZConfirmationDialog } from '@/components/ui/ZConfirmationDialog';
 import { useAuthStore } from '@/store/auth-store';
 
 declare global {
@@ -32,7 +33,13 @@ interface SessionWatcherProps {
 }
 
 export function SessionWatcher({ expiresAt, onRefresh, onLogout, isRedirecting, redirectMessage }: SessionWatcherProps) {
-    const { lock, isLocked, isLoggingOut } = useAuthStore();
+    const { lock, isLocked, isLoggingOut } = useAuthStore(
+        useShallow((s) => ({
+            lock: s.lock,
+            isLocked: s.isLocked,
+            isLoggingOut: s.isLoggingOut,
+        }))
+    );
     const [showWarning, setShowWarning] = useState(false);
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [remainingSeconds, setRemainingSeconds] = useState<number | null>(null);

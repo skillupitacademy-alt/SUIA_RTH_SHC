@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuthStore } from '@/store/auth-store';
+import { useShallow } from 'zustand/react/shallow';
 import { apiClient } from '@quiz/api-client';
 import { Loader2 } from 'lucide-react';
 
@@ -14,7 +15,14 @@ interface AuthGuardProps {
 export function AuthGuard({ children, requireAdmin = false }: AuthGuardProps) {
     const router = useRouter();
     const pathname = usePathname();
-    const { user, login, logout, isSessionExpired } = useAuthStore();
+    const { user, login, logout, isSessionExpired } = useAuthStore(
+        useShallow((s) => ({
+            user: s.user,
+            login: s.login,
+            logout: s.logout,
+            isSessionExpired: s.isSessionExpired,
+        }))
+    );
     const [isChecking, setIsChecking] = useState(true);
 
     useEffect(() => {

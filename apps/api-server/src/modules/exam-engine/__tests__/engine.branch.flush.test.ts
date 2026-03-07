@@ -41,7 +41,19 @@ vi.mock('@quiz/db', () => {
       }),
       transaction: vi.fn(async (cb) => cb({
         query: { exams: { findFirst: vi.fn().mockResolvedValue(null) } },
-        update: vi.fn().mockReturnValue({ set: vi.fn().mockReturnValue({ where: vi.fn() }) }),
+        update: vi.fn().mockReturnValue({
+          set: vi.fn().mockReturnValue({
+            where: vi.fn().mockReturnValue({
+              returning: vi.fn().mockResolvedValue([{ id: 'existing-exam' }]),
+            }),
+          }),
+        }),
+        insert: vi.fn().mockReturnValue({
+          values: vi.fn().mockReturnValue({
+            returning: vi.fn().mockResolvedValue([{ id: 'ik-1' }]),
+            onConflictDoNothing: vi.fn().mockResolvedValue(undefined),
+          }),
+        }),
         select: vi.fn().mockReturnValue({ from: vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue([]) }) }),
       })),
     },

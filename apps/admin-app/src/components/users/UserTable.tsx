@@ -2,7 +2,7 @@
 
 import { apiClient } from '@quiz/api-client';
 import { recordCounter } from '@quiz/observability';
-import { ZLoader, ZPagination } from '@quiz/ui';
+import { useDebounce, ZLoader, ZPagination } from '@quiz/ui';
 import { formatDistanceToNow } from 'date-fns';
 import { Calendar, CheckCircle, Lock, Mail, Shield, User } from 'lucide-react';
 import Image from 'next/image';
@@ -57,11 +57,13 @@ export function UserTable() {
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const [isActionLoading, setIsActionLoading] = useState(false);
 
+    const debouncedSearchQuery = useDebounce(searchQuery, 500);
+
     const fetchUsers = useCallback(async () => {
         setIsLoading(true);
         try {
             const serverFilters: UserFilters = {};
-            if (searchQuery !== '') serverFilters.search = searchQuery;
+            if (debouncedSearchQuery !== '') serverFilters.search = debouncedSearchQuery;
             if (filterRole !== 'ALL') serverFilters.role = filterRole;
 
             if (filterBlocked === 'BLOCKED') {
@@ -96,22 +98,16 @@ export function UserTable() {
         } finally {
             setIsLoading(false);
         }
-    }, [filterBlocked, filterRole, filterVerified, page, pageSize, searchQuery]);
+    }, [filterBlocked, filterRole, filterVerified, page, pageSize, debouncedSearchQuery]);
 
     useEffect(() => {
-        void fetchUsers();
-    }, [fetchUsers]);
-
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            if (page === 1) {
-                void fetchUsers();
-            } else {
-                setPage(1);
-            }
-        }, 500);
-        return () => clearTimeout(timer);
-    }, [fetchUsers, page, searchQuery]);
+        // fetchUsers is stable for the same dependencies
+        if (page === 1) {
+            void fetchUsers();
+        } else {
+            setPage(1);
+        }
+    }, [fetchUsers, page, debouncedSearchQuery]);
 
     const handleSaveUser = async (e: React.FormEvent) => {
         e.preventDefault();

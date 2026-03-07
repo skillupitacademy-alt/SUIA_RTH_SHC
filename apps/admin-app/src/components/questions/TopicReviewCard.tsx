@@ -29,14 +29,14 @@ interface TopicReviewCardProps {
     onEditRequest: (topic: TopicReviewCardProps['topic']) => void;
 }
 
-export function TopicReviewCard({
+export const TopicReviewCard = React.memo(({
     topic,
     index,
     isSelected = false,
     onSelect,
     onDeleteRequest,
     onEditRequest
-}: TopicReviewCardProps) {
+}: TopicReviewCardProps) => {
     const statusColors: Record<string, string> = {
         active: 'bg-emerald-50 text-emerald-600 border-emerald-100',
         inactive: 'bg-slate-50 text-slate-500 border-slate-100'
@@ -180,4 +180,7 @@ export function TopicReviewCard({
             </div>
         </div>
     );
-}
+});
+
+TopicReviewCard.displayName = 'TopicReviewCard';
+

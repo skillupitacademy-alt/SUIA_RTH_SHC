@@ -1,6 +1,6 @@
+import { PageTitle } from '@quiz/ui';
 import { Users } from 'lucide-react';
 
-import { PageTitle } from '@/components/layout/PageTitle';
 import { UserTable } from '@/components/users/UserTable';
 
 export default function UsersPage() {

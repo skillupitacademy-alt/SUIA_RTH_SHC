@@ -7,6 +7,7 @@ describe('AdminUserEngine', () => {
     findAll: vi.fn(),
     update: vi.fn(),
     delete: vi.fn(),
+    softDelete: vi.fn(),
     toggleBlockStatus: vi.fn(),
   };
   const audit = { log: vi.fn() };
@@ -22,15 +23,14 @@ describe('AdminUserEngine', () => {
         { id: 'u4', isBlocked: false, lastActiveAt: new Date(now.getTime() - 8 * 60 * 1000) },
       ],
       total: 4,
-      page: 1,
+      nextCursor: null,
       limit: 10,
-      totalPages: 1,
     });
     repository.update.mockResolvedValue({ id: 'u1', isBlocked: true });
-    repository.delete.mockResolvedValue({ id: 'u2' });
+    repository.softDelete.mockResolvedValue({ id: 'u2' });
     repository.toggleBlockStatus.mockResolvedValue([{ id: 'u3', isBlocked: false }]);
 
-    const list = await engine.getUsers(1, 10, 'active', { status: 'online' });
+    const list = await engine.getUsers(null, 10, 'active', { status: 'online' });
     expect(list.users[0].status).toBe('online');
     expect(list.users[1].status).toBe('idle');
     expect(list.users[2].status).toBe('blocked');

@@ -1,7 +1,7 @@
 'use client';
 
 import { apiClient } from '@quiz/api-client';
-import { ZLoader, ZPagination } from '@quiz/ui';
+import { HierarchySearchBar, ZLoader, ZPagination, ZPortalModal } from '@quiz/ui';
 import { Check, Cpu, Hash, Plus, Shield, Trash2, Zap } from 'lucide-react';
 import { X } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
@@ -17,12 +17,10 @@ import {
     AlertDialogDescription,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { ZPortalModal } from '@/components/ui/ZPortalModal';
 import { cn } from '@/lib/utils';
 import type { Skill } from '@/types/domain';
 import { clientLogger } from '@/utils/clientLogger';
 
-import { HierarchySearchBar } from './HierarchySearchBar';
 import { SkillReviewCard } from './SkillReviewCard';
 
 type SkillRow = Skill & {
@@ -444,8 +442,8 @@ export function SkillTable() {
                 <HierarchySearchBar
                     value={searchQuery}
                     placeholder="Search Skills..."
-                    onChange={(val) => { setSearchQuery(val); setPage(1); }}
-                    onSelectAll={(checked) => handleSelectAll(checked)}
+                    onChange={(val: string) => { setSearchQuery(val); setPage(1); }}
+                    onSelectAll={(checked: boolean) => handleSelectAll(checked)}
                     selectAllChecked={data.length > 0 && selectedIds.size === data.length}
                     leftIcon={<Shield className="w-5 h-5" />}
                     actions={(

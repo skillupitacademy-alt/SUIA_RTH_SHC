@@ -1,17 +1,18 @@
 import { vi } from 'vitest';
 
 export const createMockDb = () => {
-  const mockTx = {
+  const mockTx: any = {
     insert: vi.fn().mockReturnValue({
       values: vi.fn().mockReturnValue({
-        returning: vi.fn().mockResolvedValue([]),
+        // default insert returns an id so validation branches can proceed
+        returning: vi.fn().mockResolvedValue([{ id: 'mock-id' }]),
         onConflictDoNothing: vi.fn().mockResolvedValue([]),
       }),
     }),
     update: vi.fn().mockReturnValue({
       set: vi.fn().mockReturnValue({
         where: vi.fn().mockReturnValue({
-          returning: vi.fn().mockResolvedValue([]),
+          returning: vi.fn().mockResolvedValue([{ id: 'mock-id' }]),
         }),
       }),
     }),
@@ -32,29 +33,30 @@ export const createMockDb = () => {
     }),
     execute: vi.fn().mockResolvedValue({ rows: [] }),
     query: {
-      domains: { findFirst: vi.fn(), findMany: vi.fn() },
-      subjects: { findFirst: vi.fn(), findMany: vi.fn() },
-      topics: { findFirst: vi.fn(), findMany: vi.fn() },
-      subtopics: { findFirst: vi.fn(), findMany: vi.fn() },
-      skills: { findFirst: vi.fn(), findMany: vi.fn() },
-      topicSkills: { findFirst: vi.fn(), findMany: vi.fn() },
-      questions: { findFirst: vi.fn(), findMany: vi.fn() },
-      users: { findFirst: vi.fn(), findMany: vi.fn() },
-      userProfiles: { findFirst: vi.fn(), findMany: vi.fn() },
-      userRoles: { findFirst: vi.fn(), findMany: vi.fn() },
-      adminUsers: { findFirst: vi.fn(), findMany: vi.fn() },
-      exams: { findFirst: vi.fn(), findMany: vi.fn() },
-      examQuestions: { findFirst: vi.fn(), findMany: vi.fn() },
-      idempotencyKeys: { findFirst: vi.fn(), findMany: vi.fn() },
+      domains: { findFirst: vi.fn().mockResolvedValue(null), findMany: vi.fn().mockResolvedValue([]) },
+      subjects: { findFirst: vi.fn().mockResolvedValue(null), findMany: vi.fn().mockResolvedValue([]) },
+      topics: { findFirst: vi.fn().mockResolvedValue(null), findMany: vi.fn().mockResolvedValue([]) },
+      subtopics: { findFirst: vi.fn().mockResolvedValue(null), findMany: vi.fn().mockResolvedValue([]) },
+      skills: { findFirst: vi.fn().mockResolvedValue(null), findMany: vi.fn().mockResolvedValue([]) },
+      topicSkills: { findFirst: vi.fn().mockResolvedValue(null), findMany: vi.fn().mockResolvedValue([]) },
+      questions: { findFirst: vi.fn().mockResolvedValue(null), findMany: vi.fn().mockResolvedValue(Array.from({ length: 10 }, (_, i) => ({ id: `q${i+1}` }))) },
+      users: { findFirst: vi.fn().mockResolvedValue(null), findMany: vi.fn().mockResolvedValue([]) },
+      userProfiles: { findFirst: vi.fn().mockResolvedValue(null), findMany: vi.fn().mockResolvedValue([]) },
+      userRoles: { findFirst: vi.fn().mockResolvedValue(null), findMany: vi.fn().mockResolvedValue([]) },
+      adminUsers: { findFirst: vi.fn().mockResolvedValue(null), findMany: vi.fn().mockResolvedValue([]) },
+      exams: { findFirst: vi.fn().mockResolvedValue(null), findMany: vi.fn().mockResolvedValue([]) },
+      examQuestions: { findFirst: vi.fn().mockResolvedValue(null), findMany: vi.fn().mockResolvedValue([]) },
+      idempotencyKeys: { findFirst: vi.fn().mockResolvedValue(null), findMany: vi.fn().mockResolvedValue([]) },
+      backgroundJobs: { findFirst: vi.fn().mockResolvedValue(null), findMany: vi.fn().mockResolvedValue([]) },
     },
   };
 
-  const mockDb = {
-    ...mockTx,
-    transaction: vi.fn().mockImplementation(async (callback) => {
-      return await callback(mockTx);
-    }),
-  };
+  const mockDb: any = { ...mockTx };
+
+  // Ensure tests that override mockDb methods see the same instance inside transactions
+  mockDb.transaction = vi.fn().mockImplementation(async (callback) => {
+    return await callback(mockDb);
+  });
 
   return { mockDb, mockTx };
 };

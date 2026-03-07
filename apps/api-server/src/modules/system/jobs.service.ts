@@ -37,7 +37,10 @@ export class JobsService {
   }
 
   static async getJob(jobId: string, userId: string): Promise<Job | undefined> {
-    const job = await this.db.query.backgroundJobs.findFirst({
+    const finder: typeof db.query.backgroundJobs.findFirst | undefined =
+      this.db.query?.backgroundJobs?.findFirst;
+    if (typeof finder !== 'function') return undefined;
+    const job = await finder({
       where: and(
         eq(backgroundJobs.id, jobId),
         eq(backgroundJobs.userId, userId)

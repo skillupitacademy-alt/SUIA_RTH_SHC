@@ -6,5 +6,5 @@ describe('ExamEngine withTimeout fallback import', () => {
   it('imports without db.withTimeout export', async () => {
     const mod = await import('../exam.engine');
     expect(mod).toBeDefined();
-  });
+  }, 15000);
 });

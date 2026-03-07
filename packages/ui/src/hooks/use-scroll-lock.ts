@@ -8,7 +8,7 @@ let originalBodyOverflow = '';
 let originalMainOverflowY = '';
 
 /**
- * Hook to lock scrolling on the document body and the main admin layout content area.
+ * Hook to lock scrolling on the document body and the main layout content area.
  * This ensures that when a modal is open, the background doesn't scroll.
  * Uses reference counting to be safe for multiple simultaneous overlays.
  */
@@ -23,7 +23,7 @@ export function useScrollLock(lock: boolean) {
             originalBodyOverflow = document.body.style.overflow;
             document.body.style.overflow = 'hidden';
 
-            // 2. Lock the main admin layout content area (which has overflow-y-auto)
+            // 2. Lock the main layout content area (which has overflow-y-auto)
             const mainContent = document.querySelector('main');
             if (mainContent) {
                 originalMainOverflowY = mainContent.style.overflowY;

@@ -1,12 +1,12 @@
 'use client';
 
 import { apiClient } from '@quiz/api-client';
-import { ZLoader, ZPagination } from '@quiz/ui';
+import { useDebounce, ZLoader, ZPagination } from '@quiz/ui';
 import { AlertTriangle, FileText, Filter, Hash, Trash2, X } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
-import { CascadingSelect, Selection } from '@/components/entry/CascadingSelect';
+import { CascadingSelect, type Selection } from '@/components/entry/CascadingSelect';
 import { clientLogger } from '@/utils/clientLogger';
 
 import { QuestionReviewCard } from './QuestionReviewCard';
@@ -55,12 +55,7 @@ export function QuestionTable() {
         skillIds: [] as string[]
     });
     const [searchQuery, setSearchQuery] = useState('');
-    const [debouncedSearch, setDebouncedSearch] = useState('');
-
-    useEffect(() => {
-        const timer = setTimeout(() => setDebouncedSearch(searchQuery), 500);
-        return () => clearTimeout(timer);
-    }, [searchQuery]);
+    const debouncedSearch = useDebounce(searchQuery, 500);
 
     const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; questionId: string | null; isDeleting: boolean; error: string | null }>({
         isOpen: false,
@@ -137,16 +132,16 @@ export function QuestionTable() {
                     questionSkills: (q as { questionSkills?: QuestionData['questionSkills'] }).questionSkills,
                     topic: (q as { topic?: QuestionData['topic'] }).topic
                 }));
-            setQuestions(mappedQuestions);
-            setTotalPages(data.totalPages);
-            setTotalCount(data.total ?? data.questions.length); // Fallback if total is missing
-        } catch (error) {
-            clientLogger.error('Failed to fetch questions', { error: error instanceof Error ? error.message : 'unknown' });
-            // We keep silence for main table load but could set an error state if requested
-        } finally {
-            setIsLoading(false);
-        }
-    };
+                setQuestions(mappedQuestions);
+                setTotalPages(data.totalPages);
+                setTotalCount(data.total ?? data.questions.length); // Fallback if total is missing
+            } catch (error) {
+                clientLogger.error('Failed to fetch questions', { error: error instanceof Error ? error.message : 'unknown' });
+                // We keep silence for main table load but could set an error state if requested
+            } finally {
+                setIsLoading(false);
+            }
+        };
         void fetchQuestions();
     }, [page, pageSize, filters, debouncedSearch]);
 

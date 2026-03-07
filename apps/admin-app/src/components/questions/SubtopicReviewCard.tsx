@@ -31,14 +31,14 @@ interface SubtopicReviewCardProps {
     onEditRequest: (subtopic: SubtopicCard) => void;
 }
 
-export function SubtopicReviewCard({
+export const SubtopicReviewCard = React.memo(({
     subtopic,
     index,
     isSelected = false,
     onSelect,
     onDeleteRequest,
     onEditRequest
-}: SubtopicReviewCardProps) {
+}: SubtopicReviewCardProps) => {
     const statusColors: Record<string, string> = {
         active: 'bg-emerald-50 text-emerald-600 border-emerald-100',
         inactive: 'bg-slate-50 text-slate-500 border-slate-100'
@@ -181,4 +181,6 @@ export function SubtopicReviewCard({
             </div>
         </div>
     );
-}
+});
+
+SubtopicReviewCard.displayName = 'SubtopicReviewCard';

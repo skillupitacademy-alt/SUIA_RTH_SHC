@@ -1,12 +1,11 @@
 import { subjects } from '@quiz/db';
 
 export interface ISubjectRepository {
-  findAll(page: number, limit: number, filters?: { domainId?: string; search?: string }): Promise<{
+  findAll(cursor: string | null, limit: number, filters?: { domainId?: string; search?: string }): Promise<{
     data: Array<(typeof subjects.$inferSelect) & { domain?: Record<string, unknown> }>;
     total: number;
-    page: number;
+    nextCursor: string | null;
     limit: number;
-    totalPages: number;
   }>;
   findById(id: string): Promise<typeof subjects.$inferSelect | undefined>;
   create(data: typeof subjects.$inferInsert): Promise<typeof subjects.$inferSelect>;

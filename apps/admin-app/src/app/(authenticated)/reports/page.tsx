@@ -1,10 +1,10 @@
 'use client';
 
+import { PageTitle } from '@quiz/ui';
 import { FileText, Terminal } from 'lucide-react';
 import React from 'react';
 
 import { AdminReportPipelineCard } from '@/components/dashboard/AdminReportPipelineCard';
-import { PageTitle } from '@/components/layout/PageTitle';
 import { HierarchyReports } from '@/components/reports/HierarchyReports';
 
 export default function ReportsPage() {

@@ -11,8 +11,14 @@ export class AdminDomainEngine {
     private readonly auditService = container.get(AuditService)
   ) {}
 
-  async getDomains(page: number = 1, limit: number = 20, filters?: { search?: string }) {
-    return await this.repository.findAll(page, limit, filters);
+  async getDomains(cursor: string | null = null, limit: number = 20, filters?: { search?: string }) {
+    const result = await this.repository.findAll(cursor, limit, filters);
+    return {
+        domains: result.data,
+        total: result.total,
+        nextCursor: result.nextCursor,
+        limit: result.limit
+    };
   }
 
   async createDomain(data: typeof domains.$inferInsert, adminId: string) {

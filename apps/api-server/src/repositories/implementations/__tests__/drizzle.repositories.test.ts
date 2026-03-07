@@ -151,17 +151,17 @@ describe('Drizzle repositories', () => {
     const topicRepo = new DrizzleTopicRepository();
     const subtopicRepo = new DrizzleSubtopicRepository();
 
-    await expect(domainRepo.findAll(1, 10, { search: 'math' })).resolves.toMatchObject({ total: 2, totalPages: 1 });
-    await expect(domainRepo.findAll(2, 10)).resolves.toMatchObject({ page: 2, limit: 10 });
-    await expect(subjectRepo.findAll(1, 10, { domainId: 'd1', search: 'sub' })).resolves.toMatchObject({ total: 2, totalPages: 1 });
-    await expect(subjectRepo.findAll(1, 10, { domainId: 'd1' })).resolves.toMatchObject({ total: 2 });
-    await expect(subjectRepo.findAll(1, 10)).resolves.toMatchObject({ total: 2 });
-    await expect(topicRepo.findAll(1, 10, { subjectId: 's1', search: 'topic' })).resolves.toMatchObject({ total: 2, totalPages: 1 });
-    await expect(topicRepo.findAll(1, 10, { subjectId: 's1' })).resolves.toMatchObject({ total: 2 });
-    await expect(topicRepo.findAll(1, 10)).resolves.toMatchObject({ total: 2 });
-    await expect(subtopicRepo.findAll(1, 10, { topicId: 't1', search: 'subtopic' })).resolves.toMatchObject({ total: 2, totalPages: 1 });
-    await expect(subtopicRepo.findAll(1, 10, { topicId: 't1' })).resolves.toMatchObject({ total: 2 });
-    await expect(subtopicRepo.findAll(1, 10)).resolves.toMatchObject({ total: 2 });
+    await expect(domainRepo.findAll(null, 10, { search: 'math' })).resolves.toMatchObject({ total: 2, nextCursor: null });
+    await expect(domainRepo.findAll(null, 10)).resolves.toMatchObject({ limit: 10 });
+    await expect(subjectRepo.findAll(null, 10, { domainId: 'd1', search: 'sub' })).resolves.toMatchObject({ total: 2 });
+    await expect(subjectRepo.findAll(null, 10, { domainId: 'd1' })).resolves.toMatchObject({ total: 2 });
+    await expect(subjectRepo.findAll(null, 10)).resolves.toMatchObject({ total: 2 });
+    await expect(topicRepo.findAll(null, 10, { subjectId: 's1', search: 'topic' })).resolves.toMatchObject({ total: 2 });
+    await expect(topicRepo.findAll(null, 10, { subjectId: 's1' })).resolves.toMatchObject({ total: 2 });
+    await expect(topicRepo.findAll(null, 10)).resolves.toMatchObject({ total: 2 });
+    await expect(subtopicRepo.findAll(null, 10, { topicId: 't1', search: 'subtopic' })).resolves.toMatchObject({ total: 2 });
+    await expect(subtopicRepo.findAll(null, 10, { topicId: 't1' })).resolves.toMatchObject({ total: 2 });
+    await expect(subtopicRepo.findAll(null, 10)).resolves.toMatchObject({ total: 2 });
 
     await expect(domainRepo.create({ name: 'D' } as any)).resolves.toEqual({ id: 'new-1' });
     await expect(domainRepo.update('d1', { name: 'D2' } as any)).resolves.toEqual({ id: 'updated-1' });
@@ -195,13 +195,13 @@ describe('Drizzle repositories', () => {
 
   it('covers skill repository branches and topic mapping', async () => {
     const skillRepo = new DrizzleSkillRepository();
-    await expect(skillRepo.findAll(1, 10)).resolves.toMatchObject({ total: 2, totalPages: 1 });
-    await expect(skillRepo.findAll(1, 10, { search: 'skill' })).resolves.toMatchObject({ total: 2, totalPages: 1 });
+    await expect(skillRepo.findAll(null, 10)).resolves.toMatchObject({ total: 2 });
+    await expect(skillRepo.findAll(null, 10, { search: 'skill' })).resolves.toMatchObject({ total: 2 });
     await expect(skillRepo.create({ name: 'Skill' } as any)).resolves.toEqual({ id: 'new-1' });
     await expect(skillRepo.update('sk1', { name: 'Skill2' } as any)).resolves.toEqual({ id: 'updated-1' });
     await expect(skillRepo.delete('sk1')).resolves.toEqual({ id: 'deleted-1' });
     await expect(skillRepo.deleteBatch(['sk1'])).resolves.toEqual([{ id: 'deleted-1' }]);
-    await expect(skillRepo.getTopicSkills(1, 20)).resolves.toEqual([{ skill: { id: 'sk1' } }]);
+    await expect(skillRepo.getTopicSkills(null, 20)).resolves.toEqual({ data: [{ skill: { id: 'sk1' } }], nextCursor: null });
     await expect(skillRepo.getSkillsByTopic('t1')).resolves.toEqual([{ id: 'sk1' }]);
     await expect(skillRepo.mapTopicToSkills('t1', ['sk1', 'sk2'])).resolves.toBeUndefined();
     await expect(skillRepo.mapTopicToSkills('t1', [])).resolves.toBeUndefined();
@@ -216,11 +216,11 @@ describe('Drizzle repositories', () => {
 
     selectWhereMock.mockResolvedValue([{} as any]);
 
-    await expect(domainRepo.findAll(1, 10)).resolves.toMatchObject({ total: 0, totalPages: 1 });
-    await expect(skillRepo.findAll(1, 10)).resolves.toMatchObject({ total: 0, totalPages: 1 });
-    await expect(subjectRepo.findAll(1, 10)).resolves.toMatchObject({ total: 0, totalPages: 1 });
-    await expect(topicRepo.findAll(1, 10)).resolves.toMatchObject({ total: 0, totalPages: 1 });
-    await expect(subtopicRepo.findAll(1, 10)).resolves.toMatchObject({ total: 0, totalPages: 1 });
+    await expect(domainRepo.findAll(null, 10)).resolves.toMatchObject({ total: 0 });
+    await expect(skillRepo.findAll(null, 10)).resolves.toMatchObject({ total: 0 });
+    await expect(subjectRepo.findAll(null, 10)).resolves.toMatchObject({ total: 0 });
+    await expect(topicRepo.findAll(null, 10)).resolves.toMatchObject({ total: 0 });
+    await expect(subtopicRepo.findAll(null, 10)).resolves.toMatchObject({ total: 0 });
   });
 
   it('covers admin user repository filter branches and mutations', async () => {
@@ -232,13 +232,13 @@ describe('Drizzle repositories', () => {
     selectInnerJoinWhereMock.mockResolvedValueOnce([{ id: 'u1' }]); // role filter results
     queryMocks.usersFindMany.mockResolvedValueOnce([{ id: 'u1', isBlocked: false, lastActiveAt: new Date() }]);
 
-    await expect(userRepo.findAll(1, 10, 'active', { search: 'john', role: 'admin', isBlocked: false, isVerified: true, status: 'online' }))
-      .resolves.toMatchObject({ total: 3, totalPages: 1 });
+    await expect(userRepo.findAll(null, 10, 'active', { search: 'john', role: 'admin', isBlocked: false, isVerified: true, status: 'online' }))
+      .resolves.toMatchObject({ total: 3 });
 
     selectWhereMock.mockResolvedValueOnce([]); // search profile no match
     selectInnerJoinWhereMock.mockResolvedValueOnce([]); // role no results -> early return
-    await expect(userRepo.findAll(1, 10, 'deleted', { search: 'none', role: 'unknown' }))
-      .resolves.toEqual({ users: [], total: 0, page: 1, limit: 10, totalPages: 0 });
+    await expect(userRepo.findAll(null, 10, 'deleted', { search: 'none', role: 'unknown' }))
+      .resolves.toEqual({ users: [], total: 0, nextCursor: null, limit: 10 });
 
     // Exercise remaining status branches (idle/offline) and non-role query path
     selectWhereMock.mockResolvedValueOnce([{ count: 1 }]);

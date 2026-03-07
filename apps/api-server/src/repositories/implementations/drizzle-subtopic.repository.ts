@@ -1,5 +1,5 @@
 import { db, subtopics } from '@quiz/db';
-import { and, desc, eq, inArray, sql } from 'drizzle-orm';
+import { and, desc, eq, inArray, lt, sql } from 'drizzle-orm';
 
 import { BaseRepository } from '@/modules/core/repositories/base.repository';
 
@@ -12,9 +12,13 @@ export class DrizzleSubtopicRepository extends BaseRepository<typeof subtopics.$
     super(db);
   }
 
-  async findAll(page: number, limit: number, filters?: { topicId?: string; search?: string }) {
-    const offset = (page - 1) * limit;
+  async findAll(cursor: string | null, limit: number, filters?: { topicId?: string; search?: string }) {
     const conditions = [];
+
+    if (cursor !== null && cursor !== '') {
+        conditions.push(lt(subtopics.createdAt, new Date(cursor)));
+    }
+
     if (filters?.topicId !== undefined && filters?.topicId !== null && filters?.topicId !== '') {
         conditions.push(eq(subtopics.topicId, filters.topicId));
     }
@@ -24,25 +28,27 @@ export class DrizzleSubtopicRepository extends BaseRepository<typeof subtopics.$
 
     const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
 
-    const data = await this.dbInstance.query.subtopics.findMany({
+    const dataRaw = await this.dbInstance.query.subtopics.findMany({
       where: whereClause,
-      limit,
-      offset,
+      limit: limit + 1,
       orderBy: [desc(subtopics.createdAt)],
       with: {
         topic: true,
       }
     });
 
+    const hasNext = dataRaw.length > limit;
+    const data = hasNext ? dataRaw.slice(0, limit) : dataRaw;
+    const nextCursor = hasNext ? data[data.length - 1].createdAt.toISOString() : null;
+
     const [{ count }] = await this.dbInstance
       .select({ count: sql<number>`count(*)` })
       .from(subtopics)
-      .where(whereClause ?? sql`true`);
+      .where(conditions.length > 0 ? and(...conditions.filter(c => !c.toString().includes('created_at <'))) : sql`true`);
 
     const total = Number(count ?? 0);
-    const totalPages = Math.max(1, Math.ceil(total / limit));
 
-    return { data, total, page, limit, totalPages };
+    return { data, total, nextCursor, limit };
   }
 
   async create(data: typeof subtopics.$inferInsert) {

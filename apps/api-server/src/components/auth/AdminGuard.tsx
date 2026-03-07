@@ -4,11 +4,20 @@ import { apiClient } from '@quiz/api-client';
 import { ZLoader } from '@quiz/ui';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 
-import { type AuthState, useAuthStore } from '@/store/auth-store';
+import { useAuthStore } from '@/store/auth-store';
 
 export function AdminGuard({ children }: { children: React.ReactNode }) {
-    const { _user, isAuthenticated, initialized, login, logout } = useAuthStore() as AuthState;
+    const { isAuthenticated, initialized, login, logout } = useAuthStore(
+        useShallow((s) => ({
+            isAuthenticated: s.isAuthenticated,
+            initialized: s.initialized,
+            login: s.login,
+            logout: s.logout,
+        }))
+    );
+    const _user = useAuthStore((s) => s._user);
     const _router = useRouter();
 
     useEffect(() => {
@@ -22,8 +31,6 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
         // Hardening: Revalidate session state with server
         const revalidate = async () => {
             try {
-                // Access _token is handled via httpOnly cookies
-                // Using getAdminSession parity
                 const { user: validatedUser, expiresAt } = await apiClient.auth.getAdminSession();
                 const isAdmin = validatedUser.isAdmin === true;
                 if (isAdmin === false) throw new Error("Revoked");

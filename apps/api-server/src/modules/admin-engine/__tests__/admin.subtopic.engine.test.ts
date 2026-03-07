@@ -14,13 +14,13 @@ describe('AdminSubtopicEngine', () => {
   const engine = new AdminSubtopicEngine(repository as any, audit as any);
 
   it('delegates all methods and emits audit records', async () => {
-    repository.findAll.mockResolvedValue({ data: [], total: 0, page: 1, limit: 10, totalPages: 0 });
+    repository.findAll.mockResolvedValue({ data: [], total: 0, nextCursor: null, limit: 10 });
     repository.create.mockResolvedValue({ id: 'st1' });
     repository.update.mockResolvedValue({ id: 'st1', name: 'Updated' });
     repository.delete.mockResolvedValue({ id: 'st1' });
     repository.deleteBatch.mockResolvedValue([{ id: 'st1' }]);
 
-    await expect(engine.getSubtopics(1, 10, { topicId: 't1', search: 'loops' })).resolves.toEqual({ data: [], total: 0, page: 1, limit: 10, totalPages: 0 });
+    await expect(engine.getSubtopics(null, 10, { topicId: 't1', search: 'loops' })).resolves.toEqual({ subtopics: [], total: 0, nextCursor: null, limit: 10 });
     await expect(engine.createSubtopic({ name: 'Loops', topicId: 't1' } as any, 'admin-1')).resolves.toEqual({ id: 'st1' });
     await expect(engine.updateSubtopic('st1', { name: 'Updated' } as any, 'admin-1')).resolves.toEqual({ id: 'st1', name: 'Updated' });
     await expect(engine.deleteSubtopic('st1', 'admin-1')).resolves.toEqual({ id: 'st1' });

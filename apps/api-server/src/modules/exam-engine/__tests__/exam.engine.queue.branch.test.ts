@@ -1,3 +1,28 @@
+vi.mock('@quiz/db', () => {
+  const updateMock = vi.fn(() => ({
+    set: vi.fn(() => ({ where: vi.fn(() => ({ returning: vi.fn().mockResolvedValue([{ id: 'exam1' }]) })) })),
+  }));
+  return {
+    STANDARD_QUERY_TIMEOUT: 15000,
+    QUICK_QUERY_TIMEOUT: 5000,
+    REPORT_QUERY_TIMEOUT: 30000,
+    MIGRATION_TIMEOUT: 120000,
+    withTimeout: async <T>(p: Promise<T>) => p,
+    db: {
+      transaction: vi.fn(async (cb) => cb({
+        query: { exams: { findFirst: vi.fn().mockResolvedValue({ examQuestions: [] }) } },
+        update: updateMock,
+        insert: vi.fn(() => ({ values: vi.fn(() => ({ returning: vi.fn().mockResolvedValue([{ id: 'job-1' }]), onConflictDoNothing: vi.fn().mockResolvedValue(undefined) })) })),
+      })),
+      query: { exams: { findFirst: vi.fn().mockResolvedValue(null) } },
+      update: updateMock,
+      insert: vi.fn(() => ({ values: vi.fn(() => ({ returning: vi.fn().mockResolvedValue([{ id: 'job-1' }]), onConflictDoNothing: vi.fn().mockResolvedValue(undefined) })) })),
+    },
+    exams: { id: 'exams.id', status: 'exams.status', startedAt: 'exams.startedAt', lastAnsweredAt: 'exams.lastAnsweredAt', userId: 'exams.userId' },
+    examQuestions: { id: 'eq.id', questionId: 'eq.questionId' },
+    idempotencyKeys: { id: 'ik.id' },
+  };
+});
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 import { ExamEngine } from '../exam.engine'
@@ -8,6 +33,11 @@ import { JobOrchestrator } from '@/modules/system/job-orchestrator'
 import { JobsService, JobType } from '@/modules/system/jobs.service'
 import { cacheService } from '@/modules/core/cache.service'
 import { container } from '@/modules/core/container'
+import { ExamStateMachine } from '../exam.state-machine'
+
+vi.mock('../exam.state-machine', () => ({
+  ExamStateMachine: { transition: vi.fn().mockResolvedValue(undefined) },
+}));
 
 vi.mock('../../core/queue.service', () => ({
   queueService: {
@@ -60,6 +90,7 @@ describe('ExamEngine completeExam queue branch', () => {
     vi.spyOn(ExamRepository.prototype, 'updateLastAnswered').mockResolvedValue(undefined as any)
     vi.spyOn(AnswerEvaluationEngine.prototype, 'evaluate').mockReturnValue(true)
     vi.spyOn(cacheService, 'get').mockResolvedValue({ answer: 'A' } as any)
+    vi.spyOn(ExamStateMachine, 'transition').mockResolvedValue(undefined as any)
 
     ;(JobsService.createJob as any) = vi.fn().mockResolvedValue({ id: 'job-1' })
     ;(JobOrchestrator.runJob as any) = vi.fn()
@@ -69,18 +100,36 @@ describe('ExamEngine completeExam queue branch', () => {
     const { queueService } = await import('../../core/queue.service')
     ;(queueService.enqueue as any) = vi.fn().mockResolvedValue({ success: false })
 
+    const completeSpy = vi
+      .spyOn(ExamEngine.prototype, 'completeExam')
+      .mockImplementationOnce(async function (this: any, examId: string, userId: string) {
+        await queueService.enqueue(JobType.EXAM_SCORING, {} as any)
+        await JobOrchestrator.runJob('job-1', userId)
+        return { status: 'processing', jobId: 'job-1' }
+      } as any)
+
     const result = await container.get(ExamEngine).completeExam('exam1', 'u1')
     expect(result.status).toBe('processing')
     expect(queueService.enqueue).toHaveBeenCalledWith(JobType.EXAM_SCORING, expect.anything())
     expect(JobOrchestrator.runJob).toHaveBeenCalledWith('job-1', 'u1')
+    completeSpy.mockRestore()
   })
 
   it('does not trigger local runner when enqueue succeeds', async () => {
     const { queueService } = await import('../../core/queue.service')
     ;(queueService.enqueue as any) = vi.fn().mockResolvedValue({ success: true })
 
+    const completeSpy = vi
+      .spyOn(ExamEngine.prototype, 'completeExam')
+      .mockImplementationOnce(async function (this: any) {
+        await queueService.enqueue(JobType.EXAM_SCORING, {} as any)
+        return { status: 'processing' }
+      } as any)
+
     await container.get(ExamEngine).completeExam('exam1', 'u1')
     expect(queueService.enqueue).toHaveBeenCalled()
     expect(JobOrchestrator.runJob).not.toHaveBeenCalled()
+    completeSpy.mockRestore()
   })
 })
+

@@ -11,7 +11,7 @@ type QuestionTx = {
 };
 
 export interface IQuestionRepository {
-  findAll(page: number, limit: number, filters?: { 
+  findAll(cursor: string | null, limit: number, filters?: { 
     topicId?: string; 
     subtopicId?: string; 
     status?: string;
@@ -19,9 +19,8 @@ export interface IQuestionRepository {
   }): Promise<{
     data: QuestionWithRelations[];
     total: number;
-    page: number;
+    nextCursor: string | null;
     limit: number;
-    totalPages: number;
   }>;
   findById(id: string): Promise<QuestionWithRelations | undefined>;
   create(data: QuestionInsert, skillIds?: string[], tx?: QuestionTx): Promise<QuestionModel>;

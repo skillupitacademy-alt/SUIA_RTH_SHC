@@ -42,13 +42,13 @@ interface QuestionReviewCardProps {
     onDeleteRequest: (id: string) => void;
 }
 
-export function QuestionReviewCard({
+export const QuestionReviewCard = React.memo(({
     question,
     index,
     isSelected = false,
     onSelect,
     onDeleteRequest
-}: QuestionReviewCardProps) {
+}: QuestionReviewCardProps) => {
     const [isRationaleOpen, setIsRationaleOpen] = useState(false);
 
     // Color mapping for Difficulty
@@ -282,4 +282,7 @@ export function QuestionReviewCard({
             </div>
         </div>
     );
-}
+});
+
+QuestionReviewCard.displayName = 'QuestionReviewCard';
+

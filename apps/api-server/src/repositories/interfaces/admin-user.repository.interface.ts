@@ -8,7 +8,7 @@ type AdminUserRecord = {
 };
 
 export interface IAdminUserRepository {
-  findAll(page: number, limit: number, status: 'active' | 'deleted', filters?: { 
+  findAll(cursor: string | null, limit: number, status: 'active' | 'deleted', filters?: { 
     search?: string; 
     role?: string; 
     isBlocked?: boolean; 
@@ -17,12 +17,12 @@ export interface IAdminUserRepository {
   }): Promise<{
     users: AdminUserRecord[];
     total: number;
-    page: number;
+    nextCursor: string | null;
     limit: number;
-    totalPages: number;
   }>;
   findById(id: string): Promise<AdminUserRecord | undefined>;
   update(id: string, data: Record<string, unknown>): Promise<AdminUserRecord>;
+  softDelete(id: string): Promise<AdminUserRecord>;
   delete(id: string): Promise<AdminUserRecord>;
   toggleBlockStatus(userId: string, isBlocked: boolean): Promise<AdminUserRecord[]>;
 }

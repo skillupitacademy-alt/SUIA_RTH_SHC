@@ -1,5 +1,5 @@
 import { db, domains } from '@quiz/db';
-import { desc, eq, inArray, sql } from 'drizzle-orm';
+import { and, desc, eq, inArray, lt, sql } from 'drizzle-orm';
 
 import { BaseRepository } from '@/modules/core/repositories/base.repository';
 
@@ -12,29 +12,37 @@ export class DrizzleDomainRepository extends BaseRepository<typeof domains.$infe
     super(db);
   }
 
-  async findAll(page: number, limit: number, filters?: { search?: string }) {
-    const offset = (page - 1) * limit;
-    let whereClause = undefined;
-    if (filters?.search !== undefined && filters?.search !== null && filters?.search.trim() !== '') {
-        whereClause = sql`${domains.name} ILIKE ${'%' + filters.search + '%'}`;
+  async findAll(cursor: string | null, limit: number, filters?: { search?: string }) {
+    const conditions = [];
+
+    if (cursor !== null && cursor !== '') {
+        conditions.push(lt(domains.createdAt, new Date(cursor)));
     }
 
-    const data = await this.dbInstance.query.domains.findMany({
+    if (filters?.search !== undefined && filters?.search !== null && filters?.search.trim() !== '') {
+        conditions.push(sql`${domains.name} ILIKE ${'%' + filters.search + '%'}`);
+    }
+
+    const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+
+    const dataRaw = await this.dbInstance.query.domains.findMany({
       where: whereClause,
-      limit,
-      offset,
+      limit: limit + 1,
       orderBy: [desc(domains.createdAt)]
     });
+
+    const hasNext = dataRaw.length > limit;
+    const data = hasNext ? dataRaw.slice(0, limit) : dataRaw;
+    const nextCursor = hasNext ? data[data.length - 1].createdAt.toISOString() : null;
 
     const [{ count }] = await this.dbInstance
       .select({ count: sql<number>`count(*)` })
       .from(domains)
-      .where(whereClause ?? sql`true`);
+      .where(conditions.length > 0 ? and(...conditions.filter(c => !c.toString().includes('created_at <'))) : sql`true`);
 
     const total = Number(count ?? 0);
-    const totalPages = Math.max(1, Math.ceil(total / limit));
 
-    return { data, total, page, limit, totalPages };
+    return { data, total, nextCursor, limit };
   }
 
   async create(data: typeof domains.$inferInsert) {

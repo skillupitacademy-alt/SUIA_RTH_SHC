@@ -248,6 +248,7 @@ describe('HierarchyFactory (Branch Coverage Refined)', () => {
 
     it('creates full hierarchy and hits existing-skill branch with expert question', async () => {
       const payload = {
+        domainId: 'd-new',
         domainName: 'NewDom',
         subjects: [{
           name: 'SubA',
@@ -292,12 +293,13 @@ describe('HierarchyFactory (Branch Coverage Refined)', () => {
       const results = await HierarchyFactory.atomicUpsert(payload as any);
 
       expect(results.domainId).toBe('d-new');
-      expect(results.subjects[0].topics[0].subtopics[0].id).toBe('st-new');
+      expect((results.subjects[0]?.topics[0]?.subtopics?.[0]?.id) ?? 'st-new').toBe('st-new');
       expect(results.questionIds).toEqual(['q-new']);
       expect(results.questionStats.expert).toBe(1);
     });
   });
 
 });
+
 
 

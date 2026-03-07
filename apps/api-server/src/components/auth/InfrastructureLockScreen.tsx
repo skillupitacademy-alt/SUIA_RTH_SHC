@@ -4,11 +4,20 @@ import { apiClient } from '@quiz/api-client';
 import { ZLoader } from '@quiz/ui';
 import { ChevronRight, Lock, LogOut, ShieldCheck, User as UserIcon } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 
 import { useAuthStore } from '@/store/auth-store';
 
 export function InfrastructureLockScreen() {
-    const { _user, unlock, logout, isLocked, login } = useAuthStore();
+    const { unlock, logout, isLocked, login } = useAuthStore(
+        useShallow((s) => ({
+            unlock: s.unlock,
+            logout: s.logout,
+            isLocked: s.isLocked,
+            login: s.login,
+        }))
+    );
+    const _user = useAuthStore((s) => s._user);
     const [password, setPassword] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);

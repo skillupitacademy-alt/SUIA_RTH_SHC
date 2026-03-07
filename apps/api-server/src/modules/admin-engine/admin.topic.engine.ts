@@ -11,8 +11,14 @@ export class AdminTopicEngine {
     private readonly auditService = container.get(AuditService)
   ) {}
 
-  async getTopics(page: number = 1, limit: number = 20, filters?: { subjectId?: string; search?: string }) {
-    return await this.repository.findAll(page, limit, filters);
+  async getTopics(cursor: string | null = null, limit: number = 20, filters?: { subjectId?: string; search?: string }) {
+    const result = await this.repository.findAll(cursor, limit, filters);
+    return {
+        topics: result.data,
+        total: result.total,
+        nextCursor: result.nextCursor,
+        limit: result.limit
+    };
   }
 
   async createTopic(data: typeof topics.$inferInsert, adminId: string) {

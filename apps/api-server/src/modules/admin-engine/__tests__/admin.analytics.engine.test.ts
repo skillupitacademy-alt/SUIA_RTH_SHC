@@ -59,7 +59,7 @@ describe('AdminAnalyticsEngine', () => {
       { quadrant: 'struggle', count: 1 },
       { quadrant: 'no_data', count: 3 },
     ]);
-    repository.getAuditLogs.mockResolvedValue([{ id: 'a1' }]);
+    repository.getAuditLogs.mockResolvedValue({ data: [{ id: 'a1' }], nextCursor: null });
     repository.getRBACMetrics.mockResolvedValue({ admins: 1 });
     repository.getAllDomainHierarchy.mockResolvedValue([
       {
@@ -98,7 +98,7 @@ describe('AdminAnalyticsEngine', () => {
       noData: 3,
       total: 15,
     });
-    await expect(engine.getRecentAuditLogs(5)).resolves.toEqual([{ id: 'a1' }]);
+    await expect(engine.getRecentAuditLogs(5)).resolves.toEqual({ logs: [{ id: 'a1' }], nextCursor: null });
     await expect(engine.getRBACMetrics()).resolves.toEqual({ admins: 1 });
     await expect(engine.getBlueprintMetrics()).resolves.toEqual({ total: 0, active: 0, popular: [] });
     await expect(engine.getGrowthZones()).resolves.toEqual({ areas: [] });

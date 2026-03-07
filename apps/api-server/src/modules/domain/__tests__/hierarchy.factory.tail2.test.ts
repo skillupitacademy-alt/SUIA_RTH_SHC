@@ -12,12 +12,12 @@ vi.mock('@quiz/db', () => ({
         transaction: vi.fn().mockImplementation(async (cb) => {
             const tx = {
                 query: {
-                    domains: { findFirst: vi.fn() },
-                    subjects: { findFirst: vi.fn() },
-                    topics: { findFirst: vi.fn() },
-                    subtopics: { findFirst: vi.fn() },
-                    skills: { findFirst: vi.fn() },
-                    questionSkills: { findFirst: vi.fn() }
+                    domains: { findFirst: vi.fn(), findMany: vi.fn().mockResolvedValue([]) },
+                    subjects: { findFirst: vi.fn(), findMany: vi.fn().mockResolvedValue([]) },
+                    topics: { findFirst: vi.fn(), findMany: vi.fn().mockResolvedValue([]) },
+                    subtopics: { findFirst: vi.fn(), findMany: vi.fn().mockResolvedValue([]) },
+                    skills: { findFirst: vi.fn(), findMany: vi.fn().mockResolvedValue([]) },
+                    questionSkills: { findFirst: vi.fn(), findMany: vi.fn().mockResolvedValue([]) }
                 },
                 insert: vi.fn().mockReturnValue({
                     values: vi.fn().mockReturnValue({

@@ -3,10 +3,16 @@
 import { useAuthStore } from "@/store/auth-store";
 import { recordCounter } from "@quiz/observability";
 import { User, Mail, Shield, LogOut, CheckCircle2 } from "lucide-react";
+import { useShallow } from 'zustand/react/shallow';
 import { useRouter } from "next/navigation";
 
 export default function SettingsPage() {
-    const { user, logout } = useAuthStore();
+    const { user, logout } = useAuthStore(
+        useShallow((s) => ({
+            user: s.user,
+            logout: s.logout,
+        }))
+    );
     const router = useRouter();
 
     const handleLogout = () => {

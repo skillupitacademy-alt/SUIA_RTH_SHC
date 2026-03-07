@@ -16,10 +16,12 @@
     "dependencies": {
         "@next/bundle-analyzer": "^16.1.6",
         "@quiz/api-client": "workspace:*",
-        "@quiz/ui": "workspace:*",
         "@quiz/observability": "workspace:*",
+        "@quiz/ui": "workspace:*",
         "@radix-ui/react-alert-dialog": "^1.1.15",
         "@sentry/nextjs": "^10.40.0",
+        "@tanstack/react-query": "^5.90.21",
+        "@tanstack/react-query-devtools": "^5.91.3",
         "@types/node": "^20",
         "@types/react": "^19.0.0",
         "@types/react-dom": "^19.0.0",

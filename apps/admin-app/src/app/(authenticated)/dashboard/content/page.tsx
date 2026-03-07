@@ -1,8 +1,10 @@
 'use client';
 
+import { ZSkeleton } from '@quiz/ui';
 import { GraduationCap } from "lucide-react";
+import dynamic from 'next/dynamic';
 
-import { ContentReadinessBoard } from "@/components/dashboard/ContentReadinessBoard";
+const ContentReadinessBoard = dynamic(() => import("@/components/dashboard/ContentReadinessBoard").then(mod => ({ default: mod.ContentReadinessBoard })), { loading: () => <ZSkeleton className="h-64 w-full rounded-2xl" /> });
 import { DashboardPageHeader } from "@/components/dashboard/DashboardPageHeader";
 
 export default function ContentReadinessPage() {

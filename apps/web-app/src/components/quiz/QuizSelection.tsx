@@ -42,7 +42,7 @@ const ICON_MAP: Record<string, typeof Code> = {
 
 export function QuizSelection() {
     const router = useRouter();
-    const { isAuthenticated } = useAuthStore();
+    const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
     const [domains, setDomains] = useState<Domain[]>([]);
     const [loading, setLoading] = useState(true);
     const [starting, setStarting] = useState(false);

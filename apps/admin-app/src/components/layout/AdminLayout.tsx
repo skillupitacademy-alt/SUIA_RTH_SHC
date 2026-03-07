@@ -16,6 +16,7 @@ import {
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 
 import { AdminGuard } from '@/components/auth/AdminGuard';
 import { AdminLockScreen } from '@/components/auth/AdminLockScreen';
@@ -43,7 +44,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     useStrictNavigation();
     usePresenceHeartbeat();
     const pathname = usePathname();
-    const { logout, expiresAt, user, login, setLoggingOut } = useAuthStore();
+    const { logout, expiresAt, user, login, setLoggingOut } = useAuthStore(
+        useShallow((s) => ({
+            logout: s.logout,
+            expiresAt: s.expiresAt,
+            user: s.user,
+            login: s.login,
+            setLoggingOut: s.setLoggingOut,
+        }))
+    );
     const [isRedirecting, setIsRedirecting] = useState(false);
     const [redirectMessage, setRedirectMessage] = useState<string | undefined>(undefined);
     const { showWarning, cancelNavigation } = useStrictNavigation();

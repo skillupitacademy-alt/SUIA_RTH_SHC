@@ -1,10 +1,10 @@
 'use client';
 
+import { PageTitle } from '@quiz/ui';
 import { Award, BookOpen, Database, GitBranch, Hash, Layers, Plus } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
 
-import { PageTitle } from '@/components/layout/PageTitle';
 import { DomainTable } from '@/components/questions/DomainTable';
 import { QuestionTable } from '@/components/questions/QuestionTable';
 import { SkillTable } from '@/components/questions/SkillTable';

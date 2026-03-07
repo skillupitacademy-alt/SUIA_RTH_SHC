@@ -1,19 +1,17 @@
 'use client';
 
 import { apiClient } from '@quiz/api-client';
-import { ZPagination } from '@quiz/ui';
+import { HierarchySearchBar, ZPagination, ZPortalModal } from '@quiz/ui';
 import { Check, Edit2, GitBranch, Layers, Plus, Trash, Trash2, X } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 
 import { HierarchyFactoryWizard } from '@/components/content/HierarchyFactoryWizard';
 import { ErrorBanner } from '@/components/layout/ErrorBanner';
-import { ZPortalModal } from '@/components/ui/ZPortalModal';
 import { useDomains, useSubjects, useTopics } from '@/hooks/useAdminHierarchy';
 import { cn } from '@/lib/utils';
 import { clientLogger } from '@/utils/clientLogger';
 
 import type { Domain } from '../../types/domain';
-import { HierarchySearchBar } from './HierarchySearchBar';
 
 type SubtopicRow = {
     id: string;

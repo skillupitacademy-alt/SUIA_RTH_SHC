@@ -1,5 +1,6 @@
+import { PageTitle } from '@quiz/ui';
+
 import { DocsViewer } from '@/components/docs/DocsViewer';
-import { PageTitle } from '@/components/layout/PageTitle';
 import { getDocsStructure } from '@/lib/docs-loader';
 
 

@@ -30,17 +30,22 @@ async function getHandler(_req: NextRequest) {
     await verifyAdmin(_req);
 
     const searchParams = _req.nextUrl.searchParams;
-    const page = parseInt(searchParams.get('page') ?? '1');
+    const cursor = searchParams.get('cursor');
     const limit = parseInt(searchParams.get('limit') ?? '20');
     const domainId = searchParams.get('domainId') ?? undefined;
     const search = searchParams.get('search') ?? undefined;
 
-    const result = await AdminSubjectEngine.getSubjects(page, limit, { domainId, search });
+    const result = await AdminSubjectEngine.getSubjects(cursor, limit, { domainId, search });
     const durationMs = Date.now() - start;
     recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.subjects.get.success', 1);
     recordTimer(METRICS.ADMIN.DASHBOARD_LOAD + '.subjects.get.duration', durationMs, { outcome: 'success' });
     
-    return ApiResponse.paginated(result.data, result.total, page, limit);
+    return ApiResponse.success({
+      data: result.subjects,
+      total: result.total,
+      nextCursor: result.nextCursor,
+      limit: result.limit
+    });
   } catch (_error: unknown) {
     const durationMs = Date.now() - start;
     recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.subjects.get.failure', 1);

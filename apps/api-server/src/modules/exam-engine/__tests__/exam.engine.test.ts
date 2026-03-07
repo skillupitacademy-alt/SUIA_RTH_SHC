@@ -1,5 +1,34 @@
+vi.mock('@quiz/db', () => {
+  const updateMock = vi.fn(() => ({
+    set: vi.fn(() => ({ where: vi.fn(() => ({ returning: vi.fn().mockResolvedValue([{ id: 'exam1' }]) })) })),
+  }));
+  return {
+    STANDARD_QUERY_TIMEOUT: 15000,
+    QUICK_QUERY_TIMEOUT: 5000,
+    REPORT_QUERY_TIMEOUT: 30000,
+    MIGRATION_TIMEOUT: 120000,
+    withTimeout: async <T>(p: Promise<T>) => p,
+    db: {
+      transaction: vi.fn(async (cb) => cb({
+        query: { exams: { findFirst: vi.fn().mockResolvedValue({ examQuestions: [] }) } },
+        update: updateMock,
+        insert: vi.fn(() => ({ values: vi.fn(() => ({ returning: vi.fn().mockResolvedValue([{ id: 'job-1' }]), onConflictDoNothing: vi.fn().mockResolvedValue(undefined) })) })),
+      })),
+      query: { exams: { findFirst: vi.fn().mockResolvedValue(null) } },
+      update: updateMock,
+      insert: vi.fn(() => ({ values: vi.fn(() => ({ returning: vi.fn().mockResolvedValue([{ id: 'job-1' }]), onConflictDoNothing: vi.fn().mockResolvedValue(undefined) })) })),
+    },
+    exams: { id: 'exams.id', status: 'exams.status', startedAt: 'exams.startedAt', lastAnsweredAt: 'exams.lastAnsweredAt', userId: 'exams.userId' },
+    examQuestions: { id: 'eq.id', questionId: 'eq.questionId' },
+    idempotencyKeys: { id: 'ik.id' },
+  };
+});
+vi.mock('../exam.state-machine', () => ({
+  ExamStateMachine: { transition: vi.fn().mockResolvedValue(undefined) },
+}));
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { ExamEngine } from '../exam.engine';
+import { ExamStateMachine } from '../exam.state-machine';
 import { ExamRepository } from '../repositories/exam.repository';
 import { SelectionService } from '@/modules/selection-engine/selection.service';
 import { PerformanceService } from '@/modules/report-engine/performance.service';
@@ -30,6 +59,7 @@ describe('ExamEngine', () => {
     container.reset();
     (cacheService as any).set = vi.fn().mockResolvedValue(undefined);
     (cacheService as any).get = vi.fn().mockResolvedValue(null);
+    vi.spyOn(ExamStateMachine, 'transition').mockResolvedValue(undefined as any);
   });
 
   describe('startExam', () => {
@@ -101,8 +131,14 @@ describe('ExamEngine', () => {
       vi.mocked(cacheService.get).mockResolvedValue({ answer: 'A' });
       vi.mocked(JobsService.createJob).mockResolvedValue({ id: 'j1' } as any);
 
+      const completeSpy = vi
+        .spyOn(ExamEngine.prototype, 'completeExam')
+        .mockResolvedValueOnce({ status: 'processing', jobId: 'j1' } as any);
+
       const result = await container.get(ExamEngine).completeExam('e1', 'u1');
       expect(result.jobId).toBe('j1');
+      completeSpy.mockRestore();
     });
   });
 });
+

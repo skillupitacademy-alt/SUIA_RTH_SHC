@@ -1,5 +1,5 @@
 import { db, subjects } from '@quiz/db';
-import { and, desc, eq, inArray, sql } from 'drizzle-orm';
+import { and, desc, eq, inArray, lt, sql } from 'drizzle-orm';
 
 import { BaseRepository } from '@/modules/core/repositories/base.repository';
 
@@ -12,9 +12,13 @@ export class DrizzleSubjectRepository extends BaseRepository<typeof subjects.$in
     super(db);
   }
 
-  async findAll(page: number, limit: number, filters?: { domainId?: string; search?: string }) {
-    const offset = (page - 1) * limit;
+  async findAll(cursor: string | null, limit: number, filters?: { domainId?: string; search?: string }) {
     const conditions = [];
+
+    if (cursor !== null && cursor !== '') {
+        conditions.push(lt(subjects.createdAt, new Date(cursor)));
+    }
+
     if (filters?.domainId !== undefined && filters?.domainId !== null && filters?.domainId !== '') {
         conditions.push(eq(subjects.domainId, filters.domainId));
     }
@@ -24,25 +28,27 @@ export class DrizzleSubjectRepository extends BaseRepository<typeof subjects.$in
 
     const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
 
-    const data = await this.dbInstance.query.subjects.findMany({
+    const dataRaw = await this.dbInstance.query.subjects.findMany({
       where: whereClause,
-      limit,
-      offset,
+      limit: limit + 1,
       orderBy: [desc(subjects.createdAt)],
       with: {
         domain: true,
       }
     });
 
+    const hasNext = dataRaw.length > limit;
+    const data = hasNext ? dataRaw.slice(0, limit) : dataRaw;
+    const nextCursor = hasNext ? data[data.length - 1].createdAt.toISOString() : null;
+
     const [{ count }] = await this.dbInstance
       .select({ count: sql<number>`count(*)` })
       .from(subjects)
-      .where(whereClause ?? sql`true`);
+      .where(conditions.length > 0 ? and(...conditions.filter(c => !c.toString().includes('created_at <'))) : sql`true`);
 
     const total = Number(count ?? 0);
-    const totalPages = Math.max(1, Math.ceil(total / limit));
 
-    return { data, total, page, limit, totalPages };
+    return { data, total, nextCursor, limit };
   }
 
   async create(data: typeof subjects.$inferInsert) {

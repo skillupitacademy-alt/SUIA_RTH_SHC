@@ -1,23 +1,26 @@
 ﻿'use client';
 
-import { ZLoader } from "@quiz/ui";
+import { ZLoader, ZSkeleton } from "@quiz/ui";
 import type { EChartsOption } from "echarts";
 import { BarChart3, BrainCircuit, Layers, LayoutDashboard, Microscope, PieChart as PieChartIcon, ShieldCheck, TrendingDown } from "lucide-react";
+import dynamic from 'next/dynamic';
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
-import AdminDiscriminationScatter from "@/components/charts/AdminDiscriminationScatter";
-import AdminItemDifficultyChart from "@/components/charts/AdminItemDifficultyChart";
-import AdminPlannedVsActualDifficulty from "@/components/charts/AdminPlannedVsActualDifficulty";
-import AdminPoolSufficiency from "@/components/charts/AdminPoolSufficiency";
-import AdminScoreHistogram from "@/components/charts/AdminScoreHistogram";
-import AdminTopicSkillHeatmap from "@/components/charts/AdminTopicSkillHeatmap";
-import BaseChart from "@/components/charts/BaseChart";
-import { BrokenQuestionsRepairStation } from "@/components/intelligence/BrokenQuestionsRepairStation";
+const AdminDiscriminationScatter = dynamic(() => import("@/components/charts/AdminDiscriminationScatter"), { loading: () => <ZSkeleton className="h-64 w-full rounded-2xl" /> });
+const AdminItemDifficultyChart = dynamic(() => import("@/components/charts/AdminItemDifficultyChart"), { loading: () => <ZSkeleton className="h-64 w-full rounded-2xl" /> });
+const AdminPlannedVsActualDifficulty = dynamic(() => import("@/components/charts/AdminPlannedVsActualDifficulty"), { loading: () => <ZSkeleton className="h-64 w-full rounded-2xl" /> });
+const AdminPoolSufficiency = dynamic(() => import("@/components/charts/AdminPoolSufficiency"), { loading: () => <ZSkeleton className="h-64 w-full rounded-2xl" /> });
+const AdminScoreHistogram = dynamic(() => import("@/components/charts/AdminScoreHistogram"), { loading: () => <ZSkeleton className="h-64 w-full rounded-2xl" /> });
+const AdminTopicSkillHeatmap = dynamic(() => import("@/components/charts/AdminTopicSkillHeatmap"), { loading: () => <ZSkeleton className="h-64 w-full rounded-2xl" /> });
+const BaseChart = dynamic(() => import("@/components/charts/BaseChart"), { loading: () => <ZSkeleton className="h-24 w-full rounded-2xl" /> });
+const BrokenQuestionsRepairStation = dynamic(() => import("@/components/intelligence/BrokenQuestionsRepairStation").then(mod => ({ default: mod.BrokenQuestionsRepairStation })), { loading: () => <ZSkeleton className="h-64 w-full rounded-2xl" /> });
+const HelpRequestManager = dynamic(() => import("@/components/tutor/HelpRequestManager").then(mod => ({ default: mod.HelpRequestManager })), { loading: () => <ZSkeleton className="h-64 w-full rounded-2xl" /> });
+
+import { PageTitle } from "@quiz/ui";
+
 import { notesSecurityGuide } from "@/components/intelligence/guides";
 import { InsightGuideCard } from "@/components/intelligence/InsightGuideCard";
-import { PageTitle } from "@/components/layout/PageTitle";
-import { HelpRequestManager } from "@/components/tutor/HelpRequestManager";
 import { clientLogger } from "@/utils/clientLogger";
 
 type TutorMetrics = {

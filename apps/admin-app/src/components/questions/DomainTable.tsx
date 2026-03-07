@@ -1,7 +1,7 @@
 'use client';
 
 import { apiClient } from '@quiz/api-client';
-import { ZLoader, ZPagination } from '@quiz/ui';
+import { HierarchySearchBar, ZLoader, ZPagination, ZPortalModal } from '@quiz/ui';
 import { Check, Globe, Plus, Trash2, X } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 
@@ -15,14 +15,12 @@ import {
     AlertDialogDescription,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { ZPortalModal } from '@/components/ui/ZPortalModal';
 import { cn } from '@/lib/utils';
 import type { DomainSummary } from '@/types/review';
 import { clientLogger } from '@/utils/clientLogger';
 
 import type { Domain, Status } from '../../types/domain';
 import { DomainReviewCard } from './DomainReviewCard';
-import { HierarchySearchBar } from './HierarchySearchBar';
 
 type DomainForm = {
     name: string;
@@ -409,7 +407,7 @@ export function DomainTable() {
                     <HierarchySearchBar
                         value={searchQuery}
                         placeholder="Search Domains..."
-                        onChange={(val) => { setSearchQuery(val); setPage(1); }}
+                        onChange={(val: string) => { setSearchQuery(val); setPage(1); }}
                         onSelectAll={handleSelectAll}
                         selectAllChecked={data.length > 0 && selectedIds.size === data.length}
                         leftIcon={<Globe className="w-5 h-5" />}

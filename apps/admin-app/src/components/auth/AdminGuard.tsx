@@ -4,12 +4,23 @@ import { apiClient } from '@quiz/api-client';
 import { ZLoader } from '@quiz/ui';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 
 import { useAuthStore } from '@/store/auth-store';
 import { clientLogger } from '@/utils/clientLogger';
 
 export function AdminGuard({ children }: { children: React.ReactNode }) {
-    const { user, isAuthenticated, initialized, login, logout, expiresAt, isLocked } = useAuthStore();
+    const { user, isAuthenticated, initialized, login, logout, expiresAt, isLocked } = useAuthStore(
+        useShallow((s) => ({
+            user: s.user,
+            isAuthenticated: s.isAuthenticated,
+            initialized: s.initialized,
+            login: s.login,
+            logout: s.logout,
+            expiresAt: s.expiresAt,
+            isLocked: s.isLocked,
+        }))
+    );
     const router = useRouter();
     const pathname = usePathname();
 

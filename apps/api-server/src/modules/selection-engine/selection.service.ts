@@ -2,7 +2,7 @@ import { db, examBlueprints, questions, STANDARD_QUERY_TIMEOUT, subjects as subj
 import { METRICS } from '@quiz/observability';
 import crypto from 'crypto';
 import type { InferSelectModel } from 'drizzle-orm';
-import { and, asc, eq, gte, inArray, notInArray, or, sql } from 'drizzle-orm';
+import { and, asc, eq, inArray, or, sql } from 'drizzle-orm';
 
 import { logger } from '@/lib/logger';
 import { recordCounter, recordTimer } from '@/lib/metrics';
@@ -358,7 +358,7 @@ export class SelectionService {
 
         if (totalInPool === 0) return [];
 
-        // 2. Deterministic Seeding
+        // 2. Deterministic Seeding & Sampling
         const seedSource = JSON.stringify({
           userId,
           idempotencyKey,
@@ -367,45 +367,46 @@ export class SelectionService {
         });
         const masterSeed = crypto.createHash('sha256').update(seedSource).digest('hex');
 
-        // 3. Jump-and-Sample Loop
-        const anchors = this.generateDeterministicUUIDs(masterSeed, count * 2);
-        const candidates: Question[] = [];
+        // 3. Batch ID Fetch & Deterministic Sample
+        const allMatchingIds = (await withTimeout(
+          this.dbInstance.select({ id: questions.id })
+            .from(questions)
+            .where(baseFilters)
+            .orderBy(asc(questions.id)),
+          STANDARD_QUERY_TIMEOUT,
+          'SelectionService.fetchFromPool.allIds'
+        )).map(r => r.id);
 
-        for (const anchor of anchors) {
-          if (candidates.length >= count) break;
+        if (allMatchingIds.length === 0) return [];
 
-          const [candidate] = await withTimeout(
-            this.dbInstance.select()
-              .from(questions)
-              .where(and(baseFilters, gte(questions.id, anchor), notInArray(questions.id, Array.from(selectedIds))))
-              .orderBy(asc(questions.id))
-              .limit(1),
-            STANDARD_QUERY_TIMEOUT,
-            'SelectionService.fetchFromPool.anchor'
-          );
-
-          if (candidate !== undefined && candidate !== null) {
-            candidates.push(candidate);
-            selectedIds.add(candidate.id);
-          } else {
-            // Wrap-around
-            const [fallback] = await withTimeout(
-              this.dbInstance.select()
-                .from(questions)
-                .where(and(baseFilters, notInArray(questions.id, Array.from(selectedIds))))
-                .orderBy(asc(questions.id))
-                .limit(1),
-              STANDARD_QUERY_TIMEOUT,
-              'SelectionService.fetchFromPool.fallback'
-            );
-            
-            if (fallback !== undefined && fallback !== null) {
-              candidates.push(fallback);
-              selectedIds.add(fallback.id);
-            }
-          }
+        // Simple deterministic shuffle/sample using seed
+        const pseudoRandom = (seed: string) => {
+            let h = 0;
+            for (let i = 0; i < seed.length; i++) h = Math.imul(31, h) + seed.charCodeAt(i) | 0;
+            return () => {
+                h = Math.imul(48271, h) | 0;
+                return (h >>> 0) / 2147483647;
+            };
+        };
+        const rng = pseudoRandom(masterSeed);
+        
+        const sampledIds: string[] = [];
+        const pool = [...allMatchingIds];
+        while (sampledIds.length < count && pool.length > 0) {
+            const index = Math.floor(rng() * pool.length);
+            sampledIds.push(pool.splice(index, 1)[0]);
         }
 
+        // 4. Batch Fetch Questions
+        const candidates = await withTimeout(
+          this.dbInstance.select()
+            .from(questions)
+            .where(inArray(questions.id, sampledIds)),
+          STANDARD_QUERY_TIMEOUT,
+          'SelectionService.fetchFromPool.batchFetch'
+        );
+
+        candidates.forEach(c => selectedIds.add(c.id));
         return candidates;
       };
 

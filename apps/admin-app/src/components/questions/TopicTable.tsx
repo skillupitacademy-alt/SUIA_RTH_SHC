@@ -1,7 +1,7 @@
 'use client';
 
 import { apiClient } from '@quiz/api-client';
-import { ZLoader, ZPagination } from '@quiz/ui';
+import { HierarchySearchBar, useDebounce, ZLoader, ZPagination, ZPortalModal } from '@quiz/ui';
 import { BookOpen, Check, Edit2, Hash, Plus, Sparkles, Trash, Trash2 } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 
@@ -15,12 +15,9 @@ import {
     AlertDialogDescription,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { ZPortalModal } from '@/components/ui/ZPortalModal';
 import { useDomains, useSubjects } from '@/hooks/useAdminHierarchy';
 import { cn } from '@/lib/utils';
 import { clientLogger } from '@/utils/clientLogger';
-
-import { HierarchySearchBar } from './HierarchySearchBar';
 
 interface Topic {
     id: string;
@@ -51,7 +48,7 @@ export function TopicTable() {
     const [totalPages, setTotalPages] = useState(1);
     const [totalCount, setTotalCount] = useState(0);
     const [searchQuery, setSearchQuery] = useState('');
-    const [debouncedSearch, setDebouncedSearch] = useState('');
+    const debouncedSearch = useDebounce(searchQuery, 500);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
 
@@ -84,15 +81,11 @@ export function TopicTable() {
     const domains = domainsHook.data;
     const subjects = subjectsHook.data;
 
-    useEffect(() => {
-        const timer = setTimeout(() => setDebouncedSearch(searchQuery), 500);
-        return () => clearTimeout(timer);
-    }, [searchQuery]);
-
     const fetchTopics = useCallback(async () => {
         setIsLoading(true);
         try {
-            const response = await apiClient.admin.getTopics(page, pageSize, debouncedSearch || undefined);
+            const searchTerm = debouncedSearch.trim() === '' ? undefined : debouncedSearch;
+            const response = await apiClient.admin.getTopics(page, pageSize, searchTerm);
             const mapped = response.data.map((topic: Topic) => ({
                 ...topic,
                 learningUrl: topic.learningUrl ?? '',

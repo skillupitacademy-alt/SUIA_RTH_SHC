@@ -41,11 +41,12 @@ interface PerformanceData {
     efficiency: EfficiencyData; // Properly typed
 }
 
+type GrowthMetric = { id?: string; date?: string; name?: string; score?: number; count?: number };
+type GrowthPoint = { id: string; name: string; accuracy: number; sampleSize: number };
 
 export function PerformanceAnalyticsBoard() {
     const [perf, setPerf] = useState<PerformanceData | null>(null);
-    type GrowthMetric = { id: string; name: string; accuracy: number; sampleSize: number };
-    const [growth, setGrowth] = useState<GrowthMetric[]>([]);
+    const [growth, setGrowth] = useState<GrowthPoint[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [range, setRange] = useState<TimeRange>('7d');
     const [error, setError] = useState<string | null>(null);
@@ -61,7 +62,7 @@ export function PerformanceAnalyticsBoard() {
                 ]);
                 const typedPerf = perfData as PerformanceData | null;
                 const typedGrowth = Array.isArray(growthData)
-                    ? growthData.map((g: any, idx: number) => ({
+                    ? growthData.map((g: GrowthMetric, idx: number) => ({
                         id: g.id ?? g.date ?? `metric-${idx}`,
                         name: g.name ?? g.date ?? 'Metric',
                         accuracy: typeof g.score === 'number' ? Math.round(g.score * 100) / 100 : 0,

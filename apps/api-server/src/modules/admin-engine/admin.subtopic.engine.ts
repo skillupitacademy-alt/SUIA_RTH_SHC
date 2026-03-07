@@ -11,8 +11,14 @@ export class AdminSubtopicEngine {
     private readonly auditService = container.get(AuditService)
   ) {}
 
-  async getSubtopics(page: number = 1, limit: number = 20, filters?: { topicId?: string; search?: string }) {
-    return await this.repository.findAll(page, limit, filters);
+  async getSubtopics(cursor: string | null = null, limit: number = 20, filters?: { topicId?: string; search?: string }) {
+    const result = await this.repository.findAll(cursor, limit, filters);
+    return {
+        subtopics: result.data,
+        total: result.total,
+        nextCursor: result.nextCursor,
+        limit: result.limit
+    };
   }
 
   async createSubtopic(data: typeof subtopics.$inferInsert, adminId: string) {

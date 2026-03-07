@@ -20,9 +20,16 @@ import {
     timeBoxplotGuide,
     difficultySplitGuide
 } from "@/components/insights/guides";
+import { useShallow } from 'zustand/react/shallow';
 
 export default function UserInsightsPage() {
-    const { data, fetchDashboard, loading } = useDashboardStore();
+    const { data, fetchDashboard, loading } = useDashboardStore(
+        useShallow((s) => ({
+            data: s.data,
+            fetchDashboard: s.fetchDashboard,
+            loading: s.loading,
+        }))
+    );
     const [performanceInsight, setPerformanceInsight] = useState<TutorInsight | null>(null);
     const [masteryInsight, setMasteryInsight] = useState<TutorInsight | null>(null);
 

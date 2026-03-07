@@ -1,5 +1,5 @@
 import { db, examBlueprints } from '@quiz/db';
-import { desc, eq, sql } from 'drizzle-orm';
+import { and, desc, eq, lt, sql } from 'drizzle-orm';
 
 import { BaseRepository } from '@/modules/core/repositories/base.repository';
 
@@ -12,19 +12,37 @@ export class DrizzleBlueprintRepository extends BaseRepository<typeof examBluepr
     super(db);
   }
 
-  async findAll(page: number, limit: number, filters?: { search?: string }) {
-    const offset = (page - 1) * limit;
-    let whereClause = undefined;
-    if (filters?.search !== undefined && filters?.search !== null && filters?.search.trim() !== '') {
-        whereClause = sql`${examBlueprints.name} ILIKE ${'%' + filters.search + '%'}`;
+  async findAll(cursor: string | null = null, limit: number = 20, filters?: { search?: string }) {
+    const conditions = [];
+
+    if (cursor !== null && cursor !== '') {
+        conditions.push(lt(examBlueprints.createdAt, new Date(cursor)));
     }
 
-    return await this.dbInstance.query.examBlueprints.findMany({
+    if (filters?.search !== undefined && filters?.search !== null && filters?.search.trim() !== '') {
+        conditions.push(sql`${examBlueprints.name} ILIKE ${'%' + filters.search + '%'}`);
+    }
+
+    const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+
+    const dataRaw = await this.dbInstance.query.examBlueprints.findMany({
       where: whereClause,
-      limit,
-      offset,
+      limit: limit + 1,
       orderBy: [desc(examBlueprints.createdAt)]
     });
+
+    const hasNext = dataRaw.length > limit;
+    const data = hasNext ? dataRaw.slice(0, limit) : dataRaw;
+    const nextCursor = hasNext ? data[data.length - 1].createdAt.toISOString() : null;
+
+    const [{ count }] = await this.dbInstance
+      .select({ count: sql<number>`count(*)` })
+      .from(examBlueprints)
+      .where(conditions.length > 0 ? and(...conditions.filter(c => !c.toString().includes('created_at <'))) : sql`true`);
+
+    const total = Number(count ?? 0);
+
+    return { data, total, nextCursor, limit };
   }
 
   async create(data: typeof examBlueprints.$inferInsert) {

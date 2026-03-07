@@ -1,10 +1,13 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=Inter:wght@400;500;600;700;800;900&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --font-inter: 'Inter', system-ui, -apple-system, sans-serif;
+    --font-outfit: 'Outfit', sans-serif;
+  }
+
   html {
     font-size: 15px;
     /* Platform-standard accessible high-density scaling */
@@ -12,29 +15,29 @@
 
   body {
     @apply text-foreground bg-background antialiased;
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-family: var(--font-inter);
   }
 
   h1,
   .h1 {
     @apply tracking-tight;
-    font-family: 'Outfit', sans-serif;
+    font-family: var(--font-outfit);
   }
 
   h2,
   .h2 {
     @apply tracking-tight;
-    font-family: 'Outfit', sans-serif;
+    font-family: var(--font-outfit);
   }
 }
 
 @layer utilities {
   .font-outfit {
-    font-family: 'Outfit', sans-serif;
+    font-family: var(--font-outfit);
   }
 
   .font-inter {
-    font-family: 'Inter', sans-serif;
+    font-family: var(--font-inter);
   }
 
   .text-premium-gradient {

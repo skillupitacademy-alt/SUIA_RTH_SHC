@@ -40,14 +40,14 @@ const SKILL_CATEGORIES: Record<string, string> = {
     practical: 'Practical'
 };
 
-export function SkillReviewCard({
+export const SkillReviewCard = React.memo(({
     skill,
     index,
     isSelected = false,
     onSelect,
     onDeleteRequest,
     onEditRequest
-}: SkillReviewCardProps) {
+}: SkillReviewCardProps) => {
 
     return (
         <div className={cn(
@@ -161,4 +161,6 @@ export function SkillReviewCard({
             </div>
         </div>
     );
-}
+});
+
+SkillReviewCard.displayName = 'SkillReviewCard';

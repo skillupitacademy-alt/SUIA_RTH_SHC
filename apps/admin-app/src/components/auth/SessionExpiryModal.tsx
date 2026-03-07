@@ -5,6 +5,7 @@ import { apiClient } from '@quiz/api-client';
 import { LogOut, ShieldAlert } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 
 import { useAuthStore } from '@/store/auth-store';
 import { clientLogger } from '@/utils/clientLogger';
@@ -12,7 +13,14 @@ import { clientLogger } from '@/utils/clientLogger';
 export function SessionExpiryModal() {
     const router = useRouter();
     const pathname = usePathname();
-    const { isSessionExpired, setSessionExpired, logout, isLoggingOut } = useAuthStore();
+    const { isSessionExpired, setSessionExpired, logout, isLoggingOut } = useAuthStore(
+        useShallow((s) => ({
+            isSessionExpired: s.isSessionExpired,
+            setSessionExpired: s.setSessionExpired,
+            logout: s.logout,
+            isLoggingOut: s.isLoggingOut,
+        }))
+    );
 
     useEffect(() => {
         const handleUnauthorized = (event: Event) => {

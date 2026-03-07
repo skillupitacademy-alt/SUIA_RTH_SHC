@@ -1,5 +1,6 @@
 'use client';
 
+import { ZConfirmationDialog } from '@quiz/ui';
 import {
     CheckCheck,
     RefreshCcw, Save, Sparkles,
@@ -8,7 +9,6 @@ import {
 import React from 'react';
 import { toast } from 'sonner';
 
-import { ZConfirmationDialog } from '@/components/ui/ZConfirmationDialog';
 import { useFactory } from '@/context/FactoryContext';
 import { GeneratedQuestion } from '@/types/factory';
 import { clientLogger } from '@/utils/clientLogger';

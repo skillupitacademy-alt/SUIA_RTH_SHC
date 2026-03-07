@@ -193,3 +193,4 @@ export * from './schema/reports';
 
 export type { InferSelectModel, InferInsertModel } from 'drizzle-orm';
 export * from './utils/query-timeout';
+export const dbReadOnly = dbReplica;

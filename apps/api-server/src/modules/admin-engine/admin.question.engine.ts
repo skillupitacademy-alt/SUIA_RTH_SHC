@@ -39,7 +39,7 @@ export class AdminQuestionEngine {
     private readonly auditService = container.get(AuditService)
   ) {}
 
-  async getQuestions(page: number = 1, limit: number = 20, filters?: { 
+  async getQuestions(cursor: string | null = null, limit: number = 20, filters?: { 
     domainId?: string; 
     subjectId?: string; 
     topicId?: string; 
@@ -48,13 +48,12 @@ export class AdminQuestionEngine {
     status?: string; 
     search?: string 
   }) {
-    const result = await this.repository.findAll(page, limit, filters);
+    const result = await this.repository.findAll(cursor, limit, filters);
     return {
         questions: result.data,
         total: result.total,
-        page: result.page,
-        limit: result.limit,
-        totalPages: result.totalPages
+        nextCursor: result.nextCursor,
+        limit: result.limit
     };
   }
 

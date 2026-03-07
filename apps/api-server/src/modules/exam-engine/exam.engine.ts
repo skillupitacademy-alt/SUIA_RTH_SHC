@@ -1,7 +1,6 @@
-import type { examBlueprints } from '@quiz/db';
-import { exams, QUICK_QUERY_TIMEOUT, STANDARD_QUERY_TIMEOUT, withTimeout as dbWithTimeout } from '@quiz/db';
+import { db, examBlueprints, examQuestions, exams, idempotencyKeys, QUICK_QUERY_TIMEOUT, STANDARD_QUERY_TIMEOUT, withTimeout as dbWithTimeout } from '@quiz/db';
 import { JobType } from '@quiz/types';
-import type { InferSelectModel } from 'drizzle-orm';
+import { and, eq, type InferSelectModel } from 'drizzle-orm';
 
 import { logger } from '@/lib/logger';
 import { AnswerEvaluationEngine } from '@/modules/answer-engine/answer.engine';
@@ -291,73 +290,98 @@ export class ExamEngine {
     }
 
     await ExamStateMachine.transition(targetExamId, 'processing', userId);
-    const updated = await withTimeout(
-      this.examRepo.updateStatus(targetExamId, 'processing'),
-      STANDARD_QUERY_TIMEOUT,
-      'ExamEngine.completeExam.updateStatus'
-    );
-
     let jobId: string | undefined;
 
-    if (updated.length > 0) {
-        // Phase 3: Flush stored answers from Redis to Postgres
-        try {
-            const liveStatePrefix = `exam-state:${targetExamId}:q:`;
-            
-            const examWithQuestions = await withTimeout(
-                this.examRepo.findByIdWithQuestions(targetExamId),
-                STANDARD_QUERY_TIMEOUT,
-                'ExamEngine.completeExam.fetchQuestions'
-            );
+    await db.transaction(async (tx) => {
+        const updated = await withTimeout(
+          tx.update(exams)
+            .set({ status: 'processing' })
+            .where(and(eq(exams.id, targetExamId), eq(exams.status, 'started')))
+            .returning({ id: exams.id }),
+          STANDARD_QUERY_TIMEOUT,
+          'ExamEngine.completeExam.updateStatus'
+        );
 
-            if (examWithQuestions?.examQuestions) {
-                // Use the main DB instance for the batch update
-                for (const eqRecord of examWithQuestions.examQuestions) {
-                    const cached = await cacheService.get<{ answer: string }>(`${liveStatePrefix}${eqRecord.questionId}`);
-                    if (cached !== null && cached !== undefined && cached.answer !== undefined && cached.answer !== null && cached.answer !== '') {
-                        await this.updateExamResponse(
-                          fullExam,
-                          {
-                            id: eqRecord.id,
-                            responseMetadata: (eqRecord.responseMetadata as Record<string, unknown> | null) ?? null,
-                            question: {
-                              type: eqRecord.question.type,
-                              correctAnswer: eqRecord.question.correctAnswer,
+        if (updated.length > 0) {
+            // Phase 3: Flush stored answers from Redis to Postgres
+            try {
+                const liveStatePrefix = `exam-state:${targetExamId}:q:`;
+                
+                const examWithQuestions = await withTimeout(
+                    tx.query.exams.findFirst({
+                        where: eq(exams.id, targetExamId),
+                        with: {
+                            examQuestions: {
+                                with: {
+                                    question: true,
+                                },
                             },
-                          },
-                          cached.answer
-                        );
+                        },
+                    }),
+                    STANDARD_QUERY_TIMEOUT,
+                    'ExamEngine.completeExam.fetchQuestions'
+                );
+
+                if (examWithQuestions?.examQuestions) {
+                    for (const eqRecord of examWithQuestions.examQuestions) {
+                        const cached = await cacheService.get<{ answer: string }>(`${liveStatePrefix}${eqRecord.questionId}`).catch(() => null);
+                        const cachedAnswer = cached?.answer ?? null;
+                        if (cachedAnswer !== null && cachedAnswer !== '') {
+                            // Evaluation logic (inlined or helper)
+                            const isCorrect = this.answerEvaluationEngine.evaluate(eqRecord.question.type as "mcq" | "code_mcq", eqRecord.question.correctAnswer, cachedAnswer);
+                            const now = new Date();
+                            const lastTime = fullExam.lastAnsweredAt ? new Date(fullExam.lastAnsweredAt).getTime() : new Date(fullExam.startedAt).getTime();
+                            const existingMetadata = (eqRecord.responseMetadata as Record<string, unknown> | null) ?? {};
+                            const timeSpentSeconds = existingMetadata.timeSpentSeconds !== undefined ? existingMetadata.timeSpentSeconds : Math.max(0, Math.floor((now.getTime() - lastTime) / 1000));
+
+                            await tx.update(examQuestions)
+                              .set({
+                                userAnswer: cachedAnswer, 
+                                isCorrect, 
+                                responseMetadata: { ...existingMetadata, timeSpentSeconds, firstAnsweredAt: existingMetadata.firstAnsweredAt ?? now.toISOString() } 
+                              })
+                              .where(eq(examQuestions.id, eqRecord.id));
+                        }
                     }
                 }
-            }
-        } catch (e) {
-            logger.error({ err: e, examId: targetExamId }, '[ExamEngine] Failed to flush Redis answers to DB');
-        }
+                
+                await tx.update(exams)
+                  .set({ lastAnsweredAt: new Date() })
+                  .where(eq(exams.id, targetExamId));
 
-        if (idempotencyKey !== undefined && idempotencyKey !== null && idempotencyKey !== '') {
-            await this.examRepo.recordIdempotency({ userId, key: `submit:${idempotencyKey}`, examId: targetExamId }).catch(() => null);
+            } catch (e) {
+                logger.error({ err: e, examId: targetExamId }, '[ExamEngine] Failed to flush Redis answers to DB');
+                throw e; // Rollback transaction if flush fails
+            }
+
+            if (idempotencyKey !== undefined && idempotencyKey !== null && idempotencyKey !== '') {
+                await tx.insert(idempotencyKeys).values({ userId, key: `submit:${idempotencyKey}`, examId: targetExamId }).onConflictDoNothing();
+            }
+            
+            const job = await JobsService.createJob({
+                userId,
+                type: JobType.EXAM_SCORING,
+                payload: { examId: targetExamId }
+            });
+            jobId = job.id;
         }
-        const job = await JobsService.createJob({
-            userId,
-            type: JobType.EXAM_SCORING,
-            payload: { examId: targetExamId }
-        });
-        jobId = job.id;
-        
+    });
+
+    if (jobId !== null) {
         // Phase 2: Hyper-Scale Async via Message Queue (QStash)
         const isQueueEnabled = process.env.QSTASH_TOKEN !== undefined;
         
         if (isQueueEnabled) {
             const { queueService } = await import('../core/queue.service');
-            const enqueued = await queueService.enqueue(JobType.EXAM_SCORING, { jobId: job.id, userId, examId: targetExamId });
+            const enqueued = await queueService.enqueue(JobType.EXAM_SCORING, { jobId: jobId!, userId, examId: targetExamId });
             
             if (!enqueued.success) {
                 // Fallback to local async if queue fails
-                void JobOrchestrator.runJob(job.id, userId);
+                void JobOrchestrator.runJob(jobId!, userId);
             }
         } else {
             // Local Async Fallback (Standard Node process)
-            void JobOrchestrator.runJob(job.id, userId);
+            void JobOrchestrator.runJob(jobId!, userId);
         }
     }
 

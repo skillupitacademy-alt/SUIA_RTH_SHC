@@ -1,7 +1,7 @@
 'use client';
 
 import { apiClient } from '@quiz/api-client';
-import { ZLoader, ZPagination } from '@quiz/ui';
+import { HierarchySearchBar, ZLoader, ZPagination, ZPortalModal } from '@quiz/ui';
 import { BookOpen, Check, Plus, Trash2, X } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 
@@ -16,13 +16,11 @@ import {
     AlertDialogDescription,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { ZPortalModal } from '@/components/ui/ZPortalModal';
 import { useDomains } from '@/hooks/useAdminHierarchy';
 import { cn } from '@/lib/utils';
 import { clientLogger } from '@/utils/clientLogger';
 
 import type { Domain } from '../../types/domain';
-import { HierarchySearchBar } from './HierarchySearchBar';
 import { SubjectReviewCard } from './SubjectReviewCard';
 type SubjectItem = {
     id: string;
@@ -511,11 +509,13 @@ export function SubjectTable() {
                                     index={index + (page - 1) * pageSize}
                                     isSelected={selectedIds.has(subject.id)}
                                     onSelect={handleSelect}
-                                    onDeleteRequest={(d) => { setCurrentSubject({
-                                        ...subject,
-                                        status: (d.status as SubjectItem['status']) ?? 'active',
-                                        description: d.description ?? null
-                                    }); setIsDeleteOpen(true); }}
+                                    onDeleteRequest={(d) => {
+                                        setCurrentSubject({
+                                            ...subject,
+                                            status: (d.status as SubjectItem['status']) ?? 'active',
+                                            description: d.description ?? null
+                                        }); setIsDeleteOpen(true);
+                                    }}
                                     onEditRequest={(d) => handleOpenForm({
                                         ...subject,
                                         status: (d.status as SubjectItem['status']) ?? 'active',

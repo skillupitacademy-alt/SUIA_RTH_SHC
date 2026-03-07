@@ -17,14 +17,14 @@ interface DomainReviewCardProps {
     onEditRequest: (domain: DomainSummary) => void;
 }
 
-export function DomainReviewCard({
+export const DomainReviewCard = React.memo(({
     domain,
     index,
     isSelected = false,
     onSelect,
     onDeleteRequest,
     onEditRequest
-}: DomainReviewCardProps) {
+}: DomainReviewCardProps) => {
     const statusColors: Record<string, string> = {
         active: 'bg-emerald-50 text-emerald-600 border-emerald-100',
         inactive: 'bg-slate-50 text-slate-500 border-slate-100'
@@ -146,6 +146,9 @@ export function DomainReviewCard({
                     </div>
                 </div>
             </div>
-        </div >
+        </div>
     );
-}
+});
+
+DomainReviewCard.displayName = 'DomainReviewCard';
+

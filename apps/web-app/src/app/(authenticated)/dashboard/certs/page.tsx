@@ -1,5 +1,3 @@
-'use client';
-
 import { Award, Clock } from "lucide-react";
 
 export default function CertificationsPage() {

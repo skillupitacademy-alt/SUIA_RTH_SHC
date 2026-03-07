@@ -13,13 +13,19 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useShallow } from 'zustand/react/shallow';
 
 import { InfrastructureGuard } from "@/components/auth/InfrastructureGuard";
-import { type AuthState, useAuthStore } from "@/store/auth-store";
+import { useAuthStore } from "@/store/auth-store";
 
 export default function Home() {
     const router = useRouter();
-    const { initialized, logout, _user } = useAuthStore() as AuthState;
+    const { initialized, logout } = useAuthStore(
+        useShallow((s) => ({
+            initialized: s.initialized,
+            logout: s.logout,
+        }))
+    );
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {

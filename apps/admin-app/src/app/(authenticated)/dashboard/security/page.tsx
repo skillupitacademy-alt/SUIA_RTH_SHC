@@ -1,9 +1,9 @@
-'use client';
-
+import { ZSkeleton } from '@quiz/ui';
 import { ShieldAlert } from 'lucide-react';
+import dynamic from 'next/dynamic';
 
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
-import { SecurityHealthPanel } from '@/components/dashboard/SecurityHealthPanel';
+const SecurityHealthPanel = dynamic(() => import('@/components/dashboard/SecurityHealthPanel').then(mod => ({ default: mod.SecurityHealthPanel })), { loading: () => <ZSkeleton className="h-64 w-full rounded-2xl" /> });
 
 export default function SecurityPage() {
     return (

@@ -3,6 +3,7 @@
 import type { BackgroundJob } from '@quiz/api-client';
 import { apiClient } from '@quiz/api-client';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 
 import { useAuthStore } from '@/store/auth-store';
 import { useJobStore } from '@/store/job-store';
@@ -13,8 +14,24 @@ const POLL_INTERVAL = 5000; // 5 seconds
 const LOCAL_STORAGE_KEY = 'admin-active-jobs';
 
 export function useJobTracker() {
-    const { user, isAuthenticated, initialized } = useAuthStore();
-    const { jobs, setJobs, updateJob, removeJob, setPolling, isPolling } = useJobStore();
+    const { user, isAuthenticated, initialized } = useAuthStore(
+        useShallow((s) => ({
+            user: s.user,
+            isAuthenticated: s.isAuthenticated,
+            initialized: s.initialized,
+        }))
+    );
+
+    const { jobs, setJobs, updateJob, removeJob, setPolling, isPolling } = useJobStore(
+        useShallow((s) => ({
+            jobs: s.jobs,
+            setJobs: s.setJobs,
+            updateJob: s.updateJob,
+            removeJob: s.removeJob,
+            setPolling: s.setPolling,
+            isPolling: s.isPolling,
+        }))
+    );
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const pollTimerRef = useRef<NodeJS.Timeout | null>(null);

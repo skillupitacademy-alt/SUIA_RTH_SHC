@@ -1,9 +1,9 @@
-'use client';
-
+import { ZSkeleton } from '@quiz/ui';
 import { Radio } from 'lucide-react';
+import dynamic from 'next/dynamic';
 
 import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader';
-import { LiveSessionsList } from '@/components/dashboard/LiveSessionsList';
+const LiveSessionsList = dynamic(() => import('@/components/dashboard/LiveSessionsList').then(mod => ({ default: mod.LiveSessionsList })), { loading: () => <ZSkeleton className="h-64 w-full rounded-2xl" /> });
 
 export default function LiveSessionsPage() {
     return (

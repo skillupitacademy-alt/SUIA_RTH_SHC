@@ -20,7 +20,7 @@ vi.mock('@quiz/db', () => ({
                 backgroundJobs: { findFirst: vi.fn() }
             }, 
             insert: vi.fn().mockReturnValue({ values: vi.fn().mockReturnValue({ returning: vi.fn().mockResolvedValue([{ id: 'exam-id' }]) }) }),
-            update: vi.fn().mockReturnValue({ set: vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue(undefined) }) })
+            update: vi.fn().mockReturnValue({ set: vi.fn().mockReturnValue({ where: vi.fn().mockReturnValue({ returning: vi.fn().mockResolvedValue([{ id: 'exam-id' }]) }) }) })
         })),
         query: {
             idempotencyKeys: { findFirst: vi.fn() },

@@ -8,13 +8,14 @@ import { useAuthStore } from '@/store/auth-store';
 import { useRouter } from 'next/navigation';
 import { apiClient } from '@quiz/api-client';
 import { recordClientMetric, METRICS } from '@quiz/observability';
+import { Button, Input, ZLoader } from '@quiz/ui';
 
 
 export function LoginForm() {
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const { login } = useAuthStore();
+    const login = useAuthStore((s) => s.login);
     const router = useRouter();
 
     const toErrorMessage = (err: unknown): string => {
@@ -67,39 +68,33 @@ export function LoginForm() {
 
             <form className="mt-8 space-y-6" onSubmit={handleSubmit} autoComplete="off">
                 <div className="space-y-4">
-                    <div>
-                        <label className="text-sm font-medium leading-none" htmlFor="email">
-                            Email Address
-                        </label>
-                        <input
-                            id="email"
-                            name="email"
-                            type="email"
-                            placeholder="name@example.com"
-                            autoComplete="username"
-                            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm mt-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                            required
-                        />
-                    </div>
-                    <div>
+                    <Input
+                        id="email"
+                        name="email"
+                        type="email"
+                        label="Email Address"
+                        placeholder="name@example.com"
+                        autoComplete="username"
+                        required
+                    />
+                    <div className="space-y-2">
                         <label className="text-sm font-medium leading-none" htmlFor="password">
                             Password
                         </label>
-                        <div className="relative mt-1.5">
-                            <input
+                        <div className="relative">
+                            <Input
                                 id="password"
                                 name="password"
                                 type={showPassword ? "text" : "password"}
                                 placeholder="••••••••"
                                 minLength={1}
                                 autoComplete="new-password"
-                                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                                 required
                             />
                             <button
                                 type="button"
                                 onClick={() => setShowPassword(!showPassword)}
-                                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground z-10"
                                 aria-label={showPassword ? "Hide password" : "Show password"}
                             >
                                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -116,13 +111,13 @@ export function LoginForm() {
                     <Link href="/forgot-password" className="text-sm font-medium text-primary hover:underline">Forgot password?</Link>
                 </div>
 
-                <button
+                <Button
                     type="submit"
                     disabled={loading}
-                    className="w-full inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-bold text-primary-foreground shadow hover:bg-primary/90 h-11 transition-all"
+                    className="w-full h-11"
                 >
-                    {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Sign In"}
-                </button>
+                    {loading ? <ZLoader size="xs" className="text-white" center={false} /> : "Sign In"}
+                </Button>
             </form>
 
             <div className="text-center text-sm">
@@ -177,49 +172,40 @@ export function SignupForm() {
 
             <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
                 <div className="space-y-4">
-                    <div>
-                        <label className="text-sm font-medium leading-none" htmlFor="name">Full Name</label>
-                        <input
-                            id="name"
-                            name="name"
-                            type="text"
-                            placeholder="John Doe"
-                            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm mt-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                            required
-                        />
-                    </div>
-                    <div>
-                        <label className="text-sm font-medium leading-none" htmlFor="email">Email Address</label>
-                        <input
-                            id="email"
-                            name="email"
-                            type="email"
-                            placeholder="name@example.com"
-                            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm mt-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                            required
-                        />
-                    </div>
-                    <div>
-                        <label className="text-sm font-medium leading-none" htmlFor="password">Password</label>
-                        <input
-                            id="password"
-                            name="password"
-                            type="password"
-                            placeholder="••••••••"
-                            minLength={1}
-                            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm mt-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                            required
-                        />
-                    </div>
+                    <Input
+                        id="name"
+                        name="name"
+                        type="text"
+                        label="Full Name"
+                        placeholder="John Doe"
+                        required
+                    />
+                    <Input
+                        id="email"
+                        name="email"
+                        type="email"
+                        label="Email Address"
+                        placeholder="name@example.com"
+                        required
+                    />
+                    <Input
+                        id="password"
+                        name="password"
+                        type="password"
+                        label="Password"
+                        placeholder="••••••••"
+                        minLength={1}
+                        required
+                    />
                 </div>
 
-                <button
+                <Button
                     type="submit"
                     disabled={loading}
-                    className="w-full inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-bold text-primary-foreground shadow hover:bg-primary/90 h-11 transition-all"
+                    className="w-full h-11"
                 >
-                    {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Sign Up"}
-                </button>
+                    {loading ? <ZLoader size="xs" className="text-white" center={false} /> : "Sign Up"}
+                </Button>
             </form>
 
             <div className="text-center text-sm">
@@ -272,25 +258,22 @@ export function ForgotPasswordForm() {
             </div>
 
             <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-                <div>
-                    <label className="text-sm font-bold leading-none" htmlFor="email">Email Address</label>
-                    <input
-                        id="email"
-                        name="email"
-                        type="email"
-                        placeholder="name@example.com"
-                        className="flex h-12 w-full rounded-xl border border-input bg-background px-4 py-2 text-sm mt-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                        required
-                    />
-                </div>
+                <Input
+                    id="email"
+                    name="email"
+                    type="email"
+                    label="Email Address"
+                    placeholder="name@example.com"
+                    required
+                />
 
-                <button
+                <Button
                     type="submit"
                     disabled={loading}
-                    className="w-full inline-flex items-center justify-center rounded-xl bg-primary px-4 py-3 text-sm font-bold text-primary-foreground shadow hover:bg-primary/90 h-12 transition-all"
+                    className="w-full h-12"
                 >
-                    {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Send reset link"}
-                </button>
+                    {loading ? <ZLoader size="xs" className="text-white" center={false} /> : "Send reset link"}
+                </Button>
             </form>
 
             <div className="text-center text-sm">
@@ -400,40 +383,36 @@ export function ResetPasswordForm({ token }: { token: string }) {
 
             <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
                 <div className="space-y-4">
-                    <div>
+                    <div className="space-y-2">
                         <label className="text-sm font-bold leading-none" htmlFor="password">New Password</label>
-                        <div className="relative mt-2">
-                            <input
+                        <div className="relative">
+                            <Input
                                 id="password"
                                 name="password"
                                 type={showPassword ? "text" : "password"}
                                 placeholder="••••••••"
                                 minLength={1}
-                                className="flex h-12 w-full rounded-xl border border-input bg-background px-4 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                                 required
                             />
                             <button
                                 type="button"
                                 onClick={() => setShowPassword(!showPassword)}
-                                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground z-10"
                                 aria-label={showPassword ? "Hide password" : "Show password"}
                             >
                                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                             </button>
                         </div>
                     </div>
-                    <div>
-                        <label className="text-sm font-bold leading-none" htmlFor="confirm">Confirm Password</label>
-                        <input
-                            id="confirm"
-                            name="confirm"
-                            type="password"
-                            placeholder="••••••••"
-                            minLength={1}
-                            className="flex h-12 w-full rounded-xl border border-input bg-background px-4 py-2 text-sm mt-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                            required
-                        />
-                    </div>
+                    <Input
+                        id="confirm"
+                        name="confirm"
+                        type="password"
+                        label="Confirm Password"
+                        placeholder="••••••••"
+                        minLength={1}
+                        required
+                    />
                 </div>
 
                 {error && (
@@ -442,13 +421,13 @@ export function ResetPasswordForm({ token }: { token: string }) {
                     </div>
                 )}
 
-                <button
+                <Button
                     type="submit"
                     disabled={loading}
-                    className="w-full inline-flex items-center justify-center rounded-xl bg-primary px-4 py-3 text-sm font-bold text-primary-foreground shadow hover:bg-primary/90 h-12 transition-all"
+                    className="w-full h-12"
                 >
-                    {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Reset password"}
-                </button>
+                    {loading ? <ZLoader size="xs" className="text-white" center={false} /> : "Reset password"}
+                </Button>
             </form>
 
             <div className="text-center text-sm">

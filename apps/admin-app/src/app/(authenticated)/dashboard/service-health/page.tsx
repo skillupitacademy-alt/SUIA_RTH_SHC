@@ -1,9 +1,11 @@
 'use client';
 
+import { ZSkeleton } from '@quiz/ui';
 import { Activity } from "lucide-react";
+import dynamic from 'next/dynamic';
 
 import { DashboardPageHeader } from "@/components/dashboard/DashboardPageHeader";
-import { ServiceHealth } from "@/components/dashboard/ServiceHealth";
+const ServiceHealth = dynamic(() => import("@/components/dashboard/ServiceHealth").then(mod => ({ default: mod.ServiceHealth })), { loading: () => <ZSkeleton className="h-64 w-full rounded-2xl" /> });
 
 export default function ServiceHealthPage() {
     return (

@@ -19,8 +19,8 @@ export class AdminUserEngine {
     private readonly auditService = container.get(AuditService)
   ) {}
 
-  async getUsers(page: number = 1, limit: number = 20, status: 'active' | 'deleted' = 'active', filters?: { search?: string; role?: string; isBlocked?: boolean; isVerified?: boolean; status?: string }) {
-    const result = await this.repository.findAll(page, limit, status, filters);
+  async getUsers(cursor: string | null = null, limit: number = 20, status: 'active' | 'deleted' = 'active', filters?: { search?: string; role?: string; isBlocked?: boolean; isVerified?: boolean; status?: string }) {
+    const result = await this.repository.findAll(cursor, limit, status, filters);
 
     const now = new Date();
     const processedUsers = result.users.map(u => {
@@ -37,9 +37,8 @@ export class AdminUserEngine {
     return {
       users: processedUsers,
       total: result.total,
-      page: result.page,
-      limit: result.limit,
-      totalPages: result.totalPages
+      nextCursor: result.nextCursor,
+      limit: result.limit
     };
   }
 
@@ -54,7 +53,10 @@ export class AdminUserEngine {
 
   async deleteUser(id: string, adminId: string) {
     await this.auditService.log({ userId: adminId, action: 'admin_delete_user', metadata: { targetUserId: id } });
-    return await this.repository.delete(id);
+    
+    // T97: Performance soft delete by default. 
+    // This prevents accidental mass CASCADE DELETE of exams/reports/etc.
+    return await this.repository.softDelete(id);
   }
 
   async toggleBlockStatus(userId: string, isBlocked: boolean, adminId: string) {

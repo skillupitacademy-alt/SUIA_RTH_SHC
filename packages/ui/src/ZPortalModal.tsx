@@ -3,13 +3,14 @@
 import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 
-import { useScrollLock } from '@/hooks/useScrollLock';
+import { useScrollLock } from './hooks/use-scroll-lock';
 
 interface ZPortalModalProps {
     children: React.ReactNode;
     isOpen: boolean;
     onClose?: () => void;
     zIndex?: number;
+    className?: string;
 }
 
 /**
@@ -21,7 +22,8 @@ export function ZPortalModal({
     children,
     isOpen,
     onClose,
-    zIndex = 1000
+    zIndex = 1000,
+    className = "fixed inset-0 w-screen h-[100dvh] overflow-hidden flex flex-col bg-white"
 }: ZPortalModalProps) {
     const [mounted, setMounted] = useState(false);
 
@@ -47,7 +49,7 @@ export function ZPortalModal({
 
     return createPortal(
         <div
-            className="fixed inset-0 w-screen h-[100dvh] overflow-hidden flex flex-col bg-white"
+            className={className}
             style={{ zIndex }}
             aria-modal="true"
             role="dialog"

@@ -23,7 +23,7 @@ async function getHandler(_req: NextRequest) {
     await container.get(TokenService).verifyAccessToken(_token, true);
     
     const searchParams = _req.nextUrl.searchParams;
-    const page = parseInt(searchParams.get('page') ?? '1');
+    const cursor = searchParams.get('cursor');
     const limit = parseInt(searchParams.get('limit') ?? '20');
     const status = (searchParams.get('status') as 'active' | 'deleted') ?? 'active';
     
@@ -36,7 +36,7 @@ async function getHandler(_req: NextRequest) {
     const isVerified = isVerifiedParam === 'true' ? true : isVerifiedParam === 'false' ? false : undefined;
     const xStatus = searchParams.get('xStatus') ?? undefined;
 
-    const result = await AdminUserEngine.getUsers(page, limit, status, { search, role, isBlocked, isVerified, status: xStatus });
+    const result = await AdminUserEngine.getUsers(cursor, limit, status, { search, role, isBlocked, isVerified, status: xStatus });
     
     const { toAdminUserDTO } = await import('@/dtos/admin.dto');
     const usersDto = result.users.map(toAdminUserDTO);
@@ -45,7 +45,12 @@ async function getHandler(_req: NextRequest) {
     recordCounter('admin.api.users.get.success', 1);
     recordTimer('admin.api.users.get.duration', durationMs, { outcome: 'success' });
     
-    return ApiResponse.paginated(usersDto, result.total, page, limit);
+    return ApiResponse.success({
+      data: usersDto,
+      total: result.total,
+      nextCursor: result.nextCursor,
+      limit: result.limit
+    });
   } catch (_error: unknown) {
     const durationMs = Date.now() - start;
     log.error({ error: _error }, 'ADMIN_USERS failed');

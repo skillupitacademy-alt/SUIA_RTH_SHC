@@ -1,12 +1,11 @@
 import { topics } from '@quiz/db';
 
 export interface ITopicRepository {
-  findAll(page: number, limit: number, filters?: { subjectId?: string; search?: string }): Promise<{
+  findAll(cursor: string | null, limit: number, filters?: { subjectId?: string; search?: string }): Promise<{
     data: Array<(typeof topics.$inferSelect) & { subject?: Record<string, unknown> }>;
     total: number;
-    page: number;
+    nextCursor: string | null;
     limit: number;
-    totalPages: number;
   }>;
   findById(id: string): Promise<typeof topics.$inferSelect | undefined>;
   create(data: typeof topics.$inferInsert): Promise<typeof topics.$inferSelect>;

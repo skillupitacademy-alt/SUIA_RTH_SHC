@@ -24,21 +24,21 @@ describe('AdminDomainEngine', () => {
 
   describe('getDomains', () => {
     it('should fetch domains with pagination', async () => {
-      const expected = { data: [{ id: '1', name: 'Domain 1' }], total: 1, page: 1, limit: 10, totalPages: 1 };
+      const expected = { data: [{ id: '1', name: 'Domain 1' }], total: 1, nextCursor: null, limit: 10 };
       mockRepository.findAll.mockResolvedValue(expected);
 
-      const result = await engine.getDomains(1, 10);
+      const result = await engine.getDomains(null, 10);
 
-      expect(mockRepository.findAll).toHaveBeenCalledWith(1, 10, undefined);
-      expect(result).toEqual(expected);
+      expect(mockRepository.findAll).toHaveBeenCalledWith(null, 10, undefined);
+      expect(result).toEqual({ domains: expected.data, total: 1, nextCursor: null, limit: 10 });
     });
 
     it('should apply search filter if provided', async () => {
-      mockRepository.findAll.mockResolvedValue({ data: [], total: 0, page: 1, limit: 10, totalPages: 0 });
+      mockRepository.findAll.mockResolvedValue({ data: [], total: 0, nextCursor: null, limit: 10 });
 
-      await engine.getDomains(1, 10, { search: 'test' });
+      await engine.getDomains(null, 10, { search: 'test' });
 
-      expect(mockRepository.findAll).toHaveBeenCalledWith(1, 10, { search: 'test' });
+      expect(mockRepository.findAll).toHaveBeenCalledWith(null, 10, { search: 'test' });
     });
   });
 

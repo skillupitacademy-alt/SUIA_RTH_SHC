@@ -1,5 +1,5 @@
 import { db, domains, questions, questionSkills, skills,subjects, subtopics, topics } from '@quiz/db';
-import { and,eq } from 'drizzle-orm';
+import { and, eq, inArray } from 'drizzle-orm';
 
 export interface HierarchyQuestionPayload {
   skillNames?: string[];
@@ -154,43 +154,51 @@ export class HierarchyFactory {
   }
 
   private static async handleBatchDomains(tx: Parameters<Parameters<typeof db.transaction>[0]>[0], batch: { name: string; description?: string; category?: string }[], results: ReturnType<typeof HierarchyFactory['initResults']>) {
-    for (const bd of batch) {
-        const existing = await tx.query.domains.findFirst({
-            where: eq(domains.name, bd.name)
-        });
-        if (existing) {
-            results.batchDomains.push(existing.id);
-            results.stats.domains.skipped++;
-        } else {
-            const [newDomain] = await tx.insert(domains).values({
-                name: bd.name,
-                description: bd.description,
-                category: bd.category
-            }).returning();
-            results.batchDomains.push(newDomain.id);
-            results.stats.domains.added++;
-        }
+    if (batch.length === 0) return;
+    const names = batch.map(b => b.name);
+    const existingDomains = await tx.query.domains.findMany({
+      where: inArray(domains.name, names)
+    });
+    const existingNames = new Set(existingDomains.map(d => d.name));
+    
+    const toInsert = batch.filter(b => !existingNames.has(b.name)).map(bd => ({
+      name: bd.name,
+      description: bd.description,
+      category: bd.category
+    }));
+
+    if (toInsert.length > 0) {
+      const newlyInserted = await tx.insert(domains).values(toInsert).returning();
+      newlyInserted.forEach(d => results.batchDomains.push(d.id));
+      results.stats.domains.added += newlyInserted.length;
     }
+    
+    existingDomains.forEach(d => results.batchDomains.push(d.id));
+    results.stats.domains.skipped += existingDomains.length;
   }
 
   private static async handleBatchSkills(tx: Parameters<Parameters<typeof db.transaction>[0]>[0], batch: { name: string; category?: string; mappingType?: string }[], results: ReturnType<typeof HierarchyFactory['initResults']>) {
-    for (const bs of batch) {
-        const existing = await tx.query.skills.findFirst({
-            where: eq(skills.name, bs.name)
-        });
-        if (existing) {
-            results.batchSkills.push(existing.id);
-            results.stats.skills.skipped++;
-        } else {
-            const [newSkill] = await tx.insert(skills).values({
-                name: bs.name,
-                category: ((bs.category !== undefined && bs.category !== null && bs.category !== '') ? bs.category : 'technical') as "technical" | "cognitive" | "process",
-                mappingType: ((bs.mappingType !== undefined && bs.mappingType !== null && bs.mappingType !== '') ? bs.mappingType : 'conceptual') as "conceptual" | "technical" | "practical"
-            }).returning();
-            results.batchSkills.push(newSkill.id);
-            results.stats.skills.added++;
-        }
+    if (batch.length === 0) return;
+    const names = batch.map(b => b.name);
+    const existingSkills = await tx.query.skills.findMany({
+      where: inArray(skills.name, names)
+    });
+    const existingNames = new Set(existingSkills.map(s => s.name));
+
+    const toInsert = batch.filter(b => !existingNames.has(b.name)).map(bs => ({
+      name: bs.name,
+      category: ((bs.category !== undefined && bs.category !== null && bs.category !== '') ? bs.category : 'technical') as "technical" | "cognitive" | "process",
+      mappingType: ((bs.mappingType !== undefined && bs.mappingType !== null && bs.mappingType !== '') ? bs.mappingType : 'conceptual') as "conceptual" | "technical" | "practical"
+    }));
+
+    if (toInsert.length > 0) {
+      const newlyInserted = await tx.insert(skills).values(toInsert).returning();
+      newlyInserted.forEach(s => results.batchSkills.push(s.id));
+      results.stats.skills.added += newlyInserted.length;
     }
+
+    existingSkills.forEach(s => results.batchSkills.push(s.id));
+    results.stats.skills.skipped += existingSkills.length;
   }
 
   private static async processSubject(tx: Parameters<Parameters<typeof db.transaction>[0]>[0], s: NonNullable<AtomicHierarchyPayload['subjects']>[number], domainId: string, results: ReturnType<typeof HierarchyFactory['initResults']>) {
@@ -321,6 +329,33 @@ export class HierarchyFactory {
 
     const insertedQuestions = await tx.insert(questions).values(questionValues).returning();
 
+    // 1. Collect all skill names to batch resolve
+    const allSkillNames = new Set<string>();
+    sourceQuestions.forEach(q => q.skillNames?.forEach(s => allSkillNames.add(s)));
+    
+    const skillMap = new Map<string, string>();
+    if (allSkillNames.size > 0) {
+      const existingSkills = await tx.query.skills.findMany({
+        where: inArray(skills.name, Array.from(allSkillNames))
+      });
+      existingSkills.forEach(s => skillMap.set(s.name, s.id));
+
+      const missingSkillNames = Array.from(allSkillNames).filter(name => !skillMap.has(name));
+      if (missingSkillNames.length > 0) {
+        const newlyInsertedSkills = await tx.insert(skills).values(
+          missingSkillNames.map(name => ({
+            name,
+            category: 'technical' as const,
+            mappingType: 'conceptual' as const
+          }))
+        ).returning();
+        newlyInsertedSkills.forEach(s => skillMap.set(s.name, s.id));
+      }
+    }
+
+    // 2. Prepare bulk questionSkills insert
+    const questionSkillsToInsert: Array<{ questionId: string, skillId: string }> = [];
+
     for (let i = 0; i < insertedQuestions.length; i++) {
         const sourceQ = sourceQuestions[i];
         const insertedQ = insertedQuestions[i];
@@ -335,35 +370,20 @@ export class HierarchyFactory {
         results.questionStats.total++;
 
         if (sourceQ.skillNames && sourceQ.skillNames.length > 0) {
-        for (const skillName of sourceQ.skillNames) {
-            // Resolve or Create Skill
-            let skillId: string;
-            const existingSkill = await tx.query.skills.findFirst({
-            where: eq(skills.name, skillName)
-            });
-
-            if (existingSkill) {
-            skillId = existingSkill.id;
-            } else {
-            const validMappingTypes = ['conceptual', 'technical', 'practical'];
-            const mType = sourceQ.mappingType?.toLowerCase() ?? 'conceptual';
-            const finalMappingType = validMappingTypes.includes(mType) ? mType : 'conceptual';
-
-            const [newSkill] = await tx.insert(skills).values({
-                name: skillName,
-                category: 'technical',
-                mappingType: finalMappingType as "conceptual" | "technical" | "practical"
-            }).returning();
-            skillId = newSkill.id;
+          for (const skillName of sourceQ.skillNames) {
+            const skillId = skillMap.get(skillName);
+            if (skillId !== undefined && skillId !== null) {
+              questionSkillsToInsert.push({
+                questionId: insertedQ.id,
+                skillId
+              });
             }
+          }
+        }
+    }
 
-            // Link Question to Skill
-            await tx.insert(questionSkills).values({
-            questionId: insertedQ.id,
-            skillId
-            });
-        }
-        }
+    if (questionSkillsToInsert.length > 0) {
+      await tx.insert(questionSkills).values(questionSkillsToInsert);
     }
     return insertedQuestions.length;
   }

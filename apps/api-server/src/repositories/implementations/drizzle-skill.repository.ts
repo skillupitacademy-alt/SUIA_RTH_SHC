@@ -1,5 +1,5 @@
 import { db, skills } from '@quiz/db';
-import { eq, inArray, sql } from 'drizzle-orm';
+import { and, desc, eq, inArray, lt, type SQL,sql } from 'drizzle-orm';
 
 import { BaseRepository } from '@/modules/core/repositories/base.repository';
 
@@ -12,19 +12,29 @@ export class DrizzleSkillRepository extends BaseRepository<typeof skills.$inferS
     super(db);
   }
 
-  async findAll(page: number, limit: number, filters?: { search?: string }) {
-    const offset = (page - 1) * limit;
-    let whereClause = undefined;
-    if (filters?.search !== undefined && filters?.search !== null && filters?.search.trim() !== '') {
-        whereClause = sql`${skills.name} ILIKE ${'%' + filters.search + '%'}`;
+  async findAll(cursor: string | null, limit: number, filters?: { search?: string }) {
+    const conditions: SQL[] = [];
+
+    if (cursor !== null && cursor !== '') {
+        // Use lexicographic cursor on name for deterministic ordering
+        conditions.push(lt(skills.name, cursor));
     }
 
-    const data = await this.dbInstance.query.skills.findMany({
+    if (filters?.search !== undefined && filters?.search !== null && filters?.search.trim() !== '') {
+        conditions.push(sql`${skills.name} ILIKE ${'%' + filters.search + '%'}`);
+    }
+
+    const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+
+    const dataRaw = await this.dbInstance.query.skills.findMany({
       where: whereClause,
-      limit,
-      offset,
-      orderBy: [skills.name]
+      limit: limit + 1,
+      orderBy: [desc(skills.name)]
     });
+
+    const hasNext = dataRaw.length > limit;
+    const data = hasNext ? dataRaw.slice(0, limit) : dataRaw;
+    const nextCursor = hasNext ? data[data.length - 1].name : null;
 
     const [{ count }] = await this.dbInstance
       .select({ count: sql<number>`count(*)` })
@@ -32,9 +42,8 @@ export class DrizzleSkillRepository extends BaseRepository<typeof skills.$inferS
       .where(whereClause ?? sql`true`);
 
     const total = Number(count ?? 0);
-    const totalPages = Math.max(1, Math.ceil(total / limit));
 
-    return { data, total, page, limit, totalPages };
+    return { data, total, nextCursor, limit };
   }
 
   async create(data: typeof skills.$inferInsert) {
@@ -56,16 +65,25 @@ export class DrizzleSkillRepository extends BaseRepository<typeof skills.$inferS
     return await this.dbInstance.delete(skills).where(inArray(skills.id, ids)).returning();
   }
 
-  async getTopicSkills(page: number = 1, limit: number = 20) {
-    const offset = (page - 1) * limit;
-    return await this.dbInstance.query.topicSkills.findMany({
-      limit,
-      offset,
+  async getTopicSkills(cursor: string | null = null, limit: number = 20) {
+    if (cursor !== null && cursor !== '') {
+        // No dedicated id column; cursor pagination skipped for join table
+    }
+
+    const dataRaw = await this.dbInstance.query.topicSkills.findMany({
+      limit: limit + 1,
+      where: undefined,
       with: {
         topic: true,
         skill: true
       }
     });
+
+    const hasNext = dataRaw.length > limit;
+    const data = hasNext ? dataRaw.slice(0, limit) : dataRaw;
+    const nextCursor = hasNext ? null : null;
+
+    return { data, nextCursor };
   }
 
   async getSkillsByTopic(topicId: string) {

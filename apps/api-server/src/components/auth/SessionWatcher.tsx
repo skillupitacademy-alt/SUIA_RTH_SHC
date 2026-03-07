@@ -3,8 +3,9 @@
 import { ZLoader } from '@quiz/ui';
 import { ShieldAlert, Terminal } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 
-import { useAuthStore } from '@/store/auth-store';
+import { type AuthState, useAuthStore } from '@/store/auth-store';
 
 // Modern Tier-3 Security Constants
 const WARNING_THRESHOLD = 180; // 3 min before token expiry
@@ -21,7 +22,13 @@ interface SessionWatcherProps {
 }
 
 export function SessionWatcher({ expiresAt, onRefresh, onLogout, isRedirecting }: SessionWatcherProps) {
-    const { lock, isLocked, isLoggingOut } = useAuthStore();
+    const { lock, isLocked, isLoggingOut } = useAuthStore(
+        useShallow((s: AuthState) => ({
+            lock: s.lock,
+            isLocked: s.isLocked,
+            isLoggingOut: s.isLoggingOut,
+        }))
+    );
     const [showWarning, setShowWarning] = useState(false);
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [remainingSeconds, setRemainingSeconds] = useState<number | null>(null);

@@ -12,8 +12,8 @@ vi.mock('@quiz/db', () => ({
         transaction: vi.fn().mockImplementation(async (cb) => {
             const tx = {
                 query: {
-                    domains: { findFirst: vi.fn() },
-                    skills: { findFirst: vi.fn() },
+                    domains: { findFirst: vi.fn(), findMany: vi.fn().mockResolvedValue([]) },
+                    skills: { findFirst: vi.fn(), findMany: vi.fn().mockResolvedValue([]) },
                 },
                 insert: vi.fn().mockReturnValue({
                     values: vi.fn().mockReturnValue({

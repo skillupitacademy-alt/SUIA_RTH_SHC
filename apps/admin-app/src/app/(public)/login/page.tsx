@@ -1,7 +1,7 @@
 ﻿'use client';
 
 import { apiClient } from '@quiz/api-client';
-import { ZLoader } from '@quiz/ui';
+import { Button, Input, ZLoader } from '@quiz/ui';
 import { Lock, Mail, ShieldCheck } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -12,7 +12,7 @@ import { clientLogger } from '@/utils/clientLogger';
 
 export default function AdminLoginPage() {
     const router = useRouter();
-    const { login } = useAuthStore();
+    const login = useAuthStore((s) => s.login);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
     const [formData, setFormData] = useState({
@@ -75,22 +75,20 @@ export default function AdminLoginPage() {
             </div> : null}
 
             <form onSubmit={(e) => void handleSubmit(e)} className="space-y-6" autoComplete="off">
-                <div className="space-y-2">
-                    <label className="text-sm font-medium leading-none text-slate-500" htmlFor="admin-login-email">Email Address</label>
-                    <div className="relative">
-                        <Mail className="absolute left-4 top-4 text-slate-400 h-5 w-5" />
-                        <input
-                            type="email"
-                            required
-                            id="admin-login-email"
-                            name="username"
-                            autoComplete="username"
-                            className="w-full pl-12 pr-4 py-4 rounded-xl border bg-slate-50 text-[#1A1A1A] text-[15px] focus:bg-white focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all font-semibold"
-                            placeholder="admin@quizplatform.com"
-                            value={formData.email}
-                            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                        />
-                    </div>
+                <div className="relative">
+                    <Mail className="absolute left-4 top-4 text-slate-400 h-5 w-5 z-10" />
+                    <Input
+                        type="email"
+                        required
+                        id="admin-login-email"
+                        name="username"
+                        label="Email Address"
+                        autoComplete="username"
+                        className="pl-12"
+                        placeholder="admin@quizplatform.com"
+                        value={formData.email}
+                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    />
                 </div>
 
                 <div className="space-y-2">
@@ -104,15 +102,15 @@ export default function AdminLoginPage() {
                         </Link>
                     </div>
                     <div className="relative">
-                        <Lock className="absolute left-4 top-4 text-slate-400 h-5 w-5" />
-                        <input
+                        <Lock className="absolute left-4 top-4 text-slate-400 h-5 w-5 z-10" />
+                        <Input
                             type="password"
                             required
                             minLength={1}
                             id="admin-login-password"
                             name="password"
                             autoComplete="new-password"
-                            className="w-full pl-12 pr-4 py-4 rounded-xl border bg-slate-50 text-[#1A1A1A] text-[15px] focus:bg-white focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all font-semibold"
+                            className="pl-12"
                             placeholder="••••••••••••"
                             value={formData.password}
                             onChange={(e) => setFormData({ ...formData, password: e.target.value })}
@@ -120,10 +118,10 @@ export default function AdminLoginPage() {
                     </div>
                 </div>
 
-                <button
+                <Button
                     type="submit"
                     disabled={isLoading}
-                    className="w-full py-5 rounded-xl bg-[#FF4B91] text-white font-bold tracking-normal text-sm shadow-lg shadow-[#FF4B91]/25 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-3"
+                    className="w-full py-7 shadow-lg shadow-primary/25 rounded-2xl"
                 >
                     {isLoading ? (
                         <>
@@ -133,7 +131,7 @@ export default function AdminLoginPage() {
                     ) : (
                         "AUTHENTICATE"
                     )}
-                </button>
+                </Button>
             </form>
 
             <div className="mt-8 pt-8 border-t text-center">

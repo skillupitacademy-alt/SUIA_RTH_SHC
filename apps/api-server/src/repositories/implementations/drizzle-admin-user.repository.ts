@@ -1,5 +1,5 @@
 import { db, roles, userProfiles, userRoles, users } from '@quiz/db';
-import { and, desc, eq, gt, inArray, isNotNull, isNull, or, type SQL, sql } from 'drizzle-orm';
+import { and, desc, eq, gt, inArray, isNotNull, isNull, lt, or, type SQL, sql } from 'drizzle-orm';
 
 import { BaseRepository } from '@/modules/core/repositories/base.repository';
 
@@ -12,20 +12,24 @@ export class DrizzleAdminUserRepository extends BaseRepository<typeof users.$inf
     super(db);
   }
 
-  async findAll(page: number, limit: number, status: 'active' | 'deleted', filters?: { 
+  async findAll(cursor: string | null, limit: number, status: 'active' | 'deleted', filters?: { 
     search?: string; 
     role?: string; 
     isBlocked?: boolean; 
     isVerified?: boolean; 
     status?: string 
   }) {
-    const offset = (page - 1) * limit;
     const conditions: SQL[] = [];
     
     if (status === 'active') {
         conditions.push(isNull(users.deletedAt));
     } else {
         conditions.push(isNotNull(users.deletedAt));
+    }
+
+    if (cursor !== null && cursor !== '') {
+        // Assuming cursor is the createdAt timestamp string
+        conditions.push(lt(users.createdAt, new Date(cursor)));
     }
 
     if (filters?.search !== undefined && filters.search !== null && filters.search.trim() !== '') {
@@ -35,7 +39,7 @@ export class DrizzleAdminUserRepository extends BaseRepository<typeof users.$inf
     if (filters?.role !== undefined && filters.role !== null && filters.role.trim() !== '') {
         const hasResults = await this.applyUserRoleFilter(filters.role, conditions);
         if (!hasResults) {
-            return { users: [], total: 0, page, limit, totalPages: 0 };
+            return { users: [], total: 0, nextCursor: null, limit };
         }
     }
 
@@ -55,13 +59,12 @@ export class DrizzleAdminUserRepository extends BaseRepository<typeof users.$inf
 
     const [countResult] = await this.dbInstance.select({ count: sql`count(*)` })
         .from(users)
-        .where(whereClause);
+        .where(status === 'active' ? isNull(users.deletedAt) : isNotNull(users.deletedAt));
     
     const totalCount = Number(countResult?.count ?? 0);
 
     const usersList = await this.dbInstance.query.users.findMany({
-      limit,
-      offset,
+      limit: limit + 1, // Fetch one extra to check if there's a next page
       where: whereClause,
       orderBy: [desc(users.createdAt)],
       with: {
@@ -74,18 +77,26 @@ export class DrizzleAdminUserRepository extends BaseRepository<typeof users.$inf
       }
     });
 
+    const hasNext = usersList.length > limit;
+    const data = hasNext ? usersList.slice(0, limit) : usersList;
+    const nextCursor = hasNext ? data[data.length - 1].createdAt?.toISOString() ?? null : null;
+
     return {
-      users: usersList,
+      users: data,
       total: totalCount,
-      page,
-      limit,
-      totalPages: Math.ceil(totalCount / limit)
+      nextCursor,
+      limit
     };
   }
 
   async update(id: string, data: Partial<typeof users.$inferInsert>) {
     const [updated] = await this.dbInstance.update(users).set(data).where(eq(users.id, id)).returning();
     return updated;
+  }
+
+  async softDelete(id: string) {
+    const [deleted] = await this.dbInstance.update(users).set({ deletedAt: new Date() }).where(eq(users.id, id)).returning();
+    return deleted;
   }
 
   async delete(id: string) {

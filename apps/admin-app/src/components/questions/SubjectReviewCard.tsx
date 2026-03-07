@@ -22,14 +22,14 @@ interface SubjectReviewCardProps {
     onEditRequest: (subject: SubjectReviewCardProps['subject']) => void;
 }
 
-export function SubjectReviewCard({
+export const SubjectReviewCard = React.memo(({
     subject,
     index,
     isSelected = false,
     onSelect,
     onDeleteRequest,
     onEditRequest
-}: SubjectReviewCardProps) {
+}: SubjectReviewCardProps) => {
     const statusColors: Record<string, string> = {
         active: 'bg-emerald-50 text-emerald-600 border-emerald-100',
         inactive: 'bg-slate-50 text-slate-500 border-slate-100'
@@ -152,4 +152,7 @@ export function SubjectReviewCard({
             </div>
         </div>
     );
-}
+});
+
+SubjectReviewCard.displayName = 'SubjectReviewCard';
+

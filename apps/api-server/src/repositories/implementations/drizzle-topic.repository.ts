@@ -1,5 +1,5 @@
 import { db, topics } from '@quiz/db';
-import { and, desc, eq, inArray, sql } from 'drizzle-orm';
+import { and, desc, eq, inArray, lt, sql } from 'drizzle-orm';
 
 import { BaseRepository } from '@/modules/core/repositories/base.repository';
 
@@ -12,9 +12,13 @@ export class DrizzleTopicRepository extends BaseRepository<typeof topics.$inferS
     super(db);
   }
 
-  async findAll(page: number, limit: number, filters?: { subjectId?: string; search?: string }) {
-    const offset = (page - 1) * limit;
+  async findAll(cursor: string | null, limit: number, filters?: { subjectId?: string; search?: string }) {
     const conditions = [];
+
+    if (cursor !== null && cursor !== '') {
+        conditions.push(lt(topics.createdAt, new Date(cursor)));
+    }
+
     if (filters?.subjectId !== undefined && filters?.subjectId !== null && filters?.subjectId !== '') {
         conditions.push(eq(topics.subjectId, filters.subjectId));
     }
@@ -24,29 +28,27 @@ export class DrizzleTopicRepository extends BaseRepository<typeof topics.$inferS
 
     const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
 
-    const data = await this.dbInstance.query.topics.findMany({
+    const dataRaw = await this.dbInstance.query.topics.findMany({
       where: whereClause,
-      limit,
-      offset,
+      limit: limit + 1,
       orderBy: [desc(topics.createdAt)],
       with: {
-        subject: {
-          with: {
-            domain: true,
-          }
-        }
+        subject: true,
       }
     });
+
+    const hasNext = dataRaw.length > limit;
+    const data = hasNext ? dataRaw.slice(0, limit) : dataRaw;
+    const nextCursor = hasNext ? data[data.length - 1].createdAt.toISOString() : null;
 
     const [{ count }] = await this.dbInstance
       .select({ count: sql<number>`count(*)` })
       .from(topics)
-      .where(whereClause ?? sql`true`);
+      .where(conditions.length > 0 ? and(...conditions.filter(c => !c.toString().includes('created_at <'))) : sql`true`);
 
     const total = Number(count ?? 0);
-    const totalPages = Math.max(1, Math.ceil(total / limit));
 
-    return { data, total, page, limit, totalPages };
+    return { data, total, nextCursor, limit };
   }
 
   async create(data: typeof topics.$inferInsert) {

@@ -37,11 +37,11 @@ async function getHandler(_req: NextRequest) {
 
     try {
         const searchParams = _req.nextUrl.searchParams;
-        const page = parseInt(searchParams.get('page') ?? '1');
+        const cursor = searchParams.get('cursor');
         const limit = parseInt(searchParams.get('limit') ?? '20');
         const search = searchParams.get('search') ?? undefined;
 
-        const data = await AdminBlueprintEngine.getBlueprints(page, limit, { search });
+        const data = await AdminBlueprintEngine.getBlueprints(cursor, limit, { search });
         
         const durationMs = Date.now() - start;
         recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.blueprints.get.success', 1);

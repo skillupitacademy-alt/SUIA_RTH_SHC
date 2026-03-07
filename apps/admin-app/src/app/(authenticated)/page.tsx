@@ -1,5 +1,6 @@
 'use client';
 
+import { cn,PageTitle } from '@quiz/ui';
 import {
     Activity,
     ArrowRight,
@@ -15,11 +16,6 @@ import {
     Users
 } from 'lucide-react';
 import Link from 'next/link';
-import React from 'react';
-
-import { PageTitle } from '@/components/layout/PageTitle';
-import { cn } from '@/lib/utils';
-
 const dashboardCards = [
     {
         title: "Control Center",

@@ -1,5 +1,5 @@
 import { db, questions, questionSkills } from '@quiz/db';
-import { and, desc, eq, inArray, sql } from 'drizzle-orm';
+import { and, desc, eq, inArray, lt, sql } from 'drizzle-orm';
 
 import { BaseRepository } from '@/modules/core/repositories/base.repository';
 
@@ -12,14 +12,17 @@ export class DrizzleQuestionRepository extends BaseRepository<typeof questions.$
     super(db);
   }
 
-  async findAll(page: number, limit: number, filters?: { 
+  async findAll(cursor: string | null, limit: number, filters?: { 
     topicId?: string; 
     subtopicId?: string; 
     status?: string;
     search?: string;
   }) {
-    const offset = (page - 1) * limit;
     const conditions = [];
+
+    if (cursor !== null && cursor !== '') {
+        conditions.push(lt(questions.updatedAt, new Date(cursor)));
+    }
 
     if (filters?.subtopicId !== undefined && filters?.subtopicId !== null && filters?.subtopicId !== '') {
         conditions.push(eq(questions.subtopicId, filters.subtopicId));
@@ -37,10 +40,9 @@ export class DrizzleQuestionRepository extends BaseRepository<typeof questions.$
 
     const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
 
-    const data = await this.dbInstance.query.questions.findMany({
+    const dataRaw = await this.dbInstance.query.questions.findMany({
       where: whereClause,
-      limit,
-      offset,
+      limit: limit + 1,
       orderBy: [desc(questions.updatedAt)],
       with: {
         topic: {
@@ -64,15 +66,18 @@ export class DrizzleQuestionRepository extends BaseRepository<typeof questions.$
       }
     });
 
+    const hasNext = dataRaw.length > limit;
+    const data = hasNext ? dataRaw.slice(0, limit) : dataRaw;
+    const nextCursor = hasNext ? data[data.length - 1].updatedAt.toISOString() : null;
+
     const [{ count }] = await this.dbInstance
       .select({ count: sql<number>`count(*)` })
       .from(questions)
-      .where(whereClause ?? sql`true`);
+      .where(conditions.length > 0 ? and(...conditions.filter(c => !c.toString().includes('updated_at <'))) : sql`true`);
 
     const total = Number(count ?? 0);
-    const totalPages = Math.max(1, Math.ceil(total / limit));
 
-    return { data, total, page, limit, totalPages };
+    return { data, total, nextCursor, limit };
   }
 
   async create(

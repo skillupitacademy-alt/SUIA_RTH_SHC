@@ -4,13 +4,22 @@ import { apiClient } from '@quiz/api-client';
 import { ZLoader } from '@quiz/ui';
 import { ChevronRight, Lock, LogOut, ShieldCheck, User as UserIcon } from 'lucide-react';
 import { useRef, useState } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 
 import { useFocusTrap } from '@/hooks/useFocusTrap';
 import { useAuthStore } from '@/store/auth-store';
 import { clientLogger } from '@/utils/clientLogger';
 
 export function AdminLockScreen() {
-    const { user, unlock, logout, isLocked, login } = useAuthStore();
+    const { user, unlock, logout, isLocked, login } = useAuthStore(
+        useShallow((s) => ({
+            user: s.user,
+            unlock: s.unlock,
+            logout: s.logout,
+            isLocked: s.isLocked,
+            login: s.login,
+        }))
+    );
     const [password, setPassword] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);

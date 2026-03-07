@@ -3,6 +3,7 @@
 import { apiClient } from '@quiz/api-client';
 import { recordCounter } from '@quiz/observability';
 import { ZLoader } from '@quiz/ui';
+import { PageTitle } from '@quiz/ui';
 import {
     Activity,
     AlertTriangle,
@@ -18,7 +19,6 @@ import {
 } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 
-import { PageTitle } from '@/components/layout/PageTitle';
 import { cn } from '@/lib/utils';
 import { clientLogger } from '@/utils/clientLogger';
 

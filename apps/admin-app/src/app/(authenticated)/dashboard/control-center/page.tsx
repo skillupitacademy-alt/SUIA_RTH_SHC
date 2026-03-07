@@ -1,8 +1,10 @@
 'use client';
 
+import { ZSkeleton } from '@quiz/ui';
 import { LayoutDashboard } from "lucide-react";
+import dynamic from 'next/dynamic';
 
-import { ControlCenterDeck } from "@/components/dashboard/ControlCenterDeck";
+const ControlCenterDeck = dynamic(() => import("@/components/dashboard/ControlCenterDeck").then(mod => ({ default: mod.ControlCenterDeck })), { loading: () => <ZSkeleton className="h-64 w-full rounded-2xl" /> });
 import { DashboardPageHeader } from "@/components/dashboard/DashboardPageHeader";
 
 export default function ControlCenterPage() {

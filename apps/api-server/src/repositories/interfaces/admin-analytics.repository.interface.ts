@@ -26,7 +26,7 @@ export interface IAdminAnalyticsRepository {
     avgTime: number | null;
   }>;
   getEfficiencyAnalytics(): Promise<EfficiencyRow[]>;
-  getAuditLogs(limit: number): Promise<UnknownRecord[]>;
+  getAuditLogs(cursor: string | null, limit: number): Promise<{ data: UnknownRecord[]; nextCursor: string | null }>;
   getRBACMetrics(): Promise<UnknownRecord[]>;
   getAllDomainHierarchy(): Promise<DomainHierarchy[]>;
 }

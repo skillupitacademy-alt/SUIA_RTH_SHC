@@ -11,8 +11,14 @@ export class AdminSubjectEngine {
     private readonly auditService = container.get(AuditService)
   ) {}
 
-  async getSubjects(page: number = 1, limit: number = 20, filters?: { domainId?: string; search?: string }) {
-    return await this.repository.findAll(page, limit, filters);
+  async getSubjects(cursor: string | null = null, limit: number = 20, filters?: { domainId?: string; search?: string }) {
+    const result = await this.repository.findAll(cursor, limit, filters);
+    return {
+        subjects: result.data,
+        total: result.total,
+        nextCursor: result.nextCursor,
+        limit: result.limit
+    };
   }
 
   async createSubject(data: typeof subjects.$inferInsert, adminId: string) {
