@@ -24,17 +24,25 @@ export default async function DashboardPage() {
 
     console.log('[Dashboard] Fetching data for user:', user.id);
     let data;
+    let fetchError = null;
     try {
         data = await fetchServerDashboard('7d', 1, 3);
         console.log('[Dashboard] Data fetched successfully:', !!data);
     } catch (err) {
         console.error('[Dashboard] Error fetching dashboard data:', err);
-        // Fallback or re-throw to trigger boundary
-        throw err;
+        fetchError = err instanceof Error ? err.message : 'Unknown error';
     }
 
     return (
         <div className="space-y-10">
+            {/* Debug Marker */}
+            <div className="hidden">RENDER_READY_USER_{user.id}</div>
+
+            {fetchError && (
+                <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-red-600 font-bold text-sm">
+                    Dashboard Data Error: {fetchError}
+                </div>
+            )}
             {/* Welcome Header */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div>
