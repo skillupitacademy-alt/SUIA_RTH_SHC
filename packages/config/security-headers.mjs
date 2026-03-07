@@ -35,7 +35,9 @@ export function getCSPHeader(options) {
 
   const scriptSrc = ([
     "'self'",
-    isDev ? "'unsafe-inline' 'unsafe-eval'" : "",
+    // Next.js injects small inline bootstrap scripts; allow them with an inline allowance.
+    "'unsafe-inline'",
+    isDev ? "'unsafe-eval'" : "",
     "https://static.cloudflareinsights.com",
   ].filter(Boolean));
 

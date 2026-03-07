@@ -17,6 +17,7 @@ const nextConfig = {
     },
     async headers() {
         const isDev = process.env.NODE_ENV === 'development';
+        const reportAllowedOrigin = process.env.NEXT_PUBLIC_WEB_APP_URL || "https://quiz.realtutorialhub.com";
         const apiUrls = [
             process.env.NEXT_PUBLIC_API_URL,
             process.env.NEXT_PUBLIC_ADMIN_URL,
@@ -25,6 +26,15 @@ const nextConfig = {
         ].filter(Boolean);
 
         return [
+            {
+                source: '/api/security/report',
+                headers: [
+                    { key: 'Access-Control-Allow-Origin', value: reportAllowedOrigin },
+                    { key: 'Access-Control-Allow-Methods', value: 'POST, OPTIONS' },
+                    { key: 'Access-Control-Allow-Headers', value: 'Content-Type' },
+                    { key: 'Cross-Origin-Resource-Policy', value: 'cross-origin' },
+                ],
+            },
             {
                 source: '/api/(.*)',
                 headers: [
