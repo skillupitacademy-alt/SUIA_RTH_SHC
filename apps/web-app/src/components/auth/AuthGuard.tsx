@@ -15,12 +15,13 @@ interface AuthGuardProps {
 export function AuthGuard({ children, requireAdmin = false }: AuthGuardProps) {
     const router = useRouter();
     const pathname = usePathname();
-    const { user, login, logout, isSessionExpired } = useAuthStore(
+    const { user, login, logout, isSessionExpired, initialized } = useAuthStore(
         useShallow((s) => ({
             user: s.user,
             login: s.login,
             logout: s.logout,
             isSessionExpired: s.isSessionExpired,
+            initialized: s.initialized,
         }))
     );
     const [isChecking, setIsChecking] = useState(true);
@@ -32,7 +33,10 @@ export function AuthGuard({ children, requireAdmin = false }: AuthGuardProps) {
 
     useEffect(() => {
         const checkAuth = async () => {
-            // CRITICAL: If session is already marked as expired, 
+            // 1. Wait for rehydration
+            if (!initialized) return;
+
+            // 2. If session is already marked as expired, 
             // don't try to "re-login" from the background.
             if (isSessionExpired) {
                 setIsChecking(false);
@@ -83,14 +87,14 @@ export function AuthGuard({ children, requireAdmin = false }: AuthGuardProps) {
         };
 
         checkAuth();
-    }, [user, router, pathname, login, logout, requireAdmin, isSessionExpired]);
+    }, [user, router, pathname, login, logout, requireAdmin, isSessionExpired, initialized]);
 
-    if (isChecking) {
+    if (isChecking || !initialized) {
         return (
             <div className="flex h-screen w-full items-center justify-center bg-background">
                 <div className="flex flex-col items-center gap-4">
                     <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                    <p className="text-sm text-muted-foreground">Verifying session...</p>
+                    <p className="text-sm text-muted-foreground">Initializing secure environment...</p>
                 </div>
             </div>
         );
