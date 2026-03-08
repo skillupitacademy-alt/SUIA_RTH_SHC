@@ -30,20 +30,22 @@ export async function fetchServerDashboard(range = '7d', page = 1, limit = 3) {
     const cookieStore = await cookies();
     const accessToken = cookieStore.get('accessToken')?.value;
 
-    const apiUrl = getApiBase();
-    const res = await fetch(`${apiUrl}/dashboard?range=${range}&page=${page}&limit=${limit}`, {
-        headers: {
-            'Authorization': accessToken ? `Bearer ${accessToken}` : '',
-            'Cookie': cookieStore.toString()
-        },
-        next: { revalidate: 60 } // Cache for 1 minute
-    });
+    try {
+        const apiUrl = getApiBase();
+        const res = await fetch(`${apiUrl}/dashboard?range=${range}&page=${page}&limit=${limit}`, {
+            headers: {
+                'Authorization': accessToken ? `Bearer ${accessToken}` : '',
+                'Cookie': cookieStore.toString()
+            },
+            next: { revalidate: 60 } // Cache for 1 minute
+        });
 
-    if (!res.ok) {
-        throw new Error(`Failed to fetch dashboard: ${res.statusText}`);
+        if (!res.ok) return null;
+        return res.json();
+    } catch (error) {
+        console.error('Error fetching server dashboard:', error);
+        return null;
     }
-
-    return res.json();
 }
 
 export async function fetchDrilldownMetadata() {

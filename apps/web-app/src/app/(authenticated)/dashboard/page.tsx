@@ -1,38 +1,28 @@
-'use client';
-
 import { StatsGrid } from "@/components/dashboard/StatsCards";
-import { ArrowRight, Play, BookOpen, Activity, Loader2 } from "lucide-react";
+import { ArrowRight, BookOpen } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { apiClient } from "@quiz/api-client";
-import { recordCounter, recordTimer } from "@quiz/observability";
 import { cn } from "@/lib/utils";
-import { clientLogger } from "@/utils/clientLogger";
-
-import { useAuthStore } from "@/store/auth-store";
-import { useDashboardStore } from "@/store/dashboard-store";
-import { useEffect, useState } from "react";
-
-import { ZLoader } from "@quiz/ui";
 import { TutorInsightCard } from "@/components/tutor/TutorInsightCard";
+import { DashboardHeaderActions } from "@/components/islands/DashboardHeaderActions";
+import { getServerSession, fetchServerDashboard } from "@/lib/server-data";
+import { redirect } from "next/navigation";
 
-export default function DashboardPage() {
-    const { user } = useAuthStore();
-    const router = useRouter();
-    const { data, fetchDashboard, loading } = useDashboardStore();
-    const [isStarting, setIsStarting] = useState(false);
+type RecentActivity = {
+    id: string;
+    status?: string | null;
+    relativeTime?: string | null;
+    title?: string | null;
+    score?: number | null;
+};
 
-    useEffect(() => {
-        fetchDashboard('7d', 1, 3);
-    }, [fetchDashboard]);
+export default async function DashboardPage() {
+    const user = await getServerSession();
 
-    if (!data && loading) {
-        return (
-            <div className="flex h-[calc(100vh-64px)] items-center justify-center bg-muted/5">
-                <ZLoader size="xl" text="Loading Dashboard..." />
-            </div>
-        );
+    if (!user) {
+        redirect('/login');
     }
+
+    const data = await fetchServerDashboard('7d', 1, 3);
 
     return (
         <div className="space-y-10">
@@ -42,50 +32,7 @@ export default function DashboardPage() {
                     <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 uppercase">Dashboard Overview</h1>
                     <p className="text-muted-foreground font-medium">Welcome back, <span className="text-pink-600 font-black">{user?.name || 'User'}</span>! Let&apos;s see your progress.</p>
                 </div>
-                <div className="flex flex-wrap items-center gap-4">
-                    <button
-                        onClick={async () => {
-                            if (isStarting) return;
-                            const start = Date.now();
-                            try {
-                                setIsStarting(true);
-                                recordCounter('web.ui.dashboard.start_exam_click', 1);
-                                const res = await apiClient.quiz.startAdaptiveExam();
-                                const duration = Date.now() - start;
-                                recordTimer('web.ui.dashboard.start_exam_time', duration);
-                                recordCounter('web.ui.dashboard.start_exam_success', 1);
-                                router.push(`/exam/${res.examId}`);
-                            } catch (err) {
-                                clientLogger.error('Failed to start adaptive exam', { error: err instanceof Error ? err.message : 'unknown' });
-                                recordCounter('web.ui.dashboard.start_exam_error', 1);
-                                alert('Failed to start adaptive exam. Please try again.');
-                            } finally {
-                                setIsStarting(false);
-                            }
-                        }}
-                        disabled={isStarting}
-                        className="inline-flex items-center justify-center rounded-2xl bg-black px-6 py-3 text-sm font-bold text-white shadow-lg shadow-black/10 hover:bg-gray-800 transition-all hover:scale-105 disabled:opacity-50 disabled:scale-100"
-                    >
-                        {isStarting ? (
-                            <>
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin text-pink-500" />
-                                Recruiting...
-                            </>
-                        ) : (
-                            <>
-                                <Activity size={18} className="mr-2 text-pink-500 animate-pulse" />
-                                Start Adaptive Mission
-                            </>
-                        )}
-                    </button>
-                    <Link
-                        href="/quiz/new"
-                        className="inline-flex items-center justify-center rounded-2xl bg-primary px-6 py-3 text-sm font-bold text-primary-foreground shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all hover:scale-105"
-                    >
-                        <Play size={18} className="mr-2" />
-                        Start New Exam
-                    </Link>
-                </div>
+                <DashboardHeaderActions />
             </div>
 
             {/* Stats Section */}
@@ -98,12 +45,12 @@ export default function DashboardPage() {
                 <div className="space-y-6">
                     <h3 className="text-xl font-bold px-1 text-slate-900 uppercase tracking-tight">Recent Activity</h3>
                     <div className="space-y-4">
-                        {data?.recentActivity?.length === 0 ? (
+                        {!data?.recentActivity || data.recentActivity.length === 0 ? (
                             <div className="p-8 text-center border-2 border-slate-200 rounded-[2rem] bg-slate-50 text-slate-600">
                                 <p className="text-sm font-medium">No exams taken yet</p>
                             </div>
                         ) : (
-                            data?.recentActivity?.map((activity) => (
+                            data.recentActivity.map((activity: RecentActivity) => (
                                 <div key={activity.id} className="p-5 rounded-[1.5rem] border border-slate-200 bg-white hover:border-pink-500/30 transition-all group shadow-sm">
                                     <div className="flex items-center justify-between">
                                         <div>
