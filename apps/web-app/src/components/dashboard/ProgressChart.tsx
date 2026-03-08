@@ -1,9 +1,11 @@
+ 'use client';
+
 import { useDashboardStore } from '@/store/dashboard-store';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 
 export function ProgressChart({ trendData = [] }: { trendData?: Array<{ score: number; date: string }> }) {
-    const { fetchPerformanceTrend } = useDashboardStore();
+    const fetchPerformanceTrend = useDashboardStore((s) => s.fetchPerformanceTrend);
     const [range, setRange] = useState('7d');
 
     const handleRangeChange = (newRange: string) => {

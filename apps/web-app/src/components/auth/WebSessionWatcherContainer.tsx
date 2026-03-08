@@ -5,12 +5,22 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 import { useAuthStore } from '@/store/auth-store';
+import { useShallow } from 'zustand/react/shallow';
 import { clientLogger } from '@/utils/clientLogger';
 
 import { SessionWatcher } from './SessionWatcher';
 
 export function WebSessionWatcherContainer() {
-    const { expiresAt, login, logout, user, isAuthenticated, setSessionExpired } = useAuthStore();
+    const { expiresAt, login, logout, user, isAuthenticated, setSessionExpired } = useAuthStore(
+        useShallow((s) => ({
+            expiresAt: s.expiresAt,
+            login: s.login,
+            logout: s.logout,
+            user: s.user,
+            isAuthenticated: s.isAuthenticated,
+            setSessionExpired: s.setSessionExpired,
+        }))
+    );
     const [isRedirecting, setIsRedirecting] = useState(false);
     const router = useRouter();
 

@@ -1,4 +1,5 @@
 import { LucideIcon, TrendingUp, TrendingDown, Info } from 'lucide-react';
+import React from 'react';
 
 type StatsOverview = {
     avgScore: number;
@@ -20,7 +21,7 @@ interface StatCardProps {
     tooltip?: string;
 }
 
-export function StatCard({ title, value, icon: Icon, trend, color, tooltip }: StatCardProps) {
+export const StatCard = React.memo(function StatCard({ title, value, icon: Icon, trend, color, tooltip }: StatCardProps) {
     // Executive Minimal: Clean, high-contrast icon backgrounds
     const colorClasses = {
         primary: "text-pink-500 bg-pink-50",
@@ -57,7 +58,7 @@ export function StatCard({ title, value, icon: Icon, trend, color, tooltip }: St
             </div>
         </div>
     );
-}
+});
 
 export function StatsGrid({ overview, deltaPct, healthStatus }: { overview?: StatsOverview; deltaPct?: number | null; healthStatus?: 'green' | 'yellow' | 'red' }) {
     const globalRankValue = overview?.globalRank ?? "Pending";

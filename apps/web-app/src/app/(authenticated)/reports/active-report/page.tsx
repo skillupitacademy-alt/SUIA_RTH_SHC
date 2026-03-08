@@ -69,7 +69,7 @@ type ReportViewModel = {
 function ReportContent() {
     const searchParams = useSearchParams();
     const router = useRouter();
-    const { isAuthenticated } = useAuthStore();
+    const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
     const examId = searchParams.get('examId');
     const [reportData, setReportData] = useState<ReportViewModel | null>(null);
     const [isLoading, setIsLoading] = useState(true);
