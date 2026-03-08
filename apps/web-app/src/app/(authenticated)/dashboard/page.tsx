@@ -1,14 +1,7 @@
-import { cookies } from "next/headers";
 import { getServerSession, fetchServerDashboard } from "@/lib/server-data";
 import DashboardClientFallback from "@/components/dashboard/DashboardClientFallback";
 
 export default async function DashboardPage() {
-    // === DIAGNOSTIC: Prove server component runs ===
-    const cookieStore = await cookies();
-    const allCookieNames = cookieStore.getAll().map(c => c.name);
-    const hasAccessToken = cookieStore.has('accessToken');
-    console.log(`[SSR:DashboardPage] Server component executing. Cookies present: [${allCookieNames.join(', ')}]. accessToken: ${hasAccessToken}`);
-    // === END DIAGNOSTIC ===
 
     // Try server-side data fetch — graceful fallback if it fails
     let serverUser = null;
