@@ -45,7 +45,12 @@ export function LoginForm() {
             if (!user) throw new Error("Login succeeded but no user data was returned.");
             login({ ...user, onboarded: user.onboarded ?? false });
             await recordClientMetric(METRICS.AUTH.LOGIN, 1, { method: 'email', outcome: 'success' });
-            router.push('/dashboard');
+            // CRITICAL: Use full page navigation, NOT client-side router.push.
+            // DashboardPage is a Server Component (T79 refactor) that reads cookies
+            // via getServerSession(). Client-side navigation (router.push) doesn't
+            // properly propagate cookies for server component rendering, causing
+            // a blank dashboard. A full page load ensures cookies are sent correctly.
+            window.location.href = '/dashboard';
         } catch (err: unknown) {
             setError(toErrorMessage(err));
         } finally {
@@ -148,7 +153,8 @@ export function SignupForm() {
             if (!user) throw new Error("Account created but failed to log you in automatically.");
 
             useAuthStore.getState().login({ ...user, onboarded: user.onboarded ?? false });
-            router.push('/dashboard');
+            // Same as LoginForm: full page load needed for server component cookie access
+            window.location.href = '/dashboard';
         } catch (err: unknown) {
             const message = err instanceof Error ? err.message : "Failed to create account.";
             setError(message);
