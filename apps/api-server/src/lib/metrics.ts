@@ -57,19 +57,20 @@ const emit = (metric: string, value: number, tags?: Tags) => {
   // 2. Real Sentry Metrics API Export (Production Sink)
   try {
     type MetricsApi = {
-      increment: (name: string, val: number, opts: { tags?: Record<string, string> }) => unknown;
-      distribution: (name: string, val: number, opts: { tags?: Record<string, string> }) => unknown;
+      count: (name: string, val: number, opts?: { attributes?: Record<string, string> }) => void;
+      distribution: (name: string, val: number, opts?: { attributes?: Record<string, string>; unit?: string }) => void;
+      gauge: (name: string, val: number, opts?: { attributes?: Record<string, string>; unit?: string }) => void;
     };
     const metricsApi = (Sentry as unknown as { metrics?: MetricsApi }).metrics;
-    if (metricsApi !== undefined) {
-      const options = { tags: safeTags };
+    if (metricsApi && typeof metricsApi.count === 'function') {
+      const options = { attributes: safeTags };
       if (value === 1) {
-        metricsApi.increment(metric, 1, options);
+        metricsApi.count(metric, 1, options);
       } else {
-        metricsApi.distribution(metric, value, options);
+        metricsApi.distribution(metric, value, { ...options, unit: 'none' });
       }
     } else {
-      // Fallback for older versions via addBreadcrumb for trace correlation
+      // Fallback when Sentry is disabled or metrics API is absent
       Sentry.addBreadcrumb({
         category: 'metric',
         message: `${metric}: ${value}`,

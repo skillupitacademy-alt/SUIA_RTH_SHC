@@ -2,6 +2,21 @@ import { cookies } from 'next/headers';
 import { getApiBase } from '@/utils/apiBase';
 
 /**
+ * Derive the SSR API base URL — bypasses Cloudflare for server-to-server calls.
+ * Falls back to the public API URL if INTERNAL_API_URL is not set.
+ */
+function getInternalApiBase(): string {
+    const internal = process.env.INTERNAL_API_URL?.trim();
+    if (internal) {
+        const withoutTrailingSlash = internal.replace(/\/+$/, '');
+        return withoutTrailingSlash.toLowerCase().endsWith('/api')
+            ? withoutTrailingSlash
+            : `${withoutTrailingSlash}/api`;
+    }
+    return getApiBase();
+}
+
+/**
  * Build a valid Cookie header string from the Next.js cookie store.
  * cookieStore.toString() is unreliable in Next.js 16 — manually serialize.
  */
@@ -36,7 +51,7 @@ export async function getServerSession() {
     }
 
     try {
-        const apiUrl = getApiBase();
+        const apiUrl = getInternalApiBase();
         console.log(`[SSR:getServerSession] Fetching ${apiUrl}/auth/me with Bearer token (${accessToken.substring(0, 10)}...)`);
         const res = await fetch(`${apiUrl}/auth/me`, {
             headers,
@@ -61,7 +76,7 @@ export async function fetchServerDashboard(range = '7d', page = 1, limit = 3) {
     const { headers } = await getAuthHeaders();
 
     try {
-        const apiUrl = getApiBase();
+        const apiUrl = getInternalApiBase();
         const res = await fetch(`${apiUrl}/dashboard?range=${range}&page=${page}&limit=${limit}`, {
             headers,
             next: { revalidate: 60 }
@@ -79,7 +94,7 @@ export async function fetchDrilldownMetadata() {
     const { headers } = await getAuthHeaders();
 
     try {
-        const apiUrl = getApiBase();
+        const apiUrl = getInternalApiBase();
         const res = await fetch(`${apiUrl}/dashboard/performance/metadata`, {
             headers,
             next: { revalidate: 3600 }
@@ -97,7 +112,7 @@ export async function fetchPerformanceBreakdown(range = '28d') {
     const { headers } = await getAuthHeaders();
 
     try {
-        const apiUrl = getApiBase();
+        const apiUrl = getInternalApiBase();
         const res = await fetch(`${apiUrl}/dashboard/performance/breakdown?range=${range}`, {
             headers,
             next: { revalidate: 300 }
