@@ -27,7 +27,6 @@ export default async function DashboardPage() {
         data = await fetchServerDashboard('7d', 1, 3);
     } catch (err) {
         console.error('[Dashboard] Error fetching dashboard data:', err);
-        // We still show the page layout even if data fails
     }
 
     return (

@@ -1,4 +1,5 @@
 import { cookies } from 'next/headers';
+import { getApiBase } from '@/utils/apiBase';
 
 export async function getServerSession() {
     const cookieStore = await cookies();
@@ -7,7 +8,7 @@ export async function getServerSession() {
     if (!accessToken) return null;
 
     try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002/api';
+        const apiUrl = getApiBase();
         const res = await fetch(`${apiUrl}/auth/me`, {
             headers: {
                 'Authorization': `Bearer ${accessToken}`,
@@ -29,7 +30,7 @@ export async function fetchServerDashboard(range = '7d', page = 1, limit = 3) {
     const cookieStore = await cookies();
     const accessToken = cookieStore.get('accessToken')?.value;
 
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002/api';
+    const apiUrl = getApiBase();
     const res = await fetch(`${apiUrl}/dashboard?range=${range}&page=${page}&limit=${limit}`, {
         headers: {
             'Authorization': accessToken ? `Bearer ${accessToken}` : '',
@@ -49,7 +50,7 @@ export async function fetchDrilldownMetadata() {
     const cookieStore = await cookies();
     const accessToken = cookieStore.get('accessToken')?.value;
 
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002/api';
+    const apiUrl = getApiBase();
     const res = await fetch(`${apiUrl}/dashboard/performance/metadata`, {
         headers: {
             'Authorization': accessToken ? `Bearer ${accessToken}` : '',
@@ -66,7 +67,7 @@ export async function fetchPerformanceBreakdown(range = '28d') {
     const cookieStore = await cookies();
     const accessToken = cookieStore.get('accessToken')?.value;
 
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002/api';
+    const apiUrl = getApiBase();
     const res = await fetch(`${apiUrl}/dashboard/performance/breakdown?range=${range}`, {
         headers: {
             'Authorization': accessToken ? `Bearer ${accessToken}` : '',
