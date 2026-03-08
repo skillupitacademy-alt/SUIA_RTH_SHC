@@ -5,7 +5,6 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { apiClient } from '@quiz/api-client';
 import { useQuizStore } from '@/store/quiz-store';
-import { useShallow } from 'zustand/react/shallow';
 import { useExamBackup, getFilteredBackup } from '@/hooks/useExamBackup';
 import { clientLogger } from '@/utils/clientLogger';
 import { recordClientMetric } from '@quiz/observability';
@@ -38,24 +37,8 @@ export function useExamInterfaceLogic() {
         examId,
         setExamId,
         isSubmitted,
-        updateTimeLeft
-    } = useQuizStore(
-        useShallow((s) => ({
-            questions: s.questions,
-            answers: s.answers,
-            markedForReview: s.markedForReview,
-            timeLeft: s.timeLeft,
-            currentQuestionIndex: s.currentQuestionIndex,
-            setAnswer: s.setAnswer,
-            toggleReview: s.toggleReview,
-            setCurrentIndex: s.setCurrentIndex,
-            finishQuiz: s.finishQuiz,
-            examId: s.examId,
-            setExamId: s.setExamId,
-            isSubmitted: s.isSubmitted,
-            updateTimeLeft: s.updateTimeLeft,
-        }))
-    );
+        updateTimeLeft,
+    } = useQuizStore();
 
     const normalizedAnswers = useMemo(() => {
         const result: Record<string, string> = {};

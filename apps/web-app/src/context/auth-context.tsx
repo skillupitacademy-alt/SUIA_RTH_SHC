@@ -5,7 +5,6 @@ import { createContext, useCallback, useContext, useEffect, useState } from 'rea
 
 import { useAuthStore } from '@/store/auth-store';
 import { clientLogger } from '@/utils/clientLogger';
-import { useShallow } from 'zustand/react/shallow';
 
 // We keep the Context API for backward compatibility/wrapping, 
 // but it delegates to the store.
@@ -23,20 +22,13 @@ interface AuthContextValue {
     isAuthenticated: boolean;
     loading: boolean;
     login: (user: AuthUser, expiresAt?: string | null) => void;
-    logout: (onLogout?: () => void) => void;
+    logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-    const { user, isAuthenticated, login, logout: storeLogout } = useAuthStore(
-        useShallow((s) => ({
-            user: s.user,
-            isAuthenticated: s.isAuthenticated,
-            login: s.login,
-            logout: s.logout,
-        }))
-    );
+    const { user, isAuthenticated, login, logout: storeLogout } = useAuthStore();
     const [loading, setLoading] = useState(true);
 
     const handleLogout = useCallback(async () => {
@@ -95,7 +87,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         if (process.env.NODE_ENV !== 'production') {
             window.__E2E_IS_AUTHENTICATED__ = () => {
-                return useAuthStore.getState().isAuthenticated;
+                return useAuthStore.getState().getIsAuthenticated();
             };
         }
 

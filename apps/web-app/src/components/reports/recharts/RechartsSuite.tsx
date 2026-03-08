@@ -27,7 +27,6 @@ import {
     AreaChart
 } from 'recharts';
 import React from 'react';
-import { Card, CardTitle, CardHeader, CardContent } from '@quiz/ui';
 
 // --- Premium Design Tokens ---
 const COLORS = {
@@ -91,27 +90,27 @@ const ChartDefs = () => (
     </svg>
 );
 
-export const ChartCard: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => (
-    <Card className="group relative bg-white/60 backdrop-blur-xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all hover:shadow-[0_20px_50px_rgba(0,0,0,0.1)] hover:-translate-y-1 border-white">
+export const Card: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => (
+    <div className="group relative rounded-[2.5rem] border border-white bg-white/60 backdrop-blur-xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-8 w-full transition-all hover:shadow-[0_20px_50px_rgba(0,0,0,0.1)] hover:-translate-y-1">
         <ChartDefs />
-        <CardHeader className="flex-row items-center justify-between mb-2">
+        <div className="flex items-center justify-between mb-8">
             <div>
-                <CardTitle className="text-xs font-black text-slate-400 tracking-[0.2em]">{title}</CardTitle>
+                <h3 className="text-xs font-black text-slate-400 uppercase tracking-[0.2em]">{title}</h3>
                 <div className="h-1 w-8 bg-primary/20 rounded-full mt-2 group-hover:w-16 transition-all duration-500" />
             </div>
             <div className="flex gap-1">
                 <div className="h-1.5 w-1.5 rounded-full bg-slate-200" />
                 <div className="h-1.5 w-1.5 rounded-full bg-slate-200" />
             </div>
-        </CardHeader>
-        <CardContent className="h-[400px] w-full p-8 pt-0">
+        </div>
+        <div className="h-[400px] w-full">
             {children}
-        </CardContent>
-    </Card>
+        </div>
+    </div>
 );
 
 export const CompetencyRadar: React.FC<{ skills: Array<{ name: string; value: number }> }> = ({ skills }) => (
-    <ChartCard title="Skill Capability Matrix (Radar)">
+    <Card title="Skill Capability Matrix (Radar)">
         <ResponsiveContainer>
             <RadarChart cx="50%" cy="50%" outerRadius="80%" data={skills}>
                 <PolarGrid strokeOpacity={0.1} />
@@ -128,11 +127,11 @@ export const CompetencyRadar: React.FC<{ skills: Array<{ name: string; value: nu
                 <Tooltip content={<CustomTooltip />} />
             </RadarChart>
         </ResponsiveContainer>
-    </ChartCard>
+    </Card>
 );
 
 export const LearningVelocity: React.FC<{ points: Array<{ label: string; value: number }> }> = ({ points }) => (
-    <ChartCard title="Learning Velocity & Momentum">
+    <Card title="Learning Velocity & Momentum">
         <ResponsiveContainer>
             <AreaChart data={points}>
                 <defs>
@@ -155,11 +154,11 @@ export const LearningVelocity: React.FC<{ points: Array<{ label: string; value: 
                 />
             </AreaChart>
         </ResponsiveContainer>
-    </ChartCard>
+    </Card>
 );
 
 export const MasteryTreemap: React.FC<{ items: Array<{ name: string; value: number }> }> = ({ items }) => (
-    <ChartCard title="Structural Hierarchy (Treemap)">
+    <Card title="Structural Hierarchy (Treemap)">
         <ResponsiveContainer>
             <Treemap
                 data={items}
@@ -170,11 +169,11 @@ export const MasteryTreemap: React.FC<{ items: Array<{ name: string; value: numb
                 <Tooltip content={<CustomTooltip />} />
             </Treemap>
         </ResponsiveContainer>
-    </ChartCard>
+    </Card>
 );
 
 export const MasterySunburst: React.FC<{ items: Array<{ name: string; value: number; fill?: string }> }> = ({ items }) => (
-    <ChartCard title="Structural Hierarchy (Sunburst)">
+    <Card title="Structural Hierarchy (Sunburst)">
         <ResponsiveContainer>
             <PieChart>
                 <Pie
@@ -194,11 +193,11 @@ export const MasterySunburst: React.FC<{ items: Array<{ name: string; value: num
                 <Tooltip content={<CustomTooltip />} />
             </PieChart>
         </ResponsiveContainer>
-    </ChartCard>
+    </Card>
 );
 
 export const DifficultyBars: React.FC<{ bars: Array<{ label: string; simple: number; intermediate: number; expert: number }> }> = ({ bars }) => (
-    <ChartCard title="The Expertise Bridge (Difficulty Clusters)">
+    <Card title="The Expertise Bridge (Difficulty Clusters)">
         <ResponsiveContainer>
             <BarChart data={bars} barGap={12}>
                 <CartesianGrid strokeDasharray="10 10" stroke="#f1f5f9" vertical={false} />
@@ -211,7 +210,7 @@ export const DifficultyBars: React.FC<{ bars: Array<{ label: string; simple: num
                 <Bar dataKey="expert" radius={[10, 10, 0, 0]} fill="url(#roseGradient)" name="SURGICAL" />
             </BarChart>
         </ResponsiveContainer>
-    </ChartCard>
+    </Card>
 );
 
 export const SnapshotDonut: React.FC<{ correct: number; incorrect: number; skipped: number }> = ({ correct, incorrect, skipped }) => {
@@ -221,7 +220,7 @@ export const SnapshotDonut: React.FC<{ correct: number; incorrect: number; skipp
         { name: 'Bypassed', value: skipped, color: '#f1f5f9' },
     ];
     return (
-        <ChartCard title="Operational Snapshot">
+        <Card title="Operational Snapshot">
             <ResponsiveContainer>
                 <PieChart>
                     <Pie
@@ -259,12 +258,12 @@ export const SnapshotDonut: React.FC<{ correct: number; incorrect: number; skipp
                     <Legend verticalAlign="middle" align="right" layout="vertical" iconType="circle" wrapperStyle={{ paddingLeft: 40, fontSize: 11, fontWeight: 900, textTransform: 'uppercase' }} />
                 </PieChart>
             </ResponsiveContainer>
-        </ChartCard>
+        </Card>
     );
 };
 
 export const RetentionFunnel: React.FC<{ stages: Array<{ label: string; value: number }> }> = ({ stages }) => (
-    <ChartCard title="Survival Attrition (Retention Funnel)">
+    <Card title="Survival Attrition (Retention Funnel)">
         <ResponsiveContainer>
             <FunnelChart>
                 <Tooltip content={<CustomTooltip />} />
@@ -276,11 +275,11 @@ export const RetentionFunnel: React.FC<{ stages: Array<{ label: string; value: n
                 </Funnel>
             </FunnelChart>
         </ResponsiveContainer>
-    </ChartCard>
+    </Card>
 );
 
 export const FluencyScatter: React.FC<{ points: Array<{ x: number; y: number; label: string }> }> = ({ points }) => (
-    <ChartCard title="Cognitive Fluency (Speed vs Accuracy)">
+    <Card title="Cognitive Fluency (Speed vs Accuracy)">
         <ResponsiveContainer>
             <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
@@ -296,5 +295,5 @@ export const FluencyScatter: React.FC<{ points: Array<{ x: number; y: number; la
                 </Scatter>
             </ScatterChart>
         </ResponsiveContainer>
-    </ChartCard>
+    </Card>
 );

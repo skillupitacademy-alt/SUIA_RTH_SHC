@@ -27,7 +27,7 @@ const NAV_ITEMS = [
 
 export function Sidebar() {
     const pathname = usePathname();
-    const data = useDashboardStore((s) => s.data);
+    const { data } = useDashboardStore();
 
     const weeklyExams = data?.overview?.weeklyExamsCount || 0;
     const weeklyGoal = 4;

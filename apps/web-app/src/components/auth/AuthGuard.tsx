@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuthStore } from '@/store/auth-store';
-import { useShallow } from 'zustand/react/shallow';
 import { apiClient } from '@quiz/api-client';
 import { Loader2 } from 'lucide-react';
 
@@ -15,15 +14,7 @@ interface AuthGuardProps {
 export function AuthGuard({ children, requireAdmin = false }: AuthGuardProps) {
     const router = useRouter();
     const pathname = usePathname();
-    const { user, login, logout, isSessionExpired, initialized } = useAuthStore(
-        useShallow((s) => ({
-            user: s.user,
-            login: s.login,
-            logout: s.logout,
-            isSessionExpired: s.isSessionExpired,
-            initialized: s.initialized,
-        }))
-    );
+    const { user, login, logout, isSessionExpired } = useAuthStore();
     const [isChecking, setIsChecking] = useState(true);
 
     useEffect(() => {
@@ -33,10 +24,7 @@ export function AuthGuard({ children, requireAdmin = false }: AuthGuardProps) {
 
     useEffect(() => {
         const checkAuth = async () => {
-            // 1. Wait for rehydration
-            if (!initialized) return;
-
-            // 2. If session is already marked as expired, 
+            // CRITICAL: If session is already marked as expired, 
             // don't try to "re-login" from the background.
             if (isSessionExpired) {
                 setIsChecking(false);
@@ -87,14 +75,14 @@ export function AuthGuard({ children, requireAdmin = false }: AuthGuardProps) {
         };
 
         checkAuth();
-    }, [user, router, pathname, login, logout, requireAdmin, isSessionExpired, initialized]);
+    }, [user, router, pathname, login, logout, requireAdmin, isSessionExpired]);
 
-    if (isChecking || !initialized) {
+    if (isChecking) {
         return (
             <div className="flex h-screen w-full items-center justify-center bg-background">
                 <div className="flex flex-col items-center gap-4">
                     <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                    <p className="text-sm text-muted-foreground">Initializing secure environment...</p>
+                    <p className="text-sm text-muted-foreground">Verifying session...</p>
                 </div>
             </div>
         );

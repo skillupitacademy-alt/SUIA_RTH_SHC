@@ -1,3 +1,5 @@
+"use client";
+
 import { InboxPanel } from "@/components/inbox/InboxPanel";
 import { Mail, Sparkles } from "lucide-react";
 

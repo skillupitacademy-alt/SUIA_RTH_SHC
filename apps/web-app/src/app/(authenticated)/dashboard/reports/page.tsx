@@ -1,19 +1,16 @@
+'use client';
+
 import { FileText, ArrowRight } from "lucide-react";
 import Link from "next/link";
-import { fetchServerDashboard } from "@/lib/server-data";
+import { useDashboardStore } from "@/store/dashboard-store";
+import { useEffect } from "react";
 
-type CompletedReport = {
-    id: string;
-    status?: string | null;
-    relativeTime?: string | null;
-    title?: string | null;
-    score?: number | null;
-};
+export default function ReportsPage() {
+    const { data, fetchDashboard } = useDashboardStore();
 
-export default async function ReportsPage() {
-    const data = await fetchServerDashboard('all', 1, 50); // Fetch more for the full list
-
-    const completedReports = data?.recentActivity?.filter((a: CompletedReport) => a.status === 'completed') || [];
+    useEffect(() => {
+        fetchDashboard();
+    }, [fetchDashboard]);
 
     return (
         <div className="space-y-12">
@@ -29,13 +26,13 @@ export default async function ReportsPage() {
             </div>
 
             <div className="grid gap-6">
-                {completedReports.length === 0 ? (
+                {data?.recentActivity?.filter(a => a.status === 'completed').length === 0 ? (
                     <div className="p-20 text-center border-2 border-dashed border-slate-200 rounded-[2.5rem] bg-slate-50/10 text-slate-400">
                         <p className="font-black uppercase tracking-widest text-sm">No completed assessment reports found.</p>
                         <p className="text-[10px] uppercase font-bold tracking-widest mt-2">Complete a quiz to see your detailed breakdown.</p>
                     </div>
                 ) : (
-                    completedReports.map((report: CompletedReport) => (
+                    data?.recentActivity?.filter(a => a.status === 'completed').map((report) => (
                         <div key={report.id} className="p-8 rounded-[2.5rem] border border-slate-200 bg-white hover:border-pink-500/20 transition-all group flex items-center justify-between shadow-sm">
                             <div className="flex flex-col gap-2">
                                 <div className="flex items-center gap-3">

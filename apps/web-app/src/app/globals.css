@@ -99,7 +99,7 @@
 body {
   color: hsl(var(--foreground));
   background: hsl(var(--background));
-  font-family: var(--font-inter);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
 /* 

@@ -133,7 +133,7 @@ export interface ExamReportLayoutProps {
 
 type TabType = 'summary' | 'performance' | 'complexity' | 'audit';
 
-const TabButton = React.memo(({ active, onClick, icon: Icon, label }: { active: boolean, onClick: () => void, icon: LucideIcon, label: string }) => (
+const TabButton = ({ active, onClick, icon: Icon, label }: { active: boolean, onClick: () => void, icon: LucideIcon, label: string }) => (
     <button
         onClick={onClick}
         className={cn(
@@ -153,56 +153,7 @@ const TabButton = React.memo(({ active, onClick, icon: Icon, label }: { active: 
             {label}
         </span>
     </button>
-));
-TabButton.displayName = 'TabButton';
-
-const AuditQuestionCard = React.memo(({ question, index }: { question: NonNullable<ExamReport['questions']>[number], index: number }) => (
-    <motion.div
-        initial={{ opacity: 0, x: -10 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ delay: index * 0.05 }}
-        className="p-8 rounded-[2.5rem] bg-slate-900/40 border border-white/5 hover:border-indigo-500/20 transition-all group"
-    >
-        <div className="flex items-start justify-between gap-8">
-            <div className="flex gap-8">
-                <div className={cn(
-                    "h-14 w-14 rounded-2xl flex items-center justify-center shrink-0 font-black text-lg",
-                    question.isCorrect ? "bg-indigo-600/10 text-indigo-400" : "bg-rose-500/10 text-rose-500"
-                )}>
-                    {(index + 1).toString().padStart(2, '0')}
-                </div>
-                <div className="space-y-5">
-                    <h4 className="text-2xl font-bold text-slate-200 leading-snug max-w-4xl">{question.text}</h4>
-                    <div className="flex flex-wrap gap-8 pt-4">
-                        <div className="flex flex-col gap-1.5">
-                            <span className="text-[13px] font-black uppercase text-slate-500 tracking-widest">User Pulse</span>
-                            <div className={cn("text-[15px] font-bold", question.isCorrect ? "text-indigo-400" : "text-rose-400")}>
-                                {question.userAnswer || "No Data"}
-                            </div>
-                        </div>
-                        {!question.isCorrect && question.correctAnswer && (
-                            <div className="flex flex-col gap-1.5 ml-6 border-l border-slate-800 pl-6">
-                                <span className="text-[13px] font-black uppercase text-slate-500 tracking-widest">Target Sync</span>
-                                <div className="text-[15px] font-bold text-indigo-400">{question.correctAnswer}</div>
-                            </div>
-                        )}
-                    </div>
-                    {question.explanation && (
-                        <div className="mt-8 p-8 rounded-3xl bg-indigo-500/[0.03] border border-indigo-500/10 text-slate-300 text-[15px] leading-relaxed italic">
-                            {question.explanation}
-                        </div>
-                    )}
-                </div>
-            </div>
-            {question.isCorrect ? (
-                <CheckCircle2 size={28} className="text-indigo-500 opacity-20 group-hover:opacity-100 transition-opacity" />
-            ) : (
-                <XCircle size={28} className="text-rose-500 opacity-20 group-hover:opacity-100 transition-opacity" />
-            )}
-        </div>
-    </motion.div>
-));
-AuditQuestionCard.displayName = 'AuditQuestionCard';
+);
 
 const HeuristicPanel = ({
     title,
@@ -553,7 +504,51 @@ export function ExamReportLayout({ data, loading }: ExamReportLayoutProps) {
                                 </div>
 
                                 {data.questions?.map((q, idx) => (
-                                    <AuditQuestionCard key={q.id || idx} question={q} index={idx} />
+                                    <motion.div
+                                        key={idx}
+                                        initial={{ opacity: 0, x: -10 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        transition={{ delay: idx * 0.05 }}
+                                        className="p-8 rounded-[2.5rem] bg-slate-900/40 border border-white/5 hover:border-indigo-500/20 transition-all group"
+                                    >
+                                        <div className="flex items-start justify-between gap-8">
+                                            <div className="flex gap-8">
+                                                <div className={cn(
+                                                    "h-14 w-14 rounded-2xl flex items-center justify-center shrink-0 font-black text-lg",
+                                                    q.isCorrect ? "bg-indigo-600/10 text-indigo-400" : "bg-rose-500/10 text-rose-500"
+                                                )}>
+                                                    {(idx + 1).toString().padStart(2, '0')}
+                                                </div>
+                                                <div className="space-y-5">
+                                                    <h4 className="text-2xl font-bold text-slate-200 leading-snug max-w-4xl">{q.text}</h4>
+                                                    <div className="flex flex-wrap gap-8 pt-4">
+                                                        <div className="flex flex-col gap-1.5">
+                                                            <span className="text-[13px] font-black uppercase text-slate-500 tracking-widest">User Pulse</span>
+                                                            <div className={cn("text-[15px] font-bold", q.isCorrect ? "text-indigo-400" : "text-rose-400")}>
+                                                                {q.userAnswer || "No Data"}
+                                                            </div>
+                                                        </div>
+                                                        {!q.isCorrect && q.correctAnswer && (
+                                                            <div className="flex flex-col gap-1.5 ml-6 border-l border-slate-800 pl-6">
+                                                                <span className="text-[13px] font-black uppercase text-slate-500 tracking-widest">Target Sync</span>
+                                                                <div className="text-[15px] font-bold text-indigo-400">{q.correctAnswer}</div>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                    {q.explanation && (
+                                                        <div className="mt-8 p-8 rounded-3xl bg-indigo-500/[0.03] border border-indigo-500/10 text-slate-300 text-[15px] leading-relaxed italic">
+                                                            {q.explanation}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                            {q.isCorrect ? (
+                                                <CheckCircle2 size={28} className="text-indigo-500 opacity-20 group-hover:opacity-100 transition-opacity" />
+                                            ) : (
+                                                <XCircle size={28} className="text-rose-500 opacity-20 group-hover:opacity-100 transition-opacity" />
+                                            )}
+                                        </div>
+                                    </motion.div>
                                 ))}
                             </div>
                         )}

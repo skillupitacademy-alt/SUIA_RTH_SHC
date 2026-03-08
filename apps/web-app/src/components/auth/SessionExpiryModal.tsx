@@ -8,18 +8,11 @@ import { useEffect } from 'react';
 
 import { useAuthStore } from '@/store/auth-store';
 import { clientLogger } from '@/utils/clientLogger';
-import { useShallow } from 'zustand/react/shallow';
 
 export function SessionExpiryModal() {
     const router = useRouter();
     const pathname = usePathname();
-    const { isSessionExpired, setSessionExpired, logout } = useAuthStore(
-        useShallow((s) => ({
-            isSessionExpired: s.isSessionExpired,
-            setSessionExpired: s.setSessionExpired,
-            logout: s.logout,
-        }))
-    );
+    const { isSessionExpired, setSessionExpired, logout } = useAuthStore();
 
     useEffect(() => {
         const handleUnauthorized = (event: Event) => {
