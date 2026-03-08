@@ -30,20 +30,29 @@ async function getAuthHeaders() {
 export async function getServerSession() {
     const { accessToken, headers } = await getAuthHeaders();
 
-    if (!accessToken) return null;
+    if (!accessToken) {
+        console.log('[SSR:getServerSession] No accessToken cookie found — falling back to client');
+        return null;
+    }
 
     try {
         const apiUrl = getApiBase();
+        console.log(`[SSR:getServerSession] Fetching ${apiUrl}/auth/me with Bearer token (${accessToken.substring(0, 10)}...)`);
         const res = await fetch(`${apiUrl}/auth/me`, {
             headers,
             next: { revalidate: 0 }
         });
 
-        if (!res.ok) return null;
+        if (!res.ok) {
+            const body = await res.text().catch(() => '');
+            console.error(`[SSR:getServerSession] /auth/me returned ${res.status}: ${body}`);
+            return null;
+        }
         const data = await res.json();
+        console.log(`[SSR:getServerSession] Success — user: ${data.user?.name || 'unknown'}`);
         return data.user || null;
     } catch (error) {
-        console.error('Error fetching server session:', error);
+        console.error('[SSR:getServerSession] Fetch error:', error);
         return null;
     }
 }
