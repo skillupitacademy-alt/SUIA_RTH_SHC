@@ -20,7 +20,7 @@ async function handler(_req: NextRequest) {
       return ApiResponse.error(unauthorized('Unauthorized'), 401);
     }
 
-    const _payload = await container.get(TokenService).verifyAccessToken(_token, false);
+    const _payload = await container.get(TokenService).verifyUserAccessToken(_token);
     
     const range = _req.nextUrl.searchParams.get('range') ?? '28d';
     const validRanges = ['7d', '14d', '28d', '90d'];

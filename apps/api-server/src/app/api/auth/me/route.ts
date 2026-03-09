@@ -17,7 +17,7 @@ async function handler(_req: NextRequest) {
       return ApiResponse.error(unauthorized('Unauthorized', 'UNAUTHORIZED'));
     }
 
-    const _payload = await container.get(TokenService).verifyAccessToken(_token, false);
+    const _payload = await container.get(TokenService).verifyUserAccessToken(_token);
     const _user = await db.query.users.findFirst({
       where: eq(users.id, _payload.userId),
       with: {

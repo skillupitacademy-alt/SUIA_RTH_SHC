@@ -19,6 +19,7 @@
         "@opentelemetry/api": "^1.9.0",
         "@quiz/api-client": "workspace:*",
         "@quiz/db": "workspace:*",
+        "@quiz/observability": "workspace:*",
         "@quiz/types": "workspace:*",
         "@quiz/ui": "workspace:*",
         "@radix-ui/react-alert-dialog": "^1.1.15",

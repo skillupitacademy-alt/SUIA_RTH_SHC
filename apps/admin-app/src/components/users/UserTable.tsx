@@ -78,18 +78,22 @@ export function UserTable() {
             if (filterVerified === 'UNVERIFIED') serverFilters.isVerified = false;
 
             const [activeData] = await Promise.all([
-                apiClient.admin.getUsers(page, pageSize, 'active', serverFilters),
-                apiClient.admin.getUsers(1, 10, 'deleted')
+                apiClient.admin.getUsers(page.toString(), pageSize, 'active', serverFilters),
+                apiClient.admin.getUsers('1', 10, 'deleted')
             ]);
 
-            setUsers(activeData.users);
-            setTotalPages(activeData.totalPages);
-            setTotalCount(activeData.total ?? activeData.users.length);
+            const activeUsers = activeData.data ?? [];
+            const total = activeData.total ?? activeUsers.length ?? 0;
+            const totalPagesCalc = Math.max(1, Math.ceil(total / activeData.limit));
 
-            if (activeData.users.length === 0) {
+            setUsers(activeUsers);
+            setTotalPages(totalPagesCalc);
+            setTotalCount(total);
+
+            if (activeUsers.length === 0) {
                 recordCounter('admin.ui.users.empty', 1, { filterRole });
             } else {
-                recordCounter('admin.ui.users.fetch_success', 1, { count: activeData.users.length });
+                recordCounter('admin.ui.users.fetch_success', 1, { count: activeUsers.length });
             }
         } catch (error) {
             recordCounter('admin.ui.users.fetch_error', 1, { reason: error instanceof Error ? error.message : 'unknown' });

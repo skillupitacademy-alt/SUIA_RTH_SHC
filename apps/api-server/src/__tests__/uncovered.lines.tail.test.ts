@@ -154,14 +154,14 @@ describe('uncovered line mop-up', () => {
     } as any;
     TokenService.setInstance(mock);
     await TokenService.generateRefreshToken('u1', false, 'user');
-    await TokenService.verifyAccessToken('tok', true);
+    await TokenService.verifyAdminAccessToken('tok');
     await TokenService.verifyRefreshToken('tok', {});
     await TokenService.hashToken('tok');
     TokenService.getExpiration('tok');
     TokenService.getExpiryISO({ exp: 1 } as any);
 
     const real = new TokenService();
-    await expect(real.verifyAccessToken('not-a-jwt', true)).rejects.toBeTruthy();
+    await expect(real.verifyAdminAccessToken('not-a-jwt')).rejects.toBeTruthy();
   });
 
   it('covers container set and fallback factory branches', () => {

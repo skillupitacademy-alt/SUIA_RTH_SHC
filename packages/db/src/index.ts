@@ -71,6 +71,7 @@ export const getDb = (type: 'primary' | 'replica' = 'primary'): DbClient => {
                 connectionString: process.env.DATABASE_URL_REPLICA,
                 max: 10,
                 idleTimeoutMillis: 30000,
+                statement_timeout: 30000,
             });
             replicaDbInstance = drizzle(pool, { schema });
         }
@@ -93,14 +94,15 @@ export const getDb = (type: 'primary' | 'replica' = 'primary'): DbClient => {
             max: 15, // Higher limit for primary writes
             idleTimeoutMillis: 30000,
             connectionTimeoutMillis: 2000,
-            query_timeout: 10000, // 10s global query timeout (Task 37)
+            query_timeout: 30000, // 30s global query timeout (Task 37)
+            statement_timeout: 30000, // 30s server-side timeout
         });
 
         pool.on('error', (err) => console.error('[DB Pool Error]', err));
         pool.on('connect', (client) => { 
             if (process.env.DEBUG_DB) console.log('[DB Pool] New connection created'); 
             // Task 37: Enforce server-side timeouts
-            client.query('SET statement_timeout = 10000'); // 10s
+            client.query('SET statement_timeout = 30000'); // 30s
             client.query('SET idle_in_transaction_session_timeout = 30000'); // 30s
         });
 

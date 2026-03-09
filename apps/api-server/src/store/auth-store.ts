@@ -25,6 +25,7 @@ export interface AuthState {
   setIsLoggingOut: (val: boolean) => void;
 }
 
+// ⚠️ ALWAYS use selectors: useStore(s => s.field), never useStore()
 export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({

@@ -1,6 +1,6 @@
+import { TOKENS } from "@/lib/app.container";
 import { AuditService } from "@/modules/auth/audit.service";
 import { container } from "@/modules/core/container";
-import { DrizzleAdminUserRepository } from "@/repositories/implementations/drizzle-admin-user.repository";
 import { IAdminUserRepository } from "@/repositories/interfaces/admin-user.repository.interface";
 
 export interface UpdateUserInput {
@@ -15,7 +15,7 @@ type UpdateUserRepoInput = {
 
 export class AdminUserEngine {
   constructor(
-    private readonly repository: IAdminUserRepository = container.get(DrizzleAdminUserRepository),
+    private readonly repository: IAdminUserRepository = container.get(TOKENS.AdminUserRepo),
     private readonly auditService = container.get(AuditService)
   ) {}
 

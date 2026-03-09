@@ -90,7 +90,7 @@ describe('DrizzleAdminAnalyticsRepository', () => {
       avgTime: 120,
     });
     await expect(repo.getEfficiencyAnalytics()).resolves.toEqual([{ quadrant: 'mastery', count: 1 }]);
-    await expect(repo.getAuditLogs(10)).resolves.toEqual({ data: [{ id: 'a1' }], nextCursor: null });
+    await expect(repo.getAuditLogs(null, 10)).resolves.toEqual({ data: [{ id: 'a1' }], nextCursor: null });
     await expect(repo.getRBACMetrics()).resolves.toEqual([{ role: 'ADMIN', count: 1 }]);
     await expect(repo.getAllDomainHierarchy()).resolves.toEqual([{ id: 'd1' }]);
   });

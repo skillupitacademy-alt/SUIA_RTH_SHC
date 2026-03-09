@@ -21,7 +21,7 @@ async function patchHandler(
       return ApiResponse.error(unauthorized('Unauthorized', 'UNAUTHORIZED'));
     }
     
-    const _payload = await container.get(TokenService).verifyAccessToken(_token, true);
+    const _payload = await container.get(TokenService).verifyAdminAccessToken(_token);
 
     const rawBody = await _req.json();
     if (!validateJsonDepth(rawBody) || !validateJsonSize(rawBody)) {
@@ -54,7 +54,7 @@ async function deleteHandler(
       return ApiResponse.error(unauthorized('Unauthorized', 'UNAUTHORIZED'));
     }
     
-    const _payload = await container.get(TokenService).verifyAccessToken(_token, true);
+    const _payload = await container.get(TokenService).verifyAdminAccessToken(_token);
 
     if (!(await _verifyAdmin(_payload))) {
       return ApiResponse.error(forbidden());

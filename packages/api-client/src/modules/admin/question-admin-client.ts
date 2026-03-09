@@ -10,6 +10,7 @@ import {
   Subject,
   Subtopic,
   Topic,
+  IAdminQuestionConfigClient,
 } from '@quiz/api-client/types';
 
 type DomainPayload = Pick<Domain, 'name' | 'slug' | 'description' | 'icon'>;
@@ -40,14 +41,14 @@ type FactoryBatchPayload = {
   subtopicId?: string;
 };
 
-export class QuestionAdminClient {
+export class QuestionAdminClient implements IAdminQuestionConfigClient {
   constructor(private client: FetchClient) {}
 
-  async getDomains(page: number = 1, limit: number = 20, search?: string) {
+  async getDomains(cursor?: string | null, limit: number = 20, search?: string) {
     const query = new URLSearchParams({
-      page: page.toString(),
       limit: limit.toString(),
     });
+    if (cursor != null && cursor !== '') query.append('cursor', cursor);
     if (search != null && search !== '') query.append('search', search);
 
     return this.client.get<PaginatedResponse<Domain>>(
@@ -78,15 +79,15 @@ export class QuestionAdminClient {
   }
 
   async getSubjects(
-    page: number = 1,
+    cursor?: string | null,
     limit: number = 20,
     domainId?: string,
     search?: string
   ) {
     const query = new URLSearchParams({
-      page: page.toString(),
       limit: limit.toString(),
     });
+    if (cursor != null && cursor !== '') query.append('cursor', cursor);
     if (domainId != null && domainId !== '') query.append('domainId', domainId);
     if (search != null && search !== '') query.append('search', search);
 
@@ -96,7 +97,7 @@ export class QuestionAdminClient {
   }
 
   async getSubjectsByDomain(domainId: string) {
-    return this.getSubjects(1, 100, domainId).then((res) => res.data);
+    return this.getSubjects(null, 100, domainId).then((res) => res.data);
   }
 
   async createSubject(data: SubjectPayload) {
@@ -122,15 +123,15 @@ export class QuestionAdminClient {
   }
 
   async getTopics(
-    page: number = 1,
+    cursor?: string | null,
     limit: number = 20,
     subjectId?: string,
     search?: string
   ) {
     const query = new URLSearchParams({
-      page: page.toString(),
       limit: limit.toString(),
     });
+    if (cursor != null && cursor !== '') query.append('cursor', cursor);
     if (subjectId != null && subjectId !== '')
       query.append('subjectId', subjectId);
     if (search != null && search !== '') query.append('search', search);
@@ -141,7 +142,7 @@ export class QuestionAdminClient {
   }
 
   async getTopicsBySubject(subjectId: string) {
-    return this.getTopics(1, 100, subjectId).then((res) => res.data);
+    return this.getTopics(null, 100, subjectId).then((res) => res.data);
   }
 
   async createTopic(data: TopicPayload) {
@@ -167,15 +168,15 @@ export class QuestionAdminClient {
   }
 
   async getSubtopics(
-    page: number = 1,
+    cursor?: string | null,
     limit: number = 20,
     topicId?: string,
     search?: string
   ) {
     const query = new URLSearchParams({
-      page: page.toString(),
       limit: limit.toString(),
     });
+    if (cursor != null && cursor !== '') query.append('cursor', cursor);
     if (topicId != null && topicId !== '') query.append('topicId', topicId);
     if (search != null && search !== '') query.append('search', search);
 
@@ -209,11 +210,11 @@ export class QuestionAdminClient {
     );
   }
 
-  async getSkills(page: number = 1, limit: number = 20, search?: string) {
+  async getSkills(cursor?: string | null, limit: number = 20, search?: string) {
     const query = new URLSearchParams({
-      page: page.toString(),
       limit: limit.toString(),
     });
+    if (cursor != null && cursor !== '') query.append('cursor', cursor);
     if (search != null && search !== '') query.append('search', search);
 
     return this.client.get<PaginatedResponse<Skill>>(
@@ -255,7 +256,7 @@ export class QuestionAdminClient {
   }
 
   async getQuestions(
-    page: number = 1,
+    cursor?: string | null,
     limit: number = 20,
     filters?: {
       domainId?: string;
@@ -268,9 +269,9 @@ export class QuestionAdminClient {
     }
   ) {
     const query = new URLSearchParams({
-      page: page.toString(),
       limit: limit.toString(),
     });
+    if (cursor != null && cursor !== '') query.append('cursor', cursor);
     if (filters?.domainId != null && filters.domainId !== '')
       query.append('domainId', filters.domainId);
     if (filters?.subjectId != null && filters.subjectId !== '')

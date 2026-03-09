@@ -14,21 +14,21 @@ describe('Token Service Tail 7', () => {
     const service = container.get(TokenService);
     const token = await service.generateRefreshToken('u1', false, 'user');
     
-    await expect(service.verifyRefreshToken(token, { audience: 'admin' }))
+    await expect(service.verifyAdminRefreshToken(token))
       .rejects.toThrow(); 
   });
 
   it('verifyRefreshToken: accepts matching audience in options', async () => {
     const service = container.get(TokenService);
     const token = await service.generateRefreshToken('u1', false, 'user');
-    const decoded = await service.verifyRefreshToken(token, { audience: 'user' });
+    const decoded = await service.verifyUserRefreshToken(token);
     expect(decoded.userId).toBe('u1');
   });
 
   it('verifyRefreshToken: handles ADMIN_SECRET for admin refresh tokens', async () => {
     const service = container.get(TokenService);
     const token = await service.generateRefreshToken('a1', true, 'admin');
-    const decoded = await service.verifyRefreshToken(token, { isAdmin: true });
+    const decoded = await service.verifyAdminRefreshToken(token);
     expect(decoded.isAdmin).toBe(true);
   });
 });

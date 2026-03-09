@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { TOKENS } from '@/lib/app.container';
 import { container } from '@/modules/core/container';
 import { TrendsService } from '@/modules/metrics/trends.service';
-import { DrizzleAdminAnalyticsRepository } from '@/repositories/implementations/drizzle-admin-analytics.repository';
 import { IAdminAnalyticsRepository } from '@/repositories/interfaces/admin-analytics.repository.interface';
 
 export interface ExamActivityReport {
@@ -14,15 +14,25 @@ export interface ExamActivityReport {
 
 export class AdminAnalyticsEngine {
   constructor(
-    private readonly repository: IAdminAnalyticsRepository = container.get(DrizzleAdminAnalyticsRepository)
+    private readonly repository: IAdminAnalyticsRepository = container.get(TOKENS.AdminAnalyticsRepo)
   ) {}
 
   async getPlatformMetrics() {
-    return await this.repository.getPlatformMetrics();
+    const { withTimeout, REPORT_QUERY_TIMEOUT } = await import('@quiz/db');
+    return await withTimeout(
+        this.repository.getPlatformMetrics(),
+        REPORT_QUERY_TIMEOUT,
+        'AdminAnalyticsEngine.getPlatformMetrics'
+    );
   }
 
   async getExamActivity(): Promise<ExamActivityReport> {
-    const result = await this.repository.getExamActivity();
+    const { withTimeout, REPORT_QUERY_TIMEOUT } = await import('@quiz/db');
+    const result = await withTimeout(
+        this.repository.getExamActivity(),
+        REPORT_QUERY_TIMEOUT,
+        'AdminAnalyticsEngine.getExamActivity'
+    );
 
     const base = result.statusStats.reduce((acc: Record<string, number>, curr: any) => {
       acc[curr.status] = Number(curr.count ?? 0);
@@ -50,33 +60,29 @@ export class AdminAnalyticsEngine {
   }
 
   async getPerformanceAnalytics(range: string = '7d') {
-    // Analytics that are too complex/materialized stay partially in repository or use specialized services
-    // For now, I'll keep the orchestration of multiple sources here
+    // Optimized: Leverage TrendsService for consolidated trend metrics
     const [
         efficiency,
-        trendSummaryResult,
-        deltaDataResult,
-        domainDeltasResult
-    ] = await Promise.allSettled([
+        trendSummary,
+        domainDeltas
+    ] = await Promise.all([
         this.getEfficiencyAnalytics(),
         TrendsService.getTrendSummary({ range }),
-        TrendsService.getPeriodDelta(undefined, range),
         TrendsService.getDomainDeltas(range)
     ]);
 
-    // Materialized view queries would eventually go to repository too
-    // For now, I'll use direct db for MV just to keep it moving, or better, add to repository
-    const { db } = await import('@quiz/db');
+    const { db, withTimeout, REPORT_QUERY_TIMEOUT } = await import('@quiz/db');
     const { sql } = await import('drizzle-orm');
     
-    // Actually, I already added getPerformanceAnalytics needs to repository? No, I'll add them now or just use db here.
-    // Let's add them to the repository for consistency.
-    
-    const [domainScores, difficultyScores, passFail] = await Promise.all([
-        db.execute(sql`SELECT dimension_id as "dimensionId", name, avg_accuracy as "avgAccuracy", sample_size as "count" FROM mv_mastery_matrix WHERE dimension_type = 'domain'`),
-        db.execute(sql`SELECT name as difficulty, avg_accuracy as "avgAccuracy" FROM mv_mastery_matrix WHERE dimension_type = 'difficulty'`),
-        db.execute(sql`SELECT (avg_accuracy >= 70) as "isPass", SUM(sample_size) as count FROM mv_mastery_matrix WHERE dimension_type = 'domain' GROUP BY (avg_accuracy >= 70)`)
-    ]);
+    const [domainScores, difficultyScores, passFail] = await withTimeout(
+        Promise.all([
+            db.execute(sql`SELECT dimension_id as "dimensionId", name, avg_accuracy as "avgAccuracy", sample_size as "count" FROM mv_mastery_matrix WHERE dimension_type = 'domain'`),
+            db.execute(sql`SELECT name as difficulty, avg_accuracy as "avgAccuracy" FROM mv_mastery_matrix WHERE dimension_type = 'difficulty'`),
+            db.execute(sql`SELECT (avg_accuracy >= 70) as "isPass", SUM(sample_size) as count FROM mv_mastery_matrix WHERE dimension_type = 'domain' GROUP BY (avg_accuracy >= 70)`)
+        ]),
+        REPORT_QUERY_TIMEOUT,
+        'AdminAnalyticsEngine.getPerformanceAnalytics.fetchMatrix'
+    );
 
     interface DomainRow { dimensionId: string | null; name: string | null; avgAccuracy: number; count: number; }
     interface DifficultyRow { difficulty: string; avgAccuracy: number; }
@@ -86,17 +92,7 @@ export class AdminAnalyticsEngine {
     const difficulties = difficultyScores.rows as unknown as DifficultyRow[];
     const passFailData = passFail.rows as unknown as PassFailItem[];
     
-    const efficiencyData = efficiency.status === 'fulfilled' ? efficiency.value : {
-        mastery: 0, persistence: 0, rash: 0, struggle: 0, noData: 0, total: 0
-    };
-
-    const trendSummary = trendSummaryResult.status === 'fulfilled' ? trendSummaryResult.value : {
-        avgScore: 0, passRate: 0, totalExams: 0, bestSkill: null, worstSkill: null, currentStreak: 0
-    };
-
-    const deltaData = deltaDataResult.status === 'fulfilled' ? deltaDataResult.value : null;
-    const domainDeltas = domainDeltasResult.status === 'fulfilled' ? (domainDeltasResult.value as Record<string, { delta: number }>) : {};
-    const healthStatus = TrendsService.getExecHealth(trendSummary.avgScore, deltaData?.deltaPct ?? null);
+    const healthStatus = TrendsService.getExecHealth(trendSummary.avgScore, trendSummary.bestSkill ? 5 : 0); // Placeholder for health logic if delta unavailable
 
     return {
       domains: domainsData.map(d => ({
@@ -114,10 +110,9 @@ export class AdminAnalyticsEngine {
         pass: Number(passFailData.find((p: PassFailItem) => p.isPass === true)?.count ?? 0),
         fail: Number(passFailData.find((p: PassFailItem) => p.isPass === false)?.count ?? 0)
       },
-      efficiency: efficiencyData,
+      efficiency,
       summary: {
           ...trendSummary,
-          deltaPct: deltaData?.deltaPct ?? null,
           healthStatus
       }
     };

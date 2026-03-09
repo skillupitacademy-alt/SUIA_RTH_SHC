@@ -95,7 +95,7 @@ export function QuestionTable() {
         const fetchQuestions = async () => {
             setIsLoading(true);
             try {
-                const data = await apiClient.admin.getQuestions(page, pageSize, {
+                const data = await apiClient.admin.getQuestions(page.toString(), pageSize, {
                     domainId: (filters.domainId != null && filters.domainId !== '') ? filters.domainId : undefined,
                     subjectId: (filters.subjectId != null && filters.subjectId !== '') ? filters.subjectId : undefined,
                     topicId: (filters.topicId != null && filters.topicId !== '') ? filters.topicId : undefined,
@@ -133,8 +133,8 @@ export function QuestionTable() {
                     topic: (q as { topic?: QuestionData['topic'] }).topic
                 }));
                 setQuestions(mappedQuestions);
-                setTotalPages(data.totalPages);
-                setTotalCount(data.total ?? data.questions.length); // Fallback if total is missing
+                setTotalPages(data.totalPages ?? 1);
+                setTotalCount(data.total ?? data.questions.length ?? 0); // Fallback if total is missing
             } catch (error) {
                 clientLogger.error('Failed to fetch questions', { error: error instanceof Error ? error.message : 'unknown' });
                 // We keep silence for main table load but could set an error state if requested

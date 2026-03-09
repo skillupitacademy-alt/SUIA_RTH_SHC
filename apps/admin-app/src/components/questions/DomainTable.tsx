@@ -66,7 +66,7 @@ export function DomainTable() {
     const fetchDomains = useCallback(async () => {
         setIsLoading(true);
         try {
-            const response = await apiClient.admin.getDomains(page, pageSize, debouncedSearch || undefined);
+            const response = await apiClient.admin.getDomains(page.toString(), pageSize, debouncedSearch || undefined);
             const domains: Domain[] = Array.isArray(response.data)
                 ? response.data.map((d) => ({
                     id: String(d.id),
@@ -79,8 +79,8 @@ export function DomainTable() {
                 }))
                 : [];
             setData(domains);
-            setTotalPages(response.totalPages);
-            setTotalCount(response.total ?? response.data.length);
+            setTotalPages(response.totalPages ?? 1);
+            setTotalCount(response.total ?? response.data.length ?? 0);
             setSelectedIds(new Set()); // Reset selection on refresh
         } catch (error) {
             clientLogger.error('Failed to fetch domains', { error: error instanceof Error ? error.message : 'unknown' });

@@ -7,9 +7,10 @@ import {
   AdminPlatformMetrics,
   AdminSystemUsage,
   AdminTrendSummary,
+  IAdminAnalyticsClient,
 } from '@quiz/api-client/types';
 
-export class AnalyticsAdminClient {
+export class AnalyticsAdminClient implements IAdminAnalyticsClient {
   constructor(private client: FetchClient) {}
 
   async getMetrics() {

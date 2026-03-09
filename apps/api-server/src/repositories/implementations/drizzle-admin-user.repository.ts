@@ -1,6 +1,7 @@
 import { db, roles, userProfiles, userRoles, users } from '@quiz/db';
 import { and, desc, eq, gt, inArray, isNotNull, isNull, lt, or, type SQL, sql } from 'drizzle-orm';
 
+import { buildPaginatedResponse, decodePageCursor } from '@/lib/pagination';
 import { BaseRepository } from '@/modules/core/repositories/base.repository';
 
 import { IAdminUserRepository } from '../interfaces/admin-user.repository.interface';
@@ -28,8 +29,18 @@ export class DrizzleAdminUserRepository extends BaseRepository<typeof users.$inf
     }
 
     if (cursor !== null && cursor !== '') {
-        // Assuming cursor is the createdAt timestamp string
-        conditions.push(lt(users.createdAt, new Date(cursor)));
+        try {
+            const { lastSortValue, lastId } = decodePageCursor(cursor);
+            conditions.push(
+                or(
+                    lt(users.createdAt, new Date(lastSortValue)),
+                    and(eq(users.createdAt, new Date(lastSortValue)), lt(users.id, lastId))
+                ) as SQL
+            );
+        } catch {
+            // Fallback for legacy timestamp-only cursors
+            conditions.push(lt(users.createdAt, new Date(cursor)));
+        }
     }
 
     if (filters?.search !== undefined && filters.search !== null && filters.search.trim() !== '') {
@@ -64,9 +75,9 @@ export class DrizzleAdminUserRepository extends BaseRepository<typeof users.$inf
     const totalCount = Number(countResult?.count ?? 0);
 
     const usersList = await this.dbInstance.query.users.findMany({
-      limit: limit + 1, // Fetch one extra to check if there's a next page
+      limit: limit + 1,
       where: whereClause,
-      orderBy: [desc(users.createdAt)],
+      orderBy: [desc(users.createdAt), desc(users.id)],
       with: {
         profile: true,
         userRoles: {
@@ -77,14 +88,17 @@ export class DrizzleAdminUserRepository extends BaseRepository<typeof users.$inf
       }
     });
 
-    const hasNext = usersList.length > limit;
-    const data = hasNext ? usersList.slice(0, limit) : usersList;
-    const nextCursor = hasNext ? data[data.length - 1].createdAt?.toISOString() ?? null : null;
+    const paginated = buildPaginatedResponse(
+        usersList,
+        limit,
+        item => item.createdAt?.toISOString() ?? '',
+        totalCount
+    );
 
     return {
-      users: data,
-      total: totalCount,
-      nextCursor,
+      users: paginated.data,
+      total: paginated.total ?? 0,
+      nextCursor: paginated.nextCursor,
       limit
     };
   }

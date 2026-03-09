@@ -86,7 +86,7 @@ export class TrendsService {
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - daysAgo);
 
-    // Get all exams in range
+    // Optimized: Fetch skill results using a join to avoid separate exam meta queries
     const conditions = [
       eq(exams.status, 'completed'),
       gte(exams.completedAt, cutoffDate)
@@ -96,47 +96,42 @@ export class TrendsService {
       conditions.push(eq(exams.userId, userId));
     }
 
-    const userExams = await db.query.exams.findMany({
-      where: and(...conditions),
-      orderBy: [desc(exams.completedAt)],
-      limit: this.MAX_EXAMS,
-      columns: {
-        id: true,
-        completedAt: true
-      }
-    });
+    const rawResults = await db.select({
+      examId: exams.id,
+      completedAt: exams.completedAt,
+      skillId: resultsByDimension.dimensionId,
+      skillName: resultsByDimension.name,
+      accuracy: resultsByDimension.accuracy
+    })
+    .from(resultsByDimension)
+    .innerJoin(exams, eq(resultsByDimension.examId, exams.id))
+    .where(and(
+      ...conditions,
+      eq(resultsByDimension.dimensionType, 'skill')
+    ))
+    .orderBy(desc(exams.completedAt));
 
-    if (userExams.length === 0) return [];
-
-    const examIds = userExams.map(e => e.id);
-
-    // Get skill results for these exams
-    const skillResults = await db.query.resultsByDimension.findMany({
-      where: and(
-        sql`${resultsByDimension.examId} = ANY(${examIds})`,
-        eq(resultsByDimension.dimensionType, 'skill')
-      ),
-      orderBy: [desc(resultsByDimension.examId)]
-    });
+    if (rawResults.length === 0) return [];
 
     // Group by skill and calculate deltas
     const skillMap = new Map<string, { name: string; scores: number[]; examDates: Date[] }>();
 
-    for (const result of skillResults) {
-      const skillId = result.dimensionId ?? result.name;
-      if (skillId === undefined || skillId === null) continue; // Skip if no valid ID
+    for (const row of rawResults) {
+      const skillId = row.skillId ?? row.skillName;
+      if (skillId === null || skillId === undefined || skillId === '') continue;
       
       if (!skillMap.has(skillId)) {
         skillMap.set(skillId, {
-          name: result.name ?? 'Unknown Skill',
+          name: row.skillName ?? 'Unknown Skill',
           scores: [],
           examDates: []
         });
       }
-      const examDate = userExams.find(e => e.id === result.examId)?.completedAt;
-      if (examDate !== undefined && examDate !== null) {
-        skillMap.get(skillId)!.scores.push(result.accuracy);
-        skillMap.get(skillId)!.examDates.push(examDate);
+      
+      const group = skillMap.get(skillId)!;
+      if (group.scores.length < 10) { // Keep history manageable
+        group.scores.push(row.accuracy);
+        group.examDates.push(row.completedAt ?? new Date());
       }
     }
 
@@ -144,9 +139,7 @@ export class TrendsService {
     const trends: SkillTrend[] = [];
 
     for (const [skillId, data] of skillMap.entries()) {
-      if (data.scores.length === 0) continue;
-
-      const currentScore = data.scores[0]; // Most recent
+      const currentScore = data.scores[0];
       const previousScore = data.scores.length > 1 ? data.scores[1] : null;
       const delta = previousScore !== null ? currentScore - previousScore : 0;
 
@@ -154,7 +147,6 @@ export class TrendsService {
       if (delta > 5) trend = 'improving';
       else if (delta < -5) trend = 'declining';
 
-      // Prediction Engine Integration
       const forecast = ForecastService.calculateTrajectory(
         data.scores.map((s, idx) => ({ 
           accuracy: s, 
@@ -169,13 +161,12 @@ export class TrendsService {
         previousScore,
         delta,
         trend,
-        sparkline: data.scores.slice(0, 5).reverse(), // Last 5 scores, oldest first
+        sparkline: data.scores.slice(0, 5).reverse(),
         predictedMasteryDate: forecast.predictedMasteryDate,
         isStruggling: forecast.isStruggling
       });
     }
 
-    // Sort by absolute delta (biggest changes first) and limit
     return trends
       .sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta))
       .slice(0, this.MAX_SKILLS);
@@ -190,14 +181,18 @@ export class TrendsService {
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - daysAgo);
 
-    const userExams = await db.query.exams.findMany({
-      where: and(
-        eq(exams.status, 'completed'),
-        gte(exams.completedAt, cutoffDate),
-      ),
-      orderBy: [desc(exams.completedAt)],
-      limit: this.MAX_EXAMS
-    });
+    // Optimized: Run summary calc and skill trends in parallel
+    const [userExams, skillTrends] = await Promise.all([
+      db.query.exams.findMany({
+        where: and(
+          eq(exams.status, 'completed'),
+          gte(exams.completedAt, cutoffDate),
+        ),
+        orderBy: [desc(exams.completedAt)],
+        limit: this.MAX_EXAMS
+      }),
+      this.getSkillTrends({ range })
+    ]);
 
     if (userExams.length === 0) {
       return {
@@ -226,8 +221,6 @@ export class TrendsService {
       }
     }
 
-    // Get skill trends for best/worst
-    const skillTrends = await this.getSkillTrends({ range });
     const bestSkill = (skillTrends.length > 0 && skillTrends[0].delta > 0)
       ? { name: skillTrends[0].skillName, delta: skillTrends[0].delta }
       : null;

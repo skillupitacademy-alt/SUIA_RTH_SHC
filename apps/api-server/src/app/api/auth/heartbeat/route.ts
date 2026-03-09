@@ -19,7 +19,7 @@ async function handler(_req: NextRequest) {
       return ApiResponse.error(unauthorized('Unauthorized', 'UNAUTHORIZED'));
     }
 
-    const _payload = await tokenService.verifyAccessToken(_token, false);
+    const _payload = await tokenService.verifyUserAccessToken(_token);
     
     await authService.heartbeat(_payload.userId);
 

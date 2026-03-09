@@ -1,8 +1,9 @@
 import { db, questions, questionSkills } from '@quiz/db';
-import { and, desc, eq, inArray, lt, sql } from 'drizzle-orm';
+import { and, desc, eq, inArray, lt, or,sql } from 'drizzle-orm';
 
-import { BaseRepository } from '@/modules/core/repositories/base.repository';
+import { buildPaginatedResponse, decodePageCursor } from '@/lib/pagination';
 
+import { BaseRepository } from '../../modules/core/repositories/base.repository';
 import { IQuestionRepository } from '../interfaces/question.repository.interface';
 
 export class DrizzleQuestionRepository extends BaseRepository<typeof questions.$inferSelect, typeof questions> implements IQuestionRepository {
@@ -18,32 +19,53 @@ export class DrizzleQuestionRepository extends BaseRepository<typeof questions.$
     status?: string;
     search?: string;
   }) {
-    const conditions = [];
-
-    if (cursor !== null && cursor !== '') {
-        conditions.push(lt(questions.updatedAt, new Date(cursor)));
-    }
+    const baseConditions = [];
 
     if (filters?.subtopicId !== undefined && filters?.subtopicId !== null && filters?.subtopicId !== '') {
-        conditions.push(eq(questions.subtopicId, filters.subtopicId));
+        baseConditions.push(eq(questions.subtopicId, filters.subtopicId));
     } else if (filters?.topicId !== undefined && filters?.topicId !== null && filters?.topicId !== '') {
-        conditions.push(eq(questions.topicId, filters.topicId));
+        baseConditions.push(eq(questions.topicId, filters.topicId));
     }
 
     if (filters?.status !== undefined && filters?.status !== null && filters?.status !== '') {
-        conditions.push(eq(questions.status, filters.status as "active" | "inactive" | "draft"));
+        baseConditions.push(eq(questions.status, filters.status as "active" | "inactive" | "draft"));
     }
 
     if (filters?.search !== undefined && filters?.search !== null && filters?.search.trim() !== '') {
-        conditions.push(sql`${questions.questionText} ILIKE ${'%' + filters.search + '%'}`);
+        baseConditions.push(sql`${questions.questionText} ILIKE ${'%' + filters.search + '%'}`);
     }
 
-    const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+    const cursorConditions = [];
+    if (cursor !== null && cursor !== '') {
+        try {
+            const { lastSortValue, lastId } = decodePageCursor(cursor);
+            cursorConditions.push(
+                or(
+                    lt(questions.updatedAt, new Date(lastSortValue)),
+                    and(eq(questions.updatedAt, new Date(lastSortValue)), lt(questions.id, lastId))
+                )
+            );
+        } catch {
+            // Fallback for legacy timestamp|id cursors
+            const [cursorDate, cursorId] = cursor.split('|');
+            if (cursorId) {
+                cursorConditions.push(or(
+                    lt(questions.updatedAt, new Date(cursorDate)),
+                    and(eq(questions.updatedAt, new Date(cursorDate)), lt(questions.id, cursorId))
+                ));
+            } else {
+                cursorConditions.push(lt(questions.updatedAt, new Date(cursorDate)));
+            }
+        }
+    }
+
+    const allConditions = [...baseConditions, ...cursorConditions];
+    const whereClause = allConditions.length > 0 ? and(...allConditions) : undefined;
 
     const dataRaw = await this.dbInstance.query.questions.findMany({
       where: whereClause,
       limit: limit + 1,
-      orderBy: [desc(questions.updatedAt)],
+      orderBy: [desc(questions.updatedAt), desc(questions.id)],
       with: {
         topic: {
           with: {
@@ -66,28 +88,35 @@ export class DrizzleQuestionRepository extends BaseRepository<typeof questions.$
       }
     });
 
-    const hasNext = dataRaw.length > limit;
-    const data = hasNext ? dataRaw.slice(0, limit) : dataRaw;
-    const nextCursor = hasNext ? data[data.length - 1].updatedAt.toISOString() : null;
-
-    const [{ count }] = await this.dbInstance
+    // For total count, use only baseConditions
+    const [{ count: totalCount }] = await this.dbInstance
       .select({ count: sql<number>`count(*)` })
       .from(questions)
-      .where(conditions.length > 0 ? and(...conditions.filter(c => !c.toString().includes('updated_at <'))) : sql`true`);
+      .where(baseConditions.length > 0 ? and(...baseConditions) : sql`true`);
 
-    const total = Number(count ?? 0);
+    const total = Number(totalCount ?? 0);
 
-    return { data, total, nextCursor, limit };
+    const paginated = buildPaginatedResponse(
+        dataRaw,
+        limit,
+        item => item.updatedAt.toISOString(),
+        total
+    );
+
+    return { 
+        data: paginated.data, 
+        total: paginated.total ?? 0, 
+        nextCursor: paginated.nextCursor, 
+        limit 
+    };
   }
 
   async create(
     data: typeof questions.$inferInsert,
     skillIds?: string[],
-    tx?: {
-      insert: typeof db.insert;
-    }
+    tx?: typeof db
   ) {
-    const executor = tx || this.dbInstance;
+    const executor = tx !== undefined ? tx : this.dbInstance;
     
     const [newQuestion] = await executor.insert(questions).values(data).returning();
 
@@ -105,13 +134,9 @@ export class DrizzleQuestionRepository extends BaseRepository<typeof questions.$
     id: string,
     data: Partial<typeof questions.$inferInsert>,
     skillIds?: string[],
-    tx?: {
-      update: typeof db.update;
-      delete: typeof db.delete;
-      insert: typeof db.insert;
-    }
+    tx?: typeof db
   ) {
-    const executor = tx || this.dbInstance;
+    const executor = tx !== undefined ? tx : this.dbInstance;
 
     const [updated] = await executor.update(questions).set(data).where(eq(questions.id, id)).returning();
 
@@ -129,7 +154,6 @@ export class DrizzleQuestionRepository extends BaseRepository<typeof questions.$
   }
 
   async delete(id: string) {
-      // Logic from engine: delete is actually a status update to 'inactive'
     const [res] = await this.dbInstance.update(questions).set({ status: 'inactive' }).where(eq(questions.id, id)).returning();
     return res;
   }

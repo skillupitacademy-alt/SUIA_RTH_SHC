@@ -17,7 +17,7 @@ describe('Token Service Tail 6', () => {
     } as any);
     
     // Pass isAdmin: false to prevent fallback to ADMIN_SECRET which obscures the audience mismatch error
-    await expect(service.verifyAccessToken(token, { audience: 'admin', isAdmin: false }))
+    await expect(service.verifyUserAccessToken(token, { audience: 'admin' }))
       .rejects.toThrow(/Audience mismatch/);
   });
 
@@ -28,7 +28,7 @@ describe('Token Service Tail 6', () => {
         userId: 'a1', email: 'a', roles: [], isAdmin: true, aud: 'web-app' 
     } as any);
     
-    await expect(service.verifyAccessToken(token, { isAdmin: true }))
+    await expect(service.verifyAdminAccessToken(token))
       .rejects.toThrow(/Audience violation: admin scope received unexpected aud/);
   });
 });

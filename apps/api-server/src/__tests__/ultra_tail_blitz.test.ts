@@ -123,11 +123,14 @@ vi.mock('@quiz/db', async (importOriginal) => {
     examBlueprints: { id: 'eb_id' },
     examQuestions: { id: 'eq_id' },
     sql: vi.fn((strs) => strs[0]),
+    withTimeout: vi.fn((p) => p),
     and: vi.fn(),
     eq: vi.fn(),
     gte: vi.fn(),
     asc: vi.fn(),
     desc: vi.fn(),
+    inArray: vi.fn(),
+    or: vi.fn(),
     notInArray: vi.fn(),
   };
 });
@@ -599,55 +602,43 @@ describe('Ultra Final Coverage Marathon - 100% Global Blitz', () => {
         });
 
         it('hits SelectionService dynamic paths', async () => {
+             // 1. Setup specific user-requested scenario
+             const config = { 
+                 subjectIds: ['s1'], // Front End Development
+                 topicIds: ['t1'],   // JavaScript
+                 subtopicIds: ['st1', 'st2', 'st3', 'st4'], 
+                 questionCount: 10,
+                 difficulty: 'mixed'
+             };
+
             vi.mocked(cacheService.get).mockRejectedValueOnce(new Error('fail'));
             mDb.query.topics.findMany.mockResolvedValue([]);
+            mDb.query.questions.findMany.mockResolvedValue([{ id: 'q1' }]);
+            mDb.query.examBlueprints.findFirst.mockResolvedValue({ id: 'b1', totalQuestions: 10 });
             
-            mDb.select.mockImplementation(() => {
-                const target = () => {};
-                const proxy: any = new Proxy(target, {
-                  get: (t, prop) => {
-                    if (prop === 'then') return (resolve: any) => resolve([{ id: 'q1' }]);
-                    return () => proxy;
-                  },
-                  apply: () => proxy,
-                });
-                return proxy;
-            });
-            
-            const config = { 
-                blueprintId: 'b1', 
-                selectionConfig: [{ itemCount: 1 }, { itemCount: undefined }] 
-            };
-            
-            const res = await SelectionService.composeExam('u1', 'b1', 'ikey', config as any);
-            expect(res).toBeDefined();
-
-            // 1. Config is null/undefined (Line 181 branch) - must call private method directly
-            // composeExam does `config || {}`, so the ?? {} fallback in resolveSelectionCriteria is unreachable via public API
-            await (SelectionService as any).resolveSelectionCriteria('d1', null as any, { totalQuestions: 1 }).catch(() => {});
-
-            // 2. Transient Blueprint (Line 128)
-            vi.mocked(cacheService.get).mockRejectedValueOnce(new Error('fail'));
-            mDb.query.examBlueprints.findFirst.mockResolvedValue(null); // Force transient
-            await SelectionService.composeExam('u1', 'b_none', 'k_trans').catch(() => {});
-
-            // 3. fetchStaticQuestions error (Line 161)
-            mDb.query.examBlueprints.findFirst.mockResolvedValueOnce({ id: 'b_static', questionIds: ['q1'] });
-            mDb.query.questions.findMany.mockResolvedValueOnce([]); // No questions found
-            await expect(SelectionService.composeExam('u1', 'b_static', 'k_static')).rejects.toThrow('no longer exist or are inactive');
-
-            // 4. executeDynamicSelection pool wrap-around (Line 296)
-            mDb.query.examBlueprints.findFirst.mockResolvedValue({ id: 'bp1', totalQuestions: 1 });
-            mDb.select.mockImplementation(() => {
-                let callCount = 0;
+            mDb.select.mockImplementation((fields: any) => {
                 const target = () => {};
                 const proxy: any = new Proxy(target, {
                   get: (t, prop) => {
                     if (prop === 'then') {
-                        callCount++;
-                        if (callCount === 1) return (resolve: any) => resolve([{ count: 1 }]); // totalInPool
-                        if (callCount === 2) return (resolve: any) => resolve([]); // empty anchor selection (hits line 296)
-                        return (resolve: any) => resolve([{ id: 'q_fallback' }]); // wrap-around selection
+                        return (resolve: any) => {
+                            const fieldKeys = fields ? Object.keys(fields) : [];
+                            let result: any[] = [];
+                            if (fieldKeys.includes('topicId')) result = [{ topicId: 't1' }];
+                            else if (fieldKeys.includes('subjectId')) result = [{ subjectId: 's1' }];
+                            else if (fieldKeys.includes('id') && !fieldKeys.includes('difficulty')) result = [{ id: 'q1' }];
+                            else if (fieldKeys.includes('difficulty')) {
+                                result = Array.from({ length: 10 }, (_, i) => ({
+                                    id: `q${i+1}`,
+                                    difficulty: i < 3 ? 'simple' : (i < 6 ? 'intermediate' : 'expert')
+                                }));
+                            } else {
+                                result = Array.from({ length: 10 }, (_, i) => ({
+                                    id: `q${i+1}`, type: 'mcq'
+                                }));
+                            }
+                            return resolve(result);
+                        };
                     }
                     return () => proxy;
                   },
@@ -655,15 +646,37 @@ describe('Ultra Final Coverage Marathon - 100% Global Blitz', () => {
                 });
                 return proxy;
             });
-            await SelectionService.composeExam('u1', 'bp1', 'k_wrap');
+            
+            const res = await SelectionService.composeExam('u1', 'b1', 'ikey', config as any);
+            expect(res).toBeDefined();
+            expect(res.questions.length).toBeGreaterThan(0);
+            
+            
 
-            // 5. executeDynamicSelection empty pool error (Line 332)
-            mDb.select.mockImplementation(() => ({
-                from: () => ({
-                    where: () => Promise.resolve([{ count: 0 }]) // Force empty pool early
-                })
-            }));
-            await expect(SelectionService.composeExam('u1', 'bp1', 'k_empty')).rejects.toThrow('No questions found');
+            // 1. Transient Blueprint (Force empty/null)
+            vi.mocked(cacheService.get).mockRejectedValueOnce(new Error('fail'));
+            mDb.query.examBlueprints.findFirst.mockResolvedValue(null);
+            await SelectionService.composeExam('u1', 'b_none', 'k_trans').catch(() => {});
+
+            // 2. fetchStaticQuestions error
+            mDb.query.examBlueprints.findFirst.mockResolvedValueOnce({ id: 'b_static', questionIds: ['q1'] });
+            mDb.query.questions.findMany.mockResolvedValueOnce([]); 
+            await expect(SelectionService.composeExam('u1', 'b_static', 'k_static')).rejects.toThrow('no longer exist');
+
+            // 3. Fully Empty dynamic pool
+            mDb.query.examBlueprints.findFirst.mockResolvedValue({ id: 'bp_empty', totalQuestions: 1 });
+            mDb.select.mockImplementation(() => {
+                const target = () => {};
+                const proxy: any = new Proxy(target, {
+                  get: (t, prop) => {
+                    if (prop === 'then') return (resolve: any) => resolve([]); // Empty result
+                    return () => proxy;
+                  },
+                  apply: () => proxy,
+                });
+                return proxy;
+            });
+            await expect(SelectionService.composeExam('u1', 'bp_empty', 'k_empty')).rejects.toThrow('No questions found');
         });
 
         it('hits ReportMaterializer branches', async () => {

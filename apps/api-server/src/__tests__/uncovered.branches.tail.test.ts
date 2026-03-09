@@ -21,7 +21,7 @@ describe('uncovered branch mop-up', () => {
       aud: 'user',
     });
 
-    await expect(svc.verifyAccessToken(userToken, { isAdmin: false, audience: 'admin' })).rejects.toThrow(
+    await expect(svc.verifyUserAccessToken(userToken, { audience: 'admin' })).rejects.toThrow(
       'Audience mismatch: expected admin',
     );
 
@@ -38,7 +38,7 @@ describe('uncovered branch mop-up', () => {
       .setExpirationTime('15m')
       .sign(TokenService.ADMIN_SECRET);
 
-    await expect(svc.verifyAccessToken(invalidAdminAud, { isAdmin: true })).rejects.toThrow(
+    await expect(svc.verifyAdminAccessToken(invalidAdminAud)).rejects.toThrow(
       'Audience violation: admin scope received unexpected aud',
     );
   });

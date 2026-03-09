@@ -30,7 +30,7 @@ describe('JobsService branch coverage', () => {
     bgTable = mod.backgroundJobs as any;
     vi.clearAllMocks();
     (JobsService as any)._db = undefined;
-    process.env.NODE_ENV = 'test';
+    vi.stubEnv('NODE_ENV', 'test');
     JobsService.withDb(dbMock);
   });
 
@@ -41,12 +41,11 @@ describe('JobsService branch coverage', () => {
       where: vi.fn().mockResolvedValue([{ count: 5 }]),
     } as any);
 
-    const res = await JobsService.listJobs({ userId: 'u1', status: JobStatus.PENDING, limit: 10, offset: 2 });
+    const res = await JobsService.listJobs({ userId: 'u1', status: JobStatus.PENDING, limit: 10 });
 
     expect(dbMock.query.backgroundJobs.findMany).toHaveBeenCalledWith(expect.objectContaining({
       where: expect.anything(),
-      limit: 10,
-      offset: 2,
+      limit: 11,
     }));
     expect(res.total).toBe(5);
     expect(res.items[0].id).toBe('j1');
@@ -68,8 +67,8 @@ describe('JobsService branch coverage', () => {
   });
 
   it('simulateJob early-returns when mock jobs disabled', async () => {
-    process.env.NODE_ENV = 'production';
-    process.env.ALLOW_MOCK_JOBS = 'false';
+    vi.stubEnv('NODE_ENV', 'production');
+    vi.stubEnv('ALLOW_MOCK_JOBS', 'false');
     const spyUpdate = vi.spyOn(JobsService, 'updateJobStatus').mockResolvedValue({} as any);
     await JobsService.simulateJob('job', 'u1');
     expect(spyUpdate).not.toHaveBeenCalled();
@@ -78,8 +77,8 @@ describe('JobsService branch coverage', () => {
   }, 1000);
 
   it('simulateJob drives happy path when allowed', async () => {
-    process.env.NODE_ENV = 'production';
-    process.env.ALLOW_MOCK_JOBS = 'true';
+    vi.stubEnv('NODE_ENV', 'production');
+    vi.stubEnv('ALLOW_MOCK_JOBS', 'true');
     const spyUpdate = vi.spyOn(JobsService, 'updateJobStatus').mockResolvedValue({} as any);
     vi.useFakeTimers();
     const promise = JobsService.simulateJob('job', 'u1');

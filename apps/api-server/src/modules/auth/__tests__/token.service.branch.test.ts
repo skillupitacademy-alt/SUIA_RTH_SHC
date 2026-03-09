@@ -31,7 +31,7 @@ describe('TokenService branch coverage', () => {
       .setExpirationTime('5m')
       .sign(new TextEncoder().encode(process.env.ADMIN_JWT_SECRET!));
 
-    await expect(tokenService.verifyAccessToken(badAud, { isAdmin: true })).rejects.toThrow(/unexpected aud/i);
+    await expect(tokenService.verifyAdminAccessToken(badAud)).rejects.toThrow(/unexpected aud/i);
   });
 
   it('enforces audience when provided explicitly', async () => {
@@ -41,7 +41,7 @@ describe('TokenService branch coverage', () => {
       '5m'
     );
 
-    await expect(tokenService.verifyAccessToken(token, { audience: 'user' })).rejects.toThrow();
+    await expect(tokenService.verifyUserAccessToken(token)).rejects.toThrow();
   });
 
   it('accepts a normal user token when no audience is enforced (legacy default)', async () => {
@@ -56,7 +56,7 @@ describe('TokenService branch coverage', () => {
   it('verifies refresh token happy path and derives expiration helpers', async () => {
     const tokenService = await loadService();
     const refresh = await tokenService.generateRefreshToken('u123', false, 'user');
-    const payload = await tokenService.verifyRefreshToken(refresh, { isAdmin: false, audience: 'user' });
+    const payload = await tokenService.verifyUserRefreshToken(refresh);
     expect(payload.userId).toBe('u123');
 
     const expIso = tokenService.getExpiration(refresh);

@@ -85,15 +85,15 @@ export function TopicTable() {
         setIsLoading(true);
         try {
             const searchTerm = debouncedSearch.trim() === '' ? undefined : debouncedSearch;
-            const response = await apiClient.admin.getTopics(page, pageSize, searchTerm);
+            const response = await apiClient.admin.getTopics(page.toString(), pageSize, searchTerm);
             const mapped = response.data.map((topic: Topic) => ({
                 ...topic,
                 learningUrl: topic.learningUrl ?? '',
                 detailedNotesPath: topic.detailedNotesPath ?? '',
             }));
             setData(mapped);
-            setTotalPages(response.totalPages);
-            setTotalCount(response.total ?? response.data.length);
+            setTotalPages(response.totalPages ?? 1);
+            setTotalCount(response.total ?? response.data.length ?? 0);
             setSelectedIds(new Set());
         } catch (error) {
             clientLogger.error('Failed to fetch topics', { error: error instanceof Error ? error.message : 'unknown' });

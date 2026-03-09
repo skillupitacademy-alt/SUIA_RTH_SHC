@@ -6,6 +6,8 @@ import { container } from '../../core/container';
 const mockQueryBuilder = (result: any = []) => ({
     from: vi.fn().mockReturnThis(),
     where: vi.fn().mockReturnThis(),
+    orderBy: vi.fn().mockReturnThis(),
+    limit: vi.fn().mockReturnThis(),
     then: (resolve: any) => Promise.resolve(result).then(resolve),
 } as any);
 
@@ -35,10 +37,9 @@ describe('SelectionService composition empty pools', () => {
 
     it('throws if no questions found in pool', async () => {
         vi.mocked(db.query.examBlueprints.findFirst).mockResolvedValue({ id: 'bp1' } as any);
-        vi.mocked(db.select).mockImplementation(() => mockQueryBuilder([{ count: 0 }]));
+        vi.mocked(db.select).mockImplementation(() => mockQueryBuilder([]));
 
         const service = container.get(SelectionService);
         await expect(service.composeExam('u1', 'bp1', 'key1')).rejects.toThrow('No questions found');
     });
 });
-

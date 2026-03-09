@@ -55,13 +55,14 @@ export class UserRepository extends BaseRepository<User, typeof users> {
     await this.dbInstance.update(users).set({ lastActiveAt: date }).where(eq(users.id, id));
   }
 
-  async create(data: { email: string; passwordHash: string; name: string }) {
-    const [user] = await this.dbInstance.insert(users).values({
+  async create(data: { email: string; passwordHash: string; name: string }, tx?: Pick<typeof db, 'insert' | 'query'>) {
+    const executor = tx ?? this.dbInstance;
+    const [user] = await executor.insert(users).values({
       email: data.email,
       passwordHash: data.passwordHash,
     }).returning();
 
-    await this.dbInstance.insert(userProfiles).values({
+    await executor.insert(userProfiles).values({
       userId: user.id,
       name: data.name,
     });
@@ -69,13 +70,14 @@ export class UserRepository extends BaseRepository<User, typeof users> {
     return user;
   }
 
-  async assignRole(userId: string, roleName: string) {
-    const role = await this.dbInstance.query.roles.findFirst({
+  async assignRole(userId: string, roleName: string, tx?: Pick<typeof db, 'insert' | 'query'>) {
+    const executor = tx ?? this.dbInstance;
+    const role = await executor.query.roles.findFirst({
       where: sql`${roles.name} = ${roleName}`,
     });
 
-    if (role) {
-      await this.dbInstance.insert(userRoles).values({
+    if (role !== null && role !== undefined) {
+      await executor.insert(userRoles).values({
         userId,
         roleId: role.id,
       });

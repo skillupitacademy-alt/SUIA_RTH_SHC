@@ -1,5 +1,5 @@
 import { auditLogs, db, domains, examQuestions, exams, questions, resultsByDimension, roles, userRoles, users } from '@quiz/db';
-import { and, count, desc, eq, isNotNull, lt, sql } from 'drizzle-orm';
+import { and, count, desc, eq, isNotNull, lt, or,sql } from 'drizzle-orm';
 
 import { IAdminAnalyticsRepository } from '../interfaces/admin-analytics.repository.interface';
 
@@ -112,13 +112,24 @@ export class DrizzleAdminAnalyticsRepository implements IAdminAnalyticsRepositor
   async getAuditLogs(cursor: string | null, limit: number) {
     const conditions = [];
     if (cursor !== null && cursor !== '') {
-        conditions.push(lt(auditLogs.createdAt, new Date(cursor)));
+        const [cursorDate, cursorId] = cursor.split('|');
+        if (cursorId) {
+            conditions.push(or(
+                lt(auditLogs.createdAt, new Date(cursorDate)),
+                and(
+                    eq(auditLogs.createdAt, new Date(cursorDate)),
+                    lt(auditLogs.id, cursorId)
+                )
+            ));
+        } else {
+            conditions.push(lt(auditLogs.createdAt, new Date(cursorDate)));
+        }
     }
 
     const dataRaw = await this.dbInstance.query.auditLogs.findMany({
       where: conditions.length > 0 ? and(...conditions) : undefined,
       limit: limit + 1,
-      orderBy: [desc(auditLogs.createdAt)],
+      orderBy: [desc(auditLogs.createdAt), desc(auditLogs.id)],
       with: {
           user: true
       }
@@ -126,7 +137,7 @@ export class DrizzleAdminAnalyticsRepository implements IAdminAnalyticsRepositor
 
     const hasNext = dataRaw.length > limit;
     const data = hasNext ? dataRaw.slice(0, limit) : dataRaw;
-    const nextCursor = hasNext ? data[data.length - 1].createdAt.toISOString() : null;
+    const nextCursor = hasNext ? `${data[data.length - 1].createdAt.toISOString()}|${data[data.length - 1].id}` : null;
 
     return { data, nextCursor };
   }

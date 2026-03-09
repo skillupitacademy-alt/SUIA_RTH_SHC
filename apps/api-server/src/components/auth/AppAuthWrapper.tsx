@@ -2,12 +2,21 @@
 
 import { apiClient } from '@quiz/api-client';
 import { useState } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 
 import { SessionWatcher } from '@/components/auth/SessionWatcher';
 import { useAuthStore } from '@/store/auth-store';
 
 export function AppAuthWrapper({ children }: { children: React.ReactNode }) {
-    const { expiresAt, login, logout, initialized, isAuthenticated } = useAuthStore();
+    const { expiresAt, login, logout, initialized, isAuthenticated } = useAuthStore(
+        useShallow((s) => ({
+            expiresAt: s.expiresAt,
+            login: s.login,
+            logout: s.logout,
+            initialized: s.initialized,
+            isAuthenticated: s.isAuthenticated,
+        }))
+    );
     const [isRedirecting, setIsRedirecting] = useState(false);
 
     const handleRefresh = async () => {

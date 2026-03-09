@@ -1,7 +1,7 @@
 import { LucideIcon, TrendingUp, TrendingDown, Info } from 'lucide-react';
 import React from 'react';
 
-type StatsOverview = {
+export type StatsOverview = {
     avgScore: number;
     totalExams: number;
     masteryPoints: number;

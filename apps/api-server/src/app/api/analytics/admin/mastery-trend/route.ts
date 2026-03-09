@@ -31,7 +31,7 @@ async function getHandler(req: NextRequest) {
       throw unauthorized("Authentication required");
     }
 
-    await container.get(TokenService).verifyAccessToken(token, true);
+    await container.get(TokenService).verifyAdminAccessToken(token);
 
     try {
       const cachedData = await redis.get(CACHE_KEYS.ANALYTICS.ADMIN("mastery-trend"));

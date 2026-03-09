@@ -14,7 +14,7 @@ export function LoginForm() {
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const { login } = useAuthStore();
+    const login = useAuthStore((s) => s.login);
     const router = useRouter();
 
     const toErrorMessage = (err: unknown): string => {

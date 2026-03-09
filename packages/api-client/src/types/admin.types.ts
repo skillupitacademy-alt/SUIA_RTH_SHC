@@ -1,4 +1,4 @@
-import { DomainHierarchy, PaginatedQuestions, QuestionCounts, QuestionSummary } from '../types';
+import { DomainHierarchy, PaginatedQuestions, QuestionCounts, QuestionSummary, PaginatedResponse, AdminUserProfile, Domain, Subject, Topic } from '../types';
 
 export interface AdminSuccessResponse {
   success?: boolean;
@@ -146,3 +146,76 @@ export interface AdminSessionListResponse {
   limit: number;
   totalPages: number;
 }
+
+export interface IAdminUserClient {
+  getUsers(
+    cursor?: string | null,
+    limit?: number,
+    status?: 'active' | 'deleted',
+    filters?: {
+      search?: string;
+      role?: string;
+      isBlocked?: boolean;
+      isVerified?: boolean;
+      status?: string;
+    }
+  ): Promise<PaginatedResponse<AdminUserProfile>>;
+  updateUser(id: string, data: Partial<AdminUserProfile> & Record<string, unknown>): Promise<AdminUserProfile>;
+  deleteUser(id: string): Promise<AdminSuccessResponse>;
+  login(email: string, password: string): Promise<{
+    user: AdminUserProfile;
+    accessToken: string;
+    expiresAt: string | null;
+  }>;
+}
+
+export interface IAdminQuestionConfigClient {
+  getDomains(cursor?: string | null, limit?: number, search?: string): Promise<PaginatedResponse<Domain>>;
+  createDomain(data: Pick<Domain, 'name' | 'slug' | 'description' | 'icon'>): Promise<Domain>;
+  updateDomain(id: string, data: Partial<Pick<Domain, 'name' | 'slug' | 'description' | 'icon'>>): Promise<Domain>;
+  deleteDomain(id: string): Promise<AdminSuccessResponse>;
+  getSubjects(cursor?: string | null, limit?: number, domainId?: string, search?: string): Promise<PaginatedResponse<Subject>>;
+  createSubject(data: Pick<Subject, 'name' | 'domainId' | 'slug' | 'description' | 'icon' | 'orderIndex'>): Promise<Subject>;
+  getTopics(cursor?: string | null, limit?: number, subjectId?: string, search?: string): Promise<PaginatedResponse<Topic>>;
+  createTopic(data: Pick<Topic, 'name' | 'subjectId' | 'slug' | 'description' | 'orderIndex' | 'complexity'>): Promise<Topic>;
+  getQuestions(
+    cursor?: string | null,
+    limit?: number,
+    filters?: {
+      domainId?: string;
+      subjectId?: string;
+      topicId?: string;
+      subtopicId?: string;
+      skillIds?: string[];
+      status?: string;
+      search?: string;
+    }
+  ): Promise<PaginatedQuestions>;
+  createQuestion(data: Omit<QuestionSummary, 'id'> & Record<string, unknown>): Promise<QuestionSummary>;
+}
+
+export interface IAdminBlueprintConfigClient {
+  getBlueprints(cursor?: string | null, limit?: number, search?: string): Promise<PaginatedResponse<AdminBlueprint>>;
+  getBlueprintById(id: string): Promise<AdminBlueprint>;
+  createBlueprint(data: Record<string, unknown>): Promise<AdminBlueprint>;
+  updateBlueprint(id: string, data: Partial<Record<string, unknown>>): Promise<AdminBlueprint>;
+  deleteBlueprint(id: string): Promise<AdminSuccessResponse>;
+}
+
+export interface IAdminConfigClient extends IAdminQuestionConfigClient, IAdminBlueprintConfigClient {}
+
+export interface IAdminAnalyticsClient {
+  getMetrics(): Promise<AdminPlatformMetrics>;
+  getUserMetrics(): Promise<AdminPlatformMetrics>;
+  getSecurityMetrics(): Promise<Record<string, unknown>>;
+  getPerformanceAnalytics(range?: string): Promise<AdminPerformanceAnalytics>;
+}
+
+export interface IAdminAuditClient {
+  getAuditLogs(params?: any): Promise<AdminAuditLog[] | PaginatedResponse<AdminAuditLog>>;
+}
+
+export interface IAdminReportClient extends IAdminAnalyticsClient, IAdminAuditClient {}
+
+
+

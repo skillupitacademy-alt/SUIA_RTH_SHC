@@ -1,3 +1,4 @@
+// ⚠️ ALWAYS use selectors: useStore(s => s.field), never useStore()
 import { apiClient } from '@quiz/api-client';
 import { recordCounter, recordTimer } from '@quiz/observability';
 import { create } from 'zustand';

@@ -58,12 +58,11 @@ describe('HierarchyFactory extreme tail logic', () => {
         const result = await HierarchyFactory.atomicUpsert(payload);
         expect(result.domainId).toBe('d1');
         // Because IDs were provided, the DB query to find existing items is SKIPPED
-        // and we expect the transaction logic to not invoke subjects/topics/subtopics findFirst.
     });
 
     it('throws domain context error if subjects provided without domain (Line 77)', async () => {
         const payload = {
-            batchSkills: ['Skill A'],
+            batchSkills: [{ name: 'Skill A' }],
             subjects: [{ name: 'S1', topics: [] }]
         };
         await expect(HierarchyFactory.atomicUpsert(payload as any)).rejects.toThrow('Domain context required for hierarchical operations.');
@@ -74,9 +73,9 @@ describe('HierarchyFactory extreme tail logic', () => {
             const tx = {
                 query: {
                     domains: { findFirst: vi.fn().mockResolvedValue({ id: 'd1', description: 'old', category: 'old' }) },
-                    subjects: { findFirst: vi.fn() },
-                    topics: { findFirst: vi.fn() },
-                    subtopics: { findFirst: vi.fn() }
+                    subjects: { findFirst: vi.fn(), findMany: vi.fn().mockResolvedValue([]) },
+                    topics: { findFirst: vi.fn(), findMany: vi.fn().mockResolvedValue([]) },
+                    subtopics: { findFirst: vi.fn(), findMany: vi.fn().mockResolvedValue([]) }
                 },
                 update: vi.fn().mockReturnValue({ set: vi.fn().mockReturnValue({ where: vi.fn() }) }),
                 insert: vi.fn().mockReturnValue({ values: vi.fn().mockReturnValue({ returning: vi.fn().mockResolvedValue([]) }) })
@@ -93,11 +92,11 @@ describe('HierarchyFactory extreme tail logic', () => {
         vi.mocked(db.transaction).mockImplementation(async (cb: any) => {
             const tx = {
                 query: {
-                    domains: { findFirst: vi.fn() },
-                    subjects: { findFirst: vi.fn() },
-                    topics: { findFirst: vi.fn() },
-                    subtopics: { findFirst: vi.fn() },
-                    skills: { findFirst: vi.fn() }
+                    domains: { findFirst: vi.fn(), findMany: vi.fn().mockResolvedValue([]) },
+                    subjects: { findFirst: vi.fn(), findMany: vi.fn().mockResolvedValue([{ id: 's1', name: 'S1' }]) },
+                    topics: { findFirst: vi.fn(), findMany: vi.fn().mockResolvedValue([{ id: 't1', name: 'T1' }]) },
+                    subtopics: { findFirst: vi.fn(), findMany: vi.fn().mockResolvedValue([{ id: 'st1', name: 'ST1' }]) },
+                    skills: { findFirst: vi.fn(), findMany: vi.fn().mockResolvedValue([]) }
                 },
                 insert: vi.fn().mockReturnValue({
                     values: vi.fn().mockReturnValue({
@@ -138,5 +137,3 @@ describe('HierarchyFactory extreme tail logic', () => {
         expect(result.questionStats.expert).toBe(1);
     });
 });
-
-

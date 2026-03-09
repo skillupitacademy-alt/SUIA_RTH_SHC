@@ -72,7 +72,7 @@ describe('Consolidated Security Coverage', () => {
             roles: ['USER'],
             isAdmin: false 
         });
-        await expect(TokenService.verifyAccessToken(token, { audience: 'infra' })).rejects.toThrow();
+        await expect(TokenService.verifyInfraAccessToken(token)).rejects.toThrow();
     });
 
     it('triggers CSRF bearer bypass', async () => {

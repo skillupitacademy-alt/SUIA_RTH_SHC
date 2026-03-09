@@ -5,6 +5,7 @@ import { TutorInsightCard } from '../TutorInsightCard';
 
 // Mock fetch and observability
 global.fetch = vi.fn();
+const fetchMock = global.fetch as unknown as ReturnType<typeof vi.fn>;
 vi.mock('@quiz/observability', () => ({
   recordCounter: vi.fn(),
   recordTimer: vi.fn(),
@@ -20,8 +21,8 @@ vi.mock('../NotesViewer', () => ({
 
 describe('TutorInsightCard Smoke Test', () => {
   it('should not crash with empty recommendations', async () => {
-    // @ts-ignore
-    (global.fetch as any).mockResolvedValue({
+    // @ts-expect-error fetch is mocked locally for the test
+    fetchMock.mockResolvedValue({
       ok: true,
       json: async () => [],
     });
@@ -31,8 +32,8 @@ describe('TutorInsightCard Smoke Test', () => {
   });
 
   it('should handle fetch errors gracefully', async () => {
-    // @ts-ignore
-    (global.fetch as any).mockResolvedValue({
+    // @ts-expect-error fetch is mocked locally for the test
+    fetchMock.mockResolvedValue({
       ok: false,
       status: 500,
       json: async () => ({ error: 'Internal Server Error' }),

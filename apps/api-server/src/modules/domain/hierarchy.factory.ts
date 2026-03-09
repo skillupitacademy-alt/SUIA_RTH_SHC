@@ -80,14 +80,38 @@ export class HierarchyFactory {
       await this.handleBatchSkills(tx, _payload.batchSkills, results);
     }
 
-    // 2. Resolve Subjects
-    if (_payload.subjects !== undefined) {
+    // 2. Resolve Subjects in Batch
+    if (_payload.subjects !== undefined && _payload.subjects.length > 0) {
       const dId = results.domainId;
       if (dId === null || dId === undefined) throw new Error('Domain context required for hierarchical operations.');
+      
+      const subjectNames = _payload.subjects.map(s => s.name);
+      const existingSubjects = await tx.query.subjects.findMany({
+        where: and(eq(subjects.domainId, dId), inArray(subjects.name, subjectNames))
+      });
+      const subjectMap = new Map(existingSubjects.map(s => [s.name, s.id]));
+
+      // Identify missing subjects
+      const subjectsToInsert = _payload.subjects
+        .filter(s => (s.id === undefined || s.id === null || s.id === '') && !subjectMap.has(s.name))
+        .map(s => ({ domainId: dId, name: s.name }));
+
+      if (subjectsToInsert.length > 0) {
+        const newSubjects = await tx.insert(subjects).values(subjectsToInsert).returning();
+        newSubjects.forEach(s => {
+          subjectMap.set(s.name, s.id);
+          results.stats.subjects.added++;
+        });
+      }
+      results.stats.subjects.skipped += existingSubjects.length;
+
+      // Process subjects (nested topics will be batched inside)
       for (const s of _payload.subjects) {
-        await this.processSubject(tx, s, dId, results);
+        const subjectId = s.id ?? subjectMap.get(s.name)!;
+        await this.processSubject(tx, s, dId, subjectId, results);
       }
     }
+
 
     return results;
   }
@@ -201,25 +225,7 @@ export class HierarchyFactory {
     results.stats.skills.skipped += existingSkills.length;
   }
 
-  private static async processSubject(tx: Parameters<Parameters<typeof db.transaction>[0]>[0], s: NonNullable<AtomicHierarchyPayload['subjects']>[number], domainId: string, results: ReturnType<typeof HierarchyFactory['initResults']>) {
-    let subjectId = s.id;
-    if (subjectId === undefined || subjectId === null || subjectId === '') {
-      const existing = await tx.query.subjects.findFirst({
-        where: and(eq(subjects.domainId, domainId), eq(subjects.name, s.name)),
-      });
-      if (existing) {
-        subjectId = existing.id;
-        results.stats.subjects.skipped++;
-      } else {
-        const [newSub] = await tx.insert(subjects).values({
-          domainId,
-          name: s.name,
-        }).returning();
-        subjectId = newSub.id;
-        results.stats.subjects.added++;
-      }
-    }
-
+  private static async processSubject(tx: Parameters<Parameters<typeof db.transaction>[0]>[0], s: NonNullable<AtomicHierarchyPayload['subjects']>[number], domainId: string, subjectId: string, results: ReturnType<typeof HierarchyFactory['initResults']>) {
     const subjectResult = { 
         id: subjectId, 
         name: s.name, 
@@ -231,38 +237,62 @@ export class HierarchyFactory {
         }> 
     };
 
-    if (s.topics) {
+    if (s.topics && s.topics.length > 0) {
+      // Batch resolve topics for this subject
+      const topicNames = s.topics.map(t => t.name);
+      const existingTopics = await tx.query.topics.findMany({
+        where: and(eq(topics.subjectId, subjectId), inArray(topics.name, topicNames))
+      });
+      const topicMap = new Map(existingTopics.map(t => [t.name, t.id]));
+
+      const topicsToInsert = s.topics
+        .filter(t => (t.id === undefined || t.id === null || t.id === '') && !topicMap.has(t.name))
+        .map(t => ({ subjectId, name: t.name }));
+
+      if (topicsToInsert.length > 0) {
+        const newTopics = await tx.insert(topics).values(topicsToInsert).returning();
+        newTopics.forEach(t => {
+          topicMap.set(t.name, t.id);
+          results.stats.topics.added++;
+        });
+      }
+      results.stats.topics.skipped += existingTopics.length;
+
       for (const t of s.topics) {
-        await this.processTopic(tx, t, subjectId, results, subjectResult);
+        const topicId = t.id ?? topicMap.get(t.name)!;
+        await this.processTopic(tx, t, subjectId, topicId, results, subjectResult);
       }
     }
     results.subjects.push(subjectResult);
   }
 
-  private static async processTopic(tx: Parameters<Parameters<typeof db.transaction>[0]>[0], t: NonNullable<NonNullable<AtomicHierarchyPayload['subjects']>[number]['topics']>[number], subjectId: string, results: ReturnType<typeof HierarchyFactory['initResults']>, subjectResult: { id: string; name: string; topics: Array<{ id: string; name: string; subtopics?: Array<{ id: string; name: string }>; questions?: number }> }) {
-    let topicId = t.id;
-    if (topicId === undefined || topicId === null || topicId === '') {
-      const existing = await tx.query.topics.findFirst({
-        where: and(eq(topics.subjectId, subjectId), eq(topics.name, t.name)),
-      });
-      if (existing) {
-        topicId = existing.id;
-        results.stats.topics.skipped++;
-      } else {
-        const [newTopic] = await tx.insert(topics).values({
-          subjectId,
-          name: t.name,
-        }).returning();
-        topicId = newTopic.id;
-        results.stats.topics.added++;
-      }
-    }
-
+  private static async processTopic(tx: Parameters<Parameters<typeof db.transaction>[0]>[0], t: NonNullable<NonNullable<AtomicHierarchyPayload['subjects']>[number]['topics']>[number], subjectId: string, topicId: string, results: ReturnType<typeof HierarchyFactory['initResults']>, subjectResult: { id: string; name: string; topics: Array<{ id: string; name: string; subtopics?: Array<{ id: string; name: string }>; questions?: number }> }) {
     const topicResult = { id: topicId, name: t.name, subtopics: [] as Array<{ id: string; name: string }>, questions: 0 };
 
-    if (t.subtopics) {
+    if (t.subtopics && t.subtopics.length > 0) {
+      // Batch resolve subtopics for this topic
+      const subtopicNames = t.subtopics.map(st => st.name);
+      const existingSubtopics = await tx.query.subtopics.findMany({
+        where: and(eq(subtopics.topicId, topicId), inArray(subtopics.name, subtopicNames))
+      });
+      const subtopicMap = new Map(existingSubtopics.map(st => [st.name, st.id]));
+
+      const subtopicsToInsert = t.subtopics
+        .filter(st => (st.id === undefined || st.id === null || st.id === '') && !subtopicMap.has(st.name))
+        .map(st => ({ topicId, name: st.name }));
+
+      if (subtopicsToInsert.length > 0) {
+        const newSubtopics = await tx.insert(subtopics).values(subtopicsToInsert).returning();
+        newSubtopics.forEach(st => {
+          subtopicMap.set(st.name, st.id);
+          results.stats.subtopics.added++;
+        });
+      }
+      results.stats.subtopics.skipped += existingSubtopics.length;
+
       for (const st of t.subtopics) {
-        await this.processSubtopic(tx, st, topicId, results, topicResult);
+        const subtopicId = st.id ?? subtopicMap.get(st.name)!;
+        await this.processSubtopic(tx, st, topicId, subtopicId, results, topicResult);
       }
     }
 
@@ -274,25 +304,7 @@ export class HierarchyFactory {
     subjectResult.topics.push(topicResult);
   }
 
-  private static async processSubtopic(tx: Parameters<Parameters<typeof db.transaction>[0]>[0], st: NonNullable<NonNullable<NonNullable<AtomicHierarchyPayload['subjects']>[number]['topics']>[number]['subtopics']>[number], topicId: string, results: ReturnType<typeof HierarchyFactory['initResults']>, topicResult: { id: string; name: string; subtopics: Array<{ id: string; name: string }>, questions: number }) {
-    let subtopicId = st.id;
-    if (subtopicId === undefined || subtopicId === null || subtopicId === '') {
-      const existing = await tx.query.subtopics.findFirst({
-        where: and(eq(subtopics.topicId, topicId), eq(subtopics.name, st.name)),
-      });
-      if (existing) {
-        subtopicId = existing.id;
-        results.stats.subtopics.skipped++;
-      } else {
-        const [newSubtopic] = await tx.insert(subtopics).values({
-          topicId,
-          name: st.name,
-        }).returning();
-        subtopicId = newSubtopic.id;
-        results.stats.subtopics.added++;
-      }
-    }
-
+  private static async processSubtopic(tx: Parameters<Parameters<typeof db.transaction>[0]>[0], st: NonNullable<NonNullable<NonNullable<AtomicHierarchyPayload['subjects']>[number]['topics']>[number]['subtopics']>[number], topicId: string, subtopicId: string, results: ReturnType<typeof HierarchyFactory['initResults']>, topicResult: { id: string; name: string; subtopics: Array<{ id: string; name: string }>, questions: number }) {
     const subtopicResult = { id: subtopicId, name: st.name, questions: 0 };
 
     if (st.questions && st.questions.length > 0) {

@@ -41,10 +41,20 @@ describe('SelectionService composition mixed', () => {
         let callCount = 0;
         vi.mocked(db.select).mockImplementation(() => {
             callCount++;
-            // Mock both count(*) and selection calls
-            // For mixed, it requests 3 simple, 3 intermediate, 4 expert (for total 10)
-            // Each tier does 1 count + 1 select
-            return mockQueryBuilder(callCount % 2 === 1 ? [{ count: 1 }] : [{ id: 'q'+callCount }]);
+            if (callCount === 1) {
+                // First call: Fetch all matching IDs with difficulty
+                return mockQueryBuilder([
+                    { id: 'q1', difficulty: 'simple' },
+                    { id: 'q2', difficulty: 'intermediate' },
+                    { id: 'q3', difficulty: 'expert' }
+                ]);
+            }
+            // Second call: Fetch full objects for sampled IDs
+            return mockQueryBuilder([
+                { id: 'q1', difficulty: 'simple', questionText: 'Q1' },
+                { id: 'q2', difficulty: 'intermediate', questionText: 'Q2' },
+                { id: 'q3', difficulty: 'expert', questionText: 'Q3' }
+            ]);
         });
 
         const service = container.get(SelectionService);
@@ -52,4 +62,3 @@ describe('SelectionService composition mixed', () => {
         expect(result.questions.length).toBeGreaterThan(0);
     });
 });
-

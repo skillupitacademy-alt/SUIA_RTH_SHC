@@ -5,9 +5,9 @@ const { mockDb, mockTx } = vi.hoisted(() => {
   const tx = {
     query: {
         domains: { findFirst: vi.fn(), findMany: vi.fn() },
-        subjects: { findFirst: vi.fn() },
-        topics: { findFirst: vi.fn() },
-        subtopics: { findFirst: vi.fn() },
+        subjects: { findFirst: vi.fn(), findMany: vi.fn() },
+        topics: { findFirst: vi.fn(), findMany: vi.fn() },
+        subtopics: { findFirst: vi.fn(), findMany: vi.fn() },
         skills: { findMany: vi.fn() }
     },
     insert: vi.fn().mockReturnThis(),
@@ -67,9 +67,9 @@ describe('HierarchyFactory Batching (T94)', () => {
 
         // Setup mocks on the shared mockTx
         vi.mocked(mockTx.query.domains.findFirst).mockResolvedValue({ id: 'd1', name: 'Domain 1' } as any);
-        vi.mocked(mockTx.query.subjects.findFirst).mockResolvedValue({ id: 's1', name: 'Subject 1' } as any);
-        vi.mocked(mockTx.query.topics.findFirst).mockResolvedValue({ id: 't1', name: 'Topic 1' } as any);
-        vi.mocked(mockTx.query.subtopics.findFirst).mockResolvedValue({ id: 'st1', name: 'Subtopic 1' } as any);
+        vi.mocked(mockTx.query.subjects.findMany).mockResolvedValue([{ id: 's1', name: 'Subject 1' }] as any);
+        vi.mocked(mockTx.query.topics.findMany).mockResolvedValue([{ id: 't1', name: 'Topic 1' }] as any);
+        vi.mocked(mockTx.query.subtopics.findMany).mockResolvedValue([{ id: 'st1', name: 'Subtopic 1' }] as any);
         vi.mocked(mockTx.query.skills.findMany).mockResolvedValue([{ id: 'sk1', name: 'S1' }] as any);
         
         vi.mocked(mockTx.returning)
@@ -79,8 +79,7 @@ describe('HierarchyFactory Batching (T94)', () => {
         const results = await HierarchyFactory.atomicUpsert(payload);
 
         expect(results.questionIds).toHaveLength(2);
-        // Verify batching happen by checking how many times insert questions was called
-        // In the implementation, questions are mapped to questionValues then inserted once.
-        // We verify that tx.insert was called with the questions table.
+        // Verify batching happen by checking if returning was called (indicating inserts happened)
+        expect(mockTx.returning).toHaveBeenCalled();
     });
 });

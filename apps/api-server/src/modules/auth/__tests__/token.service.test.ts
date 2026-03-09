@@ -23,7 +23,7 @@ describe('TokenService (unit)', () => {
     const service = container.get(TokenService);
     const token = await service.generateRefreshToken('u1', false, 'user');
     expect(token).toBeDefined();
-    const decoded = await service.verifyRefreshToken(token, { audience: 'user' });
+    const decoded = await service.verifyUserRefreshToken(token);
     expect(decoded.userId).toBe('u1');
   });
 

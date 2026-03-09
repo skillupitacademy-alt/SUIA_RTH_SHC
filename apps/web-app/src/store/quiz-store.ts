@@ -13,6 +13,7 @@ type QuizStore = SessionSlice & ContentSlice & InteractionSlice & TimerSlice & {
   startQuiz: (questions: Question[], config: QuizConfig, duration: number) => void;
 };
 
+// ⚠️ ALWAYS use selectors: useStore(s => s.field), never useStore()
 export const useQuizStore = create<QuizStore>()(
   persist(
     (set, get, store) => ({

@@ -18,7 +18,7 @@ async function _verifyAdmin(_req: NextRequest) {
   const _token = container.get(TokenService).getAccessToken(_req, { scope: 'admin' });
   if (_token === null || _token === undefined || _token.trim() === '') return null;
   try {
-     const _payload = await container.get(TokenService).verifyAccessToken(_token, true);
+     const _payload = await container.get(TokenService).verifyAdminAccessToken(_token);
      return _payload;
   } catch {
      return null;

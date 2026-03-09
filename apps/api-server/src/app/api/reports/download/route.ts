@@ -44,7 +44,7 @@ async function getHandler(req: NextRequest) {
       if (!exam) throw notFound("Exam", attemptId);
       userId = exam.userId;
     } else {
-      const payload = await container.get(TokenService).verifyAccessToken(token, false);
+      const payload = await container.get(TokenService).verifyUserAccessToken(token);
       if (payload === null || payload === undefined || payload.userId === null || payload.userId === undefined) {
         throw unauthorized("Unauthorized");
       }

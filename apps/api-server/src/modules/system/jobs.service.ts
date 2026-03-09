@@ -1,12 +1,12 @@
 import { backgroundJobs, db } from '@quiz/db';
-import { CreateJobInput as CreateJobDTO, Job,JobStatus } from '@quiz/types';
-import { and, desc, eq, inArray, sql } from 'drizzle-orm';
+import { CreateJobInput as CreateJobDTO, Job, JobStatus } from '@quiz/types';
+import { and, desc, eq, inArray, lt,or, sql } from 'drizzle-orm';
 
 export interface ListJobsOptions {
   userId?: string;
   status?: JobStatus;
   limit?: number;
-  offset?: number;
+  cursor?: { createdAt: string; id: string };
 }
 
 export class JobsService {
@@ -46,12 +46,11 @@ export class JobsService {
         eq(backgroundJobs.userId, userId)
       ),
     });
-    return job;
+    return job as Job | undefined;
   }
 
-  static async listJobs(options: ListJobsOptions): Promise<{ items: Job[]; total: number }> {
+  static async listJobs(options: ListJobsOptions): Promise<{ items: Job[]; total: number; nextCursor: { createdAt: string; id: string } | null; hasNextPage: boolean }> {
     const limit = options.limit ?? 50;
-    const offset = options.offset ?? 0;
     
     const conditions = [];
     if (options.userId !== undefined) {
@@ -61,14 +60,33 @@ export class JobsService {
       conditions.push(eq(backgroundJobs.status, options.status));
     }
 
+    if (options.cursor) {
+        conditions.push(
+            or(
+                lt(backgroundJobs.createdAt, new Date(options.cursor.createdAt)),
+                and(
+                    eq(backgroundJobs.createdAt, new Date(options.cursor.createdAt)),
+                    lt(backgroundJobs.id, options.cursor.id)
+                )
+            )
+        );
+    }
+
     const where = conditions.length > 0 ? and(...conditions) : undefined;
 
     const items = await this.db.query.backgroundJobs.findMany({
       where,
-      orderBy: [desc(backgroundJobs.createdAt)],
-      limit,
-      offset,
+      orderBy: [desc(backgroundJobs.createdAt), desc(backgroundJobs.id)],
+      limit: limit + 1,
     });
+
+    const hasNextPage = items.length > limit;
+    const results = hasNextPage ? items.slice(0, limit) : items;
+
+    const nextCursor = hasNextPage && results.length > 0 ? {
+        createdAt: results[results.length - 1].createdAt.toISOString(),
+        id: results[results.length - 1].id
+    } : null;
 
     const [countResult] = await this.db
       .select({ count: sql<number>`count(*)` })
@@ -76,8 +94,10 @@ export class JobsService {
       .where(where || sql`true`);
 
     return {
-      items: items as Job[],
+      items: results as Job[],
       total: Number(countResult?.count ?? 0),
+      nextCursor,
+      hasNextPage
     };
   }
 

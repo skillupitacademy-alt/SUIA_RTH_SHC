@@ -3,13 +3,13 @@ import { StatsGrid } from '../StatsCards';
 
 describe('StatsGrid Smoke Test', () => {
   it('should not crash with undefined overview', () => {
-    // @ts-ignore
+    // @ts-expect-error intentionally passing undefined to verify resilience
     const result = StatsGrid({ overview: undefined, deltaPct: null, healthStatus: undefined });
     expect(result).toBeDefined();
   });
 
   it('should not crash with null deltaPct', () => {
-    // @ts-ignore
+    // @ts-expect-error intentionally missing optional props
     const result = StatsGrid({ 
       overview: { avgScore: 50, totalExams: 2, masteryPoints: 10, weeklyExamsCount: 1, globalRank: null },
       deltaPct: null,
@@ -19,7 +19,7 @@ describe('StatsGrid Smoke Test', () => {
   });
 
   it('should handle missing healthStatus gracefully', () => {
-    // @ts-ignore
+    // @ts-expect-error intentionally missing healthStatus
     const result = StatsGrid({ 
       overview: { avgScore: 50, totalExams: 2, masteryPoints: 10, weeklyExamsCount: 1, globalRank: null },
       deltaPct: 5,

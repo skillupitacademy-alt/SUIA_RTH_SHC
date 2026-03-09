@@ -33,6 +33,8 @@ export default function RootLayout({
 }: Readonly<{
     children: React.ReactNode;
 }>) {
+    ReactDOM.preconnect("https://fonts.googleapis.com");
+    ReactDOM.preconnect("https://fonts.gstatic.com", { crossOrigin: "" });
     ReactDOM.preconnect(process.env.NEXT_PUBLIC_API_URL || "http://localhost:3002", { crossOrigin: "use-credentials" });
 
     return (

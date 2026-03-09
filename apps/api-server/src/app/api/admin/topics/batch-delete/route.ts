@@ -23,7 +23,7 @@ async function _verifyAdmin(_req: NextRequest) {
     }
 
     try {
-        const _payload = await container.get(TokenService).verifyAccessToken(_token, true);
+        const _payload = await container.get(TokenService).verifyAdminAccessToken(_token);
         return { userId: _payload.userId };
     } catch (_error) {
         return { _error: unauthorized('Unauthorized', 'UNAUTHORIZED') };

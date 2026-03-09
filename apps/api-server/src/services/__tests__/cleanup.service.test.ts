@@ -1,39 +1,54 @@
-import { describe, expect, it, vi, beforeEach } from 'vitest';
-import { CleanupService } from '../cleanup.service';
+import { describe, it, expect, vi } from 'vitest';
 
-const { mockDb } = vi.hoisted(() => {
-  const m = {
-    delete: vi.fn().mockReturnThis(),
-    where: vi.fn().mockReturnThis(),
-    returning: vi.fn().mockResolvedValue([]),
+const dbMocks = vi.hoisted(() => {
+  const deleteReturn = (label: string) =>
+    vi.fn(() => ({
+      where: vi.fn(() => ({
+        returning: vi.fn().mockResolvedValue([{ id: `${label}-1` }]),
+      })),
+    }));
+
+  const db = {
+    delete: vi.fn(),
   } as any;
-  return { mockDb: m };
+
+  db.delete
+    .mockImplementationOnce(deleteReturn('session'))
+    .mockImplementationOnce(deleteReturn('refresh'))
+    .mockImplementationOnce(deleteReturn('revoked'))
+    .mockImplementationOnce(deleteReturn('verify'))
+    .mockImplementationOnce(deleteReturn('pwd'))
+    .mockImplementationOnce(deleteReturn('audit'))
+    .mockImplementationOnce(deleteReturn('jobs'));
+
+  return { db };
 });
 
 vi.mock('@quiz/db', () => ({
-  db: mockDb,
-  sessions: { id: 's_id', expiresAt: 's_exp' },
-  refreshTokens: { id: 'rt_id', expiresAt: 'rt_exp' },
-  revokedTokens: { id: 'rv_id', expiresAt: 'rv_exp' },
-  verificationTokens: { id: 'vt_id', expiresAt: 'vt_exp' },
-  passwordResetTokens: { id: 'pr_id', expiresAt: 'pr_exp' },
-  auditLogs: { id: 'al_id', createdAt: 'al_cat' },
-  backgroundJobs: { id: 'bj_id', createdAt: 'bj_cat', status: 'bj_st' },
+  db: dbMocks.db,
+  sessions: {} as any,
+  refreshTokens: {} as any,
+  revokedTokens: {} as any,
+  verificationTokens: {} as any,
+  passwordResetTokens: {} as any,
+  auditLogs: {} as any,
+  backgroundJobs: { status: 'status', createdAt: 'createdAt' } as any,
 }));
 
-describe('CleanupService (T96)', () => {
-    beforeEach(() => {
-        vi.clearAllMocks();
-    });
+import { CleanupService } from '../cleanup.service';
 
-    it('should execute all cleanup operations and return success', async () => {
-        // Spy on console.log/error to keep test output clean
-        vi.spyOn(console, 'log').mockImplementation(() => {});
+describe('CleanupService', () => {
+  it('returns success on happy path', async () => {
+    await expect(CleanupService.runCleanupJob()).resolves.toEqual({ success: true });
+  });
 
-        const result = await CleanupService.runCleanupJob();
+  it('propagates errors from delete operations', async () => {
+    const erroringDelete = vi.fn(() => {
+      throw new Error('boom');
+    }) as any;
+    const dbModule = await import('@quiz/db');
+    (dbModule as any).db.delete = erroringDelete;
 
-        expect(result.success).toBe(true);
-        // Verify that db.delete was called for different tables
-        expect(mockDb.delete).toHaveBeenCalledTimes(7);
-    });
+    await expect(CleanupService.runCleanupJob()).rejects.toThrow('boom');
+  });
 });

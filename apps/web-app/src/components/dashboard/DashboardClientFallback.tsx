@@ -10,33 +10,43 @@ import { cn } from "@/lib/utils";
 import { clientLogger } from "@/utils/clientLogger";
 
 import { useAuthStore } from "@/store/auth-store";
-import { useDashboardStore } from "@/store/dashboard-store";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import { ZLoader } from "@quiz/ui";
-import { TutorInsightCard } from "@/components/tutor/TutorInsightCard";
+import dynamic from "next/dynamic";
+
+const TutorInsightCard = dynamic(() => import("@/components/tutor/TutorInsightCard").then(mod => mod.TutorInsightCard), {
+    loading: () => (
+        <div className="bg-white border border-slate-200 rounded-[2rem] p-8 animate-pulse">
+            <div className="h-4 w-32 bg-slate-100 rounded mb-6" />
+            <div className="space-y-4">
+                <div className="h-20 w-full bg-slate-50 rounded-2xl" />
+                <div className="h-20 w-full bg-slate-50 rounded-2xl" />
+            </div>
+        </div>
+    ),
+    ssr: false
+});
+
+import { DashboardActivity, DashboardData, useDashboardQuery } from "@/hooks/queries/dashboard.queries";
 
 interface DashboardClientFallbackProps {
     serverUser?: { name?: string } | null;
-    serverData?: Record<string, unknown> | null;
+    serverData?: DashboardData | null;
 }
 
 export default function DashboardClientFallback({ serverUser, serverData }: DashboardClientFallbackProps) {
-    const { user: clientUser } = useAuthStore();
+    const clientUser = useAuthStore((s) => s.user);
     const router = useRouter();
-    const { data: clientData, fetchDashboard, loading } = useDashboardStore();
+
+    // Optimized: Use React Query for dashboard data
+    const { data: clientData, isLoading: loading } = useDashboardQuery('7d', 1, 3);
+
     const [isStarting, setIsStarting] = useState(false);
 
     // Use server data if available, otherwise fetch client-side
     const user = serverUser || clientUser;
-    const data = (serverData as typeof clientData) || clientData;
-
-    useEffect(() => {
-        // Only fetch client-side if server didn't provide data
-        if (!serverData) {
-            fetchDashboard('7d', 1, 3);
-        }
-    }, [fetchDashboard, serverData]);
+    const data = serverData ?? clientData;
 
     if (!data && loading) {
         return (
@@ -115,7 +125,7 @@ export default function DashboardClientFallback({ serverUser, serverData }: Dash
                                 <p className="text-sm font-medium">No exams taken yet</p>
                             </div>
                         ) : (
-                            data?.recentActivity?.map((activity) => (
+                            data?.recentActivity?.map((activity: DashboardActivity) => (
                                 <div key={activity.id} className="p-5 rounded-[1.5rem] border border-slate-200 bg-white hover:border-pink-500/30 transition-all group shadow-sm">
                                     <div className="flex items-center justify-between">
                                         <div>

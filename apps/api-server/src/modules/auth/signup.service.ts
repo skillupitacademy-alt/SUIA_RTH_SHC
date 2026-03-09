@@ -24,14 +24,17 @@ export class SignupService {
 
     const passwordHash = await this.passwordService.hash(password);
 
-    // Sequential inserts as transactions are not supported by the http driver for Neon
-    const newUser = await this.userRepo.create({
-      email,
-      passwordHash,
-      name,
-    });
+    const { db } = await import('@quiz/db');
+    const newUser = await db.transaction(async (tx) => {
+      const user = await this.userRepo.create({
+        email,
+        passwordHash,
+        name,
+      }, tx);
 
-    await this.userRepo.assignRole(newUser.id, 'USER');
+      await this.userRepo.assignRole(user.id, 'USER', tx);
+      return user;
+    });
 
     await this.auditService.log({ userId: newUser.id, action: 'signup_success', ip });
     return newUser;

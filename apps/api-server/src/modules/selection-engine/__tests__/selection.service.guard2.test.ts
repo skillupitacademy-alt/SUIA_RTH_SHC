@@ -36,7 +36,7 @@ describe('SelectionService Guard 2', () => {
         vi.clearAllMocks();
         container.reset();
         
-        vi.mocked(db.select).mockImplementation(() => mockQueryBuilder([{ count: 1 }]));
+        vi.mocked(db.select).mockImplementation(() => mockQueryBuilder([{ id: 'q1', difficulty: 'simple' }]));
         container.register(SelectionService, new SelectionService(db as any, { get: vi.fn(), set: vi.fn() } as any));
     });
 
@@ -46,6 +46,6 @@ describe('SelectionService Guard 2', () => {
         const service = container.get(SelectionService);
         const result = await service.composeExam('u1', 'none', 'key1');
         expect(result.blueprint.id).toBe('transient');
+        expect(result.questions).toHaveLength(1);
     });
 });
-

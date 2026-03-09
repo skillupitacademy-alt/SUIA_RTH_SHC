@@ -28,7 +28,7 @@ async function getHandler(_request: NextRequest) {
       const _token = container.get(TokenService).getAccessToken(_request, { scope: 'admin' });
       if (_token !== undefined && _token !== null && _token !== '') {
         try {
-          const _payload = await container.get(TokenService).verifyAccessToken(_token, true);
+          const _payload = await container.get(TokenService).verifyAdminAccessToken(_token);
           isAuthorized = await _verifyAdmin(_payload);
         } catch {
           // Ignore _token errors, authorization remains false

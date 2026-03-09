@@ -17,7 +17,7 @@ async function _verifyAdmin(_req: NextRequest) {
     if (_token === undefined || _token === null || _token === '') {
         throw unauthorized('Unauthorized', 'UNAUTHORIZED');
     }
-    return await container.get(TokenService).verifyAccessToken(_token, true);
+    return await container.get(TokenService).verifyAdminAccessToken(_token);
 }
 
 async function handler(_req: NextRequest) {

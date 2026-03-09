@@ -32,7 +32,7 @@ async function getHandler(req: NextRequest) {
       throw unauthorized("Authentication required");
     }
 
-    const payload = await container.get(TokenService).verifyAccessToken(token as string, true) as {
+    const payload = await container.get(TokenService).verifyAdminAccessToken(token as string) as {
       isAdmin?: boolean;
       roles?: string[];
     } | null;

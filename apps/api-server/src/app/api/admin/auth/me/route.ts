@@ -17,14 +17,14 @@ async function handler(_req: NextRequest) {
   try {
     const portalIdentity = _req.headers.get('x-portal-identity') ?? 'admin';
     const scope = portalIdentity === 'infrastructure' ? 'infrastructure' : 'admin';
-    const audience = portalIdentity === 'infrastructure' ? 'infra' : 'admin';
+
 
     const _token = container.get(TokenService).getAccessToken(_req, { scope });
-    if (_token === null || _token === undefined || _token.trim() === '') {
+    if (typeof _token !== 'string' || _token.trim().length === 0) {
         return ApiResponse.error(unauthorized('Unauthorized'), 401);
     }
 
-    const _payload = await container.get(TokenService).verifyAccessToken(_token, { isAdmin: true, audience });
+    const _payload = await container.get(TokenService).verifyAdminAccessToken(_token);
     const _user = await db.query.users.findFirst({
       where: eq(users.id, _payload.userId),
       with: {

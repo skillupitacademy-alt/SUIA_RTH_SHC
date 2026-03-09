@@ -36,7 +36,7 @@ async function getHandler(req: NextRequest) {
       throw unauthorized("Authentication required");
     }
 
-    const payload = await container.get(TokenService).verifyAccessToken(token, true);
+    const payload = await container.get(TokenService).verifyAdminAccessToken(token);
     const isAdmin = Array.isArray(payload.roles) && payload.roles.some(
       (role: string) => role === "ADMIN" || role === "SUPER_ADMIN"
     );

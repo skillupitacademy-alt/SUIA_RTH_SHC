@@ -7,6 +7,7 @@ import { recordCounter, recordTimer } from '@/lib/metrics';
 import { withSpan } from '@/lib/tracer';
 import { container } from '@/modules/core/container';
 import { eventBus } from '@/modules/core/event-bus';
+import { DOMAIN_EVENTS } from '@/modules/core/events';
 
 import { ExamObserver } from '../exam-engine/exam.observer';
 import { ExamStateMachine } from '../exam-engine/exam.state-machine';
@@ -135,37 +136,41 @@ export class ScoringEngine {
           accuracy: ds.accuracy,
         }));
 
-        await db.delete(resultsByDimension).where(eq(resultsByDimension.examId, examId));
+        const finalScoreResult = await db.transaction(async (tx) => {
+          await tx.delete(resultsByDimension).where(eq(resultsByDimension.examId, examId));
 
-        if (resultsData.length > 0) {
-          await db.insert(resultsByDimension).values(resultsData);
-        }
+          if (resultsData.length > 0) {
+            await tx.insert(resultsByDimension).values(resultsData);
+          }
 
-        const finalScore = strategy.calculateOverallScore(evaluatedAnswers);
+          const finalScore = strategy.calculateOverallScore(evaluatedAnswers);
 
-        // Transition Status
-        await ExamStateMachine.transition(examId, 'completed');
+          // Transition Status
+          await ExamStateMachine.transition(examId, 'completed', undefined, tx);
 
-        // Update Score & Completion Metadata
-        await db.update(exams)
-          .set({ 
-            totalScore: finalScore, 
-            completedAt: new Date()
-          })
-          .where(eq(exams.id, examId));
+          // Update Score & Completion Metadata
+          await tx.update(exams)
+            .set({ 
+              totalScore: finalScore, 
+              completedAt: new Date()
+            })
+            .where(eq(exams.id, examId));
+
+          return finalScore;
+        });
 
         // Task 62: Emit event instead of direct orchestration
-        eventBus.emit('EXAM_COMPLETED', {
+        eventBus.emitEvent(DOMAIN_EVENTS.EXAM_COMPLETED, {
             examId,
             userId: exam.userId,
-            score: finalScore
+            score: finalScoreResult
         });
 
         const durationMs = Date.now() - start;
         recordCounter(METRICS.CORE.SCORING + '.success', 1);
         recordTimer(METRICS.CORE.SCORING + '.duration', durationMs);
 
-        return finalScore;
+        return finalScoreResult;
       } catch (_error) {
         const durationMs = Date.now() - start;
         recordCounter(METRICS.CORE.SCORING + '.failure', 1, { error: _error instanceof Error ? _error.message : 'unknown' });
@@ -173,14 +178,21 @@ export class ScoringEngine {
 
         this.log.error({ examId, error: _error instanceof Error ? _error.message : 'unknown error' }, 'Scoring failed');
         
-        await db.update(exams)
-          .set({ status: 'failed' })
-          .where(eq(exams.id, examId))
-          .catch(() => null);
+        try {
+          await db.update(exams)
+            .set({ status: 'failed' })
+            .where(eq(exams.id, examId));
+        } catch (updateErr) {
+          this.log.warn({ examId, error: updateErr }, 'Could not update exam status to failed');
+        }
 
-        await ExamStateMachine.transition(examId, 'failed').catch(() => null);
+        try {
+          await ExamStateMachine.transition(examId, 'failed');
+        } catch (transErr) {
+          this.log.warn({ examId, error: transErr }, 'Could not transition exam state to failed');
+        }
         
-        eventBus.emit('EXAM_FAILED', {
+        eventBus.emitEvent(DOMAIN_EVENTS.EXAM_FAILED, {
             examId,
             userId: 'unknown',
             error: _error instanceof Error ? _error.message : 'unknown error'

@@ -37,7 +37,7 @@ async function handler(req: NextRequest) {
     if (token === null || token === undefined || token.length === 0) {
       return ApiResponse.error(unauthorized("Unauthorized"), 401);
     }
-    const payload = await container.get(TokenService).verifyAccessToken(token, true);
+    const payload = await container.get(TokenService).verifyAdminAccessToken(token);
     
     const hasAdminRole = Array.isArray(payload.roles) && payload.roles.some(
       (role: string) => role.toUpperCase() === "ADMIN" || role.toUpperCase() === "SUPER_ADMIN"

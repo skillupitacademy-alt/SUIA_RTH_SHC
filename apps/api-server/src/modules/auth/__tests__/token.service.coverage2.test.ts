@@ -55,7 +55,7 @@ describe("TokenService coverage additions", () => {
     mocks.jwtVerify
       .mockResolvedValueOnce({ payload: { aud: ["admin"], userId: "u1" } })
       .mockResolvedValueOnce({ payload: { aud: ["infra"], userId: "u2" } });
-    await expect(service.verifyAccessToken("t", true)).resolves.toMatchObject({ aud: ["admin"] });
+    await expect(service.verifyAdminAccessToken("t")).resolves.toMatchObject({ aud: ["admin"] });
   });
 
   it("verifyRefreshToken variants return payloads", async () => {
@@ -66,7 +66,7 @@ describe("TokenService coverage additions", () => {
     await expect(service.verifyAdminRefreshToken("t", { audience: "admin" })).resolves.toMatchObject({ userId: "u2" });
 
     mocks.jwtVerify.mockResolvedValue({ payload: { userId: "u3", isAdmin: false } });
-    await expect(service.verifyRefreshToken("t", { isAdmin: false, audience: "user" })).resolves.toMatchObject({ userId: "u3" });
+    await expect(service.verifyUserRefreshToken("t")).resolves.toMatchObject({ userId: "u3" });
   });
 
   it("static wrappers delegate to instance methods", async () => {

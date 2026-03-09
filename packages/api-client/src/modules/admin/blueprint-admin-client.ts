@@ -3,22 +3,23 @@ import {
   AdminBlueprint,
   AdminSuccessResponse,
   PaginatedResponse,
+  IAdminBlueprintConfigClient,
 } from '@quiz/api-client/types';
 
 type BlueprintPayload = Record<string, unknown>;
 
-export class BlueprintAdminClient {
+export class BlueprintAdminClient implements IAdminBlueprintConfigClient {
   constructor(private client: FetchClient) {}
 
   async getBlueprints(
-    page: number = 1,
+    cursor?: string | null,
     limit: number = 20,
     search?: string
   ) {
     const query = new URLSearchParams({
-      page: page.toString(),
       limit: limit.toString(),
     });
+    if (cursor != null && cursor !== '') query.append('cursor', cursor);
     if (search != null && search !== '') query.append('search', search);
 
     return this.client.get<PaginatedResponse<AdminBlueprint>>(
@@ -50,3 +51,4 @@ export class BlueprintAdminClient {
     );
   }
 }
+

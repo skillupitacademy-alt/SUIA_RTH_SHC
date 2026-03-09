@@ -1,52 +1,82 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { db, subtopics, topics } from '@quiz/db';
-import { SelectionService } from '../selection.service';
 import { container } from '../../core/container';
-
-const mockQueryBuilder = (result: any = []) => ({
-    from: vi.fn().mockReturnThis(),
-    where: vi.fn().mockReturnThis(),
-    then: (resolve: any) => Promise.resolve(result).then(resolve),
-});
+import { SelectionService } from '../selection.service';
+import { cacheService } from '../../core/cache.service';
+import { db } from '@quiz/db';
 
 vi.mock('@quiz/db', () => ({
-  STANDARD_QUERY_TIMEOUT: 15000,
-  QUICK_QUERY_TIMEOUT: 5000,
-  REPORT_QUERY_TIMEOUT: 30000,
-  MIGRATION_TIMEOUT: 120000,
-  withTimeout: vi.fn(async (promise: Promise<any>) => promise),
   db: {
     select: vi.fn(),
-    query: { examBlueprints: { findFirst: vi.fn() } }
+    transaction: vi.fn(),
+    query: {
+      examBlueprints: { findFirst: vi.fn() },
+      questions: { findMany: vi.fn() }
+    }
   },
-  subtopics: { tableName: 'subtopics', id: 'id', topicId: 'topic_id' },
-  topics: { tableName: 'topics', id: 'id', subjectId: 'subject_id' },
-  examBlueprints: { tableName: 'exam_blueprints', id: 'id' },
-  subjects: { tableName: 'subjects' },
-  questions: { tableName: 'questions' }
+  examBlueprints: { id: 'id', totalQuestions: 'totalQuestions' },
+  questions: { id: 'id', difficulty: 'difficulty', status: 'status', subtopicId: 'subtopicId', topicId: 'topicId' },
+  topics: { id: 'id', subjectId: 'subjectId' },
+  subtopics: { id: 'id', topicId: 'topicId' },
+  subjects: { id: 'id', domainId: 'domainId' },
+  STANDARD_QUERY_TIMEOUT: 1000,
+  withTimeout: vi.fn((p) => p),
+  and: vi.fn(),
+  or: vi.fn(),
+  eq: vi.fn(),
+  inArray: vi.fn(),
+  asc: vi.fn(),
+  sql: vi.fn()
 }));
 
-describe('SelectionService Rules', () => {
+vi.mock('../core/cache.service', () => ({
+  cacheService: {
+    get: vi.fn(),
+    set: vi.fn()
+  }
+}));
+
+describe('SelectionService Rules verification', () => {
+    let service: SelectionService;
+
     beforeEach(() => {
         vi.clearAllMocks();
-        container.reset();
-        container.register(SelectionService, new SelectionService(db as any, { get: vi.fn(), set: vi.fn() } as any));
+        service = new SelectionService();
     });
 
-  it('applies depth-based rules for subtopics (Line 181+)', async () => {
-    const service = container.get(SelectionService);
-    vi.mocked(db.query.examBlueprints.findFirst).mockResolvedValue({ id: 'bp1' } as any);
-    
-    const selectQueue = [
-        mockQueryBuilder([{ topicId: 't1' }]), // subtopics parent check
-        mockQueryBuilder([]),                 // topics parent check
-    ];
-    vi.mocked(db.select).mockImplementation(() => selectQueue.shift() as any);
+    it('applies Simple difficulty for Topic-level selection', async () => {
+        const blueprint = { id: 'b1', totalQuestions: 10, subjects: [], topics: [], subtopics: [] };
+        
+        // Mock resolveBlueprint
+        vi.mocked(db.query.examBlueprints.findFirst).mockResolvedValue(blueprint as any);
+        
+        // Mock parents selects (empty for Topic)
+        vi.mocked(db.select).mockReturnValue({
+            from: vi.fn().mockReturnThis(),
+            where: vi.fn().mockReturnThis(),
+            then: vi.fn().mockImplementation((resolve) => resolve([]))
+        } as any);
 
-    // Mock resolveSelectionCriteria internals indirectly by verifying the output criteria properties
-    // In this test we just want to ensure it doesn't crash and returns expected count
-    // The actual logic is tested via composition or private method exposure if needed.
-    // For now we use composeExam to trigger the path.
-  });
+        const config = { topicIds: ['t1'] };
+        const criteria = await (service as any).resolveSelectionCriteria('d1', config, blueprint);
+        
+        expect(criteria.difficultyPref).toBe('simple');
+        expect(criteria.requestedTotal).toBe(10);
+    });
+
+    it('applies Mixed difficulty for Subtopic-level selection', async () => {
+        const blueprint = { id: 'b1', totalQuestions: 10, subjects: [], topics: [], subtopics: [] };
+        vi.mocked(db.query.examBlueprints.findFirst).mockResolvedValue(blueprint as any);
+        
+        vi.mocked(db.select).mockReturnValue({
+            from: vi.fn().mockReturnThis(),
+            where: vi.fn().mockReturnThis(),
+            then: vi.fn().mockImplementation((resolve) => resolve([{ topicId: 't1' }]))
+        } as any);
+
+        const config = { subtopicIds: ['st1'] };
+        const criteria = await (service as any).resolveSelectionCriteria('d1', config, blueprint);
+        
+        expect(criteria.difficultyPref).toBe('mixed');
+        expect(criteria.requestedTotal).toBe(10);
+    });
 });
-

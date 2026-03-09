@@ -25,7 +25,7 @@ async function getHandler(_req: NextRequest) {
       return ApiResponse.error(badRequest('Unauthorized', 'UNAUTHORIZED'));
     }
 
-    const _payload = await container.get(TokenService).verifyAccessToken(_token, true);
+    const _payload = await container.get(TokenService).verifyAdminAccessToken(_token);
 
     if (!(await _verifyAdmin(_payload))) {
         log.warn({ userId: _payload.userId }, 'ADMIN_QUESTIONS forbidden (missing admin role)');
@@ -77,7 +77,7 @@ async function postHandler(_req: NextRequest) {
     if (_token === null || _token === undefined || _token.trim() === '') {
       return ApiResponse.error(badRequest('Unauthorized', 'UNAUTHORIZED'));
     }
-    const _payload = await container.get(TokenService).verifyAccessToken(_token, true);
+    const _payload = await container.get(TokenService).verifyAdminAccessToken(_token);
 
     const rawBody = await _req.json();
 

@@ -54,7 +54,7 @@ describe('TokenService remaining branch tails', () => {
       aud: 'other',
     });
 
-    await expect(service.verifyAccessToken(token, { isAdmin: true })).rejects.toThrow('Audience violation');
+    await expect(service.verifyAdminAccessToken(token)).rejects.toThrow('Audience violation');
   });
 
   it('accepts required audience when token audience is a matching array', async () => {
@@ -74,7 +74,7 @@ describe('TokenService remaining branch tails', () => {
       .setExpirationTime('15m')
       .sign((TokenService as any).ADMIN_SECRET);
 
-    await expect(service.verifyAccessToken(token, { audience: 'admin', isAdmin: true })).resolves.toMatchObject({
+    await expect(service.verifyAdminAccessToken(token)).resolves.toMatchObject({
       userId: 'u2',
     });
   });

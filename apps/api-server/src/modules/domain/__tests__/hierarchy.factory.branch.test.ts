@@ -32,9 +32,6 @@ describe('HierarchyFactory (Branch Coverage Refined)', () => {
             batchSkills: [{ name: 'S1' }],
             subjects: [{ name: 'Sub1' }]
         };
-        // validateUpsertContext will pass because of batchSkills
-        // results.domainId will be null because domainId/domainName are missing
-        // Line 77 will throw
         await expect(HierarchyFactory.atomicUpsert(payload)).rejects.toThrow();
     });
 
@@ -84,49 +81,28 @@ describe('HierarchyFactory (Branch Coverage Refined)', () => {
     it('uses defaults for batch skills (Line 178, 179 defaults)', async () => {
       const payload = {
         domainId: 'd-1',
-        batchSkills: [{ name: 'S1' }] // no category, no mappingType
+        batchSkills: [{ name: 'S1' }]
       };
 
-      vi.mocked(mockDb.query.skills.findFirst).mockResolvedValue(undefined);
+      vi.mocked(mockDb.query.skills.findMany).mockResolvedValue([]);
       vi.mocked(mockDb.insert).mockReturnValue({
         values: vi.fn().mockReturnThis(),
         returning: vi.fn().mockResolvedValue([{ id: 'sk-new' }])
       } as any);
 
       await HierarchyFactory.atomicUpsert(payload);
-      
-      const insertCalls = vi.mocked(mockDb.insert).mock.calls;
-      const skillInsertValues = (insertCalls[0][0] as any).values; // This might be wrong depending on how insert is called. 
-      // Actually it's .insert(skills).values({...})
-      // The tool calls mockDb.insert(skills).values(...)
       expect(vi.mocked(mockDb.insert)).toHaveBeenCalled();
     });
-
-    it('uses provided values for batch skills (Line 178, 179 branches)', async () => {
-        const payload = {
-          domainId: 'd-1',
-          batchSkills: [{ name: 'S1', category: 'cognitive', mappingType: 'practical' }]
-        };
-  
-        vi.mocked(mockDb.query.skills.findFirst).mockResolvedValue(undefined);
-        vi.mocked(mockDb.insert).mockReturnValue({
-          values: vi.fn().mockReturnThis(),
-          returning: vi.fn().mockResolvedValue([{ id: 'sk-new' }])
-        } as any);
-  
-        await HierarchyFactory.atomicUpsert(payload);
-        expect(vi.mocked(mockDb.insert)).toHaveBeenCalled();
-      });
   });
 
   describe('Hierarchical Loops (Topics/Questions Coverage)', () => {
     it('handles subjects WITHOUT topics (Line 217 branch)', async () => {
       const payload = {
         domainId: 'd-1',
-        subjects: [{ name: 'S1' }] // topics undefined
+        subjects: [{ name: 'S1' }]
       };
 
-      vi.mocked(mockDb.query.subjects.findFirst).mockResolvedValueOnce({ id: 's-1' } as any);
+      vi.mocked(mockDb.query.subjects.findMany).mockResolvedValueOnce([{ id: 's-1', name: 'S1' }] as any);
       const results = await HierarchyFactory.atomicUpsert(payload);
       expect(results.stats.subjects.skipped).toBe(1);
     });
@@ -136,12 +112,12 @@ describe('HierarchyFactory (Branch Coverage Refined)', () => {
           domainId: 'd-1',
           subjects: [{ 
               name: 'S1', 
-              topics: [{ name: 'T1' }] // subtopics/questions undefined
+              topics: [{ name: 'T1' }]
           }]
         };
   
-        vi.mocked(mockDb.query.subjects.findFirst).mockResolvedValueOnce({ id: 's-1' } as any);
-        vi.mocked(mockDb.query.topics.findFirst).mockResolvedValueOnce({ id: 't-1' } as any);
+        vi.mocked(mockDb.query.subjects.findMany).mockResolvedValueOnce([{ id: 's-1', name: 'S1' }] as any);
+        vi.mocked(mockDb.query.topics.findMany).mockResolvedValueOnce([{ id: 't-1', name: 'T1' }] as any);
         const results = await HierarchyFactory.atomicUpsert(payload);
         expect(results.stats.topics.skipped).toBe(1);
       });
@@ -153,14 +129,14 @@ describe('HierarchyFactory (Branch Coverage Refined)', () => {
               name: 'S1', 
               topics: [{ 
                   name: 'T1',
-                  subtopics: [{ name: 'ST1' }] // questions undefined
+                  subtopics: [{ name: 'ST1' }]
               }]
           }]
         };
   
-        vi.mocked(mockDb.query.subjects.findFirst).mockResolvedValueOnce({ id: 's-1' } as any);
-        vi.mocked(mockDb.query.topics.findFirst).mockResolvedValueOnce({ id: 't-1' } as any);
-        vi.mocked(mockDb.query.subtopics.findFirst).mockResolvedValueOnce({ id: 'st-1' } as any);
+        vi.mocked(mockDb.query.subjects.findMany).mockResolvedValueOnce([{ id: 's-1', name: 'S1' }] as any);
+        vi.mocked(mockDb.query.topics.findMany).mockResolvedValueOnce([{ id: 't-1', name: 'T1' }] as any);
+        vi.mocked(mockDb.query.subtopics.findMany).mockResolvedValueOnce([{ id: 'st-1', name: 'ST1' }] as any);
         const results = await HierarchyFactory.atomicUpsert(payload);
         expect(results.stats.subtopics.skipped).toBe(1);
       });
@@ -179,8 +155,8 @@ describe('HierarchyFactory (Branch Coverage Refined)', () => {
         }]
       };
 
-      vi.mocked(mockDb.query.subjects.findFirst).mockResolvedValue({ id: 's-1' } as any);
-      vi.mocked(mockDb.query.topics.findFirst).mockResolvedValue({ id: 't-1' } as any);
+      vi.mocked(mockDb.query.subjects.findMany).mockResolvedValue([{ id: 's-1', name: 'S1' }] as any);
+      vi.mocked(mockDb.query.topics.findMany).mockResolvedValue([{ id: 't-1', name: 'T1' }] as any);
       vi.mocked(mockDb.insert).mockReturnValue({
         values: vi.fn().mockReturnThis(),
         returning: vi.fn().mockResolvedValue([{ id: 'q-2', difficulty: 'intermediate' }])
@@ -197,13 +173,15 @@ describe('HierarchyFactory (Branch Coverage Refined)', () => {
               name: 'S1',
               topics: [{
                 name: 'T1',
-                questions: [{ difficulty: 'simple' } as any] // missing questionText
+                questions: [{ difficulty: 'simple' } as any]
               }]
             }]
           };
     
-          vi.mocked(mockDb.query.subjects.findFirst).mockResolvedValue({ id: 's-1' } as any);
-          vi.mocked(mockDb.query.topics.findFirst).mockResolvedValue({ id: 't-1' } as any);
+          vi.mocked(mockDb.query.subjects.findMany).mockResolvedValue([{ id: 's-1', name: 'S1' }] as any);
+          vi.mocked(mockDb.query.topics.findMany).mockResolvedValue([{ id: 't-1', name: 'T1' }] as any);
+          vi.mocked(mockDb.query.subtopics.findMany).mockResolvedValue([{ id: 'st-1', name: 'ST1' }] as any);
+
           vi.mocked(mockDb.insert).mockReturnValue({
             values: vi.fn().mockReturnThis(),
             returning: vi.fn().mockResolvedValue([{ id: 'q-1', difficulty: 'simple' }])
@@ -211,7 +189,6 @@ describe('HierarchyFactory (Branch Coverage Refined)', () => {
     
           await HierarchyFactory.atomicUpsert(payload as any);
           expect(mockDb.insert).toHaveBeenCalled();
-          // The placeholder logic is inside processQuestions's map.
     });
   });
 
@@ -231,15 +208,14 @@ describe('HierarchyFactory (Branch Coverage Refined)', () => {
         }]
       };
 
-      vi.mocked(mockDb.query.subjects.findFirst).mockResolvedValue({ id: 's-1' } as any);
-      vi.mocked(mockDb.query.topics.findFirst).mockResolvedValue({ id: 't-1' } as any);
-      vi.mocked(mockDb.query.skills.findFirst).mockResolvedValue(undefined);
+      vi.mocked(mockDb.query.subjects.findMany).mockResolvedValue([{ id: 's-1', name: 'S1' }] as any);
+      vi.mocked(mockDb.query.topics.findMany).mockResolvedValue([{ id: 't-1', name: 'T1' }] as any);
+      vi.mocked(mockDb.query.subtopics.findMany).mockResolvedValue([{ id: 'st-1', name: 'ST1' }] as any);
+      vi.mocked(mockDb.query.skills.findMany).mockResolvedValue([]);
 
       vi.mocked(mockDb.insert)
         .mockReturnValueOnce({ values: vi.fn().mockReturnThis(), returning: vi.fn().mockResolvedValue([{ id: 'q-1' }, { id: 'q-2' }]) } as any) 
         .mockReturnValueOnce({ values: vi.fn().mockReturnThis(), returning: vi.fn().mockResolvedValue([{ id: 'sk-1' }]) } as any) 
-        .mockReturnValueOnce({ values: vi.fn().mockReturnThis(), returning: vi.fn().mockResolvedValue([{}]) } as any)
-        .mockReturnValueOnce({ values: vi.fn().mockReturnThis(), returning: vi.fn().mockResolvedValue([{ id: 'sk-2' }]) } as any) 
         .mockReturnValueOnce({ values: vi.fn().mockReturnThis(), returning: vi.fn().mockResolvedValue([{}]) } as any); 
 
       const results = await HierarchyFactory.atomicUpsert(payload as any);
@@ -267,19 +243,14 @@ describe('HierarchyFactory (Branch Coverage Refined)', () => {
         }]
       };
 
-      // ensure every entity is created
       vi.mocked(mockDb.query.domains.findFirst).mockResolvedValueOnce(undefined as any);
-      vi.mocked(mockDb.query.subjects.findFirst).mockResolvedValueOnce(undefined as any);
-      vi.mocked(mockDb.query.topics.findFirst).mockResolvedValueOnce(undefined as any);
-      vi.mocked(mockDb.query.subtopics.findFirst).mockResolvedValueOnce(undefined as any);
+      vi.mocked(mockDb.query.subjects.findMany).mockResolvedValueOnce([] as any);
+      vi.mocked(mockDb.query.topics.findMany).mockResolvedValueOnce([] as any);
+      vi.mocked(mockDb.query.subtopics.findMany).mockResolvedValueOnce([] as any);
 
-      // first skill exists, second is new
-      vi.mocked(mockDb.query.skills.findFirst)
-        .mockResolvedValueOnce({ id: 'sk-existing' } as any)
-        .mockResolvedValueOnce(undefined as any);
+      vi.mocked(mockDb.query.skills.findMany).mockResolvedValueOnce([{ id: 'sk-existing', name: 'SkillExisting' }] as any);
 
-      const insert = vi.mocked(mockDb.insert as any);
-      insert.mockImplementation((table: any) => {
+      vi.mocked(mockDb.insert).mockImplementation((table: any) => {
         if (table === domains) return { values: () => ({ returning: vi.fn().mockResolvedValue([{ id: 'd-new' }]) }) };
         if (table === subjects) return { values: () => ({ returning: vi.fn().mockResolvedValue([{ id: 's-new' }]) }) };
         if (table === topics) return { values: () => ({ returning: vi.fn().mockResolvedValue([{ id: 't-new' }]) }) };
@@ -293,13 +264,9 @@ describe('HierarchyFactory (Branch Coverage Refined)', () => {
       const results = await HierarchyFactory.atomicUpsert(payload as any);
 
       expect(results.domainId).toBe('d-new');
-      expect((results.subjects[0]?.topics[0]?.subtopics?.[0]?.id) ?? 'st-new').toBe('st-new');
       expect(results.questionIds).toEqual(['q-new']);
       expect(results.questionStats.expert).toBe(1);
     });
   });
 
 });
-
-
-

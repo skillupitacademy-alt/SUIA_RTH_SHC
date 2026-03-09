@@ -92,7 +92,7 @@ describe('Auth & Security branch coverage', () => {
     it('TokenService.verifyAccessToken audience violation (Line 129)', async () => {
         vi.mocked(jwtVerify).mockResolvedValue({ payload: { aud: 'unknown' } } as any);
         const service = container.get(TokenService);
-        await expect(service.verifyAccessToken('token', { isAdmin: true })).rejects.toThrow(/Audience violation/);
+        await expect(service.verifyAdminAccessToken('token')).rejects.toThrow(/Audience violation/);
     });
 
     it('TokenService.getExpiration null branch (Lines 177, 179)', () => {

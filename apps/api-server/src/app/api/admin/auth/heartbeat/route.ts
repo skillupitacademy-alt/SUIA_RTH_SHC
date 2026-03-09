@@ -18,7 +18,7 @@ async function handler(_req: NextRequest) {
     const _token = container.get(TokenService).getAccessToken(_req, { scope: 'admin' });
     if (_token === null || _token === undefined || _token.trim() === '') return ApiResponse.error(unauthorized('Unauthorized Admin'), 401);
 
-    const _payload = await container.get(TokenService).verifyAccessToken(_token, true);
+    const _payload = await container.get(TokenService).verifyAdminAccessToken(_token);
     
     await db.update(users)
       .set({ lastActiveAt: new Date() })

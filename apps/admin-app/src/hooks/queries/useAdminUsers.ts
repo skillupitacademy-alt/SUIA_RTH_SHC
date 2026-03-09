@@ -13,7 +13,7 @@ export function useAdminUsers(filters: AdminUserFilters = {}) {
     queryKey: ['admin-users', filters],
     queryFn: async () => {
       apiClient.client.setPortalIdentity('admin');
-      return apiClient.admin.users.getUsers(filters.page, filters.limit, 'active', filters);
+      return apiClient.admin.users.getUsers(filters.page?.toString(), filters.limit, 'active', filters);
     },
     staleTime: 1000 * 60 * 5, // 5 minutes
   });

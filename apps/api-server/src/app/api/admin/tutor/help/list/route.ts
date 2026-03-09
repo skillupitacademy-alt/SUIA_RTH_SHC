@@ -20,7 +20,7 @@ async function getHandler(req: NextRequest) {
     if (token === null || token === undefined || token === "") {
       throw unauthorized("Unauthorized");
     }
-    const payload = await container.get(TokenService).verifyAccessToken(token, true);
+    const payload = await container.get(TokenService).verifyAdminAccessToken(token);
     if (payload === null || payload === undefined) {
       throw unauthorized("Authentication required");
     }
@@ -86,7 +86,7 @@ async function patchHandler(req: NextRequest) {
     if (token === null || token === undefined || token === "") {
       throw unauthorized("Unauthorized");
     }
-    const payload = await container.get(TokenService).verifyAccessToken(token, true);
+    const payload = await container.get(TokenService).verifyAdminAccessToken(token);
     if (payload === null || payload === undefined) {
       throw unauthorized("Authentication required");
     }

@@ -1,85 +1,121 @@
+/**
+ * Formal Exam State Machine
+ * Centralises all lifecycle transitions for exam sessions.
+ * No other code should directly mutate exam.status — use this machine.
+ */
+
 import { db, exams } from '@quiz/db';
 import { eq } from 'drizzle-orm';
 
-import { logger } from '@/lib/logger';
-import { withSpan } from '@/lib/tracer';
+export type ExamStatus =
+  | 'pending'
+  | 'started'
+  | 'processing'
+  | 'completed'
+  | 'failed'
+  | 'abandoned'
+  | 'expired';
 
-export type ExamStatus = 'started' | 'processing' | 'completed' | 'failed' | 'abandoned';
-
-const VALID_TRANSITIONS: Record<ExamStatus, ExamStatus[]> = {
-  // Allow direct terminal transitions for sync scoring/test paths.
-  'started': ['processing', 'completed', 'failed', 'abandoned'],
-  'processing': ['completed', 'failed'],
-  'completed': [], // Terminal
-  'failed': ['processing'], // Retry scoring
-  'abandoned': [], // Terminal
+/** All legal state transitions: from → allowed targets */
+const TRANSITIONS: Record<ExamStatus, ExamStatus[]> = {
+  pending:     ['started', 'failed'],
+  started:     ['processing', 'failed', 'abandoned', 'expired'],
+  processing:  ['completed', 'failed'],
+  completed:   [],           // terminal
+  failed:      [],           // terminal
+  abandoned:   [],           // terminal
+  expired:     [],           // terminal
 };
 
 export class ExamStateMachine {
-  private static log = logger.child({ module: 'exam-engine:state-machine' });
+  private status: ExamStatus;
 
-  /**
-   * Transitions an exam to a new status with validation.
-   */
-  static async transition(examId: string, targetStatus: ExamStatus, userId?: string) {
-    return withSpan('ExamStateMachine.transition', async (span) => {
-      span.setAttribute('examId', examId);
-      span.setAttribute('targetStatus', targetStatus);
+  constructor(currentStatus: ExamStatus) {
+    this.status = currentStatus;
+  }
 
-      const findFirst = db.query?.exams?.findFirst;
-    if (typeof findFirst !== 'function') {
-      this.log.warn({ examId, to: targetStatus }, 'Skipping transition: exams query mock is unavailable');
-      return;
-    }
+  /** Returns the current exam status */
+  getStatus(): ExamStatus {
+    return this.status;
+  }
 
-    const exam = await findFirst({
-      where: eq(exams.id, examId),
-      columns: { id: true, status: true, userId: true }
-    });
-
-    if (!exam) throw new Error(`Exam ${examId} not found`);
-    if (userId !== undefined && userId !== null && userId !== '' && exam.userId !== userId) {
-      throw new Error('Unauthorized state transition');
-    }
-
-    const currentStatus = exam.status as ExamStatus;
-    const allowedTransitions = VALID_TRANSITIONS[currentStatus];
-    if (allowedTransitions === undefined) {
-      this.log.warn({ examId, from: exam.status, to: targetStatus }, 'Unknown current status, skipping transition validation');
-      return;
-    }
-
-    // Check if transition is allowed
-    if (!allowedTransitions.includes(targetStatus)) {
-        this.log.warn({ examId, from: currentStatus, to: targetStatus }, 'Invalid status transition attempted');
-        
-        // If already in target status, ignore (idempotency)
-        if (currentStatus === targetStatus) return;
-        
-        throw new Error(`Invalid transition: ${currentStatus} -> ${targetStatus}`);
-    }
-
-    this.log.info({ examId, from: currentStatus, to: targetStatus }, 'Applying state transition');
-
-    await db.update(exams)
-      .set({ 
-        status: targetStatus
-      })
-      .where(eq(exams.id, examId));
-    });
+  /** Returns true if transitioning from current status to `next` is legal */
+  canTransition(next: ExamStatus): boolean {
+    return TRANSITIONS[this.status].includes(next);
   }
 
   /**
-   * Convenience check for active sessions
+   * Internal pure transition check.
+   * Throws ExamTransitionError if the transition is illegal.
    */
-  static isActive(status: string): boolean {
-    return status === 'started';
+  assertTransition(next: ExamStatus): void {
+    if (!this.canTransition(next)) {
+      throw new ExamTransitionError(
+        `Invalid exam transition: ${this.status} → ${next}`
+      );
+    }
   }
 
   /**
-   * Convenience check for terminal states
+   * Convenience: is the exam in a terminal (non-modifiable) state?
    */
-  static isTerminal(status: string): boolean {
-    return ['completed', 'abandoned'].includes(status);
+  isTerminal(): boolean {
+    return TRANSITIONS[this.status].length === 0;
+  }
+
+  /** Static factory — creates machine from a raw status string (e.g. from DB) */
+  static from(rawStatus: string): ExamStateMachine {
+    return new ExamStateMachine(rawStatus as ExamStatus);
+  }
+
+  /**
+   * Performs a transition in the database.
+   * Validates the transition before saving.
+   *
+   * @param examId The exam ID
+   * @param nextStatus The target status
+   * @param updatedBy Optional userId triggering the transition (for audit)
+   * @param tx Optional transaction block to run the update within
+   */
+  static async transition(
+    examId: string,
+    nextStatus: ExamStatus,
+    updatedBy?: string,
+    tx?: Pick<typeof db, 'query' | 'update'>
+  ): Promise<ExamStatus> {
+    const client = tx ?? db;
+    
+    // Fetch current state
+    const exam = await client.query.exams.findFirst({
+        where: eq(exams.id, examId),
+        columns: { status: true }
+    }) as { status: ExamStatus } | undefined;
+
+    if (exam === undefined) {
+        throw new Error(`Cannot transition missing exam ${examId}`);
+    }
+
+    const machine = ExamStateMachine.from(exam.status);
+    machine.assertTransition(nextStatus);
+
+    // Persist only statuses supported by the DB enum
+    if (nextStatus === 'pending' || nextStatus === 'expired') {
+      throw new ExamTransitionError(`Status ${nextStatus} cannot be persisted`);
+    }
+
+    // Update state
+    await client.update(exams)
+        .set({ status: nextStatus })
+        .where(eq(exams.id, examId));
+
+    return nextStatus;
+  }
+}
+
+export class ExamTransitionError extends Error {
+  readonly code = 'INVALID_EXAM_TRANSITION';
+  constructor(message: string) {
+    super(message);
+    this.name = 'ExamTransitionError';
   }
 }

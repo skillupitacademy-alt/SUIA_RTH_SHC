@@ -1,15 +1,17 @@
 'use client';
 
-import ScoreHistoryChart from "@/components/charts/ScoreHistoryChart";
-import MasteryTrendChart from "@/components/charts/MasteryTrendChart";
-import TopicPerformanceHeatmap from "@/components/charts/TopicPerformanceHeatmap";
-import WeaknessTreeChart from "@/components/charts/WeaknessTreeChart";
-import PersonalTimeBoxplot from "@/components/charts/PersonalTimeBoxplot";
-import PersonalDifficultySplit from "@/components/charts/PersonalDifficultySplit";
 import { useDashboardStore } from "@/store/dashboard-store";
 import { useState, useCallback, useEffect } from "react";
 import { ZLoader } from "@quiz/ui";
 import { Telescope } from "lucide-react";
+import dynamic from "next/dynamic";
+
+const ScoreHistoryChart = dynamic(() => import("@/components/charts/ScoreHistoryChart"), { loading: () => <div className="h-64 w-full bg-slate-50 animate-pulse rounded-[2.5rem]" />, ssr: false });
+const MasteryTrendChart = dynamic(() => import("@/components/charts/MasteryTrendChart"), { loading: () => <div className="h-64 w-full bg-slate-50 animate-pulse rounded-[2.5rem]" />, ssr: false });
+const TopicPerformanceHeatmap = dynamic(() => import("@/components/charts/TopicPerformanceHeatmap"), { loading: () => <div className="h-64 w-full bg-slate-50 animate-pulse rounded-[2.5rem]" />, ssr: false });
+const WeaknessTreeChart = dynamic(() => import("@/components/charts/WeaknessTreeChart"), { loading: () => <div className="h-64 w-full bg-slate-50 animate-pulse rounded-[2.5rem]" />, ssr: false });
+const PersonalTimeBoxplot = dynamic(() => import("@/components/charts/PersonalTimeBoxplot"), { loading: () => <div className="h-64 w-full bg-slate-50 animate-pulse rounded-[2.5rem]" />, ssr: false });
+const PersonalDifficultySplit = dynamic(() => import("@/components/charts/PersonalDifficultySplit"), { loading: () => <div className="h-64 w-full bg-slate-50 animate-pulse rounded-[2.5rem]" />, ssr: false });
 import { InsightGuideCard } from "@/components/insights/InsightGuideCard";
 import { ScoreHistoryResponse, MasteryTrendResponse, TutorInsight } from "@quiz/api-client";
 import {

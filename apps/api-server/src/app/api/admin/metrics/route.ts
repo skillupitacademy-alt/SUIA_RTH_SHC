@@ -17,7 +17,7 @@ async function handler(_req: NextRequest) {
     const _token = container.get(TokenService).getAccessToken(_req, { scope: 'admin' });
     if (_token === null || _token === undefined || _token.trim() === '') return ApiResponse.error(unauthorized('Unauthorized'), 401);
 
-    await container.get(TokenService).verifyAccessToken(_token, true); // true for isAdmin check
+    await container.get(TokenService).verifyAdminAccessToken(_token); // true for isAdmin check
     
     const metrics = await AdminAnalyticsEngine.getPlatformMetrics();
     

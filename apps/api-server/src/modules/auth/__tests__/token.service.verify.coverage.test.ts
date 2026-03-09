@@ -19,7 +19,7 @@ describe('TokenService verification branches', () => {
   it('enforces explicit audience mismatch branch', async () => {
     vi.mocked(jose.jwtVerify).mockResolvedValue({ payload: { aud: 'weird' } } as any);
     const service = new TokenService();
-    await expect(service.verifyAccessToken('tok', { audience: 'infra' })).rejects.toThrow(
+    await expect(service.verifyInfraAccessToken('tok')).rejects.toThrow(
       'Audience mismatch: expected infra, got weird',
     );
   });
@@ -27,7 +27,7 @@ describe('TokenService verification branches', () => {
   it('hits admin-scope audience violation branch for unknown audience', async () => {
     vi.mocked(jose.jwtVerify).mockResolvedValue({ payload: { aud: ['partner'] } } as any);
     const service = new TokenService();
-    await expect(service.verifyAccessToken('tok', true)).rejects.toThrow(
+    await expect(service.verifyAdminAccessToken('tok')).rejects.toThrow(
       'Audience violation: admin scope received unexpected aud partner',
     );
   });
@@ -52,13 +52,13 @@ describe('TokenService verification branches', () => {
   it('rejects explicit audience when token has no aud claim', async () => {
     vi.mocked(jose.jwtVerify).mockResolvedValue({ payload: {} } as any);
     const service = new TokenService();
-    await expect(service.verifyAccessToken('tok', { audience: 'user' })).rejects.toThrow('Audience mismatch');
+    await expect(service.verifyUserAccessToken('tok')).rejects.toThrow('Audience mismatch');
   });
 
   it('accepts admin verification when no audience exists and enforcement is off', async () => {
     vi.mocked(jose.jwtVerify).mockResolvedValue({ payload: { userId: 'admin1' } } as any);
     const service = new TokenService();
-    await expect(service.verifyAccessToken('tok', true)).resolves.toMatchObject({ userId: 'admin1' });
+    await expect(service.verifyAdminAccessToken('tok')).resolves.toMatchObject({ userId: 'admin1' });
   });
 
   it('getExpiration returns null when exp missing or decode throws', () => {

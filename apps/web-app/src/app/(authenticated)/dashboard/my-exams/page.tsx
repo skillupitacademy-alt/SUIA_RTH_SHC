@@ -5,8 +5,17 @@ import { recordCounter } from "@quiz/observability";
 import { useEffect, useState } from "react";
 import { BookOpen, Calendar, ArrowRight, ChevronLeft, Clock, Layers, Hash, BookOpen as BookIcon, Filter, List, TrendingUp, BarChart2 } from "lucide-react";
 import Link from "next/link";
-import { ProgressChart } from "@/components/dashboard/ProgressChart";
-import { StackedBarBreakdown } from "@/components/dashboard/StackedBarBreakdown";
+import dynamic from "next/dynamic";
+
+const ProgressChart = dynamic(() => import("@/components/dashboard/ProgressChart").then(mod => mod.ProgressChart), {
+    loading: () => <div className="h-full w-full bg-slate-50 animate-pulse rounded-[2rem]" />,
+    ssr: false
+});
+
+const StackedBarBreakdown = dynamic(() => import("@/components/dashboard/StackedBarBreakdown").then(mod => mod.StackedBarBreakdown), {
+    loading: () => <div className="h-full w-full bg-slate-50 animate-pulse rounded-[2rem]" />,
+    ssr: false
+});
 import { cn } from "@/lib/utils";
 import { SelectField, ZLoader, ZPagination } from '@quiz/ui';
 

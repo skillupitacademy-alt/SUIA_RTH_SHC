@@ -12,6 +12,6 @@ describe('TokenService enforce audience (line 133)', () => {
     jwtVerifyMock.mockResolvedValue({ payload: { aud: 'user', userId: 'u', email: 'e' } });
     const { TokenService } = await import('../token.service');
     const service = new TokenService();
-    await expect(service.verifyAccessToken('tok', { audience: 'infra' })).rejects.toThrow(/Audience mismatch/);
+    await expect(service.verifyInfraAccessToken('tok')).rejects.toThrow(/Audience mismatch/);
   });
 });

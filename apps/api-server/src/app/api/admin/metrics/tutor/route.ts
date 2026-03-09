@@ -19,7 +19,7 @@ async function handler(req: NextRequest) {
     if (typeof token !== "string" || token.trim().length === 0) {
       return ApiResponse.error(unauthorized("Unauthorized"), 401);
     }
-    await container.get(TokenService).verifyAccessToken(token, true);
+    await container.get(TokenService).verifyAdminAccessToken(token);
 
     const [notesDemand, emailHealth, weakTopics, helpRequests] = await Promise.all([
       db.execute(sql`

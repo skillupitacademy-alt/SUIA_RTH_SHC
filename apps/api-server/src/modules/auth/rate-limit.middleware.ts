@@ -38,23 +38,15 @@ export async function rateLimit(_request: NextRequest) {
   
   if (_token !== undefined && _token !== null && scope !== undefined) {
     try {
-      type AccessVerifier = (token: string) => Promise<{ userId: string }>;
-      const verifyUser: AccessVerifier | undefined =
-        (tokenService as TokenService & { verifyUserAccessToken?: AccessVerifier }).verifyUserAccessToken?.bind(tokenService)
-        ?? tokenService.verifyAccessToken?.bind(tokenService);
-      const verifyAdmin: AccessVerifier | undefined =
-        (tokenService as TokenService & { verifyAdminAccessToken?: AccessVerifier }).verifyAdminAccessToken?.bind(tokenService)
-        ?? tokenService.verifyAccessToken?.bind(tokenService);
-
-      const verifyFn = scope === 'admin' ? verifyAdmin : verifyUser;
-
-      if (verifyFn !== undefined) {
-        const _payload = await verifyFn(_token);
-        const payloadUserId = (_payload as { userId?: string | null }).userId;
-        userId = payloadUserId ?? null;
+      if (scope === 'admin') {
+        const _payload = await tokenService.verifyAdminAccessToken(_token);
+        userId = _payload.userId ?? null;
+      } else {
+        const _payload = await tokenService.verifyUserAccessToken(_token);
+        userId = _payload.userId ?? null;
       }
     } catch {
-      // Invalid _token, ignore _user-based limit
+      // Invalid token, ignore user-based limit
     }
   }
 

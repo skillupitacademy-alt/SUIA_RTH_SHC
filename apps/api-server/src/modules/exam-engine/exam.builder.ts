@@ -63,6 +63,10 @@ export class ExamBuilder {
             throw new Error('ExamBuilder: Failed to compose exam');
         }
 
+        if (selection.questions.length === 0) {
+            throw new Error('ExamBuilder: Cannot build an exam with 0 questions. Please check your blueprint or configuration.');
+        }
+
         // 2. Persist the exam session
         const exam = await this.examRepo.createExamWithQuestions({
             userId: this.userId,

@@ -40,7 +40,7 @@ async function handler(_req: NextRequest) {
       return ApiResponse.error(badRequest('Unauthorized', 'UNAUTHORIZED'));
     }
 
-    const _payload = await container.get(TokenService).verifyAccessToken(_token, true);
+    const _payload = await container.get(TokenService).verifyAdminAccessToken(_token);
 
     if (!(await _verifyAdmin(_payload))) {
         return ApiResponse.error(badRequest('Forbidden', 'FORBIDDEN'));

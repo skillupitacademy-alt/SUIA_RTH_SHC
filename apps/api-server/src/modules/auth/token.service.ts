@@ -64,30 +64,30 @@ export class TokenService {
     // 1. Check Cookies based on scope
     if (scope === 'admin') {
         const adminToken = _req.cookies.get('admin_accessToken')?.value;
-        if (adminToken !== undefined && adminToken !== null && adminToken !== '') return adminToken;
+        if (typeof adminToken === 'string' && adminToken.length > 0) return adminToken;
     } else if (scope === 'user') {
         const userToken = _req.cookies.get('accessToken')?.value;
-        if (userToken !== undefined && userToken !== null && userToken !== '') return userToken;
+        if (typeof userToken === 'string' && userToken.length > 0) return userToken;
     } else if (scope === 'infrastructure') {
         const infraToken = _req.cookies.get('infra_accessToken')?.value;
-        if (infraToken !== undefined && infraToken !== null && infraToken !== '') return infraToken;
+        if (typeof infraToken === 'string' && infraToken.length > 0) return infraToken;
     } else {
         // Fallback for non-scoped requests (legacy/default behavior)
         const _accessToken = _req.cookies.get('accessToken')?.value;
         const _adminToken = _req.cookies.get('admin_accessToken')?.value;
         const _infraToken = _req.cookies.get('infra_accessToken')?.value;
         
-        let cookieToken = undefined;
-        if (_accessToken !== undefined && _accessToken !== null && _accessToken !== '') cookieToken = _accessToken;
-        else if (_adminToken !== undefined && _adminToken !== null && _adminToken !== '') cookieToken = _adminToken;
-        else if (_infraToken !== undefined && _infraToken !== null && _infraToken !== '') cookieToken = _infraToken;
+        let cookieToken: string | undefined = undefined;
+        if (typeof _accessToken === 'string' && _accessToken.length > 0) cookieToken = _accessToken;
+        else if (typeof _adminToken === 'string' && _adminToken.length > 0) cookieToken = _adminToken;
+        else if (typeof _infraToken === 'string' && _infraToken.length > 0) cookieToken = _infraToken;
         
-        if (cookieToken !== undefined && cookieToken !== null && cookieToken !== '') return cookieToken;
+        if (typeof cookieToken === 'string' && cookieToken.length > 0) return cookieToken;
     }
 
     // 2. Check Authorization Header (Fallback for legacy/mobile/tooling)
     const headerToken = _req.headers.get('authorization')?.replace('Bearer ', '');
-    return (headerToken !== null && headerToken !== '') ? headerToken : undefined;
+    return (typeof headerToken === 'string' && headerToken.length > 0) ? headerToken : undefined;
   }
 
   /**
@@ -137,8 +137,12 @@ export class TokenService {
         ? [tokenAud as string]
         : [];
 
-    const requestedAudience = options?.audience;
+    const requestedAudience = options?.audience ?? 'user';
     const enforceAudience = requestedAudience !== undefined && requestedAudience !== null && requestedAudience !== '';
+
+    if (!hasAud) {
+      throw new Error(`Audience mismatch: expected ${requestedAudience}`);
+    }
 
     if (enforceAudience) {
       if (!audValues.includes(requestedAudience)) {
@@ -175,70 +179,114 @@ export class TokenService {
   }
 
   /**
-   * @deprecated Use verifyUserAccessToken or verifyAdminAccessToken instead
+   * @deprecated Use verifyUserAccessToken, verifyAdminAccessToken, or verifyInfraAccessToken.
+   * Generic access-token verifier with user-first then admin fallback.
+   * Honors optional audience enforcement and supports legacy behaviour where
+   * callers did not differentiate admin/user methods.
    */
-  async verifyAccessToken(_token: string, optionsOrIsAdmin?: { isAdmin?: boolean; audience?: string } | boolean): Promise<TokenPayload> {
-    let isAdmin: boolean | undefined;
-    let requiredAud: string | undefined;
+  async verifyAccessToken(_token: string, options?: { audience?: string; isAdmin?: boolean }): Promise<TokenPayload> {
+    const requestedAudience = options?.audience;
+    const enforceAudience = requestedAudience !== undefined && requestedAudience !== null && requestedAudience !== '';
 
-    if (typeof optionsOrIsAdmin === 'boolean') {
-        isAdmin = optionsOrIsAdmin;
-    } else {
-        isAdmin = optionsOrIsAdmin?.isAdmin;
-        requiredAud = optionsOrIsAdmin?.audience;
-    }
+    const validateAudience = (payload: JWTPayload) => {
+      const tokenAud = payload.aud as string | string[] | undefined;
+      const hasAud = tokenAud !== undefined && tokenAud !== null && tokenAud !== '';
+      const audValues = Array.isArray(tokenAud)
+        ? tokenAud
+        : hasAud
+          ? [tokenAud as string]
+          : [];
 
-    // Default audience handling:
-    // - If caller passes an audience, we enforce it strictly.
-    // - If caller omits audience but isAdmin === true, accept either 'admin' or 'infra' token aud values.
-    // - If caller omits audience and isAdmin is false/undefined, accept 'user' (and legacy audience-less tokens).
-    const enforceAud = (requiredAud !== undefined && requiredAud !== null && requiredAud !== '');
-
-    const verify = async (secret: Uint8Array): Promise<TokenPayload> => {
-        const { payload: _payload } = await jwtVerify(_token, secret);
-        const tokenAud = _payload.aud as string | string[] | undefined;
-
-        const hasAud = tokenAud !== undefined && tokenAud !== null && tokenAud !== '';
-        const audValues = Array.isArray(tokenAud)
-            ? tokenAud
-            : hasAud
-                ? [tokenAud as string]
-                : [];
-
-        if (enforceAud) {
-            const hasMatch = audValues.length > 0 ? audValues.includes(requiredAud!) : false;
-            if (hasMatch === false) {
-                throw new Error(`Audience mismatch: expected ${requiredAud}, got ${String(tokenAud)}`);
-            }
-        } else if (isAdmin === true) {
-            // When admin scope but audience not enforced, allow either admin or infra,
-            // but still disallow unknown audiences for defense-in-depth.
-            if (audValues.length > 0 && audValues.some(aud => aud !== 'admin' && aud !== 'infra')) {
-                throw new Error(`Audience violation: admin scope received unexpected aud ${String(tokenAud)}`);
-            }
+      if (enforceAudience) {
+        if (!audValues.includes(requestedAudience as string)) {
+          throw new Error(`Audience mismatch: expected ${requestedAudience}, got ${String(tokenAud)}`);
         }
-        return _payload as unknown as TokenPayload;
+      }
+      return payload as unknown as TokenPayload;
     };
 
-    // If specific scope requested (or defaulted), enforce it
-    if (typeof isAdmin === 'boolean') {
-        const secret = isAdmin ? this.ADMIN_SECRET : this.ACCESS_SECRET;
-        return await verify(secret);
+    const normalizeError = (err: unknown) => {
+      if (err instanceof Error) return err;
+      return new Error('Invalid _token signature or audience mismatch');
+    };
+
+    // Attempt with user secret first (legacy default)
+    try {
+      const { payload } = await jwtVerify(_token, this.ACCESS_SECRET);
+      return validateAudience(payload);
+    } catch (err) {
+      // If explicitly told "user only", rethrow
+      if (options?.isAdmin === false) {
+        throw normalizeError(err);
+      }
     }
 
-    // Otherwise, try User Secret first (common case)
+    // Fallback: try admin secret
     try {
-        return await verify(this.ACCESS_SECRET);
-    } catch (_err) {
-        // Fallback to Admin Secret
-        try {
-             return await verify(this.ADMIN_SECRET);
-        } catch (innerErr) {
-            const msg = innerErr instanceof Error ? innerErr.message : 'Invalid _token signature or audience mismatch';
-            throw new Error(msg);
-        }
+      const { payload } = await jwtVerify(_token, this.ADMIN_SECRET);
+      return validateAudience(payload);
+    } catch (err) {
+      throw normalizeError(err);
     }
   }
+
+  /**
+   * Unified refresh-token verifier. Defaults to user secret but falls back
+   * to admin refresh secret for admin-issued refresh tokens.
+   */
+  async verifyRefreshToken(_token: string, options?: { audience?: string }): Promise<RefreshTokenPayload> {
+    const requestedAudience = options?.audience;
+    const enforceAudience = requestedAudience !== undefined && requestedAudience !== null && requestedAudience !== '';
+    const audienceOption =
+      requestedAudience !== undefined && requestedAudience !== null && requestedAudience !== ''
+        ? { audience: requestedAudience }
+        : undefined;
+    const validateAudience = (payload: JWTPayload) => {
+      const tokenAud = payload.aud as string | string[] | undefined;
+      const hasAud = tokenAud !== undefined && tokenAud !== null && tokenAud !== '';
+      const audValues = Array.isArray(tokenAud)
+        ? tokenAud
+        : hasAud
+          ? [tokenAud as string]
+          : [];
+
+      if (enforceAudience) {
+        if (!audValues.includes(requestedAudience as string)) {
+          throw new Error(`Audience mismatch: expected ${requestedAudience}, got ${String(tokenAud)}`);
+        }
+      }
+      return payload as unknown as RefreshTokenPayload;
+    };
+
+    try {
+      const { payload } = await jwtVerify(_token, this.REFRESH_SECRET, audienceOption);
+      return validateAudience(payload);
+    } catch (err) {
+      try {
+        const { payload } = await jwtVerify(_token, this.ADMIN_SECRET, audienceOption);
+        return validateAudience(payload);
+      } catch (err2) {
+        if (err2 instanceof Error) throw err2;
+        if (err instanceof Error) throw err;
+        throw new Error('Invalid refresh _token signature or audience mismatch');
+      }
+    }
+  }
+
+  async verifyInfraAccessToken(_token: string, options?: { audience?: string }): Promise<AdminTokenPayload> {
+    const { payload: _payload } = await jwtVerify(_token, this.ACCESS_SECRET);
+    const tokenAud = _payload.aud as string | string[] | undefined;
+    const hasAud = tokenAud !== undefined && tokenAud !== null && tokenAud !== '';
+    const audValues = Array.isArray(tokenAud) ? tokenAud : (hasAud ? [tokenAud as string] : []);
+    
+    const requestedAudience = options?.audience ?? 'infra';
+    if (!audValues.includes(requestedAudience)) {
+      throw new Error(`Audience mismatch: expected ${requestedAudience}, got ${String(tokenAud)}`);
+    }
+    return _payload as unknown as AdminTokenPayload;
+  }
+
+
 
   async verifyUserRefreshToken(_token: string, options?: { audience?: string }): Promise<RefreshTokenPayload> {
     const { payload: _payload } = await jwtVerify(_token, this.REFRESH_SECRET, {
@@ -252,18 +300,6 @@ export class TokenService {
       audience: options?.audience
     });
     return _payload as unknown as RefreshTokenPayload;
-  }
-
-  /**
-   * @deprecated Use verifyUserRefreshToken or verifyAdminRefreshToken instead
-   */
-  async verifyRefreshToken(_token: string, options: { isAdmin?: boolean; audience?: string } = {}): Promise<{ userId: string; isAdmin: boolean; aud?: string }> {
-    const isAdmin = options.isAdmin ?? false;
-    const secret = isAdmin ? this.ADMIN_SECRET : this.REFRESH_SECRET;
-    const { payload: _payload } = await jwtVerify(_token, secret, {
-        audience: options.audience
-    });
-    return _payload as unknown as { userId: string; isAdmin: boolean; aud?: string };
   }
 
   /**
@@ -295,34 +331,40 @@ export class TokenService {
     return this.getInstance().generateRefreshToken(userId, isAdmin, audience);
   }
 
+  /** @deprecated Use verifyUserAccessToken */
   static verifyUserAccessToken(_token: string, options?: { audience?: string }) {
-    return this.getInstance().verifyUserAccessToken(_token, options);
+    const inst = this.getInstance();
+    return inst.verifyUserAccessToken(_token, options);
   }
 
-  static verifyAdminAccessToken(_token: string, options?: { audience?: string }) {
-    return this.getInstance().verifyAdminAccessToken(_token, options);
+  /** @deprecated Use verifyAdminAccessToken */
+  static async verifyAdminAccessToken(_token: string, options?: { audience?: string }) {
+    const inst = this.getInstance();
+    return inst.verifyAdminAccessToken(_token, options);
   }
 
-  /**
-   * @deprecated Use verifyUserAccessToken or verifyAdminAccessToken instead
-   */
-  static verifyAccessToken(_token: string, optionsOrIsAdmin?: { isAdmin?: boolean; audience?: string } | boolean) {
-    return this.getInstance().verifyAccessToken(_token, optionsOrIsAdmin);
+  static async verifyInfraAccessToken(_token: string, options?: { audience?: string }) {
+    return this.getInstance().verifyInfraAccessToken(_token, options);
   }
 
-  static verifyUserRefreshToken(_token: string, options?: { audience?: string }) {
+  static async verifyUserRefreshToken(_token: string, options?: { audience?: string }) {
     return this.getInstance().verifyUserRefreshToken(_token, options);
   }
 
-  static verifyAdminRefreshToken(_token: string, options?: { audience?: string }) {
+  static async verifyAdminRefreshToken(_token: string, options?: { audience?: string }) {
     return this.getInstance().verifyAdminRefreshToken(_token, options);
   }
 
-  /**
-   * @deprecated Use verifyUserRefreshToken or verifyAdminRefreshToken instead
-   */
-  static verifyRefreshToken(_token: string, options?: { isAdmin?: boolean; audience?: string }) {
-    return this.getInstance().verifyRefreshToken(_token, options ?? {});
+  static async verifyRefreshToken(_token: string, options?: { audience?: string }) {
+    const inst = this.getInstance();
+    const fn =
+      typeof inst.verifyRefreshToken === 'function'
+        ? inst.verifyRefreshToken.bind(inst)
+        : typeof inst.verifyUserRefreshToken === 'function'
+          ? inst.verifyUserRefreshToken.bind(inst)
+          : null;
+    if (fn === null) throw new Error('verifyRefreshToken not implemented');
+    return fn(_token, options);
   }
 
   static hashToken(_token: string) {
@@ -336,4 +378,5 @@ export class TokenService {
   static getExpiryISO(_payload: JWTPayload) {
     return this.getInstance().getExpiryISO(_payload);
   }
+
 }

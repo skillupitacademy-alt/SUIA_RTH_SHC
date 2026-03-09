@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { db } from '@quiz/db';
 import { SelectionService } from '../selection.service';
-import { container } from '../../core/container';
+import { container } from '@/modules/core/container';
 
 const mockQueryBuilder = (result: any = []) => ({
     from: vi.fn().mockReturnThis(),
@@ -40,15 +40,19 @@ describe('SelectionService Phase 3 requirements', () => {
 
     it('composes exam at topic level (simple, 10 questions)', async () => {
         vi.mocked(db.query.examBlueprints.findFirst).mockResolvedValue({ id: 'bp1' } as any);
-        let callCount = 0;
-        vi.mocked(db.select).mockImplementation(() => {
-           callCount++;
-           return mockQueryBuilder(callCount % 2 === 1 ? [{ count: 10 }] : [{ id: 'q' }]);
+        
+        vi.mocked(db.select).mockImplementation((fields: any) => {
+            // Check what is being selected to return appropriate mock
+            if (fields?.subjectId) return mockQueryBuilder([{ subjectId: 's1' }]);
+            if (fields?.topicId) return mockQueryBuilder([{ topicId: 't1' }]);
+            if (fields?.id && fields?.difficulty) return mockQueryBuilder([{ id: 'q1', difficulty: 'simple' }]);
+            return mockQueryBuilder([{ id: 'q1', difficulty: 'simple' }]); // Default for select()
         });
 
         const service = container.get(SelectionService);
         const result = await service.composeExam('u1', 'bp1', 'key1', { topicIds: ['t1'] });
         expect(result.questions).toBeDefined();
+        expect(result.questions.length).toBeGreaterThan(0);
     });
 
     it('returns static questions when blueprint carries questionIds', async () => {
@@ -60,4 +64,3 @@ describe('SelectionService Phase 3 requirements', () => {
         expect(result.questions).toHaveLength(1);
     });
 });
-

@@ -22,7 +22,7 @@ async function handler(_req: NextRequest, { params }: RouteParams) {
         return ApiResponse.error(unauthorized('Unauthorized'), 401);
     }
 
-    const _payload = await container.get(TokenService).verifyAccessToken(_token, true);
+    const _payload = await container.get(TokenService).verifyAdminAccessToken(_token);
     const { id } = await params;
 
     const _job = await JobsService.getJob(id, _payload.userId);

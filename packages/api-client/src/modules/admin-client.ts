@@ -1,8 +1,9 @@
-/**
- * @deprecated The monolithic AdminClient violates the Interface Segregation Principle.
- * Prefer the specialized clients exported from '@quiz/api-client' instead.
- */
 import { FetchClient } from '@quiz/api-client/core/fetch-client';
+import {
+  IAdminConfigClient,
+  IAdminReportClient,
+  IAdminUserClient,
+} from '@quiz/api-client/types';
 import { AnalyticsAdminClient } from './admin/analytics-admin-client';
 import { AuditAdminClient } from './admin/audit-admin-client';
 import { BlueprintAdminClient } from './admin/blueprint-admin-client';
@@ -11,7 +12,9 @@ import { QuestionAdminClient } from './admin/question-admin-client';
 import { SessionAdminClient } from './admin/session-admin-client';
 import { UserAdminClient } from './admin/user-admin-client';
 
-export class AdminClient {
+export class AdminClient
+  implements IAdminUserClient, IAdminConfigClient, IAdminReportClient
+{
   public questions: QuestionAdminClient;
   public users: UserAdminClient;
   public analytics: AnalyticsAdminClient;
@@ -31,8 +34,8 @@ export class AdminClient {
   }
 
   // --- QUESTION & REPOSITORY DELEGATES (deprecated) ---
-  getDomains(...args: Parameters<QuestionAdminClient['getDomains']>) {
-    return this.questions.getDomains(...args);
+  getDomains(cursor?: string | null, limit: number = 20, search?: string) {
+    return this.questions.getDomains(cursor, limit, search);
   }
   createDomain(...args: Parameters<QuestionAdminClient['createDomain']>) {
     return this.questions.createDomain(...args);
@@ -47,8 +50,8 @@ export class AdminClient {
     return this.questions.batchDeleteDomains(...args);
   }
 
-  getSubjects(...args: Parameters<QuestionAdminClient['getSubjects']>) {
-    return this.questions.getSubjects(...args);
+  getSubjects(cursor?: string | null, limit: number = 20, domainId?: string, search?: string) {
+    return this.questions.getSubjects(cursor, limit, domainId, search);
   }
   getSubjectsByDomain(...args: Parameters<QuestionAdminClient['getSubjectsByDomain']>) {
     return this.questions.getSubjectsByDomain(...args);
@@ -66,8 +69,8 @@ export class AdminClient {
     return this.questions.batchDeleteSubjects(...args);
   }
 
-  getTopics(...args: Parameters<QuestionAdminClient['getTopics']>) {
-    return this.questions.getTopics(...args);
+  getTopics(cursor?: string | null, limit: number = 20, subjectId?: string, search?: string) {
+    return this.questions.getTopics(cursor, limit, subjectId, search);
   }
   getTopicsBySubject(...args: Parameters<QuestionAdminClient['getTopicsBySubject']>) {
     return this.questions.getTopicsBySubject(...args);
@@ -156,8 +159,8 @@ export class AdminClient {
   }
 
   // --- USER DELEGATES (deprecated) ---
-  getUsers(...args: Parameters<UserAdminClient['getUsers']>) {
-    return this.users.getUsers(...args);
+  getUsers(cursor?: string | null, limit: number = 20, status: 'active' | 'deleted' = 'active', filters?: any) {
+    return this.users.getUsers(cursor, limit, status, filters);
   }
   updateUser(...args: Parameters<UserAdminClient['updateUser']>) {
     return this.users.updateUser(...args);
@@ -170,8 +173,8 @@ export class AdminClient {
   }
 
   // --- BLUEPRINT DELEGATES (deprecated) ---
-  getBlueprints(...args: Parameters<BlueprintAdminClient['getBlueprints']>) {
-    return this.blueprints.getBlueprints(...args);
+  getBlueprints(cursor?: string | null, limit: number = 20, search?: string) {
+    return this.blueprints.getBlueprints(cursor, limit, search);
   }
   getBlueprintById(...args: Parameters<BlueprintAdminClient['getBlueprintById']>) {
     return this.blueprints.getBlueprintById(...args);

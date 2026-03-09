@@ -2,15 +2,16 @@ import { FetchClient } from '@quiz/api-client/core/fetch-client';
 import {
   AdminSuccessResponse,
   AdminUserProfile,
+  IAdminUserClient,
 } from '@quiz/api-client/types';
 
 type UserUpdatePayload = Partial<AdminUserProfile> & Record<string, unknown>;
 
-export class UserAdminClient {
+export class UserAdminClient implements IAdminUserClient {
   constructor(private client: FetchClient) {}
 
   async getUsers(
-    page: number = 1,
+    cursor?: string | null,
     limit: number = 20,
     status: 'active' | 'deleted' = 'active',
     filters?: {
@@ -22,10 +23,10 @@ export class UserAdminClient {
     }
   ) {
     const query = new URLSearchParams({
-      page: page.toString(),
       limit: limit.toString(),
       status,
     });
+    if (cursor != null && cursor !== '') query.append('cursor', cursor);
     if (filters?.search != null && filters.search !== '')
       query.append('search', filters.search);
     if (filters?.role != null && filters.role !== '')
@@ -38,11 +39,10 @@ export class UserAdminClient {
       query.append('xStatus', filters.status);
 
     return this.client.get<{
-      users: AdminUserProfile[];
+      data: AdminUserProfile[];
       total: number;
-      page: number;
+      nextCursor: string | null;
       limit: number;
-      totalPages: number;
     }>(`/admin/users?${query.toString()}`);
   }
 
@@ -65,3 +65,4 @@ export class UserAdminClient {
     }>('/admin/auth/login', { email, password });
   }
 }
+

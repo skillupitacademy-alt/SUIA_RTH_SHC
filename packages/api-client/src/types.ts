@@ -71,9 +71,10 @@ export interface AdminUserProfile extends UserProfile {
 export interface PaginatedResponse<T> {
   data: T[];
   total: number;
-  page: number;
+  page?: number;
   limit: number;
-  totalPages: number;
+  totalPages?: number;
+  nextCursor?: string | null;
 }
 
 export interface PaginatedQuestions {

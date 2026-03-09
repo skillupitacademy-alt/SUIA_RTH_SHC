@@ -25,7 +25,7 @@ async function getHandler(_req: NextRequest) {
       return ApiResponse.error(unauthorized('Unauthorized', 'UNAUTHORIZED'));
     }
 
-    const _payload = await container.get(TokenService).verifyAccessToken(_token, false);
+    const _payload = await container.get(TokenService).verifyUserAccessToken(_token);
     if (_payload === null || _payload === undefined || _payload.userId === null || _payload.userId === undefined) {
       return ApiResponse.error(unauthorized('Unauthorized', 'UNAUTHORIZED'));
     }
@@ -50,7 +50,7 @@ async function patchHandler(_req: NextRequest) {
       return ApiResponse.error(unauthorized('Unauthorized', 'UNAUTHORIZED'));
     }
 
-    const _payload = await container.get(TokenService).verifyAccessToken(_token, false);
+    const _payload = await container.get(TokenService).verifyUserAccessToken(_token);
     if (_payload === null || _payload === undefined || _payload.userId === null || _payload.userId === undefined) {
       return ApiResponse.error(unauthorized('Unauthorized', 'UNAUTHORIZED'));
     }

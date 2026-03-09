@@ -84,7 +84,7 @@ export function SubjectTable() {
     const fetchSubjects = useCallback(async () => {
         setIsLoading(true);
         try {
-            const response = await apiClient.admin.getSubjects(page, pageSize, debouncedSearch || undefined);
+            const response = await apiClient.admin.getSubjects(page.toString(), pageSize, debouncedSearch || undefined);
             const mapped: SubjectItem[] = (Array.isArray(response.data) ? response.data : []).map((s) => ({
                 id: String(s.id),
                 name: s.name ?? '',
@@ -105,8 +105,8 @@ export function SubjectTable() {
                 }
             }));
             setData(mapped);
-            setTotalPages(response.totalPages);
-            setTotalCount(response.total ?? response.data.length);
+            setTotalPages(response.totalPages ?? 1);
+            setTotalCount(response.total ?? response.data.length ?? 0);
             setSelectedIds(new Set());
         } catch (error) {
             clientLogger.error('Failed to fetch subjects', { error: error instanceof Error ? error.message : 'unknown' });

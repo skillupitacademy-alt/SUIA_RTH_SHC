@@ -19,7 +19,7 @@ async function getHandler(req: NextRequest) {
       throw unauthorized("Unauthorized");
     }
 
-    const payload = await container.get(TokenService).verifyAccessToken(token, false);
+    const payload = await container.get(TokenService).verifyUserAccessToken(token);
     
     const { allowed, remaining } = CacheManager.checkRateLimit(payload.userId, 60);
     if (!allowed) {

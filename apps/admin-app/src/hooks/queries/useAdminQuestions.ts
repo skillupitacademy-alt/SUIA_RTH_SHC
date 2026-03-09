@@ -14,7 +14,7 @@ export function useAdminQuestions(filters: AdminQuestionFilters = {}) {
     queryKey: ['admin-questions', filters],
     queryFn: async () => {
       apiClient.client.setPortalIdentity('admin');
-      return apiClient.admin.questions.getQuestions(filters.page, filters.limit, filters);
+      return apiClient.admin.questions.getQuestions(filters.page?.toString(), filters.limit, filters);
     },
     staleTime: 1000 * 60 * 2, // 2 minutes
   });

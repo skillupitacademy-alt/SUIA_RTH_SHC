@@ -37,6 +37,7 @@ vi.mock('@quiz/db', () => {
       delete: vi.fn(() => ({ where: deleteWhere })),
       update: vi.fn(() => ({ set: vi.fn(() => ({ where: updateWhere })) })),
       insert: vi.fn(() => ({ values: insertValues })),
+      transaction: vi.fn(async (fn) => fn(db)),
     },
     exams: { id: 'id' },
     resultsByDimension: { examId: 'examId' },

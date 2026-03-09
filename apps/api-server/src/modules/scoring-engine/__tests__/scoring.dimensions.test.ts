@@ -33,6 +33,7 @@ describe('ScoringEngine dimension branches', () => {
     ;(db as any).delete = vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue(undefined) })
     ;(db as any).insert = vi.fn().mockReturnValue({ values: vi.fn().mockReturnValue(undefined) })
     ;(db as any).update = vi.fn().mockReturnValue({ set: vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue(undefined) }) })
+    ;(db as any).transaction = vi.fn(async (fn) => fn(db))
 
     const score = await container.get(ScoringEngine).calculateExamResults('e1')
     expect(score).toBe(100)

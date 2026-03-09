@@ -319,7 +319,10 @@ export class SelectionService {
       const selectedQuestions: Question[] = [];
       const selectedIds = new Set<string>();
 
-      const fetchFromPool = async (diffs: string[], count: number) => {
+      const fetchBatchFromPool = async (targets: Record<string, number>) => {
+        const diffs = Object.keys(targets);
+        if (diffs.length === 0) return [];
+
         const subtopicCond = finalSubtopicIds.length > 0 ? inArray(questions.subtopicId, finalSubtopicIds) : null;
         const topicCond = actualTopicIds.length > 0 ? inArray(questions.topicId, actualTopicIds) : null;
         
@@ -347,40 +350,32 @@ export class SelectionService {
           eq(questions.status, 'active')
         );
 
-        // 1. Indexed Count for sizing
-        const [{ count: totalInPool }] = await withTimeout(
-          this.dbInstance.select({ count: sql<number>`count(*)` })
-            .from(questions)
-            .where(baseFilters),
-          STANDARD_QUERY_TIMEOUT,
-          'SelectionService.fetchFromPool.count'
-        );
-
-        if (totalInPool === 0) return [];
-
-        // 2. Deterministic Seeding & Sampling
-        const seedSource = JSON.stringify({
-          userId,
-          idempotencyKey,
-          filters: { diffs, domainId, actualSubjectIds, actualTopicIds, finalSubtopicIds },
-          requestedCount: count
-        });
-        const masterSeed = crypto.createHash('sha256').update(seedSource).digest('hex');
-
-        // 3. Batch ID Fetch & Deterministic Sample
-        const allMatchingIds = (await withTimeout(
-          this.dbInstance.select({ id: questions.id })
+        // 1. Batch ID Fetch with Difficulty
+        const allMatching = await withTimeout(
+          this.dbInstance.select({ id: questions.id, difficulty: questions.difficulty })
             .from(questions)
             .where(baseFilters)
             .orderBy(asc(questions.id)),
           STANDARD_QUERY_TIMEOUT,
-          'SelectionService.fetchFromPool.allIds'
-        )).map(r => r.id);
+          'SelectionService.fetchBatchFromPool.allIds'
+        );
+        if (allMatching.length === 0) return [];
 
-        if (allMatchingIds.length === 0) return [];
+        // 2. Group by difficulty
+        const poolMap: Partial<Record<string, string[]>> = {};
+        allMatching.forEach(r => {
+            const bucket = poolMap[r.difficulty] ?? [];
+            bucket.push(r.id);
+            poolMap[r.difficulty] = bucket;
+        });
 
-        // Simple deterministic shuffle/sample using seed
-        const pseudoRandom = (seed: string) => {
+
+
+        // 3. Deterministic Seeding & Sampling per Tier
+        const allSampledIds: string[] = [];
+        
+        // Simple deterministic pseudo-RNG
+        const createRng = (seed: string) => {
             let h = 0;
             for (let i = 0; i < seed.length; i++) h = Math.imul(31, h) + seed.charCodeAt(i) | 0;
             return () => {
@@ -388,22 +383,40 @@ export class SelectionService {
                 return (h >>> 0) / 2147483647;
             };
         };
-        const rng = pseudoRandom(masterSeed);
-        
-        const sampledIds: string[] = [];
-        const pool = [...allMatchingIds];
-        while (sampledIds.length < count && pool.length > 0) {
-            const index = Math.floor(rng() * pool.length);
-            sampledIds.push(pool.splice(index, 1)[0]);
+
+        for (const [diff, targetCount] of Object.entries(targets)) {
+            const pool = poolMap[diff] ?? [];
+            if (pool.length === 0) continue;
+
+
+            const seedSource = JSON.stringify({
+                userId,
+                idempotencyKey,
+                filters: { diff, domainId, actualSubjectIds, actualTopicIds, finalSubtopicIds },
+                requestedCount: targetCount
+            });
+            const masterSeed = crypto.createHash('sha256').update(seedSource).digest('hex');
+            const rng = createRng(masterSeed);
+
+            const sampled: string[] = [];
+            const localPool = [...pool];
+            while (sampled.length < targetCount && localPool.length > 0) {
+                const index = Math.floor(rng() * localPool.length);
+                sampled.push(localPool.splice(index, 1)[0]);
+            }
+            allSampledIds.push(...sampled);
         }
+
+        if (allSampledIds.length === 0) return [];
+
 
         // 4. Batch Fetch Questions
         const candidates = await withTimeout(
           this.dbInstance.select()
             .from(questions)
-            .where(inArray(questions.id, sampledIds)),
+            .where(inArray(questions.id, allSampledIds)),
           STANDARD_QUERY_TIMEOUT,
-          'SelectionService.fetchFromPool.batchFetch'
+          'SelectionService.fetchBatchFromPool.batchFetch'
         );
 
         candidates.forEach(c => selectedIds.add(c.id));
@@ -411,26 +424,23 @@ export class SelectionService {
       };
 
       if (difficultyPref === 'mixed') {
-        const tiers = [
-          { key: 'simple', target: Math.floor(requestedTotal * 0.3) },
-          { key: 'intermediate', target: Math.floor(requestedTotal * 0.3) },
-          { key: 'expert', target: requestedTotal - Math.floor(requestedTotal * 0.3) - Math.floor(requestedTotal * 0.3) },
-        ];
-
-        for (const tier of tiers) {
-          if (tier.target > 0) {
-            const pooled = await fetchFromPool([tier.key], tier.target);
-            selectedQuestions.push(...pooled);
-          }
-        }
+        const targets: Record<string, number> = {
+            simple: Math.floor(requestedTotal * 0.3),
+            intermediate: Math.floor(requestedTotal * 0.3),
+            expert: requestedTotal - (Math.floor(requestedTotal * 0.3) * 2)
+        };
+        const pooled = await fetchBatchFromPool(targets);
+        selectedQuestions.push(...pooled);
       } else {
-        const pooled = await fetchFromPool([difficultyPref], requestedTotal);
+        const pooled = await fetchBatchFromPool({ [difficultyPref]: requestedTotal });
         selectedQuestions.push(...pooled);
       }
 
       if (selectedQuestions.length === 0) {
         throw new Error(`No questions found for the selected configuration. Please ensure the selected area has active questions.`);
       }
+
+
 
       return selectedQuestions;
     });

@@ -92,7 +92,7 @@ export function SkillTable() {
     const fetchSkills = useCallback(async () => {
         setIsLoading(true);
         try {
-            const response = await apiClient.admin.getSkills(page, pageSize, debouncedSearch || undefined);
+            const response = await apiClient.admin.getSkills(page.toString(), pageSize, debouncedSearch || undefined);
             const skills: SkillRow[] = Array.isArray(response.data)
                 ? (response.data as Skill[]).map((s) => ({
                     id: String(s.id),
@@ -106,8 +106,8 @@ export function SkillTable() {
                 }) as SkillRow)
                 : [];
             setData(skills);
-            setTotalPages(response.totalPages);
-            setTotalCount(response.total ?? skills.length);
+            setTotalPages(response.totalPages ?? 1);
+            setTotalCount(response.total ?? skills.length ?? 0);
             setSelectedIds(new Set());
         } catch (error) {
             clientLogger.error('Failed to fetch skills', { error: error instanceof Error ? error.message : 'unknown' });

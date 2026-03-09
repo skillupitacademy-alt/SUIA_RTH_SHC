@@ -14,8 +14,7 @@ export class AdaptiveExamService {
     // 1. Fetch User Analytics
     const snapshot = await UserAnalyticsService.getAdaptiveSnapshot(userId);
 
-    // 2. Promotion Engine Check (Side effect: updates profile level)
-    await AdaptivePromotionService.evaluatePromotion(userId, snapshot.difficulty);
+    // 2. [DEPRECATED] Moved inside transaction below
 
     // 3. Generate Dynamic Blueprint
     const blueprint = AdaptiveBlueprintService.generate(snapshot);
@@ -27,25 +26,28 @@ export class AdaptiveExamService {
       throw new Error("Could not find enough questions for an adaptive exam.");
     }
 
-    // 5. Create Exam Instance (Atomic Transaction)
+    // 5. Atomic Transaction: Evaluate Promotion + Create Exam
     const examId = await db.transaction(async (tx) => {
-      // Create Exam
+      // 5.1 Promotion Engine Check (Side effect: updates profile level)
+      await AdaptivePromotionService.evaluatePromotion(userId, snapshot.difficulty, tx);
+
+      // 5.2 Create Exam
       const [exam] = await tx.insert(exams).values({
         userId,
         status: 'started',
         durationSeconds: blueprint.totalQuestions * 90, // 1.5 mins per question
         startedAt: new Date(),
       }).returning({ id: exams.id });
-
-      // Create Exam Questions
+ 
+      // 5.3 Create Exam Questions
       const examQuestionsData = questionIds.map((qId, index) => ({
         examId: exam.id,
         questionId: qId,
         order: index + 1,
       }));
-
+ 
       await tx.insert(examQuestions).values(examQuestionsData);
-
+ 
       return exam.id;
     });
 

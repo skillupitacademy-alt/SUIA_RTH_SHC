@@ -49,6 +49,7 @@ describe('ScoringEngine PDF trigger branch', () => {
     (db.delete as any) = vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue(undefined) });
     (db.insert as any) = vi.fn().mockReturnValue({ values: vi.fn().mockReturnValue({ returning: vi.fn().mockResolvedValue([]) }) });
     (db.update as any) = vi.fn().mockReturnValue({ set: vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue(undefined) }) });
+    (db.transaction as any) = vi.fn(async (fn) => fn(db));
     (db.query as any).topics = { findMany: vi.fn().mockResolvedValue([]) };
 
     // make fetch reject to hit catch block

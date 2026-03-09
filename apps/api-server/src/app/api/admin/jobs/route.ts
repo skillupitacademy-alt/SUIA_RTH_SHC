@@ -23,24 +23,38 @@ async function getHandler(_req: NextRequest) {
         return ApiResponse.error(unauthorized('Unauthorized'), 401);
     }
 
-    await container.get(TokenService).verifyAccessToken(_token, true);
+    await container.get(TokenService).verifyAdminAccessToken(_token);
     
     const { searchParams } = new URL(_req.url);
     const status = searchParams.get('status') as JobStatus | undefined;
     const limit = parseInt(searchParams.get('limit') ?? '50', 10);
-    const offset = parseInt(searchParams.get('offset') ?? '0', 10);
+    const cursorId = searchParams.get('cursorId');
+    const cursorCreatedAt = searchParams.get('cursorCreatedAt');
 
-    const { items, total } = await JobsService.listJobs({
+    const hasCursor =
+      cursorId !== null &&
+      cursorId !== undefined &&
+      cursorId !== '' &&
+      cursorCreatedAt !== null &&
+      cursorCreatedAt !== undefined &&
+      cursorCreatedAt !== '';
+
+    const { items, total, nextCursor, hasNextPage } = await JobsService.listJobs({
       status,
       limit,
-      offset
+      cursor: hasCursor ? { id: cursorId, createdAt: cursorCreatedAt } : undefined
     });
 
     const durationMs = Date.now() - start;
     recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.jobs.list.success', 1);
     recordTimer(METRICS.ADMIN.DASHBOARD_LOAD + '.jobs.list.duration', durationMs, { outcome: 'success' });
 
-    return ApiResponse.success({ items, total }, 200, { 'X-Duration-Ms': durationMs.toString() });
+    return ApiResponse.success({ 
+      items, 
+      total,
+      nextCursor,
+      hasNextPage
+    }, 200, { 'X-Duration-Ms': durationMs.toString() });
   } catch (_error: unknown) {
     const durationMs = Date.now() - start;
     const _message = _error instanceof Error ? _error.message : 'Internal Server Error';
@@ -58,7 +72,7 @@ async function postHandler(_req: NextRequest) {
         return ApiResponse.error(unauthorized('Unauthorized'), 401);
     }
 
-    const _payload = await container.get(TokenService).verifyAccessToken(_token, true);
+    const _payload = await container.get(TokenService).verifyAdminAccessToken(_token);
     const rawBody = await _req.json().catch(() => null);
     if (rawBody === null || !validateJsonDepth(rawBody) || !validateJsonSize(rawBody)) {
       return ApiResponse.error(badRequest('Payload too deep or large'), 400);

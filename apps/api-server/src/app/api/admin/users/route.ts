@@ -20,7 +20,7 @@ async function getHandler(_req: NextRequest) {
     if (_token === undefined || _token === null || _token === '') {
       throw unauthorized('Unauthorized', 'UNAUTHORIZED');
     }
-    await container.get(TokenService).verifyAccessToken(_token, true);
+    await container.get(TokenService).verifyAdminAccessToken(_token);
     
     const searchParams = _req.nextUrl.searchParams;
     const cursor = searchParams.get('cursor');

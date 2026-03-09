@@ -22,7 +22,7 @@ async function postHandler(req: NextRequest) {
       throw unauthorized("Unauthorized");
     }
 
-    const payload = await container.get(TokenService).verifyAccessToken(token, false);
+    const payload = await container.get(TokenService).verifyUserAccessToken(token);
     if (payload === null || payload === undefined || payload.userId === null || payload.userId === undefined) {
       throw unauthorized("Authentication required");
     }

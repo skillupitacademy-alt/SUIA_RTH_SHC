@@ -61,6 +61,9 @@ export class JobOrchestrator {
                 case JobType.MOCK_JOB:
                     await JobsService.simulateJob(jobId, userId);
                     break;
+                case JobType.DATA_CLEANUP:
+                    await this.handleDataCleanup(jobId);
+                    break;
                 default:
                     throw new Error(`Unknown job type: ${job.type}`);
             }
@@ -128,6 +131,18 @@ export class JobOrchestrator {
         await JobsService.updateJobStatus(jobId, JobStatus.COMPLETED, {
             result: {
                 indexedAt: new Date().toISOString()
+            }
+        });
+    }
+
+    private static async handleDataCleanup(jobId: string): Promise<void> {
+        const { RetentionService } = await import('./retention.service');
+        const results = await RetentionService.performCleanup();
+
+        await JobsService.updateJobStatus(jobId, JobStatus.COMPLETED, {
+            result: {
+                ...results,
+                timestamp: new Date().toISOString()
             }
         });
     }

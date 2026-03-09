@@ -1,7 +1,7 @@
 import { FetchClient } from '@quiz/api-client/core/fetch-client';
-import { AdminAuditLog } from '@quiz/api-client/types';
+import { AdminAuditLog, IAdminAuditClient } from '@quiz/api-client/types';
 
-export class AuditAdminClient {
+export class AuditAdminClient implements IAdminAuditClient {
   constructor(private client: FetchClient) {}
 
   async getAuditLogs() {
