@@ -51,8 +51,10 @@ export const r2Storage: StorageProvider = {
       Key: fileRef,
     });
 
-    // Generate a signed URL valid for 1 hour
-    return await sign(r2, command, { expiresIn: 3600 });
+    // Casting the client sidesteps duplicate @smithy/types versions that make
+    // the presigner's Client type incompatible with our S3Client instance.
+    // Runtime behavior is unaffected because the presigner only calls send().
+    return await sign(r2 as unknown as any, command, { expiresIn: 3600 });
   },
 
   async delete(fileRef) {

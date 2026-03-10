@@ -11,9 +11,22 @@ import { logger } from '@/lib/logger';
 import type { DomainEventMap } from './events';
 
 class EventBus extends EventEmitter {
+    public log = logger;
     constructor() {
         super();
         this.setMaxListeners(20); // Scale up for many decoupled listeners
+    }
+
+    // Override base emit to add logging used by tests
+    emit(eventName: string | symbol, ...args: any[]): boolean {
+        const examId = (args?.[0] as any)?.examId;
+        this.log.info({ event: eventName, examId }, 'Emitting event');
+        try {
+            return super.emit(eventName, ...args);
+        } catch (err) {
+            this.log.error({ err, eventName, payload: args?.[0] }, '[EventBus] emit failed');
+            return false;
+        }
     }
 
     /**
@@ -23,9 +36,14 @@ class EventBus extends EventEmitter {
         eventName: K, 
         payload: DomainEventMap[K]
     ): boolean {
-        logger.debug({ eventName, payload }, `[EventBus] Emitting ${String(eventName)}`);
+        this.log.info({ event: eventName, examId: (payload as any)?.examId }, 'Emitting event');
         // We still call the base EventEmitter emit under the hood
-        return super.emit(eventName as string, payload);
+        try {
+          return super.emit(eventName as string, payload);
+        } catch (err) {
+          this.log.error({ err, eventName, payload }, '[EventBus] emit failed');
+          return false;
+        }
     }
 
     /**
@@ -38,9 +56,16 @@ class EventBus extends EventEmitter {
         logger.debug(`[EventBus] Registered listener for ${String(eventName)}`);
         // Wrap async listeners to catch unhandled rejections so they don't crash Node
         const safeListener = (payload: DomainEventMap[K]) => {
-            void Promise.resolve(listener(payload)).catch((err) => {
-                logger.error({ err, eventName, payload }, `[EventBus] Listener failed for ${String(eventName)}`);
-            });
+            try {
+              const result = listener(payload);
+              if (result && typeof (result as Promise<unknown>).then === 'function') {
+                void (result as Promise<unknown>).catch((err) => {
+                  this.log.error({ err, eventName, payload }, `[EventBus] Listener failed for ${String(eventName)}`);
+                });
+              }
+            } catch (err) {
+              this.log.error({ err, eventName, payload }, `[EventBus] Listener failed for ${String(eventName)}`);
+            }
         };
 
         return super.on(eventName as string, safeListener);

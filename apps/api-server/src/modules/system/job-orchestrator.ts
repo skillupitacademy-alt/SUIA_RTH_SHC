@@ -1,15 +1,7 @@
 import { JobStatus, JobType } from '@quiz/types';
 
 import { logger } from '@/lib/logger';
-import { AnalyticsService } from '@/modules/analytics/analytics.service';
-import { container } from '@/modules/core/container';
-import { resilienceManager } from '@/modules/core/resilience.manager';
 import { EmailService } from '@/modules/email/EmailService';
-import { PerformanceService } from '@/modules/report-engine/performance.service';
-import { ReportEngine } from '@/modules/report-engine/report.engine';
-import { ScoringEngine } from '@/modules/scoring-engine/scoring.engine';
-import { JobsService } from '@/modules/system/jobs.service';
-import { TutorService } from '@/modules/tutor/tutor.service';
 
 type EmailJobPayload =
     | { type: 'password_reset'; email: string; data: { resetUrl: string } }
@@ -39,6 +31,9 @@ export class JobOrchestrator {
      * or by a periodic worker.
      */
     static async runJob(jobId: string, userId: string): Promise<void> {
+        const { JobsService } = await import('./jobs.service');
+        const { resilienceManager } = await import('@/modules/core/resilience.manager');
+
         const job = await JobsService.getJob(jobId, userId);
         if (job === undefined) {
             this.log.error({ jobId, userId }, 'Job not found');
@@ -120,7 +115,10 @@ export class JobOrchestrator {
     ): Promise<void> {
         this.log.info({ type, userId }, '[JobOrchestrator] Running job logic directly');
         const jobId = 'direct-exec';
-        
+        const { AnalyticsService } = await import('@/modules/analytics/analytics.service');
+        const { ScoringEngine } = await import('@/modules/scoring-engine/scoring.engine');
+        const { TutorService } = await import('@/modules/tutor/tutor.service');
+
         switch (type) {
             case JobType.EXAM_SCORING: {
                 const p = payload as ExamScoringPayload;
@@ -129,6 +127,9 @@ export class JobOrchestrator {
                 break;
             }
             case JobType.ANALYTICS_PROCESS: {
+                const { PerformanceService } = await import('@/modules/report-engine/performance.service');
+                const { ReportEngine } = await import('@/modules/report-engine/report.engine');
+                const { container } = await import('@/modules/core/container');
                 const p = payload as AnalyticsProcessPayload;
                 if (p.type === 'post_exam_processing') {
                     const performanceService = container.get(PerformanceService);
@@ -155,6 +156,10 @@ export class JobOrchestrator {
     private static async handleExamScoring(jobId: string, payload: { examId: string }): Promise<void> {
         if (payload.examId === undefined || payload.examId === null || payload.examId === '') throw new Error('Missing examId in payload');
 
+        const { JobsService } = await import('./jobs.service');
+        const { ScoringEngine } = await import('@/modules/scoring-engine/scoring.engine');
+        const { TutorService } = await import('@/modules/tutor/tutor.service');
+
         const finalScore = await ScoringEngine.calculateExamResults(payload.examId);
 
         // Fire-and-forget tutor processing; do not block scoring completion
@@ -171,6 +176,8 @@ export class JobOrchestrator {
 
     private static async handleAnalyticsRefresh(jobId: string): Promise<void> {
         try {
+            const { JobsService } = await import('./jobs.service');
+            const { AnalyticsService } = await import('@/modules/analytics/analytics.service');
             /** 
              * SQL Note: REFRESH MATERIALIZED VIEW CONCURRENTLY works 
              * without locking out readers, but requires a UNIQUE INDEX 
@@ -199,6 +206,7 @@ export class JobOrchestrator {
         
         // Import dynamically to avoid potentially heavy modules and circular deps
         const { SemanticSearchService } = await import('@/modules/intelligence/semantic-search.service');
+        const { JobsService } = await import('./jobs.service');
         
         await SemanticSearchService.indexQuestion(payload.questionId, payload.text, payload.metadata || {});
 
@@ -211,6 +219,7 @@ export class JobOrchestrator {
 
     private static async handleDataCleanup(jobId: string): Promise<void> {
         const { RetentionService } = await import('./retention.service');
+        const { JobsService } = await import('./jobs.service');
         const results = await RetentionService.performCleanup();
 
         await JobsService.updateJobStatus(jobId, JobStatus.COMPLETED, {
@@ -222,6 +231,7 @@ export class JobOrchestrator {
     }
 
     private static async handleEmailSend(jobId: string, payload: EmailJobPayload): Promise<void> {
+        const { JobsService } = await import('./jobs.service');
         const { type, email, data } = payload;
         const provider = EmailService.getInstance();
 
@@ -247,6 +257,11 @@ export class JobOrchestrator {
     }
 
     private static async handleAnalyticsProcess(jobId: string, payload: AnalyticsProcessPayload): Promise<void> {
+        const { AnalyticsService } = await import('@/modules/analytics/analytics.service');
+        const { JobsService } = await import('./jobs.service');
+        const { PerformanceService } = await import('@/modules/report-engine/performance.service');
+        const { ReportEngine } = await import('@/modules/report-engine/report.engine');
+        const { container } = await import('@/modules/core/container');
         const { type } = payload;
         const performanceService = container.get(PerformanceService);
         const reportEngine = container.get(ReportEngine);

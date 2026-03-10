@@ -340,7 +340,16 @@ export class TokenService {
   /** @deprecated Use verifyAdminAccessToken */
   static async verifyAdminAccessToken(_token: string, options?: { audience?: string }) {
     const inst = this.getInstance();
-    return inst.verifyAdminAccessToken(_token, options);
+    if (typeof inst.verifyAdminAccessToken === 'function') {
+      return inst.verifyAdminAccessToken(_token, options);
+    }
+    if (typeof inst.verifyAccessToken === 'function') {
+      return inst.verifyAccessToken(_token, { audience: options?.audience, isAdmin: true }) as Promise<AdminTokenPayload>;
+    }
+    if (typeof inst.verifyUserAccessToken === 'function') {
+      return inst.verifyUserAccessToken(_token, options) as Promise<AdminTokenPayload>;
+    }
+    throw new Error('verifyAdminAccessToken not implemented');
   }
 
   static async verifyInfraAccessToken(_token: string, options?: { audience?: string }) {

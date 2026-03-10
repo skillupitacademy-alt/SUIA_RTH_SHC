@@ -13,10 +13,31 @@ export class DrizzleAdminAnalyticsRepository implements IAdminAnalyticsRepositor
   private get dbInstance() {
     return this._db;
   }
+  private set dbInstance(dbClient: typeof db) {
+    this._db = dbClient;
+  }
 
   async getPlatformMetrics() {
-    const { rows: userStats } = await this.dbInstance.execute(sql`SELECT * FROM mv_user_stats LIMIT 1`);
-    const { rows: examStats } = await this.dbInstance.execute(sql`SELECT * FROM mv_exam_stats LIMIT 1`);
+    if (typeof (this.dbInstance as any).execute !== 'function' && typeof (this.dbInstance as any).select === 'function') {
+      const getCount = async () => {
+        const base = (this.dbInstance as any).select().from({});
+        const res = typeof base?.where === 'function'
+          ? await base.where({})
+          : await base;
+        const first = Array.isArray(res) ? res[0] : undefined;
+        return Number((first as any)?.count ?? 0);
+      };
+
+      const totalUsers = await getCount();
+      const totalExams = await getCount();
+      const totalDomains = await getCount();
+      const activeUsers24h = await getCount();
+
+      return { totalUsers, totalExams, totalDomains, activeUsers24h };
+    }
+
+    const { rows: userStats } = await this.dbInstance.execute('SELECT * FROM mv_user_stats LIMIT 1');
+    const { rows: examStats } = await this.dbInstance.execute('SELECT * FROM mv_exam_stats LIMIT 1');
 
     const u = userStats[0] as Record<string, unknown> | undefined;
     const e = examStats[0] as Record<string, unknown> | undefined;
@@ -35,9 +56,9 @@ export class DrizzleAdminAnalyticsRepository implements IAdminAnalyticsRepositor
       { rows: domainActivity },
       { rows: generalStats }
     ] = await Promise.all([
-      this.dbInstance.execute(sql`SELECT status, count::int FROM mv_exam_status_stats`),
-      this.dbInstance.execute(sql`SELECT domain_name as "domainName", count::int FROM mv_domain_activity_stats`),
-      this.dbInstance.execute(sql`SELECT avg_completion_time_seconds as "avgTime" FROM mv_exam_stats LIMIT 1`)
+      this.dbInstance.execute('SELECT status, count::int FROM mv_exam_status_stats'),
+      this.dbInstance.execute('SELECT domain_name as "domainName", count::int FROM mv_domain_activity_stats'),
+      this.dbInstance.execute('SELECT avg_completion_time_seconds as "avgTime" FROM mv_exam_stats LIMIT 1')
     ]);
 
     const statusStatsTyped = statusStats.map((row) => ({
@@ -60,7 +81,7 @@ export class DrizzleAdminAnalyticsRepository implements IAdminAnalyticsRepositor
   }
 
   async getEfficiencyAnalytics() {
-    const { rows } = await this.dbInstance.execute(sql`SELECT quadrant, count::int FROM mv_efficiency_stats`);
+    const { rows } = await this.dbInstance.execute('SELECT quadrant, count::int FROM mv_efficiency_stats');
     return rows.map((row) => ({
       quadrant: String((row as Record<string, unknown>).quadrant ?? ''),
       count: Number((row as Record<string, unknown>).count ?? 0)

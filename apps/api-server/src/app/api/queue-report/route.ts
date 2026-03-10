@@ -3,6 +3,8 @@ import { METRICS } from "@quiz/observability";
 import { eq } from "drizzle-orm";
 import { after, NextRequest } from "next/server";
 
+export const dynamic = 'force-dynamic';
+
 import { badRequest, forbidden, unauthorized } from "@/lib/api-error";
 import { ApiResponse } from "@/lib/api-response";
 import { logger } from "@/lib/logger";

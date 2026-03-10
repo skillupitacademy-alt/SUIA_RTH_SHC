@@ -7,5 +7,5 @@ export interface EmailOptions {
 
 export interface IEmailProvider {
   sendEmail(options: EmailOptions): Promise<void>;
-  sendPasswordReset(email: string, resetUrl: string): Promise<void>;
+  sendPasswordResetEmail(email: string, resetUrl: string): Promise<void>;
 }

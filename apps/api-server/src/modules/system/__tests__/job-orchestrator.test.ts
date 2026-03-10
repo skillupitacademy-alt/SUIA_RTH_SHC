@@ -3,11 +3,11 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ScoringEngine } from '@/modules/scoring-engine/scoring.engine';
 import { JobOrchestrator } from '@/modules/system/job-orchestrator';
-import { JobsService } from '@/modules/system/jobs.service';
+import { JobsService } from '../jobs.service';
 import { TutorService } from '@/modules/tutor/tutor.service';
 
 // Mock the services
-vi.mock('@/modules/system/jobs.service');
+vi.mock('../jobs.service');
 vi.mock('@/modules/scoring-engine/scoring.engine');
 vi.mock('@/modules/tutor/tutor.service');
 

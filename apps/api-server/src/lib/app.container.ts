@@ -67,5 +67,8 @@ export function bootstrapContainer() {
   container.register(TOKENS.FeatureFlagService, new FeatureFlagService());
 }
 
-// Auto-bootstrap the container when this module is imported
-bootstrapContainer();
+// Auto-bootstrap the container when this module is imported (skip in tests)
+const isTestEnv = process.env.NODE_ENV === 'test' || process.env.VITEST === 'true' || process.env.VITEST_WORKER_ID !== undefined;
+if (!isTestEnv) {
+  bootstrapContainer();
+}

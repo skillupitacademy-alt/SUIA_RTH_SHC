@@ -3,6 +3,8 @@ import { withCacheHeaders } from '@/lib/cache-headers';
 import { queueConnection } from '@/lib/queue-config';
 import { withLogging } from '@/lib/withLogging';
 
+export const dynamic = 'force-dynamic';
+
 // Health check with Redis status (Task 109).
 export const GET = withLogging(async () => {
     let redisStatus = 'error';
@@ -17,5 +19,5 @@ export const GET = withLogging(async () => {
         status: 'ok',
         redis: redisStatus,
         timestamp: new Date().toISOString()
-    }), 'none');
+    }), 'DYNAMIC');
 });

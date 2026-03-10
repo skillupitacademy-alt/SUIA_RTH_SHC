@@ -38,7 +38,7 @@ async function getHandler(_req: NextRequest) {
       return ApiResponse.error(notFound('Profile', _payload.userId));
     }
 
-    return withCacheHeaders(ApiResponse.success(profile), 'private');
+    return withCacheHeaders(ApiResponse.success(profile), 'SESSION');
   } catch (_error: unknown) {
     return ApiResponse.error(_error, 401);
   }

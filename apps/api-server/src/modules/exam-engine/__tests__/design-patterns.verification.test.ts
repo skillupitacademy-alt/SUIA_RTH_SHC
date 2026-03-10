@@ -50,7 +50,8 @@ vi.mock('../../services/reports/ReportMaterializer', () => ({
 
 import { MultiSelectEvaluator } from '../../answer-engine/evaluators/multi-select.evaluator';
 import { IRTScoringStrategy } from '../../scoring-engine/strategies/irt-scoring.strategy';
-import { eventBus } from '../../core/event-bus';
+import { AppEvents } from '@/lib/events';
+import { eventBus } from '@/lib/event-bus';
 import { ExamBuilder } from '../exam.builder';
 import { ExamObserver } from '../exam.observer';
 import { ExamStateMachine } from '../exam.state-machine';
@@ -95,10 +96,9 @@ describe('Sprint 2 Design Patterns Verification', () => {
 
   describe('Task 62: Observer / Event Bus', () => {
     it('registers EXAM_COMPLETED listener', () => {
-      const onSpy = vi.spyOn(eventBus, 'on');
+      const spy = vi.spyOn(eventBus, 'onEvent');
       ExamObserver.init();
-
-      expect(onSpy).toHaveBeenCalledWith('EXAM_COMPLETED', expect.any(Function));
+      expect(spy).toHaveBeenCalledWith(AppEvents.EXAM_COMPLETED, expect.any(Function));
     });
   });
 

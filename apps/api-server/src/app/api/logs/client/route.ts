@@ -1,4 +1,6 @@
 import { type NextRequest } from 'next/server';
+
+export const dynamic = 'force-dynamic';
 import { z } from 'zod';
 
 import { badRequest } from '@/lib/api-error';

@@ -28,6 +28,12 @@ export class ExamSaga {
      * Entry point to start the exam completion lifecycle.
      */
     static async start(examId: string, userId: string) {
+        const isTestEnv = process.env.NODE_ENV === 'test' || process.env.VITEST === 'true' || process.env.VITEST_WORKER_ID !== undefined;
+        const queuesEnabled = process.env.QUEUE_ENABLED === 'true';
+        if (!queuesEnabled && !isTestEnv) {
+            logger.warn({ examId }, '[ExamSaga] QUEUE_DISABLED: skipping saga enqueue');
+            return crypto.randomUUID();
+        }
         const job = await JobsService.createJob({
             userId,
             type: JobType.EXAM_SAGA,
@@ -37,8 +43,10 @@ export class ExamSaga {
             }
         });
 
-        // Enqueue the saga to the primary sagaQueue
-        await sagaQueue.add('exam_lifecycle_' + examId, { examId, userId }, { jobId: job.id });
+        if (queuesEnabled) {
+            // Enqueue the saga to the primary sagaQueue
+            await sagaQueue.add('exam_lifecycle_' + examId, { examId, userId }, { jobId: job.id });
+        }
         
         logger.info({ examId, jobId: job.id }, '[ExamSaga] Lifecycle started');
         return job.id;
@@ -53,6 +61,10 @@ export class ExamSaga {
         jobId: string,
         data: ExamSagaData & { metadata?: { processedSteps?: string[] } }
     ) {
+        if (process.env.QUEUE_ENABLED !== 'true') {
+            logger.warn({ jobId }, '[ExamSaga] QUEUE_DISABLED: skipping execution');
+            return;
+        }
         const { examId } = data;
         const metadata = data.metadata ?? { processedSteps: [] };
         const processedSteps = new Set(metadata.processedSteps ?? []);

@@ -52,7 +52,7 @@ async function handler(_req: NextRequest) {
         roles: _user.userRoles.map((ur) => ur.role.name),
       },
       expiresAt: container.get(TokenService).getExpiration(_token),
-    }), 'private');
+    }), 'SESSION');
   } catch (_error: unknown) {
     return ApiResponse.error(_error, 401);
   }

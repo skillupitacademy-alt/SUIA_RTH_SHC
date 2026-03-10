@@ -10,6 +10,8 @@ type EventHandler<T> = (payload: T) => Promise<void> | void;
 
 class EventBus {
   private handlers = new Map<string, EventHandler<unknown>[]>();
+  // Exposed for tests; mirrors logger interface
+  public log = logger;
 
   /** 
    * Type-safe subscribe to an event.
@@ -42,7 +44,8 @@ class EventBus {
   async emit<T>(event: string, payload: T): Promise<void> {
     const eventHandlers = this.handlers.get(event) ?? [];
     if (eventHandlers.length > 0) {
-      logger.debug({ event, payload }, `[EventBus] Emitting ${String(event)}`);
+      const examId = (payload as any)?.examId;
+      this.log.info({ event, examId }, 'Emitting event');
       await Promise.allSettled(eventHandlers.map(h => Promise.resolve(h(payload as unknown))));
     }
   }
@@ -62,3 +65,4 @@ class EventBus {
 }
 
 export const eventBus = new EventBus();
+(eventBus as any).log = logger;

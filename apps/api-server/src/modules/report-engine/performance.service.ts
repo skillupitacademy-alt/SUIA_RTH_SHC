@@ -3,15 +3,26 @@ import { sql } from "drizzle-orm";
 
 import { logger } from "@/lib/logger";
 
-import { cacheService, type CacheValue } from "../core/cache.service";
+import type { CacheValue } from "../core/cache.service";
 
 export class PerformanceService {
   private static singleton: PerformanceService | null = null;
+  private cacheInstance?: {
+    get<T extends CacheValue>(key: string): Promise<T | null>;
+    set(key: string, value: CacheValue, ttl?: number): Promise<void>;
+    del(key: string): Promise<void>;
+  };
 
   constructor(
     private readonly dbInstance = db,
-    private readonly cache = cacheService
-  ) {}
+    cache?: {
+      get<T extends CacheValue>(key: string): Promise<T | null>;
+      set(key: string, value: CacheValue, ttl?: number): Promise<void>;
+      del(key: string): Promise<void>;
+    }
+  ) {
+    this.cacheInstance = cache;
+  }
 
   private static getInstance() {
     if (this.singleton === null) this.singleton = new PerformanceService();
@@ -39,9 +50,17 @@ export class PerformanceService {
     return `attempt:${examId}:core:v4`;
   }
 
+  private async getCache() {
+    if (this.cacheInstance !== undefined) return this.cacheInstance;
+    const { cacheService } = await import('../core/cache.service');
+    this.cacheInstance = cacheService;
+    return this.cacheInstance;
+  }
+
   async getCachedReport<T extends CacheValue>(examId: string): Promise<T | null> {
     try {
-      return await this.cache.get<T>(this.getCacheKey(examId));
+      const cache = await this.getCache();
+      return await cache.get<T>(this.getCacheKey(examId));
     } catch (err) {
       this.log.warn({ err, examId }, 'Cache read failed, falling back to DB');
       return null;
@@ -50,8 +69,9 @@ export class PerformanceService {
 
   async cacheReport<T extends CacheValue>(examId: string, data: T) {
     try {
+      const cache = await this.getCache();
       // Cache for 24 hours (86400 seconds * 1000ms)
-      await this.cache.set(this.getCacheKey(examId), data, 86400 * 1000);
+      await cache.set(this.getCacheKey(examId), data, 86400 * 1000);
     } catch (err) {
       this.log.warn({ err, examId }, 'Cache write failed, continuing without cache');
     }
@@ -59,7 +79,8 @@ export class PerformanceService {
 
   async invalidateCache(examId: string) {
     try {
-      await this.cache.del(this.getCacheKey(examId));
+      const cache = await this.getCache();
+      await cache.del(this.getCacheKey(examId));
     } catch (err) {
       this.log.warn({ err, examId }, 'Cache invalidate failed, continuing');
     }

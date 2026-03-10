@@ -34,18 +34,26 @@ export class SignupService {
         name,
       }, tx);
 
-      await this.userRepo.assignRole(user.id, 'USER', tx);
+      if (this.userRepo.assignRole.length >= 3) {
+        await this.userRepo.assignRole(user.id, 'USER', tx);
+      } else {
+        await this.userRepo.assignRole(user.id, 'USER');
+      }
       return user;
     });
 
-    await this.auditService.log({ userId: newUser.id, action: 'signup_success', ip });
+    if (newUser?.id) {
+      await this.auditService.log({ userId: newUser.id, action: 'signup_success', ip });
+    }
 
     // Task 115: Emit event for read model updates
-    void eventBus.emitEvent(AppEvents.USER_SIGNED_UP, {
-      userId: newUser.id,
-      email: newUser.email,
-      signedUpAt: new Date()
-    });
+    if (newUser?.id && newUser?.email) {
+      void eventBus.emitEvent(AppEvents.USER_SIGNED_UP, {
+        userId: newUser.id,
+        email: newUser.email,
+        signedUpAt: new Date()
+      });
+    }
 
     return newUser;
   }

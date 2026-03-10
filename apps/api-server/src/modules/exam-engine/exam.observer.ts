@@ -7,7 +7,14 @@ import { QueueFactory } from '../../lib/queue-factory';
 
 export class ExamObserver {
   private static log = logger.child({ module: 'exam-engine:observer' });
-  private static analyticsQueue = QueueFactory.getQueue<AnalyticsJobPayload>('analyticsQueue');
+  private static analyticsQueue: ReturnType<typeof QueueFactory.getQueue<AnalyticsJobPayload>> | null = null;
+
+  private static getAnalyticsQueue() {
+    if (this.analyticsQueue === null) {
+      this.analyticsQueue = QueueFactory.getQueue<AnalyticsJobPayload>('analyticsQueue');
+    }
+    return this.analyticsQueue;
+  }
 
   static init() {
     eventBus.onEvent(AppEvents.EXAM_COMPLETED, ({ examId }) => {
@@ -16,7 +23,8 @@ export class ExamObserver {
       void (async () => {
         try {
           // Task 108: Offload heavy processing to BullMQ
-          await this.analyticsQueue.add('post_exam_' + examId, {
+          const queue = this.getAnalyticsQueue();
+          await queue.add('post_exam_' + examId, {
             examId,
             processingType: 'post_exam_processing',
           } satisfies AnalyticsJobPayload);

@@ -17,6 +17,8 @@ interface DuplicateCheckPayload {
   topicId: string;
 }
 
+export const dynamic = "force-dynamic";
+
 async function postHandler(req: NextRequest) {
   const start = Date.now();
   try {

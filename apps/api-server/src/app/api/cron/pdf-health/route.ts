@@ -2,6 +2,8 @@ import { db, exams } from "@quiz/db";
 import { desc, eq } from "drizzle-orm";
 import { type NextRequest } from "next/server";
 
+export const dynamic = 'force-dynamic';
+
 import { unauthorized } from "@/lib/api-error";
 import { ApiResponse } from "@/lib/api-response";
 import { recordCounter, recordTimer } from "@/lib/metrics";

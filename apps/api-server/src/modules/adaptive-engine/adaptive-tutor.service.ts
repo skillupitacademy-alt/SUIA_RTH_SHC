@@ -3,7 +3,6 @@ import { eq, inArray } from "drizzle-orm";
 
 import { withSpan } from "@/lib/tracer";
 
-import { UserAnalyticsService } from "../analytics/user-analytics.service";
 
 type TopicDetail = (typeof topics)["_"]["inferSelect"] & {
   learningUrl?: string | null;
@@ -35,6 +34,7 @@ export class AdaptiveTutorService {
     return withSpan('AdaptiveTutorService.generateInsights', async (span) => {
       span.setAttribute('userId', userId);
       // 1. Fetch historical analytics
+    const { UserAnalyticsService } = await import('../analytics/user-analytics.service');
     const historical = await UserAnalyticsService.getTopicPerformance(userId);
     const historicalMap = new Map(historical.map((h) => [h.topicId, h.accuracy]));
 

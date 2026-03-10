@@ -55,6 +55,7 @@ vi.mock('@quiz/db', () => {
   };
 });
 
+import { encodePageCursor } from '@/lib/pagination';
 import { DrizzleQuestionRepository } from '../drizzle-question.repository';
 
 describe('DrizzleQuestionRepository', () => {
@@ -73,7 +74,7 @@ describe('DrizzleQuestionRepository', () => {
     const res = await repo.findAll(new Date().toISOString(), 2, { subtopicId: 'st1', status: 'active', search: 'algebra' });
     expect(res.total).toBe(3);
     expect(res.data.length).toBe(2); // sliced
-    expect(res.nextCursor).toBe(`${rows[1].updatedAt.toISOString()}|${rows[1].id}`);
+    expect(res.nextCursor).toBe(encodePageCursor(rows[1].id, rows[1].updatedAt.toISOString()));
   });
 
   it('findAll falls back to topic filter when subtopicId missing', async () => {

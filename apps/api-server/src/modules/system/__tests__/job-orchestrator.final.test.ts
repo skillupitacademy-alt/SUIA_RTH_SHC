@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
 // 1. Mocks at very top for hoisting
-vi.mock('@/modules/system/jobs.service');
+vi.mock('../jobs.service');
 vi.mock('@/modules/analytics/analytics.service');
 vi.mock('@/modules/core/resilience.manager');
 vi.mock('@/modules/scoring-engine/scoring.engine');
@@ -24,7 +24,7 @@ vi.mock('@/lib/logger', () => {
 
 // 2. Imports after mocks
 import { JobOrchestrator } from '../job-orchestrator';
-import { JobsService } from '@/modules/system/jobs.service';
+import { JobsService } from '../jobs.service';
 import { AnalyticsService } from '@/modules/analytics/analytics.service';
 import { resilienceManager } from '@/modules/core/resilience.manager';
 import { ScoringEngine } from '@/modules/scoring-engine/scoring.engine';

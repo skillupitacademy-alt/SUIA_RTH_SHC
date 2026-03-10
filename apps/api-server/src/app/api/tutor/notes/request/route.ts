@@ -11,6 +11,8 @@ import { AdaptiveTutorService } from "@/modules/adaptive-engine/adaptive-tutor.s
 import { TokenService } from "@/modules/auth/token.service";
 import { container } from '@/modules/core/container';
 
+export const dynamic = 'force-dynamic';
+
 async function postHandler(req: NextRequest) {
   const start = Date.now();
   try {

@@ -34,6 +34,7 @@ const {
 vi.mock('@quiz/db', () => ({
   db: {
     select: selectMock,
+    execute: vi.fn(),
     query: {
       auditLogs: { findMany: auditLogsFindManyMock },
       domains: { findMany: domainsFindManyMock },
@@ -67,16 +68,14 @@ describe('DrizzleAdminAnalyticsRepository', () => {
   it('covers all analytics repository methods', async () => {
     const repo = new DrizzleAdminAnalyticsRepository();
 
-    fromMock
-      .mockReturnValueOnce([{ count: 10 }] as any) // users count
-      .mockReturnValueOnce([{ count: 5 }] as any) // exams count
-      .mockReturnValueOnce([{ count: 2 }] as any) // domains count
-      .mockReturnValueOnce({ where: vi.fn().mockResolvedValue([{ count: 3 }]) } as any) // active users
-      .mockReturnValueOnce({ groupBy: vi.fn().mockResolvedValue([{ status: 'completed', count: 3 }]) } as any) // exam activity status
-      .mockReturnValueOnce({ where: vi.fn().mockReturnValue({ groupBy: vi.fn().mockResolvedValue([{ domainName: 'Math', count: 3 }]) }) } as any) // domain activity
-      .mockReturnValueOnce({ where: vi.fn().mockResolvedValue([{ avgTime: 120 }]) } as any) // avg time
-      .mockReturnValueOnce({ where: vi.fn().mockReturnValue({ groupBy: vi.fn().mockResolvedValue([{ quadrant: 'mastery', count: 1 }]) }) } as any) // efficiency
-      .mockReturnValueOnce({ leftJoin: vi.fn().mockReturnValue({ groupBy: vi.fn().mockReturnValue({ orderBy: vi.fn().mockResolvedValue([{ role: 'ADMIN', count: 1 }]) }) }) } as any); // rbac
+    const db = (repo as any)._db;
+    db.execute
+      .mockResolvedValueOnce({ rows: [{ total_users: 10, total_domains: 2, active_users_24h: 3 }] }) // user stats
+      .mockResolvedValueOnce({ rows: [{ total_exams: 5 }] }) // exam stats
+      .mockResolvedValueOnce({ rows: [{ status: 'completed', count: 3 }] }) // exam status stats
+      .mockResolvedValueOnce({ rows: [{ domainName: 'Math', count: 3 }] }) // domain activity stats
+      .mockResolvedValueOnce({ rows: [{ avgTime: 120 }] }) // exam stats avg time
+      .mockResolvedValueOnce({ rows: [{ quadrant: 'mastery', count: 1 }] }); // efficiency stats
 
     await expect(repo.getPlatformMetrics()).resolves.toEqual({
       totalUsers: 10,
@@ -91,6 +90,12 @@ describe('DrizzleAdminAnalyticsRepository', () => {
     });
     await expect(repo.getEfficiencyAnalytics()).resolves.toEqual([{ quadrant: 'mastery', count: 1 }]);
     await expect(repo.getAuditLogs(null, 10)).resolves.toEqual({ data: [{ id: 'a1' }], nextCursor: null });
+    const rbacMock = {
+      groupBy: vi.fn().mockReturnValue({
+        orderBy: vi.fn().mockResolvedValue([{ role: 'ADMIN', count: 1 }])
+      })
+    };
+    leftJoinMock.mockReturnValue(rbacMock as any);
     await expect(repo.getRBACMetrics()).resolves.toEqual([{ role: 'ADMIN', count: 1 }]);
     await expect(repo.getAllDomainHierarchy()).resolves.toEqual([{ id: 'd1' }]);
   });

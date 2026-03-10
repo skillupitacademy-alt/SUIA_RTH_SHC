@@ -22,6 +22,7 @@ import { ReportRepository } from "@/modules/report-engine/report-repository";
 import { ReportJobService } from "@/services/reports/ReportJobService";
 
 export const runtime = "nodejs"; // Required for Puppeteer
+export const dynamic = "force-dynamic";
 
 /**
  * POST /api/generate-report

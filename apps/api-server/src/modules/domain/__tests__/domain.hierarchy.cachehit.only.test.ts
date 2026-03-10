@@ -1,4 +1,5 @@
-import { describe, it, expect, vi } from 'vitest';
+import * as vitest from 'vitest';
+const { describe, it, expect, vi } = vitest;
 
 import { db } from '@quiz/db';
 
@@ -9,6 +10,7 @@ describe('DomainService getDomainHierarchy cache hit short-circuits DB', () => {
   it('returns cached hierarchy and skips DB', async () => {
     const cachedValue = { id: 'd1', subjects: [] };
     vi.spyOn(cacheService, 'get').mockResolvedValueOnce(cachedValue as any);
+    if (!(db as any).query) (db as any).query = {};
     if (!(db as any).query.domains) {
       (db as any).query.domains = { findFirst: vi.fn(), findMany: vi.fn() };
     }

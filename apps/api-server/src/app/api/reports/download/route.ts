@@ -3,6 +3,8 @@ import { METRICS } from "@quiz/observability";
 import { eq } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 
+export const dynamic = 'force-dynamic';
+
 import { badRequest, forbidden, notFound, unauthorized } from "@/lib/api-error";
 import { ApiResponse } from "@/lib/api-response";
 import { recordCounter, recordTimer } from "@/lib/metrics";

@@ -16,11 +16,11 @@ async function getHandler(req: NextRequest) {
 
     if (id !== null && id !== undefined && id !== '') {
       const hierarchy = await DomainService.getDomainHierarchy(id);
-      return withCacheHeaders(ApiResponse.success(hierarchy), 'static');
+      return withCacheHeaders(ApiResponse.success(hierarchy), 'IMMUTABLE');
     }
 
     const domains = await DomainService.getAllDomains();
-    return withCacheHeaders(ApiResponse.success(domains), 'static');
+    return withCacheHeaders(ApiResponse.success(domains), 'IMMUTABLE');
   } catch (error: unknown) {
     return ApiResponse.error(error);
   }

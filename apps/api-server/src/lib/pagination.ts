@@ -52,7 +52,7 @@ export function buildPaginatedResponse<T extends { id: string }>(
   
   return {
     data,
-    nextCursor: lastItem !== undefined ? encodePageCursor(lastItem.id, getSortValue(lastItem)) : null,
+    nextCursor: hasMore && lastItem !== undefined ? encodePageCursor(lastItem.id, getSortValue(lastItem)) : null,
     hasMore,
     total
   };

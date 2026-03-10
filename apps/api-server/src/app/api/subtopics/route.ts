@@ -18,7 +18,7 @@ async function getHandler(req: NextRequest) {
     }
 
     const subtopics = await TopicService.getSubtopicsByTopic(topicId);
-    return withCacheHeaders(ApiResponse.success(subtopics), 'static');
+    return withCacheHeaders(ApiResponse.success(subtopics), 'IMMUTABLE');
   } catch (error: unknown) {
     return ApiResponse.error(error);
   }

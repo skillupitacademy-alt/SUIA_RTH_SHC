@@ -4,6 +4,8 @@ import { migrate } from 'drizzle-orm/neon-serverless/migrator';
 import { type NextRequest } from 'next/server';
 import path from 'path';
 
+export const dynamic = 'force-dynamic';
+
 import { unauthorized } from "@/lib/api-error";
 import { ApiResponse } from "@/lib/api-response";
 import { recordCounter, recordTimer } from "@/lib/metrics";

@@ -7,6 +7,7 @@ import { recordCounter } from '@/lib/metrics';
 import { AdminAuthService } from '@/modules/auth/admin-auth.service';
 
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
 const loginSchema = z.object({
   email: z.string().email(),

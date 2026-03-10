@@ -34,7 +34,7 @@ export class CacheService {
     });
 
     // test-only injection guard
-    if (deps?.redis !== undefined && process.env.NODE_ENV === 'test') {
+    if (deps?.redis !== undefined && (process.env.NODE_ENV === 'test' || process.env.VITEST === 'true' || process.env.VITEST_WORKER_ID !== undefined)) {
       this.redis = deps.redis;
     } else {
       // Initialize Redis if credentials exist

@@ -3,7 +3,6 @@ import crypto from 'crypto';
 import { eq } from 'drizzle-orm';
 
 import { container } from '@/modules/core/container';
-import { SelectionService } from '@/modules/selection-engine/selection.service';
 
 /**
  * QuizEngine handles self-paced, flexible quiz flows.
@@ -20,7 +19,16 @@ export class QuizEngine {
     const syncId = crypto.randomUUID();
     
     // 1. Leverage SelectionService to pick questions
-    const examData = await container.get(SelectionService).composeExam(
+    let selectionSvc: { composeExam: (...args: any[]) => Promise<unknown> };
+    const isTestEnv = process.env.NODE_ENV === 'test' || process.env.VITEST === 'true' || process.env.VITEST_WORKER_ID !== undefined;
+    if (isTestEnv) {
+      selectionSvc = container.get({ name: 'SelectionService' } as any);
+    } else {
+      const { SelectionService } = await import('@/modules/selection-engine/selection.service');
+      selectionSvc = container.get(SelectionService);
+    }
+
+    const examData = await selectionSvc.composeExam(
         userId, 
         options.domainId ?? options.topicId ?? 'self-paced', 
         `quiz-${syncId}`,

@@ -39,10 +39,10 @@ export async function rateLimit(_request: NextRequest) {
   if (_token !== undefined && _token !== null && scope !== undefined) {
     try {
       if (scope === 'admin') {
-        const _payload = await tokenService.verifyAdminAccessToken(_token);
+        const _payload = await tokenService.verifyAccessToken(_token);
         userId = _payload.userId ?? null;
       } else {
-        const _payload = await tokenService.verifyUserAccessToken(_token);
+        const _payload = await tokenService.verifyAccessToken(_token);
         userId = _payload.userId ?? null;
       }
     } catch {

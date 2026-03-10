@@ -38,7 +38,7 @@ export class ResendEmailProvider implements IEmailProvider {
     }
   }
 
-  async sendPasswordReset(email: string, resetUrl: string): Promise<void> {
+  async sendPasswordResetEmail(email: string, resetUrl: string): Promise<void> {
     const html = `
       <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px;">
         <h2 style="color: #0f172a; font-size: 24px; font-weight: 800; margin-bottom: 24px;">Reset your password</h2>

@@ -40,7 +40,16 @@ describe('Consolidated Administration Coverage', () => {
   const topicRepoStub = { findAll: vi.fn(), create: vi.fn(), update: vi.fn(), delete: vi.fn(), deleteBatch: vi.fn() };
   const subtopicRepoStub = { findAll: vi.fn(), create: vi.fn(), update: vi.fn(), delete: vi.fn(), deleteBatch: vi.fn() };
   const adminUserRepoStub = { findAll: vi.fn(), update: vi.fn(), delete: vi.fn(), toggleBlockStatus: vi.fn() };
-  const analyticsEngine = new AdminAnalyticsEngine();
+  const analyticsRepoStub = {
+    getEfficiencyAnalytics: vi.fn(),
+    getAllDomainHierarchy: vi.fn(),
+    getPlatformMetrics: vi.fn(),
+    getExamActivity: vi.fn(),
+    getAuditLogs: vi.fn(),
+    getRBACMetrics: vi.fn(),
+    withDb: vi.fn(function withDb() { return this; })
+  };
+  const analyticsEngine = new AdminAnalyticsEngine(analyticsRepoStub as any);
   const domainEngine = new AdminDomainEngine(domainRepoStub as any, auditStub as any);
   const skillEngine = new AdminSkillEngine(skillRepoStub as any, auditStub as any);
   const subjectEngine = new AdminSubjectEngine(subjectRepoStub as any, auditStub as any);
@@ -50,6 +59,12 @@ describe('Consolidated Administration Coverage', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    analyticsRepoStub.getEfficiencyAnalytics.mockReset();
+    analyticsRepoStub.getAllDomainHierarchy.mockReset();
+    analyticsRepoStub.getPlatformMetrics.mockReset();
+    analyticsRepoStub.getExamActivity.mockReset();
+    analyticsRepoStub.getAuditLogs.mockReset();
+    analyticsRepoStub.getRBACMetrics.mockReset();
     // Set default returns for findMany to avoid '.map of undefined' errors
     vi.mocked(mockDb.query.users.findMany).mockResolvedValue([]);
     vi.mocked(mockDb.query.domains.findMany).mockResolvedValue([]);
@@ -73,25 +88,17 @@ describe('Consolidated Administration Coverage', () => {
 
   describe('AdminAnalyticsEngine', () => {
     it('covers efficiency analytics quadrants', async () => {
-        vi.mocked(mockDb.select).mockReturnValue({
-            from: vi.fn().mockReturnValue({
-                where: vi.fn().mockReturnValue({
-                    groupBy: vi.fn().mockImplementation(async () => {
-                        const data = [
-                            { quadrant: 'mastery', count: 5 },
-                            { quadrant: 'rash', count: 2 }
-                        ];
-                        return data;
-                    })
-                })
-            })
-        } as any);
+        analyticsRepoStub.getEfficiencyAnalytics.mockResolvedValue([
+          { quadrant: 'mastery', count: 5 },
+          { quadrant: 'rash', count: 2 }
+        ]);
         const analytics = await analyticsEngine.getEfficiencyAnalytics();
         expect(analytics.mastery).toBe(5);
         expect(analytics.rash).toBe(2);
     });
 
     it('handles performance analytics with range', async () => {
+        analyticsRepoStub.getEfficiencyAnalytics.mockResolvedValue([]);
         vi.mocked(mockDb.execute).mockResolvedValue({ 
             rows: [{ dimensionId: 'd1', name: 'Domain 1', avgAccuracy: 85, count: 10 }] 
         } as any);
@@ -100,12 +107,25 @@ describe('Consolidated Administration Coverage', () => {
     });
 
     it('covers content health report branches', async () => {
-        vi.mocked(mockDb.query.domains.findMany).mockResolvedValue([
-            { id: 'd1', name: 'D1', subjects: [
-                { id: 's1', name: 'S1', topics: [
-                    { id: 't1', name: 'T1', questions: [{ difficulty: 'simple', subtopicId: 'st1' }], subtopics: [{ id: 'st1', name: 'ST1' }] }
-                ]}
-            ]}
+        analyticsRepoStub.getAllDomainHierarchy.mockResolvedValue([
+          {
+            id: 'd1',
+            name: 'D1',
+            subjects: [
+              {
+                id: 's1',
+                name: 'S1',
+                topics: [
+                  {
+                    id: 't1',
+                    name: 'T1',
+                    questions: [{ difficulty: 'simple', subtopicId: 'st1' }],
+                    subtopics: [{ id: 'st1', name: 'ST1' }]
+                  }
+                ]
+              }
+            ]
+          }
         ] as any);
         const report = await analyticsEngine.getContentHealthReport();
         expect(report).toBeDefined();

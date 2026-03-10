@@ -8,7 +8,7 @@ const jobs = {
 };
 const resilience = { isHighLoad: vi.fn().mockReturnValue(true) };
 
-vi.mock('@/modules/system/jobs.service', () => ({ JobsService: jobs }));
+vi.mock('../jobs.service', () => ({ JobsService: jobs }));
 vi.mock('@/modules/core/resilience.manager', () => ({ resilienceManager: resilience }));
 vi.mock('@/modules/analytics/analytics.service', () => ({ AnalyticsService: { refreshAllViews: vi.fn() } }));
 vi.mock('@/modules/scoring-engine/scoring.engine', () => ({ ScoringEngine: { calculateExamResults: vi.fn() } }));

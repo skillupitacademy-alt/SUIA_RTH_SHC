@@ -8,6 +8,8 @@ import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from "@/lib/sa
 import { withLogging } from "@/lib/withLogging";
 import { JobOrchestrator } from '@/modules/system/job-orchestrator';
 
+export const dynamic = "force-dynamic";
+
 async function postHandler(req: NextRequest) {
   const start = Date.now();
   try {

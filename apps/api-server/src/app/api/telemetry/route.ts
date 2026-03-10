@@ -1,11 +1,12 @@
 import { type NextRequest } from "next/server";
-
 import { badRequest } from "@/lib/api-error";
 import { ApiResponse } from "@/lib/api-response";
 import { logger } from "@/lib/logger";
 import { recordCounter, recordTimer } from "@/lib/metrics";
 import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from "@/lib/sanitize";
 import { withLogging } from "@/lib/withLogging";
+
+export const dynamic = 'force-dynamic';
 
 const SENSITIVE_FIELDS = ['email', 'password', 'token', 'ssn', 'phone', 'secret', 'key'];
 

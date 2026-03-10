@@ -18,7 +18,7 @@ async function getHandler(req: NextRequest) {
     }
 
     const subjects = await SubjectService.getSubjectsByDomain(domainId);
-    return withCacheHeaders(ApiResponse.success(subjects), 'static');
+    return withCacheHeaders(ApiResponse.success(subjects), 'IMMUTABLE');
   } catch (error: unknown) {
     return ApiResponse.error(error);
   }

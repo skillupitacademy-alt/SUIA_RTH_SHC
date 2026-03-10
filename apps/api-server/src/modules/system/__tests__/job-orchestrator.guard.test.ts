@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
 const envBackup = { ...process.env };
 
-vi.mock('@/modules/system/jobs.service', () => ({
+vi.mock('../jobs.service', () => ({
   JobsService: {
     getJob: vi.fn(),
     updateJobStatus: vi.fn(),

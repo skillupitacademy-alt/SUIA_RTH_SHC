@@ -9,6 +9,7 @@ import { recordCounter } from "@/lib/metrics";
 import { withLogging } from "@/lib/withLogging";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 /**
  * Sweep Stuck Reports

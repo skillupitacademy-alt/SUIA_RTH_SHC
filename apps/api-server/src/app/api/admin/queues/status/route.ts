@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 
+export const dynamic = 'force-dynamic';
+
 import { bootstrapCQRS, GetQueueStatusQuery, queryBus } from '@/lib/cqrs';
 import { logger } from '@/lib/logger';
 

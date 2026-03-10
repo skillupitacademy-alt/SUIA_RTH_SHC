@@ -11,6 +11,8 @@ import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from "@/lib/sa
 import { withLogging } from "@/lib/withLogging";
 import { verifyAdminOrInfraToken } from "@/modules/auth/admin-audience.util";
 
+export const dynamic = "force-dynamic";
+
 // Define strict types locally to ensure safety without circular deps
 type Difficulty = 'simple' | 'intermediate' | 'expert';
 type MappingType = 'conceptual' | 'technical' | 'practical';

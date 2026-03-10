@@ -1,5 +1,7 @@
 import type { NextRequest } from 'next/server';
 
+export const dynamic = 'force-dynamic';
+
 import { badRequest, forbidden, unauthorized } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
 import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sanitize';

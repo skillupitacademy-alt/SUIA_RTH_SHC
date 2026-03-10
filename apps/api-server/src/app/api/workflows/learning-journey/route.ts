@@ -3,6 +3,8 @@ import { serve } from "@upstash/workflow/nextjs";
 import { logger } from "@/lib/logger";
 import { withLogging } from "@/lib/withLogging";
 
+export const dynamic = "force-dynamic";
+
 /**
  * Durable Workflow for managing a student's learning journey.
  * Orchestrates engagement steps over several days.

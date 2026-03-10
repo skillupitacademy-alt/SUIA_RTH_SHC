@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { db } from '@quiz/db';
 
 const { executeMock, trendSummaryMock, periodDeltaMock, domainDeltasMock, execHealthMock } = vi.hoisted(() => ({
   executeMock: vi.fn(),
@@ -119,7 +120,7 @@ describe('AdminAnalyticsEngine', () => {
     domainDeltasMock.mockResolvedValue({ d1: { current: 70, previous: 64, delta: 6 } });
     execHealthMock.mockReturnValue('green');
 
-    executeMock
+    vi.mocked(db.execute)
       .mockResolvedValueOnce({ rows: [{ dimensionId: 'd1', name: 'Domain 1', avgAccuracy: 72, count: 10 }] })
       .mockResolvedValueOnce({ rows: [{ difficulty: 'simple', avgAccuracy: 81 }] })
       .mockResolvedValueOnce({ rows: [{ isPass: true, count: 8 }, { isPass: false, count: 2 }] });
@@ -133,7 +134,7 @@ describe('AdminAnalyticsEngine', () => {
     domainDeltasMock.mockRejectedValueOnce(new Error('boom'));
     repository.getEfficiencyAnalytics.mockRejectedValueOnce(new Error('boom'));
     execHealthMock.mockReturnValueOnce('red');
-    executeMock
+    vi.mocked(db.execute)
       .mockResolvedValueOnce({ rows: [] })
       .mockResolvedValueOnce({ rows: [] })
       .mockResolvedValueOnce({ rows: [] });
@@ -172,7 +173,7 @@ describe('AdminAnalyticsEngine', () => {
     periodDeltaMock.mockResolvedValue({ currentAvg: 10, previousAvg: null, deltaPct: null });
     domainDeltasMock.mockResolvedValue({});
     execHealthMock.mockReturnValue('yellow');
-    executeMock
+    vi.mocked(db.execute)
       .mockResolvedValueOnce({ rows: [{ dimensionId: null, name: null, avgAccuracy: undefined, count: undefined }] })
       .mockResolvedValueOnce({ rows: [{ difficulty: 'simple', avgAccuracy: undefined }] })
       .mockResolvedValueOnce({ rows: [] });

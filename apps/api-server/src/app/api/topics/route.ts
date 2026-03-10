@@ -18,7 +18,7 @@ async function getHandler(req: NextRequest) {
     }
 
     const topics = await TopicService.getTopicsBySubject(subjectId);
-    return withCacheHeaders(ApiResponse.success(topics), 'static');
+    return withCacheHeaders(ApiResponse.success(topics), 'IMMUTABLE');
   } catch (error: unknown) {
     return ApiResponse.error(error);
   }
