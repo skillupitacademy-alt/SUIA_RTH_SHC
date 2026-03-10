@@ -1,9 +1,7 @@
-'use client';
-
 import { apiClient } from '@quiz/api-client';
-import { ZLoader } from '@quiz/ui';
+import { useAuthSync,ZLoader } from '@quiz/ui';
 import { usePathname, useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useCallback,useEffect } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 
 import { useAuthStore } from '@/store/auth-store';
@@ -24,10 +22,41 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
     const router = useRouter();
     const pathname = usePathname();
 
-    useEffect(() => {
-        // 1. Establish Portal Identity Hint
-        apiClient.client.setPortalIdentity('admin');
-    }, []);
+    // Circuit Breaker: Custom handler for Admin
+    const handleUnauthorized = useCallback((e: Event) => {
+        // PATIENCE PROTOCOL: If the terminal is locked, the user is still at their desk (or pause-mode)
+        // We should NOT trigger a hard logout/redirect in the background.
+        // The AdminLockScreen will handle re-authentication when the user attempts to unlock.
+        if (isLocked === true) {
+            clientLogger.warn("Circuit Breaker: 401 detected while LOCKED. Deferring to Lock Protocol.");
+            e.preventDefault(); // Tells FetchClient NOT to perform hard window.location redirect
+            return;
+        }
+
+        void (async () => {
+            clientLogger.warn("Circuit Breaker: Global 401 detected. Logging out.");
+            try {
+                await apiClient.auth.logout();
+            } catch (err) {
+                clientLogger.error("Server-side logout failed during unauthorized event", { error: err instanceof Error ? err.message : 'unknown' });
+            } finally {
+                logout();
+                if (typeof window !== 'undefined') {
+                    window.localStorage.removeItem('quiz-platform-admin-auth');
+                }
+                router.push('/login?reason=session_expired');
+            }
+        })();
+    }, [isLocked, logout, router]);
+
+    // Centralized Auth Sync Hook
+    useAuthSync({
+        portal: 'admin',
+        isAuthenticated,
+        isLocked,
+        logout,
+        onUnauthorized: handleUnauthorized
+    });
 
     useEffect(() => {
         if (initialized === false) return;
@@ -63,36 +92,6 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
                 void revalidate();
             }
         }
-
-        // Circuit Breaker: Listen for global 401 events from FetchClient
-        const handleUnauthorized = (e: Event) => {
-            // PATIENCE PROTOCOL: If the terminal is locked, the user is still at their desk (or pause-mode)
-            // We should NOT trigger a hard logout/redirect in the background.
-            // The AdminLockScreen will handle re-authentication when the user attempts to unlock.
-            if (isLocked === true) {
-                clientLogger.warn("Circuit Breaker: 401 detected while LOCKED. Deferring to Lock Protocol.");
-                e.preventDefault(); // Tells FetchClient NOT to perform hard window.location redirect
-                return;
-            }
-
-            void (async () => {
-                clientLogger.warn("Circuit Breaker: Global 401 detected. Logging out.");
-                try {
-                    await apiClient.auth.logout();
-                } catch (err) {
-                    clientLogger.error("Server-side logout failed during unauthorized event", { error: err instanceof Error ? err.message : 'unknown' });
-                } finally {
-                    logout();
-                    if (typeof window !== 'undefined') {
-                        window.localStorage.removeItem('quiz-platform-admin-auth');
-                    }
-                    router.push('/login?reason=session_expired');
-                }
-            })();
-        };
-
-        window.addEventListener('auth:unauthorized', handleUnauthorized);
-        return () => window.removeEventListener('auth:unauthorized', handleUnauthorized);
     }, [expiresAt, initialized, isAuthenticated, isLocked, login, logout, pathname, router, user]);
 
 

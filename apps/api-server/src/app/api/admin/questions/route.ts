@@ -1,13 +1,16 @@
 import { METRICS } from '@quiz/observability';
 import type { NextRequest } from 'next/server';
 
+import type { AdminQuestionInput } from '@/dtos/admin.dto';
 import { badRequest } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
+import { withCorrelationId } from '@/lib/correlation-id.middleware';
+import { bootstrapCQRS, GetQuestionsQuery, queryBus } from '@/lib/cqrs';
 import { logger } from '@/lib/logger';
 import { recordCounter, recordTimer } from '@/lib/metrics';
 import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 import { withLogging } from '@/lib/withLogging';
-import { AdminQuestionEngine, type CreateQuestionInput } from "@/modules/admin-engine/admin.engine";
+import { AdminQuestionEngine as AdminQuestionEngineClass, type CreateQuestionInput } from "@/modules/admin-engine/admin.question.engine";
 import { _verifyAdmin } from '@/modules/auth/rbac.service';
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
@@ -16,6 +19,12 @@ import { questionSchema } from '@/schemas/admin.schemas';
 export const dynamic = 'force-dynamic';
 
 const log = logger.child({ module: 'admin:questions' });
+type QuestionsQueryResult = {
+  questions: unknown[];
+  total: number;
+  nextCursor: string | null;
+  limit: number;
+};
 
 async function getHandler(_req: NextRequest) {
     const start = Date.now();
@@ -46,10 +55,11 @@ async function getHandler(_req: NextRequest) {
         search: searchParams.get('search') ?? undefined,
     };
 
-    const result = await AdminQuestionEngine.getQuestions(cursor, limit, filters);
+    bootstrapCQRS();
+    const result = await queryBus.dispatch(new GetQuestionsQuery(cursor, limit, filters)) as QuestionsQueryResult;
     
     const { toAdminQuestionDTO } = await import('@/dtos/admin.dto');
-    const questionsDto = result.questions.map(toAdminQuestionDTO);
+    const questionsDto = (result.questions as unknown[]).map((q) => toAdminQuestionDTO(q as AdminQuestionInput));
 
     const durationMs = Date.now() - start;
     recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.questions.get.success', 1);
@@ -91,7 +101,8 @@ async function postHandler(_req: NextRequest) {
       return ApiResponse.error(badRequest('Invalid payload', 'BAD_REQUEST', parsed.error.issues));
     }
 
-    const result = await AdminQuestionEngine.createQuestion(parsed.data, _payload.userId);
+    const engine = container.get(AdminQuestionEngineClass);
+    const result = await engine.createQuestion(parsed.data, _payload.userId);
     
     const durationMs = Date.now() - start;
     recordCounter(METRICS.ADMIN.PUBLISH, 1, { action: 'create', outcome: 'success' });
@@ -106,5 +117,5 @@ async function postHandler(_req: NextRequest) {
   }
 }
 
-export const GET = withLogging(getHandler, { component: 'admin', operation: 'get_questions' });
-export const POST = withLogging(postHandler, { component: 'admin', operation: 'create_question' });
+export const GET = withCorrelationId(withLogging(getHandler, { component: 'admin', operation: 'get_questions' }));
+export const POST = withCorrelationId(withLogging(postHandler, { component: 'admin', operation: 'create_question' }));

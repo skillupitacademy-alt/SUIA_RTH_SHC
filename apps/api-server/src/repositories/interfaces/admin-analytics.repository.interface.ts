@@ -1,24 +1,18 @@
-type UnknownRecord = Record<string, unknown>;
+import { db } from '@quiz/db';
 
-type ExamActivityRow = { status: string; count: number };
-type DomainActivityRow = { domainName: string | null; count: number };
-type EfficiencyRow = { quadrant: string; count: number };
-type DomainHierarchy = {
+export type UnknownRecord = Record<string, unknown>;
+
+export type ExamActivityRow = { status: string; count: number };
+export type DomainActivityRow = { domainName: string | null; count: number };
+export type EfficiencyRow = { quadrant: string; count: number };
+export type DomainHierarchy = {
   id: string;
   name: string;
-  subjects: Array<{
-    id: string;
-    name: string;
-    topics: Array<{
-      id: string;
-      name: string;
-      subtopics: Array<{ id: string; name: string }>;
-      questions: Array<{ difficulty: string; subtopicId: string | null }>;
-    }>;
-  }>;
+  subjects: Array<Record<string, unknown>>;
 };
 
 export interface IAdminAnalyticsRepository {
+  withDb(dbClient: typeof db): IAdminAnalyticsRepository;
   getPlatformMetrics(): Promise<UnknownRecord>;
   getExamActivity(): Promise<{
     statusStats: ExamActivityRow[];

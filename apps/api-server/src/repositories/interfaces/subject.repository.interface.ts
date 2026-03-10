@@ -1,8 +1,12 @@
-import { subjects } from '@quiz/db';
+import { db, subjects } from '@quiz/db';
 
 export interface ISubjectRepository {
+  /**
+   * Returns a new instance of the repository using the specified database client.
+   */
+  withDb(dbClient: typeof db): this;
   findAll(cursor: string | null, limit: number, filters?: { domainId?: string; search?: string }): Promise<{
-    data: Array<(typeof subjects.$inferSelect) & { domain?: Record<string, unknown> }>;
+    data: Array<(typeof subjects.$inferSelect) & { domain?: Record<string, unknown> | Record<string, unknown>[] }>;
     total: number;
     nextCursor: string | null;
     limit: number;

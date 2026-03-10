@@ -6,6 +6,7 @@
  */
 import pino from 'pino';
 
+import { getRequestId, getUserId } from './request-context';
 import { getCorrelationId } from './trace.context';
 
 const isProd = process.env.NODE_ENV === 'production';
@@ -16,9 +17,13 @@ export const logger = pino({
     serializers: pino.stdSerializers,
     mixin() {
         const correlationId = getCorrelationId();
-        return correlationId !== undefined && correlationId !== null && correlationId !== ''
-          ? { correlationId }
-          : {};
+        const requestId = getRequestId();
+        const userId = getUserId();
+        return {
+            ...(typeof correlationId === 'string' && correlationId.trim().length > 0 ? { correlationId } : {}),
+            ...(typeof requestId === 'string' && requestId.trim().length > 0 ? { requestId } : {}),
+            ...(typeof userId === 'string' && userId.trim().length > 0 ? { userId } : {}),
+        };
     },
     formatters: {
         level: (label) => ({ level: label }),

@@ -42,27 +42,47 @@ export class ReportMaterializer {
 
             if (!exam) throw new Error("Exam not found");
 
-            const questions = exam.examQuestions.map(eq => ({
-                id: eq.id,
-                text: eq.question.questionText,
-                userAnswer: eq.userAnswer,
-                correctAnswer: eq.question.correctAnswer,
-                explanation: eq.question.explanation,
-                isCorrect: eq.isCorrect === true,
+            type QuestionRow = {
+                id: string;
+                text: string;
+                userAnswer: string | null;
+                correctAnswer: string | null;
+                explanation: string | null;
+                isCorrect: boolean;
+                timeSpent: number;
+                difficulty: string;
+                topicId: string;
+                topicName: string;
+                subjectId: string;
+                subjectName: string;
+                domainId: string;
+                domainName: string;
+                subtopicId: string | null;
+                subtopicName: string;
+            };
+
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const questions: QuestionRow[] = exam.examQuestions.map((eqRow: any) => ({
+                id: eqRow.id,
+                text: eqRow.question.questionText,
+                userAnswer: eqRow.userAnswer,
+                correctAnswer: eqRow.question.correctAnswer,
+                explanation: eqRow.question.explanation,
+                isCorrect: eqRow.isCorrect === true,
                 timeSpent:
-                    typeof eq.responseMetadata === "object" &&
-                    eq.responseMetadata !== null &&
-                    typeof (eq.responseMetadata as { timeSpentSeconds?: number }).timeSpentSeconds === "number"
-                        ? (eq.responseMetadata as { timeSpentSeconds?: number }).timeSpentSeconds
+                    typeof eqRow.responseMetadata === "object" &&
+                    eqRow.responseMetadata !== null &&
+                    typeof eqRow.responseMetadata.timeSpentSeconds === "number"
+                        ? eqRow.responseMetadata.timeSpentSeconds
                         : 0,
-                difficulty: eq.question.difficulty,
-                topicId: eq.question.topicId,
-                topicName: eq.question.topic.name,
-                subjectId: eq.question.topic.subjectId,
-                subjectName: eq.question.topic.subject.name,
-                domainId: eq.question.topic.subject.domainId,
-                domainName: eq.question.topic.subject.domain.name,
-                subtopicId: eq.question.subtopicId,
+                difficulty: eqRow.question.difficulty,
+                topicId: eqRow.question.topicId,
+                topicName: eqRow.question.topic.name,
+                subjectId: eqRow.question.topic.subjectId,
+                subjectName: eqRow.question.topic.subject.name,
+                domainId: eqRow.question.topic.subject.domainId,
+                domainName: eqRow.question.topic.subject.domain.name,
+                subtopicId: eqRow.question.subtopicId,
                 subtopicName: "", // We'll fetch this if needed or mapping exists
             }));
 
@@ -70,7 +90,7 @@ export class ReportMaterializer {
             const subtopicIds = Array.from(
                 new Set(
                     questions
-                        .map(q => q.subtopicId)
+                        .map((q: QuestionRow) => q.subtopicId)
                         .filter((id): id is string => id !== null && id !== undefined && id !== "")
                 )
             );
@@ -91,7 +111,7 @@ export class ReportMaterializer {
             const subjectsMap = new Map<string, SubjectNode>();
             const topicsMap = new Map<string, TopicNode>();
 
-            questions.forEach(q => {
+            questions.forEach((q: QuestionRow) => {
                 if (!subjectsMap.has(q.subjectId)) {
                     const sNode: SubjectNode = { id: q.subjectId, name: q.subjectName, topics: [] };
                     subjectsMap.set(q.subjectId, sNode);
@@ -117,8 +137,8 @@ export class ReportMaterializer {
             };
 
             for (const subject of hierarchy.subjects) {
-                const subjectQuestions = questions.filter(q => q.subjectId === subject.id);
-                const sAccuracy = (subjectQuestions.filter(q => q.isCorrect).length / subjectQuestions.length) * 100;
+                const subjectQuestions = questions.filter((q: QuestionRow) => q.subjectId === subject.id);
+                const sAccuracy = (subjectQuestions.filter((q: QuestionRow) => q.isCorrect).length / subjectQuestions.length) * 100;
 
                 datasets.domain.subjectAccuracies.push({
                     subjectId: subject.id,
@@ -135,8 +155,8 @@ export class ReportMaterializer {
                 };
 
                 for (const topic of subject.topics) {
-                    const topicQuestions = questions.filter(q => q.topicId === topic.id);
-                    const tAccuracy = (topicQuestions.filter(q => q.isCorrect).length / topicQuestions.length) * 100;
+                    const topicQuestions = questions.filter((q: QuestionRow) => q.topicId === topic.id);
+                    const tAccuracy = (topicQuestions.filter((q: QuestionRow) => q.isCorrect).length / topicQuestions.length) * 100;
 
                     datasets.subjects[subject.id].topicAccuracies.push({
                         topicId: topic.id,
@@ -145,8 +165,8 @@ export class ReportMaterializer {
                     });
 
                     // Detailed Topic Dataset
-                    const topicSubtopics = Array.from(new Set(topicQuestions.map(q => q.subtopicId))).map(sid => {
-                        const sqs = topicQuestions.filter(q => q.subtopicId === sid);
+                    const topicSubtopics = Array.from(new Set(topicQuestions.map((q: QuestionRow) => q.subtopicId))).map((sid) => {
+                        const sqs = topicQuestions.filter((q: QuestionRow) => q.subtopicId === sid);
                         const safeSubtopic = getSafeSubtopic(sid, subtopicMap);
                         
                         return {
@@ -157,11 +177,11 @@ export class ReportMaterializer {
                         };
                     });
 
-                    const heatmap = [];
+                    const heatmap: Array<{ subtopic: string; difficulty: string; accuracy: number; attempts: number }> = [];
                     const diffs = ['simple', 'intermediate', 'expert'];
                     const stNames = Array.from(
                         new Set(
-                            topicQuestions.map(q => {
+                            topicQuestions.map((q: QuestionRow) => {
                                 return getSafeSubtopic(q.subtopicId, subtopicMap).name;
                             })
                         )
@@ -169,7 +189,7 @@ export class ReportMaterializer {
 
                     for (const st of stNames) {
                         for (const d of diffs) {
-                            const cellQs = topicQuestions.filter(q => {
+                            const cellQs = topicQuestions.filter((q: QuestionRow) => {
                                 return getSafeSubtopic(q.subtopicId, subtopicMap).name === st && q.difficulty === d;
                             });
                             if (cellQs.length > 0) {
@@ -188,18 +208,30 @@ export class ReportMaterializer {
                         name: topic.name,
                         accuracy: Math.round(tAccuracy),
                         attempted: topicQuestions.length,
-                        correct: topicQuestions.filter(q => q.isCorrect).length,
-                        incorrect: topicQuestions.filter(q => !q.isCorrect).length,
+                        correct: topicQuestions.filter((q: QuestionRow) => q.isCorrect === true).length,
+                        incorrect: topicQuestions.filter((q: QuestionRow) => q.isCorrect !== true).length,
                         avgTime: Math.round(
-                            topicQuestions.reduce((acc, curr) => acc + (curr.timeSpent as number), 0) /
+                            topicQuestions.reduce((acc: number, curr: QuestionRow) => acc + (curr.timeSpent as number), 0) /
                             topicQuestions.length
                         ),
                         subtopics: topicSubtopics,
                         timeSeries: [], 
                         difficultySplit: {
-                            easy: Math.round((topicQuestions.filter(q => q.difficulty === 'simple' && q.isCorrect).length / (topicQuestions.filter(q => q.difficulty === 'simple').length || 1)) * 100),
-                            medium: Math.round((topicQuestions.filter(q => q.difficulty === 'intermediate' && q.isCorrect).length / (topicQuestions.filter(q => q.difficulty === 'intermediate').length || 1)) * 100),
-                            hard: Math.round((topicQuestions.filter(q => q.difficulty === 'expert' && q.isCorrect).length / (topicQuestions.filter(q => q.difficulty === 'expert').length || 1)) * 100)
+                            easy: (() => {
+                                const total = topicQuestions.filter((q: QuestionRow) => q.difficulty === 'simple').length;
+                                const correct = topicQuestions.filter((q: QuestionRow) => q.difficulty === 'simple' && q.isCorrect === true).length;
+                                return Math.round((correct / (total === 0 ? 1 : total)) * 100);
+                            })(),
+                            medium: (() => {
+                                const total = topicQuestions.filter((q: QuestionRow) => q.difficulty === 'intermediate').length;
+                                const correct = topicQuestions.filter((q: QuestionRow) => q.difficulty === 'intermediate' && q.isCorrect === true).length;
+                                return Math.round((correct / (total === 0 ? 1 : total)) * 100);
+                            })(),
+                            hard: (() => {
+                                const total = topicQuestions.filter((q: QuestionRow) => q.difficulty === 'expert').length;
+                                const correct = topicQuestions.filter((q: QuestionRow) => q.difficulty === 'expert' && q.isCorrect === true).length;
+                                return Math.round((correct / (total === 0 ? 1 : total)) * 100);
+                            })()
                         },
                         heatmap,
                         ai: {
@@ -223,10 +255,10 @@ export class ReportMaterializer {
                 }
             }
 
-            datasets.domain.overallAccuracy = Math.round((questions.filter(q => q.isCorrect).length / questions.length) * 100);
+            datasets.domain.overallAccuracy = Math.round((questions.filter((q: QuestionRow) => q.isCorrect).length / questions.length) * 100);
 
             // 4. Appendix
-            const questionBank: QuestionItem[] = questions.map(q => ({
+            const questionBank: QuestionItem[] = questions.map((q: QuestionRow) => ({
                 id: q.id,
                 text: q.text,
                 userAnswer: q.userAnswer,

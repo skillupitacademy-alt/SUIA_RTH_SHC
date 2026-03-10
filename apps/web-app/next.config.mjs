@@ -10,6 +10,7 @@ const apiUrlClean = (process.env.NEXT_PUBLIC_API_URL || "https://api.realtutoria
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+    compress: true,
     transpilePackages: ['@quiz/api-client', '@quiz/db', '@quiz/ui', 'lucide-react'],
     serverExternalPackages: ['jsdom', 'html-encoding-sniffer', '@exodus/bytes', 'isomorphic-dompurify'],
     async headers() {

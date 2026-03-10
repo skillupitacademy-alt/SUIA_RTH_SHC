@@ -24,8 +24,29 @@ import { MonitoringProvider } from "@/components/providers/MonitoringProvider";
 import { QueryProvider } from "@/components/providers/QueryProvider";
 
 export const metadata: Metadata = {
-    title: "Quiz Platform",
-    description: "Learn and Test your knowledge",
+    title: {
+        default: "Quiz Platform | Master Your Skills",
+        template: "%s | Quiz Platform"
+    },
+    description: "Learn and test your knowledge with our high-performance adaptive quiz platform. Master any subject with data-driven insights.",
+    manifest: "/manifest.json",
+    icons: {
+        icon: "/favicon.ico",
+        apple: "/icon-192.png",
+    },
+    openGraph: {
+        type: "website",
+        locale: "en_US",
+        url: "https://quiz-platform.vercel.app",
+        siteName: "Quiz Platform",
+        title: "Quiz Platform | Elite Learning & Assessment",
+        description: "Adaptive testing, deep analytics, and mastery-based learning.",
+    },
+    twitter: {
+        card: "summary_large_image",
+        title: "Quiz Platform",
+        description: "Adaptive learning for the modern era.",
+    }
 };
 
 export default function RootLayout({

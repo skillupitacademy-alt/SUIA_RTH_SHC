@@ -28,7 +28,7 @@ export interface AdminDashboardDTO {
 }
 
 type Maybe<T> = T | null | undefined;
-type AdminUserInput = {
+export type AdminUserInput = {
   id: string;
   email: string;
   createdAt?: Date;
@@ -39,7 +39,7 @@ type AdminUserInput = {
   exams?: unknown[] | null;
 };
 
-type AdminQuestionInput = {
+export type AdminQuestionInput = {
   id: string;
   text?: string;
   questionText?: string;

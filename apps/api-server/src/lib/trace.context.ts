@@ -4,7 +4,7 @@
  * anywhere in the call stack without prop-drilling.
  */
 
-import { AsyncLocalStorage } from 'node:async_hooks';
+import { AsyncLocalStorage } from 'async_hooks';
 
 export interface RequestContextData {
     correlationId: string;

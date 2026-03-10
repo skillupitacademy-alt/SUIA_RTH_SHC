@@ -1,6 +1,18 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
+
+type HUDTheme = {
+    colors: {
+        secondaryButton: string;
+        secondaryButtonText: string;
+        primaryButton: string;
+        primaryButtonText: string;
+    };
+    effects: {
+        buttonRadius: string;
+        primaryButtonShadow: string;
+    };
+};
 
 interface HUDControlsProps {
     currentIndex: number;
@@ -8,7 +20,7 @@ interface HUDControlsProps {
     onGoToQuestion: (index: number) => void;
     onSubmit: () => void;
     isSubmitting: boolean;
-    theme: any;
+    theme: HUDTheme;
 }
 
 export function HUDControls({

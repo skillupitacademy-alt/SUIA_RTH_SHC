@@ -3,11 +3,14 @@ import type { NextRequest } from 'next/server';
 
 import { forbidden, unauthorized } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
+import { withCorrelationId } from '@/lib/correlation-id.middleware';
+import { bootstrapCQRS, GetPlatformMetricsQuery, queryBus } from '@/lib/cqrs';
 import { recordCounter, recordTimer } from '@/lib/metrics';
 import { withLogging } from '@/lib/withLogging';
-import { AdminAnalyticsEngine } from "@/modules/admin-engine/admin.engine";
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
+
+bootstrapCQRS(); // Ensure handlers are registered
 
 export const dynamic = 'force-dynamic';
 
@@ -19,7 +22,7 @@ async function handler(_req: NextRequest) {
 
     await container.get(TokenService).verifyAdminAccessToken(_token); // true for isAdmin check
     
-    const metrics = await AdminAnalyticsEngine.getPlatformMetrics();
+    const metrics = await queryBus.dispatch(new GetPlatformMetricsQuery());
     
     const durationMs = Date.now() - startTime;
     recordCounter(METRICS.ADMIN.DASHBOARD_LOAD, 1, { outcome: 'success' });
@@ -34,4 +37,4 @@ async function handler(_req: NextRequest) {
   }
 }
 
-export const GET = withLogging(handler, { component: 'admin', operation: 'get_platform_metrics' });
+export const GET = withCorrelationId(withLogging(handler, { component: 'admin', operation: 'get_platform_metrics' }));

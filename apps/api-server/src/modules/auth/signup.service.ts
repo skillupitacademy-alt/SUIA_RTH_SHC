@@ -1,5 +1,7 @@
 import crypto from 'crypto';
 
+import { eventBus } from '@/lib/event-bus';
+import { AppEvents } from '@/lib/events';
 import { AuditService } from '@/modules/auth/audit.service';
 import { PasswordService } from '@/modules/auth/password.service';
 import { UserRepository } from '@/modules/auth/repositories/user.repository';
@@ -37,6 +39,14 @@ export class SignupService {
     });
 
     await this.auditService.log({ userId: newUser.id, action: 'signup_success', ip });
+
+    // Task 115: Emit event for read model updates
+    void eventBus.emitEvent(AppEvents.USER_SIGNED_UP, {
+      userId: newUser.id,
+      email: newUser.email,
+      signedUpAt: new Date()
+    });
+
     return newUser;
   }
 

@@ -4,15 +4,23 @@ import type { NextRequest } from 'next/server';
 
 import { badRequest, unauthorized } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
+import { withCorrelationId } from '@/lib/correlation-id.middleware';
+import { bootstrapCQRS, GetSubjectsQuery, queryBus } from '@/lib/cqrs';
 import { recordCounter, recordTimer } from '@/lib/metrics';
 import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 import { withLogging } from '@/lib/withLogging';
-import { AdminSubjectEngine } from "@/modules/admin-engine/admin.engine";
+import { AdminSubjectEngine as AdminSubjectEngineClass } from '@/modules/admin-engine/admin.subject.engine';
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
 import { subjectSchema } from '@/schemas/hierarchy.schemas';
 
 type SubjectInsert = typeof subjects.$inferInsert;
+type SubjectsQueryResult = {
+  subjects: SubjectInsert[];
+  total: number;
+  nextCursor: string | null;
+  limit: number;
+};
 
 export const dynamic = 'force-dynamic';
 
@@ -35,7 +43,8 @@ async function getHandler(_req: NextRequest) {
     const domainId = searchParams.get('domainId') ?? undefined;
     const search = searchParams.get('search') ?? undefined;
 
-    const result = await AdminSubjectEngine.getSubjects(cursor, limit, { domainId, search });
+    bootstrapCQRS();
+    const result = await queryBus.dispatch(new GetSubjectsQuery(cursor, limit, { domainId, search })) as SubjectsQueryResult;
     const durationMs = Date.now() - start;
     recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.subjects.get.success', 1);
     recordTimer(METRICS.ADMIN.DASHBOARD_LOAD + '.subjects.get.duration', durationMs, { outcome: 'success' });
@@ -80,7 +89,8 @@ async function postHandler(_req: NextRequest) {
       order: body.order,
     };
 
-    const result = await AdminSubjectEngine.createSubject(createBody, _payload.userId);
+    const engine = container.get(AdminSubjectEngineClass);
+    const result = await engine.createSubject(createBody, _payload.userId);
     const durationMs = Date.now() - start;
     recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.subjects.create.success', 1);
     recordTimer(METRICS.ADMIN.DASHBOARD_LOAD + '.subjects.create.duration', durationMs, { outcome: 'success' });
@@ -94,5 +104,5 @@ async function postHandler(_req: NextRequest) {
   }
 }
 
-export const GET = withLogging(getHandler, { component: 'admin', operation: 'get_subjects' });
-export const POST = withLogging(postHandler, { component: 'admin', operation: 'create_subject' });
+export const GET = withCorrelationId(withLogging(getHandler, { component: 'admin', operation: 'get_subjects' }));
+export const POST = withCorrelationId(withLogging(postHandler, { component: 'admin', operation: 'create_subject' }));

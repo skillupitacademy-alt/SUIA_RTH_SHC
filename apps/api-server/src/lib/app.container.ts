@@ -4,6 +4,12 @@
  * Import and call `bootstrapContainer()` once at app startup.
  */
 import { container } from '@/modules/core/container';
+import { AuditLoggingExamRepository } from '@/modules/exam-engine/audit-logging.decorator';
+import { ExamRepository } from '@/modules/exam-engine/repositories/exam.repository';
+import { PerformanceService } from '@/modules/report-engine/performance.service';
+// Services
+import { SelectionService } from '@/modules/selection-engine/selection.service';
+import { FeatureFlagService } from '@/modules/system/feature-flags.service';
 import { DrizzleAdminAnalyticsRepository } from '@/repositories/implementations/drizzle-admin-analytics.repository';
 // Repositories
 import { DrizzleAdminUserRepository } from '@/repositories/implementations/drizzle-admin-user.repository';
@@ -30,6 +36,11 @@ export const TOKENS = {
   TopicRepo: 'ITopicRepository',
   SubtopicRepo: 'ISubtopicRepository',
   SkillRepo: 'ISkillRepo',
+  ExamRepo: 'IExamRepository',
+  SelectionService: 'ISelectionService',
+  PerformanceService: 'IPerformanceService',
+  AuditLoggingExamRepo: 'AuditLoggingExamRepository',
+  FeatureFlagService: 'IFeatureFlagService',
 } as const;
 
 export function bootstrapContainer() {
@@ -45,8 +56,16 @@ export function bootstrapContainer() {
   container.register(TOKENS.TopicRepo, new DrizzleTopicRepository());
   container.register(TOKENS.SubtopicRepo, new DrizzleSubtopicRepository());
   container.register(TOKENS.SkillRepo, new DrizzleSkillRepository());
+
+  const examBaseRepo = new ExamRepository();
+  container.register(TOKENS.ExamRepo, examBaseRepo);
+  container.register(TOKENS.AuditLoggingExamRepo, new AuditLoggingExamRepository(examBaseRepo));
+  
+  // Register engine services as singletons
+  container.register(TOKENS.SelectionService, new SelectionService());
+  container.register(TOKENS.PerformanceService, new PerformanceService());
+  container.register(TOKENS.FeatureFlagService, new FeatureFlagService());
 }
 
 // Auto-bootstrap the container when this module is imported
 bootstrapContainer();
-

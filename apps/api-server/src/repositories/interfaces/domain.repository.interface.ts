@@ -1,6 +1,10 @@
-import { domains } from '@quiz/db';
+import { db, domains } from '@quiz/db';
 
 export interface IDomainRepository {
+  /**
+   * Returns a new instance of the repository using the specified database client.
+   */
+  withDb(dbClient: typeof db): this;
   findAll(cursor: string | null, limit: number, filters?: { search?: string }): Promise<{
     data: (typeof domains.$inferSelect)[];
     total: number;

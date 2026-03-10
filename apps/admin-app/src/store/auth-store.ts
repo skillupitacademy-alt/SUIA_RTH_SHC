@@ -3,16 +3,10 @@ import { createAuthStore } from '@quiz/ui';
 // ⚠️ ALWAYS use selectors: useStore(s => s.field), never useStore()
 export const useAuthStore = createAuthStore({
   name: 'quiz-platform-admin-auth',
-});
-
-// Wrapper for custom logout logic
-const originalLogout = useAuthStore.getState().logout;
-useAuthStore.setState({
-  logout: () => {
+  onLogout: () => {
     // SECURITY SHREDDER: Immediately purge sensitive draft data on logout
     if (typeof window !== 'undefined') {
       localStorage.removeItem('quiz-factory-storage-v1');
     }
-    originalLogout();
   }
 });

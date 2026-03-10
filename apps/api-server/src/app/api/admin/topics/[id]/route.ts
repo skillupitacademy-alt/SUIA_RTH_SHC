@@ -67,5 +67,7 @@ async function deleteHandler(
   }
 }
 
-export const PATCH = withLogging(patchHandler, { component: 'admin', operation: 'update_topic' });
-export const DELETE = withLogging(deleteHandler, { component: 'admin', operation: 'delete_topic' });
+import { withCorrelationId } from '@/lib/correlation-id.middleware';
+
+export const PATCH = withCorrelationId(withLogging(patchHandler, { component: 'admin', operation: 'update_topic' }));
+export const DELETE = withCorrelationId(withLogging(deleteHandler, { component: 'admin', operation: 'delete_topic' }));

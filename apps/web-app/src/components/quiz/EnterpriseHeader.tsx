@@ -1,13 +1,14 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import { Clock, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
+type EnterpriseQuestion = { id: string };
+
 interface EnterpriseHeaderProps {
     error: string | null;
     setError: (error: string | null) => void;
-    questions: any[];
+    questions: EnterpriseQuestion[];
     currentQuestionIndex: number;
     answers: Record<string, number>;
     markedForReview: string[];

@@ -1,5 +1,5 @@
 import { UserProfile } from '@quiz/api-client/types';
-import { FetchClient } from '@quiz/api-client/core/fetch-client';
+import { FetchClient, TIMEOUTS } from '@quiz/api-client/core/fetch-client';
 
 export class AuthClient {
   private client: FetchClient;
@@ -11,54 +11,56 @@ export class AuthClient {
   async login(email: string, password: string) {
     return this.client.post<{ user: UserProfile; accessToken: string; refreshToken: string }>(
       '/auth/login',
-      { email, password }
+      { email, password },
+      { timeout: TIMEOUTS.STANDARD }
     );
   }
 
   async signup(email: string, password: string, name: string) {
     return this.client.post<{ user: UserProfile; accessToken: string }>(
       '/auth/signup',
-      { email, password, name }
+      { email, password, name },
+      { timeout: TIMEOUTS.STANDARD }
     );
   }
 
   async getSession() {
-    return this.client.get<{ user: UserProfile; expiresAt: string | null }>('/auth/me');
+    return this.client.get<{ user: UserProfile; expiresAt: string | null }>('/auth/me', { timeout: TIMEOUTS.QUICK });
   }
 
   async getAdminSession() {
-    return this.client.get<{ user: UserProfile; expiresAt: string | null }>('/admin/auth/me');
+    return this.client.get<{ user: UserProfile; expiresAt: string | null }>('/admin/auth/me', { timeout: TIMEOUTS.QUICK });
   }
 
   async logout() {
-    return this.client.post('/auth/logout', {});
+    return this.client.post('/auth/logout', {}, { timeout: TIMEOUTS.STANDARD });
   }
 
   async refresh(examId?: string) {
-    return this.client.post<{ accessToken: string; expiresAt: string | null }>('/auth/refresh', { examId });
+    return this.client.post<{ accessToken: string; expiresAt: string | null }>('/auth/refresh', { examId }, { timeout: TIMEOUTS.STANDARD });
   }
 
   async updateProfile(profileData: Partial<UserProfile>) {
-    return this.client.post<UserProfile, Partial<UserProfile>>('/auth/profile', profileData);
+    return this.client.post<UserProfile, Partial<UserProfile>>('/auth/profile', profileData, { timeout: TIMEOUTS.STANDARD });
   }
 
   async forgotPassword(email: string) {
-    return this.client.post('/auth/forgot-password', { email });
+    return this.client.post('/auth/forgot-password', { email }, { timeout: TIMEOUTS.STANDARD });
   }
 
   async validateResetToken(token: string) {
-    return this.client.get<{ valid: boolean }>(`/auth/reset-password?_token=${token}`);
+    return this.client.get<{ valid: boolean }>(`/auth/reset-password?_token=${token}`, { timeout: TIMEOUTS.STANDARD });
   }
 
   async resetPassword(token: string, newPassword: string) {
-    return this.client.post('/auth/reset-password', { token, password: newPassword });
+    return this.client.post('/auth/reset-password', { token, password: newPassword }, { timeout: TIMEOUTS.STANDARD });
   }
 
   async heartbeat() {
-    return this.client.post('/auth/heartbeat', {});
+    return this.client.post('/auth/heartbeat', {}, { timeout: TIMEOUTS.QUICK });
   }
 
   async adminHeartbeat() {
-    return this.client.post('/admin/auth/heartbeat', {});
+    return this.client.post('/admin/auth/heartbeat', {}, { timeout: TIMEOUTS.QUICK });
   }
 }

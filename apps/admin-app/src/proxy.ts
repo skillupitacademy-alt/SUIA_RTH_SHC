@@ -32,6 +32,13 @@ export function proxy(request: NextRequest) {
   const response = NextResponse.next();
   response.headers.set('x-request-id', requestId);
 
+  // Task 103: Warn on responses > 1MB
+  const contentLengthHeader = response.headers.get('content-length');
+  const contentLength = contentLengthHeader !== null ? parseInt(contentLengthHeader, 10) : null;
+  if (contentLength !== null && contentLength > 1_048_576) {
+    console.warn(`[WARN] Large response payload: ${request.nextUrl.pathname} (${contentLength} bytes)`);
+  }
+
   if (isProtectedRoute === true) {
     response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
   }

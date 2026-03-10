@@ -20,6 +20,7 @@ export class UserAdminClient implements IAdminUserClient {
       isBlocked?: boolean;
       isVerified?: boolean;
       status?: string;
+      fields?: string;
     }
   ) {
     const query = new URLSearchParams({
@@ -37,6 +38,8 @@ export class UserAdminClient implements IAdminUserClient {
       query.append('isVerified', filters.isVerified ? 'true' : 'false');
     if (filters?.status != null && filters.status !== '')
       query.append('xStatus', filters.status);
+    if (filters?.fields != null && filters.fields !== '')
+      query.append('fields', filters.fields);
 
     return this.client.get<{
       data: AdminUserProfile[];

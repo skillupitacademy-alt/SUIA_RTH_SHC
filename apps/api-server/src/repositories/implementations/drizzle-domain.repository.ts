@@ -8,9 +8,14 @@ import { IDomainRepository } from '../interfaces/domain.repository.interface';
 export class DrizzleDomainRepository extends BaseRepository<typeof domains.$inferSelect, typeof domains> implements IDomainRepository {
   protected table = domains;
 
-  constructor() {
-    super(db);
+  constructor(dbInstance: typeof db = db) {
+    super(dbInstance);
   }
+
+  withDb(dbClient: typeof db): this {
+    return new DrizzleDomainRepository(dbClient) as this;
+  }
+
 
   async findAll(cursor: string | null, limit: number, filters?: { search?: string }) {
     const conditions = [];

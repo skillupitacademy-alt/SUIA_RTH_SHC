@@ -4,8 +4,7 @@ import { QueueService } from '../queue.service';
 import { logger } from '@/lib/logger';
 
 const resetSingleton = () => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (QueueService as any).instance = undefined;
+  (QueueService as unknown as { instance?: QueueService | undefined }).instance = undefined;
 };
 
 describe('QueueService branch coverage', () => {
@@ -22,8 +21,8 @@ describe('QueueService branch coverage', () => {
     process.env.VERCEL_URL = '';
     resetSingleton();
 
-    const qs = QueueService.getInstance() as any;
-    expect(qs.appUrl).toBe('https://public.example.com');
+    const qs = QueueService.getInstance();
+    expect((qs as unknown as { appUrl: string }).appUrl).toBe('https://public.example.com');
   });
 
   it('falls back to VERCEL_URL when public url is empty', () => {
@@ -31,8 +30,8 @@ describe('QueueService branch coverage', () => {
     process.env.VERCEL_URL = 'my-app.vercel.app';
     resetSingleton();
 
-    const qs = QueueService.getInstance() as any;
-    expect(qs.appUrl).toBe('https://my-app.vercel.app');
+    const qs = QueueService.getInstance();
+    expect((qs as unknown as { appUrl: string }).appUrl).toBe('https://my-app.vercel.app');
   });
 
   it('adds delay and retries headers when options passed', async () => {
@@ -84,8 +83,8 @@ describe('QueueService branch coverage', () => {
     process.env.VERCEL_URL = '';
     resetSingleton();
 
-    const qs = QueueService.getInstance() as any;
-    expect(qs.appUrl).toBe('http://localhost:3000');
+    const qs = QueueService.getInstance();
+    expect((qs as unknown as { appUrl: string }).appUrl).toBe('http://localhost:3000');
   });
 
   it('returns failure and logs when response not ok', async () => {

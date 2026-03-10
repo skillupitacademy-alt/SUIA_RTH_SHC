@@ -13,6 +13,8 @@ import { loginSchema } from '@/schemas/auth.schemas';
 
 export const dynamic = 'force-dynamic';
 
+import { withCorrelationId } from '@/lib/correlation-id.middleware';
+
 async function handler(req: NextRequest) {
   const start = Date.now();
   try {
@@ -25,10 +27,22 @@ async function handler(req: NextRequest) {
     const { email, password } = parsed.data;
 
     const { _user, accessToken, refreshToken, isAdmin } = await container.get(AuthService).login(email, password);
+    const rawProfile = Array.isArray(_user.profile) ? _user.profile[0] ?? {} : (_user.profile ?? {});
+    const authUserInput = {
+      id: _user.id,
+      email: _user.email,
+      createdAt: _user.createdAt,
+      emailVerified: (_user as { emailVerified?: boolean }).emailVerified ?? false,
+      profile: {
+        name: (rawProfile as { name?: string | null }).name ?? null,
+        professionalStatus: (rawProfile as { professionalStatus?: string | null }).professionalStatus ?? null,
+        educationLevel: (rawProfile as { educationLevel?: string | null }).educationLevel ?? null,
+      },
+    } satisfies Parameters<typeof toUserSummaryDTO>[0];
 
     recordCounter(METRICS.AUTH.LOGIN, 1, { role: isAdmin ? 'admin' : 'user' });
 
-    const userDto = toUserSummaryDTO(_user, isAdmin);
+    const userDto = toUserSummaryDTO(authUserInput, isAdmin);
 
     const response = ApiResponse.success({
       user: userDto,
@@ -74,4 +88,11 @@ async function handler(req: NextRequest) {
   }
 }
 
-export const POST = withLogging(handler, { component: 'auth', operation: 'login' });
+import { withRateLimit } from '@/middleware/rate-limit.middleware';
+
+export const POST = withRateLimit(
+  withCorrelationId(
+    withLogging(handler, { component: 'auth', operation: 'login' })
+  ),
+  { limit: 5, windowMs: 60000 }
+);

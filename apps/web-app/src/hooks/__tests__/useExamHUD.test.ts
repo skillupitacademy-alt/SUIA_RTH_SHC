@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useExamHUD } from '../useExamHUD';
@@ -51,7 +50,7 @@ describe('useExamHUD', () => {
 
     beforeEach(() => {
         vi.clearAllMocks();
-        (useRouter as any).mockReturnValue(mockRouter);
+        (useRouter as unknown as vi.Mock).mockReturnValue(mockRouter);
         // Mock setTimeout to execute immediately
         vi.useFakeTimers();
     });
@@ -78,8 +77,8 @@ describe('useExamHUD', () => {
             remainingTimeSeconds: 600,
         };
 
-        (apiClient.quiz.getQuizState as any).mockResolvedValue(mockData);
-        (getFilteredBackup as any).mockReturnValue({ q1: 'A' });
+        (apiClient.quiz.getQuizState as unknown as vi.Mock).mockResolvedValue(mockData);
+        (getFilteredBackup as unknown as vi.Mock).mockReturnValue({ q1: 'A' });
 
         const { result } = renderHook(() => useExamHUD(mockExamId));
 
@@ -96,7 +95,7 @@ describe('useExamHUD', () => {
     });
 
     it('should handle terminal statuses by redirecting to reports', async () => {
-        (apiClient.quiz.getQuizState as any).mockResolvedValue({
+        (apiClient.quiz.getQuizState as unknown as vi.Mock).mockResolvedValue({
             id: mockExamId,
             status: 'completed' as const,
             questions: [],
@@ -119,8 +118,8 @@ describe('useExamHUD', () => {
             remainingTimeSeconds: 600,
         };
 
-        (apiClient.quiz.getQuizState as any).mockResolvedValue(mockData);
-        (getFilteredBackup as any).mockReturnValue({});
+        (apiClient.quiz.getQuizState as unknown as vi.Mock).mockResolvedValue(mockData);
+        (getFilteredBackup as unknown as vi.Mock).mockReturnValue({});
 
         const { result } = renderHook(() => useExamHUD(mockExamId));
 
@@ -145,8 +144,8 @@ describe('useExamHUD', () => {
             remainingTimeSeconds: 600,
         };
 
-        (apiClient.quiz.getQuizState as any).mockResolvedValue(mockData);
-        (getFilteredBackup as any).mockReturnValue({});
+        (apiClient.quiz.getQuizState as unknown as vi.Mock).mockResolvedValue(mockData);
+        (getFilteredBackup as unknown as vi.Mock).mockReturnValue({});
 
         const { result } = renderHook(() => useExamHUD(mockExamId));
 
@@ -165,7 +164,7 @@ describe('useExamHUD', () => {
     });
 
     it('should handle submission failure', async () => {
-        (apiClient.quiz.getQuizState as any).mockResolvedValue({
+        (apiClient.quiz.getQuizState as unknown as vi.Mock).mockResolvedValue({
             id: mockExamId,
             status: 'started' as const,
             questions: [],
@@ -177,7 +176,7 @@ describe('useExamHUD', () => {
             vi.runAllTimers();
         });
 
-        (apiClient.quiz.submitExam as any).mockRejectedValue(new Error('Network Error'));
+        (apiClient.quiz.submitExam as unknown as vi.Mock).mockRejectedValue(new Error('Network Error'));
 
         await act(async () => {
             await result.current.actions.submitExam();

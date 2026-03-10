@@ -4,15 +4,23 @@ import type { NextRequest } from 'next/server';
 
 import { badRequest, unauthorized } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
+import { withCorrelationId } from '@/lib/correlation-id.middleware';
+import { bootstrapCQRS, GetSkillsQuery, queryBus } from '@/lib/cqrs';
 import { recordCounter, recordTimer } from '@/lib/metrics';
 import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 import { withLogging } from '@/lib/withLogging';
-import { AdminSkillEngine } from "@/modules/admin-engine/admin.engine";
+import { AdminSkillEngine as AdminSkillEngineClass } from '@/modules/admin-engine/admin.skill.engine';
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
 import { skillSchema } from '@/schemas/hierarchy.schemas';
 
 type SkillInsert = typeof skills.$inferInsert;
+type SkillsQueryResult = {
+  skills: SkillInsert[];
+  total: number;
+  nextCursor: string | null;
+  limit: number;
+};
 
 export const dynamic = 'force-dynamic';
 
@@ -34,7 +42,8 @@ async function getHandler(_req: NextRequest) {
     const limit = parseInt(searchParams.get('limit') ?? '20');
     const search = searchParams.get('search') ?? undefined;
 
-    const result = await AdminSkillEngine.getSkills(cursor, limit, { search });
+    bootstrapCQRS();
+    const result = await queryBus.dispatch(new GetSkillsQuery(cursor, limit, { search })) as SkillsQueryResult;
     const durationMs = Date.now() - start;
     recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.skills.get.success', 1);
     recordTimer(METRICS.ADMIN.DASHBOARD_LOAD + '.skills.get.duration', durationMs, { outcome: 'success' });
@@ -81,7 +90,8 @@ async function postHandler(_req: NextRequest) {
       weight: Number.isFinite(parsedWeight) ? parsedWeight : 1,
     };
 
-    const result = await AdminSkillEngine.createSkill(createBody, _payload.userId);
+    const engine = container.get(AdminSkillEngineClass);
+    const result = await engine.createSkill(createBody, _payload.userId);
     const durationMs = Date.now() - start;
     recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.skills.create.success', 1);
     recordTimer(METRICS.ADMIN.DASHBOARD_LOAD + '.skills.create.duration', durationMs, { outcome: 'success' });
@@ -95,5 +105,5 @@ async function postHandler(_req: NextRequest) {
   }
 }
 
-export const GET = withLogging(getHandler, { component: 'admin', operation: 'get_skills' });
-export const POST = withLogging(postHandler, { component: 'admin', operation: 'create_skill' });
+export const GET = withCorrelationId(withLogging(getHandler, { component: 'admin', operation: 'get_skills' }));
+export const POST = withCorrelationId(withLogging(postHandler, { component: 'admin', operation: 'create_skill' }));

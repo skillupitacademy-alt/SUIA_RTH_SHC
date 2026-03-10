@@ -9,10 +9,12 @@
 ## Table of Contents
 
 - [Sprint 1: Close Phase 1 Gaps](#sprint-1-close-phase-1-gaps-3-hours)
-- [Sprint 2: Finish SOLID Principles](#sprint-2-finish-solid-principles-1-2-days)
-- [Sprint 3: Frontend Quick Wins](#sprint-3-frontend-quick-wins-2-3-days)
-- [Sprint 4: Database Optimization](#sprint-4-database-optimization-3-5-days)
-- [Sprint 5: Remaining Frontend Tasks](#sprint-5-remaining-frontend-tasks-3-5-days)
+- [x] Sprint 1: Database & Infra (Quick Wins)
+- [x] Sprint 2: Authentication & Security Hardening
+- [x] Sprint 3: Frontend Performance & UX (Quick Wins)
+- [x] Sprint 4: Project Reliability & Error Handling
+- [x] Sprint 5: Frontend Optimization & Layout
+- [x] Sprint 6: Architecture Gaps & Scale Prep
 
 ---
 
@@ -502,6 +504,12 @@ Currently `verifyAccessToken(token, isAdmin?)` handles both user and admin token
 > [!CAUTION]
 > **ZERO REGRESSION POLICY**: Only convert pages that do NOT use hooks, browser APIs, or event handlers. Keep identical UI output.
 
+### Sprint 3: Frontend Performance & UX (Quick Wins)
+- [x] T79: Convert Dashboard into a Server Component (where possible) and use Next.js `fetch` cache for stats.
+- [x] T80: Implement `next/dynamic` for heavy UI components (Tutor Insight Card, Victory Animation) to reduce initial JS bundle.
+- [x] T81: Ensure all large SVGs and static assets use `next/image` or are properly optimized for faster LCP.
+- [x] T84: Refactor Zustand store usage to use specific selectors (e.g., `useAuthStore(s => s.user)`) instead of full state objects to prevent re-renders.
+- [x] T91: Add resource preconnect hints in `layout.tsx` for Google Fonts and the Production API URL.
 ### Prompt
 
 > Identify pages in both apps that can be Server Components. A page CAN be a Server Component if it:
@@ -703,7 +711,10 @@ Currently `verifyAccessToken(token, isAdmin?)` handles both user and admin token
 >      ```
 >
 > 2. **Exam start** in `exam-engine/exam.engine.ts`:
->    - Does it create exam + exam_questions in separate queries?
+>    - Does it create exam +### Sprint 2: Authentication & Security Hardening
+- [x] T6: Hardify `TokenService` verification logic—enforce audience checks (aud: user/admin) and scope-based validation.
+- [x] T7: Split `AdminClient` in `api-client` into logical sub-clients (`JobAdminClient`, `UserAdminClient`, etc.) for better tree-shaking.
+- [x] T8: Refactor `AdminClient` constructor to lazy-load specifically needed sub-clients. exam_questions in separate queries?
 >    - If already transactional, verify `tx` is used for ALL queries inside.
 >
 > 3. **Admin hierarchy operations** in `admin-engine/admin.domain.engine.ts` etc.:

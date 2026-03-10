@@ -9,8 +9,12 @@ import { IQuestionRepository } from '../interfaces/question.repository.interface
 export class DrizzleQuestionRepository extends BaseRepository<typeof questions.$inferSelect, typeof questions> implements IQuestionRepository {
   protected table = questions;
 
-  constructor() {
-    super(db);
+  constructor(dbInstance: typeof db = db) {
+    super(dbInstance);
+  }
+
+  withDb(dbClient: typeof db): this {
+    return new DrizzleQuestionRepository(dbClient) as this;
   }
 
   async findAll(cursor: string | null, limit: number, filters?: { 

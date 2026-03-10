@@ -1,5 +1,5 @@
 import { db, examQuestions, exams, idempotencyKeys } from '@quiz/db';
-import { and, eq } from 'drizzle-orm';
+import { and, desc, eq } from 'drizzle-orm';
 
 import { BaseRepository } from '@/modules/core/repositories/base.repository';
 
@@ -19,16 +19,19 @@ export interface Exam {
 export class ExamRepository extends BaseRepository<Exam, typeof exams> {
   protected table = exams;
 
-  constructor() {
-    super(db);
+  constructor(dbInstance: typeof db = db) {
+    super(dbInstance);
+  }
+
+  withDb(dbClient: typeof db): this {
+    return new ExamRepository(dbClient) as this;
   }
 
   async findActiveExam(id: string, userId: string) {
       return await this.dbInstance.query.exams.findFirst({
             where: and(
                 eq(exams.id, id),
-                eq(exams.userId, userId),
-                eq(exams.status, 'started')
+                eq(exams.userId, userId)
             )
         });
   }
@@ -49,7 +52,7 @@ export class ExamRepository extends BaseRepository<Exam, typeof exams> {
   async updateStatus(id: string, status: "started" | "processing" | "completed" | "abandoned" | "failed") {
     return await this.dbInstance.update(exams)
       .set({ status })
-      .where(and(eq(exams.id, id), eq(exams.status, 'started')))
+      .where(eq(exams.id, id))
       .returning({ id: exams.id });
   }
 
@@ -98,13 +101,13 @@ export class ExamRepository extends BaseRepository<Exam, typeof exams> {
     idempotencyKey?: string;
   }) {
     return await this.dbInstance.transaction(async (tx) => {
-      const [exam] = await tx.insert(exams).values({
+      const [exam] = await (tx.insert(exams).values({
         userId: data.userId,
         blueprintId: data.blueprintId,
         status: data.status,
         durationSeconds: data.durationSeconds,
         totalScore: 0,
-      }).returning();
+      }).returning() as unknown as Exam[]);
 
       const examQuestionsData = data.questions.map((q, index) => ({
         examId: exam.id,
@@ -132,5 +135,20 @@ export class ExamRepository extends BaseRepository<Exam, typeof exams> {
       key: data.key,
       examId: data.examId,
     }).onConflictDoNothing();
+  }
+
+  async findByUserId(userId: string, options: { status?: string; limit?: number } = {}) {
+    const statusFilter = (options.status as ("started" | "processing" | "completed" | "abandoned" | "failed") | undefined);
+    return await this.dbInstance.query.exams.findMany({
+      where: and(
+        eq(exams.userId, userId),
+        statusFilter !== undefined && statusFilter !== null
+          ? eq(exams.status, statusFilter)
+          : undefined
+      ),
+      limit: options.limit,
+      orderBy: [desc(exams.startedAt)],
+      with: { blueprint: true }
+    });
   }
 }

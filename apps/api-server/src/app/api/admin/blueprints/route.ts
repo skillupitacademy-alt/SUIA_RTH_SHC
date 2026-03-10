@@ -4,10 +4,11 @@ import type { NextRequest } from 'next/server';
 
 import { badRequest, internalError, unauthorized } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
+import { bootstrapCQRS,GetBlueprintsQuery, queryBus } from '@/lib/cqrs';
 import { recordCounter, recordTimer } from '@/lib/metrics';
 import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 import { withLogging } from '@/lib/withLogging';
-import { AdminBlueprintEngine } from "@/modules/admin-engine/admin.engine";
+import { AdminBlueprintEngine as AdminBlueprintEngineClass } from '@/modules/admin-engine/admin.blueprint.engine';
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
 import { blueprintSchema } from '@/schemas/admin.schemas';
@@ -41,7 +42,8 @@ async function getHandler(_req: NextRequest) {
         const limit = parseInt(searchParams.get('limit') ?? '20');
         const search = searchParams.get('search') ?? undefined;
 
-        const data = await AdminBlueprintEngine.getBlueprints(cursor, limit, { search });
+        bootstrapCQRS();
+        const data = await queryBus.dispatch(new GetBlueprintsQuery(cursor, limit, { search }));
         
         const durationMs = Date.now() - start;
         recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.blueprints.get.success', 1);
@@ -73,7 +75,8 @@ async function postHandler(_req: NextRequest) {
             return ApiResponse.error(badRequest('Invalid payload', 'BAD_REQUEST', parsed.error.issues), 400);
         }
 
-        const result = await AdminBlueprintEngine.createBlueprint(parsed.data);
+        const engine = container.get(AdminBlueprintEngineClass);
+        const result = await engine.createBlueprint(parsed.data);
         
         const durationMs = Date.now() - start;
         recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.blueprints.create.success', 1);
@@ -89,5 +92,7 @@ async function postHandler(_req: NextRequest) {
     }
 }
 
-export const GET = withLogging(getHandler, { component: 'admin', operation: 'get_blueprints' });
-export const POST = withLogging(postHandler, { component: 'admin', operation: 'create_blueprint' });
+import { withCorrelationId } from '@/lib/correlation-id.middleware';
+
+export const GET = withCorrelationId(withLogging(getHandler, { component: 'admin', operation: 'get_blueprints' }));
+export const POST = withCorrelationId(withLogging(postHandler, { component: 'admin', operation: 'create_blueprint' }));

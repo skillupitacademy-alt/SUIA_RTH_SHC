@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 import { ApiResponse } from '@/lib/api-response';
 import { withApiHandler } from '@/lib/api-wrapper';
+import { withCorrelationId } from '@/lib/correlation-id.middleware';
 import { recordCounter } from '@/lib/metrics';
 import { AdminAuthService } from '@/modules/auth/admin-auth.service';
 
@@ -66,8 +67,8 @@ async function handler(_req: Request, body: z.infer<typeof loginSchema>) {
   return response;
 }
 
-export const POST = withApiHandler(handler, { 
+export const POST = withCorrelationId(withApiHandler(handler, { 
   schema: loginSchema,
   component: 'admin-auth', 
   operation: 'login' 
-});
+}));

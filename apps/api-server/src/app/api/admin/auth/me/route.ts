@@ -5,6 +5,7 @@ import type { NextRequest } from 'next/server';
 
 import { forbidden, notFound, unauthorized } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
+import { withCorrelationId } from '@/lib/correlation-id.middleware';
 import { recordCounter, recordTimer } from '@/lib/metrics';
 import { withLogging } from '@/lib/withLogging';
 import { TokenService } from '@/modules/auth/token.service';
@@ -37,6 +38,9 @@ async function handler(_req: NextRequest) {
 
     if (_user === null || _user === undefined) return ApiResponse.error(notFound('User', _payload.userId));
 
+    const profile = Array.isArray(_user.profile) ? _user.profile[0] ?? {} : (_user.profile ?? {});
+    const typedProfile = profile as { name?: string | null };
+
     const role = _user.userRoles[0]?.role?.name?.toLowerCase() ?? 'user';
     const isAdmin = role === 'admin' || role === 'super_admin' || role === 'infrastructure';
 
@@ -52,7 +56,7 @@ async function handler(_req: NextRequest) {
       user: {
         id: _user.id,
         email: _user.email,
-        name: _user.profile?.name ?? 'Administrator',
+        name: typedProfile.name ?? 'Administrator',
         role,
         isAdmin
       },
@@ -65,4 +69,4 @@ async function handler(_req: NextRequest) {
   }
 }
 
-export const GET = withLogging(handler, { component: 'admin-auth', operation: 'get_me' });
+export const GET = withCorrelationId(withLogging(handler, { component: 'admin-auth', operation: 'get_me' }));

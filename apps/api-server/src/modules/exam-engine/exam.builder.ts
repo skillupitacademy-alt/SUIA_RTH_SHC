@@ -47,8 +47,12 @@ export class ExamBuilder {
     }
 
     async build() {
-        if (!this.userId || !this.blueprintOrDomainId) {
-            throw new Error('ExamBuilder: userId and blueprintOrDomainId are required');
+        if (!this.userId) throw new Error('ExamBuilder: userId is required');
+        if (!this.blueprintOrDomainId) throw new Error('ExamBuilder: blueprintOrDomainId is required');
+        
+        const questionCount = this.config?.questionCount ?? 10;
+        if (questionCount <= 0 || questionCount > 100) {
+            throw new Error('ExamBuilder: questionCount must be between 1 and 100');
         }
 
         // 1. Compose the exam (Selection logic)

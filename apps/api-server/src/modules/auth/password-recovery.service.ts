@@ -47,7 +47,7 @@ export class PasswordRecoveryService {
 
     const resetUrl = `${baseUrl.replace(/\/$/, '')}/reset-password?token=${token}`;
     
-    await EmailService.sendPasswordResetEmail(user.email, resetUrl);
+    await EmailService.getInstance().sendPasswordResetEmail(user.email, resetUrl);
 
     return true;
   }

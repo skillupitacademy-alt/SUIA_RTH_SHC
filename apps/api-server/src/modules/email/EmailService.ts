@@ -1,31 +1,48 @@
-import { MockEmailProvider } from './providers/MockEmailProvider';
-import { ResendEmailProvider } from './providers/ResendEmailProvider';
-import type { IEmailProvider } from './types';
+import { emailQueue } from '@/lib/queue/queues';
 
+export interface SendEmailOptions {
+  to: string;
+  subject: string;
+  html: string;
+  from?: string;
+}
+
+/**
+ * Service for handling email operations via BullMQ (Task 109).
+ */
 export class EmailService {
-  private static instance: IEmailProvider | null = null;
+  private static singleton: EmailService | null = null;
 
-  static getInstance(): IEmailProvider {
-    if (this.instance === null) {
-      const provider = (process.env.EMAIL_PROVIDER ?? 'mock').toLowerCase();
-      
-      if (provider === 'resend') {
-        const apiKey = process.env.RESEND_API_KEY;
-        const from = process.env.EMAIL_FROM ?? 'QuizPlatform <onboarding@resend.dev>';
+  constructor() {}
 
-        if (apiKey === undefined || apiKey.trim() === '') {
-          this.instance = new MockEmailProvider();
-        } else {
-          this.instance = new ResendEmailProvider(apiKey, from);
-        }
-      } else {
-        this.instance = new MockEmailProvider();
-      }
+  public static getInstance(): EmailService {
+    if (!EmailService.singleton) {
+      EmailService.singleton = new EmailService();
     }
-    return this.instance;
+    return EmailService.singleton;
   }
 
-  static async sendPasswordResetEmail(email: string, resetUrl: string): Promise<void> {
-    await this.getInstance().sendPasswordReset(email, resetUrl);
+  /**
+   * Offloads generic email to background queue (Task 109).
+   */
+  async sendEmail(options: SendEmailOptions): Promise<void> {
+    await emailQueue.add('send_generic_email', {
+      to: options.to,
+      subject: options.subject,
+      html: options.html,
+      // template field is optional as per job-types.ts
+    });
+  }
+
+  /**
+   * Offloads password reset email to background queue (Task 109).
+   */
+  async sendPasswordResetEmail(email: string, resetUrl: string): Promise<void> {
+    await emailQueue.add('send_password_reset', {
+      to: email,
+      subject: 'Reset your password',
+      template: 'password_reset',
+      data: { resetUrl }
+    });
   }
 }

@@ -1,6 +1,5 @@
 import { db, examBlueprints, questions, STANDARD_QUERY_TIMEOUT, subjects as subjectsTable, subtopics, topics, withTimeout as dbWithTimeout } from '@quiz/db';
 import { METRICS } from '@quiz/observability';
-import crypto from 'crypto';
 import type { InferSelectModel } from 'drizzle-orm';
 import { and, asc, eq, inArray, or, sql } from 'drizzle-orm';
 
@@ -10,6 +9,11 @@ import { withSpan } from '@/lib/tracer';
 import { cacheService } from '@/modules/core/cache.service';
 
 const withTimeout = dbWithTimeout ?? (async <T>(promise: Promise<T>) => promise);
+const hashString = (input: string): string => {
+  let h = 0;
+  for (let i = 0; i < input.length; i++) h = Math.imul(31, h) + input.charCodeAt(i) | 0;
+  return Math.abs(h).toString(16);
+};
 
 type Blueprint = InferSelectModel<typeof examBlueprints>;
 type Question = InferSelectModel<typeof questions>;
@@ -64,21 +68,6 @@ export class SelectionService {
   // Expose for branch-coverage tests
   static resolveSelectionCriteria(domainId: string, config: SelectionConfig, blueprint: Blueprint) {
     return this.getInstance().resolveSelectionCriteria(domainId, config, blueprint);
-  }
-
-  /**
-   * Generates a set of deterministic UUID anchors based on a seed.
-   */
-  private generateDeterministicUUIDs(seed: string, count: number): string[] {
-    const anchors: string[] = [];
-    let currentSeed = seed;
-    for (let i = 0; i < count; i++) {
-        const hash = crypto.createHash('sha256').update(currentSeed + i).digest('hex');
-        const uuid = `${hash.slice(0, 8)}-${hash.slice(8, 12)}-4${hash.slice(12, 15)}-a${hash.slice(15, 18)}-${hash.slice(18, 30)}`;
-        anchors.push(uuid);
-        currentSeed = hash;
-    }
-    return anchors;
   }
 
   /**
@@ -395,7 +384,7 @@ export class SelectionService {
                 filters: { diff, domainId, actualSubjectIds, actualTopicIds, finalSubtopicIds },
                 requestedCount: targetCount
             });
-            const masterSeed = crypto.createHash('sha256').update(seedSource).digest('hex');
+            const masterSeed = hashString(seedSource);
             const rng = createRng(masterSeed);
 
             const sampled: string[] = [];
@@ -446,3 +435,4 @@ export class SelectionService {
     });
   }
 }
+

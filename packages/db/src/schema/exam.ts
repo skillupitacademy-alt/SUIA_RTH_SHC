@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, uuid, integer, jsonb, pgEnum, boolean, index, uniqueIndex } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, uuid, integer, jsonb, pgEnum, boolean, index, uniqueIndex, primaryKey } from "drizzle-orm/pg-core";
 import { relations, desc } from "drizzle-orm";
 import { users } from "./auth";
 import { domains, subjects, topics } from "./domain";
@@ -26,8 +26,8 @@ export const examBlueprints = pgTable("exam_blueprints", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
-export const exams = pgTable("exams", {
-  id: uuid("id").primaryKey().defaultRandom(),
+export const exams = (pgTable("exams", {
+  id: uuid("id").notNull().defaultRandom(),
   userId: uuid("user_id")
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
@@ -40,11 +40,12 @@ export const exams = pgTable("exams", {
   lastAnsweredAt: timestamp("last_answered_at"),
   completedAt: timestamp("completed_at"),
   reportMaterialized: jsonb("report_materialized"),
-}, (t) => ({
-  idx_exams_user_id_status: index("idx_exams_user_id_status").on(t.userId, t.status),
-  idx_exams_dashboard_opt: index("idx_exams_dashboard_opt").on(t.userId, t.status, desc(t.completedAt)),
-  idx_exams_blueprint_id: index("idx_exams_blueprint_id").on(t.blueprintId),
-}));
+}, (t) => [
+  primaryKey({ columns: [t.id, t.startedAt] }),
+  index("idx_exams_user_id_status").on(t.userId, t.status),
+  index("idx_exams_dashboard_opt").on(t.userId, t.status, desc(t.completedAt)),
+  index("idx_exams_blueprint_id").on(t.blueprintId),
+]));
 
 export const examQuestions = pgTable("exam_questions", {
   id: uuid("id").primaryKey().defaultRandom(),

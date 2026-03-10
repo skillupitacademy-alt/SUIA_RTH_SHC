@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useExamInterfaceLogic } from '../useExamInterfaceLogic';
@@ -53,8 +52,8 @@ describe('useExamInterfaceLogic', () => {
 
     beforeEach(() => {
         vi.clearAllMocks();
-        (useRouter as any).mockReturnValue(mockRouter);
-        (useSearchParams as any).mockReturnValue(mockSearchParams);
+        (useRouter as unknown as vi.Mock).mockReturnValue(mockRouter);
+        (useSearchParams as unknown as vi.Mock).mockReturnValue(mockSearchParams);
         
         // Reset QuizStore
         useQuizStore.setState({
@@ -81,8 +80,8 @@ describe('useExamInterfaceLogic', () => {
             remainingTimeSeconds: 600,
         };
 
-        (apiClient.quiz.getQuizState as any).mockResolvedValue(mockData);
-        (getFilteredBackup as any).mockReturnValue({});
+        (apiClient.quiz.getQuizState as unknown as vi.Mock).mockResolvedValue(mockData);
+        (getFilteredBackup as unknown as vi.Mock).mockReturnValue({});
 
         renderHook(() => useExamInterfaceLogic());
 
@@ -125,12 +124,12 @@ describe('useExamInterfaceLogic', () => {
     it('should handle finish attempt with confirmation', async () => {
         useQuizStore.setState({
             examId: mockExamId,
-            questions: [{ id: 'q1' }, { id: 'q2' }] as any,
+            questions: [{ id: 'q1' }, { id: 'q2' }],
             answers: { q1: 0 }, // Only one answered
         });
 
         const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
-        (apiClient.quiz.submitExam as any).mockResolvedValue({});
+        (apiClient.quiz.submitExam as unknown as vi.Mock).mockResolvedValue({});
 
         const { result } = renderHook(() => useExamInterfaceLogic());
 

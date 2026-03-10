@@ -5,6 +5,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { useAuthStore } from '@/store/auth-store';
 import { useShallow } from 'zustand/react/shallow';
 import { apiClient } from '@quiz/api-client';
+import { useAuthSync } from '@quiz/ui';
 import { Loader2 } from 'lucide-react';
 
 interface AuthGuardProps {
@@ -15,9 +16,10 @@ interface AuthGuardProps {
 export function AuthGuard({ children, requireAdmin = false }: AuthGuardProps) {
     const router = useRouter();
     const pathname = usePathname();
-    const { user, login, logout, isSessionExpired } = useAuthStore(
+    const { user, isAuthenticated, login, logout, isSessionExpired } = useAuthStore(
         useShallow((s) => ({
             user: s.user,
+            isAuthenticated: s.isAuthenticated,
             login: s.login,
             logout: s.logout,
             isSessionExpired: s.isSessionExpired,
@@ -25,10 +27,15 @@ export function AuthGuard({ children, requireAdmin = false }: AuthGuardProps) {
     );
     const [isChecking, setIsChecking] = useState(true);
 
-    useEffect(() => {
-        // 1. Establish Portal Identity Hint
-        apiClient.client.setPortalIdentity('user');
-    }, []);
+    // Centralized Auth Sync Hook
+    useAuthSync({
+        portal: 'user',
+        isAuthenticated: isAuthenticated,
+        logout: () => {
+            logout();
+            router.push('/login?reason=session_expired');
+        }
+    });
 
     useEffect(() => {
         const checkAuth = async () => {
@@ -45,8 +52,6 @@ export function AuthGuard({ children, requireAdmin = false }: AuthGuardProps) {
                 if (!user) {
                     const session = await apiClient.auth.getSession();
                     // Assuming session returns { user: ... }
-                    // We might need an accessToken here if getSession provides it or we rely on cookie
-                    // For now, let's assume getSession validates the cookie and returns user
                     if (session && session.user) {
                         login({ ...session.user, onboarded: session.user.onboarded ?? false });
                     } else {

@@ -4,6 +4,7 @@ import type { NextRequest } from 'next/server';
 
 import { notFound, unauthorized } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
+import { withCacheHeaders } from '@/lib/cache-headers';
 import { withLogging } from '@/lib/withLogging';
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
@@ -32,26 +33,31 @@ async function handler(_req: NextRequest) {
 
     if (!_user) return ApiResponse.error(notFound('User', _payload.userId));
 
-    const onboarded = typeof _user.profile?.professionalStatus === 'string' && 
-                      _user.profile.professionalStatus !== '' && 
-                      typeof _user.profile?.educationLevel === 'string' && 
-                      _user.profile.educationLevel !== '';
+    const profile = Array.isArray(_user.profile) ? _user.profile[0] ?? {} : (_user.profile ?? {});
+    const typedProfile = profile as { name?: string | null; professionalStatus?: string | null; educationLevel?: string | null };
 
-    return ApiResponse.success({
+    const onboarded = typeof typedProfile.professionalStatus === 'string' && 
+                      typedProfile.professionalStatus !== '' && 
+                      typeof typedProfile.educationLevel === 'string' && 
+                      typedProfile.educationLevel !== '';
+
+    return withCacheHeaders(ApiResponse.success({
       user: {
         id: _user.id,
         email: _user.email,
-        name: _user.profile?.name,
+        name: typedProfile.name,
         onboarded,
-        professionalStatus: _user.profile?.professionalStatus ?? null,
-        educationLevel: _user.profile?.educationLevel ?? null,
+        professionalStatus: typedProfile.professionalStatus ?? null,
+        educationLevel: typedProfile.educationLevel ?? null,
         roles: _user.userRoles.map((ur) => ur.role.name),
       },
       expiresAt: container.get(TokenService).getExpiration(_token),
-    });
+    }), 'private');
   } catch (_error: unknown) {
     return ApiResponse.error(_error, 401);
   }
 }
 
-export const GET = withLogging(handler, { component: 'auth', operation: 'me' });
+import { withCorrelationId } from '@/lib/correlation-id.middleware';
+
+export const GET = withCorrelationId(withLogging(handler, { component: 'auth', operation: 'me' }));

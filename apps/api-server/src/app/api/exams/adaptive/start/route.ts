@@ -34,4 +34,6 @@ async function postHandler(req: NextRequest) {
   }
 }
 
-export const POST = withLogging(postHandler, { component: 'exam', operation: 'start_adaptive_exam' });
+import { withCorrelationId } from '@/lib/correlation-id.middleware';
+
+export const POST = withCorrelationId(withLogging(postHandler, { component: 'exam', operation: 'start_adaptive_exam' }));

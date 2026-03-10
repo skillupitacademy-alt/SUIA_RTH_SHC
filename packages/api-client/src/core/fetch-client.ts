@@ -1,12 +1,54 @@
 // Module-level lock for deduplicating refresh calls across parallel requests
 let globalRefreshPromise: Promise<unknown> | null = null;
 
+export const TIMEOUTS = {
+  QUICK: 5000,
+  STANDARD: 15000,
+  LONG: 30000,
+  UPLOAD: 60000,
+} as const;
+
+export class TimeoutError extends Error {
+  constructor(message: string = 'Request timed out') {
+    super(message);
+    this.name = 'TimeoutError';
+  }
+}
+
+export interface RetryOptions {
+  maxRetries?: number;
+  delay?: number;
+  backoff?: number;
+  jitter?: boolean;
+}
+
+export type FetchOptions = RequestInit & {
+  _isRetry?: boolean;
+  timeout?: number;
+  retry?: RetryOptions;
+};
+
+const DEFAULT_RETRY: Required<RetryOptions> = {
+  maxRetries: 3,
+  delay: 1000,
+  backoff: 2,
+  jitter: true,
+};
+
+const RETRYABLE_STATUSES = [408, 429, 500, 502, 503, 504];
+const IDEMPOTENT_METHODS = ['GET', 'HEAD', 'OPTIONS'];
+
+// In-memory ETag cache for Task 104
+const ETAG_CACHE = new Map<string, { etag: string; data: any }>();
+
 export class FetchClient {
   private baseUrl: string;
+  private apiVersion: string;
   private portalIdentity: string | null = null;
 
-  constructor(baseUrl: string) {
+  constructor(baseUrl: string, apiVersion: string = 'v1') {
     this.baseUrl = baseUrl;
+    this.apiVersion = apiVersion;
   }
 
   private getCookie(name: string): string | null {
@@ -21,18 +63,70 @@ export class FetchClient {
     this.portalIdentity = identity;
   }
 
-  public async request<TResponse>(endpoint: string, options: RequestInit & { _isRetry?: boolean } = {}): Promise<TResponse> {
-    const url = `${this.baseUrl}${endpoint}`;
+  public async request<TResponse>(
+    endpoint: string, 
+    options: FetchOptions = {}
+  ): Promise<TResponse> {
+    const retryOptions = { ...DEFAULT_RETRY, ...options.retry };
+    let attempt = 0;
+
+    while (true) {
+      try {
+        return await this.performRequest<TResponse>(endpoint, options);
+      } catch (err: unknown) {
+        attempt++;
+        
+        const isRetryableError = err instanceof TimeoutError || (err instanceof Error && err.message === 'Network error');
+        const canRetry = attempt <= retryOptions.maxRetries && 
+                         (options.method === undefined || IDEMPOTENT_METHODS.includes(options.method));
+
+        if (!canRetry && !isRetryableError) throw err;
+        
+        // Final attempt failed
+        if (attempt > retryOptions.maxRetries) throw err;
+
+        // Calculate backoff
+        const delay = retryOptions.delay * Math.pow(retryOptions.backoff, attempt - 1);
+        const jitter = retryOptions.jitter ? Math.random() * 0.3 * delay : 0;
+        const totalDelay = delay + jitter;
+
+        await new Promise(resolve => setTimeout(resolve, totalDelay));
+      }
+    }
+  }
+
+  private async performRequest<TResponse>(
+    endpoint: string, 
+    options: FetchOptions = {}
+  ): Promise<TResponse> {
+    const timeout = options.timeout ?? TIMEOUTS.STANDARD;
+    const controller = new AbortController();
+    const id = setTimeout(() => controller.abort(), timeout);
+
+    const apiPrefix = `/api/${this.apiVersion}`;
+    const normalizedEndpoint = endpoint.startsWith('/api/') && !endpoint.startsWith(apiPrefix)
+      ? endpoint.replace('/api/', `${apiPrefix}/`)
+      : endpoint;
+      
+    const url = `${this.baseUrl}${normalizedEndpoint}`;
     
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
+      'Accept-Version': this.apiVersion,
       ...(this.portalIdentity ? { 'x-portal-identity': this.portalIdentity } : {}),
       ...(options.headers as Record<string, string>),
     };
 
+    // 104: Send ETag for conditional GET
+    const isGet = (options.method || 'GET') === 'GET';
+    const cached = isGet ? ETAG_CACHE.get(url) : null;
+    if (cached) {
+      headers['If-None-Match'] = cached.etag;
+    }
+
     const isServer = typeof document === 'undefined';
 
-    // Server-side (Next.js) cookie forwarding: include the incoming request cookies
+    // Server-side (Next.js) cookie forwarding
     if (isServer && headers.cookie === undefined) {
       try {
         const { cookies } = await import('next/headers');
@@ -41,16 +135,11 @@ export class FetchClient {
           headers.cookie = cookieHeader;
         }
       } catch {
-        // If next/headers is not available, skip; client-side will handle cookies via browser
+        // Fallback
       }
     }
 
-    // Client-side: log if auth cookies look missing
-    if (!isServer) {
-      // quiet client-side cookie checks
-    }
-
-    // Add CSRF token for mutation requests
+    // Add CSRF token
     const isMutation = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(options.method || 'GET');
     if (isMutation) {
       const csrfToken = this.getCookie('csrfToken');
@@ -65,14 +154,22 @@ export class FetchClient {
         ...options,
         headers,
         credentials: 'include',
+        signal: controller.signal,
       });
     } catch (err: unknown) {
-      // Browser-level block (CORS/preflight/network)
-      if (err instanceof TypeError && err.message === 'Failed to fetch') {
-        throw new Error('Network/Security Error: Request blocked by browser (CORS or connectivity).');
+      if (err instanceof Error && err.name === 'AbortError') {
+        throw new TimeoutError(`Request to ${endpoint} timed out after ${timeout}ms`);
       }
-      // Fallback
+      if (err instanceof TypeError && err.message === 'Failed to fetch') {
+        throw new Error('Network/Security Error: Request blocked by browser (CORS).');
+      }
       throw err instanceof Error ? err : new Error('Network error');
+    } finally {
+      clearTimeout(id);
+    }
+
+    if (response.status === 304 && cached) {
+      return cached.data as TResponse;
     }
 
     if (!response.ok) {
@@ -82,23 +179,32 @@ export class FetchClient {
         if (rid) sessionStorage.setItem('last_request_id', rid);
       }
 
-      // PATIENT CLIENT: Handle 401/403 with Auto-Refresh & Single-Flight Retry
+      // Check for retryable status
+      if (RETRYABLE_STATUSES.includes(response.status) && !options._isRetry) {
+        // Handle 429 Retry-After
+        if (response.status === 429) {
+          const retryAfter = response.headers.get('Retry-After');
+          if (retryAfter) {
+            const delay = parseInt(retryAfter, 10) * 1000;
+            if (!isNaN(delay)) {
+              await new Promise(resolve => setTimeout(resolve, delay));
+            }
+          }
+        }
+        throw new Error(`Retryable status: ${response.status}`);
+      }
+
+      // 401/403 Auto-Refresh
       if ((response.status === 401 || response.status === 403) && !options._isRetry && endpoint !== '/auth/refresh') {
         try {
-          // 1. DEDUPLICATION: If a refresh is already in flight, wait for it
           if (!globalRefreshPromise) {
-            globalRefreshPromise = this.request('/auth/refresh', { method: 'POST', _isRetry: true });
+            globalRefreshPromise = this.performRequest('/auth/refresh', { method: 'POST', _isRetry: true });
           }
-          
           await globalRefreshPromise;
-          globalRefreshPromise = null; // Clear lock after success
-
-          // 2. RETRY: Fire the original request again
-          return this.request<TResponse>(endpoint, { ...options, _isRetry: true });
-
-        } catch (refreshErr) {
-          globalRefreshPromise = null; // Clear lock on failure
-          // silent refresh failure
+          globalRefreshPromise = null;
+          return this.performRequest<TResponse>(endpoint, { ...options, _isRetry: true });
+        } catch {
+          globalRefreshPromise = null;
         }
       }
 
@@ -144,14 +250,24 @@ export class FetchClient {
       }
     }
 
-    return response.json() as Promise<TResponse>;
+    const result = await response.json();
+
+    // 104: Store ETag and data for GET requests
+    if (isGet) {
+      const etag = response.headers.get('ETag');
+      if (etag) {
+        ETAG_CACHE.set(url, { etag, data: result });
+      }
+    }
+
+    return result as TResponse;
   }
 
-  get<TResponse>(endpoint: string, options?: RequestInit) {
+  get<TResponse>(endpoint: string, options?: FetchOptions) {
     return this.request<TResponse>(endpoint, { ...options, method: 'GET' });
   }
 
-  post<TResponse, TBody = unknown>(endpoint: string, body: TBody, options?: RequestInit) {
+  post<TResponse, TBody = unknown>(endpoint: string, body: TBody, options?: FetchOptions) {
     return this.request<TResponse>(endpoint, {
       ...options,
       method: 'POST',
@@ -159,7 +275,7 @@ export class FetchClient {
     });
   }
 
-  put<TResponse, TBody = unknown>(endpoint: string, body: TBody, options?: RequestInit) {
+  put<TResponse, TBody = unknown>(endpoint: string, body: TBody, options?: FetchOptions) {
     return this.request<TResponse>(endpoint, {
       ...options,
       method: 'PUT',
@@ -167,7 +283,7 @@ export class FetchClient {
     });
   }
 
-  patch<TResponse, TBody = unknown>(endpoint: string, body: TBody, options?: RequestInit) {
+  patch<TResponse, TBody = unknown>(endpoint: string, body: TBody, options?: FetchOptions) {
     return this.request<TResponse>(endpoint, {
       ...options,
       method: 'PATCH',
@@ -175,7 +291,7 @@ export class FetchClient {
     });
   }
 
-  delete<TResponse>(endpoint: string, options?: RequestInit) {
+  delete<TResponse>(endpoint: string, options?: FetchOptions) {
     return this.request<TResponse>(endpoint, { ...options, method: 'DELETE' });
   }
 }

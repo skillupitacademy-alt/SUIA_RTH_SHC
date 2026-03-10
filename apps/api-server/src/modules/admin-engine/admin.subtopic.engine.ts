@@ -1,4 +1,4 @@
-import { subtopics } from '@quiz/db';
+import { db, subtopics } from '@quiz/db';
 
 import { AuditService } from "@/modules/auth/audit.service";
 import { container } from "@/modules/core/container";
@@ -10,6 +10,10 @@ export class AdminSubtopicEngine {
     private readonly repository: ISubtopicRepository = container.get(DrizzleSubtopicRepository),
     private readonly auditService = container.get(AuditService)
   ) {}
+
+  withDb(dbClient: typeof db): AdminSubtopicEngine {
+    return new AdminSubtopicEngine(this.repository.withDb(dbClient), this.auditService);
+  }
 
   async getSubtopics(cursor: string | null = null, limit: number = 20, filters?: { topicId?: string; search?: string }) {
     const result = await this.repository.findAll(cursor, limit, filters);

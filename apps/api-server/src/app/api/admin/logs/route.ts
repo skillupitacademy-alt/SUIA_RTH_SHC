@@ -2,8 +2,8 @@ import type { NextRequest } from 'next/server';
 
 import { internalError, unauthorized } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
+import { bootstrapCQRS,GetAuditLogsQuery, queryBus } from '@/lib/cqrs';
 import { withLogging } from '@/lib/withLogging';
-import { AdminAnalyticsEngine } from "@/modules/admin-engine/admin.engine";
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
 
@@ -24,7 +24,8 @@ async function handler(_req: NextRequest) {
         const cursor = searchParams.get('cursor');
         const limit = parseInt(searchParams.get('limit') ?? '50');
         
-        const data = await AdminAnalyticsEngine.getRecentAuditLogs(cursor, limit);
+        bootstrapCQRS();
+        const data = await queryBus.dispatch(new GetAuditLogsQuery(cursor, limit));
         return ApiResponse.success(data);
     } catch (_error: unknown) {
         const message = _error instanceof Error ? _error.message : 'Internal Server Error';
@@ -32,4 +33,6 @@ async function handler(_req: NextRequest) {
     }
 }
 
-export const GET = withLogging(handler, { component: 'admin', operation: 'get_audit_logs' });
+import { withCorrelationId } from '@/lib/correlation-id.middleware';
+
+export const GET = withCorrelationId(withLogging(handler, { component: 'admin', operation: 'get_logs' }));

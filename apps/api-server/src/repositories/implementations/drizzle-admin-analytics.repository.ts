@@ -1,112 +1,70 @@
-import { auditLogs, db, domains, examQuestions, exams, questions, resultsByDimension, roles, userRoles, users } from '@quiz/db';
-import { and, count, desc, eq, isNotNull, lt, or,sql } from 'drizzle-orm';
+import { auditLogs, db, questions, roles, userRoles } from '@quiz/db';
+import { and, desc, eq, lt, or, sql } from 'drizzle-orm';
 
 import { IAdminAnalyticsRepository } from '../interfaces/admin-analytics.repository.interface';
 
 export class DrizzleAdminAnalyticsRepository implements IAdminAnalyticsRepository {
-  private dbInstance = db;
+  constructor(private _db: typeof db = db) {}
+
+  withDb(dbClient: typeof db): IAdminAnalyticsRepository {
+    return new DrizzleAdminAnalyticsRepository(dbClient);
+  }
+
+  private get dbInstance() {
+    return this._db;
+  }
 
   async getPlatformMetrics() {
-    const [userCount] = await this.dbInstance.select({ count: count() }).from(users);
-    const [examCount] = await this.dbInstance.select({ count: count() }).from(exams);
-    const [domainCount] = await this.dbInstance.select({ count: count() }).from(domains);
+    const { rows: userStats } = await this.dbInstance.execute(sql`SELECT * FROM mv_user_stats LIMIT 1`);
+    const { rows: examStats } = await this.dbInstance.execute(sql`SELECT * FROM mv_exam_stats LIMIT 1`);
 
-    const yesterday = new Date();
-    yesterday.setHours(yesterday.getHours() - 24);
-    
-    const [activeUsers] = await this.dbInstance.select({ 
-        count: sql<number>`count(distinct ${exams.userId})`.mapWith(Number) 
-    })
-    .from(exams)
-    .where(sql`${exams.startedAt} >= ${yesterday}`);
+    const u = userStats[0] as Record<string, unknown> | undefined;
+    const e = examStats[0] as Record<string, unknown> | undefined;
 
     return {
-      totalUsers: userCount.count,
-      totalExams: examCount.count,
-      totalDomains: domainCount.count,
-      activeUsers24h: activeUsers !== undefined ? activeUsers.count : 0 
+      totalUsers: Number((u?.total_users as number | string | undefined) ?? 0),
+      totalExams: Number((e?.total_exams as number | string | undefined) ?? 0),
+      totalDomains: Number((u?.total_domains as number | string | undefined) ?? 0),
+      activeUsers24h: Number((u?.active_users_24h as number | string | undefined) ?? 0)
     };
   }
 
   async getExamActivity() {
-    const statusStats = await this.dbInstance.select({
-      status: exams.status,
-      count: sql<number>`count(*)`.mapWith(Number),
-    })
-    .from(exams)
-    .groupBy(exams.status);
+    const [
+      { rows: statusStats },
+      { rows: domainActivity },
+      { rows: generalStats }
+    ] = await Promise.all([
+      this.dbInstance.execute(sql`SELECT status, count::int FROM mv_exam_status_stats`),
+      this.dbInstance.execute(sql`SELECT domain_name as "domainName", count::int FROM mv_domain_activity_stats`),
+      this.dbInstance.execute(sql`SELECT avg_completion_time_seconds as "avgTime" FROM mv_exam_stats LIMIT 1`)
+    ]);
 
-    const domainActivity = await this.dbInstance.select({
-      domainName: resultsByDimension.name,
-      count: sql<number>`count(distinct ${resultsByDimension.examId})`.mapWith(Number),
-    })
-    .from(resultsByDimension)
-    .where(eq(resultsByDimension.dimensionType, 'domain'))
-    .groupBy(resultsByDimension.name);
+    const statusStatsTyped = statusStats.map((row) => ({
+      status: String((row as Record<string, unknown>).status ?? ''),
+      count: Number((row as Record<string, unknown>).count ?? 0)
+    }));
 
-    const [avgTimeResult] = await this.dbInstance.select({
-      avgTime: sql<number>`avg(extract(epoch from (${exams.completedAt} - ${exams.startedAt})))`.mapWith(Number)
-    })
-    .from(exams)
-    .where(eq(exams.status, 'completed'));
+    const domainActivityTyped = domainActivity.map((row) => ({
+      domainName: String((row as Record<string, unknown>).domainName ?? ''),
+      count: Number((row as Record<string, unknown>).count ?? 0)
+    }));
+
+    const general = generalStats[0] as Record<string, unknown> | undefined;
 
     return {
-      statusStats,
-      domainActivity,
-      avgTime: avgTimeResult?.avgTime
+      statusStats: statusStatsTyped,
+      domainActivity: domainActivityTyped,
+      avgTime: Number((general?.avgTime as number | string | undefined) ?? 0)
     };
   }
 
   async getEfficiencyAnalytics() {
-    const TIME_THRESHOLD = 60;
-    
-    return await this.dbInstance.select({
-      quadrant: sql<string>`
-        case 
-          when ${examQuestions.isCorrect} = true 
-               and (${examQuestions.responseMetadata}->>'timeSpentSeconds') ~ '^[0-9]+$' 
-               and cast(${examQuestions.responseMetadata}->>'timeSpentSeconds' as integer) <= ${TIME_THRESHOLD} 
-               then 'mastery'
-          when ${examQuestions.isCorrect} = true 
-               and (${examQuestions.responseMetadata}->>'timeSpentSeconds') ~ '^[0-9]+$' 
-               and cast(${examQuestions.responseMetadata}->>'timeSpentSeconds' as integer) > ${TIME_THRESHOLD} 
-               then 'persistence'
-          when ${examQuestions.isCorrect} = false 
-               and (${examQuestions.responseMetadata}->>'timeSpentSeconds') ~ '^[0-9]+$' 
-               and cast(${examQuestions.responseMetadata}->>'timeSpentSeconds' as integer) <= ${TIME_THRESHOLD} 
-               then 'rash'
-          when ${examQuestions.isCorrect} = false 
-               and (${examQuestions.responseMetadata}->>'timeSpentSeconds') ~ '^[0-9]+$' 
-               and cast(${examQuestions.responseMetadata}->>'timeSpentSeconds' as integer) > ${TIME_THRESHOLD} 
-               then 'struggle'
-          else 'no_data'
-        end
-      `,
-      count: sql<number>`count(*)`.mapWith(Number)
-    })
-    .from(examQuestions)
-    .where(isNotNull(examQuestions.isCorrect))
-    .groupBy(sql`
-        case 
-          when ${examQuestions.isCorrect} = true 
-               and (${examQuestions.responseMetadata}->>'timeSpentSeconds') ~ '^[0-9]+$' 
-               and cast(${examQuestions.responseMetadata}->>'timeSpentSeconds' as integer) <= ${TIME_THRESHOLD} 
-               then 'mastery'
-          when ${examQuestions.isCorrect} = true 
-               and (${examQuestions.responseMetadata}->>'timeSpentSeconds') ~ '^[0-9]+$' 
-               and cast(${examQuestions.responseMetadata}->>'timeSpentSeconds' as integer) > ${TIME_THRESHOLD} 
-               then 'persistence'
-          when ${examQuestions.isCorrect} = false 
-               and (${examQuestions.responseMetadata}->>'timeSpentSeconds') ~ '^[0-9]+$' 
-               and cast(${examQuestions.responseMetadata}->>'timeSpentSeconds' as integer) <= ${TIME_THRESHOLD} 
-               then 'rash'
-          when ${examQuestions.isCorrect} = false 
-               and (${examQuestions.responseMetadata}->>'timeSpentSeconds') ~ '^[0-9]+$' 
-               and cast(${examQuestions.responseMetadata}->>'timeSpentSeconds' as integer) > ${TIME_THRESHOLD} 
-               then 'struggle'
-          else 'no_data'
-        end
-    `);
+    const { rows } = await this.dbInstance.execute(sql`SELECT quadrant, count::int FROM mv_efficiency_stats`);
+    return rows.map((row) => ({
+      quadrant: String((row as Record<string, unknown>).quadrant ?? ''),
+      count: Number((row as Record<string, unknown>).count ?? 0)
+    }));
   }
 
   async getAuditLogs(cursor: string | null, limit: number) {

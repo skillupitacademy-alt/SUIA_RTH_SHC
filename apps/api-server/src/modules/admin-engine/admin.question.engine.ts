@@ -1,3 +1,4 @@
+import { db } from '@quiz/db';
 import { JobType } from '@quiz/types';
 
 import { AuditService } from "@/modules/auth/audit.service";
@@ -38,6 +39,10 @@ export class AdminQuestionEngine {
     private readonly repository: IQuestionRepository = container.get(DrizzleQuestionRepository),
     private readonly auditService = container.get(AuditService)
   ) {}
+
+  withDb(dbClient: typeof db): AdminQuestionEngine {
+    return new AdminQuestionEngine(this.repository.withDb(dbClient), this.auditService);
+  }
 
   async getQuestions(cursor: string | null = null, limit: number = 20, filters?: { 
     domainId?: string; 

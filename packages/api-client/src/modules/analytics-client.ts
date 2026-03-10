@@ -1,4 +1,4 @@
-import { FetchClient } from '../core/fetch-client';
+import { FetchClient, TIMEOUTS } from '../core/fetch-client';
 
 export interface TutorInsightSignal {
   type: 'good' | 'neutral' | 'risk';
@@ -90,90 +90,90 @@ export class AnalyticsClient {
    * Fetch personal score history for the authenticated user (Last 10 exams).
    */
   async getUserScoreHistory(): Promise<ScoreHistoryResponse> {
-    return this.client.get<ScoreHistoryResponse>('/analytics/user/score-history');
+    return this.client.get<ScoreHistoryResponse>('/analytics/user/score-history', { timeout: TIMEOUTS.LONG });
   }
 
   /**
    * Fetch personal mastery trend for the authenticated user.
    */
   async getUserMasteryTrend(): Promise<MasteryTrendResponse> {
-    return this.client.get<MasteryTrendResponse>('/analytics/user/mastery-trend');
+    return this.client.get<MasteryTrendResponse>('/analytics/user/mastery-trend', { timeout: TIMEOUTS.LONG });
   }
 
   /**
    * Fetch personal topic performance (accuracy per topic).
    */
   async getUserTopicPerformance(): Promise<TopicPerformanceResponse> {
-    return this.client.get<TopicPerformanceResponse>('/analytics/user/topic-performance');
+    return this.client.get<TopicPerformanceResponse>('/analytics/user/topic-performance', { timeout: TIMEOUTS.LONG });
   }
 
   /**
    * Fetch personal weakness tree (Domain → Topic → Skill hierarchy).
    */
   async getUserWeaknessTree(): Promise<WeaknessTreeNode[]> {
-    return this.client.get<WeaknessTreeNode[]>('/analytics/user/weakness-tree');
+    return this.client.get<WeaknessTreeNode[]>('/analytics/user/weakness-tree', { timeout: TIMEOUTS.LONG });
   }
 
   /**
    * Fetch personal time-per-question distribution (Pacing analysis).
    */
   async getUserTimeBoxplot(): Promise<TimeBoxplotResponse> {
-    return this.client.get<TimeBoxplotResponse>('/analytics/user/time-boxplot');
+    return this.client.get<TimeBoxplotResponse>('/analytics/user/time-boxplot', { timeout: TIMEOUTS.LONG });
   }
 
   /**
    * Fetch personal accuracy per difficulty level.
    */
   async getUserDifficultyAccuracy(): Promise<DifficultyAccuracyResponse> {
-    return this.client.get<DifficultyAccuracyResponse>('/analytics/user/difficulty-accuracy');
+    return this.client.get<DifficultyAccuracyResponse>('/analytics/user/difficulty-accuracy', { timeout: TIMEOUTS.LONG });
   }
 
   /**
    * Fetch global score distribution (Admin only).
    */
   async getAdminScoreHistogram(): Promise<ScoreHistogramResponse> {
-    return this.client.get<ScoreHistogramResponse>('/analytics/admin/score-histogram');
+    return this.client.get<ScoreHistogramResponse>('/analytics/admin/score-histogram', { timeout: TIMEOUTS.LONG });
   }
 
   /**
    * Fetch global mastery trend (Admin only).
    */
   async getAdminMasteryTrend(): Promise<MasteryTrendResponse> {
-    return this.client.get<MasteryTrendResponse>('/analytics/admin/mastery-trend');
+    return this.client.get<MasteryTrendResponse>('/analytics/admin/mastery-trend', { timeout: TIMEOUTS.LONG });
   }
 
   /**
    * Fetch topic-skill heatmap (Admin only).
    */
   async getAdminTopicSkillHeatmap(): Promise<TopicSkillHeatmapResponse> {
-    return this.client.get<TopicSkillHeatmapResponse>('/analytics/admin/topic-skill-heatmap');
+    return this.client.get<TopicSkillHeatmapResponse>('/analytics/admin/topic-skill-heatmap', { timeout: TIMEOUTS.LONG });
   }
 
   /**
    * Fetch item difficulty report (Admin only).
    */
   async getAdminItemDifficulty(): Promise<ItemDifficultyResponse> {
-    return this.client.get<ItemDifficultyResponse>('/analytics/admin/item-difficulty');
+    return this.client.get<ItemDifficultyResponse>('/analytics/admin/item-difficulty', { timeout: TIMEOUTS.LONG });
   }
 
   /**
    * Fetch item discrimination analysis (Admin only).
    */
   async getAdminDiscrimination(): Promise<DiscriminationResponse> {
-    return this.client.get<DiscriminationResponse>('/analytics/admin/discrimination');
+    return this.client.get<DiscriminationResponse>('/analytics/admin/discrimination', { timeout: TIMEOUTS.LONG });
   }
 
   /**
    * Fetch question pool sufficiency data (Admin only).
    */
   async getAdminPoolSufficiency(): Promise<PoolSufficiencyResponse> {
-    return this.client.get<PoolSufficiencyResponse>('/analytics/admin/pool-sufficiency');
+    return this.client.get<PoolSufficiencyResponse>('/analytics/admin/pool-sufficiency', { timeout: TIMEOUTS.LONG });
   }
 
   /**
    * Fetch planned vs actual difficulty variance (Admin only).
    */
   async getAdminPlannedVsActualDifficulty(): Promise<DifficultyVarianceResponse> {
-    return this.client.get<DifficultyVarianceResponse>('/analytics/admin/planned-vs-actual-difficulty');
+    return this.client.get<DifficultyVarianceResponse>('/analytics/admin/planned-vs-actual-difficulty', { timeout: TIMEOUTS.LONG });
   }
 }

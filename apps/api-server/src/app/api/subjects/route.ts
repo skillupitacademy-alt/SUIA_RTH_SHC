@@ -2,6 +2,7 @@ import { type NextRequest } from 'next/server';
 
 import { badRequest } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
+import { withCacheHeaders } from '@/lib/cache-headers';
 import { withLogging } from '@/lib/withLogging';
 import { SubjectService } from '@/modules/domain/domain.service';
 
@@ -17,7 +18,7 @@ async function getHandler(req: NextRequest) {
     }
 
     const subjects = await SubjectService.getSubjectsByDomain(domainId);
-    return ApiResponse.success(subjects);
+    return withCacheHeaders(ApiResponse.success(subjects), 'static');
   } catch (error: unknown) {
     return ApiResponse.error(error);
   }

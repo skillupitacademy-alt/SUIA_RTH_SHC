@@ -57,4 +57,6 @@ async function handler(req: NextRequest) {
   }
 }
 
-export const GET = withLogging(handler, { component: 'admin', operation: 'list_reports' });
+import { withCorrelationId } from '@/lib/correlation-id.middleware';
+
+export const GET = withCorrelationId(withLogging(handler, { component: 'admin', operation: 'list_reports' }));

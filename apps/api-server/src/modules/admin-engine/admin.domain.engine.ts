@@ -1,4 +1,4 @@
-import { domains } from '@quiz/db';
+import { db, domains } from '@quiz/db';
 
 import { AuditService } from "@/modules/auth/audit.service";
 import { container } from "@/modules/core/container";
@@ -10,6 +10,10 @@ export class AdminDomainEngine {
     private readonly repository: IDomainRepository = container.get(DrizzleDomainRepository),
     private readonly auditService = container.get(AuditService)
   ) {}
+
+  withDb(dbClient: typeof db): AdminDomainEngine {
+    return new AdminDomainEngine(this.repository.withDb(dbClient), this.auditService);
+  }
 
   async getDomains(cursor: string | null = null, limit: number = 20, filters?: { search?: string }) {
     const result = await this.repository.findAll(cursor, limit, filters);

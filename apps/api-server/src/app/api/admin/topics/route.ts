@@ -4,16 +4,24 @@ import type { NextRequest } from 'next/server';
 
 import { badRequest, forbidden, unauthorized } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
+import { withCorrelationId } from '@/lib/correlation-id.middleware';
+import { bootstrapCQRS, GetTopicsQuery, queryBus } from '@/lib/cqrs';
 import { recordCounter, recordTimer } from '@/lib/metrics';
 import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 import { withLogging } from '@/lib/withLogging';
-import { AdminTopicEngine } from "@/modules/admin-engine/admin.engine";
+import { AdminTopicEngine as AdminTopicEngineClass } from '@/modules/admin-engine/admin.topic.engine';
 import { _verifyAdmin } from '@/modules/auth/rbac.service';
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
 import { topicSchema } from '@/schemas/hierarchy.schemas';
 
 type TopicInsert = typeof topics.$inferInsert;
+type TopicsQueryResult = {
+  topics: TopicInsert[];
+  total: number;
+  nextCursor: string | null;
+  limit: number;
+};
 
 export const dynamic = 'force-dynamic';
 
@@ -36,7 +44,8 @@ async function getHandler(_req: NextRequest) {
     const subjectId = searchParams.get('subjectId') ?? undefined;
     const search = searchParams.get('search') ?? undefined;
 
-    const result = await AdminTopicEngine.getTopics(cursor, limit, { subjectId, search });
+    bootstrapCQRS();
+    const result = await queryBus.dispatch(new GetTopicsQuery(cursor, limit, { subjectId, search })) as TopicsQueryResult;
     const durationMs = Date.now() - start;
     recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.topics.get.success', 1);
     recordTimer(METRICS.ADMIN.DASHBOARD_LOAD + '.topics.get.duration', durationMs, { outcome: 'success' });
@@ -88,7 +97,8 @@ async function postHandler(_req: NextRequest) {
       detailedNotesPath: body.detailedNotesPath,
     };
 
-    const result = await AdminTopicEngine.createTopic(createBody, _payload.userId);
+    const engine = container.get(AdminTopicEngineClass);
+    const result = await engine.createTopic(createBody, _payload.userId);
     const durationMs = Date.now() - start;
     recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.topics.create.success', 1);
     recordTimer(METRICS.ADMIN.DASHBOARD_LOAD + '.topics.create.duration', durationMs, { outcome: 'success' });
@@ -102,5 +112,5 @@ async function postHandler(_req: NextRequest) {
   }
 }
 
-export const GET = withLogging(getHandler, { component: 'admin', operation: 'get_topics' });
-export const POST = withLogging(postHandler, { component: 'admin', operation: 'create_topic' });
+export const GET = withCorrelationId(withLogging(getHandler, { component: 'admin', operation: 'get_topics' }));
+export const POST = withCorrelationId(withLogging(postHandler, { component: 'admin', operation: 'create_topic' }));

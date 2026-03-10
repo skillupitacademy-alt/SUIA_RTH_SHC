@@ -1,40 +1,34 @@
 /**
- * Correlation ID Middleware
+ * Correlation ID Middleware Wrapper
+ * Wraps a Next.js App Router handler (req, context) => Response.
  * Ensures every incoming request gets a unique correlation ID
  * that flows through the system via AsyncLocalStorage.
  */
 import crypto from 'crypto';
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
 
-import { runWithTrace } from './trace.context';
+import { withRequestContext } from './request-context';
 
-export async function withCorrelationId(
-    req: NextRequest, 
-    handler: (req: NextRequest) => Promise<NextResponse>
+export function withCorrelationId<TContext = unknown>(
+  handler: (req: NextRequest, context: TContext) => Promise<Response> | Response
 ) {
-    const incomingId = req.headers.get('x-correlation-id');
-    const correlationId =
-      incomingId !== null && incomingId !== undefined && incomingId.trim() !== ''
-        ? incomingId
-        : crypto.randomUUID();
+  return async (req: NextRequest, context: TContext): Promise<Response> => {
+    const incomingId = req.headers.get('x-correlation-id') ?? req.headers.get('x-request-id') ?? '';
+    const trimmed = incomingId.trim();
+    const correlationId = trimmed.length > 0 ? trimmed : crypto.randomUUID();
 
-    // Reattach the header so it flows to upstream services if needed
-    const requestHeaders = new Headers(req.headers);
-    requestHeaders.set('x-correlation-id', correlationId);
-
-    // Create a new request object with the updated headers
-    const newReq = new NextRequest(req, {
-        headers: requestHeaders
-    });
-
-    const contextData = {
+    return withRequestContext(
+      { 
+        requestId: correlationId, 
         correlationId,
-        path: req.nextUrl.pathname
-    };
-
-    return runWithTrace(contextData, async () => {
-        const response = await handler(newReq);
+        path: req.nextUrl.pathname,
+        ip: (req as { ip?: string }).ip ?? undefined
+      }, 
+      async () => {
+        const response = await handler(req, context);
         response.headers.set('x-correlation-id', correlationId);
         return response;
-    });
+      }
+    );
+  };
 }

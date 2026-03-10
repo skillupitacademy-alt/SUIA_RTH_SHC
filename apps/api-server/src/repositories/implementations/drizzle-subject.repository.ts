@@ -8,9 +8,14 @@ import { ISubjectRepository } from '../interfaces/subject.repository.interface';
 export class DrizzleSubjectRepository extends BaseRepository<typeof subjects.$inferSelect, typeof subjects> implements ISubjectRepository {
   protected table = subjects;
 
-  constructor() {
-    super(db);
+  constructor(dbInstance: typeof db = db) {
+    super(dbInstance);
   }
+
+  withDb(dbClient: typeof db): this {
+    return new DrizzleSubjectRepository(dbClient) as this;
+  }
+
 
   async findAll(cursor: string | null, limit: number, filters?: { domainId?: string; search?: string }) {
     const conditions = [];

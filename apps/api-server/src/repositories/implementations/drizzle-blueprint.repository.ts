@@ -8,9 +8,14 @@ import { IBlueprintRepository } from '../interfaces/blueprint.repository.interfa
 export class DrizzleBlueprintRepository extends BaseRepository<typeof examBlueprints.$inferSelect, typeof examBlueprints> implements IBlueprintRepository {
   protected table = examBlueprints;
 
-  constructor() {
-    super(db);
+  constructor(dbInstance: typeof db = db) {
+    super(dbInstance);
   }
+
+  withDb(dbClient: typeof db): this {
+    return new DrizzleBlueprintRepository(dbClient) as this;
+  }
+
 
   async findAll(cursor: string | null = null, limit: number = 20, filters?: { search?: string }) {
     const conditions = [];

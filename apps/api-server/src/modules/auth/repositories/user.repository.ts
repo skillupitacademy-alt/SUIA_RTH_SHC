@@ -17,8 +17,12 @@ export interface User {
 export class UserRepository extends BaseRepository<User, typeof users> {
   protected table = users;
 
-  constructor() {
-    super(db);
+  constructor(dbInstance: typeof db = db) {
+    super(dbInstance);
+  }
+
+  withDb(dbClient: typeof db): this {
+    return new UserRepository(dbClient) as this;
   }
 
   async findByEmail(email: string): Promise<User | undefined> {

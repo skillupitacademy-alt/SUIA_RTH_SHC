@@ -16,36 +16,10 @@ export interface UpdateReportSuccessInput {
 }
 
 export class ReportRepository {
-  constructor(private readonly dbInstance = db) {}
+  constructor(private readonly dbInstance: typeof db = db) {}
 
-  static instance = new ReportRepository();
-
-  static getReportByAttempt(attemptId: string) {
-    return this.instance.getReportByAttempt(attemptId);
-  }
-
-  static createReportIfNotExists(input: CreateReportInput) {
-    return this.instance.createReportIfNotExists(input);
-  }
-
-  static updateReportStatus(
-    attemptId: string,
-    status: 'pending' | 'generating' | 'ready' | 'failed',
-    stageOrError?: string
-  ) {
-    return this.instance.updateReportStatus(attemptId, status, stageOrError);
-  }
-
-  static updateReportSuccess(attemptId: string, data: UpdateReportSuccessInput) {
-    return this.instance.updateReportSuccess(attemptId, data);
-  }
-
-  static listReports(filters?: { status?: string; userId?: string; limit?: number; offset?: number }) {
-    return this.instance.listReports(filters);
-  }
-
-  static getReportStats() {
-    return this.instance.getReportStats();
+  withDb(dbClient: typeof db): ReportRepository {
+    return new ReportRepository(dbClient);
   }
 
   async getReportByAttempt(attemptId: string) {
@@ -156,5 +130,36 @@ export class ReportRepository {
       byStatus: Object.fromEntries(statusCounts.map(r => [r.status, Number(r.total)])),
       avgGenerationTimeMs: avgGen[0]?.avgMs !== null ? Math.round(Number(avgGen[0]?.avgMs ?? 0)) : null,
     };
+  }
+
+  // Convenience static helpers so existing callers using the class as a singleton keep working
+  private static readonly defaultRepo = new ReportRepository();
+
+  static getReportByAttempt(attemptId: string) {
+    return this.defaultRepo.getReportByAttempt(attemptId);
+  }
+
+  static createReportIfNotExists(input: CreateReportInput) {
+    return this.defaultRepo.createReportIfNotExists(input);
+  }
+
+  static updateReportStatus(
+    attemptId: string,
+    status: 'pending' | 'generating' | 'ready' | 'failed',
+    stageOrError?: string
+  ) {
+    return this.defaultRepo.updateReportStatus(attemptId, status, stageOrError);
+  }
+
+  static updateReportSuccess(attemptId: string, data: UpdateReportSuccessInput) {
+    return this.defaultRepo.updateReportSuccess(attemptId, data);
+  }
+
+  static listReports(filters?: { status?: string; userId?: string; limit?: number; offset?: number }) {
+    return this.defaultRepo.listReports(filters);
+  }
+
+  static getReportStats() {
+    return this.defaultRepo.getReportStats();
   }
 }

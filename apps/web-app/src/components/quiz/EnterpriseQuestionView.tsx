@@ -1,11 +1,19 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import { Code, CheckCircle2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
+type EnterpriseQuestion = {
+    id: string;
+    text: string;
+    difficulty: string;
+    type?: string;
+    code?: string | null;
+    options: string[];
+};
+
 interface EnterpriseQuestionViewProps {
-    question: any;
+    question: EnterpriseQuestion;
     currentQuestionIndex: number;
     totalQuestions: number;
     answerIndex: number | undefined;

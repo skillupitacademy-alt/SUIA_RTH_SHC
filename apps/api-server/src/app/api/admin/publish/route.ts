@@ -53,4 +53,6 @@ async function postHandler(_req: NextRequest) {
     }
 }
 
-export const POST = withLogging(postHandler, { component: 'admin', operation: 'publish_question' });
+import { withCorrelationId } from '@/lib/correlation-id.middleware';
+
+export const POST = withCorrelationId(withLogging(postHandler, { component: 'admin', operation: 'publish_question' }));

@@ -1,16 +1,23 @@
 import { db, roles, userProfiles, userRoles, users } from '@quiz/db';
 import { and, desc, eq, gt, inArray, isNotNull, isNull, lt, or, type SQL, sql } from 'drizzle-orm';
 
+import { getDrizzleFields } from '@/lib/field-selector';
 import { buildPaginatedResponse, decodePageCursor } from '@/lib/pagination';
 import { BaseRepository } from '@/modules/core/repositories/base.repository';
 
 import { IAdminUserRepository } from '../interfaces/admin-user.repository.interface';
 
+const USER_ADMIN_ALLOWLIST = ['id', 'email', 'name', 'roles', 'isVerified', 'createdAt', 'lastLoginAt', 'examCount'];
+
 export class DrizzleAdminUserRepository extends BaseRepository<typeof users.$inferSelect, typeof users> implements IAdminUserRepository {
   protected table = users;
 
-  constructor() {
-    super(db);
+  constructor(dbInstance: typeof db = db) {
+    super(dbInstance);
+  }
+
+  withDb(dbClient: typeof db): this {
+    return new DrizzleAdminUserRepository(dbClient) as this;
   }
 
   async findAll(cursor: string | null, limit: number, status: 'active' | 'deleted', filters?: { 
@@ -18,7 +25,8 @@ export class DrizzleAdminUserRepository extends BaseRepository<typeof users.$inf
     role?: string; 
     isBlocked?: boolean; 
     isVerified?: boolean; 
-    status?: string 
+    status?: string;
+    fields?: string;
   }) {
     const conditions: SQL[] = [];
     
@@ -70,14 +78,23 @@ export class DrizzleAdminUserRepository extends BaseRepository<typeof users.$inf
 
     const [countResult] = await this.dbInstance.select({ count: sql`count(*)` })
         .from(users)
-        .where(status === 'active' ? isNull(users.deletedAt) : isNotNull(users.deletedAt));
+        .where(
+          status === 'active'
+            ? isNull(users.deletedAt)
+            : status === 'deleted'
+              ? isNotNull(users.deletedAt)
+              : undefined
+        );
     
     const totalCount = Number(countResult?.count ?? 0);
+
+    const columns = getDrizzleFields(filters?.fields, USER_ADMIN_ALLOWLIST, users as unknown as Record<string, unknown>);
 
     const usersList = await this.dbInstance.query.users.findMany({
       limit: limit + 1,
       where: whereClause,
       orderBy: [desc(users.createdAt), desc(users.id)],
+      ...(columns ? { columns } : {}),
       with: {
         profile: true,
         userRoles: {

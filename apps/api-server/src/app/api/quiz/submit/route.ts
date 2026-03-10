@@ -80,4 +80,6 @@ async function postHandler(req: NextRequest) {
   }
 }
 
-export const POST = withLogging(postHandler, { component: 'quiz', operation: 'submit_exam' });
+import { withCorrelationId } from '@/lib/correlation-id.middleware';
+
+export const POST = withCorrelationId(withLogging(postHandler, { component: 'quiz', operation: 'submit_exam' }));

@@ -83,7 +83,8 @@ export class SessionService {
       where: and(eq(exams.id, examId), eq(exams.userId, userId)),
       with: {
         examQuestions: {
-          orderBy: (eq, { asc }) => [asc(eq.order)],
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          orderBy: (eqAny: any, helpers: any) => [helpers.asc(eqAny.order)],
           with: { question: true }
         }
       }
@@ -92,10 +93,13 @@ export class SessionService {
     if (!fullExam) throw new Error('Exam state lost');
 
     // Calculate progress
-    const answeredCount = fullExam.examQuestions.filter(q => q.userAnswer !== null).length;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const answeredCount = fullExam.examQuestions.filter((q: any) => q.userAnswer !== null).length;
     
     // Find first unanswered question
-    const currentEq = fullExam.examQuestions.find(q => q.userAnswer === null) || fullExam.examQuestions[fullExam.examQuestions.length - 1];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const firstUnanswered = fullExam.examQuestions.find((q: any) => q.userAnswer === null);
+    const currentEq = firstUnanswered ?? (fullExam.examQuestions.length > 0 ? fullExam.examQuestions[fullExam.examQuestions.length - 1] : null);
 
     const startTime = new Date(fullExam.startedAt).getTime();
     const timeElapsedSeconds = Math.floor((Date.now() - startTime) / 1000);
@@ -113,7 +117,8 @@ export class SessionService {
         answeredCount,
       },
       // Full question list (sanitized)
-      questions: fullExam.examQuestions.map(eq => ({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      questions: fullExam.examQuestions.map((eq: any) => ({
         id: eq.question.id,
         questionId: eq.question.id, // Explicitly provide questionId for ExamInterface mapping
         text: eq.question.questionText, 

@@ -4,16 +4,24 @@ import type { NextRequest } from 'next/server';
 
 import { badRequest, forbidden, unauthorized } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
+import { withCorrelationId } from '@/lib/correlation-id.middleware';
+import { bootstrapCQRS, GetSubtopicsQuery, queryBus } from '@/lib/cqrs';
 import { recordCounter, recordTimer } from '@/lib/metrics';
 import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 import { withLogging } from '@/lib/withLogging';
-import { AdminSubtopicEngine } from "@/modules/admin-engine/admin.engine";
+import { AdminSubtopicEngine as AdminSubtopicEngineClass } from '@/modules/admin-engine/admin.subtopic.engine';
 import { _verifyAdmin } from '@/modules/auth/rbac.service';
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
 import { subtopicSchema } from '@/schemas/hierarchy.schemas';
 
 type SubtopicInsert = typeof subtopics.$inferInsert;
+type SubtopicsQueryResult = {
+  subtopics: SubtopicInsert[];
+  total: number;
+  nextCursor: string | null;
+  limit: number;
+};
 
 export const dynamic = 'force-dynamic';
 
@@ -36,7 +44,8 @@ async function getHandler(_req: NextRequest) {
     const topicId = searchParams.get('topicId') ?? undefined;
     const search = searchParams.get('search') ?? undefined;
 
-    const result = await AdminSubtopicEngine.getSubtopics(cursor, limit, { topicId, search });
+    bootstrapCQRS();
+    const result = await queryBus.dispatch(new GetSubtopicsQuery(cursor, limit, { topicId, search })) as SubtopicsQueryResult;
     const durationMs = Date.now() - start;
     recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.subtopics.get.success', 1);
     recordTimer(METRICS.ADMIN.DASHBOARD_LOAD + '.subtopics.get.duration', durationMs, { outcome: 'success' });
@@ -84,7 +93,8 @@ async function postHandler(_req: NextRequest) {
       depthLevel: body.depthLevel,
     };
 
-    const result = await AdminSubtopicEngine.createSubtopic(createBody, _payload.userId);
+    const engine = container.get(AdminSubtopicEngineClass);
+    const result = await engine.createSubtopic(createBody, _payload.userId);
     const durationMs = Date.now() - start;
     recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.subtopics.create.success', 1);
     recordTimer(METRICS.ADMIN.DASHBOARD_LOAD + '.subtopics.create.duration', durationMs, { outcome: 'success' });
@@ -98,5 +108,5 @@ async function postHandler(_req: NextRequest) {
   }
 }
 
-export const GET = withLogging(getHandler, { component: 'admin', operation: 'get_subtopics' });
-export const POST = withLogging(postHandler, { component: 'admin', operation: 'create_subtopic' });
+export const GET = withCorrelationId(withLogging(getHandler, { component: 'admin', operation: 'get_subtopics' }));
+export const POST = withCorrelationId(withLogging(postHandler, { component: 'admin', operation: 'create_subtopic' }));

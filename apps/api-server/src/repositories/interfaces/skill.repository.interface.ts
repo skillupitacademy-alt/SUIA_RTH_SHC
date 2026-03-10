@@ -1,6 +1,10 @@
-import { skills } from '@quiz/db';
+import { db, skills } from '@quiz/db';
 
 export interface ISkillRepository {
+  /**
+   * Returns a new instance of the repository using the specified database client.
+   */
+  withDb(dbClient: typeof db): this;
   findAll(cursor: string | null, limit: number, filters?: { search?: string }): Promise<{
     data: (typeof skills.$inferSelect)[];
     total: number;

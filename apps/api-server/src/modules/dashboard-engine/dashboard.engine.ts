@@ -102,11 +102,18 @@ export class DashboardEngine {
         weeklyExamsCount: weeklyExamsResult[0]?.count ?? 0,
         globalRank: null, 
       },
-      performanceTrend: performanceTrendResult.map(t => ({
+      performanceTrend: performanceTrendResult.map((t: { score: number | null; completedAt: Date | null }) => ({
         score: t.score ?? 0,
         date: (t.completedAt !== null && t.completedAt !== undefined) ? t.completedAt.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }) : 'Unknown'
       })),
-      recentActivity: recentCompletedExams.map(e => {
+      recentActivity: (recentCompletedExams as Array<{
+        id: string;
+        blueprint?: { name?: string | null } | null;
+        dimensions?: Array<{ dimensionType: string; name?: string | null }> | null;
+        totalScore: number | null;
+        completedAt: Date | null;
+        status: string;
+      }>).map((e) => {
         // Derive title: Blueprint Name > Dimensions (Topic > Subject > Domain)
         let derivedTitle: string | null | undefined = e.blueprint?.name;
         

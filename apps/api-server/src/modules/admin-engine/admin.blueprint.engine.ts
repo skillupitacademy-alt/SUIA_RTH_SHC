@@ -1,3 +1,4 @@
+import { db } from "@quiz/db";
 import { examBlueprints } from "@quiz/db";
 
 import { container } from "@/modules/core/container";
@@ -8,6 +9,10 @@ export class AdminBlueprintEngine {
   constructor(
     private readonly repository: IBlueprintRepository = container.get(DrizzleBlueprintRepository)
   ) {}
+
+  withDb(dbClient: typeof db): AdminBlueprintEngine {
+    return new AdminBlueprintEngine(this.repository.withDb(dbClient));
+  }
 
   async getBlueprints(cursor: string | null = null, limit: number = 20, filters?: { search?: string }) {
     const result = await this.repository.findAll(cursor, limit, filters);

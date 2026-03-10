@@ -91,3 +91,10 @@ export const validateTopicSchema = z.object({
   topicId: uuid,
 });
 export type ValidateTopicInput = z.infer<typeof validateTopicSchema>;
+
+export const jobActionSchema = z.object({
+  queueName: z.string(),
+  jobId: z.string(),
+  action: z.enum(['retry', 'discard', 'promote']),
+});
+export type JobActionInput = z.infer<typeof jobActionSchema>;

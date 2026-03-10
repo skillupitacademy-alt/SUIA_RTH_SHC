@@ -8,6 +8,7 @@
  */
 import { type NextRequest, NextResponse } from 'next/server';
 
+import { withEtags } from '../middleware/etag.middleware';
 import { logger } from './logger';
 
 type RouteHandler<T = unknown> = (request: NextRequest, context: T) => Promise<Response> | Response;
@@ -84,11 +85,15 @@ export function withLogging<T = unknown>(handler: RouteHandler<T>, options: LogO
             // Ensure the requestId is surfaced to callers.
             const headers = new Headers(response.headers);
             headers.set('x-request-id', requestId);
-            return new NextResponse(response.body, {
+            
+            const nextResponse = new NextResponse(response.body, {
                 status: response.status,
                 statusText: response.statusText,
                 headers,
             });
+
+            // 104: Apply ETags for conditional requests
+            return await withEtags(request, nextResponse);
         } catch (err) {
             const durationMs = Date.now() - start;
             const isProd = process.env.NODE_ENV === 'production';

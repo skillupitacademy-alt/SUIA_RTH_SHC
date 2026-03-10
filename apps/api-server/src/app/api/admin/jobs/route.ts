@@ -4,6 +4,7 @@ import type { NextRequest } from 'next/server';
 
 import { badRequest, internalError, unauthorized } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
+import { withCorrelationId } from '@/lib/correlation-id.middleware';
 import { recordCounter, recordTimer } from '@/lib/metrics';
 import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 import { withLogging } from '@/lib/withLogging';
@@ -128,5 +129,5 @@ async function postHandler(_req: NextRequest) {
   }
 }
 
-export const GET = withLogging(getHandler, { component: 'admin', operation: 'list_jobs' });
-export const POST = withLogging(postHandler, { component: 'admin', operation: 'create_job' });
+export const GET = withCorrelationId(withLogging(getHandler, { component: 'admin', operation: 'get_jobs' }));
+export const POST = withCorrelationId(withLogging(postHandler, { component: 'admin', operation: 'create_job' }));

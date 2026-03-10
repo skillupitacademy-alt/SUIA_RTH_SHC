@@ -8,9 +8,14 @@ import { ISkillRepository } from '../interfaces/skill.repository.interface';
 export class DrizzleSkillRepository extends BaseRepository<typeof skills.$inferSelect, typeof skills> implements ISkillRepository {
   protected table = skills;
 
-  constructor() {
-    super(db);
+  constructor(dbInstance: typeof db = db) {
+    super(dbInstance);
   }
+
+  withDb(dbClient: typeof db): this {
+    return new DrizzleSkillRepository(dbClient) as this;
+  }
+
 
   async findAll(cursor: string | null, limit: number, filters?: { search?: string }) {
     const conditions: SQL[] = [];

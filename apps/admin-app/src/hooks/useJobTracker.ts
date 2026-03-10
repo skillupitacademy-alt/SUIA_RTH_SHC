@@ -60,11 +60,20 @@ export function useJobTracker() {
         }
 
         try {
-            type JobResult = { job: BackgroundJob } | { _removeId: string } | null;
+            type JobResult = { job: BackgroundJob | null } | { _removeId: string } | null;
             const results: JobResult[] = await Promise.all(
                 jobIds.map(async (id) => {
                     try {
-                        return await apiClient.admin.getJobById(id);
+                        const res = await apiClient.admin.getJobById(id);
+                        if (res !== null && typeof res === 'object') {
+                            if ('job' in res) {
+                                return { job: (res as { job: BackgroundJob | null }).job };
+                            }
+                            if ('jobId' in res) {
+                                return { _removeId: (res as { jobId: string }).jobId };
+                            }
+                        }
+                        return { _removeId: id };
                     } catch (err: unknown) {
                         if (err !== null && typeof err === 'object' && 'status' in err && (err.status === 404 || err.status === 401)) {
                             return { _removeId: id };
@@ -75,7 +84,7 @@ export function useJobTracker() {
             );
 
             const fetchedJobs: BackgroundJob[] = results
-                .filter((res): res is { job: BackgroundJob } => res !== null && !('_removeId' in res))
+                .filter((res): res is { job: BackgroundJob } => res !== null && !('_removeId' in res) && res.job !== null)
                 .map(res => res.job);
 
             const idsToRemove: string[] = results

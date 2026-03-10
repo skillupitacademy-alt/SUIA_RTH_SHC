@@ -4,6 +4,7 @@ import type { NextRequest } from 'next/server';
 
 import { badRequest, notFound, unauthorized } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
+import { withCacheHeaders } from '@/lib/cache-headers';
 import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 import { withLogging } from '@/lib/withLogging';
 import { TokenService } from '@/modules/auth/token.service';
@@ -37,7 +38,7 @@ async function getHandler(_req: NextRequest) {
       return ApiResponse.error(notFound('Profile', _payload.userId));
     }
 
-    return ApiResponse.success(profile);
+    return withCacheHeaders(ApiResponse.success(profile), 'private');
   } catch (_error: unknown) {
     return ApiResponse.error(_error, 401);
   }

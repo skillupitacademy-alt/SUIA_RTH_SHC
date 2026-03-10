@@ -8,9 +8,14 @@ import { ISubtopicRepository } from '../interfaces/subtopic.repository.interface
 export class DrizzleSubtopicRepository extends BaseRepository<typeof subtopics.$inferSelect, typeof subtopics> implements ISubtopicRepository {
   protected table = subtopics;
 
-  constructor() {
-    super(db);
+  constructor(dbInstance: typeof db = db) {
+    super(dbInstance);
   }
+
+  withDb(dbClient: typeof db): this {
+    return new DrizzleSubtopicRepository(dbClient) as this;
+  }
+
 
   async findAll(cursor: string | null, limit: number, filters?: { topicId?: string; search?: string }) {
     const conditions = [];

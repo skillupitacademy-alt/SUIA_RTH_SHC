@@ -1,3 +1,5 @@
+import { db } from "@quiz/db";
+
 import { TOKENS } from "@/lib/app.container";
 import { AuditService } from "@/modules/auth/audit.service";
 import { container } from "@/modules/core/container";
@@ -19,7 +21,11 @@ export class AdminUserEngine {
     private readonly auditService = container.get(AuditService)
   ) {}
 
-  async getUsers(cursor: string | null = null, limit: number = 20, status: 'active' | 'deleted' = 'active', filters?: { search?: string; role?: string; isBlocked?: boolean; isVerified?: boolean; status?: string }) {
+  withDb(dbClient: typeof db): AdminUserEngine {
+    return new AdminUserEngine(this.repository.withDb(dbClient), this.auditService);
+  }
+
+  async getUsers(cursor: string | null = null, limit: number = 20, status: 'active' | 'deleted' = 'active', filters?: { search?: string; role?: string; isBlocked?: boolean; isVerified?: boolean; status?: string; fields?: string }) {
     const result = await this.repository.findAll(cursor, limit, status, filters);
 
     const now = new Date();

@@ -1,4 +1,4 @@
-import { subjects } from '@quiz/db';
+import { db, subjects } from '@quiz/db';
 
 import { AuditService } from "@/modules/auth/audit.service";
 import { container } from "@/modules/core/container";
@@ -10,6 +10,10 @@ export class AdminSubjectEngine {
     private readonly repository: ISubjectRepository = container.get(DrizzleSubjectRepository),
     private readonly auditService = container.get(AuditService)
   ) {}
+
+  withDb(dbClient: typeof db): AdminSubjectEngine {
+    return new AdminSubjectEngine(this.repository.withDb(dbClient), this.auditService);
+  }
 
   async getSubjects(cursor: string | null = null, limit: number = 20, filters?: { domainId?: string; search?: string }) {
     const result = await this.repository.findAll(cursor, limit, filters);

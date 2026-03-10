@@ -8,8 +8,13 @@ const __dirname = path.dirname(__filename);
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+    compress: true,
     transpilePackages: ['@quiz/api-client', '@quiz/db', '@quiz/ui', 'lucide-react'],
-    serverExternalPackages: ['@sparticuz/chromium', 'puppeteer-core'],
+    // Bundle ioredis/BullMQ to avoid Turbopack “can't be external” warnings; keep heavy binaries out.
+    serverExternalPackages: [],
+    env: {
+        QUEUE_ENABLED: process.env.QUEUE_ENABLED ?? 'false',
+    },
     outputFileTracingRoot: path.join(__dirname, '../../'),
     outputFileTracingIncludes: {
         '/api/generate-report': ['../../node_modules/@sparticuz/chromium/**/*'],
@@ -56,6 +61,14 @@ const nextConfig = {
                         })
                     },
                 ],
+            },
+        ];
+    },
+    async rewrites() {
+        return [
+            {
+                source: '/api/v1/:path*',
+                destination: '/api/:path*',
             },
         ];
     },

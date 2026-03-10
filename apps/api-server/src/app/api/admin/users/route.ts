@@ -1,17 +1,29 @@
 import type { NextRequest } from 'next/server';
 
+import type { AdminUserInput } from '@/dtos/admin.dto';
 import { unauthorized } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
+import { bootstrapCQRS, GetAdminUsersQuery, queryBus } from '@/lib/cqrs';
+import { selectFields } from '@/lib/field-selector';
 import { logger } from '@/lib/logger';
 import { recordCounter, recordTimer } from '@/lib/metrics';
 import { withLogging } from '@/lib/withLogging';
-import { AdminUserEngine } from "@/modules/admin-engine/admin.engine";
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
 
 export const dynamic = 'force-dynamic';
 
 const log = logger.child({ module: 'admin:users' });
+
+const USER_ADMIN_ALLOWLIST = [
+  'id', 'email', 'name', 'roles', 'isVerified', 'createdAt', 'lastLoginAt', 'examCount'
+];
+type AdminUsersQueryResult = {
+  users: unknown[];
+  total: number;
+  nextCursor: string | null;
+  limit: number;
+};
 
 async function getHandler(_req: NextRequest) {
     const start = Date.now();
@@ -35,11 +47,17 @@ async function getHandler(_req: NextRequest) {
     const isVerifiedParam = searchParams.get('isVerified');
     const isVerified = isVerifiedParam === 'true' ? true : isVerifiedParam === 'false' ? false : undefined;
     const xStatus = searchParams.get('xStatus') ?? undefined;
+    const fields = searchParams.get('fields');
 
-    const result = await AdminUserEngine.getUsers(cursor, limit, status, { search, role, isBlocked, isVerified, status: xStatus });
+    bootstrapCQRS();
+    const result = await queryBus.dispatch(new GetAdminUsersQuery(cursor, limit, status, { search, role, isBlocked, isVerified, status: xStatus, fields: fields ?? undefined })) as AdminUsersQueryResult;
     
     const { toAdminUserDTO } = await import('@/dtos/admin.dto');
-    const usersDto = result.users.map(toAdminUserDTO);
+    const usersDto = selectFields(
+      (result.users as unknown[]).map((user) => toAdminUserDTO(user as AdminUserInput)) as unknown as Record<string, unknown>[],
+      fields,
+      USER_ADMIN_ALLOWLIST
+    );
     
     const durationMs = Date.now() - start;
     recordCounter('admin.api.users.get.success', 1);
@@ -60,4 +78,6 @@ async function getHandler(_req: NextRequest) {
   }
 }
 
-export const GET = withLogging(getHandler, { component: 'admin', operation: 'get_users' });
+import { withCorrelationId } from '@/lib/correlation-id.middleware';
+
+export const GET = withCorrelationId(withLogging(getHandler, { component: 'admin', operation: 'get_users' }));

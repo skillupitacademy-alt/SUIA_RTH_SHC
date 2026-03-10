@@ -8,8 +8,12 @@ type RefreshTokenRow = typeof refreshTokens.$inferSelect;
 export class TokenRepository extends BaseRepository<RefreshTokenRow, typeof refreshTokens> {
   protected table = refreshTokens;
 
-  constructor() {
-    super(db);
+  constructor(dbInstance: typeof db = db) {
+    super(dbInstance);
+  }
+
+  withDb(dbClient: typeof db): this {
+    return new TokenRepository(dbClient) as this;
   }
 
   async createRefreshToken(data: { userId: string; token: string; expiresAt: Date }) {

@@ -41,8 +41,7 @@ class DIContainer {
       } catch (error) {
         // Fallback: support factory functions used in tests (non-constructors)
         try {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const produced = (token as any)();
+          const produced = (token as unknown as () => T)();
           this.instances.set(token, produced);
           return produced as T;
         } catch (_factoryError) {

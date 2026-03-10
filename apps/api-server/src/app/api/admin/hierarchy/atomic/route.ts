@@ -45,4 +45,6 @@ async function handler(_req: NextRequest) {
     }
 }
 
-export const POST = withLogging(handler, { component: 'admin', operation: 'atomic_seed_hierarchy' });
+import { withCorrelationId } from '@/lib/correlation-id.middleware';
+
+export const POST = withCorrelationId(withLogging(handler, { component: 'admin', operation: 'atomic_seed_hierarchy' }));

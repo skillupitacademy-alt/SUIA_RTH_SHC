@@ -2,6 +2,7 @@ import { type NextRequest } from 'next/server';
 
 import { badRequest } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
+import { withCacheHeaders } from '@/lib/cache-headers';
 import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 import { withLogging } from '@/lib/withLogging';
 import { DomainService } from '@/modules/domain/domain.service';
@@ -15,11 +16,11 @@ async function getHandler(req: NextRequest) {
 
     if (id !== null && id !== undefined && id !== '') {
       const hierarchy = await DomainService.getDomainHierarchy(id);
-      return ApiResponse.success(hierarchy);
+      return withCacheHeaders(ApiResponse.success(hierarchy), 'static');
     }
 
     const domains = await DomainService.getAllDomains();
-    return ApiResponse.success(domains);
+    return withCacheHeaders(ApiResponse.success(domains), 'static');
   } catch (error: unknown) {
     return ApiResponse.error(error);
   }

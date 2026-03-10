@@ -48,7 +48,7 @@ type QuestionInput = {
   options?: unknown;
 };
 
-type ExamStartInput = {
+export type ExamStartInput = {
   examId: string;
   status: string;
   totalQuestions: number;

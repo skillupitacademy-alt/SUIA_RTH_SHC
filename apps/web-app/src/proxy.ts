@@ -43,6 +43,12 @@ export function proxy(request: NextRequest) {
   const response = NextResponse.next();
   response.headers.set('x-request-id', requestId);
 
+  // Task 103: Warn on responses > 1MB
+  const contentLength = response.headers.get('content-length');
+  if (contentLength && parseInt(contentLength, 10) > 1048576) {
+    console.warn(`[WARN] Large response payload: ${request.nextUrl.pathname} (${contentLength} bytes)`);
+  }
+
   // Security headers for all responses
   response.headers.set('X-Frame-Options', 'DENY');
   response.headers.set('X-Content-Type-Options', 'nosniff');

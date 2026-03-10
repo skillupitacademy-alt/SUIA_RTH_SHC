@@ -1,8 +1,12 @@
-import { subtopics } from '@quiz/db';
+import { db, subtopics } from '@quiz/db';
 
 export interface ISubtopicRepository {
+  /**
+   * Returns a new instance of the repository using the specified database client.
+   */
+  withDb(dbClient: typeof db): this;
   findAll(cursor: string | null, limit: number, filters?: { topicId?: string; search?: string }): Promise<{
-    data: Array<(typeof subtopics.$inferSelect) & { topic?: Record<string, unknown> }>;
+    data: Array<(typeof subtopics.$inferSelect) & { topic?: Record<string, unknown> | Record<string, unknown>[] }>;
     total: number;
     nextCursor: string | null;
     limit: number;

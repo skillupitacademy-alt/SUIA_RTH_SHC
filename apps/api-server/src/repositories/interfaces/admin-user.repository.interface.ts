@@ -1,3 +1,5 @@
+import { db } from '@quiz/db';
+
 type AdminUserRecord = {
   id: string;
   email: string;
@@ -8,12 +10,17 @@ type AdminUserRecord = {
 };
 
 export interface IAdminUserRepository {
+  /**
+   * Returns a new instance of the repository using the specified database client.
+   */
+  withDb(dbClient: typeof db): this;
   findAll(cursor: string | null, limit: number, status: 'active' | 'deleted', filters?: { 
     search?: string; 
     role?: string; 
-    isBlocked?: boolean; 
+    isBlocked?: boolean;
     isVerified?: boolean; 
-    status?: string 
+    status?: string;
+    fields?: string;
   }): Promise<{
     users: AdminUserRecord[];
     total: number;

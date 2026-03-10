@@ -53,7 +53,8 @@ export class QuizEngine {
         id: exam.id,
         status: exam.status,
         startedAt: exam.startedAt,
-        questions: exam.examQuestions.map(eq => ({
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        questions: exam.examQuestions.map((eq: any) => ({
             id: eq.question.id,
             text: eq.question.questionText,
             options: eq.question.options,

@@ -1,44 +1,35 @@
+import { eventBus } from '@/lib/event-bus';
+import { AppEvents } from '@/lib/events';
 import { logger } from '@/lib/logger';
-import { container } from '@/modules/core/container';
-import { eventBus } from '@/modules/core/event-bus';
 
-import { PerformanceService } from '../report-engine/performance.service';
-import { ReportEngine } from '../report-engine/report.engine';
+import type { AnalyticsJobPayload } from '../../lib/queue/job-types';
+import { QueueFactory } from '../../lib/queue-factory';
 
 export class ExamObserver {
   private static log = logger.child({ module: 'exam-engine:observer' });
+  private static analyticsQueue = QueueFactory.getQueue<AnalyticsJobPayload>('analyticsQueue');
 
   static init() {
-    const performanceService = container.get(PerformanceService);
-    const reportEngine = container.get(ReportEngine);
-
-    eventBus.on('EXAM_COMPLETED', ({ examId }) => {
+    eventBus.onEvent(AppEvents.EXAM_COMPLETED, ({ examId }) => {
+      this.log.info({ examId }, 'Observer: Offloading side effects to background worker');
+      
       void (async () => {
-        this.log.info({ examId }, 'Observer: Handling EXAM_COMPLETED');
-
         try {
-          // 1. Refresh Materialized Views
-          await performanceService.refreshAnalytics();
+          // Task 108: Offload heavy processing to BullMQ
+          await this.analyticsQueue.add('post_exam_' + examId, {
+            examId,
+            processingType: 'post_exam_processing',
+          } satisfies AnalyticsJobPayload);
 
-          // 2. Materialize Report
-          const { ReportMaterializer } = await import('../../services/reports/ReportMaterializer');
-          await ReportMaterializer.materialize(examId);
-
-          // 3. Prime Cache
-          const reportData = await reportEngine.getPremiumExamReport(examId);
-          await performanceService.cacheReport(examId, reportData);
-
-          // 4. Trigger PDF Generation (Background)
+          // Keep PDF trigger for now as it's quick (async fetch)
           this.triggerPdfGeneration(examId);
-
-          this.log.info({ examId }, 'Observer: Completed side effects for exam');
         } catch (err) {
-          this.log.error({ examId, err }, 'Observer: Failed to handle EXAM_COMPLETED');
+          this.log.error({ examId, err }, 'Observer: Failed to queue background tasks');
         }
       })();
     });
 
-    this.log.info('ExamObserver initialized');
+    this.log.info('ExamObserver initialized with background capabilities');
   }
 
   private static triggerPdfGeneration(examId: string) {

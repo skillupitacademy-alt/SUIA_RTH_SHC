@@ -3,13 +3,15 @@ import { type NextRequest } from 'next/server';
 
 import { badRequest, unauthorized } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
+import { bootstrapCQRS,commandBus, SubmitAnswerCommand } from '@/lib/cqrs';
 import { recordCounter, recordTimer } from '@/lib/metrics';
 import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 import { withLogging } from '@/lib/withLogging';
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
-import { ExamEngine } from '@/modules/exam-engine/exam.engine';
 import { answerSchema } from '@/schemas/quiz.schemas';
+
+bootstrapCQRS();
 
 export const dynamic = 'force-dynamic';
 
@@ -46,13 +48,13 @@ async function postHandler(req: NextRequest) {
     
     const idempotencyKey = req.headers.get('idempotency-key') ?? req.headers.get('Idempotency-Key');
 
-    await container.get(ExamEngine).submitAnswer(
-      body.examId,
-      body.questionId,
-      body.answer,
-      payload.userId,
-      idempotencyKey ?? undefined
-    );
+    await commandBus.dispatch(new SubmitAnswerCommand({
+      examId: body.examId,
+      questionId: body.questionId,
+      answer: body.answer,
+      userId: payload.userId,
+      idempotencyKey: idempotencyKey ?? undefined
+    }));
     
     const durationMs = Date.now() - start;
     recordCounter(METRICS.QUIZ.ANSWER, 1, { outcome: 'success' });

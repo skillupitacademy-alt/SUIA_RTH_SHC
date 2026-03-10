@@ -4,6 +4,8 @@ import { NextResponse } from 'next/server';
 
 import { container } from '@/modules/core/container';
 
+import { applyApiVersion } from './middleware/api-version.middleware';
+import { withEtags } from './middleware/etag.middleware';
 import { corsMiddleware } from './modules/auth/cors.middleware';
 import { csrfProtection, setCsrfToken } from './modules/auth/csrf.middleware';
 import { _verifyAdmin } from './modules/auth/rbac.service';
@@ -119,7 +121,15 @@ export async function proxy(request: NextRequest) {
   const response = NextResponse.next({
     request: { headers: requestHeaders }
   });
+
+  // Task 103: Warn on responses > 1MB
+  const contentLengthHeader = response.headers.get('content-length');
+  const contentLength = contentLengthHeader !== null ? parseInt(contentLengthHeader, 10) : null;
+  if (contentLength !== null && contentLength > 1_048_576) {
+    console.warn(`[WARN] Large response payload: ${request.nextUrl.pathname} (${contentLength} bytes)`);
+  }
   
+  applyApiVersion(request, response);
   setCsrfToken(response);
   response.headers.set('x-request-id', requestId);
   response.headers.set('x-session-id', sessionId);
@@ -127,7 +137,8 @@ export async function proxy(request: NextRequest) {
   // Expose headers to frontend
   response.headers.set('Access-Control-Expose-Headers', 'x-request-id, x-session-id, x-csrf-token, X-Duration-Ms');
   
-  return corsMiddleware(request, response);
+  const finalResponse = corsMiddleware(request, response) as NextResponse;
+  return await withEtags(request, finalResponse);
 }
 
 export const config = {

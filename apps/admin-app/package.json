@@ -11,9 +11,10 @@
         "test": "vitest run",
         "test:watch": "vitest",
         "test:coverage": "vitest run --coverage",
-        "analyze": "ANALYZE=true next build"
+        "analyze": "cross-env ANALYZE=true next build"
     },
     "dependencies": {
+        "cross-env": "^7.0.3",
         "@next/bundle-analyzer": "^16.1.6",
         "@quiz/api-client": "workspace:*",
         "@quiz/observability": "workspace:*",

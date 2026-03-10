@@ -1,8 +1,31 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+import { db } from '@quiz/db';
+
 import { TOKENS } from '@/lib/app.container';
 import { container } from '@/modules/core/container';
 import { TrendsService } from '@/modules/metrics/trends.service';
 import { IAdminAnalyticsRepository } from '@/repositories/interfaces/admin-analytics.repository.interface';
+
+type StatusStat = { status: string; count: number };
+type DomainActivityItem = { domainName: string; count: number };
+type EfficiencyStat = { quadrant: 'mastery' | 'persistence' | 'rash' | 'struggle' | 'no_data'; count: number };
+type DomainNode = {
+  id: string;
+  name: string;
+  subjects: SubjectNode[];
+};
+type SubjectNode = {
+  id: string;
+  name: string;
+  topics: TopicNode[];
+};
+type TopicNode = {
+  id: string;
+  name: string;
+  questions: QuestionNode[];
+  subtopics: SubtopicNode[];
+};
+type SubtopicNode = { id: string; name: string };
+type QuestionNode = { difficulty: string; subtopicId: string | null };
 
 export interface ExamActivityReport {
   started: number;
@@ -16,6 +39,14 @@ export class AdminAnalyticsEngine {
   constructor(
     private readonly repository: IAdminAnalyticsRepository = container.get(TOKENS.AdminAnalyticsRepo)
   ) {}
+
+  /**
+   * Returns a new instance of the engine using the specified database client.
+   * Useful for CQRS read-side (dbReadOnly).
+   */
+  withDb(dbClient: typeof db): AdminAnalyticsEngine {
+    return new AdminAnalyticsEngine(this.repository.withDb(dbClient));
+  }
 
   async getPlatformMetrics() {
     const { withTimeout, REPORT_QUERY_TIMEOUT } = await import('@quiz/db');
@@ -34,28 +65,29 @@ export class AdminAnalyticsEngine {
         'AdminAnalyticsEngine.getExamActivity'
     );
 
-    const base = result.statusStats.reduce((acc: Record<string, number>, curr: any) => {
+    const statusStats = result.statusStats as StatusStat[];
+    const base = statusStats.reduce((acc: Record<string, number>, curr: StatusStat) => {
       acc[curr.status] = Number(curr.count ?? 0);
       return acc;
     }, { started: 0, completed: 0, abandoned: 0 });
 
     return {
       ...base,
-      byDomain: result.domainActivity.map((d: any) => ({ name: d.domainName, count: Number(d.count ?? 0) })),
+      byDomain: (result.domainActivity as DomainActivityItem[]).map((d) => ({ name: d.domainName, count: Number(d.count ?? 0) })),
       avgCompletionTimeMinutes: Math.round(Number(result.avgTime ?? 0) / 60)
     } as ExamActivityReport;
   }
 
   async getEfficiencyAnalytics() {
-    const counts = await this.repository.getEfficiencyAnalytics();
+    const counts = (await this.repository.getEfficiencyAnalytics()) as EfficiencyStat[];
 
     return {
-      mastery: counts.find((c: any) => c.quadrant === 'mastery')?.count ?? 0,
-      persistence: counts.find((c: any) => c.quadrant === 'persistence')?.count ?? 0,
-      rash: counts.find((c: any) => c.quadrant === 'rash')?.count ?? 0,
-      struggle: counts.find((c: any) => c.quadrant === 'struggle')?.count ?? 0,
-      noData: counts.find((c: any) => c.quadrant === 'no_data')?.count ?? 0,
-      total: counts.reduce((acc: number, curr: any) => acc + curr.count, 0)
+      mastery: counts.find((c) => c.quadrant === 'mastery')?.count ?? 0,
+      persistence: counts.find((c) => c.quadrant === 'persistence')?.count ?? 0,
+      rash: counts.find((c) => c.quadrant === 'rash')?.count ?? 0,
+      struggle: counts.find((c) => c.quadrant === 'struggle')?.count ?? 0,
+      noData: counts.find((c) => c.quadrant === 'no_data')?.count ?? 0,
+      total: counts.reduce((acc: number, curr) => acc + curr.count, 0)
     };
   }
 
@@ -129,9 +161,9 @@ export class AdminAnalyticsEngine {
   async getBlueprintMetrics() { return { total: 0, active: 0, popular: [] }; }
 
   async getContentHealthReport() {
-    const allDomains = await this.repository.getAllDomainHierarchy();
+    const allDomains = (await this.repository.getAllDomainHierarchy()) as DomainNode[];
 
-    const calculateStats = (qs: any[]) => {
+    const calculateStats = (qs: QuestionNode[]) => {
       const stats = {
         total: qs.length,
         simple: qs.filter(q => q.difficulty === 'simple').length,
@@ -143,19 +175,19 @@ export class AdminAnalyticsEngine {
     };
 
     return allDomains.map(domain => {
-      const domainQuestions: any[] = [];
-      const subjectsResults = domain.subjects.map((subject: any) => {
-        const subjectQuestions: any[] = [];
-        const topicsResults = subject.topics.map((topic: any) => {
-          subjectQuestions.push(...topic.questions.map((q: any) => ({ difficulty: q.difficulty, subtopicId: q.subtopicId })));
+      const domainQuestions: QuestionNode[] = [];
+      const subjectsResults = domain.subjects.map((subject) => {
+        const subjectQuestions: QuestionNode[] = [];
+        const topicsResults = subject.topics.map((topic) => {
+          subjectQuestions.push(...topic.questions.map((q) => ({ difficulty: q.difficulty, subtopicId: q.subtopicId })));
           return {
             id: topic.id,
             name: topic.name,
-            stats: calculateStats(topic.questions.map((q: any) => ({ difficulty: q.difficulty, subtopicId: q.subtopicId }))),
-            subtopics: topic.subtopics.map((st: any) => ({
+            stats: calculateStats(topic.questions.map((q) => ({ difficulty: q.difficulty, subtopicId: q.subtopicId }))),
+            subtopics: topic.subtopics.map((st) => ({
               id: st.id,
               name: st.name,
-              stats: calculateStats(topic.questions.filter((q: any) => q.subtopicId === st.id).map((q: any) => ({ difficulty: q.difficulty, subtopicId: q.subtopicId })))
+              stats: calculateStats(topic.questions.filter((q) => q.subtopicId === st.id).map((q) => ({ difficulty: q.difficulty, subtopicId: q.subtopicId })))
             }))
           };
         });

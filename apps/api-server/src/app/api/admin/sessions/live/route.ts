@@ -3,9 +3,9 @@ import type { NextRequest } from 'next/server';
 
 import { internalError, unauthorized } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
+import { bootstrapCQRS,GetLiveSessionsQuery, queryBus } from '@/lib/cqrs';
 import { recordCounter, recordTimer } from '@/lib/metrics';
 import { withLogging } from '@/lib/withLogging';
-import { AdminAnalyticsEngine } from "@/modules/admin-engine/admin.engine";
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
 
@@ -23,7 +23,9 @@ async function handler(_req: NextRequest) {
     const start = Date.now();
     try {
         await _verifyAdmin(_req);
-        const data = await AdminAnalyticsEngine.getLiveSessions();
+        
+        bootstrapCQRS();
+        const data = await queryBus.dispatch(new GetLiveSessionsQuery());
         
         const durationMs = Date.now() - start;
         recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.sessions.live.success', 1);
@@ -39,4 +41,6 @@ async function handler(_req: NextRequest) {
     }
 }
 
-export const GET = withLogging(handler, { component: 'admin', operation: 'get_live_sessions' });
+import { withCorrelationId } from '@/lib/correlation-id.middleware';
+
+export const GET = withCorrelationId(withLogging(handler, { component: 'admin', operation: 'get_live_sessions' }));

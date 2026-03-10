@@ -1,14 +1,27 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Flag, LayoutDashboard } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
+type TacticalQuestion = { questionId: string };
+type ThemeConfig = {
+    colors: {
+        questionCard: string;
+        questionCardBorder: string;
+        tacticalChipCurrent: string;
+        tacticalChipFlagged: string;
+        tacticalChipAnswered: string;
+        tacticalChipUnvisited: string;
+    };
+    spacing: { tacticalChipSize: string };
+    effects: { chipRadius: string };
+};
+
 interface TacticalMapProps {
-    questions: any[];
+    questions: TacticalQuestion[];
     currentIndex: number;
     answers: Record<string, string>;
     flags: Record<string, boolean>;
     onGoToQuestion: (index: number) => void;
-    theme: any;
+    theme: ThemeConfig;
 }
 
 export function TacticalMap({

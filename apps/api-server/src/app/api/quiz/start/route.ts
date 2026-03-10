@@ -1,18 +1,24 @@
 import { METRICS } from '@quiz/observability';
 import { type NextRequest } from 'next/server';
 
+import type { ExamStartInput } from '@/dtos/exam.dto';
 import { badRequest, unauthorized } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
+import { bootstrapCQRS, commandBus, StartExamCommand } from '@/lib/cqrs';
 import { logger } from '@/lib/logger';
 import { recordCounter, recordTimer } from '@/lib/metrics';
 import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 import { withLogging } from '@/lib/withLogging';
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
-import { ExamEngine } from '@/modules/exam-engine/exam.engine';
+import { StartExamConfig } from '@/modules/exam-engine/exam.engine';
 import { startQuizSchema } from '@/schemas/quiz.schemas';
 
+bootstrapCQRS();
+
 export const dynamic = 'force-dynamic';
+
+import { withCorrelationId } from '@/lib/correlation-id.middleware';
 
 async function postHandler(req: NextRequest) {
   const startTime = Date.now();
@@ -42,22 +48,23 @@ async function postHandler(req: NextRequest) {
     if (!parsed.success) {
       throw badRequest("Invalid payload");
     }
-    const { domainId, blueprintId, ...config } = parsed.data;
+    const { domainId, blueprintId, ...rest } = parsed.data;
+    const config: StartExamConfig = rest;
     const targetId = blueprintId ?? domainId;
     const idempotencyKey = req.headers.get('idempotency-key') ?? req.headers.get('Idempotency-Key');
 
     // 6. Hardening & Validation
-    validateStartQuizRequest(idempotencyKey, targetId, config as StartQuizConfig);
+    validateStartQuizRequest(idempotencyKey, targetId, config);
 
-    const examData = await container.get(ExamEngine).startExam(
-      payload.userId, 
-      targetId as string, 
-      idempotencyKey as string, 
+    const examData = await commandBus.dispatch(new StartExamCommand({
+      userId: payload.userId,
+      blueprintId: targetId as string,
+      idempotencyKey: idempotencyKey as string,
       config
-    );
+    }));
 
     const { toExamStartDTO } = await import('@/dtos/exam.dto');
-    const responseDto = toExamStartDTO(examData);
+    const responseDto = toExamStartDTO(examData as unknown as ExamStartInput);
 
     const durationMs = Date.now() - startTime;
     recordCounter(METRICS.EXAM.START, 1, { outcome: 'success' });
@@ -75,27 +82,18 @@ async function postHandler(req: NextRequest) {
   }
 }
 
-export const POST = withLogging(postHandler, { component: 'quiz', operation: 'start_exam' });
+export const POST = withCorrelationId(withLogging(postHandler, { component: 'quiz', operation: 'start_exam' }));
 
-type StartQuizConfig = {
-    questionCount?: number;
-    subjectIds?: string[];
-    topicIds?: string[];
-    subtopicIds?: string[];
-    topics?: string[];
-    difficulty?: string;
-};
 
-function validateStartQuizRequest(idempotencyKey: string | null, targetId: string | undefined, config: StartQuizConfig) {
+function validateStartQuizRequest(idempotencyKey: string | null, targetId: string | undefined, config: StartExamConfig) {
     if (typeof idempotencyKey !== 'string' || idempotencyKey.trim() === '') {
         throw badRequest('Missing Idempotency-Key header');
     }
-
     if (config.questionCount !== undefined && (config.questionCount < 5 || config.questionCount > 50)) {
         throw badRequest('questionCount must be between 5 and 50');
     }
 
-    const arrayFields: (keyof StartQuizConfig)[] = ['subjectIds', 'topicIds', 'subtopicIds', 'topics'];
+    const arrayFields: (keyof StartExamConfig)[] = ['subjectIds', 'topicIds', 'subtopicIds', 'topics'];
     for (const field of arrayFields) {
         if (config[field] !== undefined) {
             const value = config[field];

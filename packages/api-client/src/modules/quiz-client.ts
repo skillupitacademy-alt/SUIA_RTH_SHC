@@ -1,4 +1,4 @@
-import { FetchClient } from '@quiz/api-client/core/fetch-client';
+import { FetchClient, TIMEOUTS } from '@quiz/api-client/core/fetch-client';
 import {
   Domain,
   DomainHierarchy,
@@ -79,7 +79,7 @@ export class QuizClient {
   }
 
   async getDomains() {
-    return this.client.get<Domain[]>('/domains');
+    return this.client.get<Domain[]>('/domains', { timeout: TIMEOUTS.QUICK });
   }
 
   async getDomainHierarchy(domainId: string) {
@@ -104,7 +104,7 @@ export class QuizClient {
     topicIds?: string[];
     subtopicIds?: string[];
   }) {
-    return this.client.post<QuestionCounts, typeof filters>('/quiz/count', filters);
+    return this.client.post<QuestionCounts, typeof filters>('/quiz/count', filters, { timeout: TIMEOUTS.STANDARD });
   }
 
   async startExam(
@@ -123,11 +123,13 @@ export class QuizClient {
       headers: {
         'Idempotency-Key': opts.idempotencyKey,
       },
+      timeout: TIMEOUTS.STANDARD,
+      retry: { maxRetries: 3 },
     });
   }
 
   async startAdaptiveExam() {
-    return this.client.post<{ examId: string; mode: string; questions: any[] }>('/exams/adaptive/start', {});
+    return this.client.post<{ examId: string; mode: string; questions: any[] }>('/exams/adaptive/start', {}, { timeout: TIMEOUTS.STANDARD, retry: { maxRetries: 3 } });
   }
 
   async submitAnswer(examId: string, questionId: string, answer: string, opts?: { idempotencyKey?: string }) {
@@ -146,6 +148,8 @@ export class QuizClient {
       { examId, questionId, answer },
       {
         headers: opts?.idempotencyKey ? { 'Idempotency-Key': opts.idempotencyKey } : undefined,
+        timeout: TIMEOUTS.STANDARD,
+        retry: { maxRetries: 3 },
       }
     );
   }
@@ -155,19 +159,21 @@ export class QuizClient {
       examId: string; 
       status: 'processing' | 'completed' | 'failed' | 'abandoned'; 
     }>('/quiz/submit', { examId }, {
-        headers: opts?.idempotencyKey ? { 'Idempotency-Key': opts.idempotencyKey } : undefined
+        headers: opts?.idempotencyKey ? { 'Idempotency-Key': opts.idempotencyKey } : undefined,
+        timeout: TIMEOUTS.STANDARD,
+        retry: { maxRetries: 3 },
     });
   }
 
   async getResult(examId: string) {
-    return this.client.get<QuizResultResponse>(`/quiz/result?examId=${examId}`);
+    return this.client.get<QuizResultResponse>(`/quiz/result?examId=${examId}`, { timeout: TIMEOUTS.LONG });
   }
 
   async getQuizState(examId: string) {
-    return this.client.get<QuizState>(`/quiz/state?examId=${examId}`);
+    return this.client.get<QuizState>(`/quiz/state?examId=${examId}`, { timeout: TIMEOUTS.QUICK });
   }
 
   async requestMasterNotes(topicId: string) {
-    return this.client.post<{ success: boolean; message: string }>(`/topics/${topicId}/request-notes`, {});
+    return this.client.post<{ success: boolean; message: string }>(`/topics/${topicId}/request-notes`, {}, { timeout: TIMEOUTS.STANDARD });
   }
 }

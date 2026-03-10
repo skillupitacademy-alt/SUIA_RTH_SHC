@@ -147,6 +147,25 @@ export interface AdminSessionListResponse {
   totalPages: number;
 }
 
+export interface AdminQueueStats {
+  enabled: boolean;
+  timestamp: string;
+  queues: Array<{
+    id: string;
+    queueName: string;
+    displayName: string;
+    status: 'online' | 'error';
+    counts: Record<string, number> | null;
+    lastFailed: Array<{
+      id: string;
+      name: string;
+      failedReason: string;
+      finishedOn: string | null;
+      data: any;
+    }>;
+  }>;
+}
+
 export interface IAdminUserClient {
   getUsers(
     cursor?: string | null,
@@ -158,6 +177,7 @@ export interface IAdminUserClient {
       isBlocked?: boolean;
       isVerified?: boolean;
       status?: string;
+      fields?: string;
     }
   ): Promise<PaginatedResponse<AdminUserProfile>>;
   updateUser(id: string, data: Partial<AdminUserProfile> & Record<string, unknown>): Promise<AdminUserProfile>;

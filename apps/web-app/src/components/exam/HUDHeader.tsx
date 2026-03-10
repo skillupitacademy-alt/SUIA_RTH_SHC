@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Timer } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -8,7 +7,7 @@ interface HUDHeaderProps {
     isNearEnd: boolean;
     formatTime: (seconds: number) => string;
     onTerminate: () => void;
-    theme: any;
+    theme: { spacing: { headerHeight: string } };
 }
 
 export function HUDHeader({

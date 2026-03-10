@@ -71,4 +71,6 @@ async function handler(_req: NextRequest) {
   return response;
 }
 
-export const POST = withLogging(handler, { component: 'auth', operation: 'logout' });
+import { withCorrelationId } from '@/lib/correlation-id.middleware';
+
+export const POST = withCorrelationId(withLogging(handler, { component: 'auth', operation: 'logout' }));

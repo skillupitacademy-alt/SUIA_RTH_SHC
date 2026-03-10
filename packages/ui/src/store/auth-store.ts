@@ -31,6 +31,7 @@ export interface AuthState {
 
 interface CreateAuthStoreOptions {
   name: string;
+  onLogout?: () => void;
 }
 
 export const createAuthStore = (options: CreateAuthStoreOptions) => {
@@ -49,6 +50,8 @@ export const createAuthStore = (options: CreateAuthStoreOptions) => {
         },
         logout: (onLogout) => {
           if (onLogout) onLogout();
+          if (options.onLogout) options.onLogout();
+          
           set({ user: null, isAuthenticated: false, expiresAt: null, isLocked: false, isLoggingOut: false });
         },
         lock: () => set({ isLocked: true }),

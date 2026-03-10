@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 'use client';
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
@@ -73,7 +72,7 @@ export function useExamInterfaceLogic() {
     const [error, setError] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const withRetry = async <T,>(fn: () => Promise<T>, retries = 3, delay = 1000): Promise<T> => {
+    const withRetry = useCallback(async <T,>(fn: () => Promise<T>, retries = 3, delay = 1000): Promise<T> => {
         try {
             return await fn();
         } catch (err) {
@@ -81,7 +80,7 @@ export function useExamInterfaceLogic() {
             await new Promise(resolve => setTimeout(resolve, delay));
             return withRetry(fn, retries - 1, delay * 2);
         }
-    };
+    }, []);
 
     const handleAnswer = useCallback(async (optionIndex: number) => {
         const question = questions[currentQuestionIndex];
@@ -102,7 +101,7 @@ export function useExamInterfaceLogic() {
         } catch (err) {
             clientLogger.error('Failed to save answer after retries', { error: err });
         }
-    }, [examId, currentQuestionIndex, questions, setAnswer]);
+    }, [examId, currentQuestionIndex, questions, setAnswer, withRetry]);
 
     useEffect(() => {
         const initExam = async () => {
@@ -174,8 +173,8 @@ export function useExamInterfaceLogic() {
             }
         };
 
-        initExam();
-    }, [examIdParam, router, setExamId, setCurrentIndex]);
+        void initExam();
+    }, [examIdParam, router, setExamId, setCurrentIndex, setIsLoading, setError]);
 
     useEffect(() => {
         if (isLoading || isSubmitted) return;

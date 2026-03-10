@@ -1,4 +1,4 @@
-import { skills } from '@quiz/db';
+import { db, skills } from '@quiz/db';
 
 import { AuditService } from "@/modules/auth/audit.service";
 import { container } from "@/modules/core/container";
@@ -10,6 +10,10 @@ export class AdminSkillEngine {
     private readonly repository: ISkillRepository = container.get(DrizzleSkillRepository),
     private readonly auditService = container.get(AuditService)
   ) {}
+
+  withDb(dbClient: typeof db): AdminSkillEngine {
+    return new AdminSkillEngine(this.repository.withDb(dbClient), this.auditService);
+  }
 
   async getSkills(cursor: string | null = null, limit: number = 20, filters?: { search?: string }) {
     const result = await this.repository.findAll(cursor, limit, filters);

@@ -1,15 +1,47 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Flag, CheckCircle2, Circle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
+type QuestionOption = string | { text?: string; label?: string };
+type QuestionTheme = {
+    colors: {
+        questionCard: string;
+        questionCardBorder: string;
+        answerSelected: string;
+        answerSelectedBorder: string;
+        answerSelectedText: string;
+        answerUnselected: string;
+        answerUnselectedBorder: string;
+        answerUnselectedText: string;
+    };
+    spacing: {
+        questionCardPadding: string;
+        answerOptionPadding: string;
+        answerMinHeight: string;
+    };
+    effects: {
+        questionCardRadius: string;
+        buttonRadius?: string;
+        answerRadius: string;
+        selectedShadow: string;
+    };
+    typography: {
+        answerTextSize: string;
+    };
+};
+
 interface QuestionViewProps {
-    question: any;
+    question: {
+        questionId: string;
+        text: string;
+        codeSnippet?: string | null;
+        options: QuestionOption[];
+    };
     currentIndex: number;
     answer: string | undefined;
     isFlagged: boolean;
     onSelectOption: (questionId: string, optionText: string) => void;
     onToggleFlag: (questionId: string) => void;
-    theme: any;
+    theme: QuestionTheme;
 }
 
 export function QuestionView({
@@ -69,7 +101,7 @@ export function QuestionView({
 
                 {/* Options Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-4">
-                    {question.options.map((option: any, oIdx: number) => {
+                    {question.options.map((option, oIdx: number) => {
                         const optionText = typeof option === 'string' ? option : (option.text || option.label || 'Unknown Option');
                         const isSelected = answer === optionText;
 

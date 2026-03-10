@@ -118,6 +118,8 @@ async function deleteHandler(
   }
 }
 
-export const GET = withLogging(getHandler, { component: 'admin', operation: 'get_user' });
-export const PATCH = withLogging(patchHandler, { component: 'admin', operation: 'update_user' });
-export const DELETE = withLogging(deleteHandler, { component: 'admin', operation: 'delete_user' });
+import { withCorrelationId } from '@/lib/correlation-id.middleware';
+
+export const GET = withCorrelationId(withLogging(getHandler, { component: 'admin', operation: 'get_user' }));
+export const PATCH = withCorrelationId(withLogging(patchHandler, { component: 'admin', operation: 'update_user' }));
+export const DELETE = withCorrelationId(withLogging(deleteHandler, { component: 'admin', operation: 'delete_user' }));

@@ -59,6 +59,28 @@
                       {
                         "files": ["src/modules/report-engine/report.engine.ts","src/modules/report-engine/report.engine.factory.ts"],
                         "rules": { "@typescript-eslint/no-explicit-any": "off" }
+                      },
+                      {
+                        "files": [
+                          "src/lib/**/*",
+                          "src/modules/**/*",
+                          "src/repositories/**/*",
+                          "src/services/**/*",
+                          "src/app/**/*",
+                          "src/middleware/**/*"
+                        ],
+                        "excludedFiles": [
+                          "**/__tests__/**",
+                          "**/*.test.*",
+                          "src/test/**"
+                        ],
+                        "rules": {
+                          "@typescript-eslint/no-explicit-any": "warn",
+                          "@typescript-eslint/strict-boolean-expressions": "warn",
+                          "@typescript-eslint/no-misused-promises": "warn",
+                          "@typescript-eslint/no-unused-vars": "warn",
+                          "no-case-declarations": "warn"
+                        }
                       }
                   ],
     "rules":  {

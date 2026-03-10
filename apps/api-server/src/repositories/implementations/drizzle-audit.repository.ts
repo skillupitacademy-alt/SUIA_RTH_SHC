@@ -8,8 +8,12 @@ import { IAuditRepository } from '../interfaces/audit.repository.interface';
 export class DrizzleAuditRepository extends BaseRepository<typeof auditLogs.$inferSelect, typeof auditLogs> implements IAuditRepository {
   protected table = auditLogs;
 
-  constructor() {
-    super(db);
+  constructor(dbInstance: typeof db = db) {
+    super(dbInstance);
+  }
+
+  withDb(dbClient: typeof db): this {
+    return new DrizzleAuditRepository(dbClient) as this;
   }
 
   async log(entry: typeof auditLogs.$inferInsert) {

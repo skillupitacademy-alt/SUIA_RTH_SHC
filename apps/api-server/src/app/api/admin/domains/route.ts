@@ -4,10 +4,12 @@ import type { NextRequest } from 'next/server';
 
 import { badRequest, unauthorized } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
+import { withCorrelationId } from '@/lib/correlation-id.middleware';
+import { bootstrapCQRS, GetDomainsQuery, queryBus } from '@/lib/cqrs';
 import { recordCounter, recordTimer } from '@/lib/metrics';
 import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 import { withLogging } from '@/lib/withLogging';
-import { AdminDomainEngine } from "@/modules/admin-engine/admin.engine";
+import { AdminDomainEngine as AdminDomainEngineClass } from '@/modules/admin-engine/admin.domain.engine';
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
 import { domainSchema } from '@/schemas/hierarchy.schemas';
@@ -34,7 +36,13 @@ async function getHandler(_req: NextRequest) {
     const limit = parseInt(searchParams.get('limit') ?? '20');
     const search = searchParams.get('search') ?? undefined;
 
-    const result = await AdminDomainEngine.getDomains(cursor, limit, { search });
+    bootstrapCQRS();
+    const result = await queryBus.dispatch(new GetDomainsQuery(cursor, limit, { search })) as {
+      domains: DomainInsert[];
+      total: number;
+      nextCursor: string | null;
+      limit: number;
+    };
     const durationMs = Date.now() - start;
     recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.domains.get.success', 1);
     recordTimer(METRICS.ADMIN.DASHBOARD_LOAD + '.domains.get.duration', durationMs, { outcome: 'success' });
@@ -78,7 +86,8 @@ async function postHandler(_req: NextRequest) {
       status: body.status,
     };
 
-    const result = await AdminDomainEngine.createDomain(createBody, _payload.userId);
+    const engine = container.get(AdminDomainEngineClass);
+    const result = await engine.createDomain(createBody, _payload.userId);
     const durationMs = Date.now() - start;
     recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.domains.create.success', 1);
     recordTimer(METRICS.ADMIN.DASHBOARD_LOAD + '.domains.create.duration', durationMs, { outcome: 'success' });
@@ -92,5 +101,5 @@ async function postHandler(_req: NextRequest) {
   }
 }
 
-export const GET = withLogging(getHandler, { component: 'admin', operation: 'get_domains' });
-export const POST = withLogging(postHandler, { component: 'admin', operation: 'create_domain' });
+export const GET = withCorrelationId(withLogging(getHandler, { component: 'admin', operation: 'get_domains' }));
+export const POST = withCorrelationId(withLogging(postHandler, { component: 'admin', operation: 'create_domain' }));

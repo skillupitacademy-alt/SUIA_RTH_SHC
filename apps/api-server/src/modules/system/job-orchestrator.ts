@@ -2,10 +2,27 @@ import { JobStatus, JobType } from '@quiz/types';
 
 import { logger } from '@/lib/logger';
 import { AnalyticsService } from '@/modules/analytics/analytics.service';
+import { container } from '@/modules/core/container';
 import { resilienceManager } from '@/modules/core/resilience.manager';
+import { EmailService } from '@/modules/email/EmailService';
+import { PerformanceService } from '@/modules/report-engine/performance.service';
+import { ReportEngine } from '@/modules/report-engine/report.engine';
 import { ScoringEngine } from '@/modules/scoring-engine/scoring.engine';
 import { JobsService } from '@/modules/system/jobs.service';
 import { TutorService } from '@/modules/tutor/tutor.service';
+
+type EmailJobPayload =
+    | { type: 'password_reset'; email: string; data: { resetUrl: string } }
+    | { type: 'generic'; email: string; data: { subject: string; html: string; from: string } };
+
+type AnalyticsProcessPayload =
+    | { type: 'post_exam_processing'; examId: string }
+    | { type: 'daily_refresh'; examId?: string }
+    | { type: 'refresh_views' };
+
+type ExamSagaPayload = { examId: string; userId: string };
+type ExamScoringPayload = { examId: string };
+type SemanticIndexPayload = { questionId: string; text: string; metadata?: Record<string, unknown> };
 
 export class JobOrchestrator {
     private static log = logger.child({ module: 'system:job-orchestrator' });
@@ -50,19 +67,28 @@ export class JobOrchestrator {
             // 2. Route based on type
             switch (job.type) {
                 case JobType.EXAM_SCORING:
-                    await this.handleExamScoring(jobId, job.payload as { examId: string });
+                    await this.handleExamScoring(jobId, job.payload as ExamScoringPayload);
                     break;
                 case JobType.ANALYTICS_REFRESH:
                     await this.handleAnalyticsRefresh(jobId);
                     break;
                 case JobType.SEMANTIC_INDEXING:
-                    await this.handleSemanticIndexing(jobId, job.payload as { questionId: string; text: string; metadata?: Record<string, unknown> });
+                    await this.handleSemanticIndexing(jobId, job.payload as SemanticIndexPayload);
                     break;
                 case JobType.MOCK_JOB:
                     await JobsService.simulateJob(jobId, userId);
                     break;
                 case JobType.DATA_CLEANUP:
                     await this.handleDataCleanup(jobId);
+                    break;
+                case JobType.EMAIL_SEND:
+                    await this.handleEmailSend(jobId, job.payload as EmailJobPayload);
+                    break;
+                case JobType.ANALYTICS_PROCESS:
+                    await this.handleAnalyticsProcess(jobId, job.payload as AnalyticsProcessPayload);
+                    break;
+                case JobType.EXAM_SAGA:
+                    await this.handleExamSaga(jobId, job.payload as ExamSagaPayload, userId);
                     break;
                 default:
                     throw new Error(`Unknown job type: ${job.type}`);
@@ -75,6 +101,54 @@ export class JobOrchestrator {
             await JobsService.updateJobStatus(jobId, JobStatus.FAILED, {
                 error: err instanceof Error ? err.message : 'Unknown error during execution'
             });
+        }
+    }
+
+    private static async handleExamSaga(jobId: string, payload: ExamSagaPayload, userId: string): Promise<void> {
+        const { ExamSaga } = await import('../exam-engine/exam.saga');
+        await ExamSaga.execute(jobId, { examId: payload.examId, userId });
+    }
+
+    /**
+     * Executes the CORE logic of a job type without modifying the database job record.
+     * This is used for internal orchestration (Sagas).
+     */
+    static async runJobDirectly(
+        type: JobType | string,
+        payload: AnalyticsProcessPayload | EmailJobPayload | ExamScoringPayload,
+        userId: string
+    ): Promise<void> {
+        this.log.info({ type, userId }, '[JobOrchestrator] Running job logic directly');
+        const jobId = 'direct-exec';
+        
+        switch (type) {
+            case JobType.EXAM_SCORING: {
+                const p = payload as ExamScoringPayload;
+                await ScoringEngine.calculateExamResults(p.examId);
+                void TutorService.processExamResults(p.examId);
+                break;
+            }
+            case JobType.ANALYTICS_PROCESS: {
+                const p = payload as AnalyticsProcessPayload;
+                if (p.type === 'post_exam_processing') {
+                    const performanceService = container.get(PerformanceService);
+                    const reportEngine = container.get(ReportEngine);
+                    await performanceService.refreshAnalytics();
+                    const { ReportMaterializer } = await import('../../services/reports/ReportMaterializer');
+                    await ReportMaterializer.materialize(p.examId);
+                    const reportData = await reportEngine.getPremiumExamReport(p.examId);
+                    await performanceService.cacheReport(p.examId, reportData);
+                } else {
+                    await AnalyticsService.refreshAllViews();
+                }
+                break;
+            }
+            case JobType.EMAIL_SEND: {
+                await this.handleEmailSend(jobId, payload as EmailJobPayload);
+                break;
+            }
+            default:
+                throw new Error(`Direct execution not implemented for type: ${type}`);
         }
     }
 
@@ -144,6 +218,63 @@ export class JobOrchestrator {
                 ...results,
                 timestamp: new Date().toISOString()
             }
+        });
+    }
+
+    private static async handleEmailSend(jobId: string, payload: EmailJobPayload): Promise<void> {
+        const { type, email, data } = payload;
+        const provider = EmailService.getInstance();
+
+        switch (type) {
+            case 'password_reset':
+                await provider.sendPasswordResetEmail(email, data.resetUrl);
+                break;
+            case 'generic':
+                await provider.sendEmail({
+                    to: email,
+                    subject: data.subject,
+                    html: data.html,
+                    from: data.from,
+                });
+                break;
+            default:
+                throw new Error(`Unknown email job type: ${type}`);
+        }
+
+        await JobsService.updateJobStatus(jobId, JobStatus.COMPLETED, {
+            result: { sentAt: new Date().toISOString() }
+        });
+    }
+
+    private static async handleAnalyticsProcess(jobId: string, payload: AnalyticsProcessPayload): Promise<void> {
+        const { type } = payload;
+        const performanceService = container.get(PerformanceService);
+        const reportEngine = container.get(ReportEngine);
+
+        switch (type) {
+            case 'post_exam_processing': {
+                if (typeof payload.examId !== 'string' || payload.examId.trim() === '') throw new Error('examId is required');
+                await performanceService.refreshAnalytics();
+                const { ReportMaterializer } = await import('../../services/reports/ReportMaterializer');
+                await ReportMaterializer.materialize(payload.examId);
+                const reportData = await reportEngine.getPremiumExamReport(payload.examId);
+                await performanceService.cacheReport(payload.examId, reportData);
+                break;
+            }
+            case 'daily_refresh': {
+                await performanceService.refreshAnalytics();
+                break;
+            }
+            case 'refresh_views': {
+                await AnalyticsService.refreshAllViews();
+                break;
+            }
+            default:
+                throw new Error(`Unknown analytics job type: ${type}`);
+        }
+
+        await JobsService.updateJobStatus(jobId, JobStatus.COMPLETED, {
+            result: { processedAt: new Date().toISOString() }
         });
     }
 }

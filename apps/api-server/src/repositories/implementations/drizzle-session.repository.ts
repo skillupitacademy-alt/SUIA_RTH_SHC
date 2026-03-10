@@ -8,8 +8,12 @@ import { ISessionRepository } from '../interfaces/session.repository.interface';
 export class DrizzleSessionRepository extends BaseRepository<typeof sessions.$inferSelect, typeof sessions> implements ISessionRepository {
   protected table = sessions;
 
-  constructor() {
-    super(db);
+  constructor(dbInstance: typeof db = db) {
+    super(dbInstance);
+  }
+
+  withDb(dbClient: typeof db): this {
+    return new DrizzleSessionRepository(dbClient) as this;
   }
 
   async createSession(userId: string, expiresAt: Date, ip?: string, device?: string) {

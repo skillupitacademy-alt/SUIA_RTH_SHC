@@ -86,6 +86,8 @@ async function deleteHandler(_req: NextRequest, { params }: { params: Promise<{ 
     }
 }
 
-export const GET = withLogging(getHandler, { component: 'admin', operation: 'get_question' });
-export const PATCH = withLogging(patchHandler, { component: 'admin', operation: 'update_question' });
-export const DELETE = withLogging(deleteHandler, { component: 'admin', operation: 'delete_question' });
+import { withCorrelationId } from '@/lib/correlation-id.middleware';
+
+export const GET = withCorrelationId(withLogging(getHandler, { component: 'admin', operation: 'get_question' }));
+export const PATCH = withCorrelationId(withLogging(patchHandler, { component: 'admin', operation: 'update_question' }));
+export const DELETE = withCorrelationId(withLogging(deleteHandler, { component: 'admin', operation: 'delete_question' }));
