@@ -26,13 +26,6 @@ vi.mock('@quiz/db', () => ({
   subtopics: { id: 'subtopics.id' },
 }));
 
-vi.mock('ioredis', () => ({
-  default: vi.fn().mockReturnValue({
-    get: vi.fn().mockResolvedValue(null),
-    set: vi.fn().mockResolvedValue('OK'),
-    del: vi.fn().mockResolvedValue(1),
-  })
-}));
 
 describe('Consolidated Core Coverage', () => {
   beforeEach(() => {

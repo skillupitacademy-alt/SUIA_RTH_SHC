@@ -1,15 +1,15 @@
 import { ApiResponse } from '@/lib/api-response';
 import { withCacheHeaders } from '@/lib/cache-headers';
-import { redisConnection as queueConnection } from '@/lib/queue/queue.config';
+import { redis } from '@/lib/redis';
 import { withLogging } from '@/lib/withLogging';
 
 export const dynamic = 'force-dynamic';
 
-// Health check with Redis status (Task 109).
+// Health check with Redis status.
 export const GET = withLogging(async () => {
     let redisStatus = 'error';
     try {
-        const ping = await queueConnection.ping();
+        const ping = await redis.ping();
         if (ping === 'PONG') redisStatus = 'ok';
     } catch (_err: unknown) {
         redisStatus = 'down';

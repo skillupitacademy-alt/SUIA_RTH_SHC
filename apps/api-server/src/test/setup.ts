@@ -88,54 +88,7 @@ vi.mock('@upstash/redis', () => {
   return { Redis: MockRedis }
 })
 
-// Mock ioredis to avoid real TCP connections
-vi.mock('ioredis', () => {
-  return {
-    default: class Redis {
-      constructor() {}
-      on = vi.fn();
-      quit = vi.fn();
-      disconnect = vi.fn();
-      connect = vi.fn();
-      get = vi.fn();
-      set = vi.fn();
-      del = vi.fn();
-    },
-    // CommonJS require support
-    Redis: class Redis {
-      constructor() {}
-      on = vi.fn();
-      quit = vi.fn();
-      disconnect = vi.fn();
-      connect = vi.fn();
-      get = vi.fn();
-      set = vi.fn();
-      del = vi.fn();
-    }
-  }
-});
 
-// BullMQ mock to avoid real Redis connections in unit tests
-vi.mock('bullmq', () => {
-  const Queue = vi.fn().mockImplementation(() => ({
-    add: vi.fn(),
-    getJob: vi.fn(),
-    on: vi.fn(),
-  }));
-  const Worker = vi.fn().mockImplementation(() => ({
-    on: vi.fn(),
-    close: vi.fn(),
-  }));
-  const QueueScheduler = vi.fn().mockImplementation(() => ({
-    on: vi.fn(),
-    close: vi.fn(),
-  }));
-  const QueueEvents = vi.fn().mockImplementation(() => ({
-    on: vi.fn(),
-    close: vi.fn(),
-  }));
-  return { Queue, Worker, QueueScheduler, QueueEvents, JobsOptions: {} };
-});
 
 // Default test env settings
 process.env.QUEUE_ENABLED = 'false';

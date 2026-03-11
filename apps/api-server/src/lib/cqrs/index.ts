@@ -9,7 +9,6 @@ import { GetDomainsHandler } from './queries/get-domains.query';
 import { GetLiveSessionsHandler } from './queries/get-live-sessions.query';
 import { GetPlatformMetricsHandler } from './queries/get-platform-metrics.query';
 import { GetQuestionsHandler } from './queries/get-questions.query';
-import { GetQueueStatusHandler } from './queries/get-queue-status.query';
 import { GetSkillsHandler } from './queries/get-skills.query';
 import { GetSubjectsHandler } from './queries/get-subjects.query';
 import { GetSubtopicsHandler } from './queries/get-subtopics.query';
@@ -38,7 +37,6 @@ export function bootstrapCQRS() {
   queryBus.register('GetSkillsQuery', new GetSkillsHandler());
   queryBus.register('GetAuditLogsQuery', new GetAuditLogsHandler());
   queryBus.register('GetLiveSessionsQuery', new GetLiveSessionsHandler());
-  queryBus.register('GetQueueStatusQuery', new GetQueueStatusHandler());
 
   // Commands
   commandBus.register('StartExamCommand', new StartExamHandler());
@@ -59,7 +57,6 @@ export * from './queries/get-domains.query';
 export * from './queries/get-live-sessions.query';
 export * from './queries/get-platform-metrics.query';
 export * from './queries/get-questions.query';
-export * from './queries/get-queue-status.query';
 export * from './queries/get-skills.query';
 export * from './queries/get-subjects.query';
 export * from './queries/get-subtopics.query';
