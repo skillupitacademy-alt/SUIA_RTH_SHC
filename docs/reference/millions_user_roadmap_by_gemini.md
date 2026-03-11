@@ -44,14 +44,14 @@
 ### ⚡ Phase 2: Scale Foundations (Weeks 3-5)
 *Goal: Decouple the monolith. The server never "waits".*
 
-#### 2.1 Async Job Architecture
-**Tech**: `BullMQ`, `Redis`.
-- [ ] **Queue**: Create `scoring-queue` & `email-queue`.
-- [ ] **Worker**: Create `apps/worker` service (Node/TS).
-- [ ] **API**: `submit` returns `202 Accepted` + `statusUrl`.
-- [ ] **Status**: New endpoint `/api/quiz/status/[id]` checked via Redis/DB.
+#### 2.1 Async Job Architecture (Durable Workflows)
+**Tech**: `Upstash Workflow` (Replaced BullMQ for Vercel/Serverless support), `Redis`.
+- [ ] **Workflow**: Create `scoringWorkflow` & `reportWorkflow`.
+- [ ] **Durable Step**: Implement multi-step scoring with auto-retries.
+- [ ] **API**: `submit` triggers workflow + returns `202 Accepted` + `statusUrl`.
+- [ ] **Status**: New endpoint `/api/quiz/status/[id]` uses `workflow.get()` to track progress.
 > **🤖 AI Prompt**:  
-> "Implement a generic `QueueService` using BullMQ. Create a dedicated `worker` process entry point. Update the `submitExam` API route to enqueue a job instead of processing inline. Implement the 202 status flow."
+> "Implement durable background processing using Upstash Workflows. Update the `submitExam` API route to trigger a workflow instead of processing inline. Implement the 202 status flow with progress tracking for each workflow step."
 
 #### 2.2 Global Rate Limiting
 **Tech**: `ioredis`, Token Bucket.
@@ -70,7 +70,7 @@
 
 **✅ Phase 2 Acceptance Criteria**:
 - Submit returns 202 instantly (<500ms).
-- Scoring happens in background worker.
+- Scoring happens via durable serverless workflows.
 - Status endpoint accurately reflects progress.
 - API is guarded by CDN/WAF.
 
@@ -138,7 +138,7 @@
 
 ## 3. Role Ownership
 - **Platform/SRE**: CDN, WAF, Gateway, IaC (Terraform), DR.
-- **Backend Engineer**: Queue/Worker, Status Endpoint, Redis, DB Scaling.
+- **Backend Engineer**: Workflow/Worker, Status Endpoint, Redis, DB Scaling.
 - **Frontend Engineer**: Perf optimization, Polling logic, a11y/i18n.
 - **QA Engineer**: Load/Soak scripts (k6), E2E Test Suite.
 

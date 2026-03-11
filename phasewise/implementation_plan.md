@@ -28,7 +28,7 @@ This plan follows the exact sequence defined in the architectural manuals.
 
 ### [PHASE-3-SCALE-PREPARATION](file:///d:/onlinewebsites/quiz-platform/docs/claude-scalable-architecture/PHASE-3-SCALE-PREPARATION.md)
 - **Task 99-105 (API Optimization)**: Cache headers, versioning, retries, and field selection.
-- **Task 106-111 (Async Processing)**: BullMQ integration, async scoring/email, and Saga patterns.
+- **Task 106-111 (Async Processing)**: Upstash Workflows implementation (Pivoted from BullMQ for Vercel Serverless compatibility), async scoring/email, and Saga patterns.
 - **Task 112-121 (Database Scaling)**: CQRS, materialized views, read replicas, and partitioning.
 
 ---

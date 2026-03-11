@@ -156,23 +156,26 @@ Phase 4: ░░░░░░░░░░░░░░░░░░░░░░  0/3
 
 ---
 
-## Sprint 8: Async Processing & Message Queues (Tasks 106-111)
+## Sprint 8: Async Processing & Durable Workflows (Tasks 106-111)
+
+> [!IMPORTANT]
+> **Architecture Pivot**: BullMQ was originally planned for background processing. However, because this project is hosted on **Vercel (Serverless)**, BullMQ's requirement for persistent workers is not compatible. We have pivoted to **Upstash Workflows**, which provide durable, serverless-native execution for long-running tasks.
 
 **Effort**: 3-4 weeks | **Impact**: Async scoring, email queue, fault tolerance
 
 ---
 
-### Task 106: Install and Configure BullMQ Message Queue
+### Task 106: Install and Configure Upstash Workflows (BullMQ Replacement)
 
 **Priority**: 🔴 Critical | **Effort**: 1 day | **Risk**: Medium
 
-> Install `bullmq` in `apps/api-server`. Create:
-- [x] T106: Implement a global Dead Letter Queue (DLQ) for all background jobs (BullMQ).
-- [x] T107: Configure job workers to catch terminal failures (after retries) and move payloads to the `deadLetterQueue` with error context.
-- [x] T108: Extend the Admin Jobs API to support list/retry/discard actions on failed jobs.
-- [x] T109: Implement a "Job Health" dashboard in the Admin Panel showing counts for Active, Waiting, and Failed (DLQ) jobs.
-- [x] T110: Refactor the `ExamSaga` to be idempotent across retries—ensuring scoring doesn't run twice if already completed.
-- [x] T111: Implement incremental status updates in the `ExamSaga` to allow resuming from the last successful step on retry.
+> Install `@upstash/workflow` and configure serverless workers.
+- [x] T106: Implement durable workflows for long-running processes (Upstash).
+- [x] T107: Configure workflow steps with automatic retries and error handling.
+- [x] T108: Extend Admin Jobs API to track Upstash Workflow execution status.
+- [x] T109: Implement a "Job Health" dashboard showing Workflow progress and failures.
+- [x] T110: Refactor `ExamSaga` into a durable Upstash Workflow.
+- [x] T111: Implement granular step tracking in `JobsService` for real-time progress.
 
 ---
 

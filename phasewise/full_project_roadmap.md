@@ -62,8 +62,8 @@ Read replica routing, fix N+1 queries, add missing transactions, data retention 
 ### 3.1 — API Optimization (Tasks 99-105)
 Cache-Control headers, API versioning, retries with backoff, response compression, ETags.
 
-### 3.2 — Async Processing (Tasks 106-111)
-BullMQ message queue, async scoring/email workers, dead-letter queues, Saga pattern.
+### 3.2 — Async Processing & Durable Workflows (Tasks 106-111)
+Heavy work doesn't block the student. Student clicks "Submit" → they see "Submitted!" instantly. Behind the scenes, a durable Upstash Workflow (serverless-native replacement for BullMQ) handles scoring + AI analysis + PDF generation without the student waiting.
 
 ### 3.3 — Database Scaling (Tasks 112-121)
 CQRS read/write separation, materialized views, table partitioning, GDPR anonymization.
@@ -94,7 +94,7 @@ Event sourcing, multi-region deployment, WebSocket real-time sync, bulkhead/load
 | Phase | Target Scale | Key Focus |
 |---|---|---|
 | Scaling 1 | 0 → 50K users | Neon pooling, Edge Middleware, `use cache`, Zod optimization |
-| Scaling 2 | 50K → 250K | Submission buffering, background workers, idempotency, throttling |
+| Scaling 2 | 50K → 250K | Submission buffering, serverless background workflows, idempotency, throttling |
 | Scaling 3 | 250K → 1M | Table partitioning, read replicas, global Redis cache |
 | Scaling 4 | 1M+ | Multi-region, CDN strategy, circuit breakers, global load balancing |
 | Scaling 5 | Billions of rows | Redis idempotency offloading, PostgreSQL partitioning, IndexedDB |
@@ -112,6 +112,7 @@ Event sourcing, multi-region deployment, WebSocket real-time sync, bulkhead/load
 | 9 | **Resilience / Safe Mode** | `resilience/` | ✅ **DONE** | — |
 | 11 | **Data Sharding & Lifecycle** | `data-strategy/` | ❌ Not Started | 🟡 Medium |
 | 12 | **Observability & Polish** | `operations/` | ❌ Not Started | 🟡 Medium |
+| 🔵 10 | **Phase 3.2**: Async Durable Workflows (Upstash) | High | Handles exam day surge (Replaced BullMQ for Vercel) | 🟢 Low |
 | 14 | **Roadmap UI Blueprint** | `ui/` | ❌ Not Started | 🟢 Low |
 | 15 | **Biometric Passkey Guard** | `security/` | ❌ Not Started | 🟡 Medium |
 

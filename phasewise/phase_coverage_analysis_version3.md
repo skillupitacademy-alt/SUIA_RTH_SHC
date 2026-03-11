@@ -208,16 +208,14 @@ Cross-reference of all architecture docs and AI prompts against actual codebase 
 | 104 | Add ETags for Conditional Requests | ❌ Not Started |
 | 105 | Add Field Selection for Admin API | ❌ Not Started |
 
-#### 3.2 — Async Processing & Message Queues (Tasks 106-111)
+| 106 | Install and Configure Upstash Workflows (Replaced BullMQ) | ✅ Done |
+| 107 | Move Scoring to Durable Workflow Step | ✅ Done |
+| 108 | Add Workflow Status Tracking (Step-based) | ✅ Done |
+| 109 | Move Email Sending to Workflow Step | ✅ Done |
+| 110 | Add Workflow Monitoring Dashboard | ✅ Done |
+| 111 | Implement Durable Saga Pattern via Workflows | ✅ Done |
 
-| # | Task | Status |
-|---|---|---|
-| 106 | Install and Configure BullMQ Message Queue | ❌ Not Started |
-| 107 | Move Scoring to Async Queue Worker | ❌ Not Started |
-| 108 | Add Dead Letter Queue for Failed Jobs | ❌ Not Started |
-| 109 | Move Email Sending to Async Queue | ❌ Not Started |
-| 110 | Add Job Monitoring Dashboard | ❌ Not Started |
-| 111 | Implement Saga Pattern for Exam Lifecycle | ❌ Not Started |
+> **Architecture Note**: BullMQ was replaced by **Upstash Workflows** to maintain compatibility with **Vercel Serverless** architecture. Persistent workers are no longer required.
 
 #### 3.3 — Database Sharding & Partitioning (Tasks 112-121)
 

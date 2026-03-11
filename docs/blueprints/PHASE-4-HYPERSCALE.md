@@ -1647,7 +1647,7 @@
 >    - `010-vercel-deployment.md` — Why Vercel? Serverless trade-offs.
 >    - `011-zustand-state-management.md` — Why Zustand? Why not Redux, Jotai, Context?
 >    - `012-event-sourcing-exam.md` — Why Event Sourcing for exams?
->    - `013-bullmq-async-processing.md` — Why BullMQ? Why not SQS, RabbitMQ?
+>    - `013-upstash-workflow-async.md` — Why Upstash Workflows? Reason for replacing BullMQ (Vercel serverless compatibility).
 >    - `014-cqrs-read-write-split.md` — Why CQRS? Read replica strategy.
 >    - `015-repository-pattern.md` — Why Repository Pattern for data access?
 >

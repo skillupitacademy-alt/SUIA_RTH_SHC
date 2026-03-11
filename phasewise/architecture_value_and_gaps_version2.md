@@ -48,7 +48,7 @@ The architecture plan is designed to evolve your platform through **4 maturity l
 | Section | What It Solves | Real-World Scenario |
 |---|---|---|
 | **3.1 API Optimization** | Reduces unnecessary network traffic | Student's browser caches the question bank → on page refresh, the server says "nothing changed" (ETags) instead of re-sending 500KB of data |
-| **3.2 Async Processing** | Heavy work doesn't block the student | Student clicks "Submit" → they see "Submitted!" instantly. Behind the scenes, scoring + AI analysis + PDF generation happen in a queue, taking 30 seconds without the student waiting |
+| **3.2 Async Processing** | Heavy work doesn't block the student | Student clicks "Submit" → they see "Submitted!" instantly. Behind the scenes, a durable Upstash Workflow (serverless-native replacement for BullMQ) handles scoring + AI analysis + PDF generation without the student waiting |
 | **3.3 Database Scaling** | Splits read/write traffic across servers | 5,000 students viewing their dashboard (reads) don't slow down 500 students actively taking exams (writes) |
 | **3.4 BFF & Feature Flags** | Tailors API responses and enables safe rollouts | You launch a new scoring algorithm → feature flag sends it to 5% of users first. If scores look wrong, you kill it instantly without redeploying |
 | **3.5 Performance Testing** | Proves the system can handle the load BEFORE launch day | You simulate 10,000 concurrent exam submissions → k6 report shows p95 latency is 400ms. You're confident launch day won't crash |
@@ -195,6 +195,6 @@ Here's what to tackle next, ordered by **impact vs effort**:
 | 🟡 7 | **Gap 1**: Accessibility (WCAG) | Medium-High | Legal compliance |
 | 🟡 8 | **Phase 2.3**: Structured Logging (Pino) | Medium | Debugging at scale |
 | 🟡 9 | **Phase 2.5**: N+1 Query Fixes | Low-Medium | Immediate perf boost |
-| 🔵 10 | **Phase 3.2**: Async Queues (BullMQ/QStash) | High | Handles exam day surge |
+| 🔵 10 | **Phase 3.2**: Async Durable Workflows (Upstash) | High | Handles exam day surge (Replaced BullMQ for Vercel) |
 | 🔵 11 | **Gap 2**: i18n | High | Market expansion |
 | 🔵 12 | **Gap 5**: PWA | Medium | Mobile student experience |

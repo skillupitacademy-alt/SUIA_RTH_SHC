@@ -339,7 +339,10 @@
 
 ---
 
-## 3.2 — ASYNC PROCESSING & MESSAGE QUEUES (Tasks 106-111)
+## 3.2 — ASYNC PROCESSING & DURABLE WORKFLOWS (Tasks 106-111)
+
+> [!IMPORTANT]
+> **Architecture Pivot**: BullMQ was originally planned for background processing. However, because this project is hosted on **Vercel (Serverless)**, BullMQ's requirement for persistent workers is not compatible. We have pivoted to **Upstash Workflows**, which provide durable, serverless-native execution for long-running tasks.
 
 ---
 
