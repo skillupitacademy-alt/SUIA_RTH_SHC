@@ -17,7 +17,6 @@ const eq = typeof eqFn === 'function' ? eqFn : ((..._args: unknown[]) => undefin
 export const __withTimeout = withTimeout;
 
 export const dynamic = 'force-dynamic';
-const queuesEnabled = process.env.QUEUE_ENABLED === 'true';
 
 export class ScoringEngine {
   private static singleton: ScoringEngine | null = null;

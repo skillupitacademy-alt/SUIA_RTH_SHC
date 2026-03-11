@@ -12,8 +12,13 @@ export const dynamic = "force-dynamic";
  * Replaces the brittle synchronous loop in the API route.
  */
 const { POST: workflowHandler } = serve<{ 
-    questions: any[]; 
-    context: any; 
+    questions: Record<string, unknown>[]; 
+    context: { 
+        topicId: string; 
+        subtopicId?: string; 
+        skillId?: string; 
+        skillIds?: string[];
+    }; 
     adminId: string;
 }>(
   async (context) => {
@@ -33,7 +38,8 @@ const { POST: workflowHandler } = serve<{
              logger.info({ batch: batchNum, total: totalBatches, size: batch.length }, "[Workflow] Processing batch");
              
              // AdminQuestionEngine is a container-managed singleton exported from admin.engine
-             await AdminQuestionEngine.bulkCreateQuestionsWithContext(batch, contextMeta, adminId);
+             // eslint-disable-next-line @typescript-eslint/no-explicit-any
+             await AdminQuestionEngine.bulkCreateQuestionsWithContext(batch as any, contextMeta, adminId);
         });
     }
 

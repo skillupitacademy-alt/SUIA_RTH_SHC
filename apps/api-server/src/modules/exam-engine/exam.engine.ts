@@ -12,7 +12,6 @@ import type { CacheValue } from '../core/cache.service';
 import { PerformanceService } from '../report-engine/performance.service';
 import { ExamBuilder } from './exam.builder';
 import { ExamSaga } from './exam.saga';
-import { ExamStateMachine } from './exam.state-machine';
 import { ExamRepository } from './repositories/exam.repository';
 
 const withTimeout = dbWithTimeout ?? (async <T>(promise: Promise<T>) => promise);
@@ -347,13 +346,6 @@ export class ExamEngine {
 
     await this.performanceService.invalidateCache(targetExamId);
 
-    interface ExamBase { 
-      id: string; 
-      userId: string; 
-      status: string; 
-      startedAt: Date | string; 
-      lastAnsweredAt: Date | string | null; 
-    }
     
     // Phase 1: Fetch Exam & Questions (Outside Transaction)
     const examWithQuestions = await withTimeout(

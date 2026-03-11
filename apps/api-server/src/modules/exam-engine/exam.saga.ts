@@ -1,4 +1,5 @@
 import { JobStatus, JobType } from '@quiz/types';
+
 import { logger } from '@/lib/logger';
 import { container } from '@/modules/core/container';
 import { EmailService } from '@/modules/email/EmailService';
@@ -53,7 +54,9 @@ export class ExamSaga {
 
         if (queuesEnabled) {
             // Trigger Upstash Workflow for production stability
-            const publicUrl = process.env.NEXT_PUBLIC_APP_URL || `https://${process.env.VERCEL_URL}` || 'http://localhost:3000';
+            const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? '';
+            const vercelUrl = process.env.VERCEL_URL ?? '';
+            const publicUrl = appUrl !== '' ? appUrl : (vercelUrl !== '' ? `https://${vercelUrl}` : 'http://localhost:3000');
             const workflowUrl = `${publicUrl}/api/workflows/exam-report`;
             
             try {

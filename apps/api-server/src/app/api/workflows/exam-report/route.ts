@@ -1,5 +1,5 @@
-import { serve } from "@upstash/workflow/nextjs";
 import { JobStatus } from "@quiz/types";
+import { serve } from "@upstash/workflow/nextjs";
 
 import { logger } from "@/lib/logger";
 import { withLogging } from "@/lib/withLogging";
@@ -27,7 +27,7 @@ const { POST: workflowHandler } = serve<{ examId: string; userId: string; jobId?
     await context.run("scoring", async () => {
       logger.info({ examId }, "[Workflow] Calculating scores");
       
-      if (jobId) {
+      if (jobId !== undefined && jobId !== "") {
           await JobsService.updateJobStatus(jobId, JobStatus.PROCESSING, { currentStep: 'scoring' });
       }
 
@@ -42,7 +42,7 @@ const { POST: workflowHandler } = serve<{ examId: string; userId: string; jobId?
     await context.run("analytics", async () => {
         logger.info({ examId }, "[Workflow] Materializing report & caching");
         
-        if (jobId) {
+        if (jobId !== undefined && jobId !== "") {
             await JobsService.updateJobStatus(jobId, JobStatus.PROCESSING, { currentStep: 'analytics' });
         }
 
@@ -62,7 +62,7 @@ const { POST: workflowHandler } = serve<{ examId: string; userId: string; jobId?
     await context.run("notification", async () => {
         logger.info({ examId }, "[Workflow] Sending completion email");
         
-        if (jobId) {
+        if (jobId !== undefined && jobId !== "") {
             await JobsService.updateJobStatus(jobId, JobStatus.PROCESSING, { currentStep: 'notification' });
         }
 
@@ -80,7 +80,7 @@ const { POST: workflowHandler } = serve<{ examId: string; userId: string; jobId?
 
     // STEP 4: FINALIZE
     await context.run("finalize", async () => {
-        if (jobId) {
+        if (jobId !== undefined && jobId !== "") {
             await JobsService.updateJobStatus(jobId, JobStatus.COMPLETED, {
                 result: {
                     examId,

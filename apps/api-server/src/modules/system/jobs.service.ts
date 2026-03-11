@@ -182,8 +182,8 @@ export class JobsService {
 
     if (status === JobStatus.PROCESSING) {
       updateData.startedAt = new Date();
-      if (data && 'currentStep' in data && data.currentStep) {
-        updateData.result = { ...(data.result || {}), currentStep: data.currentStep };
+      if (data !== undefined && 'currentStep' in data && data.currentStep !== undefined && data.currentStep !== '') {
+        updateData.result = { ...((data.result as Record<string, unknown> | undefined) ?? {}), currentStep: data.currentStep };
       }
     } else if (status === JobStatus.COMPLETED || status === JobStatus.FAILED) {
       updateData.completedAt = new Date();

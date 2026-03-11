@@ -1,5 +1,6 @@
 import type { questions } from '@quiz/db';
 import { METRICS } from '@quiz/observability';
+import { JobStatus,JobType } from '@quiz/types';
 import type { NextRequest } from 'next/server';
 
 import { badRequest } from '@/lib/api-error';
@@ -7,12 +8,10 @@ import { ApiResponse } from '@/lib/api-response';
 import { recordCounter, recordTimer } from '@/lib/metrics';
 import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 import { withLogging } from '@/lib/withLogging';
-import { AdminQuestionEngine } from "@/modules/admin-engine/admin.engine";
 import { _verifyAdmin } from '@/modules/auth/rbac.service';
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
 import { bulkQuestionSchema } from '@/schemas/admin.schemas';
-import { JobType, JobStatus } from '@quiz/types';
 
 type CreateQuestionInput = typeof questions.$inferInsert & {
     skillNames?: string[];
@@ -72,7 +71,9 @@ async function handler(_req: NextRequest) {
     });
 
     // Trigger Upstash Workflow instead of processing synchronously
-    const publicUrl = process.env.NEXT_PUBLIC_APP_URL || `https://${process.env.VERCEL_URL}` || 'http://localhost:3000';
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? '';
+    const vercelUrl = process.env.VERCEL_URL ?? '';
+    const publicUrl = appUrl !== '' ? appUrl : (vercelUrl !== '' ? `https://${vercelUrl}` : 'http://localhost:3000');
     const workflowUrl = `${publicUrl}/api/workflows/bulk-import`;
     
     // We fire-and-forget or await the trigger
