@@ -12,6 +12,7 @@ import { _verifyAdmin } from '@/modules/auth/rbac.service';
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
 import { bulkQuestionSchema } from '@/schemas/admin.schemas';
+import { JobType, JobStatus } from '@quiz/types';
 
 type CreateQuestionInput = typeof questions.$inferInsert & {
     skillNames?: string[];
@@ -59,21 +60,51 @@ async function handler(_req: NextRequest) {
     }
     const { topicId, subtopicId, skillId, skillIds, questions } = parsed.data;
 
-    const result = await AdminQuestionEngine.bulkCreateQuestionsWithContext(
-        questions, 
-        { topicId, subtopicId, skillId, skillIds }, 
-        _payload.userId
-    );
+    // Create a job record for tracking the bulk import
+    const { JobsService } = await import('@/modules/system/jobs.service');
+    const job = await JobsService.createJob({
+        userId: _payload.userId,
+        type: JobType.BULK_IMPORT,
+        payload: {
+            count: questions.length,
+            context: { topicId, subtopicId, skillId, skillIds }
+        }
+    });
+
+    // Trigger Upstash Workflow instead of processing synchronously
+    const publicUrl = process.env.NEXT_PUBLIC_APP_URL || `https://${process.env.VERCEL_URL}` || 'http://localhost:3000';
+    const workflowUrl = `${publicUrl}/api/workflows/bulk-import`;
+    
+    // We fire-and-forget or await the trigger
+    const workflowResponse = await fetch(workflowUrl, {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${process.env.QSTASH_TOKEN}`,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ 
+            questions, 
+            context: { topicId, subtopicId, skillId, skillIds }, 
+            adminId: _payload.userId,
+            jobId: job.id
+        })
+    });
+
+    if (!workflowResponse.ok) {
+        await JobsService.updateJobStatus(job.id, JobStatus.FAILED, { error: `Workflow trigger failed: ${workflowResponse.statusText}` });
+        throw new Error(`Failed to trigger workflow: ${workflowResponse.statusText}`);
+    }
 
     const durationMs = Date.now() - start;
-    recordCounter(METRICS.ADMIN.BULK_UPLOAD, 1, { outcome: 'success', count: result.length });
+    recordCounter(METRICS.ADMIN.BULK_UPLOAD, 1, { outcome: 'async_started', count: questions.length });
     recordTimer(METRICS.ADMIN.BULK_UPLOAD + '.duration', durationMs, { outcome: 'success' });
     
     return ApiResponse.success({ 
         success: true, 
-        count: result.length,
-        message: `Successfully uploaded ${result.length} questions` 
-    }, 200, { 'X-Duration-Ms': durationMs.toString() });
+        jobId: job.id,
+        count: questions.length,
+        message: `Successfully queued ${questions.length} questions for background processing` 
+    }, 202, { 'X-Duration-Ms': durationMs.toString() });
   } catch (_error: unknown) {
     const message = _error instanceof Error ? _error.message : 'Internal Server Error';
     const durationMs = Date.now() - start;

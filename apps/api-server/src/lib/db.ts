@@ -9,10 +9,15 @@ const connectionString =
     ? "postgresql://placeholder:placeholder@ep-placeholder.us-east-2.aws.neon.tech/neondb"
     : envDatabaseUrl;
 
+// Add statement timeout of 10s to ensure no query hangs indefinitely
+const connectionWithTimeout = connectionString.includes('?') 
+    ? `${connectionString}&options=-c%20statement_timeout=10000`
+    : `${connectionString}?options=-c%20statement_timeout=10000`;
+
 /**
  * Primary SQL client for writes.
  */
-export const sql = neon(connectionString);
+export const sql = neon(connectionWithTimeout);
 
 /**
  * Replica SQL client for heavy reads. 

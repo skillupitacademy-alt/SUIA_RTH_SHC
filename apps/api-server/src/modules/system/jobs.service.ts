@@ -1,6 +1,6 @@
 import { backgroundJobs, db } from '@quiz/db';
 import { CreateJobInput as CreateJobDTO, Job, JobStatus } from '@quiz/types';
-import { and, desc, eq, inArray, lt,or, sql } from 'drizzle-orm';
+import { and, desc, eq, inArray, lt, or, sql } from 'drizzle-orm';
 
 export interface ListJobsOptions {
   userId?: string;
@@ -166,7 +166,7 @@ export class JobsService {
   static async updateJobStatus(
     jobId: string, 
     status: JobStatus,
-    data?: { result?: Record<string, unknown>; error?: string }
+    data?: { result?: Record<string, unknown>; error?: string; currentStep?: string }
   ): Promise<Job> {
     const updateData: {
       status: JobStatus;
@@ -182,6 +182,9 @@ export class JobsService {
 
     if (status === JobStatus.PROCESSING) {
       updateData.startedAt = new Date();
+      if (data && 'currentStep' in data && data.currentStep) {
+        updateData.result = { ...(data.result || {}), currentStep: data.currentStep };
+      }
     } else if (status === JobStatus.COMPLETED || status === JobStatus.FAILED) {
       updateData.completedAt = new Date();
       if (data?.result !== undefined) updateData.result = data.result;

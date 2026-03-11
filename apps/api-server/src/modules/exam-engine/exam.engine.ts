@@ -323,8 +323,11 @@ export class ExamEngine {
   }
 
   async completeExam(examId: string, userId: string, idempotencyKey?: string) {
+    const startTimestamp = Date.now();
     const queuesEnabled = process.env.QUEUE_ENABLED === 'true';
     const isTestEnv = process.env.NODE_ENV === 'test' || process.env.VITEST === 'true' || process.env.VITEST_WORKER_ID !== undefined;
+    
+    let jobId: string | undefined;
     
     if (!queuesEnabled && !isTestEnv) {
       this.log.warn({ examId }, 'QUEUE_DISABLED: skipping queue side-effects');
@@ -352,112 +355,88 @@ export class ExamEngine {
       lastAnsweredAt: Date | string | null; 
     }
     
-    const repoExam = await this.examRepo.findById(targetExamId);
-    let fullExam: ExamBase | null = repoExam ? (repoExam as unknown as ExamBase) : null;
+    // Phase 1: Fetch Exam & Questions (Outside Transaction)
+    const examWithQuestions = await withTimeout(
+        db.query.exams.findFirst({
+            where: eq(exams.id, targetExamId),
+            with: {
+                examQuestions: {
+                    with: {
+                        question: true,
+                    },
+                },
+            },
+        }),
+        STANDARD_QUERY_TIMEOUT,
+        'ExamEngine.completeExam.fetchMetadata'
+    );
 
-    if (fullExam === null) {
-       const fallback = await this.examRepo.findByIdWithBlueprint(targetExamId);
-       if (fallback !== null && fallback !== undefined) {
-          fullExam = fallback as unknown as ExamBase;
-       }
+    if (!examWithQuestions || examWithQuestions.userId !== userId) throw new Error('Unauthorized');
+    if (['completed', 'processing', 'failed', 'abandoned'].includes(examWithQuestions.status)) {
+        return { examId: targetExamId, status: examWithQuestions.status };
     }
+
+    const examQuestionsList = examWithQuestions.examQuestions ?? [];
     
-    if (fullExam === null || fullExam.userId !== userId) throw new Error('Unauthorized');
-
-    if (['completed', 'processing', 'failed', 'abandoned'].includes(fullExam.status)) {
-        return { examId: targetExamId, status: fullExam.status };
-    }
-
-    // Use State Machine
-    if (!isTestEnv) {
-      await ExamStateMachine.transition(targetExamId, 'processing', userId);
-    }
+    // Phase 2: Parallel Redis Fetch (OUTSIDE any transaction)
+    const liveStatePrefix = `exam-state:${targetExamId}:q:`;
+    const cache = await this.getCache();
     
-    let jobId: string | undefined;
-    const startTimestamp = Date.now();
+    const answersToFlush = await Promise.all(
+        examQuestionsList.map(async (eqRecord) => {
+            const cached = await cache.get<{ answer: string }>(`${liveStatePrefix}${eqRecord.questionId}`).catch(() => null);
+            return { eqRecord, cachedAnswer: cached?.answer ?? null };
+        })
+    );
 
+    // Phase 3: Fast Atomic DB Updates inside Transaction
     try {
         await db.transaction(async (tx) => {
-            // Double check status inside transaction for safety
-            const txExam = await tx.query.exams.findFirst({
+            // Re-check status for concurrency safety
+            const txStatusCheck = await tx.query.exams.findFirst({
                 where: eq(exams.id, targetExamId),
                 columns: { status: true }
             });
             
-            const txStatus = (txExam as { status?: string } | undefined)?.status;
-            if (txStatus === 'processing' || txStatus === undefined || txExam === null || txExam === undefined) {
-                // Phase 1: Fetch Questions (Fast DB metadata)
-                interface ExamQuestionJoined {
-                    id: string; 
-                    questionId: string; 
-                    responseMetadata: unknown; 
-                    question: { type: string; correctAnswer: string } 
-                }
+            if (txStatusCheck?.status === 'processing' || txStatusCheck?.status === 'completed') return;
 
-                const examWithQuestions = await withTimeout(
-                    tx.query.exams.findFirst({
-                        where: eq(exams.id, targetExamId),
-                        with: {
-                            examQuestions: {
-                                with: {
-                                    question: true,
-                                },
-                            },
-                        },
-                    }),
-                    STANDARD_QUERY_TIMEOUT,
-                    'ExamEngine.completeExam.fetchQuestions'
-                ) as { examQuestions: ExamQuestionJoined[] } | null;
-
-                const examQuestionsList = examWithQuestions?.examQuestions ?? [];
-                
-                // Phase 2: Parallel Redis Fetch (OUTSIDE any loop)
-                const liveStatePrefix = `exam-state:${targetExamId}:q:`;
-                const cache = await this.getCache();
-                
-                const answersToFlush = await Promise.all(
-                    examQuestionsList.map(async (eqRecord) => {
-                        const cached = await cache.get<{ answer: string }>(`${liveStatePrefix}${eqRecord.questionId}`).catch(() => null);
-                        return { eqRecord, cachedAnswer: cached?.answer ?? null };
-                    })
-                );
-
-                // Phase 3: Fast Atomic DB Updates
-                for (const { eqRecord, cachedAnswer } of answersToFlush) {
-                    if (cachedAnswer !== null && cachedAnswer !== '') {
-                        const now = new Date();
-                        const isLastAnsweredSet = fullExam!.lastAnsweredAt !== null;
-                        const lastTime = isLastAnsweredSet ? new Date(fullExam!.lastAnsweredAt as string | Date).getTime() : new Date(fullExam!.startedAt).getTime();
-                        
-                        interface ResponseMetadata {
-                          timeSpentSeconds?: number;
-                          firstAnsweredAt?: string;
-                        }
-                        
-                        const existingMetadata = (eqRecord.responseMetadata as ResponseMetadata | null) ?? {};
-                        const timeSpentSeconds = existingMetadata.timeSpentSeconds ?? Math.max(0, Math.floor((now.getTime() - lastTime) / 1000));
-
-                        await tx.update(examQuestions)
-                            .set({
-                                userAnswer: cachedAnswer, 
-                                isCorrect: false, // Default or re-evaluate if needed, usually saga handles it
-                                responseMetadata: { 
-                                    ...existingMetadata, 
-                                    timeSpentSeconds, 
-                                    firstAnsweredAt: existingMetadata.firstAnsweredAt ?? now.toISOString() 
-                                } 
-                            })
-                            .where(eq(examQuestions.id, eqRecord.id));
+            for (const { eqRecord, cachedAnswer } of answersToFlush) {
+                if (cachedAnswer !== null && cachedAnswer !== '') {
+                    const now = new Date();
+                    const lastTime = examWithQuestions.lastAnsweredAt 
+                        ? new Date(examWithQuestions.lastAnsweredAt).getTime() 
+                        : new Date(examWithQuestions.startedAt).getTime();
+                    
+                    interface ResponseMetadata {
+                        timeSpentSeconds?: number;
+                        firstAnsweredAt?: string;
                     }
-                }
-                
-                await tx.update(exams)
-                    .set({ lastAnsweredAt: new Date() })
-                    .where(eq(exams.id, targetExamId));
+                    
+                    const existingMetadata = (eqRecord.responseMetadata as ResponseMetadata | null) ?? {};
+                    const timeSpentSeconds = existingMetadata.timeSpentSeconds ?? Math.max(0, Math.floor((now.getTime() - lastTime) / 1000));
 
-                if (idempotencyKey !== undefined && idempotencyKey !== null && idempotencyKey !== '') {
-                    await tx.insert(idempotencyKeys).values({ userId, key: `submit:${idempotencyKey}`, examId: targetExamId }).onConflictDoNothing();
+                    await tx.update(examQuestions)
+                        .set({
+                            userAnswer: cachedAnswer, 
+                            isCorrect: false, 
+                            responseMetadata: { 
+                                ...existingMetadata, 
+                                timeSpentSeconds, 
+                                firstAnsweredAt: existingMetadata.firstAnsweredAt ?? now.toISOString() 
+                            } 
+                        })
+                        .where(eq(examQuestions.id, eqRecord.id));
                 }
+            }
+            
+            await tx.update(exams)
+                .set({ lastAnsweredAt: new Date() })
+                .where(eq(exams.id, targetExamId));
+
+            if (idempotencyKey !== undefined && idempotencyKey !== null && idempotencyKey !== '') {
+                await tx.insert(idempotencyKeys)
+                    .values({ userId, key: `submit:${idempotencyKey}`, examId: targetExamId })
+                    .onConflictDoNothing();
             }
         });
 
@@ -482,7 +461,7 @@ export class ExamEngine {
           type: JobType.EXAM_SAGA,
           payload: { examId: targetExamId },
         });
-        jobId = (job !== null && job !== undefined && typeof job.id === 'string') ? job.id : crypto.randomUUID();
+        jobId = job.id;
         if (useQstash) {
           const { queueService } = await import('@/modules/core/queue.service');
           const enqueueResult = await queueService.enqueue('exam_saga', { jobId, userId, examId: targetExamId });

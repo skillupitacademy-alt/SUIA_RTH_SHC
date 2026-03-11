@@ -6,7 +6,8 @@ export enum JobType {
     DATA_CLEANUP = 'DATA_CLEANUP',
     EMAIL_SEND = 'EMAIL_SEND',
     ANALYTICS_PROCESS = 'ANALYTICS_PROCESS',
-    EXAM_SAGA = 'EXAM_SAGA'
+    EXAM_SAGA = 'EXAM_SAGA',
+    BULK_IMPORT = 'BULK_IMPORT'
 }
 
 export enum JobStatus {
@@ -25,6 +26,7 @@ export interface JobResult {
     examId?: string;
     finalScore?: number;
     completedAt?: string;
+    currentStep?: string;
     [key: string]: unknown;
 }
 

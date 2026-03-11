@@ -1,7 +1,5 @@
 import { JobStatus, JobType } from '@quiz/types';
-
 import { logger } from '@/lib/logger';
-import { sagaQueue } from '@/lib/queue/queues';
 import { container } from '@/modules/core/container';
 import { EmailService } from '@/modules/email/EmailService';
 import { PerformanceService } from '@/modules/report-engine/performance.service';
@@ -54,8 +52,27 @@ export class ExamSaga {
         });
 
         if (queuesEnabled) {
-            // Enqueue the saga to the primary sagaQueue
-            await sagaQueue.add('exam_lifecycle_' + examId, { examId, userId }, { jobId: job.id });
+            // Trigger Upstash Workflow for production stability
+            const publicUrl = process.env.NEXT_PUBLIC_APP_URL || `https://${process.env.VERCEL_URL}` || 'http://localhost:3000';
+            const workflowUrl = `${publicUrl}/api/workflows/exam-report`;
+            
+            try {
+                await fetch(workflowUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${process.env.QSTASH_TOKEN}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ examId, userId, jobId: job.id })
+                });
+                logger.info({ examId, jobId: job.id }, '[ExamSaga] Workflow triggered successfully');
+            } catch (err) {
+                logger.error({ err, examId }, '[ExamSaga] Failed to trigger workflow');
+                // No BullMQ fallback anymore
+                await JobsService.updateJobStatus(job.id, JobStatus.FAILED, { 
+                    error: 'Workflow trigger failed and BullMQ is decommissioned.' 
+                });
+            }
         }
         
         logger.info({ examId, jobId: job.id }, '[ExamSaga] Lifecycle started');

@@ -218,17 +218,6 @@ export class ScoringEngine {
           return finalScore;
         });
 
-        if (queuesEnabled) {
-          const { eventBus } = await import('@/lib/event-bus');
-          const { AppEvents } = await import('@/lib/events');
-          void eventBus.emitEvent(AppEvents.EXAM_COMPLETED, {
-            examId,
-            userId: exam.userId,
-            score: finalScoreResult,
-            completedAt: new Date()
-          });
-        }
-
         const durationMs = Date.now() - start;
         recordCounter(METRICS.CORE.SCORING + '.success', 1);
         recordTimer(METRICS.CORE.SCORING + '.duration', durationMs);
