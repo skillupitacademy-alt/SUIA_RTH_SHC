@@ -44,7 +44,7 @@ class EventBus {
   async emit<T>(event: string, payload: T): Promise<void> {
     const eventHandlers = this.handlers.get(event) ?? [];
     if (eventHandlers.length > 0) {
-      const examId = (payload as any)?.examId;
+      const examId = (payload as Record<string, unknown>)?.examId;
       this.log.info({ event, examId }, 'Emitting event');
       await Promise.allSettled(eventHandlers.map(h => Promise.resolve(h(payload as unknown))));
     }
@@ -64,5 +64,5 @@ class EventBus {
   }
 }
 
+// Global Singleton Instance
 export const eventBus = new EventBus();
-(eventBus as any).log = logger;

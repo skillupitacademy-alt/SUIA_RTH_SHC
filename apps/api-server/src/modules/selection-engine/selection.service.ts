@@ -58,7 +58,7 @@ export class SelectionService {
     const { cacheService } = await import('@/modules/core/cache.service');
     const isTestEnv = process.env.NODE_ENV === 'test' || process.env.VITEST === 'true' || process.env.VITEST_WORKER_ID !== undefined;
     if (isTestEnv) {
-      const isMocked = (cacheService.get as any)?.mock !== undefined || (cacheService.set as any)?.mock !== undefined;
+      const isMocked = (cacheService.get as unknown as { mock?: unknown }).mock !== undefined || (cacheService.set as unknown as { mock?: unknown }).mock !== undefined;
       if (isMocked) {
         this.cacheInstance = cacheService;
         return this.cacheInstance;
@@ -144,12 +144,12 @@ export class SelectionService {
     const { withSpan } = await import('@/lib/tracer');
     const { METRICS } = await import('@quiz/observability');
     const isTestEnv = process.env.NODE_ENV === 'test' || process.env.VITEST === 'true' || process.env.VITEST_WORKER_ID !== undefined;
-    const useSpan = !isTestEnv || (withSpan as any)?.mock !== undefined;
+    const useSpan = !isTestEnv || (withSpan as unknown as { mock?: unknown }).mock !== undefined;
     let recordCounter: (metric: string, value?: number, tags?: Record<string, string | number | boolean | undefined>) => void;
     let recordTimer: (metric: string, durationMs: number, tags?: Record<string, string | number | boolean | undefined>) => void;
     if (isTestEnv) {
       const metrics = await import('@/lib/metrics');
-      const mocked = (metrics.recordCounter as any)?.mock !== undefined || (metrics.recordTimer as any)?.mock !== undefined;
+      const mocked = (metrics.recordCounter as unknown as { mock?: unknown }).mock !== undefined || (metrics.recordTimer as unknown as { mock?: unknown }).mock !== undefined;
       recordCounter = mocked ? metrics.recordCounter : () => undefined;
       recordTimer = mocked ? metrics.recordTimer : () => undefined;
     } else {
@@ -168,7 +168,7 @@ export class SelectionService {
         const blueprint = await this.resolveBlueprint(userId, blueprintOrDomainId, config);
 
         // 1.5 STATIC OVERRIDE: If blueprint has fixed questionIds, bypass dynamic selection
-        if (blueprint.questionIds && blueprint.questionIds.length > 0) {
+        if (blueprint.questionIds && (blueprint.questionIds as string[]).length > 0) {
           const result = await this.fetchStaticQuestions(blueprint);
           recordCounter(METRICS.CORE.SELECTION + '.success', 1, { type: 'static' });
           recordTimer(METRICS.CORE.SELECTION + '.duration', Date.now() - start);
@@ -207,7 +207,7 @@ export class SelectionService {
      const log = await this.getLog();
 
     try {
-      blueprint = await cache.get(blueprintCacheKey);
+      blueprint = await cache.get<Blueprint>(blueprintCacheKey); 
     } catch (e) {
       log.warn(
         { error: e instanceof Error ? e.message : 'unknown error' },
@@ -257,18 +257,16 @@ export class SelectionService {
         timeLimit: Math.ceil((config?.questionCount ?? 10) * 1.5),
         domains: [],
         description: null,
-        status: 'active',
+        status: 'active' as const,
         createdAt: new Date(),
         updatedAt: new Date(),
         createdById: userId,
         // Simulated loose fields
-        ...({
-            difficultyDistribution: { simple: 30, intermediate: 30, expert: 40 },
-            subjects: config?.subjectIds ?? [],
-            topics: config?.topicIds ?? [],
-            subtopics: config?.subtopicIds ?? [],
-            questionIds: []
-        } as Record<string, unknown>)
+        difficultyDistribution: { simple: 30, intermediate: 30, expert: 40 },
+        subjects: config?.subjectIds ?? [],
+        topics: config?.topicIds ?? [],
+        subtopics: config?.subtopicIds ?? [],
+        questionIds: []
       } as unknown as Blueprint;
     }
     return blueprint;
@@ -308,13 +306,11 @@ export class SelectionService {
       difficulty 
     } = config ?? {};
 
-    const finalSubjectIds = configSubjectIds ?? (subjectId !== undefined ? [subjectId] : blueprint.subjects) ?? [];
-    const finalTopicIds = configTopicIds ?? legacyTopicIds ?? blueprint.topics ?? [];
-    const finalSubtopicIds = subtopicIds.length > 0 ? subtopicIds : (blueprint.subtopics ?? []);
+    const finalSubjectIds = configSubjectIds ?? (subjectId !== undefined ? [subjectId] : (blueprint.subjects as string[] | null)) ?? [];
+    const finalTopicIds = configTopicIds ?? legacyTopicIds ?? (blueprint.topics as string[] | null) ?? [];
+    const finalSubtopicIds = subtopicIds.length > 0 ? subtopicIds : ((blueprint.subtopics as string[] | null) ?? []);
 
     // Task 59: Apply depth-based configuration rules
-    // IF till topics -> Difficulty is Simple, 10 Questions
-    // If till Sub topics -> Difficulty is Mixed, 10 Questions
     let autoDifficulty = difficulty;
     let autoCount = questionCount;
 
@@ -334,7 +330,7 @@ export class SelectionService {
     autoDifficulty = autoDifficulty ?? 'mixed';
     autoCount = autoCount ?? blueprint.totalQuestions ?? 10;
     
-    // Resolve Exclusions (Parents of selected children should not be blindly included to avoid double dipping or broad scope)
+    // Resolve Exclusions
     const selectedTopicParents: string[] = finalSubtopicIds.length > 0 
         ? (await withTimeout(
                   this.dbInstance.select({ topicId: subtopics.topicId })
@@ -378,7 +374,7 @@ export class SelectionService {
   ): Promise<Question[]> {
     const { withSpan } = await import('@/lib/tracer');
     const isTestEnv = process.env.NODE_ENV === 'test' || process.env.VITEST === 'true' || process.env.VITEST_WORKER_ID !== undefined;
-    const useSpan = !isTestEnv || (withSpan as any)?.mock !== undefined;
+    const useSpan = !isTestEnv || (withSpan as unknown as { mock?: unknown }).mock !== undefined;
     const run = async (span: { setAttribute?: (k: string, v: string) => void }) => {
       span?.setAttribute?.('domainId', domainId);
       span?.setAttribute?.('userId', userId);
@@ -418,7 +414,6 @@ export class SelectionService {
           eq(questions.status, 'active')
         );
 
-        // 1. Batch ID Fetch with Difficulty
         const allMatching = await withTimeout(
           this.dbInstance.select({ id: questions.id, difficulty: questions.difficulty })
             .from(questions)
@@ -429,7 +424,6 @@ export class SelectionService {
         );
         if (allMatching.length === 0) return [];
 
-        // 2. Group by difficulty
         const poolMap: Partial<Record<string, string[]>> = {};
         allMatching.forEach(r => {
             const bucket = poolMap[r.difficulty] ?? [];
@@ -437,12 +431,8 @@ export class SelectionService {
             poolMap[r.difficulty] = bucket;
         });
 
-
-
-        // 3. Deterministic Seeding & Sampling per Tier
         const allSampledIds: string[] = [];
         
-        // Simple deterministic pseudo-RNG
         const createRng = (seed: string) => {
             let h = 0;
             for (let i = 0; i < seed.length; i++) h = Math.imul(31, h) + seed.charCodeAt(i) | 0;
@@ -455,7 +445,6 @@ export class SelectionService {
         for (const [diff, targetCount] of Object.entries(targets)) {
             const pool = poolMap[diff] ?? [];
             if (pool.length === 0) continue;
-
 
             const seedSource = JSON.stringify({
                 userId,
@@ -477,8 +466,6 @@ export class SelectionService {
 
         if (allSampledIds.length === 0) return [];
 
-
-        // 4. Batch Fetch Questions
         const candidates = await withTimeout(
           this.dbInstance.select()
             .from(questions)
@@ -508,8 +495,6 @@ export class SelectionService {
         throw new Error(`No questions found for the selected configuration. Please ensure the selected area has active questions.`);
       }
 
-
-
       return selectedQuestions;
     };
 
@@ -517,4 +502,3 @@ export class SelectionService {
     return withSpan('SelectionService.executeDynamicSelection', async (span) => run(span));
   }
 }
-

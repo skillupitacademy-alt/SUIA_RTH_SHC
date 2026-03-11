@@ -1,15 +1,16 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 // @ts-nocheck
 import { db, examQuestions, exams, REPORT_QUERY_TIMEOUT, resultsByDimension, withTimeout as dbWithTimeout } from '@quiz/db';
-import { eq as eqFn } from 'drizzle-orm';
+import { eq as eqFn, type InferSelectModel } from 'drizzle-orm';
 
 import { logger } from '@/lib/logger';
-import type { EvaluatedAnswer } from './strategies/scoring-strategy.interface';
+
 import type { AnswerEvaluationEngine } from '../answer-engine/answer.engine';
+import { ExamObserver } from '../exam-engine/exam.observer';
 import type { ExamRepository } from '../exam-engine/repositories/exam.repository';
 import type { PerformanceService } from '../report-engine/performance.service';
 import type { ReportEngine } from '../report-engine/report.engine';
-import { ExamObserver } from '../exam-engine/exam.observer';
+import type { EvaluatedAnswer } from './strategies/scoring-strategy.interface';
 
 const withTimeout = dbWithTimeout ?? (async <T>(promise: Promise<T>) => promise);
 const eq = typeof eqFn === 'function' ? eqFn : ((..._args: unknown[]) => undefined);
@@ -17,9 +18,6 @@ export const __withTimeout = withTimeout;
 
 export const dynamic = 'force-dynamic';
 const queuesEnabled = process.env.QUEUE_ENABLED === 'true';
-const queuesDisabledStub = {
-  add: async () => undefined,
-};
 
 export class ScoringEngine {
   private static singleton: ScoringEngine | null = null;
@@ -82,7 +80,6 @@ export class ScoringEngine {
     this.examRepo = this.examRepo ?? container.get(ExamRepository);
     this.reportEngine = this.reportEngine ?? container.get(ReportEngine);
     this.answerEvaluation = this.answerEvaluation ?? container.get(AnswerEvaluationEngine);
-
   }
 
   private static getInstance() {
@@ -131,8 +128,7 @@ export class ScoringEngine {
 
         if (exam === undefined) throw new Error('Exam not found');
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const topicIds = [...new Set(exam.examQuestions.map((eq: any) => eq.question.topicId))];
+        const topicIds = [...new Set(exam.examQuestions.map((eqRecord) => (eqRecord.question as Record<string, unknown>).topicId))];
         const topicData = await withTimeout(
           db.query.topics.findMany({
             where: (topics, { inArray }) => inArray(topics.id, topicIds as string[]),
@@ -148,17 +144,15 @@ export class ScoringEngine {
 
         const topicMap = new Map(topicData.map(t => [t.id, t]));
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const evaluatedAnswers: EvaluatedAnswer[] = await Promise.all(exam.examQuestions.map(async (eqRecord: any) => {
-          // If answer is not yet evaluated, do it now
+        const evaluatedAnswers: EvaluatedAnswer[] = await Promise.all(exam.examQuestions.map(async (eqRecord) => {
           if (eqRecord.isCorrect === null || eqRecord.isCorrect === undefined) {
-             const isCorrect = this.answerEvaluation!.evaluate(eqRecord.question.type, eqRecord.question.correctAnswer, eqRecord.userAnswer);
+             const isCorrect = this.answerEvaluation!.evaluate((eqRecord.question as Record<string, unknown>).type as string, (eqRecord.question as Record<string, unknown>).correctAnswer as string, eqRecord.userAnswer as string);
              await db.update(examQuestions).set({ isCorrect }).where(eq(examQuestions.id, eqRecord.id)).catch(() => undefined);
              eqRecord.isCorrect = isCorrect;
           }
 
           return {
-            question: eqRecord.question,
+            question: eqRecord.question as Record<string, unknown>,
             examQuestion: {
                 ...eqRecord,
                 isCorrect: eqRecord.isCorrect
@@ -166,7 +160,7 @@ export class ScoringEngine {
           };
         }));
 
-        const strategyName = typeof (exam.blueprint as { scoringStrategy?: string })?.scoringStrategy === 'string'
+        const strategyName = typeof (exam.blueprint as { scoringStrategy?: string | null })?.scoringStrategy === 'string'
           ? (exam.blueprint as { scoringStrategy?: string }).scoringStrategy!
           : 'percentage';
         const strategy = ScoringStrategyRegistry.get(strategyName);
@@ -174,8 +168,8 @@ export class ScoringEngine {
         const dimensions: Record<string, { total: number; correct: number; name?: string }> = {};
 
         for (const eqRecord of exam.examQuestions) {
-          const q = eqRecord.question;
-          const t = topicMap.get(q.topicId);
+          const q = eqRecord.question as Record<string, unknown>;
+          const t = topicMap.get(q.topicId as string);
           if (t === undefined) continue;
 
           const baseDims = DimensionRegistry.getAllDimensions({
@@ -192,7 +186,7 @@ export class ScoringEngine {
           }
         }
 
-        const resultsData = strategy.calculateDimensionScores(evaluatedAnswers, dimensions).map(ds => ({
+        const dimensionScores = strategy.calculateDimensionScores(evaluatedAnswers, dimensions).map(ds => ({
           examId,
           dimensionType: ds.type,
           dimensionId: ds.id,
@@ -204,8 +198,8 @@ export class ScoringEngine {
         const finalScoreResult = await db.transaction(async (tx) => {
           await tx.delete(resultsByDimension).where(eq(resultsByDimension.examId, examId));
 
-          if (resultsData.length > 0) {
-            await tx.insert(resultsByDimension).values(resultsData);
+          if (dimensionScores.length > 0) {
+            await tx.insert(resultsByDimension).values(dimensionScores as unknown as Array<InferSelectModel<typeof resultsByDimension>>);
           }
 
           const finalScore = strategy.calculateOverallScore(evaluatedAnswers);
@@ -224,8 +218,6 @@ export class ScoringEngine {
           return finalScore;
         });
 
-        // Task 62: Emit event instead of direct orchestration
-        // Emit event only when queues enabled (to keep test env quiet)
         if (queuesEnabled) {
           const { eventBus } = await import('@/lib/event-bus');
           const { AppEvents } = await import('@/lib/events');

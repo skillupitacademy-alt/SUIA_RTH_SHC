@@ -32,6 +32,19 @@ export interface TrendSummary {
   currentStreak: number;
 }
 
+interface RawTrendRow {
+  examId?: string | null;
+  completedAt?: string | Date | null;
+  skillId?: string | null;
+  dimensionId?: string | null;
+  skillName?: string | null;
+  name?: string | null;
+  score?: number | null;
+  examDate?: string | Date | null;
+  accuracy?: number | null;
+  [key: string]: unknown;
+}
+
 export class TrendsService {
   private static PASS_THRESHOLD = parseInt(process.env.PASS_THRESHOLD ?? '70', 10);
   private static MAX_EXAMS = 200;
@@ -86,7 +99,6 @@ export class TrendsService {
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - daysAgo);
 
-    // Optimized: Fetch skill results using a join to avoid separate exam meta queries
     const conditions = [
       eq(exams.status, 'completed'),
       gte(exams.completedAt, cutoffDate)
@@ -110,28 +122,29 @@ export class TrendsService {
       eq(resultsByDimension.dimensionType, 'skill')
     ));
 
-    let rawResults: any = [];
-    if (typeof (baseQuery as any).orderBy === 'function') {
-      rawResults = await (baseQuery as any).orderBy(desc(exams.completedAt));
+    let rawResults: RawTrendRow[] = [];
+    const queryWithOrderBy = baseQuery as { orderBy?: (val: unknown) => Promise<RawTrendRow[]> };
+    if (typeof queryWithOrderBy.orderBy === 'function') {
+      rawResults = await queryWithOrderBy.orderBy(desc(exams.completedAt));
     } else if (Array.isArray(baseQuery)) {
-      rawResults = baseQuery;
+      rawResults = baseQuery as RawTrendRow[];
     } else {
-      rawResults = await baseQuery;
+      rawResults = await (baseQuery as Promise<RawTrendRow[]>);
     }
     rawResults = Array.isArray(rawResults) ? rawResults : [];
     const isTestEnv = process.env.NODE_ENV === 'test' || process.env.VITEST === 'true' || process.env.VITEST_WORKER_ID !== undefined;
-    const finder = (db as any)?.query?.resultsByDimension?.findMany;
-    const finderMocked = typeof finder === 'function' && (finder as { mock?: unknown }).mock !== undefined;
-    if (rawResults.length === 0 && (isTestEnv || finderMocked) && typeof finder === 'function') {
-      rawResults = await finder();
+    const binder = (db as unknown as { query: { resultsByDimension: { findMany: () => Promise<RawTrendRow[]> } } })?.query?.resultsByDimension?.findMany;
+    const binderMocked = typeof binder === 'function' && (binder as unknown as { mock?: unknown }).mock !== undefined;
+    if (rawResults.length === 0 && (isTestEnv || binderMocked) && typeof binder === 'function') {
+      rawResults = await binder();
       rawResults = Array.isArray(rawResults) ? rawResults : [];
     }
 
     if (rawResults.length === 0) return [];
 
     let validExamIds: Set<string> | null = null;
-    const hasExamId = rawResults.some((row: any) => row?.examId !== undefined && row?.examId !== null);
-    const hasMissingCompletedAt = rawResults.some((row: any) => row?.completedAt === undefined || row?.completedAt === null);
+    const hasExamId = rawResults.some((row) => row?.examId !== undefined && row?.examId !== null);
+    const hasMissingCompletedAt = rawResults.some((row) => row?.completedAt === undefined || row?.completedAt === null);
     if (hasExamId && hasMissingCompletedAt) {
       const examRows = await db.select({ id: exams.id })
         .from(exams)
@@ -141,11 +154,10 @@ export class TrendsService {
       }
     }
 
-    // Group by skill and calculate deltas
     const skillMap = new Map<string, { name: string; scores: number[]; examDates: Date[] }>();
 
     for (const row of rawResults) {
-      if (validExamIds && row?.examId && !validExamIds.has(row.examId)) continue;
+      if (validExamIds !== null && row?.examId !== undefined && row?.examId !== null && !validExamIds.has(row.examId)) continue;
       const skillId = row.skillId ?? row.dimensionId ?? row.skillName ?? row.name;
       if (skillId === null || skillId === undefined || skillId === '') continue;
       
@@ -158,13 +170,12 @@ export class TrendsService {
       }
       
       const group = skillMap.get(skillId)!;
-      if (group.scores.length < 10) { // Keep history manageable
-        group.scores.push(row.accuracy);
-        group.examDates.push(row.completedAt ?? new Date());
+      if (group.scores.length < 10) { 
+        group.scores.push(row.accuracy ?? 0);
+        group.examDates.push(row.completedAt !== null && row.completedAt !== undefined ? new Date(row.completedAt) : new Date());
       }
     }
 
-    // Calculate trends
     const trends: SkillTrend[] = [];
 
     for (const [skillId, data] of skillMap.entries()) {
@@ -210,7 +221,6 @@ export class TrendsService {
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - daysAgo);
 
-    // Optimized: Run summary calc and skill trends in parallel
     const [userExams, skillTrends] = await Promise.all([
       db.query.exams.findMany({
         where: and(
@@ -234,13 +244,11 @@ export class TrendsService {
       };
     }
 
-    // Calculate avg score and pass rate
     const totalScore = userExams.reduce((sum, exam) => sum + (exam.totalScore ?? 0), 0);
     const avgScore = Math.round(totalScore / userExams.length);
     const passedCount = userExams.filter(exam => (exam.totalScore ?? 0) >= this.PASS_THRESHOLD).length;
     const passRate = passedCount / userExams.length;
 
-    // Calculate current streak (only when all recent exams pass)
     const hasFailure = userExams.some(exam => (exam.totalScore ?? 0) < this.PASS_THRESHOLD);
     const currentStreak = hasFailure ? 0 : userExams.length;
 
@@ -361,7 +369,6 @@ export class TrendsService {
 
     const result: Record<string, { current: number; previous: number; delta: number }> = {};
 
-    // Map current stats
     currentStats.forEach(stat => {
         if (stat.id === undefined || stat.id === null) return;
         result[stat.id] = {
@@ -371,7 +378,6 @@ export class TrendsService {
         };
     });
 
-    // Merge previous stats
     previousStats.forEach(stat => {
         const sid = stat.id;
         if (sid === undefined || sid === null) return;

@@ -1,6 +1,6 @@
 import { MockEmailProvider } from './providers/MockEmailProvider';
 import { ResendEmailProvider } from './providers/ResendEmailProvider';
-import type { IEmailProvider, EmailOptions } from './types';
+import type { EmailOptions,IEmailProvider } from './types';
 
 /**
  * EmailService now selects a provider (Mock or Resend) based on env, keeping tests hermetic.
@@ -9,8 +9,8 @@ export class EmailService {
   private static instance: IEmailProvider | null = null;
 
   private static resolveProvider(): IEmailProvider {
-    const provider = process.env.EMAIL_PROVIDER?.toLowerCase();
-    if (provider === 'resend' && process.env.RESEND_API_KEY) {
+    const provider = (process.env.EMAIL_PROVIDER ?? '').toLowerCase();
+    if (provider === 'resend' && (process.env.RESEND_API_KEY !== undefined && process.env.RESEND_API_KEY !== '')) {
       const from = process.env.EMAIL_FROM ?? 'Quiz <noreply@example.com>';
       return new ResendEmailProvider(process.env.RESEND_API_KEY, from);
     }

@@ -18,14 +18,14 @@ export class DrizzleAdminAnalyticsRepository implements IAdminAnalyticsRepositor
   }
 
   async getPlatformMetrics() {
-    if (typeof (this.dbInstance as any).execute !== 'function' && typeof (this.dbInstance as any).select === 'function') {
+    if (typeof (this.dbInstance as unknown as Record<string, unknown>).execute !== 'function' && typeof (this.dbInstance as unknown as Record<string, unknown>).select === 'function') {
       const getCount = async () => {
-        const base = (this.dbInstance as any).select().from({});
-        const res = typeof base?.where === 'function'
-          ? await base.where({})
+        const base = (this.dbInstance as unknown as { select: () => { from: (t: unknown) => { where: (o: unknown) => unknown } } }).select().from({});
+        const res = typeof (base as Record<string, unknown>).where === 'function'
+          ? await (base as { where: (o: unknown) => Promise<unknown[]> }).where({})
           : await base;
         const first = Array.isArray(res) ? res[0] : undefined;
-        return Number((first as any)?.count ?? 0);
+        return Number((first as Record<string, unknown> | undefined)?.count ?? 0);
       };
 
       const totalUsers = await getCount();

@@ -76,17 +76,7 @@ type ExamQuestionRow = {
   };
 };
 
-type ExamRecord = {
-  id: string;
-  totalScore: number | null;
-  completedAt: Date | null;
-  dimensions: Array<{
-    dimensionType: string;
-    name: string | null;
-    accuracy: number | null;
-  }>;
-  examQuestions: ExamQuestionRow[];
-};
+// Deleted unused ExamRecord
 
 type DimensionRow = {
   dimensionType: string;
@@ -333,7 +323,7 @@ export class ReportEngine {
       
       // Fallback if tutorService not provided
       const tutorInsights = (topicAccuracyRecords.length > 0)
-        ? (this.tutorService?.generateInsights
+        ? (this.tutorService !== undefined && typeof this.tutorService.generateInsights === 'function'
             ? await this.tutorService.generateInsights(exam.userId, topicAccuracyRecords)
             : await (await import('../adaptive-engine/adaptive-tutor.service')).AdaptiveTutorService.generateInsights(exam.userId, topicAccuracyRecords))
         : "Baseline performance data established.";
@@ -380,9 +370,8 @@ export class ReportEngine {
       span.setAttribute('examId', examId);
       
       // 1. Check Redis Cache First
-      const { container } = await import('../core/container');
       const { PerformanceService } = await import('./performance.service');
-      const performanceService = this.performanceService || container.get(PerformanceService);
+      const performanceService = this.performanceService !== undefined ? this.performanceService : container.get(PerformanceService);
     const cached = await performanceService.getCachedReport<PremiumReport>(examId);
     if (cached !== null && cached !== undefined) return cached;
 
@@ -596,7 +585,6 @@ export class ReportEngine {
         ?? hierarchyFallback?.question?.topic?.name
         ?? undefined,
     };
-
     const rawQuestions = await this.dbInstance.execute(sql`
         SELECT 
             eq.id,
@@ -611,15 +599,6 @@ export class ReportEngine {
         WHERE eq.exam_id = ${examId}
         ORDER BY eq.id ASC
     `);
-    const questionRows = Array.isArray(rawQuestions.rows) ? rawQuestions.rows : [];
-    if (questionRows.length === 0) {
-      // Only reject when we also lack analytics results and core score is absent (true missing dataset)
-      if (Array.isArray(dimensionResults) && dimensionResults.length === 0 && (core.score === null || core.score === undefined)) {
-        throw new Error('rejected promise');
-      }
-      // If analytics present, synthesize minimal rows to keep downstream happy
-      rawQuestions.rows = [];
-    }
 
     const tutorInsights = await (async () => {
         if (core.score === null) return "Data insufficient for personalized AI tutoring. Please complete the assessment to unlock insights.";
@@ -637,6 +616,7 @@ export class ReportEngine {
           topicId: t.topicId,
           accuracy: t.total / t.count
         }));
+
 
         // Suppress conceptual gaps for near-perfect scores, but keep contract as an array
         if ((core.score ?? 0) >= 95) return [];
@@ -716,7 +696,7 @@ export class ReportEngine {
 
     // 2. Synthesize Deterministic Interpretation
     const { ReportInterpreter } = await import('./report-interpreter.service');
-    const interpreter = this.interpreter || container.get(ReportInterpreter);
+    const interpreter = this.interpreter !== undefined ? this.interpreter : container.get(ReportInterpreter);
     finalReport.interpreter = interpreter.interpret(finalReport);
 
     // Phase 1: Cache result for subsequent hits

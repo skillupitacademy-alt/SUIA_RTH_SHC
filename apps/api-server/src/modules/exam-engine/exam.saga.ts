@@ -32,7 +32,17 @@ export class ExamSaga {
         const queuesEnabled = process.env.QUEUE_ENABLED === 'true';
         if (!queuesEnabled && !isTestEnv) {
             logger.warn({ examId }, '[ExamSaga] QUEUE_DISABLED: skipping saga enqueue');
-            return crypto.randomUUID();
+            // If queues are disabled and not in test environment, we still need to create a job
+            // to track the saga's progress, but it won't be enqueued.
+            const job = await JobsService.createJob({
+                userId,
+                type: JobType.EXAM_SAGA,
+                payload: {
+                    examId,
+                    metadata: { processedSteps: [] }
+                }
+            });
+            return job.id;
         }
         const job = await JobsService.createJob({
             userId,

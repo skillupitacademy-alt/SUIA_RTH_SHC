@@ -102,7 +102,7 @@ export class ExamStateMachine {
           throw new Error(`Cannot transition missing exam ${examId}`);
       }
 
-      if (updatedBy && exam.userId && exam.userId !== updatedBy) {
+      if ((updatedBy !== undefined && updatedBy !== null && updatedBy !== "") && (exam.userId !== undefined && exam.userId !== null && exam.userId !== "") && exam.userId !== updatedBy) {
         throw new ExamTransitionError('Unauthorized exam transition');
       }
 

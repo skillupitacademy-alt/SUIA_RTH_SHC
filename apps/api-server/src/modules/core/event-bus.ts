@@ -18,8 +18,8 @@ class EventBus extends EventEmitter {
     }
 
     // Override base emit to add logging used by tests
-    emit(eventName: string | symbol, ...args: any[]): boolean {
-        const examId = (args?.[0] as any)?.examId;
+    emit(eventName: string | symbol, ...args: unknown[]): boolean {
+        const examId = (args?.[0] as Record<string, unknown>)?.examId;
         this.log.info({ event: eventName, examId }, 'Emitting event');
         try {
             return super.emit(eventName, ...args);
@@ -36,7 +36,7 @@ class EventBus extends EventEmitter {
         eventName: K, 
         payload: DomainEventMap[K]
     ): boolean {
-        this.log.info({ event: eventName, examId: (payload as any)?.examId }, 'Emitting event');
+        this.log.info({ event: eventName, examId: (payload as Record<string, unknown>)?.examId }, 'Emitting event');
         // We still call the base EventEmitter emit under the hood
         try {
           return super.emit(eventName as string, payload);

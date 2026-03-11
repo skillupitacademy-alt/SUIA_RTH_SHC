@@ -1,4 +1,4 @@
-import { REPORT_QUERY_TIMEOUT, db, withTimeout } from '@quiz/db';
+import { db, REPORT_QUERY_TIMEOUT, withTimeout } from '@quiz/db';
 import { sql } from 'drizzle-orm';
 
 import { TOKENS } from '@/lib/app.container';
@@ -117,21 +117,21 @@ export class AdminAnalyticsEngine {
       interface DifficultyRow { difficulty: string | null; avgAccuracy: number | null; }
       interface PassFailItem { isPass: boolean; count: number; }
 
-      const domainsData = Array.isArray((domainScores as any)?.rows)
-        ? (domainScores as any).rows as DomainRow[]
+      const domainsData = Array.isArray((domainScores as unknown as Record<string, unknown>)?.rows)
+        ? (domainScores as unknown as Record<string, unknown>).rows as unknown as DomainRow[]
         : Array.isArray(domainScores)
-          ? domainScores as any as DomainRow[]
-          : (domainScores !== null && domainScores !== undefined ? [domainScores as any as DomainRow] : []);
-      const difficulties = Array.isArray((difficultyScores as any)?.rows)
-        ? (difficultyScores as any).rows as DifficultyRow[]
+          ? domainScores as unknown as DomainRow[]
+          : (domainScores !== null && domainScores !== undefined ? [domainScores as unknown as DomainRow] : []);
+      const difficulties = Array.isArray((difficultyScores as unknown as Record<string, unknown>)?.rows)
+        ? (difficultyScores as unknown as Record<string, unknown>).rows as unknown as DifficultyRow[]
         : Array.isArray(difficultyScores)
-          ? difficultyScores as any as DifficultyRow[]
-          : (difficultyScores !== null && difficultyScores !== undefined ? [difficultyScores as any as DifficultyRow] : []);
-      const passFailData = Array.isArray((passFail as any)?.rows)
-        ? (passFail as any).rows as PassFailItem[]
+          ? difficultyScores as unknown as DifficultyRow[]
+          : (difficultyScores !== null && difficultyScores !== undefined ? [difficultyScores as unknown as DifficultyRow] : []);
+      const passFailData = Array.isArray((passFail as unknown as Record<string, unknown>)?.rows)
+        ? (passFail as unknown as Record<string, unknown>).rows as unknown as PassFailItem[]
         : Array.isArray(passFail)
-          ? passFail as any as PassFailItem[]
-          : (passFail !== null && passFail !== undefined ? [passFail as any as PassFailItem] : []);
+          ? passFail as unknown as PassFailItem[]
+          : (passFail !== null && passFail !== undefined ? [passFail as unknown as PassFailItem] : []);
       
       const healthStatus = TrendsService.getExecHealth(trendSummary.avgScore, trendSummary.bestSkill ? 5 : 0); // Placeholder for health logic if delta unavailable
       const hasMatrixData = domainsData.length > 0 || difficulties.length > 0 || passFailData.length > 0 || trendSummary.totalExams > 0;

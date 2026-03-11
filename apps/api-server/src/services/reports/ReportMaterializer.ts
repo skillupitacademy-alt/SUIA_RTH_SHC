@@ -300,7 +300,7 @@ export class ReportMaterializer {
         };
 
         const isTestEnv = process.env.NODE_ENV === 'test' || process.env.VITEST === 'true' || process.env.VITEST_WORKER_ID !== undefined;
-        const useSpan = !isTestEnv || (withSpan as any)?.mock !== undefined;
+        const useSpan = !isTestEnv || (withSpan as unknown as { mock?: unknown }).mock !== undefined;
         if (!useSpan) {
             return run();
         }

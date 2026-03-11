@@ -7,9 +7,9 @@ import { logger } from '@/lib/logger';
 import { container } from '@/modules/core/container';
 import { SelectionService } from '@/modules/selection-engine/selection.service';
 
+import type { AnswerEvaluationEngine } from '../answer-engine/answer.engine';
 import type { CacheValue } from '../core/cache.service';
 import { PerformanceService } from '../report-engine/performance.service';
-import type { AnswerEvaluationEngine } from '../answer-engine/answer.engine';
 import { ExamBuilder } from './exam.builder';
 import { ExamSaga } from './exam.saga';
 import { ExamStateMachine } from './exam.state-machine';
@@ -276,9 +276,9 @@ export class ExamEngine {
 
     const now = new Date();
     const startedAt = new Date(exam.startedAt).getTime();
-    const lastAnsweredAt = exam.lastAnsweredAt ? new Date(exam.lastAnsweredAt).getTime() : startedAt;
+    const lastAnsweredAt = (exam.lastAnsweredAt !== null && exam.lastAnsweredAt !== undefined) ? new Date(exam.lastAnsweredAt).getTime() : startedAt;
     const existingMetadata = (eqRecord.responseMetadata as Record<string, unknown> | null) ?? {};
-    const timeSpentSeconds = existingMetadata.timeSpentSeconds ?? Math.max(0, Math.floor((now.getTime() - lastAnsweredAt) / 1000));
+    const timeSpentSeconds = typeof existingMetadata.timeSpentSeconds === 'number' ? existingMetadata.timeSpentSeconds : Math.max(0, Math.floor((now.getTime() - lastAnsweredAt) / 1000));
     const firstAnsweredAt = existingMetadata.firstAnsweredAt ?? now.toISOString();
     const isCorrect = this.answerEvaluation.evaluate(eqRecord.question.type, eqRecord.question.correctAnswer, answer);
 
@@ -346,7 +346,7 @@ export class ExamEngine {
     if (fullExam === undefined || fullExam === null || (fullExam as { userId?: string | null }).userId === undefined || (fullExam as { userId?: string | null }).userId === null) {
       if (typeof (this.examRepo as ExamRepository).findByIdWithBlueprint === 'function') {
         const fallback = await (this.examRepo as ExamRepository).findByIdWithBlueprint(targetExamId);
-        if (fallback !== undefined && fallback !== null) fullExam = fallback as any;
+        if (fallback !== undefined && fallback !== null) fullExam = fallback as unknown as typeof fullExam;
       }
     }
     if (!fullExam) throw new Error('Exam not found');
@@ -452,7 +452,7 @@ export class ExamEngine {
           type: JobType.EXAM_SAGA,
           payload: { examId: targetExamId },
         });
-        jobId = (job && typeof job.id === 'string') ? job.id : crypto.randomUUID();
+        jobId = (job !== null && job !== undefined && typeof job.id === 'string') ? job.id : crypto.randomUUID();
         if (useQstash) {
           const { queueService } = await import('@/modules/core/queue.service');
           const enqueueResult = await queueService.enqueue('exam_saga', { jobId, userId, examId: targetExamId });
