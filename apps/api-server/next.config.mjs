@@ -1,7 +1,7 @@
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { withSentryConfig } from "@sentry/nextjs";
-import { standardSecurityHeaders, getCSPHeader } from '../../packages/config/security-headers.mjs';
+import { baseSecurityHeaders, standardSecurityHeaders, getCSPHeader } from '../../packages/config/security-headers.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -34,6 +34,7 @@ const nextConfig = {
             {
                 source: '/api/security/report',
                 headers: [
+                    ...baseSecurityHeaders,
                     { key: 'Access-Control-Allow-Origin', value: reportAllowedOrigin },
                     { key: 'Access-Control-Allow-Methods', value: 'POST, OPTIONS' },
                     { key: 'Access-Control-Allow-Headers', value: 'Content-Type' },

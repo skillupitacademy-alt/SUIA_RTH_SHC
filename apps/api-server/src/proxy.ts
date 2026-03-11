@@ -19,7 +19,7 @@ export async function proxy(request: NextRequest) {
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set('x-request-id', requestId);
   requestHeaders.set('x-session-id', sessionId);
-
+  
   // 2. CORS Preflight
   if (request.method === 'OPTIONS') {
     const response = new NextResponse(null, { status: 204 });
@@ -38,14 +38,18 @@ export async function proxy(request: NextRequest) {
                       request.nextUrl.pathname.startsWith('/api/admin/auth');
   
   if (!isAuthRoute) {
-    const csrfResponse = await csrfProtection(request);
-    if (csrfResponse !== null && csrfResponse !== undefined) {
-      return corsMiddleware(request, csrfResponse);
+    const isSecurityReport = request.nextUrl.pathname === '/api/security/report';
+    if (!isSecurityReport) {
+      const csrfResponse = await csrfProtection(request);
+      if (csrfResponse !== null && csrfResponse !== undefined) {
+        return corsMiddleware(request, csrfResponse);
+      }
     }
   }
 
   // 5. Auth Protection
-  const isPublicRoute = isAuthRoute || request.nextUrl.pathname === '/api/status';
+  const isSecurityReport = request.nextUrl.pathname === '/api/security/report';
+  const isPublicRoute = isAuthRoute || isSecurityReport || request.nextUrl.pathname === '/api/status';
 
   if (!isPublicRoute) {
     const pathname = request.nextUrl.pathname;

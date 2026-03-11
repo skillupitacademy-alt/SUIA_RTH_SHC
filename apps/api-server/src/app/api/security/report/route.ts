@@ -30,15 +30,35 @@ interface CSPReport {
     };
 }
 
+const MAX_BODY_SIZE = 100 * 1024; // 100KB
+
 async function postHandler(req: NextRequest) {
     const start = Date.now();
     try {
+        // 1. Content-Type Validation (Airlock Pillar 2)
+        const contentType = req.headers.get('content-type') ?? '';
+        if (!contentType.includes('application/csp-report') && !contentType.includes('application/json')) {
+            throw badRequest("Invalid Content-Type");
+        }
+
+        // 2. Size Clamping (Airlock Pillar 2)
+        const contentLength = parseInt(req.headers.get('content-length') ?? '0');
+        if (contentLength > MAX_BODY_SIZE) {
+            throw badRequest("Payload too large");
+        }
+
         const body = await req.json().catch(() => null) as CSPReport | null;
         if (body === null || body['csp-report'] === undefined) {
             throw badRequest("Invalid CSP report format");
         }
 
         const report = body['csp-report'];
+        
+        // Basic validation of fields to prevent injection or junk
+        if (report['document-uri'] === undefined || report['violated-directive'] === undefined) {
+            throw badRequest("Malformed report content");
+        }
+
         const timestamp = new Date().toISOString();
         const logEntry = JSON.stringify({
             timestamp,

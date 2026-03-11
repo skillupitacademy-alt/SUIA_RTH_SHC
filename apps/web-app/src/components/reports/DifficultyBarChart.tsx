@@ -3,6 +3,7 @@
 import React from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { MethodologyDisclaimer } from './MethodologyDisclaimer';
+import { StableRenderGuard } from './recharts/StableRenderGuard';
 
 export interface DifficultyBarChartProps {
     data: { level: string; accuracy: number; attempts: number }[];
@@ -28,54 +29,56 @@ export const DifficultyBarChart = React.memo(({ data, expertDropOff }: Difficult
             </div>
 
             <div className="flex-grow min-h-0 relative z-10 py-6">
-                <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
-                    <BarChart data={sortedData} margin={{ top: 20, right: 30, left: 0, bottom: 0 }}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.03)" vertical={false} />
-                        <XAxis
-                            dataKey="level"
-                            axisLine={false}
-                            tickLine={false}
-                            tick={{ fill: '#64748b', fontSize: 13, fontWeight: 800 }}
-                            padding={{ left: 40, right: 40 }}
-                        />
-                        <YAxis hide domain={[0, 100]} />
-                        <Tooltip
-                            cursor={{ fill: 'rgba(255,255,255,0.02)' }}
-                            content={({ active, payload }) => {
-                                if (active && payload && payload.length) {
-                                    return (
-                                        <div className="bg-[#0f172a]/95 backdrop-blur-xl border border-white/10 p-5 rounded-2xl shadow-2xl">
-                                            <p className="text-[12px] font-black text-indigo-400 uppercase tracking-widest mb-2">{payload[0].payload.level} Gravity</p>
-                                            <div className="flex items-baseline gap-2">
-                                                <span className="text-4xl font-black text-white">{payload[0].value}%</span>
-                                                <span className="text-[11px] font-bold text-slate-500 uppercase tracking-[0.2em]">Accuracy</span>
+                <StableRenderGuard>
+                    <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
+                        <BarChart data={sortedData} margin={{ top: 20, right: 30, left: 0, bottom: 0 }}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.03)" vertical={false} />
+                            <XAxis
+                                dataKey="level"
+                                axisLine={false}
+                                tickLine={false}
+                                tick={{ fill: '#64748b', fontSize: 13, fontWeight: 800 }}
+                                padding={{ left: 40, right: 40 }}
+                            />
+                            <YAxis hide domain={[0, 100]} />
+                            <Tooltip
+                                cursor={{ fill: 'rgba(255,255,255,0.02)' }}
+                                content={({ active, payload }) => {
+                                    if (active && payload && payload.length) {
+                                        return (
+                                            <div className="bg-[#0f172a]/95 backdrop-blur-xl border border-white/10 p-5 rounded-2xl shadow-2xl">
+                                                <p className="text-[12px] font-black text-indigo-400 uppercase tracking-widest mb-2">{payload[0].payload.level} Gravity</p>
+                                                <div className="flex items-baseline gap-2">
+                                                    <span className="text-4xl font-black text-white">{payload[0].value}%</span>
+                                                    <span className="text-[11px] font-bold text-slate-500 uppercase tracking-[0.2em]">Accuracy</span>
+                                                </div>
+                                                <div className="mt-4 pt-4 border-t border-white/5">
+                                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{payload[0].payload.attempts} Diagnostic Cycles</p>
+                                                </div>
                                             </div>
-                                            <div className="mt-4 pt-4 border-t border-white/5">
-                                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{payload[0].payload.attempts} Diagnostic Cycles</p>
-                                            </div>
-                                        </div>
-                                    );
-                                }
-                                return null;
-                            }}
-                        />
-                        <Bar
-                            dataKey="accuracy"
-                            radius={[12, 12, 4, 4]}
-                            barSize={60}
-                            isAnimationActive={true}
-                            animationDuration={1200}
-                        >
-                            {sortedData.map((entry, index) => (
-                                <Cell
-                                    key={`cell-${index}`}
-                                    fill={entry.accuracy < 50 ? '#f43f5e' : entry.accuracy < 75 ? '#6366f1' : '#10b981'}
-                                    fillOpacity={0.9}
-                                />
-                            ))}
-                        </Bar>
-                    </BarChart>
-                </ResponsiveContainer>
+                                        );
+                                    }
+                                    return null;
+                                }}
+                            />
+                            <Bar
+                                dataKey="accuracy"
+                                radius={[12, 12, 4, 4]}
+                                barSize={60}
+                                isAnimationActive={true}
+                                animationDuration={1200}
+                            >
+                                {sortedData.map((entry, index) => (
+                                    <Cell
+                                        key={`cell-${index}`}
+                                        fill={entry.accuracy < 50 ? '#f43f5e' : entry.accuracy < 75 ? '#6366f1' : '#10b981'}
+                                        fillOpacity={0.9}
+                                    />
+                                ))}
+                            </Bar>
+                        </BarChart>
+                    </ResponsiveContainer>
+                </StableRenderGuard>
             </div>
 
             <div className="mt-auto pt-5 border-t border-white/5 space-y-6">

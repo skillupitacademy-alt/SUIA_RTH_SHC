@@ -28,6 +28,7 @@ import {
 } from 'recharts';
 import React from 'react';
 import { Card, CardTitle, CardHeader, CardContent } from '@quiz/ui';
+import { StableRenderGuard } from './StableRenderGuard';
 
 // --- Premium Design Tokens ---
 const COLORS = {
@@ -112,105 +113,115 @@ export const ChartCard: React.FC<{ title: string; children: React.ReactNode }> =
 
 export const CompetencyRadar: React.FC<{ skills: Array<{ name: string; value: number }> }> = ({ skills }) => (
     <ChartCard title="Skill Capability Matrix (Radar)">
-        <ResponsiveContainer minWidth={0} minHeight={0}>
-            <RadarChart cx="50%" cy="50%" outerRadius="80%" data={skills}>
-                <PolarGrid strokeOpacity={0.1} />
-                <PolarAngleAxis dataKey="name" tick={{ fill: COLORS.slate[1], fontSize: 10, fontWeight: 'bold' }} />
-                <Radar
-                    name="Capability"
-                    dataKey="value"
-                    stroke={COLORS.indigo[0]}
-                    strokeWidth={4}
-                    fill={COLORS.indigo[0]}
-                    fillOpacity={0.3}
-                    dot={{ r: 4, fill: COLORS.indigo[0], strokeWidth: 2, stroke: '#fff' }}
-                />
-                <Tooltip content={<CustomTooltip />} />
-            </RadarChart>
-        </ResponsiveContainer>
+        <StableRenderGuard>
+            <ResponsiveContainer minWidth={0} minHeight={0}>
+                <RadarChart cx="50%" cy="50%" outerRadius="80%" data={skills}>
+                    <PolarGrid strokeOpacity={0.1} />
+                    <PolarAngleAxis dataKey="name" tick={{ fill: COLORS.slate[1], fontSize: 10, fontWeight: 'bold' }} />
+                    <Radar
+                        name="Capability"
+                        dataKey="value"
+                        stroke={COLORS.indigo[0]}
+                        strokeWidth={4}
+                        fill={COLORS.indigo[0]}
+                        fillOpacity={0.3}
+                        dot={{ r: 4, fill: COLORS.indigo[0], strokeWidth: 2, stroke: '#fff' }}
+                    />
+                    <Tooltip content={<CustomTooltip />} />
+                </RadarChart>
+            </ResponsiveContainer>
+        </StableRenderGuard>
     </ChartCard>
 );
 
 export const LearningVelocity: React.FC<{ points: Array<{ label: string; value: number }> }> = ({ points }) => (
     <ChartCard title="Learning Velocity & Momentum">
-        <ResponsiveContainer minWidth={0} minHeight={0}>
-            <AreaChart data={points}>
-                <defs>
-                    <linearGradient id="velocityFill" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.1} />
-                        <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
-                    </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="10 10" stroke="#f1f5f9" vertical={false} />
-                <XAxis dataKey="label" hide />
-                <YAxis domain={[0, 100]} axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: 700 }} />
-                <Tooltip content={<CustomTooltip />} />
-                <Area
-                    type="monotone"
-                    dataKey="value"
-                    stroke="#3b82f6"
-                    strokeWidth={4}
-                    fill="url(#velocityFill)"
-                    animationDuration={2000}
-                />
-            </AreaChart>
-        </ResponsiveContainer>
+        <StableRenderGuard>
+            <ResponsiveContainer minWidth={0} minHeight={0}>
+                <AreaChart data={points}>
+                    <defs>
+                        <linearGradient id="velocityFill" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.1} />
+                            <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                        </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="10 10" stroke="#f1f5f9" vertical={false} />
+                    <XAxis dataKey="label" hide />
+                    <YAxis domain={[0, 100]} axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: 700 }} />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Area
+                        type="monotone"
+                        dataKey="value"
+                        stroke="#3b82f6"
+                        strokeWidth={4}
+                        fill="url(#velocityFill)"
+                        animationDuration={2000}
+                    />
+                </AreaChart>
+            </ResponsiveContainer>
+        </StableRenderGuard>
     </ChartCard>
 );
 
 export const MasteryTreemap: React.FC<{ items: Array<{ name: string; value: number }> }> = ({ items }) => (
     <ChartCard title="Structural Hierarchy (Treemap)">
-        <ResponsiveContainer minWidth={0} minHeight={0}>
-            <Treemap
-                data={items}
-                dataKey="value"
-                stroke="#fff"
-                fill="#10b981"
-            >
-                <Tooltip content={<CustomTooltip />} />
-            </Treemap>
-        </ResponsiveContainer>
+        <StableRenderGuard>
+            <ResponsiveContainer minWidth={0} minHeight={0}>
+                <Treemap
+                    data={items}
+                    dataKey="value"
+                    stroke="#fff"
+                    fill="#10b981"
+                >
+                    <Tooltip content={<CustomTooltip />} />
+                </Treemap>
+            </ResponsiveContainer>
+        </StableRenderGuard>
     </ChartCard>
 );
 
 export const MasterySunburst: React.FC<{ items: Array<{ name: string; value: number; fill?: string }> }> = ({ items }) => (
     <ChartCard title="Structural Hierarchy (Sunburst)">
-        <ResponsiveContainer minWidth={0} minHeight={0}>
-            <PieChart>
-                <Pie
-                    data={items}
-                    dataKey="value"
-                    nameKey="name"
-                    innerRadius="30%"
-                    outerRadius="95%"
-                    paddingAngle={2}
-                    animationBegin={500}
-                    cornerRadius={6}
-                >
-                    {items.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.fill || COLORS.emerald[0]} stroke="#fff" strokeWidth={2} />
-                    ))}
-                </Pie>
-                <Tooltip content={<CustomTooltip />} />
-            </PieChart>
-        </ResponsiveContainer>
+        <StableRenderGuard>
+            <ResponsiveContainer minWidth={0} minHeight={0}>
+                <PieChart>
+                    <Pie
+                        data={items}
+                        dataKey="value"
+                        nameKey="name"
+                        innerRadius="30%"
+                        outerRadius="95%"
+                        paddingAngle={2}
+                        animationBegin={500}
+                        cornerRadius={6}
+                    >
+                        {items.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.fill || COLORS.emerald[0]} stroke="#fff" strokeWidth={2} />
+                        ))}
+                    </Pie>
+                    <Tooltip content={<CustomTooltip />} />
+                </PieChart>
+            </ResponsiveContainer>
+        </StableRenderGuard>
     </ChartCard>
 );
 
 export const DifficultyBars: React.FC<{ bars: Array<{ label: string; simple: number; intermediate: number; expert: number }> }> = ({ bars }) => (
     <ChartCard title="The Expertise Bridge (Difficulty Clusters)">
-        <ResponsiveContainer minWidth={0} minHeight={0}>
-            <BarChart data={bars} barGap={12}>
-                <CartesianGrid strokeDasharray="10 10" stroke="#f1f5f9" vertical={false} />
-                <XAxis dataKey="label" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 10, fontWeight: 800 }} />
-                <YAxis domain={[0, 100]} axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: 700 }} />
-                <Tooltip content={<CustomTooltip />} />
-                <Legend iconType="circle" wrapperStyle={{ paddingTop: 40, fontSize: 10, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.1em' }} />
-                <Bar dataKey="simple" radius={[10, 10, 0, 0]} fill="url(#emeraldGradient)" name="CORE" />
-                <Bar dataKey="intermediate" radius={[10, 10, 0, 0]} fill="url(#indigoGradient)" name="APPLIED" />
-                <Bar dataKey="expert" radius={[10, 10, 0, 0]} fill="url(#roseGradient)" name="SURGICAL" />
-            </BarChart>
-        </ResponsiveContainer>
+        <StableRenderGuard>
+            <ResponsiveContainer minWidth={0} minHeight={0}>
+                <BarChart data={bars} barGap={12}>
+                    <CartesianGrid strokeDasharray="10 10" stroke="#f1f5f9" vertical={false} />
+                    <XAxis dataKey="label" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 10, fontWeight: 800 }} />
+                    <YAxis domain={[0, 100]} axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: 700 }} />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Legend iconType="circle" wrapperStyle={{ paddingTop: 40, fontSize: 10, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.1em' }} />
+                    <Bar dataKey="simple" radius={[10, 10, 0, 0]} fill="url(#emeraldGradient)" name="CORE" />
+                    <Bar dataKey="intermediate" radius={[10, 10, 0, 0]} fill="url(#indigoGradient)" name="APPLIED" />
+                    <Bar dataKey="expert" radius={[10, 10, 0, 0]} fill="url(#roseGradient)" name="SURGICAL" />
+                </BarChart>
+            </ResponsiveContainer>
+        </StableRenderGuard>
     </ChartCard>
 );
 
@@ -222,79 +233,85 @@ export const SnapshotDonut: React.FC<{ correct: number; incorrect: number; skipp
     ];
     return (
         <ChartCard title="Operational Snapshot">
-            <ResponsiveContainer minWidth={0} minHeight={0}>
-                <PieChart>
-                    <Pie
-                        data={data}
-                        dataKey="value"
-                        nameKey="name"
-                        innerRadius="65%"
-                        outerRadius="90%"
-                        paddingAngle={8}
-                        animationBegin={500}
-                    >
-                        {data.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={entry.color} />
-                        ))}
-                    </Pie>
-                    <text
-                        x="50%"
-                        y="50%"
-                        textAnchor="middle"
-                        dominantBaseline="middle"
-                        className="fill-slate-900 font-black text-2xl"
-                    >
-                        {Math.round((correct / (correct + incorrect + skipped || 1)) * 100)}%
-                    </text>
-                    <text
-                        x="50%"
-                        y="58%"
-                        textAnchor="middle"
-                        dominantBaseline="middle"
-                        className="fill-slate-400 font-bold text-[10px] uppercase tracking-widest"
-                    >
-                        Mastery
-                    </text>
-                    <Tooltip content={<CustomTooltip />} />
-                    <Legend verticalAlign="middle" align="right" layout="vertical" iconType="circle" wrapperStyle={{ paddingLeft: 40, fontSize: 11, fontWeight: 900, textTransform: 'uppercase' }} />
-                </PieChart>
-            </ResponsiveContainer>
+            <StableRenderGuard>
+                <ResponsiveContainer minWidth={0} minHeight={0}>
+                    <PieChart>
+                        <Pie
+                            data={data}
+                            dataKey="value"
+                            nameKey="name"
+                            innerRadius="65%"
+                            outerRadius="90%"
+                            paddingAngle={8}
+                            animationBegin={500}
+                        >
+                            {data.map((entry, index) => (
+                                <Cell key={`cell-${index}`} fill={entry.color} />
+                            ))}
+                        </Pie>
+                        <text
+                            x="50%"
+                            y="50%"
+                            textAnchor="middle"
+                            dominantBaseline="middle"
+                            className="fill-slate-900 font-black text-2xl"
+                        >
+                            {Math.round((correct / (correct + incorrect + skipped || 1)) * 100)}%
+                        </text>
+                        <text
+                            x="50%"
+                            y="58%"
+                            textAnchor="middle"
+                            dominantBaseline="middle"
+                            className="fill-slate-400 font-bold text-[10px] uppercase tracking-widest"
+                        >
+                            Mastery
+                        </text>
+                        <Tooltip content={<CustomTooltip />} />
+                        <Legend verticalAlign="middle" align="right" layout="vertical" iconType="circle" wrapperStyle={{ paddingLeft: 40, fontSize: 11, fontWeight: 900, textTransform: 'uppercase' }} />
+                    </PieChart>
+                </ResponsiveContainer>
+            </StableRenderGuard>
         </ChartCard>
     );
 };
 
 export const RetentionFunnel: React.FC<{ stages: Array<{ label: string; value: number }> }> = ({ stages }) => (
     <ChartCard title="Survival Attrition (Retention Funnel)">
-        <ResponsiveContainer minWidth={0} minHeight={0}>
-            <FunnelChart>
-                <Tooltip content={<CustomTooltip />} />
-                <Funnel dataKey="value" data={stages} isAnimationActive stroke="none">
-                    <Cell fill="url(#indigoGradient)" fillOpacity={1} />
-                    <Cell fill="url(#indigoGradient)" fillOpacity={0.8} />
-                    <Cell fill="url(#indigoGradient)" fillOpacity={0.6} />
-                    <LabelList position="center" fill="#fff" stroke="none" dataKey="label" style={{ fontWeight: 900, fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.1em' }} />
-                </Funnel>
-            </FunnelChart>
-        </ResponsiveContainer>
+        <StableRenderGuard>
+            <ResponsiveContainer minWidth={0} minHeight={0}>
+                <FunnelChart>
+                    <Tooltip content={<CustomTooltip />} />
+                    <Funnel dataKey="value" data={stages} isAnimationActive stroke="none">
+                        <Cell fill="url(#indigoGradient)" fillOpacity={1} />
+                        <Cell fill="url(#indigoGradient)" fillOpacity={0.8} />
+                        <Cell fill="url(#indigoGradient)" fillOpacity={0.6} />
+                        <LabelList position="center" fill="#fff" stroke="none" dataKey="label" style={{ fontWeight: 900, fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.1em' }} />
+                    </Funnel>
+                </FunnelChart>
+            </ResponsiveContainer>
+        </StableRenderGuard>
     </ChartCard>
 );
 
 export const FluencyScatter: React.FC<{ points: Array<{ x: number; y: number; label: string }> }> = ({ points }) => (
     <ChartCard title="Cognitive Fluency (Speed vs Accuracy)">
-        <ResponsiveContainer minWidth={0} minHeight={0}>
-            <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                <XAxis type="number" dataKey="x" name="Reaction Time" unit="s" label={{ value: 'Response Time (s)', position: 'insideBottom', offset: -10, fontSize: 10, fontWeight: 800 }} />
-                <YAxis type="number" dataKey="y" name="Precision" unit="%" domain={[0, 100]} label={{ value: 'Accuracy (%)', angle: -90, position: 'insideLeft', fontSize: 10, fontWeight: 800 }} />
-                <Tooltip content={<CustomTooltip />} />
-                <ReferenceLine x={4} stroke="#f43f5e" strokeDasharray="10 10" label={{ value: 'Lag Threshold', position: 'top', fill: '#f43f5e', fontSize: 8, fontWeight: 900 }} />
-                <ReferenceLine y={70} stroke="#10b981" strokeDasharray="10 10" label={{ value: 'Mastery Line', position: 'right', fill: '#10b981', fontSize: 8, fontWeight: 900 }} />
-                <Scatter name="Tasks" data={points} fill="#6366f1">
-                    {points.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.y > 70 ? '#10b981' : '#6366f1'} />
-                    ))}
-                </Scatter>
-            </ScatterChart>
-        </ResponsiveContainer>
+        <StableRenderGuard>
+            <ResponsiveContainer minWidth={0} minHeight={0}>
+                <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                    <XAxis type="number" dataKey="x" name="Reaction Time" unit="s" label={{ value: 'Response Time (s)', position: 'insideBottom', offset: -10, fontSize: 10, fontWeight: 800 }} />
+                    <YAxis type="number" dataKey="y" name="Precision" unit="%" domain={[0, 100]} label={{ value: 'Accuracy (%)', angle: -90, position: 'insideLeft', fontSize: 10, fontWeight: 800 }} />
+                    <Tooltip content={<CustomTooltip />} />
+                    <ReferenceLine x={4} stroke="#f43f5e" strokeDasharray="10 10" label={{ value: 'Lag Threshold', position: 'top', fill: '#f43f5e', fontSize: 8, fontWeight: 900 }} />
+                    <ReferenceLine y={70} stroke="#10b981" strokeDasharray="10 10" label={{ value: 'Mastery Line', position: 'right', fill: '#10b981', fontSize: 8, fontWeight: 900 }} />
+                    <Scatter name="Tasks" data={points} fill="#6366f1">
+                        {points.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.y > 70 ? '#10b981' : '#6366f1'} />
+                        ))}
+                    </Scatter>
+                </ScatterChart>
+            </ResponsiveContainer>
+        </StableRenderGuard>
     </ChartCard>
 );

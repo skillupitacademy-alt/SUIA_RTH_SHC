@@ -2,7 +2,7 @@
  * Standard security headers for all Quiz Platform apps.
  * JS build-friendly version of security-headers.ts (keeps values in sync manually).
  */
-export const standardSecurityHeaders = [
+export const baseSecurityHeaders = [
   { key: 'X-DNS-Prefetch-Control', value: 'on' },
   { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' },
   { key: 'X-Frame-Options', value: 'DENY' },
@@ -10,9 +10,13 @@ export const standardSecurityHeaders = [
   { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
   { key: 'X-XSS-Protection', value: '0' },
   { key: 'Cross-Origin-Opener-Policy', value: 'same-origin' },
-  { key: 'Cross-Origin-Resource-Policy', value: 'same-origin' },
   { key: 'Cross-Origin-Embedder-Policy', value: 'require-corp' },
   { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=(), interest-cohort=(), payment=(), usb=()' },
+];
+
+export const standardSecurityHeaders = [
+  ...baseSecurityHeaders,
+  { key: 'Cross-Origin-Resource-Policy', value: 'same-origin' },
 ];
 
 /**

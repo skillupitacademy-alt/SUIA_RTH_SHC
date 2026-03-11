@@ -4,6 +4,7 @@ import React from 'react';
 import { RadialBarChart, RadialBar, ResponsiveContainer, PolarAngleAxis } from "recharts";
 import { Calendar, Activity } from "lucide-react";
 import { MethodologyDisclaimer } from './MethodologyDisclaimer';
+import { StableRenderGuard } from './recharts/StableRenderGuard';
 
 type RadialBarFixedProps = React.ComponentProps<typeof RadialBar> & {
     innerRadius?: number | string;
@@ -88,50 +89,52 @@ export const RadialKPI = React.memo(({ data, suppressAnimation }: RadialKPIProps
                 </div>
 
                 <div className="w-full h-full flex items-center justify-center relative">
-                    <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
-                        <RadialBarChart
-                            key={mounted ? 'mounted' : 'unmounted'}
-                            cx="50%"
-                            cy="50%"
-                            innerRadius="30%"
-                            outerRadius="80%"
-                            startAngle={90}
-                            endAngle={450}
-                            barSize={10}
-                            data={radialData}
-                        >
-                            <defs>
-                                <linearGradient id="cyanLinear" x1="0" y1="0" x2="1" y2="1">
-                                    <stop offset="0%" stopColor="#06b6d4" />
-                                    <stop offset="100%" stopColor="#22d3ee" />
-                                </linearGradient>
-                                <linearGradient id="emeraldLinear" x1="0" y1="0" x2="1" y2="1">
-                                    <stop offset="0%" stopColor="#10b981" />
-                                    <stop offset="100%" stopColor="#34d399" />
-                                </linearGradient>
-                                <linearGradient id="amberLinear" x1="0" y1="0" x2="1" y2="1">
-                                    <stop offset="0%" stopColor="#f59e0b" />
-                                    <stop offset="100%" stopColor="#fbbf24" />
-                                </linearGradient>
-                                <linearGradient id="violetLinear" x1="0" y1="0" x2="1" y2="1">
-                                    <stop offset="0%" stopColor="#8b5cf6" />
-                                    <stop offset="100%" stopColor="#a78bfa" />
-                                </linearGradient>
-                                <filter id="glow_RKPI" x="-50%" y="-50%" width="200%" height="200%">
-                                    <feGaussianBlur stdDeviation="3.5" result="blur" />
-                                    <feMerge>
-                                        <feMergeNode in="blur" />
-                                        <feMergeNode in="SourceGraphic" />
-                                    </feMerge>
-                                </filter>
-                            </defs>
-                            <PolarAngleAxis type="number" domain={[0, 100]} tick={false} />
-                            <RadialBarFixed dataKey="time" innerRadius="35%" outerRadius="35%" fill="url(#violetLinear)" cornerRadius={20} background={{ fill: 'rgba(255,255,255,0.02)' }} filter="url(#glow_RKPI)" isAnimationActive={!suppressAnimation} />
-                            <RadialBarFixed dataKey="rank" innerRadius="50%" outerRadius="50%" fill="url(#amberLinear)" cornerRadius={20} background={{ fill: 'rgba(255,255,255,0.02)' }} filter="url(#glow_RKPI)" isAnimationActive={!suppressAnimation} />
-                            <RadialBarFixed dataKey="mastery" innerRadius="65%" outerRadius="65%" fill="url(#emeraldLinear)" cornerRadius={20} background={{ fill: 'rgba(255,255,255,0.02)' }} filter="url(#glow_RKPI)" isAnimationActive={!suppressAnimation} />
-                            <RadialBarFixed dataKey="score" innerRadius="80%" outerRadius="80%" fill="url(#cyanLinear)" cornerRadius={20} background={{ fill: 'rgba(255,255,255,0.02)' }} filter="url(#glow_RKPI)" isAnimationActive={!suppressAnimation} />
-                        </RadialBarChart>
-                    </ResponsiveContainer>
+                    <StableRenderGuard>
+                        <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
+                            <RadialBarChart
+                                key={mounted ? 'mounted' : 'unmounted'}
+                                cx="50%"
+                                cy="50%"
+                                innerRadius="30%"
+                                outerRadius="80%"
+                                startAngle={90}
+                                endAngle={450}
+                                barSize={10}
+                                data={radialData}
+                            >
+                                <defs>
+                                    <linearGradient id="cyanLinear" x1="0" y1="0" x2="1" y2="1">
+                                        <stop offset="0%" stopColor="#06b6d4" />
+                                        <stop offset="100%" stopColor="#22d3ee" />
+                                    </linearGradient>
+                                    <linearGradient id="emeraldLinear" x1="0" y1="0" x2="1" y2="1">
+                                        <stop offset="0%" stopColor="#10b981" />
+                                        <stop offset="100%" stopColor="#34d399" />
+                                    </linearGradient>
+                                    <linearGradient id="amberLinear" x1="0" y1="0" x2="1" y2="1">
+                                        <stop offset="0%" stopColor="#f59e0b" />
+                                        <stop offset="100%" stopColor="#fbbf24" />
+                                    </linearGradient>
+                                    <linearGradient id="violetLinear" x1="0" y1="0" x2="1" y2="1">
+                                        <stop offset="0%" stopColor="#8b5cf6" />
+                                        <stop offset="100%" stopColor="#a78bfa" />
+                                    </linearGradient>
+                                    <filter id="glow_RKPI" x="-50%" y="-50%" width="200%" height="200%">
+                                        <feGaussianBlur stdDeviation="3.5" result="blur" />
+                                        <feMerge>
+                                            <feMergeNode in="blur" />
+                                            <feMergeNode in="SourceGraphic" />
+                                        </feMerge>
+                                    </filter>
+                                </defs>
+                                <PolarAngleAxis type="number" domain={[0, 100]} tick={false} />
+                                <RadialBarFixed dataKey="time" innerRadius="35%" outerRadius="35%" fill="url(#violetLinear)" cornerRadius={20} background={{ fill: 'rgba(255,255,255,0.02)' }} filter="url(#glow_RKPI)" isAnimationActive={!suppressAnimation} />
+                                <RadialBarFixed dataKey="rank" innerRadius="50%" outerRadius="50%" fill="url(#amberLinear)" cornerRadius={20} background={{ fill: 'rgba(255,255,255,0.02)' }} filter="url(#glow_RKPI)" isAnimationActive={!suppressAnimation} />
+                                <RadialBarFixed dataKey="mastery" innerRadius="65%" outerRadius="65%" fill="url(#emeraldLinear)" cornerRadius={20} background={{ fill: 'rgba(255,255,255,0.02)' }} filter="url(#glow_RKPI)" isAnimationActive={!suppressAnimation} />
+                                <RadialBarFixed dataKey="score" innerRadius="80%" outerRadius="80%" fill="url(#cyanLinear)" cornerRadius={20} background={{ fill: 'rgba(255,255,255,0.02)' }} filter="url(#glow_RKPI)" isAnimationActive={!suppressAnimation} />
+                            </RadialBarChart>
+                        </ResponsiveContainer>
+                    </StableRenderGuard>
                 </div>
             </div>
 

@@ -4,6 +4,7 @@ import React from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { Clock } from "lucide-react";
 import { MethodologyDisclaimer } from './MethodologyDisclaimer';
+import { StableRenderGuard } from './recharts/StableRenderGuard';
 
 export interface TimeSpentDonutProps {
     data: {
@@ -70,54 +71,56 @@ export const TimeSpentDonut = React.memo(({ data, suppressAnimation }: TimeSpent
             </div>
 
             <div className="relative flex-grow min-h-[300px]">
-                <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
-                    <PieChart key={mounted ? 'mounted' : 'unmounted'}>
-                        <defs>
-                            <filter id="timeGlow_TSD" x="-50%" y="-50%" width="200%" height="200%">
-                                <feGaussianBlur stdDeviation="5" result="blur" />
-                                <feMerge>
-                                    <feMergeNode in="blur" />
-                                    <feMergeNode in="SourceGraphic" />
-                                </feMerge>
-                            </filter>
-                        </defs>
-                        <Pie
-                            data={breakdown}
-                            cx="50%"
-                            cy="50%"
-                            innerRadius={75}
-                            outerRadius={105}
-                            paddingAngle={4}
-                            dataKey="value"
-                            stroke="none"
-                            isAnimationActive={!suppressAnimation}
-                            animationDuration={suppressAnimation ? 0 : 600}
-                            cornerRadius={4}
-                        >
-                            {breakdown.map((entry, index) => (
-                                <Cell
-                                    key={`cell-${index}`}
-                                    fill={entry.color}
-                                    filter="url(#timeGlow_TSD)"
-                                    className="outline-none"
-                                />
-                            ))}
-                        </Pie>
-                        <Tooltip
-                            content={({ active, payload }) => {
-                                if (active && payload && payload.length) {
-                                    return (
-                                        <div className="bg-[#0f172a]/95 backdrop-blur-xl border border-white/10 p-4 rounded-2xl shadow-2xl">
-                                            <p className="text-[12px] font-black text-indigo-400 uppercase tracking-widest mb-1">{payload[0].payload.name}</p>
-                                            <p className="text-2xl font-black text-white">{formatTotalTime(Number(payload[0].value))}</p>
-                                        </div>
-                                    );
-                                }
-                                return null;
-                            }}
-                        />
-                    </PieChart>
-                </ResponsiveContainer>
+                <StableRenderGuard>
+                    <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
+                        <PieChart key={mounted ? 'mounted' : 'unmounted'}>
+                            <defs>
+                                <filter id="timeGlow_TSD" x="-50%" y="-50%" width="200%" height="200%">
+                                    <feGaussianBlur stdDeviation="5" result="blur" />
+                                    <feMerge>
+                                        <feMergeNode in="blur" />
+                                        <feMergeNode in="SourceGraphic" />
+                                    </feMerge>
+                                </filter>
+                            </defs>
+                            <Pie
+                                data={breakdown}
+                                cx="50%"
+                                cy="50%"
+                                innerRadius={75}
+                                outerRadius={105}
+                                paddingAngle={4}
+                                dataKey="value"
+                                stroke="none"
+                                isAnimationActive={!suppressAnimation}
+                                animationDuration={suppressAnimation ? 0 : 600}
+                                cornerRadius={4}
+                            >
+                                {breakdown.map((entry, index) => (
+                                    <Cell
+                                        key={`cell-${index}`}
+                                        fill={entry.color}
+                                        filter="url(#timeGlow_TSD)"
+                                        className="outline-none"
+                                    />
+                                ))}
+                            </Pie>
+                            <Tooltip
+                                content={({ active, payload }) => {
+                                    if (active && payload && payload.length) {
+                                        return (
+                                            <div className="bg-[#0f172a]/95 backdrop-blur-xl border border-white/10 p-4 rounded-2xl shadow-2xl">
+                                                <p className="text-[12px] font-black text-indigo-400 uppercase tracking-widest mb-1">{payload[0].payload.name}</p>
+                                                <p className="text-2xl font-black text-white">{formatTotalTime(Number(payload[0].value))}</p>
+                                            </div>
+                                        );
+                                    }
+                                    return null;
+                                }}
+                            />
+                        </PieChart>
+                    </ResponsiveContainer>
+                </StableRenderGuard>
 
                 <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-10">
                     <div className="flex flex-col items-center">

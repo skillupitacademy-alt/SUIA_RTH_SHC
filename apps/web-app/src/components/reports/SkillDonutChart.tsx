@@ -4,6 +4,7 @@ import React from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { MoreHorizontal } from "lucide-react";
 import { MethodologyDisclaimer } from './MethodologyDisclaimer';
+import { StableRenderGuard } from './recharts/StableRenderGuard';
 
 export interface SkillDonutChartProps {
     data: { name: string; accuracy: number; attempts: number }[];
@@ -31,60 +32,62 @@ export const SkillDonutChart = React.memo(({ data, suppressAnimation }: SkillDon
             </div>
 
             <div className="relative flex-grow min-h-[300px]">
-                <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
-                    <PieChart key={mounted ? 'mounted' : 'unmounted'}>
-                        <defs>
-                            <filter id="skillGlow_SDC" x="-50%" y="-50%" width="200%" height="200%">
-                                <feGaussianBlur stdDeviation="5" result="blur" />
-                                <feMerge>
-                                    <feMergeNode in="blur" />
-                                    <feMergeNode in="SourceGraphic" />
-                                </feMerge>
-                            </filter>
-                        </defs>
-                        <Pie
-                            data={data}
-                            cx="50%"
-                            cy="50%"
-                            innerRadius={75}
-                            outerRadius={105}
-                            paddingAngle={4}
-                            dataKey="accuracy"
-                            stroke="none"
-                            isAnimationActive={!suppressAnimation}
-                            animationDuration={suppressAnimation ? 0 : 600}
-                            cornerRadius={4}
-                        >
-                            {data.map((entry, index) => {
-                                const hue = (index * 137.5) % 360;
-                                return (
-                                    <Cell
-                                        key={`cell-${index}`}
-                                        fill={`hsl(${hue}, 70%, 50%)`}
-                                        filter="url(#skillGlow_SDC)"
-                                        className="outline-none"
-                                    />
-                                );
-                            })}
-                        </Pie>
-                        <Tooltip
-                            content={({ active, payload }) => {
-                                if (active && payload && payload.length) {
+                <StableRenderGuard>
+                    <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
+                        <PieChart key={mounted ? 'mounted' : 'unmounted'}>
+                            <defs>
+                                <filter id="skillGlow_SDC" x="-50%" y="-50%" width="200%" height="200%">
+                                    <feGaussianBlur stdDeviation="5" result="blur" />
+                                    <feMerge>
+                                        <feMergeNode in="blur" />
+                                        <feMergeNode in="SourceGraphic" />
+                                    </feMerge>
+                                </filter>
+                            </defs>
+                            <Pie
+                                data={data}
+                                cx="50%"
+                                cy="50%"
+                                innerRadius={75}
+                                outerRadius={105}
+                                paddingAngle={4}
+                                dataKey="accuracy"
+                                stroke="none"
+                                isAnimationActive={!suppressAnimation}
+                                animationDuration={suppressAnimation ? 0 : 600}
+                                cornerRadius={4}
+                            >
+                                {data.map((entry, index) => {
+                                    const hue = (index * 137.5) % 360;
                                     return (
-                                        <div className="bg-[#0f172a]/95 backdrop-blur-xl border border-white/10 p-4 rounded-2xl shadow-2xl">
-                                            <p className="text-[12px] font-black text-indigo-400 uppercase tracking-widest mb-1">{payload[0].name}</p>
-                                            <p className="text-2xl font-black text-white">{payload[0].value}%</p>
-                                            <p className="text-[10px] font-bold text-slate-500 uppercase mt-1 tracking-widest">
-                                                {payload[0].payload.attempts} Vectors Tested
-                                            </p>
-                                        </div>
+                                        <Cell
+                                            key={`cell-${index}`}
+                                            fill={`hsl(${hue}, 70%, 50%)`}
+                                            filter="url(#skillGlow_SDC)"
+                                            className="outline-none"
+                                        />
                                     );
-                                }
-                                return null;
-                            }}
-                        />
-                    </PieChart>
-                </ResponsiveContainer>
+                                })}
+                            </Pie>
+                            <Tooltip
+                                content={({ active, payload }) => {
+                                    if (active && payload && payload.length) {
+                                        return (
+                                            <div className="bg-[#0f172a]/95 backdrop-blur-xl border border-white/10 p-4 rounded-2xl shadow-2xl">
+                                                <p className="text-[12px] font-black text-indigo-400 uppercase tracking-widest mb-1">{payload[0].name}</p>
+                                                <p className="text-2xl font-black text-white">{payload[0].value}%</p>
+                                                <p className="text-[10px] font-bold text-slate-500 uppercase mt-1 tracking-widest">
+                                                    {payload[0].payload.attempts} Vectors Tested
+                                                </p>
+                                            </div>
+                                        );
+                                    }
+                                    return null;
+                                }}
+                            />
+                        </PieChart>
+                    </ResponsiveContainer>
+                </StableRenderGuard>
 
                 <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-10">
                     <div className="flex flex-col items-center">
