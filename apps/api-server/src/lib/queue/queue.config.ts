@@ -20,6 +20,17 @@ function createRedisClient(): IORedis {
     throw new Error('QUEUE_ENABLED=true but REDIS_URL is not set');
   }
 
+  try {
+    const url = new URL(redisUrl);
+    logger.info({ 
+      protocol: url.protocol, 
+      host: url.hostname, 
+      port: url.port 
+    }, '[RedisConfig] Initializing ioredis client');
+  } catch {
+    logger.warn('[RedisConfig] Failed to parse REDIS_URL for diagnostics');
+  }
+
   const client = new IORedis(redisUrl, {
     maxRetriesPerRequest: null, // Required by BullMQ
     enableReadyCheck: false,

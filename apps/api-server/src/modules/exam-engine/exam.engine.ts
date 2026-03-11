@@ -366,14 +366,8 @@ export class ExamEngine {
     let jobId: string | undefined;
 
     await db.transaction(async (tx) => {
-        const txQuery = (tx as { query?: { exams?: { findFirst?: typeof db.query.exams.findFirst } } }).query;
-        const txUpdate = (tx as { update?: typeof db.update }).update;
-        const txInsert = (tx as { insert?: typeof db.insert }).insert;
-        if (txQuery?.exams?.findFirst === undefined || typeof txUpdate !== 'function') {
-            return;
-        }
         // Double check status inside transaction for safety
-        const txExam = await txQuery.exams.findFirst({
+        const txExam = await tx.query.exams.findFirst({
             where: eq(exams.id, targetExamId),
             columns: { status: true }
         });
@@ -385,7 +379,7 @@ export class ExamEngine {
                 const liveStatePrefix = `exam-state:${targetExamId}:q:`;
                 
                 const examWithQuestions = await withTimeout(
-                    txQuery.exams.findFirst({
+                    tx.query.exams.findFirst({
                         where: eq(exams.id, targetExamId),
                         with: {
                             examQuestions: {
@@ -397,7 +391,7 @@ export class ExamEngine {
                     }),
                     STANDARD_QUERY_TIMEOUT,
                     'ExamEngine.completeExam.fetchQuestions'
-                );
+                ) as unknown as { examQuestions: { id: string; questionId: string; responseMetadata: unknown; question: { type: string; correctAnswer: string } }[] } | null;
 
                 const examQuestionsList = examWithQuestions?.examQuestions ?? [];
                 if (examQuestionsList.length > 0) {
@@ -411,17 +405,17 @@ export class ExamEngine {
                             const existingMetadata = (eqRecord.responseMetadata as Record<string, unknown> | null) ?? {};
                             const timeSpentSeconds = existingMetadata.timeSpentSeconds ?? Math.max(0, Math.floor((now.getTime() - lastTime) / 1000));
 
-                            await txUpdate(examQuestions)
+                            await tx.update(examQuestions)
                               .set({
                                 userAnswer: cachedAnswer, 
-                                responseMetadata: { ...existingMetadata, timeSpentSeconds, firstAnsweredAt: existingMetadata.firstAnsweredAt ?? now.toISOString() } 
+                                responseMetadata: { ...existingMetadata, timeSpentSeconds, firstAnsweredAt: ((existingMetadata as Record<string, unknown>)?.firstAnsweredAt as string) ?? now.toISOString() } 
                               })
                               .where(eq(examQuestions.id, eqRecord.id));
                         }
                     }
                 }
                 
-                await txUpdate(exams)
+                await tx.update(exams)
                   .set({ lastAnsweredAt: new Date() })
                   .where(eq(exams.id, targetExamId));
 
@@ -431,9 +425,7 @@ export class ExamEngine {
             }
 
             if (idempotencyKey !== undefined && idempotencyKey !== null && idempotencyKey !== '') {
-                if (typeof txInsert === 'function') {
-                    await txInsert(idempotencyKeys).values({ userId, key: `submit:${idempotencyKey}`, examId: targetExamId }).onConflictDoNothing();
-                }
+                await tx.insert(idempotencyKeys).values({ userId, key: `submit:${idempotencyKey}`, examId: targetExamId }).onConflictDoNothing();
             }
             
         }
