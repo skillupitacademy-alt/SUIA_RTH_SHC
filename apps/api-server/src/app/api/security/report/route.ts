@@ -68,7 +68,7 @@ async function postHandler(req: NextRequest) {
         recordCounter('security.csp_report.count', 1, { outcome: 'success' });
         recordTimer('security.csp_report.duration', Date.now() - start, { outcome: 'success' });
         
-        return ApiResponse.success(null, 204); 
+        return ApiResponse.noContent(); 
     } catch (err: unknown) {
         recordCounter('security.csp_report.count', 1, { outcome: 'failure' });
         logger.error({ err, route: '/api/security/report', method: 'POST' }, '[CSP-AUDIT] Error processing report');

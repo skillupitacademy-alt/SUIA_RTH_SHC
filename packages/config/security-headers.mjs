@@ -58,6 +58,7 @@ export function getCSPHeader(options) {
     "img-src": imgSrc,
     "font-src": fontSrc,
     "connect-src": connectSrc,
+    "frame-src": connectSrc, // Support report download iframes
     "frame-ancestors": ["'none'"],
     "base-uri": ["'self'"],
     "form-action": ["'self'"],
