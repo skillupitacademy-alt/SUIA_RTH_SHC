@@ -17,6 +17,9 @@ export class QueryTimeoutError extends Error {
 
 /**
  * Wraps a database query promise with a timeout.
+ * @param queryPromise - The Drizzle query promise
+ * @param timeoutMs - Timeout in milliseconds
+ * @param queryDescription - Context for error logging (e.g., 'ExamRepository.findById')
  */
 export async function withTimeout<T>(
   queryPromise: Promise<T>,
@@ -27,15 +30,23 @@ export async function withTimeout<T>(
 
   const timeoutPromise = new Promise<never>((_, reject) => {
     timeoutId = setTimeout(() => {
+      const error = new QueryTimeoutError(queryDescription, timeoutMs);
       console.warn(`[DB Timeout] ${queryDescription} exceeded ${timeoutMs}ms`);
-      reject(new QueryTimeoutError(queryDescription, timeoutMs));
+      reject(error);
     }, timeoutMs);
   });
 
   try {
+    // We race the query against the timeout
     const result = await Promise.race([queryPromise, timeoutPromise]);
     return result;
+  } catch (err) {
+    if (err instanceof QueryTimeoutError) {
+       throw err;
+    }
+    // Re-wrap or just re-throw original error
+    throw err;
   } finally {
-    clearTimeout(timeoutId!);
+    if (timeoutId!) clearTimeout(timeoutId);
   }
 }
