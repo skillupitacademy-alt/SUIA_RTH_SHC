@@ -1,14 +1,13 @@
 import { db, exams } from "@quiz/db";
 import { METRICS } from "@quiz/observability";
 import { eq } from "drizzle-orm";
-import { type NextRequest, NextResponse } from "next/server";
+import { type NextRequest } from "next/server";
 
 export const dynamic = 'force-dynamic';
 
 import { badRequest, forbidden, notFound, unauthorized } from "@/lib/api-error";
 import { ApiResponse } from "@/lib/api-response";
 import { recordCounter, recordTimer } from "@/lib/metrics";
-import { getDownloadUrl } from "@/lib/storage/get-download-url";
 import { withLogging } from "@/lib/withLogging";
 import { TokenService } from "@/modules/auth/token.service";
 import { container } from '@/modules/core/container';
@@ -72,19 +71,30 @@ async function getHandler(req: NextRequest) {
       throw notFound("Report ready file", attemptId);
     }
 
-    // 4. Generate a temporary read-only URL for the private blob
-    const downloadUrl = await getDownloadUrl(report.fileRef);
-    if (downloadUrl === null || downloadUrl === undefined || downloadUrl === "") {
-      recordCounter(METRICS.REPORTS.DOWNLOAD, 1, { outcome: "failure", reason: "download_url_failed" });
-      return ApiResponse.error(new Error("Download unavailable"), 502);
+    // 4. Fetch the private blob content and stream it
+    const fileRef = report.fileRef;
+    const response = await fetch(fileRef, {
+      headers: {
+        'Authorization': `Bearer ${process.env.BLOB_READ_WRITE_TOKEN}`
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch report from storage: ${response.statusText}`);
     }
 
     const durationMs = Date.now() - startTime;
     recordCounter(METRICS.REPORTS.DOWNLOAD, 1, { outcome: "success" });
     recordTimer(METRICS.REPORTS.DOWNLOAD + '.duration', durationMs, { outcome: "success" });
 
-    return NextResponse.redirect(downloadUrl, {
-      headers: { 'X-Duration-Ms': durationMs.toString() }
+    // Return the content as a direct file download
+    return new Response(response.body, {
+      headers: {
+        'Content-Type': 'application/pdf',
+        'Content-Disposition': `attachment; filename="Insight-Report-${attemptId}.pdf"`,
+        'Cache-Control': 'private, max-age=3600',
+        'X-Duration-Ms': durationMs.toString()
+      }
     });
   } catch (error: unknown) {
     recordCounter(METRICS.REPORTS.DOWNLOAD, 1, { outcome: "failure" });
