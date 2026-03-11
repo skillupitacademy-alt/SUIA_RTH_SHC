@@ -14,5 +14,12 @@ export function corsMiddleware(_request: NextRequest, response: NextResponse) {
   response.headers.set('Access-Control-Allow-Credentials', 'true');
   response.headers.set('Access-Control-Max-Age', '86400');
 
+  // Pillar 2: Resolve NotSameOrigin for telemetry (Vercel + browser security)
+  // Catch all variations: /api/security/report, /api/v1/security/report/
+  const isSecurityReport = _request.nextUrl.pathname.toLowerCase().includes('security/report');
+  if (isSecurityReport) {
+    response.headers.set('Cross-Origin-Resource-Policy', 'cross-origin');
+  }
+
   return response;
 }

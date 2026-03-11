@@ -12,10 +12,16 @@ import { _verifyAdmin } from './modules/auth/rbac.service';
 import { TokenService } from './modules/auth/token.service';
 
 export async function proxy(request: NextRequest) {
-  // 1. Ensure a requestId and sessionId exist and are forwarded downstream
   const requestId = request.headers.get('x-request-id') ?? crypto.randomUUID();
   const sessionId = request.headers.get('x-session-id') ?? 'anon-' + crypto.randomUUID().slice(0, 8);
+  const pathname = request.nextUrl.pathname;
   
+  // DIAGNOSTIC LOG (User visible in Vercel)
+  if (pathname.includes('security/report')) {
+    const authHeader = request.headers.get('authorization');
+    console.log(`[PROXY] Intercepted: ${pathname} | Method: ${request.method} | User: ${authHeader !== null && authHeader !== '' ? 'Yes' : 'No'}`);
+  }
+
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set('x-request-id', requestId);
   requestHeaders.set('x-session-id', sessionId);
@@ -38,7 +44,7 @@ export async function proxy(request: NextRequest) {
                       request.nextUrl.pathname.startsWith('/api/admin/auth');
   
   if (!isAuthRoute) {
-    const isSecurityReport = request.nextUrl.pathname === '/api/security/report';
+    const isSecurityReport = pathname.toLowerCase().includes('security/report');
     if (!isSecurityReport) {
       const csrfResponse = await csrfProtection(request);
       if (csrfResponse !== null && csrfResponse !== undefined) {
@@ -48,8 +54,8 @@ export async function proxy(request: NextRequest) {
   }
 
   // 5. Auth Protection
-  const isSecurityReport = request.nextUrl.pathname === '/api/security/report';
-  const isPublicRoute = isAuthRoute || isSecurityReport || request.nextUrl.pathname === '/api/status';
+  const isSecurityReport = pathname.toLowerCase().includes('security/report');
+  const isPublicRoute = isAuthRoute || isSecurityReport || pathname.includes('/api/status');
 
   if (!isPublicRoute) {
     const pathname = request.nextUrl.pathname;
