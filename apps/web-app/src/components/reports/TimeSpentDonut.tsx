@@ -70,7 +70,7 @@ export const TimeSpentDonut = React.memo(({ data, suppressAnimation }: TimeSpent
             </div>
 
             <div className="relative flex-grow min-h-[300px]">
-                <ResponsiveContainer width="100%" height="100%">
+                <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                     <PieChart key={mounted ? 'mounted' : 'unmounted'}>
                         <defs>
                             <filter id="timeGlow_TSD" x="-50%" y="-50%" width="200%" height="200%">

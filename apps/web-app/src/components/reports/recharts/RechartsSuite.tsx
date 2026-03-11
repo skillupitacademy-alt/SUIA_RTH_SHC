@@ -112,7 +112,7 @@ export const ChartCard: React.FC<{ title: string; children: React.ReactNode }> =
 
 export const CompetencyRadar: React.FC<{ skills: Array<{ name: string; value: number }> }> = ({ skills }) => (
     <ChartCard title="Skill Capability Matrix (Radar)">
-        <ResponsiveContainer>
+        <ResponsiveContainer minWidth={0} minHeight={0}>
             <RadarChart cx="50%" cy="50%" outerRadius="80%" data={skills}>
                 <PolarGrid strokeOpacity={0.1} />
                 <PolarAngleAxis dataKey="name" tick={{ fill: COLORS.slate[1], fontSize: 10, fontWeight: 'bold' }} />
@@ -133,7 +133,7 @@ export const CompetencyRadar: React.FC<{ skills: Array<{ name: string; value: nu
 
 export const LearningVelocity: React.FC<{ points: Array<{ label: string; value: number }> }> = ({ points }) => (
     <ChartCard title="Learning Velocity & Momentum">
-        <ResponsiveContainer>
+        <ResponsiveContainer minWidth={0} minHeight={0}>
             <AreaChart data={points}>
                 <defs>
                     <linearGradient id="velocityFill" x1="0" y1="0" x2="0" y2="1">
@@ -160,7 +160,7 @@ export const LearningVelocity: React.FC<{ points: Array<{ label: string; value: 
 
 export const MasteryTreemap: React.FC<{ items: Array<{ name: string; value: number }> }> = ({ items }) => (
     <ChartCard title="Structural Hierarchy (Treemap)">
-        <ResponsiveContainer>
+        <ResponsiveContainer minWidth={0} minHeight={0}>
             <Treemap
                 data={items}
                 dataKey="value"
@@ -175,7 +175,7 @@ export const MasteryTreemap: React.FC<{ items: Array<{ name: string; value: numb
 
 export const MasterySunburst: React.FC<{ items: Array<{ name: string; value: number; fill?: string }> }> = ({ items }) => (
     <ChartCard title="Structural Hierarchy (Sunburst)">
-        <ResponsiveContainer>
+        <ResponsiveContainer minWidth={0} minHeight={0}>
             <PieChart>
                 <Pie
                     data={items}
@@ -199,7 +199,7 @@ export const MasterySunburst: React.FC<{ items: Array<{ name: string; value: num
 
 export const DifficultyBars: React.FC<{ bars: Array<{ label: string; simple: number; intermediate: number; expert: number }> }> = ({ bars }) => (
     <ChartCard title="The Expertise Bridge (Difficulty Clusters)">
-        <ResponsiveContainer>
+        <ResponsiveContainer minWidth={0} minHeight={0}>
             <BarChart data={bars} barGap={12}>
                 <CartesianGrid strokeDasharray="10 10" stroke="#f1f5f9" vertical={false} />
                 <XAxis dataKey="label" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 10, fontWeight: 800 }} />
@@ -222,7 +222,7 @@ export const SnapshotDonut: React.FC<{ correct: number; incorrect: number; skipp
     ];
     return (
         <ChartCard title="Operational Snapshot">
-            <ResponsiveContainer>
+            <ResponsiveContainer minWidth={0} minHeight={0}>
                 <PieChart>
                     <Pie
                         data={data}
@@ -265,7 +265,7 @@ export const SnapshotDonut: React.FC<{ correct: number; incorrect: number; skipp
 
 export const RetentionFunnel: React.FC<{ stages: Array<{ label: string; value: number }> }> = ({ stages }) => (
     <ChartCard title="Survival Attrition (Retention Funnel)">
-        <ResponsiveContainer>
+        <ResponsiveContainer minWidth={0} minHeight={0}>
             <FunnelChart>
                 <Tooltip content={<CustomTooltip />} />
                 <Funnel dataKey="value" data={stages} isAnimationActive stroke="none">
@@ -281,7 +281,7 @@ export const RetentionFunnel: React.FC<{ stages: Array<{ label: string; value: n
 
 export const FluencyScatter: React.FC<{ points: Array<{ x: number; y: number; label: string }> }> = ({ points }) => (
     <ChartCard title="Cognitive Fluency (Speed vs Accuracy)">
-        <ResponsiveContainer>
+        <ResponsiveContainer minWidth={0} minHeight={0}>
             <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
                 <XAxis type="number" dataKey="x" name="Reaction Time" unit="s" label={{ value: 'Response Time (s)', position: 'insideBottom', offset: -10, fontSize: 10, fontWeight: 800 }} />

@@ -38,7 +38,7 @@ export const SubtopicBarChart = React.memo(({ data, weakest, rootCauseText, dens
             </div>
 
             <div className="flex-grow min-h-0 relative z-10 py-4">
-                <ResponsiveContainer width="100%" height="100%">
+                <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                     <BarChart
                         data={sortedData}
                         layout="vertical"

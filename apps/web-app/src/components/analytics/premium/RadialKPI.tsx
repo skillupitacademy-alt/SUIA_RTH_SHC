@@ -33,7 +33,7 @@ export const RadialKPI = React.memo(({ score, mastery, readiness, status }: Radi
                 <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-emerald-500 rounded-full blur-[100px]" />
             </div>
 
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                 <RadialBarChart
                     cx="50%"
                     cy="50%"

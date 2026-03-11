@@ -31,7 +31,7 @@ export const SkillDonutChart = React.memo(({ data, suppressAnimation }: SkillDon
             </div>
 
             <div className="relative flex-grow min-h-[300px]">
-                <ResponsiveContainer width="100%" height="100%">
+                <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                     <PieChart key={mounted ? 'mounted' : 'unmounted'}>
                         <defs>
                             <filter id="skillGlow_SDC" x="-50%" y="-50%" width="200%" height="200%">

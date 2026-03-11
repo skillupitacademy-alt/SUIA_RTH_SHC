@@ -33,7 +33,7 @@ export const DifficultyBarChart = React.memo(({ data }: DifficultyBarChartProps)
             </div>
 
             <div className="h-[200px] w-full">
-                <ResponsiveContainer width="100%" height="100%">
+                <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                     <BarChart data={data} margin={{ top: 20, right: 30, left: 0, bottom: 0 }}>
                         <XAxis
                             dataKey="level"

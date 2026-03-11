@@ -28,7 +28,7 @@ export const DifficultyBarChart = React.memo(({ data, expertDropOff }: Difficult
             </div>
 
             <div className="flex-grow min-h-0 relative z-10 py-6">
-                <ResponsiveContainer width="100%" height="100%">
+                <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                     <BarChart data={sortedData} margin={{ top: 20, right: 30, left: 0, bottom: 0 }}>
                         <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.03)" vertical={false} />
                         <XAxis
