@@ -43,3 +43,24 @@ export const BULLMQ_CONNECTION: QueueOptions = {
 };
 
 export const QUEUE_ENABLED = process.env.QUEUE_ENABLED === 'true';
+
+/**
+ * Shared default queue options for BullMQ.
+ */
+export const defaultQueueOptions = {
+  connection: redisConnection as unknown as QueueOptions['connection'],
+  defaultJobOptions: {
+    attempts: 3,
+    backoff: {
+      type: 'exponential',
+      delay: 1000,
+    },
+    removeOnComplete: {
+      age: 24 * 3600, // Keep completed jobs for 24h
+      count: 1000,
+    },
+    removeOnFail: {
+      age: 7 * 24 * 3600, // Keep failed jobs for 7 days
+    },
+  },
+};

@@ -1,6 +1,6 @@
 import { ApiResponse } from '@/lib/api-response';
 import { withCacheHeaders } from '@/lib/cache-headers';
-import { queueConnection } from '@/lib/queue-config';
+import { redisConnection as queueConnection } from '@/lib/queue/queue.config';
 import { withLogging } from '@/lib/withLogging';
 
 export const dynamic = 'force-dynamic';

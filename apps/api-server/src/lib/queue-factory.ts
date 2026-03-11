@@ -1,7 +1,9 @@
 import { Job, Processor, Queue, type QueueOptions,Worker } from 'bullmq';
 
 import { logger } from './logger';
-import { bullConnection, defaultQueueOptions, queueConnection } from './queue-config';
+import { BULLMQ_CONNECTION, defaultQueueOptions } from './queue/queue.config';
+
+const bullConnection = BULLMQ_CONNECTION.connection;
 
 const log = logger.child({ component: 'queue-factory' });
 const queuesDisabled = process.env.QUEUE_ENABLED !== 'true';
@@ -47,7 +49,7 @@ export class QueueFactory {
       } as unknown as Worker<T, R>;
     }
     const worker = new Worker(name, processor, {
-      connection: bullConnection ?? (queueConnection as unknown as QueueOptions['connection']),
+      connection: (bullConnection as unknown) as QueueOptions['connection'],
       concurrency,
     });
 
