@@ -1,6 +1,4 @@
-import fs from 'fs';
 import { type NextRequest } from 'next/server';
-import path from 'path';
 
 import { badRequest } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
@@ -59,28 +57,12 @@ async function postHandler(req: NextRequest) {
             throw badRequest("Malformed report content");
         }
 
-        const timestamp = new Date().toISOString();
-        const logEntry = JSON.stringify({
-            timestamp,
-            ip: req.headers.get('x-forwarded-for') ?? 'unknown',
-            userAgent: req.headers.get('user-agent') ?? 'unknown',
-            ...report,
-        });
-
-        const logDir = path.join(process.cwd(), 'logs', 'security');
-        const logFile = path.join(logDir, 'csp-audit.log');
-
-        if (!fs.existsSync(logDir)) {
-            fs.mkdirSync(logDir, { recursive: true });
-        }
-
-        fs.appendFileSync(logFile, logEntry + '\n');
-
         logger.warn({
             route: '/api/security/report',
             method: req.method,
-            documentUri: report['document-uri'],
-            blockedUri: report['blocked-uri'],
+            ip: req.headers.get('x-forwarded-for') ?? 'unknown',
+            userAgent: req.headers.get('user-agent') ?? 'unknown',
+            report: report, // Include full details in the cloud log
         }, '[CSP-AUDIT] Violation');
 
         recordCounter('security.csp_report.count', 1, { outcome: 'success' });

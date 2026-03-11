@@ -41,8 +41,10 @@ export function getCSPHeader(options) {
     "'self'",
     // Next.js injects small inline bootstrap scripts; allow them with an inline allowance.
     "'unsafe-inline'",
+    "'wasm-unsafe-eval'", // Pillar 5: Support Cloudflare/Wasm telemetry
     isDev ? "'unsafe-eval'" : "",
     "https://static.cloudflareinsights.com",
+    "https://quiz.realtutorialhub.com", // Allow speculation rules from own domain
   ].filter(Boolean));
 
   const styleSrc = ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"];
