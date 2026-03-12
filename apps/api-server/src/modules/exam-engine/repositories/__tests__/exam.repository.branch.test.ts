@@ -36,6 +36,9 @@ vi.mock('@quiz/db', () => {
     exams: { id: 'exams.id', status: 'exams.status', userId: 'exams.userId' } as any,
     examQuestions: { id: 'eq.id' } as any,
     idempotencyKeys: { userId: 'ik.userId', key: 'ik.key', examId: 'ik.examId' } as any,
+    withTimeout: vi.fn((p) => p),
+    QUICK_QUERY_TIMEOUT: 100,
+    STANDARD_QUERY_TIMEOUT: 200,
   };
 });
 

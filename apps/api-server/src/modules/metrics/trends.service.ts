@@ -145,8 +145,16 @@ export class TrendsService {
     let validExamIds: Set<string> | null = null;
     const hasExamId = rawResults.some((row) => row?.examId !== undefined && row?.examId !== null);
     const hasMissingCompletedAt = rawResults.some((row) => row?.completedAt === undefined || row?.completedAt === null);
-    if (hasExamId && typeof (db as any)?.query?.exams?.findMany === 'function') {
-      const examRows = await (db as any).query.exams.findMany({
+    type DbExamQuery = {
+      query?: {
+        exams?: {
+          findMany?: (args: { where: unknown; columns: { id: boolean } }) => Promise<Array<{ id: string }>>;
+        };
+      };
+    };
+    const examFindMany = (db as unknown as DbExamQuery).query?.exams?.findMany;
+    if (hasExamId && typeof examFindMany === 'function') {
+      const examRows = await examFindMany({
         where: and(...conditions),
         columns: { id: true },
       });

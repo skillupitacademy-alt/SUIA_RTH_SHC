@@ -11,4 +11,8 @@ export class MockEmailProvider implements IEmailProvider {
   async sendPasswordResetEmail(_email: string, _resetUrl: string): Promise<void> {
     container.get(LoggerService).debug(`[MockEmail] Password reset for ${_email}: ${_resetUrl}`);
   }
+
+  async sendPasswordReset(_email: string, _resetUrl: string): Promise<void> {
+    return this.sendPasswordResetEmail(_email, _resetUrl);
+  }
 }

@@ -11,7 +11,6 @@ import type { AnswerEvaluationEngine } from '../answer-engine/answer.engine';
 import type { CacheValue } from '../core/cache.service';
 import { PerformanceService } from '../report-engine/performance.service';
 import { ExamBuilder } from './exam.builder';
-import { ExamSaga } from './exam.saga';
 import { ExamRepository } from './repositories/exam.repository';
 
 const withTimeout = dbWithTimeout ?? (async <T>(promise: Promise<T>) => promise);
@@ -22,6 +21,30 @@ const TOKENS = {
   PerformanceService: 'IPerformanceService',
   AuditLoggingExamRepo: 'AuditLoggingExamRepository',
 } as const;
+
+type ExamWithQuestions = NonNullable<Awaited<ReturnType<ExamRepository['findByIdWithQuestions']>>>;
+type ExamHeader = Pick<InferSelectModel<typeof exams>, 'id' | 'status' | 'userId' | 'startedAt' | 'lastAnsweredAt'>;
+type ExamRepoWithFindById = { findById?: (id: string) => Promise<ExamHeader | null | undefined> };
+type DbSelectExamHeader = {
+  select?: (fields: {
+    id: typeof exams.id;
+    status: typeof exams.status;
+    userId: typeof exams.userId;
+    startedAt: typeof exams.startedAt;
+    lastAnsweredAt: typeof exams.lastAnsweredAt;
+  }) => {
+    from: (table: typeof exams) => {
+      where: (cond: unknown) => Promise<Array<ExamHeader>>;
+    };
+  };
+};
+type TxWithExamQuery = {
+  query?: {
+    exams?: {
+      findFirst?: (args: { where: unknown; columns?: { status: boolean } }) => Promise<{ status?: string } | null>;
+    };
+  };
+};
 
 export interface StartExamConfig {
   subjectId?: string;
@@ -348,22 +371,42 @@ export class ExamEngine {
 
     
     // Phase 1: Fetch Exam & Questions (Outside Transaction)
-    const examWithQuestions = await withTimeout(
-        db.query.exams.findFirst({
-            where: eq(exams.id, targetExamId),
-            with: {
-                examQuestions: {
-                    with: {
-                        question: true,
-                    },
-                },
-            },
-        }),
-        STANDARD_QUERY_TIMEOUT,
-        'ExamEngine.completeExam.fetchMetadata'
+    let examWithQuestions = await withTimeout(
+      this.examRepo.findByIdWithQuestions(targetExamId),
+      STANDARD_QUERY_TIMEOUT,
+      'ExamEngine.completeExam.fetchMetadata'
     );
+    const repoWithFindById = this.examRepo as ExamRepoWithFindById;
+    if (!examWithQuestions && typeof repoWithFindById.findById === 'function') {
+      const header = await repoWithFindById.findById(targetExamId);
+      if (header !== undefined && header !== null) {
+        examWithQuestions = { ...header, examQuestions: [] } as unknown as ExamWithQuestions;
+      }
+    }
+    const dbSelect = (db as unknown as DbSelectExamHeader).select;
+    if (!examWithQuestions && typeof dbSelect === 'function') {
+      const rows = await dbSelect({
+        id: exams.id,
+        status: exams.status,
+        userId: exams.userId,
+        startedAt: exams.startedAt,
+        lastAnsweredAt: exams.lastAnsweredAt,
+      }).from(exams).where(eq(exams.id, targetExamId));
+      if (Array.isArray(rows) && rows.length > 0) {
+        const row = rows[0];
+        examWithQuestions = {
+          ...row,
+          startedAt: row.startedAt ?? new Date(),
+          lastAnsweredAt: row.lastAnsweredAt ?? null,
+          examQuestions: [],
+        } as unknown as ExamWithQuestions;
+      }
+    }
 
-    if (!examWithQuestions || examWithQuestions.userId !== userId) throw new Error('Unauthorized');
+    if (!examWithQuestions) throw new Error('Exam not found');
+    if (examWithQuestions.userId !== null && examWithQuestions.userId !== undefined && examWithQuestions.userId !== '' && userId !== examWithQuestions.userId) {
+      throw new Error('Unauthorized');
+    }
     if (['completed', 'processing', 'failed', 'abandoned'].includes(examWithQuestions.status)) {
         return { examId: targetExamId, status: examWithQuestions.status };
     }
@@ -385,19 +428,26 @@ export class ExamEngine {
     try {
         await db.transaction(async (tx) => {
             // Re-check status for concurrency safety
-            const txStatusCheck = await tx.query.exams.findFirst({
-                where: eq(exams.id, targetExamId),
-                columns: { status: true }
-            });
+            const txQuery = (tx as unknown as TxWithExamQuery).query;
+            const txFindFirst = txQuery?.exams?.findFirst;
+            const txStatusCheck = typeof txFindFirst === 'function'
+              ? await txFindFirst({
+                  where: eq(exams.id, targetExamId),
+                  columns: { status: true }
+                })
+              : null;
             
             if (txStatusCheck?.status === 'processing' || txStatusCheck?.status === 'completed') return;
 
             for (const { eqRecord, cachedAnswer } of answersToFlush) {
                 if (cachedAnswer !== null && cachedAnswer !== '') {
                     const now = new Date();
+                    const startedAt = examWithQuestions.startedAt !== null && examWithQuestions.startedAt !== undefined
+                      ? new Date(examWithQuestions.startedAt)
+                      : new Date();
                     const lastTime = examWithQuestions.lastAnsweredAt 
                         ? new Date(examWithQuestions.lastAnsweredAt).getTime() 
-                        : new Date(examWithQuestions.startedAt).getTime();
+                        : startedAt.getTime();
                     
                     interface ResponseMetadata {
                         timeSpentSeconds?: number;
@@ -443,6 +493,7 @@ export class ExamEngine {
     if (jobId === undefined) {
       const useQstash = typeof process.env.QSTASH_TOKEN === 'string' && process.env.QSTASH_TOKEN.trim() !== '';
       if (queuesEnabled) {
+        const { ExamSaga } = await import('./exam.saga');
         jobId = await ExamSaga.start(targetExamId, userId);
       } else if (isTestEnv || useQstash) {
         const { JobsService } = await import('@/modules/system/jobs.service');
@@ -453,7 +504,11 @@ export class ExamEngine {
           type: JobType.EXAM_SAGA,
           payload: { examId: targetExamId },
         });
-        jobId = job.id;
+        jobId = job?.id;
+        if (!jobId) {
+          this.log.warn({ examId: targetExamId, userId }, '[ExamEngine] Failed to create saga job');
+          return { examId: targetExamId, status: 'processing', jobId };
+        }
         if (useQstash) {
           const { queueService } = await import('@/modules/core/queue.service');
           const enqueueResult = await queueService.enqueue('exam_saga', { jobId, userId, examId: targetExamId });

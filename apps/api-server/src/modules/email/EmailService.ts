@@ -33,6 +33,12 @@ export class EmailService {
   }
 
   static async sendPasswordResetEmail(email: string, resetUrl: string): Promise<void> {
-    return this.getInstance().sendPasswordResetEmail(email, resetUrl);
+    const instance = this.getInstance() as IEmailProvider & {
+      sendPasswordReset?: (email: string, resetUrl: string) => Promise<void>;
+    };
+    if (typeof instance.sendPasswordReset === 'function') {
+      return instance.sendPasswordReset(email, resetUrl);
+    }
+    return instance.sendPasswordResetEmail(email, resetUrl);
   }
 }

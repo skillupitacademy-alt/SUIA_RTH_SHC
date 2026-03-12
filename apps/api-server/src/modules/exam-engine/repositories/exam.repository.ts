@@ -1,4 +1,4 @@
-import { db, examQuestions, exams, idempotencyKeys, QUICK_QUERY_TIMEOUT, STANDARD_QUERY_TIMEOUT, withTimeout } from '@quiz/db';
+import { db, examQuestions, exams, idempotencyKeys, QUICK_QUERY_TIMEOUT, STANDARD_QUERY_TIMEOUT, withTimeout as dbWithTimeout } from '@quiz/db';
 import { and, desc, eq } from 'drizzle-orm';
 
 import { BaseRepository } from '@/modules/core/repositories/base.repository';
@@ -18,6 +18,7 @@ export interface Exam {
 
 export class ExamRepository extends BaseRepository<Exam, typeof exams> {
   protected table = exams;
+  private withTimeoutFn = dbWithTimeout ?? (async <T>(promise: Promise<T>) => promise);
 
   constructor(dbInstance: typeof db = db) {
     super(dbInstance);
@@ -28,7 +29,7 @@ export class ExamRepository extends BaseRepository<Exam, typeof exams> {
   }
 
   async findActiveExam(id: string, userId: string) {
-      return await withTimeout(
+      return await this.withTimeoutFn(
           this.dbInstance.query.exams.findFirst({
             where: and(
                 eq(exams.id, id),
@@ -41,7 +42,7 @@ export class ExamRepository extends BaseRepository<Exam, typeof exams> {
   }
 
   async findByIdWithBlueprint(id: string) {
-    return await withTimeout(
+    return await this.withTimeoutFn(
       this.dbInstance.query.exams.findFirst({
         where: eq(exams.id, id),
         with: { blueprint: true }
@@ -52,7 +53,7 @@ export class ExamRepository extends BaseRepository<Exam, typeof exams> {
   }
 
   async updateLastAnswered(id: string, date: Date = new Date()) {
-    await withTimeout(
+    await this.withTimeoutFn(
       this.dbInstance.update(exams)
         .set({ lastAnsweredAt: date })
         .where(eq(exams.id, id)),
@@ -62,7 +63,7 @@ export class ExamRepository extends BaseRepository<Exam, typeof exams> {
   }
 
   async updateStatus(id: string, status: "started" | "processing" | "completed" | "abandoned" | "failed") {
-    return await withTimeout(
+    return await this.withTimeoutFn(
       this.dbInstance.update(exams)
         .set({ status })
         .where(eq(exams.id, id))
@@ -77,7 +78,7 @@ export class ExamRepository extends BaseRepository<Exam, typeof exams> {
     isCorrect: boolean;
     responseMetadata: Record<string, unknown>;
   }) {
-    await withTimeout(
+    await this.withTimeoutFn(
       this.dbInstance.update(examQuestions)
         .set({
           userAnswer: data.userAnswer,
@@ -91,7 +92,7 @@ export class ExamRepository extends BaseRepository<Exam, typeof exams> {
   }
 
   async findQuestionByExamAndQuestion(examId: string, questionId: string) {
-    return await withTimeout(
+    return await this.withTimeoutFn(
       this.dbInstance.query.examQuestions.findFirst({
         where: and(
           eq(examQuestions.examId, examId),
@@ -107,7 +108,7 @@ export class ExamRepository extends BaseRepository<Exam, typeof exams> {
   }
 
   async findByIdWithQuestions(id: string) {
-    return await withTimeout(
+    return await this.withTimeoutFn(
       this.dbInstance.query.exams.findFirst({
         where: eq(exams.id, id),
         with: {
@@ -124,7 +125,7 @@ export class ExamRepository extends BaseRepository<Exam, typeof exams> {
   }
 
   async checkIdempotency(userId: string, key: string) {
-    return await withTimeout(
+    return await this.withTimeoutFn(
       this.dbInstance.query.idempotencyKeys.findFirst({
         where: and(
           eq(idempotencyKeys.userId, userId),
@@ -144,7 +145,7 @@ export class ExamRepository extends BaseRepository<Exam, typeof exams> {
     questions: { id: string }[];
     idempotencyKey?: string;
   }) {
-    return await withTimeout(
+    return await this.withTimeoutFn(
       this.dbInstance.transaction(async (tx) => {
         const [exam] = await (tx.insert(exams).values({
           userId: data.userId,
@@ -178,7 +179,7 @@ export class ExamRepository extends BaseRepository<Exam, typeof exams> {
   }
 
   async recordIdempotency(data: { userId: string; key: string; examId: string }) {
-    await withTimeout(
+    await this.withTimeoutFn(
       this.dbInstance.insert(idempotencyKeys).values({
         userId: data.userId,
         key: data.key,
@@ -191,7 +192,7 @@ export class ExamRepository extends BaseRepository<Exam, typeof exams> {
 
   async findByUserId(userId: string, options: { status?: string; limit?: number } = {}) {
     const statusFilter = (options.status as ("started" | "processing" | "completed" | "abandoned" | "failed") | undefined);
-    return await withTimeout(
+    return await this.withTimeoutFn(
       this.dbInstance.query.exams.findMany({
         where: and(
           eq(exams.userId, userId),
@@ -209,7 +210,7 @@ export class ExamRepository extends BaseRepository<Exam, typeof exams> {
   }
 
   async updateAnswerByExamAndQuestion(examId: string, questionId: string, answer: string, isCorrect: boolean, metadata: Record<string, unknown>) {
-    await withTimeout(
+    await this.withTimeoutFn(
       this.dbInstance.update(examQuestions)
         .set({
           userAnswer: answer,

@@ -64,4 +64,8 @@ export class ResendEmailProvider implements IEmailProvider {
       html,
     });
   }
+
+  async sendPasswordReset(email: string, resetUrl: string): Promise<void> {
+    return this.sendPasswordResetEmail(email, resetUrl);
+  }
 }

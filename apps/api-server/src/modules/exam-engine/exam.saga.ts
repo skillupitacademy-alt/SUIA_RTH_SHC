@@ -1,4 +1,5 @@
 import { JobStatus, JobType } from '@quiz/types';
+import { Client } from '@upstash/workflow';
 
 import { logger } from '@/lib/logger';
 import { container } from '@/modules/core/container';
@@ -7,11 +8,15 @@ import { PerformanceService } from '@/modules/report-engine/performance.service'
 import { ReportEngine } from '@/modules/report-engine/report.engine';
 import { ScoringEngine } from '@/modules/scoring-engine/scoring.engine';
 import { JobsService } from '@/modules/system/jobs.service';
-import { Client } from "@upstash/workflow";
+
+const qstashUrl = typeof process.env.QSTASH_URL === 'string' && process.env.QSTASH_URL.trim() !== ''
+  ? process.env.QSTASH_URL
+  : 'https://qstash.upstash.io';
+const qstashToken = typeof process.env.QSTASH_TOKEN === 'string' ? process.env.QSTASH_TOKEN : '';
 
 const workflowClient = new Client({
-    baseUrl: process.env.QSTASH_URL || "https://qstash.upstash.io",
-    token: process.env.QSTASH_TOKEN || "",
+    baseUrl: qstashUrl,
+    token: qstashToken,
 });
 
 export interface ExamSagaData {
@@ -56,8 +61,10 @@ export class ExamSaga {
             }
         });
 
-        if (queuesEnabled && process.env.QSTASH_TOKEN) {
-            const workflowUrl = `${process.env.NEXT_PUBLIC_API_URL}/workflows/exam-report`;
+        const hasQstashToken = typeof process.env.QSTASH_TOKEN === 'string' && process.env.QSTASH_TOKEN.trim() !== '';
+        const apiUrl = typeof process.env.NEXT_PUBLIC_API_URL === 'string' ? process.env.NEXT_PUBLIC_API_URL : '';
+        if (queuesEnabled && hasQstashToken) {
+            const workflowUrl = `${apiUrl.replace(/\/$/, '')}/workflows/exam-report`;
             logger.info({ examId, jobId: job.id, workflowUrl }, '[ExamSaga] Triggering Upstash Workflow');
             
             try {
