@@ -370,7 +370,7 @@ function QuizSelectionConsoleContent() {
 
             // 4. Navigate to Active HUD
             // Guardrail: Ensure examId is valid before redirecting
-            const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+            const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
             if (!data?.examId || data.examId === 'undefined' || !uuidRegex.test(data.examId)) {
                 throw new Error('Start exam failed: missing or invalid examId in response');
             }

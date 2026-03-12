@@ -41,8 +41,12 @@ export class PerformanceService {
       await this.dbInstance.execute(sql`REFRESH MATERIALIZED VIEW attempt_analytics_mv`);
       await this.dbInstance.execute(sql`REFRESH MATERIALIZED VIEW attempt_dimension_accuracy_mv`);
       this.log.info('Materialized views refreshed successfully.');
-    } catch (e) {
-      this.log.error({ err: e }, 'Materialized view refresh failed completely');
+    } catch (e: unknown) {
+      this.log.error({ 
+        err: e, 
+        message: (e as Record<string, unknown>)?.message,
+        hint: 'Ensure scripts/init-mvs.ts has been run on this environment.'
+      }, 'Materialized view refresh failed completely');
     }
   }
 

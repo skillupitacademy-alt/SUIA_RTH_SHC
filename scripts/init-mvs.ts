@@ -1,6 +1,12 @@
 import "dotenv/config";
 import { Client } from "pg";
 
+const scriptLogger = {
+  info: (...args: any[]) => console.log(...args),
+  warn: (...args: any[]) => console.warn(...args),
+  error: (...args: any[]) => console.error(...args)
+};
+
 async function main() {
   const client = new Client({
     connectionString: process.env.DATABASE_URL,
@@ -130,5 +136,7 @@ async function main() {
   scriptLogger.info("✅ Analysis engine fully initialized.");
 }
 
-main().catch(scriptLogger.error);
-
+main().catch(err => {
+    console.error("Fatal error:", err);
+    process.exit(1);
+});
