@@ -52,7 +52,7 @@ async function getHandler(req: NextRequest) {
         const statusMap: Record<string, string> = {
           'started': 'generating',
           'processing': 'generating',
-          'completed': 'ready',
+          'completed': 'not_found',
           'failed': 'failed',
           'abandoned': 'failed'
         };
