@@ -70,12 +70,14 @@ export class ExamSaga {
                 });
                 logger.info({ examId, jobId: job.id }, '[ExamSaga] Workflow triggered successfully');
             } catch (err) {
-                logger.error({ err, examId }, '[ExamSaga] Failed to trigger workflow');
-                // No BullMQ fallback anymore
-                await JobsService.updateJobStatus(job.id, JobStatus.FAILED, { 
-                    error: 'Workflow trigger failed and BullMQ is decommissioned.' 
-                });
+                logger.error({ err, examId }, '[ExamSaga] Failed to trigger workflow. Falling back to local execution.');
+                // Local fallback for dev/resilience (Task 125)
+                void this.execute(job.id, { examId, userId });
             }
+        } else {
+            // If queues are disabled, still run the saga locally (Task 125)
+            logger.info({ examId, jobId: job.id }, '[ExamSaga] QUEUE_DISABLED: Running saga locally');
+            void this.execute(job.id, { examId, userId });
         }
         
         logger.info({ examId, jobId: job.id }, '[ExamSaga] Lifecycle started');
@@ -91,10 +93,6 @@ export class ExamSaga {
         jobId: string,
         data: ExamSagaData & { metadata?: { processedSteps?: string[] } }
     ) {
-        if (process.env.QUEUE_ENABLED !== 'true') {
-            logger.warn({ jobId }, '[ExamSaga] QUEUE_DISABLED: skipping execution');
-            return;
-        }
         const { examId } = data;
         const metadata = data.metadata ?? { processedSteps: [] };
         const processedSteps = new Set(metadata.processedSteps ?? []);

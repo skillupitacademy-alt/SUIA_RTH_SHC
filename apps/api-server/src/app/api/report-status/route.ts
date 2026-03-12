@@ -9,6 +9,7 @@ import { getDownloadUrl } from "@/lib/storage/get-download-url";
 import { withLogging } from "@/lib/withLogging";
 import { TokenService } from "@/modules/auth/token.service";
 import { container } from '@/modules/core/container';
+import { ExamRepository } from "@/modules/exam-engine/repositories/exam.repository";
 import { ReportRepository } from "@/modules/report-engine/report-repository";
 
 export const dynamic = 'force-dynamic';
@@ -41,7 +42,27 @@ async function getHandler(req: NextRequest) {
 
     const report = await ReportRepository.getReportByAttempt(attemptId);
 
+    // Fallback: Check the exams table if no materialized report record exists yet (Task 125)
     if (report === undefined || report === null) {
+      const examRepo = container.get(ExamRepository);
+      const exam = await examRepo.findById(attemptId);
+      
+      if (exam !== undefined && exam !== null) {
+        // Map exam status to a pseudo-report status to keep frontend polling alive
+        const statusMap: Record<string, string> = {
+          'started': 'generating',
+          'processing': 'generating',
+          'completed': 'ready',
+          'failed': 'failed',
+          'abandoned': 'failed'
+        };
+
+        return ApiResponse.success({ 
+          status: statusMap[exam.status] || 'generating',
+          isLegacyFallback: true 
+        }, 200, { "Cache-Control": "no-store" });
+      }
+
       return ApiResponse.success({ status: "not_found" }, 404);
     }
 

@@ -303,7 +303,7 @@ export function ExamReportLayout({ data, loading }: ExamReportLayoutProps) {
     const auditAvgLatency = totalQuestions > 0 ? Math.round(data.totalTimeSpentSeconds / totalQuestions) : 0;
 
 
-    if (loading) {
+    if (loading || !data) {
         return (
             <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-6">
                 <ZLoader />
@@ -313,11 +313,18 @@ export function ExamReportLayout({ data, loading }: ExamReportLayoutProps) {
                     animate={{ opacity: [0, 1, 0] }}
                     transition={{ duration: 2, repeat: Infinity }}
                 >
-                    Synthesizing Personal Neural Matrix...
+                    {loading ? "Synthesizing Personal Neural Matrix..." : "Loading matrix data..."}
                 </motion.p>
             </div>
         );
     }
+
+    // Defensive guards for arrays to prevent t.map is not a function (Task 125)
+    const subtopics = Array.isArray(data.subtopics) ? data.subtopics : [];
+    const skills = Array.isArray(data.skills) ? data.skills : [];
+    const difficulty = Array.isArray(data.difficulty) ? data.difficulty : [];
+    const heatmap = Array.isArray(data.heatmap) ? data.heatmap : [];
+    const questions = Array.isArray(data.questions) ? data.questions : [];
 
     return (
         <div className="min-h-screen bg-slate-950 p-4 md:p-8 lg:p-12 mb-20 scrollbar-hide">
@@ -383,7 +390,7 @@ export function ExamReportLayout({ data, loading }: ExamReportLayoutProps) {
                                 <div className="flex flex-col gap-10">
                                     <div className="w-full min-h-[580px] lg:h-[580px] relative">
                                         <SubtopicBarChart
-                                            data={data.subtopics}
+                                            data={subtopics}
                                             weakest={data.ai.weakest_subtopic}
                                             rootCauseText={data.ai.weakest_subtopic && data.ai.weakest_skill
                                                 ? `Root Cause: ${data.ai.weakest_skill} in ${data.ai.weakest_subtopic} (${data.weakest_difficulty || 'Expert'})`
@@ -418,12 +425,12 @@ export function ExamReportLayout({ data, loading }: ExamReportLayoutProps) {
                                 <div className="flex flex-col gap-10">
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-stretch min-h-[580px] lg:h-[580px]">
                                         <div className="flex flex-col">
-                                            <SkillDonutChart data={data.skills} />
+                                            <SkillDonutChart data={skills} />
                                         </div>
                                         <div className="flex flex-col">
                                             <TimeSpentDonut data={{
                                                 totalSeconds: data.totalTimeSpentSeconds,
-                                                questions: data.questions || [],
+                                                questions: questions,
                                                 timeBuckets: data.timeBuckets
                                             }} />
                                         </div>
@@ -461,7 +468,7 @@ export function ExamReportLayout({ data, loading }: ExamReportLayoutProps) {
                                 {/* Section 3: Heatmap Projection */}
                                 <div className="flex flex-col gap-10">
                                     <div className="w-full min-h-[580px] lg:h-[580px] relative">
-                                        <HeatmapGrid data={data.heatmap} />
+                                        <HeatmapGrid data={heatmap} />
                                     </div>
                                     <div className="flex flex-col">
                                         <HeuristicPanel
@@ -484,7 +491,7 @@ export function ExamReportLayout({ data, loading }: ExamReportLayoutProps) {
                                 <div className="flex flex-col gap-10">
                                     <div className="w-full min-h-[580px] lg:h-[580px] relative">
                                         <DifficultyBarChart
-                                            data={data.difficulty}
+                                            data={difficulty}
                                             expertDropOff={data.expertDropOff}
                                         />
                                     </div>
@@ -552,7 +559,7 @@ export function ExamReportLayout({ data, loading }: ExamReportLayoutProps) {
                                     </div>
                                 </div>
 
-                                {Array.isArray(data.questions) && data.questions.map((q, idx) => (
+                                {questions.map((q, idx) => (
                                     <AuditQuestionCard key={q.id || idx} question={q} index={idx} />
                                 ))}
                             </div>

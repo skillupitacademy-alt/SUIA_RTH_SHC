@@ -41,6 +41,7 @@ export function getCSPHeader(options: CSPOptions): string {
     const scriptSrc = ([
         "'self'",
         isDev ? "'unsafe-inline' 'unsafe-eval'" : "",
+        "'wasm-unsafe-eval'", // Required for Cloudflare/Wasm performance
         "https://static.cloudflareinsights.com",
     ].filter((v): v is string => !!v));
 
@@ -60,6 +61,7 @@ export function getCSPHeader(options: CSPOptions): string {
         "form-action": ["'self'"],
         "object-src": ["'none'"],
         "manifest-src": ["'self'"],
+        "script-src-elem": [...scriptSrc, "'inline-speculation-rules'"], // For browser speculation rules
     };
 
     if (reportUri) {

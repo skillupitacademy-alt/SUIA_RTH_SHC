@@ -97,9 +97,26 @@ export class SyncManager {
         try {
             await submitFn(item);
             await this.removeAnswer(idempotencyKeyToKey(item.idempotencyKey));
-        } catch (err) {
-            clientLogger.error('[SyncManager] Failed to sync answer', { error: err instanceof Error ? err.message : 'unknown' });
-            // Increment retry count
+        } catch (err: unknown) {
+            const message = err instanceof Error ? err.message : String(err);
+            const status = (err as Record<string, unknown>)?.status;
+            
+            clientLogger.error('[SyncManager] Failed to sync answer', { error: message, status });
+
+            // Terminal errors (400) should NOT be retried (Task 125).
+            // This prevents "Thundering Herd" logs when an exam is closed/timed out.
+            const isTerminal = status === 400 || 
+                             message.includes('Time limit exceeded') || 
+                             message.includes('Exam not active') ||
+                             message.includes('Exam already completed');
+
+            if (isTerminal) {
+                clientLogger.warn('[SyncManager] Terminal error detected. Clearing from queue.', { key: item.idempotencyKey });
+                await this.removeAnswer(idempotencyKeyToKey(item.idempotencyKey));
+                continue;
+            }
+
+            // Increment retry count for transient errors (network, 500s)
             const db = await this.getDB();
             const tx = db.transaction(STORE_NAME, 'readwrite');
             item.retryCount++;

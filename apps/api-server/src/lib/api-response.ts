@@ -16,7 +16,10 @@ export class ApiResponse {
     }
 
     static noContent() {
-        return new NextResponse(null, { status: 204 });
+        return new NextResponse(null, { 
+            status: 204,
+            statusText: 'No Content'
+        });
     }
 
     static error(err: unknown, status: number = 500, requestId?: string, headers: Record<string, string> = {}) {
