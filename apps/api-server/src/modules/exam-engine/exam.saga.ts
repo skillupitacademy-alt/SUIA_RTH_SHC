@@ -51,47 +51,17 @@ export class ExamSaga {
         });
 
         if (queuesEnabled) {
-            // Trigger Upstash Workflow via QStash publish (NOT direct fetch).
-            // The @upstash/workflow serve() handler requires QStash signatures
-            // to orchestrate durable workflow steps. Direct fetch bypasses this.
-            const rawQstashUrl = process.env.QSTASH_URL ?? 'https://qstash.upstash.io';
-            // Normalize: ensure the URL ends with /v2/publish/
-            const qstashBaseUrl = rawQstashUrl.includes('/v2/publish')
-                ? (rawQstashUrl.endsWith('/') ? rawQstashUrl : `${rawQstashUrl}/`)
-                : `${rawQstashUrl.replace(/\/+$/, '')}/v2/publish/`;
-            const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? '';
-            const vercelUrl = process.env.VERCEL_URL ?? '';
-            const appBase = apiUrl !== '' 
-                ? apiUrl.replace(/\/api\/?$/, '')   // "https://api.realtutorialhub.com/api" → "https://api.realtutorialhub.com"
-                : (vercelUrl !== '' ? `https://${vercelUrl}` : '');
-            const workflowEndpoint = `${appBase}/api/workflows/exam-report`;
-            const qstashPublishUrl = `${qstashBaseUrl}${workflowEndpoint}`;
-            
-            try {
-                if (appBase === '') {
-                    throw new Error('No app URL configured (NEXT_PUBLIC_API_URL / VERCEL_URL missing)');
-                }
-
-                const response = await fetch(qstashPublishUrl, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${process.env.QSTASH_TOKEN}`,
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ examId, userId, jobId: job.id })
-                });
-
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    throw new Error(`QStash publish failed: ${response.status} ${errorText}`);
-                }
-
-                logger.info({ examId, jobId: job.id, qstashPublishUrl }, '[ExamSaga] Workflow triggered via QStash');
-            } catch (err) {
-                logger.error({ err, examId, qstashPublishUrl }, '[ExamSaga] QStash trigger failed. Falling back to local execution.');
-                // Local fallback for dev/resilience
-                void this.execute(job.id, { examId, userId });
-            }
+            // NOTE: QStash/Upstash Workflow is the intended production path, but
+            // Cloudflare's CSRF protection blocks ALL QStash callbacks (403) on
+            // both api.realtutorialhub.com AND quiz-platform-api-server.vercel.app.
+            // Until a Cloudflare WAF bypass rule is configured for /api/workflows/*,
+            // we run the saga locally (fire-and-forget) in the serverless function.
+            // This is the same pattern that worked reliably at commit 24e96947.
+            //
+            // TODO: To enable QStash, add a Cloudflare WAF rule to skip CSRF for
+            // /api/workflows/* from Upstash IPs, then uncomment the QStash block below.
+            logger.info({ examId, jobId: job.id }, '[ExamSaga] Running saga locally (Cloudflare blocks QStash callbacks)');
+            void this.execute(job.id, { examId, userId });
         } else {
             // If queues are disabled, still run the saga locally
             logger.info({ examId, jobId: job.id }, '[ExamSaga] QUEUE_DISABLED: Running saga locally');
