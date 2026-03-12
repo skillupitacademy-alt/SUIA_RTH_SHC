@@ -54,6 +54,21 @@ function QuizSelectionConsoleContent() {
         if (id) {
             setActiveExamId(id);
         }
+
+        // SERVER-SIDE RECOVERY (Double-Resilience)
+        const checkServerActive = async () => {
+            try {
+                const res = await apiClient.quiz.getActiveExam();
+                if (res?.active) {
+                    setActiveExamId(res.examId);
+                    clientLogger.info('[Recovery] Active session found on server', { examId: res.examId });
+                }
+            } catch (err) {
+                // Background check should be silent
+                clientLogger.warn('[Recovery] Active check failed', { error: err });
+            }
+        };
+        checkServerActive();
     }, []);
 
     useEffect(() => {
@@ -355,7 +370,7 @@ function QuizSelectionConsoleContent() {
 
             // 4. Navigate to Active HUD
             // Guardrail: Ensure examId is valid before redirecting
-            const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+            const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
             if (!data?.examId || data.examId === 'undefined' || !uuidRegex.test(data.examId)) {
                 throw new Error('Start exam failed: missing or invalid examId in response');
             }

@@ -173,6 +173,16 @@ export class QuizClient {
     return this.client.get<QuizState>(`/quiz/state?examId=${examId}`, { timeout: TIMEOUTS.QUICK });
   }
 
+  async getActiveExam() {
+    return this.client.get<{
+      active: boolean;
+      examId: string;
+      status: string;
+      title: string;
+      startedAt: string;
+    }>('/quiz/active', { timeout: TIMEOUTS.QUICK });
+  }
+
   async requestMasterNotes(topicId: string) {
     return this.client.post<{ success: boolean; message: string }>(`/topics/${topicId}/request-notes`, {}, { timeout: TIMEOUTS.STANDARD });
   }

@@ -67,7 +67,7 @@ export function useExamInterfaceLogic() {
         return result;
     }, [answers, questions]);
 
-    const { clearBackup } = useExamBackup(examId || undefined, normalizedAnswers);
+    useExamBackup(examId || undefined, normalizedAnswers);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -197,7 +197,7 @@ export function useExamInterfaceLogic() {
                 apiClient.quiz.submitExam(examId, { idempotencyKey: submissionKey })
             );
 
-            clearBackup(examId);
+            // clearBackup(examId); // REMOVED: Delay until report page claimed successfully
             finishQuiz();
             router.push(`/reports/active-report?examId=${examId}`);
         } catch (err) {

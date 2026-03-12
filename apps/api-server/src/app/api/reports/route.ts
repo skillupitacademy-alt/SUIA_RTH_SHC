@@ -53,7 +53,7 @@ async function getHandler(req: NextRequest) {
       userId = exam.userId;
 
       if (exam.status === 'started') {
-        return ApiResponse.error(new Error('Exam still in progress'), 409);
+        return ApiResponse.success({ status: 'started', message: 'Exam is still in progress' }, 202);
       }
       if (exam.status === 'processing') {
         return ApiResponse.success({ status: 'processing', message: 'Report is generating...' }, 202);
@@ -82,7 +82,7 @@ async function getHandler(req: NextRequest) {
         }
 
         if (examCheck.status === 'started') {
-          return ApiResponse.error(new Error('Exam still in progress'), 409);
+          return ApiResponse.success({ status: 'started', message: 'Exam is still in progress' }, 202);
         }
         if (examCheck.status === 'processing') {
           return ApiResponse.success({ status: 'processing', message: 'Report is generating...' }, 202);

@@ -90,6 +90,22 @@ export class ExamRepository extends BaseRepository<Exam, typeof exams> {
     );
   }
 
+  async findQuestionByExamAndQuestion(examId: string, questionId: string) {
+    return await withTimeout(
+      this.dbInstance.query.examQuestions.findFirst({
+        where: and(
+          eq(examQuestions.examId, examId),
+          eq(examQuestions.questionId, questionId)
+        ),
+        with: {
+          question: true
+        }
+      }),
+      QUICK_QUERY_TIMEOUT,
+      'ExamRepository.findQuestionByExamAndQuestion'
+    );
+  }
+
   async findByIdWithQuestions(id: string) {
     return await withTimeout(
       this.dbInstance.query.exams.findFirst({
@@ -189,6 +205,25 @@ export class ExamRepository extends BaseRepository<Exam, typeof exams> {
       }),
       STANDARD_QUERY_TIMEOUT,
       'ExamRepository.findByUserId'
+    );
+  }
+
+  async updateAnswerByExamAndQuestion(examId: string, questionId: string, answer: string, isCorrect: boolean, metadata: Record<string, unknown>) {
+    await withTimeout(
+      this.dbInstance.update(examQuestions)
+        .set({
+          userAnswer: answer,
+          isCorrect,
+          responseMetadata: metadata,
+        })
+        .where(
+          and(
+            eq(examQuestions.examId, examId),
+            eq(examQuestions.questionId, questionId)
+          )
+        ),
+      QUICK_QUERY_TIMEOUT,
+      'ExamRepository.updateAnswerByExamAndQuestion'
     );
   }
 }

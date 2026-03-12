@@ -68,6 +68,14 @@ async function sendToServer(level: LogLevel, message: string, meta?: Record<stri
 
 function log(level: LogLevel, message: string, meta?: Record<string, unknown>) {
   if (!shouldLog(level)) return;
+  
+  // Local console logging for developer visibility (Task 116)
+  if (level === 'error') {
+    console.error(`[ClientLogger] ${message}`, meta);
+  } else if (level === 'warn') {
+    console.warn(`[ClientLogger] ${message}`, meta);
+  }
+
   void sendToServer(level, message, meta);
 }
 
