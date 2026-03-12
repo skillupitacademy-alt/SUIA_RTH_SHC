@@ -167,6 +167,9 @@ export const closePool = async () => {
  */
 export const db = new Proxy({} as DbClient, {
     get: (target, prop) => {
+        if (Object.prototype.hasOwnProperty.call(target, prop)) {
+            return (target as any)[prop];
+        }
         const instance = getDb('primary');
         return (instance as any)[prop];
     }
@@ -178,6 +181,9 @@ export const db = new Proxy({} as DbClient, {
  */
 export const dbReplica = new Proxy({} as DbClient, {
     get: (target, prop) => {
+        if (Object.prototype.hasOwnProperty.call(target, prop)) {
+            return (target as any)[prop];
+        }
         const instance = getDb('replica');
         return (instance as any)[prop];
     }

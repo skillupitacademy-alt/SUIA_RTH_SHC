@@ -40,7 +40,11 @@ vi.mock('@quiz/db', () => ({
     insert: vi.fn(() => ({ values: vi.fn().mockReturnThis(), returning: vi.fn().mockResolvedValue([]) })),
     update: vi.fn(() => ({ set: vi.fn().mockReturnThis(), where: vi.fn().mockResolvedValue({}) })),
     delete: vi.fn(() => ({ where: vi.fn().mockResolvedValue({}) })),
-    transaction: vi.fn(async (fn) => fn({})),
+    transaction: vi.fn(async (fn) => fn({
+      query: { exams: { findFirst: vi.fn() } },
+      update: vi.fn(() => ({ set: vi.fn().mockReturnThis(), where: vi.fn().mockResolvedValue({}) })),
+      insert: vi.fn(() => ({ values: vi.fn().mockReturnThis(), onConflictDoNothing: vi.fn().mockResolvedValue(undefined) })),
+    })),
     execute: vi.fn().mockResolvedValue({ rows: [] }),
   },
   exams: {},

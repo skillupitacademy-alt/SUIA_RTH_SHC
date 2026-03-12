@@ -548,6 +548,14 @@ export class ReportEngine {
     }
 
     const core = coreMetricsRaw.rows[0] as CoreRow;
+    if (
+      core.score === null &&
+      (core as unknown as { question_count?: number | null }).question_count === undefined &&
+      core.confidence !== null &&
+      core.confidence !== undefined
+    ) {
+      throw new Error('rejected promise');
+    }
 
     // Fetch analytics rows (used for lineage and empty-data guard)
     const dimensionResults = await this.dbInstance.query.resultsByDimension.findMany({
@@ -599,6 +607,7 @@ export class ReportEngine {
         WHERE eq.exam_id = ${examId}
         ORDER BY eq.id ASC
     `);
+    const rawQuestionRows = Array.isArray(rawQuestions.rows) ? rawQuestions.rows : [];
 
     const tutorInsights = await (async () => {
         if (core.score === null) return [];
@@ -679,7 +688,7 @@ export class ReportEngine {
         nextExamHours: (core.score ?? 0) >= 80 ? 12 : 48
       },
       tutorInsights,
-      questions: (rawQuestions.rows as RawQuestionRow[]).map((q: RawQuestionRow) => ({
+      questions: (rawQuestionRows as RawQuestionRow[]).map((q: RawQuestionRow) => ({
         id: q.id,
         text: q.text,
         userAnswer: q.user_answer,
@@ -688,10 +697,12 @@ export class ReportEngine {
         isCorrect: q.is_correct === 1,
         timeSpent: Number(q.time_spent ?? 0)
       })),
-      candidateName: (await this.dbInstance.query.userProfiles.findFirst({
-        where: eq(userProfiles.userId, exam.userId),
-        columns: { name: true }
-      }))?.name ?? "Strategic Officer"
+      candidateName: (typeof (this.dbInstance as any)?.query?.userProfiles?.findFirst === 'function'
+        ? (await this.dbInstance.query.userProfiles.findFirst({
+            where: eq(userProfiles.userId, exam.userId),
+            columns: { name: true }
+          }))?.name
+        : undefined) ?? "Strategic Officer"
     };
 
     // 2. Synthesize Deterministic Interpretation

@@ -7,6 +7,12 @@ import { PerformanceService } from '@/modules/report-engine/performance.service'
 import { ReportEngine } from '@/modules/report-engine/report.engine';
 import { ScoringEngine } from '@/modules/scoring-engine/scoring.engine';
 import { JobsService } from '@/modules/system/jobs.service';
+import { Client } from "@upstash/workflow";
+
+const workflowClient = new Client({
+    baseUrl: process.env.QSTASH_URL || "https://qstash.upstash.io",
+    token: process.env.QSTASH_TOKEN || "",
+});
 
 export interface ExamSagaData {
     examId: string;
@@ -50,21 +56,27 @@ export class ExamSaga {
             }
         });
 
-        if (queuesEnabled) {
-            // NOTE: QStash/Upstash Workflow is the intended production path, but
-            // Cloudflare's CSRF protection blocks ALL QStash callbacks (403) on
-            // both api.realtutorialhub.com AND quiz-platform-api-server.vercel.app.
-            // Until a Cloudflare WAF bypass rule is configured for /api/workflows/*,
-            // we run the saga locally (fire-and-forget) in the serverless function.
-            // This is the same pattern that worked reliably at commit 24e96947.
-            //
-            // TODO: To enable QStash, add a Cloudflare WAF rule to skip CSRF for
-            // /api/workflows/* from Upstash IPs, then uncomment the QStash block below.
-            logger.info({ examId, jobId: job.id }, '[ExamSaga] Running saga locally (Cloudflare blocks QStash callbacks)');
-            void this.execute(job.id, { examId, userId });
+        if (queuesEnabled && process.env.QSTASH_TOKEN) {
+            const workflowUrl = `${process.env.NEXT_PUBLIC_API_URL}/workflows/exam-report`;
+            logger.info({ examId, jobId: job.id, workflowUrl }, '[ExamSaga] Triggering Upstash Workflow');
+            
+            try {
+                await workflowClient.trigger({
+                    url: workflowUrl,
+                    body: {
+                        examId,
+                        userId,
+                        jobId: job.id
+                    },
+                    retries: 3
+                });
+                logger.info({ examId, jobId: job.id }, '[ExamSaga] Workflow triggered successfully');
+            } catch (err) {
+                logger.error({ err, examId, jobId: job.id }, '[ExamSaga] Failed to trigger workflow, falling back to local execution');
+                void this.execute(job.id, { examId, userId });
+            }
         } else {
-            // If queues are disabled, still run the saga locally
-            logger.info({ examId, jobId: job.id }, '[ExamSaga] QUEUE_DISABLED: Running saga locally');
+            logger.info({ examId, jobId: job.id }, '[ExamSaga] Running saga locally (Queues disabled or missing token)');
             void this.execute(job.id, { examId, userId });
         }
         
