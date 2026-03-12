@@ -243,7 +243,7 @@ const HeuristicPanel = ({
                     "flex-grow overflow-visible",
                     horizontal ? "grid grid-cols-1 md:grid-cols-3 gap-6" : "space-y-6"
                 )}>
-                    {details.map((tier, idx) => (
+                    {Array.isArray(details) && details.map((tier, idx) => (
                         <div key={idx} className="p-6 bg-slate-900/40 rounded-[2rem] border border-white/5 relative overflow-hidden group/tier hover:bg-slate-900/60 transition-all duration-300">
                             <div className="flex items-center justify-between mb-5 relative z-10">
                                 <div className="flex items-center gap-4">
@@ -552,7 +552,7 @@ export function ExamReportLayout({ data, loading }: ExamReportLayoutProps) {
                                     </div>
                                 </div>
 
-                                {data.questions?.map((q, idx) => (
+                                {Array.isArray(data.questions) && data.questions.map((q, idx) => (
                                     <AuditQuestionCard key={q.id || idx} question={q} index={idx} />
                                 ))}
                             </div>

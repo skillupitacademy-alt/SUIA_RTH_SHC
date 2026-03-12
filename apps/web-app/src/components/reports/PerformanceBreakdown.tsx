@@ -17,7 +17,7 @@ export function PerformanceBreakdown({ topics, difficulty, growthZones }: Perfor
                     <BookOpen className="text-primary" size={20} />
                 </div>
                 <div className="space-y-6">
-                    {topics.map((topic) => {
+                    {Array.isArray(topics) && topics.map((topic) => {
                         const percentage = Math.round((topic.score / topic.total) * 100);
                         return (
                             <div key={topic.name} className="space-y-3">
@@ -46,7 +46,7 @@ export function PerformanceBreakdown({ topics, difficulty, growthZones }: Perfor
                 <div className="p-8 rounded-[3rem] border bg-background shadow-sm">
                     <h3 className="text-xl font-black tracking-tight mb-8 text-slate-900">Difficulty Breakdown</h3>
                     <div className="grid grid-cols-3 gap-4">
-                        {difficulty.map((d) => (
+                        {Array.isArray(difficulty) && difficulty.map((d) => (
                             <div key={d.level} className="text-center p-6 rounded-[2rem] bg-white border border-slate-100 shadow-sm">
                                 <p className="text-[10px] font-black uppercase text-slate-500 tracking-[0.2em] mb-2">{d.level}</p>
                                 <p className="text-3xl font-black text-primary drop-shadow-sm">{d.accuracy}%</p>
@@ -66,7 +66,7 @@ export function PerformanceBreakdown({ topics, difficulty, growthZones }: Perfor
                     </div>
                     <div className="space-y-4">
                         {growthZones.length > 0 ? (
-                            growthZones.map((zone, idx) => (
+                            Array.isArray(growthZones) && growthZones.map((zone, idx) => (
                                 <div key={idx} className="flex gap-4 p-4 rounded-2xl bg-white/60">
                                     <div className="h-10 w-10 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center shrink-0">
                                         <TrendingUp size={20} />

@@ -112,7 +112,7 @@ export type PremiumReport = {
     weakest_skill?: string;
     nextExamHours: number;
   };
-  tutorInsights: Array<{ topicId: string; accuracy: number }> | string;
+  tutorInsights: Array<{ topicId: string; topicName: string; priority: "critical" | "growth" | "stable"; label: string; recommendation: string; learningUrl?: string; accuracy: number }>;
   lineage?: {
     domain?: string;
     subject?: string;
@@ -601,7 +601,7 @@ export class ReportEngine {
     `);
 
     const tutorInsights = await (async () => {
-        if (core.score === null) return "Data insufficient for personalized AI tutoring. Please complete the assessment to unlock insights.";
+        if (core.score === null) return [];
         
         const topicAgg = (core.subtopics ?? []).reduce((acc, curr) => {
           const tid = curr.topicId;

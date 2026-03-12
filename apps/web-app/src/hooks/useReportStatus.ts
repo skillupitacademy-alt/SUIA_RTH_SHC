@@ -26,7 +26,13 @@ export function useReportStatus(attemptId: string) {
         credentials: "include",
       });
       
-      if (!res.ok && res.status !== 404) {
+      if (res.status === 404) {
+        setStatus("not_found");
+        setLoading(false);
+        return;
+      }
+      
+      if (!res.ok) {
         throw new Error("Failed to check report status");
       }
 

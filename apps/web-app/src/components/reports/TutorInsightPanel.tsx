@@ -49,7 +49,7 @@ export const TutorInsightPanel = React.memo(({ insights }: TutorInsightPanelProp
         }
     };
 
-    if (!insights || insights.length === 0) return null;
+    if (!insights || !Array.isArray(insights) || insights.length === 0) return null;
 
     return (
         <div className="w-full bg-[#0a0c12]/80 border border-indigo-500/10 rounded-[3rem] p-10 lg:p-14 backdrop-blur-xl relative overflow-hidden group">
