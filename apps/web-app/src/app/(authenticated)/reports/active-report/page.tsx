@@ -90,7 +90,7 @@ function ReportContent() {
             try {
                 const data = await apiClient.quiz.getResult(examId);
 
-                if (data.status === 'processing') {
+                if (data.status === 'processing' || data.status === 'started') {
                     if (isMounted) setIsProcessing(true);
 
                     if (retryCount < 20) { // Max ~2 mins
@@ -118,6 +118,8 @@ function ReportContent() {
                 }
 
                 // Narrow data to the report object (status: 'completed' etc)
+                // We use a type hedge here to ensure TS is satisfied after our exhaustive status checks
+                if (!('score' in data)) return;
                 const report = data;
 
                 // Map API data to UI format

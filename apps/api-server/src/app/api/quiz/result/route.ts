@@ -46,7 +46,10 @@ async function getHandler(req: NextRequest) {
     }
 
     if (examCheck.status === 'started') {
-        return ApiResponse.error(new Error('Exam is still in progress'), 409);
+        return ApiResponse.success({ 
+            status: 'started',
+            message: 'Exam is still finishing...' 
+        }, 202, { 'Retry-After': '5' });
     }
     if (examCheck.status === 'processing') {
         return ApiResponse.success({ 
@@ -67,6 +70,15 @@ async function getHandler(req: NextRequest) {
     return ApiResponse.success(responseDto, 200, { 'X-Duration-Ms': durationMs.toString() });
   } catch (error: unknown) {
     const durationMs = Date.now() - startTime;
+    const message = error instanceof Error ? error.message : String(error);
+
+    if (message.includes('Analytics not precomputed') || message.includes('Score is null')) {
+      return ApiResponse.success({ 
+        status: 'processing', 
+        message: 'Finalizing analytics matrix...' 
+      }, 202);
+    }
+
     recordCounter(METRICS.QUIZ.SCORE, 1, { outcome: 'failure' });
     recordTimer(METRICS.QUIZ.SCORE + '.duration', durationMs, { outcome: 'failure' });
     return ApiResponse.error(error, 400, durationMs.toString());

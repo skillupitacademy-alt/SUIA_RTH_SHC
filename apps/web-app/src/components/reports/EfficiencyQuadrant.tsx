@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils';
 import { QuizResultResponse } from '@quiz/api-client';
 import { Target, Zap, Clock, AlertTriangle, HelpCircle } from 'lucide-react';
 
-type ResultData = Exclude<QuizResultResponse, { status: 'processing' }>;
+type ResultData = Exclude<QuizResultResponse, { status: 'processing' | 'started' }>;
 type QuestionData = ResultData['questions'][number];
 
 interface EfficiencyQuadrantProps {

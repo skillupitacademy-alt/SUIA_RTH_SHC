@@ -42,7 +42,7 @@ export interface ActionPlanItem {
 }
 
 export type QuizResultResponse = 
-  | { status: 'processing'; message: string }
+  | { status: 'processing' | 'started'; message: string }
   | { 
       id: string;
       status: 'completed' | 'failed' | 'abandoned';

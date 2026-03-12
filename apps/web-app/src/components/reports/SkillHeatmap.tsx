@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils';
 import { QuizResultResponse } from '@quiz/api-client';
 import { ChevronDown, ChevronUp, Info } from 'lucide-react';
 
-type ResultData = Exclude<QuizResultResponse, { status: 'processing' }>;
+type ResultData = Exclude<QuizResultResponse, { status: 'processing' | 'started' }>;
 type SkillData = NonNullable<ResultData['performance']['skill']>;
 
 interface SkillHeatmapProps {
