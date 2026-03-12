@@ -31,8 +31,6 @@ export class ExamSaga {
         const queuesEnabled = process.env.QUEUE_ENABLED === 'true';
         if (!queuesEnabled && !isTestEnv) {
             logger.warn({ examId }, '[ExamSaga] QUEUE_DISABLED: skipping saga enqueue');
-            // If queues are disabled and not in test environment, we still need to create a job
-            // to track the saga's progress, but it won't be enqueued.
             const job = await JobsService.createJob({
                 userId,
                 type: JobType.EXAM_SAGA,
@@ -53,29 +51,49 @@ export class ExamSaga {
         });
 
         if (queuesEnabled) {
-            // Trigger Upstash Workflow for production stability
-            const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? '';
+            // Trigger Upstash Workflow via QStash publish (NOT direct fetch).
+            // The @upstash/workflow serve() handler requires QStash signatures
+            // to orchestrate durable workflow steps. Direct fetch bypasses this.
+            const rawQstashUrl = process.env.QSTASH_URL ?? 'https://qstash.upstash.io';
+            // Normalize: ensure the URL ends with /v2/publish/
+            const qstashBaseUrl = rawQstashUrl.includes('/v2/publish')
+                ? (rawQstashUrl.endsWith('/') ? rawQstashUrl : `${rawQstashUrl}/`)
+                : `${rawQstashUrl.replace(/\/+$/, '')}/v2/publish/`;
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? '';
             const vercelUrl = process.env.VERCEL_URL ?? '';
-            const publicUrl = appUrl !== '' ? appUrl : (vercelUrl !== '' ? `https://${vercelUrl}` : 'http://localhost:3000');
-            const workflowUrl = `${publicUrl}/api/workflows/exam-report`;
+            const appBase = apiUrl !== '' 
+                ? apiUrl.replace(/\/api\/?$/, '')   // "https://api.realtutorialhub.com/api" → "https://api.realtutorialhub.com"
+                : (vercelUrl !== '' ? `https://${vercelUrl}` : '');
+            const workflowEndpoint = `${appBase}/api/workflows/exam-report`;
+            const qstashPublishUrl = `${qstashBaseUrl}${workflowEndpoint}`;
             
             try {
-                await fetch(workflowUrl, {
+                if (appBase === '') {
+                    throw new Error('No app URL configured (NEXT_PUBLIC_API_URL / VERCEL_URL missing)');
+                }
+
+                const response = await fetch(qstashPublishUrl, {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${process.env.QSTASH_TOKEN}`,
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({ examId, userId, jobId: job.id })
                 });
-                logger.info({ examId, jobId: job.id }, '[ExamSaga] Workflow triggered successfully');
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`QStash publish failed: ${response.status} ${errorText}`);
+                }
+
+                logger.info({ examId, jobId: job.id, qstashPublishUrl }, '[ExamSaga] Workflow triggered via QStash');
             } catch (err) {
-                logger.error({ err, examId }, '[ExamSaga] Failed to trigger workflow. Falling back to local execution.');
-                // Local fallback for dev/resilience (Task 125)
+                logger.error({ err, examId, qstashPublishUrl }, '[ExamSaga] QStash trigger failed. Falling back to local execution.');
+                // Local fallback for dev/resilience
                 void this.execute(job.id, { examId, userId });
             }
         } else {
-            // If queues are disabled, still run the saga locally (Task 125)
+            // If queues are disabled, still run the saga locally
             logger.info({ examId, jobId: job.id }, '[ExamSaga] QUEUE_DISABLED: Running saga locally');
             void this.execute(job.id, { examId, userId });
         }
@@ -182,4 +200,3 @@ export class ExamSaga {
         await JobsService.updateJobStatus(jobId, JobStatus.PROCESSING);
     }
 }
- 
