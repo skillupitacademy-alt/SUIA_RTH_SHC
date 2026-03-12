@@ -45,7 +45,8 @@ export async function proxy(request: NextRequest) {
   
   if (!isAuthRoute) {
     const isSecurityReport = pathname.toLowerCase().includes('security/report');
-    if (!isSecurityReport) {
+    const isWorkflowRoute = pathname.startsWith('/api/workflows');
+    if (!isSecurityReport && !isWorkflowRoute) {
       const csrfResponse = await csrfProtection(request);
       if (csrfResponse !== null && csrfResponse !== undefined) {
         return corsMiddleware(request, csrfResponse);
@@ -55,7 +56,8 @@ export async function proxy(request: NextRequest) {
 
   // 5. Auth Protection
   const isSecurityReport = pathname.toLowerCase().includes('security/report');
-  const isPublicRoute = isAuthRoute || isSecurityReport || pathname.includes('/api/status');
+  const isWorkflowRoute = pathname.startsWith('/api/workflows');
+  const isPublicRoute = isAuthRoute || isSecurityReport || pathname.includes('/api/status') || isWorkflowRoute;
 
   if (!isPublicRoute) {
     const pathname = request.nextUrl.pathname;
