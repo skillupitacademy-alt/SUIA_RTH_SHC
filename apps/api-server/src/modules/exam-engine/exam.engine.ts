@@ -422,7 +422,7 @@ export class ExamEngine {
             }
             
             await tx.update(exams)
-                .set({ lastAnsweredAt: new Date() })
+                .set({ status: 'processing', lastAnsweredAt: new Date() })
                 .where(eq(exams.id, targetExamId));
 
             if (idempotencyKey !== undefined && idempotencyKey !== null && idempotencyKey !== '') {

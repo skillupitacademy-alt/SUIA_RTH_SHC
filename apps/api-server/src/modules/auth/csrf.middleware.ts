@@ -14,9 +14,9 @@ export async function csrfProtection(_request: NextRequest) {
   const host = _request.headers.get('host');
   const path = _request.nextUrl.pathname;
   
-  // EXEMPTION: CSP Reporting Endpoint
-  // Browser-automated POSTs for CSP violations do not carry CSRF tokens.
-  if (path === '/api/security/report') return null;
+  // EXEMPTION: Public/Telemetry Endpoints
+  // Browser-automated POSTs for CSP violations and telemetry do not carry CSRF tokens.
+  if (path === '/api/security/report' || path === '/api/logs/client') return null;
   
   // Check if origin is allowed
   const isAllowed = config.csrf.allowedOrigins.includes(origin ?? '') || 

@@ -4,6 +4,7 @@ import type { EChartsOption } from "echarts";
 import { useEffect, useState } from "react";
 import { Sparkles } from "lucide-react";
 import { clientLogger } from "@/utils/clientLogger";
+import { getApiBase } from "@/utils/apiBase";
 import BaseChart from "@/components/charts/BaseChart";
 
 interface HistoryItem {
@@ -16,6 +17,7 @@ interface TopicProgressChartProps {
 }
 
 export function TopicProgressChart({ topicId }: TopicProgressChartProps) {
+    const apiBase = getApiBase();
     const [history, setHistory] = useState<HistoryItem[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -23,7 +25,7 @@ export function TopicProgressChart({ topicId }: TopicProgressChartProps) {
     useEffect(() => {
         async function fetchHistory() {
             try {
-                const res = await fetch(`/api/recommendations/history?topicId=${topicId}`, {
+                const res = await fetch(`${apiBase}/recommendations/history?topicId=${topicId}`, {
                     credentials: "include",
                 });
                 if (!res.ok) {
@@ -41,7 +43,7 @@ export function TopicProgressChart({ topicId }: TopicProgressChartProps) {
             }
         }
         fetchHistory();
-    }, [topicId]);
+    }, [apiBase, topicId]);
 
     const levelMap: Record<string, number> = {
         revise: 1,
