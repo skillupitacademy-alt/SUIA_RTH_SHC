@@ -17,7 +17,7 @@ import {
   topicSkills,
   withTimeout as dbWithTimeout,
 } from '@quiz/db';
-import { eq as eqFn, type InferSelectModel } from 'drizzle-orm';
+import { and, eq, inArray, type InferSelectModel } from 'drizzle-orm';
 
 import { logger } from '@/lib/logger';
 
@@ -29,7 +29,6 @@ import type { ReportEngine } from '../report-engine/report.engine';
 import type { EvaluatedAnswer } from './strategies/scoring-strategy.interface';
 
 const withTimeout = dbWithTimeout ?? (async <T>(promise: Promise<T>) => promise);
-const eq = typeof eqFn === 'function' ? eqFn : ((..._args: unknown[]) => undefined);
 export const __withTimeout = withTimeout;
 
 export const dynamic = 'force-dynamic';
@@ -189,7 +188,7 @@ export class ScoringEngine {
             .from(topics)
             .innerJoin(subjects, eq(topics.subjectId, subjects.id))
             .innerJoin(domains, eq(subjects.domainId, domains.id))
-            .where((t, { inArray }) => inArray(topics.id, topicIds as string[])),
+            .where(inArray(topics.id, topicIds as string[])),
             REPORT_QUERY_TIMEOUT,
             'ScoringEngine.fetchTopics.base'
         );
@@ -200,11 +199,11 @@ export class ScoringEngine {
         })
         .from(topicSkills)
         .innerJoin(skills, eq(topicSkills.skillId, skills.id))
-        .where((ts, { inArray }) => inArray(topicSkills.topicId, topicIds as string[]));
+        .where(inArray(topicSkills.topicId, topicIds as string[]));
 
         const subtopicRows = await db.select()
         .from(subtopics)
-        .where((st, { inArray }) => inArray(subtopics.topicId, topicIds as string[]));
+        .where(inArray(subtopics.topicId, topicIds as string[]));
 
         const topicData = topicRaw.map(r => ({
             ...r.topic,
