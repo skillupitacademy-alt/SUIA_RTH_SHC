@@ -21,7 +21,19 @@ function getInternalApiBase(): string {
  * cookieStore.toString() is unreliable in Next.js 16 — manually serialize.
  */
 async function getAuthHeaders() {
-    const cookieStore = await cookies();
+    let cookieStore: Awaited<ReturnType<typeof cookies>> | null = null;
+    try {
+        cookieStore = await cookies();
+    } catch {
+        return {
+            accessToken: undefined,
+            headers: {
+                Authorization: '',
+                Cookie: '',
+            },
+        };
+    }
+
     const accessToken = cookieStore.get('accessToken')?.value;
     const refreshToken = cookieStore.get('refreshToken')?.value;
     const csrfToken = cookieStore.get('csrfToken')?.value;
