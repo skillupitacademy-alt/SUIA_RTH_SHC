@@ -1,28 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
 
-vi.mock('@quiz/db', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@quiz/db')>();
-
-  return {
-    ...actual,
-    withTimeout: actual.withTimeout ?? (async (promise: Promise<any>) => promise),
-    db: {
-      ...actual.db,
-      query: {
-        ...(actual.db as any).query,
-        exams: {
-          findFirst: vi.fn(),
-        },
-      },
-      update: vi.fn(() => ({
-        set: vi.fn(() => ({
-          where: vi.fn(() => Promise.resolve([{ id: '1' }])),
-        })),
-      })),
-    },
-  };
-});
-
 vi.mock('@/modules/core/container', () => ({
   container: {
     get: vi.fn((token: { name?: string }) => {

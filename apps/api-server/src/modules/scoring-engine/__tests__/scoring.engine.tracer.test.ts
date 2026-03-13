@@ -74,7 +74,10 @@ describe('ScoringEngine Tracing', () => {
       { resolveOn: 'where', result: [] }, // subtopicRows
     ]);
 
-    const perf = { invalidateCache: vi.fn().mockResolvedValue(undefined) };
+    const perf = {
+      invalidateCache: vi.fn().mockResolvedValue(undefined),
+      refreshAnalytics: vi.fn().mockResolvedValue(undefined),
+    };
     const engine = new ScoringEngine(perf as any, {} as any, {} as any);
     await expect(engine.calculateExamResults('exam-1')).resolves.toBe(0);
 

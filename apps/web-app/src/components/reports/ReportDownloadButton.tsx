@@ -2,76 +2,116 @@
 
 import React, { useEffect, useState, useRef } from "react";
 import { useReportStatus } from "@/hooks/useReportStatus";
+import { useExportJob } from "@/hooks/useExportJob";
 import { cn } from "@/lib/utils";
-import { AlertCircle, FileText, Loader2, RefreshCw, Bell } from "lucide-react";
+import { 
+  AlertCircle, 
+  FileText, 
+  Loader2, 
+  RefreshCw, 
+  Bell, 
+  ChevronDown, 
+  Database, 
+  FileJson, 
+  CheckCircle2
+} from "lucide-react";
 import { ReportGenerationModal } from "./ReportGenerationModal";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface ReportDownloadButtonProps {
     attemptId: string;
+    userId: string;
     className?: string;
 }
 
-export function ReportDownloadButton({ attemptId, className }: ReportDownloadButtonProps) {
-    const { status, stage, loading, downloadUrl, error, triggerGeneration, cooldown } = useReportStatus(attemptId);
+export function ReportDownloadButton({ attemptId, userId, className }: ReportDownloadButtonProps) {
+    const { status: pdfStatus, stage: pdfStage, loading: pdfLoading, downloadUrl: pdfUrl, error: pdfError, triggerGeneration: triggerPdf, cooldown: pdfCooldown } = useReportStatus(attemptId);
+    const { triggerExport, status: exportStatus, downloadUrl: exportUrl, isExporting, error: exportError } = useExportJob();
+    
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [activeFormat, setActiveFormat] = useState<"pdf" | "json" | "csv">("pdf");
     const [showNotification, setShowNotification] = useState(false);
-    const lastStatus = useRef(status);
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const dropdownRef = useRef<HTMLDivElement>(null);
+    const lastPdfStatus = useRef(pdfStatus);
+    const lastExportStatus = useRef(exportStatus);
 
-    // Auto-open modal when generation starts
+    // Sync modal/notifications for PDF
     useEffect(() => {
-        if (status === "generating" && lastStatus.current !== "generating") {
+        if (pdfStatus === "generating" && lastPdfStatus.current !== "generating") {
+            setActiveFormat("pdf");
             setIsModalOpen(true);
         }
 
-        // Show notification if report becomes ready while modal is closed
-        if (status === "ready" && lastStatus.current === "generating" && !isModalOpen) {
+        if (pdfStatus === "ready" && lastPdfStatus.current === "generating" && !isModalOpen) {
             setShowNotification(true);
-            // Hide notification after 8 seconds
             setTimeout(() => setShowNotification(false), 8000);
         }
 
-        lastStatus.current = status;
-    }, [status, isModalOpen]);
+        lastPdfStatus.current = pdfStatus;
+    }, [pdfStatus, isModalOpen]);
 
-    const handleDownload = () => {
-        if (downloadUrl) {
-            // High-reliability iframe download trigger
+    // Sync modal for JSON/CSV exports
+    useEffect(() => {
+        if (exportStatus === "processing" && lastExportStatus.current !== "processing") {
+            setIsModalOpen(true);
+        }
+        lastExportStatus.current = exportStatus;
+    }, [exportStatus]);
+
+    // Close dropdown on click outside
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+                setIsDropdownOpen(false);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
+
+    const handlePdfDownload = () => {
+        if (pdfUrl) {
             const frameId = "pdf-download-frame";
             let frame = document.getElementById(frameId) as HTMLIFrameElement;
             if (!frame) {
                 frame = document.createElement("iframe");
                 frame.id = frameId;
+                frame.title = "PDF download frame";
                 frame.style.display = "none";
                 document.body.appendChild(frame);
             }
-            frame.src = downloadUrl;
+            frame.src = pdfUrl;
             setShowNotification(false);
+            setIsDropdownOpen(false);
         }
     };
 
-    const handleTrigger = async (options?: { force?: boolean }) => {
-        await triggerGeneration(options);
+    const handleExport = (format: "json" | "csv") => {
+        setActiveFormat(format);
+        triggerExport(attemptId, userId, format);
+        setIsDropdownOpen(false);
         setIsModalOpen(true);
     };
 
-    if (loading) {
+    const handleTriggerPdf = async (options?: { force?: boolean }) => {
+        setActiveFormat("pdf");
+        await triggerPdf(options);
+        setIsModalOpen(true);
+        setIsDropdownOpen(false);
+    };
+
+    if (pdfLoading) {
         return (
-            <button
-                disabled
-                className={cn(
-                    "flex items-center gap-3 px-6 py-2.5 bg-slate-800/50 text-slate-500 rounded-xl font-bold uppercase tracking-widest cursor-wait text-[11px] animate-pulse",
-                    className
-                )}
-            >
+            <button disabled className={cn("flex items-center gap-3 px-6 py-2.5 bg-slate-950/70 text-slate-500 rounded-2xl font-black uppercase tracking-[0.2em] cursor-wait text-[11px] animate-pulse border border-white/5", className)}>
                 <Loader2 className="w-5 h-5 animate-spin opacity-30" />
-                Checking Report...
+                Preparing...
             </button>
         );
     }
 
     return (
-        <>
+        <div className="relative inline-block" ref={dropdownRef}>
             {/* Success Notification (Toast) */}
             <AnimatePresence>
                 {showNotification && (
@@ -80,7 +120,7 @@ export function ReportDownloadButton({ attemptId, className }: ReportDownloadBut
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.9 }}
                         className="fixed bottom-8 right-8 z-[110] flex items-center gap-4 p-4 bg-indigo-600 text-white rounded-2xl shadow-2xl shadow-indigo-600/40 border border-indigo-500/50 cursor-pointer"
-                        onClick={handleDownload}
+                        onClick={handlePdfDownload}
                     >
                         <div className="flex items-center justify-center w-10 h-10 bg-white/20 rounded-xl">
                             <Bell className="w-5 h-5 animate-bounce" />
@@ -89,90 +129,151 @@ export function ReportDownloadButton({ attemptId, className }: ReportDownloadBut
                             <div className="text-xs font-bold uppercase tracking-wider">Report Ready</div>
                             <p className="text-[11px] opacity-90 font-medium">Your Insight PDF is now available for download.</p>
                         </div>
-                        <button
-                            onClick={(e) => { e.stopPropagation(); setShowNotification(false); }}
-                            className="ml-2 p-1 hover:bg-white/10 rounded-lg transition-colors"
-                        >
+                        <button onClick={(e) => { e.stopPropagation(); setShowNotification(false); }} className="ml-2 p-1 hover:bg-white/10 rounded-lg transition-colors">
                             <AlertCircle className="w-4 h-4 rotate-45" />
                         </button>
                     </motion.div>
                 )}
             </AnimatePresence>
 
-            {/* Main Button States */}
-            {status === "ready" ? (
-                <div className="relative">
-                    {/* Visual Pulse Nudge */}
-                    <div className="absolute inset-0 bg-indigo-500/30 blur-xl rounded-xl animate-pulse" />
-
+            {/* Split Button Strategy */}
+            <div className="flex items-stretch overflow-hidden rounded-2xl border border-white/5 shadow-[0_20px_40px_rgba(0,0,0,0.45)]">
+                {pdfStatus === "ready" ? (
                     <button
-                        onClick={handleDownload}
+                        onClick={handlePdfDownload}
                         className={cn(
-                            "relative flex items-center gap-3 px-8 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold uppercase tracking-widest transition-all shadow-lg shadow-indigo-600/20 active:scale-95 group text-[11px]",
+                            "flex items-center gap-3 px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-black uppercase tracking-[0.2em] transition-all active:scale-[0.98] group text-[11px] border-r border-indigo-500/50",
                             className
                         )}
                     >
-                        <FileText className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                        Download Insight PDF
+                        <FileText className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                        Download PDF
                     </button>
-                </div>
-            ) : (status === "generating" || status === "pending") ? (
-                <button
-                    onClick={() => setIsModalOpen(true)}
-                    className={cn(
-                        "flex items-center gap-3 px-6 py-2.5 bg-slate-800 hover:bg-slate-700 text-indigo-400 rounded-xl font-bold uppercase tracking-widest transition-all text-[11px] border border-slate-700/50",
-                        className
-                    )}
-                >
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                    {stage === "rendering" ? "Rendering PDF..." : stage === "uploading" ? "Finalizing..." : "Analyzing Matrix..."}
-                </button>
-            ) : cooldown > 0 ? (
-                <button
-                    disabled
-                    className={cn(
-                        "flex items-center gap-3 px-6 py-2.5 bg-slate-900 border border-slate-800 text-slate-500 rounded-xl font-bold uppercase tracking-widest transition-all text-[11px] cursor-not-allowed opacity-80",
-                        className
-                    )}
-                >
-                    <RefreshCw size={18} className="animate-spin-slow opacity-20" />
-                    Next Report in {cooldown}s
-                </button>
-            ) : (status === "failed" || error) ? (
-                <button
-                    onClick={() => handleTrigger({ force: true })}
-                    className={cn(
-                        "flex items-center gap-3 px-6 py-2.5 bg-rose-600/10 border border-rose-500/20 hover:bg-rose-600/20 text-rose-500 rounded-xl font-bold uppercase tracking-widest transition-all text-[11px]",
-                        className
-                    )}
-                >
-                    <AlertCircle size={18} />
-                    {error || "Generation Failed"}
-                </button>
-            ) : (
-                <button
-                    onClick={() => handleTrigger()}
-                    className={cn(
-                        "flex items-center gap-3 px-6 py-2.5 bg-indigo-600/10 border border-indigo-500/20 hover:bg-indigo-600/20 text-indigo-400 rounded-xl font-bold uppercase tracking-widest transition-all text-[11px]",
-                        className
-                    )}
-                >
-                    <RefreshCw size={18} />
-                    Generate PDF Report
-                </button>
-            )}
+                ) : (pdfStatus === "generating" || pdfStatus === "pending") ? (
+                    <button
+                        onClick={() => { setActiveFormat("pdf"); setIsModalOpen(true); }}
+                        className={cn("flex items-center gap-3 px-6 py-3 bg-slate-950/70 text-indigo-400 font-black uppercase tracking-[0.2em] transition-all text-[11px] border-r border-white/5", className)}
+                    >
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        {pdfStatus === "pending" ? "Preparing..." : "Generating..."}
+                    </button>
+                ) : (
+                    <button
+                        onClick={() => handleTriggerPdf()}
+                        disabled={pdfCooldown > 0}
+                        className={cn(
+                            "flex items-center gap-3 px-6 py-3 bg-slate-950/70 border-r border-white/5 hover:bg-slate-900/80 text-indigo-400 font-black uppercase tracking-[0.2em] transition-all text-[11px] disabled:opacity-50",
+                            className
+                        )}
+                    >
+                        <RefreshCw className={cn("w-4 h-4", pdfCooldown > 0 && "animate-spin-slow opacity-30")} />
+                        {pdfCooldown > 0 ? `Retry in ${pdfCooldown}s` : "Generate PDF"}
+                    </button>
+                )}
 
-            {/* Premium Generation Modal */}
+                {/* Dropdown Toggle */}
+                <button
+                    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                    className="px-3 bg-indigo-700 hover:bg-indigo-600 text-white transition-colors border-l border-indigo-400/20"
+                >
+                    <ChevronDown className={cn("w-4 h-4 transition-transform duration-300", isDropdownOpen && "rotate-180")} />
+                </button>
+            </div>
+
+            {/* Dropdown Menu */}
+            <AnimatePresence>
+                {isDropdownOpen && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                        className="absolute right-0 mt-3 w-72 bg-slate-950/95 border border-white/5 rounded-[2rem] shadow-[0_30px_60px_rgba(0,0,0,0.6)] p-3 z-[120] backdrop-blur-2xl"
+                    >
+                        <div className="mb-2 px-3 py-2">
+                            <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Data Intelligence Export</span>
+                        </div>
+
+                        {/* PDF Option (Duplicate of main but helpful in menu) */}
+                        <button 
+                            disabled={pdfStatus !== "ready"}
+                            onClick={handlePdfDownload}
+                            className="w-full flex items-center justify-between p-4 hover:bg-slate-900/70 rounded-2xl transition-all group disabled:opacity-30 disabled:cursor-not-allowed border border-transparent hover:border-white/5"
+                        >
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 bg-indigo-500/10 rounded-xl text-indigo-400 group-hover:bg-indigo-500 group-hover:text-white transition-colors">
+                                    <FileText size={16} />
+                                </div>
+                                <div className="text-left">
+                                    <div className="text-xs font-black text-slate-100 italic uppercase tracking-wider">Visual Report</div>
+                                    <div className="text-[10px] text-slate-500">Premium Insights PDF</div>
+                                </div>
+                            </div>
+                            {pdfStatus === "ready" && <CheckCircle2 size={14} className="text-emerald-500" />}
+                        </button>
+
+                        <div className="h-px bg-slate-800/50 my-1 mx-2" />
+
+                        {/* JSON Export */}
+                        <button 
+                            onClick={() => handleExport("json")}
+                            disabled={isExporting}
+                            className="w-full flex items-center justify-between p-4 hover:bg-slate-900/70 rounded-2xl transition-all group disabled:opacity-50 border border-transparent hover:border-white/5"
+                        >
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 bg-amber-500/10 rounded-xl text-amber-400 group-hover:bg-amber-500 group-hover:text-white transition-colors">
+                                    <FileJson size={16} />
+                                </div>
+                                <div className="text-left">
+                                    <div className="text-xs font-black text-slate-100 uppercase tracking-wider">Deep Analytics</div>
+                                    <div className="text-[10px] text-slate-500">JSON Fact Structure</div>
+                                </div>
+                            </div>
+                            {exportStatus === "processing" && <Loader2 size={14} className="text-amber-500 animate-spin" />}
+                        </button>
+
+                        {/* CSV Export */}
+                        <button 
+                            onClick={() => handleExport("csv")}
+                            disabled={isExporting}
+                            className="w-full flex items-center justify-between p-4 hover:bg-slate-900/70 rounded-2xl transition-all group disabled:opacity-50 border border-transparent hover:border-white/5"
+                        >
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 bg-emerald-500/10 rounded-xl text-emerald-400 group-hover:bg-emerald-500 group-hover:text-white transition-colors">
+                                    <Database size={16} />
+                                </div>
+                                <div className="text-left">
+                                    <div className="text-xs font-black text-slate-100 uppercase tracking-wider">Data Engineering</div>
+                                    <div className="text-[10px] text-slate-500">14-File CSV Bundle (ZIP)</div>
+                                </div>
+                            </div>
+                            {exportStatus === "processing" && <Loader2 size={14} className="text-emerald-500 animate-spin" />}
+                        </button>
+
+                        {(pdfError || exportError) && (
+                            <div className="mt-2 p-2 bg-rose-500/10 rounded-xl border border-rose-500/20">
+                                <span className="text-[9px] text-rose-400 font-medium leading-tight block">
+                                    {pdfError || exportError}
+                                </span>
+                            </div>
+                        )}
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* Hidden download frame */}
+            <iframe id="pdf-download-frame" title="PDF download frame" className="hidden" />
+
             <ReportGenerationModal
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
-                status={status}
-                stage={stage}
-                error={error}
-                downloadUrl={downloadUrl}
+                status={activeFormat === "pdf" ? pdfStatus : exportStatus}
+                stage={activeFormat === "pdf" ? pdfStage : null}
+                error={activeFormat === "pdf" ? pdfError : exportError}
+                downloadUrl={activeFormat === "pdf" ? pdfUrl : exportUrl}
                 attemptId={attemptId}
+                format={activeFormat}
             />
-        </>
+        </div>
     );
 }
 

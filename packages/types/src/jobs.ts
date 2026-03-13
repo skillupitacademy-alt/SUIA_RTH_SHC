@@ -7,7 +7,8 @@ export enum JobType {
     EMAIL_SEND = 'EMAIL_SEND',
     ANALYTICS_PROCESS = 'ANALYTICS_PROCESS',
     EXAM_SAGA = 'EXAM_SAGA',
-    BULK_IMPORT = 'BULK_IMPORT'
+    BULK_IMPORT = 'BULK_IMPORT',
+    EXPORT_SAGA = 'EXPORT_SAGA'
 }
 
 export enum JobStatus {

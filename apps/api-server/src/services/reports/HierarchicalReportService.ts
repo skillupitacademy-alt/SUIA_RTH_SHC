@@ -29,7 +29,7 @@ export class HierarchicalReportService {
             // 1. Fetch Materialized Report
             const exam = await db.query.exams.findFirst({
                 where: eq(exams.id, job.examId),
-                columns: { reportMaterialized: true, userId: true }
+                columns: { reportMaterialized: true, userId: true, exportUrls: true }
             });
 
             if (exam?.reportMaterialized === null || exam?.reportMaterialized === undefined) {
@@ -96,6 +96,11 @@ export class HierarchicalReportService {
             this.log.info({ jobId }, "Uploading final merged report");
             const pdfUrl = await uploadReport(mergedBuffer, exam.userId, job.examId);
 
+            const nextExportUrls = {
+                ...(exam.exportUrls ?? {}),
+                analytics_pdf: pdfUrl
+            };
+
             // Update Report Success
             await ReportRepository.updateReportSuccess(job.examId, {
                 fileRef: pdfUrl,
@@ -103,6 +108,10 @@ export class HierarchicalReportService {
                 fileSizeKb: Math.round(mergedBuffer.length / 1024),
                 pageCount: totalPageEstimate
             });
+
+            await db.update(exams).set({
+                exportUrls: nextExportUrls
+            }).where(eq(exams.id, job.examId));
 
             await ReportJobService.updateProgress(jobId, 100, "completed");
             

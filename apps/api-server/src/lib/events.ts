@@ -17,6 +17,7 @@ export const AppEvents = {
   SYSTEM_HEALTH_CHECK: 'system.health_check',
   BACKGROUND_JOB_FAILED: 'system.job_failed',
   REPORT_GENERATED: 'report.generated',
+  EXPORT_COMPLETE: 'export.complete'
 } as const;
 
 export type AppEvent = typeof AppEvents[keyof typeof AppEvents];
@@ -80,5 +81,14 @@ export interface DomainEventMap {
   [AppEvents.EXAM_COMPLETED]: ExamCompletedPayload;
   [AppEvents.EXAM_FAILED]: ExamFailedPayload;
   [AppEvents.BACKGROUND_JOB_FAILED]: JobFailedPayload;
+  [AppEvents.EXPORT_COMPLETE]: ExportCompletePayload;
   [key: string]: unknown;
+}
+
+export interface ExportCompletePayload {
+  examId: string;
+  userId: string;
+  format: string;
+  downloadUrl: string;
+  completedAt: Date;
 }

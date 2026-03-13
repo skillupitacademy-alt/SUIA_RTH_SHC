@@ -559,7 +559,11 @@ export class ReportEngine {
 
     // Lazy Refresh: If the primary row is empty (MV not refreshed for this attempt)
     const hasData = (row: Partial<CoreRow> | undefined) =>
-      row !== undefined && row !== null && row.score !== null;
+      row !== undefined
+      && row !== null
+      && (row.score !== null
+        || (row as unknown as { question_count?: number | null }).question_count !== null
+        || row.confidence !== null);
 
     if (coreMetricsRaw.rows.length === 0 || !hasData(coreMetricsRaw.rows[0])) {
       this.log.info({ examId }, 'Analytic row missing in MV, triggering lazy refresh');

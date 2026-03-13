@@ -196,8 +196,10 @@ export default function PremiumReportPage() {
                     </button>
 
                     <div className="h-8 w-[1px] bg-slate-800/50" />
-
-                    <ReportDownloadButton attemptId={id as string} />
+                    <ReportDownloadButton 
+                        attemptId={id as string} 
+                        userId={report.userId || ""} 
+                    />
                 </div>
             </header>
 

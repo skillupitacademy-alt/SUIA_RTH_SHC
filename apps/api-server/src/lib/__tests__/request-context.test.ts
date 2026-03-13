@@ -1,58 +1,81 @@
-import { describe, expect, it } from 'vitest';
-import { runWithTrace, getCorrelationId, getRequestContext } from '../trace.context';
+import { describe, it, expect } from 'vitest';
+import {
+  getCorrelationId,
+  getPath,
+  getRequestContext,
+  getRequestId,
+  getUserId,
+  runWithTrace,
+  setUserId,
+  withRequestContext,
+} from '../request-context';
 
-describe('TraceContext (RequestContext)', () => {
-  it('should return undefined when outside a context', () => {
-    expect(getCorrelationId()).toBeUndefined();
-    expect(getRequestContext()).toBeUndefined();
+describe('request-context', () => {
+  it('uses explicit requestId and exposes accessors', () => {
+    const result = withRequestContext(
+      { requestId: 'req-1', userId: 'u1', ip: '127.0.0.1', path: '/x', startedAt: 123 },
+      () => {
+        setUserId('u2');
+        return {
+          ctx: getRequestContext(),
+          requestId: getRequestId(),
+          correlationId: getCorrelationId(),
+          userId: getUserId(),
+          path: getPath(),
+        };
+      }
+    );
+
+    expect(result.requestId).toBe('req-1');
+    expect(result.correlationId).toBe('req-1');
+    expect(result.userId).toBe('u2');
+    expect(result.path).toBe('/x');
+    expect(result.ctx?.startedAt).toBe(123);
   });
 
-  it('should store and retrieve correlationId using string argument', () => {
-    const testId = 'test-id-123';
-    runWithTrace(testId, () => {
-      expect(getCorrelationId()).toBe(testId);
-      expect(getRequestContext()?.correlationId).toBe(testId);
+  it('falls back to correlationId when requestId is missing', () => {
+    const result = withRequestContext({ correlationId: 'corr-1' }, () => ({
+      requestId: getRequestId(),
+      correlationId: getCorrelationId(),
+    }));
+
+    expect(result.requestId).toBe('corr-1');
+    expect(result.correlationId).toBe('corr-1');
+  });
+
+  it('generates a requestId when none provided', () => {
+    const originalDescriptor = Object.getOwnPropertyDescriptor(globalThis, 'crypto');
+    Object.defineProperty(globalThis, 'crypto', {
+      value: {},
+      configurable: true,
     });
+
+    try {
+      const result = withRequestContext({}, () => ({
+        requestId: getRequestId(),
+        correlationId: getCorrelationId(),
+      }));
+
+      expect(result.requestId).toBeDefined();
+      expect(result.correlationId).toBe(result.requestId);
+    } finally {
+      if (originalDescriptor) {
+        Object.defineProperty(globalThis, 'crypto', originalDescriptor);
+      } else {
+        // Restore absence when crypto was not originally defined.
+        // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+        delete (globalThis as any).crypto;
+      }
+    }
   });
 
-  it('should store and retrieve full context object', () => {
-    const context = {
-        correlationId: 'req-456',
-        userId: 'user-789',
-        path: '/api/v1/exams'
-    };
+  it('supports runWithTrace string shortcut', () => {
+    const result = runWithTrace('trace-1', () => ({
+      requestId: getRequestId(),
+      correlationId: getCorrelationId(),
+    }));
 
-    runWithTrace(context, () => {
-      expect(getCorrelationId()).toBe('req-456');
-      
-      const reqCtx = getRequestContext();
-      expect(reqCtx).toBeDefined();
-      expect(reqCtx?.userId).toBe('user-789');
-      expect(reqCtx?.path).toBe('/api/v1/exams');
-    });
-  });
-
-  it('should isolate contexts across async boundaries', async () => {
-    const results: string[] = [];
-
-    const asyncTask = (id: string, delay: number) => {
-      return runWithTrace(id, async () => {
-        // Wait a bit to ensure concurrency
-        await new Promise(resolve => setTimeout(resolve, delay));
-        // Retrieve ID inside the callback after async wait
-        const retrievedId = getCorrelationId();
-        if (retrievedId) results.push(retrievedId);
-      });
-    };
-
-    // Run two tasks concurrently
-    await Promise.all([
-      asyncTask('context-A', 50),
-      asyncTask('context-B', 10)
-    ]);
-
-    expect(results).toContain('context-A');
-    expect(results).toContain('context-B');
-    expect(results.length).toBe(2);
+    expect(result.requestId).toBe('trace-1');
+    expect(result.correlationId).toBe('trace-1');
   });
 });

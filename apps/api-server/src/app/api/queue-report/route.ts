@@ -1,5 +1,6 @@
 import { db, exams } from "@quiz/db";
 import { METRICS } from "@quiz/observability";
+import { Client } from "@upstash/workflow";
 import { eq } from "drizzle-orm";
 import { after, NextRequest } from "next/server";
 
@@ -124,7 +125,35 @@ async function postHandler(req: NextRequest) {
     // 4. State Machine Init
     await ReportRepository.createReportIfNotExists({ attemptId, userId, status: "pending" });
 
-    // 5. Direct inline generation inside after() — no fragile internal HTTP call
+    // 5. Prefer Upstash Workflow when enabled; fall back to local serverless generation
+    const queuesEnabled = process.env.QUEUE_ENABLED === "true";
+    const qstashToken = typeof process.env.QSTASH_TOKEN === "string" ? process.env.QSTASH_TOKEN : "";
+    const qstashUrl = typeof process.env.QSTASH_URL === "string" && process.env.QSTASH_URL.trim() !== ""
+      ? process.env.QSTASH_URL
+      : "https://qstash.upstash.io";
+
+    if (queuesEnabled && qstashToken.trim() !== "") {
+      const workflowClient = new Client({
+        baseUrl: qstashUrl,
+        token: qstashToken,
+      });
+      const apiBase = (process.env.NEXT_PUBLIC_API_URL ?? req.nextUrl.origin).replace(/\/$/, "");
+      const workflowUrl = `${apiBase}/api/workflows/pdf-report`;
+
+      try {
+        await workflowClient.trigger({
+          url: workflowUrl,
+          body: { attemptId, userId },
+          retries: 3
+        });
+        logger.info({ attemptId, workflowUrl }, "[QueueReport] Triggered PDF workflow");
+        return ApiResponse.success({ status: "queued", attemptId });
+      } catch (err) {
+        logger.error({ err, attemptId, workflowUrl }, "[QueueReport] Workflow trigger failed; falling back to local generation");
+      }
+    }
+
+    // Local inline generation inside after() ? preserves current PDF UX
     after(async () => {
       try {
         const startTime = Date.now();
@@ -151,6 +180,16 @@ async function postHandler(req: NextRequest) {
           fileSizeKb,
           pageCount
         });
+
+        const examRow = await db.query.exams.findFirst({
+          where: eq(exams.id, attemptId),
+          columns: { exportUrls: true }
+        });
+        const nextExportUrls = {
+          ...(examRow?.exportUrls ?? {}),
+          analytics_pdf: fileRef
+        };
+        await db.update(exams).set({ exportUrls: nextExportUrls }).where(eq(exams.id, attemptId));
 
         const totalDuration = Date.now() - startTime;
         recordTimer("reports.api.total.duration", totalDuration, { route: "/api/queue-report", outcome: "success", fileSizeKb });

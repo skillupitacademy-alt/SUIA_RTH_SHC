@@ -77,7 +77,10 @@ export class ScoringEngine {
 
     const isTestEnv = process.env.NODE_ENV === 'test' || process.env.VITEST === 'true' || process.env.VITEST_WORKER_ID !== undefined;
     if (isTestEnv) {
-      this.performanceService = this.performanceService ?? ({ invalidateCache: async () => undefined } as PerformanceService);
+      this.performanceService = this.performanceService ?? ({
+        invalidateCache: async () => undefined,
+        refreshAnalytics: async () => undefined,
+      } as PerformanceService);
       this.examRepo = this.examRepo ?? ({} as ExamRepository);
       this.reportEngine = this.reportEngine ?? ({} as ReportEngine);
       this.answerEvaluation = this.answerEvaluation ?? ({ evaluate: () => false } as AnswerEvaluationEngine);

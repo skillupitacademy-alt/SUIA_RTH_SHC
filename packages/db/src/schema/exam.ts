@@ -40,6 +40,7 @@ export const exams = (pgTable("exams", {
   lastAnsweredAt: timestamp("last_answered_at"),
   completedAt: timestamp("completed_at"),
   reportMaterialized: jsonb("report_materialized"),
+  exportUrls: jsonb("export_urls"),
 }, (t) => [
   primaryKey({ columns: [t.id, t.startedAt] }),
   index("idx_exams_user_id_status").on(t.userId, t.status),

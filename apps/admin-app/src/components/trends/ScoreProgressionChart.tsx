@@ -1,6 +1,7 @@
 'use client';
 import { format } from 'date-fns';
 import { CartesianGrid, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, type TooltipProps, XAxis, YAxis } from 'recharts';
+import type { NameType, ValueType } from 'recharts/types/component/DefaultTooltipContent';
 
 interface ScoreProgressionChartProps {
     scores: Array<{
@@ -30,15 +31,16 @@ export function ScoreProgressionChart({ scores, passThreshold = 70 }: ScoreProgr
         fullDate: format(new Date(s.date), 'PPP')
     }));
 
-    const tooltipFormatter: TooltipProps<number, string>['formatter'] = (value, name, { payload }) => {
+    const tooltipFormatter: TooltipProps<ValueType, NameType>['formatter'] = (value, name, { payload }) => {
         if (name === 'score') {
             const blueprint = payload?.blueprintName ?? '';
-            return [`${value}%`, blueprint];
+            const numericValue = toNumberValue(value);
+            return [`${numericValue}%`, blueprint];
         }
         return value;
     };
 
-    const tooltipLabelFormatter: TooltipProps<number, string>['labelFormatter'] = (_label, payload) => {
+    const tooltipLabelFormatter: TooltipProps<ValueType, NameType>['labelFormatter'] = (_label, payload) => {
         const first = (payload != null && payload.length > 0) ? payload[0] : null;
         return first?.payload?.fullDate ?? _label;
     };
@@ -107,4 +109,15 @@ export function ScoreProgressionChart({ scores, passThreshold = 70 }: ScoreProgr
             </ResponsiveContainer>
         </div>
     );
+}
+
+function toNumberValue(value: ValueType | undefined): number {
+    if (typeof value === 'number') return value;
+    if (typeof value === 'string') return Number(value);
+    if (Array.isArray(value)) {
+        const first = value.find(item => item != null);
+        if (typeof first === 'number') return first;
+        if (typeof first === 'string') return Number(first);
+    }
+    return 0;
 }

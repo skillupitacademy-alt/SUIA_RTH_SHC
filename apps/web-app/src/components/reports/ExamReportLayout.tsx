@@ -67,6 +67,7 @@ const TutorInsightPanel = dynamic(() => import("./TutorInsightPanel").then(mod =
 
 export interface ExamReport {
     examId: string;
+    userId?: string;
     score: number;
     mastery: number;
     readiness: number;

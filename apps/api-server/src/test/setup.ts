@@ -27,6 +27,7 @@ vi.mock('@quiz/db', () => ({
       sessions: { findFirst: vi.fn(), findMany: vi.fn() },
       auditLogs: { findFirst: vi.fn(), findMany: vi.fn() },
       backgroundJobs: { findFirst: vi.fn(), findMany: vi.fn() },
+      reportJobs: { findFirst: vi.fn(), findMany: vi.fn() },
     },
     select: vi.fn(() => {
       const builder: any = {
@@ -42,8 +43,13 @@ vi.mock('@quiz/db', () => ({
       return builder;
     }),
     insert: vi.fn(() => ({ values: vi.fn().mockReturnThis(), returning: vi.fn().mockResolvedValue([]) })),
-    update: vi.fn(() => ({ set: vi.fn().mockReturnThis(), where: vi.fn().mockResolvedValue({}) })),
-    delete: vi.fn(() => ({ where: vi.fn().mockResolvedValue({}) })),
+    update: vi.fn(() => ({
+      set: vi.fn().mockReturnThis(),
+      where: vi.fn(() => ({ returning: vi.fn().mockResolvedValue([]) })),
+    })),
+    delete: vi.fn(() => ({
+      where: vi.fn(() => ({ returning: vi.fn().mockResolvedValue([]) })),
+    })),
     transaction: vi.fn(async (fn) => {
       const builder: any = {
         from: vi.fn().mockReturnThis(),
@@ -58,7 +64,10 @@ vi.mock('@quiz/db', () => ({
       return fn({
         query: { exams: { findFirst: vi.fn() } },
         select: vi.fn(() => builder),
-        update: vi.fn(() => ({ set: vi.fn().mockReturnThis(), where: vi.fn().mockResolvedValue({}) })),
+        update: vi.fn(() => ({
+          set: vi.fn().mockReturnThis(),
+          where: vi.fn(() => ({ returning: vi.fn().mockResolvedValue([]) })),
+        })),
         insert: vi.fn(() => ({ values: vi.fn().mockReturnThis(), onConflictDoNothing: vi.fn().mockResolvedValue(undefined) })),
       });
     }),
@@ -78,6 +87,8 @@ vi.mock('@quiz/db', () => ({
   passwordResetTokens: {},
   idempotencyKeys: { userId: 'userId', key: 'key', examId: 'examId' },
   backgroundJobs: { id: 'id' },
+  reportJobs: { id: 'id', createdAt: 'createdAt', status: 'status' },
+  auditLogs: { id: 'id', createdAt: 'createdAt', action: 'action', userId: 'userId' },
   resultsByDimension: {},
   roles: {},
   userRoles: {},

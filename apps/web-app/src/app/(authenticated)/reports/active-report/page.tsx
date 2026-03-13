@@ -19,7 +19,8 @@ import {
     SnapshotDonut,
     FluencyScatter
 } from "@/components/reports/recharts/RechartsSuite";
-import { ArrowLeft, Download, Share2, Loader2 } from "lucide-react";
+import { ArrowLeft, Share2, Loader2 } from "lucide-react";
+import { ReportDownloadButton } from "@/components/reports/ReportDownloadButton";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import { ActionPlanItem, apiClient } from "@quiz/api-client";
@@ -253,9 +254,11 @@ function ReportContent() {
                             <button className="flex items-center gap-2 px-6 py-2 rounded-xl border-2 font-bold hover:bg-background transition-colors text-sm">
                                 <Share2 size={16} /> Share
                             </button>
-                            <button className="flex items-center gap-2 px-6 py-2 rounded-xl bg-primary text-primary-foreground font-black shadow-lg shadow-primary/20 hover:scale-105 transition-transform text-sm">
-                                <Download size={16} /> Download PDF
-                            </button>
+                            <ReportDownloadButton 
+                                attemptId={examId!} 
+                                userId={useAuthStore.getState().user?.id || ""} 
+                                className="!py-2 !px-6"
+                            />
                         </div>
                     </div>
 

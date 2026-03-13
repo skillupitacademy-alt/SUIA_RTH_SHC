@@ -66,6 +66,16 @@ export class JobsService {
     return job as Job | undefined;
   }
 
+  static async getJobStatus(jobId: string): Promise<Job | undefined> {
+    const client = this.resolveDb((candidate) => typeof (candidate as unknown as Record<string, unknown>).query === 'object');
+    const finder = (client as unknown as { query: { backgroundJobs: { findFirst: unknown } } }).query?.backgroundJobs?.findFirst;
+    if (typeof finder !== 'function') return undefined;
+    const job = await finder({
+      where: eq(backgroundJobs.id, jobId),
+    });
+    return job as Job | undefined;
+  }
+
   static async listJobs(options: ListJobsOptions): Promise<{ items: Job[]; total: number; nextCursor: { createdAt: string; id: string } | null; hasNextPage: boolean }> {
     const limit = options.limit ?? 50;
     const client = this.resolveDb((candidate) =>

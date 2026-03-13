@@ -9,11 +9,14 @@ import {
     Loader2,
     XCircle,
     Download,
-    AlertCircle
+    AlertCircle,
+    FileJson,
+    Database
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-
 import { createPortal } from "react-dom";
+
+type ExportFormat = "pdf" | "json" | "csv";
 
 interface ReportGenerationModalProps {
     isOpen: boolean;
@@ -23,14 +26,29 @@ interface ReportGenerationModalProps {
     error: string | null;
     downloadUrl: string | null;
     attemptId: string;
+    format?: ExportFormat;
 }
 
-const STAGES = [
-    { id: "queued", label: "Initialization", description: "Request received, preparing analytics engine..." },
-    { id: "rendering", label: "Analysis & Rendering", description: "Synthesizing performance matrix & building PDF..." },
-    { id: "uploading", label: "Finalizing", description: "Encrypting & uploading to secure storage..." },
-    { id: "ready", label: "Complete", description: "Your insight report is ready for download." }
-];
+const STAGES_CONFIG: Record<ExportFormat, { id: string; label: string; description: string }[]> = {
+    pdf: [
+        { id: "queued", label: "Initialization", description: "Request received, preparing analytics engine..." },
+        { id: "rendering", label: "Analysis & Rendering", description: "Synthesizing performance matrix & building PDF..." },
+        { id: "uploading", label: "Finalizing", description: "Encrypting & uploading to secure storage..." },
+        { id: "ready", label: "Complete", description: "Your insight report is ready for download." }
+    ],
+    json: [
+        { id: "queued", label: "Initialization", description: "Requesting server-side analytical synthesis..." },
+        { id: "processing", label: "Data Synthesis", description: "Aggregating 12 KPI layers into raw fact structure..." },
+        { id: "finalizing", label: "Formatting", description: "Serializing JSON envelope and verifying schema..." },
+        { id: "ready", label: "Complete", description: "Your data intelligence file is ready for download." }
+    ],
+    csv: [
+        { id: "queued", label: "Initialization", description: "Triggering multi-stage aggregation pipeline..." },
+        { id: "aggregating", label: "KPI Extraction", description: "Calculating domain, subtopic, and skill masteries..." },
+        { id: "zipping", label: "ZIP Packaging", description: "Bundling 14 CSV files into a secure archive..." },
+        { id: "ready", label: "Complete", description: "Your 14-file analytical bundle is ready for download." }
+    ]
+};
 
 export function ReportGenerationModal({
     isOpen,
@@ -39,23 +57,25 @@ export function ReportGenerationModal({
     stage,
     error,
     downloadUrl,
+    format = "pdf"
 }: ReportGenerationModalProps) {
-    // Use a local stage tracker to handle smooth transitions especially for the "ready" state
     const [currentStageIndex, setCurrentStageIndex] = useState(0);
     const [mounted, setMounted] = useState(false);
+
+    const stages = STAGES_CONFIG[format];
 
     useEffect(() => {
         setMounted(true);
     }, []);
 
     useEffect(() => {
-        if (status === "ready") {
+        if (status === "ready" || status === "completed") {
             setCurrentStageIndex(3);
-        } else if (stage === "uploading") {
+        } else if (stage === "uploading" || stage === "finalizing" || stage === "zipping") {
             setCurrentStageIndex(2);
-        } else if (stage === "rendering") {
+        } else if (stage === "rendering" || stage === "processing" || stage === "aggregating") {
             setCurrentStageIndex(1);
-        } else if (stage === "queued" || status === "pending") {
+        } else if (stage === "queued" || status === "pending" || status === "processing") {
             setCurrentStageIndex(0);
         }
     }, [stage, status]);
@@ -63,16 +83,16 @@ export function ReportGenerationModal({
     if (!isOpen || !mounted) return null;
 
     const isFailed = status === "failed" || !!error;
-    const isReady = status === "ready";
+    const isReady = status === "ready" || status === "completed";
 
     const handleDownload = () => {
         if (downloadUrl) {
-            // High-reliability iframe download trigger
-            const frameId = "pdf-download-frame";
-            let frame = document.getElementById(frameId) as HTMLIFrameElement;
+            const frameId = "artifact-download-frame";
+            let frame = document.getElementById(frameId) as HTMLIFrameElement | null;
             if (!frame) {
                 frame = document.createElement("iframe");
                 frame.id = frameId;
+                frame.title = "Download frame";
                 frame.style.display = "none";
                 document.body.appendChild(frame);
             }
@@ -88,18 +108,15 @@ export function ReportGenerationModal({
                 exit={{ opacity: 0 }}
                 className="fixed inset-0 z-[9999] flex flex-col bg-[#020617]"
             >
-                {/* Immersive Background Texture */}
                 <div className="absolute inset-0 opacity-10 pointer-events-none overflow-hidden">
                     <div className="absolute top-[-5%] left-[-5%] w-[30%] h-[30%] bg-indigo-600/10 blur-[100px] rounded-full" />
                     <div className="absolute bottom-[-5%] right-[-5%] w-[20%] h-[40%] bg-blue-600/5 blur-[100px] rounded-full" />
                 </div>
 
-                {/* Header/Control Bar */}
                 <div className="absolute top-0 inset-x-0 p-6 flex justify-end z-50">
                     <button
                         onClick={onClose}
                         className="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-all group active:scale-95"
-                        title="Close Overlay"
                     >
                         <XCircle className="w-5 h-5 text-slate-400 group-hover:text-white" />
                     </button>
@@ -111,11 +128,12 @@ export function ReportGenerationModal({
                         animate={{ y: 0, opacity: 1 }}
                         className="w-full max-w-xl mx-auto"
                     >
-                        {/* Header Section */}
                         <div className="text-center mb-10">
                             <div className="inline-flex items-center justify-center w-20 h-20 rounded-[2rem] bg-indigo-600/5 border border-indigo-500/10 mb-6 backdrop-blur-xl">
                                 {isReady ? (
-                                    <FileText className="w-10 h-10 text-indigo-400" />
+                                    format === "pdf" ? <FileText className="w-10 h-10 text-indigo-400" /> :
+                                    format === "json" ? <FileJson className="w-10 h-10 text-amber-400" /> :
+                                    <Database className="w-10 h-10 text-emerald-400" />
                                 ) : isFailed ? (
                                     <AlertCircle className="w-10 h-10 text-rose-500" />
                                 ) : (
@@ -124,29 +142,27 @@ export function ReportGenerationModal({
                             </div>
 
                             <h2 className="text-3xl md:text-4xl font-bold text-white tracking-tight mb-3 uppercase">
-                                {isReady ? "Analysis Complete" : isFailed ? "System Fault" : "Neural Pipeline"}
+                                {isReady ? "Export Complete" : isFailed ? "System Fault" : "Synthesis Pipeline"}
                             </h2>
                             <p className="text-slate-400 text-base md:text-lg max-w-md mx-auto font-medium leading-relaxed">
                                 {isReady
-                                    ? "Your diagnostic report has been synthesized and is prepared for download."
+                                    ? `Your ${format.toUpperCase()} artifact has been synthesized and is prepared for download.`
                                     : isFailed
                                         ? "A critical error occurred during synthesis. The pipeline has been halted."
-                                        : "Executing deep-layer synthesis of performance data..."
+                                        : `Executing deep-layer ${format.toUpperCase()} synthesis...`
                                 }
                             </p>
                         </div>
 
-                        {/* Progress Timeline - Refined Scale */}
                         {!isFailed && (
                             <div className="relative space-y-8 mb-10 px-4 md:px-8">
-                                {STAGES.map((s, idx) => {
+                                {stages.map((s, idx) => {
                                     const isActive = idx === currentStageIndex;
                                     const isCompleted = idx < currentStageIndex || isReady;
 
                                     return (
                                         <div key={s.id} className="relative flex items-center gap-6">
-                                            {/* Vertical connector line */}
-                                            {idx < STAGES.length - 1 && (
+                                            {idx < stages.length - 1 && (
                                                 <div className={cn(
                                                     "absolute left-[13px] top-9 w-[1px] h-10",
                                                     isCompleted ? "bg-indigo-600/50" : "bg-slate-800"
@@ -189,7 +205,6 @@ export function ReportGenerationModal({
                             </div>
                         )}
 
-                        {/* Error Context */}
                         {isFailed && (
                             <div className="bg-rose-600/5 border border-rose-500/10 rounded-[2rem] p-6 mb-10 backdrop-blur-xl">
                                 <div className="flex gap-4">
@@ -197,14 +212,13 @@ export function ReportGenerationModal({
                                     <div>
                                         <div className="text-base font-bold text-rose-500 uppercase tracking-wider mb-1">Diagnostic Error</div>
                                         <p className="text-sm text-rose-400/80 leading-relaxed font-medium">
-                                            {error || "An internal timeout occurred during PDF buffer allocation."}
+                                            {error || `An internal error occurred during ${format.toUpperCase()} buffer allocation.`}
                                         </p>
                                     </div>
                                 </div>
                             </div>
                         )}
 
-                        {/* Action Region */}
                         <div className="flex flex-col gap-4 w-full max-w-sm mx-auto">
                             {isReady ? (
                                 <button
@@ -212,7 +226,7 @@ export function ReportGenerationModal({
                                     className="flex items-center justify-center gap-3 w-full py-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl font-bold uppercase tracking-wider transition-all shadow-xl shadow-indigo-600/20 active:scale-[0.98] group text-sm"
                                 >
                                     <Download className="w-5 h-5" />
-                                    Download Result
+                                    Download Artifact
                                 </button>
                             ) : isFailed ? (
                                 <button
@@ -233,7 +247,7 @@ export function ReportGenerationModal({
                             <div className="flex flex-col items-center gap-2 mt-6">
                                 <div className="h-px w-16 bg-gradient-to-r from-transparent via-slate-800 to-transparent" />
                                 <p className="text-[10px] text-slate-600 font-bold uppercase tracking-[0.3em]">
-                                    Neural Engine v4.2 • Secured
+                                    Analytical Engine v4.5 • Secure Synthesis
                                 </p>
                             </div>
                         </div>

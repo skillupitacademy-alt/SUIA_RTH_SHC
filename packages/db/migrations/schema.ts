@@ -324,6 +324,7 @@ export const exams = pgTable("exams", {
 	completedAt: timestamp("completed_at", { mode: 'string' }),
 	durationSeconds: integer("duration_seconds"),
 	lastAnsweredAt: timestamp("last_answered_at", { mode: 'string' }),
+	exportUrls: jsonb("export_urls"),
 }, (table) => [
 	index("idx_exams_dashboard_opt").using("btree", table.userId.asc().nullsLast().op("uuid_ops"), table.status.asc().nullsLast().op("enum_ops"), table.completedAt.desc().nullsFirst().op("enum_ops")),
 	index("idx_exams_user_id_status").using("btree", table.userId.asc().nullsLast().op("enum_ops"), table.status.asc().nullsLast().op("uuid_ops")),

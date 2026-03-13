@@ -1,5 +1,6 @@
 import { JobStatus, JobType } from '@quiz/types';
 
+import type { ExportFormat } from '@/lib/export/exportTypes';
 import { logger } from '@/lib/logger';
 import { EmailService } from '@/modules/email/EmailService';
 
@@ -13,6 +14,7 @@ type AnalyticsProcessPayload =
     | { type: 'refresh_views' };
 
 type ExamSagaPayload = { examId: string; userId: string };
+type ExportSagaPayload = { examId: string; format: ExportFormat };
 type ExamScoringPayload = { examId: string };
 type SemanticIndexPayload = { questionId: string; text: string; metadata?: Record<string, unknown> };
 
@@ -85,6 +87,9 @@ export class JobOrchestrator {
                 case JobType.EXAM_SAGA:
                     await this.handleExamSaga(jobId, job.payload as ExamSagaPayload, userId);
                     break;
+                case JobType.EXPORT_SAGA:
+                    await this.handleExportSaga(jobId, job.payload as ExportSagaPayload, userId);
+                    break;
                 default:
                     throw new Error(`Unknown job type: ${job.type}`);
             }
@@ -102,6 +107,11 @@ export class JobOrchestrator {
     private static async handleExamSaga(jobId: string, payload: ExamSagaPayload, userId: string): Promise<void> {
         const { ExamSaga } = await import('../exam-engine/exam.saga');
         await ExamSaga.execute(jobId, { examId: payload.examId, userId });
+    }
+
+    private static async handleExportSaga(jobId: string, payload: ExportSagaPayload, userId: string): Promise<void> {
+        const { ExportSaga } = await import('@/lib/export/export.saga');
+        await ExportSaga.execute(jobId, { examId: payload.examId, userId, format: payload.format });
     }
 
     /**

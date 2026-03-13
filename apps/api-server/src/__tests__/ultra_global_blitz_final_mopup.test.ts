@@ -21,87 +21,6 @@ const makeSelect = (rows: any[] = []) => ({
     then: (resolve: (value: unknown) => void) => resolve(rows),
 });
 
-// Mock DB
-vi.mock('@quiz/db', async () => {
-    const actual = await vi.importActual('@quiz/db') as any;
-    const makeSelect = (rows: any[] = []) => ({
-        from: vi.fn().mockReturnThis(),
-        leftJoin: vi.fn().mockReturnThis(),
-        innerJoin: vi.fn().mockReturnThis(),
-        where: vi.fn().mockReturnThis(),
-        orderBy: vi.fn().mockReturnThis(),
-        groupBy: vi.fn().mockReturnThis(),
-        limit: vi.fn().mockReturnThis(),
-        then: (resolve: (value: unknown) => void) => resolve(rows),
-    });
-    
-    const mockDb = {
-        ...actual.db,
-        query: {
-            ...actual.db.query,
-            examBlueprints: { findFirst: vi.fn().mockResolvedValue(undefined) },
-            questions: { findMany: vi.fn().mockResolvedValue([]) },
-            backgroundJobs: { findFirst: vi.fn().mockResolvedValue(undefined), findMany: vi.fn().mockResolvedValue([]) },
-            auditLogs: { findMany: vi.fn().mockResolvedValue([]) },
-            subjects: { findMany: vi.fn().mockResolvedValue([]) },
-            domains: { findFirst: vi.fn().mockResolvedValue(undefined) },
-            exams: { findFirst: vi.fn().mockResolvedValue(undefined) },
-            idempotencyKeys: { findFirst: vi.fn().mockResolvedValue(undefined) },
-        },
-        insert: vi.fn(() => ({ 
-            values: vi.fn(() => ({ 
-                returning: vi.fn(() => Promise.resolve([{ id: 'new-id' }])),
-                onConflictDoNothing: vi.fn().mockResolvedValue({ success: true })
-            })) 
-        })),
-        update: vi.fn(() => ({ 
-            set: vi.fn(() => ({ 
-                where: vi.fn(() => ({ 
-                    returning: vi.fn(() => Promise.resolve([{ id: 'upd-id' }])) 
-                })) 
-            })) 
-        })),
-        delete: vi.fn(() => ({ 
-            where: vi.fn(() => ({ 
-                returning: vi.fn(() => Promise.resolve([{ id: 'del-id' }])) 
-            })) 
-        })),
-        select: vi.fn(() => makeSelect([{ count: 1 }])),
-        transaction: vi.fn(async (cb) => cb({
-            insert: vi.fn(() => ({ 
-                values: vi.fn(() => ({ 
-                    returning: vi.fn(() => Promise.resolve([{ id: 'tx-new-id' }])),
-                    onConflictDoNothing: vi.fn().mockResolvedValue({ success: true })
-                })) 
-            })),
-            update: vi.fn(() => ({ 
-                set: vi.fn(() => ({ 
-                    where: vi.fn(() => ({ 
-                        returning: vi.fn(() => Promise.resolve([{ id: 'tx-upd-id' }])) 
-                    })) 
-                })) 
-            })),
-            query: {
-                exams: { findFirst: vi.fn().mockResolvedValue(undefined) },
-                subjects: { findMany: vi.fn().mockResolvedValue([]) },
-                topics: { findMany: vi.fn().mockResolvedValue([]) },
-                subtopics: { findMany: vi.fn().mockResolvedValue([]) },
-                skills: { findMany: vi.fn().mockResolvedValue([]) },
-                domains: { findFirst: vi.fn().mockResolvedValue(undefined) },
-                idempotencyKeys: { findFirst: vi.fn().mockResolvedValue(undefined) },
-                backgroundJobs: { findFirst: vi.fn().mockResolvedValue(undefined) }
-            },
-            select: vi.fn(() => makeSelect([{ count: 1 }])),
-        }))
-    };
-
-    return {
-        ...actual,
-        db: mockDb,
-        withTimeout: vi.fn(async (p, _t, _d) => p)
-    };
-});
-
 // Mock Cache
 vi.mock('../modules/core/cache.service', () => ({
     cacheService: {
@@ -137,6 +56,10 @@ describe('Final Global Blitz Coverage Mop-up', () => {
         vi.restoreAllMocks();
         vi.clearAllMocks();
         JobsService.withDb(db as any);
+
+        if (!db.query.idempotencyKeys) {
+            db.query.idempotencyKeys = { findFirst: vi.fn().mockResolvedValue(undefined) } as any;
+        }
 
         // Standardize count mock globally
         vi.mocked(db.select).mockReturnValue({
@@ -270,6 +193,9 @@ describe('Final Global Blitz Coverage Mop-up', () => {
             vi.mocked(cacheService.get).mockResolvedValue(null);
 
             process.env.QSTASH_TOKEN = 'test';
+            process.env.QUEUE_ENABLED = 'false';
+            vi.spyOn(JobsService, 'createJob').mockResolvedValue({ id: 'job-1' } as any);
+            vi.spyOn(JobOrchestrator, 'runJob').mockResolvedValue(undefined as any);
             vi.mocked(queueService.enqueue).mockResolvedValueOnce({ success: false, messageId: 'm1' } as any);
 
             await engine.completeExam('e1', 'u1', 'i1');

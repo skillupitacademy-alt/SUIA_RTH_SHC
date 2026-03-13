@@ -1,7 +1,10 @@
+import { db, exams } from '@quiz/db';
 import { JobStatus, JobType } from '@quiz/types';
 import { Client } from '@upstash/workflow';
+import { eq } from 'drizzle-orm';
 
 import { logger } from '@/lib/logger';
+import { redis } from '@/lib/redis';
 import { container } from '@/modules/core/container';
 import { EmailService } from '@/modules/email/EmailService';
 import { PerformanceService } from '@/modules/report-engine/performance.service';
@@ -158,6 +161,29 @@ export class ExamSaga {
                 await this.updateProgress(jobId, data, processedSteps);
             } else {
                 logger.debug({ examId }, '[ExamSaga] Skipping Step 3: Notification (Already complete)');
+            }
+
+            // STEP 4-6: EXPORTS (JSON/CSV) + STORE URLS
+            if (!processedSteps.has('exports')) {
+                logger.info({ examId }, '[ExamSaga] Step 4-6: Generating JSON/CSV exports');
+                const { ExportEngine } = await import('@/lib/export/exportEngine');
+                const exportEngine = ExportEngine.getInstance();
+                const jsonUrl = await exportEngine.processExport(examId, data.userId, 'json');
+                const csvUrl = await exportEngine.processExport(examId, data.userId, 'csv');
+
+                await db.update(exams)
+                    .set({ exportUrls: { analytics_json: jsonUrl, analytics_csv: csvUrl } })
+                    .where(eq(exams.id, examId));
+
+                await Promise.all([
+                    redis.set(`export:${examId}:${data.userId}:json`, jsonUrl, { ex: 900 }),
+                    redis.set(`export:${examId}:${data.userId}:csv`, csvUrl, { ex: 900 }),
+                ]);
+
+                processedSteps.add('exports');
+                await this.updateProgress(jobId, data, processedSteps);
+            } else {
+                logger.debug({ examId }, '[ExamSaga] Skipping Step 4-6: Exports (Already complete)');
             }
 
             logger.info({ examId }, '[ExamSaga] Lifecycle completed successfully');

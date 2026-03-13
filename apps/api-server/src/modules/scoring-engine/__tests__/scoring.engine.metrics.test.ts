@@ -61,7 +61,7 @@ describe('ScoringEngine Metrics', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     engine = new ScoringEngine(
-      { invalidateCache: vi.fn() } as any,
+      { invalidateCache: vi.fn(), refreshAnalytics: vi.fn().mockResolvedValue(undefined) } as any,
       {} as any,
       {} as any
     );
