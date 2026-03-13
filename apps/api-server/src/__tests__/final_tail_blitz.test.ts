@@ -40,7 +40,12 @@ vi.mock('@quiz/db', () => {
     execute: vi.fn().mockResolvedValue({ rows: [] }),
     select: vi.fn().mockImplementation(() => ({
       from: vi.fn().mockReturnThis(),
+      innerJoin: vi.fn().mockReturnThis(),
+      leftJoin: vi.fn().mockReturnThis(),
       where: vi.fn().mockReturnThis(),
+      orderBy: vi.fn().mockReturnThis(),
+      groupBy: vi.fn().mockReturnThis(),
+      limit: vi.fn().mockReturnThis(),
       then: vi.fn((cb) => Promise.resolve([]).then(cb)),
     })),
     delete: vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue({}) }),
@@ -61,6 +66,7 @@ vi.mock('@quiz/db', () => {
     examQuestions: { id: 'id', examId: 'examId' },
     resultsByDimension: { examId: 'examId' },
     userProfiles: { userId: 'userId' },
+    users: { id: 'id' },
     topics: { id: 'id' },
     subtopics: { id: 'id' },
     subjects: { id: 'id' },
@@ -84,6 +90,16 @@ vi.mock('resend', () => {
 describe('Final Tail Coverage Blitz - 100% Branch Marathon', () => {
     const originalEnv = { ...process.env };
     const mDb = dbLib.db as any;
+    const makeSelect = (rows: any[] = []) => ({
+        from: vi.fn().mockReturnThis(),
+        innerJoin: vi.fn().mockReturnThis(),
+        leftJoin: vi.fn().mockReturnThis(),
+        where: vi.fn().mockReturnThis(),
+        orderBy: vi.fn().mockReturnThis(),
+        groupBy: vi.fn().mockReturnThis(),
+        limit: vi.fn().mockReturnThis(),
+        then: (cb: (value: unknown) => void) => cb(rows),
+    });
 
     beforeEach(() => {
         vi.clearAllMocks();
@@ -104,6 +120,7 @@ describe('Final Tail Coverage Blitz - 100% Branch Marathon', () => {
         
         // Inject db into ReportEngine
         (ReportEngine as any)._db = mDb;
+        mDb.select.mockImplementation(() => makeSelect([]));
     });
 
     afterEach(() => {
@@ -131,6 +148,7 @@ describe('Final Tail Coverage Blitz - 100% Branch Marathon', () => {
             await SelectionService.composeExam('u1', 'bp1', 'k1', { topics: ['legacy-t1'] } as any).catch(() => {});
             mDb.query.examBlueprints.findFirst.mockResolvedValue({ id: 'bp1', topics: ['bp-t1'] });
             await SelectionService.composeExam('u1', 'bp1', 'k1', {}).catch(() => {});
+            mDb.select.mockImplementation(() => makeSelect([]));
         });
     });
 
@@ -161,6 +179,7 @@ describe('Final Tail Coverage Blitz - 100% Branch Marathon', () => {
             mDb.query.examQuestions.findFirst.mockResolvedValue({
                 question: { topic: { subject: { domain: { name: 'D' }, name: 'S' }, name: 'T' } }
             });
+            mDb.select.mockReturnValueOnce(makeSelect([{ exam: { id: 'e1', userId: 'u1' }, blueprint: { id: 'b1' } }]));
 
             await ReportEngine.getPremiumExamReport('e1');
             expect(AdaptiveTutorService.generateInsights).toHaveBeenCalled();
@@ -226,12 +245,23 @@ describe('Final Tail Coverage Blitz - 100% Branch Marathon', () => {
                 }
             });
 
-            await ReportMaterializer.materialize('e1');
-            
-            // Explicitly check call to findMany to ensure Line 75 was hit
-            expect(mDb.query.subtopics.findMany).toHaveBeenCalled();
-            const calls = mDb.query.subtopics.findMany.mock.calls;
-            expect(calls.length).toBeGreaterThan(0);
+            mDb.select
+              .mockReturnValueOnce(makeSelect([{ exam: { id: 'e1', userId: 'u1' }, user: null }]))
+              .mockReturnValueOnce(makeSelect([
+                {
+                  examQuestion: mockExam.examQuestions[0],
+                  question: mockExam.examQuestions[0].question,
+                  topic: { id: 't1', name: 'T', subjectId: 's1' },
+                  subject: { id: 's1', name: 'S', domainId: 'd1' },
+                  domain: { id: 'd1', name: 'D' },
+                },
+              ]))
+              .mockReturnValueOnce(makeSelect([{ id: 'st1', name: 'Subtopic 1' }]));
+
+            const report = await ReportMaterializer.materialize('e1');
+
+            const subtopics = report.datasets.topics['t1']?.subtopics ?? [];
+            expect(subtopics.some((s: any) => s.name === 'Subtopic 1')).toBe(true);
         });
     });
 

@@ -27,6 +27,7 @@ vi.mock("@/modules/report-engine/report-interpreter.service", () => ({
 }))
 
 import { createReportEngine } from "../report.engine.factory"
+import { installSelectMock } from '../../../test/select-mock'
 
 const mockDb = {
   query: {
@@ -59,6 +60,10 @@ beforeEach(() => {
   mockDb.query.userProfiles.findFirst.mockReset();
   mockDb.query.resultsByDimension.findMany.mockResolvedValue([]);
   mockDb.execute.mockReset();
+  installSelectMock(mockDb as any, [
+    { resolveOn: 'limit', result: [{ exam: baseExam, blueprint: null }] },
+    { resolveOn: 'limit', result: [{ name: 'User' }] }, // candidateName
+  ]);
 })
 
 describe("ReportEngine late branches", () => {

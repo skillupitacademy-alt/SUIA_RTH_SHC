@@ -8,6 +8,7 @@ vi.mock('@/lib/tracer', () => ({
 import { withSpan } from '@/lib/tracer';
 import { db } from '@quiz/db';
 import { ReportEngine } from '../report.engine';
+import { installSelectMock } from '../../../test/select-mock';
 
 vi.mock('@quiz/db', () => ({
   STANDARD_QUERY_TIMEOUT: 15000,
@@ -22,6 +23,9 @@ vi.mock('@quiz/db', () => ({
     },
   },
   exams: { id: 'id', userId: 'userId', status: 'status', blueprintId: 'blueprintId' },
+  examBlueprints: {},
+  examQuestions: {},
+  questions: {},
   resultsByDimension: { examId: 'examId' }
 }));
 
@@ -34,14 +38,20 @@ describe('ReportEngine Tracing', () => {
   });
 
   it('calls withSpan in getUserPerformance', async () => {
-    (db.query.exams.findMany as any).mockResolvedValue([]);
+    installSelectMock(db as any, [
+      { resolveOn: 'orderBy', result: [{ exam: { id: 'e1', totalScore: 80 }, dimensions: null }] },
+    ]);
     await engine.getUserPerformance('u1');
     expect(withSpan).toHaveBeenCalledWith('ReportEngine.getUserPerformance', expect.any(Function));
   });
 
   it('calls withSpan in getExamReport', async () => {
-    (db.query.exams.findFirst as any).mockResolvedValue({ id: 'e1', userId: 'u1', examQuestions: [] });
-    (db.query.resultsByDimension.findMany as any).mockResolvedValue([]);
+    installSelectMock(db as any, [
+      { resolveOn: 'limit', result: [{ exam: { id: 'e1', userId: 'u1', status: 'completed', startedAt: new Date(), completedAt: new Date(), blueprintId: null }, blueprint: null }] },
+      { resolveOn: 'where', result: [] }, // examQuestions join
+      { resolveOn: 'where', result: [] }, // resultsByDimension
+      { resolveOn: 'where', result: [{ id: 'p1', totalScore: 50, isCorrect: true }] }, // percentile cohort
+    ]);
     await engine.getExamReport('e1');
     expect(withSpan).toHaveBeenCalledWith('ReportEngine.getExamReport', expect.any(Function));
   });

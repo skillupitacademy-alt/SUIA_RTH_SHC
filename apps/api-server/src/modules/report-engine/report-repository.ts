@@ -18,19 +18,18 @@ export interface UpdateReportSuccessInput {
 export class ReportRepository {
   constructor(private readonly dbInstance: typeof db = db) {}
 
-  withDb(dbClient: typeof db): ReportRepository {
-    return new ReportRepository(dbClient);
-  }
-
   async getReportByAttempt(attemptId: string) {
-    return this.dbInstance.query.reports.findFirst({
-      where: eq(reports.attemptId, attemptId),
-    });
+    const rows = await this.dbInstance
+      .select()
+      .from(reports)
+      .where(eq(reports.attemptId, attemptId))
+      .limit(1);
+    return rows[0] ?? null;
   }
 
   async createReportIfNotExists(input: CreateReportInput) {
     const existing = await this.getReportByAttempt(input.attemptId);
-    if (existing) return existing;
+    if (existing !== null && existing !== undefined) return existing;
 
     const [newReport] = await this.dbInstance
       .insert(reports)

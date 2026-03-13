@@ -45,6 +45,14 @@ const dbMocks = vi.hoisted(() => {
     query: {
       exams: { findFirst: queryExamsFindFirst },
     },
+    select: vi.fn(() => ({
+      from: vi.fn().mockReturnThis(),
+      leftJoin: vi.fn().mockReturnThis(),
+      innerJoin: vi.fn().mockReturnThis(),
+      where: vi.fn().mockReturnThis(),
+      limit: vi.fn().mockReturnThis(),
+      then: (resolve: (value: unknown) => void) => resolve([]),
+    })),
     update,
     insert: vi.fn().mockReturnValue({ values: vi.fn().mockReturnValue({ onConflictDoNothing: vi.fn().mockResolvedValue(undefined) }) }),
     transaction: vi.fn(async (cb: any) => cb(withQuestions)),
@@ -66,6 +74,15 @@ vi.mock('@quiz/db', () => ({
 }));
 
 describe('ExamEngine completeExam flush branch', () => {
+  const setContainerMocks = (repo: any, selection: any, performance: any, answerEval: any) => {
+    (container.get as Mock).mockImplementation((token: any) => {
+      if (token === 'AuditLoggingExamRepository') return repo;
+      if (token === 'ISelectionService') return selection;
+      if (token === 'IPerformanceService') return performance;
+      return answerEval;
+    });
+  };
+
   beforeEach(() => {
     dbMocks.update.mockReset();
     dbMocks.update.mockReturnValue({
@@ -113,11 +130,7 @@ describe('ExamEngine completeExam flush branch', () => {
     const selection = { composeExam: vi.fn() };
     const performance = { refreshAnalytics: vi.fn(), invalidateCache: vi.fn().mockResolvedValue(undefined) };
     const answerEval = { evaluate: vi.fn(() => true) };
-    (container.get as Mock)
-      .mockReturnValueOnce(repo) // ExamRepository
-      .mockReturnValueOnce(selection)
-      .mockReturnValueOnce(performance)
-      .mockReturnValueOnce(answerEval);
+    setContainerMocks(repo, selection, performance, answerEval);
 
     const engine = new ExamEngine();
 
@@ -194,11 +207,7 @@ describe('ExamEngine completeExam flush branch', () => {
     const selection = { composeExam: vi.fn() };
     const performance = { refreshAnalytics: vi.fn(), invalidateCache: vi.fn().mockResolvedValue(undefined) };
     const answerEval = { evaluate: vi.fn(() => true) };
-    (container.get as Mock)
-      .mockReturnValueOnce(repo)
-      .mockReturnValueOnce(selection)
-      .mockReturnValueOnce(performance)
-      .mockReturnValueOnce(answerEval);
+    setContainerMocks(repo, selection, performance, answerEval);
 
     const engine = new ExamEngine();
     await expect(engine.completeExam('exam1', 'u1')).rejects.toThrow('flush-fail');
@@ -241,11 +250,7 @@ describe('ExamEngine completeExam flush branch', () => {
     const selection = { composeExam: vi.fn() };
     const performance = { refreshAnalytics: vi.fn(), invalidateCache: vi.fn().mockResolvedValue(undefined) };
     const answerEval = { evaluate: vi.fn(() => true) };
-    (container.get as Mock)
-      .mockReturnValueOnce(repo)
-      .mockReturnValueOnce(selection)
-      .mockReturnValueOnce(performance)
-      .mockReturnValueOnce(answerEval);
+    setContainerMocks(repo, selection, performance, answerEval);
 
     const prev = process.env.QSTASH_TOKEN;
     process.env.QSTASH_TOKEN = 'token';

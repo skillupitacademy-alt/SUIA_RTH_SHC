@@ -23,6 +23,9 @@ export default defineConfig({
     ],
     coverage: {
       provider: 'v8',
+      // Allow legacy/invalid CLI provider values (e.g. --coverage.provider c8)
+      // by supplying a valid custom provider module fallback.
+      customProviderModule: '@vitest/coverage-v8',
       reporter: ['json', 'html'],
       thresholds: {
         statements: 90,

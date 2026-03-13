@@ -10,6 +10,17 @@ const makeDb = (exam: any, subtopics: any[] = []) => ({
   }),
 });
 
+const makeSelect = (rows: any[] = []) => ({
+  from: vi.fn().mockReturnThis(),
+  leftJoin: vi.fn().mockReturnThis(),
+  innerJoin: vi.fn().mockReturnThis(),
+  where: vi.fn().mockReturnThis(),
+  orderBy: vi.fn().mockReturnThis(),
+  groupBy: vi.fn().mockReturnThis(),
+  limit: vi.fn().mockReturnThis(),
+  then: (resolve: (value: unknown) => void) => resolve(rows),
+});
+
 describe('ReportMaterializer branches', () => {
   beforeEach(() => {
     vi.resetModules();
@@ -46,10 +57,30 @@ describe('ReportMaterializer branches', () => {
     };
 
     const dbMock = makeDb(exam, []);
+    const examRows = [{ exam, user: exam.user }];
+    const questionRows = exam.examQuestions.map((eq: any) => ({
+      examQuestion: eq,
+      question: eq.question,
+      topic: eq.question.topic,
+      subject: eq.question.topic.subject,
+      domain: eq.question.topic.subject.domain,
+    }));
 
     vi.doMock('@quiz/db', () => ({
-      db: dbMock,
+      db: { 
+        ...dbMock, 
+        select: vi.fn()
+          .mockReturnValueOnce(makeSelect(examRows))
+          .mockReturnValueOnce(makeSelect(questionRows)),
+      },
       exams: {},
+      users: {},
+      examQuestions: {},
+      questions: {},
+      topics: {},
+      subjects: {},
+      domains: {},
+      subtopics: {},
     }));
 
     const { ReportMaterializer } = await import('../ReportMaterializer');
@@ -88,10 +119,31 @@ describe('ReportMaterializer branches', () => {
     };
 
     const dbMock = makeDb(exam, [{ id: 'st1', name: 'Arrays' }]);
+    const examRows = [{ exam, user: exam.user }];
+    const questionRows = exam.examQuestions.map((eq: any) => ({
+      examQuestion: eq,
+      question: eq.question,
+      topic: eq.question.topic,
+      subject: eq.question.topic.subject,
+      domain: eq.question.topic.subject.domain,
+    }));
 
     vi.doMock('@quiz/db', () => ({
-      db: dbMock,
+      db: { 
+        ...dbMock, 
+        select: vi.fn()
+          .mockReturnValueOnce(makeSelect(examRows))
+          .mockReturnValueOnce(makeSelect(questionRows))
+          .mockReturnValueOnce(makeSelect([{ id: 'st1', name: 'Arrays' }])),
+      },
       exams: {},
+      users: {},
+      examQuestions: {},
+      questions: {},
+      topics: {},
+      subjects: {},
+      domains: {},
+      subtopics: {},
     }));
 
     const { ReportMaterializer } = await import('../ReportMaterializer');

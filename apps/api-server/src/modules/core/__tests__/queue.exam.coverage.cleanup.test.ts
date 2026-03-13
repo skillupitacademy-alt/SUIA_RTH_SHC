@@ -5,6 +5,19 @@ import { db, exams, idempotencyKeys, examQuestions, backgroundJobs, notification
 import { cacheService } from '@/modules/core/cache.service';
 import { ExamBuilder } from '@/modules/exam-engine/exam.builder';
 
+const { makeSelect } = vi.hoisted(() => ({
+    makeSelect: (rows: any[] = []) => ({
+        from: vi.fn().mockReturnThis(),
+        leftJoin: vi.fn().mockReturnThis(),
+        innerJoin: vi.fn().mockReturnThis(),
+        where: vi.fn().mockReturnThis(),
+        orderBy: vi.fn().mockReturnThis(),
+        groupBy: vi.fn().mockReturnThis(),
+        limit: vi.fn().mockReturnThis(),
+        then: (resolve: (value: unknown) => void) => resolve(rows),
+    })
+}));
+
 vi.mock('@/modules/core/cache.service');
 vi.mock('@quiz/db', () => ({
   STANDARD_QUERY_TIMEOUT: 15000,
@@ -18,7 +31,8 @@ vi.mock('@quiz/db', () => ({
                 exams: { findFirst: vi.fn() },
                 idempotencyKeys: { findFirst: vi.fn() },
                 backgroundJobs: { findFirst: vi.fn() }
-            }, 
+            },
+            select: vi.fn().mockReturnValue(makeSelect([])),
             insert: vi.fn().mockReturnValue({ values: vi.fn().mockReturnValue({ returning: vi.fn().mockResolvedValue([{ id: 'exam-id' }]) }) }),
             update: vi.fn().mockReturnValue({ set: vi.fn().mockReturnValue({ where: vi.fn().mockReturnValue({ returning: vi.fn().mockResolvedValue([{ id: 'exam-id' }]) }) }) })
         })),
@@ -28,6 +42,7 @@ vi.mock('@quiz/db', () => ({
             backgroundJobs: { findFirst: vi.fn() },
             notifications: { findFirst: vi.fn() }
         },
+        select: vi.fn().mockReturnValue(makeSelect([])),
         insert: vi.fn().mockReturnValue({ values: vi.fn().mockReturnValue({ returning: vi.fn().mockResolvedValue([{ id: 'ins-id' }]) }) }),
         update: vi.fn().mockReturnValue({
             set: vi.fn().mockReturnValue({
@@ -41,7 +56,9 @@ vi.mock('@quiz/db', () => ({
     exams: { id: 'id', status: 'status' },
     examQuestions: { examId: 'eid', questionId: 'qid', order: 'o' },
     backgroundJobs: { id: 'id', userId: 'userId', type: 'type' },
-    notifications: { id: 'id', userId: 'userId' }
+    notifications: { id: 'id', userId: 'userId' },
+    questions: { id: 'qid' },
+    skills: { id: 'sid' }
 }));
 
 describe('Queue and Exam cleanup coverage', () => {
@@ -70,6 +87,10 @@ describe('Queue and Exam cleanup coverage', () => {
             id: 'e1', status: 'started', userId: 'u1',
             examQuestions: [{ questionId: 'q1', question: { type: 'mcq', topicId: 't1' } }]
         } as any);
+
+        vi.mocked(db.select)
+            .mockReturnValueOnce(makeSelect([{ id: 'e1', userId: 'u1', status: 'started' }]) as any)
+            .mockReturnValueOnce(makeSelect([]) as any);
         
         // Force cacheService.get to throw to enter flush catch
         vi.mocked(cacheService.get).mockRejectedValue(new Error('Flush fail'));

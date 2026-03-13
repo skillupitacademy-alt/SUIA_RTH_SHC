@@ -63,12 +63,12 @@ async function postHandler(req: NextRequest) {
     let userId: string;
 
     if (isInternal) {
-      const examData = await db.query.exams.findFirst({
-        where: eq(exams.id, attemptId),
-        columns: { userId: true }
-      });
-      if (!examData) throw notFound("Exam", attemptId);
-      userId = examData.userId;
+      const examRows = await db.select({ userId: exams.userId })
+        .from(exams)
+        .where(eq(exams.id, attemptId))
+        .limit(1);
+      if (examRows.length === 0) throw notFound("Exam", attemptId);
+      userId = examRows[0].userId;
     } else {
       const token = container.get(TokenService).getAccessToken(req, { scope: "user" });
       if (token === null || token === undefined || token === "") throw unauthorized("Unauthorized");
@@ -79,10 +79,11 @@ async function postHandler(req: NextRequest) {
       userId = payload.userId;
     }
     
-    const exam = await db.query.exams.findFirst({
-      where: eq(exams.id, attemptId),
-      columns: { userId: true, status: true, reportMaterialized: true }
-    });
+    const examRows = await db.select({ userId: exams.userId, status: exams.status, reportMaterialized: exams.reportMaterialized })
+      .from(exams)
+      .where(eq(exams.id, attemptId))
+      .limit(1);
+    const exam = examRows[0];
 
     if (exam === null || exam === undefined) {
       throw notFound("Exam", attemptId);

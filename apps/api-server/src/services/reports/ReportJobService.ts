@@ -89,10 +89,11 @@ export class ReportJobService {
      * Get job status
      */
     static async getJobStatus(jobId: string): Promise<ReportJob | null> {
-        const result = await db.query.reportJobs.findFirst({
-            where: eq(reportJobs.id, jobId)
-        });
-        return result ?? null;
+        const resultRows = await db.select()
+            .from(reportJobs)
+            .where(eq(reportJobs.id, jobId))
+            .limit(1);
+        return resultRows[0] ?? null;
     }
     /**
      * Recovery: Reset jobs stuck in 'processing' for too long

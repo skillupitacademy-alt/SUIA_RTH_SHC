@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // @ts-nocheck
-import { db, examQuestions, exams, resultsByDimension, userProfiles } from "@quiz/db";
+import { db, examBlueprints, examQuestions, exams, questions, resultsByDimension, userProfiles } from "@quiz/db";
 import { and, desc, eq, sql } from "drizzle-orm";
 
 import { logger } from "@/lib/logger";
@@ -64,17 +64,7 @@ type RawQuestionRow = {
   time_spent: number | null;
 };
 
-type ExamQuestionRow = {
-  isCorrect: boolean | null;
-  userAnswer: string | null;
-  timeSpent: number | null;
-  questionId: string;
-  question: {
-    questionText: string | null;
-    explanation: string | null;
-    correctAnswer: string | null;
-  };
-};
+
 
 // Deleted unused ExamRecord
 
@@ -213,18 +203,32 @@ export class ReportEngine {
     return withSpan('ReportEngine.getUserPerformance', async (span) => {
       span.setAttribute('userId', userId);
 
-      const userExams = (typeof (this.dbInstance as any)?.query?.exams?.findMany === 'function'
-        ? await (this.dbInstance as any).query.exams.findMany({
-            where: eq(exams.userId, userId),
-            orderBy: [desc(exams.completedAt)],
-            with: { dimensions: true },
-          })
-        : []) ?? [];
+      const userExams = await this.dbInstance.select({
+        exam: exams,
+        dimensions: resultsByDimension
+      })
+      .from(exams)
+      .leftJoin(resultsByDimension, eq(exams.id, resultsByDimension.examId))
+      .where(eq(exams.userId, userId))
+      .orderBy(desc(exams.completedAt));
+
+      // Group by exam to handle the joined dimensions
+      const examMap = new Map<string, any>();
+      for (const row of userExams) {
+        if (!examMap.has(row.exam.id)) {
+          examMap.set(row.exam.id, { ...row.exam, dimensions: [] });
+        }
+        if (row.dimensions) {
+          examMap.get(row.exam.id).dimensions.push(row.dimensions);
+        }
+      }
+      
+      const examsList = Array.from(examMap.values());
 
       return {
-        examsCompleted: userExams.length,
-        averageScore: userExams.length > 0 ? userExams.reduce((acc: number, curr) => acc + (curr.totalScore ?? 0), 0) / userExams.length : 0,
-        dimensions: userExams.flatMap((e) => e.dimensions),
+        examsCompleted: examsList.length,
+        averageScore: examsList.length > 0 ? examsList.reduce((acc: number, curr) => acc + (curr.totalScore ?? 0), 0) / examsList.length : 0,
+        dimensions: examsList.flatMap((e) => e.dimensions),
       };
     });
   }
@@ -242,29 +246,39 @@ export class ReportEngine {
             whereClause = and(eq(exams.status, 'completed'), eq(exams.blueprintId, blueprintId))!;
         }
 
-        const cohort = typeof (this.dbInstance as any)?.query?.exams?.findMany === 'function'
-          ? await this.dbInstance.query.exams.findMany({
-              where: whereClause,
-              columns: { id: true, totalScore: true },
-              with: {
-                examQuestions: { columns: { isCorrect: true } },
-              },
-            })
-          : [];
+        const cohortRows = await this.dbInstance.select({
+            id: exams.id,
+            totalScore: exams.totalScore,
+            isCorrect: examQuestions.isCorrect
+        })
+        .from(exams)
+        .leftJoin(examQuestions, eq(exams.id, examQuestions.examId))
+        .where(whereClause);
 
-        if (cohort.length <= 1) return 50;
+        if (cohortRows.length === 0) return 50;
 
-        const accuracies = cohort.map((e: { examQuestions?: { isCorrect: boolean | null }[] }) => {
-            const total = e.examQuestions?.length ?? 0;
-            const correct = e.examQuestions?.filter(q => q.isCorrect === true).length ?? 0;
-            return total > 0 ? (correct / total) * 100 : 0;
-        });
+        // Group by exam for accuracy calculation
+        const cohortMap = new Map<string, { correct: number, total: number }>();
+        for (const row of cohortRows) {
+            if (!cohortMap.has(row.id)) {
+                cohortMap.set(row.id, { correct: 0, total: 0 });
+            }
+            if (row.isCorrect !== null) {
+                cohortMap.get(row.id)!.total++;
+                if (row.isCorrect === true) cohortMap.get(row.id)!.correct++;
+            }
+        }
 
-        const lowerScores = accuracies.filter((acc: number) => acc < myAccuracy).length;
+        const accuratelyList = Array.from(cohortMap.values()).map(e => e.total > 0 ? (e.correct / e.total) * 100 : 0);
+
+        if (accuratelyList.length <= 1) return 50;
+
+        const lowerScores = accuratelyList.filter((acc: number) => acc < myAccuracy).length;
+        const cohortSize = accuratelyList.length;
         // Clamp explicitly for edge cases expected by tests
         if (lowerScores === 0) return 1;
-        if (lowerScores === cohort.length) return 99;
-        const percentile = (lowerScores / cohort.length) * 100;
+        if (lowerScores === cohortSize) return 99;
+        const percentile = (lowerScores / cohortSize) * 100;
         return Math.min(99, Math.max(1, Math.round(percentile)));
     } catch (e: unknown) {
         this.log.error({ currentExamId, error: e instanceof Error ? e.message : 'unknown' }, 'Percentile failed');
@@ -277,27 +291,34 @@ export class ReportEngine {
     return withSpan('ReportEngine.getExamReport', async (span) => {
       span.setAttribute('examId', examId);
 
-        const exam = await this.dbInstance.query.exams.findFirst({
-            where: eq(exams.id, examId),
-            with: {
-              examQuestions: {
-                with: {
-                  question: true,
-            }
-          },
-          blueprint: true,
-        }
-      }) as (typeof exams.$inferSelect & {
-        examQuestions: ExamQuestionRow[];
-        blueprint?: { timeLimit?: number | null };
-        userId: string;
-      }) | undefined;
+        const examRows = await this.dbInstance.select({
+            exam: exams,
+            blueprint: examBlueprints
+        })
+        .from(exams)
+        .leftJoin(examBlueprints, eq(exams.blueprintId, examBlueprints.id))
+        .where(eq(exams.id, examId))
+        .limit(1);
 
-      if (exam === undefined || exam === null) throw new Error('Exam not found');
+        if (examRows.length === 0) throw new Error('Exam not found');
+        const examBase = examRows[0].exam;
+        const blueprint = examRows[0].blueprint;
 
-      const results = await this.dbInstance.query.resultsByDimension.findMany({
-        where: eq(resultsByDimension.examId, examId),
-      }) as DimensionRow[];
+        const eqRowsSelection = await this.dbInstance.select({
+            examQuestion: examQuestions,
+            question: questions
+        })
+        .from(examQuestions)
+        .innerJoin(questions, eq(examQuestions.questionId, questions.id))
+        .where(eq(examQuestions.examId, examId));
+
+        const exam = {
+            ...examBase,
+            blueprint,
+            examQuestions: eqRowsSelection.map(r => ({ ...r.examQuestion, question: r.question }))
+        };
+
+        const results = await this.dbInstance.select().from(resultsByDimension).where(eq(resultsByDimension.examId, examId));
 
       const totalQuestions = exam.examQuestions.length;
       const correctAnswers = exam.examQuestions.filter((item: any) => item.isCorrect === true).length;
@@ -375,14 +396,17 @@ export class ReportEngine {
     const cached = await performanceService.getCachedReport<PremiumReport>(examId);
     if (cached !== null && cached !== undefined) return cached;
 
-    const exam = await this.dbInstance.query.exams.findFirst({
-      where: eq(exams.id, examId),
-      with: {
-        blueprint: true,
-      }
-    });
+    const examRowsPremium = await this.dbInstance.select({
+      exam: exams,
+      blueprint: examBlueprints
+    })
+    .from(exams)
+    .leftJoin(examBlueprints, eq(exams.blueprintId, examBlueprints.id))
+    .where(eq(exams.id, examId))
+    .limit(1);
 
-    if (exam === undefined || exam === null) throw new Error('Exam not found');
+    if (examRowsPremium.length === 0) throw new Error('Exam not found');
+    const exam = { ...examRowsPremium[0].exam, blueprint: examRowsPremium[0].blueprint };
 
     const runCoreQuery = async () => {
         const res = await this.dbInstance.execute(sql`
@@ -697,12 +721,10 @@ export class ReportEngine {
         isCorrect: q.is_correct === 1,
         timeSpent: Number(q.time_spent ?? 0)
       })),
-      candidateName: (typeof (this.dbInstance as any)?.query?.userProfiles?.findFirst === 'function'
-        ? (await this.dbInstance.query.userProfiles.findFirst({
-            where: eq(userProfiles.userId, exam.userId),
-            columns: { name: true }
-          }))?.name
-        : undefined) ?? "Strategic Officer"
+      candidateName: (await this.dbInstance.select({ name: userProfiles.name })
+        .from(userProfiles)
+        .where(eq(userProfiles.userId, exam.userId))
+        .limit(1))[0]?.name ?? "Strategic Officer"
     };
 
     // 2. Synthesize Deterministic Interpretation

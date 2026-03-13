@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { installSelectMock } from '../../../test/select-mock';
 
 vi.mock('@/lib/tracer', () => ({
   withSpan: vi.fn((_: string, fn: (span: { setAttribute: (k: string, v: string) => void }) => unknown) =>
@@ -22,6 +23,13 @@ describe('ReportEngine (unit)', () => {
         },
       },
     };
+
+    installSelectMock(mockDb as any, [
+      { resolveOn: 'orderBy', result: [
+        { exam: { id: 'e1', totalScore: 80 }, dimensions: { id: 'd1' } },
+        { exam: { id: 'e2', totalScore: null }, dimensions: null },
+      ] },
+    ]);
 
     const engine = new ReportEngine(mockDb as any);
     const res = await engine.getUserPerformance('u1');

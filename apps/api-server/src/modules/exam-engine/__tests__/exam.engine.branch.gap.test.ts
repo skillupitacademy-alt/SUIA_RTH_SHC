@@ -32,6 +32,13 @@ vi.mock('@quiz/db', () => {
       transaction: vi.fn(async (cb) =>
         cb({
           query: { exams: { findFirst: vi.fn().mockResolvedValue({ examQuestions: [] }) } },
+          select: vi.fn(() => ({
+            from: vi.fn().mockReturnValue({
+              where: vi.fn().mockReturnValue({
+                limit: vi.fn().mockResolvedValue([]),
+              }),
+            }),
+          })),
           update: updateMock,
           insert: vi.fn(() => ({
             values: vi.fn(() => ({
@@ -42,6 +49,13 @@ vi.mock('@quiz/db', () => {
         })
       ),
       query: { exams: { findFirst: vi.fn().mockResolvedValue(null) } },
+      select: vi.fn(() => ({
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockReturnValue({
+            limit: vi.fn().mockResolvedValue([]),
+          }),
+        }),
+      })),
       update: updateMock,
       insert: vi.fn(() => ({
         values: vi.fn(() => ({

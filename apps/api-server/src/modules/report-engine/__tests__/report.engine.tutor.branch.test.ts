@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 import { ReportEngine } from '../report.engine';
+import { installSelectMock } from '../../../test/select-mock';
 
 vi.mock('@/modules/report-engine/performance.service', () => ({
   PerformanceService: {
@@ -52,7 +53,7 @@ describe('ReportEngine tutorInsights late branch', () => {
       expert_drop_off: false,
     };
 
-    (ReportEngine as any)._db = {
+    const mockDb = {
       query: {
         exams: { findFirst: vi.fn().mockResolvedValue(exam) },
         resultsByDimension: { findMany: vi.fn().mockResolvedValue([]) },
@@ -66,6 +67,13 @@ describe('ReportEngine tutorInsights late branch', () => {
         // raw questions
         .mockResolvedValueOnce({ rows: [] }),
     };
+
+    installSelectMock(mockDb as any, [
+      { resolveOn: 'limit', result: [{ exam, blueprint: null }] },
+      { resolveOn: 'limit', result: [{ name: 'Test User' }] }, // candidateName
+    ]);
+
+    (ReportEngine as any)._db = mockDb;
 
     const result = await ReportEngine.getPremiumExamReport('ex1');
     expect(result.tutorInsights).toEqual([]);

@@ -3,6 +3,7 @@ import { container } from '@/modules/core/container';
 import { PerformanceService } from '@/modules/report-engine/performance.service';
 import { db } from '@quiz/db';
 import { ScoringEngine } from '../scoring.engine';
+import { installSelectMock } from '../../../test/select-mock';
 
 const mockPerformanceService = {
   invalidateCache: vi.fn().mockResolvedValue(undefined),
@@ -34,23 +35,17 @@ describe('ScoringEngine PDF trigger branch', () => {
   });
 
   it('logs but does not throw when fetch rejects (lines 194,209)', async () => {
-    (db.query as any) = {
-      exams: {
-        findFirst: vi.fn().mockResolvedValue({
-          id: 'ex1',
-          userId: 'u1',
-          status: 'started',
-          startedAt: new Date(),
-          lastAnsweredAt: null,
-          examQuestions: [],
-        }),
-      },
-    };
+    installSelectMock(db as any, [
+      { resolveOn: 'limit', result: [{ exam: { id: 'ex1', userId: 'u1', status: 'started', startedAt: new Date(), completedAt: new Date(), blueprintId: null }, blueprint: {} }] },
+      { resolveOn: 'where', result: [] }, // examQuestions join
+      { resolveOn: 'where', result: [] }, // topicRaw
+      { resolveOn: 'where', result: [] }, // topicSkillRows
+      { resolveOn: 'where', result: [] }, // subtopicRows
+    ]);
     (db.delete as any) = vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue(undefined) });
     (db.insert as any) = vi.fn().mockReturnValue({ values: vi.fn().mockReturnValue({ returning: vi.fn().mockResolvedValue([]) }) });
     (db.update as any) = vi.fn().mockReturnValue({ set: vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue(undefined) }) });
     (db.transaction as any) = vi.fn(async (fn) => fn(db));
-    (db.query as any).topics = { findMany: vi.fn().mockResolvedValue([]) };
 
     // make fetch reject to hit catch block
     (global.fetch as any) = vi.fn().mockRejectedValue(new Error('pdf fail'));
@@ -59,23 +54,26 @@ describe('ScoringEngine PDF trigger branch', () => {
   });
 
   it('handles scoring failure and failed status update (lines 45, 209)', async () => {
-    // Exam with a question so topics.findMany is invoked (branch ~45)
-    const examQuestion = { question: { topicId: 't1', questionSkills: [], subtopics: [] } };
-    (db.query as any) = {
-      exams: {
-        findFirst: vi.fn().mockResolvedValue({
-          id: 'ex2',
-          userId: 'u1',
-          status: 'started',
-          startedAt: new Date(),
-          lastAnsweredAt: null,
-          examQuestions: [examQuestion],
-        }),
-      },
-      topics: {
-        findMany: vi.fn().mockRejectedValue(new Error('topics boom')),
-      },
-    };
+    const selectMock = vi.fn();
+    selectMock
+      .mockImplementationOnce(() => ({
+        from: vi.fn().mockReturnThis(),
+        leftJoin: vi.fn().mockReturnThis(),
+        where: vi.fn().mockReturnThis(),
+        limit: vi.fn().mockResolvedValue([{ exam: { id: 'ex2', userId: 'u1', status: 'started', startedAt: new Date(), completedAt: new Date(), blueprintId: null }, blueprint: {} }]),
+      }))
+      .mockImplementationOnce(() => ({
+        from: vi.fn().mockReturnThis(),
+        innerJoin: vi.fn().mockReturnThis(),
+        leftJoin: vi.fn().mockReturnThis(),
+        where: vi.fn().mockResolvedValue([]),
+      }))
+      .mockImplementationOnce(() => ({
+        from: vi.fn().mockReturnThis(),
+        innerJoin: vi.fn().mockReturnThis(),
+        where: vi.fn().mockRejectedValue(new Error('topics boom')),
+      }));
+    (db as any).select = selectMock;
 
     // Make the status update fail to hit line 209
     const whereReject = vi.fn().mockRejectedValue(new Error('update fail'));
@@ -84,7 +82,7 @@ describe('ScoringEngine PDF trigger branch', () => {
     });
 
     await expect(container.get(ScoringEngine).calculateExamResults('ex2')).rejects.toBeInstanceOf(Error);
-    expect((db.query as any).topics.findMany).toHaveBeenCalled();
+    expect(selectMock).toHaveBeenCalled();
     expect(whereReject).toHaveBeenCalled();
   });
 });

@@ -85,6 +85,16 @@ vi.mock('@quiz/db', async (importOriginal) => {
     return proxy as any;
   };
 
+  const selectQueue: any[] = [];
+  const selectImpl = (fields: any) => {
+      if (selectQueue.length > 0) {
+          const next = selectQueue.shift();
+          return createChainableProxy(next);
+      }
+      const val = fields?.count ? [{ count: 10 }] : [];
+      return createChainableProxy(val);
+  };
+
   const dbMock = {
     query: {
       exams: createTableMock(),
@@ -99,10 +109,9 @@ vi.mock('@quiz/db', async (importOriginal) => {
       questions: createTableMock(),
       subjects: createTableMock(),
     },
-    select: vi.fn().mockImplementation((fields) => {
-        const val = fields?.count ? [{ count: 10 }] : [];
-        return createChainableProxy(val);
-    }),
+    __selectQueue: selectQueue,
+    __selectImpl: selectImpl,
+    select: vi.fn().mockImplementation(selectImpl),
     transaction: vi.fn().mockImplementation((cb) => cb(dbMock)),
     execute: vi.fn().mockResolvedValue({ rows: [] }),
     insert: vi.fn().mockImplementation(() => createChainableProxy()),
@@ -137,9 +146,22 @@ vi.mock('@quiz/db', async (importOriginal) => {
 
 describe('Ultra Final Coverage Marathon - 100% Global Blitz', () => {
     const mDb = (dbLib as any).db;
+    const makeSelect = (rows: any[] = []) => ({
+        from: vi.fn().mockReturnThis(),
+        leftJoin: vi.fn().mockReturnThis(),
+        innerJoin: vi.fn().mockReturnThis(),
+        where: vi.fn().mockReturnThis(),
+        orderBy: vi.fn().mockReturnThis(),
+        groupBy: vi.fn().mockReturnThis(),
+        limit: vi.fn().mockReturnThis(),
+        then: (resolve: (value: unknown) => void) => resolve(rows),
+    });
 
     beforeEach(() => {
         vi.clearAllMocks();
+        mDb.query.exams.findFirst.mockReset();
+        mDb.__selectQueue.length = 0;
+        mDb.select.mockImplementation(mDb.__selectImpl);
         vi.spyOn(ResilienceService, 'isFeatureEnabled').mockResolvedValue(true);
         vi.spyOn(PerformanceService, 'getCachedReport').mockResolvedValue(null);
         vi.spyOn(PerformanceService, 'refreshAnalytics').mockResolvedValue(undefined as any);
@@ -150,6 +172,20 @@ describe('Ultra Final Coverage Marathon - 100% Global Blitz', () => {
         (ReportEngine as any)._db = mDb;
         (SelectionService as any)._db = mDb;
         (ScoringEngine as any)._db = mDb;
+
+        const perfStub = {
+            getCachedReport: vi.fn().mockResolvedValue(null),
+            refreshAnalytics: vi.fn().mockResolvedValue(undefined),
+            cacheReport: vi.fn().mockResolvedValue(undefined),
+            invalidateCache: vi.fn().mockResolvedValue(undefined),
+        };
+        const tutorStub = {
+            generateInsights: vi.fn().mockResolvedValue([]),
+        };
+        const interpreterStub = {
+            interpret: vi.fn().mockReturnValue({}),
+        };
+        ReportEngine.setInstance(new ReportEngine(mDb as any, perfStub as any, tutorStub as any, interpreterStub as any));
     });
 
     // --- 1. Tutor & Intelligence ---
@@ -315,6 +351,10 @@ describe('Ultra Final Coverage Marathon - 100% Global Blitz', () => {
                 { id: 'e1', totalScore: 80, dimensions: [{ id: 'd1' }] },
                 { id: 'e2', totalScore: null, dimensions: [] }
             ]);
+            mDb.__selectQueue.push([
+                { exam: { id: 'e1', totalScore: 80 }, dimensions: { id: 'd1' } },
+                { exam: { id: 'e2', totalScore: null }, dimensions: null },
+            ]);
             const res = await ReportEngine.getUserPerformance('u1');
             expect(res.examsCompleted).toBe(2);
             expect(res.averageScore).toBe(40);
@@ -334,12 +374,21 @@ describe('Ultra Final Coverage Marathon - 100% Global Blitz', () => {
                 { dimensionType: 'skill', dimensionId: null, accuracy: 60, name: '', score: 10 },
                 { dimensionType: 'skill', dimensionId: null, accuracy: 60, name: null, score: 10 }
             ]);
+            mDb.__selectQueue.push(
+                [{ exam: { id: 'e1', userId: 'u1', status: 'completed', startedAt: new Date('2023-01-01T10:00:00'), completedAt: new Date('2023-01-01T10:15:00'), blueprintId: 'b1' }, blueprint: { id: 'b1' } }],
+                [{ examQuestion: { isCorrect: true, responseMetadata: {} }, question: { questionText: 'Q1', correctAnswer: 'A', explanation: 'E', topicId: 't1' } }],
+                [],
+                []
+            );
             
             await ReportEngine.getExamReport('e1', { includeCorrectAnswers: true });
         });
 
         it('hits premium reporting success paths', async () => {
             mDb.query.exams.findFirst.mockResolvedValue({ id: 'e1', userId: 'u1', completedAt: new Date() });
+            mDb.select.mockImplementation(() => makeSelect([
+                { exam: { id: 'e1', userId: 'u1', completedAt: new Date() }, blueprint: { id: 'b1' } }
+            ]));
             
             // 1. Lazy refresh fail
             mDb.execute.mockResolvedValue({ rows: [] });
@@ -370,17 +419,26 @@ describe('Ultra Final Coverage Marathon - 100% Global Blitz', () => {
         it('hits extreme tail edges for 100% coverage', async () => {
             // Percentile non-Error AND Error
             mDb.query.exams.findMany.mockRejectedValueOnce('string error');
+            mDb.select.mockImplementationOnce(() => { throw 'string error'; });
             const perc1 = await ReportEngine['calculatePercentile']('e1', 'b1', 100);
             expect(perc1).toBe(50);
             mDb.query.exams.findMany.mockRejectedValueOnce(new Error('real error'));
+            mDb.select.mockImplementationOnce(() => { throw new Error('real error'); });
             const perc2 = await ReportEngine['calculatePercentile']('e1', 'b1', 100);
             expect(perc2).toBe(50);
+            mDb.select.mockImplementation(mDb.__selectImpl);
 
             // Percentile success paths (cohort > 1, total > 0, total 0)
             mDb.query.exams.findMany.mockResolvedValueOnce([
                 { id: 'c1', examQuestions: [{ isCorrect: true }, { isCorrect: false }] }, // total > 0, score 50
                 { id: 'c2', examQuestions: [] }, // total 0
                 { id: 'c3', examQuestions: undefined } // total 0 fallback
+            ]);
+            mDb.__selectQueue.push([
+                { id: 'c1', totalScore: null, isCorrect: true },
+                { id: 'c1', totalScore: null, isCorrect: false },
+                { id: 'c2', totalScore: null, isCorrect: false },
+                { id: 'c3', totalScore: null, isCorrect: null },
             ]);
             const perc3 = await ReportEngine['calculatePercentile']('e1', 'b1', 75);
             expect(perc3).toBe(99); // 75 is higher than 50 and 0, so 100 percentile or 99!
@@ -396,6 +454,12 @@ describe('Ultra Final Coverage Marathon - 100% Global Blitz', () => {
                 { dimensionType: 'topic', name: 'T1', dimensionId: null } as any,
                 { dimensionType: 'topic', name: null, dimensionId: 'd1' } as any
             ]);
+            mDb.__selectQueue.push(
+                [{ exam: { id: 'e1', userId: 'u1', status: 'completed', completedAt: new Date(), startedAt: undefined, blueprintId: 'b1' }, blueprint: { id: 'b1' } }],
+                [],
+                [],
+                []
+            );
             await ReportEngine.getExamReport('e1');
 
             // getExamReport - no completedAt
@@ -405,10 +469,19 @@ describe('Ultra Final Coverage Marathon - 100% Global Blitz', () => {
                 completedAt: undefined,
                 examQuestions: []
             });
+            mDb.__selectQueue.push(
+                [{ exam: { id: 'e1', userId: 'u1', status: 'completed', startedAt: new Date(), completedAt: undefined, blueprintId: 'b1' }, blueprint: { id: 'b1' } }],
+                [],
+                [],
+                []
+            );
             await ReportEngine.getExamReport('e1');
 
             // getPremiumExamReport - 60-80 Borderline, Low Confidence, missing subtopics/skills
             mDb.query.exams.findFirst.mockResolvedValue({ id: 'e1', userId: 'u1', completedAt: new Date() });
+            mDb.select.mockImplementation(() => makeSelect([
+                { exam: { id: 'e1', userId: 'u1', completedAt: new Date() }, blueprint: { id: 'b1' } }
+            ]));
             
             mDb.execute.mockResolvedValueOnce({ rows: [{ 
                 score: 70, heatmap: [{ attempts: 0, difficulty: 'expert' }], 
@@ -469,10 +542,12 @@ describe('Ultra Final Coverage Marathon - 100% Global Blitz', () => {
 
             // getPremiumExamReport - Exam not found
             mDb.query.exams.findFirst.mockResolvedValueOnce(null);
+            mDb.select.mockImplementationOnce(() => makeSelect([]));
             await expect(ReportEngine.getPremiumExamReport('e1')).rejects.toThrow('Exam not found');
             
             // getExamReport - Exam not found
             mDb.query.exams.findFirst.mockResolvedValueOnce(null);
+            mDb.select.mockImplementationOnce(() => makeSelect([]));
             await expect(ReportEngine.getExamReport('e1')).rejects.toThrow('Exam not found');
         });
     });
@@ -483,12 +558,14 @@ describe('Ultra Final Coverage Marathon - 100% Global Blitz', () => {
                 id: 'e1', 
                 examQuestions: [{ question: { topicId: 't1' } }] 
             });
+            mDb.__selectQueue.push([{ exam: { id: 'e1', userId: 'u1', blueprintId: null }, blueprint: null }]);
             await ScoringEngine.calculateExamResults('e1');
 
             mDb.query.exams.findFirst.mockResolvedValueOnce({ 
                 id: 'e2', 
                 examQuestions: [{ question: { topicId: null } }] 
             });
+            mDb.__selectQueue.push([{ exam: { id: 'e2', userId: 'u1', blueprintId: null }, blueprint: null }]);
             await ScoringEngine.calculateExamResults('e2');
         });
 
@@ -518,6 +595,7 @@ describe('Ultra Final Coverage Marathon - 100% Global Blitz', () => {
                     }
                 }]
             });
+            mDb.__selectQueue.push([{ exam: { id: 'e_meta', userId: 'u1', blueprintId: null }, blueprint: null }]);
             mDb.query.topics.findMany.mockResolvedValueOnce([{
                 id: 't1',
                 name: 'Topic1',
@@ -530,14 +608,20 @@ describe('Ultra Final Coverage Marathon - 100% Global Blitz', () => {
 
             // 3. Error Catching: refreshAnalytics fail (Line 196)
             mDb.query.exams.findFirst.mockResolvedValueOnce({ id: 'e_ref', examQuestions: [] });
+            mDb.__selectQueue.push([{ exam: { id: 'e_ref', userId: 'u1', blueprintId: null }, blueprint: null }]);
             vi.spyOn(PerformanceService, 'refreshAnalytics').mockRejectedValueOnce(new Error('Refresh Fail'));
             await ScoringEngine.calculateExamResults('e_ref');
 
             // 4. Error Catching: main catch block (Line 201)
-            mDb.query.exams.findFirst.mockRejectedValueOnce(new Error('Critical DB Fail'));
+            const { ExamStateMachine } = await import('@/modules/exam-engine/exam.state-machine');
+            vi.spyOn(ExamStateMachine, 'transition').mockResolvedValue(undefined as any);
+            mDb.select.mockImplementation(mDb.__selectImpl);
+            mDb.__selectQueue.length = 0;
+            mDb.select.mockImplementationOnce(() => { throw new Error('Critical DB Fail'); });
             await expect(ScoringEngine.calculateExamResults('e_fail')).rejects.toThrow('Critical DB Fail');
 
             // 5. Error Catching: failed to mark as failed (Line 210)
+            mDb.select.mockImplementationOnce(() => { throw new Error('Double Fail'); });
             mDb.query.exams.findFirst.mockRejectedValueOnce(new Error('Double Fail'));
             mDb.update.mockImplementationOnce(() => ({
                 set: () => ({
@@ -548,6 +632,7 @@ describe('Ultra Final Coverage Marathon - 100% Global Blitz', () => {
 
             // 6. Background Fetch Fail (Line 194)
             mDb.query.exams.findFirst.mockResolvedValueOnce({ id: 'e_fetch', examQuestions: [] });
+            mDb.__selectQueue.push([{ exam: { id: 'e_fetch', userId: 'u1', blueprintId: null }, blueprint: null }]);
             // Mock global fetch to reject
             const oldFetch = global.fetch;
             global.fetch = vi.fn().mockRejectedValueOnce(new Error('Network Fail'));
@@ -578,6 +663,7 @@ describe('Ultra Final Coverage Marathon - 100% Global Blitz', () => {
                     }
                 ]
             });
+            mDb.__selectQueue.push([{ exam: { id: 'e_nullskills', userId: 'u1', blueprintId: null }, blueprint: null }]);
             mDb.query.topics.findMany.mockResolvedValueOnce([{
                 id: 't1',
                 name: 'Topic1',
@@ -588,10 +674,12 @@ describe('Ultra Final Coverage Marathon - 100% Global Blitz', () => {
             await ScoringEngine.calculateExamResults('e_nullskills');
 
             // 8. Non-Error throw to hit 'unknown error' fallback (Line 202 false branch)
+            mDb.select.mockImplementationOnce(() => { throw 'string_error_not_instanceof_Error'; });
             mDb.query.exams.findFirst.mockRejectedValueOnce('string_error_not_instanceof_Error');
             await expect(ScoringEngine.calculateExamResults('e_str')).rejects.toBe('string_error_not_instanceof_Error');
 
             // 9. Non-Error throw + update also rejects with non-Error (Lines 202+210 false branches)
+            mDb.select.mockImplementationOnce(() => { throw 42; });
             mDb.query.exams.findFirst.mockRejectedValueOnce(42);
             mDb.update.mockImplementationOnce(() => ({
                 set: () => ({
@@ -683,6 +771,21 @@ describe('Ultra Final Coverage Marathon - 100% Global Blitz', () => {
              // Restore materialize for this specific test block to hit actual logic
              vi.mocked(ReportMaterializer.materialize).mockRestore();
              
+             const toQuestionRows = (examQuestions: any[]) =>
+                 examQuestions.map((eq: any) => ({
+                     examQuestion: eq,
+                     question: eq.question,
+                     topic: eq.question.topic,
+                     subject: eq.question.topic.subject,
+                     domain: eq.question.topic.subject.domain,
+                 }));
+             
+             const pushMaterialize = (exam: any, withSubtopics: boolean, subtopicsRows: any[] = []) => {
+                 const examRow = { exam: { ...exam, user: undefined }, user: exam.user ?? null };
+                 mDb.__selectQueue.push([examRow], toQuestionRows(exam.examQuestions ?? []));
+                 if (withSubtopics) mDb.__selectQueue.push(subtopicsRows);
+             };
+             
              // Truthy branch (subtopics exist, high accuracy, defined timeSpent, single hierarchy)
              mDb.query.exams.findFirst.mockResolvedValueOnce({
                  userId: 'u1',
@@ -705,6 +808,31 @@ describe('Ultra Final Coverage Marathon - 100% Global Blitz', () => {
                  if (args && args.where) args.where({ id: 't_id' }, { inArray: () => true });
                  return [];
              });
+             pushMaterialize(
+                 {
+                     userId: 'u1',
+                     user: { email: 'test@example.com' },
+                     examQuestions: [{
+                         isCorrect: true,
+                         userAnswer: 'A',
+                         correctAnswer: 'A',
+                         explanation: 'Exp',
+                         timeSpent: 30,
+                         responseMetadata: { timeSpentSeconds: 30 },
+                         question: {
+                             topicId: 't1',
+                             difficulty: 'simple',
+                             subtopicId: 's1',
+                             questionText: 'Q1',
+                             correctAnswer: 'A',
+                             explanation: 'Exp',
+                             topic: { id: 't1', name: 'Topic1', subjectId: 'subj1', subject: { id: 'subj1', name: 'Subj1', domainId: 'd1', domain: { id: 'd1', name: 'Dom1' } } }
+                         }
+                     }]
+                 },
+                 true,
+                 []
+             );
              await ReportMaterializer.materialize('e1');
 
              // Borderline branch (1 subject, 2 topics, borderline accuracy 75%, user null)
@@ -722,6 +850,22 @@ describe('Ultra Final Coverage Marathon - 100% Global Blitz', () => {
                      { isCorrect: false, responseMetadata: 'invalid_string' as unknown, question: { topicId: 't2', difficulty: 'expert', subtopicId: null, topic: { id: 't2', name: 'Topic2', subjectId: 'subj1', subject: { id: 'subj1', name: 'Subj1', domainId: 'd1', domain: { id: 'd1', name: 'Dom1' } } } } }
                  ]
              });
+             pushMaterialize(
+                 {
+                     userId: 'u1',
+                     user: null,
+                     examQuestions: [
+                         { isCorrect: true, responseMetadata: { timeSpentSeconds: 0 }, question: { topicId: 't1', difficulty: 'intermediate', subtopicId: 's1', questionText: 'Q1', correctAnswer: 'A', explanation: 'E', topic: { id: 't1', name: 'Topic1', subjectId: 'subj1', subject: { id: 'subj1', name: 'Subj1', domainId: 'd1', domain: { id: 'd1', name: 'Dom1' } } } } },
+                         { isCorrect: true, responseMetadata: { timeSpentSeconds: null }, question: { topicId: 't1', difficulty: 'intermediate', subtopicId: 's1', questionText: 'Q2', correctAnswer: 'A', explanation: 'E', topic: { id: 't1', name: 'Topic1', subjectId: 'subj1', subject: { id: 'subj1', name: 'Subj1', domainId: 'd1', domain: { id: 'd1', name: 'Dom1' } } } } },
+                         { isCorrect: true, responseMetadata: { timeSpentSeconds: undefined }, question: { topicId: 't1', difficulty: 'intermediate', subtopicId: 's1', questionText: 'Q3', correctAnswer: 'A', explanation: 'E', topic: { id: 't1', name: 'Topic1', subjectId: 'subj1', subject: { id: 'subj1', name: 'Subj1', domainId: 'd1', domain: { id: 'd1', name: 'Dom1' } } } } },
+                         { isCorrect: false, question: { topicId: 't1', difficulty: 'intermediate', subtopicId: 's2', questionText: 'Q4', correctAnswer: 'A', explanation: 'E', topic: { id: 't1', name: 'Topic1', subjectId: 'subj1', subject: { id: 'subj1', name: 'Subj1', domainId: 'd1', domain: { id: 'd1', name: 'Dom1' } } } } },
+                         { isCorrect: false, responseMetadata: null, question: { topicId: 't2', difficulty: 'expert', subtopicId: null, questionText: 'Q5', correctAnswer: 'A', explanation: 'E', topic: { id: 't2', name: 'Topic2', subjectId: 'subj1', subject: { id: 'subj1', name: 'Subj1', domainId: 'd1', domain: { id: 'd1', name: 'Dom1' } } } } },
+                         { isCorrect: false, responseMetadata: 'invalid_string' as unknown, question: { topicId: 't2', difficulty: 'expert', subtopicId: null, questionText: 'Q6', correctAnswer: 'A', explanation: 'E', topic: { id: 't2', name: 'Topic2', subjectId: 'subj1', subject: { id: 'subj1', name: 'Subj1', domainId: 'd1', domain: { id: 'd1', name: 'Dom1' } } } } }
+                     ]
+                 },
+                 true,
+                 []
+             );
              await ReportMaterializer.materialize('e3');
 
              // Falsy branch (no subtopics, low accuracy, zero division fallbacks, multiple subjects/topics)
@@ -733,6 +877,17 @@ describe('Ultra Final Coverage Marathon - 100% Global Blitz', () => {
                      { isCorrect: false, responseMetadata: {}, question: { topicId: 't3', difficulty: 'intermediate', topic: { id: 't3', name: 'Topic3', subjectId: 'subj3', subject: { id: 'subj3', name: 'Subj3', domainId: undefined, domain: { id: 'd2', name: 'Dom2' } } } } }
                  ]
              });
+             pushMaterialize(
+                 {
+                     userId: 'u1',
+                     user: { email: '   ' },
+                     examQuestions: [
+                         { isCorrect: false, responseMetadata: { timeSpentSeconds: 15 }, question: { topicId: 't2', difficulty: 'expert', subtopicId: null, questionText: 'Q7', correctAnswer: 'A', explanation: 'E', topic: { id: 't2', name: 'Topic2', subjectId: 'subj2', subject: { id: 'subj2', name: 'Subj2', domainId: 'd1', domain: { id: 'd1', name: 'Dom1' } } } } },
+                         { isCorrect: false, responseMetadata: {}, question: { topicId: 't3', difficulty: 'intermediate', subtopicId: null, questionText: 'Q8', correctAnswer: 'A', explanation: 'E', topic: { id: 't3', name: 'Topic3', subjectId: 'subj3', subject: { id: 'subj3', name: 'Subj3', domainId: undefined, domain: { id: 'd2', name: 'Dom2' } } } } }
+                     ]
+                 },
+                 false
+             );
              await ReportMaterializer.materialize('e2');
 
              // Empty array branch (covers hierarchy.subjects[0]?.topics optional chaining where length=0)
@@ -741,12 +896,14 @@ describe('Ultra Final Coverage Marathon - 100% Global Blitz', () => {
                  user: undefined, // undefined user
                  examQuestions: []
              });
+             pushMaterialize({ userId: 'u1', user: undefined, examQuestions: [] }, false);
              await ReportMaterializer.materialize('e4');
 
              // --- NEW: Final coverage tail-enders ---
              
              // 5. Exam not found (Line 40)
              mDb.query.exams.findFirst.mockResolvedValueOnce(null);
+             mDb.__selectQueue.push([]);
              await expect(ReportMaterializer.materialize('e_null')).rejects.toThrow('Exam not found');
 
              // 6. Depth 1 & READY status (Line 212 & 252-253)
@@ -771,6 +928,24 @@ describe('Ultra Final Coverage Marathon - 100% Global Blitz', () => {
                      } 
                  }]
              });
+             pushMaterialize(
+                 {
+                     userId: 'u1',
+                     examQuestions: [{
+                         isCorrect: true,
+                         question: {
+                             topicId: 't1',
+                             difficulty: 'simple',
+                             subtopicId: null,
+                             questionText: 'Q9',
+                             correctAnswer: 'A',
+                             explanation: 'E',
+                             topic: { id: 't1', name: 'T', subjectId: 's1', subject: { id: 's1', name: 'S', domainId: 'd1', domain: { id: 'd1', name: 'D' } } }
+                         }
+                     }]
+                 },
+                 false
+             );
              const rReady = await ReportMaterializer.materialize('e_ready');
              expect(rReady.datasets.topics['t1'].ai.status).toBe('READY');
              expect(rReady.meta.depth).toBe(1);
@@ -783,6 +958,16 @@ describe('Ultra Final Coverage Marathon - 100% Global Blitz', () => {
                      { isCorrect: true, question: { topicId: 't2', topic: { id: 't2', name: 'T2', subjectId: 's1', subject: { id: 's1', name: 'S1', domainId: 'd1', domain: { id: 'd1', name: 'D' } } } } }
                  ]
              });
+             pushMaterialize(
+                 {
+                     userId: 'u1',
+                     examQuestions: [
+                         { isCorrect: true, question: { topicId: 't1', difficulty: 'simple', subtopicId: null, questionText: 'Q10', correctAnswer: 'A', explanation: 'E', topic: { id: 't1', name: 'T1', subjectId: 's1', subject: { id: 's1', name: 'S1', domainId: 'd1', domain: { id: 'd1', name: 'D' } } } } },
+                         { isCorrect: true, question: { topicId: 't2', difficulty: 'simple', subtopicId: null, questionText: 'Q11', correctAnswer: 'A', explanation: 'E', topic: { id: 't2', name: 'T2', subjectId: 's1', subject: { id: 's1', name: 'S1', domainId: 'd1', domain: { id: 'd1', name: 'D' } } } } }
+                     ]
+                 },
+                 false
+             );
              const rDepth2 = await ReportMaterializer.materialize('e_depth2');
              expect(rDepth2.meta.depth).toBe(2);
 
@@ -794,6 +979,16 @@ describe('Ultra Final Coverage Marathon - 100% Global Blitz', () => {
                      { isCorrect: true, question: { topicId: 't3', topic: { id: 't3', name: 'T3', subjectId: 's2', subject: { id: 's2', name: 'S2', domainId: 'd1', domain: { id: 'd1', name: 'D1' } } } } }
                  ]
              });
+             pushMaterialize(
+                 {
+                     userId: 'u1',
+                     examQuestions: [
+                         { isCorrect: true, question: { topicId: 't1', difficulty: 'simple', subtopicId: null, questionText: 'Q12', correctAnswer: 'A', explanation: 'E', topic: { id: 't1', name: 'T1', subjectId: 's1', subject: { id: 's1', name: 'S1', domainId: 'd1', domain: { id: 'd1', name: 'D1' } } } } },
+                         { isCorrect: true, question: { topicId: 't3', difficulty: 'simple', subtopicId: null, questionText: 'Q13', correctAnswer: 'A', explanation: 'E', topic: { id: 't3', name: 'T3', subjectId: 's2', subject: { id: 's2', name: 'S2', domainId: 'd1', domain: { id: 'd1', name: 'D1' } } } } }
+                     ]
+                 },
+                 false
+             );
              const rDepth3 = await ReportMaterializer.materialize('e_depth3');
              expect(rDepth3.meta.depth).toBe(3);
         });

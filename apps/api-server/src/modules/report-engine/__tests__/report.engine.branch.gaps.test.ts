@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { container } from '@/modules/core/container';
 
 import { ReportEngine } from '../report.engine';
+import { installSelectMock } from '../../../test/select-mock';
 
 describe('ReportEngine branch gaps', () => {
   const oldNodeEnv = process.env.NODE_ENV;
@@ -71,6 +72,18 @@ describe('ReportEngine branch gaps', () => {
       },
     };
 
+    installSelectMock(mockDb as any, [
+      { resolveOn: 'limit', result: [{ exam: { id: 'e1', userId: 'u1', status: 'completed', startedAt: new Date('2025-01-01T00:00:00Z'), completedAt: new Date('2025-01-01T00:10:00Z'), blueprintId: null }, blueprint: null }] },
+      { resolveOn: 'where', result: [] }, // examQuestions join
+      { resolveOn: 'where', result: [
+        { dimensionType: 'topic', dimensionId: 't1', name: 'Topic 1', score: 0, accuracy: 88 },
+      ] }, // resultsByDimension
+      { resolveOn: 'where', result: [
+        { id: 'peer1', totalScore: 80, isCorrect: true },
+        { id: 'peer1', totalScore: 80, isCorrect: false },
+      ] }, // percentile cohort
+    ]);
+
     const engine = new ReportEngine(mockDb as any, undefined, tutorService as any, undefined);
     await engine.getExamReport('e1');
 
@@ -127,6 +140,11 @@ describe('ReportEngine branch gaps', () => {
         })
         .mockResolvedValueOnce({ rows: null }),
     };
+
+    installSelectMock(mockDb as any, [
+      { resolveOn: 'limit', result: [{ exam: { id: 'e2', userId: 'u2', status: 'completed', blueprintId: null, completedAt: new Date('2025-01-01T00:20:00Z'), startedAt: new Date('2025-01-01T00:00:00Z') }, blueprint: null }] },
+      { resolveOn: 'limit', result: [{ name: 'User 2' }] }, // candidateName
+    ]);
 
     const performanceService = {
       getCachedReport: vi.fn().mockResolvedValue(null),
@@ -203,6 +221,11 @@ describe('ReportEngine branch gaps', () => {
           ],
         }),
     };
+
+    installSelectMock(mockDb as any, [
+      { resolveOn: 'limit', result: [{ exam: { id: 'e3', userId: 'u3', status: 'completed', blueprintId: null, completedAt: new Date('2025-01-01T00:20:00Z'), startedAt: new Date('2025-01-01T00:00:00Z') }, blueprint: null }] },
+      { resolveOn: 'limit', result: [{ name: 'User 3' }] }, // candidateName
+    ]);
 
     const performanceService = {
       getCachedReport: vi.fn().mockResolvedValue(null),

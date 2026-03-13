@@ -175,10 +175,13 @@ export class ReportPdfService {
       });
 
       // 3. Fetch data locally for injection
-      const exam = await this.dbInstance.query.exams.findFirst({
-        where: eq(exams.id, attemptId),
-        columns: { reportMaterialized: true },
-      });
+      const examRows = await this.dbInstance.select({
+        reportMaterialized: exams.reportMaterialized
+      })
+      .from(exams)
+      .where(eq(exams.id, attemptId))
+      .limit(1);
+      const exam = examRows[0];
 
       const engine = this.reportEngine || (await import('../core/container')).container.get(ReportEngine);
       type ReportData = Awaited<ReturnType<typeof engine.getPremiumExamReport>> & { reportMaterialized?: unknown };
@@ -250,12 +253,15 @@ export class ReportPdfService {
    * Complete generation + upload + DB sync flow
    */
   async generateAndUpload(attemptId: string): Promise<string> {
-    const exam = await this.dbInstance.query.exams.findFirst({
-      where: eq(exams.id, attemptId),
-      columns: { userId: true },
-    });
+    const examRows = await this.dbInstance.select({
+      userId: exams.userId
+    })
+    .from(exams)
+    .where(eq(exams.id, attemptId))
+    .limit(1);
+    const exam = examRows[0];
 
-    if (!exam) throw new Error(`Exam not found: ${attemptId}`);
+    if (exam === null || exam === undefined) throw new Error(`Exam not found: ${attemptId}`);
 
     const { buffer, fileSizeKb, generationTimeMs, pageCount } = await this.generate(attemptId);
 

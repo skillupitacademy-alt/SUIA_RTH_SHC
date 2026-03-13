@@ -16,6 +16,7 @@ import { recordCounter, recordTimer } from '@/lib/metrics';
 import { db } from '@quiz/db';
 import { ScoringEngine } from '../scoring.engine';
 import { ExamStateMachine } from '../../exam-engine/exam.state-machine';
+import { installSelectMock } from '../../../test/select-mock';
 
 vi.mock('../../exam-engine/exam.state-machine', () => ({
   ExamStateMachine: {
@@ -34,13 +35,24 @@ vi.mock('@quiz/db', () => ({
       exams: { findFirst: vi.fn() },
       topics: { findMany: vi.fn() },
     },
+    select: vi.fn(),
     insert: vi.fn(() => ({ values: vi.fn() })),
     update: vi.fn(() => ({ set: vi.fn(() => ({ where: vi.fn() })) })),
     delete: vi.fn(() => ({ where: vi.fn() })),
     transaction: vi.fn(async (fn) => fn(db)),
   },
   exams: { id: 'id', status: 'status' },
-  resultsByDimension: { examId: 'examId' }
+  examBlueprints: {},
+  examQuestions: {},
+  questions: {},
+  questionSkills: {},
+  skills: {},
+  resultsByDimension: { examId: 'examId' },
+  topics: {},
+  subjects: {},
+  domains: {},
+  subtopics: {},
+  topicSkills: {},
 }));
 
 describe('ScoringEngine Metrics', () => {
@@ -56,9 +68,14 @@ describe('ScoringEngine Metrics', () => {
   });
 
   it('records success metrics on successful scoring', async () => {
-    (db.query.exams.findFirst as any).mockResolvedValue({ id: 'e1', examQuestions: [], blueprint: {} });
-    (db.query.topics.findMany as any).mockResolvedValue([]);
-    
+    installSelectMock(db as any, [
+      { resolveOn: 'limit', result: [{ exam: { id: 'e1', userId: 'u1', status: 'completed', startedAt: new Date(), completedAt: new Date(), blueprintId: null }, blueprint: {} }] },
+      { resolveOn: 'where', result: [] }, // examQuestions join
+      { resolveOn: 'where', result: [] }, // topicRaw
+      { resolveOn: 'where', result: [] }, // topicSkillRows
+      { resolveOn: 'where', result: [] }, // subtopicRows
+    ]);
+
     await engine.calculateExamResults('e1');
     
     expect(recordCounter).toHaveBeenCalledWith(METRICS.CORE.SCORING + '.success', 1);
@@ -66,7 +83,12 @@ describe('ScoringEngine Metrics', () => {
   });
 
   it('records failure metrics on scoring error', async () => {
-    (db.query.exams.findFirst as any).mockRejectedValue(new Error('DB Error'));
+    (db as any).select = vi.fn(() => ({
+      from: vi.fn().mockReturnThis(),
+      leftJoin: vi.fn().mockReturnThis(),
+      where: vi.fn().mockReturnThis(),
+      limit: vi.fn().mockRejectedValue(new Error('DB Error')),
+    }));
     
     await expect(engine.calculateExamResults('e1')).rejects.toThrow();
     

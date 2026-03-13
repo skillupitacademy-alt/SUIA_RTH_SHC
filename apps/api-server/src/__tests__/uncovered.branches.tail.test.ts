@@ -10,6 +10,17 @@ import { TokenService } from '@/modules/auth/token.service';
 import { DrizzleAdminAnalyticsRepository } from '@/repositories/implementations/drizzle-admin-analytics.repository';
 import { DrizzleAdminUserRepository } from '@/repositories/implementations/drizzle-admin-user.repository';
 
+const makeSelect = (rows: any[] = []) => ({
+  from: vi.fn().mockReturnThis(),
+  leftJoin: vi.fn().mockReturnThis(),
+  innerJoin: vi.fn().mockReturnThis(),
+  where: vi.fn().mockReturnThis(),
+  orderBy: vi.fn().mockReturnThis(),
+  groupBy: vi.fn().mockReturnThis(),
+  limit: vi.fn().mockReturnThis(),
+  then: (resolve: (value: unknown) => void) => resolve(rows),
+});
+
 describe('uncovered branch mop-up', () => {
   it('covers token service audience mismatch and admin audience violation', async () => {
     const svc = new TokenService();
@@ -50,11 +61,7 @@ describe('uncovered branch mop-up', () => {
 
   it('covers selection resolve criteria auto difficulty/count branches', async () => {
     const mockDb = {
-      select: vi.fn().mockReturnValue({
-        from: vi.fn().mockReturnValue({
-          where: vi.fn().mockResolvedValue([]),
-        }),
-      }),
+      select: vi.fn().mockReturnValue(makeSelect([])),
     };
     const svc = new SelectionService(mockDb as any, {} as any);
     SelectionService.setInstance(svc as any);
@@ -96,10 +103,10 @@ describe('uncovered branch mop-up', () => {
     const dbInstance = {
       select: vi
         .fn()
-        .mockReturnValueOnce({ from: vi.fn().mockResolvedValue([{ count: 1 }]) })
-        .mockReturnValueOnce({ from: vi.fn().mockResolvedValue([{ count: 2 }]) })
-        .mockReturnValueOnce({ from: vi.fn().mockResolvedValue([{ count: 3 }]) })
-        .mockReturnValueOnce({ from: vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue([]) }) }),
+        .mockReturnValueOnce(makeSelect([{ count: 1 }]))
+        .mockReturnValueOnce(makeSelect([{ count: 2 }]))
+        .mockReturnValueOnce(makeSelect([{ count: 3 }]))
+        .mockReturnValueOnce(makeSelect([])),
       query: { auditLogs: { findMany: vi.fn() }, domains: { findMany: vi.fn() } },
     };
     (repo as any).dbInstance = dbInstance;
@@ -115,11 +122,7 @@ describe('uncovered branch mop-up', () => {
   it('covers admin user repository idle branch and count fallback', async () => {
     const repo = new DrizzleAdminUserRepository();
     const dbInstance = {
-      select: vi.fn().mockReturnValue({
-        from: vi.fn().mockReturnValue({
-          where: vi.fn().mockResolvedValue([{}]),
-        }),
-      }),
+      select: vi.fn().mockReturnValue(makeSelect([{}])),
       query: { users: { findMany: vi.fn().mockResolvedValue([]) } },
     };
     (repo as any).dbInstance = dbInstance;
@@ -154,6 +157,10 @@ describe('uncovered branch mop-up', () => {
           ]),
         },
       },
+      select: vi.fn()
+        .mockReturnValueOnce(makeSelect([{ exam: { id: 'e1', userId: 'u1', status: 'completed', completedAt: new Date(), startedAt: new Date(Date.now() - 60000), blueprintId: 'b1' }, blueprint: { id: 'b1' } }]))
+        .mockReturnValueOnce(makeSelect([{ examQuestion: { isCorrect: true, userAnswer: 'A', responseMetadata: {} }, question: { questionText: 'Q?', correctAnswer: 'A', explanation: 'ex', type: 'mcq' } }]))
+        .mockReturnValueOnce(makeSelect([{ dimensionType: 'topic', dimensionId: 't1', name: 'Topic 1', score: 80, accuracy: 80 }])),
     };
 
     const tutorSpy = vi.spyOn((await import('@/modules/adaptive-engine/adaptive-tutor.service')).AdaptiveTutorService, 'generateInsights')

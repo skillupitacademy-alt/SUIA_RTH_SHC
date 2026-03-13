@@ -1,6 +1,22 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 // @ts-nocheck
-import { db, examQuestions, exams, REPORT_QUERY_TIMEOUT, resultsByDimension, withTimeout as dbWithTimeout } from '@quiz/db';
+import {
+  db,
+  domains,
+  examBlueprints,
+  examQuestions,
+  exams,
+  questions,
+  questionSkills,
+  REPORT_QUERY_TIMEOUT,
+  resultsByDimension,
+  skills,
+  subjects,
+  subtopics,
+  topics,
+  topicSkills,
+  withTimeout as dbWithTimeout,
+} from '@quiz/db';
 import { eq as eqFn, type InferSelectModel } from 'drizzle-orm';
 
 import { logger } from '@/lib/logger';
@@ -101,45 +117,101 @@ export class ScoringEngine {
       await this.performanceService!.invalidateCache(examId);
 
       try {
-        const exam = await withTimeout(
-          db.query.exams.findFirst({
-            where: eq(exams.id, examId),
-            with: {
-              blueprint: true,
-              examQuestions: {
-                with: {
-                  question: {
-                    with: {
-                      questionSkills: {
-                        with: {
-                          skill: true
-                        }
-                      }
-                    }
-                  },
-                }
-              }
-            }
-          }),
+        // 1. Fetch Exam & Blueprint
+        const examRows = await withTimeout(
+          db.select({
+            exam: exams,
+            blueprint: examBlueprints
+          })
+          .from(exams)
+          .leftJoin(examBlueprints, eq(exams.blueprintId, examBlueprints.id))
+          .where(eq(exams.id, examId))
+          .limit(1),
           REPORT_QUERY_TIMEOUT,
           'ScoringEngine.fetchExam'
         );
 
-        if (exam === undefined) throw new Error('Exam not found');
+        if (examRows.length === 0) throw new Error('Exam not found');
+        const examHeader = examRows[0].exam;
+        const blueprint = examRows[0].blueprint;
+
+        // 2. Fetch Exam Questions with nested Question + Skills
+        const eqRows = await withTimeout(
+          db.select({
+            examQuestion: examQuestions,
+            question: questions,
+            skill: skills
+          })
+          .from(examQuestions)
+          .innerJoin(questions, eq(examQuestions.questionId, questions.id))
+          .leftJoin(questionSkills, eq(questions.id, questionSkills.questionId))
+          .leftJoin(skills, eq(questionSkills.skillId, skills.id))
+          .where(eq(examQuestions.examId, examId)),
+          REPORT_QUERY_TIMEOUT,
+          'ScoringEngine.fetchExamQuestions'
+        );
+
+        // Group rows back into relational-like structure
+        interface EqRecordWithQuestion extends Partial<InferSelectModel<typeof examQuestions>> {
+            question: Record<string, unknown> & { questionSkills: { skill: InferSelectModel<typeof skills> }[] };
+        }
+        const eqMap = new Map<string, EqRecordWithQuestion>();
+        for (const r of eqRows) {
+            if (!eqMap.has(r.examQuestion.id)) {
+                eqMap.set(r.examQuestion.id, {
+                    ...r.examQuestion,
+                    question: {
+                        ...r.question,
+                        questionSkills: []
+                    }
+                });
+            }
+            if (r.skill) {
+                eqMap.get(r.examQuestion.id).question.questionSkills.push({ skill: r.skill });
+            }
+        }
+        
+        const exam = {
+            ...examHeader,
+            blueprint,
+            examQuestions: Array.from(eqMap.values())
+        };
 
         const topicIds = [...new Set(exam.examQuestions.map((eqRecord) => (eqRecord.question as Record<string, unknown>).topicId))];
-        const topicData = await withTimeout(
-          db.query.topics.findMany({
-            where: (topics, { inArray }) => inArray(topics.id, topicIds as string[]),
-            with: {
-              subject: { with: { domain: true } },
-              topicSkills: { with: { skill: true } },
-              subtopics: true
-            }
-          }),
-          REPORT_QUERY_TIMEOUT,
-          'ScoringEngine.fetchTopics'
+        
+        // 3. Fetch Topics with nested Subject, Domain, Skills, and Subtopics
+        const topicRaw = await withTimeout(
+            db.select({
+                topic: topics,
+                subject: subjects,
+                domain: domains
+            })
+            .from(topics)
+            .innerJoin(subjects, eq(topics.subjectId, subjects.id))
+            .innerJoin(domains, eq(subjects.domainId, domains.id))
+            .where((t, { inArray }) => inArray(topics.id, topicIds as string[])),
+            REPORT_QUERY_TIMEOUT,
+            'ScoringEngine.fetchTopics.base'
         );
+
+        const topicSkillRows = await db.select({
+            topicSkill: topicSkills,
+            skill: skills
+        })
+        .from(topicSkills)
+        .innerJoin(skills, eq(topicSkills.skillId, skills.id))
+        .where((ts, { inArray }) => inArray(topicSkills.topicId, topicIds as string[]));
+
+        const subtopicRows = await db.select()
+        .from(subtopics)
+        .where((st, { inArray }) => inArray(subtopics.topicId, topicIds as string[]));
+
+        const topicData = topicRaw.map(r => ({
+            ...r.topic,
+            subject: { ...r.subject, domain: r.domain },
+            topicSkills: topicSkillRows.filter(ts => ts.topicSkill.topicId === r.topic.id).map(ts => ({ skill: ts.skill })),
+            subtopics: subtopicRows.filter(st => st.topicId === r.topic.id)
+        }));
 
         const topicMap = new Map(topicData.map(t => [t.id, t]));
 

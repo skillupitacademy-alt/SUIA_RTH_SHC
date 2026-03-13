@@ -4,6 +4,7 @@ import { container } from '@/modules/core/container';
 import { ScoringEngine } from '../scoring.engine';
 import { SelectionService } from '@/modules/selection-engine/selection.service';
 import { PerformanceService } from '@/modules/report-engine/performance.service';
+import { installSelectMock } from '../../../test/select-mock';
 
 vi.mock('@quiz/db', () => ({
   STANDARD_QUERY_TIMEOUT: 15000,
@@ -17,6 +18,7 @@ vi.mock('@quiz/db', () => ({
             topics: { findMany: vi.fn() },
             subtopics: { findMany: vi.fn() }
         },
+        select: vi.fn(),
         execute: vi.fn(),
         update: vi.fn().mockReturnValue({
             set: vi.fn().mockReturnValue({
@@ -33,9 +35,17 @@ vi.mock('@quiz/db', () => ({
         })
     },
     exams: { id: 'id', status: 'status', totalScore: 'totalScore' },
+    examBlueprints: {},
+    examQuestions: {},
+    questions: {},
+    questionSkills: {},
+    skills: {},
     resultsByDimension: { id: 'id', examId: 'examId' },
     topics: { id: 'id', name: 'name' },
-    subtopics: { id: 'id', name: 'name' }
+    subtopics: { id: 'id', name: 'name' },
+    subjects: {},
+    domains: {},
+    topicSkills: {}
 }));
 
 const mockPerformanceService = {
@@ -67,7 +77,9 @@ describe('Final cleanup - Scoring, Selection, Performance', () => {
 
     it('ScoringEngine.calculateExamResults throws if exam not found (Line 45)', async () => {
         mockPerformanceService.invalidateCache.mockResolvedValue(undefined);
-        vi.mocked(db.query.exams.findFirst).mockResolvedValue(undefined);
+        installSelectMock(db as any, [
+            { resolveOn: 'limit', result: [] },
+        ]);
         await expect(container.get(ScoringEngine).calculateExamResults('e-none')).rejects.toThrow('Exam not found');
     });
 

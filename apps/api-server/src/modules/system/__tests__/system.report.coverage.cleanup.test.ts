@@ -17,14 +17,32 @@ vi.mock('@quiz/db', () => ({
             exams: { findFirst: vi.fn() },
             subtopics: { findMany: vi.fn() }
         },
+        select: vi.fn(),
         update: vi.fn().mockReturnValue({ set: vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue(undefined) }) })
     },
     exams: { id: 'id' },
+    users: { id: 'id' },
+    examQuestions: { id: 'id' },
+    questions: { id: 'id' },
+    topics: { id: 'id' },
+    subjects: { id: 'id' },
+    domains: { id: 'id' },
     subtopics: { id: 'id' }
 }));
 
 vi.mock('@/modules/system/jobs.service');
 vi.mock('@/modules/core/resilience.manager');
+
+const makeSelect = (rows: any[] = []) => ({
+    from: vi.fn().mockReturnThis(),
+    leftJoin: vi.fn().mockReturnThis(),
+    innerJoin: vi.fn().mockReturnThis(),
+    where: vi.fn().mockReturnThis(),
+    orderBy: vi.fn().mockReturnThis(),
+    groupBy: vi.fn().mockReturnThis(),
+    limit: vi.fn().mockReturnThis(),
+    then: (resolve: (value: unknown) => void) => resolve(rows),
+});
 
 describe('System and Report cleanup coverage', () => {
     beforeEach(() => {
@@ -34,6 +52,27 @@ describe('System and Report cleanup coverage', () => {
     });
 
     it('ReportMaterializer.materialize hits "Core Focus" fallback (Line 149)', async () => {
+        const examRow: any = { id: 'e1', userId: 'u1', user: null };
+        const questionRows = [
+            {
+                examQuestion: { id: 'eq1', userAnswer: 'A', isCorrect: true, responseMetadata: { timeSpentSeconds: 10 } },
+                question: {
+                    questionText: 'Q1',
+                    correctAnswer: 'A',
+                    difficulty: 'simple',
+                    topicId: 't1',
+                    subtopicId: null,
+                },
+                topic: { id: 't1', name: 'T1', subjectId: 's1' },
+                subject: { id: 's1', name: 'S1', domainId: 'd1' },
+                domain: { id: 'd1', name: 'D1' },
+            },
+        ];
+
+        vi.mocked(db.select)
+            .mockReturnValueOnce(makeSelect([{ exam: examRow, user: null }]))
+            .mockReturnValueOnce(makeSelect(questionRows));
+
         vi.mocked(db.query.exams.findFirst).mockResolvedValue({
             id: 'e1', userId: 'u1',
             examQuestions: [{

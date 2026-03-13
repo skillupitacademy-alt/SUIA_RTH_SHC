@@ -5,6 +5,7 @@ import { db } from '@quiz/db'
 import { container } from '@/modules/core/container'
 import { PerformanceService } from '@/modules/report-engine/performance.service'
 import { ScoringEngine } from '@/modules/scoring-engine/scoring.engine'
+import { installSelectMock } from '../../../test/select-mock'
 
 const mockPerformanceService = {
   invalidateCache: vi.fn().mockResolvedValue(undefined),
@@ -19,7 +20,9 @@ vi.mock('@/modules/report-engine/performance.service', () => ({
 describe('ScoringEngine phase 3 coverage', () => {
   it('marks exam failed when scoring throws because exam is missing', async () => {
     container.register(PerformanceService, mockPerformanceService as any)
-    ;(db.query as any).exams = { findFirst: vi.fn().mockResolvedValue(undefined) }
+    installSelectMock(db as any, [
+      { resolveOn: 'limit', result: [] },
+    ])
     ;(db as any).update = vi.fn().mockReturnValue({
       set: vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue(undefined) })
     })

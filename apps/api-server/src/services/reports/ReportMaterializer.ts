@@ -1,6 +1,6 @@
-import { db, exams } from "@quiz/db";
+import * as schema from "@quiz/db";
 import { DomainNode, QuestionItem, ReportJSON, SubjectNode, TopicNode } from "@quiz/types/report";
-import { eq } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 
 import { logger } from "@/lib/logger";
 import { withSpan } from "@/lib/tracer";
@@ -14,32 +14,54 @@ export class ReportMaterializer {
         const run = async () => {
             this.log.info({ examId }, "Materializing hierarchical report data");
 
-            // 1. Fetch Exam with Lineage
-            const exam = await db.query.exams.findFirst({
-                where: eq(exams.id, examId),
-                with: {
-                    user: true,
-                    examQuestions: {
-                        with: {
-                            question: {
-                                with: {
-                                    topic: {
-                                        with: {
-                                            subject: {
-                                                with: {
-                                                    domain: true
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
+            // 1. Fetch Exam & User
+            const examRows = await schema.db.select({
+                exam: schema.exams,
+                user: schema.users
+            })
+            .from(schema.exams)
+            .leftJoin(schema.users, eq(schema.exams.userId, schema.users.id))
+            .where(eq(schema.exams.id, examId))
+            .limit(1);
+
+            if (examRows.length === 0) throw new Error("Exam not found");
+            const examHeader = examRows[0].exam;
+            const user = examRows[0].user;
+
+            // 2. Fetch Exam Questions with full lineage (Topic -> Subject -> Domain)
+            const questionRows = await schema.db.select({
+                examQuestion: schema.examQuestions,
+                question: schema.questions,
+                topic: schema.topics,
+                subject: schema.subjects,
+                domain: schema.domains
+            })
+            .from(schema.examQuestions)
+            .innerJoin(schema.questions, eq(schema.examQuestions.questionId, schema.questions.id))
+            .innerJoin(schema.topics, eq(schema.questions.topicId, schema.topics.id))
+            .innerJoin(schema.subjects, eq(schema.topics.subjectId, schema.subjects.id))
+            .innerJoin(schema.domains, eq(schema.subjects.domainId, schema.domains.id))
+            .where(eq(schema.examQuestions.examId, examId));
+
+            const exam = {
+                ...examHeader,
+                user,
+                examQuestions: questionRows.map(r => ({
+                    ...r.examQuestion,
+                    question: {
+                        ...r.question,
+                        topic: {
+                            ...r.topic,
+                            subject: {
+                                ...r.subject,
+                                domain: r.domain
                             }
                         }
                     }
-                }
-            });
+                }))
+            };
 
-            if (!exam) throw new Error("Exam not found");
+            if (exam === null || exam === undefined) throw new Error("Exam not found");
 
             type QuestionRow = {
                 id: string;
@@ -85,7 +107,7 @@ export class ReportMaterializer {
                 subtopicName: "", // We'll fetch this if needed or mapping exists
             }));
 
-            // 2. Fetch Metadata (Subtopics & Skills)
+            // 3. Fetch Metadata (Subtopics)
             const subtopicIds = Array.from(
                 new Set(
                     questions
@@ -94,7 +116,7 @@ export class ReportMaterializer {
                 )
             );
             const dbSubtopics = subtopicIds.length > 0
-                ? await db.query.subtopics.findMany({ where: (t, { inArray }) => inArray(t.id, subtopicIds as string[]) })
+                ? await schema.db.select().from(schema.subtopics).where(inArray(schema.subtopics.id, subtopicIds as string[]))
                 : [];
             const subtopicMap = new Map(dbSubtopics.map(s => [s.id, s.name]));
 
@@ -292,9 +314,9 @@ export class ReportMaterializer {
             };
 
             // Cache back to DB
-            await db.update(exams)
+            await schema.db.update(schema.exams)
                 .set({ reportMaterialized: report })
-                .where(eq(exams.id, examId));
+                .where(eq(schema.exams.id, examId));
 
             return report;
         };

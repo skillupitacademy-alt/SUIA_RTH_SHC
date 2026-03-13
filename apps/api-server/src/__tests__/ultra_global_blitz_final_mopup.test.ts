@@ -10,9 +10,30 @@ import { db } from '@quiz/db';
 import { JobType } from '@quiz/types';
 import { container } from '../modules/core/container';
 
+const makeSelect = (rows: any[] = []) => ({
+    from: vi.fn().mockReturnThis(),
+    leftJoin: vi.fn().mockReturnThis(),
+    innerJoin: vi.fn().mockReturnThis(),
+    where: vi.fn().mockReturnThis(),
+    orderBy: vi.fn().mockReturnThis(),
+    groupBy: vi.fn().mockReturnThis(),
+    limit: vi.fn().mockReturnThis(),
+    then: (resolve: (value: unknown) => void) => resolve(rows),
+});
+
 // Mock DB
 vi.mock('@quiz/db', async () => {
     const actual = await vi.importActual('@quiz/db') as any;
+    const makeSelect = (rows: any[] = []) => ({
+        from: vi.fn().mockReturnThis(),
+        leftJoin: vi.fn().mockReturnThis(),
+        innerJoin: vi.fn().mockReturnThis(),
+        where: vi.fn().mockReturnThis(),
+        orderBy: vi.fn().mockReturnThis(),
+        groupBy: vi.fn().mockReturnThis(),
+        limit: vi.fn().mockReturnThis(),
+        then: (resolve: (value: unknown) => void) => resolve(rows),
+    });
     
     const mockDb = {
         ...actual.db,
@@ -45,11 +66,7 @@ vi.mock('@quiz/db', async () => {
                 returning: vi.fn(() => Promise.resolve([{ id: 'del-id' }])) 
             })) 
         })),
-        select: vi.fn(() => ({
-            from: vi.fn(() => ({
-                where: vi.fn(() => Promise.resolve([{ count: 1 }]))
-            }))
-        })),
+        select: vi.fn(() => makeSelect([{ count: 1 }])),
         transaction: vi.fn(async (cb) => cb({
             insert: vi.fn(() => ({ 
                 values: vi.fn(() => ({ 
@@ -74,11 +91,7 @@ vi.mock('@quiz/db', async () => {
                 idempotencyKeys: { findFirst: vi.fn().mockResolvedValue(undefined) },
                 backgroundJobs: { findFirst: vi.fn().mockResolvedValue(undefined) }
             },
-            select: vi.fn(() => ({
-                from: vi.fn(() => ({
-                    where: vi.fn(() => Promise.resolve([{ count: 1 }]))
-                }))
-            })),
+            select: vi.fn(() => makeSelect([{ count: 1 }])),
         }))
     };
 
@@ -127,9 +140,14 @@ describe('Final Global Blitz Coverage Mop-up', () => {
 
         // Standardize count mock globally
         vi.mocked(db.select).mockReturnValue({
-            from: vi.fn(() => ({
-                where: vi.fn(() => Promise.resolve([{ count: 123 }]))
-            }))
+            from: vi.fn().mockReturnThis(),
+            leftJoin: vi.fn().mockReturnThis(),
+            innerJoin: vi.fn().mockReturnThis(),
+            where: vi.fn().mockReturnThis(),
+            orderBy: vi.fn().mockReturnThis(),
+            groupBy: vi.fn().mockReturnThis(),
+            limit: vi.fn().mockReturnThis(),
+            then: (resolve: (value: unknown) => void) => resolve([{ count: 123 }]),
         } as any);
 
         // Standardize findMany/findFirst fallbacks
@@ -158,11 +176,14 @@ describe('Final Global Blitz Coverage Mop-up', () => {
             // Test executeDynamicSelection failure (Line 409/436)
             const criteria: any = { requestedTotal: 10, difficultyPref: 'simple', finalSubtopicIds: [], actualTopicIds: [], actualSubjectIds: [] };
             vi.mocked(db.select).mockReturnValue({
-                from: vi.fn(() => ({
-                    where: vi.fn(() => ({
-                        orderBy: vi.fn(() => Promise.resolve([]))
-                    }))
-                }))
+                from: vi.fn().mockReturnThis(),
+                leftJoin: vi.fn().mockReturnThis(),
+                innerJoin: vi.fn().mockReturnThis(),
+                where: vi.fn().mockReturnThis(),
+                orderBy: vi.fn().mockReturnThis(),
+                groupBy: vi.fn().mockReturnThis(),
+                limit: vi.fn().mockReturnThis(),
+                then: (resolve: (value: unknown) => void) => resolve([]),
             } as any);
 
             await expect((service as any).executeDynamicSelection('u1', 'd1', 'i1', criteria, { id: 'b1' }))
@@ -241,11 +262,7 @@ describe('Final Global Blitz Coverage Mop-up', () => {
                         subtopics: { findMany: vi.fn().mockResolvedValue([]) },
                         skills: { findMany: vi.fn().mockResolvedValue([]) }
                     },
-                    select: vi.fn(() => ({
-                        from: vi.fn(() => ({
-                            where: vi.fn(() => Promise.resolve([{ count: 123 }]))
-                        }))
-                    })),
+                    select: vi.fn(() => makeSelect([{ count: 123 }])),
                 };
                 return callback(tx);
             });

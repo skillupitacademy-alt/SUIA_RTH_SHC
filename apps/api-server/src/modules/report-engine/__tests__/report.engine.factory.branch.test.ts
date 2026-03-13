@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from "vitest"
 
 import { createReportEngine } from "../report.engine.factory"
+import { installSelectMock } from '../../../test/select-mock'
 
 vi.mock("@/modules/analytics/user-analytics.service", () => ({
   UserAnalyticsService: {
@@ -39,6 +40,12 @@ const baseExam = {
 
 describe("ReportEngine branches (db-injected)", () => {
   it("handles percentile calc fallback when cohort empty", async () => {
+    installSelectMock(mockDb as any, [
+      { resolveOn: 'limit', result: [{ exam: baseExam, blueprint: null }] },
+      { resolveOn: 'where', result: [] }, // examQuestions join
+      { resolveOn: 'where', result: [] }, // resultsByDimension
+      { resolveOn: 'where', result: [] }, // percentile cohort
+    ])
     mockDb.query.exams.findMany.mockResolvedValueOnce([])
     mockDb.query.exams.findFirst.mockResolvedValueOnce({ ...baseExam, examQuestions: [] })
     mockDb.query.resultsByDimension.findMany.mockResolvedValueOnce([])
@@ -50,6 +57,12 @@ describe("ReportEngine branches (db-injected)", () => {
   })
 
   it("returns report even if analytics row empty after refresh", async () => {
+    installSelectMock(mockDb as any, [
+      { resolveOn: 'limit', result: [{ exam: baseExam, blueprint: null }] },
+      { resolveOn: 'where', result: [] }, // examQuestions join
+      { resolveOn: 'where', result: [] }, // resultsByDimension
+      { resolveOn: 'where', result: [] }, // percentile cohort
+    ])
     mockDb.query.exams.findFirst.mockResolvedValue({ ...baseExam, examQuestions: [] })
     mockDb.query.resultsByDimension.findMany.mockResolvedValue([])
     mockDb.execute.mockResolvedValue({ rows: [{ score: null }] })
@@ -60,6 +73,21 @@ describe("ReportEngine branches (db-injected)", () => {
   })
 
   it("maps heatmap/difficulty with showNoData flags", async () => {
+    installSelectMock(mockDb as any, [
+      { resolveOn: 'limit', result: [{ exam: baseExam, blueprint: null }] },
+      { resolveOn: 'where', result: [
+        { examQuestion: { isCorrect: true, questionId: 'q1', userAnswer: null, responseMetadata: null }, question: {} },
+        { examQuestion: { isCorrect: false, questionId: 'q2', userAnswer: null, responseMetadata: null }, question: {} },
+      ] }, // examQuestions join
+      { resolveOn: 'where', result: [
+        { dimensionType: "topic", dimensionId: "t1", accuracy: 40, name: "Topic" },
+        { dimensionType: "skill", dimensionId: "s1", accuracy: 90, name: "Skill" },
+      ] }, // resultsByDimension
+      { resolveOn: 'where', result: [
+        { id: 'p1', totalScore: 50, isCorrect: true },
+        { id: 'p1', totalScore: 50, isCorrect: false },
+      ] }, // percentile cohort
+    ])
     mockDb.query.exams.findFirst.mockResolvedValue({
       ...baseExam,
       examQuestions: [

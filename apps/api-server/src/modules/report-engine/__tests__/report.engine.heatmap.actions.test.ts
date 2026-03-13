@@ -21,6 +21,7 @@ vi.mock("@/modules/report-engine/report-interpreter.service", () => ({
 }));
 
 import { createReportEngine } from "../report.engine.factory";
+import { installSelectMock } from '../../../test/select-mock';
 
 const mockDb = {
   query: {
@@ -39,6 +40,10 @@ const ReportEngine = createReportEngine({ db: mockDb as any });
 
 describe("ReportEngine heatmap & AI action branches", () => {
   it("normalizes heatmap difficulty and returns high-score action set", async () => {
+    installSelectMock(mockDb as any, [
+      { resolveOn: 'limit', result: [{ exam: { id: "exam-hm", userId: "u1", status: "completed", blueprintId: null, completedAt: new Date(), startedAt: new Date(Date.now() - 20_000) }, blueprint: null }] },
+      { resolveOn: 'limit', result: [{ name: 'User' }] }, // candidateName
+    ]);
     mockDb.query.exams.findFirst.mockResolvedValue({
       id: "exam-hm",
       userId: "u1",

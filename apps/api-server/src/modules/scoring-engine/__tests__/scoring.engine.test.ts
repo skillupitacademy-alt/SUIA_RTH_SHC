@@ -4,6 +4,7 @@ import { container } from '@/modules/core/container';
 import { ScoringEngine } from '@/modules/scoring-engine/scoring.engine';
 import { PerformanceService } from '@/modules/report-engine/performance.service';
 import { ExamObserver } from '@/modules/exam-engine/exam.observer';
+import { installSelectMock } from '../../../test/select-mock';
 
 const mockPerformanceService = {
   invalidateCache: vi.fn().mockResolvedValue(undefined),
@@ -24,27 +25,33 @@ describe('ScoringEngine (integration)', () => {
   it('calculates results for an exam by fetching from DB', async () => {
     const exam = {
       id: 'e1',
+      userId: 'u1',
       status: 'started',
       startedAt: new Date(),
-      examQuestions: [
-        { 
-          isCorrect: true, 
-          question: { id: 'q1', topicId: 't1', difficulty: 'simple', questionSkills: [] } 
-        }
-      ],
-      blueprint: { scoringStrategy: 'percentage' }
+      completedAt: new Date(),
+      blueprintId: null,
     };
 
-    const topic = {
-      id: 't1',
-      name: 'Topic 1',
-      subject: { id: 's1', name: 'S1', domain: { id: 'd1', name: 'D1' } },
-      topicSkills: [],
-      subtopics: []
-    };
+    const eqRows = [
+      {
+        examQuestion: { id: 'eq1', examId: 'e1', questionId: 'q1', isCorrect: true },
+        question: { id: 'q1', topicId: 't1', difficulty: 'simple', questionText: 'Q', correctAnswer: 'A' },
+        skill: null,
+      },
+    ];
+    const topicRaw = [{
+      topic: { id: 't1', name: 'Topic 1', subjectId: 's1' },
+      subject: { id: 's1', name: 'S1', domainId: 'd1' },
+      domain: { id: 'd1', name: 'D1' },
+    }];
 
-    (db.query as any).exams = { findFirst: vi.fn().mockResolvedValue(exam) };
-    (db.query as any).topics = { findMany: vi.fn().mockResolvedValue([topic]) };
+    installSelectMock(db as any, [
+      { resolveOn: 'limit', result: [{ exam, blueprint: { scoringStrategy: 'percentage' } }] },
+      { resolveOn: 'where', result: eqRows },
+      { resolveOn: 'where', result: topicRaw },
+      { resolveOn: 'where', result: [] }, // topicSkillRows
+      { resolveOn: 'where', result: [] }, // subtopicRows
+    ]);
     (db as any).delete = vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue(undefined) });
     (db as any).insert = vi.fn().mockReturnValue({ values: vi.fn().mockResolvedValue(undefined) });
     (db as any).update = vi.fn().mockReturnValue({ set: vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue(undefined) }) });
@@ -53,7 +60,6 @@ describe('ScoringEngine (integration)', () => {
     const score = await container.get(ScoringEngine).calculateExamResults('e1');
     
     expect(score).toBe(100);
-    expect((db.query as any).exams.findFirst).toHaveBeenCalled();
     expect((db as any).update).toHaveBeenCalled();
   });
 

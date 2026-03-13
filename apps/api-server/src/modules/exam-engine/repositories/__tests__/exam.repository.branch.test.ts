@@ -27,9 +27,17 @@ vi.mock('@quiz/db', () => {
     },
   };
 
-  const transaction = vi.fn(async (cb: any) => cb({ insert, update }));
+  const select = vi.fn(() => ({
+    from: vi.fn().mockReturnValue({
+      where: vi.fn().mockReturnValue({
+        limit: vi.fn().mockResolvedValue([{ id: 'exam1', status: 'started', userId: 'u1' }]),
+      }),
+    }),
+  }));
 
-  const db = { update, insert, query, transaction } as any;
+  const transaction = vi.fn(async (cb: any) => cb({ insert, update, select }));
+
+  const db = { update, insert, query, transaction, select } as any;
 
   return {
     db,

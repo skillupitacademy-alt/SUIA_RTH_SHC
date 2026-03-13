@@ -1,4 +1,4 @@
-import { db, examQuestions, exams, idempotencyKeys, QUICK_QUERY_TIMEOUT, STANDARD_QUERY_TIMEOUT, withTimeout as dbWithTimeout } from '@quiz/db';
+import { db, examBlueprints, examQuestions, exams, idempotencyKeys, questions, QUICK_QUERY_TIMEOUT, STANDARD_QUERY_TIMEOUT, withTimeout as dbWithTimeout } from '@quiz/db';
 import { and, desc, eq } from 'drizzle-orm';
 
 import { BaseRepository } from '@/modules/core/repositories/base.repository';
@@ -29,27 +29,35 @@ export class ExamRepository extends BaseRepository<Exam, typeof exams> {
   }
 
   async findActiveExam(id: string, userId: string) {
-      return await this.withTimeoutFn(
-          this.dbInstance.query.exams.findFirst({
-            where: and(
-                eq(exams.id, id),
-                eq(exams.userId, userId)
-            )
-          }),
+      const rows = await this.withTimeoutFn(
+          this.dbInstance.select()
+              .from(exams)
+              .where(and(
+                  eq(exams.id, id),
+                  eq(exams.userId, userId)
+              ))
+              .limit(1),
           QUICK_QUERY_TIMEOUT,
           'ExamRepository.findActiveExam'
       );
+      return rows[0] ?? null;
   }
 
   async findByIdWithBlueprint(id: string) {
-    return await this.withTimeoutFn(
-      this.dbInstance.query.exams.findFirst({
-        where: eq(exams.id, id),
-        with: { blueprint: true }
-      }),
+    const rows = await this.withTimeoutFn(
+      this.dbInstance.select({
+        exam: exams,
+        blueprint: examBlueprints
+      })
+      .from(exams)
+      .leftJoin(examBlueprints, eq(exams.blueprintId, examBlueprints.id))
+      .where(eq(exams.id, id))
+      .limit(1),
       QUICK_QUERY_TIMEOUT,
       'ExamRepository.findByIdWithBlueprint'
     );
+    if (rows.length === 0) return null;
+    return { ...rows[0].exam, blueprint: rows[0].blueprint };
   }
 
   async updateLastAnswered(id: string, date: Date = new Date()) {
@@ -92,49 +100,64 @@ export class ExamRepository extends BaseRepository<Exam, typeof exams> {
   }
 
   async findQuestionByExamAndQuestion(examId: string, questionId: string) {
-    return await this.withTimeoutFn(
-      this.dbInstance.query.examQuestions.findFirst({
-        where: and(
-          eq(examQuestions.examId, examId),
-          eq(examQuestions.questionId, questionId)
-        ),
-        with: {
-          question: true
-        }
-      }),
+    const rows = await this.withTimeoutFn(
+      this.dbInstance.select({
+        examQuestion: examQuestions,
+        question: questions
+      })
+      .from(examQuestions)
+      .innerJoin(questions, eq(examQuestions.questionId, questions.id))
+      .where(and(
+        eq(examQuestions.examId, examId),
+        eq(examQuestions.questionId, questionId)
+      ))
+      .limit(1),
       QUICK_QUERY_TIMEOUT,
       'ExamRepository.findQuestionByExamAndQuestion'
     );
+    if (rows.length === 0) return null;
+    return { ...rows[0].examQuestion, question: rows[0].question };
   }
 
   async findByIdWithQuestions(id: string) {
-    return await this.withTimeoutFn(
-      this.dbInstance.query.exams.findFirst({
-        where: eq(exams.id, id),
-        with: {
-          examQuestions: {
-            with: {
-              question: true,
-            },
-          },
-        },
-      }),
-      STANDARD_QUERY_TIMEOUT,
-      'ExamRepository.findByIdWithQuestions'
+    const examRows = await this.withTimeoutFn(
+        this.dbInstance.select().from(exams).where(eq(exams.id, id)).limit(1),
+        STANDARD_QUERY_TIMEOUT,
+        'ExamRepository.findByIdWithQuestions.exam'
     );
+    if (examRows.length === 0) return null;
+
+    const questionRows = await this.withTimeoutFn(
+        this.dbInstance.select({
+            examQuestion: examQuestions,
+            question: questions
+        })
+        .from(examQuestions)
+        .innerJoin(questions, eq(examQuestions.questionId, questions.id))
+        .where(eq(examQuestions.examId, id)),
+        STANDARD_QUERY_TIMEOUT,
+        'ExamRepository.findByIdWithQuestions.questions'
+    );
+
+    return {
+        ...examRows[0],
+        examQuestions: questionRows.map(r => ({
+            ...r.examQuestion,
+            question: r.question
+        }))
+    };
   }
 
   async checkIdempotency(userId: string, key: string) {
-    return await this.withTimeoutFn(
-      this.dbInstance.query.idempotencyKeys.findFirst({
-        where: and(
-          eq(idempotencyKeys.userId, userId),
-          eq(idempotencyKeys.key, key)
-        ),
-      }),
+    const rows = await this.withTimeoutFn(
+      this.dbInstance.select().from(idempotencyKeys).where(and(
+        eq(idempotencyKeys.userId, userId),
+        eq(idempotencyKeys.key, key)
+      )).limit(1),
       QUICK_QUERY_TIMEOUT,
       'ExamRepository.checkIdempotency'
     );
+    return rows[0] ?? null;
   }
 
   async createExamWithQuestions(data: {
@@ -192,21 +215,25 @@ export class ExamRepository extends BaseRepository<Exam, typeof exams> {
 
   async findByUserId(userId: string, options: { status?: string; limit?: number } = {}) {
     const statusFilter = (options.status as ("started" | "processing" | "completed" | "abandoned" | "failed") | undefined);
-    return await this.withTimeoutFn(
-      this.dbInstance.query.exams.findMany({
-        where: and(
-          eq(exams.userId, userId),
-          statusFilter !== undefined && statusFilter !== null
-            ? eq(exams.status, statusFilter)
-            : undefined
-        ),
-        limit: options.limit,
-        orderBy: [desc(exams.startedAt)],
-        with: { blueprint: true }
-      }),
+    const rows = await this.withTimeoutFn(
+      this.dbInstance.select({
+        exam: exams,
+        blueprint: examBlueprints
+      })
+      .from(exams)
+      .leftJoin(examBlueprints, eq(exams.blueprintId, examBlueprints.id))
+      .where(and(
+        eq(exams.userId, userId),
+        statusFilter !== undefined && statusFilter !== null
+          ? eq(exams.status, statusFilter)
+          : undefined
+      ))
+      .limit(options.limit ?? 50)
+      .orderBy(desc(exams.startedAt)),
       STANDARD_QUERY_TIMEOUT,
       'ExamRepository.findByUserId'
     );
+    return rows.map(r => ({ ...r.exam, blueprint: r.blueprint }));
   }
 
   async updateAnswerByExamAndQuestion(examId: string, questionId: string, answer: string, isCorrect: boolean, metadata: Record<string, unknown>) {

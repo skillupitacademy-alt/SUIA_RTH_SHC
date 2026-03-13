@@ -28,23 +28,40 @@ vi.mock('@quiz/db', () => ({
       auditLogs: { findFirst: vi.fn(), findMany: vi.fn() },
       backgroundJobs: { findFirst: vi.fn(), findMany: vi.fn() },
     },
-    select: vi.fn(() => ({
-      from: vi.fn().mockReturnThis(),
-      innerJoin: vi.fn().mockReturnThis(),
-      leftJoin: vi.fn().mockReturnThis(),
-      where: vi.fn().mockReturnThis(),
-      orderBy: vi.fn().mockResolvedValue([]),
-      groupBy: vi.fn().mockReturnThis(),
-      limit: vi.fn().mockReturnThis(),
-    })),
+    select: vi.fn(() => {
+      const builder: any = {
+        from: vi.fn().mockReturnThis(),
+        innerJoin: vi.fn().mockReturnThis(),
+        leftJoin: vi.fn().mockReturnThis(),
+        where: vi.fn().mockReturnThis(),
+        orderBy: vi.fn().mockReturnThis(),
+        groupBy: vi.fn().mockReturnThis(),
+        limit: vi.fn().mockReturnThis(),
+        then: (resolve: (value: unknown) => void) => resolve([]),
+      };
+      return builder;
+    }),
     insert: vi.fn(() => ({ values: vi.fn().mockReturnThis(), returning: vi.fn().mockResolvedValue([]) })),
     update: vi.fn(() => ({ set: vi.fn().mockReturnThis(), where: vi.fn().mockResolvedValue({}) })),
     delete: vi.fn(() => ({ where: vi.fn().mockResolvedValue({}) })),
-    transaction: vi.fn(async (fn) => fn({
-      query: { exams: { findFirst: vi.fn() } },
-      update: vi.fn(() => ({ set: vi.fn().mockReturnThis(), where: vi.fn().mockResolvedValue({}) })),
-      insert: vi.fn(() => ({ values: vi.fn().mockReturnThis(), onConflictDoNothing: vi.fn().mockResolvedValue(undefined) })),
-    })),
+    transaction: vi.fn(async (fn) => {
+      const builder: any = {
+        from: vi.fn().mockReturnThis(),
+        innerJoin: vi.fn().mockReturnThis(),
+        leftJoin: vi.fn().mockReturnThis(),
+        where: vi.fn().mockReturnThis(),
+        orderBy: vi.fn().mockReturnThis(),
+        groupBy: vi.fn().mockReturnThis(),
+        limit: vi.fn().mockReturnThis(),
+        then: (resolve: (value: unknown) => void) => resolve([]),
+      };
+      return fn({
+        query: { exams: { findFirst: vi.fn() } },
+        select: vi.fn(() => builder),
+        update: vi.fn(() => ({ set: vi.fn().mockReturnThis(), where: vi.fn().mockResolvedValue({}) })),
+        insert: vi.fn(() => ({ values: vi.fn().mockReturnThis(), onConflictDoNothing: vi.fn().mockResolvedValue(undefined) })),
+      });
+    }),
     execute: vi.fn().mockResolvedValue({ rows: [] }),
   },
   exams: {},
@@ -55,6 +72,7 @@ vi.mock('@quiz/db', () => ({
   users: {},
   questions: {},
   examQuestions: {},
+  questionSkills: {},
   refreshTokens: { token: 'token', revoked: 'revoked', userId: 'userId', expiresAt: 'expiresAt' },
   verificationTokens: {},
   passwordResetTokens: {},
@@ -67,6 +85,7 @@ vi.mock('@quiz/db', () => ({
   domains: {},
   skills: {},
   topics: {},
+  topicSkills: {},
   subtopics: {},
   notifications: {},
   userRecommendations: {},

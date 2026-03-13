@@ -23,6 +23,7 @@ vi.mock('@quiz/db', async (importOriginal) => {
 import { dbc } from '@quiz/db';
 import { AdaptiveTutorService } from '@/modules/adaptive-engine/adaptive-tutor.service';
 import { ReportEngine } from '../report.engine';
+import { installSelectMock } from '../../../test/select-mock';
 
 vi.mock('@/modules/adaptive-engine/adaptive-tutor.service', () => ({
   AdaptiveTutorService: {
@@ -127,6 +128,17 @@ describe('ReportEngine branch coverage (action plan + tutor insights)', () => {
         .mockResolvedValueOnce({ rows: rawQuestions }), // raw questions
     };
 
+    installSelectMock(mockDb as any, [
+      { resolveOn: 'limit', result: [{ exam, blueprint: { id: 'bp-1' } }] },
+      { resolveOn: 'where', result: [] }, // examQuestions join
+      { resolveOn: 'where', result: results }, // resultsByDimension
+      { resolveOn: 'where', result: [
+        { id: 'peer1', totalScore: 80, isCorrect: true },
+        { id: 'peer1', totalScore: 80, isCorrect: false },
+        { id: 'peer2', totalScore: 95, isCorrect: true },
+      ] }, // percentile cohort
+    ]);
+
     (ReportEngine as any)._db = mockDb;
 
     const report = await ReportEngine.getExamReport('ex-branch');
@@ -150,13 +162,17 @@ describe('ReportEngine branch coverage (action plan + tutor insights)', () => {
       { id: 'e2', totalScore: null, dimensions: [{ name: 'd2' }] }, // null totalScore exercises fallback to 0
     ];
 
-    (ReportEngine as any)._db = {
+    const mockDb = {
       query: {
         exams: {
           findMany: vi.fn().mockResolvedValue(exams),
         },
       },
     };
+    installSelectMock(mockDb as any, [
+      { resolveOn: 'orderBy', result: exams.map((examRow) => ({ exam: examRow, dimensions: examRow.dimensions[0] })) },
+    ]);
+    (ReportEngine as any)._db = mockDb;
 
     const perf = await ReportEngine.getUserPerformance('user-1');
 
@@ -190,7 +206,7 @@ describe('ReportEngine branch coverage (action plan + tutor insights)', () => {
   });
 
   it('calculatePercentile clamps floor to 1 when lowerScores are zero (195-205)', async () => {
-    (ReportEngine as any)._db = {
+    const mockDb = {
       query: {
         exams: {
           findMany: vi.fn().mockResolvedValue([
@@ -201,6 +217,17 @@ describe('ReportEngine branch coverage (action plan + tutor insights)', () => {
         },
       },
     };
+    installSelectMock(mockDb as any, [
+      { resolveOn: 'where', result: [
+        { id: 'p1', totalScore: 10, isCorrect: true },
+        { id: 'p1', totalScore: 10, isCorrect: false },
+        { id: 'p2', totalScore: 20, isCorrect: true },
+        { id: 'p2', totalScore: 20, isCorrect: false },
+        { id: 'p3', totalScore: 30, isCorrect: true },
+        { id: 'p3', totalScore: 30, isCorrect: false },
+      ] },
+    ]);
+    (ReportEngine as any)._db = mockDb;
 
     const percentile = await (ReportEngine as any).calculatePercentile('e-low', null, 1); // very low accuracy
 
@@ -208,7 +235,7 @@ describe('ReportEngine branch coverage (action plan + tutor insights)', () => {
   });
 
   it('calculatePercentile clamps ceiling to 99 when everyone else is lower (195-205)', async () => {
-    (ReportEngine as any)._db = {
+    const mockDb = {
       query: {
         exams: {
           findMany: vi.fn().mockResolvedValue([
@@ -219,6 +246,17 @@ describe('ReportEngine branch coverage (action plan + tutor insights)', () => {
         },
       },
     };
+    installSelectMock(mockDb as any, [
+      { resolveOn: 'where', result: [
+        { id: 'p1', totalScore: 10, isCorrect: false },
+        { id: 'p1', totalScore: 10, isCorrect: false },
+        { id: 'p2', totalScore: 20, isCorrect: false },
+        { id: 'p2', totalScore: 20, isCorrect: false },
+        { id: 'p3', totalScore: 30, isCorrect: false },
+        { id: 'p3', totalScore: 30, isCorrect: false },
+      ] },
+    ]);
+    (ReportEngine as any)._db = mockDb;
 
     const percentile = await (ReportEngine as any).calculatePercentile('e-high', null, 100); // higher than peers
 
@@ -279,6 +317,18 @@ describe('ReportEngine branch coverage (action plan + tutor insights)', () => {
         .mockResolvedValueOnce({ rows: [coreRow] }) // core metrics
         .mockResolvedValueOnce({ rows: [] }), // raw questions
     };
+
+    installSelectMock(mockDb as any, [
+      { resolveOn: 'limit', result: [{ exam, blueprint: null }] },
+      { resolveOn: 'where', result: [] }, // examQuestions join
+      { resolveOn: 'where', result: [
+        { dimensionType: 'topic', dimensionId: 't1', name: 'Loops', accuracy: 70, score: 0 },
+      ] }, // resultsByDimension
+      { resolveOn: 'where', result: [
+        { id: 'p1', totalScore: 50, isCorrect: true },
+        { id: 'p1', totalScore: 50, isCorrect: false },
+      ] }, // percentile cohort
+    ]);
 
     (ReportEngine as any)._db = mockDb;
 

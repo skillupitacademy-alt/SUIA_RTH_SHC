@@ -34,19 +34,31 @@ vi.mock('@quiz/db', () => {
         exams: { findFirst: vi.fn() },
         topics: { findMany: vi.fn() },
       },
+      select: vi.fn(),
       delete: vi.fn(() => ({ where: deleteWhere })),
       update: vi.fn(() => ({ set: vi.fn(() => ({ where: updateWhere })) })),
       insert: vi.fn(() => ({ values: insertValues })),
       transaction: vi.fn(async (fn) => fn(db)),
     },
     exams: { id: 'id' },
+    examBlueprints: {},
+    examQuestions: {},
+    questions: {},
+    questionSkills: {},
+    skills: {},
     resultsByDimension: { examId: 'examId' },
+    topics: {},
+    subjects: {},
+    domains: {},
+    subtopics: {},
+    topicSkills: {},
   };
 });
 
 import { withSpan } from '@/lib/tracer';
 import { db } from '@quiz/db';
 import { ScoringEngine } from '../scoring.engine';
+import { installSelectMock } from '../../../test/select-mock';
 
 describe('ScoringEngine Tracing', () => {
   beforeEach(() => {
@@ -54,13 +66,13 @@ describe('ScoringEngine Tracing', () => {
   });
 
   it('reaches calculation path for tracer-enabled engine', async () => {
-    (db.query.exams.findFirst as any).mockResolvedValue({
-      id: 'exam-1',
-      userId: 'u1',
-      examQuestions: [],
-      blueprint: { scoringStrategy: 'percentage' }
-    });
-    (db.query.topics.findMany as any).mockResolvedValue([]);
+    installSelectMock(db as any, [
+      { resolveOn: 'limit', result: [{ exam: { id: 'exam-1', userId: 'u1', status: 'completed', startedAt: new Date(), completedAt: new Date(), blueprintId: null }, blueprint: { scoringStrategy: 'percentage' } }] },
+      { resolveOn: 'where', result: [] }, // examQuestions join
+      { resolveOn: 'where', result: [] }, // topicRaw
+      { resolveOn: 'where', result: [] }, // topicSkillRows
+      { resolveOn: 'where', result: [] }, // subtopicRows
+    ]);
 
     const perf = { invalidateCache: vi.fn().mockResolvedValue(undefined) };
     const engine = new ScoringEngine(perf as any, {} as any, {} as any);

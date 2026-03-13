@@ -11,10 +11,24 @@ vi.mock('@quiz/db', () => {
     db: {
       transaction: vi.fn(async (cb) => cb({
         query: { exams: { findFirst: vi.fn().mockResolvedValue({ examQuestions: [] }) } },
+        select: vi.fn(() => ({
+          from: vi.fn().mockReturnValue({
+            where: vi.fn().mockReturnValue({
+              limit: vi.fn().mockResolvedValue([]),
+            }),
+          }),
+        })),
         update: updateMock,
         insert: vi.fn(() => ({ values: vi.fn(() => ({ returning: vi.fn().mockResolvedValue([{ id: 'job-1' }]), onConflictDoNothing: vi.fn().mockResolvedValue(undefined) })) })),
       })),
       query: { exams: { findFirst: vi.fn().mockResolvedValue(null) } },
+      select: vi.fn(() => ({
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockReturnValue({
+            limit: vi.fn().mockResolvedValue([]),
+          }),
+        }),
+      })),
       update: updateMock,
       insert: vi.fn(() => ({ values: vi.fn(() => ({ returning: vi.fn().mockResolvedValue([{ id: 'job-1' }]), onConflictDoNothing: vi.fn().mockResolvedValue(undefined) })) })),
     },

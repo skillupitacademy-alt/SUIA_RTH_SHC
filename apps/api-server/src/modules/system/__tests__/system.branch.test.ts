@@ -21,12 +21,30 @@ vi.mock('@quiz/db', () => ({
             subtopics: { findMany: vi.fn() },
             backgroundJobs: { findFirst: vi.fn() }
         },
+        select: vi.fn(),
         update: vi.fn().mockReturnValue({ set: vi.fn().mockReturnThis(), where: vi.fn().mockReturnThis(), catch: vi.fn() }),
         execute: vi.fn()
     },
     exams: { id: 'id' },
+    users: { id: 'id' },
+    examQuestions: { id: 'id' },
+    questions: { id: 'id' },
+    topics: { id: 'id' },
+    subjects: { id: 'id' },
+    domains: { id: 'id' },
     subtopics: { id: 'id' }
 }));
+
+const makeSelect = (rows: any[] = []) => ({
+    from: vi.fn().mockReturnThis(),
+    leftJoin: vi.fn().mockReturnThis(),
+    innerJoin: vi.fn().mockReturnThis(),
+    where: vi.fn().mockReturnThis(),
+    orderBy: vi.fn().mockReturnThis(),
+    groupBy: vi.fn().mockReturnThis(),
+    limit: vi.fn().mockReturnThis(),
+    then: (resolve: (value: unknown) => void) => resolve(rows),
+});
 
 describe('System & Reports branch coverage', () => {
     beforeEach(() => {
@@ -74,6 +92,21 @@ describe('System & Reports branch coverage', () => {
     });
 
     it('ReportMaterializer empty subtopics branch (Line 75/76)', async () => {
+        const examRow: any = { id: 'e1', userId: 'u1', user: null };
+        const questionRows = [
+            {
+                examQuestion: { id: 'eq1', responseMetadata: { timeSpentSeconds: 10 } },
+                question: { questionText: 'Q', correctAnswer: 'A', topicId: 't1', subtopicId: null, difficulty: 'simple' },
+                topic: { name: 'T', subjectId: 's1' },
+                subject: { name: 'S', domainId: 'd1' },
+                domain: { name: 'D' },
+            },
+        ];
+
+        vi.mocked(db.select)
+            .mockReturnValueOnce(makeSelect([{ exam: examRow, user: null }]))
+            .mockReturnValueOnce(makeSelect(questionRows));
+
         vi.mocked(db.query.exams.findFirst).mockResolvedValue({
             id: 'e1', userId: 'u1',
             examQuestions: [{

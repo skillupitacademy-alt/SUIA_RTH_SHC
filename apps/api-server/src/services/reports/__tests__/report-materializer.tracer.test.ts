@@ -9,6 +9,19 @@ import { withSpan } from '@/lib/tracer';
 import { db } from '@quiz/db';
 import { ReportMaterializer } from '../ReportMaterializer';
 
+const { makeSelect } = vi.hoisted(() => ({
+  makeSelect: (rows: any[] = []) => ({
+    from: vi.fn().mockReturnThis(),
+    leftJoin: vi.fn().mockReturnThis(),
+    innerJoin: vi.fn().mockReturnThis(),
+    where: vi.fn().mockReturnThis(),
+    orderBy: vi.fn().mockReturnThis(),
+    groupBy: vi.fn().mockReturnThis(),
+    limit: vi.fn().mockReturnThis(),
+    then: (resolve: (value: unknown) => void) => resolve(rows),
+  })
+}));
+
 vi.mock('@quiz/db', () => ({
   db: {
     query: {
@@ -20,8 +33,16 @@ vi.mock('@quiz/db', () => ({
         where: vi.fn().mockResolvedValue({}),
       })),
     })),
+    select: vi.fn().mockReturnValue(makeSelect([])),
   },
-  exams: { id: 'id' }
+  exams: { id: 'id' },
+  users: { id: 'id' },
+  examQuestions: { id: 'eq' },
+  questions: { id: 'q' },
+  topics: { id: 't' },
+  subjects: { id: 's' },
+  domains: { id: 'd' },
+  subtopics: { id: 'st' }
 }));
 
 describe('ReportMaterializer Tracing', () => {

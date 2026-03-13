@@ -238,6 +238,13 @@ describe('uncovered line mop-up', () => {
       query: {
         exams: { findFirst: vi.fn().mockResolvedValue({ id: 'e1' }) },
       },
+      select: vi.fn().mockReturnValue({
+        from: vi.fn().mockReturnThis(),
+        leftJoin: vi.fn().mockReturnThis(),
+        innerJoin: vi.fn().mockReturnThis(),
+        where: vi.fn().mockReturnThis(),
+        limit: vi.fn().mockResolvedValue([{ id: 'e1', userId: 'u1' }]),
+      }),
       update: vi.fn().mockReturnValue({
         set: vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue(undefined), returning: vi.fn().mockResolvedValue([{ id: 'e1' }]) }),
       }),
@@ -332,6 +339,13 @@ describe('uncovered line mop-up', () => {
         resultsByDimension: { findMany: vi.fn().mockResolvedValue([]) },
         examQuestions: { findFirst: vi.fn().mockResolvedValue(null) },
       },
+      select: vi.fn().mockReturnValue({
+        from: vi.fn().mockReturnThis(),
+        leftJoin: vi.fn().mockReturnThis(),
+        innerJoin: vi.fn().mockReturnThis(),
+        where: vi.fn().mockReturnThis(),
+        limit: vi.fn().mockResolvedValue([{ exam: { id: 'e1', userId: 'u1' }, blueprint: null }]),
+      }),
       execute: vi
         .fn()
         .mockResolvedValueOnce({ rows: [{ score: null, subtopics: [], confidence: 'LOW' }] })

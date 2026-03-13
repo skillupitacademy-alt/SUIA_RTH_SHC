@@ -1,4 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
+import { installSelectMock } from '../../../test/select-mock';
+import { db } from '@quiz/db';
 
 vi.mock('../report-engine/performance.service', () => ({
   PerformanceService: { invalidateCache: vi.fn().mockResolvedValue(undefined) }
@@ -24,13 +26,26 @@ vi.mock('@quiz/db', () => ({
     })),
   },
   exams: {},
+  examBlueprints: {},
+  examQuestions: {},
+  questions: {},
+  questionSkills: {},
+  skills: {},
   resultsByDimension: {},
+  topics: {},
+  subjects: {},
+  domains: {},
+  subtopics: {},
+  topicSkills: {},
 }));
 
 describe('ScoringEngine.calculateExamResults guard', () => {
   it('throws when exam not found (line 45)', async () => {
     const { container } = await import('@/modules/core/container');
     const { ScoringEngine } = await import('../scoring.engine');
+    installSelectMock(db as any, [
+      { resolveOn: 'limit', result: [] },
+    ]);
     await expect(container.get(ScoringEngine).calculateExamResults('missing')).rejects.toThrow(/Exam not found/);
   }, 20000);
 });

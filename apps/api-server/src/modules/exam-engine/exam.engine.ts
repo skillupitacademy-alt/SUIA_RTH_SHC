@@ -25,26 +25,6 @@ const TOKENS = {
 type ExamWithQuestions = NonNullable<Awaited<ReturnType<ExamRepository['findByIdWithQuestions']>>>;
 type ExamHeader = Pick<InferSelectModel<typeof exams>, 'id' | 'status' | 'userId' | 'startedAt' | 'lastAnsweredAt'>;
 type ExamRepoWithFindById = { findById?: (id: string) => Promise<ExamHeader | null | undefined> };
-type DbSelectExamHeader = {
-  select?: (fields: {
-    id: typeof exams.id;
-    status: typeof exams.status;
-    userId: typeof exams.userId;
-    startedAt: typeof exams.startedAt;
-    lastAnsweredAt: typeof exams.lastAnsweredAt;
-  }) => {
-    from: (table: typeof exams) => {
-      where: (cond: unknown) => Promise<Array<ExamHeader>>;
-    };
-  };
-};
-type TxWithExamQuery = {
-  query?: {
-    exams?: {
-      findFirst?: (args: { where: unknown; columns?: { status: boolean } }) => Promise<{ status?: string } | null>;
-    };
-  };
-};
 
 export interface StartExamConfig {
   subjectId?: string;
@@ -133,7 +113,7 @@ export class ExamEngine {
       // 1. Idempotency Check
       if (idempotencyKey !== undefined && idempotencyKey !== null && idempotencyKey !== '') {
         const existingKey = await this.examRepo.checkIdempotency(userId, idempotencyKey);
-        if (existingKey) {
+        if (existingKey !== null && existingKey !== undefined) {
           return await this.resumeExamSession(existingKey.examId);
         }
       }
@@ -218,7 +198,7 @@ export class ExamEngine {
 
   private async handleRaceCondition(userId: string, idempotencyKey: string) {
     const existingKey = await this.examRepo.checkIdempotency(userId, idempotencyKey);
-    if (existingKey) {
+    if (existingKey !== null && existingKey !== undefined) {
        return await this.resumeExamSession(existingKey.examId);
     }
     throw new Error('Collision recovery failed');
@@ -360,7 +340,7 @@ export class ExamEngine {
         try {
           if (typeof this.examRepo.checkIdempotency === 'function') {
             const existingKey = await this.examRepo.checkIdempotency(userId, `submit:${idempotencyKey}`);
-            if (existingKey) targetExamId = existingKey.examId;
+            if (existingKey !== null && existingKey !== undefined) targetExamId = existingKey.examId;
           }
         } catch {
           // Best-effort idempotency 
@@ -383,16 +363,16 @@ export class ExamEngine {
         examWithQuestions = { ...header, examQuestions: [] } as unknown as ExamWithQuestions;
       }
     }
-    const dbSelect = (db as unknown as DbSelectExamHeader).select;
-    if (!examWithQuestions && typeof dbSelect === 'function') {
-      const rows = await dbSelect({
+    if (!examWithQuestions) {
+      const rows = await db.select({
         id: exams.id,
         status: exams.status,
         userId: exams.userId,
         startedAt: exams.startedAt,
         lastAnsweredAt: exams.lastAnsweredAt,
-      }).from(exams).where(eq(exams.id, targetExamId));
-      if (Array.isArray(rows) && rows.length > 0) {
+      }).from(exams).where(eq(exams.id, targetExamId)).limit(1);
+      
+      if (rows.length > 0) {
         const row = rows[0];
         examWithQuestions = {
           ...row,
@@ -403,7 +383,7 @@ export class ExamEngine {
       }
     }
 
-    if (!examWithQuestions) throw new Error('Exam not found');
+    if (examWithQuestions === null || examWithQuestions === undefined) throw new Error('Exam not found');
     if (examWithQuestions.userId !== null && examWithQuestions.userId !== undefined && examWithQuestions.userId !== '' && userId !== examWithQuestions.userId) {
       throw new Error('Unauthorized');
     }
@@ -427,15 +407,13 @@ export class ExamEngine {
     // Phase 3: Fast Atomic DB Updates inside Transaction
     try {
         await db.transaction(async (tx) => {
-            // Re-check status for concurrency safety
-            const txQuery = (tx as unknown as TxWithExamQuery).query;
-            const txFindFirst = txQuery?.exams?.findFirst;
-            const txStatusCheck = typeof txFindFirst === 'function'
-              ? await txFindFirst({
-                  where: eq(exams.id, targetExamId),
-                  columns: { status: true }
-                })
-              : null;
+            // Standard query builder (Immune to fullSchema TypeErrors during bundling)
+            const rows = await tx.select({ status: exams.status })
+                .from(exams)
+                .where(eq(exams.id, targetExamId))
+                .limit(1);
+            
+            const txStatusCheck = rows[0] ?? null;
             
             if (txStatusCheck?.status === 'processing' || txStatusCheck?.status === 'completed') return;
 
