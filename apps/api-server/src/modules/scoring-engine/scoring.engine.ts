@@ -17,7 +17,7 @@ import {
   topicSkills,
   withTimeout as dbWithTimeout,
 } from '@quiz/db';
-import { and, eq, inArray, type InferSelectModel } from 'drizzle-orm';
+import { eq, inArray, type InferSelectModel } from 'drizzle-orm';
 
 import { logger } from '@/lib/logger';
 
@@ -287,6 +287,9 @@ export class ScoringEngine {
 
           return finalScore;
         });
+
+        // Refresh Analytical Views (Materialized Views)
+        await this.performanceService!.refreshAnalytics();
 
         const durationMs = Date.now() - start;
         recordCounter(METRICS.CORE.SCORING + '.success', 1);
