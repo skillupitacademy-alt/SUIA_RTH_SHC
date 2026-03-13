@@ -438,7 +438,7 @@ export class ExamEngine {
                     await tx.update(examQuestions)
                         .set({
                             userAnswer: cachedAnswer, 
-                            isCorrect: false, 
+                            isCorrect: null, 
                             responseMetadata: { 
                                 ...existingMetadata, 
                                 timeSpentSeconds, 
