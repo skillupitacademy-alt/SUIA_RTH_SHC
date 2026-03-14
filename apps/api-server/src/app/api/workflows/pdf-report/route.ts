@@ -22,12 +22,11 @@ const { POST: workflowHandler } = serve<{ attemptId: string; userId: string }>(a
 
   logger.info({ attemptId }, "[PDF Workflow] Starting PDF generation");
 
-  try {
-    // Idempotency: short-circuit if PDF already exists
+  const idempotency = await context.run("idempotency-check", async () => {
     const existingReport = await ReportRepository.getReportByAttempt(attemptId);
     if (existingReport?.status === "ready" && typeof existingReport.fileRef === "string" && existingReport.fileRef.trim() !== "") {
       logger.info({ attemptId }, "[PDF Workflow] Idempotency hit via report record");
-      return;
+      return { shortCircuit: true };
     }
 
     const examRow = await db.query.exams.findFirst({
@@ -37,50 +36,49 @@ const { POST: workflowHandler } = serve<{ attemptId: string; userId: string }>(a
     const existingPdfUrl = (examRow?.exportUrls as { analytics_pdf?: string } | null)?.analytics_pdf;
     if (typeof existingPdfUrl === "string" && existingPdfUrl.trim() !== "") {
       logger.info({ attemptId }, "[PDF Workflow] Idempotency hit via exams.export_urls");
-      return;
+      return { shortCircuit: true };
     }
 
-    const uploadResult = await context.run("render-and-upload", async () => {
-      await ReportRepository.updateReportStatus(attemptId, "generating", "rendering");
-      const renderResult = await ReportPdfService.generate(attemptId);
-      
-      await ReportRepository.updateReportStatus(attemptId, "generating", "uploading");
-      const fileRef = await uploadReport(renderResult.buffer, userId, attemptId);
-      
-      return { 
-        fileRef,
-        generationTimeMs: renderResult.generationTimeMs,
-        fileSizeKb: renderResult.fileSizeKb,
-        pageCount: renderResult.pageCount
-      };
+    return { shortCircuit: false };
+  });
+
+  if (idempotency.shortCircuit) return;
+
+  const uploadResult = await context.run("render-and-upload", async () => {
+    await ReportRepository.updateReportStatus(attemptId, "generating", "rendering");
+    const renderResult = await ReportPdfService.generate(attemptId);
+    
+    await ReportRepository.updateReportStatus(attemptId, "generating", "uploading");
+    const fileRef = await uploadReport(renderResult.buffer, userId, attemptId);
+    
+    return { 
+      fileRef,
+      generationTimeMs: renderResult.generationTimeMs,
+      fileSizeKb: renderResult.fileSizeKb,
+      pageCount: renderResult.pageCount
+    };
+  });
+
+  await context.run("finalize", async () => {
+    await ReportRepository.updateReportSuccess(attemptId, {
+      fileRef: uploadResult.fileRef,
+      generationTimeMs: uploadResult.generationTimeMs,
+      fileSizeKb: uploadResult.fileSizeKb,
+      pageCount: uploadResult.pageCount
     });
 
-    await context.run("finalize", async () => {
-      await ReportRepository.updateReportSuccess(attemptId, {
-        fileRef: uploadResult.fileRef,
-        generationTimeMs: uploadResult.generationTimeMs,
-        fileSizeKb: uploadResult.fileSizeKb,
-        pageCount: uploadResult.pageCount
-      });
-
-      const examRow = await db.query.exams.findFirst({
-        where: eq(exams.id, attemptId),
-        columns: { exportUrls: true }
-      });
-      const nextExportUrls = {
-        ...(examRow?.exportUrls ?? {}),
-        analytics_pdf: uploadResult.fileRef
-      };
-      await db.update(exams).set({ exportUrls: nextExportUrls }).where(eq(exams.id, attemptId));
+    const examRow = await db.query.exams.findFirst({
+      where: eq(exams.id, attemptId),
+      columns: { exportUrls: true }
     });
+    const nextExportUrls = {
+      ...(examRow?.exportUrls ?? {}),
+      analytics_pdf: uploadResult.fileRef
+    };
+    await db.update(exams).set({ exportUrls: nextExportUrls }).where(eq(exams.id, attemptId));
+  });
 
-    logger.info({ attemptId }, "[PDF Workflow] PDF generation completed");
-  } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    logger.error({ err: error, attemptId }, "[PDF Workflow] PDF generation failed");
-    await ReportRepository.updateReportStatus(attemptId, "failed", message);
-    throw error;
-  }
+  logger.info({ attemptId }, "[PDF Workflow] PDF generation completed");
 });
 
 export const POST = withLogging(workflowHandler, { component: "workflow", operation: "pdf_report" });

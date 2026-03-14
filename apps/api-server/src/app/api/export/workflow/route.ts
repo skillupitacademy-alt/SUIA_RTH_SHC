@@ -128,26 +128,30 @@ export const { POST } = serve<{
     return payload;
   });
 
-  const formatted = await context.run('format-data', async () => {
+  await context.run('format-data', async () => {
     log.info({ examId, jobId }, 'Step: Format Data');
     const payload = aggregated;
     const buffer = format === 'csv' ? await csvFormatter.formatAsZip(payload) : jsonFormatter.format(payload);
     const contentType = format === 'csv' ? 'application/zip' : 'application/json';
     const extension = format === 'csv' ? 'zip' : 'json';
     await persistState({ step: 'format-data', examId, userId, format, contentType, extension });
-    return { contentType, extension, buffer };
+    return { contentType, extension, bufferLength: buffer.length };
   });
 
   const downloadUrl = await context.run('upload-to-blob', async () => {
     log.info({ examId, jobId }, 'Step: Upload to Blob');
-    const filename = `exports/${userId}/${examId}/analysis_${Date.now()}.${formatted.extension}`;
-    const { url } = await put(filename, formatted.buffer, {
+    const payload = aggregated;
+    const buffer = format === 'csv' ? await csvFormatter.formatAsZip(payload) : jsonFormatter.format(payload);
+    const contentType = format === 'csv' ? 'application/zip' : 'application/json';
+    const extension = format === 'csv' ? 'zip' : 'json';
+    const filename = `exports/${userId}/${examId}/analysis_${Date.now()}.${extension}`;
+    const { url } = await put(filename, buffer, {
       access: 'private',
-      contentType: formatted.contentType,
+      contentType,
       addRandomSuffix: false,
       allowOverwrite: true,
     });
-    await persistState({ step: 'upload-to-blob', examId, userId, format, downloadUrl: url });
+    await persistState({ step: 'upload-to-blob', examId, userId, format, downloadUrl: url, bufferBytes: buffer.length });
     return url;
   });
 
