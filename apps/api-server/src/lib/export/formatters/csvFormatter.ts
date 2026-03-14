@@ -80,6 +80,8 @@ This ZIP contains 14 files for deep analytical review:
 - historical_progress.csv: Longitudinal performance tracking across sessions.
 - guidance_signals.csv: AI-derived recommendations and critical gap alerts.
 
+Note: historical_progress.csv populates only after a student completes 2 or more exam sessions on the same topic. It will be empty for first-time exam takers.
+
 Usage: Import these files into Excel or PowerBI for advanced visualization.`;
   }
 }

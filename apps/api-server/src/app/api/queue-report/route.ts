@@ -230,7 +230,8 @@ async function postHandler(req: NextRequest) {
         logger.error({ err, attemptId }, "[QueueReport] Background generation failed");
         recordCounter("reports.api.queue.count", 1, { route: "/api/queue-report", outcome: "failure" });
         const msg = err instanceof Error ? err.message : "Unknown error";
-        await ReportRepository.updateReportStatus(attemptId, "failed", msg).catch(() => {});
+        const safeMsg = sanitizeReportError(msg);
+        await ReportRepository.updateReportStatus(attemptId, "failed", safeMsg).catch(() => {});
       }
     });
 
@@ -244,3 +245,16 @@ async function postHandler(req: NextRequest) {
 }
 
 export const POST = withLogging(postHandler, { component: 'reports', operation: 'queue_report' });
+
+function sanitizeReportError(message: string): string {
+  const lowered = message.toLowerCase();
+  if (
+    lowered.includes("upstash workflow") ||
+    lowered.includes("workflowabort") ||
+    lowered.includes("disabled-qstash") ||
+    lowered.includes("failed to authenticate workflow request")
+  ) {
+    return "PDF generation failed. Please retry.";
+  }
+  return message;
+}

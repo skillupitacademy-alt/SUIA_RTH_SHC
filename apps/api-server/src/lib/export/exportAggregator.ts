@@ -24,21 +24,31 @@ export class ExportAggregator {
     groups.forEach((groupRows, _key) => {
       const totalAttempts = groupRows.length;
       const correctAnswers = groupRows.filter(r => r.isCorrect).length;
-      const accuracyPct = (correctAnswers / totalAttempts) * 100;
+      const accuracyPct = totalAttempts > 0 ? (correctAnswers / totalAttempts) * 100 : 0;
 
       const totalTime = groupRows.reduce((acc, r) => acc + r.timeSpentSeconds, 0);
-      const avgTimeSec = totalTime / totalAttempts;
+      const avgTimeSec = totalAttempts > 0 ? totalTime / totalAttempts : 0;
 
       const totalWeight = groupRows.reduce((acc, r) => acc + r.masteryWeight, 0);
       const earnedWeight = groupRows.reduce((acc, r) => acc + r.weightedScore, 0);
-      const masteryScorePct = (earnedWeight / (totalWeight || 1)) * 100;
+      const masteryScorePct = totalWeight > 0 ? (earnedWeight / totalWeight) * 100 : 0;
 
-      const stableProcessingPct = (groupRows.filter(r => r.processingPattern === 'stable').length / totalAttempts) * 100;
-      const logicProcessingPct = (groupRows.filter(r => r.processingPattern === 'logic').length / totalAttempts) * 100;
-      const errorTimePct = (groupRows.filter(r => r.processingPattern === 'neural_error').length / totalAttempts) * 100;
+      const stableProcessingPct = totalAttempts > 0
+        ? (groupRows.filter(r => r.processingPattern === 'stable').length / totalAttempts) * 100
+        : 0;
+      const logicProcessingPct = totalAttempts > 0
+        ? (groupRows.filter(r => r.processingPattern === 'logic').length / totalAttempts) * 100
+        : 0;
+      const errorTimePct = totalAttempts > 0
+        ? (groupRows.filter(r => r.processingPattern === 'neural_error').length / totalAttempts) * 100
+        : 0;
 
-      const impulsivePct = (groupRows.filter(r => r.isImpulsive).length / totalAttempts) * 100;
-      const diligentPct = (groupRows.filter(r => r.isDiligent).length / totalAttempts) * 100;
+      const impulsivePct = totalAttempts > 0
+        ? (groupRows.filter(r => r.isImpulsive).length / totalAttempts) * 100
+        : 0;
+      const diligentPct = totalAttempts > 0
+        ? (groupRows.filter(r => r.isDiligent).length / totalAttempts) * 100
+        : 0;
 
       const expertRows = groupRows.filter(r => (r.difficulty || '').toLowerCase() === 'expert');
       const simpleRows = groupRows.filter(r => (r.difficulty || '').toLowerCase() === 'simple');

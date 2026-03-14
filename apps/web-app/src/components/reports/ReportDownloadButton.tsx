@@ -32,6 +32,7 @@ export function ReportDownloadButton({ attemptId, userId, className }: ReportDow
     const [activeFormat, setActiveFormat] = useState<"pdf" | "json" | "csv">("pdf");
     const [showNotification, setShowNotification] = useState(false);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const [exportUrlMap, setExportUrlMap] = useState<{ json?: string; csv?: string }>({});
     const dropdownRef = useRef<HTMLDivElement>(null);
     const lastPdfStatus = useRef(pdfStatus);
     const lastExportStatus = useRef(exportStatus);
@@ -58,6 +59,12 @@ export function ReportDownloadButton({ attemptId, userId, className }: ReportDow
         }
         lastExportStatus.current = exportStatus;
     }, [exportStatus]);
+
+    useEffect(() => {
+        if ((activeFormat === "json" || activeFormat === "csv") && exportStatus === "ready" && exportUrl) {
+            setExportUrlMap((prev) => ({ ...prev, [activeFormat]: exportUrl }));
+        }
+    }, [activeFormat, exportStatus, exportUrl]);
 
     // Close dropdown on click outside
     useEffect(() => {
@@ -87,7 +94,26 @@ export function ReportDownloadButton({ attemptId, userId, className }: ReportDow
         }
     };
 
+    const handleExportDownload = (url: string) => {
+        const frameId = "export-download-frame";
+        let frame = document.getElementById(frameId) as HTMLIFrameElement;
+        if (!frame) {
+            frame = document.createElement("iframe");
+            frame.id = frameId;
+            frame.title = "Export download frame";
+            frame.style.display = "none";
+            document.body.appendChild(frame);
+        }
+        frame.src = url;
+        setIsDropdownOpen(false);
+    };
+
     const handleExport = (format: "json" | "csv") => {
+        const existingUrl = exportUrlMap[format];
+        if (existingUrl) {
+            handleExportDownload(existingUrl);
+            return;
+        }
         setActiveFormat(format);
         triggerExport(attemptId, userId, format);
         setIsDropdownOpen(false);
@@ -96,6 +122,10 @@ export function ReportDownloadButton({ attemptId, userId, className }: ReportDow
 
     const handleTriggerPdf = async (options?: { force?: boolean }) => {
         setActiveFormat("pdf");
+        if (pdfStatus === "ready" && pdfUrl) {
+            handlePdfDownload();
+            return;
+        }
         await triggerPdf(options);
         setIsModalOpen(true);
         setIsDropdownOpen(false);
@@ -263,6 +293,7 @@ export function ReportDownloadButton({ attemptId, userId, className }: ReportDow
 
             {/* Hidden download frame */}
             <iframe id="pdf-download-frame" title="PDF download frame" className="hidden" />
+            <iframe id="export-download-frame" title="Export download frame" className="hidden" />
 
             <ReportGenerationModal
                 isOpen={isModalOpen}

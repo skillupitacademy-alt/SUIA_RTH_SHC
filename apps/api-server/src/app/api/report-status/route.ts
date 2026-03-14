@@ -109,10 +109,14 @@ async function getHandler(req: NextRequest) {
     }
 
     recordCounter(METRICS.REPORTS.VIEW, 1, { status: report.status });
+    const sanitizedError = report.status === "failed"
+      ? sanitizeReportError(report.errorStage)
+      : undefined;
+
     return ApiResponse.success({ 
       status: report.status,
       stage: report.status === "generating" ? report.errorStage : undefined,
-      error: report.status === "failed" ? report.errorStage : undefined
+      error: sanitizedError
     }, 200, { "Cache-Control": "no-store" });
 
   } catch (error: unknown) {
@@ -123,3 +127,17 @@ async function getHandler(req: NextRequest) {
 }
 
 export const GET = withLogging(getHandler, { component: 'reports', operation: 'get_report_status' });
+
+function sanitizeReportError(message: string | null | undefined): string | undefined {
+  if (message === null || message === undefined || message.trim() === "") return message ?? undefined;
+  const lowered = message.toLowerCase();
+  if (
+    lowered.includes("upstash workflow") ||
+    lowered.includes("workflowabort") ||
+    lowered.includes("disabled-qstash") ||
+    lowered.includes("failed to authenticate workflow request")
+  ) {
+    return "PDF generation failed. Please retry.";
+  }
+  return message;
+}

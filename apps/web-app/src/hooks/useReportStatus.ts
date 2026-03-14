@@ -48,7 +48,7 @@ export function useReportStatus(attemptId: string) {
       setStage(data.stage ?? null);
       
       if (data.status === "failed") {
-        setError(data.error ?? "Generation failed");
+        setError(sanitizeErrorMessage(data.error ?? "Generation failed"));
       } else if (data.status === "ready" && data.url) {
         setDownloadUrl(data.url);
       }
@@ -62,7 +62,7 @@ export function useReportStatus(attemptId: string) {
 
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Failed to check report status";
-      setError(message);
+      setError(sanitizeErrorMessage(message));
       setStatus("failed");
     } finally {
       setLoading(false);
@@ -136,10 +136,23 @@ export function useReportStatus(attemptId: string) {
       checkStatus();
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Failed to queue report generation";
-      setError(message);
+      setError(sanitizeErrorMessage(message));
       setStatus("failed");
     }
   };
 
   return { status, stage, loading, downloadUrl, error, triggerGeneration, checkStatus, cooldown };
+}
+
+function sanitizeErrorMessage(message: string): string {
+  const lowered = message.toLowerCase();
+  if (
+    lowered.includes("upstash workflow") ||
+    lowered.includes("workflowabort") ||
+    lowered.includes("disabled-qstash") ||
+    lowered.includes("failed to authenticate workflow request")
+  ) {
+    return "Export failed. Please retry.";
+  }
+  return message;
 }
