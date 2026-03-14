@@ -43,9 +43,8 @@ export class ExportSaga {
         const apiUrl = typeof process.env.NEXT_PUBLIC_API_URL === 'string' ? process.env.NEXT_PUBLIC_API_URL : '';
         
         if (queuesEnabled && hasQstashToken) {
-            const baseUrl = apiUrl.replace(/\/+$/, ''); // Remove trailing slashes
-            const baseWithoutApi = baseUrl.endsWith('/api') ? baseUrl.slice(0, -4) : baseUrl; 
-            const workflowUrl = `${baseWithoutApi}/api/export/workflow`;
+            // Strict construction based on user confirmed environment configuration
+            const workflowUrl = `${process.env.NEXT_PUBLIC_API_URL}/export/workflow`;
             logger.info({ examId, jobId: job.id, workflowUrl }, '[ExportSaga] Triggering Upstash Workflow');
             
             try {
