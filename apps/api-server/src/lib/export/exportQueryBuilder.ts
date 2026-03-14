@@ -54,9 +54,9 @@ export class ExportQueryBuilder {
         JOIN user_profiles up ON up.user_id = u.id
         JOIN exam_questions eq ON eq.exam_id = e.id
         JOIN questions q ON q.id = eq.question_id
-        JOIN topics t ON t.id = q.topic_id
-        JOIN subjects sub ON sub.id = t.subject_id
-        JOIN domains d ON d.id = sub.domain_id
+        LEFT JOIN topics t ON t.id = q.topic_id
+        LEFT JOIN subjects sub ON sub.id = t.subject_id
+        LEFT JOIN domains d ON d.id = sub.domain_id
         LEFT JOIN subtopics st ON st.id = q.subtopic_id
         LEFT JOIN question_skills qs ON qs.question_id = q.id
         LEFT JOIN skills sk ON sk.id = qs.skill_id
@@ -176,9 +176,9 @@ export class ExportQueryBuilder {
         JOIN user_profiles up ON up.user_id = u.id
         JOIN exam_questions eq ON eq.exam_id = e.id
         JOIN questions q ON q.id = eq.question_id
-        JOIN topics t ON t.id = q.topic_id
-        JOIN subjects sub ON sub.id = t.subject_id
-        JOIN domains d ON d.id = sub.domain_id
+        LEFT JOIN topics t ON t.id = q.topic_id
+        LEFT JOIN subjects sub ON sub.id = t.subject_id
+        LEFT JOIN domains d ON d.id = sub.domain_id
         LEFT JOIN subtopics st ON st.id = q.subtopic_id
         LEFT JOIN question_skills qs ON qs.question_id = q.id
         LEFT JOIN skills sk ON sk.id = qs.skill_id
@@ -272,9 +272,9 @@ export class ExportQueryBuilder {
       // Mirroring ReportEngine.getPremiumExamReport() logic potentially
       .innerJoin(examQuestions, eq(exams.id, examQuestions.examId))
       .innerJoin(questions, eq(examQuestions.questionId, questions.id))
-      .innerJoin(topics, eq(questions.topicId, topics.id))
-      .innerJoin(subjects, eq(topics.subjectId, subjects.id))
-      .innerJoin(domains, eq(subjects.domainId, domains.id))
+      .leftJoin(topics, eq(questions.topicId, topics.id))
+      .leftJoin(subjects, eq(topics.subjectId, subjects.id))
+      .leftJoin(domains, eq(subjects.domainId, domains.id))
       .where(eq(exams.id, examId))
       .limit(1);
 
@@ -288,9 +288,9 @@ export class ExportQueryBuilder {
         examId: r.examId,
         startedAt: r.startedAt.toISOString(),
         lineage: {
-          domain: r.domainName,
-          subject: r.subjectName,
-          topic: r.topicName
+          domain: r.domainName ?? 'General',
+          subject: r.subjectName ?? 'General',
+          topic: r.topicName ?? 'General'
         }
       };
     });

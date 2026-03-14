@@ -137,8 +137,19 @@ async function postHandler(req: NextRequest) {
         baseUrl: qstashUrl,
         token: qstashToken,
       });
-      const apiBase = (process.env.NEXT_PUBLIC_API_URL ?? req.nextUrl.origin).replace(/\/$/, "");
-      const workflowUrl = `${apiBase}/api/workflows/pdf-report`;
+      const originUrl = req.nextUrl.origin;
+      const explicitApiUrl = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "");
+      
+      // If NEXT_PUBLIC_API_URL is provided, we use it directly as the base if it already ends in /api. 
+      // Safe construction to ensure exactly one /api/workflows path
+      let workflowUrl: string;
+      if (explicitApiUrl) {
+          workflowUrl = explicitApiUrl.endsWith('/api') 
+              ? `${explicitApiUrl}/workflows/pdf-report`
+              : `${explicitApiUrl}/api/workflows/pdf-report`;
+      } else {
+          workflowUrl = `${originUrl}/api/workflows/pdf-report`;
+      }
 
       try {
         await workflowClient.trigger({
