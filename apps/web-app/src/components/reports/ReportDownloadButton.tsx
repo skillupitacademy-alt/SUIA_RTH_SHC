@@ -195,8 +195,8 @@ export function ReportDownloadButton({ attemptId, userId, className }: ReportDow
 
                         {/* PDF Option (Duplicate of main but helpful in menu) */}
                         <button 
-                            disabled={pdfStatus !== "ready"}
-                            onClick={handlePdfDownload}
+                            disabled={pdfStatus === "generating" || pdfStatus === "pending" || pdfCooldown > 0}
+                            onClick={pdfStatus === "ready" ? handlePdfDownload : () => handleTriggerPdf()}
                             className="w-full flex items-center justify-between p-4 hover:bg-slate-900/70 rounded-2xl transition-all group disabled:opacity-30 disabled:cursor-not-allowed border border-transparent hover:border-white/5"
                         >
                             <div className="flex items-center gap-3">
@@ -205,10 +205,11 @@ export function ReportDownloadButton({ attemptId, userId, className }: ReportDow
                                 </div>
                                 <div className="text-left">
                                     <div className="text-xs font-black text-slate-100 italic uppercase tracking-wider">Visual Report</div>
-                                    <div className="text-[10px] text-slate-500">Premium Insights PDF</div>
+                                    <div className="text-[10px] text-slate-500">{pdfStatus === "ready" ? "Download PDF" : "Premium Insights PDF"}</div>
                                 </div>
                             </div>
                             {pdfStatus === "ready" && <CheckCircle2 size={14} className="text-emerald-500" />}
+                            {(pdfStatus === "generating" || pdfStatus === "pending") && <Loader2 size={14} className="text-indigo-500 animate-spin" />}
                         </button>
 
                         <div className="h-px bg-slate-800/50 my-1 mx-2" />
