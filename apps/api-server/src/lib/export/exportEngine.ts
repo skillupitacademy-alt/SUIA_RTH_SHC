@@ -88,8 +88,10 @@ export class ExportEngine {
       // 4. Upload to Vercel Blob
       const filename = `exports/${userId}/${examId}/analysis_${Date.now()}.${extension}`;
       const { url } = await put(filename, buffer, {
-        access: 'public',
-        contentType
+        access: 'private',
+        contentType,
+        addRandomSuffix: false,
+        allowOverwrite: true,
       });
 
       try {

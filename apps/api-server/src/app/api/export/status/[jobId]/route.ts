@@ -38,11 +38,17 @@ export async function GET(
       }
     }
 
+    // Build proxy download URL for private blob access
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? '';
+    const proxyDownloadUrl = job.result?.downloadUrl
+      ? `${apiUrl}/export/download?jobId=${job.id}`
+      : undefined;
+
     // Standard response structure for polling
     return NextResponse.json({
       jobId: job.id,
       status: job.status, // 'pending' | 'processing' | 'complete' | 'failed'
-      downloadUrl: job.result?.downloadUrl,
+      downloadUrl: proxyDownloadUrl,
       error: job.error,
       progress: job.progress
     });
