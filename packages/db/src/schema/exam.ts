@@ -27,7 +27,7 @@ export const examBlueprints = pgTable("exam_blueprints", {
 });
 
 export const exams = (pgTable("exams", {
-  id: uuid("id").notNull().defaultRandom(),
+  id: uuid("id").primaryKey().notNull().defaultRandom(),
   userId: uuid("user_id")
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
@@ -41,12 +41,11 @@ export const exams = (pgTable("exams", {
   completedAt: timestamp("completed_at"),
   reportMaterialized: jsonb("report_materialized"),
   exportUrls: jsonb("export_urls"),
-}, (t) => [
-  primaryKey({ columns: [t.id, t.startedAt] }),
-  index("idx_exams_user_id_status").on(t.userId, t.status),
-  index("idx_exams_dashboard_opt").on(t.userId, t.status, desc(t.completedAt)),
-  index("idx_exams_blueprint_id").on(t.blueprintId),
-]));
+}, (t) => ({
+  idx_exams_user_id_status: index("idx_exams_user_id_status").on(t.userId, t.status),
+  idx_exams_dashboard_opt: index("idx_exams_dashboard_opt").on(t.userId, t.status, desc(t.completedAt)),
+  idx_exams_blueprint_id: index("idx_exams_blueprint_id").on(t.blueprintId),
+})));
 
 export const examQuestions = pgTable("exam_questions", {
   id: uuid("id").primaryKey().defaultRandom(),
