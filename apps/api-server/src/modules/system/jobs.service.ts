@@ -54,25 +54,20 @@ export class JobsService {
   }
 
   static async getJob(jobId: string, userId: string): Promise<Job | undefined> {
-    const client = this.resolveDb((candidate) => typeof (candidate as unknown as Record<string, unknown>).query === 'object');
-    const finder = (client as unknown as { query: { backgroundJobs: { findFirst: unknown } } }).query?.backgroundJobs?.findFirst;
-    if (typeof finder !== 'function') return undefined;
-    const job = await finder({
-      where: and(
-        eq(backgroundJobs.id, jobId),
-        eq(backgroundJobs.userId, userId)
-      ),
-    });
+    const client = this.resolveDb((candidate) => typeof (candidate as unknown as Record<string, unknown>).select === 'function');
+    const [job] = await client
+      .select()
+      .from(backgroundJobs)
+      .where(and(eq(backgroundJobs.id, jobId), eq(backgroundJobs.userId, userId)));
     return job as Job | undefined;
   }
 
   static async getJobStatus(jobId: string): Promise<Job | undefined> {
-    const client = this.resolveDb((candidate) => typeof (candidate as unknown as Record<string, unknown>).query === 'object');
-    const finder = (client as unknown as { query: { backgroundJobs: { findFirst: unknown } } }).query?.backgroundJobs?.findFirst;
-    if (typeof finder !== 'function') return undefined;
-    const job = await finder({
-      where: eq(backgroundJobs.id, jobId),
-    });
+    const client = this.resolveDb((candidate) => typeof (candidate as unknown as Record<string, unknown>).select === 'function');
+    const [job] = await client
+      .select()
+      .from(backgroundJobs)
+      .where(eq(backgroundJobs.id, jobId));
     return job as Job | undefined;
   }
 
@@ -105,11 +100,12 @@ export class JobsService {
 
     const where = conditions.length > 0 ? and(...conditions) : undefined;
 
-    const items = await (client as unknown as { query: { backgroundJobs: { findMany: (o: unknown) => Promise<Job[]> } } }).query.backgroundJobs.findMany({
-      where,
-      orderBy: [desc(backgroundJobs.createdAt), desc(backgroundJobs.id)],
-      limit: limit + 1,
-    });
+    const items = await client
+      .select()
+      .from(backgroundJobs)
+      .where(where || sql`true`)
+      .orderBy(desc(backgroundJobs.createdAt), desc(backgroundJobs.id))
+      .limit(limit + 1);
 
     const hasNextPage = items.length > limit;
     const results = hasNextPage ? items.slice(0, limit) : items;

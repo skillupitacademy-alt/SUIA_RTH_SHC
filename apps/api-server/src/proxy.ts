@@ -45,7 +45,7 @@ export async function proxy(request: NextRequest) {
   
   if (!isAuthRoute) {
     const isSecurityReport = pathname.toLowerCase().includes('security/report');
-    const isWorkflowRoute = pathname.startsWith('/api/workflows');
+    const isWorkflowRoute = pathname.startsWith('/api/workflows') || pathname.startsWith('/api/api/workflows') || pathname.startsWith('/api/export/workflow') || pathname.startsWith('/api/api/export/workflow');
     if (!isSecurityReport && !isWorkflowRoute) {
       const csrfResponse = await csrfProtection(request);
       if (csrfResponse !== null && csrfResponse !== undefined) {
@@ -56,7 +56,7 @@ export async function proxy(request: NextRequest) {
 
   // 5. Auth Protection
   const isSecurityReport = pathname.toLowerCase().includes('security/report');
-  const isWorkflowRoute = pathname.startsWith('/api/workflows');
+  const isWorkflowRoute = pathname.startsWith('/api/workflows') || pathname.startsWith('/api/api/workflows') || pathname.startsWith('/api/export/workflow') || pathname.startsWith('/api/api/export/workflow');
   const isPublicRoute = isAuthRoute || isSecurityReport || pathname.includes('/api/status') || isWorkflowRoute;
 
   if (!isPublicRoute) {
