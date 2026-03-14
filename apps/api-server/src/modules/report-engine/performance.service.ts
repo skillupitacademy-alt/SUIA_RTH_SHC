@@ -47,7 +47,7 @@ export class PerformanceService {
   }
 
   getCacheKey(examId: string) {
-    return `attempt:${examId}:core:v4`;
+    return `attempt:${examId}:core:v5`;
   }
 
   private async getCache() {

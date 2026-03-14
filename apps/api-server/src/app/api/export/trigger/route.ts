@@ -13,8 +13,9 @@ export async function POST(req: NextRequest) {
     const body = (await req.json()) as unknown;
  
      if (!isExportTriggerBody(body)) {
+       log.warn({ body }, 'Invalid export trigger body');
        return NextResponse.json(
-         { error: 'Missing required fields: examId, format, userId' },
+         { error: 'Missing required fields: examId, format, userId', received: body },
          { status: 400 }
        );
      }
