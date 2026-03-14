@@ -39,6 +39,14 @@ export function useExportJob() {
         return;
       }
 
+      if (res.status === 401) {
+        setStatus("failed");
+        setError("Session expired. Please refresh and log in again.");
+        setIsExporting(false);
+        clearPolling();
+        return;
+      }
+
       if (!res.ok) throw new Error("Failed to check export status");
 
       const data: ExportJobResponse = await res.json();
@@ -93,6 +101,7 @@ export function useExportJob() {
         credentials: "include",
       });
 
+      if (res.status === 401) throw new Error("Session expired. Please refresh and log in again.");
       if (!res.ok) throw new Error("Failed to trigger export");
 
       const data = (await res.json()) as ExportJobResponse;

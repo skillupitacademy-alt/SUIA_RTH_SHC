@@ -32,6 +32,13 @@ export function useReportStatus(attemptId: string) {
         return;
       }
       
+      if (res.status === 401) {
+        setStatus("failed");
+        setError("Session expired. Please refresh and log in again.");
+        setLoading(false);
+        return;
+      }
+
       if (!res.ok) {
         throw new Error("Failed to check report status");
       }

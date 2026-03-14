@@ -93,8 +93,10 @@ export const { POST } = serve<{
     const buffer = Buffer.from(formatted.encoded, 'base64');
     const filename = `exports/${userId}/${examId}/analysis_${Date.now()}.${formatted.extension}`;
     const { url } = await put(filename, buffer, {
-      access: 'public',
-      contentType: formatted.contentType
+      access: 'private',
+      contentType: formatted.contentType,
+      addRandomSuffix: false,
+      allowOverwrite: true,
     });
     await persistState({ step: 'upload-to-blob', examId, userId, format, downloadUrl: url });
     return url;
