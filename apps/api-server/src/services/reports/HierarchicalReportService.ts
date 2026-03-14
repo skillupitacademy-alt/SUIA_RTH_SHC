@@ -112,6 +112,7 @@ export class HierarchicalReportService {
             await db.update(exams).set({
                 exportUrls: nextExportUrls
             }).where(eq(exams.id, job.examId));
+            this.log.info({ jobId, examId: job.examId, pdfUrl }, "Stored analytics_pdf in exams.export_urls");
 
             await ReportJobService.updateProgress(jobId, 100, "completed");
             

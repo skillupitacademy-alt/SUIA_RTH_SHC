@@ -42,9 +42,15 @@ export class ExportSaga {
         const hasQstashToken = typeof process.env.QSTASH_TOKEN === 'string' && process.env.QSTASH_TOKEN.trim() !== '';
 
         if (queuesEnabled && hasQstashToken) {
-            // Strict construction based on user confirmed environment configuration
-            const workflowUrl = `${process.env.NEXT_PUBLIC_API_URL}/export/workflow`;
-            logger.info({ examId, jobId: job.id, workflowUrl }, '[ExportSaga] Triggering Upstash Workflow');
+            // Robust construction: ensure exactly one /api prefix and no double slashes
+            const apiBase = (
+                typeof process.env.NEXT_PUBLIC_API_URL === 'string' && process.env.NEXT_PUBLIC_API_URL.trim() !== ''
+                    ? process.env.NEXT_PUBLIC_API_URL
+                    : 'https://api.realtutorialhub.com'
+            ).replace(/\/api\/?$/, '');
+            const workflowUrl = `${apiBase}/api/export/workflow`;
+            
+            logger.info({ examId, jobId: job.id, workflowUrl, apiBase }, "[ExportSaga] Triggering Analytical workflow");
             
             try {
                 await workflowClient.trigger({

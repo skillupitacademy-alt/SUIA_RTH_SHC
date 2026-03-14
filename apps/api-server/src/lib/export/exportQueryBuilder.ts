@@ -51,7 +51,7 @@ export class ExportQueryBuilder {
           mv.error_count
         FROM exams e
         JOIN users u ON u.id = e.user_id
-        JOIN user_profiles up ON up.user_id = u.id
+        LEFT JOIN user_profiles up ON up.user_id = u.id
         JOIN exam_questions eq ON eq.exam_id = e.id
         JOIN questions q ON q.id = eq.question_id
         LEFT JOIN topics t ON t.id = q.topic_id
@@ -173,9 +173,9 @@ export class ExportQueryBuilder {
           sk.category as "skillCategory"
         FROM exams e
         JOIN users u ON u.id = e.user_id
-        JOIN user_profiles up ON up.user_id = u.id
         JOIN exam_questions eq ON eq.exam_id = e.id
         JOIN questions q ON q.id = eq.question_id
+        LEFT JOIN user_profiles up ON up.user_id = u.id
         LEFT JOIN topics t ON t.id = q.topic_id
         LEFT JOIN subjects sub ON sub.id = t.subject_id
         LEFT JOIN domains d ON d.id = sub.domain_id
@@ -266,7 +266,7 @@ export class ExportQueryBuilder {
       })
       .from(exams)
       .innerJoin(users, eq(exams.userId, users.id))
-      .innerJoin(userProfiles, eq(users.id, userProfiles.userId))
+      .leftJoin(userProfiles, eq(users.id, userProfiles.userId))
       .leftJoin(examBlueprints, eq(exams.blueprintId, examBlueprints.id))
       // Approximate lineage from the first question's hierarchy or many-to-one
       // Mirroring ReportEngine.getPremiumExamReport() logic potentially
@@ -282,7 +282,7 @@ export class ExportQueryBuilder {
       
       const r = result[0];
       return {
-        candidateName: r.name,
+        candidateName: r.name ?? 'Anonymous',
         candidateEmail: r.email,
         vectorId: r.examId.substring(0, 8).toUpperCase(),
         examId: r.examId,

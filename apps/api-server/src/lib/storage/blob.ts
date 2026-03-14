@@ -35,7 +35,8 @@ export const blobStorage: StorageProvider = {
       const fileName = pathParts[pathParts.length - 1];
       const attemptId = fileName.split(".")[0];
 
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "https://api.realtutorialhub.com/api";
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+      if (apiUrl === undefined || apiUrl === "") return fileRef;
       return `${apiUrl}/reports/download?attemptId=${attemptId}`;
     } catch (_error) {
       return fileRef;

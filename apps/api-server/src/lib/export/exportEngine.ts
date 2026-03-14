@@ -1,4 +1,6 @@
+import { db, exams } from '@quiz/db';
 import { put } from '@vercel/blob';
+import { eq } from 'drizzle-orm';
 
 import { logger } from '@/lib/logger';
 import { redis } from '@/lib/redis';
@@ -42,8 +44,31 @@ export class ExportEngine {
           this.log.info({ examId, userId, format }, 'Export cache hit');
           return cachedUrl;
         }
+        this.log.info({ examId, userId, format }, 'Export cache miss');
       } catch (error: unknown) {
         this.log.warn({ err: error, examId, userId }, 'Export cache read failed');
+      }
+
+      // Idempotency: return existing stored URL if already generated
+      try {
+        const examRow = await db.query.exams.findFirst({
+          where: eq(exams.id, examId),
+          columns: { exportUrls: true }
+        });
+        const existingUrl = format === 'json'
+          ? (examRow?.exportUrls as { analytics_json?: string } | null)?.analytics_json
+          : (examRow?.exportUrls as { analytics_csv?: string } | null)?.analytics_csv;
+        if (typeof existingUrl === 'string' && existingUrl.trim() !== '') {
+          this.log.info({ examId, userId, format }, 'Export idempotency hit from exams.export_urls');
+          try {
+            await redis.set(cacheKey, existingUrl, { ex: 900 });
+          } catch (error: unknown) {
+            this.log.warn({ err: error, examId, userId }, 'Export cache write failed after idempotency hit');
+          }
+          return existingUrl;
+        }
+      } catch (error: unknown) {
+        this.log.warn({ err: error, examId, userId }, 'Export idempotency lookup failed');
       }
 
       // 1. Fetch Data
@@ -52,6 +77,12 @@ export class ExportEngine {
         this.queryBuilder.fetchRawAttempts(examId),
         this.queryBuilder.fetchHistoricalAttempts(userId, examId)
       ]);
+      
+      this.log.info({ 
+        examId, 
+        currentRows: currentRows.length, 
+        historicalRows: historicalRows.length 
+      }, 'Data fetch completed for analytical export');
 
       // 2. Aggregate
       const [aggregations, historicalProgress] = await Promise.all([

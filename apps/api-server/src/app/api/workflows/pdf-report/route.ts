@@ -23,15 +23,36 @@ const { POST: workflowHandler } = serve<{ attemptId: string; userId: string }>(a
   logger.info({ attemptId }, "[PDF Workflow] Starting PDF generation");
 
   try {
-    const renderResult = await context.run("render", async () => {
-      await ReportRepository.updateReportStatus(attemptId, "generating", "rendering");
-      return ReportPdfService.generate(attemptId);
-    });
+    // Idempotency: short-circuit if PDF already exists
+    const existingReport = await ReportRepository.getReportByAttempt(attemptId);
+    if (existingReport?.status === "ready" && typeof existingReport.fileRef === "string" && existingReport.fileRef.trim() !== "") {
+      logger.info({ attemptId }, "[PDF Workflow] Idempotency hit via report record");
+      return;
+    }
 
-    const uploadResult = await context.run("upload", async () => {
+    const examRow = await db.query.exams.findFirst({
+      where: eq(exams.id, attemptId),
+      columns: { exportUrls: true }
+    });
+    const existingPdfUrl = (examRow?.exportUrls as { analytics_pdf?: string } | null)?.analytics_pdf;
+    if (typeof existingPdfUrl === "string" && existingPdfUrl.trim() !== "") {
+      logger.info({ attemptId }, "[PDF Workflow] Idempotency hit via exams.export_urls");
+      return;
+    }
+
+    const uploadResult = await context.run("render-and-upload", async () => {
+      await ReportRepository.updateReportStatus(attemptId, "generating", "rendering");
+      const renderResult = await ReportPdfService.generate(attemptId);
+      
       await ReportRepository.updateReportStatus(attemptId, "generating", "uploading");
       const fileRef = await uploadReport(renderResult.buffer, userId, attemptId);
-      return { ...renderResult, fileRef };
+      
+      return { 
+        fileRef,
+        generationTimeMs: renderResult.generationTimeMs,
+        fileSizeKb: renderResult.fileSizeKb,
+        pageCount: renderResult.pageCount
+      };
     });
 
     await context.run("finalize", async () => {

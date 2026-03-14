@@ -1,6 +1,8 @@
+import { db, exams } from '@quiz/db';
 import { JobStatus } from '@quiz/types';
 import { serve } from '@upstash/workflow/nextjs';
 import { put } from '@vercel/blob';
+import { eq } from 'drizzle-orm';
 
 import { eventBus } from '@/lib/event-bus';
 import { AppEvents } from '@/lib/events';
@@ -27,6 +29,7 @@ export const { POST } = serve<{
   const aggregator = new ExportAggregator();
   const jsonFormatter = new JsonFormatter();
   const csvFormatter = new CsvFormatter();
+  const cacheKey = `export:${examId}:${userId}:${format}`;
 
   const persistState = async (state: Record<string, unknown>) => {
     try {
@@ -36,28 +39,76 @@ export const { POST } = serve<{
     }
   };
 
-  await context.run('fetch-raw-data', async () => {
+  const fetched = await context.run('fetch-raw-data', async () => {
     log.info({ examId, jobId }, 'Step: Fetch Raw Data');
     await JobsService.updateJobStatus(jobId, JobStatus.PROCESSING);
+
+    // Idempotency: check cache and DB before heavy work
+    try {
+      const cachedUrl = await redis.get<string>(cacheKey);
+      if (typeof cachedUrl === 'string' && cachedUrl.trim() !== '') {
+        log.info({ examId, jobId, format }, 'Export workflow cache hit');
+        await JobsService.updateJobStatus(jobId, JobStatus.COMPLETED, {
+          result: {
+            examId,
+            format,
+            downloadUrl: cachedUrl,
+            completedAt: new Date().toISOString()
+          }
+        });
+        return { meta: null, currentRows: [], historicalRows: [], shortCircuitUrl: cachedUrl } as const;
+      }
+      log.info({ examId, jobId, format }, 'Export workflow cache miss');
+    } catch (error: unknown) {
+      log.warn({ err: error, jobId, examId }, 'Export workflow cache read failed');
+    }
+
+    try {
+      const examRow = await db.query.exams.findFirst({
+        where: eq(exams.id, examId),
+        columns: { exportUrls: true }
+      });
+      const existingUrl = format === 'json'
+        ? (examRow?.exportUrls as { analytics_json?: string } | null)?.analytics_json
+        : (examRow?.exportUrls as { analytics_csv?: string } | null)?.analytics_csv;
+      if (typeof existingUrl === 'string' && existingUrl.trim() !== '') {
+        log.info({ examId, jobId, format }, 'Export workflow idempotency hit from exams.export_urls');
+        try {
+          await redis.set(cacheKey, existingUrl, { ex: 900 });
+        } catch (error: unknown) {
+          log.warn({ err: error, jobId, examId }, 'Export workflow cache write failed after idempotency hit');
+        }
+        await JobsService.updateJobStatus(jobId, JobStatus.COMPLETED, {
+          result: {
+            examId,
+            format,
+            downloadUrl: existingUrl,
+            completedAt: new Date().toISOString()
+          }
+        });
+        return { meta: null, currentRows: [], historicalRows: [], shortCircuitUrl: existingUrl } as const;
+      }
+    } catch (error: unknown) {
+      log.warn({ err: error, jobId, examId }, 'Export workflow idempotency lookup failed');
+    }
+
     const [meta, currentRows, historicalRows] = await Promise.all([
       queryBuilder.fetchUserMeta(examId),
       queryBuilder.fetchRawAttempts(examId),
       queryBuilder.fetchHistoricalAttempts(userId, examId)
     ]);
-    await persistState({ step: 'fetch-raw-data', examId, userId, format, meta, currentRows, historicalRows });
+    // Persist only lightweight state to avoid Redis size limits.
+    await persistState({ step: 'fetch-raw-data', examId, userId, format });
     return { meta, currentRows, historicalRows };
   });
 
+  if ('shortCircuitUrl' in fetched) {
+    return;
+  }
+
   const aggregated = await context.run('aggregate-data', async () => {
     log.info({ examId, jobId }, 'Step: Aggregate Data');
-    const metaState = await redis.get<string>(stateKey);
-    const parsed =
-      typeof metaState === 'string' && metaState.length > 0
-        ? (JSON.parse(metaState) as { meta: unknown; currentRows: unknown; historicalRows: unknown })
-        : null;
-    const meta = parsed?.meta;
-    const currentRows = (parsed?.currentRows ?? []) as Parameters<ExportAggregator['buildAggregations']>[0];
-    const historicalRows = (parsed?.historicalRows ?? []) as Parameters<ExportAggregator['buildHistoricalProgress']>[0];
+    const { meta, currentRows, historicalRows } = fetched;
 
     const [aggregations, historicalProgress] = await Promise.all([
       aggregator.buildAggregations(currentRows),
@@ -73,7 +124,7 @@ export const { POST } = serve<{
       guidanceSignals
     } as ExportPayload;
 
-    await persistState({ step: 'aggregate-data', examId, userId, format, payload });
+    await persistState({ step: 'aggregate-data', examId, userId, format });
     return payload;
   });
 
@@ -83,16 +134,14 @@ export const { POST } = serve<{
     const buffer = format === 'csv' ? await csvFormatter.formatAsZip(payload) : jsonFormatter.format(payload);
     const contentType = format === 'csv' ? 'application/zip' : 'application/json';
     const extension = format === 'csv' ? 'zip' : 'json';
-    const encoded = buffer.toString('base64');
-    await persistState({ step: 'format-data', examId, userId, format, contentType, extension, encoded });
-    return { contentType, extension, encoded };
+    await persistState({ step: 'format-data', examId, userId, format, contentType, extension });
+    return { contentType, extension, buffer };
   });
 
   const downloadUrl = await context.run('upload-to-blob', async () => {
     log.info({ examId, jobId }, 'Step: Upload to Blob');
-    const buffer = Buffer.from(formatted.encoded, 'base64');
     const filename = `exports/${userId}/${examId}/analysis_${Date.now()}.${formatted.extension}`;
-    const { url } = await put(filename, buffer, {
+    const { url } = await put(filename, formatted.buffer, {
       access: 'private',
       contentType: formatted.contentType,
       addRandomSuffix: false,
@@ -120,6 +169,12 @@ export const { POST } = serve<{
       downloadUrl,
       completedAt: new Date()
     });
+
+    try {
+      await redis.set(cacheKey, downloadUrl, { ex: 900 });
+    } catch (error: unknown) {
+      log.warn({ err: error, jobId, examId }, 'Export workflow cache write failed after completion');
+    }
 
     try {
       await redis.del(stateKey);

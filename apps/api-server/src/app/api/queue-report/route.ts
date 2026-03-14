@@ -61,7 +61,7 @@ async function postHandler(req: NextRequest) {
     if (isInternal) {
       const examMatch = await db.query.exams.findFirst({
         where: eq(exams.id, attemptId),
-        columns: { userId: true, status: true }
+        columns: { userId: true, status: true, exportUrls: true }
       });
       if (examMatch === null || examMatch === undefined) throw badRequest("Exam not found");
       userId = examMatch.userId;
@@ -77,7 +77,7 @@ async function postHandler(req: NextRequest) {
 
       const exam = await db.query.exams.findFirst({
         where: eq(exams.id, attemptId),
-        columns: { userId: true, status: true }
+        columns: { userId: true, status: true, exportUrls: true }
       });
 
       if (exam === null || exam === undefined) {
@@ -93,7 +93,24 @@ async function postHandler(req: NextRequest) {
       }
     }
 
-    // 2. Proactive Rate Limit check (3 per min)
+    // 2. Idempotency: if a ready PDF already exists, return immediately
+    const existingReport = await ReportRepository.getReportByAttempt(attemptId);
+    if (existingReport?.status === "ready" && typeof existingReport.fileRef === "string" && existingReport.fileRef.trim() !== "") {
+      logger.info({ attemptId }, "[QueueReport] PDF idempotency hit via report record");
+      return ApiResponse.success({ status: "ready", attemptId, downloadUrl: existingReport.fileRef });
+    }
+
+    const examExport = await db.query.exams.findFirst({
+      where: eq(exams.id, attemptId),
+      columns: { exportUrls: true }
+    });
+    const existingPdfUrl = (examExport?.exportUrls as { analytics_pdf?: string } | null)?.analytics_pdf;
+    if (typeof existingPdfUrl === "string" && existingPdfUrl.trim() !== "") {
+      logger.info({ attemptId }, "[QueueReport] PDF idempotency hit via exams.export_urls");
+      return ApiResponse.success({ status: "ready", attemptId, downloadUrl: existingPdfUrl });
+    }
+
+    // 3. Proactive Rate Limit check (3 per min)
     const { count, ttlRem } = await cacheService.increment(`ratelimit:pdf:${userId}`, 60000);
     if (count > 3) {
       return ApiResponse.error(new Error("Rate limit exceeded"), 429, undefined, {
@@ -102,8 +119,7 @@ async function postHandler(req: NextRequest) {
       });
     }
 
-    // 3. Concurrency Guard with Stale-Job Recovery
-    const existingReport = await ReportRepository.getReportByAttempt(attemptId);
+    // 4. Concurrency Guard with Stale-Job Recovery
     if (existingReport !== null && existingReport !== undefined && (existingReport.status === "pending" || existingReport.status === "generating")) {
       const updatedAt = existingReport.updatedAt instanceof Date
         ? existingReport.updatedAt.getTime()
@@ -122,10 +138,10 @@ async function postHandler(req: NextRequest) {
       await ReportRepository.updateReportStatus(attemptId, "pending", undefined);
     }
 
-    // 4. State Machine Init
+    // 5. State Machine Init
     await ReportRepository.createReportIfNotExists({ attemptId, userId, status: "pending" });
 
-    // 5. Prefer Upstash Workflow when enabled; fall back to local serverless generation
+    // 6. Prefer Upstash Workflow when enabled; fall back to local serverless generation
     const queuesEnabled = process.env.QUEUE_ENABLED === "true";
     const qstashToken = typeof process.env.QSTASH_TOKEN === "string" ? process.env.QSTASH_TOKEN : "";
     const qstashUrl = typeof process.env.QSTASH_URL === "string" && process.env.QSTASH_URL.trim() !== ""
@@ -137,10 +153,16 @@ async function postHandler(req: NextRequest) {
         baseUrl: qstashUrl,
         token: qstashToken,
       });
-      // Strict construction based on user confirmed environment configuration
-      const workflowUrl = `${process.env.NEXT_PUBLIC_API_URL}/workflows/pdf-report`;
+      // Robust construction: ensure exactly one /api prefix and no double slashes
+      const apiBase = (
+        typeof process.env.NEXT_PUBLIC_API_URL === "string" && process.env.NEXT_PUBLIC_API_URL.trim() !== ""
+          ? process.env.NEXT_PUBLIC_API_URL
+          : "https://api.realtutorialhub.com"
+      ).replace(/\/api\/?$/, "");
+      const workflowUrl = `${apiBase}/api/workflows/pdf-report`;
 
       try {
+        logger.info({ attemptId, workflowUrl, apiBase }, "[QueueReport] Triggering PDF workflow");
         await workflowClient.trigger({
           url: workflowUrl,
           body: { attemptId, userId },
@@ -190,6 +212,7 @@ async function postHandler(req: NextRequest) {
           analytics_pdf: fileRef
         };
         await db.update(exams).set({ exportUrls: nextExportUrls }).where(eq(exams.id, attemptId));
+        logger.info({ attemptId, fileRef }, "[QueueReport] Stored analytics_pdf in exams.export_urls");
 
         const totalDuration = Date.now() - startTime;
         recordTimer("reports.api.total.duration", totalDuration, { route: "/api/queue-report", outcome: "success", fileSizeKb });

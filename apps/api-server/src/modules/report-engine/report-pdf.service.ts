@@ -68,7 +68,10 @@ export class ReportPdfService {
     const internalKey = internalEnv !== undefined && internalEnv !== "" ? internalEnv : "secret";
 
     const apiBaseEnv = process.env.NEXT_PUBLIC_API_URL;
-    const apiBase = apiBaseEnv !== undefined && apiBaseEnv !== "" ? apiBaseEnv : "http://localhost:3000/api";
+    if (apiBaseEnv === undefined || apiBaseEnv === "") {
+      throw new Error("NEXT_PUBLIC_API_URL is required for PDF generation");
+    }
+    const apiBase = apiBaseEnv;
 
     // Direct to the Web App for printing, not the API subdomain
     const webAppUrlEnv = process.env.NEXT_PUBLIC_WEB_APP_URL;

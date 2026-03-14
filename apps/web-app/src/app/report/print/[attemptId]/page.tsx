@@ -21,7 +21,10 @@ import { PdfPage } from "@/components/reports/print/PrintToolkit";
 import type { QuestionItem, ReportJSON, SubjectDataset, TopicDataset } from "@quiz/types";
 
 async function fetchReportData(attemptId: string, internalKey?: string): Promise<ExamReport> {
-    const rawApiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3002/api";
+    const rawApiUrl = process.env.NEXT_PUBLIC_API_URL;
+    if (!rawApiUrl) {
+        throw new Error("NEXT_PUBLIC_API_URL is required for report rendering");
+    }
     const apiUrl = rawApiUrl.replace(/\/api$/, "").replace(/\/$/, "");
 
     const headers: Record<string, string> = {
