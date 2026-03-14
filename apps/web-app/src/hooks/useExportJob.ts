@@ -63,7 +63,7 @@ export function useExportJob() {
         setIsExporting(false);
         clearPolling();
       } else if (data.status === "failed") {
-        setError(data.error ?? "Export failed");
+        setError(sanitizeErrorMessage(data.error ?? "Export failed"));
         setIsExporting(false);
         clearPolling();
       }
@@ -122,6 +122,19 @@ export function useExportJob() {
 }
 
 function getErrorMessage(error: unknown): string {
-  if (error instanceof Error) return error.message;
+  if (error instanceof Error) return sanitizeErrorMessage(error.message);
   return "Unexpected error";
+}
+
+function sanitizeErrorMessage(message: string): string {
+  const lowered = message.toLowerCase();
+  if (
+    lowered.includes("upstash workflow") ||
+    lowered.includes("workflowabort") ||
+    lowered.includes("disabled-qstash") ||
+    lowered.includes("failed to authenticate workflow request")
+  ) {
+    return "Export failed. Please retry.";
+  }
+  return message;
 }
