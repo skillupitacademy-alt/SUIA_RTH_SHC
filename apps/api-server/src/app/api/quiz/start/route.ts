@@ -50,7 +50,12 @@ async function postHandler(req: NextRequest) {
     }
     const { domainId, blueprintId, ...rest } = parsed.data;
     const config: StartExamConfig = rest;
-    const targetId = blueprintId ?? domainId;
+    
+    // Explicitly handle empty strings or missing IDs
+    const effectiveBlueprintId = (typeof blueprintId === 'string' && blueprintId.trim() !== '') ? blueprintId : undefined;
+    const effectiveDomainId = (typeof domainId === 'string' && domainId.trim() !== '') ? domainId : undefined;
+    
+    const targetId = effectiveBlueprintId ?? effectiveDomainId;
     const idempotencyKey = req.headers.get('idempotency-key') ?? req.headers.get('Idempotency-Key');
 
     // 6. Hardening & Validation

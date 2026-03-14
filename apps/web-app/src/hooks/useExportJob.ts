@@ -74,9 +74,21 @@ export function useExportJob() {
 
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
+      
+      // Read CSRF token from cookie for POST authentication
+      const csrfToken = typeof document !== 'undefined'
+        ? document.cookie
+          .split('; ')
+          .find(row => row.startsWith('csrfToken='))
+          ?.split('=')[1] ?? ''
+        : '';
+
       const res = await fetch(`${apiUrl}/export/trigger`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'x-csrf-token': csrfToken,
+        },
         body: JSON.stringify({ examId, userId, format }),
         credentials: "include",
       });

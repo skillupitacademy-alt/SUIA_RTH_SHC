@@ -102,10 +102,12 @@ export class DashboardEngine {
         weeklyExamsCount: weeklyExamsResult[0]?.count ?? 0,
         globalRank: null, 
       },
-      performanceTrend: performanceTrendResult.map((t: { score: number | null; completedAt: Date | null }) => ({
-        score: t.score ?? 0,
-        date: (t.completedAt !== null && t.completedAt !== undefined) ? t.completedAt.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }) : 'Unknown'
-      })),
+          performanceTrend: performanceTrendResult.map((t: { score: number | null; completedAt: Date | string | null }) => ({
+            score: t.score ?? 0,
+            date: (t.completedAt instanceof Date) 
+                ? t.completedAt.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }) 
+                : (typeof t.completedAt === 'string' ? new Date(t.completedAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }) : 'Unknown')
+          })),
       recentActivity: (recentCompletedExams as Array<{
         id: string;
         blueprint?: { name?: string | null } | null;
@@ -130,7 +132,7 @@ export class DashboardEngine {
           id: e.id,
           title: derivedTitle ?? 'Self-Paced Quiz',
           score: e.totalScore,
-          relativeTime: this.getRelativeTime(e.completedAt!),
+          relativeTime: e.completedAt ? this.getRelativeTime(e.completedAt instanceof Date ? e.completedAt : new Date(e.completedAt)) : 'Unknown',
           status: e.status,
         };
       }),
