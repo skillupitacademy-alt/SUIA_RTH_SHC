@@ -1,3 +1,4 @@
+import { JobStatus } from '@quiz/types';
 import { NextRequest, NextResponse } from 'next/server';
 
 import { logger } from '@/lib/logger';
@@ -24,12 +25,12 @@ export async function GET(
 
     // Stale job recovery: if processing for > 2 minutes, auto-fail
     const STALE_THRESHOLD_MS = 2 * 60 * 1000;
-    if ((job.status === 'processing' || job.status === 'pending') && job.updatedAt) {
+    if ((job.status === 'processing' || job.status === 'pending') && job.updatedAt !== null && job.updatedAt !== undefined) {
       const updatedAt = new Date(job.updatedAt).getTime();
       const elapsed = Date.now() - updatedAt;
       if (elapsed > STALE_THRESHOLD_MS) {
         log.warn({ jobId, elapsed, status: job.status }, 'Stale export job detected, auto-failing');
-        await JobsService.updateJobStatus(jobId, 'failed' as any, { error: 'Export timed out. Please retry.' });
+        await JobsService.updateJobStatus(jobId, 'failed' as JobStatus, { error: 'Export timed out. Please retry.' });
         return NextResponse.json({
           jobId: job.id,
           status: 'failed',
@@ -39,9 +40,9 @@ export async function GET(
     }
 
     // Build proxy download URL for private blob access
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? '';
-    const proxyDownloadUrl = job.result?.downloadUrl
-      ? `${apiUrl}/export/download?jobId=${job.id}`
+
+    const proxyDownloadUrl = (job.result?.downloadUrl !== null && job.result?.downloadUrl !== undefined)
+      ? `${process.env.NEXT_PUBLIC_API_URL ?? ''}/export/download?jobId=${job.id}`
       : undefined;
 
     // Standard response structure for polling

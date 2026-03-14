@@ -40,8 +40,7 @@ export class ExportSaga {
         });
 
         const hasQstashToken = typeof process.env.QSTASH_TOKEN === 'string' && process.env.QSTASH_TOKEN.trim() !== '';
-        const apiUrl = typeof process.env.NEXT_PUBLIC_API_URL === 'string' ? process.env.NEXT_PUBLIC_API_URL : '';
-        
+
         if (queuesEnabled && hasQstashToken) {
             // Strict construction based on user confirmed environment configuration
             const workflowUrl = `${process.env.NEXT_PUBLIC_API_URL}/export/workflow`;

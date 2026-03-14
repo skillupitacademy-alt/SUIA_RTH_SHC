@@ -21,13 +21,13 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const jobId = searchParams.get('jobId');
 
-    if (!jobId || jobId.trim() === '') {
+    if (jobId === null || jobId.trim() === '') {
       throw badRequest('Missing jobId');
     }
 
     // Authenticate
     const token = container.get(TokenService).getAccessToken(req, { scope: 'user' });
-    if (!token) {
+    if (token === null || token === undefined) {
       throw unauthorized('Unauthorized');
     }
     const payload = await container.get(TokenService).verifyUserAccessToken(token);
@@ -45,7 +45,7 @@ export async function GET(req: NextRequest) {
       throw forbidden('Forbidden');
     }
 
-    if (job.status !== 'completed' || !job.result?.downloadUrl) {
+    if (job.status !== 'completed' || job.result?.downloadUrl === null || job.result?.downloadUrl === undefined) {
       return NextResponse.json({ error: 'Export not ready' }, { status: 404 });
     }
 
