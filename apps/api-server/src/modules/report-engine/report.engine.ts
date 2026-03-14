@@ -79,6 +79,7 @@ type DimensionRow = {
 
 export type PremiumReport = {
   examId: string;
+  userId: string;
   score: number;
   mastery: number;
   readiness: number;
@@ -670,6 +671,7 @@ export class ReportEngine {
 
     const finalReport: PremiumReport = {
       examId: exam.id,
+      userId: exam.userId,
       completedAt: (exam.completedAt !== null && exam.completedAt !== undefined) ? exam.completedAt.toISOString() : undefined,
       lineage,
       score: Math.round(core.score ?? 0),

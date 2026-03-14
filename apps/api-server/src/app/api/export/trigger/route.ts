@@ -11,13 +11,13 @@ const log = logger.child({ module: 'export-trigger-api' });
 export async function POST(req: NextRequest) {
   try {
     const body = (await req.json()) as unknown;
-
-    if (!isExportTriggerBody(body)) {
-      return NextResponse.json(
-        { error: 'Missing required fields: examId, format, userId' },
-        { status: 400 }
-      );
-    }
+ 
+     if (!isExportTriggerBody(body)) {
+       return NextResponse.json(
+         { error: 'Missing required fields: examId, format, userId' },
+         { status: 400 }
+       );
+     }
 
     const { examId, format, userId } = body;
 

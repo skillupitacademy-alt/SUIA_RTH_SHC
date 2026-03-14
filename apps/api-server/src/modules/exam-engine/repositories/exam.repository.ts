@@ -172,7 +172,7 @@ export class ExamRepository extends BaseRepository<Exam, typeof exams> {
       this.dbInstance.transaction(async (tx) => {
         const [exam] = await (tx.insert(exams).values({
           userId: data.userId,
-          blueprintId: data.blueprintId || null,
+          blueprintId: (data.blueprintId !== null && data.blueprintId !== '') ? data.blueprintId : null,
           status: data.status,
           durationSeconds: data.durationSeconds,
           totalScore: 0,
