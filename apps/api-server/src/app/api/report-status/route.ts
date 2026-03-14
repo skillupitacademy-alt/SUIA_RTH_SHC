@@ -89,14 +89,18 @@ async function getHandler(req: NextRequest) {
       }
     }
 
-    if (report.status === "generating") {
+    if (report.status === "generating" || report.status === "pending") {
       const updatedAt =
         report.updatedAt !== null && report.updatedAt !== undefined
           ? new Date(report.updatedAt).getTime()
           : 0;
       const now = Date.now();
-      if (now - updatedAt > 3 * 60 * 1000) {
+      if (now - updatedAt > 2 * 60 * 1000) {
         recordCounter(METRICS.REPORTS.FAILURES, 1, { reason: 'stalled' });
+        
+        // Auto-fail the stalled job in the database so the frontend can reset
+        await ReportRepository.updateReportStatus(attemptId, "failed", "Generation stalled. Please retry.").catch(() => {});
+        
         return ApiResponse.success({ 
           status: "failed", 
           error: "Generation stalled. Please retry." 
