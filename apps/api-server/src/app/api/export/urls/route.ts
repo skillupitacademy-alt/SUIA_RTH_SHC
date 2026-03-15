@@ -50,6 +50,14 @@ async function getHandler(req: NextRequest) {
     try {
       const cachedUrl = await redis.get<string>(cacheKey);
       if (typeof cachedUrl === 'string' && cachedUrl.trim() !== '') {
+        const { storage } = await import('@/lib/storage');
+        const exists = await storage.exists(cachedUrl);
+        if (!exists) {
+          // Stale cache pointer (blob deleted). Clear cache and force regeneration path.
+          await redis.del(cacheKey).catch(() => {});
+          return ApiResponse.success({ url: null, source: 'stale' }, 200);
+        }
+
         const formatKey = format === 'json'
           ? 'analytics_json'
           : format === 'csv'
@@ -75,6 +83,25 @@ async function getHandler(req: NextRequest) {
       : exportUrls?.student_insight_pdf;
 
     if (typeof url === 'string' && url.trim() !== '') {
+      const { storage } = await import('@/lib/storage');
+      const exists = await storage.exists(url);
+      if (!exists) {
+        // Stale DB pointer. Clear the field so future calls regenerate.
+        const formatKey = format === 'json'
+          ? 'analytics_json'
+          : format === 'csv'
+          ? 'analytics_csv'
+          : 'student_insight_pdf';
+        const existingUrls = (exam.exportUrls as Record<string, unknown> | null) ?? {};
+        const nextUrls = { ...existingUrls };
+        delete (nextUrls as Record<string, unknown>)[formatKey];
+        await db.update(exams)
+          .set({ exportUrls: nextUrls })
+          .where(eq(exams.id, examId))
+          .catch(() => {});
+        await redis.del(cacheKey).catch(() => {});
+        return ApiResponse.success({ url: null, source: 'stale' }, 200);
+      }
       return ApiResponse.success({ url: buildProxyUrl(examId, format), source: 'db' }, 200);
     }
 

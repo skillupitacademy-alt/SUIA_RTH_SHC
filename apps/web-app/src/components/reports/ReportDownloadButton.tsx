@@ -141,12 +141,33 @@ export function ReportDownloadButton({ attemptId, userId, className }: ReportDow
         setIsDropdownOpen(false);
     };
 
-    const handleExport = (format: Exclude<ExportFormat, "pdf">) => {
-        const existingUrl = exportUrlMap[format];
-        if (existingUrl) {
-            handleExportDownload(existingUrl);
-            return;
+    const handleExport = async (format: Exclude<ExportFormat, "pdf">) => {
+        // Even if we have a cached/ticked URL, revalidate with the server.
+        // This prevents "green tick but nothing downloads" when blob objects were deleted.
+        const apiBase = getApiBase();
+        try {
+            const res = await fetch(`${apiBase}/export/urls?examId=${encodeURIComponent(attemptId)}&format=${encodeURIComponent(format)}`, {
+                credentials: "include",
+            });
+            if (res.ok) {
+                const data = (await res.json()) as { url?: string | null };
+                if (typeof data.url === "string" && data.url.trim() !== "") {
+                    setExportUrlMap((prev) => ({ ...prev, [format]: data.url as string }));
+                    handleExportDownload(data.url);
+                    return;
+                }
+            }
+        } catch {
+            // Fall through to regeneration path.
         }
+
+        // No valid URL (or server unreachable) -> regenerate via export job.
+        setExportUrlMap((prev) => {
+            if (prev[format] === undefined) return prev;
+            const next = { ...prev };
+            delete next[format];
+            return next;
+        });
         setActiveFormat(format);
         triggerExport(attemptId, userId, format);
         setIsDropdownOpen(false);
@@ -279,7 +300,7 @@ export function ReportDownloadButton({ attemptId, userId, className }: ReportDow
 
                         {/* Student Insight PDF */}
                         <button 
-                            onClick={() => handleExport("student-insight-pdf")}
+                            onClick={() => { void handleExport("student-insight-pdf"); }}
                             disabled={isExporting}
                             className="w-full flex items-center justify-between p-4 hover:bg-slate-900/70 rounded-2xl transition-all group disabled:opacity-50 border border-transparent hover:border-white/5"
                         >
@@ -300,7 +321,7 @@ export function ReportDownloadButton({ attemptId, userId, className }: ReportDow
 
                         {/* JSON Export */}
                         <button 
-                            onClick={() => handleExport("json")}
+                            onClick={() => { void handleExport("json"); }}
                             disabled={isExporting}
                             className="w-full flex items-center justify-between p-4 hover:bg-slate-900/70 rounded-2xl transition-all group disabled:opacity-50 border border-transparent hover:border-white/5"
                         >
@@ -319,7 +340,7 @@ export function ReportDownloadButton({ attemptId, userId, className }: ReportDow
 
                         {/* CSV Export */}
                         <button 
-                            onClick={() => handleExport("csv")}
+                            onClick={() => { void handleExport("csv"); }}
                             disabled={isExporting}
                             className="w-full flex items-center justify-between p-4 hover:bg-slate-900/70 rounded-2xl transition-all group disabled:opacity-50 border border-transparent hover:border-white/5"
                         >

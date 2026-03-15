@@ -111,6 +111,10 @@ export async function GET(req: NextRequest) {
 
     if (!response.ok) {
       log.error({ jobId, status: response.status }, 'Failed to fetch export from blob storage');
+      if (response.status === 404) {
+        // Blob was deleted or URL is stale. Tell client to regenerate.
+        return NextResponse.json({ error: 'Export artifact missing. Please regenerate.' }, { status: 404 });
+      }
       throw new Error(`Failed to fetch export from storage: ${response.statusText}`);
     }
 

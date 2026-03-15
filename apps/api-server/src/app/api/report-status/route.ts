@@ -8,8 +8,7 @@ import { recordCounter, recordTimer } from "@/lib/metrics";
 import { getDownloadUrl } from "@/lib/storage/get-download-url";
 import { withLogging } from "@/lib/withLogging";
 import { TokenService } from "@/modules/auth/token.service";
-import { container } from '@/modules/core/container';
-import { ExamRepository } from "@/modules/exam-engine/repositories/exam.repository";
+import { container } from "@/modules/core/container";
 import { ReportRepository } from "@/modules/report-engine/report-repository";
 
 export const dynamic = 'force-dynamic';
@@ -44,10 +43,34 @@ async function getHandler(req: NextRequest) {
 
     // Fallback: Check the exams table if no materialized report record exists yet (Task 125)
     if (report === undefined || report === null) {
-      const examRepo = container.get(ExamRepository);
-      const exam = await examRepo.findById(attemptId);
+      // Defensive: avoid relying on DI seams for exam lookup; query directly.
+      const { db, exams } = await import("@quiz/db");
+      const { eq } = await import("drizzle-orm");
+      const examRow = await db.query.exams.findFirst({
+        where: eq(exams.id, attemptId),
+        columns: { userId: true, status: true, exportUrls: true }
+      });
       
-      if (exam !== undefined && exam !== null) {
+      if (examRow !== undefined && examRow !== null) {
+        if (!isInternal && examRow.userId !== userId) {
+          throw forbidden("Unauthorized");
+        }
+
+        // If the PDF exists in exams.export_urls, return ready (and verify storage exists).
+        const exportUrls = examRow.exportUrls as { analytics_pdf?: string } | null;
+        const analyticsPdfRef = exportUrls?.analytics_pdf;
+        if (typeof analyticsPdfRef === "string" && analyticsPdfRef.trim() !== "") {
+          const { storage } = await import("@/lib/storage");
+          const exists = await storage.exists(analyticsPdfRef);
+          if (exists) {
+            const url = await getDownloadUrl(analyticsPdfRef);
+            recordCounter(METRICS.REPORTS.VIEW, 1, { outcome: 'success', status: 'ready', source: 'exams.export_urls' });
+            return ApiResponse.success({ status: "ready", url }, 200, { "Cache-Control": "no-store" });
+          }
+          // Stale pointer: treat as not found (caller can regenerate).
+          recordCounter(METRICS.REPORTS.VIEW, 1, { outcome: 'failure', reason: 'missing_storage', source: 'exams.export_urls' });
+        }
+
         // Map exam status to a pseudo-report status to keep frontend polling alive
         const statusMap: Record<string, string> = {
           'started': 'generating',
@@ -58,7 +81,7 @@ async function getHandler(req: NextRequest) {
         };
 
         return ApiResponse.success({ 
-          status: statusMap[exam.status] || 'generating',
+          status: statusMap[examRow.status] || 'generating',
           isLegacyFallback: true 
         }, 200, { "Cache-Control": "no-store" });
       }
