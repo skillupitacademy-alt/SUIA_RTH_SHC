@@ -50,7 +50,14 @@ async function getHandler(req: NextRequest) {
     try {
       const cachedUrl = await redis.get<string>(cacheKey);
       if (typeof cachedUrl === 'string' && cachedUrl.trim() !== '') {
-        return ApiResponse.success({ url: cachedUrl, source: 'redis' }, 200);
+        const formatKey = format === 'json' ? 'analytics_json' : 'analytics_csv';
+        const existingUrls = (exam.exportUrls as Record<string, string> | null) ?? {};
+        if (typeof existingUrls[formatKey] !== 'string' || existingUrls[formatKey]?.trim() === '') {
+          await db.update(exams)
+            .set({ exportUrls: { ...existingUrls, [formatKey]: cachedUrl } })
+            .where(eq(exams.id, examId));
+        }
+        return ApiResponse.success({ url: buildProxyUrl(examId, format), source: 'redis' }, 200);
       }
     } catch (err) {
       log.warn({ err, examId, userId }, 'Redis lookup failed');
@@ -60,7 +67,7 @@ async function getHandler(req: NextRequest) {
     const url = format === 'json' ? exportUrls?.analytics_json : exportUrls?.analytics_csv;
 
     if (typeof url === 'string' && url.trim() !== '') {
-      return ApiResponse.success({ url, source: 'db' }, 200);
+      return ApiResponse.success({ url: buildProxyUrl(examId, format), source: 'db' }, 200);
     }
 
     return ApiResponse.success({ url: null, source: 'none' }, 200);
@@ -71,3 +78,12 @@ async function getHandler(req: NextRequest) {
 }
 
 export const GET = withLogging(getHandler, { component: 'export', operation: 'get_export_urls' });
+
+function buildProxyUrl(examId: string, format: string) {
+  const rawBase = process.env.NEXT_PUBLIC_API_URL ?? '';
+  if (rawBase.trim() === '') {
+    return `/api/export/download?examId=${encodeURIComponent(examId)}&format=${encodeURIComponent(format)}`;
+  }
+  const base = rawBase.replace(/\/api\/?$/, '').replace(/\/+$/, '');
+  return `${base}/api/export/download?examId=${encodeURIComponent(examId)}&format=${encodeURIComponent(format)}`;
+}

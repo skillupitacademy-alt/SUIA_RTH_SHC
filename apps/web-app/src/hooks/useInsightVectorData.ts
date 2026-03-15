@@ -68,7 +68,7 @@ export function useInsightVectorData(examId?: string, userId?: string) {
 
   const fetchPayload = useCallback(async (url: string) => {
     try {
-      const res = await fetch(url);
+      const res = await fetch(url, { credentials: "include" });
       if (!res.ok) throw new Error("Failed to fetch insight payload");
       const payload = await res.json();
       const content = payload?.content ?? payload;
