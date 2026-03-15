@@ -322,7 +322,7 @@ export default function PrintReportPage(props: {
                 </PdfPage>
 
                 {/* Page 7: Audit Statistical Summary (stats only, no Q&A cards) */}
-                <PdfPage orientation="landscape" autoScale={scale < 1} isLast={true}>
+                <PdfPage orientation="landscape" autoScale={scale < 1}>
                     <QuestionAuditPage
                         data={topicData}
                         page={getPageNum(7)}

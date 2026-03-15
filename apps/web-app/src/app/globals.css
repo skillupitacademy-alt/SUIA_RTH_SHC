@@ -150,9 +150,10 @@ body {
   break-after: page !important;
 }
 
-.pdf-page.pdf-page-last {
-  page-break-after: auto !important;
-  break-after: auto !important;
+/* Last PdfPage in the document never forces a trailing break */
+.pdf-page:last-of-type {
+  page-break-after: avoid !important;
+  break-after: avoid !important;
 }
 
 .pdf-page.portrait {
