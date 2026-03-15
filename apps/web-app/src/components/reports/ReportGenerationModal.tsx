@@ -14,8 +14,8 @@ import {
     Database,
     Bell
 } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { createPortal } from "react-dom";
+import { useReportThemeTokens } from "./hooks/useReportThemeTokens";
 
 export type ExportFormat = "pdf" | "json" | "csv" | "student-insight-pdf";
 
@@ -66,6 +66,7 @@ export function ReportGenerationModal({
     downloadUrl,
     format = "pdf"
 }: ReportGenerationModalProps) {
+    const { tokens } = useReportThemeTokens();
     const [displayStageIndex, setDisplayStageIndex] = useState(0);
     const [targetStageIndex, setTargetStageIndex] = useState(0);
     const [mounted, setMounted] = useState(false);
@@ -158,7 +159,8 @@ export function ReportGenerationModal({
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="fixed inset-0 z-[9999] flex flex-col bg-[#020617]"
+                className="fixed inset-0 z-[9999] flex flex-col"
+                style={{ backgroundColor: tokens.pageBg }}
             >
                 <div className="absolute inset-0 opacity-10 pointer-events-none overflow-hidden">
                     <div className="absolute top-[-5%] left-[-5%] w-[30%] h-[30%] bg-indigo-600/10 blur-[100px] rounded-full" />
@@ -168,9 +170,10 @@ export function ReportGenerationModal({
                 <div className="absolute top-0 inset-x-0 p-6 flex justify-end z-50">
                     <button
                         onClick={onClose}
-                        className="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-all group active:scale-95"
+                        className="p-2.5 rounded-xl border transition-all group active:scale-95"
+                        style={{ backgroundColor: tokens.cardBg, borderColor: tokens.borderSubtle }}
                     >
-                        <XCircle className="w-5 h-5 text-slate-400 group-hover:text-white" />
+                        <XCircle className="w-5 h-5 group-hover:text-indigo-400" style={{ color: tokens.textSecondary }} />
                     </button>
                 </div>
 
@@ -194,10 +197,10 @@ export function ReportGenerationModal({
                                 )}
                             </div>
 
-                            <h2 className="text-3xl md:text-4xl font-bold text-white tracking-tight mb-3 uppercase">
+                            <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-3 uppercase" style={{ color: tokens.textPrimary }}>
                                 {isReady ? "Export Complete" : isFailed ? "System Fault" : "Synthesis Pipeline"}
                             </h2>
-                            <p className="text-slate-400 text-base md:text-lg max-w-md mx-auto font-medium leading-relaxed">
+                            <p className="text-base md:text-lg max-w-md mx-auto font-medium leading-relaxed" style={{ color: tokens.textSecondary }}>
                                 {isReady
                                     ? `Your ${format.toUpperCase().replace("-PDF", "")} artifact has been synthesized and is prepared for download.`
                                     : isFailed
@@ -216,13 +219,13 @@ export function ReportGenerationModal({
                                     return (
                                         <div key={s.id} className="relative flex items-center gap-6">
                                             {idx < stages.length - 1 && (
-                                                <div className={cn(
-                                                    "absolute left-[13px] top-9 w-[1px] h-10",
-                                                    isCompleted ? "bg-indigo-600/50" : "bg-slate-800"
-                                                )} />
+                                                <div
+                                                    className="absolute left-[13px] top-9 w-[1px] h-10"
+                                                    style={{ backgroundColor: isCompleted ? "rgba(79,70,229,0.50)" : tokens.borderSubtle }}
+                                                />
                                             )}
 
-                                            <div className="z-10 bg-[#020617] p-1">
+                                            <div className="z-10 p-1" style={{ backgroundColor: tokens.pageBg }}>
                                                 {isCompleted ? (
                                                     <CheckCircle2 className="w-6 h-6 text-indigo-500" />
                                                 ) : isActive ? (
@@ -236,17 +239,24 @@ export function ReportGenerationModal({
                                             </div>
 
                                             <div className="flex-1">
-                                                <div className={cn(
-                                                    "text-base font-semibold uppercase tracking-wider",
-                                                    isActive ? "text-white" : isCompleted ? "text-slate-400" : "text-slate-700"
-                                                )}>
+                                                <div
+                                                    className="text-base font-semibold uppercase tracking-wider"
+                                                    style={{
+                                                        color: isActive
+                                                            ? tokens.textPrimary
+                                                            : isCompleted
+                                                                ? tokens.textSecondary
+                                                                : tokens.textMuted
+                                                    }}
+                                                >
                                                     {s.label}
                                                 </div>
                                                 {isActive && (
                                                     <motion.p
                                                         initial={{ opacity: 0, y: 5 }}
                                                         animate={{ opacity: 1, y: 0 }}
-                                                        className="text-[13px] text-slate-400 font-medium mt-0.5"
+                                                        className="text-[13px] font-medium mt-0.5"
+                                                        style={{ color: tokens.textSecondary }}
                                                     >
                                                         {s.description}
                                                     </motion.p>
@@ -292,14 +302,16 @@ export function ReportGenerationModal({
                             ) : isFailed ? (
                                 <button
                                     onClick={onClose}
-                                    className="flex items-center justify-center gap-3 w-full py-4 bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-2xl font-bold uppercase tracking-wider transition-all text-sm active:scale-[0.98]"
+                                    className="flex items-center justify-center gap-3 w-full py-4 border rounded-2xl font-bold uppercase tracking-wider transition-all text-sm active:scale-[0.98]"
+                                    style={{ backgroundColor: tokens.cardBg, color: tokens.textPrimary, borderColor: tokens.borderMedium }}
                                 >
                                     Abort Process
                                 </button>
                             ) : (
                                 <button
                                     onClick={onClose}
-                                    className="flex items-center justify-center gap-3 w-full py-4 bg-white/5 hover:bg-white/10 text-slate-400 border border-white/5 rounded-2xl font-bold uppercase tracking-wider transition-all text-sm active:scale-[0.98]"
+                                    className="flex items-center justify-center gap-3 w-full py-4 border rounded-2xl font-bold uppercase tracking-wider transition-all text-sm active:scale-[0.98]"
+                                    style={{ backgroundColor: tokens.cardBg, color: tokens.textSecondary, borderColor: tokens.borderSubtle }}
                                 >
                                     Return to Hub
                                 </button>
@@ -307,7 +319,7 @@ export function ReportGenerationModal({
 
                             <div className="flex flex-col items-center gap-2 mt-6">
                                 <div className="h-px w-16 bg-gradient-to-r from-transparent via-slate-800 to-transparent" />
-                                <p className="text-[10px] text-slate-600 font-bold uppercase tracking-[0.3em]">
+                                <p className="text-[10px] font-bold uppercase tracking-[0.3em]" style={{ color: tokens.textMuted }}>
                                     Analytical Engine v4.5 • Secure Synthesis
                                 </p>
                             </div>

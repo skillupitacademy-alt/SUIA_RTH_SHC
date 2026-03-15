@@ -19,6 +19,7 @@ import {
 import { ReportGenerationModal, type ExportFormat } from "./ReportGenerationModal";
 import { motion, AnimatePresence } from "framer-motion";
 import { useReportTheme } from "./context/ReportThemeContext";
+import { useReportThemeTokens } from "./hooks/useReportThemeTokens";
 
 interface ReportDownloadButtonProps {
     attemptId: string;
@@ -176,6 +177,7 @@ export function ReportDownloadButton({ attemptId, userId, className }: ReportDow
     };
 
     const { theme } = useReportTheme();
+    const { tokens } = useReportThemeTokens();
 
     const handleTriggerPdf = async (options?: { force?: boolean }) => {
         setActiveFormat("pdf");
@@ -274,67 +276,81 @@ export function ReportDownloadButton({ attemptId, userId, className }: ReportDow
                         initial={{ opacity: 0, y: 10, scale: 0.95 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                        className="absolute right-0 mt-3 w-72 bg-slate-950/95 border border-white/5 rounded-[2rem] shadow-[0_30px_60px_rgba(0,0,0,0.6)] p-3 z-[120] backdrop-blur-2xl"
+                        className="absolute right-0 mt-3 w-72 border rounded-[2rem] shadow-[0_30px_60px_rgba(0,0,0,0.6)] p-3 z-[120] backdrop-blur-2xl"
+                        style={{ backgroundColor: tokens.cardBg, borderColor: tokens.borderSubtle }}
                     >
                         <div className="mb-2 px-3 py-2">
-                            <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Data Intelligence Export</span>
+                            <span className="text-[10px] font-black uppercase tracking-[0.3em]" style={{ color: tokens.textMuted }}>
+                                Data Intelligence Export
+                            </span>
                         </div>
 
                         {/* PDF Option (Duplicate of main but helpful in menu) */}
                         <button 
                             disabled={pdfStatus === "generating" || pdfStatus === "pending" || pdfCooldown > 0}
                             onClick={pdfStatus === "ready" ? () => handlePdfDownload() : () => handleTriggerPdf()}
-                            className="w-full flex items-center justify-between p-4 hover:bg-slate-900/70 rounded-2xl transition-all group disabled:opacity-30 disabled:cursor-not-allowed border border-transparent hover:border-white/5"
+                            className={cn(
+                                "w-full flex items-center justify-between p-4 rounded-2xl transition-all group disabled:opacity-30 disabled:cursor-not-allowed border border-transparent",
+                                theme === "dark" ? "hover:bg-slate-900/70 hover:border-white/5" : "hover:bg-slate-100/90 hover:border-black/5"
+                            )}
                         >
                             <div className="flex items-center gap-3">
                                 <div className="p-2 bg-indigo-500/10 rounded-xl text-indigo-400 group-hover:bg-indigo-500 group-hover:text-white transition-colors">
                                     <FileText size={16} />
                                 </div>
                                 <div className="text-left">
-                                    <div className="text-xs font-black text-slate-100 italic uppercase tracking-wider">Visual Report</div>
-                                    <div className="text-[10px] text-slate-500">{pdfStatus === "ready" ? "Download PDF" : "Premium Insights PDF"}</div>
+                                    <div className="text-xs font-black italic uppercase tracking-wider" style={{ color: tokens.textPrimary }}>Visual Report</div>
+                                    <div className="text-[10px]" style={{ color: tokens.textSecondary }}>
+                                        {pdfStatus === "ready" ? "Download PDF" : "Premium Insights PDF"}
+                                    </div>
                                 </div>
                             </div>
                             {pdfStatus === "ready" && <CheckCircle2 size={14} className="text-emerald-500" />}
                             {(pdfStatus === "generating" || pdfStatus === "pending") && <Loader2 size={14} className="text-indigo-500 animate-spin" />}
                         </button>
 
-                        <div className="h-px bg-slate-800/50 my-1 mx-2" />
+                        <div className="h-px my-1 mx-2" style={{ backgroundColor: tokens.borderSubtle }} />
 
                         {/* Student Insight PDF */}
                         <button 
                             onClick={() => { void handleExport("student-insight-pdf"); }}
                             disabled={isExporting}
-                            className="w-full flex items-center justify-between p-4 hover:bg-slate-900/70 rounded-2xl transition-all group disabled:opacity-50 border border-transparent hover:border-white/5"
+                            className={cn(
+                                "w-full flex items-center justify-between p-4 rounded-2xl transition-all group disabled:opacity-50 border border-transparent",
+                                theme === "dark" ? "hover:bg-slate-900/70 hover:border-white/5" : "hover:bg-slate-100/90 hover:border-black/5"
+                            )}
                         >
                             <div className="flex items-center gap-3">
                                 <div className="p-2 bg-indigo-500/10 rounded-xl text-indigo-400 group-hover:bg-indigo-500 group-hover:text-white transition-colors">
                                     <Bell size={16} />
                                 </div>
                                 <div className="text-left">
-                                    <div className="text-xs font-black text-slate-100 uppercase tracking-wider italic">Neural Insight</div>
-                                    <div className="text-[10px] text-slate-500">3-Page High Fidelity PDF</div>
+                                    <div className="text-xs font-black uppercase tracking-wider italic" style={{ color: tokens.textPrimary }}>Neural Insight</div>
+                                    <div className="text-[10px]" style={{ color: tokens.textSecondary }}>3-Page High Fidelity PDF</div>
                                 </div>
                             </div>
                             {exportStatus === "processing" && activeFormat === "student-insight-pdf" && <Loader2 size={14} className="text-indigo-500 animate-spin" />}
                             {exportUrlMap["student-insight-pdf"] && <CheckCircle2 size={14} className="text-emerald-500" />}
                         </button>
 
-                        <div className="h-px bg-slate-800/50 my-1 mx-2" />
+                        <div className="h-px my-1 mx-2" style={{ backgroundColor: tokens.borderSubtle }} />
 
                         {/* JSON Export */}
                         <button 
                             onClick={() => { void handleExport("json"); }}
                             disabled={isExporting}
-                            className="w-full flex items-center justify-between p-4 hover:bg-slate-900/70 rounded-2xl transition-all group disabled:opacity-50 border border-transparent hover:border-white/5"
+                            className={cn(
+                                "w-full flex items-center justify-between p-4 rounded-2xl transition-all group disabled:opacity-50 border border-transparent",
+                                theme === "dark" ? "hover:bg-slate-900/70 hover:border-white/5" : "hover:bg-slate-100/90 hover:border-black/5"
+                            )}
                         >
                             <div className="flex items-center gap-3">
                                 <div className="p-2 bg-amber-500/10 rounded-xl text-amber-400 group-hover:bg-amber-500 group-hover:text-white transition-colors">
                                     <FileJson size={16} />
                                 </div>
                                 <div className="text-left">
-                                    <div className="text-xs font-black text-slate-100 uppercase tracking-wider">Deep Analytics</div>
-                                    <div className="text-[10px] text-slate-500">JSON Fact Structure</div>
+                                    <div className="text-xs font-black uppercase tracking-wider" style={{ color: tokens.textPrimary }}>Deep Analytics</div>
+                                    <div className="text-[10px]" style={{ color: tokens.textSecondary }}>JSON Fact Structure</div>
                                 </div>
                             </div>
                             {exportStatus === "processing" && activeFormat === "json" && <Loader2 size={14} className="text-amber-500 animate-spin" />}
@@ -345,15 +361,18 @@ export function ReportDownloadButton({ attemptId, userId, className }: ReportDow
                         <button 
                             onClick={() => { void handleExport("csv"); }}
                             disabled={isExporting}
-                            className="w-full flex items-center justify-between p-4 hover:bg-slate-900/70 rounded-2xl transition-all group disabled:opacity-50 border border-transparent hover:border-white/5"
+                            className={cn(
+                                "w-full flex items-center justify-between p-4 rounded-2xl transition-all group disabled:opacity-50 border border-transparent",
+                                theme === "dark" ? "hover:bg-slate-900/70 hover:border-white/5" : "hover:bg-slate-100/90 hover:border-black/5"
+                            )}
                         >
                             <div className="flex items-center gap-3">
                                 <div className="p-2 bg-emerald-500/10 rounded-xl text-emerald-400 group-hover:bg-emerald-500 group-hover:text-white transition-colors">
                                     <Database size={16} />
                                 </div>
                                 <div className="text-left">
-                                    <div className="text-xs font-black text-slate-100 uppercase tracking-wider">Data Engineering</div>
-                                    <div className="text-[10px] text-slate-500">14-File CSV Bundle (ZIP)</div>
+                                    <div className="text-xs font-black uppercase tracking-wider" style={{ color: tokens.textPrimary }}>Data Engineering</div>
+                                    <div className="text-[10px]" style={{ color: tokens.textSecondary }}>14-File CSV Bundle (ZIP)</div>
                                 </div>
                             </div>
                             {exportStatus === "processing" && activeFormat === "csv" && <Loader2 size={14} className="text-emerald-500 animate-spin" />}
