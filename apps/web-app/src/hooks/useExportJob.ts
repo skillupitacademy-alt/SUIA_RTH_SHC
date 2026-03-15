@@ -14,6 +14,7 @@ export function useExportJob() {
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isExporting, setIsExporting] = useState(false);
+  const [jobId, setJobId] = useState<string | null>(null);
   
   const pollInterval = useRef<NodeJS.Timeout | null>(null);
 
@@ -79,6 +80,7 @@ export function useExportJob() {
     setDownloadUrl(null);
     setError(null);
     setStatus("processing");
+    setJobId(null);
 
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
@@ -105,6 +107,7 @@ export function useExportJob() {
       if (!res.ok) throw new Error("Failed to trigger export");
 
       const data = (await res.json()) as ExportJobResponse;
+      if (data.jobId) setJobId(data.jobId);
 
       // Start polling
       pollInterval.current = setInterval(() => checkStatus(data.jobId), 2000);
@@ -118,7 +121,7 @@ export function useExportJob() {
     return () => clearPolling();
   }, [clearPolling]);
 
-  return { triggerExport, status, isExporting, downloadUrl, error };
+  return { triggerExport, status, isExporting, downloadUrl, error, jobId };
 }
 
 function getErrorMessage(error: unknown): string {

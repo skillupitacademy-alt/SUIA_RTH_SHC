@@ -12,10 +12,6 @@ export interface ListJobsOptions {
 export class JobsService {
   // Test seam: optionally override db instance
   private static _db: typeof db | undefined;
-  private static resolveDb(predicate: (candidate: typeof db) => boolean) {
-    const candidate = this._db ?? db;
-    return predicate(candidate) ? candidate : db;
-  }
   static withDb(fakeDb: typeof db) {
     if (process.env.NODE_ENV !== 'production') {
       this._db = fakeDb;
@@ -39,8 +35,7 @@ export class JobsService {
         updatedAt: new Date(),
       } as Job;
     }
-    const client = this.resolveDb((candidate) => typeof (candidate as unknown as Record<string, unknown>).insert === 'function');
-    const [job] = await client
+    const [job] = await this.db
       .insert(backgroundJobs)
       .values({
         userId: dto.userId,
@@ -54,29 +49,19 @@ export class JobsService {
   }
 
   static async getJob(jobId: string, userId: string): Promise<Job | undefined> {
-    const client = this.resolveDb((candidate) => typeof (candidate as unknown as Record<string, unknown>).select === 'function');
-    const [job] = await client
-      .select()
-      .from(backgroundJobs)
-      .where(and(eq(backgroundJobs.id, jobId), eq(backgroundJobs.userId, userId)));
-    return job as Job | undefined;
+    return await this.db.query.backgroundJobs.findFirst({
+      where: and(eq(backgroundJobs.id, jobId), eq(backgroundJobs.userId, userId)),
+    }) as Job | undefined;
   }
 
   static async getJobStatus(jobId: string): Promise<Job | undefined> {
-    const client = this.resolveDb((candidate) => typeof (candidate as unknown as Record<string, unknown>).select === 'function');
-    const [job] = await client
-      .select()
-      .from(backgroundJobs)
-      .where(eq(backgroundJobs.id, jobId));
-    return job as Job | undefined;
+    return await this.db.query.backgroundJobs.findFirst({
+      where: eq(backgroundJobs.id, jobId),
+    }) as Job | undefined;
   }
 
   static async listJobs(options: ListJobsOptions): Promise<{ items: Job[]; total: number; nextCursor: { createdAt: string; id: string } | null; hasNextPage: boolean }> {
     const limit = options.limit ?? 50;
-    const client = this.resolveDb((candidate) =>
-      (candidate as unknown as Record<string, unknown>).query !== undefined && 
-      typeof (candidate as unknown as Record<string, unknown>).select === 'function'
-    );
     
     const conditions = [];
     if (options.userId !== undefined) {
@@ -100,12 +85,11 @@ export class JobsService {
 
     const where = conditions.length > 0 ? and(...conditions) : undefined;
 
-    const items = await client
-      .select()
-      .from(backgroundJobs)
-      .where(where || sql`true`)
-      .orderBy(desc(backgroundJobs.createdAt), desc(backgroundJobs.id))
-      .limit(limit + 1);
+    const items = await this.db.query.backgroundJobs.findMany({
+      where: where ?? sql`true`,
+      orderBy: [desc(backgroundJobs.createdAt), desc(backgroundJobs.id)],
+      limit: limit + 1,
+    });
 
     const hasNextPage = items.length > limit;
     const results = hasNextPage ? items.slice(0, limit) : items;
@@ -115,7 +99,7 @@ export class JobsService {
         id: results[results.length - 1].id
     } : null;
 
-    const [countResult] = await client
+    const [countResult] = await this.db
       .select({ count: sql<number>`count(*)` })
       .from(backgroundJobs)
       .where(where || sql`true`);
@@ -131,7 +115,7 @@ export class JobsService {
   static async retryJob(jobId: string, userId: string): Promise<Job> {
     const originalJob = await this.getJob(jobId, userId);
     if (originalJob === undefined) {
-      throw new Error('Original job not found or unauthorized');
+      throw new Error('Original job not found');
     }
 
     // Create a new job with the same payload
@@ -143,8 +127,7 @@ export class JobsService {
   }
 
   static async deleteJob(jobId: string, userId: string): Promise<void> {
-    const client = this.resolveDb((candidate) => typeof (candidate as unknown as Record<string, unknown>).delete === 'function');
-    await client
+    await this.db
       .delete(backgroundJobs)
       .where(
         and(
@@ -156,8 +139,7 @@ export class JobsService {
 
   static async getActiveJobCount(userId: string): Promise<number> {
     const activeStatuses: JobStatus[] = [JobStatus.PENDING, JobStatus.PROCESSING];
-    const client = this.resolveDb((candidate) => typeof (candidate as unknown as Record<string, unknown>).select === 'function');
-    const results = await client
+    const results = await this.db
       .select()
       .from(backgroundJobs)
       .where(
@@ -197,8 +179,7 @@ export class JobsService {
       if (data?.error !== undefined) updateData.error = data.error;
     }
 
-    const client = this.resolveDb((candidate) => typeof (candidate as unknown as Record<string, unknown>).update === 'function');
-    const [job] = await client
+    const [job] = await this.db
       .update(backgroundJobs)
       .set(updateData)
       .where(eq(backgroundJobs.id, jobId))
