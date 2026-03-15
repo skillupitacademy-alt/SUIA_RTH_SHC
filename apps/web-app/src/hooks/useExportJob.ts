@@ -5,12 +5,15 @@ export type ExportStatus = "idle" | "processing" | "ready" | "failed";
 interface ExportJobResponse {
   jobId: string;
   status: "pending" | "processing" | "completed" | "failed";
+  stage?: string | null;
+  progress?: number | null;
   downloadUrl?: string;
   error?: string;
 }
 
 export function useExportJob() {
   const [status, setStatus] = useState<ExportStatus>("idle");
+  const [stage, setStage] = useState<string | null>(null);
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isExporting, setIsExporting] = useState(false);
@@ -51,6 +54,7 @@ export function useExportJob() {
       if (!res.ok) throw new Error("Failed to check export status");
 
       const data: ExportJobResponse = await res.json();
+      if (data.stage !== undefined) setStage(data.stage ?? null);
       if (data.status === "completed") {
         setStatus("ready");
       } else if (data.status === "processing" || data.status === "pending") {
@@ -80,6 +84,7 @@ export function useExportJob() {
     setDownloadUrl(null);
     setError(null);
     setStatus("processing");
+    setStage("queued");
     setJobId(null);
 
     try {
@@ -108,9 +113,19 @@ export function useExportJob() {
 
       const data = (await res.json()) as ExportJobResponse;
       if (data.jobId) setJobId(data.jobId);
+      if (data.stage !== undefined) setStage(data.stage ?? "queued");
 
       // Start polling
-      pollInterval.current = setInterval(() => checkStatus(data.jobId), 2000);
+      if (data.jobId) {
+        pollInterval.current = setInterval(() => checkStatus(data.jobId), 2000);
+      } else if (data.downloadUrl) {
+        // Dev/non-job response path
+        setDownloadUrl(data.downloadUrl);
+        setStatus("ready");
+        setIsExporting(false);
+      } else {
+        throw new Error("Export did not return a jobId");
+      }
     } catch (err: unknown) {
       setError(getErrorMessage(err));
       setIsExporting(false);
@@ -121,7 +136,7 @@ export function useExportJob() {
     return () => clearPolling();
   }, [clearPolling]);
 
-  return { triggerExport, status, isExporting, downloadUrl, error, jobId };
+  return { triggerExport, status, stage, isExporting, downloadUrl, error, jobId };
 }
 
 function getErrorMessage(error: unknown): string {

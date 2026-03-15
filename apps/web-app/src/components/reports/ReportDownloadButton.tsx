@@ -27,7 +27,7 @@ interface ReportDownloadButtonProps {
 
 export function ReportDownloadButton({ attemptId, userId, className }: ReportDownloadButtonProps) {
     const { status: pdfStatus, stage: pdfStage, loading: pdfLoading, downloadUrl: pdfUrl, error: pdfError, triggerGeneration: triggerPdf, cooldown: pdfCooldown } = useReportStatus(attemptId);
-    const { triggerExport, status: exportStatus, downloadUrl: exportUrl, isExporting, error: exportError } = useExportJob();
+    const { triggerExport, status: exportStatus, stage: exportStage, downloadUrl: exportUrl, isExporting, error: exportError } = useExportJob();
     
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [activeFormat, setActiveFormat] = useState<ExportFormat>("pdf");
@@ -355,7 +355,7 @@ export function ReportDownloadButton({ attemptId, userId, className }: ReportDow
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 status={activeFormat === "pdf" ? pdfStatus : exportStatus}
-                stage={activeFormat === "pdf" ? pdfStage : null}
+                stage={activeFormat === "pdf" ? pdfStage : exportStage}
                 error={activeFormat === "pdf" ? pdfError : exportError}
                 downloadUrl={activeFormat === "pdf" ? pdfUrl : exportUrl}
                 attemptId={attemptId}

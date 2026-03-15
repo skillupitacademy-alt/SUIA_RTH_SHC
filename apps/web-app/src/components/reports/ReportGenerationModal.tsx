@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
     CheckCircle2,
@@ -66,8 +66,10 @@ export function ReportGenerationModal({
     downloadUrl,
     format = "pdf"
 }: ReportGenerationModalProps) {
-    const [currentStageIndex, setCurrentStageIndex] = useState(0);
+    const [displayStageIndex, setDisplayStageIndex] = useState(0);
+    const [targetStageIndex, setTargetStageIndex] = useState(0);
     const [mounted, setMounted] = useState(false);
+    const timeoutsRef = useRef<number[]>([]);
 
     const stages = STAGES_CONFIG[format];
 
@@ -76,21 +78,64 @@ export function ReportGenerationModal({
     }, []);
 
     useEffect(() => {
+        // Compute a target stage index from the latest backend state.
+        // Backend can jump quickly (e.g. queued -> ready in a single poll),
+        // so we animate displayStageIndex separately to keep stages legible.
+        const lastIdx = stages.length - 1;
+
+        let nextTarget = 0;
         if (status === "ready" || status === "completed") {
-            setCurrentStageIndex(3);
-        } else if (stage === "uploading" || stage === "finalizing" || stage === "zipping" || (format === "student-insight-pdf" && stage === "rendering")) {
-            setCurrentStageIndex(2);
-        } else if (stage === "rendering" || stage === "processing" || stage === "aggregating") {
-            setCurrentStageIndex(1);
-        } else if (stage === "queued" || status === "pending" || status === "processing") {
-            setCurrentStageIndex(0);
+            nextTarget = lastIdx;
+        } else if (status === "failed" || !!error) {
+            nextTarget = Math.min(targetStageIndex, lastIdx);
+        } else if (stage === "uploading" || stage === "finalizing" || stage === "zipping") {
+            nextTarget = Math.min(2, lastIdx);
+        } else if (stage === "rendering") {
+            // For Student Insight, rendering is stage #2 (queued -> processing -> rendering -> ready).
+            // For Visual PDF, rendering is stage #1 (queued -> rendering -> uploading -> ready).
+            nextTarget = format === "student-insight-pdf" ? Math.min(2, lastIdx) : Math.min(1, lastIdx);
+        } else if (stage === "processing" || stage === "aggregating") {
+            nextTarget = Math.min(1, lastIdx);
+        } else {
+            nextTarget = 0;
         }
-    }, [stage, status, format]);
+
+        setTargetStageIndex(nextTarget);
+    }, [stage, status, format, stages.length, error, targetStageIndex]);
+
+    useEffect(() => {
+        // Clear any in-flight timers when target changes or modal closes.
+        timeoutsRef.current.forEach((t) => window.clearTimeout(t));
+        timeoutsRef.current = [];
+
+        if (!isOpen) return;
+
+        // Snap backwards immediately (new run).
+        if (targetStageIndex < displayStageIndex) {
+            setDisplayStageIndex(targetStageIndex);
+            return;
+        }
+
+        // Step forward with minimum dwell time so users perceive each stage.
+        const minStageMs = format === "pdf" ? 700 : 550;
+        let delay = 0;
+        for (let idx = displayStageIndex + 1; idx <= targetStageIndex; idx += 1) {
+            delay += minStageMs;
+            const t = window.setTimeout(() => setDisplayStageIndex(idx), delay);
+            timeoutsRef.current.push(t);
+        }
+
+        return () => {
+            timeoutsRef.current.forEach((t) => window.clearTimeout(t));
+            timeoutsRef.current = [];
+        };
+    }, [targetStageIndex, displayStageIndex, format, isOpen]);
 
     if (!isOpen || !mounted) return null;
 
     const isFailed = status === "failed" || !!error;
     const isReady = status === "ready" || status === "completed";
+    const uiReady = isReady && displayStageIndex >= stages.length - 1;
 
     const handleDownload = () => {
         if (downloadUrl) {
@@ -165,8 +210,8 @@ export function ReportGenerationModal({
                         {!isFailed && (
                             <div className="relative space-y-8 mb-10 px-4 md:px-8">
                                 {stages.map((s, idx) => {
-                                    const isActive = idx === currentStageIndex;
-                                    const isCompleted = idx < currentStageIndex || isReady;
+                                    const isActive = idx === displayStageIndex && !isFailed;
+                                    const isCompleted = idx < displayStageIndex || (uiReady && idx === stages.length - 1);
 
                                     return (
                                         <div key={s.id} className="relative flex items-center gap-6">
@@ -228,13 +273,21 @@ export function ReportGenerationModal({
                         )}
 
                         <div className="flex flex-col gap-4 w-full max-w-sm mx-auto">
-                            {isReady ? (
+                            {uiReady ? (
                                 <button
                                     onClick={handleDownload}
                                     className="flex items-center justify-center gap-3 w-full py-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl font-bold uppercase tracking-wider transition-all shadow-xl shadow-indigo-600/20 active:scale-[0.98] group text-sm"
                                 >
                                     <Download className="w-5 h-5" />
                                     Download Artifact
+                                </button>
+                            ) : isReady ? (
+                                <button
+                                    disabled
+                                    className="flex items-center justify-center gap-3 w-full py-4 bg-indigo-600/40 text-white/80 rounded-2xl font-bold uppercase tracking-wider transition-all shadow-xl shadow-indigo-600/10 text-sm cursor-not-allowed"
+                                >
+                                    <Loader2 className="w-5 h-5 animate-spin" />
+                                    Preparing Download
                                 </button>
                             ) : isFailed ? (
                                 <button
