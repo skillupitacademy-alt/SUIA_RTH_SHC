@@ -23,7 +23,7 @@ async function getHandler(req: NextRequest) {
     if (examId === '') {
       throw badRequest('Missing examId');
     }
-    if (format !== 'json' && format !== 'csv') {
+    if (format !== 'json' && format !== 'csv' && format !== 'student-insight-pdf') {
       throw badRequest('Invalid format');
     }
 
@@ -50,7 +50,11 @@ async function getHandler(req: NextRequest) {
     try {
       const cachedUrl = await redis.get<string>(cacheKey);
       if (typeof cachedUrl === 'string' && cachedUrl.trim() !== '') {
-        const formatKey = format === 'json' ? 'analytics_json' : 'analytics_csv';
+        const formatKey = format === 'json'
+          ? 'analytics_json'
+          : format === 'csv'
+          ? 'analytics_csv'
+          : 'student_insight_pdf';
         const existingUrls = (exam.exportUrls as Record<string, string> | null) ?? {};
         if (typeof existingUrls[formatKey] !== 'string' || existingUrls[formatKey]?.trim() === '') {
           await db.update(exams)
@@ -63,8 +67,12 @@ async function getHandler(req: NextRequest) {
       log.warn({ err, examId, userId }, 'Redis lookup failed');
     }
 
-    const exportUrls = exam.exportUrls as { analytics_json?: string; analytics_csv?: string } | null;
-    const url = format === 'json' ? exportUrls?.analytics_json : exportUrls?.analytics_csv;
+    const exportUrls = exam.exportUrls as { analytics_json?: string; analytics_csv?: string; student_insight_pdf?: string } | null;
+    const url = format === 'json'
+      ? exportUrls?.analytics_json
+      : format === 'csv'
+      ? exportUrls?.analytics_csv
+      : exportUrls?.student_insight_pdf;
 
     if (typeof url === 'string' && url.trim() !== '') {
       return ApiResponse.success({ url: buildProxyUrl(examId, format), source: 'db' }, 200);

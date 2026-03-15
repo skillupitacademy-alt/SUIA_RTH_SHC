@@ -4,6 +4,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { useReportStatus } from "@/hooks/useReportStatus";
 import { useExportJob } from "@/hooks/useExportJob";
 import { cn } from "@/lib/utils";
+import { getApiBase } from "@/utils/apiBase";
 import { 
   AlertCircle, 
   FileText, 
@@ -76,6 +77,37 @@ export function ReportDownloadButton({ attemptId, userId, className }: ReportDow
         document.addEventListener("mousedown", handleClickOutside);
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
+
+    // Prefetch export URLs so ticks show for completed exports
+    useEffect(() => {
+        const shouldFetch = isDropdownOpen && attemptId && userId;
+        if (!shouldFetch) return;
+
+        const controller = new AbortController();
+        const apiBase = getApiBase();
+        const formats: Array<Exclude<ExportFormat, "pdf">> = ["json", "csv", "student-insight-pdf"];
+
+        (async () => {
+            for (const format of formats) {
+                if (exportUrlMap[format]) continue;
+                try {
+                    const res = await fetch(`${apiBase}/export/urls?examId=${encodeURIComponent(attemptId)}&format=${encodeURIComponent(format)}`, {
+                        credentials: "include",
+                        signal: controller.signal
+                    });
+                    if (!res.ok) continue;
+                    const data = (await res.json()) as { url?: string | null };
+                    if (data.url) {
+                        setExportUrlMap((prev) => ({ ...prev, [format]: data.url as string }));
+                    }
+                } catch (err) {
+                    if ((err as { name?: string }).name === "AbortError") return;
+                }
+            }
+        })();
+
+        return () => controller.abort();
+    }, [isDropdownOpen, attemptId, userId, exportUrlMap]);
 
     const handlePdfDownload = (urlParam?: string) => {
         const url = urlParam || pdfUrl;

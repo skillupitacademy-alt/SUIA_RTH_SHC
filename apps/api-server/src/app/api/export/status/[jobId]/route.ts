@@ -41,8 +41,9 @@ export async function GET(
 
     // Build proxy download URL for private blob access
 
+    const base = (process.env.NEXT_PUBLIC_API_URL ?? '').replace(/\/api\/?$/, '').replace(/\/+$/, '');
     const proxyDownloadUrl = (job.result?.downloadUrl !== null && job.result?.downloadUrl !== undefined)
-      ? `${process.env.NEXT_PUBLIC_API_URL ?? ''}/export/download?jobId=${job.id}`
+      ? `${base}/api/export/download?jobId=${job.id}`
       : undefined;
 
     // Standard response structure for polling
