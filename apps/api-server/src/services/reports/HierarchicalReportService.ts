@@ -94,7 +94,9 @@ export class HierarchicalReportService {
             // 5. Upload & Finalize
             await ReportJobService.updateProgress(jobId, 95, "processing");
             this.log.info({ jobId }, "Uploading final merged report");
-            const pdfUrl = await uploadReport(mergedBuffer, exam.userId, job.examId);
+            const pdfUrl = await uploadReport(mergedBuffer, exam.userId, job.examId, {
+                fileBasename: `${job.examId}-student-infograph-report`,
+            });
 
             const nextExportUrls = {
                 ...(exam.exportUrls ?? {}),

@@ -15,8 +15,9 @@ const r2 = new S3Client({
 const BUCKET = process.env.R2_BUCKET!;
 
 export const r2Storage: StorageProvider = {
-  async uploadReport(buffer, { userId, attemptId }) {
-    const key = `reports/${userId}/${attemptId}.pdf`;
+  async uploadReport(buffer, { userId, attemptId, fileBasename }) {
+    const basename = (typeof fileBasename === 'string' && fileBasename.trim() !== '') ? fileBasename.trim() : attemptId;
+    const key = `reports/${userId}/${basename}.pdf`;
 
     await r2.send(
       new PutObjectCommand({

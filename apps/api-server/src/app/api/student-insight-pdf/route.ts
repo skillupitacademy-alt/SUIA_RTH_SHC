@@ -11,7 +11,6 @@ import { StudentInsightFormatter } from "@/lib/export/formatters/studentInsightF
 import { logger } from "@/lib/logger";
 import { recordCounter } from "@/lib/metrics";
 import { redis } from "@/lib/redis";
-import { getDownloadUrl } from "@/lib/storage/get-download-url";
 import { uploadReport } from "@/lib/storage/upload-report";
 import { withLogging } from "@/lib/withLogging";
 import { TokenService } from "@/modules/auth/token.service";
@@ -96,7 +95,7 @@ async function postHandler(req: NextRequest) {
       );
 
       // 3. Upload & Store
-      const fileRef = await uploadReport(buffer, userId, attemptId);
+      const fileRef = await uploadReport(buffer, userId, attemptId, { fileBasename: `${attemptId}-student-insight` });
       
       // Update exams.export_urls
       const currentUrls = (exam.exportUrls as Record<string, string> | null) || {};
@@ -109,7 +108,8 @@ async function postHandler(req: NextRequest) {
         })
         .where(eq(exams.id, attemptId));
 
-      const url = await getDownloadUrl(fileRef);
+      // Use the export download proxy so we can fetch the private blob with auth.
+      const url = `/api/export/download?examId=${encodeURIComponent(attemptId)}&format=student-insight-pdf`;
       recordCounter(METRICS.REPORTS.PDF_GEN, 1, { type: 'student_insight', outcome: 'success' });
       
       return ApiResponse.success({ url, cached: false });

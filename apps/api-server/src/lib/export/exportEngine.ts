@@ -119,6 +119,7 @@ export class ExportEngine {
         const { StudentInsightFormatter } = await import('./formatters/studentInsightFormatter');
         const { ReportEngine } = await import('@/modules/report-engine/report.engine');
         const { container } = await import('@/modules/core/container');
+        const { uploadReport } = await import('@/lib/storage/upload-report');
         
         const reportEngine = container.get(ReportEngine);
         const premiumReport = await reportEngine.getPremiumExamReport(examId);
@@ -137,9 +138,31 @@ export class ExportEngine {
             customData: insightData 
           }
         );
-        buffer = pdfBuffer;
-        contentType = 'application/pdf';
-        extension = 'pdf';
+
+        // Store Student Insight PDFs under reports/ with a stable, non-colliding name.
+        const fileRef = await uploadReport(pdfBuffer, userId, examId, { fileBasename: `${examId}-student-insight` });
+
+        try {
+          const examRow = await db.query.exams.findFirst({
+            where: eq(exams.id, examId),
+            columns: { exportUrls: true }
+          });
+          const existingUrls = (examRow?.exportUrls as Record<string, unknown> | null) ?? {};
+          await db.update(exams)
+            .set({ exportUrls: { ...existingUrls, student_insight_pdf: fileRef } })
+            .where(eq(exams.id, examId));
+        } catch (error: unknown) {
+          this.log.warn({ err: error, examId, userId }, 'Failed to persist student_insight_pdf to exams.export_urls');
+        }
+
+        try {
+          await redis.set(cacheKey, fileRef, { ex: 900 });
+        } catch (error: unknown) {
+          this.log.warn({ err: error, examId, userId }, 'Export cache write failed for student-insight-pdf');
+        }
+
+        this.log.info({ examId, fileRef }, 'Student Insight PDF completed and uploaded');
+        return fileRef;
       } else {
         throw new Error(`Unsupported format: ${format}`);
       }

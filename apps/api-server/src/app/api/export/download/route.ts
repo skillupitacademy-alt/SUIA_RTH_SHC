@@ -91,6 +91,17 @@ export async function GET(req: NextRequest) {
       format = formatParam;
     }
 
+    // If the job result didn't preserve format reliably, infer it from the blob key.
+    // This prevents "PDF saved as JSON" issues when the underlying artifact is a PDF.
+    const lowerUrl = blobUrl.toLowerCase();
+    if (lowerUrl.endsWith('.pdf')) {
+      format = 'student-insight-pdf';
+    } else if (lowerUrl.endsWith('.zip')) {
+      format = 'csv';
+    } else if (lowerUrl.endsWith('.json')) {
+      format = 'json';
+    }
+
     // Fetch from private blob
     const response = await fetch(blobUrl, {
       headers: {
@@ -113,7 +124,12 @@ export async function GET(req: NextRequest) {
       : format === 'student-insight-pdf'
       ? 'pdf'
       : 'json';
-    const filename = `Export-${(jobId ?? examId ?? 'export').slice(0, 8)}.${extension}`;
+    const prefix = format === 'student-insight-pdf'
+      ? 'Student-Insight'
+      : format === 'csv'
+      ? 'Data-Engineering'
+      : 'Deep-Analytics';
+    const filename = `${prefix}-${(jobId ?? examId ?? 'export').slice(0, 8)}.${extension}`;
 
     return new Response(response.body, {
       headers: {

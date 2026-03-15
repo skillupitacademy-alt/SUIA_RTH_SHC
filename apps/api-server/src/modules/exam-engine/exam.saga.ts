@@ -239,7 +239,7 @@ export class ExamSaga {
                     }
                 );
 
-                const fileRef = await uploadReport(buffer, data.userId, examId);
+                const fileRef = await uploadReport(buffer, data.userId, examId, { fileBasename: `${examId}-student-insight` });
                 
                 const examObj = await db.query.exams.findFirst({
                     where: eq(exams.id, examId),

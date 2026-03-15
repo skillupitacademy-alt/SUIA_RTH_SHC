@@ -192,7 +192,9 @@ async function postHandler(req: NextRequest) {
         // Stage 2: Uploading
         await ReportRepository.updateReportStatus(attemptId, "generating", "uploading");
         const uploadStart = Date.now();
-        const fileRef = await uploadReport(buffer, userId, attemptId);
+        const fileRef = await uploadReport(buffer, userId, attemptId, {
+          fileBasename: `${attemptId}-student-infograph-report`,
+        });
         const uploadDuration = Date.now() - uploadStart;
         recordTimer("reports.api.upload.duration", uploadDuration, { route: "/api/queue-report", outcome: "success" });
 

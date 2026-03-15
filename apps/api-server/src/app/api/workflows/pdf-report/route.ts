@@ -49,7 +49,9 @@ const { POST: workflowHandler } = serve<{ attemptId: string; userId: string }>(a
     const renderResult = await ReportPdfService.generate(attemptId);
     
     await ReportRepository.updateReportStatus(attemptId, "generating", "uploading");
-    const fileRef = await uploadReport(renderResult.buffer, userId, attemptId);
+    const fileRef = await uploadReport(renderResult.buffer, userId, attemptId, {
+      fileBasename: `${attemptId}-student-infograph-report`,
+    });
     
     return { 
       fileRef,

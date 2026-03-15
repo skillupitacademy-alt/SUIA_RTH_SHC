@@ -104,15 +104,14 @@ export class ReportPdfService {
 
     try {
       const page = await browser.newPage();
-
-      const isInsightReport = options?.customPath?.includes('student-insight') ?? false;
       
-      // Ensure specific dimensions for pixel perfection
+      // Keep a consistent rendering baseline (A4 landscape) across reports.
+      // Student Insight pages control their own fixed canvas sizing via CSS.
       await page.setViewport({
-        width: isInsightReport ? 1200 : 1920,
-        height: isInsightReport ? 1600 : 1080,
+        width: 1920,
+        height: 1080,
         deviceScaleFactor: 2,
-        isLandscape: !isInsightReport
+        isLandscape: true
       });
 
       let url = options?.customPath !== undefined && options?.customPath !== null && options?.customPath !== ""
@@ -189,13 +188,10 @@ export class ReportPdfService {
         margin: { top: 0, right: 0, bottom: 0, left: 0 },
       };
 
-      if (isInsightReport) {
-        pdfOptions.width = 1200;
-        pdfOptions.height = 1600;
-      } else {
-        pdfOptions.format = 'A4';
-        pdfOptions.landscape = true;
-      }
+      // Student Insight and Visual Report both print as A4 landscape.
+      // Any fixed pixel sizing is handled in the page layout CSS.
+      pdfOptions.format = 'A4';
+      pdfOptions.landscape = true;
 
       const pdfBuffer = await page.pdf(pdfOptions);
 
@@ -241,7 +237,9 @@ export class ReportPdfService {
     const { buffer, fileSizeKb, generationTimeMs, pageCount } = await this.generate(attemptId);
 
     const { uploadReport } = await import("@/lib/storage/upload-report");
-    const storageUrl = await uploadReport(buffer, exam.userId, attemptId);
+    const storageUrl = await uploadReport(buffer, exam.userId, attemptId, {
+      fileBasename: `${attemptId}-student-infograph-report`,
+    });
 
     const repository = this.reportRepository ?? (await import('../core/container')).container.get(ReportRepository);
     await repository.updateReportSuccess(attemptId, {

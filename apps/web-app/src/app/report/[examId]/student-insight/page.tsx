@@ -143,7 +143,7 @@ export default function StudentInsightPdfPage() {
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
         
         @page {
-          size: A4;
+          size: A4 landscape;
           margin: 0;
         }
 

@@ -156,7 +156,9 @@ async function postHandler(req: NextRequest) {
         throw new Error("Generated PDF exceeds size constraints (10MB)");
       }
 
-      const fileRef = await uploadReport(buffer, userId, attemptId);
+      const fileRef = await uploadReport(buffer, userId, attemptId, {
+        fileBasename: `${attemptId}-student-infograph-report`,
+      });
 
       await ReportRepository.updateReportSuccess(attemptId, {
         fileRef,
