@@ -1,7 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
-
 import { db, exams } from '@quiz/db';
 import { eq } from 'drizzle-orm';
+import { NextRequest, NextResponse } from 'next/server';
 
 import { badRequest, forbidden, unauthorized } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
@@ -80,7 +79,7 @@ export async function GET(req: NextRequest) {
       const exportUrls = exam.exportUrls as { analytics_json?: string; analytics_csv?: string } | null;
       const url = formatParam === 'json' ? exportUrls?.analytics_json : exportUrls?.analytics_csv;
 
-      if (!url || url.trim() === '') {
+      if (url === null || url === undefined || url.trim() === '') {
         return NextResponse.json({ error: 'Export not ready' }, { status: 404 });
       }
 

@@ -14,11 +14,11 @@ import { JsonFormatter } from './formatters/jsonFormatter';
 
 export class ExportEngine {
   private static instance: ExportEngine;
-  private log = logger.child({ module: 'export-engine' });
-  private queryBuilder = new ExportQueryBuilder();
-  private aggregator = new ExportAggregator();
-  private jsonFormatter = new JsonFormatter();
-  private csvFormatter = new CsvFormatter();
+  public log = logger.child({ module: 'export-engine' });
+  public queryBuilder = new ExportQueryBuilder();
+  public aggregator = new ExportAggregator();
+  public jsonFormatter = new JsonFormatter();
+  public csvFormatter = new CsvFormatter();
 
   private constructor() {}
 
@@ -57,7 +57,9 @@ export class ExportEngine {
         });
         const existingUrl = format === 'json'
           ? (examRow?.exportUrls as { analytics_json?: string } | null)?.analytics_json
-          : (examRow?.exportUrls as { analytics_csv?: string } | null)?.analytics_csv;
+          : format === 'csv'
+          ? (examRow?.exportUrls as { analytics_csv?: string } | null)?.analytics_csv
+          : (examRow?.exportUrls as { student_insight_pdf?: string } | null)?.student_insight_pdf;
         if (typeof existingUrl === 'string' && existingUrl.trim() !== '') {
           this.log.info({ examId, userId, format }, 'Export idempotency hit from exams.export_urls');
           try {
@@ -112,6 +114,32 @@ export class ExportEngine {
         buffer = await this.csvFormatter.formatAsZip(payload);
         contentType = 'application/zip';
         extension = 'zip';
+      } else if (format === 'student-insight-pdf') {
+        const { ReportPdfService } = await import('@/modules/report-engine/report-pdf.service');
+        const { StudentInsightFormatter } = await import('./formatters/studentInsightFormatter');
+        const { ReportEngine } = await import('@/modules/report-engine/report.engine');
+        const { container } = await import('@/modules/core/container');
+        
+        const reportEngine = container.get(ReportEngine);
+        const premiumReport = await reportEngine.getPremiumExamReport(examId);
+        
+        const formatter = new StudentInsightFormatter();
+        const insightData = formatter.format(payload, premiumReport);
+        
+        const { buffer: pdfBuffer } = await ReportPdfService.getInstance().generate(
+          examId, 
+          undefined, 
+          undefined, 
+          undefined, 
+          undefined, 
+          { 
+            customPath: `/report/${examId}/student-insight`,
+            customData: insightData 
+          }
+        );
+        buffer = pdfBuffer;
+        contentType = 'application/pdf';
+        extension = 'pdf';
       } else {
         throw new Error(`Unsupported format: ${format}`);
       }

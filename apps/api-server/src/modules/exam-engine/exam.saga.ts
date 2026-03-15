@@ -3,11 +3,13 @@ import { JobStatus, JobType } from '@quiz/types';
 import { Client } from '@upstash/workflow';
 import { eq } from 'drizzle-orm';
 
+import type { ExportMeta, ExportPayload, RawAttemptRow } from '@/lib/export/exportTypes';
 import { logger } from '@/lib/logger';
 import { redis } from '@/lib/redis';
 import { container } from '@/modules/core/container';
 import { EmailService } from '@/modules/email/EmailService';
 import { PerformanceService } from '@/modules/report-engine/performance.service';
+import type { PremiumReport } from '@/modules/report-engine/report.engine';
 import { ReportEngine } from '@/modules/report-engine/report.engine';
 import { ScoringEngine } from '@/modules/scoring-engine/scoring.engine';
 import { JobsService } from '@/modules/system/jobs.service';
@@ -171,8 +173,20 @@ export class ExamSaga {
                 const jsonUrl = await exportEngine.processExport(examId, data.userId, 'json');
                 const csvUrl = await exportEngine.processExport(examId, data.userId, 'csv');
 
+                const examRow = await db.query.exams.findFirst({
+                    where: eq(exams.id, examId),
+                    columns: { exportUrls: true }
+                });
+                const existingUrls = (examRow?.exportUrls as Record<string, string> | null) ?? {};
+
                 await db.update(exams)
-                    .set({ exportUrls: { analytics_json: jsonUrl, analytics_csv: csvUrl } })
+                    .set({ 
+                        exportUrls: { 
+                            ...existingUrls,
+                            analytics_json: jsonUrl, 
+                            analytics_csv: csvUrl 
+                        } 
+                    })
                     .where(eq(exams.id, examId));
 
                 await Promise.all([
@@ -184,6 +198,68 @@ export class ExamSaga {
                 await this.updateProgress(jobId, data, processedSteps);
             } else {
                 logger.debug({ examId }, '[ExamSaga] Skipping Step 4-6: Exports (Already complete)');
+            }
+
+            // STEP 7: STUDENT INSIGHT PDF
+            if (!processedSteps.has('student-insight')) {
+                logger.info({ examId }, '[ExamSaga] Step 7: Generating Student Insight PDF');
+                const exportEngine = (await import('@/lib/export/exportEngine')).ExportEngine.getInstance();
+                const reportEngine = container.get(ReportEngine);
+                const { ReportPdfService } = await import('@/modules/report-engine/report-pdf.service');
+                const { StudentInsightFormatter } = await import('@/lib/export/formatters/studentInsightFormatter');
+                const { uploadReport } = await import('@/lib/storage/upload-report');
+
+                const [meta, currentRows, historicalRows, premiumReport] = await Promise.all([
+                    exportEngine.queryBuilder.fetchUserMeta(examId),
+                    exportEngine.queryBuilder.fetchRawAttempts(examId),
+                    exportEngine.queryBuilder.fetchHistoricalAttempts(data.userId, examId),
+                    reportEngine.getPremiumExamReport(examId)
+                ]) as [ExportMeta, RawAttemptRow[], RawAttemptRow[], PremiumReport];
+
+                const exportPayload: ExportPayload = {
+                    meta,
+                    rawAttempts: currentRows,
+                    aggregations: await exportEngine.aggregator.buildAggregations(currentRows),
+                    historicalProgress: await exportEngine.aggregator.buildHistoricalProgress(historicalRows),
+                    guidanceSignals: exportEngine.aggregator.buildGuidanceSignals(currentRows, historicalRows)
+                };
+
+                const formatter = new StudentInsightFormatter();
+                const insightData = formatter.format(exportPayload, premiumReport);
+
+                const { buffer } = await ReportPdfService.getInstance().generate(
+                    examId,
+                    undefined,
+                    undefined,
+                    undefined,
+                    undefined,
+                    { 
+                        customPath: `/report/${examId}/student-insight`,
+                        customData: insightData 
+                    }
+                );
+
+                const fileRef = await uploadReport(buffer, data.userId, examId);
+                
+                const examObj = await db.query.exams.findFirst({
+                    where: eq(exams.id, examId),
+                    columns: { exportUrls: true }
+                });
+                const currentUrls = (examObj?.exportUrls as Record<string, string> | null) ?? {};
+                
+                await db.update(exams)
+                    .set({ 
+                        exportUrls: { 
+                            ...currentUrls, 
+                            student_insight_pdf: fileRef 
+                        } 
+                    })
+                    .where(eq(exams.id, examId));
+
+                processedSteps.add('student-insight');
+                await this.updateProgress(jobId, data, processedSteps);
+            } else {
+                logger.debug({ examId }, '[ExamSaga] Skipping Step 7: Student Insight PDF (Already complete)');
             }
 
             logger.info({ examId }, '[ExamSaga] Lifecycle completed successfully');

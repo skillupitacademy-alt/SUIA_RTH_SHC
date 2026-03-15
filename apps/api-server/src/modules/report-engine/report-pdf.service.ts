@@ -1,99 +1,55 @@
 import { db, exams } from "@quiz/db";
 import chromium from "@sparticuz/chromium";
 import { eq } from "drizzle-orm";
-import puppeteer from "puppeteer-core";
+import puppeteer, { type Browser, type PDFOptions } from "puppeteer-core";
 
 import { logger } from "@/lib/logger";
+import { PremiumReport, ReportEngine } from "@/modules/report-engine/report.engine";
+import { ReportRepository } from "@/modules/report-engine/report-repository";
 
-import { ReportEngine } from "./report.engine";
-import { ReportRepository } from "./report-repository";
-
-export interface PdfGenerationResult {
-  buffer: Buffer;
-  generationTimeMs: number;
-  fileSizeKb: number;
-  pageCount: number;
+export interface GeneratePdfOptions {
+  customPath?: string;
+  customData?: unknown;
 }
 
 export class ReportPdfService {
-  private static singleton: ReportPdfService | null = null;
-
-  static getInstance() {
-    if (this.singleton === null) this.singleton = new ReportPdfService();
-    return this.singleton;
-  }
-
-  static async generate(attemptId: string) {
-    return this.getInstance().generate(attemptId);
-  }
-
-  // Minimal renderSegment shim for compatibility with HierarchicalReportService
-  static async renderSegment(
-    attemptId: string,
-    nodeId?: string,
-    nodeType?: string,
-    pageOffset?: number,
-    totalPages?: number
-  ) {
-    const { buffer, pageCount, fileSizeKb, generationTimeMs } = await this.getInstance().generate(
-      attemptId,
-      nodeId,
-      nodeType,
-      pageOffset,
-      totalPages
-    );
-    return { buffer, pageCount, fileSizeKb, generationTimeMs };
-  }
+  private static instance: ReportPdfService;
+  private log = logger.child({ module: "report-pdf-service" });
 
   constructor(
-    private readonly dbInstance = db,
+    private readonly dbInstance: typeof db = db,
     private readonly reportEngine?: ReportEngine,
     private readonly reportRepository?: ReportRepository
   ) {}
 
-  private log = logger.child({ module: "report-pdf-service" });
+  static getInstance(): ReportPdfService {
+    if (ReportPdfService.instance === null || ReportPdfService.instance === undefined) {
+      ReportPdfService.instance = new ReportPdfService();
+    }
+    return ReportPdfService.instance;
+  }
 
   /**
-   * Core PDF Generation Logic
-   * Supports optional nodeId/nodeType for hierarchical segment rendering.
+   * Generates a PDF via Browserless or local Chromium
    */
   async generate(
     attemptId: string,
     nodeId?: string,
     nodeType?: string,
     pageOffset?: number,
-    totalPages?: number
-  ): Promise<PdfGenerationResult> {
-    const internalEnv = process.env.INTERNAL_API_KEY;
-    const internalKey = internalEnv !== undefined && internalEnv !== "" ? internalEnv : "secret";
-
-    const apiBaseEnv = process.env.NEXT_PUBLIC_API_URL;
-    if (apiBaseEnv === undefined || apiBaseEnv === "") {
-      throw new Error("NEXT_PUBLIC_API_URL is required for PDF generation");
-    }
-    const apiBase = apiBaseEnv;
-
-    // Direct to the Web App for printing, not the API subdomain
-    const webAppUrlEnv = process.env.NEXT_PUBLIC_WEB_APP_URL;
-    const webAppUrl =
-      webAppUrlEnv !== undefined && webAppUrlEnv !== "" ? webAppUrlEnv : apiBase.replace("/api", "").replace("api.", "quiz.");
-
+    totalPages?: number,
+    options?: GeneratePdfOptions
+  ): Promise<{ buffer: Buffer; generationTimeMs: number; fileSizeKb: number; pageCount: number }> {
     const start = Date.now();
-
-    // 1. Resolve browser binary path or remote connection
     const isWindows = process.platform === "win32";
-    const browserlessApiEnv = process.env.BROWSERLESS_API_KEY;
-    const browserlessUrlEnv = process.env.BROWSERLESS_URL;
+    const webAppUrl = process.env.NEXT_PUBLIC_WEB_APP_URL ?? "http://localhost:3000";
+    const internalKey = process.env.INTERNAL_API_KEY ?? "dev-internal-key";
+    
+    // Remote browserless (Production) vs Local Chromium (Dev)
+    const browserlessUrl = process.env.BROWSERLESS_URL;
+    const hasBrowserlessUrl = typeof browserlessUrl === 'string' && browserlessUrl.trim() !== '';
 
-    // Construct URL from API Key if provided, otherwise use explicit URL
-    const browserlessUrl =
-      browserlessApiEnv !== undefined && browserlessApiEnv !== ""
-        ? `wss://chrome.browserless.io?token=${browserlessApiEnv}`
-        : browserlessUrlEnv;
-
-    const hasBrowserlessUrl = typeof browserlessUrl === "string" && browserlessUrl.length > 0;
-
-    let browser;
+    let browser: Browser;
 
     if (hasBrowserlessUrl) {
       this.log.info({ attemptId }, "[ReportPdfService] Connecting to remote browserless instance");
@@ -115,24 +71,24 @@ export class ReportPdfService {
           "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
           "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe",
           process.env.CHROME_PATH
-        ].filter(Boolean) as string[];
+        ].filter((p): p is string => p !== undefined && p !== null && p !== "") as string[];
         
         const fs = await import("fs");
         const executableCandidate = paths.find((p) => fs.existsSync(p)) ?? paths[0];
 
-        if (executableCandidate && fs.existsSync(executableCandidate)) {
+        if (executableCandidate !== undefined && fs.existsSync(executableCandidate)) {
           executablePath = executableCandidate;
         } else {
           this.log.warn({ executableCandidate, attemptId }, "[ReportPdfService] Target Chrome binary not found at primary path");
-          executablePath = await chromium.executablePath();
+          executablePath = await (await import("@sparticuz/chromium")).default.executablePath();
         }
       } else {
-        executablePath = await chromium.executablePath();
+        executablePath = await (await import("@sparticuz/chromium")).default.executablePath();
       }
 
       this.log.info({ attemptId, isWindows, executablePath }, "[ReportPdfService] Launching local browser instance");
       browser = await puppeteer.launch({
-        args: isWindows ? ["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage"] : chromium.args,
+        args: isWindows ? ["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage"] : ((chromium as unknown as { args: string[] }).args),
         defaultViewport: {
           width: 1920,
           height: 1080,
@@ -142,24 +98,31 @@ export class ReportPdfService {
           isLandscape: true,
         },
         executablePath,
-        headless: isWindows ? true : ((chromium as unknown as { headless?: boolean }).headless ?? true),
+        headless: (isWindows ? true : (chromium as unknown as { headless: boolean | 'shell' }).headless) as boolean | 'shell',
       });
     }
 
     try {
       const page = await browser.newPage();
 
-      // Ensure specific landscape dimensions for pixel perfection
+      const isInsightReport = options?.customPath?.includes('student-insight') ?? false;
+      
+      // Ensure specific dimensions for pixel perfection
       await page.setViewport({
-        width: 1920,
-        height: 1080,
+        width: isInsightReport ? 1200 : 1920,
+        height: isInsightReport ? 1600 : 1080,
         deviceScaleFactor: 2,
+        isLandscape: !isInsightReport
       });
 
-      let url = `${webAppUrl}/report/print/${attemptId}?internalKey=${internalKey}&cache_bust=${Date.now()}`;
-      if (nodeId !== undefined && nodeType !== undefined) {
-        url += `&nodeId=${nodeId}&nodeType=${nodeType}`;
-      }
+      let url = options?.customPath !== undefined && options?.customPath !== null && options?.customPath !== ""
+        ? `${webAppUrl}${options.customPath}`
+        : `${webAppUrl}/report/${attemptId}/print?internalId=${nodeId ?? ""}&type=${nodeType ?? ""}`;
+      
+      if (!url.includes('?')) url += '?';
+      else url += '&';
+      url += `key=${internalKey}`;
+
       if (pageOffset !== undefined) {
         url += `&pageOffset=${pageOffset}`;
       }
@@ -186,19 +149,19 @@ export class ReportPdfService {
       .limit(1);
       const exam = examRows[0];
 
-      const engine = this.reportEngine || (await import('../core/container')).container.get(ReportEngine);
-      type ReportData = Awaited<ReturnType<typeof engine.getPremiumExamReport>> & { reportMaterialized?: unknown };
-      const reportData: ReportData = await engine.getPremiumExamReport(attemptId);
+      const engine = this.reportEngine ?? (await import('../core/container')).container.get(ReportEngine);
+      const reportData: PremiumReport & { reportMaterialized?: unknown } = await engine.getPremiumExamReport(attemptId);
 
-      if (exam?.reportMaterialized !== undefined) {
+      if (exam?.reportMaterialized !== undefined && exam?.reportMaterialized !== null) {
         reportData.reportMaterialized = exam.reportMaterialized;
       }
 
       // 4. Data Injection: Push data into browser memory BEFORE navigation
       this.log.info({ attemptId }, "[ReportPdfService] Injecting report data into browser memory");
-      await page.evaluateOnNewDocument((data: ReportData) => {
-        (globalThis as { __REPORT_DATA__?: ReportData }).__REPORT_DATA__ = data;
-      }, reportData);
+      const dataToInject = options?.customData ?? reportData;
+      await page.evaluateOnNewDocument((data: unknown) => {
+        (globalThis as { __REPORT_DATA__?: unknown }).__REPORT_DATA__ = data;
+      }, dataToInject);
 
       // 5. Navigate and Wait
       this.log.info({ attemptId, url }, "[ReportPdfService] Navigating to print view");
@@ -220,12 +183,21 @@ export class ReportPdfService {
       await page.emulateMediaType("screen");
       await page.evaluateHandle("document.fonts.ready");
 
-      const pdfBuffer = await page.pdf({
+      const pdfOptions: PDFOptions = {
         printBackground: true,
         preferCSSPageSize: true,
-        landscape: true,
         margin: { top: 0, right: 0, bottom: 0, left: 0 },
-      });
+      };
+
+      if (isInsightReport) {
+        pdfOptions.width = 1200;
+        pdfOptions.height = 1600;
+      } else {
+        pdfOptions.format = 'A4';
+        pdfOptions.landscape = true;
+      }
+
+      const pdfBuffer = await page.pdf(pdfOptions);
 
       return {
         buffer: pdfBuffer as Buffer,
@@ -247,9 +219,9 @@ export class ReportPdfService {
     nodeType: string,
     pageOffset?: number,
     totalPages?: number
-  ): Promise<Buffer> {
+  ): Promise<{ buffer: Buffer }> {
     const { buffer } = await this.generate(attemptId, nodeId, nodeType, pageOffset, totalPages);
-    return buffer;
+    return { buffer };
   }
 
   /**
@@ -271,7 +243,7 @@ export class ReportPdfService {
     const { uploadReport } = await import("@/lib/storage/upload-report");
     const storageUrl = await uploadReport(buffer, exam.userId, attemptId);
 
-    const repository = this.reportRepository || (await import('../core/container')).container.get(ReportRepository);
+    const repository = this.reportRepository ?? (await import('../core/container')).container.get(ReportRepository);
     await repository.updateReportSuccess(attemptId, {
       fileRef: storageUrl,
       generationTimeMs,
@@ -280,5 +252,33 @@ export class ReportPdfService {
     });
 
     return storageUrl;
+  }
+
+  // Static wrappers for backward compatibility
+  private static readonly defaultService = new ReportPdfService();
+
+  static generate(
+    attemptId: string,
+    nodeId?: string,
+    nodeType?: string,
+    pageOffset?: number,
+    totalPages?: number,
+    options?: GeneratePdfOptions
+  ) {
+    return this.defaultService.generate(attemptId, nodeId, nodeType, pageOffset, totalPages, options);
+  }
+
+  static renderSegment(
+    attemptId: string,
+    nodeId: string,
+    nodeType: string,
+    pageOffset?: number,
+    totalPages?: number
+  ) {
+    return this.defaultService.renderSegment(attemptId, nodeId, nodeType, pageOffset, totalPages);
+  }
+
+  static generateAndUpload(attemptId: string) {
+    return this.defaultService.generateAndUpload(attemptId);
   }
 }

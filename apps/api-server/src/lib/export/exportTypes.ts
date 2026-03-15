@@ -1,4 +1,4 @@
-export type ExportFormat = 'pdf' | 'json' | 'csv';
+export type ExportFormat = 'pdf' | 'json' | 'csv' | 'student-insight-pdf';
 
 export interface ExportRequest {
   examId: string;

@@ -15,7 +15,7 @@ import {
   FileJson, 
   CheckCircle2
 } from "lucide-react";
-import { ReportGenerationModal } from "./ReportGenerationModal";
+import { ReportGenerationModal, type ExportFormat } from "./ReportGenerationModal";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface ReportDownloadButtonProps {
@@ -29,10 +29,10 @@ export function ReportDownloadButton({ attemptId, userId, className }: ReportDow
     const { triggerExport, status: exportStatus, downloadUrl: exportUrl, isExporting, error: exportError } = useExportJob();
     
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [activeFormat, setActiveFormat] = useState<"pdf" | "json" | "csv">("pdf");
+    const [activeFormat, setActiveFormat] = useState<ExportFormat>("pdf");
     const [showNotification, setShowNotification] = useState(false);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-    const [exportUrlMap, setExportUrlMap] = useState<{ json?: string; csv?: string }>({});
+    const [exportUrlMap, setExportUrlMap] = useState<{ json?: string; csv?: string; "student-insight-pdf"?: string }>({});
     const dropdownRef = useRef<HTMLDivElement>(null);
     const lastPdfStatus = useRef(pdfStatus);
     const lastExportStatus = useRef(exportStatus);
@@ -52,7 +52,7 @@ export function ReportDownloadButton({ attemptId, userId, className }: ReportDow
         lastPdfStatus.current = pdfStatus;
     }, [pdfStatus, isModalOpen]);
 
-    // Sync modal for JSON/CSV exports
+    // Sync modal for JSON/CSV/Insight exports
     useEffect(() => {
         if (exportStatus === "processing" && lastExportStatus.current !== "processing") {
             setIsModalOpen(true);
@@ -61,7 +61,7 @@ export function ReportDownloadButton({ attemptId, userId, className }: ReportDow
     }, [exportStatus]);
 
     useEffect(() => {
-        if ((activeFormat === "json" || activeFormat === "csv") && exportStatus === "ready" && exportUrl) {
+        if ((activeFormat === "json" || activeFormat === "csv" || activeFormat === "student-insight-pdf") && exportStatus === "ready" && exportUrl) {
             setExportUrlMap((prev) => ({ ...prev, [activeFormat]: exportUrl }));
         }
     }, [activeFormat, exportStatus, exportUrl]);
@@ -77,8 +77,9 @@ export function ReportDownloadButton({ attemptId, userId, className }: ReportDow
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
-    const handlePdfDownload = () => {
-        if (pdfUrl) {
+    const handlePdfDownload = (urlParam?: string) => {
+        const url = urlParam || pdfUrl;
+        if (url) {
             const frameId = "pdf-download-frame";
             let frame = document.getElementById(frameId) as HTMLIFrameElement;
             if (!frame) {
@@ -88,7 +89,7 @@ export function ReportDownloadButton({ attemptId, userId, className }: ReportDow
                 frame.style.display = "none";
                 document.body.appendChild(frame);
             }
-            frame.src = pdfUrl;
+            frame.src = url;
             setShowNotification(false);
             setIsDropdownOpen(false);
         }
@@ -108,7 +109,7 @@ export function ReportDownloadButton({ attemptId, userId, className }: ReportDow
         setIsDropdownOpen(false);
     };
 
-    const handleExport = (format: "json" | "csv") => {
+    const handleExport = (format: Exclude<ExportFormat, "pdf">) => {
         const existingUrl = exportUrlMap[format];
         if (existingUrl) {
             handleExportDownload(existingUrl);
@@ -150,7 +151,7 @@ export function ReportDownloadButton({ attemptId, userId, className }: ReportDow
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.9 }}
                         className="fixed bottom-8 right-8 z-[110] flex items-center gap-4 p-4 bg-indigo-600 text-white rounded-2xl shadow-2xl shadow-indigo-600/40 border border-indigo-500/50 cursor-pointer"
-                        onClick={handlePdfDownload}
+                        onClick={() => handlePdfDownload()}
                     >
                         <div className="flex items-center justify-center w-10 h-10 bg-white/20 rounded-xl">
                             <Bell className="w-5 h-5 animate-bounce" />
@@ -170,7 +171,7 @@ export function ReportDownloadButton({ attemptId, userId, className }: ReportDow
             <div className="flex items-stretch overflow-hidden rounded-2xl border border-white/5 shadow-[0_20px_40px_rgba(0,0,0,0.45)]">
                 {pdfStatus === "ready" ? (
                     <button
-                        onClick={handlePdfDownload}
+                        onClick={() => handlePdfDownload()}
                         className={cn(
                             "flex items-center gap-3 px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-black uppercase tracking-[0.2em] transition-all active:scale-[0.98] group text-[11px] border-r border-indigo-500/50",
                             className
@@ -226,7 +227,7 @@ export function ReportDownloadButton({ attemptId, userId, className }: ReportDow
                         {/* PDF Option (Duplicate of main but helpful in menu) */}
                         <button 
                             disabled={pdfStatus === "generating" || pdfStatus === "pending" || pdfCooldown > 0}
-                            onClick={pdfStatus === "ready" ? handlePdfDownload : () => handleTriggerPdf()}
+                            onClick={pdfStatus === "ready" ? () => handlePdfDownload() : () => handleTriggerPdf()}
                             className="w-full flex items-center justify-between p-4 hover:bg-slate-900/70 rounded-2xl transition-all group disabled:opacity-30 disabled:cursor-not-allowed border border-transparent hover:border-white/5"
                         >
                             <div className="flex items-center gap-3">
@@ -240,6 +241,27 @@ export function ReportDownloadButton({ attemptId, userId, className }: ReportDow
                             </div>
                             {pdfStatus === "ready" && <CheckCircle2 size={14} className="text-emerald-500" />}
                             {(pdfStatus === "generating" || pdfStatus === "pending") && <Loader2 size={14} className="text-indigo-500 animate-spin" />}
+                        </button>
+
+                        <div className="h-px bg-slate-800/50 my-1 mx-2" />
+
+                        {/* Student Insight PDF */}
+                        <button 
+                            onClick={() => handleExport("student-insight-pdf")}
+                            disabled={isExporting}
+                            className="w-full flex items-center justify-between p-4 hover:bg-slate-900/70 rounded-2xl transition-all group disabled:opacity-50 border border-transparent hover:border-white/5"
+                        >
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 bg-indigo-500/10 rounded-xl text-indigo-400 group-hover:bg-indigo-500 group-hover:text-white transition-colors">
+                                    <Bell size={16} />
+                                </div>
+                                <div className="text-left">
+                                    <div className="text-xs font-black text-slate-100 uppercase tracking-wider italic">Neural Insight</div>
+                                    <div className="text-[10px] text-slate-500">3-Page High Fidelity PDF</div>
+                                </div>
+                            </div>
+                            {exportStatus === "processing" && activeFormat === "student-insight-pdf" && <Loader2 size={14} className="text-indigo-500 animate-spin" />}
+                            {exportUrlMap["student-insight-pdf"] && <CheckCircle2 size={14} className="text-emerald-500" />}
                         </button>
 
                         <div className="h-px bg-slate-800/50 my-1 mx-2" />
@@ -259,7 +281,8 @@ export function ReportDownloadButton({ attemptId, userId, className }: ReportDow
                                     <div className="text-[10px] text-slate-500">JSON Fact Structure</div>
                                 </div>
                             </div>
-                            {exportStatus === "processing" && <Loader2 size={14} className="text-amber-500 animate-spin" />}
+                            {exportStatus === "processing" && activeFormat === "json" && <Loader2 size={14} className="text-amber-500 animate-spin" />}
+                            {exportUrlMap["json"] && <CheckCircle2 size={14} className="text-emerald-500" />}
                         </button>
 
                         {/* CSV Export */}
@@ -277,7 +300,8 @@ export function ReportDownloadButton({ attemptId, userId, className }: ReportDow
                                     <div className="text-[10px] text-slate-500">14-File CSV Bundle (ZIP)</div>
                                 </div>
                             </div>
-                            {exportStatus === "processing" && <Loader2 size={14} className="text-emerald-500 animate-spin" />}
+                            {exportStatus === "processing" && activeFormat === "csv" && <Loader2 size={14} className="text-emerald-500 animate-spin" />}
+                            {exportUrlMap["csv"] && <CheckCircle2 size={14} className="text-emerald-500" />}
                         </button>
 
                         {(pdfError || exportError) && (
@@ -292,8 +316,8 @@ export function ReportDownloadButton({ attemptId, userId, className }: ReportDow
             </AnimatePresence>
 
             {/* Hidden download frame */}
-            <iframe id="pdf-download-frame" title="PDF download frame" className="hidden" />
-            <iframe id="export-download-frame" title="Export download frame" className="hidden" />
+            <iframe id="pdf-download-frame-hidden" title="PDF download frame" className="hidden" />
+            <iframe id="export-download-frame-hidden" title="Export download frame" className="hidden" />
 
             <ReportGenerationModal
                 isOpen={isModalOpen}
@@ -308,5 +332,3 @@ export function ReportDownloadButton({ attemptId, userId, className }: ReportDow
         </div>
     );
 }
-
-

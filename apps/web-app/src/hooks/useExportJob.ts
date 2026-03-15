@@ -75,7 +75,7 @@ export function useExportJob() {
     }
   }, [clearPolling]);
 
-  const triggerExport = async (examId: string, userId: string, format: "json" | "csv") => {
+  const triggerExport = async (examId: string, userId: string, format: "json" | "csv" | "student-insight-pdf") => {
     setIsExporting(true);
     setDownloadUrl(null);
     setError(null);

@@ -11,12 +11,13 @@ import {
     Download,
     AlertCircle,
     FileJson,
-    Database
+    Database,
+    Bell
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createPortal } from "react-dom";
 
-type ExportFormat = "pdf" | "json" | "csv";
+export type ExportFormat = "pdf" | "json" | "csv" | "student-insight-pdf";
 
 interface ReportGenerationModalProps {
     isOpen: boolean;
@@ -47,6 +48,12 @@ const STAGES_CONFIG: Record<ExportFormat, { id: string; label: string; descripti
         { id: "aggregating", label: "KPI Extraction", description: "Calculating domain, subtopic, and skill masteries..." },
         { id: "zipping", label: "ZIP Packaging", description: "Bundling 14 CSV files into a secure archive..." },
         { id: "ready", label: "Complete", description: "Your 14-file analytical bundle is ready for download." }
+    ],
+    "student-insight-pdf": [
+        { id: "queued", label: "Neural Init", description: "Spinning up insight vector processing engine..." },
+        { id: "processing", label: "Deep Synthesis", description: "Fusing 12 KPI layers with behavioral cognitive patterns..." },
+        { id: "rendering", label: "Page Generation", description: "Building high-fidelity 3-page A4 insight matrix..." },
+        { id: "ready", label: "Complete", description: "Your premium Student Insight PDF is ready for download." }
     ]
 };
 
@@ -71,14 +78,14 @@ export function ReportGenerationModal({
     useEffect(() => {
         if (status === "ready" || status === "completed") {
             setCurrentStageIndex(3);
-        } else if (stage === "uploading" || stage === "finalizing" || stage === "zipping") {
+        } else if (stage === "uploading" || stage === "finalizing" || stage === "zipping" || (format === "student-insight-pdf" && stage === "rendering")) {
             setCurrentStageIndex(2);
         } else if (stage === "rendering" || stage === "processing" || stage === "aggregating") {
             setCurrentStageIndex(1);
         } else if (stage === "queued" || status === "pending" || status === "processing") {
             setCurrentStageIndex(0);
         }
-    }, [stage, status]);
+    }, [stage, status, format]);
 
     if (!isOpen || !mounted) return null;
 
@@ -133,7 +140,8 @@ export function ReportGenerationModal({
                                 {isReady ? (
                                     format === "pdf" ? <FileText className="w-10 h-10 text-indigo-400" /> :
                                     format === "json" ? <FileJson className="w-10 h-10 text-amber-400" /> :
-                                    <Database className="w-10 h-10 text-emerald-400" />
+                                    format === "csv" ? <Database className="w-10 h-10 text-emerald-400" /> :
+                                    <Bell className="w-10 h-10 text-indigo-400" />
                                 ) : isFailed ? (
                                     <AlertCircle className="w-10 h-10 text-rose-500" />
                                 ) : (
@@ -146,10 +154,10 @@ export function ReportGenerationModal({
                             </h2>
                             <p className="text-slate-400 text-base md:text-lg max-w-md mx-auto font-medium leading-relaxed">
                                 {isReady
-                                    ? `Your ${format.toUpperCase()} artifact has been synthesized and is prepared for download.`
+                                    ? `Your ${format.toUpperCase().replace("-PDF", "")} artifact has been synthesized and is prepared for download.`
                                     : isFailed
                                         ? "A critical error occurred during synthesis. The pipeline has been halted."
-                                        : `Executing deep-layer ${format.toUpperCase()} synthesis...`
+                                        : `Executing deep-layer ${format.toUpperCase().replace("-PDF", "")} synthesis...`
                                 }
                             </p>
                         </div>

@@ -86,7 +86,7 @@ function isNonEmptyString(value: unknown): value is string {
 }
 
 function isExportFormat(value: unknown): value is ExportFormat {
-  return value === 'pdf' || value === 'json' || value === 'csv';
+  return value === 'pdf' || value === 'json' || value === 'csv' || value === 'student-insight-pdf';
 }
 
 function isExportTriggerBody(value: unknown): value is { examId: string; format: ExportFormat; userId: string } {

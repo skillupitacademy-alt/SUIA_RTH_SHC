@@ -88,6 +88,9 @@ export type PremiumReport = {
   isInconsistent: boolean;
   expertDropOff: boolean;
   timePattern: string | null;
+  stableCount: number;
+  logicCount: number;
+  errorCount: number;
   weakest_difficulty: string | null;
   totalTimeSpentSeconds: number;
   timeEfficiency: 'FAST' | 'OPTIMAL';
@@ -682,6 +685,9 @@ export class ReportEngine {
       isInconsistent: core.is_inconsistent ?? false,
       expertDropOff,
       timePattern: core.time_pattern ?? null,
+      stableCount: Number(core.stable_count ?? 0),
+      logicCount: Number(core.logic_count ?? 0),
+      errorCount: Number(core.error_count ?? 0),
       weakest_difficulty: core.weakest_difficulty ?? null,
       totalTimeSpentSeconds: Number(core.total_time ?? 0),
       timeEfficiency: ((core.score ?? 0) > 80 && (core.total_time ?? 0) < ((core.question_count ?? 0) * 40)) ? 'FAST' : 'OPTIMAL',
