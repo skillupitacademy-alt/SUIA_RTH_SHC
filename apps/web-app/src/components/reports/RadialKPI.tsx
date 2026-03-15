@@ -47,7 +47,10 @@ export const RadialKPI = React.memo(({ data, suppressAnimation = false }: Radial
     const formatTime = (seconds: number) => {
         const h = Math.floor(seconds / 3600);
         const m = Math.floor((seconds % 3600) / 60);
-        return h > 0 ? `${h}h ${m}m` : `${m}m`;
+        const s = Math.floor(seconds % 60);
+        if (h > 0) return `${h}h ${m}m`;
+        if (m > 0) return `${m}m ${s > 0 ? `${s}s` : ''}`;
+        return `${s}s`;
     };
 
     const radialData = [{
@@ -87,19 +90,27 @@ export const RadialKPI = React.memo(({ data, suppressAnimation = false }: Radial
             </div>
 
             <div className="relative flex-grow flex flex-col items-center justify-center min-h-[300px] relative z-20">
-                <div className="absolute inset-0 flex flex-col items-center justify-center z-20 pointer-events-none">
+                {/* Center label lives inside the hollow core. Increase chart innerRadius to prevent overlap. */}
+                <div
+                    className="absolute pointer-events-none z-30 flex flex-col items-center justify-center"
+                    style={{
+                        top: "50%",
+                        left: "50%",
+                        transform: "translate(-50%, -50%)",
+                    }}
+                >
                     <span className="text-[11px] font-black uppercase tracking-[0.4em] mb-1" style={{ color: tokens.textMuted }}>
                         Readiness
                     </span>
-                    <span 
-                        className={`${data.readiness >= 100 ? 'text-5xl' : 'text-6xl'} font-black tracking-tighter drop-shadow-[0_0_15px_rgba(255,255,255,0.15)]`}
+                    <span
+                        className={`${data.readiness >= 100 ? "text-5xl" : "text-6xl"} font-black tracking-tighter leading-none drop-shadow-[0_0_15px_rgba(255,255,255,0.15)]`}
                         style={{ color: tokens.textPrimary }}
                     >
                         {data.readiness}%
                     </span>
                     {!suppressAnimation && (
                         <div className="mt-2 px-3 py-1 bg-white/5 rounded-full border border-white/10 flex items-center gap-2">
-                            <Activity size={12} className="text-indigo-400" />
+                            <Activity size={10} className="text-indigo-400" />
                             <span className="text-[9px] font-black text-indigo-400 uppercase tracking-widest">
                                 AI Matrix Active
                             </span>
@@ -114,8 +125,8 @@ export const RadialKPI = React.memo(({ data, suppressAnimation = false }: Radial
                                 key={mounted ? 'mounted' : 'unmounted'}
                                 cx="50%"
                                 cy="50%"
-                                innerRadius="30%"
-                                outerRadius="80%"
+                                innerRadius="45%"
+                                outerRadius="95%"
                                 startAngle={90}
                                 endAngle={450}
                                 data={radialData}
@@ -148,8 +159,8 @@ export const RadialKPI = React.memo(({ data, suppressAnimation = false }: Radial
                                 <PolarAngleAxis type="number" domain={[0, 100]} tick={false} />
                                 <RadialBarFixed
                                     dataKey="time"
-                                    innerRadius="32%"
-                                    outerRadius="40%"
+                                    innerRadius="47%"
+                                    outerRadius="54%"
                                     fill="url(#violetLinear)"
                                     cornerRadius={20}
                                     background={{ fill: theme === 'dark' ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.03)' }}
@@ -158,8 +169,8 @@ export const RadialKPI = React.memo(({ data, suppressAnimation = false }: Radial
                                 />
                                 <RadialBarFixed
                                     dataKey="rank"
-                                    innerRadius="47%"
-                                    outerRadius="55%"
+                                    innerRadius="60%"
+                                    outerRadius="67%"
                                     fill="url(#amberLinear)"
                                     cornerRadius={20}
                                     background={{ fill: theme === 'dark' ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.03)' }}
@@ -168,8 +179,8 @@ export const RadialKPI = React.memo(({ data, suppressAnimation = false }: Radial
                                 />
                                 <RadialBarFixed
                                     dataKey="mastery"
-                                    innerRadius="62%"
-                                    outerRadius="70%"
+                                    innerRadius="73%"
+                                    outerRadius="80%"
                                     fill="url(#emeraldLinear)"
                                     cornerRadius={20}
                                     background={{ fill: theme === 'dark' ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.03)' }}
@@ -178,8 +189,8 @@ export const RadialKPI = React.memo(({ data, suppressAnimation = false }: Radial
                                 />
                                 <RadialBarFixed
                                     dataKey="score"
-                                    innerRadius="77%"
-                                    outerRadius="85%"
+                                    innerRadius="86%"
+                                    outerRadius="93%"
                                     fill="url(#cyanLinear)"
                                     cornerRadius={20}
                                     background={{ fill: theme === 'dark' ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.03)' }}
@@ -198,19 +209,19 @@ export const RadialKPI = React.memo(({ data, suppressAnimation = false }: Radial
             >
                 <div className="flex flex-col items-center text-center">
                     <span className="text-[10px] font-black uppercase tracking-[0.2em] mb-1" style={{ color: tokens.textMuted }}>Score</span>
-                    <span className="text-3xl font-black text-cyan-400 tracking-tighter" style={{ color: theme === 'light' ? 'hsl(188, 86%, 40%)' : undefined }}>{data.score}%</span>
+                    <span className="text-3xl font-black text-cyan-400 tracking-tighter" style={{ color: theme === 'light' ? 'hsl(188, 86%, 40%)' : undefined, fontVariantNumeric: 'tabular-nums' }}>{data.score}%</span>
                 </div>
                 <div className="flex flex-col items-center text-center">
                     <span className="text-[10px] font-black uppercase tracking-[0.2em] mb-1" style={{ color: tokens.textMuted }}>Synthesis</span>
                     <span className="text-3xl font-black text-emerald-400 tracking-tighter" style={{ color: theme === 'light' ? 'hsl(160, 84%, 35%)' : undefined }}>{getMasteryLabel(data.mastery)}</span>
                 </div>
                 <div className="flex flex-col items-center text-center">
-                    <span className="text-[10px] font-black uppercase tracking-[0.2em] mb-1" style={{ color: tokens.textMuted }}>Rank</span>
-                    <span className="text-3xl font-black text-amber-500 tracking-tighter" style={{ color: theme === 'light' ? 'hsl(38, 92%, 40%)' : undefined }}>{data.percentile}th</span>
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em] mb-1" style={{ color: tokens.textMuted }}>Percentile</span>
+                    <span className="text-3xl font-black text-amber-500 tracking-tighter" style={{ color: theme === 'light' ? 'hsl(38, 92%, 40%)' : undefined, fontVariantNumeric: 'tabular-nums' }}>{data.percentile}th</span>
                 </div>
                 <div className="flex flex-col items-center text-center">
                     <span className="text-[10px] font-black uppercase tracking-[0.2em] mb-1" style={{ color: tokens.textMuted }}>Efficiency</span>
-                    <span className="text-3xl font-black text-violet-400 tracking-tighter" style={{ color: theme === 'light' ? 'hsl(258, 90%, 55%)' : undefined }}>{formatTime(data.totalTimeSpentSeconds)}</span>
+                    <span className="text-3xl font-black text-violet-400 tracking-tighter" style={{ color: theme === 'light' ? 'hsl(258, 90%, 55%)' : undefined, fontVariantNumeric: 'tabular-nums' }}>{formatTime(data.totalTimeSpentSeconds)}</span>
                 </div>
             </div>
 
