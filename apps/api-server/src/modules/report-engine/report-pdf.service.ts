@@ -254,7 +254,7 @@ export class ReportPdfService {
         throw new Error("Synthesis Timeout: The report engine failed to emit a ready signal within 30s.");
       }
 
-      await page.emulateMediaType("screen");
+      await page.emulateMediaType("print");
       await page.evaluateHandle("document.fonts.ready");
 
       const pdfOptions: PDFOptions = {

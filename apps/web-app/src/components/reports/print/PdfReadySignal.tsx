@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
  * PdfReadySignal - Emits a signal for Puppeteer to capture the PDF.
  * Includes "Modal Scrub" defense, Font Readiness, and Paint Buffer
  * to ensure all charts and typography are fully resolved before capture.
+ * Now gated by the deterministic Handshake with Recharts.
  */
 export function PdfReadySignal() {
     const [ready, setReady] = useState(false);
@@ -38,6 +39,17 @@ export function PdfReadySignal() {
             document.documentElement.style.overflow = "hidden";
         };
 
+        // Helper to poll for full readiness (Charts + Heatmap + Complexity)
+        const waitForReady = async (timeoutMs: number) => {
+            const start = Date.now();
+            while (Date.now() - start < timeoutMs) {
+                const ok = window.__PDF_READY_IS_DONE__?.();
+                if (ok) return true;
+                await new Promise((r) => setTimeout(r, 100));
+            }
+            return false;
+        };
+
         // Give time for hydration + chart rendering + font loading
         const timer = setTimeout(async () => {
             scrubUi();
@@ -52,11 +64,15 @@ export function PdfReadySignal() {
                 // Fallback: fonts.ready not available, proceed anyway
             }
 
-            // 4. Paint Buffer — let charts + SVGs complete their final paint cycle
-            await new Promise(r => setTimeout(r, 1200));
+            // 4. Wait for Universal Readiness handshake
+            // This ensures all Charts, Heatmaps, and Complexity bars have completed layout + paint.
+            await waitForReady(10000); // 10s safety limit
+
+            // 5. Final Paint Settle — 300ms for browser to resolve SVG layers
+            await new Promise(r => setTimeout(r, 300));
 
             setReady(true);
-        }, 4000); // 4s total wait for chart hydration + render stability
+        }, 1000); // Initial delay to allow components to mount
 
         return () => clearTimeout(timer);
     }, []);

@@ -5,6 +5,7 @@ import { RadialBarChart, RadialBar, ResponsiveContainer, PolarAngleAxis } from "
 import { Calendar, Activity } from "lucide-react";
 import { MethodologyDisclaimer } from './MethodologyDisclaimer';
 import { StableRenderGuard } from './recharts/StableRenderGuard';
+import { usePdfMarkReady } from "./print/usePdfMarkReady";
 
 type RadialBarFixedProps = React.ComponentProps<typeof RadialBar> & {
     innerRadius?: number | string;
@@ -25,12 +26,14 @@ export interface RadialKPIProps {
     suppressAnimation?: boolean;
 }
 
-export const RadialKPI = React.memo(({ data, suppressAnimation }: RadialKPIProps) => {
+export const RadialKPI = React.memo(({ data, suppressAnimation = false }: RadialKPIProps) => {
     const [mounted, setMounted] = React.useState(false);
 
     React.useEffect(() => {
         setMounted(true);
     }, []);
+
+    usePdfMarkReady("print:radial-kpi");
 
     const getMasteryLabel = (val: number) => {
         if (val >= 90) return "Expert";

@@ -11,21 +11,22 @@ interface PdfPageProps {
     children: React.ReactNode;
     orientation?: "landscape" | "portrait";
     autoScale?: boolean;
+    isLast?: boolean;
 }
 
-export function PdfPage({ children, orientation = "landscape", autoScale = false }: PdfPageProps) {
+export function PdfPage({ children, orientation = "landscape", autoScale = false, isLast = false }: PdfPageProps) {
     const dim = orientation === "landscape" ? REPORT_LAYOUT.page.landscape : REPORT_LAYOUT.page.portrait;
     const debug = process.env.NEXT_PUBLIC_DEBUG_PDF_BORDERS === "true";
     return (
         <div
-            className={`pdf-page ${orientation} relative flex flex-col bg-[#0B1220] text-slate-100 overflow-hidden select-none ${debug ? "pdf-debug-border" : ""}`}
+            className={`pdf-page ${orientation} ${isLast ? "pdf-page-last" : ""} relative flex flex-col bg-[#0B1220] text-slate-100 overflow-hidden select-none ${debug ? "pdf-debug-border" : ""}`}
             style={{
                 width: dim.width,
                 height: dim.height,
                 padding: dim.padding,
                 boxSizing: "border-box",
-                pageBreakAfter: "always",
-                breakAfter: "page",
+                pageBreakAfter: isLast ? "auto" : "always",
+                breakAfter: isLast ? "auto" : "page",
                 transformOrigin: autoScale ? "top left" : undefined,
             }}
         >

@@ -150,6 +150,11 @@ body {
   break-after: page !important;
 }
 
+.pdf-page.pdf-page-last {
+  page-break-after: auto !important;
+  break-after: auto !important;
+}
+
 .pdf-page.portrait {
   width: 1080px !important;
   height: 1920px !important;
@@ -184,9 +189,9 @@ body {
   body,
   html {
     width: 1920px !important;
-    height: 1080px !important;
+    height: auto !important;
     background: #0B1220 !important;
-    overflow: hidden !important;
+    overflow: visible !important;
   }
 
   .pdf-root {

@@ -17,6 +17,7 @@ import {
     DomainUnitData
 } from "@/components/reports/print/PrintPages";
 import { PdfReadySignal } from "@/components/reports/print/PdfReadySignal";
+import { initPdfReadyRegistry } from "@/components/reports/print/pdfReadyRegistry";
 import { PdfPage } from "@/components/reports/print/PrintToolkit";
 import type { QuestionItem, ReportJSON, SubjectDataset, TopicDataset } from "@quiz/types";
 
@@ -85,6 +86,13 @@ export default function PrintReportPage(props: {
             .then(setData)
             .catch(err => setError(err instanceof Error ? err.message : "Report loading failed"));
     }, [attemptId, internalKey]);
+
+    useEffect(() => {
+        // Deterministic "ready" handshake for PDF capture.
+        // Keep this list in sync with usePdfMarkReady() calls across the print surface.
+        initPdfReadyRegistry();
+        window.__PDF_READY_SET_EXPECTED__?.(6); // radial-kpi, subtopic-bar, skill-donut, time-donut, heatmap, complexity
+    }, []);
 
     useEffect(() => {
         const calculateScale = () => {
@@ -314,7 +322,7 @@ export default function PrintReportPage(props: {
                 </PdfPage>
 
                 {/* Page 7: Audit Statistical Summary (stats only, no Q&A cards) */}
-                <PdfPage orientation="landscape" autoScale={scale < 1}>
+                <PdfPage orientation="landscape" autoScale={scale < 1} isLast={true}>
                     <QuestionAuditPage
                         data={topicData}
                         page={getPageNum(7)}

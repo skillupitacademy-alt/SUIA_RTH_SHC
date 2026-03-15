@@ -2,7 +2,6 @@
 
 import dynamic from "next/dynamic";
 import React from "react";
-// import { ExamReport } from "@/components/reports/ExamReportLayout";
 import { cn } from "@/lib/utils";
 import { REPORT_LAYOUT } from "@/lib/reportLayoutTokens";
 import { FixedChartWrapper, PdfGridTwoColumn } from "./PrintToolkit";
@@ -15,11 +14,11 @@ import {
 
 // Import shared types
 import type { QuestionItem } from "@quiz/types";
+import { SkillDonutChartPrint, TimeSpentDonutPrint } from "./PrintDonuts";
+import { usePdfMarkReady } from "./usePdfMarkReady";
 
 const RadialKPI = dynamic(() => import("../RadialKPI").then(mod => mod.RadialKPI), { ssr: false });
 const SubtopicBarChart = dynamic(() => import("../SubtopicBarChart").then(mod => mod.SubtopicBarChart), { ssr: false });
-const SkillDonutChart = dynamic(() => import("../SkillDonutChart").then(mod => mod.SkillDonutChart), { ssr: false });
-const TimeSpentDonut = dynamic(() => import("../TimeSpentDonut").then(mod => mod.TimeSpentDonut), { ssr: false });
 
 /* ─── Tokens ─── */
 const T = REPORT_LAYOUT;
@@ -206,16 +205,16 @@ export function SubjectBreakdownPage({ data, page, total }: PageProps) {
                     <div className="grid grid-cols-2 gap-6 items-stretch">
                         <ChartCard className="flex-1">
                             <div style={{ width: T.chart.medium, height: T.chart.medium }} className="mx-auto">
-                                <SkillDonutChart data={data.skills} suppressAnimation={true} />
+                                <SkillDonutChartPrint data={data.skills} />
                             </div>
                         </ChartCard>
                         <ChartCard className="flex-1">
                             <div style={{ width: T.chart.medium, height: T.chart.medium }} className="mx-auto">
-                                <TimeSpentDonut data={{
+                                <TimeSpentDonutPrint data={{
                                     totalSeconds: data.totalTimeSpentSeconds,
                                     questions: data.questions || [],
                                     timeBuckets: data.timeBuckets
-                                }} suppressAnimation={true} />
+                                }} />
                             </div>
                         </ChartCard>
                     </div>
@@ -253,6 +252,7 @@ export function SubjectBreakdownPage({ data, page, total }: PageProps) {
 /*  PAGE 04 : Cognitive Heatmap                  */
 /* ────────────────────────────────────────────── */
 export function NeuralHeatmapPage({ data, page, total }: PageProps) {
+    usePdfMarkReady("print:heatmap");
     return (
         <div className="h-full w-full flex flex-col justify-between">
             <SectionHeader title="Cognitive Heatmap" label="Phase 21 Granular Mastery" data={data} />
@@ -290,6 +290,7 @@ export function NeuralHeatmapPage({ data, page, total }: PageProps) {
 /*  PAGE 05 : Complexity Ladder (Progress Bars)  */
 /* ────────────────────────────────────────────── */
 export function ComplexityLadderPage({ data, page, total }: PageProps) {
+    usePdfMarkReady("print:complexity");
     return (
         <div className="h-full w-full flex flex-col justify-between">
             <SectionHeader title="Complexity Scrutiny" label="Spatio‑Visual Depth Matrix" data={data} />

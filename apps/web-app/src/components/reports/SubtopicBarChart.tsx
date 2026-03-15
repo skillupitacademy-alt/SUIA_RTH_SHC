@@ -5,6 +5,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { cn } from "@/lib/utils";
 import { MethodologyDisclaimer } from './MethodologyDisclaimer';
 import { StableRenderGuard } from './recharts/StableRenderGuard';
+import { usePdfMarkReady } from "./print/usePdfMarkReady";
 
 export interface SubtopicBarChartProps {
     data: { name: string; accuracy: number; attempts: number }[];
@@ -14,6 +15,7 @@ export interface SubtopicBarChartProps {
 }
 
 export const SubtopicBarChart = React.memo(({ data, weakest, rootCauseText, dense }: SubtopicBarChartProps) => {
+    usePdfMarkReady("print:subtopic-bar");
     const sortedData = React.useMemo(() =>
         [...data].sort((a, b) => a.accuracy - b.accuracy),
         [data]);
