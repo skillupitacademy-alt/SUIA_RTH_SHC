@@ -6,6 +6,7 @@ import { Calendar, Activity } from "lucide-react";
 import { MethodologyDisclaimer } from './MethodologyDisclaimer';
 import { StableRenderGuard } from './recharts/StableRenderGuard';
 import { usePdfMarkReady } from "./print/usePdfMarkReady";
+import { useReportThemeTokens } from './hooks/useReportThemeTokens';
 
 type RadialBarFixedProps = React.ComponentProps<typeof RadialBar> & {
     innerRadius?: number | string;
@@ -27,6 +28,7 @@ export interface RadialKPIProps {
 }
 
 export const RadialKPI = React.memo(({ data, suppressAnimation = false }: RadialKPIProps) => {
+    const { tokens, theme } = useReportThemeTokens();
     const [mounted, setMounted] = React.useState(false);
 
     React.useEffect(() => {
@@ -56,28 +58,43 @@ export const RadialKPI = React.memo(({ data, suppressAnimation = false }: Radial
     }];
 
     return (
-        <div className="w-full h-full flex flex-col bg-[#0d111a] rounded-[2.5rem] p-8 py-[30px] lg:p-10 lg:py-[30px] border border-white/5 shadow-2xl relative overflow-hidden group">
+        <div 
+            className="w-full h-full flex flex-col rounded-[2.5rem] p-8 py-[30px] lg:p-10 lg:py-[30px] border shadow-2xl relative overflow-hidden group transition-colors duration-300"
+            style={{ 
+                backgroundColor: tokens.cardBg,
+                borderColor: tokens.cardBorder
+            }}
+        >
             {/* Background Glows */}
             <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/5 blur-[120px] rounded-full pointer-events-none" />
             <div className="absolute bottom-0 left-0 w-64 h-64 bg-violet-500/5 blur-[120px] rounded-full pointer-events-none" />
 
-            <div className="flex items-center justify-between border-b border-slate-800/60 pb-5 mb-5 relative z-20">
+            <div 
+                className="flex items-center justify-between border-b pb-5 mb-5 relative z-20"
+                style={{ borderBottomColor: tokens.headerBorder }}
+            >
                 <div>
                     <h3 className="text-[12px] font-black text-indigo-400 uppercase tracking-[0.3em] mb-1">Executive Summary</h3>
-                    <p className="text-2xl font-black text-white tracking-tighter uppercase leading-tight">Readiness Diagnostic</p>
+                    <p className="text-2xl font-black tracking-tighter uppercase leading-tight" style={{ color: tokens.textPrimary }}>Readiness Diagnostic</p>
                 </div>
-                <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-900/50 border border-white/5 rounded-xl cursor-default">
+                <div 
+                    className="flex items-center gap-2 px-3 py-1.5 border rounded-xl cursor-default"
+                    style={{ backgroundColor: tokens.pageBg, borderColor: tokens.borderSubtle }}
+                >
                     <Calendar size={14} className="text-slate-400" />
-                    <span className="text-[13px] font-bold text-slate-300">Session Metrics</span>
+                    <span className="text-[13px] font-bold" style={{ color: tokens.textSecondary }}>Session Metrics</span>
                 </div>
             </div>
 
             <div className="relative flex-grow flex flex-col items-center justify-center min-h-[300px] relative z-20">
                 <div className="absolute inset-0 flex flex-col items-center justify-center z-20 pointer-events-none">
-                    <span className="text-[11px] font-black text-slate-500 uppercase tracking-[0.4em] mb-1">
+                    <span className="text-[11px] font-black uppercase tracking-[0.4em] mb-1" style={{ color: tokens.textMuted }}>
                         Readiness
                     </span>
-                    <span className={`${data.readiness >= 100 ? 'text-5xl' : 'text-6xl'} font-black text-white tracking-tighter drop-shadow-[0_0_15px_rgba(255,255,255,0.15)]`}>
+                    <span 
+                        className={`${data.readiness >= 100 ? 'text-5xl' : 'text-6xl'} font-black tracking-tighter drop-shadow-[0_0_15px_rgba(255,255,255,0.15)]`}
+                        style={{ color: tokens.textPrimary }}
+                    >
                         {data.readiness}%
                     </span>
                     {!suppressAnimation && (
@@ -135,7 +152,7 @@ export const RadialKPI = React.memo(({ data, suppressAnimation = false }: Radial
                                     outerRadius="40%"
                                     fill="url(#violetLinear)"
                                     cornerRadius={20}
-                                    background={{ fill: 'rgba(255,255,255,0.02)' }}
+                                    background={{ fill: theme === 'dark' ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.03)' }}
                                     filter="url(#glow_RKPI)"
                                     isAnimationActive={!suppressAnimation}
                                 />
@@ -145,7 +162,7 @@ export const RadialKPI = React.memo(({ data, suppressAnimation = false }: Radial
                                     outerRadius="55%"
                                     fill="url(#amberLinear)"
                                     cornerRadius={20}
-                                    background={{ fill: 'rgba(255,255,255,0.02)' }}
+                                    background={{ fill: theme === 'dark' ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.03)' }}
                                     filter="url(#glow_RKPI)"
                                     isAnimationActive={!suppressAnimation}
                                 />
@@ -155,7 +172,7 @@ export const RadialKPI = React.memo(({ data, suppressAnimation = false }: Radial
                                     outerRadius="70%"
                                     fill="url(#emeraldLinear)"
                                     cornerRadius={20}
-                                    background={{ fill: 'rgba(255,255,255,0.02)' }}
+                                    background={{ fill: theme === 'dark' ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.03)' }}
                                     filter="url(#glow_RKPI)"
                                     isAnimationActive={!suppressAnimation}
                                 />
@@ -165,7 +182,7 @@ export const RadialKPI = React.memo(({ data, suppressAnimation = false }: Radial
                                     outerRadius="85%"
                                     fill="url(#cyanLinear)"
                                     cornerRadius={20}
-                                    background={{ fill: 'rgba(255,255,255,0.02)' }}
+                                    background={{ fill: theme === 'dark' ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.03)' }}
                                     filter="url(#glow_RKPI)"
                                     isAnimationActive={!suppressAnimation}
                                 />
@@ -175,22 +192,25 @@ export const RadialKPI = React.memo(({ data, suppressAnimation = false }: Radial
                 </div>
             </div>
 
-            <div className="grid grid-cols-4 gap-4 py-6 border-t border-white/5 relative z-20">
+            <div 
+                className="grid grid-cols-4 gap-4 py-6 border-t relative z-20"
+                style={{ borderTopColor: tokens.borderSubtle }}
+            >
                 <div className="flex flex-col items-center text-center">
-                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-1">Score</span>
-                    <span className="text-3xl font-black text-cyan-400 tracking-tighter">{data.score}%</span>
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em] mb-1" style={{ color: tokens.textMuted }}>Score</span>
+                    <span className="text-3xl font-black text-cyan-400 tracking-tighter" style={{ color: theme === 'light' ? 'hsl(188, 86%, 40%)' : undefined }}>{data.score}%</span>
                 </div>
                 <div className="flex flex-col items-center text-center">
-                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-1">Synthesis</span>
-                    <span className="text-3xl font-black text-emerald-400 tracking-tighter">{getMasteryLabel(data.mastery)}</span>
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em] mb-1" style={{ color: tokens.textMuted }}>Synthesis</span>
+                    <span className="text-3xl font-black text-emerald-400 tracking-tighter" style={{ color: theme === 'light' ? 'hsl(160, 84%, 35%)' : undefined }}>{getMasteryLabel(data.mastery)}</span>
                 </div>
                 <div className="flex flex-col items-center text-center">
-                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-1">Rank</span>
-                    <span className="text-3xl font-black text-amber-500 tracking-tighter">{data.percentile}th</span>
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em] mb-1" style={{ color: tokens.textMuted }}>Rank</span>
+                    <span className="text-3xl font-black text-amber-500 tracking-tighter" style={{ color: theme === 'light' ? 'hsl(38, 92%, 40%)' : undefined }}>{data.percentile}th</span>
                 </div>
                 <div className="flex flex-col items-center text-center">
-                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-1">Efficiency</span>
-                    <span className="text-3xl font-black text-violet-400 tracking-tighter">{formatTime(data.totalTimeSpentSeconds)}</span>
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em] mb-1" style={{ color: tokens.textMuted }}>Efficiency</span>
+                    <span className="text-3xl font-black text-violet-400 tracking-tighter" style={{ color: theme === 'light' ? 'hsl(258, 90%, 55%)' : undefined }}>{formatTime(data.totalTimeSpentSeconds)}</span>
                 </div>
             </div>
 

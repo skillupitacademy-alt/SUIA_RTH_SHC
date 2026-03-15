@@ -282,3 +282,78 @@ body {
   text-transform: uppercase;
   color: rgb(71, 85, 105);
 }
+
+/* 
+ * ==========================================
+ * REPORT LIGHT THEME SYSTEM
+ * ==========================================
+ */
+
+[data-report-theme="light"] {
+  background: #ffffff !important;
+  color: #0f172a !important;
+}
+
+[data-report-theme="light"] .pdf-container,
+[data-report-theme="light"] .pdf-root {
+  background: #ffffff !important;
+}
+
+[data-report-theme="light"] .pdf-page {
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border: 1px solid rgba(0, 0, 0, 0.05) !important;
+}
+
+[data-report-theme="light"] header {
+  background: rgba(255, 255, 255, 0.8) !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03) !important;
+}
+
+[data-report-theme="light"] .report-heading {
+  color: #0f172a !important;
+}
+
+[data-report-theme="light"] .report-subheading {
+  color: #64748b !important;
+}
+
+[data-report-theme="light"] .pdf-glass,
+[data-report-theme="light"] .pdf-panel {
+  background: #f8f9fc !important;
+  border: 1px solid rgba(0, 0, 0, 0.06) !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04) !important;
+}
+
+[data-report-theme="light"] .interpretation-card {
+  background: rgba(241, 245, 249, 0.5) !important;
+  border: 1px solid rgba(0, 0, 0, 0.04) !important;
+}
+
+[data-report-theme="light"] .heat-pill {
+  border-color: rgba(0, 0, 0, 0.06) !important;
+}
+
+[data-report-theme="light"] .bg-slate-900\/40,
+[data-report-theme="light"] .bg-slate-900\/50,
+[data-report-theme="light"] .bg-slate-950,
+[data-report-theme="light"] .bg-slate-950\/50 {
+  background-color: #f8f9fc !important;
+}
+
+[data-report-theme="light"] .border-white\/5,
+[data-report-theme="light"] .border-white\/\[0\.03\],
+[data-report-theme="light"] .border-slate-800\/60 {
+  border-color: rgba(0, 0, 0, 0.06) !important;
+}
+
+[data-report-theme="light"] .text-slate-300,
+[data-report-theme="light"] .text-slate-400,
+[data-report-theme="light"] .text-slate-500 {
+  color: #475569 !important;
+}
+
+[data-report-theme="light"] .text-white {
+  color: #0f172a !important;
+}

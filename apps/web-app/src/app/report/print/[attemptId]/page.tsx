@@ -73,6 +73,14 @@ export default function PrintReportPage(props: {
     const [data, setData] = useState<ExamReport | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [scale, setScale] = useState(1);
+    const [theme, setTheme] = useState<"dark" | "light">("dark");
+
+    useEffect(() => {
+        const injectedTheme = (window as unknown as { __REPORT_THEME__?: string }).__REPORT_THEME__;
+        if (injectedTheme === "light" || injectedTheme === "dark") {
+            setTheme(injectedTheme);
+        }
+    }, []);
 
     useEffect(() => {
         // Data Injection Pattern: Check if data was injected by the PDF service
@@ -113,7 +121,7 @@ export default function PrintReportPage(props: {
 
     if (error) {
         return (
-            <div className="pdf-root">
+            <div className="pdf-root" data-report-theme={theme}>
                 <div className="p-20 text-center bg-[#0B1220] min-h-screen text-white">
                     <h1 className="text-2xl font-bold text-rose-500">Render Process Terminated</h1>
                     <p className="text-slate-500 mt-4 font-mono text-xs max-w-2xl mx-auto">
@@ -128,7 +136,7 @@ export default function PrintReportPage(props: {
 
     if (!data) {
         return (
-            <div className="pdf-root">
+            <div className="pdf-root" data-report-theme={theme}>
                 <div className="p-20 text-center bg-[#0B1220] min-h-screen flex items-center justify-center">
                     <p className="text-indigo-500 font-black uppercase tracking-[.5em] animate-pulse">Initializing Neural Export...</p>
                 </div>
@@ -151,7 +159,7 @@ export default function PrintReportPage(props: {
             };
 
             return (
-                <div className="pdf-root">
+                <div className="pdf-root" data-report-theme={theme}>
                     <div className="pdf-container bg-slate-950">
                         <PdfPage orientation="landscape">
                             <DomainOverviewPage data={domainData} page={startPage + 1} total={globalTotal} />
@@ -178,7 +186,7 @@ export default function PrintReportPage(props: {
                 };
 
                 return (
-                    <div className="pdf-root">
+                    <div className="pdf-root" data-report-theme={theme}>
                         <div className="pdf-container bg-slate-950">
                             <PdfPage orientation="landscape">
                                 <SubjectSummaryPage data={subjectData} page={startPage + 1} total={globalTotal} />
@@ -276,7 +284,7 @@ export default function PrintReportPage(props: {
                     : "heatmap";
 
     return (
-        <div className="pdf-root" style={{ height: 'auto' }}>
+        <div className="pdf-root" data-report-theme={theme} style={{ height: 'auto' }}>
             <div
                 className="pdf-container bg-slate-950 flex flex-col items-center"
                 style={{

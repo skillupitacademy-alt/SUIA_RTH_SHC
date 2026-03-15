@@ -12,6 +12,8 @@ import {
 import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { MethodologyDisclaimer } from './MethodologyDisclaimer';
+import { useReportThemeTokens } from './hooks/useReportThemeTokens';
+import type { ThemeTokens } from "./context/reportThemeTokens";
 
 export interface AIRecommendation {
     status: "READY" | "BORDERLINE" | "NOT_READY";
@@ -34,7 +36,8 @@ const DiagnosticTier = ({
     color,
     icon: Icon,
     progress,
-    items
+    items,
+    tokens
 }: {
     title: string;
     status: string;
@@ -42,20 +45,27 @@ const DiagnosticTier = ({
     icon: LucideIcon;
     progress: number;
     items: string[];
+    tokens: ThemeTokens;
 }) => (
-    <div className="p-6 bg-slate-900/40 rounded-[2rem] border border-white/5 relative overflow-hidden group/tier hover:bg-slate-900/60 transition-all duration-500">
+    <div 
+        className="p-6 rounded-[2rem] border relative overflow-hidden group/tier transition-all duration-500"
+        style={{ 
+            backgroundColor: tokens.cardHover,
+            borderColor: tokens.cardBorder
+        }}
+    >
         <div className="flex items-center justify-between mb-5 relative z-10">
             <div className="flex items-center gap-4">
                 <div className={cn("p-2.5 rounded-xl border shadow-inner", color.replace('bg-', 'border-').replace('/10', '/20'))}>
                     <Icon className={cn("h-4 w-4", color.replace('bg-', 'text-').split(' ')[0])} />
                 </div>
                 <div>
-                    <span className="text-[13px] font-black text-white uppercase tracking-[0.15em]">{title}</span>
+                    <span className="text-[13px] font-black uppercase tracking-[0.15em]" style={{ color: tokens.textPrimary }}>{title}</span>
                     <span className={cn("text-[11px] font-bold ml-2 tracking-tight", color.replace('bg-', 'text-').split(' ')[0])}>({status})</span>
                 </div>
             </div>
             {/* Progress Bar matching image */}
-            <div className="h-1.5 w-24 bg-slate-800/50 rounded-full overflow-hidden p-[1px] border border-white/5">
+            <div className="h-1.5 w-24 rounded-full overflow-hidden p-[1px] border" style={{ backgroundColor: tokens.borderSubtle, borderColor: tokens.borderSubtle }}>
                 <motion.div
                     initial={{ width: 0 }}
                     animate={{ width: `${progress}%` }}
@@ -69,7 +79,7 @@ const DiagnosticTier = ({
             {items.map((item, i) => (
                 <li key={i} className="flex items-start gap-3 group/item">
                     <div className={cn("h-1.5 w-1.5 rounded-full mt-2 shrink-0 transition-transform group-hover/item:scale-150", color.split(' ')[0])} />
-                    <span className="text-[13px] text-slate-300 font-medium leading-relaxed group-hover/item:text-slate-100 transition-colors">
+                    <span className="text-[13px] font-medium leading-relaxed transition-colors" style={{ color: tokens.textSecondary }}>
                         {item}
                     </span>
                 </li>
@@ -79,7 +89,8 @@ const DiagnosticTier = ({
 );
 
 export const AIRecommendationPanel = React.memo(({ ai, layout = 'vertical' }: AIRecommendationPanelProps) => {
-    // Generate tiers based on the AI status and provided actions
+    const { tokens } = useReportThemeTokens();
+
     const tiers = [
         {
             title: "Focus Areas",
@@ -108,9 +119,15 @@ export const AIRecommendationPanel = React.memo(({ ai, layout = 'vertical' }: AI
     ];
 
     return (
-        <div className="w-full h-full flex flex-col p-8 lg:p-10 bg-[#0a0c12]/90 border border-slate-800/60 rounded-[2.5rem] shadow-[0_30px_60px_rgba(0,0,0,0.6)] backdrop-blur-3xl relative overflow-hidden group">
+        <div 
+            className="w-full h-full flex flex-col p-8 lg:p-10 rounded-[2.5rem] border shadow-[0_30px_60px_rgba(0,0,0,0.6)] backdrop-blur-3xl relative overflow-hidden group transition-colors duration-300"
+            style={{ 
+                backgroundColor: tokens.cardBg,
+                borderColor: tokens.cardBorder
+            }}
+        >
             {/* Background pattern */}
-            <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.01)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.01)_1px,transparent_1px)] bg-[size:24px_24px] [mask-image:radial-gradient(ellipse_at_center,black,transparent)] pointer-events-none" />
+            <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.01)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.01)_1px,transparent_1px)] bg-[size:24px_24px] [mask-image:radial-gradient(ellipse_at_center,black,transparent)] pointer-events-none opacity-20" />
 
             {/* Header with badges */}
             <div className="flex flex-col gap-6 mb-12 relative z-10">
@@ -119,7 +136,7 @@ export const AIRecommendationPanel = React.memo(({ ai, layout = 'vertical' }: AI
                         <div className="p-2.5 bg-indigo-500/10 rounded-2xl border border-indigo-500/20 shadow-inner group-hover:border-indigo-500/40 transition-all">
                             <BrainCircuit className="h-6 w-6 text-indigo-400" />
                         </div>
-                        <h3 className="text-xl font-black text-white uppercase tracking-tighter">Tactical Prescription</h3>
+                        <h3 className="text-xl font-black uppercase tracking-tighter" style={{ color: tokens.textPrimary }}>Tactical Prescription</h3>
                     </div>
                     <div className="flex items-center gap-3">
                         <div className="px-4 py-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-lg">
@@ -152,23 +169,23 @@ export const AIRecommendationPanel = React.memo(({ ai, layout = 'vertical' }: AI
                 )}
             </div>
 
-            <h4 className="text-[12px] font-black text-slate-400 uppercase tracking-[0.3em] mb-8 border-b border-white/5 pb-4 relative z-10">Tactical Prescription</h4>
+            <h4 className="text-[12px] font-black uppercase tracking-[0.3em] mb-8 border-b pb-4 relative z-10" style={{ color: tokens.textMuted, borderColor: tokens.borderSubtle }}>Tactical Prescription</h4>
 
             <div className={cn(
                 "relative z-10 flex-grow",
                 layout === 'horizontal' ? "grid grid-cols-1 md:grid-cols-3 gap-6" : "space-y-6"
             )}>
                 {tiers.map((tier, idx) => (
-                    <DiagnosticTier key={idx} {...tier} />
+                    <DiagnosticTier key={idx} {...tier} tokens={tokens} />
                 ))}
             </div>
 
             {/* Footer */}
-            <div className="mt-10 pt-8 border-t border-white/5 flex items-center justify-between relative z-10">
-                <div className="flex items-center gap-2 text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">
+            <div className="mt-10 pt-8 border-t flex items-center justify-between relative z-10" style={{ borderColor: tokens.borderSubtle }}>
+                <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.3em]" style={{ color: tokens.textMuted }}>
                     <span>DIAGNOSTIC LOGS V9.4</span>
                 </div>
-                <span className="text-[10px] font-black text-slate-700 uppercase tracking-[0.3em]">SYS_5J2AL8</span>
+                <span className="text-[10px] font-black uppercase tracking-[0.3em]" style={{ color: tokens.textMuted, opacity: 0.5 }}>SYS_5J2AL8</span>
             </div>
 
             <MethodologyDisclaimer

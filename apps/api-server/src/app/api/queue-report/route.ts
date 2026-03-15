@@ -40,6 +40,7 @@ async function postHandler(req: NextRequest) {
     const attemptFromParams = searchParams.get("id") ?? searchParams.get("attemptId") ?? "";
     const attemptId = (attemptFromBody || attemptFromParams).trim();
     const force = body.force === true || searchParams.get("force") === "true";
+    const theme = typeof body.theme === "string" ? body.theme : (searchParams.get("theme") ?? "dark");
 
     if (attemptId === "") {
       throw badRequest("Missing attemptId");
@@ -198,7 +199,7 @@ async function postHandler(req: NextRequest) {
         logger.info({ attemptId, workflowUrl, apiBase }, "[QueueReport] Triggering PDF workflow");
         await workflowClient.trigger({
           url: workflowUrl,
-          body: { attemptId, userId },
+          body: { attemptId, userId, theme },
           retries: 3
         });
         logger.info({ attemptId, workflowUrl }, "[QueueReport] Triggered PDF workflow");
@@ -217,7 +218,7 @@ async function postHandler(req: NextRequest) {
         // Stage 1: Rendering
         await ReportRepository.updateReportStatus(attemptId, "generating", "rendering");
         const { buffer, generationTimeMs, fileSizeKb, pageCount } = 
-          await ReportPdfService.generate(attemptId);
+          await ReportPdfService.generate(attemptId, undefined, undefined, undefined, undefined, { theme });
         
         const renderDuration = Date.now() - startTime;
         recordTimer("reports.api.render.duration", renderDuration, { route: "/api/queue-report", outcome: "success" });

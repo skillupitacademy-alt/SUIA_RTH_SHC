@@ -10,6 +10,8 @@ import Link from "next/link";
 import { clientLogger } from '@/utils/clientLogger';
 import { ReportDownloadButton } from "@/components/reports/ReportDownloadButton";
 import { useInsightVectorData } from "@/hooks/useInsightVectorData";
+import { useReportTheme } from "@/components/reports/context/ReportThemeContext";
+import { ReportThemeToggle } from "@/components/reports/ui/ReportThemeToggle";
 import dynamic from "next/dynamic";
 
 const ExamReportLayout = dynamic(
@@ -24,6 +26,8 @@ export default function PremiumReportPage() {
     const [isProcessing, setIsProcessing] = useState(false);
     const [errorMsg, setErrorMsg] = useState<string | null>(null);
     const [mounted, setMounted] = useState(false);
+
+    const { theme } = useReportTheme();
 
     // INSIGHT VECTOR HOOK
     const insight = useInsightVectorData(id as string, report?.userId);
@@ -92,7 +96,7 @@ export default function PremiumReportPage() {
     // Handle Error State
     if (errorMsg) {
         return (
-            <div className="flex h-screen flex-col items-center justify-center gap-8 text-center bg-slate-950 px-6">
+            <div className="flex h-screen flex-col items-center justify-center gap-8 text-center bg-slate-950 px-6" data-report-theme={theme}>
                 <div className="p-6 rounded-[2.5rem] bg-rose-500/10 border border-rose-500/20 text-rose-500 shadow-2xl shadow-rose-500/10">
                     <RefreshCw size={40} className="animate-spin-slow" />
                 </div>
@@ -123,7 +127,7 @@ export default function PremiumReportPage() {
     // Loading state
     if (loading || isProcessing || !report) {
         return (
-            <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center gap-4 text-slate-400">
+            <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center gap-4 text-slate-400" data-report-theme={theme}>
                 <div className="animate-spin rounded-full h-12 w-12 border-2 border-slate-800 border-t-indigo-500" />
                 <p className="text-[11px] font-bold uppercase tracking-[0.3em]">Synthesizing neural diagnostics...</p>
             </div>
@@ -132,7 +136,7 @@ export default function PremiumReportPage() {
 
     // Render the Premium Layout
     return (
-        <div className="min-h-screen bg-slate-950">
+        <div className="min-h-screen bg-slate-950" data-report-theme={theme}>
             {/* COMMAND HUB HEADER */}
             <header className="sticky top-0 z-50 bg-[#020617]/80 backdrop-blur-xl py-5 px-8 md:px-16 flex items-center justify-between border-b border-white/[0.03] shadow-2xl">
                 <div className="flex items-center gap-10">
@@ -191,6 +195,7 @@ export default function PremiumReportPage() {
                 </div>
 
                 <div className="hidden lg:flex items-center gap-8">
+                    <ReportThemeToggle />
                     <button
                         onClick={() => window.location.reload()}
                         className="p-4 rounded-xl bg-slate-900/50 border border-white/5 hover:border-indigo-500/50 text-slate-500 hover:text-indigo-400 transition-all active:scale-95 group"

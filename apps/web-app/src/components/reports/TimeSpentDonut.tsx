@@ -5,6 +5,7 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { Clock } from "lucide-react";
 import { MethodologyDisclaimer } from './MethodologyDisclaimer';
 import { StableRenderGuard } from './recharts/StableRenderGuard';
+import { useReportThemeTokens } from './hooks/useReportThemeTokens';
 
 export interface TimeSpentDonutProps {
     data: {
@@ -16,6 +17,7 @@ export interface TimeSpentDonutProps {
 }
 
 export const TimeSpentDonut = React.memo(({ data, suppressAnimation }: TimeSpentDonutProps) => {
+    const { tokens, theme } = useReportThemeTokens();
     const [mounted, setMounted] = React.useState(false);
 
     React.useEffect(() => {
@@ -48,7 +50,7 @@ export const TimeSpentDonut = React.memo(({ data, suppressAnimation }: TimeSpent
 
     // If still empty (no time at all), show an empty donut with label
     if (breakdown.length === 0) {
-        breakdown = [{ name: "No data", value: 1, color: '#1f2937', label: "No time recorded" }];
+        breakdown = [{ name: "No data", value: 1, color: theme === 'dark' ? '#1f2937' : '#f1f5f9', label: "No time recorded" }];
     }
 
     const formatTotalTime = (seconds: number) => {
@@ -58,15 +60,24 @@ export const TimeSpentDonut = React.memo(({ data, suppressAnimation }: TimeSpent
     };
 
     return (
-        <div className="w-full h-full flex flex-col p-8 py-[30px] lg:p-10 lg:py-[30px] bg-[#0d111a] rounded-[2.5rem] border border-white/5 shadow-2xl relative overflow-hidden group">
+        <div 
+            className="w-full h-full flex flex-col p-8 py-[30px] lg:p-10 lg:py-[30px] rounded-[2.5rem] border shadow-2xl relative overflow-hidden group transition-colors duration-300"
+            style={{ 
+                backgroundColor: tokens.cardBg,
+                borderColor: tokens.cardBorder
+            }}
+        >
             <div className="flex items-center justify-between border-b border-slate-800/60 pb-5 mb-5 relative z-20">
                 <div>
                     <h3 className="text-[12px] font-black text-indigo-400 uppercase tracking-[0.3em] mb-1">Temporal Metrics</h3>
-                    <p className="text-2xl font-black text-white tracking-tighter uppercase leading-tight">Time Distribution</p>
+                    <p className="text-2xl font-black tracking-tighter uppercase leading-tight" style={{ color: tokens.textPrimary }}>Time Distribution</p>
                 </div>
-                <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-900/50 border border-white/5 rounded-xl cursor-default">
+                <div 
+                    className="flex items-center gap-2 px-3 py-1.5 border rounded-xl cursor-default"
+                    style={{ backgroundColor: tokens.pageBg, borderColor: tokens.borderSubtle }}
+                >
                     <Clock size={14} className="text-indigo-400" />
-                    <span className="text-[13px] font-bold text-slate-300">Active Spend</span>
+                    <span className="text-[13px] font-bold" style={{ color: tokens.textSecondary }}>Active Spend</span>
                 </div>
             </div>
 
@@ -106,12 +117,15 @@ export const TimeSpentDonut = React.memo(({ data, suppressAnimation }: TimeSpent
                                 ))}
                             </Pie>
                             <Tooltip
-                                content={({ active, payload }) => {
+                                 content={({ active, payload }) => {
                                     if (active && payload && payload.length) {
                                         return (
-                                            <div className="bg-[#0f172a]/95 backdrop-blur-xl border border-white/10 p-4 rounded-2xl shadow-2xl">
+                                            <div 
+                                                className="backdrop-blur-xl border p-4 rounded-2xl shadow-2xl"
+                                                style={{ backgroundColor: tokens.panelBg, borderColor: tokens.borderMedium }}
+                                            >
                                                 <p className="text-[12px] font-black text-indigo-400 uppercase tracking-widest mb-1">{payload[0].payload.name}</p>
-                                                <p className="text-2xl font-black text-white">{formatTotalTime(Number(payload[0].value))}</p>
+                                                <p className="text-2xl font-black" style={{ color: tokens.textPrimary }}>{formatTotalTime(Number(payload[0].value))}</p>
                                             </div>
                                         );
                                     }
@@ -124,18 +138,23 @@ export const TimeSpentDonut = React.memo(({ data, suppressAnimation }: TimeSpent
 
                 <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-10">
                     <div className="flex flex-col items-center">
-                        <span className="text-4xl font-black text-white tracking-tighter drop-shadow-[0_0_15px_rgba(255,255,255,0.1)]">
+                        <span 
+                            className="text-4xl font-black tracking-tighter drop-shadow-[0_0_15px_rgba(255,255,255,0.1)]"
+                            style={{ color: tokens.textPrimary }}
+                        >
                             {formatTotalTime(data.totalSeconds)}
                         </span>
                         <div className="flex items-center gap-2 mt-1">
-                            <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">TOTAL</span>
+                            <span className="text-[10px] font-black uppercase tracking-[0.2em]" style={{ color: tokens.textMuted }}>TOTAL</span>
                         </div>
-
                     </div>
                 </div>
             </div>
 
-            <div className="mt-auto pt-5 border-t border-white/5 space-y-6">
+            <div 
+                className="mt-auto pt-5 border-t space-y-6"
+                style={{ borderTopColor: tokens.borderSubtle }}
+            >
                 <div className="flex flex-wrap items-center justify-center gap-8">
                     {breakdown.map((item) => (
                         <div key={item.name} className="flex items-center gap-2.5">
@@ -143,7 +162,7 @@ export const TimeSpentDonut = React.memo(({ data, suppressAnimation }: TimeSpent
                                 className="h-2.5 w-2.5 rounded-full"
                                 style={{ backgroundColor: item.color }}
                             />
-                            <span className="text-[13px] font-bold text-slate-400 tracking-tight">{item.label}</span>
+                            <span className="text-[13px] font-bold tracking-tight" style={{ color: tokens.textSecondary }}>{item.label}</span>
                         </div>
                     ))}
                 </div>

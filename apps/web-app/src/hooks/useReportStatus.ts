@@ -99,7 +99,7 @@ export function useReportStatus(attemptId: string) {
     return () => clearInterval(timer);
   }, [cooldown]);
 
-  const triggerGeneration = async (options?: { force?: boolean }) => {
+  const triggerGeneration = async (options?: { force?: boolean, theme?: string }) => {
     if (!attemptId || cooldown > 0) return;
     
     try {
@@ -116,7 +116,11 @@ export function useReportStatus(attemptId: string) {
           'Content-Type': 'application/json',
           'x-csrf-token': csrfToken,
         },
-        body: JSON.stringify({ attemptId, force: options?.force }),
+        body: JSON.stringify({ 
+          attemptId, 
+          force: options?.force,
+          theme: options?.theme 
+        }),
         credentials: "include",
       });
 

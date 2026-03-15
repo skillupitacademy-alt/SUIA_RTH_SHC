@@ -10,6 +10,7 @@ import { ReportRepository } from "@/modules/report-engine/report-repository";
 export interface GeneratePdfOptions {
   customPath?: string;
   customData?: unknown;
+  theme?: string;
 }
 
 export class ReportPdfService {
@@ -196,9 +197,12 @@ export class ReportPdfService {
       // 4. Data Injection: Push data into browser memory BEFORE navigation
       this.log.info({ attemptId }, "[ReportPdfService] Injecting report data into browser memory");
       const dataToInject = options?.customData ?? reportData;
-      await page.evaluateOnNewDocument((data: unknown) => {
+      const themeToInject = options?.theme ?? "dark";
+      
+      await page.evaluateOnNewDocument((data: unknown, theme: string) => {
         (globalThis as { __REPORT_DATA__?: unknown }).__REPORT_DATA__ = data;
-      }, dataToInject);
+        (globalThis as { __REPORT_THEME__?: string }).__REPORT_THEME__ = theme;
+      }, dataToInject, themeToInject);
 
       // 5. Navigate and Wait
       this.log.info({ attemptId, url }, "[ReportPdfService] Navigating to print view");

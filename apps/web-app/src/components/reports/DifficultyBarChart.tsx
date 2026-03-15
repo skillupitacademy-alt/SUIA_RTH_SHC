@@ -4,6 +4,7 @@ import React from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { MethodologyDisclaimer } from './MethodologyDisclaimer';
 import { StableRenderGuard } from './recharts/StableRenderGuard';
+import { useReportThemeTokens } from './hooks/useReportThemeTokens';
 
 export interface DifficultyBarChartProps {
     data: { level: string; accuracy: number; attempts: number }[];
@@ -11,20 +12,27 @@ export interface DifficultyBarChartProps {
 }
 
 export const DifficultyBarChart = React.memo(({ data, expertDropOff }: DifficultyBarChartProps) => {
+    const { tokens } = useReportThemeTokens();
     const sortedData = React.useMemo(() => {
         const order = ["Simple", "Intermediate", "Expert"];
         return [...data].sort((a, b) => order.indexOf(a.level) - order.indexOf(b.level));
     }, [data]);
 
     return (
-        <div className="w-full h-full flex flex-col bg-[#0d111a] rounded-[2.5rem] p-8 py-[30px] lg:p-10 lg:py-[30px] border border-white/5 shadow-2xl relative overflow-hidden group">
+        <div 
+            className="w-full h-full flex flex-col rounded-[2.5rem] p-8 py-[30px] lg:p-10 lg:py-[30px] border shadow-2xl relative overflow-hidden group transition-colors duration-300"
+            style={{ 
+                backgroundColor: tokens.cardBg,
+                borderColor: tokens.cardBorder
+            }}
+        >
             {/* Background Glows */}
             <div className="absolute top-0 right-0 w-64 h-64 bg-rose-500/5 blur-[120px] rounded-full pointer-events-none" />
 
             <div className="flex items-center justify-between border-b border-slate-800/60 pb-5 mb-5 relative z-20">
                 <div>
                     <h3 className="text-[12px] font-black text-indigo-400 uppercase tracking-[0.3em] mb-1">Complexity Threshold</h3>
-                    <p className="text-2xl font-black text-white uppercase tracking-tighter leading-tight">Difficulty Matrix Diagnostic</p>
+                    <p className="text-2xl font-black uppercase tracking-tighter leading-tight" style={{ color: tokens.textPrimary }}>Difficulty Matrix Diagnostic</p>
                 </div>
             </div>
 
@@ -32,7 +40,7 @@ export const DifficultyBarChart = React.memo(({ data, expertDropOff }: Difficult
                 <StableRenderGuard>
                     <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                         <BarChart data={sortedData} margin={{ top: 20, right: 30, left: 0, bottom: 0 }}>
-                            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.03)" vertical={false} />
+                            <CartesianGrid strokeDasharray="3 3" stroke={tokens.chartGrid} vertical={false} />
                             <XAxis
                                 dataKey="level"
                                 axisLine={false}
@@ -46,14 +54,17 @@ export const DifficultyBarChart = React.memo(({ data, expertDropOff }: Difficult
                                 content={({ active, payload }) => {
                                     if (active && payload && payload.length) {
                                         return (
-                                            <div className="bg-[#0f172a]/95 backdrop-blur-xl border border-white/10 p-5 rounded-2xl shadow-2xl">
+                                             <div 
+                                                className="backdrop-blur-xl border p-5 rounded-2xl shadow-2xl"
+                                                style={{ backgroundColor: tokens.panelBg, borderColor: tokens.borderMedium }}
+                                            >
                                                 <p className="text-[12px] font-black text-indigo-400 uppercase tracking-widest mb-2">{payload[0].payload.level} Gravity</p>
                                                 <div className="flex items-baseline gap-2">
-                                                    <span className="text-4xl font-black text-white">{payload[0].value}%</span>
-                                                    <span className="text-[11px] font-bold text-slate-500 uppercase tracking-[0.2em]">Accuracy</span>
+                                                    <span className="text-4xl font-black" style={{ color: tokens.textPrimary }}>{payload[0].value}%</span>
+                                                    <span className="text-[11px] font-bold uppercase tracking-[0.2em]" style={{ color: tokens.textMuted }}>Accuracy</span>
                                                 </div>
-                                                <div className="mt-4 pt-4 border-t border-white/5">
-                                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{payload[0].payload.attempts} Diagnostic Cycles</p>
+                                                <div className="mt-4 pt-4 border-t" style={{ borderTopColor: tokens.borderSubtle }}>
+                                                    <p className="text-[10px] font-black uppercase tracking-widest" style={{ color: tokens.textSecondary }}>{payload[0].payload.attempts} Diagnostic Cycles</p>
                                                 </div>
                                             </div>
                                         );
@@ -81,7 +92,10 @@ export const DifficultyBarChart = React.memo(({ data, expertDropOff }: Difficult
                 </StableRenderGuard>
             </div>
 
-            <div className="mt-auto pt-5 border-t border-white/5 space-y-6">
+            <div 
+                className="mt-auto pt-5 border-t space-y-6"
+                style={{ borderTopColor: tokens.borderSubtle }}
+            >
                 {expertDropOff && (
                     <div className="flex items-center gap-4 p-5 bg-amber-500/5 border border-amber-500/20 rounded-2xl">
                         <div className="h-10 w-10 rounded-xl bg-amber-500/10 flex items-center justify-center shrink-0">

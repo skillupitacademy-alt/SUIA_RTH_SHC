@@ -18,7 +18,7 @@ export function PdfPage({ children, orientation = "landscape", autoScale = false
     const debug = process.env.NEXT_PUBLIC_DEBUG_PDF_BORDERS === "true";
     return (
         <div
-            className={`pdf-page ${orientation} relative flex flex-col bg-[#0B1220] text-slate-100 overflow-hidden select-none ${debug ? "pdf-debug-border" : ""}`}
+            className={`pdf-page ${orientation} relative flex flex-col overflow-hidden select-none ${debug ? "pdf-debug-border" : ""}`}
             style={{
                 width: dim.width,
                 height: dim.height,

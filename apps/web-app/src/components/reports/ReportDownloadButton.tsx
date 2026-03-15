@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { ReportGenerationModal, type ExportFormat } from "./ReportGenerationModal";
 import { motion, AnimatePresence } from "framer-motion";
+import { useReportTheme } from "./context/ReportThemeContext";
 
 interface ReportDownloadButtonProps {
     attemptId: string;
@@ -174,13 +175,15 @@ export function ReportDownloadButton({ attemptId, userId, className }: ReportDow
         setIsModalOpen(true);
     };
 
+    const { theme } = useReportTheme();
+
     const handleTriggerPdf = async (options?: { force?: boolean }) => {
         setActiveFormat("pdf");
         if (pdfStatus === "ready" && pdfUrl) {
             handlePdfDownload();
             return;
         }
-        await triggerPdf(options);
+        await triggerPdf({ ...options, theme });
         setIsModalOpen(true);
         setIsDropdownOpen(false);
     };

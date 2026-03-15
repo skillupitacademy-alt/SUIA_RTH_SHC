@@ -367,7 +367,7 @@ export function ComplexityLadderPage({ data, page, total }: PageProps) {
 /* ────────────────────────────────────────────── */
 export function AppendixCoverPage({ page, total }: { page: number; total: number }) {
     return (
-        <div className="h-full flex flex-col justify-center items-center text-center bg-[#0B1220]">
+        <div className="h-full flex flex-col justify-center items-center text-center">
             <div className="w-16 h-1 bg-indigo-500 mb-12 rounded-full" />
             <h2 className="text-[12rem] font-black uppercase tracking-tighter leading-none text-white opacity-10 absolute -z-10">AUDIT</h2>
             <h2 className={cn(T.typography.metric, "text-5xl mb-4")}>Appendix</h2>
@@ -415,7 +415,7 @@ export function QuestionAuditPage({ data, page, total }: { questions?: QuestionI
             </header>
 
             {/* Raw Audit Stats Banner */}
-            <div className="p-8 bg-slate-950 rounded-[2rem] border border-white/5 mb-8 flex items-center justify-between gap-6 shadow-2xl relative overflow-hidden">
+            <div className="p-8 bg-slate-100/10 dark:bg-slate-950 rounded-[2rem] border border-white/5 mb-8 flex items-center justify-between gap-6 shadow-2xl relative overflow-hidden">
                 <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.01)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.01)_1px,transparent_1px)] bg-[size:24px_24px] [mask-image:radial-gradient(ellipse_at_center,black,transparent)] pointer-events-none" />
                 <div className="relative z-10 flex flex-col">
                     <h2 className="text-2xl font-black text-white uppercase tracking-tighter">Raw Audit</h2>
