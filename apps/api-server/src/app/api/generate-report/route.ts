@@ -120,9 +120,14 @@ async function postHandler(req: NextRequest) {
     const report = await ReportRepository.getReportByAttempt(attemptId);
     const hasFileRef = report !== null && report !== undefined && report.fileRef !== null && report.fileRef !== undefined && report.fileRef !== "";
     if (!force && report?.status === "ready" && hasFileRef) {
-      const url = await getDownloadUrl(report.fileRef as string);
-      recordCounter(METRICS.REPORTS.PDF_GEN, 1, { outcome: 'success', cached: 'true' });
-      return ApiResponse.success({ url, cached: true });
+      const { storage } = await import("@/lib/storage");
+      const exists = await storage.exists(report.fileRef as string);
+      if (exists) {
+        const url = await getDownloadUrl(report.fileRef as string);
+        recordCounter(METRICS.REPORTS.PDF_GEN, 1, { outcome: 'success', cached: 'true' });
+        return ApiResponse.success({ url, cached: true });
+      }
+      logger.warn({ attemptId }, "[GenerateReport] Stale report.fileRef detected (missing in storage) - regenerating");
     }
 
     const materialized = exam.reportMaterialized as ReportJSON | null;

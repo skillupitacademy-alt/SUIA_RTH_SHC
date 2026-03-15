@@ -96,8 +96,14 @@ async function postHandler(req: NextRequest) {
     // 2. Idempotency: if a ready PDF already exists, return immediately
     const existingReport = await ReportRepository.getReportByAttempt(attemptId);
     if (existingReport?.status === "ready" && typeof existingReport.fileRef === "string" && existingReport.fileRef.trim() !== "") {
-      logger.info({ attemptId }, "[QueueReport] PDF idempotency hit via report record");
-      return ApiResponse.success({ status: "ready", attemptId, downloadUrl: existingReport.fileRef });
+      // Validate storage existence; if blob was deleted, regenerate instead of returning stale refs.
+      const { storage } = await import("@/lib/storage");
+      const exists = await storage.exists(existingReport.fileRef);
+      if (exists) {
+        logger.info({ attemptId }, "[QueueReport] PDF idempotency hit via report record");
+        return ApiResponse.success({ status: "ready", attemptId, downloadUrl: existingReport.fileRef });
+      }
+      logger.warn({ attemptId }, "[QueueReport] Stale report.fileRef detected (missing in storage) - regenerating");
     }
 
     const examExport = await db.query.exams.findFirst({
@@ -106,8 +112,13 @@ async function postHandler(req: NextRequest) {
     });
     const existingPdfUrl = (examExport?.exportUrls as { analytics_pdf?: string } | null)?.analytics_pdf;
     if (typeof existingPdfUrl === "string" && existingPdfUrl.trim() !== "") {
-      logger.info({ attemptId }, "[QueueReport] PDF idempotency hit via exams.export_urls");
-      return ApiResponse.success({ status: "ready", attemptId, downloadUrl: existingPdfUrl });
+      const { storage } = await import("@/lib/storage");
+      const exists = await storage.exists(existingPdfUrl);
+      if (exists) {
+        logger.info({ attemptId }, "[QueueReport] PDF idempotency hit via exams.export_urls");
+        return ApiResponse.success({ status: "ready", attemptId, downloadUrl: existingPdfUrl });
+      }
+      logger.warn({ attemptId }, "[QueueReport] Stale exams.export_urls.analytics_pdf detected (missing in storage) - regenerating");
     }
 
     // 3. Proactive Rate Limit check (3 per min)

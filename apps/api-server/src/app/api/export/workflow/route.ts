@@ -39,6 +39,61 @@ export const { POST } = serve<{
     }
   };
 
+  // Student Insight PDF is a PDF artifact (stored under reports/), not a JSON/ZIP export.
+  // It needs a dedicated flow; otherwise it would fall through to JSON formatting.
+  if (format === 'student-insight-pdf') {
+    const fileRef = await context.run('generate-student-insight-pdf', async () => {
+      log.info({ examId, jobId }, 'Step: Generate Student Insight PDF');
+      await JobsService.updateJobStatus(jobId, JobStatus.PROCESSING, { currentStep: 'processing' });
+      await persistState({ step: 'fetch-raw-data', examId, userId, format });
+
+      const { ExportEngine } = await import('@/lib/export/exportEngine');
+      const engine = ExportEngine.getInstance();
+
+      await persistState({ step: 'aggregate-data', examId, userId, format });
+      // ExportEngine handles formatter + ReportPdfService + upload + exams.export_urls persistence.
+      const ref = await engine.processExport(examId, userId, 'student-insight-pdf');
+
+      await persistState({ step: 'render-pdf', examId, userId, format });
+      await persistState({ step: 'upload-report', examId, userId, format });
+      return ref;
+    });
+
+    await context.run('notify-client', async () => {
+      log.info({ examId, jobId }, 'Step: Notify Client');
+      await JobsService.updateJobStatus(jobId, JobStatus.COMPLETED, {
+        result: {
+          examId,
+          format,
+          downloadUrl: fileRef,
+          completedAt: new Date().toISOString()
+        }
+      });
+
+      void eventBus.emitEvent(AppEvents.EXPORT_COMPLETE, {
+        examId,
+        userId,
+        format,
+        downloadUrl: fileRef,
+        completedAt: new Date()
+      });
+
+      try {
+        await redis.set(cacheKey, fileRef, { ex: 900 });
+      } catch (error: unknown) {
+        log.warn({ err: error, jobId, examId }, 'Export workflow cache write failed after completion');
+      }
+
+      try {
+        await redis.del(stateKey);
+      } catch (error: unknown) {
+        log.warn({ err: error, jobId }, 'Failed to cleanup workflow state');
+      }
+    });
+
+    return;
+  }
+
   const fetched = await context.run('fetch-raw-data', async () => {
     log.info({ examId, jobId }, 'Step: Fetch Raw Data');
     await JobsService.updateJobStatus(jobId, JobStatus.PROCESSING);

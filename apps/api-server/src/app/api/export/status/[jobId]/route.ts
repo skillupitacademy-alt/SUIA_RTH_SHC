@@ -54,6 +54,13 @@ function mapWorkflowStepToStage(format: string, step?: string): { stage: string 
     if (step === 'notify-client') return { stage: 'ready', progress };
   }
 
+  if (format === 'student-insight-pdf') {
+    if (step === 'fetch-raw-data') return { stage: 'queued', progress };
+    if (step === 'aggregate-data') return { stage: 'processing', progress };
+    if (step === 'render-pdf' || step === 'upload-report') return { stage: 'rendering', progress };
+    if (step === 'notify-client') return { stage: 'ready', progress };
+  }
+
   // Fallback for formats not handled by the workflow state machine.
   if (step === 'fetch-raw-data') return { stage: 'queued', progress };
   if (step === 'aggregate-data') return { stage: 'processing', progress };
