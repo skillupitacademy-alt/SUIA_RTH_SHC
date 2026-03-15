@@ -131,6 +131,8 @@ body {
   width: 1920px;
   margin: 0 auto;
   background: #0B1220;
+  height: auto !important;
+  overflow: visible !important;
 }
 
 .pdf-page {

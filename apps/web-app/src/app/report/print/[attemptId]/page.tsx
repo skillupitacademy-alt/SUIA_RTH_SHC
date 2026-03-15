@@ -276,7 +276,7 @@ export default function PrintReportPage(props: {
                     : "heatmap";
 
     return (
-        <div className="pdf-root" style={{ height: scale < 1 ? 'auto' : '100%' }}>
+        <div className="pdf-root" style={{ height: 'auto' }}>
             <div
                 className="pdf-container bg-slate-950 flex flex-col items-center"
                 style={{

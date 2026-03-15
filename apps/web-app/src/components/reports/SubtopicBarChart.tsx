@@ -86,8 +86,7 @@ export const SubtopicBarChart = React.memo(({ data, weakest, rootCauseText, dens
                             <Bar
                                 dataKey="accuracy"
                                 radius={[0, 10, 10, 0]}
-                                isAnimationActive={true}
-                                animationDuration={1000}
+                                isAnimationActive={false}
                             >
                                 {sortedData.map((entry, index) => (
                                     <Cell

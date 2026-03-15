@@ -204,12 +204,18 @@ export function SubjectBreakdownPage({ data, page, total }: PageProps) {
                 <div className="flex-1 flex flex-col gap-6">
                     <div className="grid grid-cols-2 gap-6 items-stretch">
                         <ChartCard className="flex-1">
-                            <div style={{ width: T.chart.medium, height: T.chart.medium }} className="mx-auto">
+                            <div className="text-[10px] font-black text-indigo-400 uppercase tracking-[0.3em] mb-2">
+                                Cognitive Distribution
+                            </div>
+                            <div className="flex-1 min-h-0">
                                 <SkillDonutChartPrint data={data.skills} />
                             </div>
                         </ChartCard>
                         <ChartCard className="flex-1">
-                            <div style={{ width: T.chart.medium, height: T.chart.medium }} className="mx-auto">
+                            <div className="text-[10px] font-black text-indigo-400 uppercase tracking-[0.3em] mb-2">
+                                Temporal Metrics
+                            </div>
+                            <div className="flex-1 min-h-0">
                                 <TimeSpentDonutPrint data={{
                                     totalSeconds: data.totalTimeSpentSeconds,
                                     questions: data.questions || [],
@@ -415,24 +421,24 @@ export function QuestionAuditPage({ data, page, total }: { questions?: QuestionI
                     <h2 className="text-2xl font-black text-white uppercase tracking-tighter">Raw Audit</h2>
                     <p className="text-slate-400 font-bold uppercase text-[10px] tracking-[0.3em] mt-1">Vector Diagnostic Log</p>
                 </div>
-                <div className="relative z-10 grid grid-cols-5 gap-x-8 divide-x divide-slate-800">
+                <div className="relative z-10 flex items-center divide-x divide-slate-800">
                     <div className="flex flex-col items-center px-4">
                         <span className="text-2xl font-black text-slate-300">{totalQuestions}</span>
                         <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest mt-1 whitespace-nowrap">Total Depth</span>
                     </div>
-                    <div className="flex flex-col items-center px-6 border-l border-slate-800">
+                    <div className="flex flex-col items-center px-4 border-l border-slate-800">
                         <span className="text-2xl font-black text-indigo-400">{auditAccuracy}%</span>
                         <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest mt-1 whitespace-nowrap">Accuracy Sync</span>
                     </div>
-                    <div className="flex flex-col items-center px-8 border-l border-slate-800">
+                    <div className="flex flex-col items-center px-4 border-l border-slate-800">
                         <span className="text-2xl font-black text-emerald-500">{correctCount}</span>
                         <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest mt-1 whitespace-nowrap">Hits</span>
                     </div>
-                    <div className="flex flex-col items-center px-6 border-l border-slate-800">
+                    <div className="flex flex-col items-center px-4 border-l border-slate-800">
                         <span className="text-2xl font-black text-rose-500">{totalQuestions - correctCount}</span>
                         <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest mt-1 whitespace-nowrap">Misses</span>
                     </div>
-                    <div className="flex flex-col items-center px-6 border-l border-slate-800">
+                    <div className="flex flex-col items-center px-4 border-l border-slate-800">
                         <span className="text-2xl font-black text-amber-500">{auditAvgLatency}s</span>
                         <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest mt-1 whitespace-nowrap">Avg Latency</span>
                     </div>

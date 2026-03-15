@@ -73,22 +73,21 @@ export const RadialKPI = React.memo(({ data, suppressAnimation = false }: Radial
             </div>
 
             <div className="relative flex-grow flex flex-col items-center justify-center min-h-[300px] relative z-20">
-                <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 flex flex-col items-center justify-center z-20 pointer-events-none">
-                    <div className="relative flex flex-col items-center">
-                        <span className="text-[13px] font-black text-slate-500 uppercase tracking-[0.4em] mb-2 -translate-y-[135px]">Readiness</span>
-                        <div className="relative">
-                            <div className="absolute inset-0 bg-white/5 blur-3xl rounded-full" />
-                            <span className={`${data.readiness >= 100 ? 'text-6xl' : 'text-7xl'} font-black text-white tracking-tighter drop-shadow-[0_0_15px_rgba(255,255,255,0.15)]`}>
-                                {data.readiness}%
+                <div className="absolute inset-0 flex flex-col items-center justify-center z-20 pointer-events-none">
+                    <span className="text-[11px] font-black text-slate-500 uppercase tracking-[0.4em] mb-1">
+                        Readiness
+                    </span>
+                    <span className={`${data.readiness >= 100 ? 'text-5xl' : 'text-6xl'} font-black text-white tracking-tighter drop-shadow-[0_0_15px_rgba(255,255,255,0.15)]`}>
+                        {data.readiness}%
+                    </span>
+                    {!suppressAnimation && (
+                        <div className="mt-2 px-3 py-1 bg-white/5 rounded-full border border-white/10 flex items-center gap-2">
+                            <Activity size={12} className="text-indigo-400" />
+                            <span className="text-[9px] font-black text-indigo-400 uppercase tracking-widest">
+                                AI Matrix Active
                             </span>
                         </div>
-                        {!suppressAnimation && (
-                            <div className="mt-4 px-4 py-1.5 bg-white/5 rounded-full border border-white/10 flex items-center gap-2 translate-y-[135px]">
-                                <Activity size={14} className="text-indigo-400" />
-                                <span className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">AI Matrix Active</span>
-                            </div>
-                        )}
-                    </div>
+                    )}
                 </div>
 
                 <div className="w-full h-full flex items-center justify-center relative">
@@ -102,7 +101,6 @@ export const RadialKPI = React.memo(({ data, suppressAnimation = false }: Radial
                                 outerRadius="80%"
                                 startAngle={90}
                                 endAngle={450}
-                                barSize={10}
                                 data={radialData}
                             >
                                 <defs>
@@ -131,10 +129,46 @@ export const RadialKPI = React.memo(({ data, suppressAnimation = false }: Radial
                                     </filter>
                                 </defs>
                                 <PolarAngleAxis type="number" domain={[0, 100]} tick={false} />
-                                <RadialBarFixed dataKey="time" innerRadius="35%" outerRadius="35%" fill="url(#violetLinear)" cornerRadius={20} background={{ fill: 'rgba(255,255,255,0.02)' }} filter="url(#glow_RKPI)" isAnimationActive={!suppressAnimation} />
-                                <RadialBarFixed dataKey="rank" innerRadius="50%" outerRadius="50%" fill="url(#amberLinear)" cornerRadius={20} background={{ fill: 'rgba(255,255,255,0.02)' }} filter="url(#glow_RKPI)" isAnimationActive={!suppressAnimation} />
-                                <RadialBarFixed dataKey="mastery" innerRadius="65%" outerRadius="65%" fill="url(#emeraldLinear)" cornerRadius={20} background={{ fill: 'rgba(255,255,255,0.02)' }} filter="url(#glow_RKPI)" isAnimationActive={!suppressAnimation} />
-                                <RadialBarFixed dataKey="score" innerRadius="80%" outerRadius="80%" fill="url(#cyanLinear)" cornerRadius={20} background={{ fill: 'rgba(255,255,255,0.02)' }} filter="url(#glow_RKPI)" isAnimationActive={!suppressAnimation} />
+                                <RadialBarFixed
+                                    dataKey="time"
+                                    innerRadius="32%"
+                                    outerRadius="40%"
+                                    fill="url(#violetLinear)"
+                                    cornerRadius={20}
+                                    background={{ fill: 'rgba(255,255,255,0.02)' }}
+                                    filter="url(#glow_RKPI)"
+                                    isAnimationActive={!suppressAnimation}
+                                />
+                                <RadialBarFixed
+                                    dataKey="rank"
+                                    innerRadius="47%"
+                                    outerRadius="55%"
+                                    fill="url(#amberLinear)"
+                                    cornerRadius={20}
+                                    background={{ fill: 'rgba(255,255,255,0.02)' }}
+                                    filter="url(#glow_RKPI)"
+                                    isAnimationActive={!suppressAnimation}
+                                />
+                                <RadialBarFixed
+                                    dataKey="mastery"
+                                    innerRadius="62%"
+                                    outerRadius="70%"
+                                    fill="url(#emeraldLinear)"
+                                    cornerRadius={20}
+                                    background={{ fill: 'rgba(255,255,255,0.02)' }}
+                                    filter="url(#glow_RKPI)"
+                                    isAnimationActive={!suppressAnimation}
+                                />
+                                <RadialBarFixed
+                                    dataKey="score"
+                                    innerRadius="77%"
+                                    outerRadius="85%"
+                                    fill="url(#cyanLinear)"
+                                    cornerRadius={20}
+                                    background={{ fill: 'rgba(255,255,255,0.02)' }}
+                                    filter="url(#glow_RKPI)"
+                                    isAnimationActive={!suppressAnimation}
+                                />
                             </RadialBarChart>
                         </ResponsiveContainer>
                     </StableRenderGuard>
