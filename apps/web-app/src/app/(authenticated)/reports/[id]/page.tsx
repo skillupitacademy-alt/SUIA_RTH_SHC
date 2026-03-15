@@ -9,6 +9,7 @@ import { ArrowLeft, RefreshCw } from "lucide-react";
 import Link from "next/link";
 import { clientLogger } from '@/utils/clientLogger';
 import { ReportDownloadButton } from "@/components/reports/ReportDownloadButton";
+import { useInsightVectorData } from "@/hooks/useInsightVectorData";
 import dynamic from "next/dynamic";
 
 const ExamReportLayout = dynamic(
@@ -23,6 +24,9 @@ export default function PremiumReportPage() {
     const [isProcessing, setIsProcessing] = useState(false);
     const [errorMsg, setErrorMsg] = useState<string | null>(null);
     const [mounted, setMounted] = useState(false);
+
+    // INSIGHT VECTOR HOOK
+    const insight = useInsightVectorData(id as string, report?.userId);
 
     useEffect(() => {
         setMounted(true);
@@ -206,6 +210,14 @@ export default function PremiumReportPage() {
             <ExamReportLayout
                 data={report}
                 loading={false}
+                insightData={{
+                    guidanceSignals: insight.data?.guidanceSignals || [],
+                    historicalProgress: insight.data?.historicalProgress || [],
+                    skillData: insight.data?.skillData || [],
+                    loading: insight.loading,
+                    error: insight.error,
+                    onRetry: insight.retry,
+                }}
             />
         </div>
     );

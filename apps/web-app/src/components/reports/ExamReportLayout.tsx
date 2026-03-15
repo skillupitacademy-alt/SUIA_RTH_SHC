@@ -11,12 +11,16 @@ import {
     CheckCircle2,
     XCircle,
     AlertTriangle,
-    Zap
+    Zap,
+    Lightbulb
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ZLoader } from "@quiz/ui";
 import { AnalysisNarrative } from "./AnalysisNarrative";
+import { PrecisionGuidanceCard } from "./PrecisionGuidanceCard";
+import { InsightVectorTab } from "./InsightVectorTab";
+import { GuidanceSignalRow, HistoricalProgressRow, AggregationRow } from "@/hooks/useInsightVectorData";
 
 // Multi-ring radial KPI
 const RadialKPI = dynamic(() => import("./RadialKPI").then(mod => mod.RadialKPI), {
@@ -130,9 +134,17 @@ export interface ExamReport {
 export interface ExamReportLayoutProps {
     data: ExamReport;
     loading?: boolean;
+    insightData?: {
+        guidanceSignals: GuidanceSignalRow[];
+        historicalProgress: HistoricalProgressRow[];
+        skillData: AggregationRow[];
+        loading: boolean;
+        error: string | null;
+        onRetry: () => void;
+    };
 }
 
-type TabType = 'summary' | 'performance' | 'complexity' | 'audit';
+type TabType = 'summary' | 'insight' | 'performance' | 'complexity' | 'audit';
 
 const TabButton = React.memo(({ active, onClick, icon: Icon, label }: { active: boolean, onClick: () => void, icon: LucideIcon, label: string }) => (
     <button
@@ -293,7 +305,7 @@ const HeuristicPanel = ({
     );
 };
 
-export function ExamReportLayout({ data, loading }: ExamReportLayoutProps) {
+export function ExamReportLayout({ data, loading, insightData }: ExamReportLayoutProps) {
     const [activeTab, setActiveTab] = React.useState<TabType>('summary');
 
     // Pre-calculate Audit Stats for the 5 Data Pods
@@ -327,11 +339,17 @@ export function ExamReportLayout({ data, loading }: ExamReportLayoutProps) {
     const heatmap = Array.isArray(data.heatmap) ? data.heatmap : [];
     const questions = Array.isArray(data.questions) ? data.questions : [];
 
+    const guidanceSignals = insightData?.guidanceSignals ?? [];
+    const insightLoading = insightData?.loading ?? false;
+    const insightError = insightData?.error ?? null;
+    const insightRetry = insightData?.onRetry ?? (() => {});
+
     return (
         <div className="min-h-screen bg-slate-950 p-4 md:p-8 lg:p-12 mb-20 scrollbar-hide">
             <div className="max-w-[1600px] mx-auto">
                 <div className="flex flex-wrap items-center justify-center gap-4 mb-16">
                     <TabButton active={activeTab === 'summary'} onClick={() => setActiveTab('summary')} icon={LayoutDashboard} label="Executive Core" />
+                    <TabButton active={activeTab === 'insight'} onClick={() => setActiveTab('insight')} icon={Lightbulb} label="Insight Vector" />
                     <TabButton active={activeTab === 'performance'} onClick={() => setActiveTab('performance')} icon={BrainCircuit} label="Neural Matrix" />
                     <TabButton active={activeTab === 'complexity'} onClick={() => setActiveTab('complexity')} icon={BarChart3} label="Complexity Ladder" />
                     <TabButton active={activeTab === 'audit'} onClick={() => setActiveTab('audit')} icon={ListChecks} label="Question Audit" />
@@ -381,7 +399,75 @@ export function ExamReportLayout({ data, loading }: ExamReportLayoutProps) {
                                         />
                                     </div>
                                 )}
+
+                                <section className="space-y-8 pt-8 border-t border-white/5">
+                                    <h4 className="text-[12px] font-black text-slate-400 uppercase tracking-[0.3em] mb-2 border-b border-white/5 pb-4">
+                                        Precision Guidance
+                                    </h4>
+
+                                    {insightLoading ? (
+                                        <div className="space-y-6">
+                                            {[1, 2, 3].map((i) => (
+                                                <div key={i} className="h-40 bg-slate-900/40 rounded-[2rem] border border-white/5 animate-pulse" />
+                                            ))}
+                                            <div className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">
+                                                Loading precision vectors...
+                                            </div>
+                                        </div>
+                                    ) : insightError ? (
+                                        <div className="p-8 bg-rose-500/5 border border-rose-500/20 rounded-[2.5rem] flex flex-col items-center justify-center text-center">
+                                            <AlertTriangle className="text-rose-500 mb-4 h-8 w-8" />
+                                            <h5 className="text-[12px] font-black text-rose-400 uppercase tracking-widest">Vector Sync Failed</h5>
+                                            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-[0.3em] mt-2">
+                                                Unable to load guidance signals. Refresh the page to retry.
+                                            </p>
+                                            <button 
+                                                onClick={insightRetry}
+                                                className="mt-4 text-[10px] font-black text-indigo-400 uppercase tracking-widest hover:text-indigo-300 transition-colors"
+                                            >
+                                                Retry Synthesis
+                                            </button>
+                                        </div>
+                                    ) : guidanceSignals.length > 0 ? (
+                                        <div className="space-y-6">
+                                            {guidanceSignals
+                                                .slice()
+                                                .sort((a, b) => severityRank(a.severity) - severityRank(b.severity))
+                                                .slice(0, 5)
+                                                .map((signal, idx) => (
+                                                    <PrecisionGuidanceCard key={`${signal.signalType}-${idx}`} signal={signal} />
+                                                ))}
+                                        </div>
+                                    ) : (
+                                        <div className="p-12 bg-slate-900/40 rounded-[2.5rem] border border-white/5 border-dashed border-2 flex flex-col items-center justify-center text-center">
+                                            <span className="text-xl font-black text-slate-600 uppercase tracking-tighter">Awaiting Data Vector</span>
+                                            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-[0.3em] mt-2">
+                                                Complete additional assessment sessions to generate precision guidance signals. Minimum 3 questions required per subtopic.
+                                            </p>
+                                        </div>
+                                    )}
+                                </section>
                             </div>
+                        )}
+
+                        {activeTab === 'insight' && (
+                            <motion.div
+                                key="insight"
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -20 }}
+                                transition={{ duration: 0.5 }}
+                            >
+                                <InsightVectorTab 
+                                    guidanceSignals={insightData?.guidanceSignals ?? []}
+                                    historicalProgress={insightData?.historicalProgress ?? []}
+                                    skillData={insightData?.skillData ?? []}
+                                    report={data}
+                                    loading={insightData?.loading ?? false}
+                                    error={insightData?.error ?? null}
+                                    onRetry={insightData?.onRetry ?? (() => {})}
+                                />
+                            </motion.div>
                         )}
 
                         {/* NEURAL MATRIX TAB */}
@@ -570,4 +656,10 @@ export function ExamReportLayout({ data, loading }: ExamReportLayoutProps) {
             </div>
         </div >
     );
+}
+
+function severityRank(severity: GuidanceSignalRow["severity"]) {
+    if (severity === "HIGH") return 0;
+    if (severity === "MEDIUM") return 1;
+    return 2;
 }
