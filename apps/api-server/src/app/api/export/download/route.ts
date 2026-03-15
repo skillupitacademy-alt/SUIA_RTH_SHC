@@ -60,7 +60,7 @@ export async function GET(req: NextRequest) {
       blobUrl = job.result.downloadUrl as string;
       format = (job.result?.format as string) ?? 'json';
     } else {
-      if (formatParam !== 'json' && formatParam !== 'csv') {
+      if (formatParam !== 'json' && formatParam !== 'csv' && formatParam !== 'student-insight-pdf') {
         throw badRequest('Invalid format');
       }
       const exam = await db.query.exams.findFirst({
@@ -76,8 +76,12 @@ export async function GET(req: NextRequest) {
         throw forbidden('Forbidden');
       }
 
-      const exportUrls = exam.exportUrls as { analytics_json?: string; analytics_csv?: string } | null;
-      const url = formatParam === 'json' ? exportUrls?.analytics_json : exportUrls?.analytics_csv;
+      const exportUrls = exam.exportUrls as { analytics_json?: string; analytics_csv?: string; student_insight_pdf?: string } | null;
+      const url = formatParam === 'json'
+        ? exportUrls?.analytics_json
+        : formatParam === 'csv'
+        ? exportUrls?.analytics_csv
+        : exportUrls?.student_insight_pdf;
 
       if (url === null || url === undefined || url.trim() === '') {
         return NextResponse.json({ error: 'Export not ready' }, { status: 404 });
@@ -99,8 +103,16 @@ export async function GET(req: NextRequest) {
       throw new Error(`Failed to fetch export from storage: ${response.statusText}`);
     }
 
-    const contentType = format === 'csv' ? 'application/zip' : 'application/json';
-    const extension = format === 'csv' ? 'zip' : 'json';
+    const contentType = format === 'csv'
+      ? 'application/zip'
+      : format === 'student-insight-pdf'
+      ? 'application/pdf'
+      : 'application/json';
+    const extension = format === 'csv'
+      ? 'zip'
+      : format === 'student-insight-pdf'
+      ? 'pdf'
+      : 'json';
     const filename = `Export-${(jobId ?? examId ?? 'export').slice(0, 8)}.${extension}`;
 
     return new Response(response.body, {
